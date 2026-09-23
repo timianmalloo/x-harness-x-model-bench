@@ -19,7 +19,9 @@ summary: >-
 
 Every `bench` command and module stub that is not built names one of these ids. Work top to bottom inside a phase; the critical path is marked ◆.
 
-Source: `docs/proposals/cross-harness-benchmarking-proposal.md`. Open questions: `docs/notes/proposal-grounding-findings.md` (F1–F8).
+Source: `docs/proposals/cross-harness-benchmarking-proposal.md`. Open questions: `docs/notes/proposal-grounding-findings.md` (F1–F9) and `docs/notes/spike-runner-path.md`.
+
+Umbrella spec: [`harness-bench.md`](harness-bench.md) ([HTML](harness-bench.html)). Every unit below answers to its stories (US-1..US-52). The milestone tags (`smoke`, `full`, `G`) say which units the smoke run needs.
 
 ## Phase 0: ground
 

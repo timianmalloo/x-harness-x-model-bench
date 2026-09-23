@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-23T18:51:06Z",
+  "generated": "2026-09-23T19:20:58Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -86,8 +86,55 @@ window.AUDIT_DATA = {
       "goal": "Install Docker Desktop; run spike 1 (ACP launch + telemetry per harness) and spike 2 (worker in an external task workspace)",
       "done_when": "Docker runs hello-world; each spike has a written result with evidence",
       "tier": "T1"
+    },
+    {
+      "id": "al-01M37VDJVDTD7NA1MKXN29MFMY",
+      "shortname": "specify-harness-bench",
+      "datetime": "2026-09-23T19:20:58Z",
+      "session": "290c6347",
+      "prompt": "three things: commit and push (you dont need a PR); stay here and contiue to work; /specify use the spikes and the proposal and mockup to do the full specification, provide in md and html",
+      "summary": "docs/specs/harness-bench.md (+ generated .html via tools/render-doc-html.py, drift test tests/test_docs_html_in_sync.py): domain model, 52 stories tagged smoke/full/G, ISO 25010, threat model, UX flows UF-1..5, UI archetype B3 with deviations, WCAG 2.2 AA + TQ criteria. Gate: 6 lenses, 3 rounds, round 1 all blocked, 23 veto items resolved; carried conditions to /implement.",
+      "kind": "skill",
+      "skill": "specify",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/specs/harness-bench.md",
+        "docs/specs/harness-bench.html"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Full three-layer specification of harness-bench from the proposal, mockup and spikes, in md and html",
+      "done_when": "spec committed as md + html; three layers; falsifiable criteria; adversarial gate passed; docs graph valid",
+      "tier": "T1",
+      "started_at": "2026-09-23T18:54:46Z",
+      "duration_seconds": 1572.0
     }
   ],
-  "changes": [],
+  "changes": [
+    {
+      "id": "cl-01M37VDJZF4FCTTER06D5FS90W",
+      "datetime": "2026-09-23T19:20:58Z",
+      "session": "290c6347",
+      "kind": "spec",
+      "skill": "specify",
+      "title": "harness-bench umbrella spec: requirements the spikes and gate forced",
+      "prompt": "three things: commit and push (you dont need a PR); stay here and contiue to work; /specify use the spikes and the proposal and mockup to do the full specification, provide in md and html",
+      "summary": "Verbatim prompt delivery and pack-free pack=off (US-9/10); per-cell pinned+verified model and build (US-11/12); per-class config isolation with positive control (US-13); static symmetric permissions, host-credential and external-action containment (US-14/48/49); tool-less benchmark models and egress scan (US-46/47); plan confirmation before spend (US-6); stop/decision-timeout/resume (US-15/18/45); execution outcome vs validity; price list versioned; NA defined once (US-27); ranking by gated-composite interval (US-36).",
+      "rationale": "Spikes 1-2 showed the pack runner delivers a pack-shaped prompt, pins only Copilot, runs bundled CLIs and leaks user config; the six-lens gate blocked the first draft on 23 items. Conflicts with the proposal are recorded as C1-C12 in the spec.",
+      "artifacts": [
+        "docs/specs/harness-bench.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": null,
+        "after": "8cbbd86c569ae939a2434c3959b4ac2024d28970",
+        "branch": "spec/harness-bench",
+        "pushed": null,
+        "commits": []
+      }
+    }
+  ],
   "messages": []
 };
