@@ -15,6 +15,7 @@ bench = "harness_bench.cli:main"
 
 [dependency-groups]
 dev = [
+    "hypothesis>=6.100",
     "pytest>=8.0",
 ]
 
