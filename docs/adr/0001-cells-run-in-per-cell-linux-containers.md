@@ -2,7 +2,7 @@
 id: "adr-0001-cell-containers"
 title: "ADR-0001: Every measured cell runs in its own hardened Linux container"
 type: adr
-status: draft
+status: superseded
 owner: "@timianmalloo"
 phase: "all phases"
 tags: [benchmark, isolation, security, containers]
@@ -20,7 +20,7 @@ summary: >-
 
 # ADR-0001: Every measured cell runs in its own hardened Linux container
 
-- **Status:** Proposed. Supersedes the proposal's "authored tasks run natively on your workstation"; the spec is amended to match.
+- **Status:** **Superseded by ADR-0013 for authored tasks (2026-09-23).** Authored-task cells run natively, each in a Job Object. This container shape remains the reference only for Harbor task cells (phase 2, spike A6). The original status: Proposed; it superseded the proposal's "authored tasks run natively on your workstation".
 - **Date:** 2026-09-23 (revised after council round 1)
 - **Deciders:** @timianmalloo (owner); authored by Claude Code for the architect council
 - **Context spec/architecture:** `docs/specs/harness-bench.md`, `docs/architecture.md`

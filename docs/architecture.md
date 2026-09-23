@@ -5,7 +5,7 @@ type: architecture
 status: draft
 owner: "@timianmalloo"
 phase: "S-02 architecture of record (smoke milestone first)"
-tags: [benchmark, architecture, containers, runner, grading]
+tags: [benchmark, architecture, runner, grading]
 links:
   - { to: spec-harness-bench, rel: implements }
   - { to: proposal-cross-harness-benchmarking, rel: refines }
@@ -14,10 +14,10 @@ links:
 review-by: "2027-03-22"
 summary: >-
   A deterministic pipeline (plan, run, grade, report) whose single-writer run engine launches every
-  measured cell in its own hardened Linux container through a bench-owned ACP driver, with a pinned
-  per-cell harness profile, a static permission profile, no reach to host credentials, and grading in
-  no-network containers. Hash-chained append-only ledgers per run are the record; every result is a
-  derived view. Models appear only as the systems under test and, tool-less, as judges, summarizer and
+  measured cell natively on Windows, in its own git working copy and Windows Job Object, through a
+  bench-owned ACP driver, with a pinned per-cell harness profile and a static, symmetric permission
+  profile; grading runs natively in its own working copies (ADR-0013). Hash-chained append-only ledgers per
+  run are the record; every result is a derived view. Models appear only as the systems under test and, tool-less, as judges, summarizer and
   matcher.
 ---
 
@@ -26,11 +26,10 @@ summary: >-
 - **Status:** In review. Passed the architect council in two rounds (Gate record); owner decisions 1–5 and 7 ruled; decision 6 open.
 - **Tier:** T1.
 - **Driving spec:** `docs/specs/harness-bench.md` (US-1..US-52; in review; amended by this architecture, see [Spec amendments](#spec-amendments-made-by-this-architecture)).
-- **Evidence:** `docs/notes/spike-runner-path.md` (spikes 1–2), `docs/notes/spike-isolation-permissions.md` (R1, R2, R11).
+- **Evidence:** `docs/notes/spike-runner-path.md` (spikes 1–2), `docs/notes/spike-isolation-permissions.md` (R1, R2, R11, N1, N2).
 - **Author / date:** Claude Code (Opus 5.5) for @timianmalloo, 2026-09-23.
 - **Supersedes, in the proposal's Architecture section:**
   - "every measured cell is a coord-run/1 worker" (ADR-0002);
-  - "authored tasks run natively" (ADR-0001);
   - "OTel collector telemetry sink" (ADR-0008);
   - "judges through Claude Code and Codex" (ADR-0009).
 
@@ -39,8 +38,8 @@ summary: >-
 **What the system must do:** the spec's core scenario. Run a `harness × model × pack` matrix over a BOM, one isolated cell per (task version, combo, pack, repetition); grade every cell with the strongest oracle; report with honest uncertainty.
 
 **Hard constraints:**
-- **Host.** One Windows 11 workstation with Docker Desktop (WSL2); local only (NG2); Windows host only (NG9).
-- **Isolation and security.** US-8, US-13, US-14, US-46–US-50.
+- **Host.** One Windows 11 workstation; local only (NG2); Windows host only (NG9). Docker Desktop only for Harbor tasks (ADR-0013).
+- **Isolation.** Each cell works in its own working copy, and nothing more (owner ruling, ADR-0013). US-8, US-13 and US-14 as amended; US-48 withdrawn for authored tasks.
 - **Validity.** US-9–US-12: verbatim prompts, pack-free `pack=off`, served model verified with at least one call, pinned builds.
 - **Reproducibility.** US-4 and US-26.
 - **Scale.** At most 576 cells per run, 4 in parallel, each at most 60 minutes. The smoke worst case is about 12 h of wall clock (`bench plan` states the envelope).
@@ -63,7 +62,7 @@ summary: >-
 | Capability | Tier | Why this tier |
 | --- | --- | --- |
 | Validate, plan, schedule, budgets, stop, resume, archive, teardown, verify | T0 | Fully computable; model-checked lifecycle (P2) |
-| Workspace and image builds, pack on/off | T0 | Deterministic file and image operations |
+| Working copy builds, pack on/off | T0 | Deterministic file and git operations |
 | Telemetry normalisation, cost, correctness, drift, process, formal checks, statistics | T0 | Mechanical oracles first |
 | Egress scan, credential exact-value scan | T0 | Must be deterministic and testable |
 | Report rendering | T0 | A pure function of the derived views |
@@ -83,7 +82,7 @@ flowchart TB
     CLI[bench CLI: validate, plan, run, status, stop, grade, report, verify, teardown]
     ENG[Run engine: single writer, lifecycle = run_lifecycle.tla]
     WSB[Workspace builder]
-    IMG[Image builder: env image + pinned harness layer, SBOM, CVE scan]
+    TLS[Tools folder: pinned harness builds]
     PRF[(Harness profiles: build, mode, pin, home seeding, reader)]
     DRV[ACP cell driver]
     ARC[Archiver: no link following, exact-value credential scan]
@@ -91,7 +90,7 @@ flowchart TB
     GRD[Grade orchestrator]
     GW[Model gateway: tool-less]
     EG[Egress gate]
-    VIEWS[In-memory DuckDB views]
+    VIEWS[Pure-Python projections]
     REP[Report: CLI + HTML + summaries]
   end
   subgraph Store["runs/<run_id>/ + cache/"]
@@ -100,18 +99,16 @@ flowchart TB
     CTL[(control/: stop, decision answers)]
     VC[(shared verdict cache)]
   end
-  subgraph Docker["Docker Desktop (WSL2)"]
-    PROXY[Egress proxy, off-the-shelf]
-    CELL[Cell containers: one network each]
-    GC[Grading containers: --network none, read-only mounts]
+  subgraph Cells["bench-cells/<run>/<cell> (native, one Job Object each)"]
+    CELL[Cell: own working copy + own harness home]
+    GC[Grading working copy: archive + hidden tests]
   end
   SK -->|bench plan / run / status --json| CLI
   SK -->|decision answers| CTL
   CLI --> ENG
-  ENG --> WSB & IMG & DRV & ARC
-  PRF --> IMG & DRV & TEL
-  DRV -->|docker run -i hb-run-cell, ACP stdio| CELL
-  CELL --> PROXY
+  ENG --> WSB & DRV & ARC
+  PRF --> TLS & DRV & TEL
+  DRV -->|spawn into Job Object, ACP stdio| CELL
   CTL --> ENG
   ENG --> LED
   ARC --> ARCH
@@ -130,30 +127,30 @@ flowchart TB
 
 | Boundary | Where | Rule |
 | --- | --- | --- |
-| B1 · agent ↔ host | The cell container | Hardened container; only `/work` and the cell's home mounted, with read-only permission files; the proxy is the only way out (ADR-0001, ADR-0005). |
-| B1b · cell ↔ cell | Docker networks and paths | One network per cell; per-cell homes and workspaces; no shared paths (ADR-0001, US-13). |
+| B1 · agent ↔ host | The cell's working copy | The cell works in its own working copy with its own harness home; it runs with the operator's rights and its reach outside the working copy is not restricted (owner ruling, ADR-0013). |
+| B1b · cell ↔ cell | Paths | Per-cell working copies and homes; no shared paths by construction (US-8, US-13). |
 | B2 · cell ↔ coordinator | `bench status --json` | Schema-bound: enums, ids, hashes, counts, no free strings. Stderr tails go to the archive only (ADR-0002, ADR-0007, US-46). |
-| B3 · task oracle ↔ cell | `tasks/<ID>/tests`, `oracle/` | Never an input to the workspace builder; mounted read-only into grading containers only (US-3, US-8). |
+| B3 · task oracle ↔ cell | `tasks/<ID>/tests`, `oracle/` | Never in the task clone or its history; copied into a grading working copy only after the cell has ended (US-3, US-8). |
 | B4 · benchmark ↔ vendors | The egress gate | The only path for gateway calls and report publication (ADR-0005, ADR-0009). |
-| B5 · record ↔ views | `runs/` versus DuckDB | Views are computed in memory, never persisted as truth (ADR-0006). |
+| B5 · record ↔ views | `runs/` versus the projections | Views are computed in memory, never persisted as truth (ADR-0006). |
 | B6 · cell output ↔ host tooling | Archives and workspaces on the host | Untrusted: no host execution, safe host git, no link following, no agentic tool opens them (ADR-0010). |
 
 **Components** (each is a `/design-slice` unit; backlog id in brackets):
 - **start-benchmark skill** [S-01]. Compiles the matrix, presents the plan (US-6), starts `bench run`, relays decision requests, writes the pack audit-log entries. It holds a deny rule for `runs/**` and `bench-cells/**`.
 - **Run engine** [S-05, S-13]. Everything in ADR-0007:
-  - the lifecycle log, write-ahead launch intents, named containers, the control mailbox;
+  - the lifecycle log, write-ahead launch intents, a Job Object per cell, the control mailbox;
   - monotonic budgets, suspend detection, the failure taxonomy, the circuit breaker;
   - heartbeat, preflight, span instrumentation;
   - resume in the full milestone.
-- **Workspace builder** [S-05]. Per-cell git repo under `C:\Projects\bench-cells\<run>\<cell>`: task-version base, pack applied or stripped per the pack manifest, no remote, no oracle. Checks ancestors for instruction files.
-- **Image builder** [S-05, S-06]. One image per task environment with the pinned harness layer for all three harnesses, `FROM …@sha256`, lockfile with integrity hashes, SBOM and CVE scan, dependencies restored offline (ADR-0001, ADR-0004).
+- **Workspace builder** [S-05]. One bench-owned local clone per task version (no remote, no oracle in it or its history); one git working copy per cell under `C:\Projects\bench-cells\<run>\<cell>`, with the pack applied or stripped per the pack manifest. Checks ancestors for instruction files.
+- **Tools folder** [S-06]. Harness CLIs and adapters installed from the pinned lockfile into a bench-owned folder and invoked by path; executed build and hash recorded (US-12).
 - **Harness profiles** [S-06]. Data per harness, including home seeding and the credential kind rules (ADR-0003); qualified by the profile qualification suite (ADR-0011).
 - **ACP cell driver** [S-06]. ADR-0002: narrow input surface, deadlines on every step, verbatim prompt, deny-all permissions.
-- **Archiver and teardown** [S-05]. Waits for the container to be gone. Manifest against the source listing, hashes from the source. No link following. Exact-value credential scan. Deletes only after verification, with bounded retry on Windows sharing violations; otherwise keeps the workspace and reports it (US-19).
+- **Archiver and teardown** [S-05]. Waits until the cell's Job Object reports no active process. Manifest against the source listing, hashes from the source. No link following. Exact-value credential scan. Deletes only after verification, with bounded retry on Windows sharing violations; otherwise keeps the workspace and reports it (US-19).
 - **Telemetry** [S-07]. Readers and a normaliser into disjoint token buckets and OTel GenAI names (ADR-0008).
-- **Grade orchestrator and graders** [S-08a–g]. Under `grade.lock`, only archived cells, one grading pass at a time. Every step that runs cell content runs in a grading container (ADR-0010).
+- **Grade orchestrator and graders** [S-08a–g]. Under `grade.lock`, only archived cells, one grading pass at a time. Every step that runs cell content runs natively in its own grading working copy and Job Object, with a deadline (ADR-0010 as amended by ADR-0013).
 - **Model gateway and egress gate** [S-09]. ADR-0009 and ADR-0005.
-- **Views and statistics** [S-08f, S-11]. In-memory DuckDB over the facts; canonical sorted exports; bootstrap with the plan's seed.
+- **Views and statistics** [S-08f, S-11]. Pure-Python projections over the verified facts (`docs/notes/decision-sqlite-views.md`); canonical sorted exports; bootstrap with the plan's seed.
 - **Report** [S-10]. CLI and HTML (spec Part C); the summaries through the gateway.
 - **Lifecycle model** [S-13]. `models/run_lifecycle.tla` (obligations below).
 
@@ -166,8 +163,7 @@ flowchart TB
 | Launch intents | Write-ahead intent log / Idempotent Action (LOA 5.3) |
 | Control files | Single Writer + command mailbox |
 | Facts and views | Event Log + Materialized View (CQRS read model); Receipt Ledger (LOA 4.3) |
-| Cell and grading containers | Sandboxed Executor (LOA 5.2) + Bulkhead |
-| Proxy | Egress Gateway |
+| Cell and grading processes | Job Object per process tree (Bulkhead for lifetime and resources; not a sandbox) |
 | Egress gate | Guardrail Filter (LOA 6.2) |
 | Model gateway | AI Gateway with Read-Through cache on exact keys |
 | Oracle ladder | Cascade + Deterministic Verifier |
@@ -180,15 +176,13 @@ flowchart TB
 | ACP v1 over stdio | JSON-RPC 2.0 lines; initialize, session/new (cwd), set_mode, set_model, prompt; refusal `{"outcome":{"outcome":"cancelled"}}` | Spike R11 client; pack transport read | Verified |
 | `claude-agent-acp` 0.79.0 | `ANTHROPIC_MODEL` pins; `CLAUDE_CODE_EXECUTABLE` selects the CLI; `settings.json` `dontAsk` + allow list honoured | Spikes 1.3–1.4, R2 | Verified |
 | `codex-acp` 1.12.0 | Modes and approval policies as read from source; `CODEX_PATH` selects the CLI | Source read; spikes R2, R11 | Verified |
-| Codex CLI 0.156.0 (Linux) | Accepts `gpt-6-sol` with a ChatGPT-account login; 0.154.0 does not | Spike R11.5 | Verified |
-| Copilot CLI 1.0.88 / 1.0.89 | `--acp --model`, `--allow-tool`; per-home state; a token variable in containers | Spikes 1.2, R1, R11.3 | Verified (native); Flagged (container auth) |
+| Codex CLI 0.156.0 | Accepts `gpt-6-sol` with a ChatGPT-account login; 0.154.0 does not; ACP mode `agent-full-access` runs unsandboxed with no prompts natively | Spikes R11.5, N1.1 | Verified |
+| Copilot CLI 1.0.88 / 1.0.89 | `--acp --model`, `--allow-tool`; per-home state; login from the Windows credential store | Spikes 1.2, R1, N1.2 | Verified |
 | Native records | Claude `projects/<slug>/<sid>.jsonl`; Codex `sessions/…/rollout-*-<sid>.jsonl`; Copilot `session-store.db` `assistant_usage_events`; token semantics differ per harness | Spikes 1.2, R1.2, R11.2 | Verified (formats unversioned) |
-| Docker Desktop 4.91 / engine 29.8 | Non-root cells; bind mounts from Windows paths; no host drives visible | Spike R11.1 | Verified |
-| Container hardening flags (read-only root, cap-drop, seccomp, per-cell networks) | Standard Docker behaviour under Docker Desktop | Not spiked | Inferred (phase 1 tests) |
-| Allowlisting proxy (tinyproxy / squid) on internal networks | CONNECT allowlist, no DNS except via the proxy, private addresses denied | Not spiked | Flagged (phase 2 gate) |
+| Windows Job Objects (`ctypes`) | Kill-on-close; `TerminateJobObject`; active-process count; peak memory | Spike N2 | Verified |
+| Docker Desktop 4.91 / engine 29.8 | Harbor task containers only | Spike R11.1 | Verified |
 | Gateway backend (vendor API or headless, tools off) | Tool-less, schema-constrained output | Not spiked; no keys | Flagged (owner decision) |
-| DuckDB JSON Lines reader | In-memory views over facts | Not spiked | Inferred (S-08f) |
-| TLC on JDK 21 | Model-check the lifecycle | Java 21 present; TLC not run | Inferred (S-12/S-13) |
+| TLC on JDK 21 | Model-check the lifecycle | `tools/check_models.py`; US-44 bounds checked | Verified |
 | Python monotonic clock on Windows across sleep | Whether it advances during suspend | Not spiked | Flagged (phase 1) |
 | Harbor environments as base images; this driver as a Harbor agent | E-tasks in our container shape | Not spiked; Harbor not installed | Flagged (A6) |
 
@@ -200,7 +194,7 @@ flowchart TB
 - The coordinator session keeps the operator's tools but reads only schema-bound status (B2), and it never opens cell content (B6).
 
 **Failure & resilience.**
-- At-most-once prompting through durable intents and named containers.
+- At-most-once prompting through durable intents; a Job Object per cell, so a kill is confirmed and an engine crash leaves no running cell.
 - A closed failure taxonomy with attribution: infrastructure causes make a cell `invalid (infrastructure)` and never count against a harness (ADR-0007).
 - A circuit breaker after consecutive infrastructure failures.
 - Deadlines on every subprocess and handshake.
@@ -209,8 +203,8 @@ flowchart TB
 **Observability.**
 - `events` rows are spans: `run_id` is the trace; every phase of every cell carries start and end and a duration.
 - A heartbeat, and `bench status --json`.
-- Per-cell resource samples (peak memory, CPU throttling, archive bytes).
-- The proxy's per-cell log; coordinator and gateway usage as principals.
+- Per-cell resource samples from job accounting (peak memory, CPU time) and archive bytes.
+- Gateway usage as a principal.
 - The 07:00 question, "what happened?", is answered by `bench status`: counts by cause and attribution, `failed (unclassified)` (target 0), and per cell the cause, evidence set and archive path.
 
 **Data governance & privacy.**
@@ -221,18 +215,19 @@ flowchart TB
 
 ## Load-bearing decisions → ADRs
 
-- **ADR-0001:** every measured cell runs in its own hardened Linux container.
+- **ADR-0001:** every measured cell runs in its own hardened Linux container. **Superseded by ADR-0013 for authored tasks**; kept for Harbor task containers.
 - **ADR-0002:** a bench-owned ACP cell driver, not coord-runner or Harbor, with a re-evaluation trigger.
 - **ADR-0003:** a pinned per-cell harness profile, scoped credential kinds, and a verified served model.
 - **ADR-0004:** a static, symmetric permission profile, with dependencies restored offline.
-- **ADR-0005:** cells reach only model APIs through an allowlisting proxy (fail closed from phase 2); one egress gate.
+- **ADR-0005:** one egress gate for the benchmark's own sends; the cell proxy is superseded by ADR-0013.
 - **ADR-0006:** hash-chained append-only facts with declared grains; a shared verdict cache; every result a derived view.
 - **ADR-0007:** a deterministic single-writer run engine: at-most-once launch, failure taxonomy, clocks, control mailbox.
 - **ADR-0008:** telemetry comes from archived native records, normalised to disjoint token buckets.
 - **ADR-0009:** one tool-less model gateway with one owner-chosen backend and no fallback.
-- **ADR-0010:** cell output is untrusted on the host; grading runs in containers (B6).
+- **ADR-0010:** cell output is untrusted on the host (B6); grading runs natively in its own working copies (amended by ADR-0013).
 - **ADR-0011:** LOA C1–C11 mapped to Python, with a control each, plus the profile qualification suite.
 - **ADR-0012:** proportionate security for a single-operator local tool (owner ruling); supersedes parts of ADR-0001, 0003, 0005 and 0010.
+- **ADR-0013:** cells run natively, each in its own git working copy and Job Object (owner ruling); supersedes ADR-0001 for authored tasks.
 
 ## Lifecycle model obligations (`models/run_lifecycle.tla`, US-44)
 
@@ -244,7 +239,7 @@ flowchart TB
 
 **Invariants.** Each has a named seeded-bug variant that TLC must reject:
 - at most one prompt per cell across any number of crashes;
-- no archive while a cell's container is live;
+- no archive while a cell's process tree is live;
 - nothing is deleted before its archive is verified;
 - each cell is graded at most once per grading pass, and only after it is archived;
 - each control input is applied at most once;
@@ -258,15 +253,15 @@ flowchart TB
 
 | Phase | End-to-end capability it proves | Real | Mocked / stubbed (seam = contract) | Human validation (demo) | Test validation (E2E) | Unblocks |
 | --- | --- | --- | --- | --- | --- | --- |
-| **1 · walking skeleton** | Prose → plan → 2 combos (cc-sonnet, codex-sol) × pack on/off × 1 rep on the operator-authored fixture task `X1` (tiny Python, hidden test) → hardened containers → archive → telemetry → correctness + cost in a grading container → CLI table + minimal HTML (header, validity banner, leaderboard, drill-down) | Lifecycle model + TLC; engine at parallelism ≤ 2 with intents, named containers, failure taxonomy, deadlines, heartbeat, spans; workspace and image builders; the Claude and Codex profiles; driver; archiver with no link following and the exact-value scan; readers; correctness and cost graders; views; report skeleton | Network `unrestricted` (operator-authored task only, recorded); Copilot `not_applicable (no token)`; statistics `not computed (k=1)`; no judges or summaries in phase 1 (no caller yet) | `/start-benchmark cc-sonnet and codex-sol, pack on and off, task X1, 1 rep` → confirm → table and report → click a score → evidence | TLC passes and seeded variants fail; the 4-cell E2E asserts outcomes, verbatim prompt hash, served model ≥ 1 call, chained ledgers verify, byte-identical canonical exports on re-grade; kill-in-each-state leaves no container; B6 tests (fsmonitor, symlink, hook); ledger tamper tests; fault injection (an OOM kill, a stopped Docker daemon, a handshake hang) each gets its own cause and `failed (unclassified)` stays 0; per-cell resource sampling (peak memory, CPU throttling, archive bytes) recorded for the disk projection and limits | Every later phase |
-| **2 · smoke on all harnesses** | The six smoke tasks on all three harnesses, overnight | + Copilot profile (token); egress proxy (fail closed); hostile fixtures (US-48, US-49); T0 scripted-user matcher for A1; Harbor E1 base image (spike A6); stop, decision timeout, circuit breaker; power request; per-class canaries (US-13); benchmark credentials required for non-operator tasks | Judges and summaries not yet (their metrics NOT_RECORDED, stated) | P1 runs the smoke BOM overnight; at 07:00 `bench status` explains every non-completed cell | Hostile fixtures fail closed; proxy spike tests; stop within 30 s; answer-versus-timeout race | Real grading at scale |
+| **1 · walking skeleton** | Prose → plan → 2 combos (cc-sonnet, codex-sol) × pack on/off × 1 rep on the operator-authored fixture task `X1` (tiny Python, hidden test) → native cells in their own working copies → archive → telemetry → correctness + cost in a grading working copy → CLI table + minimal HTML (header, validity banner, leaderboard, drill-down) | Lifecycle model + TLC; engine at parallelism ≤ 2 with intents, a Job Object per cell, failure taxonomy, deadlines, heartbeat, spans; workspace builder and tools folder; the Claude and Codex profiles; driver; archiver with no link following and the exact-value scan; readers; correctness and cost graders; views; report skeleton | Network `unrestricted` (recorded); Copilot not in phase 1; statistics `not computed (k=1)`; no judges or summaries in phase 1 (no caller yet) | `/start-benchmark cc-sonnet and codex-sol, pack on and off, task X1, 1 rep` → confirm → table and report → click a score → evidence | TLC passes and seeded variants fail; the 4-cell E2E asserts outcomes, verbatim prompt hash, served model ≥ 1 call, chained ledgers verify, byte-identical canonical exports on re-grade; kill-in-each-state leaves no process in the cell's job; B6 tests (fsmonitor, symlink, hook); ledger tamper tests; fault injection (an adapter crash, a handshake hang, a disk-full write) each gets its own cause and `failed (unclassified)` stays 0; per-cell resource samples (peak memory and CPU time from the job, archive bytes) recorded for the disk projection | Every later phase |
+| **2 · smoke on all harnesses** | The six smoke tasks on all three harnesses, overnight | + Copilot profile (native, no token); T0 scripted-user matcher for A1; Harbor E1 base image (spike A6); stop, decision timeout, circuit breaker; power request; per-class canaries (US-13); benchmark credentials required for non-operator tasks | Judges and summaries not yet (their metrics NOT_RECORDED, stated) | P1 runs the smoke BOM overnight; at 07:00 `bench status` explains every non-completed cell | Stop within 30 s; answer-versus-timeout race | Real grading at scale |
 | **3 · full graders + judges** | Every smoke metric graded; judged items blind by two vendors | + drift, rigor, mutation, clarify, process graders; model gateway (owner-chosen backend); egress gate; calibration sets; matcher model rung | Summaries | Re-grade the smoke archive; κ in the header | Byte-identical re-grade from cache; injection fixture (US-46); egress canary (US-47) | The complete report |
 | **4 · report + statistics** | The complete Part C report with intervals, pack effect and AI summaries | + bootstrap; every section; summaries with the claim check; publication through the egress gate | — | Two P3 readers name the leader and the pack effect (R9) | UIA-1..15; axe; offline load | The full grid |
 | **5 · full grid** | 24 tasks × combos × packs × 3 reps; resume; comparison; G-tasks after S-12; protocol conformance | + resume; comparison; stability; G-task images; the coordination-protocol model | — | A pack change validated by a re-run comparison | Crash in each state, then resume; TLC on the coordination model | — |
 
 **Seam contracts:**
-- the network mode is recorded per cell (phase 1 `unrestricted`, operator tasks only);
-- the Copilot profile returns `not_applicable` with a reason until a token exists;
+- the network mode is recorded per cell (`unrestricted`);
+- the Copilot profile is absent from phase-1 plans (phase 2);
 - judged and summary outputs are NOT_RECORDED with a reason until phase 3.
 
 Each is replaced by substitution behind the same record.
@@ -275,14 +270,14 @@ Each is replaced by substitution behind the same record.
 
 Mapped to Python with one control per criterion in **ADR-0011**. Recorded deviations:
 - cells act as a benchmark principal, which inverts P11 on purpose;
-- phase 1's `unrestricted` network is time-boxed and fail-closed after phase 1.
+- cells run with the operator's rights and an `unrestricted` network (owner ruling, ADR-0013).
 
 ## Spec amendments made by this architecture
 
 Applied to `docs/specs/harness-bench.md` on 2026-09-23:
-1. **In scope:** every cell runs in a Linux container (ADR-0001).
+1. **In scope:** every cell runs in a Linux container (ADR-0001). *Superseded by ADR-0013: authored-task cells run natively in their own working copies; Harbor tasks in containers.*
 2. **Domain model:** the pack is not the benchmark's runner; the ACL is the coordination-ledger reader in the grader (ADR-0002).
-3. **NFR Compatibility:** Linux containers on a Windows host; report headers say so.
+3. **NFR Compatibility:** Linux containers on a Windows host; report headers say so. *Superseded by ADR-0013: native Windows; report headers say so.*
 4. **Conflict C9:** proxy enforcement from phase 2; phase 1 `unrestricted` for operator-authored tasks only.
 5. **US-11:** at least one successful model call; `invalid (no model call)` (spike R11.5).
 
@@ -295,31 +290,29 @@ Applied to `docs/specs/harness-bench.md` on 2026-09-23:
 4. **Security weight:** proportionate for a single-operator local tool; git is a mechanism, not an entry point (ADR-0012).
 5. **Third-party tasks:** may run on the operator's subscriptions; the owner accepts the risk (ADR-0012).
 7. **Spec acceptance:** `docs/specs/harness-bench.md` accepted by the owner.
+8. **Isolation:** containers dropped for authored tasks; each cell works in its own working copy, and nothing more (ADR-0013).
+6. **Copilot credential:** closed by ruling 8. Natively, Copilot uses the Windows credential store (spike N1.2); no token and no probe C1.
 
-**Still open:**
-6. **Copilot credential in containers.** Copilot CLI keeps its login in the Windows credential store, which a container cannot reach (spike R11.3). Needed by phase 2, not phase 1.
-   - **Owner ruling (2026-09-23): spike first.**
-   - **Probe C1, before phase 2:** log in once with Copilot's device-code flow inside a benchmark-owned container. Check whether the Linux build saves the login to a file under `COPILOT_HOME` that can be copied per cell like Claude's and Codex's. Record what that login can reach.
-   - **Then decide:** use the container login if it is copyable and cannot reach repositories. Otherwise use a Copilot-only fine-grained token (billed to the subscription), or leave Copilot `blocked (auth)`.
-   - The `gh` CLI token stays excluded, because it carries repository scopes.
+**Still open:** none.
 
 ## Flagged risks & residual unknowns
 
 | # | Risk | Next probe | Phase |
 | --- | --- | --- | --- |
-| A1 | Egress proxy unproven (auth refresh, streaming, DNS, private addresses) | Proxy spike with the fail tests in ADR-0005 | 2 |
-| A2 | Copilot in containers needs a Copilot-only token (owner action) | One container turn with the token | 2 |
+| A1 | *Closed by ADR-0013: no cell proxy.* | — | — |
+| A2 | *Closed by ADR-0013: Copilot runs natively (N1.2).* | — | — |
 | A3 | Copied OAuth logins may rotate and invalidate the host login | Watch the token file across a long cell | 1 |
 | A4 | Claude account context under a subscription login | Benchmark account or API key (owner decision 1) | 1 |
-| A5 | Bind-mount build performance for C# tasks; per-cell resource limits | Time D1 builds on a bind mount and on a volume; measure peak memory | 2 |
+| A5 | Per-cell resources at parallelism 2+ | Peak memory and CPU time from the job, on D1 | 2 |
 | A6 | Harbor environments as base images; this driver as a Harbor agent | Spike on E1 | 2 |
 | A7 | Gateway backend | Owner decision 2; US-46 fixture | 3 |
 | A8 | Native record formats change across CLI builds | Profile qualification suite (ADR-0011) | all |
 | A9 | Monotonic clock across sleep on Windows | Sleep the host during a cell and observe | 1 |
-| A10 | Escape from the Docker Desktop VM reaches the Windows drives | Accepted in writing; minimum Docker Desktop version pinned | all |
+| A10 | An agent reads or changes things outside its working copy (other repos, hidden tests in the bench repo, the host toolchain) | Accepted by the owner (ADR-0013); undetected. Upgrade if seen: a reach audit over tool calls | all |
+| A11 | An adapter's child CLI leaves the cell's Job Object | Probe N4: breakaway never allowed; check the job's process list during a turn | 1 |
 
 **Residual architectural risk.**
-- The benchmark measures harnesses in Linux containers under a declared profile, not on the owner's Windows desktop.
+- The benchmark measures harnesses on the owner's Windows workstation under a declared profile.
 - Each cell can reach its own model credential.
 - An agent could exfiltrate through an allowlisted vendor host using its own key. That is acceptable only with revocable, spend-capped credentials.
 

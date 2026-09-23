@@ -25,7 +25,7 @@ summary: >-
 3. Climb the control ladder (CI6) and record the highest rung that actually holds: *make it impossible* > *automated control* > *always-loaded instruction* > *knowledge doc* > *register entry only*.
 4. A control is not a control until it has been **observed failing** on the un-fixed code.
 
-**Status counts:** controlled 1 · partially-controlled 1 · uncontrolled 0 (project classes)
+**Status counts:** controlled 2 · partially-controlled 2 · uncontrolled 0 (project classes)
 **Recurrence since last review:** 4 instances of MOD-A in one session: the control was built after the fourth.
 
 ---
@@ -42,6 +42,23 @@ summary: >-
   - `2026-09-23` model v1 — two guards for one invariant masked `exceed_parallelism`.
 - **Sweep:** all 22 variants re-run after the isolation change; every one is rejected by its own target.
 - **Control:** `tools/check_models.py` checks each safety variant against its target invariant alone (`only_invariant`) and each liveness variant against its target property alone (`only_property`), asserting the target's name in TLC's output. `tests/test_check_models.py::test_every_checked_property_has_a_seeded_variant` (observed failing when a variant was removed, 2026-09-23) and `test_variant_config_checks_only_its_target`. Guards never read history variables (stated in the model design).
+- **Status:** `controlled`
+
+### RIG-D — A tool's semantics assumed in a design, not checked
+- **Signature:** a design names a mechanism (`git worktree`, a Job Object flag, a CLI mode) and relies on a property it was never observed to have.
+- **Why it survives:** the mechanism is familiar, so the property feels checked. Design text is not executed.
+- **Instances:**
+  - `2026-09-23` ADR-0013 draft: "each cell gets its own worktree of one clone". Worktrees share refs, stashes and config, so one cell's commits and remotes were visible in every other cell. Distributed Systems and the Test Architect caught it at the gate, each checking in a scratch repository.
+- **Sweep:** the other mechanisms ADR-0013 names. Job Object kill-on-close and the active-process count were spiked (N2). The Codex full-access mode was read in source and run (N1). Job naming and handle inheritance are marked Inferred with probe N4.
+- **Control:** T-WS-gitleak (automated, phase 1). Rule: every mechanism a design relies on is spiked or labelled Inferred with a named probe (the pack's no-guessing protocol, NG).
+- **Status:** `partially-controlled` (the test lands in phase 1)
+
+### EDIT-A — A blanket text replacement renames more than the target
+- **Signature:** a mechanical rename (`AllCells` → `Cells`) also rewrites identifiers that contain the target (`NotAllCellsFinished` became `NotCellsFinished`).
+- **Why it survives:** the replacement looks local; the collateral hits are in other identifiers.
+- **Instances:**
+  - `2026-09-23` removing the coordinator from the model broke the witness invariant's name. `check_models.py` failed closed ("not defined in the specification"), and the name was fixed before the commit.
+- **Control:** renames use whole-word matching (`\b…\b`, as the later `container` → `proc` rename did). `check_models.py` fails on any undefined invariant, and `test_every_seeded_variant_targets_a_declared_property` checks the names. Observed failing, 2026-09-23.
 - **Status:** `controlled`
 
 ### INS-A — Progress hidden by buffered output

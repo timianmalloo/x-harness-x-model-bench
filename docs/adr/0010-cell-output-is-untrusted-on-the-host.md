@@ -16,11 +16,17 @@ summary: >-
   tests it; graders that run cell content do so in fresh no-network grading containers with read-only
   mounts. Host git runs only with a bench-owned configuration, the archiver never follows links, and no
   agentic tool on the host opens a cell workspace.
+review-suggested: []
 ---
 
 # ADR-0010: Cell output is untrusted on the host; grading runs in containers
 
 - **Status:** Proposed
+- **Amended by ADR-0013 (2026-09-23):**
+  - grading steps that run cell content run natively, in their own grading working copy (the archive plus the hidden tests) inside their own Job Object with a deadline, not in a grading container;
+  - safe host git (`gitsafe.py`) is unchanged.
+
+  The agent already ran arbitrary commands as the operator during its cell, so native grading adds no new exposure.
 - **Date:** 2026-09-23
 - **Deciders:** @timianmalloo; authored by Claude Code for the architect council (Security V1–V2, round 1)
 - **Context spec/architecture:** `docs/architecture.md` boundaries; spec US-8, US-28–US-33, US-48

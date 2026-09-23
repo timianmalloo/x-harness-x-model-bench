@@ -1,13 +1,14 @@
 --------------------------- MODULE run_lifecycle ---------------------------
 (***************************************************************************)
 (* The lifecycle of one harness-bench run (spec US-44; ADR-0006, ADR-0007). *)
-(* Version 2 (after the design gate).                                      *)
+(* Version 3 (native cells, ADR-0013).                                     *)
 (*                                                                         *)
-(* One run engine process that can crash and be resumed; cell containers   *)
-(* that outlive a crash, can fail on their own, and die asynchronously    *)
-(* after a kill; a write-ahead intent log; a prompt_sent record that a    *)
-(* worker queues and the engine persists before the prompt goes out; kill *)
-(* first, record the outcome after the container is gone; a control       *)
+(* One run engine process that can crash and be resumed; cells (each a    *)
+(* native process tree in its own Job Object, `proc`) that can fail on    *)
+(* their own and die asynchronously after a kill; a write-ahead intent    *)
+(* log; a prompt_sent record that a worker queues and the engine persists *)
+(* before the prompt goes out; kill first, record the outcome after the   *)
+(* cell's process tree is gone; a control                                 *)
 (* mailbox (stop, a decision answer); one decision request with a timeout; *)
 (* archive-then-delete; and grading passes that the engine and a          *)
 (* concurrent `bench grade` process run under a mutual-exclusion lock.    *)
@@ -15,12 +16,16 @@
 (* BUG selects one seeded defect ("none" for the real design). Every       *)
 (* invariant and property below has a variant that TLC must reject;       *)
 (* tools/check_models.py asserts both directions.                          *)
+(*                                                                         *)
+(* The model lets a cell outlive an engine crash. With the Job Object's    *)
+(* kill-on-close it cannot, so the checked behaviours are a superset of    *)
+(* the engine's, and every safety result carries over.                     *)
 (***************************************************************************)
 EXTENDS Naturals, FiniteSets, TLC
 
 CONSTANTS
     Cells,          \* the plan's cells
-    Parallelism,    \* at most this many cell containers run at once
+    Parallelism,    \* at most this many cells run at once
     MaxCrashes,     \* engine crashes explored
     Passes,         \* grading pass ids (each process mints its own)
     Graders,        \* processes that may grade: {"engine"} or {"engine", "bench"}
@@ -39,10 +44,10 @@ VARIABLES
     reconciling,    \* after a resume: no launch until reconciliation completes
     reconciled,     \* active cells reconciled in this incarnation
     intent,         \* [cell -> BOOLEAN]  ledger: cell.launch_intent
-    launchEpoch,    \* [cell -> Nat]      incarnation that created the container
+    launchEpoch,    \* [cell -> Nat]      incarnation that created the proc
     epoch,          \* engine incarnation
-    container,      \* [cell -> {"none","running","exited"}]  physical
-    killRequested,  \* [cell -> BOOLEAN]  docker kill issued, container not yet gone
+    proc,      \* [cell -> {"none","running","exited"}]  physical
+    killRequested,  \* [cell -> BOOLEAN]  kill issued (TerminateJobObject), not yet confirmed
     killReason,     \* [cell -> Reasons]  why the engine killed it (process memory)
     queued,         \* [cell -> BOOLEAN]  worker queued prompt_sent, not yet persisted (volatile)
     promptSent,     \* [cell -> BOOLEAN]  ledger: cell.prompt_sent (fsynced, then acked to the worker)
@@ -65,7 +70,7 @@ VARIABLES
     gradeCount,     \* [Passes -> [Cells -> Nat]]  history
     flags           \* history of forbidden events
 
-vars == <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch, container,
+vars == <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch, proc,
           killRequested, killReason, queued, promptSent, pendingSend, prompts, outcome,
           wasStopped, archived, deleted, controlFile, controlApplied, applyCount, stopApplied,
           decision, resolutions, lock, passState, passOwner, graded, gradeCount, flags>>
@@ -75,8 +80,8 @@ FlagNames == {"launchAfterStop", "launchWhileOpen", "gradeUnarchived", "archiveL
 
 -----------------------------------------------------------------------------
 Active(c)  == intent[c] /\ outcome[c] = "none"
-Running    == {c \in Cells : container[c] = "running"}
-OrphanRunning == \E d \in Cells : container[d] = "running" /\ launchEpoch[d] < epoch
+Running    == {c \in Cells : proc[c] = "running"}
+OrphanRunning == \E d \in Cells : proc[d] = "running" /\ launchEpoch[d] < epoch
 Flag(f)    == flags' = [flags EXCEPT ![f] = TRUE]
 Record(c, o) ==
     /\ outcome' = [outcome EXCEPT ![c] = o]
@@ -87,7 +92,7 @@ Init ==
     /\ reconciling = FALSE /\ reconciled = {}
     /\ intent = [c \in Cells |-> FALSE]
     /\ launchEpoch = [c \in Cells |-> 0]
-    /\ container = [c \in Cells |-> "none"]
+    /\ proc = [c \in Cells |-> "none"]
     /\ killRequested = [c \in Cells |-> FALSE]
     /\ killReason = [c \in Cells |-> "none"]
     /\ queued = [c \in Cells |-> FALSE]
@@ -113,7 +118,7 @@ Init ==
 EngineReady == engine = "up" /\ ~reconciling
 
 -----------------------------------------------------------------------------
-(* Launch: intent -> container -> prompt_sent queued -> persisted + acked -> prompt *)
+(* Launch: intent -> proc -> prompt_sent queued -> persisted + acked -> prompt *)
 
 WriteIntent(c) ==
     /\ EngineReady
@@ -123,22 +128,22 @@ WriteIntent(c) ==
     /\ intent' = [intent EXCEPT ![c] = TRUE]
     /\ IF stopApplied THEN Flag("launchAfterStop")
        ELSE IF decision = "open" THEN Flag("launchWhileOpen") ELSE UNCHANGED flags
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, launchEpoch, epoch, container,
+    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, launchEpoch, epoch, proc,
                    killRequested, killReason, queued, promptSent, pendingSend, prompts, outcome,
                    wasStopped, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
                    gradeCount>>
 
-CreateContainer(c) ==
+StartCell(c) ==
     /\ EngineReady
     /\ intent[c] /\ ~promptSent[c]
     /\ (BUG = "launch_after_outcome" \/ outcome[c] = "none")
-    /\ (container[c] = "none" \/ (BUG = "launch_after_outcome" /\ container[c] = "exited"))
+    /\ (proc[c] = "none" \/ (BUG = "launch_after_outcome" /\ proc[c] = "exited"))
     /\ (BUG = "launch_after_stop" \/ ~stopApplied)
-    \* Parallelism is enforced where a container starts, counting every running container,
+    \* Parallelism is enforced where a proc starts, counting every running proc,
     \* including one that was killed and has not yet exited (the slot is held until confirmed).
     /\ (BUG = "exceed_parallelism" \/ Cardinality(Running) < Parallelism)
-    /\ container' = [container EXCEPT ![c] = "running"]
+    /\ proc' = [proc EXCEPT ![c] = "running"]
     /\ launchEpoch' = [launchEpoch EXCEPT ![c] = epoch]
     /\ IF stopApplied THEN Flag("launchAfterStop")
        ELSE IF OrphanRunning THEN Flag("launchBesideOrphan") ELSE UNCHANGED flags
@@ -147,13 +152,13 @@ CreateContainer(c) ==
                    archived, deleted, controlFile, controlApplied, applyCount, stopApplied,
                    decision, resolutions, lock, passState, passOwner, graded, gradeCount>>
 
-\* The container could not be created (image or create failure): recorded, never prompted.
-CreateFails(c) ==
+\* The proc could not be created (image or create failure): recorded, never prompted.
+StartFails(c) ==
     /\ EngineReady
-    /\ Active(c) /\ container[c] = "none" /\ ~promptSent[c] /\ ~queued[c]
+    /\ Active(c) /\ proc[c] = "none" /\ ~promptSent[c] /\ ~queued[c]
     /\ Record(c, "failed")
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
-                   container, killRequested, killReason, queued, promptSent, pendingSend,
+                   proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
                    gradeCount, flags>>
@@ -161,14 +166,14 @@ CreateFails(c) ==
 \* The worker queues prompt_sent for the engine thread (volatile until persisted).
 QueuePromptSent(c) ==
     /\ EngineReady
-    /\ container[c] = "running" /\ ~killRequested[c]
+    /\ proc[c] = "running" /\ ~killRequested[c]
     /\ (BUG = "launch_after_outcome" \/ outcome[c] = "none")
     /\ ~promptSent[c] /\ ~queued[c]
     /\ queued' = [queued EXCEPT ![c] = TRUE]
     /\ pendingSend' = IF BUG = "send_before_persist"
                         THEN [pendingSend EXCEPT ![c] = TRUE] ELSE pendingSend
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
-                   container, killRequested, killReason, promptSent, prompts, outcome,
+                   proc, killRequested, killReason, promptSent, prompts, outcome,
                    wasStopped, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
                    gradeCount, flags>>
@@ -181,7 +186,7 @@ PersistPromptSent(c) ==
     /\ queued' = [queued EXCEPT ![c] = FALSE]
     /\ pendingSend' = [pendingSend EXCEPT ![c] = TRUE]
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
-                   container, killRequested, killReason, prompts, outcome, wasStopped,
+                   proc, killRequested, killReason, prompts, outcome, wasStopped,
                    archived, deleted, controlFile, controlApplied, applyCount, stopApplied,
                    decision, resolutions, lock, passState, passOwner, graded, gradeCount,
                    flags>>
@@ -190,20 +195,20 @@ PersistPromptSent(c) ==
 SendPrompt(c) ==
     /\ engine = "up"
     /\ pendingSend[c]
-    /\ container[c] = "running" /\ ~killRequested[c]
+    /\ proc[c] = "running" /\ ~killRequested[c]
     /\ prompts' = [prompts EXCEPT ![c] = @ + 1]
     /\ pendingSend' = [pendingSend EXCEPT ![c] = FALSE]
     /\ IF outcome[c] # "none" THEN Flag("promptAfterOutcome") ELSE UNCHANGED flags
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
-                   container, killRequested, killReason, queued, promptSent, outcome,
+                   proc, killRequested, killReason, queued, promptSent, outcome,
                    wasStopped, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
                    gradeCount>>
 
-\* Environment: the container exits on its own (agent finished, or it failed before a prompt).
-ContainerExits(c) ==
-    /\ container[c] = "running" /\ ~killRequested[c]
-    /\ container' = [container EXCEPT ![c] = "exited"]
+\* Environment: the proc exits on its own (agent finished, or it failed before a prompt).
+CellExits(c) ==
+    /\ proc[c] = "running" /\ ~killRequested[c]
+    /\ proc' = [proc EXCEPT ![c] = "exited"]
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    killRequested, killReason, queued, promptSent, pendingSend, prompts,
                    outcome, wasStopped, archived, deleted, controlFile, controlApplied,
@@ -211,9 +216,9 @@ ContainerExits(c) ==
                    graded, gradeCount, flags>>
 
 \* Environment: a requested kill takes effect (the engine retries until inspect confirms).
-ContainerDies(c) ==
-    /\ container[c] = "running" /\ killRequested[c]
-    /\ container' = [container EXCEPT ![c] = "exited"]
+CellDies(c) ==
+    /\ proc[c] = "running" /\ killRequested[c]
+    /\ proc' = [proc EXCEPT ![c] = "exited"]
     /\ killRequested' = [killRequested EXCEPT ![c] = FALSE]
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    killReason, queued, promptSent, pendingSend, prompts, outcome, wasStopped,
@@ -221,31 +226,31 @@ ContainerDies(c) ==
                    decision, resolutions, lock, passState, passOwner, graded, gradeCount,
                    flags>>
 
-\* The engine records how an exited container's cell ended (never while it runs).
+\* The engine records how an exited proc's cell ended (never while it runs).
 RecordExit(c) ==
     /\ EngineReady
     /\ Active(c) /\ ~killRequested[c]
-    /\ \/ container[c] = "exited"
-       \/ BUG = "record_while_running" /\ container[c] = "running"   \* seeded: records, never kills
+    /\ \/ proc[c] = "exited"
+       \/ BUG = "record_while_running" /\ proc[c] = "running"   \* seeded: records, never kills
     /\ Record(c, CASE killReason[c] = "stop"    -> "stopped"
                    [] killReason[c] = "timeout" -> "timedout"
                    [] prompts[c] >= 1           -> "done"
                    [] OTHER                     -> "failed")
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
-                   container, killRequested, killReason, queued, promptSent, pendingSend,
+                   proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
                    gradeCount, flags>>
 
-\* Budget or handshake deadline: kill first; the outcome is recorded after the container is gone.
+\* Budget or handshake deadline: kill first; the outcome is recorded after the proc is gone.
 EngineKill(c) ==
     /\ BUG # "no_budget_kill"
     /\ EngineReady
-    /\ Active(c) /\ container[c] = "running" /\ ~killRequested[c]
+    /\ Active(c) /\ proc[c] = "running" /\ ~killRequested[c]
     /\ killRequested' = [killRequested EXCEPT ![c] = TRUE]
     /\ killReason' = [killReason EXCEPT ![c] = "timeout"]
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
-                   container, queued, promptSent, pendingSend, prompts, outcome, wasStopped,
+                   proc, queued, promptSent, pendingSend, prompts, outcome, wasStopped,
                    archived, deleted, controlFile, controlApplied, applyCount, stopApplied,
                    decision, resolutions, lock, passState, passOwner, graded, gradeCount,
                    flags>>
@@ -256,35 +261,35 @@ EngineKill(c) ==
 StopCell(c) ==
     /\ EngineReady /\ stopApplied
     /\ Active(c)
-    /\ ~(container[c] = "running" /\ killReason[c] = "stop")
-    /\ IF container[c] = "running" /\ BUG = "record_without_kill"
+    /\ ~(proc[c] = "running" /\ killReason[c] = "stop")
+    /\ IF proc[c] = "running" /\ BUG = "record_without_kill"
          THEN /\ Record(c, "stopped")                        \* seeded: records, never kills
               /\ UNCHANGED <<killRequested, killReason>>
-       ELSE IF container[c] = "running"
+       ELSE IF proc[c] = "running"
          THEN /\ killRequested' = [killRequested EXCEPT ![c] = TRUE]
               /\ killReason' = [killReason EXCEPT ![c] = "stop"]
               /\ UNCHANGED <<outcome, wasStopped>>
          ELSE /\ Record(c, "stopped")
               /\ UNCHANGED <<killRequested, killReason>>
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
-                   container, queued, promptSent, pendingSend, prompts, archived, deleted,
+                   proc, queued, promptSent, pendingSend, prompts, archived, deleted,
                    controlFile, controlApplied, applyCount, stopApplied, decision, resolutions,
                    lock, passState, passOwner, graded, gradeCount, flags>>
 
 -----------------------------------------------------------------------------
 (* Archive, then delete *)
 
-\* Archive only after the outcome is recorded and the container is gone. The seeded bug archives as
-\* soon as a kill has been issued, without waiting for inspect to confirm the container exited.
+\* Archive only after the outcome is recorded and the proc is gone. The seeded bug archives as
+\* soon as a kill has been issued, without waiting for inspect to confirm the proc exited.
 Archive(c) ==
     /\ engine = "up"
     /\ ~archived[c]
-    /\ \/ outcome[c] # "none" /\ container[c] # "running"
+    /\ \/ outcome[c] # "none" /\ proc[c] # "running"
        \/ BUG = "archive_live" /\ killRequested[c]
     /\ archived' = [archived EXCEPT ![c] = TRUE]
-    /\ IF container[c] = "running" THEN Flag("archiveLive") ELSE UNCHANGED flags
+    /\ IF proc[c] = "running" THEN Flag("archiveLive") ELSE UNCHANGED flags
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
-                   container, killRequested, killReason, queued, promptSent, pendingSend,
+                   proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, deleted, controlFile, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
                    graded, gradeCount>>
@@ -295,7 +300,7 @@ DeleteWorkspace(c) ==
     /\ (BUG = "delete_before_archive" \/ archived[c])
     /\ deleted' = [deleted EXCEPT ![c] = TRUE]
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
-                   container, killRequested, killReason, queued, promptSent, pendingSend,
+                   proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, controlFile, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
                    graded, gradeCount, flags>>
@@ -307,7 +312,7 @@ WriteControl(k) ==
     /\ ~controlFile[k] /\ ~controlApplied[k]
     /\ controlFile' = [controlFile EXCEPT ![k] = TRUE]
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
-                   container, killRequested, killReason, queued, promptSent, pendingSend,
+                   proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
                    graded, gradeCount, flags>>
@@ -323,7 +328,7 @@ ApplyStop ==
     /\ decision' = IF decision = "open" THEN "resolved" ELSE decision   \* superseded (stop)
     /\ resolutions' = IF decision = "open" THEN resolutions + 1 ELSE resolutions
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
-                   container, killRequested, killReason, queued, promptSent, pendingSend,
+                   proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile, lock,
                    passState, passOwner, graded, gradeCount, flags>>
 
@@ -337,7 +342,7 @@ ApplyAnswer ==
          THEN /\ decision' = "resolved" /\ resolutions' = resolutions + 1
          ELSE UNCHANGED <<decision, resolutions>>
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
-                   container, killRequested, killReason, queued, promptSent, pendingSend,
+                   proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile, stopApplied,
                    lock, passState, passOwner, graded, gradeCount, flags>>
 
@@ -346,7 +351,7 @@ RemoveControl(k) ==
     /\ controlFile[k] /\ controlApplied[k]
     /\ controlFile' = [controlFile EXCEPT ![k] = FALSE]
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
-                   container, killRequested, killReason, queued, promptSent, pendingSend,
+                   proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
                    graded, gradeCount, flags>>
@@ -358,7 +363,7 @@ RaiseDecision ==
     /\ engine = "up" /\ decision = "none" /\ ~stopApplied
     /\ decision' = "open"
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
-                   container, killRequested, killReason, queued, promptSent, pendingSend,
+                   proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile,
                    controlApplied, applyCount, stopApplied, resolutions, lock, passState,
                    passOwner, graded, gradeCount, flags>>
@@ -368,7 +373,7 @@ TimeoutDefault ==
     /\ engine = "up" /\ decision = "open"
     /\ decision' = "resolved" /\ resolutions' = resolutions + 1
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
-                   container, killRequested, killReason, queued, promptSent, pendingSend,
+                   proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile,
                    controlApplied, applyCount, stopApplied, lock, passState, passOwner,
                    graded, gradeCount, flags>>
@@ -386,7 +391,7 @@ Crash ==
     /\ passState' = [p \in Passes |->
                        IF passOwner[p] = "engine" /\ passState[p] = "active"
                          THEN "abandoned" ELSE passState[p]]
-    /\ UNCHANGED <<reconciling, reconciled, intent, launchEpoch, epoch, container,
+    /\ UNCHANGED <<reconciling, reconciled, intent, launchEpoch, epoch, proc,
                    killRequested, promptSent, prompts, outcome, wasStopped, archived, deleted,
                    controlFile, controlApplied, applyCount, stopApplied, decision,
                    resolutions, passOwner, graded, gradeCount, flags>>
@@ -395,32 +400,32 @@ Resume ==
     /\ engine = "down"
     /\ engine' = "up" /\ epoch' = epoch + 1
     /\ reconciling' = TRUE /\ reconciled' = {}
-    /\ UNCHANGED <<crashes, intent, launchEpoch, container, killRequested, killReason, queued,
+    /\ UNCHANGED <<crashes, intent, launchEpoch, proc, killRequested, killReason, queued,
                    promptSent, pendingSend, prompts, outcome, wasStopped, archived, deleted,
                    controlFile, controlApplied, applyCount, stopApplied, decision,
                    resolutions, lock, passState, passOwner, graded, gradeCount, flags>>
 
-\* Reconciliation step 1: kill every running container carrying the run's label, whatever its outcome.
+\* Reconciliation step 1: kill every running proc carrying the run's label, whatever its outcome.
 ReconcileKill(c) ==
     /\ engine = "up" /\ reconciling
-    /\ container[c] = "running" /\ ~killRequested[c]
+    /\ proc[c] = "running" /\ ~killRequested[c]
     /\ killRequested' = [killRequested EXCEPT ![c] = TRUE]
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
-                   container, killReason, queued, promptSent, pendingSend, prompts, outcome,
+                   proc, killReason, queued, promptSent, pendingSend, prompts, outcome,
                    wasStopped, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
                    gradeCount, flags>>
 
-\* Reconciliation step 2 (container gone): prompted cells fail, never relaunched; unprompted
-\* cells have their container removed and may launch once.
+\* Reconciliation step 2 (proc gone): prompted cells fail, never relaunched; unprompted
+\* cells have their proc removed and may launch once.
 ReconcileRecord(c) ==
     /\ engine = "up" /\ reconciling
     /\ Active(c) /\ c \notin reconciled
-    /\ (BUG = "reconcile_no_wait" \/ container[c] # "running")   \* seeded: records without confirming the kill
+    /\ (BUG = "reconcile_no_wait" \/ proc[c] # "running")   \* seeded: records without confirming the kill
     /\ IF promptSent[c] /\ BUG # "relaunch_prompted"
          THEN /\ Record(c, "crashfail")
-              /\ UNCHANGED <<container, promptSent>>
-         ELSE /\ container' = [container EXCEPT ![c] = "none"]
+              /\ UNCHANGED <<proc, promptSent>>
+         ELSE /\ proc' = [proc EXCEPT ![c] = "none"]
               /\ promptSent' = IF BUG = "relaunch_prompted"
                                  THEN [promptSent EXCEPT ![c] = FALSE] ELSE promptSent
               /\ UNCHANGED <<outcome, wasStopped>>
@@ -434,9 +439,9 @@ ReconcileRecord(c) ==
 ReopenStopped(c) ==
     /\ BUG = "relaunch_stopped"
     /\ engine = "up" /\ reconciling
-    /\ outcome[c] = "stopped" /\ container[c] # "running"
+    /\ outcome[c] = "stopped" /\ proc[c] # "running"
     /\ outcome' = [outcome EXCEPT ![c] = "none"]
-    /\ container' = [container EXCEPT ![c] = "none"]
+    /\ proc' = [proc EXCEPT ![c] = "none"]
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    killRequested, killReason, queued, promptSent, pendingSend, prompts,
                    wasStopped, archived, deleted, controlFile, controlApplied, applyCount,
@@ -446,9 +451,9 @@ ReopenStopped(c) ==
 ReconcileDone ==
     /\ engine = "up" /\ reconciling
     /\ \A c \in Cells : (Active(c) => c \in reconciled)
-                           /\ (BUG = "reconcile_no_wait" \/ container[c] # "running")
+                           /\ (BUG = "reconcile_no_wait" \/ proc[c] # "running")
     /\ reconciling' = FALSE
-    /\ UNCHANGED <<engine, crashes, reconciled, intent, launchEpoch, epoch, container,
+    /\ UNCHANGED <<engine, crashes, reconciled, intent, launchEpoch, epoch, proc,
                    killRequested, killReason, queued, promptSent, pendingSend, prompts,
                    outcome, wasStopped, archived, deleted, controlFile, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
@@ -471,7 +476,7 @@ GradeStart(p, g) ==
     /\ passState' = [passState EXCEPT ![p] = "active"]
     /\ passOwner' = [passOwner EXCEPT ![p] = g]
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
-                   container, killRequested, killReason, queued, promptSent, pendingSend,
+                   proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile,
                    controlApplied, applyCount, stopApplied, decision, resolutions, graded,
                    gradeCount, flags>>
@@ -486,7 +491,7 @@ GradeCell(p, c) ==
     /\ gradeCount' = [gradeCount EXCEPT ![p][c] = @ + 1]
     /\ IF ~archived[c] THEN Flag("gradeUnarchived") ELSE UNCHANGED flags
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
-                   container, killRequested, killReason, queued, promptSent, pendingSend,
+                   proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile,
                    controlApplied, applyCount, stopApplied, decision, resolutions, lock,
                    passState, passOwner>>
@@ -500,7 +505,7 @@ GradeEnd(p) ==
     /\ lock' = IF lock = passOwner[p] THEN "free" ELSE lock
     /\ passState' = [passState EXCEPT ![p] = "done"]
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
-                   container, killRequested, killReason, queued, promptSent, pendingSend,
+                   proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile,
                    controlApplied, applyCount, stopApplied, decision, resolutions, passOwner,
                    graded, gradeCount, flags>>
@@ -509,8 +514,8 @@ GradeEnd(p) ==
 Next ==
     \/ \E c \in Cells : WriteIntent(c)
     \/ \E c \in Cells :
-          \/ CreateContainer(c) \/ CreateFails(c) \/ QueuePromptSent(c) \/ PersistPromptSent(c)
-          \/ SendPrompt(c) \/ ContainerExits(c) \/ ContainerDies(c) \/ RecordExit(c)
+          \/ StartCell(c) \/ StartFails(c) \/ QueuePromptSent(c) \/ PersistPromptSent(c)
+          \/ SendPrompt(c) \/ CellExits(c) \/ CellDies(c) \/ RecordExit(c)
           \/ EngineKill(c) \/ StopCell(c) \/ Archive(c) \/ DeleteWorkspace(c)
           \/ ReconcileKill(c) \/ ReconcileRecord(c) \/ ReopenStopped(c)
     \/ \E k \in Controls : WriteControl(k) \/ RemoveControl(k)
@@ -527,7 +532,7 @@ Fairness ==
     /\ WF_vars(Resume) /\ WF_vars(ReconcileDone) /\ WF_vars(TimeoutDefault)
     /\ WF_vars(ApplyStop) /\ WF_vars(ApplyAnswer)
     /\ \A c \in Cells :
-          /\ WF_vars(StopCell(c)) /\ WF_vars(ContainerDies(c)) /\ WF_vars(RecordExit(c))
+          /\ WF_vars(StopCell(c)) /\ WF_vars(CellDies(c)) /\ WF_vars(RecordExit(c))
           /\ WF_vars(ReconcileKill(c)) /\ WF_vars(ReconcileRecord(c)) /\ WF_vars(Archive(c))
           /\ WF_vars(EngineKill(c))
     /\ \A p \in Passes :
@@ -546,7 +551,7 @@ Symmetry == Permutations(Cells) \cup Permutations(Passes)
 TypeOK ==
     /\ engine \in {"up", "down"}
     /\ outcome \in [Cells -> Outcomes]
-    /\ container \in [Cells -> {"none", "running", "exited"}]
+    /\ proc \in [Cells -> {"none", "running", "exited"}]
     /\ killReason \in [Cells -> Reasons]
     /\ decision \in {"none", "open", "resolved"}
     /\ lock \in {"free", "engine", "bench"}
@@ -565,7 +570,7 @@ StoppedNeverRelaunched     == \A c \in Cells : wasStopped[c] => outcome[c] = "st
 DecisionResolvedOnce       == resolutions <= 1
 NoLaunchWhileDecisionOpen  == ~flags["launchWhileOpen"]
 NoLaunchBesideOrphan       == ~flags["launchBesideOrphan"]
-NoOutcomeWhileRunning      == \A c \in Cells : outcome[c] # "none" => container[c] # "running"
+NoOutcomeWhileRunning      == \A c \in Cells : outcome[c] # "none" => proc[c] # "running"
 
 \* Reachability witness (must be VIOLATED by the real design): every cell can end graded and
 \* deleted, so safety does not pass merely because the run stalls early.
@@ -575,7 +580,7 @@ NotAllCellsFinished        == ~(\A c \in Cells : deleted[c] /\ \E p \in Passes :
 DecisionEventuallyResolved == (decision = "open") ~> (decision = "resolved")
 StopReachesTerminal        == controlFile["stop"] ~>
                                 (stopApplied /\ \A c \in Cells :
-                                   (intent[c] => outcome[c] # "none" /\ container[c] # "running"))
+                                   (intent[c] => outcome[c] # "none" /\ proc[c] # "running"))
 EndedCellsGetArchived      == \A c \in Cells : (outcome[c] # "none") ~> archived[c]
 PromptedCellsEnd           == \A c \in Cells : promptSent[c] ~> (outcome[c] # "none")
 \* With GradedOncePerPass, "each cell is graded exactly once" (US-44) in the engine's pass.

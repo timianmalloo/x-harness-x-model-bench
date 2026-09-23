@@ -101,7 +101,7 @@ If that works end to end for the smoke BOM, the product is worth building. Every
 **In scope (BOM v0):**
 - The `harness × model × pack` factorial over the 24-task, seven-scenario BOM v0.2 (`bench/bom.yaml`).
 - Harnesses: Claude Code, Codex CLI, Copilot CLI.
-- Local execution on the owner's Windows 11 workstation. Every cell runs in its own Linux container under Docker Desktop (WSL2), authored and Harbor tasks alike (amended 2026-09-23 by ADR-0001; the proposal ran authored tasks natively).
+- Local execution on the owner's Windows 11 workstation. Authored-task cells run natively, each in its own git working copy. Harbor tasks run in their own containers under Docker Desktop (amended 2026-09-23 by ADR-0013, back to the proposal's split, after ADR-0001 had put every cell in a container).
 - The seven metric areas of `bench/metrics.yaml` v0.2, the oracle ladder, two blind vendor judges and bootstrap statistics.
 - The CLI table, one HTML report and two AI summaries.
 - Comparison of two runs (for example two pack revisions), in the full milestone.
@@ -341,7 +341,7 @@ Each criterion is written so that a test can fail it. IDs are stable, and downst
 
 #### Epic E3 — Execute cells
 
-**US-8 · smoke — As P1, I want each cell isolated in its own workspace, so that no cell can see another cell, the bench repo, a hidden oracle or a previous run.**
+**US-8 · smoke — As P1, I want each cell isolated in its own workspace, so that no cell can see another cell, the bench repo, a hidden oracle or a previous run.** *(Amended 2026-09-23 by ADR-0013: the workspace is the cell's own git working copy, a `git clone --local` of a bench-owned task clone (worktrees of one clone were rejected: they share refs, stashes and config between cells). A cell starts with only its own tree, and the hidden tests are never in the clone or its history. What an agent reads outside its working copy is not restricted, by owner ruling.)*
 - **Given** a prepared cell **When** its workspace tree is listed **Then** it equals the task version's base tree plus, for `pack=on`, the pack delta, and nothing else. No path under the task's `tests/` or `oracle/` and no bench-repo path appears.
 - **Given** two cells of the same task running in parallel **When** one writes a file **Then** the file does not appear in the other's workspace.
 
@@ -360,10 +360,10 @@ Each criterion is written so that a test can fail it. IDs are stable, and downst
 - **Given** two combos on the same harness with different models in one run **When** they run **Then** each cell's served model matches its own combo. (Test case from spike 1.4: an environment-wide pin cannot do this. Verified.)
 
 **US-12 · smoke — As P1, I want the harness build pinned and recorded, so that "harness effect" means a known build.**
-- **Given** a cell **When** it starts **Then** its executed harness build (version and binary hash) equals the planned build for its combo, or the cell does not start and a decision request is raised.
+- **Given** a cell **When** it starts **Then** its executed harness build (version and binary hash) equals the planned build for its combo, or the cell does not start and a decision request is raised. *(Phase 1, before decision requests exist: the cell is recorded `failed (build changed)` and the engine stops launching; ADR-0013.)*
 - **Given** a cell record **When** it is read **Then** it names the build that actually executed, not the one on PATH. [Spike: adapters run bundled builds 2.1.274 and 0.154.0. Verified]
 
-**US-13 · smoke — As P1, I want each cell's harness configuration and state isolated from mine and from other cells, so that my personal instructions, skills and settings are not an unmeasured treatment and no cell can touch another's records.**
+**US-13 · smoke — As P1, I want each cell's harness configuration and state isolated from mine and from other cells, so that my personal instructions, skills and settings are not an unmeasured treatment and no cell can touch another's records.** *(Amended 2026-09-23 by ADR-0013: met by a per-cell harness home and a cells root outside the user profile. "No other cell reads or writes" means each cell's records live in its own location; a deliberate read from elsewhere is not prevented.)*
 - **Given** canaries in each user-level configuration class for a harness:
   - an instruction-file string;
   - a skill whose description contains the string;
@@ -379,20 +379,16 @@ Each criterion is written so that a test can fail it. IDs are stable, and downst
 - **Given** the run **When** it starts **Then**:
   - the run record states, per harness, the static allowlist of tool classes (file edit in workspace, shell in workspace, package install, network), and the lists are identical across harnesses;
   - no tool call in any cell is approved by a model. [Spike: today Codex self-approves and Claude and Copilot block. Verified]
-- **Given** a cell whose agent tries to write outside its workspace **When** the cell ends **Then** either:
-  - the write was denied, and the cell continues and is graded; or
-  - the write was detected in the watched path set (the operator profile, the bench repo, sibling repos, other cells' workspaces), and the cell's validity is `invalid (containment)` and it is listed.
-
-  [Flagged R4: detection method on native Windows]
+- ~~**Given** a cell whose agent tries to write outside its workspace…~~ *Withdrawn 2026-09-23 by ADR-0013: an agent's reach outside its working copy is not restricted or detected, by owner ruling ("if an agent benchmark is operating in its own worktree, that's all we are looking for").*
 - **Given** a Harbor task container **When** it is created **Then** it has no bind mount of the operator's profile and no access to the Docker socket.
 
-**US-48 · smoke — As P1, I want no cell to be able to reach my credentials or other data on the host, so that an unattended agent cannot leak what it should never see.** *(Amended 2026-09-23 by ADR-0012: met by the container's mounts, checked by one container-configuration test; the hostile-fixture criterion is no longer a gate, and outbound network is not restricted.)*
-- **Given** canary secrets planted in the operator profile (an SSH key, a git credential, another harness's auth file, a file in a sibling repo) **When** a hostile fixture task tries to read each one and send it to a local listener **Then** every read is denied, or the cell runs under an identity or sandbox that cannot reach them. No canary appears in any transcript, archive or listener log. The transcript and archive check is mandatory even when the listener stays empty, because network egress is not enforced on native cells (C9).
-- **Given** a cell **When** its environment is inspected **Then** the only credential it can reach is its own harness's model-API credential, recorded by name (never by value).
+**US-48 · smoke — As P1, I want no cell to be able to reach my credentials or other data on the host, so that an unattended agent cannot leak what it should never see.** *(Withdrawn for authored tasks 2026-09-23 by ADR-0013. Cells run with the operator's rights, and the owner accepts the risk: "that's a risk that I am not worried about." It still applies to Harbor task containers (US-14's Harbor criterion). It had earlier been amended by ADR-0012.)*
+- *(Harbor task containers only, from phase 2:)* **Given** canary secrets planted in the operator profile (an SSH key, a git credential, another harness's auth file, a file in a sibling repo) **When** a hostile fixture task tries to read each one and send it to a local listener **Then** every read is denied, or the cell runs under an identity or sandbox that cannot reach them. No canary appears in any transcript, archive or listener log. The transcript and archive check is mandatory even when the listener stays empty, because network egress is not enforced on native cells (C9).
+- *(Harbor task containers only, from phase 2:)* **Given** a cell **When** its environment is inspected **Then** the only credential it can reach is its own harness's model-API credential, recorded by name (never by value).
 
-**US-49 · smoke — As P1, I want no cell to take an external, irreversible action, so that a benchmark run cannot push code, open issues or publish packages.** *(Amended 2026-09-23 by ADR-0012: met by no git remote and no `gh` in the image; the network-failure fixture is no longer a gate.)*
-- **Given** any cell **When** it starts **Then** its repository has no git remote, and git credential helpers and `gh` authentication are unavailable in its environment.
-- **Given** a fixture task that attempts `git push` and `gh pr create` **When** it runs **Then** both fail without reaching the network.
+**US-49 · smoke — As P1, I want no cell to take an external, irreversible action, so that a benchmark run cannot push code, open issues or publish packages.** *(Amended 2026-09-23 by ADR-0013: met by a task clone with no remote. `gh` and git credential helpers stay available to cells as they are to the operator; the owner accepts this. It had earlier been amended by ADR-0012.)*
+- **Given** any cell **When** it starts **Then** its working copy has no git remote, and no commit, stash or remote made by another cell is visible in it.
+- ~~**Given** a fixture task that attempts `git push` and `gh pr create` …~~ *No longer a gate (ADR-0012, ADR-0013).*
 
 **US-16 · smoke — As P1, I want budgets enforced per cell, so that a stuck agent cannot consume the night.**
 - **Given** a cell with budget B minutes **When** it is still running at B **Then** its process tree is stopped within 30 s, its execution outcome is `timed_out`, and its final tree is archived and graded.
@@ -575,7 +571,7 @@ Each criterion is written so that a test can fail it. IDs are stable, and downst
 | Security | US-14, US-46, US-47, US-48, US-49, US-50. No credential value in any archive, results store or report (US-47). |
 | Privacy | A published report and every vendor payload pass US-47. Archives stay local under `runs/` (gitignored), are never published with a report, and are kept until P1 deletes them. Transcripts enter vendor calls only for judges and summary 2, after US-47. |
 | Usability | UXA-3 (reach the leaderboard and any evidence) and UXA-7 (every error names cause and action). |
-| Compatibility | Windows 11 host with Docker Desktop (WSL2); every cell runs in a Linux container (ADR-0001). Python ≥ 3.12 on the host. One launch path for every cell of a run, so telemetry is comparable. Results describe harnesses in Linux containers, which every report header states. |
+| Compatibility | Windows 11 host; authored-task cells run natively in their own working copies (ADR-0013); Docker Desktop only for Harbor tasks. Python ≥ 3.12 on the host. One launch path for every cell of a run, so telemetry is comparable. Results describe harnesses on Windows, which every report header states, with the SDK versions used. |
 | Maintainability | Graders are pure functions of an archive (US-26), each with frozen-fixture tests. Scoring invariants (US-27, US-36, monotone normalisation) are property-tested. |
 | Portability | Windows only in v0 (NG9). |
 
@@ -686,7 +682,7 @@ The LOA fit is **[Inferred]** from the archetype intents in `layered-optimized-a
 | C6 | The mockup puts kiviats before the leaderboard | The leaderboard comes first, as in the proposal's report order (Part B) | The reader's first question is "who is ahead, and can I trust it" |
 | C7 | The mockup loads a web font | No network request (US-40) | Proposal: "self-contained HTML" |
 | C8 | The proposal defines `pack=off` as "pack stripped" only | Both arms are also free of the operator's user config (US-13) | Spike 1.5 |
-| C9 | "No network beyond the model API" (proposal) | Enforced for every cell by an allowlisting egress proxy from phase 2 (ADR-0005). Phase 1 runs with the network recorded as `unrestricted`, and only for operator-authored tasks | Amended by ADR-0001 and ADR-0005 |
+| C9 | "No network beyond the model API" (proposal) | Not enforced: authored-task cells use the host network, recorded as `unrestricted` in every run (ADR-0013 supersedes the egress proxy of ADR-0005) | Amended by ADR-0001, ADR-0005, ADR-0012 and ADR-0013 |
 | C10 | The proposal: summary 2 reads sampled `pack=on` transcripts; Security: keep raw transcripts out of vendor calls | Transcripts are allowed after the egress scan, as delimited data, into a tool-less call (US-42, US-46, US-47) | Keeps the proposal's intent under the security controls |
 | C11 | Gate: the Simplifier would defer resume; the UX Researcher requires resume branches | Resume is kept (the proposal's lifecycle model lists it) and tagged `full`; in smoke a crash marks the run `incomplete`; branches are specified | Tech-lead tie-break: the proposal source decides |
 | C12 | Gate: the Test Architect requires a traced loaded-file list; the Simplifier would defer it | The criterion was cut. Isolation is proven by per-class canaries with a positive control (US-13) | The Test Architect accepted this in round 3 |
@@ -1145,7 +1141,7 @@ One screen, eleven sections. Focal point: the **leaderboard** (U6).
 | R8 | Formal toolchains inside worker workspaces under each harness | Spike S-12 (Java 21 present; `elan` absent) | S-12 |
 | R9 | Readers may misread intervals | Show the smoke report to two P3 readers; ask them to name the leader and whether the pack helped | S-10 |
 | R10 | Matcher threshold (US-31) is unset | Label question→clarification pairs for the smoke A1 task; measure | S-04 |
-| R11 | Host isolation from credentials and the network on native Windows (US-48, C9) | Spike: run a cell under a separate low-privilege Windows account or in a container; test the canaries | S-02 |
+| R11 | Host isolation from credentials and the network on native Windows (US-48, C9) | **Closed 2026-09-23:** isolation beyond a working copy is not required (ADR-0013); spikes R11, N1 and N2 recorded | S-02 |
 | R12 | Harbor is not installed; E1 needs it | Install Harbor; run one TB2 task under Docker Desktop | S-03 / S-06 |
 | R13 | `mutmut` may not run on native Windows (it forks) | Run `mutmut run` on the workstation; else run it under WSL or choose another tool | S-08b |
 | R14 | Package installs by agents run code on the host | Decide in S-02 whether package install is allowed, and from which registries; record it in the allowlist (US-14) | S-02 |

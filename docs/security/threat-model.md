@@ -11,13 +11,14 @@ links:
   - { to: design-phase1-walking-skeleton, rel: documents }
   - { to: design-run-lifecycle-model, rel: documents }
   - { to: adr-0012-proportionate-security, rel: depends-on }
+  - { to: adr-0013-native-cells, rel: depends-on }
 review-by: "2027-03-22"
 review-suggested: []
 summary: >-
-  harness-bench is a local benchmark run by one trusted operator (ADR-0012), so security is scoped to
-  result validity and accidental damage to the host or the owner's subscription credentials. The
-  boundaries that matter are agent ↔ host, agent ↔ hidden oracle and credential ↔ published report;
-  third-party task risk and everything outside that scope are accepted by the owner.
+  harness-bench is a local benchmark run by one trusted operator (ADR-0012). Each cell works natively
+  in its own git working copy, and nothing more (ADR-0013). The controls that remain protect result
+  validity (hidden tests never in the agent's tree) and what the operator shares (no credential in a
+  published report). The agent's reach outside its working copy is accepted by the owner.
 ---
 
 # Threat Model
@@ -33,7 +34,7 @@ python3 docs/ai-forward-pack/scripts/docs-graph.py rollup --heading "Adversarial
 
 ## 1. System trust-boundary map
 
-One operator, one Windows workstation, Docker Desktop (WSL2). Each cell runs in its own hardened container (ADR-0004).
+One operator, one Windows workstation. Each cell is a native process tree in its own Job Object, working in its own git working copy with its own harness home (ADR-0013).
 
 ```mermaid
 flowchart LR
@@ -43,22 +44,22 @@ flowchart LR
     Creds["subscription logins\n(harness homes)"]
     Report["report HTML"]
   end
-  subgraph Cell["Cell container (less trusted: the agent)"]
+  subgraph Cell["Cell (the agent, with the operator's rights)"]
     Agent["harness + model"]
-    WS["workspace mount"]
+    WS["own git working copy"]
   end
   Oracle["hidden tests / oracle"]
-  Engine -- "B1 launch, kill" --> Cell
+  Engine -- "B1 spawn into Job Object, kill" --> Cell
   Creds -- "B1 per-cell copy" --> Cell
   Cell -- "B4 archive" --> Runs
-  Oracle -. "B2 never mounted" .- Cell
+  Oracle -. "B2 never in the task clone" .- Cell
   Runs --> Report
   Report -- "B5 publish" --> Shared["shared report"]
 ```
 
 | # | Boundary | Less-trusted side | More-trusted side | Owning design |
 | --- | --- | --- | --- | --- |
-| B1 | Agent ↔ host | Agent in the cell container | Host files, Docker, credentials | design-phase1-walking-skeleton |
+| B1 | Agent ↔ host | Agent in its working copy (running as the operator) | Host files, credentials | design-phase1-walking-skeleton (accepted, ADR-0013) |
 | B2 | Agent ↔ oracle | Agent | Hidden tests and oracle | design-phase1-walking-skeleton |
 | B3 | Agent ↔ git remote | Agent | The owner's remotes | design-phase1-walking-skeleton |
 | B4 | Cell output ↔ host git | Archived workspace | Host git tooling | design-phase1-walking-skeleton |
@@ -69,9 +70,9 @@ flowchart LR
 
 | source | Boundary | Threat | Disposition | Control | Test |
 |---| --- | --- | --- | --- | --- |
-| [design-phase1-walking-skeleton](../design/phase1-walking-skeleton.md) | Agent ↔ host | E/T: accidental damage to host files or credentials | mitigate | Container: non-root, no Docker socket, exactly two mounts, resource limits | T-HARD-config (`inspect`: User ≠ root, Mounts = {workspace, home}, the home mount's Source is the cell's own copy under the cells root and never the host profile, no socket, limits set, Privileged = false), run on the containers the engine actually launches, cells and grading alike |
-| [design-phase1-walking-skeleton](../design/phase1-walking-skeleton.md) | Agent ↔ oracle | I: read hidden tests | mitigate | Allowlisted build context; workspace builder never reads `tests/` or `oracle/` | T-WS-oracle, T-IMG-oracle |
-| [design-phase1-walking-skeleton](../design/phase1-walking-skeleton.md) | Agent ↔ git remote | T: push by accident | mitigate | No remote in cell repos; no `gh` in the image | T-WS-noremote |
+| [design-phase1-walking-skeleton](../design/phase1-walking-skeleton.md) | Agent ↔ host | E/T: damage to host files or credentials | accept (owner, ADR-0013) | — | — |
+| [design-phase1-walking-skeleton](../design/phase1-walking-skeleton.md) | Agent ↔ oracle | I: hidden tests in the agent's own tree | mitigate | The task clone never contains `tests/` or `oracle/`, in its tree or history | T-WS-oracle |
+| [design-phase1-walking-skeleton](../design/phase1-walking-skeleton.md) | Agent ↔ git remote | T: push by accident | mitigate | No remote in the task clone (`gh` stays available; owner-accepted) | T-WS-noremote |
 | [design-phase1-walking-skeleton](../design/phase1-walking-skeleton.md) | Cell output ↔ host git | E: run an agent-written hook | mitigate | `gitsafe.py` flags | T-B6-fsmonitor |
 | [design-phase1-walking-skeleton](../design/phase1-walking-skeleton.md) | Credential ↔ published report | I: a token in a shared report | mitigate | Exact-value check before `bench report --publish`. The value set is built at publish time from the host's current credential files and every credential file in the archived cell homes (tokens rotated during a cell), each also in base64 and URL-encoded forms | T-SEC-report (positive controls: a planted host token, and a rotated token present only in an archived home, are both found, and publishing refuses) |
 | [design-phase1-walking-skeleton](../design/phase1-walking-skeleton.md) | Everything else in the former analysis | — | accept (owner) | ADR-0012 | — |
@@ -84,17 +85,18 @@ flowchart LR
 
 | Boundary / threat | Accepted by | Rationale | Residual risk | Revisit when |
 | --- | --- | --- | --- | --- |
-| Third-party task content (hostile repos, prompt injection in task files) | @timianmalloo (ruling, 2026-09-23) | Single trusted operator running chosen tasks locally; ADR-0012 | An agent is steered by task text; contained by B1 | Tasks from sources the owner has not chosen, or the tool gets a second operator |
+| Third-party task content (hostile repos, prompt injection in task files) | @timianmalloo (ruling, 2026-09-23) | Single trusted operator running chosen tasks locally; ADR-0012 | An agent is steered by task text, with the operator's rights | Tasks from sources the owner has not chosen, or the tool gets a second operator |
+| An agent's reach outside its working copy: other repositories, the operator's logins, the bench repository and hidden tests, the host toolchain | @timianmalloo (rulings, 2026-09-23: "if an agent benchmark is operating in its own worktree, that's all we are looking for"; "that's a risk that I am not worried about") | ADR-0013 | Undetected; a hidden-test read would inflate a score | A result looks too good to be true: add the reach audit (ADR-0013 alternatives) |
 | Supply-chain provenance (SBOM, image and package allowlists) | @timianmalloo (ADR-0012) | Pinned versions and digests suffice for a local tool | A compromised pinned upstream | The tool is distributed to other users |
 | CI executing the pinned TLA+ jar | @timianmalloo (ADR-0012) | Upstream tool, hash-pinned; read-only job token | A compromised upstream release matching the pin is not credible | The pin changes |
 | Git as an entry point | @timianmalloo (ruling, 2026-09-23) | Git is a mechanism here, not an entry point | — | The tool accepts runs or tasks from a remote |
 
 ## 4. Cross-cutting controls
 
-- **Container hardening profile** (ADR-0004): non-root, no Docker socket, two mounts, resource limits. B1, B2, B3.
-- **Per-cell harness homes** (ADR-0005): each cell gets a copy of the subscription login; copies are deleted after use. B1.
+- **Own working copy per cell** (ADR-0013): a bench-owned task clone with no remote and no hidden tests in its history. B2, B3.
+- **Per-cell harness homes** (ADR-0003, ADR-0013): each cell gets its own home, with a copy of the Claude or Codex login deleted after use; Copilot uses the Windows credential store. B1.
 - **Exact-value credential check** before publishing. B5.
-- **Pinned digests and hashes** for images and tools. B6.
+- **Pinned hashes** for harness builds and tools. B6.
 
 ## 5. Gaps and flagged unknowns
 

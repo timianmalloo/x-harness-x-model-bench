@@ -55,13 +55,13 @@ The domain standard defaults to dimensions plus append-only facts (DM5), with an
 ### Identity
 
 - `cell_id` = a deterministic hash of `(task_version_hash, combo_id, pack_setting, repetition)`, computed in the plan. Resume and run comparison (US-52) use it.
-- Dimension files (plan, BOM version, catalog version, price list version, harness profile, image manifest) are content-addressed. A test asserts that each id equals the file's hash.
+- Dimension files (plan, BOM version, catalog version, price list version, harness profile) are content-addressed. A test asserts that each id equals the file's hash.
 
 ### Facts and their grains
 
 | Fact | Grain: one row is exactly one … | Key | Measures and additivity | Writer |
 | --- | --- | --- | --- | --- |
-| `events` | state transition of one run-scoped entity: the run, a cell, an attempt, a decision request, a control input, a grading pass, or the ledger itself (`ledger.tail_repaired`, `segment.sealed`). Its states are those of `models/run_lifecycle.tla`. | `(run_id, segment_id, seq)`, plus `entity_kind`, `entity_id` and `recorded_at` | none. Rows carry the transition's attributes: e.g. `attempt.container_created` holds the executed harness build, image digest and container name; `attempt.session_opened` the native session id; `cell.archived` the `archive_attempt` and `archive_hash`. | run engine (its engine thread only); grade process for grading passes |
+| `events` | state transition of one run-scoped entity: the run, a cell, an attempt, a decision request, a control input, a grading pass, or the ledger itself (`ledger.tail_repaired`, `segment.sealed`). Its states are those of `models/run_lifecycle.tla`. | `(run_id, segment_id, seq)`, plus `entity_kind`, `entity_id` and `recorded_at` | none. Rows carry the transition's attributes: e.g. `attempt.process_started` holds the executed harness build and its hash, the PID and process creation time; `attempt.session_opened` the native session id; `cell.archived` the `archive_attempt` and `archive_hash`. | run engine (its engine thread only); grade process for grading passes |
 | `model_calls` | model request made by one principal (a cell, or the model gateway), as read by one extraction | `(run_id, extraction_id, principal, native_session_id, native_ordinal)`; `cell_id` when the principal is a cell. `extraction_id` is the normaliser build hash; `native_ordinal` is the 1-based line number in the native file, unique per file. | Tokens in **disjoint buckets**: uncached input, cache read, cache write, output (additive). Reasoning is a component of output, never added to it. Start and end timestamps (not durations). Native billing units (additive). | grading pass (normaliser) |
 | `tool_calls` | tool invocation inside one cell, as read by one extraction | `(run_id, extraction_id, cell_id, native_session_id, native_ordinal)` | start and end timestamps | grading pass (normaliser) |
 | `archive_files` | file or link in one archive attempt of one cell | `(run_id, cell_id, archive_attempt, path)` | size (additive); sha256; kind (file or link, never followed) | archiver, through the engine thread |
@@ -79,7 +79,7 @@ A grading pass is an entity in `events` (`grading.started` / `grading.completed`
 
 ### Dimensions
 
-Dimensions are immutable, content-addressed versions (DM10 Type-2 by identity): task version, BOM version, catalog version (definitions, weights, normalisation anchors, rubrics, radar axis order), price list version, combo, harness profile, image manifest, plan. The planned harness build lives in the plan; the executed build lives in `events` (`attempt.container_created`); US-12 compares the two.
+Dimensions are immutable, content-addressed versions (DM10 Type-2 by identity): task version, BOM version, catalog version (definitions, weights, normalisation anchors, rubrics, radar axis order), price list version, combo, harness profile, plan. The planned harness build lives in the plan; the executed build lives in `events` (`attempt.process_started`); US-12 compares the two.
 
 ### Derived, never stored (DM7)
 

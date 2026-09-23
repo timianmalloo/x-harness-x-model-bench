@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-23T22:10:20Z",
+  "generated": "2026-09-23T23:02:15Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -230,6 +230,67 @@ window.AUDIT_DATA = {
         "branch": "design/phase1",
         "pushed": true
       }
+    },
+    {
+      "id": "al-01M3882EA0534C9VTDAZHQF1PD",
+      "shortname": "define-architecture-native-cells",
+      "datetime": "2026-09-23T23:02:04Z",
+      "session": "290c6347",
+      "prompt": "yes run the codex spike and write the superseding ADR and the revised design",
+      "summary": "Spikes N1 (all three harnesses native, symmetric, unsandboxed, 0 prompts, commands logged; Copilot needs no token) and N2 (Job Object kill/confirm, kill-on-close, peak memory). ADR-0013: cells run natively, each in its own git working copy (per-cell git clone --local; worktrees rejected because they share refs/stash/config) and Job Object; owner accepts the agent's reach outside it. ADR-0001 superseded for authored tasks; ADR-0002/3/4/5/7/9/10/12 amended; spec US-8/13/14/48/49/C9/R11 amended; model renamed container->proc (same state counts, 21/21 variants). Native revision gate passed round 2.",
+      "kind": "skill",
+      "skill": "define-architecture",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/adr/0013-native-cells-own-working-copy.md",
+        "docs/notes/spike-isolation-permissions.md",
+        "docs/design/phase1-walking-skeleton.md",
+        "docs/design/run-lifecycle-model.md",
+        "docs/architecture.md",
+        "docs/specs/harness-bench.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Replace per-cell containers with native cells per the owner's ruling, backed by a Codex native spike, a superseding ADR and a revised, re-gated phase-1 design",
+      "done_when": "Spike recorded; ADR-0013 supersedes ADR-0001; spec, architecture, ADRs, model and designs consistent; gate passed with vetoes cleared by their lenses; checks green",
+      "tier": "T2",
+      "fan_out": 4,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "persona_yield": [
+        {
+          "persona": "test-architect",
+          "raised": 8,
+          "accepted": 8
+        },
+        {
+          "persona": "distributed-systems-architect",
+          "raised": 5,
+          "accepted": 4
+        },
+        {
+          "persona": "sre-diagnostician",
+          "raised": 7,
+          "accepted": 5
+        },
+        {
+          "persona": "the-simplifier",
+          "raised": 7,
+          "accepted": 7
+        }
+      ],
+      "git": {
+        "sha": "bd2415dc55a6890afc6b54ef062aa32484798e86",
+        "short": "bd2415dc5",
+        "branch": "arch/native-cells",
+        "pushed": null
+      }
     }
   ],
   "changes": [
@@ -338,6 +399,32 @@ window.AUDIT_DATA = {
         "pushed": true,
         "commits": []
       }
+    },
+    {
+      "id": "cl-01M3882RV67E7ZQQ9QJM4FRSP8",
+      "datetime": "2026-09-23T23:02:15Z",
+      "session": "290c6347",
+      "kind": "architecture",
+      "skill": "define-architecture",
+      "title": "ADR-0013: cells run natively, each in its own git working copy and Job Object (supersedes ADR-0001 for authored tasks)",
+      "prompt": "lets step back - why do we actually even need docker and containers ... we dont need extra isolation so what is the driver? / again i think the security and isolation constraints are excessive / if an agent benchmark is operating in its own worktree thats all we are looking for",
+      "summary": "Containers, images, the cell proxy and the container tests are dropped for authored tasks. Each cell: own git clone --local (origin removed), own harness home, symmetric unsandboxed profile (Codex agent-full-access), a Job Object for budget, kill-confirm and crash safety. Harbor tasks keep containers. Copilot needs no token.",
+      "rationale": "Owner ruling: isolation beyond the agent's own working copy is not wanted, and the agent's reach outside it is an accepted risk. Spikes N1/N2 verified the native path. Worktrees of one clone were rejected at the gate because they share refs, stash and config between cells (a measurement leak).",
+      "artifacts": [
+        "docs/adr/0013-native-cells-own-working-copy.md",
+        "docs/adr/0001-cells-run-in-per-cell-linux-containers.md",
+        "docs/architecture.md",
+        "docs/specs/harness-bench.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "bd2415d",
+        "after": "bd2415dc55a6890afc6b54ef062aa32484798e86",
+        "branch": "arch/native-cells",
+        "pushed": null,
+        "commits": []
+      },
+      "audit_ref": "al-01M3882EA0534C9VTDAZHQF1PD"
     }
   ],
   "messages": []

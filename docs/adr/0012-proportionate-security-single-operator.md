@@ -20,11 +20,15 @@ summary: >-
   are kept where they protect result validity or keep an agent from damaging the machine by accident.
   Provenance checks, the egress proxy requirement, SBOM/CVE gates and most negative security tests are
   dropped or made optional; third-party tasks may run on the operator's subscription logins.
+review-suggested: []
 ---
 
 # ADR-0012: Proportionate security for a single-operator local benchmark tool
 
 - **Status:** Proposed. **Owner ruling, 2026-09-23.** It supersedes the parts of ADR-0001, ADR-0003, ADR-0005 and ADR-0010 listed below.
+- **Amended by ADR-0013 (2026-09-23):**
+  - the kept container controls ("Cells in containers…", "Grading runs in the task's container image", and the container-configuration test for US-48 and US-49) are dropped: each cell works in its own working copy, and nothing more (owner ruling, ADR-0013);
+  - goal 2, "the machine", becomes acceptance with detection. Owner: "that's a risk that I am not worried about."
 - **Deciders:** @timianmalloo.
 - **Context:** the spec's and architecture's security requirements were written as if the tool served untrusted users or untrusted task sources. The owner ruled otherwise:
   - "security needs to be reduced in weight. This is a benchmark tool to be run locally on a machine by ME; git is just a mechanism here, not an entry point."

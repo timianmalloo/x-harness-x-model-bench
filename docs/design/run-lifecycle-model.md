@@ -10,6 +10,7 @@ links:
   - { to: arch-harness-bench, rel: implements }
   - { to: adr-0007-run-engine, rel: implements }
   - { to: adr-0006-results-data-model, rel: depends-on }
+  - { to: adr-0013-native-cells, rel: implements }
   - { to: spec-harness-bench, rel: implements }
 review-by: "2027-03-22"
 summary: >-
@@ -48,24 +49,24 @@ It is **not** the engine, and it does not model: the agent's work inside a cell,
 
 | Model action | Engine behaviour and ledger event (`events.entity_kind` · transition) | Phase |
 | --- | --- | --- |
-| `WriteIntent(c)` | cell · `cell.launch_intent` (fsynced) | 1 |
-| `CreateContainer(c)` | `docker run` named `hb-<run>-<cell>` → attempt · `attempt.container_created` | 1 |
-| `CreateFails(c)` | image or create failure → cell · `cell.outcome{failed(image \| container create)}` | 1 |
+| `WriteIntent(c)` | cell · `cell.launch_intent` (fsynced; phase 5 adds `job_name = hb-<run>-<cell>-<attempt>` for resume) | 1 |
+| `StartCell(c)` | the driver creates the cell's Job Object (kill-on-close, breakaway not allowed, handle not inheritable), spawns the ACP adapter suspended with an explicit handle list, assigns it, resumes it → attempt · `attempt.process_started{pid, created_at, build, build_hash}` | 1 |
+| `StartFails(c)` | working-copy, home, build-check or spawn failure; if assignment failed, the suspended process is terminated and confirmed gone first → cell · `cell.outcome{failed(workspace \| spawn \| build changed)}` | 1 |
 | `QueuePromptSent(c)` | the worker puts `prompt_sent` on the engine queue and **blocks** on an ack | 1 |
 | `PersistPromptSent(c)` | the engine thread appends and fsyncs cell · `cell.prompt_sent`, then sets the ack | 1 |
 | `SendPrompt(c)` | the worker, holding the ack, writes ACP `session/prompt` once (no event) | 1 |
-| `ContainerExits(c)` / `ContainerDies(c)` | environment, observed by `docker inspect` (the engine retries a kill until inspect confirms) | 1 |
-| `EngineKill(c)` | budget or handshake deadline → `docker kill` by name (no event yet) | 1 |
-| `RecordExit(c)` | after inspect confirms the container is gone → cell · `cell.outcome{completed \| timed_out \| failed(cause) \| stopped}` | 1 |
-| `Archive(c)` | cell · `cell.archived{archive_hash}` (container absent or exited) | 1 |
+| `CellExits(c)` / `CellDies(c)` | at `end_turn` or adapter EOF the engine terminates the job; the job's active-process count reaching 0 is the exit (the engine re-issues `TerminateJobObject` until it does) | 1 |
+| `EngineKill(c)` | budget or handshake deadline → `TerminateJobObject` (no event yet) | 1 |
+| `RecordExit(c)` | after the job reports no active process → cell · `cell.outcome{completed \| timed_out \| failed(cause) \| stopped}` | 1 |
+| `Archive(c)` | cell · `cell.archived{archive_attempt, archive_hash}` (the cell's job has no active process) | 1 |
 | `DeleteWorkspace(c)` | cell · `cell.workspace_deleted` | 1 |
 | `GradeStart/GradeCell/GradeEnd` | grading · `grading.started`, score rows, `grading.completed`, under `grade.lock`, each process with its own `grading_id`. The engine starts its one pass only when every cell has ended and been archived (or was never launched because of a stop), and ends it only after grading every archived cell; `bench grade` may run a pass at any time | 1 |
-| *(internal progress, no model action)* | cell · `cell.workspace_built`, `cell.image_ready`; attempt · `attempt.handshake_done` — stutter steps for the model; used for phase timings | 1 |
-| `StopCell(c)` | stop → kill every running cell by name; `cell.outcome{stopped}` recorded by `RecordExit` after the container is gone; unlaunched cells stay unstarted | 2 |
+| *(internal progress, no model action)* | cell · `cell.workspace_built`; attempt · `attempt.handshake_done` — stutter steps for the model; used for phase timings | 1 |
+| `StopCell(c)` | stop → terminate every running cell's job; `cell.outcome{stopped}` recorded by `RecordExit` after the job is empty; unlaunched cells stay unstarted | 2 |
 | `WriteControl(k)` / `ApplyStop` / `ApplyAnswer` / `RemoveControl(k)` | control file (temp + rename) / control · `control.applied{uuid}` / file removed | 2 |
 | `RaiseDecision` / `TimeoutDefault` | decision · `decision.opened` / `decision.resolved{default}` | 2 |
 | `Crash` / `Resume` | process death / run · `run.resumed{epoch}` | 5 |
-| `ReconcileKill(c)` / `ReconcileRecord(c)` / `ReconcileDone` | kill every running container with label `bench.run=<id>` / cell · `cell.reconciled{crashfail \| relaunchable}` / run · `run.reconciled` | 5 |
+| `ReconcileKill(c)` / `ReconcileRecord(c)` / `ReconcileDone` | open each recorded job by name; terminate it and wait for 0 active processes; not found means the tree is gone (with kill-on-close none should survive) / cell · `cell.reconciled{crashfail \| relaunchable}` / run · `run.reconciled` | 5 |
 
 **Consumed:**
 
@@ -98,7 +99,7 @@ The model's variables mirror the ledger (ADR-0006):
 | `passState`, `graded` | grading pass transitions and score rows |
 
 State the ledger cannot know is modelled separately:
-- physical: `container`, `killRequested`;
+- physical: `proc` (the cell's process tree), `killRequested`;
 - process memory, lost on a crash: `queued`, `pendingSend`, `killReason`;
 - the engine: `engine`, `epoch`, `launchEpoch`.
 
@@ -124,15 +125,15 @@ History variables are read only by invariants, never by guards: `prompts`, `wasS
 The model *is* the concurrency model:
 - one engine process (crash and resume);
 - a worker queue and an ack barrier between each worker and the engine thread;
-- containers that run on while the engine is down, can exit before or after their prompt, and die asynchronously after a kill;
+- cells that can exit before or after their prompt and die asynchronously after a kill. The model also lets a cell run on while the engine is down; with kill-on-close none does, so the model checks a superset;
 - an environment writing control files;
 - a concurrent `bench grade` process contending for `grade.lock` with its own passes.
 
 Crash semantics:
 - process memory (`queued`, `pendingSend`, `killReason`) and the engine's hold on `grade.lock` are lost (the OS releases the file lock);
-- the ledger and the containers survive.
+- the ledger survives; with kill-on-close, the cells do not.
 
-Kill semantics: kill first, confirm the container is gone, then record the outcome. Reconciliation kills every running container of the run, whatever its recorded state, and waits for each to die before any launch.
+Kill semantics: kill first, confirm the cell's job is empty, then record the outcome. Reconciliation confirms that every recorded cell process of the run is gone, whatever its recorded state, before any launch.
 
 ## Failure-mode analysis
 
@@ -143,7 +144,7 @@ Kill semantics: kill first, confirm the container is gone, then record the outco
 | Two guards enforce one invariant, masking a seeded bug | Defence in depth in the model | prevent | One guard per mechanism, or the variant removes every guard for it | `exceed_parallelism`, `reconcile_no_wait` | Found three times and fixed: parallelism (v1); `ignore_orphans` replaced by `NoLaunchBesideOrphan`; `reconcile_no_wait` now removes both waits |
 | A variant made vacuous by a later fix | Model revision | detect | Re-run every variant after each model change | `archive_live` after kill → record | Found and fixed: `archive_live` redefined as archiving once a kill is requested |
 | Actions too atomic (kill and record, persist and send, in one step) | Model granularity | prevent | v2 splits kill → confirm → record and queue → persist → send, so a crash can fall between each pair | `record_without_kill`, `send_before_persist` | Design gate round 1 (Distributed Systems) |
-| Failure paths missing (budget kill, failure before the prompt, grading contention) | Model scope | prevent | `EngineKill`, `CreateFails`, `ContainerExits` before a prompt, `RecordExit`; the grading configuration at 2 passes | `launch_after_outcome`, `no_lock` | Design gate round 1 (Test Architect) |
+| Failure paths missing (budget kill, failure before the prompt, grading contention) | Model scope | prevent | `EngineKill`, `StartFails`, `CellExits` before a prompt, `RecordExit`; the grading configuration at 2 passes | `launch_after_outcome`, `no_lock` | Design gate round 1 (Test Architect) |
 | Safety passes only because the run stalls early | `CHECK_DEADLOCK FALSE` | detect | Reachability witness `NotAllCellsFinished`, expected violated | The `witness` line | Every run |
 | Model and engine drift apart | Two artifacts | detect | Mapping table above; an engine test replays the event sequences from the engine's tests against a Python transcription of the phase-1 guards, and rejects a seeded out-of-order ledger | Test failure in CI | `test_engine_conforms_to_lifecycle_model` (phase 1) |
 | State explosion makes CI slow | Bounds | mitigate + accept | Three configurations; symmetry; the second pass and `bench grade` kept out of the 3-cell run; CI runs `--quick` on each push and the US-44 bounds nightly | Script timing lines, flushed per line | Measured: `--quick` ≈ 3 min; US-44 bounds 5 min 37 s |
@@ -200,7 +201,7 @@ The check script prints one line per run: result, label, distinct states, second
 
 ## Flagged risks & residual unknowns
 
-- The model abstracts the Docker daemon as always answering. Daemon outages are handled by the engine's failure taxonomy (ADR-0007), not by the model.
+- The model abstracts the operating system as always answering (spawn, `TerminateJobObject`, job queries). Failures there are handled by the engine's failure taxonomy (ADR-0007), not by the model.
 - A defect that needs 2 crashes at 3 cells, more than 3 cells, or `bench grade` or 2 grading passes together with 3 cells, is outside the checked bounds. US-44 requires 1 crash; the 2-crash run is on demand (`--deep`) and has not completed.
 - Liveness is checked at 1 cell. A liveness defect that needs two cells contending for a slot is outside the bounds.
 - The first CI run will confirm the Java setup on the hosted runner (Inferred until then).

@@ -20,6 +20,10 @@ summary: >-
 # ADR-0004: A static, symmetric permission profile and offline task dependencies
 
 - **Status:** Proposed
+- **Amended by ADR-0013 (2026-09-23):**
+  - the profile is unchanged in tool classes, but no longer relies on a container sandbox; Codex uses `agent-full-access` natively (spike N1.1);
+  - dependencies are restored before the clock into the task clone (or the shared user caches), not an image;
+  - the permission files sit in the per-cell home, and nothing stops an agent editing them (owner-accepted, ADR-0013).
 - **Date:** 2026-09-23 (revised after council round 1)
 - **Deciders:** @timianmalloo; authored by Claude Code for the architect council
 - **Context spec/architecture:** `docs/specs/harness-bench.md` US-14, US-46; spec risk R14

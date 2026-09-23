@@ -20,6 +20,7 @@ summary: >-
 # ADR-0005: Cells reach only model APIs; benchmark model calls pass one egress gate
 
 - **Status:** Proposed
+- **Amended by ADR-0013 (2026-09-23):** the per-cell Docker network and egress proxy are superseded for authored tasks: cells use the host network (already optional under ADR-0012). The scan-before-egress rule for the benchmark's own sends (US-47) is unchanged.
 - **Date:** 2026-09-23 (revised after council round 1)
 - **Deciders:** @timianmalloo; authored by Claude Code for the architect council
 - **Context spec/architecture:** `docs/specs/harness-bench.md` US-47, US-48, US-49, C9

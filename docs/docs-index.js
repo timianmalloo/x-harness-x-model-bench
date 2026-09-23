@@ -200,7 +200,7 @@ window.DOCS_INDEX = {
       "path": "docs/adr/0001-cells-run-in-per-cell-linux-containers.md",
       "title": "ADR-0001: Every measured cell runs in its own hardened Linux container",
       "type": "adr",
-      "status": "draft",
+      "status": "superseded",
       "owner": "@timianmalloo",
       "phase": "all phases",
       "reviewBy": "2027-09-23",
@@ -227,7 +227,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "7f9897c54b9e14046d46c06fed15a518004abbdf723876558ecdabf831999f47"
+      "sourceSha256": "f4bee0a97122890b7089563b08f055a42b6b8e7c7c1ccb0d4a56e0cbd1257b76"
     },
     {
       "id": "adr-0002-cell-driver",
@@ -266,7 +266,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "74cb1469a73cfb2c1338413f18b9545cc975dd81c30f179a490fd52e993dfdde"
+      "sourceSha256": "1a3cd0033f199b52df74316a8df31cb740fedcec441a637d9acf019334a760f5"
     },
     {
       "id": "adr-0003-harness-profile",
@@ -300,7 +300,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "edf353209f9df6afdbee5e6fb5e4791380ab7f4104e7adc806c24fccf0b356ec"
+      "sourceSha256": "f2f8c54f5fbb39a221b38e3ef81a244d9eaae0d6a96c724febb5e07889a93080"
     },
     {
       "id": "adr-0004-static-permissions",
@@ -333,7 +333,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5ab6773b168dcb0e7c2c37ff5e8c417aa80065eabc7a6d6e921ec410fb88d881"
+      "sourceSha256": "5bda5fb79f8a242a34b6be8a23e55af0d8137aad880bcc4698dbb8bb2b9299e9"
     },
     {
       "id": "adr-0005-egress-control",
@@ -363,7 +363,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "48b86c050a02aa0e3372a3726a72b6b34f3749fefc8f2f4816de1ad28e33971d"
+      "sourceSha256": "86f893670743408d3f59789abbd557ecdbb57114034bd52523bb0c9857b77b54"
     },
     {
       "id": "adr-0006-results-data-model",
@@ -393,7 +393,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "7dc1e152a5dec9385b9228a97b10b0fab64c55d615d448fc7a4ab968e1fee33d"
+      "sourceSha256": "3bc0d51e529542e271b8ad4d63d45d3c1a58d890cebb56ed9d56829f9e4af309"
     },
     {
       "id": "adr-0007-run-engine",
@@ -424,7 +424,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d298946d4ee26672778c9aae20139828c102eae49e875ca8279d07e6b10bd92d"
+      "sourceSha256": "d151926d17b6bd3c08e2ce73be95789161da21482aad684668c4fada72cf1495"
     },
     {
       "id": "adr-0008-telemetry",
@@ -488,7 +488,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f3101933bbf0a25a77cbaa0ab96ef78c93358bb114513e2219385034e97065ed"
+      "sourceSha256": "8484a42058c8616868d0bf948c9e36861ebbc7ed45c5ac6d689d0bc61366c300"
     },
     {
       "id": "adr-0010-untrusted-cell-output",
@@ -522,7 +522,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8614159b91624a504dc796601e295aea4751b7d273c9335fbbcfee150633a520"
+      "sourceSha256": "da7f2e0eb827dd43af9cf37c552d3326914ea0db5b91a4ce9a5636736cde4aa4"
     },
     {
       "id": "adr-0011-loa-python",
@@ -593,7 +593,49 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9dce00b9711b86837cdd54cc6159a5182a5bf8700e234620e43bf4bb2f505082"
+      "sourceSha256": "74ad70eebe2346930f822301119417c0b72885f60c1e2203f0b1ed9ff199e274"
+    },
+    {
+      "id": "adr-0013-native-cells",
+      "path": "docs/adr/0013-native-cells-own-working-copy.md",
+      "title": "ADR-0013: Cells run natively, each in its own git working copy",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "all phases",
+      "reviewBy": "2027-09-23",
+      "reviewSuggested": [],
+      "summary": "Owner ruling: isolation beyond a working copy is not required. Each authored-task cell is a native process on the operator's Windows workstation, working in its own git working copy, with its own harness home and a symmetric unsandboxed permission profile. A Windows Job Object is how the engine stops a cell and knows it has stopped, not a sandbox. Containers, the egress proxy and every other isolation control are dropped for authored tasks; Harbor tasks keep their containers.",
+      "tags": [
+        "benchmark",
+        "runner",
+        "validity",
+        "owner-ruling"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0001-cell-containers",
+          "rel": "supersedes"
+        },
+        {
+          "to": "adr-0012-proportionate-security",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-spike-isolation-permissions",
+          "rel": "depends-on"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b5dab20c56500590f95801883339548457a6bd9ae9b2fe7acad875f6f232ce3d"
     },
     {
       "id": "arch-harness-bench",
@@ -605,11 +647,10 @@ window.DOCS_INDEX = {
       "phase": "S-02 architecture of record (smoke milestone first)",
       "reviewBy": "2027-03-22",
       "reviewSuggested": [],
-      "summary": "A deterministic pipeline (plan, run, grade, report) whose single-writer run engine launches every measured cell in its own hardened Linux container through a bench-owned ACP driver, with a pinned per-cell harness profile, a static permission profile, no reach to host credentials, and grading in no-network containers. Hash-chained append-only ledgers per run are the record; every result is a derived view. Models appear only as the systems under test and, tool-less, as judges, summarizer and matcher.",
+      "summary": "A deterministic pipeline (plan, run, grade, report) whose single-writer run engine launches every measured cell natively on Windows, in its own git working copy and Windows Job Object, through a bench-owned ACP driver, with a pinned per-cell harness profile and a static, symmetric permission profile; grading runs natively in its own working copies (ADR-0013). Hash-chained append-only ledgers per run are the record; every result is a derived view. Models appear only as the systems under test and, tool-less, as judges, summarizer and matcher.",
       "tags": [
         "benchmark",
         "architecture",
-        "containers",
         "runner",
         "grading"
       ],
@@ -635,10 +676,10 @@ window.DOCS_INDEX = {
         {
           "kind": "flowchart",
           "title": "Component map & boundaries",
-          "mermaid": "flowchart TB\n  subgraph Session[\"Coordinator session (Claude Code, /start-benchmark)\"]\n    SK[start-benchmark skill: compile, confirm, relay, audit-log entries]\n  end\n  subgraph Host[\"bench (Python, T0) on the Windows host\"]\n    CLI[bench CLI: validate, plan, run, status, stop, grade, report, verify, teardown]\n    ENG[Run engine: single writer, lifecycle = run_lifecycle.tla]\n    WSB[Workspace builder]\n    IMG[Image builder: env image + pinned harness layer, SBOM, CVE scan]\n    PRF[(Harness profiles: build, mode, pin, home seeding, reader)]\n    DRV[ACP cell driver]\n    ARC[Archiver: no link following, exact-value credential scan]\n    TEL[Telemetry: readers + normaliser]\n    GRD[Grade orchestrator]\n    GW[Model gateway: tool-less]\n    EG[Egress gate]\n    VIEWS[In-memory DuckDB views]\n    REP[Report: CLI + HTML + summaries]\n  end\n  subgraph Store[\"runs/<run_id>/ + cache/\"]\n    LED[(hash-chained facts: events, model_calls, tool_calls, archive_files, scores, verdict_uses, egress_events)]\n    ARCH[(cell archives)]\n    CTL[(control/: stop, decision answers)]\n    VC[(shared verdict cache)]\n  end\n  subgraph Docker[\"Docker Desktop (WSL2)\"]\n    PROXY[Egress proxy, off-the-shelf]\n    CELL[Cell containers: one network each]\n    GC[Grading containers: --network none, read-only mounts]\n  end\n  SK -->|bench plan / run / status --json| CLI\n  SK -->|decision answers| CTL\n  CLI --> ENG\n  ENG --> WSB & IMG & DRV & ARC\n  PRF --> IMG & DRV & TEL\n  DRV -->|docker run -i hb-run-cell, ACP stdio| CELL\n  CELL --> PROXY\n  CTL --> ENG\n  ENG --> LED\n  ARC --> ARCH\n  ARCH --> TEL --> LED\n  ARCH --> GRD --> GC\n  GRD --> LED\n  GRD --> GW\n  GW --> VC\n  GW --> EG\n  LED --> VIEWS --> REP\n  REP --> GW\n  REP --> EG"
+          "mermaid": "flowchart TB\n  subgraph Session[\"Coordinator session (Claude Code, /start-benchmark)\"]\n    SK[start-benchmark skill: compile, confirm, relay, audit-log entries]\n  end\n  subgraph Host[\"bench (Python, T0) on the Windows host\"]\n    CLI[bench CLI: validate, plan, run, status, stop, grade, report, verify, teardown]\n    ENG[Run engine: single writer, lifecycle = run_lifecycle.tla]\n    WSB[Workspace builder]\n    TLS[Tools folder: pinned harness builds]\n    PRF[(Harness profiles: build, mode, pin, home seeding, reader)]\n    DRV[ACP cell driver]\n    ARC[Archiver: no link following, exact-value credential scan]\n    TEL[Telemetry: readers + normaliser]\n    GRD[Grade orchestrator]\n    GW[Model gateway: tool-less]\n    EG[Egress gate]\n    VIEWS[Pure-Python projections]\n    REP[Report: CLI + HTML + summaries]\n  end\n  subgraph Store[\"runs/<run_id>/ + cache/\"]\n    LED[(hash-chained facts: events, model_calls, tool_calls, archive_files, scores, verdict_uses, egress_events)]\n    ARCH[(cell archives)]\n    CTL[(control/: stop, decision answers)]\n    VC[(shared verdict cache)]\n  end\n  subgraph Cells[\"bench-cells/<run>/<cell> (native, one Job Object each)\"]\n    CELL[Cell: own working copy + own harness home]\n    GC[Grading working copy: archive + hidden tests]\n  end\n  SK -->|bench plan / run / status --json| CLI\n  SK -->|decision answers| CTL\n  CLI --> ENG\n  ENG --> WSB & DRV & ARC\n  PRF --> TLS & DRV & TEL\n  DRV -->|spawn into Job Object, ACP stdio| CELL\n  CTL --> ENG\n  ENG --> LED\n  ARC --> ARCH\n  ARCH --> TEL --> LED\n  ARCH --> GRD --> GC\n  GRD --> LED\n  GRD --> GW\n  GW --> VC\n  GW --> EG\n  LED --> VIEWS --> REP\n  REP --> GW\n  REP --> EG"
         }
       ],
-      "sourceSha256": "c5e709ed93b70379e5f5de157386b651f19682831c1fb769da8107a619fd899c"
+      "sourceSha256": "3818fd2d2aab1026085f985ce30b198952054a67b41518fd26edf40ce4c12272"
     },
     {
       "id": "note-20260923-sqlite-views",
@@ -679,12 +720,12 @@ window.DOCS_INDEX = {
       "phase": "Phase 1 · walking skeleton (S-05, S-06, S-07, S-08a/b/f, S-10 skeleton)",
       "reviewBy": "2027-03-22",
       "reviewSuggested": [],
-      "summary": "The detailed design of the thinnest end-to-end path: prose → confirmed plan → run engine → containerised cells driven over ACP (Claude, Codex) → verified archive → telemetry from native records → correctness and cost graded in task-image containers → pure projections → CLI table and a minimal HTML report. Version 2, after the design gate: validity-first, security scoped by ADR-0012, the engine's launch, kill and record order matched to the checked lifecycle model.",
+      "summary": "The detailed design of the thinnest end-to-end path: prose → confirmed plan → run engine → native cells, each in its own git working copy and Job Object, driven over ACP (Claude, Codex) → verified archive → telemetry from native records → correctness and cost graded in grading working copies → pure projections → CLI table and a minimal HTML report. Version 4: cells run natively in their own working copies and Job Objects (ADR-0013); validity-first; the engine's launch, kill and record order matched to the checked lifecycle model.",
       "tags": [
         "benchmark",
         "runner",
         "engine",
-        "containers",
+        "native-cells",
         "acp",
         "telemetry",
         "grading",
@@ -704,7 +745,7 @@ window.DOCS_INDEX = {
           "rel": "depends-on"
         },
         {
-          "to": "adr-0001-cell-containers",
+          "to": "adr-0013-native-cells",
           "rel": "implements"
         },
         {
@@ -733,7 +774,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "618980c0fe5f54e1e541c80d3c86cde6a82e78f60166667c3c30fb666b19a22b"
+      "sourceSha256": "057a8fc8eac16ca5a7bba384c98978afa5688cb770485ce6745c430ff9cd5bbe"
     },
     {
       "id": "design-run-lifecycle-model",
@@ -767,12 +808,16 @@ window.DOCS_INDEX = {
           "rel": "depends-on"
         },
         {
+          "to": "adr-0013-native-cells",
+          "rel": "implements"
+        },
+        {
           "to": "spec-harness-bench",
           "rel": "implements"
         }
       ],
       "diagrams": [],
-      "sourceSha256": "10041f723363135a23d3f3be5f24f81cc5c7f9ad2b12954d3146e27442ed9f7b"
+      "sourceSha256": "ab7d72ebcd01e682384553aa51f8163a62a377f079112421a77397dcef4e3e88"
     },
     {
       "id": "audit-log",
@@ -827,7 +872,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d623ee7cf66260d1680e8f82f2c9f30de610179a7c3330aaa2c56248af39ad06"
+      "sourceSha256": "0236aa593db241a79e1d143a5831afb689acc6d51a1cb0427a4c9276f84b0f98"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -857,14 +902,14 @@ window.DOCS_INDEX = {
     {
       "id": "note-spike-isolation-permissions",
       "path": "docs/notes/spike-isolation-permissions.md",
-      "title": "Spikes R1, R2, R11: config isolation, static permissions, host isolation",
+      "title": "Spikes R1, R2, R11, N1, N2: config isolation, static permissions, host isolation, native cells",
       "type": "doc",
       "status": "draft",
       "owner": "@timianmalloo",
       "phase": "",
       "reviewBy": "2026-10-23",
       "reviewSuggested": [],
-      "summary": "Per-cell config homes keep sign-in and drop user-level skills for all three harnesses, but a workspace under the user profile still loads ~/.claude/CLAUDE.md, and Claude's account context (email, account-synced skills) survives any isolation. A static profile runs shell and edits with zero prompts on every harness, but only Codex sandboxes commands on native Windows. Linux containers give every harness the same containment; Claude and Codex ran in one, Copilot needs a token passed in.",
+      "summary": "Per-cell config homes keep sign-in and drop user-level skills for all three harnesses, but a workspace under the user profile still loads ~/.claude/CLAUDE.md, and Claude's account context (email, account-synced skills) survives any isolation. A static profile runs shell and edits with zero prompts on every harness. Linux containers give every harness the same containment, but Copilot needs a token passed in there. N1/N2 (after ADR-0012): natively, with Codex in agent-full-access, all three run symmetric and unsandboxed with zero prompts, log every command, and Copilot needs no token; a Windows Job Object kills and confirms a cell's whole process tree.",
       "tags": [
         "benchmark",
         "spike",
@@ -884,7 +929,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "da09fde2b6acb845cf2ef7fbf540d2f522c69fe258b220867596d76209aaa798"
+      "sourceSha256": "8d2699649e9e22be2315839714c9683713119b0cb163420a455eed0bb9101a9d"
     },
     {
       "id": "note-spike-runner-path",
@@ -1073,7 +1118,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TD\n  A([P2 runs /new-bench-task ID]) --> S[stub: task.yaml from template]\n  S --> D[draft: prompt.md, workspace base]\n  D --> O[oracle: hidden tests / rubric / clarifications / seeded bug]\n  O --> V{bench validate}\n  V -->|contract broken| E[Folder, rule, fix] --> O\n  V -->|scenario 1, no clarifications| E\n  V -->|scenario 7, no seeded bug or no toolchain pin| E\n  V -->|ok| DIS{Discrimination check: reference passes, naive or seeded fails}\n  DIS -->|does not discriminate| E2[Oracle too weak or too strict: shown with both results] --> O\n  DIS -->|discriminates| R([status: ready])"
         }
       ],
-      "sourceSha256": "f10cdd149987a87774cb9f9d850c8b5a44f1b4a835e2e6c0757f8778bdbabfb4"
+      "sourceSha256": "50c64de481f7887d22ec6f6203d646db43fad10042539854e1b6ef2cc9fb24b5"
     },
     {
       "id": "threat-model",
@@ -1085,7 +1130,7 @@ window.DOCS_INDEX = {
       "phase": "Phase 1 · walking skeleton",
       "reviewBy": "2027-03-22",
       "reviewSuggested": [],
-      "summary": "harness-bench is a local benchmark run by one trusted operator (ADR-0012), so security is scoped to result validity and accidental damage to the host or the owner's subscription credentials. The boundaries that matter are agent ↔ host, agent ↔ hidden oracle and credential ↔ published report; third-party task risk and everything outside that scope are accepted by the owner.",
+      "summary": "harness-bench is a local benchmark run by one trusted operator (ADR-0012). Each cell works natively in its own git working copy, and nothing more (ADR-0013). The controls that remain protect result validity (hidden tests never in the agent's tree) and what the operator shares (no credential in a published report). The agent's reach outside its working copy is accepted by the owner.",
       "tags": [
         "security",
         "threat-model"
@@ -1106,16 +1151,20 @@ window.DOCS_INDEX = {
         {
           "to": "adr-0012-proportionate-security",
           "rel": "depends-on"
+        },
+        {
+          "to": "adr-0013-native-cells",
+          "rel": "depends-on"
         }
       ],
       "diagrams": [
         {
           "kind": "flowchart",
           "title": "1. System trust-boundary map",
-          "mermaid": "flowchart LR\n  subgraph Host[\"Host (trusted: the operator)\"]\n    Engine[\"bench engine\\n(single writer)\"]\n    Runs[\"runs/&lt;id&gt;\\nledger + archives\"]\n    Creds[\"subscription logins\\n(harness homes)\"]\n    Report[\"report HTML\"]\n  end\n  subgraph Cell[\"Cell container (less trusted: the agent)\"]\n    Agent[\"harness + model\"]\n    WS[\"workspace mount\"]\n  end\n  Oracle[\"hidden tests / oracle\"]\n  Engine -- \"B1 launch, kill\" --> Cell\n  Creds -- \"B1 per-cell copy\" --> Cell\n  Cell -- \"B4 archive\" --> Runs\n  Oracle -. \"B2 never mounted\" .- Cell\n  Runs --> Report\n  Report -- \"B5 publish\" --> Shared[\"shared report\"]"
+          "mermaid": "flowchart LR\n  subgraph Host[\"Host (trusted: the operator)\"]\n    Engine[\"bench engine\\n(single writer)\"]\n    Runs[\"runs/&lt;id&gt;\\nledger + archives\"]\n    Creds[\"subscription logins\\n(harness homes)\"]\n    Report[\"report HTML\"]\n  end\n  subgraph Cell[\"Cell (the agent, with the operator's rights)\"]\n    Agent[\"harness + model\"]\n    WS[\"own git working copy\"]\n  end\n  Oracle[\"hidden tests / oracle\"]\n  Engine -- \"B1 spawn into Job Object, kill\" --> Cell\n  Creds -- \"B1 per-cell copy\" --> Cell\n  Cell -- \"B4 archive\" --> Runs\n  Oracle -. \"B2 never in the task clone\" .- Cell\n  Runs --> Report\n  Report -- \"B5 publish\" --> Shared[\"shared report\"]"
         }
       ],
-      "sourceSha256": "b5ca11de28ba016f64fed305721f25301f2692dc2042f281c3a2df9242f636e2"
+      "sourceSha256": "b7ad3fbf99ce707c6676c51ad16878540dc191bcc63ae47b6b905c9fe54a7798"
     }
   ],
   "surfaces": [
@@ -1143,5 +1192,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "14c18813e5a27cefc20eb741d0aad5118c315f959f0ce0936e60f772f20898c0"
+  "graphSha256": "2a12b82cc24c4b97a379aa382edf5a7d2a8d8df85589c45c0bef56e431db285e"
 };

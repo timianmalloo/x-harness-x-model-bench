@@ -20,6 +20,7 @@ summary: >-
 # ADR-0009: The benchmark's own model calls go through one tool-less model gateway
 
 - **Status:** Proposed
+- **Amended by ADR-0013 (2026-09-23):** the headless gateway CLI runs as a native process in its own Job Object, with an empty home seeded only with the credential and every tool denied, not in a cell-style container. The US-46 fixture still gates it.
 - **Date:** 2026-09-23 (revised after council round 1)
 - **Deciders:** @timianmalloo; authored by Claude Code for the architect council
 - **Context spec/architecture:** `docs/specs/harness-bench.md` US-26, US-31, US-35, US-42, US-46, US-47

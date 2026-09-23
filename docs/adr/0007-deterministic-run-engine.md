@@ -21,6 +21,12 @@ summary: >-
 # ADR-0007: A deterministic run engine schedules cells; the LLM coordinator never does
 
 - **Status:** Proposed
+- **Amended by ADR-0013 (2026-09-23):** the cell's handle is its Job Object, not a named container.
+  - The launch record is `attempt.process_started`, carrying the PID and process creation time.
+  - Kill is `TerminateJobObject`, confirmed when the active-process count reaches 0.
+  - Kill-on-close means an engine crash leaves no running cell. Phase 5 names the job `hb-<run>-<cell>-<attempt>` in `cell.launch_intent`, before the spawn; resume opens each recorded job by name, terminates it and waits for 0 active processes; not found means the tree is gone.
+  - Failure causes: the Docker, image, container-create and exit-137 causes apply only to Harbor cells. Authored cells need no new causes.
+  - Every other decision here is unchanged.
 - **Date:** 2026-09-23 (revised after council round 1)
 - **Deciders:** @timianmalloo; authored by Claude Code for the architect council
 - **Context spec/architecture:** `docs/specs/harness-bench.md` US-6, US-15–US-20, US-44–US-46

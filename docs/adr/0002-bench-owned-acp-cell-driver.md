@@ -23,6 +23,13 @@ summary: >-
 # ADR-0002: The bench drives cells with its own ACP cell driver, not the pack's coord-runner or Harbor
 
 - **Status:** Proposed. Supersedes the proposal's "every measured cell is a worker in a coord-run/1 contract".
+- **Amended by ADR-0013 (2026-09-23):**
+  - the driver spawns the ACP adapter natively into the cell's Job Object, not with `docker run -i`;
+  - `cwd` is the host workspace path;
+  - stopping a cell is `TerminateJobObject`, confirmed by the job's active-process count reaching 0;
+  - the Docker deadlines apply only to Harbor cells.
+
+  The decision to use a bench-owned driver, not coord-runner, is unchanged.
 - **Date:** 2026-09-23 (revised after council round 1)
 - **Deciders:** @timianmalloo; authored by Claude Code for the architect council
 - **Context spec/architecture:** `docs/specs/harness-bench.md`, `docs/architecture.md`

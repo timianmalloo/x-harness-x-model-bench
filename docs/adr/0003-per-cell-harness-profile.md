@@ -22,6 +22,12 @@ summary: >-
 # ADR-0003: A pinned, per-cell harness profile with a scoped credential and a verified model
 
 - **Status:** Proposed
+- **Amended by ADR-0013 (2026-09-23):**
+  - the per-cell homes are native folders under the cells root;
+  - Copilot uses the Windows credential store and needs no token;
+  - the image layer is replaced by the pinned tools folder, invoked by path.
+
+  With cells running as the operator, the copied credential is readable by the agent, as it was in the container. The owner accepts this (ADR-0013).
 - **Date:** 2026-09-23 (revised after council round 1)
 - **Deciders:** @timianmalloo; authored by Claude Code for the architect council
 - **Context spec/architecture:** `docs/specs/harness-bench.md` US-11, US-12, US-13, US-47, US-48, US-50

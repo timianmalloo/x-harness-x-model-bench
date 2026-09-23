@@ -1,6 +1,6 @@
 ---
 id: "note-spike-isolation-permissions"
-title: "Spikes R1, R2, R11: config isolation, static permissions, host isolation"
+title: "Spikes R1, R2, R11, N1, N2: config isolation, static permissions, host isolation, native cells"
 type: doc
 status: draft
 owner: "@timianmalloo"
@@ -13,9 +13,10 @@ summary: >-
   Per-cell config homes keep sign-in and drop user-level skills for all three harnesses, but a
   workspace under the user profile still loads ~/.claude/CLAUDE.md, and Claude's account context
   (email, account-synced skills) survives any isolation. A static profile runs shell and edits with
-  zero prompts on every harness, but only Codex sandboxes commands on native Windows. Linux
-  containers give every harness the same containment; Claude and Codex ran in one, Copilot needs a
-  token passed in.
+  zero prompts on every harness. Linux containers give every harness the same containment, but
+  Copilot needs a token passed in there. N1/N2 (after ADR-0012): natively, with Codex in
+  agent-full-access, all three run symmetric and unsandboxed with zero prompts, log every command, and
+  Copilot needs no token; a Windows Job Object kills and confirms a cell's whole process tree.
 ---
 
 # Spikes R1, R2, R11: config isolation, static permissions, host isolation
@@ -60,9 +61,31 @@ Labels: **Verified** = run here; **Inferred** = reasoned; **Flagged** = open.
 - **R11.5 [Verified] A second "complete but no model answer" case.** The adapter-bundled Codex 0.154.0 rejected `gpt-6-sol` for a ChatGPT-account login (`invalid_request_error`), and the ACP turn still ended `end_turn`. Pinning Codex 0.156.0 fixed it. With spike 1.4 (Claude default profile: no assistant message, transport `complete`), that is two instances of one class: **a completed turn with no successful model call**. The spec's served-model check passes vacuously on zero calls; it must require at least one successful call.
 - **Not tested:** a separate low-privilege Windows account (needs administrator rights to create); network egress restriction to the model APIs (proxy or firewall allowlist) [Flagged]; the .NET 10 SDK and Stryker in the image [Inferred: AiDe.Core is cross-platform per the proposal]; running Harbor tasks alongside.
 
+## N1, N2 — native cells without containers (2026-09-23, after ADR-0012)
+
+Question (owner): with security proportionate (ADR-0012), what do containers still buy? Code: `spikes/runner-path/native_probe.py`, `job_probe.py` (gitignored). Workspaces and homes under `C:\Projects\bench-cells-spike` (outside the profile); 0 credential copies left, then the folder was deleted.
+
+**N1: one ACP turn per harness, natively, with a per-cell home.** The prompt asked for three things: run `python -c "print(6*7)"` into `answer.txt`; fetch `https://pypi.org/simple/` and write the HTTP status to `net.txt`; write `outside-<harness>.txt` in the workspace's **parent** directory.
+
+| Harness | Profile | Permission requests | answer / net / outside | Commands in the native record | Time |
+| --- | --- | --- | --- | --- | --- |
+| Codex | ACP mode `agent-full-access`, per-cell `CODEX_HOME` with `config.toml` `model = "gpt-6-sol"` | 0 | 42 / 200 / written | all 3 | 29.4 s |
+| Claude | per-cell `CLAUDE_CONFIG_DIR`, `settings.json` allow list + `dontAsk`, `ANTHROPIC_MODEL=claude-sonnet-5` | 0 | 42 / 200 / written | all 3 | 19.0 s |
+| Copilot | empty per-cell `COPILOT_HOME`, `--allow-tool shell --allow-tool write` | 0 | 42 / 200 / written | all 3 | 16.9 s |
+
+- **N1.1 [Verified] Natively, containment is symmetric: none of the three is sandboxed.** Codex's `agent-full-access` mode sets approval `never` and sandbox `dangerFullAccess` (read in `codex-acp` 1.12.0, `dist/index.js`, `AgentFullAccess`). It reached the network and wrote outside the workspace with 0 requests, exactly as Claude and Copilot did. The R2.3 asymmetry was a choice of Codex mode, not a property of native execution.
+- **N1.2 [Verified] Copilot works natively with an empty per-cell home.** Its login comes from the Windows credential store (R1.1). It wrote 2 `assistant_usage_events` rows in the per-cell store. The R11.3 token problem exists only inside containers.
+- **N1.3 [Verified] Every harness logs the exact commands it ran in its native record.** All three command strings were present in each record. So an agent's reads of the bench repository or a task oracle can be detected from its tool calls.
+
+**N2: a Windows Job Object as the cell boundary (stdlib `ctypes`).**
+- **N2.1 [Verified] Kill, then confirm.** A child process and its grandchild were started suspended, assigned to a job, then resumed. `TerminateJobObject` killed both. The job's active-process count went from 2 to 0, and `tasklist` confirmed that neither process remained.
+- **N2.2 [Verified] An engine crash cannot leave orphans.** With `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`, a hard kill of the owning process (`taskkill /F`, no cleanup) killed the whole cell tree.
+- **N2.3 [Verified] Peak memory per cell** comes from job accounting (`PeakJobMemoryUsed`), with no polling.
+- **Not tested:** a job memory limit enforced (the cell killed at the cap); `node`-based adapters spawning their CLI inside the job, which should inherit it unless breakaway is allowed [Inferred, since we never set breakaway].
+
 ## What this means for the architecture (options, decided in `docs/architecture.md`)
 
-1. Containment symmetric across harnesses is only available by running every cell in a container. Natively, one harness (Codex) is sandboxed and two are not.
+1. ~~Containment symmetric across harnesses is only available by running every cell in a container.~~ *Corrected by N1.1: natively, Codex in `agent-full-access` is unsandboxed like the other two, so native cells are symmetric. See ADR-0013.*
 2. A container-based cell needs a transport that maps the host workspace to `/work`: an upstream change to the pack's transport, or the bench's own minimal ACP driver.
 3. Workspaces outside the user profile, per-cell homes seeded with only the credential, and pinned CLI builds are required in either mode.
 4. Claude account context is a residual harness-level treatment unless a dedicated account is used.
