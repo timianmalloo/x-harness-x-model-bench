@@ -1,0 +1,26 @@
+schema: bench-task/1
+id: C1
+scenario: 3
+title: "Concept-oriented requirements to architecture"
+status: stub
+language: other
+source:
+  kind: public
+  upstream: "ProjDevBench (concept-oriented problem)"
+  repo: "tbd"
+  commit: "tbd"
+budget:
+  minutes: 30
+  usd_cap: null
+blast_radius:
+  - "**"
+model_map: null
+scripted_user: false
+graders:
+  - correctness
+  - architecture
+  - judge
+  - cost
+  - process
+oracle:
+  summary: "Upstream OJ tests + architecture review rubric."

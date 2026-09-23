@@ -1,0 +1,29 @@
+schema: bench-task/1
+id: D3
+scenario: 4
+title: "P0 wing spine from a given architecture"
+status: stub
+language: csharp
+source:
+  kind: authored
+  upstream: "cfd-bench P0 wing spine"
+  repo: "https://github.com/timianmalloo/cfd-bench"
+  commit: "tbd"
+budget:
+  minutes: 40
+  usd_cap: null
+blast_radius:
+  - "src/**"
+  - "tests/**"
+model_map: null
+scripted_user: false
+graders:
+  - correctness
+  - mutation
+  - rigor
+  - architecture
+  - drift
+  - cost
+  - process
+oracle:
+  summary: "Hidden tests with reference values (span, area, aspect ratio, mean chord) + mutation suite."

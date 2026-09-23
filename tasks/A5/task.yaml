@@ -1,0 +1,25 @@
+schema: bench-task/1
+id: A5
+scenario: 1
+title: "Users want to see what changed"
+status: stub
+language: csharp
+source:
+  kind: authored
+  upstream: "ai-de AiDe.Core"
+  repo: "https://github.com/timianmalloo/ai-de"
+  commit: "tbd"
+budget:
+  minutes: 15
+  usd_cap: null
+blast_radius:
+  - "docs/specs/**"
+model_map: null
+scripted_user: true
+graders:
+  - clarify
+  - judge
+  - cost
+  - process
+oracle:
+  summary: "4 annotated clarifications + reference spec."

@@ -1,3 +1,18 @@
+---
+id: "proposal-cross-harness-benchmarking"
+title: "Cross-Harness Benchmarking Proposal (ai-forward)"
+type: doc
+status: accepted
+owner: "@timianmalloo"
+tags: [benchmark, proposal]
+links: []
+review-by: "2027-03-22"
+summary: >-
+  The source design for this repo: a harness × model × pack factorial benchmark over a 22-task,
+  six-scenario BOM, driven by one coordinator through the ai-forward coordination layer, graded
+  by repeatable Python scripts plus two blind judges, reported as a CLI table and an HTML page.
+---
+
 # Cross-Harness Benchmarking Proposal (ai-forward)
 
 Sep 23, 2026 · @Someone

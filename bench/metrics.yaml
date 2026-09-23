@@ -1,0 +1,91 @@
+# Metric catalogue v0. Source: proposal "Metric taxonomy".
+# Each metric is recorded raw, then normalised 0-100 per task (higher is better).
+# source: D deterministic script · J LLM judge · H harness telemetry · P pack-only
+# better: which raw direction is good (normalisation flips "lower").
+# grader: the src/harness_bench/grade/ module that owns the metric.
+# A metric a grader cannot measure is "not recorded" and excluded from the composite, never 0.
+# Changing a definition, weight or rubric bumps `version` (historical scores must not move silently).
+schema: bench-metrics/1
+version: "0.1"
+composite:
+  area_score: weighted mean of normalised metrics in the area
+  overall: correctness-gated   # a cheap failure never outranks an expensive pass
+  rank_rule: no rank above a combo whose bootstrap interval on the gated composite overlaps
+areas:
+  cost:
+    title: Cost & efficiency
+    metrics:
+      - { id: tokens_by_type,          source: [H],    better: lower,  grader: cost,        weight: 0, note: "raw only; in/out/cacheRead/cacheWrite by model" }
+      - { id: cost_usd,                source: [H, D], better: lower,  grader: cost,        weight: 1, note: "NA when no cost basis; never 0" }
+      - { id: cost_of_pass,            source: [D],    better: lower,  grader: cost,        weight: 1 }
+      - { id: tokens_per_solved,       source: [D],    better: lower,  grader: cost,        weight: 1 }
+      - { id: wall_clock_split,        source: [H],    better: lower,  grader: cost,        weight: 1, note: "wall, model, tool, idle" }
+      - { id: tokens_per_minute,       source: [D],    better: higher, grader: cost,        weight: 0 }
+      - { id: output_tokens_per_turn,  source: [D],    better: lower,  grader: cost,        weight: 0 }
+      - { id: turns_and_tool_calls,    source: [H],    better: lower,  grader: cost,        weight: 0 }
+      - { id: cache_hit_ratio,         source: [H, D], better: higher, grader: cost,        weight: 1 }
+      - { id: cache_write_amplification, source: [D],  better: lower,  grader: cost,        weight: 1 }
+      - { id: context_growth,          source: [H, D], better: lower,  grader: cost,        weight: 1, note: "peak, slope, turns to 50% window" }
+      - { id: compactions,             source: [H],    better: lower,  grader: cost,        weight: 0 }
+      - { id: coordinator_overhead,    source: [D],    better: lower,  grader: cost,        weight: 0, note: "reported, never charged to a cell" }
+  correctness:
+    title: Correctness
+    metrics:
+      - { id: pass_at_1,               source: [D], better: higher, grader: correctness, weight: 1 }
+      - { id: pass_at_k,               source: [D], better: higher, grader: correctness, weight: 0 }
+      - { id: pass_hat_k,              source: [D], better: higher, grader: correctness, weight: 1, note: "all k reps pass" }
+      - { id: partial_credit,          source: [D], better: higher, grader: correctness, weight: 1 }
+      - { id: build_and_suite_clean,   source: [D], better: higher, grader: correctness, weight: 1 }
+      - { id: mutation_score,          source: [D], better: higher, grader: mutation,    weight: 1 }
+      - { id: regression_count,        source: [D], better: lower,  grader: correctness, weight: 1 }
+      - { id: behavioural_equivalence, source: [D], better: higher, grader: correctness, weight: 1, note: "D-tasks only" }
+  rigor:
+    title: Rigor & quality
+    metrics:
+      - { id: verification_before_done, source: [D],    better: higher, grader: rigor, weight: 1 }
+      - { id: test_quality,             source: [D, J], better: higher, grader: rigor, weight: 1 }
+      - { id: static_analysis_delta,    source: [D],    better: lower,  grader: rigor, weight: 1, note: "incl. LOA001-LOA102 when pack on" }
+      - { id: maintainability,          source: [D],    better: higher, grader: rigor, weight: 1 }
+      - { id: style_conformance,        source: [D, J], better: higher, grader: rigor, weight: 1 }
+      - { id: honest_completion_claims, source: [J],    better: higher, grader: judge, weight: 1 }
+      - { id: error_handling,           source: [J],    better: higher, grader: judge, weight: 1 }
+  drift:
+    title: Drift & adherence
+    metrics:
+      - { id: spec_coverage,          source: [D, J], better: higher, grader: drift, weight: 1 }
+      - { id: scope_creep,            source: [D],    better: lower,  grader: drift, weight: 1 }
+      - { id: constraint_violations,  source: [D, J], better: lower,  grader: drift, weight: 1, note: "MTAC-IFBench categories" }
+      - { id: goal_drift_slope,       source: [J],    better: lower,  grader: judge, weight: 1 }
+      - { id: convention_drift,       source: [D],    better: lower,  grader: drift, weight: 1 }
+      - { id: instruction_reread_rate, source: [D],   better: higher, grader: drift, weight: 0, note: "diagnostic" }
+      - { id: unrequested_behaviour,  source: [J],    better: lower,  grader: judge, weight: 1 }
+  specification:
+    title: Specification & clarification
+    metrics:
+      - { id: ask_vs_assume,             source: [D],    better: higher, grader: clarify,      weight: 1 }
+      - { id: key_question_recall,       source: [D, J], better: higher, grader: clarify,      weight: 1 }
+      - { id: key_question_precision,    source: [D, J], better: higher, grader: clarify,      weight: 1 }
+      - { id: assumption_disclosure,     source: [J],    better: higher, grader: judge,        weight: 1 }
+      - { id: spec_quality,              source: [J],    better: higher, grader: judge,        weight: 1 }
+      - { id: architecture_conformance,  source: [D],    better: higher, grader: architecture, weight: 1 }
+      - { id: adr_quality,               source: [J],    better: higher, grader: judge,        weight: 1 }
+  autonomy:
+    title: Autonomy & process
+    metrics:
+      - { id: completion_without_intervention, source: [D], better: higher, grader: process, weight: 1 }
+      - { id: stuck_loops,                     source: [D], better: lower,  grader: process, weight: 1 }
+      - { id: recovery_rate,                   source: [D], better: higher, grader: process, weight: 1 }
+      - { id: tool_error_rate,                 source: [H], better: lower,  grader: process, weight: 1 }
+      - { id: planning_ratio,                  source: [D], better: higher, grader: process, weight: 0, note: "diagnostic; no a-priori good direction" }
+      - { id: time_to_first_green,             source: [D], better: lower,  grader: process, weight: 1 }
+  coordination:
+    title: Coordination & pack effect
+    metrics:
+      - { id: model_map_adherence,   source: [D, P], better: higher, grader: coordination, weight: 1 }
+      - { id: per_agent_attribution, source: [H],    better: higher, grader: coordination, weight: 1 }
+      - { id: handoff_fidelity,      source: [J],    better: higher, grader: judge,        weight: 1 }
+      - { id: intent_log_completeness, source: [D, P], better: higher, grader: coordination, weight: 1 }
+      - { id: kg_use,                source: [D, P], better: higher, grader: coordination, weight: 1 }
+      - { id: coordination_overhead, source: [D],    better: lower,  grader: coordination, weight: 1 }
+      - { id: mast_failure_codes,    source: [J],    better: lower,  grader: judge,        weight: 1 }
+      - { id: parallel_efficiency,   source: [D],    better: higher, grader: coordination, weight: 1 }

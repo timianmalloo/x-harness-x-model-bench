@@ -1,0 +1,25 @@
+schema: bench-task/1
+id: A3
+scenario: 1
+title: "Ambiguous-term ambiguity"
+status: stub
+language: python
+source:
+  kind: public
+  upstream: "ClarifyCodeBench (ambiguous-term)"
+  repo: "tbd"
+  commit: "tbd"
+budget:
+  minutes: 15
+  usd_cap: null
+blast_radius:
+  - "**"
+model_map: null
+scripted_user: true
+graders:
+  - clarify
+  - correctness
+  - cost
+  - process
+oracle:
+  summary: "Annotated key clarifications + upstream tests."

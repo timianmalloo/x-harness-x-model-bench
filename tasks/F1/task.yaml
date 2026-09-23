@@ -1,0 +1,31 @@
+schema: bench-task/1
+id: F1
+scenario: 6
+title: "P0 wing spine as three coordinated tracks"
+status: stub
+language: csharp
+source:
+  kind: authored
+  upstream: "cfd-bench P0 wing spine, three tracks"
+  repo: "https://github.com/timianmalloo/cfd-bench"
+  commit: "tbd"
+budget:
+  minutes: 60
+  usd_cap: null
+blast_radius:
+  - "src/**"
+  - "tests/**"
+model_map:
+  domain-model: tbd
+  derived-quantities: tbd
+  tests: tbd
+scripted_user: false
+graders:
+  - correctness
+  - coordination
+  - judge
+  - drift
+  - cost
+  - process
+oracle:
+  summary: "Hidden tests, intent-log completeness, model-map adherence, MAST coding."

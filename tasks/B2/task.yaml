@@ -1,0 +1,25 @@
+schema: bench-task/1
+id: B2
+scenario: 2
+title: "ai-de Core feature primer to full spec"
+status: stub
+language: csharp
+source:
+  kind: authored
+  upstream: "ai-de Core feature primer"
+  repo: "https://github.com/timianmalloo/ai-de"
+  commit: "tbd"
+budget:
+  minutes: 20
+  usd_cap: null
+blast_radius:
+  - "docs/specs/**"
+model_map: null
+scripted_user: false
+graders:
+  - judge
+  - drift
+  - cost
+  - process
+oracle:
+  summary: "Same rubric as B1 + reference spec."

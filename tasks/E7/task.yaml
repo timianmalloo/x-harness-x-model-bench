@@ -1,0 +1,28 @@
+schema: bench-task/1
+id: E7
+scenario: 5
+title: "P1 estimator slice"
+status: stub
+language: csharp
+source:
+  kind: authored
+  upstream: "cfd-bench P1 estimator"
+  repo: "https://github.com/timianmalloo/cfd-bench"
+  commit: "tbd"
+budget:
+  minutes: 45
+  usd_cap: null
+blast_radius:
+  - "src/**"
+  - "tests/**"
+model_map: null
+scripted_user: false
+graders:
+  - correctness
+  - mutation
+  - rigor
+  - drift
+  - cost
+  - process
+oracle:
+  summary: "Our reference implementation of the named formulas + property tests (monotonic in alpha, dimensional consistency, limiting cases) + mutation suite. DTIC validation out of scope."

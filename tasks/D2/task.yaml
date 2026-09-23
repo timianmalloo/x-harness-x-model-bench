@@ -1,0 +1,29 @@
+schema: bench-task/1
+id: D2
+scenario: 4
+title: "New extraction rule in AiDe.Core Extraction/"
+status: stub
+language: csharp
+source:
+  kind: authored
+  upstream: "ai-de AiDe.Core Extraction/"
+  repo: "https://github.com/timianmalloo/ai-de"
+  commit: "tbd"
+budget:
+  minutes: 45
+  usd_cap: null
+blast_radius:
+  - "src/AiDe.Core/Extraction/**"
+  - "tests/**"
+model_map: null
+scripted_user: false
+graders:
+  - correctness
+  - mutation
+  - rigor
+  - architecture
+  - drift
+  - cost
+  - process
+oracle:
+  summary: "Hidden xUnit tests, Stryker.NET mutation suite, layering check."

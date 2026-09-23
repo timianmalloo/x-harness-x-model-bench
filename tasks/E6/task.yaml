@@ -1,0 +1,24 @@
+schema: bench-task/1
+id: E6
+scenario: 5
+title: "HumanEval-C# batch of 10"
+status: stub
+language: csharp
+source:
+  kind: public
+  upstream: "MultiPL-E HumanEval-C#"
+  repo: "tbd"
+  commit: "tbd"
+budget:
+  minutes: 20
+  usd_cap: null
+blast_radius:
+  - "**"
+model_map: null
+scripted_user: false
+graders:
+  - correctness
+  - cost
+  - process
+oracle:
+  summary: "Upstream executable tests for a batch of 10 problems."

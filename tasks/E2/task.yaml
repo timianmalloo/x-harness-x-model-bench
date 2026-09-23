@@ -1,0 +1,24 @@
+schema: bench-task/1
+id: E2
+scenario: 5
+title: "TB2 software-engineering task, medium band"
+status: stub
+language: other
+source:
+  kind: public
+  upstream: "Terminal-Bench 2.0 via Harbor (medium band)"
+  repo: "harbor:terminal-bench@2.0"
+  commit: "tbd"
+budget:
+  minutes: 60
+  usd_cap: null
+blast_radius:
+  - "**"
+model_map: null
+scripted_user: false
+graders:
+  - correctness
+  - cost
+  - process
+oracle:
+  summary: "Upstream TB2 tests."

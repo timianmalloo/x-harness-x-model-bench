@@ -1,0 +1,49 @@
+// Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
+window.AUDIT_DATA = {
+  "project": "x-harness-x-model-bench",
+  "generated": "2026-09-23T17:37:23Z",
+  "audit": [
+    {
+      "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
+      "shortname": "addpacktorepo-x-harness-x-model-bench",
+      "datetime": "2026-09-23T17:37:23Z",
+      "session": "ebf50c4d",
+      "prompt": "consider the following files: harness-bench-mockup.html; Cross-Harness Benchmarking Proposal (ai-forward).md. these form the basis for a proposal for a cross-harness benchmarking tool. create a new public repo, x-harness-x-model-bench under c:\\projects and in my tim.ian.malloo github account and apply my ai-forward pack to it. ground yourself in the benchmarking proposal and mockup and build out the scaffolding for us to spec and implement the benchmarking workflow and skills in this new repo",
+      "summary": "Installed AI-Forward Pack revision 92 (2026.09.21.3) via pack-apply.py --install: 433 ADD, 3 UPDATE, 1 MERGE; docs-index.js not seeded by install; CI docs-health workflow not installed.",
+      "kind": "command",
+      "skill": "addpacktorepo",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "tier": "T0"
+    },
+    {
+      "id": "al-01M37NFXET1B4GABG9PP6YF14A",
+      "shortname": "scaffold-benchmark",
+      "datetime": "2026-09-23T17:37:23Z",
+      "session": "ebf50c4d",
+      "prompt": "consider the following files: harness-bench-mockup.html; Cross-Harness Benchmarking Proposal (ai-forward).md. these form the basis for a proposal for a cross-harness benchmarking tool. create a new public repo, x-harness-x-model-bench under c:\\projects and in my tim.ian.malloo github account and apply my ai-forward pack to it. ground yourself in the benchmarking proposal and mockup and build out the scaffolding for us to spec and implement the benchmarking workflow and skills in this new repo",
+      "summary": "bench/ inputs (22-task BOM, metrics, example matrix, prices), 22 task stubs + template, harness_bench package (validate and plan built; run/grade/report stubbed with spec ids), skills start-benchmark and new-bench-task, spec backlog S-01..S-11, grounding findings F1-F8 (F1 worker isolation blocks runner), CI.",
+      "kind": "manual",
+      "skill": null,
+      "tool": null,
+      "actor": "claude-code",
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "goal": "Scaffold the benchmark repo so the team can spec and implement the workflow and skills",
+      "done_when": "bench validate ok; pytest green; spec backlog and findings committed; repo public on GitHub",
+      "tier": "T1",
+      "git": {
+        "sha": "2cbc0ed46849079b6a531807b6148d8490f40fdb",
+        "short": "2cbc0ed46",
+        "branch": "main",
+        "pushed": null
+      }
+    }
+  ],
+  "changes": [],
+  "messages": []
+};

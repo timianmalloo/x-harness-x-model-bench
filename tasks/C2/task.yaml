@@ -1,0 +1,25 @@
+schema: bench-task/1
+id: C2
+scenario: 3
+title: "Requirement-to-architecture task"
+status: stub
+language: other
+source:
+  kind: public
+  upstream: "ArchBench (requirement-to-architecture)"
+  repo: "tbd"
+  commit: "tbd"
+budget:
+  minutes: 30
+  usd_cap: null
+blast_radius:
+  - "**"
+model_map: null
+scripted_user: false
+graders:
+  - architecture
+  - judge
+  - cost
+  - process
+oracle:
+  summary: "ArchBench hybrid grader (structural checks + judge)."

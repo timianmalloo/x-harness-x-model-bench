@@ -1,0 +1,25 @@
+schema: bench-task/1
+id: A4
+scenario: 1
+title: "Make the wing definition reusable across runs"
+status: stub
+language: csharp
+source:
+  kind: authored
+  upstream: "cfd-bench P0 domain"
+  repo: "https://github.com/timianmalloo/cfd-bench"
+  commit: "tbd"
+budget:
+  minutes: 15
+  usd_cap: null
+blast_radius:
+  - "docs/specs/**"
+model_map: null
+scripted_user: true
+graders:
+  - clarify
+  - judge
+  - cost
+  - process
+oracle:
+  summary: "5 annotated clarifications (persistence vs sharing, format, versioning, validation, scope) + reference spec."

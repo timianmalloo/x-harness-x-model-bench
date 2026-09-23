@@ -1,0 +1,45 @@
+# Bill of materials: the fixed task set every matrix cell runs.
+# Source: docs/proposals/cross-harness-benchmarking-proposal.md, "Benchmark BOM v0".
+# Each id is a folder under tasks/. `smoke: true` marks the one-per-scenario smoke BOM.
+# Status lives in each task's task.yaml, not here.
+schema: bench-bom/1
+version: "0.1"
+scenarios:
+  1: Specify from an ambiguous prompt
+  2: Specify from a primer spec
+  3: Architect from a spec
+  4: Code from an architecture spec
+  5: Code from a prompt
+  6: Multi-agent execution, one harness and session, per-agent model routing
+tasks:
+  # Scenario 1: ambiguous prompt
+  - { id: A1, scenario: 1, smoke: true,  budget_minutes: 15, source: ClarifyCodeBench, title: "Missing-goal ambiguity" }
+  - { id: A2, scenario: 1, smoke: false, budget_minutes: 15, source: ClarifyCodeBench, title: "Missing-premise ambiguity" }
+  - { id: A3, scenario: 1, smoke: false, budget_minutes: 15, source: ClarifyCodeBench, title: "Ambiguous-term ambiguity" }
+  - { id: A4, scenario: 1, smoke: false, budget_minutes: 15, source: cfd-bench,        title: "Make the wing definition reusable across runs" }
+  - { id: A5, scenario: 1, smoke: false, budget_minutes: 15, source: ai-de,            title: "Users want to see what changed" }
+  # Scenario 2: primer -> spec
+  - { id: B1, scenario: 2, smoke: true,  budget_minutes: 20, source: cfd-bench, title: "P0 conventions and spine primer to full spec" }
+  - { id: B2, scenario: 2, smoke: false, budget_minutes: 20, source: ai-de,     title: "ai-de Core feature primer to full spec" }
+  - { id: B3, scenario: 2, smoke: false, budget_minutes: 20, source: SpecBench, title: "SpecBench task" }
+  # Scenario 3: spec -> architecture
+  - { id: C1, scenario: 3, smoke: true,  budget_minutes: 30, source: ProjDevBench, title: "Concept-oriented requirements to architecture" }
+  - { id: C2, scenario: 3, smoke: false, budget_minutes: 30, source: ArchBench,    title: "Requirement-to-architecture task" }
+  # Scenario 4: architecture -> code
+  - { id: D1, scenario: 4, smoke: true,  budget_minutes: 45, source: ai-de,     title: "New projection in AiDe.Core Projections/" }
+  - { id: D2, scenario: 4, smoke: false, budget_minutes: 45, source: ai-de,     title: "New extraction rule in AiDe.Core Extraction/" }
+  - { id: D3, scenario: 4, smoke: false, budget_minutes: 40, source: cfd-bench, title: "P0 wing spine from a given architecture" }
+  # Scenario 5: prompt -> code (calibration)
+  # assume: the proposal gives E1-E5 budgets as "per task" (upstream). 60 is the BOM-wide
+  # sub-hour ceiling, not a measured upstream value; replace with the upstream budget when the
+  # concrete TB2 / SWE-bench instances are picked (spec S-03).
+  - { id: E1, scenario: 5, smoke: true,  budget_minutes: 60, source: Terminal-Bench-2.0, title: "TB2 software-engineering task, easy band" }
+  - { id: E2, scenario: 5, smoke: false, budget_minutes: 60, source: Terminal-Bench-2.0, title: "TB2 software-engineering task, medium band" }
+  - { id: E3, scenario: 5, smoke: false, budget_minutes: 60, source: Terminal-Bench-2.0, title: "TB2 software-engineering task, hard band" }
+  - { id: E4, scenario: 5, smoke: false, budget_minutes: 60, source: SWE-bench-Verified, title: "SWE-bench Verified task, 15-60 min band" }
+  - { id: E5, scenario: 5, smoke: false, budget_minutes: 60, source: SWE-bench-Verified, title: "SWE-bench Verified task, 15-60 min band" }
+  - { id: E6, scenario: 5, smoke: false, budget_minutes: 20, source: MultiPL-E,          title: "HumanEval-C# batch of 10" }
+  - { id: E7, scenario: 5, smoke: false, budget_minutes: 45, source: cfd-bench,          title: "P1 estimator slice" }
+  # Scenario 6: multi-agent
+  - { id: F1, scenario: 6, smoke: true,  budget_minutes: 60, source: cfd-bench, title: "P0 wing spine as three coordinated tracks" }
+  - { id: F2, scenario: 6, smoke: false, budget_minutes: 60, source: ai-de,     title: "D1 feature as design / implement / adversarial review" }

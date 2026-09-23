@@ -1,0 +1,25 @@
+schema: bench-task/1
+id: B3
+scenario: 2
+title: "SpecBench task"
+status: stub
+language: other
+source:
+  kind: public
+  upstream: "SpecBench"
+  repo: "tbd"
+  commit: "tbd"
+budget:
+  minutes: 20
+  usd_cap: null
+blast_radius:
+  - "**"
+model_map: null
+scripted_user: false
+graders:
+  - correctness
+  - judge
+  - cost
+  - process
+oracle:
+  summary: "SpecBench checker."

@@ -1,0 +1,25 @@
+schema: bench-task/1
+id: B1
+scenario: 2
+title: "P0 conventions and spine primer to full spec"
+status: stub
+language: csharp
+source:
+  kind: authored
+  upstream: "cfd-bench phasing plan P0 paragraph"
+  repo: "https://github.com/timianmalloo/cfd-bench"
+  commit: "tbd"
+budget:
+  minutes: 20
+  usd_cap: null
+blast_radius:
+  - "docs/specs/**"
+model_map: null
+scripted_user: false
+graders:
+  - judge
+  - drift
+  - cost
+  - process
+oracle:
+  summary: "Rubric from the /specify definition of done (core scenario, non-goals, Gherkin ACs, ISO 25010 NFRs, three layers) + reference spec."

@@ -1,0 +1,25 @@
+schema: bench-task/1
+id: X0                      # must match the folder name and a bench/bom.yaml entry
+scenario: 5                 # 1-6, see bench/bom.yaml
+title: "<one line>"
+status: stub                # stub | draft | ready  (see tasks/README.md)
+language: csharp            # csharp | python | other
+source:
+  kind: authored            # authored | public
+  upstream: "<benchmark name or repo>"
+  repo: "<clone URL or local path>"   # workspace base; public Harbor tasks name the dataset instead
+  commit: "<base commit sha>"
+budget:
+  minutes: 45               # wall-clock cap; coord-run/1 caps deadline_seconds at 3600
+  usd_cap: null             # null = no dollar cap; the minutes cap still applies
+blast_radius:               # globs the task may touch; edits elsewhere count as scope creep
+  - "src/**"
+model_map: null             # scenario 6 only: { role: model } routing the orchestrator must honour
+scripted_user: false        # scenario 1 only: true enables the clarification responder
+graders:                    # shared graders to run, in addition to grade.py if present
+  - correctness
+  - cost
+  - drift
+  - process
+oracle:
+  summary: "<what the hidden oracle is: tests, rubric, reference spec, clarifications>"

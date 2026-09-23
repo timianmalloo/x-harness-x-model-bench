@@ -1,0 +1,24 @@
+# Example matrix. The real matrix is never hand-edited: /start-benchmark compiles a prose
+# description into runs/<run_id>/matrix.yaml (CO-S0) with resolved model ids and a run id.
+# This file is the target shape and the fixture the tests validate.
+#
+# Prose that compiles to this file:
+#   "gpt-6-sol in codex and copilot, opus-5.5 and sonnet-5 in claude code,
+#    pack on and off, smoke BOM, 3 reps"
+schema: bench-matrix/1
+run_id: example
+bom: { file: bench/bom.yaml, subset: smoke }   # subset: smoke | full | [task ids]
+repetitions: 3
+packs: ["on", "off"]   # quoted: YAML 1.1 reads bare on/off as booleans
+coordinator:
+  harness: claude-code          # the CLI /start-benchmark was started from; never a measured cell
+  model: claude-opus-5-5
+combos:
+  - { id: codex-sol,   harness: codex,       model: gpt-6-sol }
+  - { id: copilot-sol, harness: copilot,     model: gpt-6-sol }
+  - { id: cc-opus,     harness: claude-code, model: claude-opus-5-5 }
+  - { id: cc-sonnet,   harness: claude-code, model: claude-sonnet-5 }
+judges:
+  # Rule: the most capable model each vendor offers at run time, resolved and pinned per run.
+  - { id: judge-anthropic, harness: claude-code, model: resolve-at-run-time }
+  - { id: judge-openai,    harness: codex,       model: resolve-at-run-time }

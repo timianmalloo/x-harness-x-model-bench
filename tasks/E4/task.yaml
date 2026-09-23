@@ -1,0 +1,25 @@
+schema: bench-task/1
+id: E4
+scenario: 5
+title: "SWE-bench Verified task, 15-60 min band"
+status: stub
+language: python
+source:
+  kind: public
+  upstream: "SWE-bench Verified"
+  repo: "harbor:swe-bench-verified"
+  commit: "tbd"
+budget:
+  minutes: 60
+  usd_cap: null
+blast_radius:
+  - "**"
+model_map: null
+scripted_user: false
+graders:
+  - correctness
+  - drift
+  - cost
+  - process
+oracle:
+  summary: "Fail-to-pass tests."
