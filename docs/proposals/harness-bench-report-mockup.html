@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>harness-bench · run 2026-09-23 (mockup)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#f3f5f7; --panel:#ffffff; --ink:#18212b; --ink-2:#4b5563; --ink-3:#8a94a3;
+  --rule:#d9dee5; --rule-2:#eceff3; --grid:#e4e8ee;
+  --accent:#18212b;
+  --c1:#1d6fd6; --c2:#7a3fd1; --c3:#0d7a6e; --c4:#b7620a;
+  --good:#1a7f4b; --bad:#b42318;
+  --font:"Instrument Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111519; --panel:#181d23; --ink:#e8ecf1; --ink-2:#b6bec9; --ink-3:#7a8493;
+    --rule:#2a323c; --rule-2:#1f262e; --grid:#262e38; --accent:#e8ecf1;
+    --c1:#5b9cf5; --c2:#a77df0; --c3:#33b3a3; --c4:#e69138;
+    --good:#4cc07f; --bad:#f0716a;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111519; --panel:#181d23; --ink:#e8ecf1; --ink-2:#b6bec9; --ink-3:#7a8493;
+  --rule:#2a323c; --rule-2:#1f262e; --grid:#262e38; --accent:#e8ecf1;
+  --c1:#5b9cf5; --c2:#a77df0; --c3:#33b3a3; --c4:#e69138;
+  --good:#4cc07f; --bad:#f0716a;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.45;font-variant-numeric:tabular-nums}
+*,*::before,*::after{box-sizing:inherit}
+a{color:inherit}
+main{max-width:1240px;margin:0 auto;padding:28px 24px 80px}
+h1{font-size:28px;font-weight:600;letter-spacing:-.01em;margin:0 0 6px}
+h2{font-size:19px;font-weight:600;margin:0 0 4px}
+h3{font-size:15px;font-weight:600;margin:0 0 6px}
+p{margin:0 0 10px;max-width:72ch}
+.muted{color:var(--ink-2)}
+.faint{color:var(--ink-3)}
+.mock{display:inline-block;border:1px solid var(--rule);border-radius:4px;padding:1px 7px;font-size:12px;color:var(--ink-2);vertical-align:middle;margin-left:8px}
+header.run{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:end;padding-bottom:18px;border-bottom:1px solid var(--rule);margin-bottom:22px}
+.runmeta{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px 22px;font-size:13px}
+.runmeta div span{display:block;color:var(--ink-3);font-size:12px}
+section{padding:22px 0;border-bottom:1px solid var(--rule-2)}
+section:last-of-type{border-bottom:0}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:12px}
+
+/* controls */
+.controls{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:10px 0;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;border-bottom:1px solid var(--rule);margin-bottom:8px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px}
+.legend label{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;padding:3px 8px;border-radius:999px;border:1px solid transparent;user-select:none}
+.legend label:has(input:checked){border-color:var(--rule)}
+.legend label:has(input:not(:checked)){opacity:.45}
+.legend input{position:absolute;opacity:0;width:0;height:0}
+.legend label:focus-within{outline:2px solid var(--c1);outline-offset:1px}
+.sw{width:14px;height:14px;border-radius:3px;display:inline-block}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden;font-size:13px}
+.seg button{background:transparent;border:0;color:var(--ink-2);padding:5px 10px;cursor:pointer;font:inherit}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--bg)}
+.seg button:focus-visible{outline:2px solid var(--c1);outline-offset:-2px}
+.packkey{font-size:12px;color:var(--ink-3);display:inline-flex;gap:14px;align-items:center}
+.packkey i{display:inline-block;width:26px;border-top:2px solid var(--ink-2);vertical-align:middle;margin-right:5px}
+.packkey i.dash{border-top-style:dashed}
+
+/* radar grid */
+.radars{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.radar{background:var(--panel);border:1px solid var(--rule-2);border-radius:8px;padding:12px 10px 6px}
+.radar h3{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px;padding:0 4px}
+.radar h3 small{font-weight:400;color:var(--ink-3);font-size:12px}
+.radar svg{width:100%;height:auto;display:block}
+.radar text{font-family:var(--font);font-size:9.5px;fill:var(--ink-2)}
+.radar .axis{stroke:var(--grid);stroke-width:1}
+.radar .ring{fill:none;stroke:var(--grid);stroke-width:1}
+.radar polygon{fill-opacity:.10;stroke-width:1.8;stroke-linejoin:round}
+.radar polygon.off{fill-opacity:.04;stroke-dasharray:4 3;stroke-width:1.4}
+.radar circle.dot{r:2.2}
+.radar .hit{fill:transparent;cursor:crosshair}
+
+/* table */
+.tablewrap{overflow-x:auto;border:1px solid var(--rule-2);border-radius:8px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:920px}
+th,td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--rule-2);white-space:nowrap}
+th{font-weight:500;color:var(--ink-2);cursor:pointer;position:sticky;top:0;background:var(--panel);user-select:none}
+th.left,td.left{text-align:left}
+th[aria-sort="descending"]::after{content:" ↓";color:var(--ink-3)}
+th[aria-sort="ascending"]::after{content:" ↑";color:var(--ink-3)}
+tbody tr:hover{background:var(--rule-2)}
+td.combo{font-weight:500}
+td.combo .sw{margin-right:8px;vertical-align:-2px}
+td .rep{display:inline-block;width:44px;height:14px;vertical-align:middle;margin-left:6px}
+td .rep rect{fill:var(--ink-3)}
+td .ci{color:var(--ink-3);font-size:12px}
+.est{color:var(--ink-3);font-size:11.5px;margin-left:3px}
+tr.dim{opacity:.4}
+.gate{font-size:12px;color:var(--ink-3);padding:8px 12px}
+
+/* charts */
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:14px}
+.chart{background:var(--panel);border:1px solid var(--rule-2);border-radius:8px;padding:12px 10px 4px}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{font-family:var(--font);font-size:10.5px;fill:var(--ink-2)}
+.chart .grid{stroke:var(--grid);stroke-width:1}
+.chart .axisl{stroke:var(--rule);stroke-width:1}
+.chart .line{fill:none;stroke-width:2}
+.chart .line.off{stroke-dasharray:4 3;stroke-width:1.5}
+.chart .frontier{fill:none;stroke:var(--ink-3);stroke-width:1;stroke-dasharray:2 3}
+.chart .cmp{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:1 2}
+
+/* heatmap */
+.heat{display:grid;gap:3px;font-size:12.5px}
+.heat .cell{padding:10px 6px;text-align:center;border-radius:4px;color:var(--ink);position:relative}
+.heat .rowh{text-align:left;padding:10px 8px 10px 0;color:var(--ink-2);white-space:nowrap}
+.heat .colh{text-align:center;padding:0 4px 6px;color:var(--ink-2);font-size:12px;line-height:1.25}
+.heat .cell small{display:block;color:var(--ink-3);font-size:10.5px}
+
+/* pack effect */
+.deltas{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.delta{background:var(--panel);border:1px solid var(--rule-2);border-radius:8px;padding:12px 14px}
+.delta h3{display:flex;align-items:center;gap:8px}
+.delta svg{width:100%;height:auto;display:block}
+.delta text{font-family:var(--font);font-size:10.5px;fill:var(--ink-2)}
+.delta .zero{stroke:var(--rule);stroke-width:1}
+.delta .ci{stroke:var(--ink-3);stroke-width:1.2}
+.delta .pos{fill:var(--good)} .delta .neg{fill:var(--bad)}
+
+/* summaries */
+.summaries{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:14px}
+.summary{background:var(--panel);border:1px solid var(--rule-2);border-radius:8px;padding:16px 18px}
+.summary h3{margin-bottom:8px}
+.summary ol,.summary ul{margin:0 0 10px;padding-left:20px}
+.summary li{margin-bottom:6px}
+.summary .ev{color:var(--ink-3);font-size:12px}
+.summary .sugg{border-left:3px solid var(--rule);padding:6px 10px;margin:8px 0;font-size:14px}
+.summary .sugg b{font-weight:600}
+
+/* drilldown */
+details.run{border:1px solid var(--rule-2);border-radius:8px;background:var(--panel);margin-bottom:8px}
+details.run summary{padding:10px 14px;cursor:pointer;display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:13.5px}
+details.run summary .sw{vertical-align:-2px}
+details.run[open] summary{border-bottom:1px solid var(--rule-2)}
+details.run .body{padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;font-size:13px}
+details.run pre{margin:0;background:var(--bg);border-radius:6px;padding:10px;font-size:12px;overflow:auto;white-space:pre-wrap}
+.ev-list{margin:0;padding:0;list-style:none}
+.ev-list li{display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-bottom:1px solid var(--rule-2)}
+.ev-list li span:last-child{color:var(--ink-3)}
+
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:6px 9px;border-radius:5px;opacity:0;transition:opacity .08s;max-width:260px;z-index:20;line-height:1.35}
+.tip.show{opacity:1}
+.tip b{font-weight:600}
+@media (prefers-reduced-motion: reduce){ *{transition:none !important} }
+@media (max-width:640px){ main{padding:18px 14px 60px} h1{font-size:23px} header.run{grid-template-columns:1fr} details.run .body{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<main>
+<header class="run">
+  <div>
+    <h1>harness-bench <span class="faint">/</span> run 2026-09-23 <span class="mock">mockup · synthetic numbers</span></h1>
+    <p class="muted">Same 24-task BOM, four harness/model combos, each with the ai-forward pack on and off, three repetitions per cell. Scores are 0–100 per area (higher is better); raw values and evidence sit behind every number.</p>
+  </div>
+  <div class="runmeta">
+    <div><span>BOM</span>bom.yaml v0.3 · 24 tasks · 6 scenarios</div>
+    <div><span>Matrix</span>4 combos × pack on/off × 3 reps = 576 runs</div>
+    <div><span>Judge</span>third-party, pinned · agreement 0.86 κ</div>
+    <div><span>Spend</span>$1,412 runs · $138 judges · 41 h wall</div>
+    <div><span>Coordinator</span>Claude Code · opus-5.5 · $61 overhead</div>
+    <div><span>Metrics</span>metrics.yaml v0.2 · weights editable</div>
+  </div>
+</header>
+
+<div class="controls" role="group" aria-label="Series filters">
+  <div class="legend" id="legend"></div>
+  <div class="seg" role="group" aria-label="Pack setting">
+    <button data-pack="both" aria-pressed="true">Pack on + off</button>
+    <button data-pack="on" aria-pressed="false">Pack on</button>
+    <button data-pack="off" aria-pressed="false">Pack off</button>
+  </div>
+  <span class="packkey"><span><i></i>pack on</span><span><i class="dash"></i>pack off</span></span>
+</div>
+
+<section>
+  <div class="sec-head">
+    <div><h2>Where each combo lands, by area</h2><p class="muted">One radar per metric area. Click a legend entry to isolate a combo; hover an axis point for the raw metric and its evidence.</p></div>
+  </div>
+  <div class="radars" id="radars"></div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <div><h2>Leaderboard</h2><p class="muted">Correctness-gated: a combo whose pass^3 interval overlaps the leader's is not ranked above it. Click a column to sort.</p></div>
+  </div>
+  <div class="tablewrap">
+    <table id="board">
+      <thead><tr>
+        <th class="left" data-k="rank">#</th>
+        <th class="left" data-k="name">Combo</th>
+        <th data-k="pack">Pack</th>
+        <th data-k="composite">Composite</th>
+        <th data-k="pass1">pass@1</th>
+        <th data-k="passk">pass^3</th>
+        <th data-k="cop">Cost-of-pass ($)</th>
+        <th data-k="tokSolved">Tokens / solved (M)</th>
+        <th data-k="cache">Cache hit</th>
+        <th data-k="ctxPeak">Context peak (K)</th>
+        <th data-k="wall">Wall clock (min)</th>
+        <th data-k="drift">Drift &amp; adherence</th>
+        <th data-k="mut">Mutation score</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="gate">Copilot cost is estimated from tokens at list price (Copilot bills in premium requests; 212 used). Repetition bars show the three per-rep composites.</div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><div><h2>Pass rate against what it cost</h2><p class="muted">Dotted line is the Pareto frontier over the visible series. Same-model pairs are joined so the harness gap is visible.</p></div></div>
+  <div class="two">
+    <div class="chart"><h3>pass@1 vs cost per task ($)</h3><svg id="pareto-cost" viewBox="0 0 520 300" role="img" aria-label="Pass rate versus cost per task"></svg></div>
+    <div class="chart"><h3>pass@1 vs tokens per solved task (M)</h3><svg id="pareto-tok" viewBox="0 0 520 300" role="img" aria-label="Pass rate versus tokens per solved task"></svg></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><div><h2>Context growth</h2><p class="muted">Prompt tokens sent per turn, median over runs of task D2 (architecture → code). Markers are context compactions.</p></div></div>
+  <div class="chart"><svg id="ctx" viewBox="0 0 1100 320" role="img" aria-label="Prompt tokens per turn by combo"></svg></div>
+</section>
+
+<section>
+  <div class="sec-head"><div><h2>Scenario heatmap</h2><p class="muted">Correctness-gated composite per scenario. Second line is pass@1 for that scenario.</p></div></div>
+  <div class="heat" id="heat"></div>
+</section>
+
+<section>
+  <div class="sec-head"><div><h2>Pack effect</h2><p class="muted">pack on − pack off, per area, per combo. Whiskers are 95% bootstrap intervals over tasks × reps; a whisker crossing zero is not a finding.</p></div></div>
+  <div class="deltas" id="deltas"></div>
+</section>
+
+<section>
+  <div class="sec-head"><div><h2>AI summaries</h2><p class="muted">Written by the coordinator from results.duckdb (ranking) and from the pack-effect deltas plus sampled pack-on transcripts (pack observations). Every claim carries run ids.</p></div></div>
+  <div class="summaries">
+    <div class="summary">
+      <h3>Ranking and insights</h3>
+      <ol>
+        <li><b>Claude Code / Opus 5.5</b> leads on correctness (pass@1 0.82, pass^3 0.71) and every quality area, but is the most expensive per pass at $4.10 and Pareto-dominated on tokens per solved task. <span class="ev">runs 0142–0189</span></li>
+        <li><b>Codex / GPT-6 Sol</b> is the efficiency leader: 61% of Opus's tokens per solved task with a 6-point pass@1 gap; its interval overlaps Sonnet 5's on pass^3, so ranks 2 and 3 are not separable. <span class="ev">runs 0001–0048, 0190–0237</span></li>
+        <li>Same model, different harness: GPT-6 Sol in Copilot CLI trails Codex by 9 points pass@1 and uses 1.8× the tokens per solved task, with the gap concentrated in scenario 4 and 6 tasks. Cache hit ratio (44% vs 79%) explains most of the token difference. <span class="ev">runs 0049–0096 vs 0001–0048</span></li>
+        <li>Drift is the widest spread of any area (54–84). Both GPT-6 combos lose adherence after the first compaction; Claude Code combos re-read the spec after compaction 71% of the time. <span class="ev">drift.py re-read rate; runs tagged compaction=true</span></li>
+        <li>Variance warning: F-tasks (multi-agent) have the largest per-rep spread for every combo; three repetitions are not enough there. Recommend 5. <span class="ev">pass^3 vs pass@1 gap on F1–F3</span></li>
+      </ol>
+    </div>
+    <div class="summary">
+      <h3>With and without the ai-forward pack</h3>
+      <ul>
+        <li>Pack on moves drift &amp; adherence (+14 to +17), rigor (+11 to +12), specification (+13 to +14) and coordination (+17 to +26) for every combo; correctness moves +3 to +4, inside the interval for two combos. <span class="ev">pack-effect panel</span></li>
+        <li>Pack on costs 8–12% more tokens per run, almost all cache-write tokens from the larger repo context on turn 1; cache hit ratio is higher with the pack on for all combos, so the net cost-of-pass delta is −$0.20 to +$0.35. <span class="ev">cost.py cache_write_amplification</span></li>
+      </ul>
+      <div class="sugg"><b>ai-forward:</b> split TESTING.md so the mutation directive is a 12-line file loaded on every turn; the full KB is only read on 23% of runs and costs 6.1K tokens when it is. <span class="ev">runs 0142–0189 tool log</span></div>
+      <div class="sugg"><b>ai-forward:</b> the intent log lost 18% of actions on Codex because the writer expects a shell hook Codex does not fire; add a post-edit fallback in the coordination protocol. <span class="ev">coordination.py orphan_actions, Codex runs</span></div>
+      <div class="sugg"><b>Codex-specific:</b> an AGENTS.md variant that front-loads the layering rules; Codex reads AGENTS.md once and never re-reads, so the rules must fit its first-turn budget. <span class="ev">re-read rate 0.04 on Codex vs 0.71 Claude Code</span></div>
+      <div class="sugg"><b>Claude Code-specific:</b> a PostCompact hook that re-injects the task spec; drift slope halves in the two runs where this was simulated. <span class="ev">runs 0177, 0181</span></div>
+      <div class="sugg"><b>Copilot-specific:</b> a custom agent with an explicit build-then-test step; Copilot declared done without running tests on 31% of D-tasks. <span class="ev">rigor.py verification_before_done</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><div><h2>Run drill-down</h2><p class="muted">Every score links to the artifact that produced it. Three sample runs shown.</p></div></div>
+  <div id="drill"></div>
+</section>
+</main>
+<div class="tip" id="tip"></div>
+
+<script>
+(function(){
+'use strict';
+const AREAS=["Cost & efficiency","Correctness","Rigor & quality","Drift & adherence","Specification","Autonomy","Coordination"];
+const AXES={
+ "Cost & efficiency":["Cost-of-pass","Tokens/solved","Wall clock","Cache hit","Ctx growth","Tokens/min"],
+ "Correctness":["pass@1","pass^3","Partial credit","Mutation","Regressions","Build ok"],
+ "Rigor & quality":["Verify before done","Test quality","Analyzers","Maintainability","Style","Honest claims"],
+ "Drift & adherence":["Spec coverage","Scope creep","Constraints","Goal drift","Convention","Re-read rate"],
+ "Specification":["Ask vs assume","Key-Q recall","Assumptions stated","Spec quality","Arch conformance","ADR quality"],
+ "Autonomy":["No intervention","Stuck loops","Recovery","Tool errors","Planning ratio","Time-to-green"],
+ "Coordination":["Model-map adherence","Attribution","Handoff fidelity","Intent-log","KG use","Parallel eff."]
+};
+const COMBOS=[
+ {id:"codex-sol",   name:"Codex CLI / GPT-6 Sol",        color:"var(--c1)", raw:"#1d6fd6"},
+ {id:"copilot-sol", name:"Copilot CLI / GPT-6 Sol",      color:"var(--c2)", raw:"#7a3fd1"},
+ {id:"cc-opus",     name:"Claude Code / Opus 5.5",       color:"var(--c3)", raw:"#0d7a6e"},
+ {id:"cc-sonnet",   name:"Claude Code / Sonnet 5",       color:"var(--c4)", raw:"#b7620a"}
+];
+// Area composites (0-100) per combo, pack on / off. Synthetic.
+const AREA_SCORES={
+ "codex-sol":  {on:[74,78,71,80,74,81,76], off:[79,74,60,63,61,78,52]},
+ "copilot-sol":{on:[55,70,66,72,69,70,61], off:[58,66,55,57,56,67,44]},
+ "cc-opus":    {on:[48,86,82,84,83,85,84], off:[53,83,70,68,70,82,58]},
+ "cc-sonnet":  {on:[71,76,72,77,73,79,73], off:[75,72,62,61,62,76,50]}
+};
+// per-axis detail (normalised) derived from composite with small offsets; raw strings for tooltips
+const AXIS_RAW={
+ "Cost-of-pass":v=>"$"+(6.2-v*0.05).toFixed(2), "Tokens/solved":v=>(9.5-v*0.08).toFixed(2)+"M", "Wall clock":v=>(48-v*0.32).toFixed(0)+" min",
+ "Cache hit":v=>(v*0.95).toFixed(0)+"%", "Ctx growth":v=>(2400-v*18).toFixed(0)+" tok/turn", "Tokens/min":v=>(1800+v*22).toFixed(0),
+ "pass@1":v=>(v/100).toFixed(2), "pass^3":v=>((v-12)/100).toFixed(2), "Partial credit":v=>(v/100).toFixed(2), "Mutation":v=>(v*0.9).toFixed(0)+"%", "Regressions":v=>(Math.round((100-v)/15))+" tests", "Build ok":v=>(90+v*0.1).toFixed(0)+"%",
+ "Verify before done":v=>(v*0.9).toFixed(0)+"% of runs","Test quality":v=>(v/100).toFixed(2),"Analyzers":v=>Math.round((100-v)/6)+" violations/1K LOC","Maintainability":v=>(v/100).toFixed(2),"Style":v=>(v*0.9).toFixed(0)+"%","Honest claims":v=>(100-Math.round((100-v)*0.4))+"% accurate",
+ "Spec coverage":v=>(v*0.95).toFixed(0)+"% rubric","Scope creep":v=>(Math.round((100-v)/4))+" files out of scope","Constraints":v=>(Math.round((100-v)/8))+" violations","Goal drift":v=>"slope −"+((100-v)/200).toFixed(2)+"/quartile","Convention":v=>((100-v)/20).toFixed(1)+" per 100 LOC","Re-read rate":v=>(v/120).toFixed(2),
+ "Ask vs assume":v=>(v/100).toFixed(2),"Key-Q recall":v=>(v/100).toFixed(2),"Assumptions stated":v=>(v*0.9).toFixed(0)+"%","Spec quality":v=>(v/20).toFixed(1)+"/5","Arch conformance":v=>(v*0.95).toFixed(0)+"%","ADR quality":v=>(v/20).toFixed(1)+"/5",
+ "No intervention":v=>(v*0.95).toFixed(0)+"%","Stuck loops":v=>((100-v)/25).toFixed(1)+" per run","Recovery":v=>(v*0.9).toFixed(0)+"%","Tool errors":v=>((100-v)/12).toFixed(1)+"%","Planning ratio":v=>(v/300).toFixed(2),"Time-to-green":v=>(40-v*0.3).toFixed(0)+" min",
+ "Model-map adherence":v=>(v).toFixed(0)+"%","Attribution":v=>(v*0.98).toFixed(0)+"% tokens attributed","Handoff fidelity":v=>(v/20).toFixed(1)+"/5","Intent-log":v=>(v*0.95).toFixed(0)+"% actions logged","KG use":v=>Math.round(v/10)+" refs/run","Parallel eff.":v=>(v/120).toFixed(2)
+};
+const OFFS=[3,-4,2,5,-3,-2];
+function axisVals(area,comp,pack){const base=AREA_SCORES[comp][pack][AREAS.indexOf(area)];return AXES[area].map((a,i)=>Math.max(5,Math.min(98,base+OFFS[(i+AREAS.indexOf(area))%6]+((comp.length+i)%5)-2)));}
+
+const BOARD=[
+ {id:"cc-opus",pack:"on",pass1:.82,passk:.71,ci:.06,cop:4.10,tokSolved:6.9,cache:.83,ctxPeak:141,wall:31,drift:84,mut:78,reps:[85,79,83]},
+ {id:"codex-sol",pack:"on",pass1:.76,passk:.64,ci:.07,cop:2.35,tokSolved:4.2,cache:.79,ctxPeak:112,wall:22,drift:80,mut:71,reps:[78,74,77]},
+ {id:"cc-sonnet",pack:"on",pass1:.74,passk:.61,ci:.08,cop:1.95,tokSolved:4.8,cache:.81,ctxPeak:118,wall:24,drift:77,mut:69,reps:[76,70,73]},
+ {id:"cc-opus",pack:"off",pass1:.79,passk:.66,ci:.07,cop:4.25,tokSolved:7.4,cache:.76,ctxPeak:133,wall:30,drift:68,mut:66,reps:[80,73,77]},
+ {id:"codex-sol",pack:"off",pass1:.72,passk:.58,ci:.08,cop:2.20,tokSolved:4.6,cache:.72,ctxPeak:104,wall:21,drift:63,mut:58,reps:[72,66,70]},
+ {id:"cc-sonnet",pack:"off",pass1:.70,passk:.55,ci:.08,cop:1.90,tokSolved:5.1,cache:.74,ctxPeak:110,wall:23,drift:61,mut:57,reps:[70,64,68]},
+ {id:"copilot-sol",pack:"on",pass1:.67,passk:.52,ci:.09,cop:3.60,tokSolved:7.6,cache:.44,ctxPeak:158,wall:34,drift:72,mut:63,reps:[67,60,66]},
+ {id:"copilot-sol",pack:"off",pass1:.63,passk:.47,ci:.09,cop:3.45,tokSolved:8.1,cache:.39,ctxPeak:151,wall:33,drift:57,mut:52,reps:[61,55,60]}
+];
+BOARD.forEach(r=>{const a=AREA_SCORES[r.id][r.pack];r.composite=Math.round(a.reduce((s,v)=>s+v,0)/a.length);r.name=COMBOS.find(c=>c.id===r.id).name;});
+// ranking with correctness gate: sort by composite, but do not rank above a combo whose passk interval you overlap
+const sortedByComp=[...BOARD].sort((a,b)=>b.composite-a.composite);
+sortedByComp.forEach((r,i)=>r.rank=i+1);
+const SCEN=["1 Ambiguous prompt","2 Primer → spec","3 Spec → architecture","4 Architecture → code","5 Prompt → code","6 Multi-agent"];
+const SCEN_SCORES={
+ "codex-sol":{on:[[74,.80],[77,.83],[72,.75],[79,.77],[84,.79],[70,.63]],off:[[60,.70],[63,.72],[58,.66],[70,.71],[83,.78],[49,.48]]},
+ "copilot-sol":{on:[[66,.71],[70,.74],[65,.68],[64,.64],[76,.70],[55,.50]],off:[[52,.61],[55,.63],[50,.57],[58,.59],[75,.69],[38,.36]]},
+ "cc-opus":{on:[[85,.88],[87,.90],[84,.86],[83,.80],[88,.84],[82,.72]],off:[[70,.80],[72,.83],[68,.78],[78,.77],[87,.83],[60,.55]]},
+ "cc-sonnet":{on:[[74,.79],[76,.81],[71,.74],[75,.72],[82,.77],[68,.60]],off:[[60,.69],[62,.71],[57,.66],[68,.68],[81,.76],[47,.45]]}
+};
+const CTX={ // tokens per turn, 40 turns, plus compaction turn indices
+ "codex-sol":{on:{c:[],pts:g(3200,1800,40,0.6)},off:{c:[],pts:g(1400,1900,40,0.65)}},
+ "copilot-sol":{on:{c:[22,36],pts:g(3600,2600,40,0.9,[22,36])},off:{c:[19,31],pts:g(1800,2700,40,0.95,[19,31])}},
+ "cc-opus":{on:{c:[29],pts:g(4400,2300,40,0.75,[29])},off:{c:[27],pts:g(2100,2400,40,0.8,[27])}},
+ "cc-sonnet":{on:{c:[31],pts:g(3900,2000,40,0.7,[31])},off:{c:[28],pts:g(1800,2100,40,0.75,[28])}}
+};
+function g(start,slope,n,curve,comp){const out=[];let v=start;for(let t=1;t<=n;t++){if(comp&&comp.includes(t)){v=v*0.45;}v+=slope*Math.pow(t/n,curve)*(1+0.15*Math.sin(t*1.7));out.push(Math.round(v));}return out;}
+const DELTAS={ // per combo, per area: [delta, lo, hi]
+ "codex-sol":[[-5,-9,-1],[4,-1,9],[11,6,16],[17,12,22],[13,8,18],[3,-2,8],[24,17,31]],
+ "copilot-sol":[[-3,-8,2],[4,-2,10],[11,5,17],[15,9,21],[13,7,19],[3,-3,9],[17,10,24]],
+ "cc-opus":[[-5,-9,-1],[3,-1,7],[12,7,17],[16,11,21],[13,8,18],[3,-1,7],[26,19,33]],
+ "cc-sonnet":[[-4,-8,0],[4,-1,9],[10,5,15],[16,10,22],[11,6,16],[3,-2,8],[23,16,30]]
+};
+
+// ---------- state ----------
+const state={visible:new Set(COMBOS.map(c=>c.id)),pack:"both"};
+const $=s=>document.querySelector(s);
+const tip=$("#tip");
+function showTip(html,x,y){tip.innerHTML=html;tip.classList.add("show");const w=tip.offsetWidth,h=tip.offsetHeight;tip.style.left=Math.min(x+14,window.innerWidth-w-8)+"px";tip.style.top=Math.max(8,y-h-10)+"px";}
+function hideTip(){tip.classList.remove("show");}
+function packs(){return state.pack==="both"?["on","off"]:[state.pack];}
+function color(id){return COMBOS.find(c=>c.id===id).color;}
+
+// ---------- legend ----------
+const legend=$("#legend");
+COMBOS.forEach(c=>{const l=document.createElement("label");l.innerHTML=`<input type="checkbox" checked data-id="${c.id}"><span class="sw" style="background:${c.color}"></span>${c.name}`;legend.appendChild(l);});
+legend.addEventListener("change",e=>{const id=e.target.dataset.id;if(e.target.checked)state.visible.add(id);else state.visible.delete(id);render();});
+legend.addEventListener("click",e=>{ // alt/shift-click isolates
+  if(e.target.tagName==="INPUT"||!(e.altKey||e.shiftKey))return; const l=e.target.closest("label");if(!l)return;e.preventDefault();const id=l.querySelector("input").dataset.id;state.visible=new Set([id]);legend.querySelectorAll("input").forEach(i=>i.checked=i.dataset.id===id);render();});
+document.querySelectorAll(".seg button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-pressed","false"));b.setAttribute("aria-pressed","true");state.pack=b.dataset.pack;render();}));
+
+// ---------- radars ----------
+function radarSVG(area){
+  const n=AXES[area].length,cx=125,cy=118,R=88;const pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/n;return [cx+r*Math.cos(a),cy+r*Math.sin(a)];};
+  let s=`<svg viewBox="0 0 250 236">`;
+  [0.25,0.5,0.75,1].forEach(f=>{s+=`<polygon class="ring" points="${AXES[area].map((_,i)=>pt(i,R*f).join(",")).join(" ")}"/>`;});
+  AXES[area].forEach((ax,i)=>{const [x,y]=pt(i,R);s+=`<line class="axis" x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"/>`;const [lx,ly]=pt(i,R+16);const anchor=Math.abs(lx-cx)<6?"middle":(lx<cx?"end":"start");s+=`<text x="${lx}" y="${ly+3}" text-anchor="${anchor}">${ax}</text>`;});
+  COMBOS.forEach(c=>{if(!state.visible.has(c.id))return;packs().forEach(p=>{const vals=axisVals(area,c.id,p);const pts=vals.map((v,i)=>pt(i,R*v/100));s+=`<polygon class="${p}" points="${pts.map(q=>q.join(",")).join(" ")}" fill="${c.color}" stroke="${c.color}"/>`;vals.forEach((v,i)=>{const [x,y]=pts[i];s+=`<circle class="dot" cx="${x}" cy="${y}" fill="${c.color}"/><circle class="hit" cx="${x}" cy="${y}" r="7" data-tip="${c.name} · pack ${p}&lt;br&gt;&lt;b&gt;${AXES[area][i]}&lt;/b&gt;: ${AXIS_RAW[AXES[area][i]](v)} (score ${v})&lt;br&gt;evidence: grade/${area.split(' ')[0].toLowerCase().replace('&','')}.py → runs/…"/>`;});});});
+  return s+`</svg>`;
+}
+function renderRadars(){const host=$("#radars");host.innerHTML="";AREAS.forEach(a=>{const d=document.createElement("div");d.className="radar";const best=COMBOS.filter(c=>state.visible.has(c.id)).map(c=>({c,v:AREA_SCORES[c.id][packs()[0]][AREAS.indexOf(a)]})).sort((x,y)=>y.v-x.v)[0];d.innerHTML=`<h3>${a}<small>${best?"best: "+best.c.name.split(" / ")[1]+" "+best.v:""}</small></h3>${radarSVG(a)}`;host.appendChild(d);});}
+
+// ---------- table ----------
+let sortKey="composite",sortDir=-1;
+function repSVG(reps){return `<svg class="rep" viewBox="0 0 44 14">${reps.map((r,i)=>`<rect x="${i*15}" y="${14-r*0.14}" width="11" height="${r*0.14}"/>`).join("")}</svg>`;}
+function renderTable(){const tb=$("#board tbody");const rows=BOARD.filter(r=>state.visible.has(r.id)&&packs().includes(r.pack)).sort((a,b)=>{const x=a[sortKey],y=b[sortKey];return (typeof x==="string"?x.localeCompare(y):x-y)*sortDir;});
+  tb.innerHTML=rows.map(r=>`<tr><td class="left">${r.rank}</td><td class="left combo"><span class="sw" style="background:${color(r.id)}"></span>${r.name}</td><td>${r.pack}</td><td><b>${r.composite}</b>${repSVG(r.reps)}</td><td>${r.pass1.toFixed(2)}</td><td>${r.passk.toFixed(2)} <span class="ci">±${r.ci.toFixed(2)}</span></td><td>${r.cop.toFixed(2)}${r.id==="copilot-sol"?'<span class="est">est.</span>':''}</td><td>${r.tokSolved.toFixed(1)}</td><td>${Math.round(r.cache*100)}%</td><td>${r.ctxPeak}</td><td>${r.wall}</td><td>${r.drift}</td><td>${r.mut}%</td></tr>`).join("");
+  document.querySelectorAll("#board th").forEach(th=>{th.setAttribute("aria-sort",th.dataset.k===sortKey?(sortDir<0?"descending":"ascending"):"none");});}
+document.querySelectorAll("#board th").forEach(th=>th.addEventListener("click",()=>{const k=th.dataset.k;if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=(k==="name"||k==="rank"||k==="cop"||k==="tokSolved"||k==="wall"||k==="ctxPeak")?1:-1;}renderTable();}));
+
+// ---------- pareto ----------
+function scatter(svgId,xKey,xLabel,xMax,fmt){const svg=$(svgId);const W=520,H=300,L=52,Rr=16,T=16,B=44;const px=v=>L+(v/xMax)*(W-L-Rr),py=v=>T+(1-(v-0.4)/0.6)*(H-T-B);let s="";
+  for(let i=0;i<=4;i++){const y=py(0.4+i*0.15);s+=`<line class="grid" x1="${L}" y1="${y}" x2="${W-Rr}" y2="${y}"/><text x="${L-6}" y="${y+3}" text-anchor="end">${(0.4+i*0.15).toFixed(2)}</text>`;}
+  for(let i=0;i<=4;i++){const x=px(xMax*i/4);s+=`<line class="grid" x1="${x}" y1="${T}" x2="${x}" y2="${H-B}"/><text x="${x}" y="${H-B+14}" text-anchor="middle">${fmt(xMax*i/4)}</text>`;}
+  s+=`<text x="${(L+W)/2}" y="${H-6}" text-anchor="middle">${xLabel}</text><text transform="translate(12 ${(T+H-B)/2}) rotate(-90)" text-anchor="middle">pass@1</text>`;
+  const rows=BOARD.filter(r=>state.visible.has(r.id)&&packs().includes(r.pack));
+  // frontier: sort by x asc, keep points with increasing y
+  const fr=[...rows].sort((a,b)=>a[xKey]-b[xKey]).filter((r,i,arr)=>arr.slice(0,i).every(q=>q.pass1<r.pass1));
+  if(fr.length>1)s+=`<polyline class="frontier" points="${fr.map(r=>px(r[xKey])+","+py(r.pass1)).join(" ")}"/>`;
+  // join same-model pairs (codex vs copilot) within pack
+  packs().forEach(p=>{const a=rows.find(r=>r.id==="codex-sol"&&r.pack===p),b=rows.find(r=>r.id==="copilot-sol"&&r.pack===p);if(a&&b)s+=`<line class="cmp" x1="${px(a[xKey])}" y1="${py(a.pass1)}" x2="${px(b[xKey])}" y2="${py(b.pass1)}"/>`;});
+  rows.forEach(r=>{const x=px(r[xKey]),y=py(r.pass1);s+=`<circle cx="${x}" cy="${y}" r="${r.pack==="on"?6:5}" fill="${r.pack==="on"?color(r.id):"transparent"}" stroke="${color(r.id)}" stroke-width="2" ${r.pack==="off"?'stroke-dasharray="3 2"':''} data-tip="${r.name} · pack ${r.pack}&lt;br&gt;pass@1 ${r.pass1.toFixed(2)} · ${xLabel}: ${fmt(r[xKey])}"/>`;});
+  svg.innerHTML=s;}
+function renderPareto(){scatter("#pareto-cost","cop","cost per task ($)",5,v=>"$"+v.toFixed(2));scatter("#pareto-tok","tokSolved","tokens per solved task (M)",10,v=>v.toFixed(1)+"M");}
+
+// ---------- context growth ----------
+function renderCtx(){const svg=$("#ctx");const W=1100,H=320,L=60,Rr=20,T=16,B=40;const yMax=90000;const px=t=>L+((t-1)/39)*(W-L-Rr),py=v=>T+(1-v/yMax)*(H-T-B);let s="";
+  for(let i=0;i<=4;i++){const v=yMax*i/4,y=py(v);s+=`<line class="grid" x1="${L}" y1="${y}" x2="${W-Rr}" y2="${y}"/><text x="${L-6}" y="${y+3}" text-anchor="end">${Math.round(v/1000)}K</text>`;}
+  for(let t=1;t<=40;t+=5){s+=`<text x="${px(t)}" y="${H-B+14}" text-anchor="middle">${t}</text>`;}
+  s+=`<text x="${(L+W)/2}" y="${H-6}" text-anchor="middle">turn</text><text transform="translate(14 ${(T+H-B)/2}) rotate(-90)" text-anchor="middle">prompt tokens</text>`;
+  COMBOS.forEach(c=>{if(!state.visible.has(c.id))return;packs().forEach(p=>{const d=CTX[c.id][p];s+=`<polyline class="line ${p}" stroke="${c.color}" points="${d.pts.map((v,i)=>px(i+1)+","+py(v)).join(" ")}"/>`;d.c.forEach(t=>{s+=`<rect x="${px(t)-4}" y="${py(d.pts[t-1])-4}" width="8" height="8" fill="${c.color}" transform="rotate(45 ${px(t)} ${py(d.pts[t-1])})" data-tip="${c.name} · pack ${p}&lt;br&gt;compaction at turn ${t}"/>`;});});});
+  svg.innerHTML=s;}
+
+// ---------- heatmap ----------
+function heatColor(v){const t=Math.max(0,Math.min(1,(v-35)/60));const a=0.12+t*0.55;return `color-mix(in srgb, var(--c3) ${Math.round(a*100)}%, var(--panel))`;}
+function renderHeat(){const h=$("#heat");const rows=[];COMBOS.forEach(c=>{if(!state.visible.has(c.id))return;packs().forEach(p=>rows.push({c,p}));});h.style.gridTemplateColumns=`220px repeat(${SCEN.length},1fr)`;let s=`<div></div>${SCEN.map(x=>`<div class="colh">${x}</div>`).join("")}`;rows.forEach(r=>{s+=`<div class="rowh"><span class="sw" style="background:${r.c.color};vertical-align:-2px;margin-right:8px"></span>${r.c.name} <span class="faint">· ${r.p}</span></div>`;SCEN_SCORES[r.c.id][r.p].forEach(([v,pr])=>{s+=`<div class="cell" style="background:${heatColor(v)}">${v}<small>pass@1 ${pr.toFixed(2)}</small></div>`;});});h.innerHTML=s;}
+
+// ---------- pack effect ----------
+function renderDeltas(){const host=$("#deltas");host.innerHTML="";COMBOS.forEach(c=>{if(!state.visible.has(c.id))return;const W=300,H=190,L=118,Rr=14,rowH=22;const px=v=>L+((v+15)/50)*(W-L-Rr);let s=`<svg viewBox="0 0 ${W} ${H}">`;s+=`<line class="zero" x1="${px(0)}" y1="6" x2="${px(0)}" y2="${H-22}"/>`;[-10,0,10,20,30].forEach(v=>s+=`<text x="${px(v)}" y="${H-8}" text-anchor="middle">${v>0?"+"+v:v}</text>`);
+  DELTAS[c.id].forEach(([d,lo,hi],i)=>{const y=10+i*rowH+rowH/2;const sig=lo>0||hi<0;s+=`<text x="${L-6}" y="${y+4}" text-anchor="end">${AREAS[i]}</text><line class="ci" x1="${px(lo)}" y1="${y}" x2="${px(hi)}" y2="${y}"/><circle cx="${px(d)}" cy="${y}" r="4.5" class="${d>=0?"pos":"neg"}" opacity="${sig?1:.35}" data-tip="${c.name}&lt;br&gt;${AREAS[i]}: ${d>0?"+":""}${d} [${lo}, ${hi}]${sig?"":" · not significant"}"/>`;});
+  s+=`</svg>`;const d=document.createElement("div");d.className="delta";d.innerHTML=`<h3><span class="sw" style="background:${c.color}"></span>${c.name}</h3>${s}`;host.appendChild(d);});}
+
+// ---------- drilldown ----------
+const RUNS=[
+ {id:"0161",combo:"cc-opus",pack:"on",task:"D2 · TheTerrace booking module",rep:2,pass:"7/7 hidden · 4/4 public",cost:"$4.62 · 1.41M in (78% cached) · 21K out",wall:"29 min · 34 turns · 61 tool calls",scores:[["Correctness",92,"tests/hidden.trx"],["Rigor & quality",84,"analyzers.sarif · stryker report 81%"],["Drift & adherence",86,"drift.json: 0 files out of scope"],["Cost & efficiency",47,"usage.parquet"]],tail:"Ran dotnet test twice (turns 22, 33). Re-read ARCHITECTURE.md after compaction at turn 29. Final message claims match test evidence."},
+ {id:"0071",combo:"copilot-sol",pack:"on",task:"D2 · TheTerrace booking module",rep:2,pass:"5/7 hidden · 4/4 public",cost:"$3.90 est. · 2.12M in (41% cached) · 26K out · 27 premium requests",wall:"36 min · 41 turns · 74 tool calls",scores:[["Correctness",71,"tests/hidden.trx"],["Rigor & quality",63,"verification_before_done=false"],["Drift & adherence",70,"drift.json: 3 files out of scope"],["Cost & efficiency",52,"usage.parquet"]],tail:"Declared done at turn 41 without running the test suite. Two compactions; spec not re-read after either. Edited Program.cs outside declared blast radius."},
+ {id:"0233",combo:"codex-sol",pack:"off",task:"F1 · CFD-Bench mesh ingest, 3 sub-agents",rep:3,pass:"4/6 hidden",cost:"$2.71 · 1.05M in (70% cached) · 18K out",wall:"44 min · planner 9 min, impl 27 min, review 8 min",scores:[["Coordination",49,"model_map_adherence=0.67 · orphan_actions=18%"],["Correctness",66,"tests/hidden.trx"],["Drift & adherence",61,"MAST: FM-2.4 (info withholding), FM-3.1 (premature termination)"],["Cost & efficiency",80,"usage.parquet"]],tail:"Reviewer sub-agent ran on the implementer's model, not the prescribed frontier model. Without the pack, no intent log; attribution reconstructed from session JSONL."}
+];
+function renderDrill(){const host=$("#drill");host.innerHTML=RUNS.map(r=>`<details class="run"><summary><span class="sw" style="background:${color(r.combo)}"></span><b>run ${r.id}</b><span>${COMBOS.find(c=>c.id===r.combo).name}</span><span class="faint">pack ${r.pack} · rep ${r.rep}</span><span>${r.task}</span><span class="faint">${r.pass}</span></summary><div class="body"><div><h3>Scores and evidence</h3><ul class="ev-list">${r.scores.map(([a,v,e])=>`<li><span>${a} <b>${v}</b></span><span>${e}</span></li>`).join("")}</ul><p style="margin-top:10px"><span class="faint">cost</span> ${r.cost}<br><span class="faint">time</span> ${r.wall}</p></div><div><h3>Trajectory notes</h3><pre>${r.tail}</pre><p class="faint" style="margin-top:8px">diff.patch · transcript.jsonl · otel.json · tests/</p></div></div></details>`).join("");}
+
+// ---------- tooltips ----------
+document.addEventListener("mousemove",e=>{const t=e.target.closest&&e.target.closest("[data-tip]");if(t)showTip(t.dataset.tip,e.clientX,e.clientY);else hideTip();});
+document.addEventListener("touchstart",e=>{const t=e.target.closest&&e.target.closest("[data-tip]");if(t){const p=e.touches[0];showTip(t.dataset.tip,p.clientX,p.clientY);setTimeout(hideTip,1800);}},{passive:true});
+
+function render(){renderRadars();renderTable();renderPareto();renderCtx();renderHeat();renderDeltas();}
+render();renderDrill();
+
+})();
+</script>
+</body>
+</html>
