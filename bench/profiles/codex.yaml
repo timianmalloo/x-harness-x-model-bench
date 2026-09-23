@@ -1,0 +1,10 @@
+# Codex cell profile (ADR-0003, ADR-0004, ADR-0013). agent-full-access: approval never, no sandbox (spike N1.1).
+harness: codex
+home_env: CODEX_HOME
+credential: { source: "~/.codex/auth.json", name: "auth.json" }
+files:
+  config.toml: 'model = "{model}"'
+env:
+  CODEX_PATH: "{exe}"
+mode: agent-full-access
+record_glob: "sessions/**/rollout-*-{session_id}.jsonl"

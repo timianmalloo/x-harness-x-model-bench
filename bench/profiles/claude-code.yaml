@@ -1,0 +1,11 @@
+# Claude Code cell profile (ADR-0003, ADR-0004, ADR-0013). Values in {braces} are filled per cell.
+harness: claude-code
+home_env: CLAUDE_CONFIG_DIR
+credential: { source: "~/.claude/.credentials.json", name: ".credentials.json" }
+files:
+  settings.json: '{"permissions": {"allow": ["Bash", "Edit", "Write", "Read", "Glob", "Grep"], "defaultMode": "dontAsk"}}'
+env:
+  ANTHROPIC_MODEL: "{model}"
+  CLAUDE_CODE_EXECUTABLE: "{exe}"
+mode: null
+record_glob: "projects/**/{session_id}.jsonl"

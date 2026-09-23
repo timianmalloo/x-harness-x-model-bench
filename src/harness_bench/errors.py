@@ -17,6 +17,7 @@ class Cause(Enum):
     # name = (code, attribution, label shown in reports)
     timed_out = ("HB-CELL-301", "agent", "timed_out")
     blocked_permission = ("HB-CELL-201", "agent", "blocked (permission)")
+    blocked_auth = ("HB-CELL-202", "harness", "blocked (auth)")
     adapter_crash = ("HB-CELL-105", "harness", "failed (adapter crash)")
     protocol = ("HB-CELL-107", "harness", "failed (protocol)")
     provider = ("HB-CELL-108", "infrastructure", "failed (provider)")

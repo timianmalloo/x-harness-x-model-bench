@@ -24,6 +24,7 @@ def test_attribution_is_from_the_closed_set():
     ("model_unavailable", "HB-CELL-116", "benchmark"),
     ("memory", "HB-CELL-103", "infrastructure"),
     ("unclassified", "HB-CELL-199", "none"),
+    ("blocked_auth", "HB-CELL-202", "harness"),
 ])
 def test_design_table_rows(cause, code, attribution):
     c = errors.Cause[cause]
