@@ -85,7 +85,7 @@ def _phase1_plan(**over):
     bom = config.load_yaml(ROOT / "bench" / "bom.yaml")
     builds = {"claude-code": {"version": "2.1.274", "sha256": "a" * 64}, "codex": {"version": "0.156.0", "sha256": "b" * 64}}
     pack = {"source": "../ai-forward", "commit": "c" * 40, "revision": 92}
-    args = dict(root=ROOT, matrix=m, bom=bom, run_id="r1", builds=builds, pack=pack, parallelism=2)
+    args = {"root": ROOT, "matrix": m, "bom": bom, "run_id": "r1", "builds": builds, "pack": pack, "parallelism": 2}
     args.update(over)
     return plan.build_plan(**args)
 
