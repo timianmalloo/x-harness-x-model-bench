@@ -2,7 +2,7 @@
 id: "spec-harness-bench"
 title: "Spec: harness-bench, a cross-harness, cross-model benchmark with the pack as a factor"
 type: spec
-status: draft
+status: accepted
 owner: "@timianmalloo"
 phase: "BOM v0: smoke milestone (proposal phases 0-5), then full grid (phase 6)"
 tags: [benchmark, spec, harness, model, pack, grading, report]
@@ -23,7 +23,7 @@ summary: >-
 
 # Spec: harness-bench
 
-- **Status:** In review. Passed the adversarial specify gate in three rounds (see [Gate record](#gate-record)); awaiting P1's acceptance.
+- **Status:** Accepted by P1 (@timianmalloo) on 2026-09-23. Passed the adversarial specify gate in three rounds (see [Gate record](#gate-record)).
 - **Tier (cost-of-error):** T1. A wrong result misdirects pack and tool decisions and gets published. The irreversible exposures are model spend, agent shell access on the owner's host, and data sent to third-party model vendors (see Threat model).
 - **Author / date:** Claude Code (Opus 5.5) for @timianmalloo, 2026-09-23.
 - **Sources:**
@@ -555,8 +555,8 @@ Each criterion is written so that a test can fail it. IDs are stable, and downst
 #### Epic E8 — Verify the benchmark itself
 
 **US-44 · smoke — As P1, I want the run lifecycle model-checked before the runner exists, so that its concurrency, stop and crash rules are right by construction.**
-- **Given** `models/run_lifecycle.tla` **When** CI runs TLC with bounds of at least 3 cells, parallelism 2 and 1 coordinator crash **Then** TLC checks and passes these invariants:
-  - the coordinator never runs a cell;
+*(Amended 2026-09-23 by owner ruling: the crash bound names the run engine, and "the coordinator never runs a cell" is removed. Since ADR-0002's ruling the benchmark has no coordinator session, and a test that fails if any `coord-run` path returns enforces the ban.)*
+- **Given** `models/run_lifecycle.tla` **When** CI runs TLC with bounds of at least 3 cells, parallelism 2 and 1 engine crash **Then** TLC checks and passes these invariants:
   - nothing is deleted before its archive is verified;
   - each cell is graded exactly once;
   - resume is idempotent;

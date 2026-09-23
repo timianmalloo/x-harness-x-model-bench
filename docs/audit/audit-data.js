@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-23T21:54:16Z",
+  "generated": "2026-09-23T22:10:20Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -314,6 +314,30 @@ window.AUDIT_DATA = {
         "commits": []
       },
       "audit_ref": "al-01M3845ZP7VPQK317STN5Z7DF6"
+    },
+    {
+      "id": "cl-01M3853PHF2G3EZ58ZGJQ4RNNR",
+      "datetime": "2026-09-23T22:10:20Z",
+      "session": "290c6347",
+      "kind": "decision",
+      "skill": null,
+      "title": "Owner rulings: spec accepted; US-44 drops the coordinator; Copilot credential spiked before phase 2",
+      "prompt": "1: I dont understand this - why do i need a fine-grained token / 2: spec is good / 3: help me through the US-44 ordering",
+      "summary": "Spec accepted. US-44 amended: crash bound names the engine; 'the coordinator never runs a cell' removed from the spec and the model (21 variants; US-44-bounds run unchanged at 77,212,448 states). Copilot: probe C1 (device-code login inside a container) before phase 2, then choose between that login and a Copilot-only token. Architecture's model-bounds line corrected to what is checked.",
+      "rationale": "Ruling 3 removed the coordinator, so the invariant named something that no longer exists; the runner ban is enforced by the coord-run grep test. Copilot keeps its login in the Windows credential store, which containers cannot reach.",
+      "artifacts": [
+        "docs/specs/harness-bench.md",
+        "docs/architecture.md",
+        "models/run_lifecycle.tla"
+      ],
+      "tags": [],
+      "git": {
+        "before": "ba5aa73",
+        "after": "ba5aa7326b27965c1be422f8a2f9ec870605e2d5",
+        "branch": "design/phase1",
+        "pushed": true,
+        "commits": []
+      }
     }
   ],
   "messages": []

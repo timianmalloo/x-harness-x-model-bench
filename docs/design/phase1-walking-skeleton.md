@@ -408,7 +408,7 @@ Scoped by ADR-0012: result validity and accidental damage to the host or the own
 
 | | |
 | --- | --- |
-| **Completed** | Lifecycle model (TLC at the US-44 bounds; 22 seeded variants each rejected by its own target); phase-1 walking-skeleton design, passed at gate round 3 with conditions |
+| **Completed** | Lifecycle model (TLC at the US-44 bounds; 21 seeded variants each rejected by its own target); phase-1 walking-skeleton design, passed at gate round 3 with conditions |
 | **Remaining** | Phase 2 designs (Copilot profile, stop/decisions, T0 matcher, Harbor E1), then phases 3–5 |
 | **Best next action** | Probes W1 and W3, then `/implement` phase 1: ledger and engine first (red-first against the model's phase-1 guards), then driver, profiles, archive, telemetry, grading, views, report, E2E |
 
@@ -437,7 +437,7 @@ Scoped by ADR-0012: result validity and accidental damage to the host or the own
 | Security | T-SEC-report's value set includes rotated tokens from archived homes, with encoded forms and a rotated-token positive control. T-HARD-config asserts the home mount's source. Native-record reader limits, with a deep-nesting fuzz case. T-IMG-oracle compares content hashes. |
 | SRE | Pre-outcome provider-error scan, with HB-CELL-108 taking precedence over `timed_out` (T-ENG-provider-timeout). Deterministic `span_id`. Workspace cap measured every 30 s. HB-RUN-002 for an unconfirmed kill. |
 | UX & Accessibility | CLI state rows with exact strings (T-CLI-states), T-UI-numerics, and light-only mode and forced-colors recorded as deviations. |
-| Simplifier | The ack-barrier rationale is written. Config substitutions fail on drift. `models/README.md` is current. **Declined:** removing `COORD` and `CoordinatorNeverACell`, because US-44 AC1 names "the coordinator never runs a cell" (removal needs a spec amendment). |
+| Simplifier | The ack-barrier rationale is written. Config substitutions fail on drift. `models/README.md` is current. Removing `COORD` and `CoordinatorNeverACell` was first declined because US-44 named the invariant. It was **adopted** after the owner amended US-44 (2026-09-23). |
 | Patterns Expert | Producer–Consumer plus Single Writer, and write-ahead intent named. A `Future` for the ack. Windows tree kill with `taskkill /T /F`. Capped backoff with an escalation code. Schneier & Kelsey cited. The D0 grep covers the synced skill copies. |
 
 **Round 3 (2026-09-23).** Re-check by the two lenses that blocked in round 2.

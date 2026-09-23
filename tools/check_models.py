@@ -34,7 +34,6 @@ TIMEOUT = 3600
 MODEL = "run_lifecycle"
 # Seeded bug -> the invariant ("inv") or temporal property ("prop") that must reject it.
 VARIANTS = {
-    "coordinator_cell": ("inv", "CoordinatorNeverACell"),
     "relaunch_prompted": ("inv", "AtMostOnePrompt"),
     "send_before_persist": ("inv", "AtMostOnePrompt"),
     "launch_after_outcome": ("inv", "NoPromptAfterOutcome"),

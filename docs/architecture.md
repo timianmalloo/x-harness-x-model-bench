@@ -23,7 +23,7 @@ summary: >-
 
 # Architecture: harness-bench
 
-- **Status:** In review. Passed the architect council in two rounds (Gate record); awaiting owner decisions 1–3.
+- **Status:** In review. Passed the architect council in two rounds (Gate record); owner decisions 1–5 and 7 ruled; decision 6 open.
 - **Tier:** T1.
 - **Driving spec:** `docs/specs/harness-bench.md` (US-1..US-52; in review; amended by this architecture, see [Spec amendments](#spec-amendments-made-by-this-architecture)).
 - **Evidence:** `docs/notes/spike-runner-path.md` (spikes 1–2), `docs/notes/spike-isolation-permissions.md` (R1, R2, R11).
@@ -236,10 +236,13 @@ flowchart TB
 
 ## Lifecycle model obligations (`models/run_lifecycle.tla`, US-44)
 
-**Bounds:** at least 3 cells, parallelism ≥ 2, ≥ 2 crashes, 1 stop, 1 decision request, and one concurrent `bench grade` process.
+**Bounds** (as checked; `docs/design/run-lifecycle-model.md` has the measurements):
+- every configuration includes 1 stop and 1 decision request;
+- the US-44 bounds (3 cells, parallelism 2, 1 crash) with the engine grading;
+- one concurrent `bench grade` process, and 2 grading passes, at 2 cells;
+- 2 crashes at 3 cells on demand only: the run did not complete, so this is residual. *(Corrected 2026-09-23: this line had promised ≥ 2 crashes and a concurrent `bench grade` at 3 cells.)*
 
 **Invariants.** Each has a named seeded-bug variant that TLC must reject:
-- the coordinator never runs a cell;
 - at most one prompt per cell across any number of crashes;
 - no archive while a cell's container is live;
 - nothing is deleted before its archive is verified;
@@ -289,13 +292,16 @@ Applied to `docs/specs/harness-bench.md` on 2026-09-23:
 1. **Credentials:** subscriptions only, no API keys (ADR-0003).
 2. **Gateway backend:** the headless CLIs with every tool denied (ADR-0009).
 3. **Pack's coordinator runner:** the benchmark MUST NOT run in it; re-evaluation trigger withdrawn (ADR-0002).
-
 4. **Security weight:** proportionate for a single-operator local tool; git is a mechanism, not an entry point (ADR-0012).
 5. **Third-party tasks:** may run on the operator's subscriptions; the owner accepts the risk (ADR-0012).
+7. **Spec acceptance:** `docs/specs/harness-bench.md` accepted by the owner.
 
 **Still open:**
-6. **Copilot-only fine-grained token** for Copilot cells in containers (billed to the subscription), or Copilot stays `blocked (auth)`.
-7. **Spec acceptance** (`docs/specs/harness-bench.md` is in review).
+6. **Copilot credential in containers.** Copilot CLI keeps its login in the Windows credential store, which a container cannot reach (spike R11.3). Needed by phase 2, not phase 1.
+   - **Owner ruling (2026-09-23): spike first.**
+   - **Probe C1, before phase 2:** log in once with Copilot's device-code flow inside a benchmark-owned container. Check whether the Linux build saves the login to a file under `COPILOT_HOME` that can be copied per cell like Claude's and Codex's. Record what that login can reach.
+   - **Then decide:** use the container login if it is copyable and cannot reach repositories. Otherwise use a Copilot-only fine-grained token (billed to the subscription), or leave Copilot `blocked (auth)`.
+   - The `gh` CLI token stays excluded, because it carries repository scopes.
 
 ## Flagged risks & residual unknowns
 

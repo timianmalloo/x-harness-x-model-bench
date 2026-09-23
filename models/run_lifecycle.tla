@@ -20,19 +20,15 @@ EXTENDS Naturals, FiniteSets, TLC
 
 CONSTANTS
     Cells,          \* the plan's cells
-    COORD,          \* the coordinator session (never a cell)
     Parallelism,    \* at most this many cell containers run at once
     MaxCrashes,     \* engine crashes explored
     Passes,         \* grading pass ids (each process mints its own)
     Graders,        \* processes that may grade: {"engine"} or {"engine", "bench"}
     BUG             \* "none" or one seeded defect name
 
-ASSUME COORD \notin Cells
 ASSUME Parallelism \in Nat \ {0}
 ASSUME "engine" \in Graders /\ Graders \subseteq {"engine", "bench"}
 
-AllCells   == Cells \cup {COORD}
-Launchable == IF BUG = "coordinator_cell" THEN AllCells ELSE Cells
 Controls   == {"stop", "answer"}
 Outcomes   == {"none", "done", "timedout", "failed", "stopped", "crashfail"}
 Reasons    == {"none", "timeout", "stop"}
@@ -65,8 +61,8 @@ VARIABLES
     lock,           \* grade.lock holder: "free" | "engine" | "bench"
     passState,      \* [Passes -> {"idle","active","done","abandoned"}]
     passOwner,      \* [Passes -> {"none","engine","bench"}]
-    graded,         \* [Passes -> SUBSET AllCells]
-    gradeCount,     \* [Passes -> [AllCells -> Nat]]  history
+    graded,         \* [Passes -> SUBSET Cells]
+    gradeCount,     \* [Passes -> [Cells -> Nat]]  history
     flags           \* history of forbidden events
 
 vars == <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch, container,
@@ -79,8 +75,8 @@ FlagNames == {"launchAfterStop", "launchWhileOpen", "gradeUnarchived", "archiveL
 
 -----------------------------------------------------------------------------
 Active(c)  == intent[c] /\ outcome[c] = "none"
-Running    == {c \in AllCells : container[c] = "running"}
-OrphanRunning == \E d \in AllCells : container[d] = "running" /\ launchEpoch[d] < epoch
+Running    == {c \in Cells : container[c] = "running"}
+OrphanRunning == \E d \in Cells : container[d] = "running" /\ launchEpoch[d] < epoch
 Flag(f)    == flags' = [flags EXCEPT ![f] = TRUE]
 Record(c, o) ==
     /\ outcome' = [outcome EXCEPT ![c] = o]
@@ -89,19 +85,19 @@ Record(c, o) ==
 Init ==
     /\ engine = "up" /\ crashes = 0 /\ epoch = 1
     /\ reconciling = FALSE /\ reconciled = {}
-    /\ intent = [c \in AllCells |-> FALSE]
-    /\ launchEpoch = [c \in AllCells |-> 0]
-    /\ container = [c \in AllCells |-> "none"]
-    /\ killRequested = [c \in AllCells |-> FALSE]
-    /\ killReason = [c \in AllCells |-> "none"]
-    /\ queued = [c \in AllCells |-> FALSE]
-    /\ promptSent = [c \in AllCells |-> FALSE]
-    /\ pendingSend = [c \in AllCells |-> FALSE]
-    /\ prompts = [c \in AllCells |-> 0]
-    /\ outcome = [c \in AllCells |-> "none"]
-    /\ wasStopped = [c \in AllCells |-> FALSE]
-    /\ archived = [c \in AllCells |-> FALSE]
-    /\ deleted = [c \in AllCells |-> FALSE]
+    /\ intent = [c \in Cells |-> FALSE]
+    /\ launchEpoch = [c \in Cells |-> 0]
+    /\ container = [c \in Cells |-> "none"]
+    /\ killRequested = [c \in Cells |-> FALSE]
+    /\ killReason = [c \in Cells |-> "none"]
+    /\ queued = [c \in Cells |-> FALSE]
+    /\ promptSent = [c \in Cells |-> FALSE]
+    /\ pendingSend = [c \in Cells |-> FALSE]
+    /\ prompts = [c \in Cells |-> 0]
+    /\ outcome = [c \in Cells |-> "none"]
+    /\ wasStopped = [c \in Cells |-> FALSE]
+    /\ archived = [c \in Cells |-> FALSE]
+    /\ deleted = [c \in Cells |-> FALSE]
     /\ controlFile = [k \in Controls |-> FALSE]
     /\ controlApplied = [k \in Controls |-> FALSE]
     /\ applyCount = [k \in Controls |-> 0]
@@ -111,7 +107,7 @@ Init ==
     /\ passState = [p \in Passes |-> "idle"]
     /\ passOwner = [p \in Passes |-> "none"]
     /\ graded = [p \in Passes |-> {}]
-    /\ gradeCount = [p \in Passes |-> [c \in AllCells |-> 0]]
+    /\ gradeCount = [p \in Passes |-> [c \in Cells |-> 0]]
     /\ flags = [f \in FlagNames |-> FALSE]
 
 EngineReady == engine = "up" /\ ~reconciling
@@ -383,9 +379,9 @@ TimeoutDefault ==
 Crash ==
     /\ engine = "up" /\ crashes < MaxCrashes
     /\ engine' = "down" /\ crashes' = crashes + 1
-    /\ queued' = [c \in AllCells |-> FALSE]
-    /\ pendingSend' = [c \in AllCells |-> FALSE]
-    /\ killReason' = [c \in AllCells |-> "none"]
+    /\ queued' = [c \in Cells |-> FALSE]
+    /\ pendingSend' = [c \in Cells |-> FALSE]
+    /\ killReason' = [c \in Cells |-> "none"]
     /\ lock' = IF lock = "engine" THEN "free" ELSE lock
     /\ passState' = [p \in Passes |->
                        IF passOwner[p] = "engine" /\ passState[p] = "active"
@@ -449,7 +445,7 @@ ReopenStopped(c) ==
 
 ReconcileDone ==
     /\ engine = "up" /\ reconciling
-    /\ \A c \in AllCells : (Active(c) => c \in reconciled)
+    /\ \A c \in Cells : (Active(c) => c \in reconciled)
                            /\ (BUG = "reconcile_no_wait" \/ container[c] # "running")
     /\ reconciling' = FALSE
     /\ UNCHANGED <<engine, crashes, reconciled, intent, launchEpoch, epoch, container,
@@ -511,8 +507,8 @@ GradeEnd(p) ==
 
 -----------------------------------------------------------------------------
 Next ==
-    \/ \E c \in Launchable : WriteIntent(c)
-    \/ \E c \in AllCells :
+    \/ \E c \in Cells : WriteIntent(c)
+    \/ \E c \in Cells :
           \/ CreateContainer(c) \/ CreateFails(c) \/ QueuePromptSent(c) \/ PersistPromptSent(c)
           \/ SendPrompt(c) \/ ContainerExits(c) \/ ContainerDies(c) \/ RecordExit(c)
           \/ EngineKill(c) \/ StopCell(c) \/ Archive(c) \/ DeleteWorkspace(c)
@@ -521,7 +517,7 @@ Next ==
     \/ ApplyStop \/ ApplyAnswer \/ RaiseDecision \/ TimeoutDefault
     \/ Crash \/ Resume \/ ReconcileDone
     \/ \E p \in Passes : \E g \in Graders : GradeStart(p, g)
-    \/ \E p \in Passes, c \in AllCells : GradeCell(p, c)
+    \/ \E p \in Passes, c \in Cells : GradeCell(p, c)
     \/ \E p \in Passes : GradeEnd(p)
 
 \* Fairness: the engine's own progress (including the budget deadline and its grading pass), and
@@ -530,13 +526,13 @@ Next ==
 Fairness ==
     /\ WF_vars(Resume) /\ WF_vars(ReconcileDone) /\ WF_vars(TimeoutDefault)
     /\ WF_vars(ApplyStop) /\ WF_vars(ApplyAnswer)
-    /\ \A c \in AllCells :
+    /\ \A c \in Cells :
           /\ WF_vars(StopCell(c)) /\ WF_vars(ContainerDies(c)) /\ WF_vars(RecordExit(c))
           /\ WF_vars(ReconcileKill(c)) /\ WF_vars(ReconcileRecord(c)) /\ WF_vars(Archive(c))
           /\ WF_vars(EngineKill(c))
     /\ \A p \in Passes :
           /\ WF_vars(GradeStart(p, "engine")) /\ WF_vars(GradeEnd(p))
-          /\ \A c \in AllCells : WF_vars(GradeCell(p, c))
+          /\ \A c \in Cells : WF_vars(GradeCell(p, c))
 
 Spec == Init /\ [][Next]_vars /\ Fairness
 
@@ -549,28 +545,27 @@ Symmetry == Permutations(Cells) \cup Permutations(Passes)
 
 TypeOK ==
     /\ engine \in {"up", "down"}
-    /\ outcome \in [AllCells -> Outcomes]
-    /\ container \in [AllCells -> {"none", "running", "exited"}]
-    /\ killReason \in [AllCells -> Reasons]
+    /\ outcome \in [Cells -> Outcomes]
+    /\ container \in [Cells -> {"none", "running", "exited"}]
+    /\ killReason \in [Cells -> Reasons]
     /\ decision \in {"none", "open", "resolved"}
     /\ lock \in {"free", "engine", "bench"}
 
-CoordinatorNeverACell      == ~intent[COORD]
-AtMostOnePrompt            == \A c \in AllCells : prompts[c] <= 1
+AtMostOnePrompt            == \A c \in Cells : prompts[c] <= 1
 NoPromptAfterOutcome       == ~flags["promptAfterOutcome"]
 NoArchiveWhileLive         == ~flags["archiveLive"]
-NothingDeletedUnarchived   == \A c \in AllCells : deleted[c] => archived[c]
-GradedOncePerPass          == \A p \in Passes, c \in AllCells : gradeCount[p][c] <= 1
+NothingDeletedUnarchived   == \A c \in Cells : deleted[c] => archived[c]
+GradedOncePerPass          == \A p \in Passes, c \in Cells : gradeCount[p][c] <= 1
 GradedOnlyWhenArchived     == ~flags["gradeUnarchived"]
 AtMostOneActivePass        == Cardinality({p \in Passes : passState[p] = "active"}) <= 1
 ControlAppliedOnce         == \A k \in Controls : applyCount[k] <= 1
 NoLaunchAfterStop          == ~flags["launchAfterStop"]
 ParallelismBound           == Cardinality(Running) <= Parallelism
-StoppedNeverRelaunched     == \A c \in AllCells : wasStopped[c] => outcome[c] = "stopped"
+StoppedNeverRelaunched     == \A c \in Cells : wasStopped[c] => outcome[c] = "stopped"
 DecisionResolvedOnce       == resolutions <= 1
 NoLaunchWhileDecisionOpen  == ~flags["launchWhileOpen"]
 NoLaunchBesideOrphan       == ~flags["launchBesideOrphan"]
-NoOutcomeWhileRunning      == \A c \in AllCells : outcome[c] # "none" => container[c] # "running"
+NoOutcomeWhileRunning      == \A c \in Cells : outcome[c] # "none" => container[c] # "running"
 
 \* Reachability witness (must be VIOLATED by the real design): every cell can end graded and
 \* deleted, so safety does not pass merely because the run stalls early.
@@ -579,7 +574,7 @@ NotAllCellsFinished        == ~(\A c \in Cells : deleted[c] /\ \E p \in Passes :
 (* Liveness *)
 DecisionEventuallyResolved == (decision = "open") ~> (decision = "resolved")
 StopReachesTerminal        == controlFile["stop"] ~>
-                                (stopApplied /\ \A c \in AllCells :
+                                (stopApplied /\ \A c \in Cells :
                                    (intent[c] => outcome[c] # "none" /\ container[c] # "running"))
 EndedCellsGetArchived      == \A c \in Cells : (outcome[c] # "none") ~> archived[c]
 PromptedCellsEnd           == \A c \in Cells : promptSent[c] ~> (outcome[c] # "none")

@@ -638,7 +638,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TB\n  subgraph Session[\"Coordinator session (Claude Code, /start-benchmark)\"]\n    SK[start-benchmark skill: compile, confirm, relay, audit-log entries]\n  end\n  subgraph Host[\"bench (Python, T0) on the Windows host\"]\n    CLI[bench CLI: validate, plan, run, status, stop, grade, report, verify, teardown]\n    ENG[Run engine: single writer, lifecycle = run_lifecycle.tla]\n    WSB[Workspace builder]\n    IMG[Image builder: env image + pinned harness layer, SBOM, CVE scan]\n    PRF[(Harness profiles: build, mode, pin, home seeding, reader)]\n    DRV[ACP cell driver]\n    ARC[Archiver: no link following, exact-value credential scan]\n    TEL[Telemetry: readers + normaliser]\n    GRD[Grade orchestrator]\n    GW[Model gateway: tool-less]\n    EG[Egress gate]\n    VIEWS[In-memory DuckDB views]\n    REP[Report: CLI + HTML + summaries]\n  end\n  subgraph Store[\"runs/<run_id>/ + cache/\"]\n    LED[(hash-chained facts: events, model_calls, tool_calls, archive_files, scores, verdict_uses, egress_events)]\n    ARCH[(cell archives)]\n    CTL[(control/: stop, decision answers)]\n    VC[(shared verdict cache)]\n  end\n  subgraph Docker[\"Docker Desktop (WSL2)\"]\n    PROXY[Egress proxy, off-the-shelf]\n    CELL[Cell containers: one network each]\n    GC[Grading containers: --network none, read-only mounts]\n  end\n  SK -->|bench plan / run / status --json| CLI\n  SK -->|decision answers| CTL\n  CLI --> ENG\n  ENG --> WSB & IMG & DRV & ARC\n  PRF --> IMG & DRV & TEL\n  DRV -->|docker run -i hb-run-cell, ACP stdio| CELL\n  CELL --> PROXY\n  CTL --> ENG\n  ENG --> LED\n  ARC --> ARCH\n  ARCH --> TEL --> LED\n  ARCH --> GRD --> GC\n  GRD --> LED\n  GRD --> GW\n  GW --> VC\n  GW --> EG\n  LED --> VIEWS --> REP\n  REP --> GW\n  REP --> EG"
         }
       ],
-      "sourceSha256": "e074b9c7efbfde204ee7d307f25171abba6d7de096a36241034222f2a470e177"
+      "sourceSha256": "c5e709ed93b70379e5f5de157386b651f19682831c1fb769da8107a619fd899c"
     },
     {
       "id": "note-20260923-sqlite-views",
@@ -733,7 +733,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3838436b05de3587689a559a9e3648cb80f84b3cce2b578ad41765bd4f9a22da"
+      "sourceSha256": "618980c0fe5f54e1e541c80d3c86cde6a82e78f60166667c3c30fb666b19a22b"
     },
     {
       "id": "design-run-lifecycle-model",
@@ -745,7 +745,7 @@ window.DOCS_INDEX = {
       "phase": "Phase 1 · walking skeleton (S-13)",
       "reviewBy": "2027-03-22",
       "reviewSuggested": [],
-      "summary": "The TLA+ model of one run's lifecycle, the proof obligation the run engine is built against (US-44). TLC checks 17 safety invariants at the US-44 bounds (3 cells, parallelism 2, 1 engine crash) and at small bounds with `bench grade` contending, grading mutual exclusion at 2 passes, and 5 liveness properties at 1 cell; each of 22 seeded-bug variants is rejected by its own target checked alone, and a witness shows every cell can finish. A mapping table binds every model action to the engine's ledger events, and a conformance test keeps the two in step.",
+      "summary": "The TLA+ model of one run's lifecycle, the proof obligation the run engine is built against (US-44). TLC checks 16 safety invariants at the US-44 bounds (3 cells, parallelism 2, 1 engine crash) and at small bounds with `bench grade` contending, grading mutual exclusion at 2 passes, and 5 liveness properties at 1 cell; each of 21 seeded-bug variants is rejected by its own target checked alone, and a witness shows every cell can finish. A mapping table binds every model action to the engine's ledger events, and a conformance test keeps the two in step.",
       "tags": [
         "benchmark",
         "tla",
@@ -772,7 +772,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "05d473d5b13b76d572743e1d6a87793aeb7669e58e2413ac3a6903c57065a0f6"
+      "sourceSha256": "10041f723363135a23d3f3be5f24f81cc5c7f9ad2b12954d3146e27442ed9f7b"
     },
     {
       "id": "audit-log",
@@ -1008,7 +1008,7 @@ window.DOCS_INDEX = {
       "path": "docs/specs/harness-bench.md",
       "title": "Spec: harness-bench, a cross-harness, cross-model benchmark with the pack as a factor",
       "type": "spec",
-      "status": "draft",
+      "status": "accepted",
       "owner": "@timianmalloo",
       "phase": "BOM v0: smoke milestone (proposal phases 0-5), then full grid (phase 6)",
       "reviewBy": "2027-03-22",
@@ -1073,7 +1073,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TD\n  A([P2 runs /new-bench-task ID]) --> S[stub: task.yaml from template]\n  S --> D[draft: prompt.md, workspace base]\n  D --> O[oracle: hidden tests / rubric / clarifications / seeded bug]\n  O --> V{bench validate}\n  V -->|contract broken| E[Folder, rule, fix] --> O\n  V -->|scenario 1, no clarifications| E\n  V -->|scenario 7, no seeded bug or no toolchain pin| E\n  V -->|ok| DIS{Discrimination check: reference passes, naive or seeded fails}\n  DIS -->|does not discriminate| E2[Oracle too weak or too strict: shown with both results] --> O\n  DIS -->|discriminates| R([status: ready])"
         }
       ],
-      "sourceSha256": "f5216ccb30ad7a0ba5aedd16fd53b0edf0f93c3b2d2517acfb4158e026d07318"
+      "sourceSha256": "f10cdd149987a87774cb9f9d850c8b5a44f1b4a835e2e6c0757f8778bdbabfb4"
     },
     {
       "id": "threat-model",
@@ -1143,5 +1143,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "2995ec9c813bb47458cdcadd245fb3e569b5f006730ef10031fb1fab69c6751e"
+  "graphSha256": "14c18813e5a27cefc20eb741d0aad5118c315f959f0ce0936e60f772f20898c0"
 };

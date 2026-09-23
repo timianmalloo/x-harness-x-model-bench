@@ -14,9 +14,9 @@ links:
 review-by: "2027-03-22"
 summary: >-
   The TLA+ model of one run's lifecycle, the proof obligation the run engine is built against (US-44).
-  TLC checks 17 safety invariants at the US-44 bounds (3 cells, parallelism 2, 1 engine crash) and at
+  TLC checks 16 safety invariants at the US-44 bounds (3 cells, parallelism 2, 1 engine crash) and at
   small bounds with `bench grade` contending, grading mutual exclusion at 2 passes, and 5 liveness
-  properties at 1 cell; each of 22 seeded-bug variants is rejected by its own target checked alone,
+  properties at 1 cell; each of 21 seeded-bug variants is rejected by its own target checked alone,
   and a witness shows every cell can finish.
   A mapping table binds every model action to the engine's ledger events, and a conformance test keeps
   the two in step.
@@ -40,7 +40,7 @@ It is **not** the engine, and it does not model: the agent's work inside a cell,
 
 **Exposed:**
 - `models/run_lifecycle.tla`: the spec, `Spec == Init /\ [][Next]_vars /\ Fairness`.
-- `models/run_lifecycle.safety.cfg`: 3 cells, parallelism 2, 1 crash, 1 grading pass, only the engine grading, `SYMMETRY Symmetry` (cells and passes), the 17 invariants.
+- `models/run_lifecycle.safety.cfg`: 3 cells, parallelism 2, 1 crash, 1 grading pass, only the engine grading, `SYMMETRY Symmetry` (cells and passes), the 16 invariants.
 - `models/run_lifecycle.grading.cfg`: 2 cells, parallelism 2, 1 crash, 2 grading passes, the engine and `bench grade`, symmetry, the grading invariants.
 - `models/run_lifecycle.liveness.cfg`: 1 cell, 1 crash, 2 pass ids, only the engine grading, no symmetry, the 5 temporal properties.
 - `tools/check_models.py`: exit 0 only if (a) the real design passes every configuration it runs, (b) the reachability witness `NotAllCellsFinished` is violated (the run can finish), and (c) every seeded variant is rejected by its named invariant or property, **checked alone** (TLC stops at the first violation, so another invariant could otherwise pre-empt the target). `--quick` skips the US-44-bounds safety run; `--deep` adds it at 2 crashes. The constant `Graders` selects whether `bench grade` runs beside the engine.
@@ -108,9 +108,9 @@ History variables are read only by invariants, never by guards: `prompts`, `wasS
 
 | Configuration | Bounds | Checks | Runs |
 | --- | --- | --- | --- |
-| Small bounds (derived from `safety.cfg`) | 2 cells, parallelism 1, 1 crash, 1 pass; the engine and `bench grade` | all 17 invariants | Every CI run |
-| `run_lifecycle.safety.cfg` (US-44 bounds) | 3 cells, parallelism 2, 1 crash, 1 pass; only the engine grades; symmetry over cells and passes | all 17 invariants | Nightly CI, and locally before any engine change that touches a transition |
-| `--deep` | as `safety.cfg`, 2 crashes | all 17 invariants | On demand (stopped unfinished at 170 M states; no result) |
+| Small bounds (derived from `safety.cfg`) | 2 cells, parallelism 1, 1 crash, 1 pass; the engine and `bench grade` | all 16 invariants | Every CI run |
+| `run_lifecycle.safety.cfg` (US-44 bounds) | 3 cells, parallelism 2, 1 crash, 1 pass; only the engine grades; symmetry over cells and passes | all 16 invariants | Nightly CI, and locally before any engine change that touches a transition |
+| `--deep` | as `safety.cfg`, 2 crashes | all 16 invariants | On demand (stopped unfinished at 170 M states; no result) |
 | `run_lifecycle.grading.cfg` | 2 cells, parallelism 2, 1 crash, 2 passes; the engine and `bench grade`; symmetry | `TypeOK` and the 3 grading invariants, including `AtMostOneActivePass` | Every CI run |
 | `run_lifecycle.liveness.cfg` | 1 cell, 1 crash, 2 pass ids; only the engine grades; no symmetry | 5 temporal properties | Every CI run |
 | Seeded variants | small bounds (the grading or liveness configuration where the defect needs it) | each variant's target alone | Every CI run |
@@ -138,7 +138,7 @@ Kill semantics: kill first, confirm the container is gone, then record the outco
 
 | Failure mode | From which choice | Disposition | How addressed | Detection | Test |
 | --- | --- | --- | --- | --- | --- |
-| Vacuous model: an invariant holds only because the model cannot reach the bad state | Abstract modelling | prevent + detect | One seeded variant per invariant and per property, each asserted rejected by its own target | `check_models.py` prints `FAIL <bug> NOT rejected` | 22 variants, all rejected by their own target checked alone; `test_every_checked_property_has_a_seeded_variant`; `test_variant_config_checks_only_its_target` (defect class MOD-A) |
+| Vacuous model: an invariant holds only because the model cannot reach the bad state | Abstract modelling | prevent + detect | One seeded variant per invariant and per property, each asserted rejected by its own target | `check_models.py` prints `FAIL <bug> NOT rejected` | 21 variants, all rejected by their own target checked alone; `test_every_checked_property_has_a_seeded_variant`; `test_variant_config_checks_only_its_target` (defect class MOD-A) |
 | A guard reads a history variable and hides a defect | History variables | prevent | Guards read only ledger, physical or process state | The `relaunch_prompted` variant | Found twice and fixed: `SendPrompt` (v1), then `QueuePromptSent` (v2); now the volatile `queued` / `pendingSend` |
 | Two guards enforce one invariant, masking a seeded bug | Defence in depth in the model | prevent | One guard per mechanism, or the variant removes every guard for it | `exceed_parallelism`, `reconcile_no_wait` | Found three times and fixed: parallelism (v1); `ignore_orphans` replaced by `NoLaunchBesideOrphan`; `reconcile_no_wait` now removes both waits |
 | A variant made vacuous by a later fix | Model revision | detect | Re-run every variant after each model change | `archive_live` after kill → record | Found and fixed: `archive_live` redefined as archiving once a kill is requested |
@@ -171,7 +171,7 @@ The check script prints one line per run: result, label, distinct states, second
 | Trigger | Directive | Here |
 | --- | --- | --- |
 | — | D0 hygiene | Always: no dead code; the script is lint-clean. |
-| T1 | D1 (the model's mutation analogue) | The 22 seeded variants, each rejected by its named target checked alone; the forward and reverse variant-coverage tests. |
+| T1 | D1 (the model's mutation analogue) | The 21 seeded variants, each rejected by its named target checked alone; the forward and reverse variant-coverage tests. |
 | T2 | D2 | TLC explores every interleaving within the bounds (exhaustive, stronger than properties sampled at random); the witness proves the explored space reaches a finished run. |
 | T3 | D3 | Trace-replay conformance: the engine's recorded event sequences replay against the phase-1 guards, and a seeded out-of-order ledger is rejected. |
 | T8 | D7 | Not applicable: no mocks. |
@@ -190,10 +190,10 @@ The check script prints one line per run: result, label, distinct states, second
 | TLC v1.7.4 runs on JDK 21 on the workstation | Ran this session | Verified |
 | Liveness (5 properties) holds at 1 cell / 1 crash | `check_models.py --quick`: 57,344 distinct states, 5 s | Verified |
 | Grading invariants hold at 2 cells / 1 crash / 2 passes, engine and `bench grade` | `check_models.py --quick`: 16,325,776 distinct states, 63 s | Verified |
-| All 17 invariants hold at small bounds with `bench grade` contending | `check_models.py --quick`: 4,503,440 distinct states, 17 s | Verified |
-| All 17 invariants hold at the US-44 bounds (3 cells, parallelism 2, 1 crash, engine grading), with symmetry | TLC: 386,254,609 states generated, 77,212,448 distinct, depth 49, 5 min 37 s, "No error has been found" | Verified |
+| All 16 invariants hold at small bounds with `bench grade` contending | `check_models.py`: 4,503,440 distinct states, 12 s | Verified |
+| All 16 invariants hold at the US-44 bounds (3 cells, parallelism 2, 1 crash, engine grading), with symmetry | TLC: 386,254,609 states generated, 77,212,448 distinct, depth 49, 5 min 37 s, "No error has been found"; the same 77,212,448 states (242 s) after the coordinator was removed | Verified |
 | Every cell can finish graded and deleted | Witness `NotAllCellsFinished` violated as expected | Verified |
-| Every seeded variant is rejected by its own target, checked alone | `check_models.py --quick`: 22 of 22 `ok` | Verified |
+| Every seeded variant is rejected by its own target, checked alone | `check_models.py`: 21 of 21 `ok` | Verified |
 | Safety at 2 crashes, 3 cells | Stopped after 8 min at 170,716,518 distinct states, queue still growing | Not verified (residual) |
 | A new invariant pre-empted two older variants' targets | Both still printed "violated", but by `NoOutcomeWhileRunning`; fixed by checking each target alone | Verified (MOD-A) |
 | Guards on history hid `relaunch_prompted` twice; overlapping guards hid a seeded defect three times | Variant runs reported `NOT rejected`; each fixed and re-run | Verified |
