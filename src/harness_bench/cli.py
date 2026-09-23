@@ -53,7 +53,6 @@ def cmd_plan(args, console: Console) -> int:
             console.print(f"[red]x[/red] {item}")
         return 1
     cells = plan.expand(matrix, bom)
-    groups = plan.batches(cells)
     if args.json:
         print(json.dumps([c.__dict__ | {"id": c.id} for c in cells], indent=2))
         return 0
@@ -69,8 +68,7 @@ def cmd_plan(args, console: Console) -> int:
     tasks = sorted({c.task for c in cells})
     console.print(
         f"{len(tasks)} tasks x {len(matrix['combos'])} combos x {len(matrix['packs'])} pack settings "
-        f"x {matrix['repetitions']} reps = [b]{len(cells)} cells[/b] in {len(groups)} coord-run/1 contracts "
-        f"(max {plan.MAX_WORKERS_PER_CONTRACT} workers each)"
+        f"x {matrix['repetitions']} reps = [b]{len(cells)} cells[/b]"
     )
     return 0
 

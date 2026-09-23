@@ -48,3 +48,5 @@ tasks:
   # Scenario 7: formalize and find bugs (ai-forward coord-core.py lease protocol)
   - { id: G1, scenario: 7, smoke: false, budget_minutes: 45, source: ai-forward, title: "TLA+ model of the coord-core lease protocol; find the seeded bug" }
   - { id: G2, scenario: 7, smoke: false, budget_minutes: 45, source: ai-forward, title: "Lean 4 proofs of fixed statements about the lease fold" }
+  # Fixtures: operator-authored, never in the smoke or full grid; selectable by id only.
+  - { id: X1, scenario: 5, smoke: false, fixture: true, budget_minutes: 5, source: authored, title: "Fixture: implement slugify (phase-1 walking skeleton)" }

@@ -1,0 +1,24 @@
+schema: bench-task/1
+id: X1
+scenario: 5
+title: "Fixture: implement slugify (phase-1 walking skeleton)"
+status: ready
+language: python
+source:
+  kind: authored
+  upstream: harness-bench fixture
+  repo: "tasks/X1/workspace"   # the base tree is this folder; its content hash is the task version
+  commit: "content-addressed"
+budget:
+  minutes: 5
+  usd_cap: null
+blast_radius:
+  - "slug.py"
+model_map: null
+scripted_user: false
+formal: null
+graders:
+  - correctness
+  - cost
+oracle:
+  summary: "Hidden unittest cases for slugify in tests/test_slug_hidden.py (stdlib only), run against the cell's working copy."
