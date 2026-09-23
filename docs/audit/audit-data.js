@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-23T17:37:23Z",
+  "generated": "2026-09-23T17:48:49Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -41,6 +41,30 @@ window.AUDIT_DATA = {
         "short": "2cbc0ed46",
         "branch": "main",
         "pushed": null
+      }
+    },
+    {
+      "id": "al-01M37P4VRR93REDR8PW3FSMK8Q",
+      "shortname": "formal-methods-revision",
+      "datetime": "2026-09-23T17:48:49Z",
+      "session": "ebf50c4d",
+      "prompt": "also... consider how this: https://explainx.ai/blog/boris-cherny-opus-5-5-lean-tla-formal-verification-sdk-2026 could influence how we think of benchmarking and grading. update the proposal and any seed content before i switch to a session in the repo",
+      "summary": "Scenario 7 (G1 TLA+, G2 Lean 4 on coord-core lease fold); oracle ladder; four-part formal grading; protocol_conformance; run-lifecycle TLA+ model; BOM v0.2 24 tasks/576 runs; metrics v0.2; S-12/S-13/S-14/S-08g; F9; mockup aligned to BOM v0.2. Sources: primary X post, secondary write-up (unverified counts), SysMoBench, Verina, VeriBench, TLA+-Bench, TraceFix, Lean4Agent.",
+      "kind": "manual",
+      "skill": null,
+      "tool": null,
+      "actor": "claude-code",
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "goal": "Fold the formal-verification result into the proposal and seed content",
+      "done_when": "proposal, BOM, metrics, tasks, graders, skills, specs, findings, mockup updated; gates green; pushed",
+      "tier": "T1",
+      "git": {
+        "sha": "77c4034eed7e58d49a8550ce0bbc55541dbd8de8",
+        "short": "77c4034ee",
+        "branch": "main",
+        "pushed": true
       }
     }
   ],

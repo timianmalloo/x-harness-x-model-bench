@@ -4,9 +4,11 @@
 # better: which raw direction is good (normalisation flips "lower").
 # grader: the src/harness_bench/grade/ module that owns the metric.
 # A metric a grader cannot measure is "not recorded" and excluded from the composite, never 0.
+# Oracle ladder: a metric is measured by the strongest mechanical oracle available (proof or model
+# check > trace conformance > tests > judge). J metrics cover only what no rung above can measure.
 # Changing a definition, weight or rubric bumps `version` (historical scores must not move silently).
 schema: bench-metrics/1
-version: "0.1"
+version: "0.2"   # 0.2: formal metrics (scenario 7) and protocol conformance
 composite:
   area_score: weighted mean of normalised metrics in the area
   overall: correctness-gated   # a cheap failure never outranks an expensive pass
@@ -39,6 +41,8 @@ areas:
       - { id: mutation_score,          source: [D], better: higher, grader: mutation,    weight: 1 }
       - { id: regression_count,        source: [D], better: lower,  grader: correctness, weight: 1 }
       - { id: behavioural_equivalence, source: [D], better: higher, grader: correctness, weight: 1, note: "D-tasks only" }
+      - { id: formal_checks_clean,     source: [D], better: higher, grader: formal,      weight: 1, note: "G-tasks: lake build, #print axioms standard only, no sorry/admit/axiom; TLC completes in bounds" }
+      - { id: bugs_confirmed,          source: [D], better: higher, grader: formal,      weight: 1, note: "G-tasks: reported bugs reproduced by a failing test on the real code" }
   rigor:
     title: Rigor & quality
     metrics:
@@ -49,6 +53,7 @@ areas:
       - { id: style_conformance,        source: [D, J], better: higher, grader: rigor, weight: 1 }
       - { id: honest_completion_claims, source: [J],    better: higher, grader: judge, weight: 1 }
       - { id: error_handling,           source: [J],    better: higher, grader: judge, weight: 1 }
+      - { id: bug_claim_precision,      source: [D],    better: higher, grader: formal, weight: 1, note: "G-tasks: confirmed / claimed" }
   drift:
     title: Drift & adherence
     metrics:
@@ -59,6 +64,7 @@ areas:
       - { id: convention_drift,       source: [D],    better: lower,  grader: drift, weight: 1 }
       - { id: instruction_reread_rate, source: [D],   better: higher, grader: drift, weight: 0, note: "diagnostic" }
       - { id: unrequested_behaviour,  source: [J],    better: lower,  grader: judge, weight: 1 }
+      - { id: statement_integrity,    source: [D],    better: higher, grader: formal, weight: 1, note: "G-tasks: given statements/properties byte-identical (hash)" }
   specification:
     title: Specification & clarification
     metrics:
@@ -69,6 +75,8 @@ areas:
       - { id: spec_quality,              source: [J],    better: higher, grader: judge,        weight: 1 }
       - { id: architecture_conformance,  source: [D],    better: higher, grader: architecture, weight: 1 }
       - { id: adr_quality,               source: [J],    better: higher, grader: judge,        weight: 1 }
+      - { id: model_conformance,         source: [D],    better: higher, grader: formal,       weight: 1, note: "G-tasks: real-code traces accepted by the agent's model / traces" }
+      - { id: model_non_vacuity,         source: [D],    better: higher, grader: formal,       weight: 1, note: "G-tasks: bug-seeded variants rejected / variants" }
   autonomy:
     title: Autonomy & process
     metrics:
@@ -89,3 +97,4 @@ areas:
       - { id: coordination_overhead, source: [D],    better: lower,  grader: coordination, weight: 1 }
       - { id: mast_failure_codes,    source: [J],    better: lower,  grader: judge,        weight: 1 }
       - { id: parallel_efficiency,   source: [D],    better: higher, grader: coordination, weight: 1 }
+      - { id: protocol_conformance,  source: [D, P], better: higher, grader: coordination, weight: 1, note: "coordination ledger replayed against models/coordination_protocol.tla" }

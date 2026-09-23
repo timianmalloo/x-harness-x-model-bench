@@ -32,4 +32,5 @@ A matrix run refuses any task that is not `ready`.
 - A-tasks: the scripted user answers only questions that match an annotated clarification in `oracle/clarifications.yaml`. Everything else gets "decide and state your assumption".
 - cfd-bench slices need no UI, no OpenFOAM and no STEP export: pure domain code with numeric oracles.
 - Public tasks keep their upstream graders; ours add on top.
+- Scenario 7 (G-tasks): pinned formal toolchain, given statements hashed, at least one bug-seeded variant the reference model or proof rejects, and a reproducing test per seeded bug. A reported bug counts only when a failing test reproduces it.
 - Authored tasks are private and versioned. Contamination-prone public tasks (E1-E3) are excluded from the pack-effect analysis.

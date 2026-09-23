@@ -26,15 +26,17 @@ Source: `docs/proposals/cross-harness-benchmarking-proposal.md`. Open questions:
 | Id | Unit | Pack skill | Depends on | Resolves | Replaces |
 | --- | --- | --- | --- | --- | --- |
 | ◆ S-02 | Architecture of record: coordinator, worker isolation, pack on/off, coord-runner integration, results data model | `/define-architecture` (ADR per decision) | — | F1, F3 | `docs/architecture.md` (not yet written) |
-| S-03 | BOM v0 freeze: upstream instance ids, pinned commits, E-task budgets, 22 vs 24 tasks | `/specify` | — | F5, F7 | `bench/bom.yaml` assumptions |
+| S-03 | BOM v0 freeze: upstream instance ids, pinned commits, E-task budgets | `/specify` | — | F7 | `bench/bom.yaml` assumptions |
+| S-12 | Formal-toolchain spike: Lean (`elan`, `lake`) and TLC on a pinned JDK run in a coord-runner worker worktree under each harness on Windows; versions pinned and fingerprinted | Spike Protocol | S-02 | F9 | `formal.toolchain: tbd` in G1/G2 |
 
 ## Phase 1: runner
 
 | Id | Unit | Pack skill | Depends on | Resolves | Replaces |
 | --- | --- | --- | --- | --- | --- |
+| ◆ S-13 | Run-lifecycle model: `models/run_lifecycle.tla`, checked by TLC in CI, written before the runner | `/design-slice` | S-02, S-12 | — | `models/README.md` row |
 | S-01 | `/start-benchmark` compilation: prose → `matrix.yaml`, model-id resolution, run id | `/specify` → `/design-slice` | S-02 | — | `skills/start-benchmark` stage 0 |
 | ◆ S-06 | Harness adapters over ACP: Claude Code, Codex, Copilot; model pin and served-model check | Spike Protocol per harness → `/design-slice` | S-02 | F3 | `adapters/*.py` |
-| ◆ S-05 | Runner: bootstrap (pack on/off), coord-run/1 contracts, archive, teardown | `/design-slice` → `/implement` | S-02, S-06 | F2 | `runner/*.py`, `bench run`, `bench teardown` |
+| ◆ S-05 | Runner: bootstrap (pack on/off), coord-run/1 contracts, archive, teardown; states map 1:1 onto the S-13 model | `/design-slice` → `/implement` | S-02, S-06, S-13 | F2 | `runner/*.py`, `bench run`, `bench teardown` |
 | ◆ S-07 | Telemetry: one event schema, OTel GenAI names; Codex reader first, then wrap `session-profile.py` | `/design-slice` → `/implement` | S-05 | — | `grade/telemetry/*`, `grade/normalize_telemetry.py` |
 
 Phase 1 exit (proposal): one E-task runs end to end on every combo, and `usage.parquet` is populated from every harness.
@@ -48,7 +50,8 @@ Phase 1 exit (proposal): one E-task runs end to end on every combo, and `usage.p
 | S-08c | Rigor, drift, process | `/design-slice` → `/implement` | S-07 | `grade/rigor.py`, `grade/drift.py`, `grade/process.py` |
 | S-08d | Clarify and architecture conformance | `/design-slice` → `/implement` | S-04 | `grade/clarify.py`, `grade/architecture.py` |
 | S-08e | Coordination (reuse coord-core, audit-log selfcheck, cfd-bench grade-benchmarks axes) | `/design-slice` → `/implement` | S-07 | `grade/coordination.py` |
-| S-08f | Normalisation, composites, `results.duckdb` schema (declare the grain first) | `/design-slice` → `/implement` | S-02 | `grade/normalize_scores.py`, `bench grade` |
+| S-08f | Normalisation, composites, `results.duckdb` schema (declare the grain first); property tests for the scoring invariants (NA never 0, correctness gate, monotone normalisation) | `/design-slice` → `/implement` | S-02 | `grade/normalize_scores.py`, `bench grade` |
+| S-08g | Formal grader: checks, statement integrity, trace conformance, bug-seeded variants, bug confirmation | `/design-slice` → `/implement` | S-12 | `grade/formal.py` |
 
 Phase 2 exit: `bench grade` reproduces fixture scores byte-for-byte.
 
@@ -64,7 +67,10 @@ Phase 2 exit: `bench grade` reproduces fixture scores byte-for-byte.
 | T-C1 | Smoke task C1 (ProjDevBench) | `/new-bench-task` | S-03 |
 | T-F1 | Smoke task F1 (three-track wing spine) | `/new-bench-task` | S-03, S-05 |
 
-Phase 3 exit: the smoke BOM (6 tasks × 1 rep) completes on all combos.
+| T-G1 | G1: TLA+ model of the coord-core lease protocol, one seeded bug; joins the smoke BOM after S-12 | `/new-bench-task` | S-03, S-12, S-08g |
+| T-G2 | G2: Lean 4 proofs of fixed statements about the lease fold | `/new-bench-task` | S-03, S-12, S-08g |
+
+Phase 3 exit: the smoke BOM (6 tasks × 1 rep) completes on all combos; G1 fails on its seeded bug and passes the reference.
 
 ## Phases 4–6
 
@@ -73,5 +79,6 @@ Phase 3 exit: the smoke BOM (6 tasks × 1 rep) completes on all combos.
 | S-09 | Judges: rubrics, 30-item calibration sets, two blind vendor judges, cached verdicts | `/specify` → `/design-slice` | S-08f |
 | S-10 | Report: CLI table, HTML (mockup is the layout target; fix F6), AI summaries | `/ui-design` → `/implement` | S-08f, S-09 |
 | S-11 | Statistics: bootstrap CIs, correctness-gated ranking, repetition policy | `/specify` | S-08f |
+| S-14 | Coordination-protocol model (`models/coordination_protocol.tla`, from the G1 reference model) and ledger-trace conformance for `protocol_conformance` | `/design-slice` → `/implement` | T-G1, S-08e |
 
 Remaining BOM tasks (A2–A5, B2–B3, C2, D2–D3, E2–E7, F2) follow the smoke six through `/new-bench-task`.

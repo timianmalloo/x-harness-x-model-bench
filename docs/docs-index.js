@@ -3,7 +3,7 @@ window.DOCS_INDEX = {
   "schemaVersion": "docs-index/v2",
   "project": "x-harness-x-model-bench",
   "generator": "docs-graph.py derive",
-  "rootId": "note-proposal-grounding-findings",
+  "rootId": "audit-log",
   "artifactTypes": [
     "knowledge",
     "glossary",
@@ -196,6 +196,32 @@ window.DOCS_INDEX = {
   },
   "artifacts": [
     {
+      "id": "audit-log",
+      "path": "docs/audit/audit-log.md",
+      "title": "Audit & Change Log",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2027-09-23",
+      "reviewSuggested": [],
+      "summary": "The durable, committed history of what was prompted, done, and decided in this repository, so work compounds across sessions. The two JSONL files are the source of truth; audit-data.js and index.html are derived projections.",
+      "tags": [
+        "audit",
+        "history",
+        "change-log",
+        "project-memory"
+      ],
+      "links": [
+        {
+          "to": "proposal-cross-harness-benchmarking",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b278432234edb1a4ac1320f18bc276401296d16169fd21a648088a947e401364"
+    },
+    {
       "id": "note-proposal-grounding-findings",
       "path": "docs/notes/proposal-grounding-findings.md",
       "title": "Proposal grounding findings (scaffold pass)",
@@ -205,7 +231,7 @@ window.DOCS_INDEX = {
       "phase": "",
       "reviewBy": "2026-10-23",
       "reviewSuggested": [],
-      "summary": "What the scaffold pass found when it checked the proposal against the mockup and the pack's real coord-runner.py: inconsistent task counts, a worker-isolation seam between \"fresh clone per run\" and coord-runner's worktrees, runner limits the design must fit, and gaps with no owner.",
+      "summary": "What the scaffold pass found when it checked the proposal against the mockup and the pack's real coord-runner.py: a worker-isolation seam between \"fresh clone per run\" and coord-runner's worktrees, runner limits the design must fit, gaps with no owner, and the evidence behind the formal-methods revision (scenario 7, oracle ladder, protocol conformance).",
       "tags": [
         "benchmark",
         "findings",
@@ -218,7 +244,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2dc0390141aff5c2baadb7533f2562e69f7ebbd84dba31bf2032003c71ffb2e3"
+      "sourceSha256": "5c3fb35e120b5febb4d11e81770311a9b7037f7f75c3fd48a879c9238365a991"
     },
     {
       "id": "proposal-cross-harness-benchmarking",
@@ -230,7 +256,7 @@ window.DOCS_INDEX = {
       "phase": "",
       "reviewBy": "2027-03-22",
       "reviewSuggested": [],
-      "summary": "The source design for this repo: a harness × model × pack factorial benchmark over a 22-task, six-scenario BOM, driven by one coordinator through the ai-forward coordination layer, graded by repeatable Python scripts plus two blind judges, reported as a CLI table and an HTML page.",
+      "summary": "The source design for this repo: a harness × model × pack factorial benchmark over a 24-task, seven-scenario BOM, driven by one coordinator through the ai-forward coordination layer, graded by the strongest mechanical oracle available (proof, model check, trace conformance, tests) before two blind judges, reported as a CLI table and an HTML page.",
       "tags": [
         "benchmark",
         "proposal"
@@ -243,7 +269,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TD\n  C[Coordinator session<br/>Claude Code or Codex] --> IL[(Intent log + KG<br/>ai-forward)]\n  C --> M[matrix.yaml × bom.yaml<br/>run plan]\n  M --> W1[Worker: Codex CLI<br/>gpt-6-sol]\n  M --> W2[Worker: Copilot CLI<br/>gpt-6-sol]\n  M --> W3[Worker: Claude Code<br/>opus-5.5]\n  W1 --> R1[Isolated repo + container<br/>pack on/off bootstrap]\n  W2 --> R2[Isolated repo + container]\n  W3 --> R3[Isolated repo + container]\n  R1 --> T[Telemetry sink<br/>OTel collector + session logs]\n  R2 --> T\n  R3 --> T\n  T --> G[grade/*.py<br/>deterministic + judge]\n  G --> S[(results.duckdb)]\n  S --> RP[report: CLI table<br/>HTML + kiviats + AI summaries]"
         }
       ],
-      "sourceSha256": "95d440cbd9f89d59d415164cde2117048873e9dd67fbda7c4b13aae520f6e0bc"
+      "sourceSha256": "0d970fba92ab07db3c068eb4a1bc87122b8fd0c821b3f4df299807aa36efa410"
     },
     {
       "id": "plan-spec-backlog",
@@ -272,10 +298,18 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "74d9e49b5ea8fbed1e0cf4636026b987bcb704920e650d0fa8d4ff29b7d782e7"
+      "sourceSha256": "483653fec83896ae535bc8c905db56e18d8a0b5bb6c23557f75ab9a9a57ee879"
     }
   ],
   "surfaces": [
+    {
+      "id": "surface-audit-index",
+      "path": "docs/audit/index.html",
+      "title": "x-harness-x-model-bench — Audit & Change Log",
+      "kind": "audit",
+      "description": "Browse the committed audit and change timeline.",
+      "artifactId": "audit-log"
+    },
     {
       "id": "surface-proposals-harness-bench-report-mockup",
       "path": "docs/proposals/harness-bench-report-mockup.html",
@@ -284,5 +318,5 @@ window.DOCS_INDEX = {
       "description": "Open an interactive knowledge artifact."
     }
   ],
-  "graphSha256": "425ba30866b24563fe6ccd6d4855718d03f734caad7f0a293d4c35f943ec71f2"
+  "graphSha256": "437d513126b1bdb4ba5cde08a4cbdd612ed0efeb43dfdcd965b8efc079e7e511"
 };

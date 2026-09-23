@@ -1,0 +1,31 @@
+schema: bench-task/1
+id: G2
+scenario: 7
+title: "Lean 4 proofs of fixed statements about the lease fold"
+status: stub
+language: other
+source:
+  kind: authored
+  upstream: "ai-forward pack/scripts/coord-core.py lease fold, translated to Lean by us"
+  repo: "https://github.com/timianmalloo/ai-forward"
+  commit: "tbd"
+budget:
+  minutes: 45
+  usd_cap: null
+blast_radius:
+  - "Proofs/**"
+model_map: null
+scripted_user: false
+formal:
+  tool: lean              # Lean 4 via elan + lake, no Mathlib
+  statements: fixed       # e.g. replay is idempotent; a retried claim takes no second lease
+  toolchain: "tbd"        # lean-toolchain pin (spike S-12)
+  statement_hash: "tbd"   # sha256 of the theorem statements file
+  seeded_bugs: 1          # a variant of the fold on which the proofs must fail
+graders:
+  - formal
+  - drift
+  - cost
+  - process
+oracle:
+  summary: "lake build clean; #print axioms standard only; statements byte-identical to the hash; proofs fail on the bug-seeded variant."

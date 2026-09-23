@@ -3,9 +3,10 @@ id: audit-log
 title: "Audit & Change Log"
 type: doc
 status: accepted
-owner: "@maintainers"
+owner: "@timianmalloo"
 tags: [audit, history, change-log, project-memory]
-links: []
+links:
+  - { to: proposal-cross-harness-benchmarking, rel: relates-to }
 review-by: 2027-09-23
 review-suggested: []
 summary: >-

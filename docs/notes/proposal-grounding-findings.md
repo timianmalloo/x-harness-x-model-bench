@@ -10,8 +10,9 @@ links:
 review-by: "2026-10-23"
 summary: >-
   What the scaffold pass found when it checked the proposal against the mockup and the pack's
-  real coord-runner.py: inconsistent task counts, a worker-isolation seam between "fresh clone per
-  run" and coord-runner's worktrees, runner limits the design must fit, and gaps with no owner.
+  real coord-runner.py: a worker-isolation seam between "fresh clone per run" and coord-runner's
+  worktrees, runner limits the design must fit, gaps with no owner, and the evidence behind the
+  formal-methods revision (scenario 7, oracle ladder, protocol conformance).
 ---
 
 # Proposal grounding findings (scaffold pass)
@@ -34,7 +35,7 @@ Options for the ADR: (a) extend coord-runner with a per-worker external workspac
 
 | Limit | Value | Consequence |
 | --- | --- | --- |
-| Workers per contract | 1–8 | Full grid of 528 cells needs 66 contracts; smoke needs 18 (`bench plan` prints this) |
+| Workers per contract | 1–8 | Full grid of 576 cells needs 72 contracts; smoke needs 18 (`bench plan` prints this) |
 | Parallelism | 1–4 | At most 4 cells run at once per contract |
 | `deadline_seconds` | ≤ 3600 | No task budget may exceed 60 minutes. F1/F2 budget is exactly 60, leaving no headroom |
 | `runtime.max_turns` | 1–8 | These are prompts sent over ACP, not agent tool turns. The proposal's per-scenario "turn cap" needs a different enforcement point |
@@ -53,13 +54,13 @@ Options for the ADR: (a) extend coord-runner with a per-worker external workspac
 
 **[Inferred]** The proposal offers "a local MCP server or a stdin responder". Under ACP with prompts limited to compiled audit ids, a stdin responder is not available. An MCP tool the agent calls (`ask_user`) keeps the answer inside one turn and logs every question. Confirm each harness can load a per-worktree MCP server over ACP (spike).
 
-## F5. Task count: 22 or 24 — S-03
+## F5. Task count: 22 or 24 — resolved (24)
 
-**[Verified]** The BOM v0 section lists 22 tasks and computes 528 runs; `tests/test_plan.py` confirms 22 × 4 × 2 × 3 = 528. The mockup header says 24 tasks and 576 runs, the mockup summary mentions F1–F3, and the phased plan's phase 6 says "24 tasks × 8 cells". This repo uses the BOM table (22). Confirm, or add the two missing tasks.
+**[Verified]** The BOM v0 section listed 22 tasks (528 runs) while the mockup header and phase 6 said 24. The formal-methods revision added G1 and G2 (scenario 7), so BOM v0 is now 24 tasks and 576 runs; `tests/test_plan.py` checks 24 × 4 × 2 × 3 = 576. The match with the mockup's 24 is a coincidence, not a reconciliation of the original gap.
 
-## F6. Mockup content predates BOM v0 — S-10
+## F6. Mockup content predated BOM v0 — fixed in the seed, layout still S-10
 
-**[Verified]** The mockup's drill-down shows "D2 · TheTerrace booking module" and "F1 · CFD-Bench mesh ingest". BOM v0 defers TheTerrace, D2 is an ai-de extraction rule, and F1 is the wing spine. The mockup header shows one "third-party, pinned" judge; the proposal specifies two vendor judges with both scores shown. Update the mockup when the report is specified. Synthetic numbers are labelled as such and are fine.
+**[Verified]** The mockup's drill-down showed "D2 · TheTerrace booking module" and "F1 · CFD-Bench mesh ingest", a single "third-party, pinned" judge, six scenarios and F1–F3. The seed mockup now matches BOM v0.2: ai-de D2, the wing-spine F1, two blind vendor judges, seven scenarios (heatmap column for scenario 7, a G1 drill-down with the four formal scores). The layout itself is still owned by S-10. Numbers remain synthetic and labelled. **[Verified]** At 390 px the page scrolls horizontally, in the original mockup as well as the updated one (headless render); fix it in S-10.
 
 ## F7. Gaps with no owner in the proposal
 
@@ -71,3 +72,15 @@ Options for the ADR: (a) extend coord-runner with a per-worker external workspac
 ## F8. YAML 1.1 booleans — fixed in the scaffold
 
 **[Verified]** Bare `on` / `off` in YAML parse as `true` / `false`. The first `bench validate` run caught this in `matrix.example.yaml`. The validator now names the cause, a test covers it, and `/start-benchmark` tells the compiler to quote pack values.
+
+## F9. Formal methods: evidence quality and what it changed — S-12, S-13, S-14, S-08g
+
+**[Verified]** Boris Cherny's Sep 23, 2026 post (primary) says Opus 5.5 plus "a couple short prompts" produced 16 PRs fixing bugs and race conditions in the Claude Agent SDK via Lean, with TLA+ sometimes combined. **[Reported, unverified]** The explainx.ai write-up adds 24 bugs (19 from proofs), 1,529 theorems across 6 Lean models, zero `sorry`, 5 PRs merged; it names no bug, model or PR, and has no links beyond the attribution. **[Reported by the papers; read from their abstracts and summaries, not re-derived]** Published measurements are far lower than the anecdote suggests: Verina 4.9% proof success (2025), SysMoBench about 46% conformance and 41% invariants for frontier models, NL→TLA+ 8.6% semantic correctness. That gap is a measurable per-harness, per-model question, so the proposal now has:
+
+- scenario 7 (G1 TLA+, G2 Lean 4) on the pack's own lease fold in `coord-core.py`, which has a pure event→lease fold with idempotent replay and a retried-call guard (verified in the source);
+- the oracle ladder (proof or model check → trace conformance → tests → judge);
+- four separate formal scores (checks, statement integrity, fidelity, yield), because zero `sorry` does not show the model matches the code;
+- `protocol_conformance`: coordination ledgers replayed against a TLA+ model of the pack's protocol;
+- a TLA+ model of the run lifecycle, checked before the runner is built.
+
+**[Flagged]** Toolchains are unproven on Windows inside coord-runner worker worktrees under each harness (spike S-12). The lease properties G1/G2 check must come from the pack's docs and tests, not our reading of the code.

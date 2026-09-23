@@ -165,9 +165,9 @@ details.run pre{margin:0;background:var(--bg);border-radius:6px;padding:10px;fon
     <p class="muted">Same 24-task BOM, four harness/model combos, each with the ai-forward pack on and off, three repetitions per cell. Scores are 0–100 per area (higher is better); raw values and evidence sit behind every number.</p>
   </div>
   <div class="runmeta">
-    <div><span>BOM</span>bom.yaml v0.3 · 24 tasks · 6 scenarios</div>
+    <div><span>BOM</span>bom.yaml v0.2 · 24 tasks · 7 scenarios</div>
     <div><span>Matrix</span>4 combos × pack on/off × 3 reps = 576 runs</div>
-    <div><span>Judge</span>third-party, pinned · agreement 0.86 κ</div>
+    <div><span>Judges</span>Fable 5.1 + GPT-6 Astra, blind · inter-judge κ 0.81</div>
     <div><span>Spend</span>$1,412 runs · $138 judges · 41 h wall</div>
     <div><span>Coordinator</span>Claude Code · opus-5.5 · $61 overhead</div>
     <div><span>Metrics</span>metrics.yaml v0.2 · weights editable</div>
@@ -251,7 +251,8 @@ details.run pre{margin:0;background:var(--bg);border-radius:6px;padding:10px;fon
         <li><b>Codex / GPT-6 Sol</b> is the efficiency leader: 61% of Opus's tokens per solved task with a 6-point pass@1 gap; its interval overlaps Sonnet 5's on pass^3, so ranks 2 and 3 are not separable. <span class="ev">runs 0001–0048, 0190–0237</span></li>
         <li>Same model, different harness: GPT-6 Sol in Copilot CLI trails Codex by 9 points pass@1 and uses 1.8× the tokens per solved task, with the gap concentrated in scenario 4 and 6 tasks. Cache hit ratio (44% vs 79%) explains most of the token difference. <span class="ev">runs 0049–0096 vs 0001–0048</span></li>
         <li>Drift is the widest spread of any area (54–84). Both GPT-6 combos lose adherence after the first compaction; Claude Code combos re-read the spec after compaction 71% of the time. <span class="ev">drift.py re-read rate; runs tagged compaction=true</span></li>
-        <li>Variance warning: F-tasks (multi-agent) have the largest per-rep spread for every combo; three repetitions are not enough there. Recommend 5. <span class="ev">pass^3 vs pass@1 gap on F1–F3</span></li>
+        <li>Variance warning: F-tasks (multi-agent) have the largest per-rep spread for every combo; three repetitions are not enough there. Recommend 5. <span class="ev">pass^3 vs pass@1 gap on F1–F2</span></li>
+        <li>Formal work (scenario 7) shows the largest harness effect in the grid: GPT-6 Sol finds the seeded lease bug in 1 of 3 reps under Copilot CLI and 2 of 3 under Codex, with 2.3× the tokens per solved task in Copilot, most of it repeated TLC runs on the same failing model. All combos keep statement integrity at 100%; model conformance, not proof completion, separates them. <span class="ev">formal.py; runs tagged scenario=7</span></li>
       </ol>
     </div>
     <div class="summary">
@@ -270,7 +271,7 @@ details.run pre{margin:0;background:var(--bg);border-radius:6px;padding:10px;fon
 </section>
 
 <section>
-  <div class="sec-head"><div><h2>Run drill-down</h2><p class="muted">Every score links to the artifact that produced it. Three sample runs shown.</p></div></div>
+  <div class="sec-head"><div><h2>Run drill-down</h2><p class="muted">Every score links to the artifact that produced it. Four sample runs shown.</p></div></div>
   <div id="drill"></div>
 </section>
 </main>
@@ -282,12 +283,12 @@ details.run pre{margin:0;background:var(--bg);border-radius:6px;padding:10px;fon
 const AREAS=["Cost & efficiency","Correctness","Rigor & quality","Drift & adherence","Specification","Autonomy","Coordination"];
 const AXES={
  "Cost & efficiency":["Cost-of-pass","Tokens/solved","Wall clock","Cache hit","Ctx growth","Tokens/min"],
- "Correctness":["pass@1","pass^3","Partial credit","Mutation","Regressions","Build ok"],
+ "Correctness":["pass@1","pass^3","Partial credit","Mutation","Regressions","Build ok","Formal checks"],
  "Rigor & quality":["Verify before done","Test quality","Analyzers","Maintainability","Style","Honest claims"],
  "Drift & adherence":["Spec coverage","Scope creep","Constraints","Goal drift","Convention","Re-read rate"],
  "Specification":["Ask vs assume","Key-Q recall","Assumptions stated","Spec quality","Arch conformance","ADR quality"],
  "Autonomy":["No intervention","Stuck loops","Recovery","Tool errors","Planning ratio","Time-to-green"],
- "Coordination":["Model-map adherence","Attribution","Handoff fidelity","Intent-log","KG use","Parallel eff."]
+ "Coordination":["Model-map adherence","Attribution","Handoff fidelity","Intent-log","KG use","Parallel eff.","Protocol conf."]
 };
 const COMBOS=[
  {id:"codex-sol",   name:"Codex CLI / GPT-6 Sol",        color:"var(--c1)", raw:"#1d6fd6"},
@@ -306,12 +307,12 @@ const AREA_SCORES={
 const AXIS_RAW={
  "Cost-of-pass":v=>"$"+(6.2-v*0.05).toFixed(2), "Tokens/solved":v=>(9.5-v*0.08).toFixed(2)+"M", "Wall clock":v=>(48-v*0.32).toFixed(0)+" min",
  "Cache hit":v=>(v*0.95).toFixed(0)+"%", "Ctx growth":v=>(2400-v*18).toFixed(0)+" tok/turn", "Tokens/min":v=>(1800+v*22).toFixed(0),
- "pass@1":v=>(v/100).toFixed(2), "pass^3":v=>((v-12)/100).toFixed(2), "Partial credit":v=>(v/100).toFixed(2), "Mutation":v=>(v*0.9).toFixed(0)+"%", "Regressions":v=>(Math.round((100-v)/15))+" tests", "Build ok":v=>(90+v*0.1).toFixed(0)+"%",
+ "pass@1":v=>(v/100).toFixed(2), "pass^3":v=>((v-12)/100).toFixed(2), "Partial credit":v=>(v/100).toFixed(2), "Mutation":v=>(v*0.9).toFixed(0)+"%", "Regressions":v=>(Math.round((100-v)/15))+" tests", "Build ok":v=>(90+v*0.1).toFixed(0)+"%", "Formal checks":v=>(v*0.9).toFixed(0)+"% clean (no sorry, std axioms, TLC done)",
  "Verify before done":v=>(v*0.9).toFixed(0)+"% of runs","Test quality":v=>(v/100).toFixed(2),"Analyzers":v=>Math.round((100-v)/6)+" violations/1K LOC","Maintainability":v=>(v/100).toFixed(2),"Style":v=>(v*0.9).toFixed(0)+"%","Honest claims":v=>(100-Math.round((100-v)*0.4))+"% accurate",
  "Spec coverage":v=>(v*0.95).toFixed(0)+"% rubric","Scope creep":v=>(Math.round((100-v)/4))+" files out of scope","Constraints":v=>(Math.round((100-v)/8))+" violations","Goal drift":v=>"slope −"+((100-v)/200).toFixed(2)+"/quartile","Convention":v=>((100-v)/20).toFixed(1)+" per 100 LOC","Re-read rate":v=>(v/120).toFixed(2),
  "Ask vs assume":v=>(v/100).toFixed(2),"Key-Q recall":v=>(v/100).toFixed(2),"Assumptions stated":v=>(v*0.9).toFixed(0)+"%","Spec quality":v=>(v/20).toFixed(1)+"/5","Arch conformance":v=>(v*0.95).toFixed(0)+"%","ADR quality":v=>(v/20).toFixed(1)+"/5",
  "No intervention":v=>(v*0.95).toFixed(0)+"%","Stuck loops":v=>((100-v)/25).toFixed(1)+" per run","Recovery":v=>(v*0.9).toFixed(0)+"%","Tool errors":v=>((100-v)/12).toFixed(1)+"%","Planning ratio":v=>(v/300).toFixed(2),"Time-to-green":v=>(40-v*0.3).toFixed(0)+" min",
- "Model-map adherence":v=>(v).toFixed(0)+"%","Attribution":v=>(v*0.98).toFixed(0)+"% tokens attributed","Handoff fidelity":v=>(v/20).toFixed(1)+"/5","Intent-log":v=>(v*0.95).toFixed(0)+"% actions logged","KG use":v=>Math.round(v/10)+" refs/run","Parallel eff.":v=>(v/120).toFixed(2)
+ "Model-map adherence":v=>(v).toFixed(0)+"%","Attribution":v=>(v*0.98).toFixed(0)+"% tokens attributed","Handoff fidelity":v=>(v/20).toFixed(1)+"/5","Intent-log":v=>(v*0.95).toFixed(0)+"% actions logged","KG use":v=>Math.round(v/10)+" refs/run","Parallel eff.":v=>(v/120).toFixed(2),"Protocol conf.":v=>(v*0.97).toFixed(0)+"% ledger steps accepted"
 };
 const OFFS=[3,-4,2,5,-3,-2];
 function axisVals(area,comp,pack){const base=AREA_SCORES[comp][pack][AREAS.indexOf(area)];return AXES[area].map((a,i)=>Math.max(5,Math.min(98,base+OFFS[(i+AREAS.indexOf(area))%6]+((comp.length+i)%5)-2)));}
@@ -330,12 +331,12 @@ BOARD.forEach(r=>{const a=AREA_SCORES[r.id][r.pack];r.composite=Math.round(a.red
 // ranking with correctness gate: sort by composite, but do not rank above a combo whose passk interval you overlap
 const sortedByComp=[...BOARD].sort((a,b)=>b.composite-a.composite);
 sortedByComp.forEach((r,i)=>r.rank=i+1);
-const SCEN=["1 Ambiguous prompt","2 Primer → spec","3 Spec → architecture","4 Architecture → code","5 Prompt → code","6 Multi-agent"];
+const SCEN=["1 Ambiguous prompt","2 Primer → spec","3 Spec → architecture","4 Architecture → code","5 Prompt → code","6 Multi-agent","7 Formalize → bugs"];
 const SCEN_SCORES={
- "codex-sol":{on:[[74,.80],[77,.83],[72,.75],[79,.77],[84,.79],[70,.63]],off:[[60,.70],[63,.72],[58,.66],[70,.71],[83,.78],[49,.48]]},
- "copilot-sol":{on:[[66,.71],[70,.74],[65,.68],[64,.64],[76,.70],[55,.50]],off:[[52,.61],[55,.63],[50,.57],[58,.59],[75,.69],[38,.36]]},
- "cc-opus":{on:[[85,.88],[87,.90],[84,.86],[83,.80],[88,.84],[82,.72]],off:[[70,.80],[72,.83],[68,.78],[78,.77],[87,.83],[60,.55]]},
- "cc-sonnet":{on:[[74,.79],[76,.81],[71,.74],[75,.72],[82,.77],[68,.60]],off:[[60,.69],[62,.71],[57,.66],[68,.68],[81,.76],[47,.45]]}
+ "codex-sol":{on:[[74,.80],[77,.83],[72,.75],[79,.77],[84,.79],[70,.63],[58,.50]],off:[[60,.70],[63,.72],[58,.66],[70,.71],[83,.78],[49,.48],[55,.50]]},
+ "copilot-sol":{on:[[66,.71],[70,.74],[65,.68],[64,.64],[76,.70],[55,.50],[44,.33]],off:[[52,.61],[55,.63],[50,.57],[58,.59],[75,.69],[38,.36],[41,.33]]},
+ "cc-opus":{on:[[85,.88],[87,.90],[84,.86],[83,.80],[88,.84],[82,.72],[71,.67]],off:[[70,.80],[72,.83],[68,.78],[78,.77],[87,.83],[60,.55],[66,.67]]},
+ "cc-sonnet":{on:[[74,.79],[76,.81],[71,.74],[75,.72],[82,.77],[68,.60],[57,.50]],off:[[60,.69],[62,.71],[57,.66],[68,.68],[81,.76],[47,.45],[52,.50]]}
 };
 const CTX={ // tokens per turn, 40 turns, plus compaction turn indices
  "codex-sol":{on:{c:[],pts:g(3200,1800,40,0.6)},off:{c:[],pts:g(1400,1900,40,0.65)}},
@@ -421,9 +422,10 @@ function renderDeltas(){const host=$("#deltas");host.innerHTML="";COMBOS.forEach
 
 // ---------- drilldown ----------
 const RUNS=[
- {id:"0161",combo:"cc-opus",pack:"on",task:"D2 · TheTerrace booking module",rep:2,pass:"7/7 hidden · 4/4 public",cost:"$4.62 · 1.41M in (78% cached) · 21K out",wall:"29 min · 34 turns · 61 tool calls",scores:[["Correctness",92,"tests/hidden.trx"],["Rigor & quality",84,"analyzers.sarif · stryker report 81%"],["Drift & adherence",86,"drift.json: 0 files out of scope"],["Cost & efficiency",47,"usage.parquet"]],tail:"Ran dotnet test twice (turns 22, 33). Re-read ARCHITECTURE.md after compaction at turn 29. Final message claims match test evidence."},
- {id:"0071",combo:"copilot-sol",pack:"on",task:"D2 · TheTerrace booking module",rep:2,pass:"5/7 hidden · 4/4 public",cost:"$3.90 est. · 2.12M in (41% cached) · 26K out · 27 premium requests",wall:"36 min · 41 turns · 74 tool calls",scores:[["Correctness",71,"tests/hidden.trx"],["Rigor & quality",63,"verification_before_done=false"],["Drift & adherence",70,"drift.json: 3 files out of scope"],["Cost & efficiency",52,"usage.parquet"]],tail:"Declared done at turn 41 without running the test suite. Two compactions; spec not re-read after either. Edited Program.cs outside declared blast radius."},
- {id:"0233",combo:"codex-sol",pack:"off",task:"F1 · CFD-Bench mesh ingest, 3 sub-agents",rep:3,pass:"4/6 hidden",cost:"$2.71 · 1.05M in (70% cached) · 18K out",wall:"44 min · planner 9 min, impl 27 min, review 8 min",scores:[["Coordination",49,"model_map_adherence=0.67 · orphan_actions=18%"],["Correctness",66,"tests/hidden.trx"],["Drift & adherence",61,"MAST: FM-2.4 (info withholding), FM-3.1 (premature termination)"],["Cost & efficiency",80,"usage.parquet"]],tail:"Reviewer sub-agent ran on the implementer's model, not the prescribed frontier model. Without the pack, no intent log; attribution reconstructed from session JSONL."}
+ {id:"0161",combo:"cc-opus",pack:"on",task:"D2 · ai-de extraction rule",rep:2,pass:"7/7 hidden · 4/4 public",cost:"$4.62 · 1.41M in (78% cached) · 21K out",wall:"29 min · 34 turns · 61 tool calls",scores:[["Correctness",92,"tests/hidden.trx"],["Rigor & quality",84,"analyzers.sarif · stryker report 81%"],["Drift & adherence",86,"drift.json: 0 files out of scope"],["Cost & efficiency",47,"usage.parquet"]],tail:"Ran dotnet test twice (turns 22, 33). Re-read ARCHITECTURE.md after compaction at turn 29. Final message claims match test evidence."},
+ {id:"0071",combo:"copilot-sol",pack:"on",task:"D2 · ai-de extraction rule",rep:2,pass:"5/7 hidden · 4/4 public",cost:"$3.90 est. · 2.12M in (41% cached) · 26K out · 27 premium requests",wall:"36 min · 41 turns · 74 tool calls",scores:[["Correctness",71,"tests/hidden.trx"],["Rigor & quality",63,"verification_before_done=false"],["Drift & adherence",70,"drift.json: 3 files out of scope"],["Cost & efficiency",52,"usage.parquet"]],tail:"Declared done at turn 41 without running the test suite. Two compactions; spec not re-read after either. Edited Program.cs outside declared blast radius."},
+ {id:"0233",combo:"codex-sol",pack:"off",task:"F1 · cfd-bench wing spine, 3 tracks",rep:3,pass:"4/6 hidden",cost:"$2.71 · 1.05M in (70% cached) · 18K out",wall:"44 min · planner 9 min, impl 27 min, review 8 min",scores:[["Coordination",49,"model_map_adherence=0.67 · orphan_actions=18%"],["Correctness",66,"tests/hidden.trx"],["Drift & adherence",61,"MAST: FM-2.4 (info withholding), FM-3.1 (premature termination)"],["Cost & efficiency",80,"usage.parquet"]],tail:"Reviewer sub-agent ran on the implementer's model, not the prescribed frontier model. Without the pack, no intent log; attribution reconstructed from session JSONL."},
+ {id:"0402",combo:"cc-opus",pack:"on",task:"G1 · TLA+ model of the coord-core lease protocol",rep:1,pass:"seeded bug found · reproduced by test",cost:"$3.05 · 0.98M in (81% cached) · 24K out",wall:"38 min · 29 turns · 14 TLC runs",scores:[["Formal checks",100,"tlc.log: completed, 41,207 distinct states"],["Statement integrity",100,"properties.tla sha256 matches task"],["Model conformance",83,"trace-validation.json: 25/30 traces accepted"],["Non-vacuity",100,"seeded variants: 3/3 rejected"],["Bug-claim precision",50,"BUGS.md: 2 claimed, 1 reproduced"]],tail:"First model over-atomized claim (read + append as one step) and passed; trace validation rejected it at step 4 of trace 07. Split the action, TLC found the seeded double-lease on retry. Second claimed bug has no reproducing test: counted as unconfirmed."}
 ];
 function renderDrill(){const host=$("#drill");host.innerHTML=RUNS.map(r=>`<details class="run"><summary><span class="sw" style="background:${color(r.combo)}"></span><b>run ${r.id}</b><span>${COMBOS.find(c=>c.id===r.combo).name}</span><span class="faint">pack ${r.pack} · rep ${r.rep}</span><span>${r.task}</span><span class="faint">${r.pass}</span></summary><div class="body"><div><h3>Scores and evidence</h3><ul class="ev-list">${r.scores.map(([a,v,e])=>`<li><span>${a} <b>${v}</b></span><span>${e}</span></li>`).join("")}</ul><p style="margin-top:10px"><span class="faint">cost</span> ${r.cost}<br><span class="faint">time</span> ${r.wall}</p></div><div><h3>Trajectory notes</h3><pre>${r.tail}</pre><p class="faint" style="margin-top:8px">diff.patch · transcript.jsonl · otel.json · tests/</p></div></div></details>`).join("");}
 

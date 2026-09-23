@@ -48,6 +48,28 @@ def test_budget_above_coord_runner_deadline_is_rejected():
     assert any("budget_minutes" in i for i in p.items)
 
 
+def test_formal_task_without_tool_or_formal_grader_is_rejected(tmp_path):
+    d = _write_task(tmp_path, "X7", scenario=7, formal=None, graders=["cost"])
+    p = config.Problems()
+    entry = {"id": "X7", "scenario": 7, "budget_minutes": 45}
+    config.validate_task(d, entry, p, config.grader_modules(ROOT))
+    msgs = " ".join(p.items)
+    assert "formal.tool" in msgs
+    assert "formal grader" in msgs
+
+
+def test_scenario_7_is_optional_in_smoke_but_at_most_one():
+    bom = config.load_yaml(ROOT / "bench" / "bom.yaml")
+    p = config.Problems()
+    config.validate_bom(bom, p)
+    assert p.items == []
+    for t in bom["tasks"]:
+        if t["scenario"] == 7:
+            t["smoke"] = True
+    config.validate_bom(bom, p)
+    assert any("at most one task for scenario 7" in i for i in p.items)
+
+
 def test_unquoted_on_off_packs_are_rejected():
     bom = config.load_yaml(ROOT / "bench" / "bom.yaml")
     m = yaml.safe_load("schema: bench-matrix/1\nrepetitions: 1\npacks: [on, off]\n"

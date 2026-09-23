@@ -1,9 +1,10 @@
 # Bill of materials: the fixed task set every matrix cell runs.
 # Source: docs/proposals/cross-harness-benchmarking-proposal.md, "Benchmark BOM v0".
-# Each id is a folder under tasks/. `smoke: true` marks the one-per-scenario smoke BOM.
+# Each id is a folder under tasks/. `smoke: true` marks the smoke BOM: one task per scenario 1-6.
+# Scenario 7 joins the smoke BOM after the formal-toolchain spike (spec S-12).
 # Status lives in each task's task.yaml, not here.
 schema: bench-bom/1
-version: "0.1"
+version: "0.2"   # 0.2: scenario 7 (formalize and find bugs), G1-G2
 scenarios:
   1: Specify from an ambiguous prompt
   2: Specify from a primer spec
@@ -11,6 +12,7 @@ scenarios:
   4: Code from an architecture spec
   5: Code from a prompt
   6: Multi-agent execution, one harness and session, per-agent model routing
+  7: Formalize and find bugs (TLA+ / Lean 4 on real code)
 tasks:
   # Scenario 1: ambiguous prompt
   - { id: A1, scenario: 1, smoke: true,  budget_minutes: 15, source: ClarifyCodeBench, title: "Missing-goal ambiguity" }
@@ -43,3 +45,6 @@ tasks:
   # Scenario 6: multi-agent
   - { id: F1, scenario: 6, smoke: true,  budget_minutes: 60, source: cfd-bench, title: "P0 wing spine as three coordinated tracks" }
   - { id: F2, scenario: 6, smoke: false, budget_minutes: 60, source: ai-de,     title: "D1 feature as design / implement / adversarial review" }
+  # Scenario 7: formalize and find bugs (ai-forward coord-core.py lease protocol)
+  - { id: G1, scenario: 7, smoke: false, budget_minutes: 45, source: ai-forward, title: "TLA+ model of the coord-core lease protocol; find the seeded bug" }
+  - { id: G2, scenario: 7, smoke: false, budget_minutes: 45, source: ai-forward, title: "Lean 4 proofs of fixed statements about the lease fold" }

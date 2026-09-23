@@ -10,7 +10,7 @@ Every run is one cell of a `harness × model × pack` grid, so three questions c
 | Model effect | harness family | model (e.g. Opus 5.5 in Claude Code vs GPT-6 Sol in Codex) |
 | Pack effect | harness + model | ai-forward pack on / off |
 
-A coordinator session runs a fixed bill of materials (22 tasks across six lifecycle scenarios, from an ambiguous prompt to multi-agent execution) in isolated per-cell workspaces. Python graders score each run, and the results come out as a CLI table, an HTML report with kiviat overlays, and two AI-written summaries.
+A coordinator session runs a fixed bill of materials (24 tasks across seven lifecycle scenarios, from an ambiguous prompt through multi-agent execution to formalizing real code in TLA+ and Lean 4) in isolated per-cell workspaces. Graders use the strongest mechanical oracle available (proof or model check, then trace conformance, then tests) before two blind judges. Results come out as a CLI table, an HTML report with kiviat overlays, and two AI-written summaries.
 
 **Status: scaffold.** The inputs, task contract, plan expansion and validation work. Running, grading and reporting are specified but not built. See [the spec backlog](docs/specs/README.md).
 
@@ -20,7 +20,7 @@ A coordinator session runs a fixed bill of materials (22 tasks across six lifecy
 | --- | --- |
 | [`docs/proposals/cross-harness-benchmarking-proposal.md`](docs/proposals/cross-harness-benchmarking-proposal.md) | The design: scenarios, BOM, architecture, metrics, grading, reporting, validity |
 | [`docs/proposals/harness-bench-report-mockup.html`](docs/proposals/harness-bench-report-mockup.html) | The report layout target (synthetic numbers) |
-| [`docs/notes/proposal-grounding-findings.md`](docs/notes/proposal-grounding-findings.md) | Open seams found while scaffolding. F1 (worker isolation) blocks the runner |
+| [`docs/notes/proposal-grounding-findings.md`](docs/notes/proposal-grounding-findings.md) | Open seams found while scaffolding. F1 (worker isolation) blocks the runner; F9 records the formal-methods evidence |
 | [`docs/specs/README.md`](docs/specs/README.md) | Ordered spec backlog, each unit mapped to a pack skill and a proposal phase |
 | [`tasks/README.md`](tasks/README.md) | The task folder contract |
 
@@ -28,11 +28,12 @@ A coordinator session runs a fixed bill of materials (22 tasks across six lifecy
 
 ```
 bench/                 declarative inputs
-  bom.yaml             22 tasks, 6 scenarios, smoke flags, budgets
+  bom.yaml             24 tasks, 7 scenarios, smoke flags, budgets
   matrix.example.yaml  target shape of a compiled matrix (combos, packs, reps, judges)
   metrics.yaml         7 areas, every metric with source, direction, grader, weight
   prices.yaml          dated list prices (empty until read from provider pages)
 tasks/<ID>/            one folder per BOM task; _template/ is the copy source
+models/                TLA+ models of the benchmark itself (run lifecycle, coordination protocol)
 src/harness_bench/
   cli.py               bench validate | plan | run | grade | report | teardown
   config.py            input validation

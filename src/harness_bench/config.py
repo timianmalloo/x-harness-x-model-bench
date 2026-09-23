@@ -11,7 +11,11 @@ from pathlib import Path
 
 import yaml
 
-SCENARIOS = range(1, 7)
+SCENARIOS = range(1, 8)
+# The smoke BOM needs exactly one task per scenario 1-6. Scenario 7 may add one after the
+# formal-toolchain spike (spec S-12).
+SMOKE_REQUIRED = range(1, 7)
+FORMAL_TOOLS = ("tla", "lean")
 TASK_STATUSES = ("stub", "draft", "ready")
 HARNESSES = ("claude-code", "codex", "copilot", "grok", "agy")
 PACKS = ("on", "off")
@@ -59,15 +63,16 @@ def validate_bom(bom: dict, p: Problems, where: str = "bench/bom.yaml") -> None:
     for t in bom.get("tasks", []):
         tid = t.get("id", "?")
         if t.get("scenario") not in SCENARIOS:
-            p.add(where, f"{tid}: scenario must be 1-6")
+            p.add(where, f"{tid}: scenario must be {SCENARIOS.start}-{SCENARIOS.stop - 1}")
         minutes = t.get("budget_minutes")
         if not isinstance(minutes, int) or not 1 <= minutes <= MAX_BUDGET_MINUTES:
             p.add(where, f"{tid}: budget_minutes must be 1-{MAX_BUDGET_MINUTES}")
         if t.get("smoke"):
             smoke.setdefault(t.get("scenario"), []).append(tid)
     for s in SCENARIOS:
-        if len(smoke.get(s, [])) != 1:
-            p.add(where, f"smoke BOM needs exactly one task for scenario {s}, has {smoke.get(s, [])}")
+        n = len(smoke.get(s, []))
+        if (s in SMOKE_REQUIRED and n != 1) or n > 1:
+            p.add(where, f"smoke BOM needs {'exactly' if s in SMOKE_REQUIRED else 'at most'} one task for scenario {s}, has {smoke.get(s, [])}")
 
 
 def validate_matrix(m: dict, bom: dict, p: Problems, where: str) -> None:
@@ -152,6 +157,14 @@ def validate_task(task_dir: Path, bom_entry: dict | None, p: Problems, grader_mo
         p.add(where, "scenario 6 tasks need a model_map")
     if t.get("scenario") == 1 and not t.get("scripted_user"):
         p.add(where, "scenario 1 tasks need scripted_user: true")
+    if t.get("scenario") == 7:
+        formal = t.get("formal") or {}
+        if formal.get("tool") not in FORMAL_TOOLS:
+            p.add(where, f"scenario 7 tasks need formal.tool in {FORMAL_TOOLS}")
+        if formal.get("statements") not in ("fixed", "agent"):
+            p.add(where, "scenario 7 tasks need formal.statements: fixed | agent")
+        if "formal" not in (t.get("graders") or []):
+            p.add(where, "scenario 7 tasks need the formal grader")
     if status in ("draft", "ready") and not (task_dir / "prompt.md").is_file():
         p.add(where, f"status {status} requires prompt.md")
     if status == "ready":
@@ -161,6 +174,9 @@ def validate_task(task_dir: Path, bom_entry: dict | None, p: Problems, grader_mo
             p.add(where, "status ready requires workspace/")
         if "tbd" in {str((t.get("source") or {}).get(k)) for k in ("repo", "commit")}:
             p.add(where, "status ready requires a pinned source.repo and source.commit")
+        formal = t.get("formal") or {}
+        if t.get("scenario") == 7 and "tbd" in {str(formal.get("toolchain")), str(formal.get("statement_hash"))}:
+            p.add(where, "status ready requires a pinned formal.toolchain and, for fixed statements, formal.statement_hash")
 
 
 def grader_modules(root: Path) -> set[str]:

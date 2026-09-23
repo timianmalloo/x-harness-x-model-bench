@@ -13,9 +13,9 @@ def _inputs(subset):
 
 
 def test_full_grid_matches_proposal_run_count():
-    # Proposal: 22 tasks x 4 combos x pack on/off x 3 reps = 528 runs.
+    # Proposal: 24 tasks x 4 combos x pack on/off x 3 reps = 576 runs.
     m, bom = _inputs("full")
-    assert len(plan.expand(m, bom)) == 528
+    assert len(plan.expand(m, bom)) == 576
 
 
 def test_smoke_grid_is_one_task_per_scenario():
@@ -43,4 +43,4 @@ def test_batches_respect_coord_run_worker_cap():
     m, bom = _inputs("full")
     groups = plan.batches(plan.expand(m, bom))
     assert all(1 <= len(g) <= plan.MAX_WORKERS_PER_CONTRACT for g in groups)
-    assert sum(len(g) for g in groups) == 528
+    assert sum(len(g) for g in groups) == 576

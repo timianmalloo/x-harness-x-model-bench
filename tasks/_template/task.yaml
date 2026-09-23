@@ -16,6 +16,7 @@ blast_radius:               # globs the task may touch; edits elsewhere count as
   - "src/**"
 model_map: null             # scenario 6 only: { role: model } routing the orchestrator must honour
 scripted_user: false        # scenario 1 only: true enables the clarification responder
+formal: null                # scenario 7 only: { tool: tla|lean, statements: fixed|agent, toolchain, statement_hash, seeded_bugs }
 graders:                    # shared graders to run, in addition to grade.py if present
   - correctness
   - cost

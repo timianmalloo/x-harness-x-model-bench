@@ -1,0 +1,34 @@
+schema: bench-task/1
+id: G1
+scenario: 7
+title: "TLA+ model of the coord-core lease protocol; find the seeded bug"
+status: stub
+language: other
+source:
+  kind: authored
+  upstream: "ai-forward pack/scripts/coord-core.py lease fold (claim, release, except, retried calls, replay)"
+  repo: "https://github.com/timianmalloo/ai-forward"
+  commit: "tbd"
+budget:
+  minutes: 45
+  usd_cap: null
+blast_radius:
+  - "spec/**"
+  - "tests/**"
+  - "BUGS.md"
+model_map: null
+scripted_user: false
+formal:
+  tool: tla               # TLC on a pinned JDK
+  statements: fixed       # the safety properties are given; the model is the agent's
+  toolchain: "tbd"        # tla2tools version + JDK version (spike S-12)
+  statement_hash: "tbd"   # sha256 of the given properties file
+  seeded_bugs: 1          # one concurrency bug planted in the extracted slice
+graders:
+  - formal
+  - correctness
+  - drift
+  - cost
+  - process
+oracle:
+  summary: "Reference TLA+ model; recorded traces of the real fold for trace validation; bug-seeded variants the model must reject; a reproducing test for the seeded bug."
