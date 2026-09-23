@@ -774,7 +774,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "057a8fc8eac16ca5a7bba384c98978afa5688cb770485ce6745c430ff9cd5bbe"
+      "sourceSha256": "58a4fd017835afc5eacc59652352dd71be2f4ccf8294061434002450f46af410"
     },
     {
       "id": "design-run-lifecycle-model",
@@ -930,6 +930,38 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "8d2699649e9e22be2315839714c9683713119b0cb163420a455eed0bb9101a9d"
+    },
+    {
+      "id": "note-spike-phase1-probes",
+      "path": "docs/notes/spike-phase1-probes.md",
+      "title": "Phase-1 probes W1, W3, N4: pack install, provider-error rows, job containment",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-23",
+      "reviewSuggested": [],
+      "summary": "W1: pack-apply.py apply --install installs pack revision 92 non-interactively in under a second and lists every path it wrote as JSON (437 files). W3: a failed Claude call is an assistant row with isApiErrorMessage, apiErrorStatus and error, model \"<synthetic>\" and zero usage; Codex reports a bad model as ACP complete with task_complete.error. N4: no harness process leaves its cell's Job Object, the job handle is not inheritable, and nothing survives TerminateJobObject.",
+      "tags": [
+        "benchmark",
+        "spike",
+        "phase-1",
+        "pack",
+        "telemetry",
+        "job-object"
+      ],
+      "links": [
+        {
+          "to": "design-phase1-walking-skeleton",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0013-native-cells",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "c7120b4935287c2ec0faa4fc3a5313fdab8345eb9b68248f023d26f531cc480d"
     },
     {
       "id": "note-spike-runner-path",
@@ -1192,5 +1224,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "2a12b82cc24c4b97a379aa382edf5a7d2a8d8df85589c45c0bef56e431db285e"
+  "graphSha256": "75847724abd6e9e748b266ca7d381e9a847f71db92960cc9a26603b77c26b604"
 };

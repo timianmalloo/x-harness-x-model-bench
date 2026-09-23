@@ -128,8 +128,8 @@ Make one complete, observable, verifiable run possible:
 | ACP adapters (pinned lockfile) | As `docs/architecture.md` | Verified |
 | Claude Code native record | `projects/<slug>/<sid>.jsonl`: `type=assistant` rows with `message.model` and `message.usage.*`; `tool_use` / `tool_result`. **The ACP session id equals `<sid>`.** | Verified (spike records) |
 | Codex native record | `sessions/…/rollout-*-<sid>.jsonl`: `turn_context.model`, token usage in `info.last_token_usage.*` (input includes cached), `task_complete.error`. **The ACP session id equals `<sid>`.** | Verified (spike records) |
-| Provider error signal in native records | Codex: `task_complete.error`; Claude: the assistant error row shape | Codex Verified (spike R11.5); Claude Flagged → golden record needed (probe W3) |
-| `pack-apply.py --install` from a pinned ai-forward commit | Installs the pack into a directory non-interactively and lists the paths written | Inferred → probe W1 |
+| Provider error signal in native records | Codex: `event_msg`/`task_complete` with `error.message` (embeds `status` and `error.type`); Claude: an assistant row with `isApiErrorMessage: true`, `apiErrorStatus`, `error`, `message.model = "<synthetic>"` and zero usage | Verified (spike R11.5; probe W3, `docs/notes/spike-phase1-probes.md`) |
+| `pack-apply.py apply --install --json` | Non-interactive install of the pinned revision; JSON rows list every path written | Verified (probe W1) |
 
 ## Data model (ADR-0006, applied)
 
@@ -204,7 +204,8 @@ The physical rules are ADR-0006's (one definition); in short:
 | `blocked (permission)` | HB-CELL-201 | agent | refused ACP permission request |
 | `failed (adapter crash)` | HB-CELL-105 | harness | EOF before `end_turn` |
 | `failed (protocol)` | HB-CELL-107 | harness | > 20 non-JSON lines or a line over 1 MiB (the line cap); junk archived |
-| `failed (provider)` | HB-CELL-108 | infrastructure | provider or quota error in the native record (Codex `task_complete.error`; Claude per probe W3), found by the pre-outcome scan; takes precedence over `timed_out` and `adapter crash` |
+| `failed (provider)` | HB-CELL-108 | infrastructure | status 408, 429, 5xx or overload in the native error row (Claude `apiErrorStatus`; Codex `task_complete.error`), found by the pre-outcome scan; takes precedence over `timed_out` and `adapter crash` |
+| `failed (model unavailable)` | HB-CELL-116 | benchmark | any other 4xx model error (for example 404 `model_not_found`, 400 `invalid_request_error`): the plan pinned a model the account cannot serve (probe W3) |
 | `failed (handshake timeout)` | HB-CELL-104 | infrastructure | handshake deadline |
 | `failed (workspace)` | HB-CELL-113 | infrastructure | task clone, working copy or home could not be built |
 | `failed (build changed)` | HB-CELL-115 | infrastructure | the planned harness build's hash differs at cell start; the cell does not start and the engine stops launching |
@@ -403,12 +404,12 @@ Scoped by ADR-0012 and ADR-0013: each cell works in its own working copy, and no
 
 | # | Unknown | Probe |
 | --- | --- | --- |
-| W1 | `pack-apply.py --install` into an arbitrary task directory | Run into a temp copy of X1's base from the pinned ai-forward commit; record the paths written |
-| W3 | Claude's provider-error row shape in the native record | Capture a record from a failed Claude call (e.g. an invalid model id) as a golden fixture |
+| W1 | `pack-apply.py --install` into an arbitrary task directory | **Done 2026-09-23 (Verified):** `docs/notes/spike-phase1-probes.md` |
+| W3 | Claude's provider-error row shape in the native record | **Done 2026-09-23 (Verified):** `docs/notes/spike-phase1-probes.md` |
 | A3 | OAuth refresh rotation invalidating the host login | Watch the credential file across a long cell |
 | A9 | Monotonic clock across Windows sleep | Sleep the host mid-cell |
 | R13 | mutmut on Windows | Run on a small module; else WSL |
-| N4 | A node adapter's child CLI stays in the cell's Job Object | List the job's processes during one turn per harness (T-JOB-tree) |
+| N4 | A node adapter's child CLI stays in the cell's Job Object | **Done 2026-09-23 (Verified):** `docs/notes/spike-phase1-probes.md` |
 
 ## Status & next action
 
@@ -416,7 +417,7 @@ Scoped by ADR-0012 and ADR-0013: each cell works in its own working copy, and no
 | --- | --- |
 | **Completed** | Lifecycle model (TLC at the US-44 bounds; 21 seeded variants each rejected by its own target); phase-1 walking-skeleton design, passed at gate round 3 with conditions |
 | **Remaining** | Phase 2 designs (Copilot profile, stop/decisions, T0 matcher, Harbor E1), then phases 3–5 |
-| **Best next action** | Probes W1 and W3, then `/implement` phase 1: ledger and engine first (red-first against the model's phase-1 guards), then driver, profiles, archive, telemetry, grading, views, report, E2E |
+| **Best next action** | `/implement` phase 1 (probes W1, W3 and N4 done): ledger and engine first (red-first against the model's phase-1 guards), then driver, profiles, archive, telemetry, grading, views, report, E2E |
 
 ## Gate record
 
