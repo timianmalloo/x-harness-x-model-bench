@@ -90,6 +90,7 @@ Home seeding is a function of the profile, not a separate component.
   - Copilot cells are `blocked (auth)` without a token.
   - Claude cells carry account context under a subscription login, which the report states.
   - **Residual (accepted in writing):** a cell can always reach its own model credential by design.
+- **Owner ruling (2026-09-23): subscriptions only, no API keys.** Every cell runs on a copied subscription login, so only operator-authored tasks may run until the owner chooses between swapping third-party smoke tasks for authored ones, a dedicated benchmark subscription account, or a recorded deviation. Copilot cells need a Copilot-only fine-grained token (still billed to the subscription), else `blocked (auth)`.
 - **Follow-ups / new risks:**
   - Spike whether a cell's OAuth refresh rotates and invalidates the host login. Until then, copies are refreshed from the host before each cell and never written back.
   - The owner decides whether to create benchmark credentials.

@@ -14,8 +14,8 @@ summary: >-
   The durable record is a set of append-only, hash-chained JSON Lines facts per run with declared
   grains (lifecycle events, model calls, tool calls, archive files, grading passes, scores, verdict uses,
   egress events), immutable content-addressed dimensions, and one shared content-addressed verdict cache.
-  Current states, costs, composites and statistics are derived views in in-memory DuckDB; no results
-  database is persisted.
+  Current states, costs, composites and statistics are derived projections computed in memory; no
+  results database is persisted.
 ---
 
 # ADR-0006: A hash-chained, append-only record per run; every result is a derived view
@@ -45,8 +45,10 @@ The domain standard defaults to dimensions plus append-only facts (DM5), with an
 ### Physical form and integrity (DM11)
 
 - **Where facts live.** `runs/<run_id>/` holds one directory per fact. Each writer session appends to its own **segment** file (JSON Lines).
-- **Every line is a hash chain.** Each line carries `seq`, `prev_hash` and `hash` (sha256 of the line content plus `prev_hash`). It is written with one `write`, then flush, then `os.fsync`.
-- **Torn tail.** On open, only a final line with no newline, or one that fails to parse, may be dropped, and it is recorded as a `ledger.tail_repaired` event. Any other broken line or chain break is an integrity error that stops the run.
+- **Every line is a hash chain.** Each line carries `seq`, `prev_hash` and `hash`. `hash` is the sha256 of the UTF-8 bytes of the line's canonical form, which includes `prev_hash`. The canonical form is `json.dumps(record_without_hash, sort_keys=True, separators=(",", ":"), ensure_ascii=False)`, with integers and strings only. No floats: a non-integer measure is a decimal string at the scale its catalog entry fixes. The form is a subset of JCS (RFC 8785). Each line is written with one `write`, then flush, then `os.fsync`.
+- **Sealed segments.** A writer closes its segment with a `segment.sealed{count, head_hash}` line. `run.completed` records the head of every segment the engine process wrote, including its own grading pass. A later `bench grade` pass is self-sealed.
+- **Abandoned segments.** A grading segment without a seal whose writer no longer holds `grade.lock` belongs to a dead writer. No process ever writes into another writer's file, because a torn tail there would fuse with any appended line. Instead the next grading pass, while holding the lock, records `segment.abandoned{segment_id, line_count, head_hash}` in **its own** segment, where the count and head are those of the last whole line. `verify` accepts an unsealed segment that such a record names, up to that head, and reports it as abandoned (HB-LED-004, a warning, exit 0). It skips an unsealed segment whose lock is held. Views read neither.
+- **Torn tail.** Only the segment's own writer, on reopening, may drop a final line that has no newline or fails to parse, and it records a `ledger.tail_repaired` event. A reader never repairs: it ignores the torn tail of an unsealed segment. Any other broken line, chain break, or broken seal is an integrity error.
 - **Verification.** `bench verify <run_id>` checks every chain. Tests that attempt a rewrite, a truncation and a mid-file insert must fail verification before phase 1 closes.
 - **Single writer.** Each fact directory has exactly one writer process at a time. The run engine writes lifecycle facts. A grading pass (from `bench grade` or from the engine) writes grading facts and its `events` rows only while holding `grade.lock`, which excludes every other writer of `events` (ADR-0007).
 
@@ -59,25 +61,29 @@ The domain standard defaults to dimensions plus append-only facts (DM5), with an
 
 | Fact | Grain: one row is exactly one … | Key | Measures and additivity | Writer |
 | --- | --- | --- | --- | --- |
-| `events` | state transition of one run-scoped entity: the run, a cell, an attempt, a decision request, a control input, or a grading pass. Its states are those of `models/run_lifecycle.tla`. | `(run_id, segment_id, seq)`, plus `entity_kind`, `entity_id` and `recorded_at` | none. Rows carry the transition's attributes: e.g. `attempt.started` holds the executed harness build, image digest, container name and native session ids; `cell.archived` holds the archive manifest hash. | run engine; grade process for grading passes |
-| `model_calls` | model request made by one principal (a cell, the coordinator session, or the model gateway) | `(run_id, principal, native_session_id, native_ordinal)`; `cell_id` when the principal is a cell | Tokens in **disjoint buckets**: uncached input, cache read, cache write, output (additive). Reasoning is a component of output, never added to it. Start and end timestamps (not durations). Native billing units (additive). | telemetry normaliser |
-| `tool_calls` | tool invocation inside one cell | `(run_id, cell_id, native_session_id, native_ordinal)` | start and end timestamps | telemetry normaliser |
-| `archive_files` | file or link in one cell archive | `(run_id, cell_id, path)` | size (additive); sha256; kind (file or link, never followed) | archiver |
-| `scores` | value of one metric for one cell in one grading pass | `(run_id, grading_id, cell_id, metric_id)` | value (non-additive); NULL with a reason when NOT_RECORDED; the archive hash graded, which is derived from the cell's sorted `archive_files` rows (no separate manifest file) | grade process |
+| `events` | state transition of one run-scoped entity: the run, a cell, an attempt, a decision request, a control input, a grading pass, or the ledger itself (`ledger.tail_repaired`, `segment.sealed`). Its states are those of `models/run_lifecycle.tla`. | `(run_id, segment_id, seq)`, plus `entity_kind`, `entity_id` and `recorded_at` | none. Rows carry the transition's attributes: e.g. `attempt.container_created` holds the executed harness build, image digest and container name; `attempt.session_opened` the native session id; `cell.archived` the `archive_attempt` and `archive_hash`. | run engine (its engine thread only); grade process for grading passes |
+| `model_calls` | model request made by one principal (a cell, or the model gateway), as read by one extraction | `(run_id, extraction_id, principal, native_session_id, native_ordinal)`; `cell_id` when the principal is a cell. `extraction_id` is the normaliser build hash; `native_ordinal` is the 1-based line number in the native file, unique per file. | Tokens in **disjoint buckets**: uncached input, cache read, cache write, output (additive). Reasoning is a component of output, never added to it. Start and end timestamps (not durations). Native billing units (additive). | grading pass (normaliser) |
+| `tool_calls` | tool invocation inside one cell, as read by one extraction | `(run_id, extraction_id, cell_id, native_session_id, native_ordinal)` | start and end timestamps | grading pass (normaliser) |
+| `archive_files` | file or link in one archive attempt of one cell | `(run_id, cell_id, archive_attempt, path)` | size (additive); sha256; kind (file or link, never followed) | archiver, through the engine thread |
+| `scores` | value of one metric for one cell in one grading pass | `(run_id, grading_id, cell_id, metric_id)` | value (non-additive); NULL with a reason when NOT_RECORDED; the `archive_attempt` graded and the `extraction_id` read (references by identity; the archive hash is not repeated) | grade process |
 | `verdict_uses` | use of a cached verdict or match by one grading pass | `(run_id, grading_id, cell_id, item_id, judge_or_matcher)` | cache hit (yes/no) | grade process |
 | `egress_events` | scan-and-send attempt | `(scope_id, seq)`, where the scope is a run or a report (a report over two runs publishes once) | payload hash; destination; purpose; result: sent, withheld or quarantined | egress gate |
 
 A grading pass is an entity in `events` (`grading.started` / `grading.completed`), carrying `grading_id`, catalog version and grader build hash. The **current score** of a cell for a catalog version is the value from the latest completed grading pass for that catalog version: the greatest `recorded_at` on `grading.completed`, tie-broken by `grading_id`. This rule is defined once, in the projection. A re-grade (after a judge outage or a grader fix) is a new grading pass. Nothing is overwritten.
 
+**Extractions are written once.** A grading pass writes `model_calls` and `tool_calls` for a cell only if no completed pass already holds that cell's `extraction_id`; it checks this under `grade.lock`. A re-grade with the same normaliser build therefore reuses the existing rows, and its scores name that `extraction_id`. A normaliser fix gives a new `extraction_id` and new rows beside the old. **The current extraction** of a cell, for a catalog version, is the one named by its current scores for that version, so totals never sum two extractions.
+
+**Archive hash.** `cell.archived` carries `archive_attempt` and `archive_hash`, a commitment over that attempt's sorted `archive_files` rows. `verify` recomputes it from the rows and fails on a mismatch (HB-LED-005).
+
 **Shared verdict cache.** Judge verdicts and clarification matches live in one content-addressed store outside any run, `cache/verdicts/<key>.json`, written create-if-absent (the first writer wins; an existing key is never replaced). The key covers: artifact hash, rubric or matcher version, prompt-template version, output-schema version, model id and backend. A run's own `verdict_uses` rows make its grading reproducible alone, as long as the cache is kept.
 
 ### Dimensions
 
-Dimensions are immutable, content-addressed versions (DM10 Type-2 by identity): task version, BOM version, catalog version (definitions, weights, normalisation anchors, rubrics, radar axis order), price list version, combo, harness profile, image manifest, plan. The planned harness build lives in the plan; the executed build lives in `events` (`attempt.started`); US-12 compares the two.
+Dimensions are immutable, content-addressed versions (DM10 Type-2 by identity): task version, BOM version, catalog version (definitions, weights, normalisation anchors, rubrics, radar axis order), price list version, combo, harness profile, image manifest, plan. The planned harness build lives in the plan; the executed build lives in `events` (`attempt.container_created`); US-12 compares the two.
 
 ### Derived, never stored (DM7)
 
-All of these are DuckDB views over the JSON Lines, opened in memory by `bench report`, with no persisted database:
+All of these are projections computed in memory by `bench report` from the verified facts, with no persisted database (pure-Python functions in phase 1, see `docs/notes/decision-sqlite-views.md`; a SQL engine only if its upgrade trigger fires):
 - current cell outcome and validity;
 - cell wall time (outcome time − launch-intent time);
 - `cost_usd` (model calls × the price list version named in the report);
@@ -116,7 +122,7 @@ All of these are DuckDB views over the JSON Lines, opened in memory by `bench re
   - Token buckets must be normalised per harness: OpenAI-style input includes cached tokens; Anthropic-style input excludes them. [Verified in spike records: Codex input 19,597 includes 12,672 cached; Copilot input 12,948 includes 12,945 cache-write; Claude input 2 with cache counted separately]
 - **Follow-ups / new risks:**
   - Property tests for the chain, the grains and the current-score rule.
-  - The DuckDB JSON reader is confirmed in S-08f. [Inferred]
+  - Projections are pure Python until the decision note's upgrade trigger fires.
 
 ## Evidence
 
@@ -124,3 +130,4 @@ All of these are DuckDB views over the JSON Lines, opened in memory by `bench re
 - `domain-and-data-modelling.md` DM5–DM13.
 - Spike native records (token semantics) [Verified].
 - Council round 1: Data & Persistence V1–V5, Distributed Systems V2 and V4, Simplifier 2–5.
+- Phase-1 design gate round 2 (2026-09-23): canonical hash form, sealed and abandoned segments, owner-only tail repair, `extraction_id` and `archive_attempt` in the keys, write-once extractions, and the archive-hash commitment. These were folded into the decision above, so the ADR and `docs/design/phase1-walking-skeleton.md` carry one definition.

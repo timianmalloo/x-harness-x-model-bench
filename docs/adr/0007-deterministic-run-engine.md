@@ -46,7 +46,7 @@ LOA P2 and P3 put scheduling in deterministic code. Council round 1 found missin
 **1. One engine process per run.**
 - `bench run <run_id>` holds an OS file lock on `runs/<run_id>/.lock` (`LockFileEx` / `msvcrt`, released by the OS when the process dies). Liveness is tested by trying the lock, never by PID.
 - The engine is the only writer of the lifecycle log (ADR-0006).
-- It appends a heartbeat event every 30 s, so `bench status` can report "alive and progressing".
+- It touches the lock file on every scheduler loop (≤ 5 s); the file's mtime is the heartbeat, so `bench status` can report "alive and progressing" without a second appender or heartbeat rows in the ledger (amended at the phase-1 design gate).
 - Its states are exactly those of `models/run_lifecycle.tla`, which is TLC-checked before the engine is built (US-44).
 
 **2. At-most-once launch (write-ahead intent log; Idempotent Action).** Per cell, in order:
@@ -62,7 +62,7 @@ LOA P2 and P3 put scheduling in deterministic code. Council round 1 found missin
 **On resume:**
 - **Intent, no container, no `prompt_sent`:** the cell was never prompted, and it may launch once.
 - **Intent, container present, no `prompt_sent`:** the container is killed and removed by name, confirmed absent by `inspect`, and the cell may launch once.
-- **`prompt_sent` without an outcome:** the cell is killed by name, confirmed absent by `inspect`, archived, and recorded `failed (coordinator crash)`. It is never relaunched.
+- **`prompt_sent` without an outcome:** the cell is killed by name, confirmed absent by `inspect`, recorded `failed (coordinator crash)`, then archived (kill → confirm → record → archive, as the model's `ReconcileKill → ReconcileRecord → Archive`). It is never relaunched.
 - **Archiving** waits until `docker inspect` shows the container absent or exited.
 
 **3. Control inputs (Single Writer + command mailbox).**

@@ -239,7 +239,7 @@ window.DOCS_INDEX = {
       "phase": "all phases",
       "reviewBy": "2027-09-23",
       "reviewSuggested": [],
-      "summary": "Measured cells are launched by a small bench-owned driver that speaks ACP to the containerised harness with a container-side cwd, a verbatim prompt, a per-cell model pin, deny-all permissions and a deadline on every step. The pack's coord-runner cannot meet US-9, US-10 or US-11 as installed; Harbor's one-shot, permissive agent runs cannot meet US-10 (scenario 1), US-14 or at-most-once. Both are recorded, with a trigger to re-evaluate.",
+      "summary": "Measured cells are launched by a small bench-owned driver that speaks ACP to the containerised harness with a container-side cwd, a verbatim prompt, a per-cell model pin, deny-all permissions and a deadline on every step. The pack's coord-runner cannot meet US-9, US-10 or US-11 as installed; Harbor's one-shot, permissive agent runs cannot meet US-10 (scenario 1), US-14 or at-most-once. Both are recorded. By owner ruling the benchmark must not run in the coordinator's runner.",
       "tags": [
         "benchmark",
         "runner",
@@ -266,7 +266,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f3fa01c81f357cbbc1877f35c596c4ef9db06b23e1047f534cd3f3715f9a3cc3"
+      "sourceSha256": "74cb1469a73cfb2c1338413f18b9545cc975dd81c30f179a490fd52e993dfdde"
     },
     {
       "id": "adr-0003-harness-profile",
@@ -300,7 +300,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d8300c592cd7661ff8f690ce763e5aca908606df5ac75dece05416ecbd7fb473"
+      "sourceSha256": "edf353209f9df6afdbee5e6fb5e4791380ab7f4104e7adc806c24fccf0b356ec"
     },
     {
       "id": "adr-0004-static-permissions",
@@ -375,7 +375,7 @@ window.DOCS_INDEX = {
       "phase": "all phases",
       "reviewBy": "2027-09-23",
       "reviewSuggested": [],
-      "summary": "The durable record is a set of append-only, hash-chained JSON Lines facts per run with declared grains (lifecycle events, model calls, tool calls, archive files, grading passes, scores, verdict uses, egress events), immutable content-addressed dimensions, and one shared content-addressed verdict cache. Current states, costs, composites and statistics are derived views in in-memory DuckDB; no results database is persisted.",
+      "summary": "The durable record is a set of append-only, hash-chained JSON Lines facts per run with declared grains (lifecycle events, model calls, tool calls, archive files, grading passes, scores, verdict uses, egress events), immutable content-addressed dimensions, and one shared content-addressed verdict cache. Current states, costs, composites and statistics are derived projections computed in memory; no results database is persisted.",
       "tags": [
         "benchmark",
         "data-model",
@@ -393,7 +393,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "902ad09be38897d6758d6208ed986812da1dbf65303b294e4fcc74a520c90ed2"
+      "sourceSha256": "7dc1e152a5dec9385b9228a97b10b0fab64c55d615d448fc7a4ab968e1fee33d"
     },
     {
       "id": "adr-0007-run-engine",
@@ -424,7 +424,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "69a487a6e12cc52c37031aa04a364d04f3312ef487925e17fe905b79634d74ee"
+      "sourceSha256": "d298946d4ee26672778c9aae20139828c102eae49e875ca8279d07e6b10bd92d"
     },
     {
       "id": "adr-0008-telemetry",
@@ -469,7 +469,7 @@ window.DOCS_INDEX = {
       "phase": "phase 3 onward (matcher T0 rung from phase 2)",
       "reviewBy": "2027-09-23",
       "reviewSuggested": [],
-      "summary": "Judges, the AI summaries and the model rung of the scripted-user matcher call models through one gateway: no tools, schema-constrained output, agent text as delimited data, results read through the shared content-addressed cache, every payload through the egress gate. One backend is built, chosen by the owner before phase 3; if it is unavailable, the result is NOT_RECORDED.",
+      "summary": "Judges, the AI summaries and the model rung of the scripted-user matcher call models through one gateway: no tools, schema-constrained output, agent text as delimited data, results read through the shared content-addressed cache, every payload through the egress gate. One backend is built: the headless vendor CLIs with every tool denied (owner ruling); if it is unavailable, the result is NOT_RECORDED.",
       "tags": [
         "benchmark",
         "judges",
@@ -488,7 +488,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "70c8ac2b2526afa68aff7add13626469e0e3d753feef6e971b26a446a2646662"
+      "sourceSha256": "f3101933bbf0a25a77cbaa0ab96ef78c93358bb114513e2219385034e97065ed"
     },
     {
       "id": "adr-0010-untrusted-cell-output",
@@ -551,6 +551,51 @@ window.DOCS_INDEX = {
       "sourceSha256": "27da114b153d8f864a697bb171c1c7134c08688e28a136b88768cbd94520af68"
     },
     {
+      "id": "adr-0012-proportionate-security",
+      "path": "docs/adr/0012-proportionate-security-single-operator.md",
+      "title": "ADR-0012: Proportionate security for a single-operator local benchmark tool",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "all phases",
+      "reviewBy": "2027-09-23",
+      "reviewSuggested": [],
+      "summary": "Owner ruling: harness-bench is a local tool run by one trusted operator on their own machine; git is a mechanism, not an entry point. The only adversary is the agent under test, and security controls are kept where they protect result validity or keep an agent from damaging the machine by accident. Provenance checks, the egress proxy requirement, SBOM/CVE gates and most negative security tests are dropped or made optional; third-party tasks may run on the operator's subscription logins.",
+      "tags": [
+        "benchmark",
+        "security",
+        "owner-ruling"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0001-cell-containers",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0003-harness-profile",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0005-egress-control",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0010-untrusted-cell-output",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "9dce00b9711b86837cdd54cc6159a5182a5bf8700e234620e43bf4bb2f505082"
+    },
+    {
       "id": "arch-harness-bench",
       "path": "docs/architecture.md",
       "title": "Architecture: harness-bench",
@@ -593,7 +638,141 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TB\n  subgraph Session[\"Coordinator session (Claude Code, /start-benchmark)\"]\n    SK[start-benchmark skill: compile, confirm, relay, audit-log entries]\n  end\n  subgraph Host[\"bench (Python, T0) on the Windows host\"]\n    CLI[bench CLI: validate, plan, run, status, stop, grade, report, verify, teardown]\n    ENG[Run engine: single writer, lifecycle = run_lifecycle.tla]\n    WSB[Workspace builder]\n    IMG[Image builder: env image + pinned harness layer, SBOM, CVE scan]\n    PRF[(Harness profiles: build, mode, pin, home seeding, reader)]\n    DRV[ACP cell driver]\n    ARC[Archiver: no link following, exact-value credential scan]\n    TEL[Telemetry: readers + normaliser]\n    GRD[Grade orchestrator]\n    GW[Model gateway: tool-less]\n    EG[Egress gate]\n    VIEWS[In-memory DuckDB views]\n    REP[Report: CLI + HTML + summaries]\n  end\n  subgraph Store[\"runs/<run_id>/ + cache/\"]\n    LED[(hash-chained facts: events, model_calls, tool_calls, archive_files, scores, verdict_uses, egress_events)]\n    ARCH[(cell archives)]\n    CTL[(control/: stop, decision answers)]\n    VC[(shared verdict cache)]\n  end\n  subgraph Docker[\"Docker Desktop (WSL2)\"]\n    PROXY[Egress proxy, off-the-shelf]\n    CELL[Cell containers: one network each]\n    GC[Grading containers: --network none, read-only mounts]\n  end\n  SK -->|bench plan / run / status --json| CLI\n  SK -->|decision answers| CTL\n  CLI --> ENG\n  ENG --> WSB & IMG & DRV & ARC\n  PRF --> IMG & DRV & TEL\n  DRV -->|docker run -i hb-run-cell, ACP stdio| CELL\n  CELL --> PROXY\n  CTL --> ENG\n  ENG --> LED\n  ARC --> ARCH\n  ARCH --> TEL --> LED\n  ARCH --> GRD --> GC\n  GRD --> LED\n  GRD --> GW\n  GW --> VC\n  GW --> EG\n  LED --> VIEWS --> REP\n  REP --> GW\n  REP --> EG"
         }
       ],
-      "sourceSha256": "26c5611fa941899840d3f952a8de13b051722670a1da8957f8e0803c0e23739b"
+      "sourceSha256": "e074b9c7efbfde204ee7d307f25171abba6d7de096a36241034222f2a470e177"
+    },
+    {
+      "id": "note-20260923-sqlite-views",
+      "path": "docs/notes/decision-sqlite-views.md",
+      "title": "Results views are pure-Python projections, with no SQL engine, until a measured trigger",
+      "type": "decision-note",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2027-03-22",
+      "reviewSuggested": [],
+      "summary": "The derived results views (ADR-0006) are pure-Python functions over the verified fact dataclasses; no SQL engine (DuckDB or sqlite3) is used. Blast radius: views.py only; the facts on disk are unchanged.",
+      "tags": [
+        "decision-note",
+        "data-model",
+        "dependencies"
+      ],
+      "links": [
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-phase1-walking-skeleton",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "41027ae770a5fe7fa2980604d3d89240ff3f55594bdda9be39dbbcf2716aeafc"
+    },
+    {
+      "id": "design-phase1-walking-skeleton",
+      "path": "docs/design/phase1-walking-skeleton.md",
+      "title": "Design: phase 1 walking skeleton (engine, cells, telemetry, grading, report)",
+      "type": "design",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton (S-05, S-06, S-07, S-08a/b/f, S-10 skeleton)",
+      "reviewBy": "2027-03-22",
+      "reviewSuggested": [],
+      "summary": "The detailed design of the thinnest end-to-end path: prose → confirmed plan → run engine → containerised cells driven over ACP (Claude, Codex) → verified archive → telemetry from native records → correctness and cost graded in task-image containers → pure projections → CLI table and a minimal HTML report. Version 2, after the design gate: validity-first, security scoped by ADR-0012, the engine's launch, kill and record order matched to the checked lifecycle model.",
+      "tags": [
+        "benchmark",
+        "runner",
+        "engine",
+        "containers",
+        "acp",
+        "telemetry",
+        "grading",
+        "report"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "design-run-lifecycle-model",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0001-cell-containers",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0002-cell-driver",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0003-harness-profile",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0007-run-engine",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0010-untrusted-cell-output",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0012-proportionate-security",
+          "rel": "implements"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "3838436b05de3587689a559a9e3648cb80f84b3cce2b578ad41765bd4f9a22da"
+    },
+    {
+      "id": "design-run-lifecycle-model",
+      "path": "docs/design/run-lifecycle-model.md",
+      "title": "Design: run lifecycle model (models/run_lifecycle.tla)",
+      "type": "design",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton (S-13)",
+      "reviewBy": "2027-03-22",
+      "reviewSuggested": [],
+      "summary": "The TLA+ model of one run's lifecycle, the proof obligation the run engine is built against (US-44). TLC checks 17 safety invariants at the US-44 bounds (3 cells, parallelism 2, 1 engine crash) and at small bounds with `bench grade` contending, grading mutual exclusion at 2 passes, and 5 liveness properties at 1 cell; each of 22 seeded-bug variants is rejected by its own target checked alone, and a witness shows every cell can finish. A mapping table binds every model action to the engine's ledger events, and a conformance test keeps the two in step.",
+      "tags": [
+        "benchmark",
+        "tla",
+        "model-checking",
+        "runner",
+        "lifecycle"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0007-run-engine",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "depends-on"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "05d473d5b13b76d572743e1d6a87793aeb7669e58e2413ac3a6903c57065a0f6"
     },
     {
       "id": "audit-log",
@@ -620,6 +799,35 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "b278432234edb1a4ac1320f18bc276401296d16169fd21a648088a947e401364"
+    },
+    {
+      "id": "defect-classes",
+      "path": "docs/lessons/defect-classes.md",
+      "title": "Defect-class register",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-12-22",
+      "reviewSuggested": [],
+      "summary": "The project's register of defect classes: the recurring shapes of things that go wrong here, what each one survives, and the control that now fails when the shape recurs. Read at grounding; appended to on every defect, correction or falsified assumption.",
+      "tags": [
+        "lessons",
+        "defect-classes",
+        "continuous-improvement"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-run-lifecycle-model",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "d623ee7cf66260d1680e8f82f2c9f30de610179a7c3330aaa2c56248af39ad06"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -764,6 +972,38 @@ window.DOCS_INDEX = {
       "sourceSha256": "638b7bc5ce30570528fdd9cd0e2c215c3b55158c2676b69e3b7444562856d82e"
     },
     {
+      "id": "privacy-review",
+      "path": "docs/security/privacy-review.md",
+      "title": "Privacy Review",
+      "type": "privacy-review",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2027-03-22",
+      "reviewSuggested": [],
+      "summary": "The only personal data is the operator's own: the account email that appears in harness transcripts, and the username in home paths. Both stay in local, gitignored run archives; the report embeds no transcript text and shows archive-relative paths. No third party receives personal data beyond the model providers the operator's own subscriptions already use.",
+      "tags": [
+        "privacy",
+        "data-governance"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "documents"
+        },
+        {
+          "to": "design-phase1-walking-skeleton",
+          "rel": "documents"
+        },
+        {
+          "to": "design-run-lifecycle-model",
+          "rel": "documents"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "d54e510a81dfb32ebc3f256b4fd6be310d719fba944dcdef11213e6d9ab50dad"
+    },
+    {
       "id": "spec-harness-bench",
       "path": "docs/specs/harness-bench.md",
       "title": "Spec: harness-bench, a cross-harness, cross-model benchmark with the pack as a factor",
@@ -833,7 +1073,49 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TD\n  A([P2 runs /new-bench-task ID]) --> S[stub: task.yaml from template]\n  S --> D[draft: prompt.md, workspace base]\n  D --> O[oracle: hidden tests / rubric / clarifications / seeded bug]\n  O --> V{bench validate}\n  V -->|contract broken| E[Folder, rule, fix] --> O\n  V -->|scenario 1, no clarifications| E\n  V -->|scenario 7, no seeded bug or no toolchain pin| E\n  V -->|ok| DIS{Discrimination check: reference passes, naive or seeded fails}\n  DIS -->|does not discriminate| E2[Oracle too weak or too strict: shown with both results] --> O\n  DIS -->|discriminates| R([status: ready])"
         }
       ],
-      "sourceSha256": "bb9f19ef8b7841cfb7e8fadb210fd062a6c588ab3857b27b4bdf5fe44a2413fc"
+      "sourceSha256": "f5216ccb30ad7a0ba5aedd16fd53b0edf0f93c3b2d2517acfb4158e026d07318"
+    },
+    {
+      "id": "threat-model",
+      "path": "docs/security/threat-model.md",
+      "title": "Threat Model",
+      "type": "threat-model",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2027-03-22",
+      "reviewSuggested": [],
+      "summary": "harness-bench is a local benchmark run by one trusted operator (ADR-0012), so security is scoped to result validity and accidental damage to the host or the owner's subscription credentials. The boundaries that matter are agent ↔ host, agent ↔ hidden oracle and credential ↔ published report; third-party task risk and everything outside that scope are accepted by the owner.",
+      "tags": [
+        "security",
+        "threat-model"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "documents"
+        },
+        {
+          "to": "design-phase1-walking-skeleton",
+          "rel": "documents"
+        },
+        {
+          "to": "design-run-lifecycle-model",
+          "rel": "documents"
+        },
+        {
+          "to": "adr-0012-proportionate-security",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "1. System trust-boundary map",
+          "mermaid": "flowchart LR\n  subgraph Host[\"Host (trusted: the operator)\"]\n    Engine[\"bench engine\\n(single writer)\"]\n    Runs[\"runs/&lt;id&gt;\\nledger + archives\"]\n    Creds[\"subscription logins\\n(harness homes)\"]\n    Report[\"report HTML\"]\n  end\n  subgraph Cell[\"Cell container (less trusted: the agent)\"]\n    Agent[\"harness + model\"]\n    WS[\"workspace mount\"]\n  end\n  Oracle[\"hidden tests / oracle\"]\n  Engine -- \"B1 launch, kill\" --> Cell\n  Creds -- \"B1 per-cell copy\" --> Cell\n  Cell -- \"B4 archive\" --> Runs\n  Oracle -. \"B2 never mounted\" .- Cell\n  Runs --> Report\n  Report -- \"B5 publish\" --> Shared[\"shared report\"]"
+        }
+      ],
+      "sourceSha256": "b5ca11de28ba016f64fed305721f25301f2692dc2042f281c3a2df9242f636e2"
     }
   ],
   "surfaces": [
@@ -861,5 +1143,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "df90d4818aacf31809b870d94492c8e9232a945ee4279215cb8e3514a198e096"
+  "graphSha256": "2995ec9c813bb47458cdcadd245fb3e569b5f006730ef10031fb1fab69c6751e"
 };

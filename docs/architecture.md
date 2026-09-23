@@ -232,6 +232,7 @@ flowchart TB
 - **ADR-0009:** one tool-less model gateway with one owner-chosen backend and no fallback.
 - **ADR-0010:** cell output is untrusted on the host; grading runs in containers (B6).
 - **ADR-0011:** LOA C1–C11 mapped to Python, with a control each, plus the profile qualification suite.
+- **ADR-0012:** proportionate security for a single-operator local tool (owner ruling); supersedes parts of ADR-0001, 0003, 0005 and 0010.
 
 ## Lifecycle model obligations (`models/run_lifecycle.tla`, US-44)
 
@@ -282,11 +283,19 @@ Applied to `docs/specs/harness-bench.md` on 2026-09-23:
 4. **Conflict C9:** proxy enforcement from phase 2; phase 1 `unrestricted` for operator-authored tasks only.
 5. **US-11:** at least one successful model call; `invalid (no model call)` (spike R11.5).
 
-## Owner decisions requested
+## Owner decisions
 
-1. **Credentials:** create benchmark API keys and a Copilot-only token (enables Copilot cells, third-party tasks and API judges), or run operator-authored tasks on subscription logins only.
-2. **Gateway backend** (before phase 3): vendor APIs, or headless CLIs with tools off.
-3. **Pack dogfooding:** accept that the benchmark does not run on coord-runner (ADR-0002, with its upstream request and re-evaluation trigger), or ask for a thin integration (engine decision requests mirrored to the pack's `coord request`).
+**Ruled 2026-09-23:**
+1. **Credentials:** subscriptions only, no API keys (ADR-0003).
+2. **Gateway backend:** the headless CLIs with every tool denied (ADR-0009).
+3. **Pack's coordinator runner:** the benchmark MUST NOT run in it; re-evaluation trigger withdrawn (ADR-0002).
+
+4. **Security weight:** proportionate for a single-operator local tool; git is a mechanism, not an entry point (ADR-0012).
+5. **Third-party tasks:** may run on the operator's subscriptions; the owner accepts the risk (ADR-0012).
+
+**Still open:**
+6. **Copilot-only fine-grained token** for Copilot cells in containers (billed to the subscription), or Copilot stays `blocked (auth)`.
+7. **Spec acceptance** (`docs/specs/harness-bench.md` is in review).
 
 ## Flagged risks & residual unknowns
 

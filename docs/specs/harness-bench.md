@@ -386,11 +386,11 @@ Each criterion is written so that a test can fail it. IDs are stable, and downst
   [Flagged R4: detection method on native Windows]
 - **Given** a Harbor task container **When** it is created **Then** it has no bind mount of the operator's profile and no access to the Docker socket.
 
-**US-48 · smoke — As P1, I want no cell to be able to reach my credentials or other data on the host, so that an unattended agent cannot leak what it should never see.**
+**US-48 · smoke — As P1, I want no cell to be able to reach my credentials or other data on the host, so that an unattended agent cannot leak what it should never see.** *(Amended 2026-09-23 by ADR-0012: met by the container's mounts, checked by one container-configuration test; the hostile-fixture criterion is no longer a gate, and outbound network is not restricted.)*
 - **Given** canary secrets planted in the operator profile (an SSH key, a git credential, another harness's auth file, a file in a sibling repo) **When** a hostile fixture task tries to read each one and send it to a local listener **Then** every read is denied, or the cell runs under an identity or sandbox that cannot reach them. No canary appears in any transcript, archive or listener log. The transcript and archive check is mandatory even when the listener stays empty, because network egress is not enforced on native cells (C9).
 - **Given** a cell **When** its environment is inspected **Then** the only credential it can reach is its own harness's model-API credential, recorded by name (never by value).
 
-**US-49 · smoke — As P1, I want no cell to take an external, irreversible action, so that a benchmark run cannot push code, open issues or publish packages.**
+**US-49 · smoke — As P1, I want no cell to take an external, irreversible action, so that a benchmark run cannot push code, open issues or publish packages.** *(Amended 2026-09-23 by ADR-0012: met by no git remote and no `gh` in the image; the network-failure fixture is no longer a gate.)*
 - **Given** any cell **When** it starts **Then** its repository has no git remote, and git credential helpers and `gh` authentication are unavailable in its environment.
 - **Given** a fixture task that attempts `git push` and `gh pr create` **When** it runs **Then** both fail without reaching the network.
 
@@ -408,7 +408,7 @@ Each criterion is written so that a test can fail it. IDs are stable, and downst
 **US-21 · smoke — As P1, I want scenario-6 cells that a harness cannot route per agent marked not applicable, so that a missing harness feature is not scored as a failure.**
 - **Given** an F-task with a `model_map` and a harness that cannot assign a model per sub-agent **When** the plan is built **Then** those cells are `not_applicable (routing unsupported)`, excluded from composites, and listed with the reason. [Inferred: Copilot CLI issue 2939, per the proposal]
 
-**US-50 · smoke — As P1, I want every tool a run depends on pinned and recorded, so that a result is reproducible and a supply-chain change is visible.**
+**US-50 · smoke — As P1, I want every tool a run depends on pinned and recorded, so that a result is reproducible and a supply-chain change is visible.** *(Amended 2026-09-23 by ADR-0012: pins and digests kept; SBOM and CVE scanning optional.)*
 - **Given** a run **When** it starts **Then** the run record lists the version, content hash and licence of each dependency:
   - ACP adapters and the CLIs they run;
   - Harbor and each task container image (by digest);
@@ -496,7 +496,7 @@ Each criterion is written so that a test can fail it. IDs are stable, and downst
 - **Given** a sampled transcript with a planted injection string **When** summary 2 is generated **Then** the set of claims it makes is the same as without the string, and the run flags the transcript.
 - **Given** any cell output (runner results, blocked reasons, decision-request details) **When** it reaches the coordinator **Then** it arrives only as schema-validated fields (ids, enums, hashes, bounded numbers). Free text from a cell never enters the coordinator's context, and a fixture cell whose blocked reason carries an injection string causes no coordinator tool call beyond the plan.
 
-**US-47 · smoke — As P1, I want every piece of data that leaves my machine scanned for secrets and personal data first, so that nothing sensitive reaches a vendor or a reader.**
+**US-47 · smoke — As P1, I want every piece of data that leaves my machine scanned for secrets and personal data first, so that nothing sensitive reaches a vendor or a reader.** *(Amended 2026-09-23 by ADR-0012: scope is published reports and judge payloads.)*
 - **Given** an egress (a judge call, a summary call, or report publication) **When** its payload is prepared **Then** it is scanned for:
   - known key patterns and the operator's token prefixes;
   - the operator's email, username and home path;

@@ -17,7 +17,7 @@ summary: >-
   harness with a container-side cwd, a verbatim prompt, a per-cell model pin, deny-all permissions and a
   deadline on every step. The pack's coord-runner cannot meet US-9, US-10 or US-11 as installed; Harbor's
   one-shot, permissive agent runs cannot meet US-10 (scenario 1), US-14 or at-most-once. Both are
-  recorded, with a trigger to re-evaluate.
+  recorded. By owner ruling the benchmark must not run in the coordinator's runner.
 ---
 
 # ADR-0002: The bench drives cells with its own ACP cell driver, not the pack's coord-runner or Harbor
@@ -59,7 +59,7 @@ We will launch measured cells with a bench-owned ACP cell driver (Python, stdlib
 ## Alternatives considered
 
 - **coord-runner as installed:** rejected. It fails US-9, US-10 and US-11 and cannot reach a container.
-- **Change coord-runner upstream, then `/updatepack`:** rejected for v0. Four changes in another repo on the critical path, and it would turn the pack's coordination runner into a benchmark runner. Filed as a tracked request to ai-forward: container cwd mapping, verbatim-prompt mode, per-worker environment. **Re-evaluation trigger:** when a pack revision ships all three, re-test coord-runner as the cell launcher against this driver's contract tests.
+- **Change coord-runner upstream, then `/updatepack`:** rejected. **Owner ruling (2026-09-23): the benchmark MUST NOT run in the coordinator's runner.** The earlier re-evaluation trigger is withdrawn. An upstream request to ai-forward (container cwd mapping, verbatim-prompt mode, per-worker environment) remains useful to the pack itself, but it can never make coord-runner this benchmark's cell launcher.
 - **Reuse `coord_transport.run_session`:** rejected. One `cwd` serves both the host process and the ACP session. Its failure discipline (bounded reads, owned cleanup) is the driver's design reference.
 - **Harbor as the runner for all cells:** rejected [Inferred; Harbor not spiked]. Its installed agents run headless and one-shot (`claude -p`, `codex exec`), install CLIs at run time and use permissive modes. That breaks:
   - the multi-turn verbatim scripted user (US-10);

@@ -4,12 +4,15 @@ on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: "17 9 * * *"   # nightly: the lifecycle model at the US-44 bounds
 
 permissions:
   contents: read
 
 jobs:
   test:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -19,3 +22,20 @@ jobs:
       - run: uv run bench validate
       - run: uv run pytest -q
       - run: python3 docs/ai-forward-pack/scripts/docs-graph.py validate
+
+  models:
+    # TLA+ lifecycle model (spec US-44). Every push: all invariants at small bounds, grading at
+    # 2 passes, liveness, the witness, and every seeded variant rejected by its own target.
+    # Nightly: safety at the US-44 bounds (3 cells, parallelism 2, 1 crash) as well.
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - if: github.event_name != 'schedule'
+        run: python3 tools/check_models.py --quick
+      - if: github.event_name == 'schedule'
+        run: python3 tools/check_models.py

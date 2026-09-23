@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-23T19:53:54Z",
+  "generated": "2026-09-23T21:54:16Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -145,6 +145,91 @@ window.AUDIT_DATA = {
       "tier": "T1",
       "started_at": "2026-09-23T19:22:35Z",
       "duration_seconds": 1878.0
+    },
+    {
+      "id": "al-01M3845ZP7VPQK317STN5Z7DF6",
+      "shortname": "design-slice-phase1-lifecycle",
+      "datetime": "2026-09-23T21:54:06Z",
+      "session": "290c6347",
+      "prompt": "C:/Program Files/Git/design-slice phase 1, starting with the lifecycle model",
+      "summary": "Lifecycle model (17 invariants, 5 liveness properties, 22 seeded variants each rejected by its own target; US-44 bounds 77,212,448 states, no error). Phase-1 walking-skeleton design v3 passed the gate at round 3 with conditions (T3 conformance red-first, mutation bar, probes W1/W3, Proof Pack). ADR-0006/0007 amended in place; ADR-0012 added (proportionate security). Threat model, privacy review and the defect-class register (MOD-A, INS-A) created. CI: --quick on push, US-44 bounds nightly.",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/run-lifecycle-model.md",
+        "docs/design/phase1-walking-skeleton.md",
+        "models/run_lifecycle.tla",
+        "tools/check_models.py",
+        "docs/adr/0012-proportionate-security-single-operator.md",
+        "docs/security/threat-model.md",
+        "docs/security/privacy-review.md",
+        "docs/lessons/defect-classes.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Phase-1 detailed design, starting with the TLA+ lifecycle model, through the design gate",
+      "done_when": "Lifecycle model checked at the US-44 bounds with every seeded variant rejected by its own target; phase-1 design passes the gate with every hard veto cleared by its lens; rollups, index and audit updated",
+      "tier": "T2",
+      "fan_out": 8,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-23T19:59:55Z",
+      "duration_seconds": 6851.0,
+      "persona_yield": [
+        {
+          "persona": "test-architect",
+          "raised": 9,
+          "accepted": 9
+        },
+        {
+          "persona": "data-persistence-architect",
+          "raised": 7,
+          "accepted": 7
+        },
+        {
+          "persona": "distributed-systems-architect",
+          "raised": 6,
+          "accepted": 6
+        },
+        {
+          "persona": "security-identity-architect",
+          "raised": 4,
+          "accepted": 4
+        },
+        {
+          "persona": "sre-diagnostician",
+          "raised": 4,
+          "accepted": 4
+        },
+        {
+          "persona": "ux-accessibility",
+          "raised": 4,
+          "accepted": 3
+        },
+        {
+          "persona": "the-simplifier",
+          "raised": 5,
+          "accepted": 3
+        },
+        {
+          "persona": "patterns-expert",
+          "raised": 4,
+          "accepted": 4
+        }
+      ],
+      "git": {
+        "sha": "0c82414a074a1e969c7e3426cdd762e36cc43182",
+        "short": "0c82414a0",
+        "branch": "design/phase1",
+        "pushed": true
+      }
     }
   ],
   "changes": [
@@ -202,6 +287,33 @@ window.AUDIT_DATA = {
         "pushed": true,
         "commits": []
       }
+    },
+    {
+      "id": "cl-01M38469QXH31HFGGATCKDBJPA",
+      "datetime": "2026-09-23T21:54:16Z",
+      "session": "290c6347",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "Phase-1 design: engine built against a checked lifecycle model; ledger keys and segments settled",
+      "prompt": "C:/Program Files/Git/design-slice phase 1, starting with the lifecycle model",
+      "summary": "Run engine order fixed by the TLA+ model: write-ahead intent, prompt ack barrier, kill -> confirm -> record -> archive, engine grades once after every cell is archived. Ledger: canonical UTF-8 hash chain, sealed segments, abandoned grading segments named in the next pass's own segment, write-once extractions with a current-extraction rule, archive_attempt in keys, archive hash as a verified commitment. Security scoped by ADR-0012.",
+      "rationale": "The owner ruled a single trusted local operator (ADR-0012), so controls target result validity. The model found defects the prose design missed (kill/record atomicity, masked guards, a pre-empted variant); the council found the re-grade collision and the abandoned-segment write. Model checking at the US-44 bounds (1 crash) is affordable (5.6 min); 2 crashes was not.",
+      "artifacts": [
+        "docs/design/run-lifecycle-model.md",
+        "docs/design/phase1-walking-skeleton.md",
+        "docs/adr/0006-append-only-run-ledger-and-derived-results.md",
+        "docs/adr/0007-deterministic-run-engine.md",
+        "docs/adr/0012-proportionate-security-single-operator.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "0c82414a074a1e969c7e3426cdd762e36cc43182",
+        "after": "0c82414a074a1e969c7e3426cdd762e36cc43182",
+        "branch": "design/phase1",
+        "pushed": true,
+        "commits": []
+      },
+      "audit_ref": "al-01M3845ZP7VPQK317STN5Z7DF6"
     }
   ],
   "messages": []

@@ -38,3 +38,6 @@ docs/audit/.run-starts.json.tmp
 !.agents/hooks.json
 !.agents/rules*
 .agents/mail/
+
+# Pinned tool downloads (tools/check_models.py fetches tla2tools.jar here)
+.tools/
