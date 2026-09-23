@@ -1,0 +1,8 @@
+[
+ {"name": "copy credential files", "file": "src/harness_bench/archive.py", "find": "elif src.is_file() and src.name not in exclude_names:", "replace": "elif src.is_file():", "tests": ["tests/test_archive.py"]},
+ {"name": "follow links", "file": "src/harness_bench/archive.py", "find": "            if _is_link(src):", "replace": "            if False:", "tests": ["tests/test_archive.py"]},
+ {"name": "skip verify before delete", "file": "src/harness_bench/archive.py", "find": "    verify(folder, rows)\n    for attempt", "replace": "    for attempt", "tests": ["tests/test_archive.py"]},
+ {"name": "verify ignores content", "file": "src/harness_bench/archive.py", "find": "or _sha(path) != r[\"sha256\"]", "replace": "", "tests": ["tests/test_archive.py"]},
+ {"name": "hash ignores size", "file": "src/harness_bench/archive.py", "find": "ROW_FIELDS = (\"path\", \"kind\", \"size\", \"sha256\", \"link_target\")", "replace": "ROW_FIELDS = (\"path\", \"kind\", \"sha256\", \"link_target\")", "tests": ["tests/test_archive.py"]},
+ {"name": "no retry on a held file", "file": "src/harness_bench/archive.py", "find": "            if attempt == retries:\n                return False", "replace": "            raise", "tests": ["tests/test_archive.py"]}
+]
