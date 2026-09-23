@@ -29,6 +29,8 @@ Each finding carries a confidence label and the spec that must resolve it (`docs
 
 Options for the ADR: (a) extend coord-runner with a per-worker external workspace; (b) run coord-runner from inside each task clone and strip coordination state before grading; (c) make each task's workspace a subtree of the bench repo's worker worktree. Decide before building the runner.
 
+**Spike 2026-09-23** (`spike-runner-path.md`): (b) works with no runner change when the bench generates the cell repo; worker trees stayed clean. (c) would expose the hidden tests. New blocker found: the runner's prompt delivery is a pack treatment in `pack=off` (spike §2.4).
+
 ## F2. coord-run/1 limits the design must fit — S-05
 
 **[Verified]** from `coord-runner.py` `validate()`:
@@ -49,6 +51,8 @@ Options for the ADR: (a) extend coord-runner with a per-worker external workspac
 **[Verified]** The proposal's adapter table uses headless CLI modes (`claude -p --output-format json`, `codex exec --json`, `copilot -p --autopilot --share`). `coord-runner.py` refuses any transport other than ACP for those harnesses. The two paths expose different telemetry: the `--output-format json` cost summary is a headless-mode feature. Pick one launch path for every cell, or comparisons mix transports. Run the Spike Protocol per harness over ACP first.
 
 **[Verified]** Copilot workers need one pinned non-`auto` model and a committed `.github/allowed_models.txt` in the invoking checkout. The `pack=off` strip list removes `.github/`. Whether that matters depends on F1.
+
+**Spike 2026-09-23** (`spike-runner-path.md`): ACP launch works for all three. Usage comes only from each harness's native store; Copilot's includes a native AI-unit cost basis. Model pinning is enforced for Copilot only, adapters run their own bundled CLI builds, and user-level configuration reaches every cell (spike §1.2–1.5).
 
 ## F4. Scripted user delivery — S-04
 

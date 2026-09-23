@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-23T17:48:49Z",
+  "generated": "2026-09-23T18:51:06Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -66,6 +66,26 @@ window.AUDIT_DATA = {
         "branch": "main",
         "pushed": true
       }
+    },
+    {
+      "id": "al-01M37SPX9RFQ9MHTJBVT37ATG1",
+      "shortname": "spike-runner-path",
+      "datetime": "2026-09-23T18:51:06Z",
+      "session": "290c6347",
+      "prompt": "you install docker desktop for me and yes run spikes 1 and 2",
+      "summary": "Docker Desktop 4.91.0 installed (engine 29.8.0, hello-world ok). Spike 1: all three harnesses complete over ACP; usage only in native stores (Copilot has native AIU cost basis); model pin enforced for Copilot only; adapters run bundled CLIs; user-level config leaks into cells. Spike 2: generated per-cell repo isolates workers (F1 option b); runner prompt delivery is a pack treatment in pack=off; unattended deny blocks Claude/Copilot shell, Codex completes. Note: docs/notes/spike-runner-path.md.",
+      "kind": "manual",
+      "skill": null,
+      "tool": null,
+      "actor": "claude-code",
+      "artifacts": [
+        "docs/notes/spike-runner-path.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "goal": "Install Docker Desktop; run spike 1 (ACP launch + telemetry per harness) and spike 2 (worker in an external task workspace)",
+      "done_when": "Docker runs hello-world; each spike has a written result with evidence",
+      "tier": "T1"
     }
   ],
   "changes": [],

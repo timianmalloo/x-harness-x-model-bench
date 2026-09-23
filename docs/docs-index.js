@@ -244,7 +244,38 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5c3fb35e120b5febb4d11e81770311a9b7037f7f75c3fd48a879c9238365a991"
+      "sourceSha256": "6e60fa814c6eae61a7b55760e8315c186138ee62e0783571b412994046748e4e"
+    },
+    {
+      "id": "note-spike-runner-path",
+      "path": "docs/notes/spike-runner-path.md",
+      "title": "Spike: harness launch over ACP, telemetry, and worker isolation",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-23",
+      "reviewSuggested": [],
+      "summary": "Spikes 1 and 2 run on the workstation on 2026-09-23. All three harnesses complete a turn over ACP through the pack's transport, and every token count lives in each harness's own session store (Copilot also records a native cost basis). A generated per-cell repo as the invoking checkout isolates workers with no runner change. Four runner gaps block unattended benchmark cells: prompt delivery, per-worker model pins, permission symmetry, and user-level config leakage.",
+      "tags": [
+        "benchmark",
+        "spike",
+        "runner",
+        "telemetry",
+        "isolation"
+      ],
+      "links": [
+        {
+          "to": "note-proposal-grounding-findings",
+          "rel": "refines"
+        },
+        {
+          "to": "proposal-cross-harness-benchmarking",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "6be48da395ad06a2e18cf0e664f395e84f62f915bd6629db4ca86712b119edda"
     },
     {
       "id": "proposal-cross-harness-benchmarking",
@@ -318,5 +349,5 @@ window.DOCS_INDEX = {
       "description": "Open an interactive knowledge artifact."
     }
   ],
-  "graphSha256": "437d513126b1bdb4ba5cde08a4cbdd612ed0efeb43dfdcd965b8efc079e7e511"
+  "graphSha256": "48438d3cc5ac434deb5871006167503ea1daac68eb8c6aeda23a67f97111531c"
 };
