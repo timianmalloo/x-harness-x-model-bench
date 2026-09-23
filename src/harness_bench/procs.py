@@ -1,0 +1,275 @@
+"""Every subprocess runs in its own Windows Job Object (ADR-0013; spikes N2, N4).
+
+Pattern: Gateway (PoEAA) for all process control, plus Bulkhead for per-cell lifetime. A job is not a
+sandbox: it is how the engine enforces a budget or a stop and knows a process tree has ended.
+
+- spawn: the process is created suspended, assigned to a new job, then resumed, so nothing it starts
+  can run before it is inside the job. Only its own three standard handles are inherited (close_fds).
+- The job is kill-on-close with breakaway never allowed, and its handle is not inheritable, so the
+  engine's death kills every cell tree (N2.2) and no child leaves the job (N4).
+- terminate_and_confirm: TerminateJobObject, then wait for the job's active-process count to reach 0.
+- Accounting: peak memory and CPU time come from the job, with no polling.
+- run: a bounded, deadline-limited command (git, graders) in its own job; the tree is always
+  terminated when the main process ends or the deadline passes.
+
+Windows only (NG9). Only this module calls `subprocess` (design D3 import lint).
+"""
+
+from __future__ import annotations
+
+import ctypes
+import ctypes.wintypes as wt
+import subprocess
+import threading
+import time
+from dataclasses import dataclass
+
+from harness_bench.errors import Cause
+
+KILL_ON_JOB_CLOSE = 0x2000
+BREAKAWAY_OK = 0x800
+SILENT_BREAKAWAY_OK = 0x1000
+DIE_ON_UNHANDLED_EXCEPTION = 0x400
+_CREATE_SUSPENDED = 0x4
+_CREATE_NO_WINDOW = 0x08000000
+_PROCESS_ALL_ACCESS = 0x1F0FFF
+_HANDLE_FLAG_INHERIT = 0x1
+_BASIC_ACCOUNTING = 1
+_BASIC_PID_LIST = 3
+_EXTENDED_LIMIT = 9
+_MAX_PIDS = 1024
+
+_k32 = ctypes.WinDLL("kernel32", use_last_error=True)
+_ntdll = ctypes.WinDLL("ntdll")
+_k32.CreateJobObjectW.restype = wt.HANDLE
+_k32.CreateJobObjectW.argtypes = [ctypes.c_void_p, wt.LPCWSTR]
+_k32.OpenProcess.restype = wt.HANDLE
+_k32.OpenProcess.argtypes = [wt.DWORD, wt.BOOL, wt.DWORD]
+_k32.AssignProcessToJobObject.argtypes = [wt.HANDLE, wt.HANDLE]
+_k32.AssignProcessToJobObject.restype = wt.BOOL
+_k32.TerminateJobObject.argtypes = [wt.HANDLE, wt.UINT]
+_k32.TerminateProcess.argtypes = [wt.HANDLE, wt.UINT]
+_k32.CloseHandle.argtypes = [wt.HANDLE]
+_k32.SetInformationJobObject.argtypes = [wt.HANDLE, ctypes.c_int, ctypes.c_void_p, wt.DWORD]
+_k32.QueryInformationJobObject.argtypes = [wt.HANDLE, ctypes.c_int, ctypes.c_void_p, wt.DWORD, ctypes.c_void_p]
+_k32.GetHandleInformation.argtypes = [wt.HANDLE, ctypes.POINTER(wt.DWORD)]
+_ntdll.NtResumeProcess.argtypes = [wt.HANDLE]
+
+
+class _IoCounters(ctypes.Structure):
+    _fields_ = [(n, ctypes.c_ulonglong) for n in ("r", "w", "o", "rb", "wb", "ob")]
+
+
+class _BasicLimit(ctypes.Structure):
+    _fields_ = [("PerProcessUserTimeLimit", ctypes.c_longlong), ("PerJobUserTimeLimit", ctypes.c_longlong),
+                ("LimitFlags", wt.DWORD), ("MinimumWorkingSetSize", ctypes.c_size_t),
+                ("MaximumWorkingSetSize", ctypes.c_size_t), ("ActiveProcessLimit", wt.DWORD),
+                ("Affinity", ctypes.c_size_t), ("PriorityClass", wt.DWORD), ("SchedulingClass", wt.DWORD)]
+
+
+class _ExtendedLimit(ctypes.Structure):
+    _fields_ = [("Basic", _BasicLimit), ("Io", _IoCounters), ("ProcessMemoryLimit", ctypes.c_size_t),
+                ("JobMemoryLimit", ctypes.c_size_t), ("PeakProcessMemoryUsed", ctypes.c_size_t),
+                ("PeakJobMemoryUsed", ctypes.c_size_t)]
+
+
+class _BasicAccounting(ctypes.Structure):
+    _fields_ = [("TotalUserTime", ctypes.c_longlong), ("TotalKernelTime", ctypes.c_longlong),
+                ("ThisPeriodTotalUserTime", ctypes.c_longlong), ("ThisPeriodTotalKernelTime", ctypes.c_longlong),
+                ("TotalPageFaultCount", wt.DWORD), ("TotalProcesses", wt.DWORD),
+                ("ActiveProcesses", wt.DWORD), ("TotalTerminatedProcesses", wt.DWORD)]
+
+
+class _PidList(ctypes.Structure):
+    _fields_ = [("Assigned", wt.DWORD), ("InList", wt.DWORD), ("Ids", ctypes.c_size_t * _MAX_PIDS)]
+
+
+class SpawnError(Exception):
+    """The process could not be started inside its job (HB-CELL-114)."""
+
+    def __init__(self, message: str, win32_error: int | None) -> None:
+        super().__init__(f"{Cause.spawn.code}: {message} (win32 error {win32_error})")
+        self.cause = Cause.spawn
+        self.win32_error = win32_error
+
+
+# Fault seams for tests: the two calls whose failure must leave no process behind.
+def _assign(job: int, handle: int) -> bool:
+    return bool(_k32.AssignProcessToJobObject(job, handle))
+
+
+def _open_process(pid: int) -> int:
+    return _k32.OpenProcess(_PROCESS_ALL_ACCESS, False, pid)
+
+
+class Job:
+    """One kill-on-close Job Object with breakaway never allowed."""
+
+    def __init__(self) -> None:
+        handle = _k32.CreateJobObjectW(None, None)  # NULL security attributes: not inheritable
+        if not handle:
+            raise SpawnError("CreateJobObject failed", ctypes.get_last_error())
+        info = _ExtendedLimit()
+        info.Basic.LimitFlags = KILL_ON_JOB_CLOSE | DIE_ON_UNHANDLED_EXCEPTION
+        if not _k32.SetInformationJobObject(handle, _EXTENDED_LIMIT, ctypes.byref(info), ctypes.sizeof(info)):
+            err = ctypes.get_last_error()
+            _k32.CloseHandle(handle)
+            raise SpawnError("SetInformationJobObject failed", err)
+        self.handle = handle
+
+    def _extended(self) -> _ExtendedLimit:
+        info = _ExtendedLimit()
+        _k32.QueryInformationJobObject(self.handle, _EXTENDED_LIMIT, ctypes.byref(info), ctypes.sizeof(info), None)
+        return info
+
+    def _accounting(self) -> _BasicAccounting:
+        acc = _BasicAccounting()
+        _k32.QueryInformationJobObject(self.handle, _BASIC_ACCOUNTING, ctypes.byref(acc), ctypes.sizeof(acc), None)
+        return acc
+
+    def limit_flags(self) -> int:
+        return self._extended().Basic.LimitFlags
+
+    def inheritable(self) -> bool:
+        flags = wt.DWORD()
+        _k32.GetHandleInformation(self.handle, ctypes.byref(flags))
+        return bool(flags.value & _HANDLE_FLAG_INHERIT)
+
+    def active(self) -> int:
+        return self._accounting().ActiveProcesses
+
+    def pids(self) -> set[int]:
+        buf = _PidList()
+        _k32.QueryInformationJobObject(self.handle, _BASIC_PID_LIST, ctypes.byref(buf), ctypes.sizeof(buf), None)
+        return {int(buf.Ids[i]) for i in range(buf.InList)}
+
+    def peak_memory(self) -> int:
+        return int(self._extended().PeakJobMemoryUsed)
+
+    def cpu_time_ms(self) -> int:
+        acc = self._accounting()
+        return (acc.TotalUserTime + acc.TotalKernelTime) // 10_000
+
+    def terminate(self, exit_code: int = 1) -> None:
+        _k32.TerminateJobObject(self.handle, exit_code)
+
+    def close(self) -> None:
+        if self.handle:
+            _k32.CloseHandle(self.handle)
+            self.handle = None
+
+
+@dataclass
+class CellProcess:
+    proc: subprocess.Popen
+    job: Job
+
+    @property
+    def pid(self) -> int:
+        return self.proc.pid
+
+    def wait(self, timeout: float | None = None) -> int:
+        """The main process's exit status, unsigned (e.g. 0xC0000017 for STATUS_NO_MEMORY)."""
+        return self.proc.wait(timeout=timeout) & 0xFFFFFFFF
+
+    def terminate_and_confirm(self, timeout: float, retry_every: float = 1.0) -> bool:
+        """Kill the whole tree; True once the job reports no active process."""
+        deadline = time.monotonic() + timeout
+        next_kill = 0.0
+        while time.monotonic() < deadline:
+            if time.monotonic() >= next_kill:
+                self.job.terminate()
+                next_kill = time.monotonic() + retry_every
+            if self.job.active() == 0:
+                return True
+            time.sleep(0.05)
+        return self.job.active() == 0
+
+    def close(self) -> None:
+        for stream in (self.proc.stdin, self.proc.stdout, self.proc.stderr):
+            if stream is not None:
+                try:
+                    stream.close()
+                except OSError:
+                    pass
+        self.job.close()
+
+
+def spawn(argv: list[str], cwd, env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL) -> CellProcess:
+    """Start argv suspended, assign it to a new job, resume it. Raises SpawnError, leaving no process."""
+    job = Job()
+    try:
+        proc = subprocess.Popen(argv, cwd=cwd, env=env, stdin=stdin, stdout=stdout, stderr=stderr,
+                                creationflags=_CREATE_SUSPENDED | _CREATE_NO_WINDOW, close_fds=True)
+    except OSError as exc:
+        job.close()
+        raise SpawnError(f"cannot start {argv[0]}", getattr(exc, "winerror", None) or exc.errno) from exc
+    handle = _open_process(proc.pid)
+    if not handle or not _assign(job.handle, handle):
+        err = ctypes.get_last_error()
+        if handle:
+            _k32.TerminateProcess(handle, 1)
+            _k32.CloseHandle(handle)
+        else:
+            proc.kill()
+        proc.wait(timeout=30)
+        job.close()
+        raise SpawnError(f"cannot assign pid {proc.pid} to its job", err)
+    _ntdll.NtResumeProcess(handle)
+    _k32.CloseHandle(handle)
+    return CellProcess(proc, job)
+
+
+@dataclass
+class Completed:
+    returncode: int | None
+    stdout: str
+    stderr: str
+    timed_out: bool
+    truncated: bool
+    seconds: float
+
+
+def _drain(stream, limit: int, sink: list, flags: list) -> None:
+    kept = 0
+    for chunk in iter(lambda: stream.read(65536), b""):
+        room = limit - kept
+        if room > 0:
+            sink.append(chunk[:room])
+            kept += min(len(chunk), room)
+        if len(chunk) > room:
+            flags.append(True)
+
+
+def run(argv: list[str], cwd, env, timeout: float, max_output: int = 1 << 20, stdin_data: bytes | None = None) -> Completed:
+    """Run a bounded command in its own job; the whole tree is terminated when it ends or times out."""
+    started = time.monotonic()
+    cell = spawn(argv, cwd, env, stdin=subprocess.PIPE if stdin_data is not None else subprocess.DEVNULL,
+                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err, trunc = [], [], []
+    readers = [threading.Thread(target=_drain, args=(cell.proc.stdout, max_output, out, trunc), daemon=True),
+               threading.Thread(target=_drain, args=(cell.proc.stderr, max_output, err, trunc), daemon=True)]
+    for t in readers:
+        t.start()
+    if stdin_data is not None:
+        try:
+            cell.proc.stdin.write(stdin_data)
+            cell.proc.stdin.close()
+        except OSError:
+            pass
+    timed_out = False
+    try:
+        code: int | None = cell.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        timed_out = True
+        code = None
+    cell.terminate_and_confirm(timeout=30)
+    if code is None:
+        code = cell.proc.wait(timeout=30) & 0xFFFFFFFF
+    for t in readers:
+        t.join(timeout=10)
+    cell.close()
+    def decode(parts: list) -> str:
+        return b"".join(parts).decode("utf-8", errors="replace")
+
+    return Completed(code, decode(out), decode(err), timed_out, bool(trunc), time.monotonic() - started)
