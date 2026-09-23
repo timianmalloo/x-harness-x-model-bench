@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-23T19:20:58Z",
+  "generated": "2026-09-23T19:53:54Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -110,6 +110,41 @@ window.AUDIT_DATA = {
       "tier": "T1",
       "started_at": "2026-09-23T18:54:46Z",
       "duration_seconds": 1572.0
+    },
+    {
+      "id": "al-01M37X9W0YGNX3AQP3NZKJGYB3",
+      "shortname": "define-architecture-harness-bench",
+      "datetime": "2026-09-23T19:53:53Z",
+      "session": "290c6347",
+      "prompt": "run the R1, R2 and R11 spikes then /define-architecture",
+      "summary": "Spikes: per-cell homes keep auth and drop user skills (workspace must be outside the profile; Claude account context persists); static zero-prompt profiles on all three harnesses but only Codex sandboxes natively; Claude and Codex ran in hardened Linux containers, Copilot needs a token. Architecture: deterministic Pipes-and-Filters pipeline; cells in per-cell hardened containers via a bench-owned ACP driver; per-cell profiles with scoped credential kinds; static permissions; egress proxy + egress gate; hash-chained append-only facts with declared grains and derived views; single-writer run engine with failure taxonomy; telemetry from native records; tool-less model gateway; B6 untrusted cell output; LOA mapping. 11 ADRs; council passed in 2 rounds (16 blocking items resolved). Spec amended (containers, ACL, NFR, C9, US-11).",
+      "kind": "skill",
+      "skill": "define-architecture",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/architecture.md",
+        "docs/adr/0001-cells-run-in-per-cell-linux-containers.md",
+        "docs/adr/0002-bench-owned-acp-cell-driver.md",
+        "docs/adr/0003-per-cell-harness-profile.md",
+        "docs/adr/0004-static-permissions-offline-dependencies.md",
+        "docs/adr/0005-egress-control.md",
+        "docs/adr/0006-append-only-run-ledger-and-derived-results.md",
+        "docs/adr/0007-deterministic-run-engine.md",
+        "docs/adr/0008-telemetry-from-native-records.md",
+        "docs/adr/0009-model-gateway-for-benchmark-model-calls.md",
+        "docs/adr/0010-cell-output-is-untrusted-on-the-host.md",
+        "docs/adr/0011-loa-conformance-in-python.md",
+        "docs/notes/spike-isolation-permissions.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Run spikes R1, R2, R11; produce the S-02 architecture of record with ADRs through the architect council",
+      "done_when": "spike results committed; architecture + ADRs pass the council gate; committed and pushed",
+      "tier": "T1",
+      "started_at": "2026-09-23T19:22:35Z",
+      "duration_seconds": 1878.0
     }
   ],
   "changes": [
@@ -132,6 +167,39 @@ window.AUDIT_DATA = {
         "after": "8cbbd86c569ae939a2434c3959b4ac2024d28970",
         "branch": "spec/harness-bench",
         "pushed": null,
+        "commits": []
+      }
+    },
+    {
+      "id": "cl-01M37X9W477YSW2MAWNF79T708",
+      "datetime": "2026-09-23T19:53:54Z",
+      "session": "290c6347",
+      "kind": "architecture",
+      "skill": "define-architecture",
+      "title": "harness-bench architecture of record: containerised cells, bench-owned ACP driver, append-only ledgers",
+      "prompt": "run the R1, R2 and R11 spikes then /define-architecture",
+      "summary": "ADR-0001..0011: per-cell hardened Linux containers; bench-owned ACP driver (not coord-runner, not Harbor); per-cell harness profiles with scoped credentials and served-model verification; static symmetric permissions and offline deps; egress proxy + single egress gate; hash-chained append-only facts, shared verdict cache, derived views; deterministic single-writer run engine with failure taxonomy and circuit breaker; telemetry from native records; tool-less model gateway with one owner-chosen backend; untrusted cell output on the host (grading containers); LOA C1-C11 in Python.",
+      "rationale": "Spikes showed native Windows gives asymmetric containment and leaks user config, the pack runner cannot deliver verbatim prompts or per-cell pins or reach containers, and telemetry lives only in native records. The architect council (6 lenses) blocked round 1 on crash-safety, security boundaries, data grains and failure attribution; all resolved in round 2.",
+      "artifacts": [
+        "docs/architecture.md",
+        "docs/adr/0001-cells-run-in-per-cell-linux-containers.md",
+        "docs/adr/0002-bench-owned-acp-cell-driver.md",
+        "docs/adr/0003-per-cell-harness-profile.md",
+        "docs/adr/0004-static-permissions-offline-dependencies.md",
+        "docs/adr/0005-egress-control.md",
+        "docs/adr/0006-append-only-run-ledger-and-derived-results.md",
+        "docs/adr/0007-deterministic-run-engine.md",
+        "docs/adr/0008-telemetry-from-native-records.md",
+        "docs/adr/0009-model-gateway-for-benchmark-model-calls.md",
+        "docs/adr/0010-cell-output-is-untrusted-on-the-host.md",
+        "docs/adr/0011-loa-conformance-in-python.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "1faf55226fddc887d2b1ee1da2e044adcf85030b",
+        "after": "1faf55226fddc887d2b1ee1da2e044adcf85030b",
+        "branch": "arch/harness-bench",
+        "pushed": true,
         "commits": []
       }
     }

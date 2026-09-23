@@ -3,7 +3,7 @@ window.DOCS_INDEX = {
   "schemaVersion": "docs-index/v2",
   "project": "x-harness-x-model-bench",
   "generator": "docs-graph.py derive",
-  "rootId": "audit-log",
+  "rootId": "adr-0001-cell-containers",
   "artifactTypes": [
     "knowledge",
     "glossary",
@@ -196,6 +196,406 @@ window.DOCS_INDEX = {
   },
   "artifacts": [
     {
+      "id": "adr-0001-cell-containers",
+      "path": "docs/adr/0001-cells-run-in-per-cell-linux-containers.md",
+      "title": "ADR-0001: Every measured cell runs in its own hardened Linux container",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "all phases",
+      "reviewBy": "2027-09-23",
+      "reviewSuggested": [],
+      "summary": "Each cell runs in a fresh, hardened Linux container under Docker Desktop (WSL2), with a deterministic name, its own network, only its workspace and its own harness home mounted, and read-only permission files. It is the only option that gives all three harnesses the same containment and keeps host credentials unreachable by construction.",
+      "tags": [
+        "benchmark",
+        "isolation",
+        "security",
+        "containers"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "note-spike-isolation-permissions",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "7f9897c54b9e14046d46c06fed15a518004abbdf723876558ecdabf831999f47"
+    },
+    {
+      "id": "adr-0002-cell-driver",
+      "path": "docs/adr/0002-bench-owned-acp-cell-driver.md",
+      "title": "ADR-0002: The bench drives cells with its own ACP cell driver, not the pack's coord-runner or Harbor",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "all phases",
+      "reviewBy": "2027-09-23",
+      "reviewSuggested": [],
+      "summary": "Measured cells are launched by a small bench-owned driver that speaks ACP to the containerised harness with a container-side cwd, a verbatim prompt, a per-cell model pin, deny-all permissions and a deadline on every step. The pack's coord-runner cannot meet US-9, US-10 or US-11 as installed; Harbor's one-shot, permissive agent runs cannot meet US-10 (scenario 1), US-14 or at-most-once. Both are recorded, with a trigger to re-evaluate.",
+      "tags": [
+        "benchmark",
+        "runner",
+        "acp",
+        "pack",
+        "harbor"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "note-spike-runner-path",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-spike-isolation-permissions",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "f3fa01c81f357cbbc1877f35c596c4ef9db06b23e1047f534cd3f3715f9a3cc3"
+    },
+    {
+      "id": "adr-0003-harness-profile",
+      "path": "docs/adr/0003-per-cell-harness-profile.md",
+      "title": "ADR-0003: A pinned, per-cell harness profile with a scoped credential and a verified model",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "all phases",
+      "reviewBy": "2027-09-23",
+      "reviewSuggested": [],
+      "summary": "Each harness has a versioned profile (Ports & Adapters): pinned CLI build, a fresh per-cell home seeded only with a credential and read-only permission files, a per-cell model pin, and a post-cell check that at least one model call succeeded on the pinned model. Operator subscription logins may run only operator-authored tasks; every archive and egress is scanned for the exact credential values issued to the run.",
+      "tags": [
+        "benchmark",
+        "harness",
+        "identity",
+        "model-pinning"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "note-spike-isolation-permissions",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "d8300c592cd7661ff8f690ce763e5aca908606df5ac75dece05416ecbd7fb473"
+    },
+    {
+      "id": "adr-0004-static-permissions",
+      "path": "docs/adr/0004-static-permissions-offline-dependencies.md",
+      "title": "ADR-0004: A static, symmetric permission profile and offline task dependencies",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "all phases",
+      "reviewBy": "2027-09-23",
+      "reviewSuggested": [],
+      "summary": "Every harness runs with the same tool classes allowed statically, with no model-based approval: file edits and shell inside the container, no web tools, no package registry. Task dependencies are restored into the image before the clock starts.",
+      "tags": [
+        "benchmark",
+        "permissions",
+        "security"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "note-spike-isolation-permissions",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "5ab6773b168dcb0e7c2c37ff5e8c417aa80065eabc7a6d6e921ec410fb88d881"
+    },
+    {
+      "id": "adr-0005-egress-control",
+      "path": "docs/adr/0005-egress-control.md",
+      "title": "ADR-0005: Cells reach only model APIs; benchmark model calls pass one egress gate",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "phase 2 onward (recorded, not enforced, in phase 1)",
+      "reviewBy": "2027-09-23",
+      "reviewSuggested": [],
+      "summary": "Cell containers sit on an internal Docker network whose only way out is an allowlisting egress proxy for the vendor model and auth hosts. Every call the benchmark itself makes to a vendor (judges, summaries, matcher) and every report publication passes one egress gate that scans for secrets and personal data first.",
+      "tags": [
+        "benchmark",
+        "security",
+        "network",
+        "privacy"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "48b86c050a02aa0e3372a3726a72b6b34f3749fefc8f2f4816de1ad28e33971d"
+    },
+    {
+      "id": "adr-0006-results-data-model",
+      "path": "docs/adr/0006-append-only-run-ledger-and-derived-results.md",
+      "title": "ADR-0006: A hash-chained, append-only record per run; every result is a derived view",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "all phases",
+      "reviewBy": "2027-09-23",
+      "reviewSuggested": [],
+      "summary": "The durable record is a set of append-only, hash-chained JSON Lines facts per run with declared grains (lifecycle events, model calls, tool calls, archive files, grading passes, scores, verdict uses, egress events), immutable content-addressed dimensions, and one shared content-addressed verdict cache. Current states, costs, composites and statistics are derived views in in-memory DuckDB; no results database is persisted.",
+      "tags": [
+        "benchmark",
+        "data-model",
+        "persistence",
+        "grain"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "902ad09be38897d6758d6208ed986812da1dbf65303b294e4fcc74a520c90ed2"
+    },
+    {
+      "id": "adr-0007-run-engine",
+      "path": "docs/adr/0007-deterministic-run-engine.md",
+      "title": "ADR-0007: A deterministic run engine schedules cells; the LLM coordinator never does",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "all phases",
+      "reviewBy": "2027-09-23",
+      "reviewSuggested": [],
+      "summary": "`bench run` is one deterministic process per run: single writer of the lifecycle log, write-ahead launch intents, named containers it can always find and kill, monotonic budgets with host-suspend detection, apply-once control files, a closed failure taxonomy that separates infrastructure from harness faults, and a circuit breaker. The Claude Code session compiles, confirms and relays; it reads only schema-bound status.",
+      "tags": [
+        "benchmark",
+        "runner",
+        "idempotency",
+        "concurrency",
+        "failure-modes"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "69a487a6e12cc52c37031aa04a364d04f3312ef487925e17fe905b79634d74ee"
+    },
+    {
+      "id": "adr-0008-telemetry",
+      "path": "docs/adr/0008-telemetry-from-native-records.md",
+      "title": "ADR-0008: Usage telemetry comes from each cell's archived native session record",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "all phases",
+      "reviewBy": "2027-09-23",
+      "reviewSuggested": [],
+      "summary": "After a cell ends, the harness's native session record in the cell's own home is archived and hashed, then normalised into model_calls rows with OpenTelemetry GenAI attribute names. No OTel collector runs in v0.",
+      "tags": [
+        "benchmark",
+        "telemetry",
+        "cost"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "note-spike-runner-path",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "f02eb68a95d6fc3d5707d71371188bb54f569ab59abfe4fb484a9bfadf37823b"
+    },
+    {
+      "id": "adr-0009-model-gateway",
+      "path": "docs/adr/0009-model-gateway-for-benchmark-model-calls.md",
+      "title": "ADR-0009: The benchmark's own model calls go through one tool-less model gateway",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "phase 3 onward (matcher T0 rung from phase 2)",
+      "reviewBy": "2027-09-23",
+      "reviewSuggested": [],
+      "summary": "Judges, the AI summaries and the model rung of the scripted-user matcher call models through one gateway: no tools, schema-constrained output, agent text as delimited data, results read through the shared content-addressed cache, every payload through the egress gate. One backend is built, chosen by the owner before phase 3; if it is unavailable, the result is NOT_RECORDED.",
+      "tags": [
+        "benchmark",
+        "judges",
+        "ai",
+        "security",
+        "cost"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "70c8ac2b2526afa68aff7add13626469e0e3d753feef6e971b26a446a2646662"
+    },
+    {
+      "id": "adr-0010-untrusted-cell-output",
+      "path": "docs/adr/0010-cell-output-is-untrusted-on-the-host.md",
+      "title": "ADR-0010: Cell output is untrusted on the host; grading runs in containers",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "all phases",
+      "reviewBy": "2027-09-23",
+      "reviewSuggested": [],
+      "summary": "Boundary B6: everything a cell wrote is untrusted. No host process executes, builds, imports or tests it; graders that run cell content do so in fresh no-network grading containers with read-only mounts. Host git runs only with a bench-owned configuration, the archiver never follows links, and no agentic tool on the host opens a cell workspace.",
+      "tags": [
+        "benchmark",
+        "security",
+        "grading",
+        "boundary"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0001-cell-containers",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "8614159b91624a504dc796601e295aea4751b7d273c9335fbbcfee150633a520"
+    },
+    {
+      "id": "adr-0011-loa-python",
+      "path": "docs/adr/0011-loa-conformance-in-python.md",
+      "title": "ADR-0011: LOA conformance criteria mapped to Python, with a control per criterion",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "phase 1 onward",
+      "reviewBy": "2027-09-23",
+      "reviewSuggested": [],
+      "summary": "The LOA conformance criteria C1–C11 are written for .NET analyzers; this Python codebase meets their intent through named lints and tests, one per criterion, run in CI. Two recorded deviations: cells act as a benchmark principal (not the requester's), and phase 1's unrestricted network is a time-boxed, fail-closed exception.",
+      "tags": [
+        "benchmark",
+        "loa",
+        "conformance",
+        "testing"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "27da114b153d8f864a697bb171c1c7134c08688e28a136b88768cbd94520af68"
+    },
+    {
+      "id": "arch-harness-bench",
+      "path": "docs/architecture.md",
+      "title": "Architecture: harness-bench",
+      "type": "architecture",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "S-02 architecture of record (smoke milestone first)",
+      "reviewBy": "2027-03-22",
+      "reviewSuggested": [],
+      "summary": "A deterministic pipeline (plan, run, grade, report) whose single-writer run engine launches every measured cell in its own hardened Linux container through a bench-owned ACP driver, with a pinned per-cell harness profile, a static permission profile, no reach to host credentials, and grading in no-network containers. Hash-chained append-only ledgers per run are the record; every result is a derived view. Models appear only as the systems under test and, tool-less, as judges, summarizer and matcher.",
+      "tags": [
+        "benchmark",
+        "architecture",
+        "containers",
+        "runner",
+        "grading"
+      ],
+      "links": [
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "proposal-cross-harness-benchmarking",
+          "rel": "refines"
+        },
+        {
+          "to": "note-spike-runner-path",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-spike-isolation-permissions",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "Component map & boundaries",
+          "mermaid": "flowchart TB\n  subgraph Session[\"Coordinator session (Claude Code, /start-benchmark)\"]\n    SK[start-benchmark skill: compile, confirm, relay, audit-log entries]\n  end\n  subgraph Host[\"bench (Python, T0) on the Windows host\"]\n    CLI[bench CLI: validate, plan, run, status, stop, grade, report, verify, teardown]\n    ENG[Run engine: single writer, lifecycle = run_lifecycle.tla]\n    WSB[Workspace builder]\n    IMG[Image builder: env image + pinned harness layer, SBOM, CVE scan]\n    PRF[(Harness profiles: build, mode, pin, home seeding, reader)]\n    DRV[ACP cell driver]\n    ARC[Archiver: no link following, exact-value credential scan]\n    TEL[Telemetry: readers + normaliser]\n    GRD[Grade orchestrator]\n    GW[Model gateway: tool-less]\n    EG[Egress gate]\n    VIEWS[In-memory DuckDB views]\n    REP[Report: CLI + HTML + summaries]\n  end\n  subgraph Store[\"runs/<run_id>/ + cache/\"]\n    LED[(hash-chained facts: events, model_calls, tool_calls, archive_files, scores, verdict_uses, egress_events)]\n    ARCH[(cell archives)]\n    CTL[(control/: stop, decision answers)]\n    VC[(shared verdict cache)]\n  end\n  subgraph Docker[\"Docker Desktop (WSL2)\"]\n    PROXY[Egress proxy, off-the-shelf]\n    CELL[Cell containers: one network each]\n    GC[Grading containers: --network none, read-only mounts]\n  end\n  SK -->|bench plan / run / status --json| CLI\n  SK -->|decision answers| CTL\n  CLI --> ENG\n  ENG --> WSB & IMG & DRV & ARC\n  PRF --> IMG & DRV & TEL\n  DRV -->|docker run -i hb-run-cell, ACP stdio| CELL\n  CELL --> PROXY\n  CTL --> ENG\n  ENG --> LED\n  ARC --> ARCH\n  ARCH --> TEL --> LED\n  ARCH --> GRD --> GC\n  GRD --> LED\n  GRD --> GW\n  GW --> VC\n  GW --> EG\n  LED --> VIEWS --> REP\n  REP --> GW\n  REP --> EG"
+        }
+      ],
+      "sourceSha256": "26c5611fa941899840d3f952a8de13b051722670a1da8957f8e0803c0e23739b"
+    },
+    {
       "id": "audit-log",
       "path": "docs/audit/audit-log.md",
       "title": "Audit & Change Log",
@@ -245,6 +645,38 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "6e60fa814c6eae61a7b55760e8315c186138ee62e0783571b412994046748e4e"
+    },
+    {
+      "id": "note-spike-isolation-permissions",
+      "path": "docs/notes/spike-isolation-permissions.md",
+      "title": "Spikes R1, R2, R11: config isolation, static permissions, host isolation",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-23",
+      "reviewSuggested": [],
+      "summary": "Per-cell config homes keep sign-in and drop user-level skills for all three harnesses, but a workspace under the user profile still loads ~/.claude/CLAUDE.md, and Claude's account context (email, account-synced skills) survives any isolation. A static profile runs shell and edits with zero prompts on every harness, but only Codex sandboxes commands on native Windows. Linux containers give every harness the same containment; Claude and Codex ran in one, Copilot needs a token passed in.",
+      "tags": [
+        "benchmark",
+        "spike",
+        "isolation",
+        "permissions",
+        "containers",
+        "security"
+      ],
+      "links": [
+        {
+          "to": "spec-harness-bench",
+          "rel": "refines"
+        },
+        {
+          "to": "note-spike-runner-path",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "da09fde2b6acb845cf2ef7fbf540d2f522c69fe258b220867596d76209aaa798"
     },
     {
       "id": "note-spike-runner-path",
@@ -373,7 +805,7 @@ window.DOCS_INDEX = {
         {
           "kind": "flowchart",
           "title": "Conceptual domain model (DM1 / DM4)",
-          "mermaid": "flowchart LR\n  subgraph Catalog[\"Benchmark Catalog\"]\n    BOM[BOM version] --> TV[Task version]\n    MC[Metric catalog version]\n    PL[Price list version]\n  end\n  subgraph Exec[\"Run Execution\"]\n    Run --> Plan[Frozen plan]\n    Run --> Sched[Run scheduler policy]\n    Cell --> Attempt\n  end\n  subgraph Ev[\"Evidence\"]\n    Arch[Cell archive]\n    TD[Teardown policy]\n  end\n  subgraph Gr[\"Grading\"]\n    SS[Score set]\n    JV[Judge verdict]\n    CM[Clarification match]\n  end\n  subgraph Rep[\"Reporting\"]\n    Report\n    Summary[AI summary]\n  end\n  TV -. by identity .-> Cell\n  Run -. by identity .-> Cell\n  Cell -. produces .-> Arch\n  Arch -. graded into .-> SS\n  MC -. version .-> SS\n  PL -. version .-> SS\n  JV --> SS\n  CM --> SS\n  SS --> Report\n  Report --> Summary\n  Exec -. ACL .- Pack[(ai-forward coordination, external)]"
+          "mermaid": "flowchart LR\n  subgraph Catalog[\"Benchmark Catalog\"]\n    BOM[BOM version] --> TV[Task version]\n    MC[Metric catalog version]\n    PL[Price list version]\n  end\n  subgraph Exec[\"Run Execution\"]\n    Run --> Plan[Frozen plan]\n    Run --> Sched[Run scheduler policy]\n    Cell --> Attempt\n  end\n  subgraph Ev[\"Evidence\"]\n    Arch[Cell archive]\n    TD[Teardown policy]\n  end\n  subgraph Gr[\"Grading\"]\n    SS[Score set]\n    JV[Judge verdict]\n    CM[Clarification match]\n  end\n  subgraph Rep[\"Reporting\"]\n    Report\n    Summary[AI summary]\n  end\n  TV -. by identity .-> Cell\n  Run -. by identity .-> Cell\n  Cell -. produces .-> Arch\n  Arch -. graded into .-> SS\n  MC -. version .-> SS\n  PL -. version .-> SS\n  JV --> SS\n  CM --> SS\n  SS --> Report\n  Report --> Summary\n  Gr -. ACL: coordination-ledger reader .- Pack[(ai-forward coordination, external)]"
         },
         {
           "kind": "flowchart",
@@ -401,7 +833,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TD\n  A([P2 runs /new-bench-task ID]) --> S[stub: task.yaml from template]\n  S --> D[draft: prompt.md, workspace base]\n  D --> O[oracle: hidden tests / rubric / clarifications / seeded bug]\n  O --> V{bench validate}\n  V -->|contract broken| E[Folder, rule, fix] --> O\n  V -->|scenario 1, no clarifications| E\n  V -->|scenario 7, no seeded bug or no toolchain pin| E\n  V -->|ok| DIS{Discrimination check: reference passes, naive or seeded fails}\n  DIS -->|does not discriminate| E2[Oracle too weak or too strict: shown with both results] --> O\n  DIS -->|discriminates| R([status: ready])"
         }
       ],
-      "sourceSha256": "b2753f8a479df28baf97ff95f9c93a2339b18181e30c47ab84626ff6f282c85c"
+      "sourceSha256": "bb9f19ef8b7841cfb7e8fadb210fd062a6c588ab3857b27b4bdf5fe44a2413fc"
     }
   ],
   "surfaces": [
@@ -429,5 +861,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "0c65c1bcf50a84717fe88e1309aa321ebdc23385b0d832a2efbd041c27ee0570"
+  "graphSha256": "df90d4818aacf31809b870d94492c8e9232a945ee4279215cb8e3514a198e096"
 };

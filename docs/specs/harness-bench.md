@@ -101,7 +101,7 @@ If that works end to end for the smoke BOM, the product is worth building. Every
 **In scope (BOM v0):**
 - The `harness × model × pack` factorial over the 24-task, seven-scenario BOM v0.2 (`bench/bom.yaml`).
 - Harnesses: Claude Code, Codex CLI, Copilot CLI.
-- Local execution on the owner's Windows 11 workstation. Authored tasks run natively; public Harbor tasks run under Docker Desktop (WSL2).
+- Local execution on the owner's Windows 11 workstation. Every cell runs in its own Linux container under Docker Desktop (WSL2), authored and Harbor tasks alike (amended 2026-09-23 by ADR-0001; the proposal ran authored tasks natively).
 - The seven metric areas of `bench/metrics.yaml` v0.2, the oracle ladder, two blind vendor judges and bootstrap statistics.
 - The CLI table, one HTML report and two AI summaries.
 - Comparison of two runs (for example two pack revisions), in the full milestone.
@@ -128,7 +128,7 @@ If that works end to end for the smoke BOM, the product is worth building. Every
 - **Grading:** turning evidence into scores.
 - **Reporting:** presenting scores.
 
-The ai-forward coordination layer is a sixth, **external** context. It is reached through its published contracts (conformist, behind an anti-corruption layer), and its words do not enter ours. The ACL translates its *decision request*, *worker* and *leader lease* into our **decision request**, **cell** and **coordinator**, each defined below.
+The ai-forward coordination layer is a sixth, **external** context. It is reached through its published contracts (conformist, behind an anti-corruption layer), and its words do not enter ours. The benchmark does not run on the pack's coordination layer (amended 2026-09-23 by ADR-0002). The pack appears only inside cells, as the treatment. The ACL is the grader that reads a cell's coordination ledger (US-34) and translates the pack's events into protocol-conformance traces. Our **decision request**, **cell** and **coordinator** are our own terms, defined below.
 
 ```mermaid
 flowchart LR
@@ -165,7 +165,7 @@ flowchart LR
   CM --> SS
   SS --> Report
   Report --> Summary
-  Exec -. ACL .- Pack[(ai-forward coordination, external)]
+  Gr -. ACL: coordination-ledger reader .- Pack[(ai-forward coordination, external)]
 ```
 
 **Ubiquitous language.** The rest of this spec, the code and the glossary use these terms and only these.
@@ -192,7 +192,7 @@ flowchart LR
 | **Repetition** | The index (1..k) of a cell among identical cells in a run. |
 | **Attempt** | One launch of a cell's harness process. A cell has at most one prompted attempt. |
 | **Execution outcome** | How a cell ended: `completed`, `timed_out`, `blocked (<cause>)` (e.g. `blocked (auth)`), `failed`, `stopped`, `not_applicable`, or `skipped (decision)` (not launched because a decision request, answered or defaulted, excluded it). Set once, by Run Execution. Terminal; a cell with an execution outcome is never launched on resume. |
-| **Cell validity** | `valid` or `invalid (<reason>)`, decided by Grading from the archive for one catalog version. It is never written back to the cell. Reasons: model mismatch, containment. |
+| **Cell validity** | `valid` or `invalid (<reason>)`, decided by Grading from the archive for one catalog version. It is never written back to the cell. Reasons: model mismatch, no model call, containment. |
 | **Workspace** | The cell's own git checkout that the harness works in. Deleted after its archive is verified. |
 | **Native session record** | The harness's own record of the cell's session (transcript, usage), keyed by its session id. |
 | **Model call** | One request from a harness to a model in a cell, with its tokens by type, model and timing. The finest measured fact. |
@@ -354,7 +354,8 @@ Each criterion is written so that a test can fail it. IDs are stable, and downst
 - **Given** a scenario-1 cell **When** the scripted user replies **Then** each reply is the text of an annotated clarification or exactly `Decide and state your assumption.`, and the scripted-user log records the question, the match decision and the reply.
 
 **US-11 · smoke — As P1, I want the model pinned and the served model verified in every cell, so that a cell is never scored against the wrong model.**
-- **Given** a cell pinned to model M **When** it ends **Then** every model call in its native session record reports M, or a model allowed by the task's `model_map` or by the harness's declared auxiliary-model list, and the run record stores the served models.
+- **Given** a cell pinned to model M **When** it ends **Then** its native session record holds at least one successful model call, every model call reports M, or a model allowed by the task's `model_map` or by the harness's declared auxiliary-model list, and the run record stores the served models.
+- **Given** a cell whose turn ended but whose native record holds no successful model call **When** it is graded **Then** its validity is `invalid (no model call)`. [Spikes 1.4 and R11.5 each found a turn the transport reported complete with no model answer. Verified]
 - **Given** a cell with any other served model **When** it is graded **Then** its validity is `invalid (model mismatch)`, it is excluded from every composite, and the report lists it.
 - **Given** two combos on the same harness with different models in one run **When** they run **Then** each cell's served model matches its own combo. (Test case from spike 1.4: an environment-wide pin cannot do this. Verified.)
 
@@ -574,7 +575,7 @@ Each criterion is written so that a test can fail it. IDs are stable, and downst
 | Security | US-14, US-46, US-47, US-48, US-49, US-50. No credential value in any archive, results store or report (US-47). |
 | Privacy | A published report and every vendor payload pass US-47. Archives stay local under `runs/` (gitignored), are never published with a report, and are kept until P1 deletes them. Transcripts enter vendor calls only for judges and summary 2, after US-47. |
 | Usability | UXA-3 (reach the leaderboard and any evidence) and UXA-7 (every error names cause and action). |
-| Compatibility | Windows 11 host. Authored tasks run natively; Harbor tasks under Docker Desktop (WSL2). Python ≥ 3.12. One launch path for every cell of a run, so telemetry is comparable. |
+| Compatibility | Windows 11 host with Docker Desktop (WSL2); every cell runs in a Linux container (ADR-0001). Python ≥ 3.12 on the host. One launch path for every cell of a run, so telemetry is comparable. Results describe harnesses in Linux containers, which every report header states. |
 | Maintainability | Graders are pure functions of an archive (US-26), each with frozen-fixture tests. Scoring invariants (US-27, US-36, monotone normalisation) are property-tested. |
 | Portability | Windows only in v0 (NG9). |
 
@@ -685,7 +686,7 @@ The LOA fit is **[Inferred]** from the archetype intents in `layered-optimized-a
 | C6 | The mockup puts kiviats before the leaderboard | The leaderboard comes first, as in the proposal's report order (Part B) | The reader's first question is "who is ahead, and can I trust it" |
 | C7 | The mockup loads a web font | No network request (US-40) | Proposal: "self-contained HTML" |
 | C8 | The proposal defines `pack=off` as "pack stripped" only | Both arms are also free of the operator's user config (US-13) | Spike 1.5 |
-| C9 | "No network beyond the model API" (proposal) | Enforced on the Harbor path. On native cells the requirement is US-48 (no reach to host secrets), with network recorded per cell | Flagged R11 |
+| C9 | "No network beyond the model API" (proposal) | Enforced for every cell by an allowlisting egress proxy from phase 2 (ADR-0005). Phase 1 runs with the network recorded as `unrestricted`, and only for operator-authored tasks | Amended by ADR-0001 and ADR-0005 |
 | C10 | The proposal: summary 2 reads sampled `pack=on` transcripts; Security: keep raw transcripts out of vendor calls | Transcripts are allowed after the egress scan, as delimited data, into a tool-less call (US-42, US-46, US-47) | Keeps the proposal's intent under the security controls |
 | C11 | Gate: the Simplifier would defer resume; the UX Researcher requires resume branches | Resume is kept (the proposal's lifecycle model lists it) and tagged `full`; in smoke a crash marks the run `incomplete`; branches are specified | Tech-lead tie-break: the proposal source decides |
 | C12 | Gate: the Test Architect requires a traced loaded-file list; the Simplifier would defer it | The criterion was cut. Isolation is proven by per-class canaries with a positive control (US-13) | The Test Architect accepted this in round 3 |
