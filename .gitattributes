@@ -1,0 +1,5 @@
+
+# AI-Forward Pack (INSTALL 2, revision 75): text is LF on every OS, so the ledgers and
+# derived files the coord merge drivers compare by byte identity mean the same thing
+# on Windows and macOS. Run `git add --renormalize .` once after adding this.
+* text=auto eol=lf

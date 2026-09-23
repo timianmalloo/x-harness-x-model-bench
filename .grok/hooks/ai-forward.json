@@ -1,0 +1,87 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); [ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); \"$py\" docs/ai-forward-pack/hooks/reread-guard.py --host grok",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); [ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); \"$py\" docs/ai-forward-pack/hooks/mail-doorbell.py --host grok --event PreToolUse",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); [ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); \"$py\" docs/ai-forward-pack/hooks/heartbeat.py --host grok --event PreToolUse",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); [ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); \"$py\" docs/ai-forward-pack/hooks/reread-guard.py --host grok",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); [ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); \"$py\" docs/ai-forward-pack/hooks/mail-doorbell.py --host grok --event UserPromptSubmit",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); [ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); \"$py\" docs/ai-forward-pack/hooks/session-start.py --host grok",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); [ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); \"$py\" docs/ai-forward-pack/hooks/session-start.py --host grok",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); [ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); \"$py\" docs/ai-forward-pack/hooks/owner-review-gate.py --host grok --event Stop",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
