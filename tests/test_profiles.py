@@ -70,6 +70,16 @@ def test_native_records_are_found_by_session_id(tmp_path):
     assert p.native_records(home, "other") == []
 
 
+def test_token_source_and_auxiliary_models_are_declared_per_harness(tmp_path):
+    claude = profiles.load(ROOT, "claude-code", credential_source=tmp_path / "c")
+    codex = profiles.load(ROOT, "codex", credential_source=tmp_path / "c")
+    assert (claude.usage_source, codex.usage_source) == ("acp_turn", "native_record")
+    assert claude.model_allowed("claude-haiku-4-5-20251001", "claude-sonnet-5")
+    assert claude.model_allowed("claude-sonnet-5", "claude-sonnet-5")
+    assert not claude.model_allowed("claude-opus-5", "claude-sonnet-5")
+    assert not codex.model_allowed("gpt-5", "gpt-6-sol")
+
+
 def test_unknown_harness_is_refused():
     with pytest.raises(ValueError):
         profiles.load(ROOT, "grok")

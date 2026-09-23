@@ -457,7 +457,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f02eb68a95d6fc3d5707d71371188bb54f569ab59abfe4fb484a9bfadf37823b"
+      "sourceSha256": "753c1185e2c0a40e19aff879fd194d7fa75fdfcc645f5fd936bf91819de1bb8c"
     },
     {
       "id": "adr-0009-model-gateway",
@@ -635,7 +635,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b5dab20c56500590f95801883339548457a6bd9ae9b2fe7acad875f6f232ce3d"
+      "sourceSha256": "3331dc8a4708de79d045b541cc97882274bf9120b68adc07f018bbeb2fdd0834"
     },
     {
       "id": "arch-harness-bench",
@@ -711,6 +711,35 @@ window.DOCS_INDEX = {
       "sourceSha256": "41027ae770a5fe7fa2980604d3d89240ff3f55594bdda9be39dbbcf2716aeafc"
     },
     {
+      "id": "note-20260923-token-source",
+      "path": "docs/notes/decision-token-source-per-harness.md",
+      "title": "Token totals come from the source that is complete for each harness",
+      "type": "decision-note",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2027-03-22",
+      "reviewSuggested": [],
+      "summary": "Measured 2026-09-23 with the pinned builds: Claude Code 2.1.274's native record under the ACP adapter omits the turn's final API call and its auxiliary title call, while the adapter's prompt response carries complete per-model turn usage; for Codex the native record is complete and the adapter reports only the last call. Each profile names its authoritative source; the other is a cross-check.",
+      "tags": [
+        "decision-note",
+        "telemetry",
+        "validity"
+      ],
+      "links": [
+        {
+          "to": "adr-0008-telemetry",
+          "rel": "refines"
+        },
+        {
+          "to": "design-phase1-walking-skeleton",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "246f0a3686348504280a109df10b0f4f82f65129cbce930623d995d7643acada"
+    },
+    {
       "id": "design-phase1-walking-skeleton",
       "path": "docs/design/phase1-walking-skeleton.md",
       "title": "Design: phase 1 walking skeleton (engine, cells, telemetry, grading, report)",
@@ -774,7 +803,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "58a4fd017835afc5eacc59652352dd71be2f4ccf8294061434002450f46af410"
+      "sourceSha256": "02a5504039052bf5a2491fb49a1e3802e1a3f2144bf68934e9d5f885737ad05b"
     },
     {
       "id": "design-run-lifecycle-model",
@@ -872,7 +901,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "0236aa593db241a79e1d143a5831afb689acc6d51a1cb0427a4c9276f84b0f98"
+      "sourceSha256": "56cffd02fe52d7ddea05837da3ea862a0dfc7355731e8b661f2a0ce029a9c0a6"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -1224,5 +1253,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "75847724abd6e9e748b266ca7d381e9a847f71db92960cc9a26603b77c26b604"
+  "graphSha256": "75aca654364ce8130e42b7106170b7a070a5c7cf539357e1f413198da616bfde"
 };

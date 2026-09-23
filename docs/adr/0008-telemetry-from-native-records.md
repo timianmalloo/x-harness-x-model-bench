@@ -20,6 +20,11 @@ summary: >-
 # ADR-0008: Usage telemetry comes from each cell's archived native session record
 
 - **Status:** Proposed. Supersedes the proposal's "OTel collector as telemetry sink".
+- **Amended 2026-09-23 (phase-1 implementation, `docs/notes/decision-token-source-per-harness.md`):**
+  - Measured: Claude Code 2.1.274's native record under the ACP adapter omits the turn's final and auxiliary calls. Codex's record is complete.
+  - The ACP prompt response does carry usage (the earlier "returns no usage" was true of spike 1.2's adapters only).
+  - Token totals therefore come from each profile's `usage_source`: `acp_turn` (a new `turn_usage` fact) for Claude Code, `native_record` for Codex. The other source is a cross-check.
+  - Per-call rows still come from native records.
 - **Date:** 2026-09-23 (revised after council round 1)
 - **Deciders:** @timianmalloo; authored by Claude Code for the architect council
 - **Context spec/architecture:** `docs/specs/harness-bench.md` US-22–US-24

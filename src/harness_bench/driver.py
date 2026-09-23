@@ -87,6 +87,7 @@ class TurnResult:
     detail: str = ""
     handshake_seconds: float = 0.0
     turn_seconds: float = 0.0
+    usage: dict | None = None  # the adapter's per-turn usage from the prompt response, if it reports one
 
 
 class _Eof(Exception):
@@ -205,6 +206,8 @@ def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handsh
     try:
         done = ch.rpc("session/prompt", {"sessionId": result.session_id, "prompt": [{"type": "text", "text": prompt}]}, None)
         result.stop_reason = done.get("stopReason")
+        if isinstance(done.get("usage"), dict):
+            result.usage = {"usage": done["usage"], "meta": done.get("_meta")}
     except _Eof:
         result.eof = True
         result.cause, result.detail = Cause.adapter_crash, "EOF before end_turn"

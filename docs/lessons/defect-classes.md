@@ -49,6 +49,7 @@ summary: >-
 - **Why it survives:** the mechanism is familiar, so the property feels checked. Design text is not executed.
 - **Instances:**
   - `2026-09-23` ADR-0013 draft: "each cell gets its own worktree of one clone". Worktrees share refs, stashes and config, so one cell's commits and remotes were visible in every other cell. Distributed Systems and the Test Architect caught it at the gate, each checking in a scratch repository.
+  - `2026-09-23` ADR-0008 assumed the native session record is a complete token source. Measured with the pinned builds, Claude Code's record under the ACP adapter omits the final and auxiliary calls. Found by comparing the same turn's two sources during `/implement`; fixed per harness (`usage_source`), with fixtures that pin both sources.
 - **Sweep:** the other mechanisms ADR-0013 names. Job Object kill-on-close and the active-process count were spiked (N2). The Codex full-access mode was read in source and run (N1). Job naming and handle inheritance are marked Inferred with probe N4.
 - **Control:** T-WS-gitleak (automated, phase 1). Rule: every mechanism a design relies on is spiked or labelled Inferred with a named probe (the pack's no-guessing protocol, NG).
 - **Status:** `partially-controlled` (the test lands in phase 1)

@@ -9,3 +9,5 @@ env:
   CLAUDE_CODE_EXECUTABLE: "{exe}"
 mode: null
 record_glob: "projects/**/{session_id}.jsonl"
+usage_source: acp_turn   # its native record misses the final and auxiliary calls (docs/notes/decision-token-source-per-harness.md)
+auxiliary_models: ["claude-haiku-4-5"]   # title generation; a served model starting with one of these is allowed (US-11)

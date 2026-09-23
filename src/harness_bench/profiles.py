@@ -18,6 +18,7 @@ from pathlib import Path
 from harness_bench import config
 
 HARNESSES = ("claude-code", "codex")
+USAGE_SOURCES = ("acp_turn", "native_record")
 DROP_EXACT = {"CLAUDECODE", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "COPILOT_HOME", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN",
               "OPENAI_API_KEY", "ANTHROPIC_MODEL", "CODEX_PATH", "CLAUDE_CODE_EXECUTABLE", "FAKE_ACP"}
 DROP_PREFIXES = ("CLAUDE_CODE_", "CODEX_", "COPILOT_", "GIT_CONFIG_")
@@ -39,6 +40,12 @@ class Profile:
     env: dict[str, str] = field(default_factory=dict)
     mode: str | None = None
     record_glob: str = ""
+    usage_source: str = "native_record"  # or acp_turn (docs/notes/decision-token-source-per-harness.md)
+    auxiliary_models: tuple[str, ...] = ()
+
+    def model_allowed(self, served: str, pinned: str) -> bool:
+        """The pin, or a declared auxiliary model (prefix match: builds date-stamp them) (US-11)."""
+        return served == pinned or any(served.startswith(a) for a in self.auxiliary_models)
 
     def seed_home(self, home: Path, model: str) -> None:
         home.mkdir(parents=True, exist_ok=True)
@@ -78,6 +85,8 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
         raise ValueError(f"no phase-1 profile for harness {harness!r} (have {HARNESSES})")
     data = config.load_yaml(root / "bench" / "profiles" / f"{harness}.yaml")
     cred = data["credential"]
+    if data.get("usage_source", "native_record") not in USAGE_SOURCES:
+        raise ValueError(f"{harness}: usage_source must be one of {USAGE_SOURCES}")
     return Profile(
         harness=data["harness"],
         home_env=data["home_env"],
@@ -87,4 +96,6 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
         env=dict(data.get("env") or {}),
         mode=data.get("mode"),
         record_glob=data["record_glob"],
+        usage_source=data.get("usage_source", "native_record"),
+        auxiliary_models=tuple(data.get("auxiliary_models") or ()),
     )
