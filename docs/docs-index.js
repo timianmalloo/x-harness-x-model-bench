@@ -907,7 +907,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "75f15819e037f48125daef7c4256bf43181844c20d4159f331db4739ab9f1ac8"
+      "sourceSha256": "8cfe1acc0ff9ecd76d0383bc17c6b252e2e872c2b6cb0af57627707b69265be8"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -1274,6 +1274,36 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "6be48da395ad06a2e18cf0e664f395e84f62f915bd6629db4ca86712b119edda"
+    },
+    {
+      "id": "proof-phase2",
+      "path": "docs/proof/phase2.md",
+      "title": "Proof Pack - phase 2 (wave-by-wave joins)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 2 · smoke on all harnesses",
+      "reviewBy": "2026-10-08",
+      "reviewSuggested": [],
+      "summary": "The evidence for each phase-2 join: what was claimed, the red observed by a non-author, the mutation result, the reviewer's verdict, and the residuals. One Claim table per join.",
+      "tags": [
+        "proof",
+        "phase2",
+        "red-first",
+        "joins"
+      ],
+      "links": [
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        },
+        {
+          "to": "proof-phase1",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "bcb722361f669fbcff4c34c6ece48d7f8e7e02676cb60940e8046710ad0c96ed"
     },
     {
       "id": "proposal-cross-harness-benchmarking",
@@ -1946,5 +1976,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "83425bdb29821ff61c0b67d4e96bc000fd00103ea514bed4016fe2334e28cab9"
+  "graphSha256": "7fb9499d99d678b19e76fb305055c5e896afcc3607aa016627a0b5839493336e"
 };
