@@ -149,16 +149,10 @@ def test_one_cells_git_state_is_invisible_to_another(source, tmp_path):  # T-WS-
 
 
 @pytest.fixture
-def clean_base():
-    """A folder under C:/Projects with no instruction file above it (pytest's tmp_path is under the profile)."""
-    import shutil
-    import uuid
-    base = Path("C:/Projects/bench-test") / uuid.uuid4().hex[:8]
-    base.mkdir(parents=True)
-    yield base
-    shutil.rmtree(base, ignore_errors=True)
-    if not any(base.parent.iterdir()):
-        base.parent.rmdir()
+def clean_base(base):
+    """A folder under C:/Projects with no instruction file above it (pytest's tmp_path is under the profile).
+    The shared `base` fixture owns its creation and removal (CLN-A)."""
+    return base
 
 
 def test_cells_root_below_an_instruction_file_is_refused(clean_base):  # T-PRE-ancestor

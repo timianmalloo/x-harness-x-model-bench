@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+from harness_bench import archive
+
 # A folder with no agent instruction file in any ancestor (HB-PRE-002). The operator's profile, where
 # pytest's tmp_path lives, holds ~/.claude/CLAUDE.md, so cells cannot be built there.
 CLEAN_PARENT = Path("C:/Projects/bench-test")
@@ -17,10 +19,14 @@ def clean_parent() -> Path:
 
 @pytest.fixture
 def base():
-    root = CLEAN_PARENT / uuid.uuid4().hex[:8]
+    # a full uuid: an 8-hex name collided with a leftover folder and turned a test into a false mutation kill (CLN-A)
+    root = CLEAN_PARENT / uuid.uuid4().hex
     root.mkdir(parents=True)
     yield root
-    shutil.rmtree(root, ignore_errors=True)
+    try:  # git writes read-only objects; a plain rmtree(ignore_errors=True) left them behind (CLN-A)
+        shutil.rmtree(root, onexc=archive.make_writable)
+    except OSError:  # a file this test process still holds open; tools/clean_bench_test.py removes it later
+        pass
     if root.parent.exists() and not any(root.parent.iterdir()):
         root.parent.rmdir()
 

@@ -52,6 +52,7 @@ def test_a_same_size_mutation_leaves_no_stale_bytecode(tmp_path, monkeypatch):
     spec.write_text(json.dumps([{"name": "cap", "file": "m.py", "find": "X = 30.0", "replace": "X = 60.0",
                                  "tests": ["test_m.py::test_x"]}]), encoding="utf-8")
     monkeypatch.setattr(mutate_check, "ROOT", tmp_path)
+    monkeypatch.delenv("PYTHONDONTWRITEBYTECODE", raising=False)  # an ambient value would hide a revert of the fix
     assert mutate_check.main([str(spec)]) == 0  # the mutation is killed
     for pyc in (tmp_path / "__pycache__").glob("m.*.pyc"):
         recorded = int.from_bytes(pyc.read_bytes()[8:12], "little")  # PEP 552 header: source mtime at compile time
