@@ -86,9 +86,27 @@ def rows(path: Path, ex: Extraction) -> Iterator[tuple[int, dict]]:
                 ex.malformed_lines += 1
 
 
+# The record is untrusted input: a field of the wrong type is treated as absent, so no foreign type reaches a row.
+def is_count(value) -> bool:
+    """A token count: an int (never a bool) that fits a signed 64-bit column and is not negative."""
+    return type(value) is int and 0 <= value < 1 << 63
+
+
 def as_int(value) -> int:
-    return value if isinstance(value, int) and not isinstance(value, bool) else 0
+    return value if is_count(value) else 0
+
+
+def as_status(value) -> int | None:
+    return value if type(value) is int else None
+
+
+def as_str(value) -> str | None:
+    return value if isinstance(value, str) else None
 
 
 def as_dict(value) -> dict:
     return value if isinstance(value, dict) else {}
+
+
+def as_list(value) -> list:
+    return value if isinstance(value, list) else []
