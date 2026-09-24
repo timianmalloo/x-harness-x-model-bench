@@ -40,16 +40,19 @@ The tool is **cosmic-ray 8.7.0**, run natively on Windows. mutmut refuses native
 
 ## Hand-written mutation files, re-run at the close
 
-Each entry is a named mutation with the tests that must kill it. The hardened `tools/mutate_check.py` counts a kill only when pytest exits 1 with a named test failing (`ae6e8f0`), and it restores every file byte for byte. The whole set was re-run on the integrated code after the last join (T9), one file at a time:
+Each entry is a named mutation with the tests that must kill it. The hardened `tools/mutate_check.py`:
+- counts a kill only when pytest exits 1 with a named test failing (`ae6e8f0`);
+- restores every file byte for byte;
+- since `6d26c76`, writes no bytecode from a mutant (TOOL-A).
 
-The re-run was at `d13b222` on 2026-09-24. After the run, `git status -- src` was clean.
+The first close re-run (`d13b222`, 188/188) was made with the pre-TOOL-A checker, so it could have been affected by stale bytecode. It is **superseded** by this re-run with the fixed checker, at `ceed6c1` on 2026-09-24, one file at a time. After the run, `git status -- src` was clean.
 
 | file | entries | result |
 | --- | --- | --- |
 | `architecture.json` | 5 | every mutation killed |
 | `archive.json` | 6 | every mutation killed |
 | `cli.json` | 11 | every mutation killed |
-| `engine.json` | 44 | every mutation killed |
+| `engine.json` | 49 (T10 added 5) | every mutation killed |
 | `grade.json` | 17 | every mutation killed |
 | `ledger.json` | 20 | every mutation killed |
 | `report.json` | 22 | every mutation killed |
@@ -57,9 +60,9 @@ The re-run was at `d13b222` on 2026-09-24. After the run, `git status -- src` wa
 | `t3.json` | 15 | every mutation killed |
 | `t8.json` | 2 | every mutation killed |
 | `t9.json` | 3 | every mutation killed |
-| `views.json` | 29 | every mutation killed |
+| `views.json` | 34 (T11 added 5) | every mutation killed |
 | `workspace.json` | 2 | every mutation killed |
-| **total** | **188** | **188 killed; each checker run exited 0** |
+| **total** | **198** | **198 killed; each checker run exited 0** |
 
 ## Gap carried to the Proof Pack
 
