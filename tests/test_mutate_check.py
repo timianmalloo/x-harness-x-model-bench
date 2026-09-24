@@ -25,6 +25,13 @@ NAMED = ["tests/test_engine.py::test_parallelism_is_never_exceeded"]
     (2, "ERROR tests/test_engine.py - SyntaxError\n1 error", "error"),  # collection error: not a kill
     (0, "1 passed", "survived"),
     (None, "", "timeout"),  # a hang is not a kill
+    # T2/W1-ACP join finding: the .venv vanished mid-run (the interpreter itself is gone). No
+    # pytest summary line and no FAILED line ever appears -- a broken environment, not a real
+    # test outcome -- regardless of what exit code the shell happens to report.
+    (1, "python: can't open file 'C:\\\\proj\\\\.venv\\\\Scripts\\\\python.exe': "
+        "[Errno 2] No such file or directory\n", "error"),
+    (0, "python: can't open file 'C:\\\\proj\\\\.venv\\\\Scripts\\\\python.exe': "
+        "[Errno 2] No such file or directory\n", "error"),  # exit 0 with no summary is not a pass
 ])
 def test_only_a_named_failure_is_a_kill(returncode, output, expected):
     assert mutate_check.verdict(returncode, output, NAMED) == expected
@@ -129,6 +136,23 @@ CR_NAMED = ["tests/test_ledger.py::test_tail_repaired", "tests/test_ledger.py"]
     (
         # no result yet (dump's pending_work_items: WorkResult is null).
         None, "pending", None,
+    ),
+    (
+        # T2/W1-ACP join finding: worker_outcome is "normal" and cosmic-ray still calls this
+        # "killed" (non-zero exit, testing.py:73), but the .venv vanished mid-run -- no FAILED
+        # line, no pytest summary at all. Not a kill.
+        {"worker_outcome": "normal", "test_outcome": "killed",
+         "output": "python: can't open file 'C:\\\\proj\\\\.venv\\\\Scripts\\\\python.exe': "
+                    "[Errno 2] No such file or directory\n", "diff": "x"},
+        "error", None,
+    ),
+    (
+        # same broken environment, but this time the shell's exit code happened to be 0 --
+        # cosmic-ray calls it "survived". Still no summary line: still an error, not a pass.
+        {"worker_outcome": "normal", "test_outcome": "survived",
+         "output": "python: can't open file 'C:\\\\proj\\\\.venv\\\\Scripts\\\\python.exe': "
+                    "[Errno 2] No such file or directory\n", "diff": "x"},
+        "error", None,
     ),
 ])
 def test_cosmic_ray_verdict_only_a_named_failure_is_a_kill(result, expected_verdict, expected_test):
