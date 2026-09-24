@@ -242,3 +242,68 @@ def test_a_tampered_golden_ledger_is_exit_5(capsys, tmp_path, name):
     _, expected = _golden(tmp_path, name, tampered=True)
     code, _, err = _verify(capsys, tmp_path)
     assert code == 5 and "HB-LED-002" in err and expected["tampered"].split(":")[0].removesuffix(".jsonl") in err
+
+
+# --- a later pass cannot be rolled back into an abandoned one (Test Architect N1) ------------------------
+# The honest runner seals a pass's events segment only after `grading.completed` (grade/runner.py), so a
+# sealed `events/grade-*` segment without that row was cut back and re-sealed: HB-LED-002, exit 5.
+
+
+def test_a_later_pass_cut_before_grading_completed_and_resealed_is_exit_5(capsys, tmp_path):
+    run_dir, expected = _golden(tmp_path, "heads")
+    later = expected["later_pass"]
+    seg = run_dir / "events" / f"{later}.jsonl"
+    _cut(seg)  # its seal and grading.completed
+    w = ledger.SegmentWriter.reopen(seg)
+    w.seal()
+    w.close()
+    assert later not in views.completed_passes(run_dir)  # the views would fall back to the in-run pass
+    code, _, err = _verify(capsys, tmp_path)
+    assert code == 5 and f"HB-LED-002: events/{later}: sealed, but holds no grading.completed" in err
+
+
+def _interrupt_at(monkeypatch, point: str, seen: list) -> None:
+    """Make the next pass verify the ledger at `point`, as it stands mid-pass, then die there."""
+
+    def probe_and_die(run_dir: Path) -> None:
+        seen.append(views.verify(run_dir))
+        raise OSError(f"interrupted at {point}")
+
+    if point == "grading a cell":
+        monkeypatch.setattr(runner._Pass, "_grade_cell", lambda self, *a: probe_and_die(self.run_dir))
+    elif point == "before grading.completed":  # every other fact is sealed by now
+        real_append = runner._Pass.append
+
+        def append(self, fact, record):
+            if record["kind"] == "grading.completed":
+                probe_and_die(self.run_dir)
+            real_append(self, fact, record)
+
+        monkeypatch.setattr(runner._Pass, "append", append)
+    else:  # "before the events seal": grading.completed is written, the seal is not
+        real_seal = ledger.SegmentWriter.seal
+
+        def seal(self):
+            if self.path.parent.name == "events" and self.segment_id.startswith(views.GRADE_PREFIX):
+                probe_and_die(self.path.parent.parent)
+            return real_seal(self)
+
+        monkeypatch.setattr(ledger.SegmentWriter, "seal", seal)
+
+
+@pytest.mark.parametrize("point", ["grading a cell", "before grading.completed", "before the events seal"])
+def test_an_in_progress_or_interrupted_pass_is_a_warning_never_an_error(capsys, root, tmp_path, monkeypatch, point):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    seen: list = []
+    _interrupt_at(monkeypatch, point, seen)
+    with pytest.raises(OSError, match=point):
+        runner.run_pass(run_dir, root)
+    monkeypatch.undo()
+    [gid] = [p.stem for p in views.segment_paths(run_dir, "events") if p.stem.startswith(views.GRADE_PREFIX)]
+    assert not ledger.verify_segment(run_dir / "events" / f"{gid}.jsonl").sealed  # an unfinished pass is never sealed
+    [in_progress] = seen
+    assert [f for f in in_progress if f.level == "error"] == []
+    code, _, err = _verify(capsys, tmp_path)
+    assert code == 0 and f"HB-LED-004: events/{gid}: abandoned grading segment, skipped by views (warning)" in err
+    runner.run_pass(run_dir, root)  # the next pass names it and completes
+    assert _verify(capsys, tmp_path)[0] == 0
