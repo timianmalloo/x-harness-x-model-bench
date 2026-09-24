@@ -46,6 +46,7 @@ ENGINE_TRANSITIONS = frozenset({
 })
 FACTS = ("events", "turn_usage", "archive_files")
 USAGE_BUCKETS = ("uncached_input", "cache_read", "cache_write", "output", "reasoning")
+STOP = "stop"  # the inbox item a worker sends to ask the engine thread to stop launching (not a ledger fact)
 NO_MEMORY_STATUSES = {0xC0000017, 0xC000012D}
 OOM_SIGNATURE = re.compile(rb"heap out of memory|out of memory|OutOfMemory", re.IGNORECASE)
 COMPLETED_STOP_REASONS = {"end_turn", "max_tokens", "max_turn_requests", "refusal"}
@@ -174,14 +175,38 @@ class Engine:
             if self.broken or self.closed:  # queued behind the failure or the end: failed, never written
                 future.set_exception(BenchError("HB-RUN-001", f"{record.get('kind')} not recorded: the ledger is broken"))
                 continue
+            if fact == STOP:  # a worker's request: the one stop path runs here, on the engine thread
+                self._stop_launching(record["code"], record["reason"])
+                future.set_result(record)
+                continue
             try:
-                future.set_result(self._append_now(fact, record))
+                row = self._append_now(fact, record)
             except (BenchError, TypeError, ValueError) as exc:  # handed to the worker; only an OSError broke the run
                 future.set_exception(exc)
-            if record.get("kind") == "cell.prompt_sent":
-                a = self.active.get(record["cell_id"])
-                if a:
-                    a.prompt_mono = time.monotonic()
+                continue
+            self._after_append(row)
+            future.set_result(row)
+
+    def _after_append(self, row: dict) -> None:
+        """Engine-thread bookkeeping of a durable row, done before its worker is released."""
+        kind = row.get("kind")
+        if kind == "cell.prompt_sent":
+            a = self.active.get(row["cell_id"])
+            if a:
+                a.prompt_mono = time.monotonic()
+        elif kind == "cell.outcome":
+            self.outcomes[row["cell_id"]] = row
+            cause = Cause[row["cause"]] if row["cause"] else None
+            if cause and cause.invalidates:
+                self.infra_streak += 1
+                if self.infra_streak >= CIRCUIT_BREAKER:
+                    self._stop_launching(cause.code, f"circuit breaker: {CIRCUIT_BREAKER} consecutive infrastructure failures")
+            else:
+                self.infra_streak = 0
+
+    def request_stop(self, code: str, reason: str) -> None:
+        """Called by a worker: ask the engine thread to stop launching; returns once the stop is decided."""
+        self.record(STOP, {"code": code, "reason": reason})
 
     # run ------------------------------------------------------------------------------------------
 
@@ -306,17 +331,7 @@ class Engine:
         row = {"kind": "cell.outcome", "cell_id": cell["cell_id"], "outcome": outcome,
                "cause": cause.name if cause else None, "code": cause.code if cause else None,
                "host_mem_available": host.available_memory(), **extra}
-        self.record("events", row)
-        self.outcomes[cell["cell_id"]] = row
-        if cause and cause.invalidates:
-            self.infra_streak += 1
-            if self.infra_streak >= CIRCUIT_BREAKER:
-                self.record("events", {"kind": "run.launch_stopped", "code": cause.code,
-                                       "reason": f"circuit breaker: {CIRCUIT_BREAKER} consecutive infrastructure failures"})
-                self.stopped = cause.code
-        else:
-            self.infra_streak = 0
-        return row
+        return self.record("events", row)  # the engine thread counts it (outcomes, circuit breaker) before returning
 
     def _run_cell(self, cell: dict) -> None:
         cid = cell["cell_id"]
@@ -334,8 +349,7 @@ class Engine:
             build = launcher.check_build()
         except BuildChanged as exc:
             self._outcome(cell, "failed", Cause.build_changed, detail=str(exc))
-            self.record("events", {"kind": "run.launch_stopped", "code": Cause.build_changed.code, "reason": str(exc)})
-            self.stopped = Cause.build_changed.code
+            self.request_stop(Cause.build_changed.code, str(exc))
             self._archive(cell, cell_dir, launcher)
             return
         traceparent = f"00-{self.trace_id}-{span_id(self.trace_id, cid, 'cell')}-01"
