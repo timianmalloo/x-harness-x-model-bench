@@ -1,0 +1,65 @@
+[
+ {
+  "name": "an integrity failure exits 1",
+  "file": "src/harness_bench/cli.py",
+  "find": "    return INTEGRITY if code.startswith((\"HB-LED\", \"HB-SEC\")) else INVALID\n",
+  "replace": "    return INVALID\n",
+  "tests": ["tests/test_cli.py::test_a_broken_ledger_is_an_integrity_failure_for_every_reader"]
+ },
+ {
+  "name": "verify passes with an archive error",
+  "file": "src/harness_bench/views.py",
+  "find": "        if archive.archive_hash(cell_rows) != e[\"archive_hash\"]:\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_cli.py::test_an_archive_row_added_afterwards_breaks_the_archive_hash"]
+ },
+ {
+  "name": "verify skips the archived bytes",
+  "file": "src/harness_bench/views.py",
+  "find": "            archive.verify(folder, cell_rows)\n",
+  "replace": "            pass\n",
+  "tests": ["tests/test_cli.py::test_verify_finds_an_edited_archive_file"]
+ },
+ {
+  "name": "an abandoned pass is an error",
+  "file": "src/harness_bench/views.py",
+  "find": "Finding(\"HB-LED-004\", \"warning\",",
+  "replace": "Finding(\"HB-LED-004\", \"error\",",
+  "tests": ["tests/test_cli.py::test_verify_warns_about_an_abandoned_pass_and_exits_0"]
+ },
+ {
+  "name": "teardown deletes an unarchived cell",
+  "file": "src/harness_bench/archive.py",
+  "find": "        if folder.name in archived:\n",
+  "replace": "        if True:\n",
+  "tests": ["tests/test_cli.py::test_teardown_removes_archived_cells_and_keeps_the_rest"]
+ },
+ {
+  "name": "teardown ignores a live engine",
+  "file": "src/harness_bench/cli.py",
+  "find": "    if oslock.is_held(run_dir / \".lock\"):\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_cli.py::test_teardown_removes_archived_cells_and_keeps_the_rest"]
+ },
+ {
+  "name": "a started run re-run",
+  "file": "src/harness_bench/cli.py",
+  "find": "    if (run_dir / \"events\").exists():\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_cli.py::test_run_refuses_a_run_that_already_started"]
+ },
+ {
+  "name": "status json carries a trailing text line",
+  "file": "src/harness_bench/cli.py",
+  "find": "    print(status.to_json(s) if args.json else status.text(s), end=\"\\n\" if args.json else \"\")\n",
+  "replace": "    print(status.to_json(s) if args.json else status.text(s), end=\"\\n\" if args.json else \"\")\n    print(\"done\")\n",
+  "tests": ["tests/test_cli.py::test_status_json_writes_only_bench_status_to_stdout"]
+ },
+ {
+  "name": "the report written for an ungraded run",
+  "file": "src/harness_bench/cli.py",
+  "find": "    if code == OK:\n        print(f\"report: {html.write(run_dir, view)}\")\n",
+  "replace": "    print(f\"report: {html.write(run_dir, view)}\")\n",
+  "tests": ["tests/test_cli.py::test_grade_then_report_writes_the_page"]
+ }
+]

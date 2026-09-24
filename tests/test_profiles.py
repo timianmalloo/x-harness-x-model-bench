@@ -50,8 +50,36 @@ def test_cell_env_is_clean_pinned_and_turns_build_servers_off(tmp_path):
     for gone in ("CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "CODEX_HOME"):
         assert gone not in env, gone
     assert env["MSBUILDDISABLENODEREUSE"] == "1" and env["UseSharedCompilation"] == "false"
-    assert (env["GIT_CONFIG_COUNT"], env["GIT_CONFIG_KEY_0"], env["GIT_CONFIG_VALUE_0"]) == ("1", "core.fsmonitor", "false")
+    assert (env["GIT_CONFIG_COUNT"], env["GIT_CONFIG_KEY_0"], env["GIT_CONFIG_VALUE_0"]) == ("2", "core.fsmonitor", "false")
+    assert (env["GIT_CONFIG_KEY_1"], env["GIT_CONFIG_VALUE_1"]) == ("core.longpaths", "true")  # HB-PRE-005 for the agent's git
     assert env["TRACEPARENT"] == "00-t-s-01" and env["PATH"] == "x"
+
+
+def _launcher(tmp_path, harness="codex"):
+    from test_tools import _fake_tree
+    tools_dir = _fake_tree(tmp_path / "tools")
+    planned = tools.resolve(tools_dir)[harness].record()
+    return profiles.ProfileLauncher(profiles.load(ROOT, harness, credential_source=tmp_path / "c"), tools_dir, planned), tools_dir
+
+
+def test_the_launcher_rehashes_the_build_at_every_cell_start(tmp_path):  # US-12, HB-CELL-115
+    launcher, tools_dir = _launcher(tmp_path)
+    assert launcher.check_build()["version"] == "0.156.0"
+    exe = tools_dir / "node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe"
+    exe.write_text("self-updated", encoding="utf-8")
+    with pytest.raises(tools.BuildChanged):
+        launcher.check_build()
+
+
+def test_the_launcher_speaks_for_its_profile(tmp_path):
+    launcher, _ = _launcher(tmp_path)
+    assert (launcher.harness, launcher.usage_source, launcher.credential_names) == ("codex", "native_record", frozenset({"auth.json"}))
+    launcher.check_build()
+    argv, env = launcher.argv_env({"model": "gpt-6-sol"}, tmp_path / "home", "00-t-s-01")
+    assert argv[1].endswith("index.js") and env["CODEX_HOME"] == str(tmp_path / "home") and env["TRACEPARENT"] == "00-t-s-01"
+    assert "OPENAI_API_KEY" not in env
+    ex = launcher.read(ROOT / "tests" / "fixtures" / "native" / "codex" / "ok.jsonl")
+    assert len(ex.model_calls) == 3
 
 
 def test_argv_runs_the_pinned_adapter_with_node(tmp_path):

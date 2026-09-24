@@ -1,3 +1,4 @@
+import hashlib
 import json
 import shutil
 from pathlib import Path
@@ -99,6 +100,13 @@ def test_phase1_plan_has_four_cells_and_every_recorded_field():
         assert key in p, key
     assert len(p["trace_id"]) == 32 and int(p["trace_id"], 16)
     assert p["parameters"]["parallelism"] == 2
+
+
+def test_the_plan_freezes_each_task_prompt_verbatim_with_its_hash():  # US-10: the prompt the agent receives
+    p = _phase1_plan()
+    raw = (ROOT / "tasks" / "X1" / "prompt.md").read_bytes().decode("utf-8")
+    assert p["tasks"]["X1"]["prompt"] == raw
+    assert p["tasks"]["X1"]["prompt_sha256"] == hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
 def test_the_plan_records_each_harness_profile_it_uses():  # grading and views read the run, not today's files (US-26)

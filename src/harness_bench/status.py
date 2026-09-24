@@ -63,8 +63,12 @@ class Status:
     graded: bool
 
 
+def unknown_run_error(run_id: str) -> BenchError:
+    return BenchError("HB-USR-001", f"no run {run_id} under runs/. Run bench plan to create one.")
+
+
 def unknown_run_message(run_id: str) -> str:
-    return f"HB-USR-001: no run {run_id} under runs/. Run bench plan to create one."
+    return str(unknown_run_error(run_id))
 
 
 def _when(recorded_at: str) -> datetime:
@@ -73,7 +77,7 @@ def _when(recorded_at: str) -> datetime:
 
 def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = None) -> Status:
     if not (run_dir / "plan.json").is_file():
-        raise BenchError("HB-USR-001", unknown_run_message(run_dir.name))
+        raise unknown_run_error(run_dir.name)
     now = now or datetime.now(UTC)
     view = views.load(run_dir)
     events = views.rows(run_dir, "events")

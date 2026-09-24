@@ -11,6 +11,8 @@ from pathlib import Path
 
 import yaml
 
+from harness_bench.errors import BenchError
+
 SCENARIOS = range(1, 8)
 # The smoke BOM needs exactly one task per scenario 1-6. Scenario 7 may add one after the
 # formal-toolchain spike (spec S-12).
@@ -41,7 +43,7 @@ def load_yaml(path: Path) -> dict:
     with path.open(encoding="utf-8") as f:
         data = yaml.safe_load(f)
     if not isinstance(data, dict):
-        raise ValueError(f"{path}: expected a mapping at the top level")
+        raise BenchError("HB-USR-002", f"{path}: expected a mapping at the top level")
     return data
 
 

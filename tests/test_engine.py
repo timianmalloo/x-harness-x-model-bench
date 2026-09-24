@@ -67,17 +67,6 @@ class FakeLauncher:
         return claude_code.read(path)
 
 
-@pytest.fixture
-def base():
-    root = Path("C:/Projects/bench-test") / uuid.uuid4().hex[:8]
-    root.mkdir(parents=True)
-    yield root
-    import shutil
-    shutil.rmtree(root, ignore_errors=True)
-    if root.parent.exists() and not any(root.parent.iterdir()):
-        root.parent.rmdir()
-
-
 def _plan(n_cells=2, budget=60, parallelism=2, labels=None):
     cells = []
     for i in range(n_cells):
@@ -85,7 +74,7 @@ def _plan(n_cells=2, budget=60, parallelism=2, labels=None):
         cells.append({"cell_id": c.id, "label": labels[i] if labels else c.label, **c.__dict__})
     return {"run_id": "r-" + uuid.uuid4().hex[:6], "plan_hash": "p" * 64, "trace_id": "a" * 32,
             "parameters": {**plan.DEFAULT_PARAMETERS, "parallelism": parallelism, "disk_floor_bytes": 1024},
-            "cells": cells, "builds": {"fake": {}}}
+            "tasks": {"X1": {"prompt": "Implement slugify.\n"}}, "cells": cells, "builds": {"fake": {}}}
 
 
 def _build_workspace(cell: dict, cell_dir: Path) -> dict:
@@ -156,10 +145,10 @@ def test_a_failed_grading_pass_never_costs_the_run(base):  # re-gradable from th
 
 def test_verbatim_prompt_reaches_the_agent_and_turn_usage_is_recorded(base):
     p = _plan(n_cells=1)
-    p["cells"][0]["prompt"] = "Implement slugify.\r\nKeep the signature.\n"
+    p["tasks"]["X1"]["prompt"] = "Implement slugify.\r\nKeep the signature.\n"  # the plan's frozen task prompt (US-10)
     _, _, config = _run(base, p, FakeLauncher({}))
     archive = config.run_dir / "archive" / p["cells"][0]["cell_id"] / "attempt-1" / "ws" / ".fake-prompt.txt"
-    assert archive.read_bytes().decode("utf-8") == p["cells"][0]["prompt"]
+    assert archive.read_bytes().decode("utf-8") == p["tasks"]["X1"]["prompt"]
     usage = ledger.read_segment(next((config.run_dir / "turn_usage").glob("*.jsonl")))
     assert [(u["model"], u["uncached_input"], u["cache_read"], u["cache_write"], u["output"]) for u in usage] == [("fake-model", 3, 30, 7, 5)]
 

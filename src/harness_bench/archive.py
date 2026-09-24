@@ -7,6 +7,8 @@
   sha256 of the canonical sorted rows, a commitment that `verify` recomputes (HB-LED-005).
 - The workspace is deleted only after the archive verifies; a Windows sharing violation is retried a
   bounded number of times, and on failure the workspace is kept and reported.
+- `teardown` removes what a run left under the cells root, but only the folders of archived cells: an
+  unarchived cell's folder is the only copy of its work, so it is kept and reported.
 """
 
 from __future__ import annotations
@@ -105,3 +107,19 @@ def delete_after_verify(cell_dir: Path, folder: Path, rows: list[dict], retries:
                 return False
             time.sleep(wait * (attempt + 1))
     return False
+
+
+def teardown(run_cells: Path, archived: set[str]) -> tuple[list[str], list[str]]:
+    """Remove the archived cells' folders under `run_cells`; return (removed, kept) cell ids."""
+    removed, kept = [], []
+    if not run_cells.is_dir():
+        return removed, kept
+    for folder in sorted(p for p in run_cells.iterdir() if p.is_dir()):
+        if folder.name in archived:
+            shutil.rmtree(folder, onexc=make_writable)
+            removed.append(folder.name)
+        else:
+            kept.append(folder.name)
+    if not any(run_cells.iterdir()):
+        run_cells.rmdir()
+    return removed, kept

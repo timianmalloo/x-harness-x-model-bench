@@ -31,10 +31,10 @@ def _slug(title: str) -> str:
 
 def pages(markdown: str) -> list[dict]:
     """Split on level-2 headings; the text before the first one is the overview page."""
-    body = re.sub(r"\A---\n.*?\n---\n", "", markdown, count=1, flags=re.S)
-    title = re.search(r"^# (.+)$", body, re.M)
+    body = re.sub(r"\A---\n.*?\n---\n", "", markdown, count=1, flags=re.DOTALL)
+    title = re.search(r"^# (.+)$", body, re.MULTILINE)
     doc_title = title.group(1).strip() if title else PROJECT
-    parts = re.split(r"^(?=## )", body, flags=re.M)
+    parts = re.split(r"^(?=## )", body, flags=re.MULTILINE)
     result = [{"id": "overview", "title": "Overview", "group": doc_title, "markdown": parts[0].strip() + "\n"}]
     for part in parts[1:]:
         heading = part.splitlines()[0][3:].strip()
@@ -49,7 +49,7 @@ def render(source: Path) -> str:
     docs = docs.replace("</", "<\\/")  # a literal </script> in the markdown must not close the tag
     meta = json.dumps({"project": PROJECT, "generated": "from " + source.relative_to(ROOT).as_posix(),
                        "documented_sha": ""})
-    html = re.sub(r"window\.DOCS = \[.*?\n\];", lambda _: "window.DOCS = " + docs + ";", template, count=1, flags=re.S)
+    html = re.sub(r"window\.DOCS = \[.*?\n\];", lambda _: "window.DOCS = " + docs + ";", template, count=1, flags=re.DOTALL)
     html = re.sub(r"window\.DOC_META = \{.*?\};", lambda _: "window.DOC_META = " + meta + ";", html, count=1)
     html = html.replace("</head>", NARROW + "</head>", 1)
     return html.replace("__PROJECT__", PROJECT)

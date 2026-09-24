@@ -21,7 +21,7 @@ from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 
-from harness_bench import ledger, profiles
+from harness_bench import archive, ledger, profiles
 from harness_bench.errors import BenchError, Cause
 from harness_bench.plan import load_confirmed
 from harness_bench.telemetry import Extraction, ModelCall, normalize
@@ -350,3 +350,45 @@ def export(view: RunView) -> bytes:
               "rank": r.rank, "interval": r.interval, "tokens": _enc(r.tokens), "wall_ms": _enc(r.wall_ms), "cost_usd": _enc(r.cost_usd)}
              for r in leaderboard(view)]
     return ledger.canonical({"run_id": view.run_id, "catalog_version": view.catalog_version, "cells": cells, "leaderboard": board})
+
+
+@dataclass(frozen=True)
+class Finding:
+    code: str
+    level: str  # error | warning
+    message: str
+
+
+def verify(run_dir: Path) -> list[Finding]:
+    """`bench verify`: every segment's chain and seal, abandoned passes, duplicates, and each archive against
+    its `archive_hash` and its `archive_files` rows. An error is an integrity failure; a warning is not."""
+    out: list[Finding] = []
+    done = completed_passes(run_dir)
+    for fact in FACTS:
+        for path in segment_paths(run_dir, fact):
+            report = ledger.verify_segment(path)
+            if report.error:
+                out.append(Finding("HB-LED-002", "error", f"{fact}/{path.name}: {report.detail}"))
+            elif path.stem.startswith(GRADE_PREFIX) and path.stem not in done:
+                out.append(Finding("HB-LED-004", "warning", f"{fact}/{path.stem}: abandoned grading segment, skipped by views"))
+    if any(f.level == "error" for f in out):
+        return out
+    try:
+        load(run_dir)
+    except BenchError as exc:
+        return [*out, Finding(exc.code, "error", exc.message)]
+    files = rows(run_dir, "archive_files")
+    for e in rows(run_dir, "events"):
+        if e["kind"] != "cell.archived":
+            continue
+        cid, attempt = e["cell_id"], e["archive_attempt"]
+        cell_rows = [r for r in files if r["cell_id"] == cid and r["archive_attempt"] == attempt]
+        if archive.archive_hash(cell_rows) != e["archive_hash"]:
+            out.append(Finding("HB-LED-005", "error", f"{cid}: archive_hash does not match its archive_files rows"))
+            continue
+        folder = run_dir / "archive" / cid / f"attempt-{attempt}"
+        try:
+            archive.verify(folder, cell_rows)
+        except BenchError as exc:
+            out.append(Finding("HB-LED-005", "error", f"{cid}: {exc.message}"))
+    return out

@@ -5,11 +5,12 @@ with the real ledger, and `archive/<cell>/attempt-1/{ws,home}` holding the cell'
 real captured Codex record as its native record.
 """
 
+import hashlib
 import json
 import shutil
 from pathlib import Path
 
-from harness_bench import ledger
+from harness_bench import archive, ledger
 from harness_bench import plan as plan_mod
 from harness_bench.grade import runner
 
@@ -75,7 +76,8 @@ def make_run(root: Path, tmp_path: Path, cells: dict[str, str | None], harness: 
     plan["plan_hash"] = plan_mod.plan_hash(plan)
     (run_dir / "plan.json").write_text(json.dumps(plan), encoding="utf-8")
     archived = set(cells) if archived is None else archived
-    with ledger.SegmentWriter.create(run_dir / "events", "engine-1") as ev:
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-1") as ev, \
+            ledger.SegmentWriter.create(run_dir / "archive_files", "engine-1") as af:
         ev.append({"kind": "run.started", "run_id": "r1"})
         for cid, source in cells.items():
             for kind in ("cell.launch_intent", "cell.workspace_built"):
@@ -95,7 +97,12 @@ def make_run(root: Path, tmp_path: Path, cells: dict[str, str | None], harness: 
             record = folder / "home" / "sessions" / "2026" / "09" / f"rollout-2026-09-23-sess-{cid}.jsonl"
             record.parent.mkdir(parents=True)
             shutil.copy(FIX / "native" / "codex" / "ok.jsonl", record)
-            ev.append({"kind": "cell.archived", "cell_id": cid, "archive_attempt": 1, "archive_hash": "h"})
+            rows = [{"path": f.relative_to(folder).as_posix(), "kind": "file", "size": f.stat().st_size,
+                     "sha256": hashlib.sha256(f.read_bytes()).hexdigest(), "link_target": "", "archive_attempt": 1}
+                    for f in sorted(folder.rglob("*")) if f.is_file()]
+            for row in rows:
+                af.append({"kind": "archive_file", "run_id": "r1", "cell_id": cid, **row})
+            ev.append({"kind": "cell.archived", "cell_id": cid, "archive_attempt": 1, "archive_hash": archive.archive_hash(rows)})
             ev.append({"kind": "cell.workspace_deleted", "cell_id": cid})
     if turn_usage is not None:
         with ledger.SegmentWriter.create(run_dir / "turn_usage", "engine-1") as tu:

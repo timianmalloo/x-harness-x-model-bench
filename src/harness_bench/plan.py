@@ -117,6 +117,12 @@ def file_hash(path: Path) -> str:
     return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest() if path.exists() else ""
 
 
+def _prompt(task_dir: Path) -> dict:
+    """The task prompt the agent receives, frozen in the plan with its hash (US-10); line ends as LF."""
+    text = (task_dir / "prompt.md").read_bytes().replace(b"\r\n", b"\n").decode("utf-8")
+    return {"prompt": text, "prompt_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest()}
+
+
 def profile_record(root: Path, harness: str) -> dict:
     p = profiles.load(root, harness)
     return {"profile_hash": file_hash(root / "bench" / "profiles" / f"{harness}.yaml"), "usage_source": p.usage_source,
@@ -143,8 +149,8 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, p
         "matrix": matrix,
         "matrix_hash": _sha(matrix),
         "bom_version": str(bom.get("version")),
-        "tasks": {t["id"]: {"version_hash": versions[t["id"]], "scenario": t["scenario"],
-                            "budget_seconds": t["budget_minutes"] * 60} for t in tasks},
+        "tasks": {t["id"]: {"version_hash": versions[t["id"]], "scenario": t["scenario"], "budget_seconds": t["budget_minutes"] * 60,
+                            **_prompt(root / "tasks" / t["id"])} for t in tasks},
         "builds": {h: builds[h] for h in sorted(harnesses)},
         "profiles": {h: profile_record(root, h) for h in sorted(harnesses)},
         "pack": pack,

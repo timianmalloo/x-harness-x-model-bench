@@ -322,7 +322,7 @@ class Engine:
             self.record("events", {"kind": "attempt.session_opened", "cell_id": cid, "session_id": session_id or ""})
             self.record("events", {"kind": "cell.prompt_sent", "cell_id": cid})
 
-        result = driver.run_turn(cp, cwd=ws, prompt=cell.get("prompt", ""), mode=launcher.mode,
+        result = driver.run_turn(cp, cwd=ws, prompt=self.plan["tasks"][cell["task"]]["prompt"], mode=launcher.mode,
                                  handshake_timeout=self.params["handshake_timeout"], before_send=barrier)
         exit_status, confirmed = self._end_process(cp)
         drain.join(timeout=5)

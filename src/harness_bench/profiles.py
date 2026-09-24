@@ -7,15 +7,20 @@ and the build, which ACP mode to set, and where the native session record lands.
 Every cell's environment is cleaned: variables that would point a harness at the operator's own home,
 API keys (subscriptions only, ADR-0003), and the markers of an enclosing Claude Code session are
 removed. Shared build servers are switched off so nothing outlives the turn or joins another cell's job.
+
+`ProfileLauncher` is the engine's Launcher for a real harness: a profile plus the planned build, re-hashed
+at every cell start (US-12).
 """
 
 from __future__ import annotations
 
+import os
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from harness_bench import config
+from harness_bench import config, tools
+from harness_bench.telemetry import claude_code, codex
 
 HARNESSES = ("claude-code", "codex")
 USAGE_SOURCES = ("acp_turn", "native_record")
@@ -26,7 +31,8 @@ CELL_ENV = {
     "MSBUILDDISABLENODEREUSE": "1",
     "UseSharedCompilation": "false",
     "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
-    "GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": "core.fsmonitor", "GIT_CONFIG_VALUE_0": "false",
+    "GIT_CONFIG_COUNT": "2", "GIT_CONFIG_KEY_0": "core.fsmonitor", "GIT_CONFIG_VALUE_0": "false",
+    "GIT_CONFIG_KEY_1": "core.longpaths", "GIT_CONFIG_VALUE_1": "true",
 }
 
 
@@ -108,3 +114,42 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
         usage_source=data.get("usage_source", "native_record"),
         auxiliary_models=tuple(data.get("auxiliary_models") or ()),
     )
+
+
+READERS = {"claude-code": claude_code.read, "codex": codex.read}
+
+
+class ProfileLauncher:
+    """engine.Launcher for a real harness. `planned` is the build record frozen in the plan."""
+
+    def __init__(self, profile: Profile, tools_dir: Path, planned: dict) -> None:
+        self.profile, self.tools_dir, self.planned = profile, tools_dir, planned
+        self.harness = profile.harness
+        self.credential_names = frozenset({profile.credential_name})
+        self.usage_source = profile.usage_source
+        self.mode = profile.mode
+        self.build: tools.Build | None = None
+
+    def check_build(self) -> dict:
+        """Re-hash the installed build and refuse it unless it is the planned one (BuildChanged)."""
+        build = tools.resolve(self.tools_dir)[self.harness]
+        tools.check_build(build, self.planned)
+        self.build = build
+        return build.record()
+
+    def seed(self, home: Path, model: str) -> None:
+        self.profile.seed_home(home, model)
+
+    def clean(self, home: Path) -> None:
+        self.profile.clean_home(home)
+
+    def argv_env(self, cell: dict, home: Path, traceparent: str) -> tuple[list[str], dict[str, str]]:
+        if self.build is None:
+            raise RuntimeError("check_build must run before argv_env")
+        return self.profile.argv(self.build), self.profile.cell_env(dict(os.environ), home, self.build, cell["model"], traceparent)
+
+    def records(self, home: Path, session_id: str) -> list[Path]:
+        return self.profile.native_records(home, session_id)
+
+    def read(self, path: Path):
+        return READERS[self.harness](path)

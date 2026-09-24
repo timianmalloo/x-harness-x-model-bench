@@ -24,11 +24,10 @@ from pathlib import Path
 from harness_bench import config, ledger, oslock, profiles, views
 from harness_bench.grade import correctness, cost
 from harness_bench.plan import file_hash, load_confirmed, task_version_hash
-from harness_bench.telemetry import Extraction, claude_code, codex, normalize
+from harness_bench.telemetry import Extraction, normalize
 
 PASS_FACTS = ("events", "model_calls", "tool_calls", "scores")
 METRICS = ("pass_at_1", "partial_credit", "cost_usd")  # the phase-1 graders' metrics
-READERS = {"claude-code": claude_code.read, "codex": codex.read}
 
 __all__ = ["METRICS", "PASS_FACTS", "PassResult", "file_hash", "grader_build", "run_pass"]
 
@@ -123,7 +122,7 @@ class _Pass:
         records = profiles.find_records(folder / "home", self.plan["profiles"][cell["harness"]]["record_glob"], session_id)
         if len(records) != 1:
             return None, "no native record for the session" if not records else "more than one native record for the session"
-        ex = READERS[cell["harness"]](records[0])
+        ex = profiles.READERS[cell["harness"]](records[0])
         cid = cell["cell_id"]
         if (cid, self.extraction) not in held:
             for row in normalize.model_call_rows(self.plan["run_id"], cid, session_id, ex, self.extraction):
