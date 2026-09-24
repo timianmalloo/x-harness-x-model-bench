@@ -882,7 +882,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f0579734fdd9487efb5298aa3b0d3d3d07f8e488a4e9a36f5cb53c63b66023a3"
+      "sourceSha256": "c804ad9c03877ced4837eeb9699d52712145257b5bf43cb41740ad10e838e8e5"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -1854,5 +1854,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "91e94dc36b2be9386d2d51054cbbe262adfd96bead219b10074370f594734c3b"
+  "graphSha256": "ae358fea54c0c1ad6b74161090f078a7e9708a43378aac3a2fb9f335f898f050"
 };
