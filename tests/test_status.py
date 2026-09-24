@@ -24,11 +24,25 @@ def root(tmp_path):
 
 
 def _live_run(root, tmp_path):
-    """A run whose engine segment shows cell `a` ended and cell `b` still running since 11:59:00."""
+    """A run whose engine segment shows cell `a` ended and cell `b` still running since 11:59:00
+    (process started and its prompt sent at the same instant, so old and new budget math agree)."""
     run_dir = make_run(root, tmp_path, {"a": GOOD}, unstarted=("b",))
     with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
         ev.append({"kind": "cell.launch_intent", "cell_id": "b"})
         ev.append({"kind": "attempt.process_started", "cell_id": "b", "recorded_at": "2026-09-23T11:59:00.000Z"})
+        ev.append({"kind": "attempt.session_opened", "cell_id": "b"})
+        ev.append({"kind": "cell.prompt_sent", "cell_id": "b", "recorded_at": "2026-09-23T11:59:00.000Z"})
+    return run_dir
+
+
+def _handshaking_run(root, tmp_path):
+    """Cell `b`'s process started at 11:58:00 (handshake) but its prompt was only sent at 11:59:00."""
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, unstarted=("b",))
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
+        ev.append({"kind": "cell.launch_intent", "cell_id": "b"})
+        ev.append({"kind": "attempt.process_started", "cell_id": "b", "recorded_at": "2026-09-23T11:58:00.000Z"})
+        ev.append({"kind": "attempt.session_opened", "cell_id": "b"})
+        ev.append({"kind": "cell.prompt_sent", "cell_id": "b", "recorded_at": "2026-09-23T11:59:00.000Z"})
     return run_dir
 
 
@@ -72,6 +86,14 @@ def test_a_cell_past_its_budget_is_being_killed(root, tmp_path):
         s = status.build(run_dir, now=later)
     assert s.running[0].killing
     assert "b: killing (unconfirmed, 90 s)" in status.text(s).splitlines()
+
+
+def test_a_running_cells_budget_is_measured_from_prompt_sent_not_process_started(root, tmp_path):  # T4-3
+    run_dir = _handshaking_run(root, tmp_path)
+    with oslock.RunLock.acquire(run_dir / ".lock", "HB-RUN-003"):
+        s = status.build(run_dir, now=NOW)  # NOW 12:00:00; process_started 11:58 (120s), prompt_sent 11:59 (60s)
+    assert s.running[0].elapsed_s == 60
+    assert not s.running[0].killing  # budget 300s: 60s elapsed, not 120s
 
 
 def test_an_unknown_run_is_hb_usr_001(tmp_path):
