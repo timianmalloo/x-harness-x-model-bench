@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T21:54:52Z",
+  "generated": "2026-09-24T21:58:27Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -3079,6 +3079,295 @@ window.AUDIT_DATA = {
             "sha256": "646a517457604a4aaefb5ceedd8e65cc08bebeca67cbde847736abd493b434c4",
             "status": "resolved",
             "token": "src/harness_bench/engine.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3APTNHE65PYRQF2TQ3ZTENJ",
+      "shortname": "Goal: Cross-vendor join review of track W1-TOOLB (plan docs/coordination…",
+      "datetime": "2026-09-24T21:58:27Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: Cross-vendor join review of track W1-TOOLB (plan docs/coordination/coordination-finish-harness-bench.md, the \"Join rule\"): judge the TOOL-B control on branch w1-toolb-control and write the review to docs/notes/review-w1-toolb-codex.md in your own worktree.\nDone when: docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path; do not edit it).; The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed; are a collection error, a timeout and an exit-2 run each reported not-a-kill; is the dump format read from cosmic-ray 8.7.0's own source rather than assumed.; The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\".; The review file is committed on your branch.\nNot in scope: Editing any file other than docs/notes/review-w1-toolb-codex.md.; Editing the w1-toolb-control checkout.; Running the full suite, anything under tests/e2e, or `-m \"\"`.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 45 minutes; commit the review before the deadline even if a mutant is unfinished, and say so.\n\nGrounding: docs/lessons/defect-classes.md (TOOL-A, TOOL-B), docs/proof/phase1.md residual 10, docs/notes/rulings.md R-19 (the phase-1 re-derivation is deferred to a named window; judge the unit-level proof). Use `python`, not `python3` (Windows); `uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py` in the throwaway worktree. Set AGENT_SESSION to your session id before committing.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3APTNSSDZ2ACY4ZD43MJGMN",
+      "shortname": "compile-Goal: Cross-vendor join review of track W1-TOOLB (plan docs/coordination…",
+      "datetime": "2026-09-24T21:58:27Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: Cross-vendor join review of track W1-TOOLB (plan docs/coordination/coordination-finish-harness-bench.md, the \"Join rule\"): judge the TOOL-B control on branch w1-toolb-control and write the review to docs/notes/review-w1-toolb-codex.md in your own worktree.\nDone when: docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path; do not edit it).; The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed; are a collection error, a timeout and an exit-2 run each reported not-a-kill; is the dump format read from cosmic-ray 8.7.0's own source rather than assumed.; The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\".; The review file is committed on your branch.\nNot in scope: Editing any file other than docs/notes/review-w1-toolb-codex.md.; Editing the w1-toolb-control checkout.; Running the full suite, anything under tests/e2e, or `-m \"\"`.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 45 minutes; commit the review before the deadline even if a mutant is unfinished, and say so.\nGrounding: docs/lessons/defect-classes.md (TOOL-A, TOOL-B), docs/proof/phase1.md residual 10, docs/notes/rulings.md R-19 (the phase-1 re-derivation is deferred to a named window; judge the unit-level proof). Use `python`, not `python3` (Windows); `uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py` in the throwaway worktree. Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path | phrase: docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path |\n| done_when: do not edit it). | phrase: do not edit it). |\n| done_when: The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed | phrase: The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed |\n| done_when: are a collection error, a timeout and an exit-2 run each reported not-a-kill | phrase: are a collection error, a timeout and an exit-2 run each reported not-a-kill |\n| done_when: is the dump format read from cosmic-ray 8.7.0's own source rather than assumed. | phrase: is the dump format read from cosmic-ray 8.7.0's own source rather than assumed. |\n| done_when: The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\". | phrase: The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\". |\n| done_when: The review file is committed on your branch. | phrase: The review file is committed on your branch. |\n| not_in_scope: Editing any file other than docs/notes/review-w1-toolb-codex.md. | phrase: Editing any file other than docs/notes/review-w1-toolb-codex.md. |\n| not_in_scope: Editing the w1-toolb-control checkout. | phrase: Editing the w1-toolb-control checkout. |\n| not_in_scope: Running the full suite, anything under tests/e2e, or `-m \"\"`. | phrase: Running the full suite, anything under tests/e2e, or `-m \"\"`. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- git worktree add --detach: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py: unresolved (not found; nearest: tests/test_mutate_check.py)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 48b5e321fda1a62dffa261d3ee310be854edb40b7a68adebeb4fccf968adcc49\n- docs/notes/review-w1-toolb-codex.md: unresolved (not found)\n- tools/mutate_check.py's: unresolved (not found; nearest: tools/mutate_check.py)\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf05cc77536737a78e92e027f861d3af0517237c1204905feddd2bb256465ffe\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 ce920dde88aceaac893ca8bb52c027d0df7385b64b226a7b6638b29d68386df3\n- tests/e2e: unresolved (not found)\n- docs/lessons/defect-classes.md: unresolved (ambiguous: 2 matches)\n- docs/proof/phase1.md: docs/proof/phase1.md sha256 3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428\n- docs/notes/rulings.md: unresolved (ambiguous: 2 matches)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3APTNHE65PYRQF2TQ3ZTENJ\nraw sha256: 82dbacc35df0bea823665dcceb35f89d49e4a1a89e8d76a0e84e6e1291206e0c\ncompiler model: claude-opus-5-5\nengine seconds: 0.001\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3APTNHE65PYRQF2TQ3ZTENJ for codex v1: 11 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path",
+            "trace": {
+              "kind": "phrase",
+              "ref": "docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "do not edit it).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "do not edit it)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "are a collection error, a timeout and an exit-2 run each reported not-a-kill",
+            "trace": {
+              "kind": "phrase",
+              "ref": "are a collection error, a timeout and an exit-2 run each reported not-a-kill"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "is the dump format read from cosmic-ray 8.7.0's own source rather than assumed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "is the dump format read from cosmic-ray 8.7.0's own source rather than assumed."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\".",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\"."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The review file is committed on your branch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The review file is committed on your branch."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing any file other than docs/notes/review-w1-toolb-codex.md.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Editing any file other than docs/notes/review-w1-toolb-codex.md."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing the w1-toolb-control checkout.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Editing the w1-toolb-control checkout."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Running the full suite, anything under tests/e2e, or `-m \"\"`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Running the full suite, anything under tests/e2e, or `-m \"\"`."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path",
+            "do not edit it).",
+            "The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed",
+            "are a collection error, a timeout and an exit-2 run each reported not-a-kill",
+            "is the dump format read from cosmic-ray 8.7.0's own source rather than assumed.",
+            "The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\".",
+            "The review file is committed on your branch."
+          ],
+          "fan_out_cap": 0,
+          "goal": "Cross-vendor join review of track W1-TOOLB (plan docs/coordination/coordination-finish-harness-bench.md, the \"Join rule\"): judge the TOOL-B control on branch w1-toolb-control and write the review to docs/notes/review-w1-toolb-codex.md in your own worktree.",
+          "main_line_budget": "one slice of at most 45 minutes; commit the review before the deadline even if a mutant is unfinished, and say so.\nGrounding: docs/lessons/defect-classes.md (TOOL-A, TOOL-B), docs/proof/phase1.md residual 10, docs/notes/rulings.md R-19 (the phase-1 re-derivation is deferred to a named window; judge the unit-level proof). Use `python`, not `python3` (Windows); `uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py` in the throwaway worktree. Set AGENT_SESSION to your session id before committing.",
+          "not_in_scope": [
+            "Editing any file other than docs/notes/review-w1-toolb-codex.md.",
+            "Editing the w1-toolb-control checkout.",
+            "Running the full suite, anything under tests/e2e, or `-m \"\"`.",
+            "Any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.001,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3APTNHE65PYRQF2TQ3ZTENJ",
+        "raw_sha256": "82dbacc35df0bea823665dcceb35f89d49e4a1a89e8d76a0e84e6e1291206e0c",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git worktree add --detach"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-m "
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python3"
+          },
+          {
+            "nearest": "tests/test_mutate_check.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench.md",
+            "reason": null,
+            "sha256": "48b5e321fda1a62dffa261d3ee310be854edb40b7a68adebeb4fccf968adcc49",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-finish-harness-bench.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/review-w1-toolb-codex.md"
+          },
+          {
+            "nearest": "tools/mutate_check.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/mutate_check.py's"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "bf05cc77536737a78e92e027f861d3af0517237c1204905feddd2bb256465ffe",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "ce920dde88aceaac893ca8bb52c027d0df7385b64b226a7b6638b29d68386df3",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/proof/phase1.md",
+            "reason": null,
+            "sha256": "3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428",
+            "status": "resolved",
+            "token": "docs/proof/phase1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
           }
         ],
         "schema": "compiled-prompt/1",

@@ -286,3 +286,58 @@ Append only. One entry per ruling. Newest last.
   1. **The window:** the first day-hours slot after the wave-1 merge with no benchmark run live and no runner slice active, or the next night not used by a benchmark run. The Leader runs cosmic-ray over the merged `main`'s phase-1 modules with the control, stores the session database with its sha256 in the run record (W1-TOOLB's own exit condition), and writes the **new** kill count and the re-derived named-kill count side by side in `docs/proof/phase2.md`. 2267 stays Flagged.
   2. No mutation-bar claim is made in any phase-2 artifact until that window has run (the round-2 condition, unchanged).
   3. Defect class: "evidence named as a condition was not retained" is recorded in `docs/lessons/defect-classes.md`; the control is that every mutation run stores its database and hash in the run record before the proof cites the count.
+
+## R-20 · 2026-09-24 · Owner seat (Fable) · Q10: no `model_calls` grain deviation; Copilot's per-model aggregate is a `turn_usage` fact under a third token-source rule
+
+- **Ruling:** the grain deviation is **rejected**. `model_calls` stays "one model request" (ADR-0006), and Copilot writes **no** `model_calls` rows: the extraction records `model_calls: not recorded (no per-call record in the native format)`. Copilot's per-model session aggregate (`session.shutdown.modelMetrics`) is written to the existing **`turn_usage`** fact, whose declared grain, one `(run, cell, attempt, model)`, is exactly what Copilot records (one attempt is one session). This is a **third `usage_source` rule** (`native_session`; the name is fixed at design time), which by the token-source note's promotion rule (`docs/notes/decision-token-source-per-harness.md:52-54`) is an **ADR-0008 amendment**. No second `turn_usage` writer process is introduced: the rows are produced by the Copilot reader (W1-COP-R) as `TurnUsage` values and appended by the grading pass under the same write-once-per-extraction rule as `model_calls`; the appending line in `grade/runner.py` is W1-COP-I's (plan line 96: it "wires row 4"). The Data & Persistence Architect's veto stands: nothing implements this before its gate clears at the COP-D join, and a dissent returns as a decision request that amends this ruling.
+- **Reasoning:**
+  - A fact's grain is not per harness. One row per model per session inside `model_calls` is a second definition of one quantity (DM7) and breaks the key: two models from one `session.shutdown` line share `(native_session_id, native_ordinal)`.
+  - The right fact already exists. `turn_usage` is keyed `(run_id, cell_id, attempt, model)` (`views.py:35`), the grade runner already reads it (`grade/runner.py:96`), and `served_models` already has a path that reads it (`normalize.py:68-69`). The only new thing is *who* fills it for Copilot and from *what*, which is what a `usage_source` rule names.
+  - Copilot's ACP `usage` cannot be that row: it is a per-turn total with no model (fixture: `inputTokens` 527,641, no model key), while `modelMetrics` carries the model, six requests and the same buckets. So the aggregate comes from the native record at grading, not from the engine.
+- **Conditions:**
+  1. ADR-0008 amendment text: `native_session` = per-(attempt, model) token buckets from the native record's session aggregate, written to `turn_usage` at grading; served models for the mismatch check are the `turn_usage` models joined with the `assistant.message.model` set; `model_calls` not recorded. `bench/profiles/copilot.yaml` names it; `profiles.py` `USAGE_SOURCES` gains it (W1-COP-I).
+  2. Bucket normalisation is asserted by arithmetic, not by name: Copilot's `usage.inputTokens` **includes** cache read and write (fixture: 18 + 439,386 + 88,237 = 527,641), so uncached input is `tokenDetails.input.tokenCount`, never `inputTokens`. The reader test states this sum (ADR-0006, "Token buckets must be normalised per harness").
+  3. `turn_usage` rows written at grading carry the `extraction_id`; engine-written rows carry none. A re-grade with the same reader build reuses them (write-once), and totals never sum two extractions.
+  4. `requests.count` per model (6 in the sample) and `totalNanoAiu` stay in provenance for wave 1; they join the catalog with Q6 (R-15).
+  5. A Copilot cell with `turn_usage` rows and no `model_calls` rows is `valid`; a test asserts that `invalid (no model call)` is not produced by the absence of `model_calls` alone under `native_session`.
+
+## R-21 · 2026-09-24 · Owner seat (Fable) · Q11: a graceful end is a W2-STOP exit condition, inside the 30-second stop bound
+
+- **Ruling:** yes. On a budget expiry or a stop, the engine first sends ACP `session/cancel`, closes the adapter's stdin and waits a bounded grace; only then does it terminate the Job Object. The grace lives **inside** the existing bound: the cell is still `stopped` or `timed_out` within 30 s of the engine's clock (UXA-10, plan line 117), so the hard floor does not move. A Copilot timeout test asserts that `session.shutdown` is present and the tokens are recorded after a budget kill.
+- **Reasoning:** without a routine shutdown Copilot writes no `modelMetrics`, so a killed cell's tokens are "not recorded" and today's label is the wrong one (`invalid (no model call)`, design R7). A graceful end is the cheapest measurement fix; the wrong label is Q5's fix (R-15).
+- **Conditions:**
+  1. The grace is a profile datum with a ceiling (≤ 10 s; `simplify:` upgrade trigger: a harness whose shutdown needs longer, measured), and the kill still fires at the bound regardless.
+  2. A cell that still writes no shutdown after the grace reads "tokens: not recorded" (R-15's new state), never `invalid (no model call)`.
+  3. The TLC model keeps its semantics: the grace is a refinement of the terminate step, and the seeded variants still fail.
+
+## R-22 · 2026-09-24 · Owner seat (Fable) · Q12: `initialize.agentInfo.version` is recorded as the US-12 evidence
+
+- **Ruling:** yes, W1-ACP. `TurnResult` gains `agent_name` and `agent_version` from ACP `initialize.agentInfo`, and the ledger's `attempt.session_opened` event carries them beside the native session id. US-12's executed-build check compares `agent_version` with the pinned build; a mismatch is `build_changed` (HB-CELL-115). `session.start.copilotVersion` (`"0.0.0"` in the capture) is never used as evidence; the reader records it as "not recorded".
+- **Reasoning:** the pinned-build hash proves which file was launched; `agentInfo.version` is an independent observation of what answered, from the protocol itself, on every harness. Two observations that must agree is a control; one that cannot fire is not.
+- **Conditions:**
+  1. Absent `agentInfo` is null in the ledger (not recorded), and the check is then skipped with a warning, never passed.
+  2. The value is recorded verbatim, no parsing; a test shows a fake agent reporting a different version producing HB-CELL-115.
+
+## R-23 · 2026-09-24 · Owner seat (Fable) · Q13: one classifier for prompt-time errors, mirroring `normalize.classify`
+
+- **Ruling:** mirror `normalize.classify`, with **one** classifier called from both paths (the native-record path and the driver's `session/prompt` error path). A prompt-time JSON-RPC error that carries an HTTP status or a provider error type is classified: 408, 429, 5xx or an overload type → `provider` (HB-CELL-108); an auth failure → `blocked_auth` (the existing `_auth_failure` precedence, `driver.py:199`); any other 4xx → `model_unavailable` (HB-CELL-116). `adapter_crash` (HB-CELL-105) remains for an error with no status and no classifiable type, with the text in `detail`. This **amends R-18 condition 2 by reference**: a status in the error is evidence, not a guess. W1-ACP, red-first on the recorded 2.1.274 rejection text.
+- **Reasoning:** an adapter that answers the prompt with a structured error did not crash; labelling it a crash charges the harness for a request the model service refused. The native-record path already makes this call (`normalize.py:73-82`); two classifiers for one question would drift (one definition, DM7 applied to logic).
+- **Conditions:**
+  1. The classifier is one function with two callers; a test feeds it the same error through both paths and asserts one cause.
+  2. A 4xx that is in truth an adapter defect (a malformed request) will read `model_unavailable` with the adapter's text in `detail`; the report's drill-down shows the detail, and the phase-2 proof discloses the class.
+
+## R-24 · 2026-09-24 · Owner seat (Fable) · Q14: record the ACP `usage` object on the attempt's terminal event
+
+- **Ruling:** record it now, in wave 1, as an **attribute of the attempt's terminal `events` row** (`acp_usage`, the adapter's `usage` and `_meta` halves verbatim, no arithmetic), not as a new fact. Owner: **W1-ACP**, as a third `engine.py` hunk under R-13 (the value comes from the `TurnResult` W1-ACP owns; the driver already keeps both halves, `driver.py:210-212`, and the engine reads only `_meta`, `engine.py:363`).
+- **Reasoning:** for Copilot the ACP total is the only in-ledger cross-check on the reader's per-model rows (Σ `turn_usage` buckets over models must equal the turn total). A check that lives only on committed fixtures cannot see a real run. An events attribute keeps the grain honest (one row is one transition) and costs one hunk.
+- **Conditions:**
+  1. Wave 1 records; the view-level check (a `HB-VAL` warning when the sum and the total disagree) is a wave-2 row beside Q5 (R-15).
+  2. The attribute is null when the adapter reports nothing; a test asserts null, never `{}` or zeros.
+  3. R-13's scope statement for W1-ACP on `engine.py` is now three hunks: `model=`, `credential_kind`, `acp_usage`.
+
+## R-25 · 2026-09-24 · Owner seat (Fable) · Q4 re-read: R-14 amended by reference; the hooks executed and failed
+
+- **Ruling:** the Leader's routing is accepted (upstream fix in the W1-PACK-2 revision 95; Copilot pack-on cells disclose until it lands). R-14 is **amended by reference**: its reasoning said "8 pack hooks run"; the measurement is that all 8 executed and **failed** (`success: false`) under Copilot's PowerShell. R-14's decision (no `trustedFolders` seeding) stands, because trust was not the cause.
+- **Conditions:**
+  1. Every wave-1 Copilot pack-on cell carries the flag `pack hooks failed (Copilot PowerShell)`, and any Copilot pack-effect figure is **Flagged** until re-measured on the fixed revision.
+  2. The re-measurement (hook success counts on revision 95) is a named next step at `/updatepack`; R-14 condition 1's counts are read from it.

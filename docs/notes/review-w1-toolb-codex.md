@@ -1,13 +1,16 @@
 ---
 id: review-w1-toolb-codex
-title: W1-TOOLB cross-vendor join review
-type: note
-owner: worker-codex-rtoolb
+title: "W1-TOOLB cross-vendor join review"
+type: decision-note
+status: accepted
+owner: "@timianmalloo"
 tags: [coordination, review, TOOL-B]
 links:
-  - type: relates-to
-    target: coordination-finish-harness-bench
-review-by: 2026-10-24
+  - { to: coordination-finish-harness-bench, rel: relates-to }
+review-by: "2026-10-24"
+summary: >-
+  Codex (gpt-6-sol, worker-codex-rtoolb) cleared W1-TOOLB for the R-19 unit-level scope; three review mutants each
+  killed by a named test.
 ---
 
 # W1-TOOLB join review — Codex

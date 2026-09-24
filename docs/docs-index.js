@@ -860,6 +860,31 @@ window.DOCS_INDEX = {
       "sourceSha256": "246f0a3686348504280a109df10b0f4f82f65129cbce930623d995d7643acada"
     },
     {
+      "id": "review-w1-toolb-codex",
+      "path": "docs/notes/review-w1-toolb-codex.md",
+      "title": "W1-TOOLB cross-vendor join review",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-24",
+      "reviewSuggested": [],
+      "summary": "Codex (gpt-6-sol, worker-codex-rtoolb) cleared W1-TOOLB for the R-19 unit-level scope; three review mutants each killed by a named test.",
+      "tags": [
+        "coordination",
+        "review",
+        "TOOL-B"
+      ],
+      "links": [
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "0eb44e13d5b0174835d76d56681a8e5d32f9296d8a827a0cb6fe762379b43fcc"
+    },
+    {
       "id": "rulings-register",
       "path": "docs/notes/rulings.md",
       "title": "Owner rulings",
@@ -882,7 +907,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "63901d3795a636545a076650fbc40d987282654191929cf9ab4f661d7c4c7c64"
+      "sourceSha256": "75f15819e037f48125daef7c4256bf43181844c20d4159f331db4739ab9f1ac8"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -1921,5 +1946,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "0701cb156f690690be0b3d70438e1170be5e242a4f53c312f63446bdbe436676"
+  "graphSha256": "83425bdb29821ff61c0b67d4e96bc000fd00103ea514bed4016fe2334e28cab9"
 };
