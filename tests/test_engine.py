@@ -378,6 +378,25 @@ def test_an_append_failure_means_the_prompt_is_never_sent(base, monkeypatch):  #
     assert not list((base / "cells").rglob(".fake-prompt.txt")) and not list((config.run_dir / "archive").rglob(".fake-prompt.txt"))
 
 
+def test_after_the_ledger_breaks_no_worker_blocks_forever(base, monkeypatch):  # T1-4
+    p = _plan(n_cells=2, parallelism=2)
+    first, second = p["cells"]
+    real = ledger.SegmentWriter.append
+
+    def failing(self, record):
+        if record.get("kind") == "cell.prompt_sent" and record.get("cell_id") == first["cell_id"]:
+            raise OSError("disk full")
+        return real(self, record)
+
+    monkeypatch.setattr(ledger.SegmentWriter, "append", failing)
+    config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
+                                 launchers={"fake": FakeLauncher({second["label"]: {"sleep": 2}})},
+                                 build_workspace=_build_workspace, grade=None, end_grace=3)
+    assert _engine_run(p, config, limit=30).exit_code == 3
+    alive = [t.name for t in threading.enumerate() if t.name.startswith("cell-")]
+    assert alive == [], f"workers still blocked after the run returned: {alive}"
+
+
 def test_a_started_run_is_refused(base):
     p = _plan(n_cells=1)
     _run(base, p, FakeLauncher({}))
