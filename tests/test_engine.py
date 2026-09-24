@@ -113,13 +113,24 @@ def _run(base, p, launcher, limit=RUN_LIMIT, **cfg):
                                  launchers={"fake": launcher}, build_workspace=cfg.pop("build_workspace", _build_workspace),
                                  grade=cfg.pop("grade", None), end_grace=cfg.pop("end_grace", 5), **cfg)
     summary = _engine_run(p, config, limit)
-    events = engine.read_events(config.run_dir)
+    events = _events(config.run_dir)
     lifecycle.replay(events, parallelism=p["parameters"]["parallelism"])  # conformance (US-44 AC3)
     return summary, events, config
 
 
+def _events(run_dir: Path) -> list[dict]:
+    return [row for seg in sorted((run_dir / "events").glob("*.jsonl")) for row in ledger.read_segment(seg)]
+
+
 def _outcomes(events):
     return {e["cell_id"]: e for e in events if e["kind"] == "cell.outcome"}
+
+
+def test_the_engine_keeps_no_dead_helpers_or_literals(base):  # T1-17 (Simplifier minors)
+    assert not hasattr(engine, "process_alive") and not hasattr(engine, "read_events")  # host / the ledger own these
+    _, _, config = _run(base, _plan(n_cells=1), FakeLauncher({}))
+    rows = ledger.read_segment(next((config.run_dir / "archive_files").glob("*.jsonl")))
+    assert rows and not any("kind" in r for r in rows)  # a fact's rows are typed by the fact, not a literal
 
 
 def test_happy_run_completes_archives_and_deletes_every_cell(base):
@@ -136,7 +147,7 @@ def test_happy_run_completes_archives_and_deletes_every_cell(base):
     assert [e["exit_status"] for e in events if e["kind"] == "attempt.process_ended"] == [0, 0]  # the real status
     for e in events:
         if e["kind"] == "attempt.process_started":  # every cell process is gone, not just recorded as ended
-            assert not engine.process_alive(e["pid"], e["created_at"])
+            assert not host.process_alive(e["pid"], e["created_at"])
     for fact in ("events", "turn_usage", "archive_files"):
         for seg in (config.run_dir / fact).glob("*.jsonl"):
             assert ledger.verify_segment(seg).sealed
@@ -147,7 +158,7 @@ def test_the_engine_grades_once_after_every_cell_is_archived_and_records_the_pas
     calls = []
 
     def grade(run_dir):
-        archived = [e["cell_id"] for e in engine.read_events(run_dir) if e["kind"] == "cell.archived"]
+        archived = [e["cell_id"] for e in _events(run_dir) if e["kind"] == "cell.archived"]
         calls.append(sorted(archived))
         return {"grading_id": "grade-x", "heads": {"scores": "h" * 64}, "cells_graded": len(archived)}
 
@@ -681,7 +692,7 @@ def test_engine_crash_leaves_no_cell_running(base):  # T-ENG-crash-no-orphan
     pids = []
     while time.monotonic() < deadline and len(pids) < 2:
         time.sleep(0.5)
-        events = engine.read_events(base / "runs" / run_id) if (base / "runs" / run_id / "events").exists() else []
+        events = _events(base / "runs" / run_id) if (base / "runs" / run_id / "events").exists() else []
         pids = [(e["pid"], e["created_at"]) for e in events if e["kind"] == "attempt.process_started"]
     assert len(pids) == 2, "cells never started"
     time.sleep(1)
@@ -689,4 +700,4 @@ def test_engine_crash_leaves_no_cell_running(base):  # T-ENG-crash-no-orphan
     proc.wait(timeout=30)
     time.sleep(2)
     for pid, created in pids:
-        assert not engine.process_alive(pid, created), f"cell process {pid} survived the engine"
+        assert not host.process_alive(pid, created), f"cell process {pid} survived the engine"
