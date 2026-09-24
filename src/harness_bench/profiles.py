@@ -48,6 +48,8 @@ class Profile:
     record_glob: str = ""
     usage_source: str = "native_record"  # or acp_turn (docs/notes/decision-token-source-per-harness.md)
     auxiliary_models: tuple[str, ...] = ()
+    set_model: bool = False  # pin the model with ACP session/set_model before the prompt (ADR-0003, R-13)
+    credential_kind: str = "subscription login (copied)"  # what attempt.process_started records (R-13)
 
     def model_allowed(self, served: str, pinned: str) -> bool:
         return model_allowed(served, pinned, self.auxiliary_models)
@@ -113,6 +115,8 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
         record_glob=data["record_glob"],
         usage_source=data.get("usage_source", "native_record"),
         auxiliary_models=tuple(data.get("auxiliary_models") or ()),
+        set_model=bool(data.get("set_model", False)),
+        credential_kind=data.get("credential_kind", "subscription login (copied)"),
     )
 
 
@@ -128,6 +132,8 @@ class ProfileLauncher:
         self.credential_names = frozenset({profile.credential_name})
         self.usage_source = profile.usage_source
         self.mode = profile.mode
+        self.set_model = profile.set_model
+        self.credential_kind = profile.credential_kind
         self.build: tools.Build | None = None
 
     def check_build(self) -> dict:
