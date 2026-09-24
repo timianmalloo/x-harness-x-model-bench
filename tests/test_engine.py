@@ -260,6 +260,18 @@ def test_a_changed_build_fails_the_cell_and_stops_launching(base):  # T-CELL-bui
     assert sum(1 for e in events if e["kind"] == "cell.launch_intent") == 1
 
 
+def test_two_workers_asking_to_stop_give_one_launch_stopped(base):  # T1-7: one stop path, on the engine thread
+    p = _plan(n_cells=3, parallelism=2)
+    _, events, _ = _run(base, p, FakeLauncher({}, build_changed=True))
+    assert [e["code"] for e in events if e["kind"] == "run.launch_stopped"] == ["HB-CELL-115"]
+
+
+def test_the_circuit_breaker_stops_launching_once(base):  # T1-7: CIRCUIT_BREAKER consecutive infrastructure failures
+    p = _plan(n_cells=4, parallelism=2)
+    _, events, _ = _run(base, p, FakeLauncher({}, missing_exe=True))
+    assert [e["code"] for e in events if e["kind"] == "run.launch_stopped"] == ["HB-CELL-114"]
+
+
 def test_no_launch_after_a_stop_while_another_cell_still_runs(base):  # NoLaunchAfterStop, a slot freeing up
     p = _plan(n_cells=3, parallelism=2, budget=60)
     a, b, c = (cell["cell_id"] for cell in p["cells"])
