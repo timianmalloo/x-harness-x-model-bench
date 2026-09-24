@@ -35,6 +35,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 FAILED = re.compile(r"^FAILED (\S+)", re.MULTILINE)
+SUMMARY = re.compile(r"\b\d+ (?:passed|failed|errors?|skipped|deselected|xfailed|xpassed|warnings?)\b|\bno tests ran\b")
 
 
 def _matched_failure(output: str, named: list[str]) -> str | None:
@@ -46,10 +47,19 @@ def _matched_failure(output: str, named: list[str]) -> str | None:
     return None
 
 
+def _ran_to_completion(output: str) -> bool:
+    """True when `output` carries real pytest evidence -- a `FAILED <node id>` line or a summary
+    line (`N passed`, `N failed`, `no tests ran`, ...) -- as opposed to a broken environment (the
+    interpreter vanished, a launch failure) whose exit code and text carry no such evidence."""
+    return bool(FAILED.search(output) or SUMMARY.search(output))
+
+
 def verdict(returncode: int | None, output: str, named: list[str]) -> str:
     """killed | survived | error | timeout, from one pytest run of the named tests."""
     if returncode is None:
         return "timeout"
+    if not _ran_to_completion(output):
+        return "error"
     if returncode not in (0, 1):
         return "error"
     if returncode == 1 and _matched_failure(output, named) is not None:
@@ -75,6 +85,8 @@ def cosmic_ray_verdict(result: dict | None, named: list[str]) -> tuple[str, str 
     output = result.get("output") or ""
     if output == "timeout":
         return "timeout", None
+    if not _ran_to_completion(output):
+        return "error", None
     if result.get("test_outcome") == "survived":
         return "survived", None
     if result.get("test_outcome") == "killed":
