@@ -1,5 +1,6 @@
 """Hash-chained append-only segments (ADR-0006, design: Data model)."""
 
+import errno
 import json
 
 import pytest
@@ -65,6 +66,34 @@ def test_append_after_seal_is_refused(tmp_path):
     with pytest.raises(BenchError) as e:
         w.append({"kind": "y"})
     assert e.value.code == "HB-LED-002"
+
+
+def test_a_failed_write_poisons_the_writer(tmp_path):  # SRE-5: nothing is appended after a torn write
+    w = ledger.SegmentWriter.create(tmp_path / "events", "engine-1")
+    w.append({"kind": "a"})
+    real = w._file
+
+    class Torn:  # the disk fills halfway through the line
+        def write(self, data):
+            real.write(data[: len(data) // 2])
+            real.flush()
+            raise OSError(errno.ENOSPC, "No space left on device")
+
+        def __getattr__(self, name):
+            return getattr(real, name)
+
+    w._file = Torn()
+    with pytest.raises(OSError) as first:
+        w.append({"kind": "b"})
+    assert first.value.errno == errno.ENOSPC  # the first failure keeps its cause
+    w._file = real  # space is back: the writer must still refuse
+    for later in (lambda: w.append({"kind": "c"}), w.seal):
+        with pytest.raises(BenchError) as e:
+            later()
+        assert e.value.code == "HB-LED-002"
+    w.close()
+    report = ledger.verify_segment(tmp_path / "events" / "engine-1.jsonl")
+    assert (report.error, report.lines, report.torn_tail) == (None, 1, True)  # the half line stays a torn tail
 
 
 @pytest.mark.parametrize("tamper", ["rewrite", "insert", "delete_middle", "cut_sealed_tail"])
