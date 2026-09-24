@@ -6,6 +6,8 @@
 - Deny-all permissions: every `session/request_permission` is answered `cancelled` and counted
   (the static profile should make it zero, US-14); any other client request gets -32601.
 - Verbatim prompt: the task text is sent exactly as given (US-10).
+- Optional model pin: `session/set_model` right after `session/new`, only when the caller passes `model=`; a
+  refusal is `failed (model unavailable)` and the prompt is never sent (ADR-0003, R-13, R-18).
 - Ack barrier: `before_send()` runs after the handshake and before `session/prompt` is written; the
   engine persists `prompt_sent` in it, so a failed append means the prompt is never sent (model
   QueuePromptSent -> PersistPromptSent -> SendPrompt). The driver never retries `session/prompt`.
@@ -19,6 +21,7 @@ from __future__ import annotations
 
 import json
 import queue
+import re
 import threading
 import time
 from collections.abc import Callable, Iterator
@@ -27,6 +30,7 @@ from pathlib import Path
 
 from harness_bench.errors import Cause
 from harness_bench.procs import CellProcess
+from harness_bench.telemetry import ProviderError, normalize
 
 MAX_LINE = 1 << 20
 MAX_JUNK = 20
@@ -90,6 +94,12 @@ class TurnResult:
     handshake_seconds: float = 0.0
     turn_seconds: float = 0.0
     usage: dict | None = None  # the adapter's per-turn usage from the prompt response, if it reports one
+    # assume: "last update" (seam req-01M38KX8503601BEP857749VVF) is on the turn clock of turn_seconds: seconds from
+    # the prompt being sent to the last session/update read in the turn, so 0 <= it <= turn_seconds. Confirm: the
+    # engine test pairs 2.0 with turn 2.5 (test_engine.py:1067). Breaks: a reader that expects the handshake clock.
+    # Null (not recorded, never 0) when the turn read no session/update; handshake-time updates do not set it.
+    last_update_seconds: float | None = None
+    agent_version: str | None = None  # initialize.agentInfo.version, verbatim (R-28); null when not reported
 
 
 class _Eof(Exception):
@@ -97,7 +107,9 @@ class _Eof(Exception):
 
 
 class _AcpError(Exception):
-    pass
+    def __init__(self, error) -> None:
+        super().__init__(json.dumps(error)[:500])
+        self.error = error if isinstance(error, dict) else {}
 
 
 class _Timeout(Exception):
@@ -112,6 +124,7 @@ class _Channel:
         self.result = result
         self.inbox: queue.Queue = queue.Queue()
         self.seq = 0
+        self.turn_start: float | None = None  # set when the prompt is sent
         threading.Thread(target=self._read, daemon=True).start()
 
     def _read(self) -> None:
@@ -164,9 +177,11 @@ class _Channel:
             elif "method" in msg:  # a notification
                 if msg["method"] == "session/update":
                     self.result.updates += 1
+                    if self.turn_start is not None:
+                        self.result.last_update_seconds = time.monotonic() - self.turn_start
             elif msg.get("id") == rid:
                 if "error" in msg:
-                    raise _AcpError(json.dumps(msg["error"])[:500])
+                    raise _AcpError(msg["error"])
                 return msg.get("result") or {}
 
 
@@ -175,17 +190,53 @@ def _auth_failure(detail: str) -> bool:
     return "auth" in low or "login" in low or "credential" in low
 
 
+# assume: an adapter reports a provider's HTTP status as "API Error: <status>" in the JSON-RPC error message and its
+# type as data.errorKind. Confirm: the one measured form, claude-agent-acp 0.79.0 refusing claude-opus-5-5
+# (tests/fixtures/acp/recordings/claude-code-x1-model-unsupported.jsonl). Breaks: another adapter's form is not
+# parsed, so its error stays adapter_crash with the text in detail (R-18 condition 2), never a guessed cause.
+_API_STATUS = re.compile(r"\bAPI Error: (\d{3})\b")
+
+
+def _prompt_error_cause(exc: _AcpError) -> Cause:
+    """R-23: a prompt-time error with a status or a provider type goes through the native-record classifier
+    (`normalize.classify`, one classifier for both paths); an auth failure keeps its precedence; an error with
+    neither status nor type is adapter_crash."""
+    if _auth_failure(str(exc)):
+        return Cause.blocked_auth
+    message = exc.error.get("message") if isinstance(exc.error.get("message"), str) else ""
+    data = exc.error.get("data") if isinstance(exc.error.get("data"), dict) else {}
+    found = _API_STATUS.search(message)
+    status = int(found.group(1)) if found else None
+    error_type = data.get("errorKind") if isinstance(data.get("errorKind"), str) else ""
+    if status is None and not error_type:
+        return Cause.adapter_crash
+    return normalize.classify([ProviderError(0, status, error_type, message[:300])]) or Cause.adapter_crash
+
+
 def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handshake_timeout: float,
-             before_send: Callable[[str | None], None]) -> TurnResult:
-    """Handshake, ack barrier, one verbatim prompt. `before_send` exceptions propagate unsent."""
-    result = TurnResult()
+             before_send: Callable[[str | None], None], model: str | None = None,
+             result: TurnResult | None = None) -> TurnResult:
+    """Handshake, ack barrier, one verbatim prompt. `before_send` exceptions propagate unsent.
+
+    `model`: sent with `session/set_model` right after `session/new` (the ADR-0003 pin, for a profile that sets it);
+    a refusal is `model_unavailable` by step, whatever its text, and the prompt is never sent (R-18).
+    `result`: a TurnResult the caller supplies and can read in `before_send` (agent_version, R-28)."""
+    result = result if result is not None else TurnResult()
     ch = _Channel(cell, result)
     started = time.monotonic()
     deadline = started + handshake_timeout
     try:
-        ch.rpc("initialize", {"protocolVersion": PROTOCOL_VERSION, "clientCapabilities": {}, "clientInfo": CLIENT_INFO}, deadline)
+        init = ch.rpc("initialize", {"protocolVersion": PROTOCOL_VERSION, "clientCapabilities": {}, "clientInfo": CLIENT_INFO}, deadline)
+        info = init.get("agentInfo")
+        version = info.get("version") if isinstance(info, dict) else None
+        result.agent_version = version if isinstance(version, str) else None  # verbatim; null when not reported
         created = ch.rpc("session/new", {"cwd": str(cwd), "mcpServers": []}, deadline)
         result.session_id = created.get("sessionId")
+        if model:
+            try:
+                ch.rpc("session/set_model", {"sessionId": result.session_id, "modelId": model}, deadline)
+            except _AcpError as exc:  # tagged by step: the plan's model is not served here
+                return _fail(result, Cause.model_unavailable, f"set_model refused: {exc}", started)
         if mode:
             ch.rpc("session/set_mode", {"sessionId": result.session_id, "modeId": mode}, deadline)
     except _Timeout as exc:
@@ -201,7 +252,7 @@ def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handsh
     result.handshake_seconds = time.monotonic() - started
 
     before_send(result.session_id)  # the ack barrier: prompt_sent is durable before the prompt goes out
-    turn_start = time.monotonic()
+    turn_start = ch.turn_start = time.monotonic()
     result.prompt_sent = True
     try:
         done = ch.rpc("session/prompt", {"sessionId": result.session_id, "prompt": [{"type": "text", "text": prompt}]}, None)
@@ -215,7 +266,7 @@ def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handsh
     except ProtocolError as exc:
         result.cause, result.detail = Cause.protocol, exc.detail
     except _AcpError as exc:
-        result.cause, result.detail = Cause.adapter_crash, f"prompt error: {exc}"
+        result.cause, result.detail = _prompt_error_cause(exc), f"prompt error: {exc}"
     result.turn_seconds = time.monotonic() - turn_start
     return result
 

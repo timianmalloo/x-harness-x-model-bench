@@ -1,5 +1,5 @@
 {
- "note": "Only the session/prompt results below are recorded bytes. No full ACP transcript (initialize, session/new, notifications) was kept from the spikes: the probe outputs went to C:\\Projects\\bench-probe-* folders that were deleted (docs/notes/spike-phase1-probes.md). replay_agent.py supplies minimal ACP-schema handshake replies and is not a recording. 'unknown' means not recorded anywhere found (git history from b82d28b, the spike notes); it is never a guess.",
+ "note": "recordings/*.jsonl are full ACP transcripts (acp-recording/1: both pipes, every line, in order, with direction and time), captured 2026-09-24 through tools/acp_record.py; replay_agent.py replays them verbatim, with no synthesised message (D5). The *-prompt-response.json files are session/prompt results only, from the 2026-09-23 spikes (read by tests/test_telemetry.py); the spikes' other probe outputs were deleted (docs/notes/spike-phase1-probes.md). 'unknown' means not recorded anywhere found (git history from b82d28b, the spike notes); it is never a guess. Kept on purpose: the Claude Code recordings' available_commands_update lists the operator's user-level command names inside a cell whose CLAUDE_CONFIG_DIR is isolated. That is US-13 evidence of known class R1.4 (account-level context survives isolation), so the scrub keeps it. Removed on purpose: the account plan and tier labels in _auth/status_update are <PLAN> (data minimisation; no test needs them).",
  "fixtures": {
   "claude-code-prompt-response.json": {
    "message": "session/prompt result (the whole result object)",
@@ -18,6 +18,33 @@
    "captured": "2026-09-23",
    "scrub": "Scrubbed at capture (commit b82d28b: 'Golden fixtures from real captures (scrubbed)'); the rule applied is unknown. Checked 2026-09-24: the file holds only stopReason and token counts, with no path, email, account or session id.",
    "source": "tests/fixtures/acp/README.md; commit b82d28b; docs/notes/decision-token-source-per-harness.md (same turn as ../native/codex/ok.jsonl)"
+  },
+  "recordings/claude-code-x1.jsonl": {
+   "message": "full ACP transcript: one X1 turn, model claude-sonnet-5, pack off; end_turn, 57 session/update, 0 permission requests",
+   "adapter": "claude-agent-acp",
+   "adapter_version": "0.79.0",
+   "harness_version": "Claude Code 2.1.274",
+   "captured": "2026-09-24",
+   "scrub": "tools/acp_record.py scrub (the rule is stamped in the header's scrub field): the cell's cwd -> <CWD>, the cell folder -> <CELL>, %USERPROFILE% -> <USERPROFILE>, the bench checkout -> <BENCH>, the cells root -> <CELLS> (each as written, with forward slashes and JSON-escaped, any case), every e-mail -> <EMAIL>; the same rules on the joined text of each streamed message; every label, plan and tier value under authStatus in _auth/status_update -> <PLAN> (d49baef); refused if the operator's username or any of 4 identity and credential-prefix words is left. Re-scrubbed by W1-ACP from the raw capture with the fixed scrub (0906cf5); read once in full before commit.",
+   "source": "Leader coord-opus-cq, capture window 1: tools/acp_record.py turn --harness claude-code --model claude-sonnet-5 --task X1; build hashes and the live TurnResult in recordings/claude-code-x1.meta.json"
+  },
+  "recordings/codex-x1.jsonl": {
+   "message": "full ACP transcript: one X1 turn, model gpt-6-sol, mode agent-full-access, pack off; end_turn, 151 session/update, 0 permission requests",
+   "adapter": "codex-acp",
+   "adapter_version": "1.12.0",
+   "harness_version": "Codex 0.156.0",
+   "captured": "2026-09-24",
+   "scrub": "tools/acp_record.py scrub (the rule is stamped in the header's scrub field): as recordings/claude-code-x1.jsonl. The final agent message (seq 83-156) had streamed a cell path one token per chunk; the stream-joined rule put its scrubbed text in the first chunk and left the other 73 chunks empty. Read once in full before commit.",
+   "source": "Leader coord-opus-cq, capture window 1: tools/acp_record.py turn --harness codex --model gpt-6-sol --task X1 (CODEX_PATH = the pinned codex.exe); build hashes and the live TurnResult in recordings/codex-x1.meta.json"
+  },
+  "recordings/claude-code-x1-model-unsupported.jsonl": {
+   "message": "full ACP transcript of the error path: Claude Code 2.1.274 refuses claude-opus-5-5 at session/prompt (API Error 400, '2.1.280 or newer is required'); prompt sent, 4 session/update, no stopReason",
+   "adapter": "claude-agent-acp",
+   "adapter_version": "0.79.0",
+   "harness_version": "Claude Code 2.1.274",
+   "captured": "2026-09-24",
+   "scrub": "tools/acp_record.py scrub (the rule is stamped in the header's scrub field): as recordings/claude-code-x1.jsonl. Read once in full before commit.",
+   "source": "Leader coord-opus-cq, capture window 1, first attempt: tools/acp_record.py turn --harness claude-code --model claude-opus-5-5 --task X1; build hashes and the live TurnResult (HB-CELL-105 at capture) in recordings/claude-code-x1-model-unsupported.meta.json"
   }
  }
 }

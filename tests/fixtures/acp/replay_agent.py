@@ -1,14 +1,15 @@
-"""Replays a recorded ACP `session/prompt` result to the driver (design D5-consumer).
+"""Replays a recorded ACP transcript to the client, verbatim (design D5-consumer; W1-ACP (b)).
 
 Configuration comes from the REPLAY_ACP environment variable (JSON):
-  {"prompt_result": "<a recorded result file in this folder>",
-   "drop": [<top-level keys removed from the recorded result, for a derived variant>],
-   "before_result": [<messages sent before the result, e.g. a seeded notification>]}
+  {"recording": "<an acp-recording/1 file, tests/fixtures/acp/recordings/*.jsonl, or a derived copy>"}
 
-Only the prompt result is recorded bytes (see provenance.json). The initialize and session/new replies
-here are the minimal shapes the ACP schema requires: they were not captured, and nothing here claims they were.
+The recorded agent lines are cut at each complete line the client sent in the recording. The agent lines
+recorded before the first client line go out at start; each line the client sends now releases the agent
+lines recorded after the matching client line. Every agent line goes out exactly as recorded (bytes, order,
+newline). Nothing is synthesised, and the client's lines are counted, never parsed.
 """
 
+import base64
 import json
 import os
 import sys
@@ -17,31 +18,34 @@ CFG = json.loads(os.environ.get("REPLAY_ACP", "{}"))
 OUT = sys.stdout.buffer
 
 
-def send(obj: dict) -> None:
-    OUT.write(json.dumps(obj).encode("utf-8") + b"\n")
-    OUT.flush()
+def segments(path: str) -> list[bytes]:
+    out = [b""]
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            r = json.loads(line)
+            if r.get("kind") != "line":
+                continue
+            if r["dir"] == "to_agent":
+                if r["nl"]:  # a complete client line ends a segment
+                    out.append(b"")
+                continue
+            data = r["text"].encode("utf-8") if "text" in r else base64.b64decode(r["b64"])
+            out[-1] += data + (b"\n" if r["nl"] else b"")
+    return out
+
+
+def send(data: bytes) -> None:
+    if data:
+        OUT.write(data)
+        OUT.flush()
 
 
 def main() -> int:
-    with open(CFG["prompt_result"], encoding="utf-8") as f:
-        recorded = json.load(f)
-    for key in CFG.get("drop", []):
-        recorded.pop(key, None)
-    for raw in sys.stdin.buffer:
-        msg = json.loads(raw)
-        method, mid = msg.get("method"), msg.get("id")
-        if method == "initialize":
-            send({"jsonrpc": "2.0", "id": mid, "result": {"protocolVersion": 1, "agentCapabilities": {}}})
-        elif method == "session/new":
-            send({"jsonrpc": "2.0", "id": mid, "result": {"sessionId": "replay-session"}})
-        elif method == "session/set_mode":
-            send({"jsonrpc": "2.0", "id": mid, "result": {}})
-        elif method == "session/prompt":
-            for extra in CFG.get("before_result", []):
-                send(extra)
-            send({"jsonrpc": "2.0", "id": mid, "result": recorded})
-        elif mid is not None:
-            send({"jsonrpc": "2.0", "id": mid, "error": {"code": -32601, "message": "not in the replay"}})
+    parts = segments(CFG["recording"])
+    send(parts[0])
+    for i, _ in enumerate(sys.stdin.buffer, start=1):
+        if i < len(parts):
+            send(parts[i])
     return 0
 
 

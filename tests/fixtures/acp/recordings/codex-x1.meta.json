@@ -1,0 +1,24 @@
+{
+ "format": "acp-recording/1",
+ "harness": "codex",
+ "model": "gpt-6-sol",
+ "task": "X1",
+ "mode": "agent-full-access",
+ "prompt_sha256": "802dfde4c609549fd864c9b6cdc5c65bd5a5a2fe1f43246563d00c5e4dd9dc49",
+ "build": {
+  "version": "0.156.0",
+  "sha256": "eabc698ea3b1c430623af0cae510c3459165ed453d2a5d2dac14513cf1b25269",
+  "adapter_version": "1.12.0",
+  "adapter_sha256": "69a628c68e3e10323b075fee3071c4ef991b973f0a825c8191ea6aba2fc870ff"
+ },
+ "captured_utc": "2026-09-24T21:51:17+00:00",
+ "result": {
+  "stop_reason": "end_turn",
+  "cause": null,
+  "session_id": "01a0d566-6681-7a83-b428-ef4029adf29a",
+  "updates": 151,
+  "permission_requests": 0,
+  "prompt_sent": true,
+  "usage_reported": true
+ }
+}

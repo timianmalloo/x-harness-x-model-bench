@@ -1,0 +1,38 @@
+[
+ {
+  "name": "M1 (Test Architect): last_update records the first in-turn update, not the last",
+  "file": "src/harness_bench/driver.py",
+  "find": "                    if self.turn_start is not None:\n                        self.result.last_update_seconds = time.monotonic() - self.turn_start\n",
+  "replace": "                    if self.turn_start is not None and self.result.last_update_seconds is None:\n                        self.result.last_update_seconds = time.monotonic() - self.turn_start\n",
+  "tests": ["tests/test_driver.py::test_last_update_is_the_turn_time_of_the_last_update_not_the_first"]
+ },
+ {
+  "name": "M2 (Test Architect): a handshake-time update sets last_update to 0.0",
+  "file": "src/harness_bench/driver.py",
+  "find": "                    if self.turn_start is not None:\n                        self.result.last_update_seconds = time.monotonic() - self.turn_start\n",
+  "replace": "                    self.result.last_update_seconds = 0.0 if self.turn_start is None else time.monotonic() - self.turn_start\n",
+  "tests": ["tests/test_driver.py::test_a_handshake_time_update_leaves_last_update_null"]
+ },
+ {
+  "name": "Codex review: a refused model setter reads adapter_crash",
+  "file": "src/harness_bench/driver.py",
+  "find": "return _fail(result, Cause.model_unavailable, f\"set_model refused: {exc}\", started)",
+  "replace": "return _fail(result, Cause.adapter_crash, f\"set_model refused: {exc}\", started)",
+  "tests": ["tests/test_driver.py::test_a_refused_model_setter_is_model_unavailable_and_the_prompt_is_never_sent"]
+ },
+ {
+  "name": "Codex review: the shared normalize.classify call replaced by an unconditional model_unavailable",
+  "file": "src/harness_bench/driver.py",
+  "find": "    return normalize.classify([ProviderError(0, status, error_type, message[:300])]) or Cause.adapter_crash\n",
+  "replace": "    return Cause.model_unavailable\n",
+  "tests": ["tests/test_driver.py::test_a_prompt_error_is_classified_by_its_status_and_type",
+            "tests/test_driver.py::test_the_prompt_error_path_calls_the_native_record_classifier"]
+ },
+ {
+  "name": "Codex review: last_update_seconds defaults to 0.0",
+  "file": "src/harness_bench/driver.py",
+  "find": "    last_update_seconds: float | None = None\n",
+  "replace": "    last_update_seconds: float | None = 0.0\n",
+  "tests": ["tests/test_driver.py::test_last_update_is_null_never_zero_with_no_session_update"]
+ }
+]
