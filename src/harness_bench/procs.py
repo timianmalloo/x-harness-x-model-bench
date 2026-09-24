@@ -39,6 +39,7 @@ _BASIC_PID_LIST = 3
 _EXTENDED_LIMIT = 9
 _MAX_PIDS = 1024
 _ERROR_INVALID_HANDLE = 6
+_KILL_GRACE = 30.0  # seconds run() allows to confirm a kill, then to collect the exit status and the output
 
 _k32 = ctypes.WinDLL("kernel32", use_last_error=True)
 _ntdll = ctypes.WinDLL("ntdll")
@@ -270,17 +271,24 @@ def run(argv: list[str], cwd, env, timeout: float, max_output: int = 1 << 20, st
         except OSError:
             pass
     timed_out = False
+    code: int | None = None
     try:
-        code: int | None = cell.wait(timeout=timeout)
-    except subprocess.TimeoutExpired:
-        timed_out = True
-        code = None
-    cell.terminate_and_confirm(timeout=30)
-    if code is None:
-        code = cell.proc.wait(timeout=30) & 0xFFFFFFFF
-    for t in readers:
-        t.join(timeout=10)
-    cell.close()
+        try:
+            code = cell.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            timed_out = True
+        cell.terminate_and_confirm(timeout=_KILL_GRACE)
+        if code is None:
+            try:
+                code = cell.wait(timeout=_KILL_GRACE)
+            except subprocess.TimeoutExpired:
+                pass  # an unconfirmed kill: no exit status is reported; closing the job below ends the tree
+        deadline = time.monotonic() + _KILL_GRACE
+        for t in readers:
+            t.join(timeout=max(0.0, deadline - time.monotonic()))
+    finally:
+        cell.close()  # the job (kill-on-close) and the pipes, on every path
+
     def decode(parts: list) -> str:
         return b"".join(parts).decode("utf-8", errors="replace")
 
