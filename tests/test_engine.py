@@ -475,6 +475,27 @@ def test_a_bad_record_fails_its_cell_not_the_run(base):  # T1-5: only a write or
     assert events[-1]["kind"] == "run.completed" and summary.exit_code == 0
 
 
+def _engine_log(run_dir: Path, emit) -> list[dict]:
+    """Lines engine.log gets while `emit` runs; the handler is removed afterwards."""
+    before = list(engine.log.handlers)
+    engine.configure_logging(run_dir, "a" * 32)
+    try:
+        emit()
+    finally:
+        for h in [h for h in engine.log.handlers if h not in before]:
+            engine.log.removeHandler(h)
+            h.close()
+    return [json.loads(line) for line in (run_dir / "engine.log").read_text(encoding="utf-8").splitlines()]
+
+
+def test_engine_log_keeps_the_whitelisted_extras_only(base):  # T1-9
+    extra = {"error_code": "HB-RUN-002", "pids": [4, 8], "detail": "why", "fact": "events", "win32_error": 5, "argv": ["x"]}
+    [line] = _engine_log(base, lambda: engine.log.error("kill unconfirmed", extra=extra))
+    assert {k: line.get(k) for k in ("error_code", "pids", "detail", "fact", "win32_error")} == {
+        "error_code": "HB-RUN-002", "pids": [4, 8], "detail": "why", "fact": "events", "win32_error": 5}
+    assert "argv" not in line  # not whitelisted: argv may carry a credential
+
+
 def test_a_started_run_is_refused(base):
     p = _plan(n_cells=1)
     _run(base, p, FakeLauncher({}))
