@@ -6,6 +6,7 @@ Exit codes: 0 ok · 1 invalid input · 2 usage (argparse) · 3 run incomplete ·
 import hashlib
 import json
 import sys
+from pathlib import Path
 
 import pytest
 from archived_runs import GOOD, make_root, make_run
@@ -171,12 +172,55 @@ def test_run_refuses_a_run_that_already_started(capsys, root, tmp_path, base):
     assert code == 1 and err.startswith("HB-USR-002")
 
 
-def _pack_repo(path):
+_PACK_APPLY_STUB = '''\
+import argparse, json
+from pathlib import Path
+
+p = argparse.ArgumentParser()
+p.add_argument("action")
+p.add_argument("--source", required=True)
+p.add_argument("--target", required=True)
+p.add_argument("--install", action="store_true")
+p.add_argument("--no-baselines", action="store_true")
+p.add_argument("--json", action="store_true")
+p.add_argument("--project", required=True)
+args = p.parse_args()
+
+(Path(args.target) / "PACK-MARKER.txt").write_text(args.project, encoding="utf-8")
+print(json.dumps({"rows": [{"path": "PACK-MARKER.txt", "status": "ok", "action": "ADD"}]}))
+'''
+
+
+def _pack_repo(path, with_pack_apply=False):
     (path / "pack" / "adapters").mkdir(parents=True)
     (path / "pack" / "adapters" / "INSTALL.md").write_text("revision: 7\n", encoding="utf-8")
+    if with_pack_apply:
+        (path / "pack" / "scripts").mkdir(parents=True)
+        (path / "pack" / "scripts" / "pack-apply.py").write_text(_PACK_APPLY_STUB, encoding="utf-8")
     for args in (["init", "-q", "-b", "main"], ["add", "-A"], ["commit", "-q", "-m", "pack"]):
         gitsafe.git(args, cwd=path, timeout=60, identity=True)
     return gitsafe.git(["rev-parse", "HEAD"], cwd=path, timeout=60).stdout.strip()
+
+
+def test_a_relative_tools_dir_resolves_absolute_and_the_pack_on_build_succeeds(root, tmp_path, monkeypatch):  # HB-CELL-113 (T8 defect 2)
+    """Real E2E: `bench --tools-dir .tools/harness run ...` failed a pack-on cell with HB-CELL-113.
+    install_pack's subprocess runs with cwd = the cell working copy, not the process cwd; a relative
+    --tools-dir left the pack root (tools_dir.parent) relative, so pack-apply.py resolved under the
+    workspace and was never found. cli.main resolves every path argument (--root, --runs, --cells-root,
+    --tools-dir, --pack-source, --matrix) to absolute once, at parse time."""
+    commit = _pack_repo(tmp_path / "ai-forward", with_pack_apply=True)
+    parser = cli.build_parser()
+    monkeypatch.chdir(tmp_path)
+    args = parser.parse_args(["--root", str(root), "--tools-dir", "tools", "plan", "--pack-source", "ai-forward"])
+    cli._resolve_paths(args)
+    assert Path(args.tools_dir).is_absolute() and Path(args.pack_source).is_absolute()
+
+    pack_root = Path(args.tools_dir).parent / "pack"
+    p = {"pack": {"source": args.pack_source, "commit": commit}, "parameters": {"git_timeout": 60}}
+    build = cli._workspace_builder(Path(args.root), p, tmp_path / "sources", pack_root)
+    result = build({"task": "X1", "task_version": "v1", "pack": "on"}, tmp_path / "cells" / "c1")
+    assert result == {"pack": "on", "pack_manifest": 1}
+    assert (tmp_path / "cells" / "c1" / "ws" / "PACK-MARKER.txt").read_text(encoding="utf-8") == "X1"
 
 
 def test_plan_confirm_freezes_builds_pack_and_prompt(capsys, root, tmp_path):

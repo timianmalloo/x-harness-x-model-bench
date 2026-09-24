@@ -47,6 +47,20 @@ def _plain() -> bool:
     return bool(os.environ.get("NO_COLOR")) or not sys.stdout.isatty()
 
 
+_PATH_ARGS = ("root", "runs", "cells_root", "tools_dir", "pack_source", "matrix")
+
+
+def _resolve_paths(args: argparse.Namespace) -> None:
+    """Every path argument is resolved to an absolute path once, here, at parse time (HB-CELL-113,
+    real E2E): a relative --tools-dir left the pack root (tools_dir.parent) relative, and
+    install_pack's subprocess runs with cwd = the cell working copy, not the process cwd -- so a
+    relative pack-apply.py path resolved under the workspace and was never found."""
+    for name in _PATH_ARGS:
+        value = getattr(args, name, None)
+        if value is not None:
+            setattr(args, name, str(Path(value).resolve()))
+
+
 def _run_dir(args) -> Path:
     run_dir = Path(args.runs) / args.run_id
     status.require_known(run_dir)
@@ -244,6 +258,7 @@ COMMANDS = {"validate": cmd_validate, "plan": cmd_plan, "run": cmd_run, "status"
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     args.runs = args.runs or str(Path(args.root) / "runs")
+    _resolve_paths(args)
     try:
         return COMMANDS[args.command](args)
     except BenchError as exc:

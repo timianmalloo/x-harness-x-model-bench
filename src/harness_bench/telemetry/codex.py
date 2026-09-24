@@ -11,7 +11,9 @@
 - An error is `event_msg`/`task_complete` with `error.message`, which embeds a JSON body with `status`
   and `error.type` (probe W3).
 - The first user message that is not tagged system context (`<environment_context>` and the like) is
-  the prompt (US-10).
+  the prompt (US-10). A pack-on cell's first user message also carries a harness-injected AGENTS.md
+  block shaped `# AGENTS.md instructions for <cwd>\n\n<INSTRUCTIONS>\n...\n</INSTRUCTIONS>`; that block
+  is context too, and is skipped the same way (real E2E, US-10, T8 defect 1).
 """
 
 from __future__ import annotations
@@ -36,6 +38,13 @@ CALL_TYPES = ("custom_tool_call", "function_call", "local_shell_call")
 OUTPUT_TYPES = ("custom_tool_call_output", "function_call_output", "local_shell_call_output")
 SHELL_NAMES = ("exec", "shell", "exec_command", "local_shell", "container.exec")
 EDIT_NAMES = ("apply_patch", "write_file", "edit")
+
+
+def _is_injected_context(text: str) -> bool:
+    """A harness-injected context part, not something the user (or the prompt) wrote: a `<tagged>`
+    block, or the AGENTS.md instructions block Codex prepends for a pack-on cell (US-10)."""
+    stripped = text.lstrip()
+    return stripped.startswith(("<", "# AGENTS.md instructions for "))
 
 
 def _tool_class(name: str) -> str:
@@ -91,8 +100,8 @@ def read(path: Path) -> Extraction:
                 ex.errors.append(ProviderError(n, status, etype, message[:300]))
         elif kind == "response_item" and ptype == "message" and payload.get("role") == "user" and ex.first_user_text is None:
             texts = [c.get("text") for c in as_list(payload.get("content")) if isinstance(c, dict) and isinstance(c.get("text"), str)]
-            if texts and not all(t.lstrip().startswith("<") for t in texts):
-                ex.first_user_text = "".join(t for t in texts if not t.lstrip().startswith("<"))
+            if texts and not all(_is_injected_context(t) for t in texts):
+                ex.first_user_text = "".join(t for t in texts if not _is_injected_context(t))
         elif kind == "response_item" and ptype in CALL_TYPES and call_id is not None:
             open_tools[call_id] = {"n": n, "name": as_str(payload.get("name")) or ptype, "start": stamp}
         elif kind == "response_item" and ptype in OUTPUT_TYPES and call_id in open_tools:
