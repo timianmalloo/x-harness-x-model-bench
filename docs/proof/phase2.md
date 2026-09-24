@@ -83,3 +83,41 @@ Each join follows the plan's join rule. A non-author re-runs every cited red in 
 | `mutate_check.py --cosmic-ray` counts a kill only when a named test failed; a collection error, a timeout and an exit-2-shaped interruption are each not a kill; the dump format comes from cosmic-ray 8.7.0's own source | `e53a7bc` → `0e5ddb3` | Leader: 14 failed, 8 passed (tests only) | Codex `gpt-6-sol`, CLEAR (`docs/notes/review-w1-toolb-codex.md`): its own mutants M1 (`is not None` inverted), M2 (the timeout sentinel) and M3 (the overstated condition) were each killed by a named test |
 
 **R-19:** the phase-1 figure of 2267 mutation kills is **not re-derivable (Flagged): the phase-1 cosmic-ray session databases were not kept.** The re-run is a named later window, and no mutation-bar claim is made in phase-2 artifacts until then.
+
+## Join: W1-ACP (rows 6, 14), Claude Opus 5.5, 2026-09-24 (joined `124af8e`)
+
+This discharges phase-1 residual 9: "capture one cell's full ACP stream … replace the schema-shaped fixture … re-run D5/D7. Deadline: before phase 2 changes the driver." The recordings were made in the Leader's capture window 1:
+- **claude-code** (`claude-sonnet-5`, `end_turn`, 57 updates);
+- **codex** (`gpt-6-sol`, `agent-full-access`, `end_turn`, 151 updates);
+- **claude-code rejecting `claude-opus-5-5`:** Claude Code 2.1.274 needs 2.1.280 or newer.
+
+All three are scrubbed (paths, emails, account plan labels). The user-level command names in `available_commands_update` are kept as US-13 evidence (known class R1.4).
+
+| claim | evidence (test) | red observed (Leader) | mutation |
+| --- | --- | --- | --- |
+| (a) the recorder is transparent; `driver.py` untouched until (f) | `test_acp_record.py::test_the_recorder_is_transparent_and_records_every_byte[ok,permission]`; the first driver commit is `586fbb0` (f) | `18c12ad`: 7 failed | — |
+| (b) verbatim replay, nothing synthesised | `test_driver.py::test_a_recorded_transcript_replays_verbatim_through_the_driver[3 recordings]` | `4645917`: 7 failed | (d) |
+| (c) PAIRING presence parsed from the recordings | `test_every_pairing_but_permission_is_present_in_the_recordings_it_cites` | `c6c4d47`: 3 failed | — |
+| (d) one-byte negative control | `test_d5_fails_when_one_byte_of_a_recorded_session_new_result_changes` | `c6c4d47` | the control is itself the mutant |
+| (e) provenance per recording, capture date checked against the meta | `test_every_recording_states_its_provenance_from_its_capture` | `c6c4d47` | — |
+| (f) `last_update_seconds`: the last update, null (never 0) with none, null for a handshake-time update | `test_last_update_is_the_turn_time_of_the_last_session_update`, `…_is_null_never_zero_with_no_session_update`, `…_of_the_last_update_not_the_first`, `test_a_handshake_time_update_leaves_last_update_null` | `043d1d5`: 2 failed | M1 (first, not last) and M2 (0.0 at handshake) killed |
+| HB-CELL-116 for an unsupported model (R-18); one classifier with status precedence (R-23) | `test_a_model_the_harness_refuses_at_the_prompt_is_model_unavailable`; `test_a_prompt_error_is_classified_by_its_status_and_type[…, 4xx-with-api_error-type]`; `test_the_prompt_error_path_calls_the_native_record_classifier` | `b1d0cd0`: 6 failed; `450e349`: 1 failed (Codex F2) | Codex M2 (the classifier bypassed) killed |
+| `session/set_model` after `session/new` and before `set_mode`; a refusal is HB-CELL-116 with no prompt sent (R-13, R-30) | `test_a_refused_model_setter_is_model_unavailable_and_the_prompt_is_never_sent[…]` | `30426c6`: 7 failed | Codex M1 (refusal read as `adapter_crash`) killed |
+| engine hunks: `model=`, launcher `credential_kind`, `agent_version`, `acp_usage` (R-13, R-24, R-28) | `test_the_credential_kind_is_the_one_the_launcher_reports`, `…session_opened_event_carries_the_agent_version`, `…attempt_end_records_the_acp_usage_verbatim_or_null` | `09a9d07`: 4 failed | — |
+| a real `ProfileLauncher` gets the engine past attempt start (Leader seam) | `test_profiles.py::test_a_real_profile_launcher_gets_the_engine_past_attempt_start` | `61acbd6`: 3 failed | — |
+
+**Mutation:** `tests/mutations/driver.json` holds 5 mutants: M1 and M2 from the Test Architect, and three from the Codex reviewer. Run by the Leader with `uv run python tools/mutate_check.py tests/mutations/driver.json`, every mutation was killed. A first run under the system Python (no pytest) reported all 5 as `error`, never `killed`, which is the TOOL-B control behaving correctly.
+
+**Reviewers:**
+- Codex `gpt-6-sol` (`docs/notes/review-w1-acp-codex.md`): CONDITION on F2, fixed red-first.
+- Claude Test Architect: (a)–(e) met by tests; (f) conditions M1 and M2 closed.
+
+**Suite on `main`:** 662 passed, 5 deselected; ruff clean.
+
+**Residuals:**
+- The ledger and `bench status` half of (f) is verified at the wave-1 exit.
+- The Copilot ACP recording is due in capture window 2.
+- No real `session/request_permission` exemplar exists: every capture had 0 permission requests.
+- Replay has no timing, so intra-turn times are replay-speed values.
+- The codex recording's chunk boundaries are a scrub artifact (see `provenance.json`).
+- The stale `engine.py:369-371` comment is a seam to W2-STOP.
