@@ -1,5 +1,12 @@
 [
  {
+  "name": "a native record missing a usage field is costed as 0 (HB-TEL-001, seam T3 -> T2)",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "        elif source == \"native_record\" and ex.missing:",
+  "replace": "        elif False:",
+  "tests": ["tests/test_grade.py::test_cost_is_na_naming_hb_tel_001_when_the_native_record_misses_a_usage_field"]
+ },
+ {
   "name": "extraction written on every pass",
   "file": "src/harness_bench/grade/runner.py",
   "find": "        if (cid, self.extraction) not in held:\n",

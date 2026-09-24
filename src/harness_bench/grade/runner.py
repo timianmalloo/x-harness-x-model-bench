@@ -151,6 +151,9 @@ class _Pass:
             value, reason, evidence = None, "price list changed since the plan (hash mismatch)", ""
         elif source == "native_record" and ex is None:
             value, reason, evidence = None, missing, ""
+        elif source == "native_record" and ex.missing:  # a usage field the record lacks is NOT_RECORDED, never 0 (US-27)
+            fields = ", ".join(sorted({m.field for m in ex.missing}))
+            value, reason, evidence = None, f"HB-TEL-001 native-record fields missing: {fields}", ""
         else:
             totals = normalize.totals(source, ex or Extraction(), usage.get(cid, []))
             value, reason, evidence = cost.cost_usd(totals, self.prices, self.plan["created_at"][:10])
