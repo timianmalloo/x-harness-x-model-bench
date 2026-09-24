@@ -1271,7 +1271,7 @@ def test_an_engine_thread_failure_exits_the_process_and_leaves_no_cell_running(b
     assert not host.process_alive(started["pid"], started["created_at"])
 
 
-# --- T10 defect report: the kill-retry backoff cap (design 30 s, code 60 s) -------------------------------------------
+# --- the kill-retry backoff cap (T10: the code had drifted to 60 s; the design says 30 s) -----------------------------
 
 class _UnconfirmedKill:
     """A CellProcess stand-in whose kill is confirmed only on its n-th check; it records each check's timeout."""
@@ -1294,7 +1294,7 @@ class _UnconfirmedKill:
 
 def test_an_unconfirmed_kill_backs_off_from_1_s_doubling_to_the_designs_30_s_cap(base):
     """design/phase1-walking-skeleton.md:189: "Retries use capped exponential backoff (1 s doubling to 30 s)".
-    engine.KILL_RETRY_CAP is 60.0 (commit 3d14c73, T1-8), so the waits after 16 s are 32 and 60, not 30 and 30."""
+    Red at 70531dc, while KILL_RETRY_CAP was 60.0 (3d14c73, T1-8): the waits after 16 s were 32 and 60."""
     config = engine.EngineConfig(run_dir=base / "r", cells_root=base / "c", launchers={}, build_workspace=_build_workspace,
                                  grade=None, end_grace=0)
     eng = engine.Engine(_plan(n_cells=1), config)
