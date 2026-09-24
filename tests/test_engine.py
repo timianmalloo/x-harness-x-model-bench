@@ -128,9 +128,10 @@ def _outcomes(events):
 
 def test_the_engine_keeps_no_dead_helpers_or_literals(base):  # T1-17 (Simplifier minors)
     assert not hasattr(engine, "process_alive") and not hasattr(engine, "read_events")  # host / the ledger own these
+    assert '"archive_file"' not in Path(engine.__file__).read_text(encoding="utf-8")  # always overwritten by the row's kind
     _, _, config = _run(base, _plan(n_cells=1), FakeLauncher({}))
     rows = ledger.read_segment(next((config.run_dir / "archive_files").glob("*.jsonl")))
-    assert rows and not any("kind" in r for r in rows)  # a fact's rows are typed by the fact, not a literal
+    assert rows and {r["kind"] for r in rows} <= {"file", "link"}  # the archive row's own kind, as before
 
 
 def test_happy_run_completes_archives_and_deletes_every_cell(base):

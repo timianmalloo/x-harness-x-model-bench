@@ -100,17 +100,6 @@ class _Active:
     lock: threading.Lock = field(default_factory=threading.Lock)  # guards kill_reason/ended and terminate vs close
 
 
-def read_events(run_dir: Path) -> list[dict]:
-    rows = []
-    for seg in sorted((run_dir / "events").glob("*.jsonl")):
-        rows.extend(ledger.read_segment(seg))
-    return rows
-
-
-def process_alive(pid: int, created: int) -> bool:
-    return host.process_alive(pid, created)
-
-
 def span_id(trace_id: str, entity: str, phase: str) -> str:
     """Deterministic, so a log line written before its span is derived still joins it (design: Telemetry)."""
     return hashlib.sha256(f"{trace_id}|{entity}|{phase}".encode()).hexdigest()[:16]
@@ -483,7 +472,7 @@ class Engine:
             cell_dir.mkdir(parents=True)
         result = archive.archive_cell(cell_dir, self.cfg.run_dir / "archive" / cid, attempt=1, exclude_names=launcher.credential_names)
         for row in result.rows:
-            self.record("archive_files", {"kind": "archive_file", "run_id": self.plan["run_id"], "cell_id": cid, **row})
+            self.record("archive_files", {"run_id": self.plan["run_id"], "cell_id": cid, **row})
         self.record("events", {"kind": "cell.archived", "cell_id": cid, "archive_attempt": 1, "archive_hash": result.archive_hash,
                                "archive_bytes": result.total_bytes})
         if archive.delete_after_verify(cell_dir, result.folder, result.rows):
