@@ -12,6 +12,7 @@ from hypothesis import strategies as st
 
 from harness_bench import driver, procs
 from harness_bench.errors import Cause
+from harness_bench.telemetry import normalize
 
 FAKE = Path(__file__).parent / "fake_acp_agent.py"
 
@@ -154,6 +155,42 @@ def test_a_killed_turn_returns_promptly_with_eof(tmp_path):
     timer.join()
     cell.close()
     assert result.prompt_sent and result.stop_reason is None and result.eof
+
+
+# D5: recorded adapter output replayed through the driver ------------------------------------------
+
+ACP_FIX = Path(__file__).parent / "fixtures" / "acp"
+REPLAY = ACP_FIX / "replay_agent.py"
+RECORDED = sorted(p for p in ACP_FIX.glob("*.json") if p.name != "provenance.json")
+PROVENANCE_KEYS = ("adapter", "adapter_version", "harness_version", "captured", "scrub", "source")
+
+
+def _replay(tmp_path, **cfg):
+    env = dict(os.environ, REPLAY_ACP=json.dumps(cfg))
+    cell = procs.spawn([sys.executable, str(REPLAY)], cwd=str(tmp_path), env=env)
+    try:
+        return driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=None, handshake_timeout=10, before_send=lambda sid: None)
+    finally:
+        cell.terminate_and_confirm(timeout=10)
+        cell.close()
+
+
+def test_every_recorded_acp_fixture_states_its_provenance():  # D5: adapter version, capture date, scrub
+    provenance = json.loads((ACP_FIX / "provenance.json").read_text(encoding="utf-8"))["fixtures"]
+    assert RECORDED and {p.name for p in RECORDED} == set(provenance)
+    for name, record in provenance.items():
+        assert all(isinstance(record.get(k), str) and record[k].strip() for k in PROVENANCE_KEYS), name
+
+
+@pytestmark_native
+@pytest.mark.parametrize("fixture", RECORDED, ids=[p.stem for p in RECORDED])
+def test_a_recorded_prompt_result_replays_through_the_driver(tmp_path, fixture):  # D5
+    recorded = json.loads(fixture.read_text(encoding="utf-8"))
+    result = _replay(tmp_path, prompt_result=str(fixture))
+    assert result.cause is None and result.stop_reason == recorded["stopReason"] and result.prompt_sent
+    assert result.usage == {"usage": recorded["usage"], "meta": recorded["_meta"]}
+    # the engine's reading of the driver's result is the reading of the recorded bytes
+    assert normalize.turn_usage({"_meta": result.usage["meta"]}) == normalize.turn_usage(recorded) != []
 
 
 # D7: every message type the fake emits is paired with a real transcript or the ACP schema ------
