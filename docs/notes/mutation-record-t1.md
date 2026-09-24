@@ -182,3 +182,31 @@ This section closes the "Out of scope" gap above. These are the 466 engine mutan
 **Observed, not a defect.**
 - The 112 in `DISK_FULL_WINERRORS` is dead weight (see L53).
 - If the engine thread raises while a turn hangs, `run()` returns without killing that turn. The cell dies at process exit, because the workers are daemon threads and the Job's kill-on-close fires then. `test_an_engine_thread_failure_exits_the_process_and_leaves_no_cell_running` pins this.
+
+## Re-run with bytecode off (T12, TOOL-A)
+
+*Run by track T12 and transcribed by the Coordinator. The Coordinator read the installed `cosmic_ray/testing.py` and spot-checked T12's results with the named-test checker (see `docs/proof/findings-T12.md`).*
+
+| item | value |
+| --- | --- |
+| tool | cosmic-ray 8.7.0, local distributor, native Windows 11; `PYTHONDONTWRITEBYTECODE=1` and `PYTHONUTF8=1` in every cosmic-ray process; an absolute interpreter per shard |
+| `src` / tests | `src` at `ceed6c1`, unchanged by the track; survivors re-run one by one with `cosmic-ray mutate-and-test` at `a0c4f52` |
+| execution | 16 detached shards, each module's master session split `index % 16`; every baseline passed; `git status -- src` clean after every phase; shards removed |
+| bytecode proof | no `src/**/__pycache__` before the run or after any of the 192 phases or 496 single-mutant jobs; a positive-control run without the variable did write bytecode |
+| commands | as recorded above (engine: T10's command for all 767) |
+
+| module | mutants | killed | equivalent | open |
+| --- | --- | --- | --- | --- |
+| lifecycle | 107 | 91 | 16 | 0 |
+| errors | 13 | 12 | 1 | 0 |
+| engine | 767 | 624 | 143 (99 annotation, 27 T1, 17 T10) | 0 |
+
+- **Agreement.** Every lifecycle, errors and engine survivor is a recorded equivalent. There is no new mutant and no timeout.
+- **Correction. The recorded equivalent L394 (`daemon=True` → `False`) is killable.**
+  - `test_an_engine_thread_failure_exits_the_process_and_leaves_no_cell_running` kills it: a non-daemon stderr drain on a hung cell keeps the process alive, and the test's subprocess times out after 60 s.
+  - It was confirmed alone with `mutate-and-test`.
+  - T1's argument ("the tail reader ends at pipe EOF") does not hold when the cell hangs. T10's test was written after T1's run.
+  - The engine equivalents are now 27 from T1 (was 28) and 17 from T10.
+- **TOOL-A exposure: none.** cosmic-ray 8.7.0 already sets `PYTHONDONTWRITEBYTECODE=1` for its test subprocess (`cosmic_ray/testing.py:52-56`).
+- **Caution for every cosmic-ray count here.** cosmic-ray reports every non-zero exit, and every timeout (output `"timeout"`), as KILLED (`testing.py:73-75`). A "killed" count is therefore an upper bound unless the killing output was read (class TOOL-B).
+- **A false kill seen in the re-run itself.** L325 `Cause << None` (an annotation) was first "killed" by `FileExistsError` on a leftover `C:/Projects/bench-test/<hex8>` folder that collided with `conftest.base`. Run alone, it survived (a CLN-A sibling).
