@@ -682,6 +682,40 @@ window.DOCS_INDEX = {
       "sourceSha256": "3818fd2d2aab1026085f985ce30b198952054a67b41518fd26edf40ce4c12272"
     },
     {
+      "id": "mutation-record-phase1",
+      "path": "docs/notes/mutation-record-phase1.md",
+      "title": "Mutation record: phase 1 (compiled)",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2026-12-22",
+      "reviewSuggested": [],
+      "summary": "Phase 1's mutation evidence in one place. cosmic-ray 8.7.0 ran over lifecycle, errors, 299 of engine's 765 mutants, ledger, views and grade/**: no mutant is open. Every hand-written tests/mutations/*.json file was re-run under the hardened checker on the integrated code, and every entry was killed. The one gap is engine.py's 466 out-of-scope cosmic-ray mutants.",
+      "tags": [
+        "mutation",
+        "cosmic-ray",
+        "phase1",
+        "proof"
+      ],
+      "links": [
+        {
+          "to": "mutation-record-t1",
+          "rel": "relates-to"
+        },
+        {
+          "to": "mutation-record-t2",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "2f70a00611b3a90f47ac7ba5db4bee70ac4e1e54534eae2b8094626212267a04"
+    },
+    {
       "id": "mutation-record-t1",
       "path": "docs/notes/mutation-record-t1.md",
       "title": "Mutation record: T1 (engine, errors, lifecycle)",
@@ -1008,7 +1042,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5661dde49bd5627561e43d049ceaffed0952152611d53ea7abe734f51ae51058"
+      "sourceSha256": "e43d7ca766af2b9ceb636ace9e819d179a3a2dfd541ee006399a5b5944a4b26d"
     },
     {
       "id": "defect-classes",
@@ -1037,7 +1071,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b418d9b3bea449ed8249fc85a971d1e54fe17d0d7eccb61f4af192085ead6d00"
+      "sourceSha256": "e407e946371c6b96d8d0c416cd40f329debdd749175a62901d63e23d619ad24c"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -1533,6 +1567,41 @@ window.DOCS_INDEX = {
       "sourceSha256": "ff77e25774f861cfac57df5ed5d9a09b31b33820b87031899c92a6b3fe88e337"
     },
     {
+      "id": "proof-phase1",
+      "path": "docs/proof/phase1.md",
+      "title": "Proof Pack: phase 1 walking skeleton",
+      "type": "proof-pack",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2026-12-22",
+      "reviewSuggested": [],
+      "summary": "Phase 1 is usable. The real 4-cell E2E (Claude Code and Codex, pack on and off) passes on the integrated branch with real model calls: all cells valid, the ledger verifies, re-grading is byte-identical, and the report renders offline. Every pre-merge finding was closed red-first across tracks T1–T9, and every mutation file is killed. N5 (user skill roots reaching Codex cells) is disclosed and flagged, not fixed.",
+      "tags": [
+        "proof",
+        "phase1",
+        "e2e",
+        "mutation",
+        "red-first"
+      ],
+      "links": [
+        {
+          "to": "design-phase1-walking-skeleton",
+          "rel": "implements"
+        },
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        },
+        {
+          "to": "mutation-record-phase1",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "914bfe137d05e75a58687873b0d0a9fba00c696b066333f321c5da673d8a3b4c"
+    },
+    {
       "id": "spec-harness-bench",
       "path": "docs/specs/harness-bench.md",
       "title": "Spec: harness-bench, a cross-harness, cross-model benchmark with the pack as a factor",
@@ -1684,5 +1753,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "fe39565e15a07444ed0a97c173af6a276e93993b9fead5341527ae465265fa6e"
+  "graphSha256": "f021918c5732a4a21e9cd1982ed5cd979d175331ba739e58ebedae9ec38b7485"
 };

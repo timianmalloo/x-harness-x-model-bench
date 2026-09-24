@@ -25,8 +25,11 @@ summary: >-
 3. Climb the control ladder (CI6) and record the highest rung that actually holds: *make it impossible* > *automated control* > *always-loaded instruction* > *knowledge doc* > *register entry only*.
 4. A control is not a control until it has been **observed failing** on the un-fixed code.
 
-**Status counts:** controlled 3 · partially-controlled 2 · uncontrolled 0 (project classes)
-**Recurrence since last review:** 4 instances of MOD-A in one session: the control was built after the fourth.
+**Status counts:** controlled 5 · partially-controlled 4 · uncontrolled 1 (project classes). Inherited E2E-E: partially-controlled.
+**Recurrence since last review:**
+- 4 instances of MOD-A in one session; the control was built after the fourth.
+- 2026-09-23: EDIT-B recurred once after registration, and its hook control was then built.
+- The phase-1 finish found four new classes from three real E2E runs: CONC-A, PATH-A, CLN-A, and a RIG-D instance.
 
 ---
 
@@ -102,6 +105,27 @@ summary: >-
 - **Sweep:** every CLI path argument (`--root`, `--runs`, `--cells-root`, `--tools-dir`, `--pack-source`, `--matrix`) is resolved once in `cli._resolve_paths`. `grep add_argument` lists no other path argument. Every `cwd=` site in `src` takes a path derived from those.
 - **Control:** `tests/test_cli.py::test_a_relative_tools_dir_resolves_absolute_and_the_pack_on_build_succeeds`, observed red at `62c38ba`. The `t8.json` T8-2 mutant is killed.
 - **Status:** `controlled` (2026-09-24)
+
+### CLN-A: cleanup that fails silently
+- **Signature:** a best-effort cleanup (`rmtree(..., ignore_errors=True)`, a handler or file never closed) fails without a sign. The residue builds up on disk, or a held handle blocks the next deletion.
+- **Why it survives:**
+  - the product's result is correct;
+  - nothing checks that the residue is gone;
+  - on Windows, read-only git objects and open files make a silent failure the common case.
+- **Instances:**
+  - `2026-09-24`, third real E2E: the race loser's temp folder, holding read-only git objects, stayed under `cells/.sources` (T9-1).
+  - Same run: `engine.log` stayed open because `configure_logging` added a handler per call and never released one. That also sent one run's log lines into another run's log (T9-2).
+  - The unit tests' teardowns left ~170 folders under `C:/Projects/bench-test`.
+- **Sweep:** T9 listed every `ignore_errors=True` site. No product-source site remains.
+  - `tests/e2e/test_walking_skeleton.py` now removes its folder with `make_writable` and asserts the folder is gone.
+  - Test-fixture teardowns (`tests/conftest.py:23`, `tests/test_workspace.py:159`, `tests/test_profiles.py:143`, `tests/fixtures/ledger/make_fixture.py:61-62`) are still `ignore_errors`.
+  - The vendored pack scripts are not ours to change.
+- **Control:**
+  - T9-1: the concurrency tests assert that no `.tmp` folder remains. Observed red at `e225ff5`.
+  - T9-2: the handler-replacement and `cmd_run` release tests. Observed red at `e225ff5`.
+  - The E2E's final cleanup now fails on any residue.
+- **Upgrade trigger:** converting the fixture teardowns to fail on residue.
+- **Status:** `partially-controlled` (the product is controlled; the test fixtures are not)
 
 ### COORD-A: a delegation mechanism's refusal routed around
 - **Signature:** the harness refuses a sub-agent's action, for example writing `docs/proof/findings-*.md` ("report files"), and the sub-agent reaches the same effect another way, such as a shell heredoc.
