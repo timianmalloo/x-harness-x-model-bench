@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T23:28:40Z",
+  "generated": "2026-09-24T23:39:33Z",
   "audit": [
     {
       "actor": null,
@@ -5291,34 +5291,23 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M3AV02NCQ93R58HZDWCV0B2H",
-      "shortname": "Goal: W1-COP-I slice 3 (plan docs/coordination/coordination-finish-harne…",
-      "datetime": "2026-09-24T23:11:19Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W1-COP-I slice 3 (plan docs/coordination/coordination-finish-harness-bench.md, W1-COP-I row and version-3 amendments; design docs/design/phase2-copilot-profile.md revision 3.1 sections 4.5, 7, 13): the Copilot model-setter refusal cause, the HB-PRE-002 extension to Copilot's instruction files, the per-(task, pack, build) instruction_list plan datum, and bench/pack-markers.txt — red-first, in the owned paths only.\nDone when: src/harness_bench/errors.py (and its test tests/test_errors.py) covers the Copilot `session/set_model` refusal form (JSON-RPC -32602 \"Invalid modelId ... not one of this session's models\") as HB-CELL-116 model unavailable per rulings R-18 and R-23, with a red commit first.; src/harness_bench/workspace.py HB-PRE-002 also refuses `GEMINI.md`, `.github/copilot-instructions.md` and any `.github/instructions/**/*.instructions.md` above the cells root, per design section 4.5, with a named red-first test per new branch in tests/test_workspace.py and one mutation entry per new branch in tests/mutations/workspace.json (each killed: `uv run python tools/mutate_check.py tests/mutations/workspace.json`).; One function `instruction_list(exe, ws, env)` in src/harness_bench/plan.py runs the pinned Copilot build's `instruction list --json` once per (task, pack, build) at `bench plan`: the pack-off result must be `[]` (a non-empty list refuses the plan with a named error) and the pack-on count is recorded as a plan datum; its unit tests use a fake exe; exactly one test marked `native` runs the real pinned build twice (pack-off `[]`; pack-on includes AGENTS.md; both runs identical) — design Simplifier N3.; bench/pack-markers.txt exists seeded with the three verified markers \"AI-Forward Pack\", \"Agent Knowledge Pack\", \"Rigor Protocol\" (R-16), with a positive-control test that a pack-on working copy built by the real workspace builder contains each marker and a pack-off copy contains none.; `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced and each green SHA.\nNot in scope: profiles.py, bench/profiles/*.yaml, views.py, driver.py, engine.py, telemetry/* (other slices or tracks).; Any model turn, `bench run`, tests/e2e, `-m \"\"`.; Any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: the design sections named above, docs/notes/rulings.md R-12, R-16, R-18, R-23, src/harness_bench/{errors,workspace,plan}.py and their tests, tests/fixtures/native/copilot/instruction-list-{off,on}.json. The pinned Copilot exe resolves via harness_bench.tools.resolve(\".tools/harness\")[\"copilot\"]. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
+      "datetime": "2026-09-24T23:11:19Z",
+      "id": "al-01M3AV02NCQ93R58HZDWCV0B2H",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: W1-COP-I slice 3 (plan docs/coordination/coordination-finish-harness-bench.md, W1-COP-I row and version-3 amendments; design docs/design/phase2-copilot-profile.md revision 3.1 sections 4.5, 7, 13): the Copilot model-setter refusal cause, the HB-PRE-002 extension to Copilot's instruction files, the per-(task, pack, build) instruction_list plan datum, and bench/pack-markers.txt — red-first, in the owned paths only.\nDone when: src/harness_bench/errors.py (and its test tests/test_errors.py) covers the Copilot `session/set_model` refusal form (JSON-RPC -32602 \"Invalid modelId ... not one of this session's models\") as HB-CELL-116 model unavailable per rulings R-18 and R-23, with a red commit first.; src/harness_bench/workspace.py HB-PRE-002 also refuses `GEMINI.md`, `.github/copilot-instructions.md` and any `.github/instructions/**/*.instructions.md` above the cells root, per design section 4.5, with a named red-first test per new branch in tests/test_workspace.py and one mutation entry per new branch in tests/mutations/workspace.json (each killed: `uv run python tools/mutate_check.py tests/mutations/workspace.json`).; One function `instruction_list(exe, ws, env)` in src/harness_bench/plan.py runs the pinned Copilot build's `instruction list --json` once per (task, pack, build) at `bench plan`: the pack-off result must be `[]` (a non-empty list refuses the plan with a named error) and the pack-on count is recorded as a plan datum; its unit tests use a fake exe; exactly one test marked `native` runs the real pinned build twice (pack-off `[]`; pack-on includes AGENTS.md; both runs identical) — design Simplifier N3.; bench/pack-markers.txt exists seeded with the three verified markers \"AI-Forward Pack\", \"Agent Knowledge Pack\", \"Rigor Protocol\" (R-16), with a positive-control test that a pack-on working copy built by the real workspace builder contains each marker and a pack-off copy contains none.; `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced and each green SHA.\nNot in scope: profiles.py, bench/profiles/*.yaml, views.py, driver.py, engine.py, telemetry/* (other slices or tracks).; Any model turn, `bench run`, tests/e2e, `-m \"\"`.; Any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: the design sections named above, docs/notes/rulings.md R-12, R-16, R-18, R-23, src/harness_bench/{errors,workspace,plan}.py and their tests, tests/fixtures/native/copilot/instruction-list-{off,on}.json. The pinned Copilot exe resolves via harness_bench.tools.resolve(\".tools/harness\")[\"copilot\"]. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
+      "session": "prompt-compile",
+      "shortname": "Goal: W1-COP-I slice 3 (plan docs/coordination/coordination-finish-harne…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M3AV032T5FZBP1NE1H14Q54M",
-      "shortname": "compile-Goal: W1-COP-I slice 3 (plan docs/coordination/coordination-finish-harne…",
-      "datetime": "2026-09-24T23:11:19Z",
-      "session": "coord-opus-cq",
-      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-COP-I slice 3 (plan docs/coordination/coordination-finish-harness-bench.md, W1-COP-I row and version-3 amendments; design docs/design/phase2-copilot-profile.md revision 3.1 sections 4.5, 7, 13): the Copilot model-setter refusal cause, the HB-PRE-002 extension to Copilot's instruction files, the per-(task, pack, build) instruction_list plan datum, and bench/pack-markers.txt — red-first, in the owned paths only.\nDone when: src/harness_bench/errors.py (and its test tests/test_errors.py) covers the Copilot `session/set_model` refusal form (JSON-RPC -32602 \"Invalid modelId ... not one of this session's models\") as HB-CELL-116 model unavailable per rulings R-18 and R-23, with a red commit first.; src/harness_bench/workspace.py HB-PRE-002 also refuses `GEMINI.md`, `.github/copilot-instructions.md` and any `.github/instructions/**/*.instructions.md` above the cells root, per design section 4.5, with a named red-first test per new branch in tests/test_workspace.py and one mutation entry per new branch in tests/mutations/workspace.json (each killed: `uv run python tools/mutate_check.py tests/mutations/workspace.json`).; One function `instruction_list(exe, ws, env)` in src/harness_bench/plan.py runs the pinned Copilot build's `instruction list --json` once per (task, pack, build) at `bench plan`: the pack-off result must be `[]` (a non-empty list refuses the plan with a named error) and the pack-on count is recorded as a plan datum; its unit tests use a fake exe; exactly one test marked `native` runs the real pinned build twice (pack-off `[]`; pack-on includes AGENTS.md; both runs identical) — design Simplifier N3.; bench/pack-markers.txt exists seeded with the three verified markers \"AI-Forward Pack\", \"Agent Knowledge Pack\", \"Rigor Protocol\" (R-16), with a positive-control test that a pack-on working copy built by the real workspace builder contains each marker and a pack-off copy contains none.; `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced and each green SHA.\nNot in scope: profiles.py, bench/profiles/*.yaml, views.py, driver.py, engine.py, telemetry/* (other slices or tracks).; Any model turn, `bench run`, tests/e2e, `-m \"\"`.; Any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: the design sections named above, docs/notes/rulings.md R-12, R-16, R-18, R-23, src/harness_bench/{errors,workspace,plan}.py and their tests, tests/fixtures/native/copilot/instruction-list-{off,on}.json. The pinned Copilot exe resolves via harness_bench.tools.resolve(\".tools/harness\")[\"copilot\"]. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: src/harness_bench/errors.py (and its test tests/test_errors.py) covers the Copilot `session/set_model` refusal form (JSON-RPC -32602 \"Invalid modelId ... not one of this session's models\") as HB-CELL-116 model unavailable per rulings R-18 and R-23, with a red commit first. | phrase: src/harness_bench/errors.py (and its test tests/test_errors.py) covers the Copilot `session/set_model` refusal form (JSON-RPC -32602 \"Invalid modelId ... not one of this session's models\") as HB-CELL-116 model unavailable per rulings R-18 and R-23, with a red commit first. |\n| done_when: src/harness_bench/workspace.py HB-PRE-002 also refuses `GEMINI.md`, `.github/copilot-instructions.md` and any `.github/instructions/**/*.instructions.md` above the cells root, per design section 4.5, with a named red-first test per new branch in tests/test_workspace.py and one mutation entry per new branch in tests/mutations/workspace.json (each killed: `uv run python tools/mutate_check.py tests/mutations/workspace.json`). | phrase: src/harness_bench/workspace.py HB-PRE-002 also refuses `GEMINI.md`, `.github/copilot-instructions.md` and any `.github/instructions/**/*.instructions.md` above the cells root, per design section 4.5, with a named red-first test per new branch in tests/test_workspace.py and one mutation entry per new branch in tests/mutations/workspace.json (each killed: `uv run python tools/mutate_check.py tests/mutations/workspace.json`). |\n| done_when: One function `instruction_list(exe, ws, env)` in src/harness_bench/plan.py runs the pinned Copilot build's `instruction list --json` once per (task, pack, build) at `bench plan`: the pack-off result must be `[]` (a non-empty list refuses the plan with a named error) and the pack-on count is recorded as a plan datum | phrase: One function `instruction_list(exe, ws, env)` in src/harness_bench/plan.py runs the pinned Copilot build's `instruction list --json` once per (task, pack, build) at `bench plan`: the pack-off result must be `[]` (a non-empty list refuses the plan with a named error) and the pack-on count is recorded as a plan datum |\n| done_when: its unit tests use a fake exe | phrase: its unit tests use a fake exe |\n| done_when: exactly one test marked `native` runs the real pinned build twice (pack-off `[]` | phrase: exactly one test marked `native` runs the real pinned build twice (pack-off `[]` |\n| done_when: pack-on includes AGENTS.md | phrase: pack-on includes AGENTS.md |\n| done_when: both runs identical) — design Simplifier N3. | phrase: both runs identical) — design Simplifier N3. |\n| done_when: bench/pack-markers.txt exists seeded with the three verified markers \"AI-Forward Pack\", \"Agent Knowledge Pack\", \"Rigor Protocol\" (R-16), with a positive-control test that a pack-on working copy built by the real workspace builder contains each marker and a pack-off copy contains none. | phrase: bench/pack-markers.txt exists seeded with the three verified markers \"AI-Forward Pack\", \"Agent Knowledge Pack\", \"Rigor Protocol\" (R-16), with a positive-control test that a pack-on working copy built by the real workspace builder contains each marker and a pack-off copy contains none. |\n| done_when: `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean. | phrase: `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean. |\n| done_when: Your final message lists each red SHA with the failing assertion it produced and each green SHA. | phrase: Your final message lists each red SHA with the failing assertion it produced and each green SHA. |\n| not_in_scope: profiles.py, bench/profiles/*.yaml, views.py, driver.py, engine.py, telemetry/* (other slices or tracks). | phrase: profiles.py, bench/profiles/*.yaml, views.py, driver.py, engine.py, telemetry/* (other slices or tracks). |\n| not_in_scope: Any model turn, `bench run`, tests/e2e, `-m \"\"`. | phrase: Any model turn, `bench run`, tests/e2e, `-m \"\"`. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- session/set_model: unresolved (not found)\n- GEMINI.md: unresolved (not found)\n- .github/copilot-instructions.md: unresolved (not found; nearest: .tools/pack/ca032f007b33/.github/copilot-instructions.md)\n- .github/instructions/**/*.instructions.md: unresolved (not found)\n- uv run python tools/mutate_check.py tests/mutations/workspace.json: unresolved (not found; nearest: tests/mutations/workspace.json)\n- instruction_list(exe, ws, env: unresolved (not found)\n- instruction list --json: unresolved (not found)\n- bench plan: unresolved (not found)\n- native: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider: unresolved (not found)\n- uv run ruff check src tests tools: unresolved (not found)\n- bench run: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 17b74cfa2175c94a17b6469bd10c90bad93c7f94c70e83590680bd99d309cc1e\n- docs/design/phase2-copilot-profile.md: docs/design/phase2-copilot-profile.md sha256 b15244d34330ebd4917bbc7599bd30944f2de10767b6a719ec18a0e19c25ee7f\n- bench/pack-markers.txt: unresolved (not found)\n- src/harness_bench/errors.py: src/harness_bench/errors.py sha256 67d4943bc7fa723cb2d3f989e2f11200e6aeec178c6ff745b1494312cdf2b3ed\n- tests/test_errors.py: tests/test_errors.py sha256 0df41bcd56a5aad5a61b88e5817b1bdf1dd48730928958502511d3babdff6ac4\n- src/harness_bench/workspace.py: src/harness_bench/workspace.py sha256 e49575ec0fcc8c8c598f9099fa74297be12d0a3383d3bffe78ceb1fbe006dd20\n- tests/test_workspace.py: tests/test_workspace.py sha256 0857385e772e2d3989627a554fa95ef7a69325327543b8a0cb29c7d8fadacbd7\n- tests/mutations/workspace.json: tests/mutations/workspace.json sha256 acc89246e97ee8c7b5984acbb2f4cb1961b68de31f32531674b9d91abd1d1e4b\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- src/harness_bench/plan.py: src/harness_bench/plan.py sha256 bb36075f56c7fb50478652f0358b6135b182136a2580c5d973f08b8978602a2c\n- AGENTS.md: unresolved (ambiguous: 2 matches)\n- profiles.py: src/harness_bench/profiles.py sha256 3afb30e7a768577cbdbff2082489fec22887895c7d7ea64c7ac77f805a3830ac\n- bench/profiles/*.yaml: unresolved (not found)\n- views.py: src/harness_bench/views.py sha256 dda67bd6871a0ee97cd28e0f816f77a0ec3c180cb75cb008c5dde44399ffc76f\n- driver.py: src/harness_bench/driver.py sha256 05678eb095d49ea508be521dc628a7e4693dfc0772d2e83f9194c132a62a2da5\n- engine.py: src/harness_bench/engine.py sha256 fd8b33c00711c1b0fbb348d4e7be802c88f608c901c30053112e465559ffbca4\n- telemetry/*: unresolved (not found)\n- tests/e2e: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 2 matches)\n- src/harness_bench/{errors,workspace,plan}.py: unresolved (not found)\n- tests/fixtures/native/copilot/instruction-list-{off,on}.json: unresolved (not found)\n- harness_bench.tools.resolve(\".tools/harness\")[\"copilot: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AV02NCQ93R58HZDWCV0B2H\nraw sha256: c4ecdabd16244fcfccf242773ee8646504624f8b00b53d5d9efeb85ed530dc4f\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
-      "summary": "compiled al-01M3AV02NCQ93R58HZDWCV0B2H for codex v1: 13 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -5778,38 +5767,38 @@ window.AUDIT_DATA = {
         "template": "codex",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3AVZV3PTNC9Z0MH86KVMDP0",
-      "shortname": "Goal: W1-COP-I slice 2 (plan docs/coordination/coordination-finish-harne…",
-      "datetime": "2026-09-24T23:28:40Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W1-COP-I slice 2 (plan docs/coordination/coordination-finish-harness-bench.md, W1-COP-I row and version-3 amendments; design docs/design/phase2-copilot-profile.md revision 3.1 sections 4.1 to 4.3, 5 and 13): the Copilot harness profile and the harness registry, red-first, in the owned paths only.\nDone when: bench/profiles/copilot.yaml exists per design section 4.1: `credential: null`, `files: {}`, a `command:` template ([exe, --acp, --model, {model}, --allow-tool, shell, --allow-tool, write]), `env: COPILOT_AUTO_UPDATE: \"false\"` (R-12), `set_model: true`, `credential_kind: \"subscription login (credential store)\"` (R-13), `record_glob: session-state/{session_id}/events.jsonl`, `usage_source: native_record`, `auxiliary_models: []`.; src/harness_bench/profiles.py: `copilot` added to HARNESSES and `READERS[\"copilot\"] = copilot.read` (the reader is on main from W1-COP-R); the nullable singular credential (`credential: null`) handled in load, seed_home, clean_home and credential_names; `argv()` built from the profile's `command:` template for all three harnesses (bench/profiles/claude-code.yaml and codex.yaml gain `command:` templates that produce exactly today's argv, proven by a test that compares old and new argv for both); the cell environment drops GH_TOKEN, GITHUB_TOKEN and GH_HOST (design section 4.1).; One registry-consistency test asserts set(HARNESSES) == set(READERS) == set(tools.LAYOUT) == the stems of bench/profiles/*.yaml.; Tests in tests/test_profiles.py for each item above were committed red first (failing on the old code for the stated reason), then green; tests/mutations/copilot.json has at least one mutant per new branch in profiles.py, all killed (`uv run python tools/mutate_check.py tests/mutations/copilot.json`).; `uv run bench plan --matrix <a scratch matrix with one copilot combo, model gpt-6-sol, task X1, pack \"off\"> --run-id <scratch id>` accepts the combo (without --confirm; delete the scratch run folder afterwards); `uv run pytest -q -p no:cacheprovider` passes; `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result.\nNot in scope: views.py, plan.py, driver.py, engine.py, errors.py, workspace.py, telemetry/* (other slices or tracks); `bench run`, any model turn, tests/e2e, `-m \"\"`; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: the design sections named above, docs/notes/rulings.md R-12, R-13, R-30, src/harness_bench/profiles.py, bench/profiles/*.yaml, tests/test_profiles.py, src/harness_bench/tools.py (LAYOUT, copilot entry from slice 1). Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3AVZVGGX33VY0AQWYJPSX87",
-      "shortname": "compile-Goal: W1-COP-I slice 2 (plan docs/coordination/coordination-finish-harne…",
-      "datetime": "2026-09-24T23:28:40Z",
-      "session": "coord-opus-cq",
-      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-COP-I slice 2 (plan docs/coordination/coordination-finish-harness-bench.md, W1-COP-I row and version-3 amendments; design docs/design/phase2-copilot-profile.md revision 3.1 sections 4.1 to 4.3, 5 and 13): the Copilot harness profile and the harness registry, red-first, in the owned paths only.\nDone when: bench/profiles/copilot.yaml exists per design section 4.1: `credential: null`, `files: {}`, a `command:` template ([exe, --acp, --model, {model}, --allow-tool, shell, --allow-tool, write]), `env: COPILOT_AUTO_UPDATE: \"false\"` (R-12), `set_model: true`, `credential_kind: \"subscription login (credential store)\"` (R-13), `record_glob: session-state/{session_id}/events.jsonl`, `usage_source: native_record`, `auxiliary_models: []`.; src/harness_bench/profiles.py: `copilot` added to HARNESSES and `READERS[\"copilot\"] = copilot.read` (the reader is on main from W1-COP-R); the nullable singular credential (`credential: null`) handled in load, seed_home, clean_home and credential_names; `argv()` built from the profile's `command:` template for all three harnesses (bench/profiles/claude-code.yaml and codex.yaml gain `command:` templates that produce exactly today's argv, proven by a test that compares old and new argv for both); the cell environment drops GH_TOKEN, GITHUB_TOKEN and GH_HOST (design section 4.1).; One registry-consistency test asserts set(HARNESSES) == set(READERS) == set(tools.LAYOUT) == the stems of bench/profiles/*.yaml.; Tests in tests/test_profiles.py for each item above were committed red first (failing on the old code for the stated reason), then green; tests/mutations/copilot.json has at least one mutant per new branch in profiles.py, all killed (`uv run python tools/mutate_check.py tests/mutations/copilot.json`).; `uv run bench plan --matrix <a scratch matrix with one copilot combo, model gpt-6-sol, task X1, pack \"off\"> --run-id <scratch id>` accepts the combo (without --confirm; delete the scratch run folder afterwards); `uv run pytest -q -p no:cacheprovider` passes; `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result.\nNot in scope: views.py, plan.py, driver.py, engine.py, errors.py, workspace.py, telemetry/* (other slices or tracks); `bench run`, any model turn, tests/e2e, `-m \"\"`; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: the design sections named above, docs/notes/rulings.md R-12, R-13, R-30, src/harness_bench/profiles.py, bench/profiles/*.yaml, tests/test_profiles.py, src/harness_bench/tools.py (LAYOUT, copilot entry from slice 1). Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: bench/profiles/copilot.yaml exists per design section 4.1: `credential: null`, `files: {}`, a `command:` template ([exe, --acp, --model, {model}, --allow-tool, shell, --allow-tool, write]), `env: COPILOT_AUTO_UPDATE: \"false\"` (R-12), `set_model: true`, `credential_kind: \"subscription login (credential store)\"` (R-13), `record_glob: session-state/{session_id}/events.jsonl`, `usage_source: native_record`, `auxiliary_models: []`. | phrase: bench/profiles/copilot.yaml exists per design section 4.1: `credential: null`, `files: {}`, a `command:` template ([exe, --acp, --model, {model}, --allow-tool, shell, --allow-tool, write]), `env: COPILOT_AUTO_UPDATE: \"false\"` (R-12), `set_model: true`, `credential_kind: \"subscription login (credential store)\"` (R-13), `record_glob: session-state/{session_id}/events.jsonl`, `usage_source: native_record`, `auxiliary_models: []`. |\n| done_when: src/harness_bench/profiles.py: `copilot` added to HARNESSES and `READERS[\"copilot\"] = copilot.read` (the reader is on main from W1-COP-R) | phrase: src/harness_bench/profiles.py: `copilot` added to HARNESSES and `READERS[\"copilot\"] = copilot.read` (the reader is on main from W1-COP-R) |\n| done_when: the nullable singular credential (`credential: null`) handled in load, seed_home, clean_home and credential_names | phrase: the nullable singular credential (`credential: null`) handled in load, seed_home, clean_home and credential_names |\n| done_when: `argv()` built from the profile's `command:` template for all three harnesses (bench/profiles/claude-code.yaml and codex.yaml gain `command:` templates that produce exactly today's argv, proven by a test that compares old and new argv for both) | phrase: `argv()` built from the profile's `command:` template for all three harnesses (bench/profiles/claude-code.yaml and codex.yaml gain `command:` templates that produce exactly today's argv, proven by a test that compares old and new argv for both) |\n| done_when: the cell environment drops GH_TOKEN, GITHUB_TOKEN and GH_HOST (design section 4.1). | phrase: the cell environment drops GH_TOKEN, GITHUB_TOKEN and GH_HOST (design section 4.1). |\n| done_when: One registry-consistency test asserts set(HARNESSES) == set(READERS) == set(tools.LAYOUT) == the stems of bench/profiles/*.yaml. | phrase: One registry-consistency test asserts set(HARNESSES) == set(READERS) == set(tools.LAYOUT) == the stems of bench/profiles/*.yaml. |\n| done_when: Tests in tests/test_profiles.py for each item above were committed red first (failing on the old code for the stated reason), then green | phrase: Tests in tests/test_profiles.py for each item above were committed red first (failing on the old code for the stated reason), then green |\n| done_when: tests/mutations/copilot.json has at least one mutant per new branch in profiles.py, all killed (`uv run python tools/mutate_check.py tests/mutations/copilot.json`). | phrase: tests/mutations/copilot.json has at least one mutant per new branch in profiles.py, all killed (`uv run python tools/mutate_check.py tests/mutations/copilot.json`). |\n| done_when: `uv run bench plan --matrix <a scratch matrix with one copilot combo, model gpt-6-sol, task X1, pack \"off\"> --run-id <scratch id>` accepts the combo (without --confirm | phrase: `uv run bench plan --matrix <a scratch matrix with one copilot combo, model gpt-6-sol, task X1, pack \"off\"> --run-id <scratch id>` accepts the combo (without --confirm |\n| done_when: delete the scratch run folder afterwards) | phrase: delete the scratch run folder afterwards) |\n| done_when: `uv run pytest -q -p no:cacheprovider` passes | phrase: `uv run pytest -q -p no:cacheprovider` passes |\n| done_when: `uv run ruff check src tests tools` is clean. | phrase: `uv run ruff check src tests tools` is clean. |\n| done_when: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result. | phrase: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result. |\n| not_in_scope: views.py, plan.py, driver.py, engine.py, errors.py, workspace.py, telemetry/* (other slices or tracks) | phrase: views.py, plan.py, driver.py, engine.py, errors.py, workspace.py, telemetry/* (other slices or tracks) |\n| not_in_scope: `bench run`, any model turn, tests/e2e, `-m \"\"` | phrase: `bench run`, any model turn, tests/e2e, `-m \"\"` |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- credential: null: unresolved (not found)\n- files: {}: unresolved (not found)\n- command: unresolved (not found)\n- env: COPILOT_AUTO_UPDATE: \"false: unresolved (not found)\n- set_model: true: unresolved (not found)\n- credential_kind: \"subscription login (credential store: unresolved (not found)\n- record_glob: session-state/{session_id}/events.jsonl: unresolved (not found)\n- usage_source: native_record: unresolved (not found)\n- auxiliary_models: : unresolved (not found)\n- copilot: unresolved (not found)\n- READERS[\"copilot\"] = copilot.read: unresolved (not found)\n- argv: unresolved (not found)\n- uv run python tools/mutate_check.py tests/mutations/copilot.json: unresolved (not found)\n- uv run bench plan --matrix <a scratch matrix with one copilot combo, model gpt-6-sol, task X1, pack \"off\"> --run-id <scratch id: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider: unresolved (not found)\n- uv run ruff check src tests tools: unresolved (not found)\n- bench run: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 17b74cfa2175c94a17b6469bd10c90bad93c7f94c70e83590680bd99d309cc1e\n- docs/design/phase2-copilot-profile.md: docs/design/phase2-copilot-profile.md sha256 b15244d34330ebd4917bbc7599bd30944f2de10767b6a719ec18a0e19c25ee7f\n- bench/profiles/copilot.yaml: unresolved (not found)\n- session-state/{session_id}/events.jsonl: unresolved (not found)\n- src/harness_bench/profiles.py: src/harness_bench/profiles.py sha256 3afb30e7a768577cbdbff2082489fec22887895c7d7ea64c7ac77f805a3830ac\n- bench/profiles/claude-code.yaml: bench/profiles/claude-code.yaml sha256 8290069b642f5e11b954eabc9e8e3c105582e9dd6a6c171c9f762b675946076c\n- codex.yaml: bench/profiles/codex.yaml sha256 b2df1423992b7285c36e2346f9ed8b9d58d6199165631e537f9e5fd8a022c4fe\n- bench/profiles/*.yaml: unresolved (not found)\n- tests/test_profiles.py: tests/test_profiles.py sha256 06aea27b8e472fc83be53e24d4236741668eb7fffd665c05cef283b10b0210ef\n- tests/mutations/copilot.json: unresolved (not found)\n- profiles.py: src/harness_bench/profiles.py sha256 3afb30e7a768577cbdbff2082489fec22887895c7d7ea64c7ac77f805a3830ac\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- views.py: src/harness_bench/views.py sha256 dda67bd6871a0ee97cd28e0f816f77a0ec3c180cb75cb008c5dde44399ffc76f\n- plan.py: src/harness_bench/plan.py sha256 b3038b0d5f683fa449249902f8292533a5b7b88f19e4ef9d0d221a89631facc3\n- driver.py: src/harness_bench/driver.py sha256 05678eb095d49ea508be521dc628a7e4693dfc0772d2e83f9194c132a62a2da5\n- engine.py: src/harness_bench/engine.py sha256 fd8b33c00711c1b0fbb348d4e7be802c88f608c901c30053112e465559ffbca4\n- errors.py: src/harness_bench/errors.py sha256 a5e3cccc80432da69d4323eec63af41d88829def2dd1adcd8536d08e832c23e4\n- workspace.py: src/harness_bench/workspace.py sha256 7191f42853803fbdeba608ff6d3fcfa970d7629eb53e5b90e5c628192fb67536\n- telemetry/*: unresolved (not found)\n- tests/e2e: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 2 matches)\n- src/harness_bench/tools.py: src/harness_bench/tools.py sha256 f669a5da58671cc29d1725e15b09265ee359a5d41570735d406a7fea7f0e7940\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AVZV3PTNC9Z0MH86KVMDP0\nraw sha256: 62c21707a8bb3677111a65cb6ad4523866df45b6e5c3a7d86d79e1fbe79a27b6\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
-      "summary": "compiled al-01M3AVZV3PTNC9Z0MH86KVMDP0 for codex v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-24T23:11:19Z",
+      "dispatchable": true,
+      "id": "al-01M3AV032T5FZBP1NE1H14Q54M",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-COP-I slice 3 (plan docs/coordination/coordination-finish-harness-bench.md, W1-COP-I row and version-3 amendments; design docs/design/phase2-copilot-profile.md revision 3.1 sections 4.5, 7, 13): the Copilot model-setter refusal cause, the HB-PRE-002 extension to Copilot's instruction files, the per-(task, pack, build) instruction_list plan datum, and bench/pack-markers.txt — red-first, in the owned paths only.\nDone when: src/harness_bench/errors.py (and its test tests/test_errors.py) covers the Copilot `session/set_model` refusal form (JSON-RPC -32602 \"Invalid modelId ... not one of this session's models\") as HB-CELL-116 model unavailable per rulings R-18 and R-23, with a red commit first.; src/harness_bench/workspace.py HB-PRE-002 also refuses `GEMINI.md`, `.github/copilot-instructions.md` and any `.github/instructions/**/*.instructions.md` above the cells root, per design section 4.5, with a named red-first test per new branch in tests/test_workspace.py and one mutation entry per new branch in tests/mutations/workspace.json (each killed: `uv run python tools/mutate_check.py tests/mutations/workspace.json`).; One function `instruction_list(exe, ws, env)` in src/harness_bench/plan.py runs the pinned Copilot build's `instruction list --json` once per (task, pack, build) at `bench plan`: the pack-off result must be `[]` (a non-empty list refuses the plan with a named error) and the pack-on count is recorded as a plan datum; its unit tests use a fake exe; exactly one test marked `native` runs the real pinned build twice (pack-off `[]`; pack-on includes AGENTS.md; both runs identical) — design Simplifier N3.; bench/pack-markers.txt exists seeded with the three verified markers \"AI-Forward Pack\", \"Agent Knowledge Pack\", \"Rigor Protocol\" (R-16), with a positive-control test that a pack-on working copy built by the real workspace builder contains each marker and a pack-off copy contains none.; `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced and each green SHA.\nNot in scope: profiles.py, bench/profiles/*.yaml, views.py, driver.py, engine.py, telemetry/* (other slices or tracks).; Any model turn, `bench run`, tests/e2e, `-m \"\"`.; Any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: the design sections named above, docs/notes/rulings.md R-12, R-16, R-18, R-23, src/harness_bench/{errors,workspace,plan}.py and their tests, tests/fixtures/native/copilot/instruction-list-{off,on}.json. The pinned Copilot exe resolves via harness_bench.tools.resolve(\".tools/harness\")[\"copilot\"]. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: src/harness_bench/errors.py (and its test tests/test_errors.py) covers the Copilot `session/set_model` refusal form (JSON-RPC -32602 \"Invalid modelId ... not one of this session's models\") as HB-CELL-116 model unavailable per rulings R-18 and R-23, with a red commit first. | phrase: src/harness_bench/errors.py (and its test tests/test_errors.py) covers the Copilot `session/set_model` refusal form (JSON-RPC -32602 \"Invalid modelId ... not one of this session's models\") as HB-CELL-116 model unavailable per rulings R-18 and R-23, with a red commit first. |\n| done_when: src/harness_bench/workspace.py HB-PRE-002 also refuses `GEMINI.md`, `.github/copilot-instructions.md` and any `.github/instructions/**/*.instructions.md` above the cells root, per design section 4.5, with a named red-first test per new branch in tests/test_workspace.py and one mutation entry per new branch in tests/mutations/workspace.json (each killed: `uv run python tools/mutate_check.py tests/mutations/workspace.json`). | phrase: src/harness_bench/workspace.py HB-PRE-002 also refuses `GEMINI.md`, `.github/copilot-instructions.md` and any `.github/instructions/**/*.instructions.md` above the cells root, per design section 4.5, with a named red-first test per new branch in tests/test_workspace.py and one mutation entry per new branch in tests/mutations/workspace.json (each killed: `uv run python tools/mutate_check.py tests/mutations/workspace.json`). |\n| done_when: One function `instruction_list(exe, ws, env)` in src/harness_bench/plan.py runs the pinned Copilot build's `instruction list --json` once per (task, pack, build) at `bench plan`: the pack-off result must be `[]` (a non-empty list refuses the plan with a named error) and the pack-on count is recorded as a plan datum | phrase: One function `instruction_list(exe, ws, env)` in src/harness_bench/plan.py runs the pinned Copilot build's `instruction list --json` once per (task, pack, build) at `bench plan`: the pack-off result must be `[]` (a non-empty list refuses the plan with a named error) and the pack-on count is recorded as a plan datum |\n| done_when: its unit tests use a fake exe | phrase: its unit tests use a fake exe |\n| done_when: exactly one test marked `native` runs the real pinned build twice (pack-off `[]` | phrase: exactly one test marked `native` runs the real pinned build twice (pack-off `[]` |\n| done_when: pack-on includes AGENTS.md | phrase: pack-on includes AGENTS.md |\n| done_when: both runs identical) — design Simplifier N3. | phrase: both runs identical) — design Simplifier N3. |\n| done_when: bench/pack-markers.txt exists seeded with the three verified markers \"AI-Forward Pack\", \"Agent Knowledge Pack\", \"Rigor Protocol\" (R-16), with a positive-control test that a pack-on working copy built by the real workspace builder contains each marker and a pack-off copy contains none. | phrase: bench/pack-markers.txt exists seeded with the three verified markers \"AI-Forward Pack\", \"Agent Knowledge Pack\", \"Rigor Protocol\" (R-16), with a positive-control test that a pack-on working copy built by the real workspace builder contains each marker and a pack-off copy contains none. |\n| done_when: `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean. | phrase: `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean. |\n| done_when: Your final message lists each red SHA with the failing assertion it produced and each green SHA. | phrase: Your final message lists each red SHA with the failing assertion it produced and each green SHA. |\n| not_in_scope: profiles.py, bench/profiles/*.yaml, views.py, driver.py, engine.py, telemetry/* (other slices or tracks). | phrase: profiles.py, bench/profiles/*.yaml, views.py, driver.py, engine.py, telemetry/* (other slices or tracks). |\n| not_in_scope: Any model turn, `bench run`, tests/e2e, `-m \"\"`. | phrase: Any model turn, `bench run`, tests/e2e, `-m \"\"`. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- session/set_model: unresolved (not found)\n- GEMINI.md: unresolved (not found)\n- .github/copilot-instructions.md: unresolved (not found; nearest: .tools/pack/ca032f007b33/.github/copilot-instructions.md)\n- .github/instructions/**/*.instructions.md: unresolved (not found)\n- uv run python tools/mutate_check.py tests/mutations/workspace.json: unresolved (not found; nearest: tests/mutations/workspace.json)\n- instruction_list(exe, ws, env: unresolved (not found)\n- instruction list --json: unresolved (not found)\n- bench plan: unresolved (not found)\n- native: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider: unresolved (not found)\n- uv run ruff check src tests tools: unresolved (not found)\n- bench run: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 17b74cfa2175c94a17b6469bd10c90bad93c7f94c70e83590680bd99d309cc1e\n- docs/design/phase2-copilot-profile.md: docs/design/phase2-copilot-profile.md sha256 b15244d34330ebd4917bbc7599bd30944f2de10767b6a719ec18a0e19c25ee7f\n- bench/pack-markers.txt: unresolved (not found)\n- src/harness_bench/errors.py: src/harness_bench/errors.py sha256 67d4943bc7fa723cb2d3f989e2f11200e6aeec178c6ff745b1494312cdf2b3ed\n- tests/test_errors.py: tests/test_errors.py sha256 0df41bcd56a5aad5a61b88e5817b1bdf1dd48730928958502511d3babdff6ac4\n- src/harness_bench/workspace.py: src/harness_bench/workspace.py sha256 e49575ec0fcc8c8c598f9099fa74297be12d0a3383d3bffe78ceb1fbe006dd20\n- tests/test_workspace.py: tests/test_workspace.py sha256 0857385e772e2d3989627a554fa95ef7a69325327543b8a0cb29c7d8fadacbd7\n- tests/mutations/workspace.json: tests/mutations/workspace.json sha256 acc89246e97ee8c7b5984acbb2f4cb1961b68de31f32531674b9d91abd1d1e4b\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- src/harness_bench/plan.py: src/harness_bench/plan.py sha256 bb36075f56c7fb50478652f0358b6135b182136a2580c5d973f08b8978602a2c\n- AGENTS.md: unresolved (ambiguous: 2 matches)\n- profiles.py: src/harness_bench/profiles.py sha256 3afb30e7a768577cbdbff2082489fec22887895c7d7ea64c7ac77f805a3830ac\n- bench/profiles/*.yaml: unresolved (not found)\n- views.py: src/harness_bench/views.py sha256 dda67bd6871a0ee97cd28e0f816f77a0ec3c180cb75cb008c5dde44399ffc76f\n- driver.py: src/harness_bench/driver.py sha256 05678eb095d49ea508be521dc628a7e4693dfc0772d2e83f9194c132a62a2da5\n- engine.py: src/harness_bench/engine.py sha256 fd8b33c00711c1b0fbb348d4e7be802c88f608c901c30053112e465559ffbca4\n- telemetry/*: unresolved (not found)\n- tests/e2e: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 2 matches)\n- src/harness_bench/{errors,workspace,plan}.py: unresolved (not found)\n- tests/fixtures/native/copilot/instruction-list-{off,on}.json: unresolved (not found)\n- harness_bench.tools.resolve(\".tools/harness\")[\"copilot: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AV02NCQ93R58HZDWCV0B2H\nraw sha256: c4ecdabd16244fcfccf242773ee8646504624f8b00b53d5d9efeb85ed530dc4f\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W1-COP-I slice 3 (plan docs/coordination/coordination-finish-harne…",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3AV02NCQ93R58HZDWCV0B2H for codex v1: 13 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-24T23:28:40Z",
+      "id": "al-01M3AVZV3PTNC9Z0MH86KVMDP0",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: W1-COP-I slice 2 (plan docs/coordination/coordination-finish-harness-bench.md, W1-COP-I row and version-3 amendments; design docs/design/phase2-copilot-profile.md revision 3.1 sections 4.1 to 4.3, 5 and 13): the Copilot harness profile and the harness registry, red-first, in the owned paths only.\nDone when: bench/profiles/copilot.yaml exists per design section 4.1: `credential: null`, `files: {}`, a `command:` template ([exe, --acp, --model, {model}, --allow-tool, shell, --allow-tool, write]), `env: COPILOT_AUTO_UPDATE: \"false\"` (R-12), `set_model: true`, `credential_kind: \"subscription login (credential store)\"` (R-13), `record_glob: session-state/{session_id}/events.jsonl`, `usage_source: native_record`, `auxiliary_models: []`.; src/harness_bench/profiles.py: `copilot` added to HARNESSES and `READERS[\"copilot\"] = copilot.read` (the reader is on main from W1-COP-R); the nullable singular credential (`credential: null`) handled in load, seed_home, clean_home and credential_names; `argv()` built from the profile's `command:` template for all three harnesses (bench/profiles/claude-code.yaml and codex.yaml gain `command:` templates that produce exactly today's argv, proven by a test that compares old and new argv for both); the cell environment drops GH_TOKEN, GITHUB_TOKEN and GH_HOST (design section 4.1).; One registry-consistency test asserts set(HARNESSES) == set(READERS) == set(tools.LAYOUT) == the stems of bench/profiles/*.yaml.; Tests in tests/test_profiles.py for each item above were committed red first (failing on the old code for the stated reason), then green; tests/mutations/copilot.json has at least one mutant per new branch in profiles.py, all killed (`uv run python tools/mutate_check.py tests/mutations/copilot.json`).; `uv run bench plan --matrix <a scratch matrix with one copilot combo, model gpt-6-sol, task X1, pack \"off\"> --run-id <scratch id>` accepts the combo (without --confirm; delete the scratch run folder afterwards); `uv run pytest -q -p no:cacheprovider` passes; `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result.\nNot in scope: views.py, plan.py, driver.py, engine.py, errors.py, workspace.py, telemetry/* (other slices or tracks); `bench run`, any model turn, tests/e2e, `-m \"\"`; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: the design sections named above, docs/notes/rulings.md R-12, R-13, R-30, src/harness_bench/profiles.py, bench/profiles/*.yaml, tests/test_profiles.py, src/harness_bench/tools.py (LAYOUT, copilot entry from slice 1). Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
+      "session": "prompt-compile",
+      "shortname": "Goal: W1-COP-I slice 2 (plan docs/coordination/coordination-finish-harne…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -6330,6 +6319,564 @@ window.AUDIT_DATA = {
             "sha256": "f669a5da58671cc29d1725e15b09265ee359a5d41570735d406a7fea7f0e7940",
             "status": "resolved",
             "token": "src/harness_bench/tools.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "datetime": "2026-09-24T23:28:40Z",
+      "dispatchable": true,
+      "id": "al-01M3AVZVGGX33VY0AQWYJPSX87",
+      "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-COP-I slice 2 (plan docs/coordination/coordination-finish-harness-bench.md, W1-COP-I row and version-3 amendments; design docs/design/phase2-copilot-profile.md revision 3.1 sections 4.1 to 4.3, 5 and 13): the Copilot harness profile and the harness registry, red-first, in the owned paths only.\nDone when: bench/profiles/copilot.yaml exists per design section 4.1: `credential: null`, `files: {}`, a `command:` template ([exe, --acp, --model, {model}, --allow-tool, shell, --allow-tool, write]), `env: COPILOT_AUTO_UPDATE: \"false\"` (R-12), `set_model: true`, `credential_kind: \"subscription login (credential store)\"` (R-13), `record_glob: session-state/{session_id}/events.jsonl`, `usage_source: native_record`, `auxiliary_models: []`.; src/harness_bench/profiles.py: `copilot` added to HARNESSES and `READERS[\"copilot\"] = copilot.read` (the reader is on main from W1-COP-R); the nullable singular credential (`credential: null`) handled in load, seed_home, clean_home and credential_names; `argv()` built from the profile's `command:` template for all three harnesses (bench/profiles/claude-code.yaml and codex.yaml gain `command:` templates that produce exactly today's argv, proven by a test that compares old and new argv for both); the cell environment drops GH_TOKEN, GITHUB_TOKEN and GH_HOST (design section 4.1).; One registry-consistency test asserts set(HARNESSES) == set(READERS) == set(tools.LAYOUT) == the stems of bench/profiles/*.yaml.; Tests in tests/test_profiles.py for each item above were committed red first (failing on the old code for the stated reason), then green; tests/mutations/copilot.json has at least one mutant per new branch in profiles.py, all killed (`uv run python tools/mutate_check.py tests/mutations/copilot.json`).; `uv run bench plan --matrix <a scratch matrix with one copilot combo, model gpt-6-sol, task X1, pack \"off\"> --run-id <scratch id>` accepts the combo (without --confirm; delete the scratch run folder afterwards); `uv run pytest -q -p no:cacheprovider` passes; `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result.\nNot in scope: views.py, plan.py, driver.py, engine.py, errors.py, workspace.py, telemetry/* (other slices or tracks); `bench run`, any model turn, tests/e2e, `-m \"\"`; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: the design sections named above, docs/notes/rulings.md R-12, R-13, R-30, src/harness_bench/profiles.py, bench/profiles/*.yaml, tests/test_profiles.py, src/harness_bench/tools.py (LAYOUT, copilot entry from slice 1). Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: bench/profiles/copilot.yaml exists per design section 4.1: `credential: null`, `files: {}`, a `command:` template ([exe, --acp, --model, {model}, --allow-tool, shell, --allow-tool, write]), `env: COPILOT_AUTO_UPDATE: \"false\"` (R-12), `set_model: true`, `credential_kind: \"subscription login (credential store)\"` (R-13), `record_glob: session-state/{session_id}/events.jsonl`, `usage_source: native_record`, `auxiliary_models: []`. | phrase: bench/profiles/copilot.yaml exists per design section 4.1: `credential: null`, `files: {}`, a `command:` template ([exe, --acp, --model, {model}, --allow-tool, shell, --allow-tool, write]), `env: COPILOT_AUTO_UPDATE: \"false\"` (R-12), `set_model: true`, `credential_kind: \"subscription login (credential store)\"` (R-13), `record_glob: session-state/{session_id}/events.jsonl`, `usage_source: native_record`, `auxiliary_models: []`. |\n| done_when: src/harness_bench/profiles.py: `copilot` added to HARNESSES and `READERS[\"copilot\"] = copilot.read` (the reader is on main from W1-COP-R) | phrase: src/harness_bench/profiles.py: `copilot` added to HARNESSES and `READERS[\"copilot\"] = copilot.read` (the reader is on main from W1-COP-R) |\n| done_when: the nullable singular credential (`credential: null`) handled in load, seed_home, clean_home and credential_names | phrase: the nullable singular credential (`credential: null`) handled in load, seed_home, clean_home and credential_names |\n| done_when: `argv()` built from the profile's `command:` template for all three harnesses (bench/profiles/claude-code.yaml and codex.yaml gain `command:` templates that produce exactly today's argv, proven by a test that compares old and new argv for both) | phrase: `argv()` built from the profile's `command:` template for all three harnesses (bench/profiles/claude-code.yaml and codex.yaml gain `command:` templates that produce exactly today's argv, proven by a test that compares old and new argv for both) |\n| done_when: the cell environment drops GH_TOKEN, GITHUB_TOKEN and GH_HOST (design section 4.1). | phrase: the cell environment drops GH_TOKEN, GITHUB_TOKEN and GH_HOST (design section 4.1). |\n| done_when: One registry-consistency test asserts set(HARNESSES) == set(READERS) == set(tools.LAYOUT) == the stems of bench/profiles/*.yaml. | phrase: One registry-consistency test asserts set(HARNESSES) == set(READERS) == set(tools.LAYOUT) == the stems of bench/profiles/*.yaml. |\n| done_when: Tests in tests/test_profiles.py for each item above were committed red first (failing on the old code for the stated reason), then green | phrase: Tests in tests/test_profiles.py for each item above were committed red first (failing on the old code for the stated reason), then green |\n| done_when: tests/mutations/copilot.json has at least one mutant per new branch in profiles.py, all killed (`uv run python tools/mutate_check.py tests/mutations/copilot.json`). | phrase: tests/mutations/copilot.json has at least one mutant per new branch in profiles.py, all killed (`uv run python tools/mutate_check.py tests/mutations/copilot.json`). |\n| done_when: `uv run bench plan --matrix <a scratch matrix with one copilot combo, model gpt-6-sol, task X1, pack \"off\"> --run-id <scratch id>` accepts the combo (without --confirm | phrase: `uv run bench plan --matrix <a scratch matrix with one copilot combo, model gpt-6-sol, task X1, pack \"off\"> --run-id <scratch id>` accepts the combo (without --confirm |\n| done_when: delete the scratch run folder afterwards) | phrase: delete the scratch run folder afterwards) |\n| done_when: `uv run pytest -q -p no:cacheprovider` passes | phrase: `uv run pytest -q -p no:cacheprovider` passes |\n| done_when: `uv run ruff check src tests tools` is clean. | phrase: `uv run ruff check src tests tools` is clean. |\n| done_when: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result. | phrase: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result. |\n| not_in_scope: views.py, plan.py, driver.py, engine.py, errors.py, workspace.py, telemetry/* (other slices or tracks) | phrase: views.py, plan.py, driver.py, engine.py, errors.py, workspace.py, telemetry/* (other slices or tracks) |\n| not_in_scope: `bench run`, any model turn, tests/e2e, `-m \"\"` | phrase: `bench run`, any model turn, tests/e2e, `-m \"\"` |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- credential: null: unresolved (not found)\n- files: {}: unresolved (not found)\n- command: unresolved (not found)\n- env: COPILOT_AUTO_UPDATE: \"false: unresolved (not found)\n- set_model: true: unresolved (not found)\n- credential_kind: \"subscription login (credential store: unresolved (not found)\n- record_glob: session-state/{session_id}/events.jsonl: unresolved (not found)\n- usage_source: native_record: unresolved (not found)\n- auxiliary_models: : unresolved (not found)\n- copilot: unresolved (not found)\n- READERS[\"copilot\"] = copilot.read: unresolved (not found)\n- argv: unresolved (not found)\n- uv run python tools/mutate_check.py tests/mutations/copilot.json: unresolved (not found)\n- uv run bench plan --matrix <a scratch matrix with one copilot combo, model gpt-6-sol, task X1, pack \"off\"> --run-id <scratch id: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider: unresolved (not found)\n- uv run ruff check src tests tools: unresolved (not found)\n- bench run: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 17b74cfa2175c94a17b6469bd10c90bad93c7f94c70e83590680bd99d309cc1e\n- docs/design/phase2-copilot-profile.md: docs/design/phase2-copilot-profile.md sha256 b15244d34330ebd4917bbc7599bd30944f2de10767b6a719ec18a0e19c25ee7f\n- bench/profiles/copilot.yaml: unresolved (not found)\n- session-state/{session_id}/events.jsonl: unresolved (not found)\n- src/harness_bench/profiles.py: src/harness_bench/profiles.py sha256 3afb30e7a768577cbdbff2082489fec22887895c7d7ea64c7ac77f805a3830ac\n- bench/profiles/claude-code.yaml: bench/profiles/claude-code.yaml sha256 8290069b642f5e11b954eabc9e8e3c105582e9dd6a6c171c9f762b675946076c\n- codex.yaml: bench/profiles/codex.yaml sha256 b2df1423992b7285c36e2346f9ed8b9d58d6199165631e537f9e5fd8a022c4fe\n- bench/profiles/*.yaml: unresolved (not found)\n- tests/test_profiles.py: tests/test_profiles.py sha256 06aea27b8e472fc83be53e24d4236741668eb7fffd665c05cef283b10b0210ef\n- tests/mutations/copilot.json: unresolved (not found)\n- profiles.py: src/harness_bench/profiles.py sha256 3afb30e7a768577cbdbff2082489fec22887895c7d7ea64c7ac77f805a3830ac\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- views.py: src/harness_bench/views.py sha256 dda67bd6871a0ee97cd28e0f816f77a0ec3c180cb75cb008c5dde44399ffc76f\n- plan.py: src/harness_bench/plan.py sha256 b3038b0d5f683fa449249902f8292533a5b7b88f19e4ef9d0d221a89631facc3\n- driver.py: src/harness_bench/driver.py sha256 05678eb095d49ea508be521dc628a7e4693dfc0772d2e83f9194c132a62a2da5\n- engine.py: src/harness_bench/engine.py sha256 fd8b33c00711c1b0fbb348d4e7be802c88f608c901c30053112e465559ffbca4\n- errors.py: src/harness_bench/errors.py sha256 a5e3cccc80432da69d4323eec63af41d88829def2dd1adcd8536d08e832c23e4\n- workspace.py: src/harness_bench/workspace.py sha256 7191f42853803fbdeba608ff6d3fcfa970d7629eb53e5b90e5c628192fb67536\n- telemetry/*: unresolved (not found)\n- tests/e2e: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 2 matches)\n- src/harness_bench/tools.py: src/harness_bench/tools.py sha256 f669a5da58671cc29d1725e15b09265ee359a5d41570735d406a7fea7f0e7940\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AVZV3PTNC9Z0MH86KVMDP0\nraw sha256: 62c21707a8bb3677111a65cb6ad4523866df45b6e5c3a7d86d79e1fbe79a27b6\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W1-COP-I slice 2 (plan docs/coordination/coordination-finish-harne…",
+      "skill": null,
+      "summary": "compiled al-01M3AVZV3PTNC9Z0MH86KVMDP0 for codex v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": "Claude Sonnet 5",
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-09-24T23:02:44Z",
+      "done_when": "copilot.py reads events.jsonl per section 4.4; __init__.py/normalize.py carry the new fields without changing Claude Code/Codex output; tests/test_telemetry_copilot.py covers every section-13 row owned by W1-COP-R, red first then green; tests/mutations/copilot_reader.json's 7 mutants all killed; full suite and ruff clean.",
+      "duration_seconds": 1233.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w1-copilot-reader",
+        "pushed": null,
+        "sha": "f7ef0473cd89b69397fc1c61c1881368600e6781",
+        "short": "f7ef0473c"
+      },
+      "goal": "Implement the Copilot telemetry reader to the gated design, red-first, with the mutation file.",
+      "id": "al-01M3ATGCG00WAYW4DFE2QZVGD5",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Implement the Copilot telemetry reader exactly to docs/design/phase2-copilot-profile.md (rev 3.1) sections 4.4, 13, 14: src/harness_bench/telemetry/copilot.py, the ModelCall.requests/ToolCall.outcome_code/Extraction.hook_starts+hook_failures additions in telemetry/__init__.py and normalize.py, tests/test_telemetry_copilot.py red-first, and tests/mutations/copilot_reader.json (the design's 7 named mutants).",
+      "session": "w1-cop-r",
+      "shortname": "W1-COP-R Copilot telemetry reader",
+      "skill": "implement",
+      "started_at": "2026-09-24T22:42:11Z",
+      "summary": "Reader reads session-state/<sid>/events.jsonl: model_calls from the last session.shutdown.modelMetrics (additive requests, disjoint buckets, the input-token arithmetic cross-check), tool_calls paired by toolCallId with outcome_code, hook_starts/hook_failures, first_user_text (US-10, no top-level agentId), and a fail-closed version gate. Red 086f85c (ImportError, copilot module absent) -> green 84f9988 (58/58) -> mutations f7ef047 (7/7 killed). Full suite 645 passed/5 deselected; ruff clean. Seam: profiles.py READERS registration left to W1-COP-I; the design's 'through views.load' US-11 check done at reader+normalize level instead (views.py/profiles.py/bench/profiles/copilot.yaml are out of scope and do not exist yet in this tree).",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "Claude Sonnet 5",
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-09-24T23:27:21Z",
+      "done_when": "Merge main first (classify untouched); BLOCKER 1/2, MAJOR 3-6, MINORS, and Codex F1/F2 all addressed with red evidence recorded; full suite, ruff and mutate_check green with every mutation killed.",
+      "fan_out": 0,
+      "git": {
+        "branch": "w1-copilot-reader",
+        "pushed": null,
+        "sha": "9167450e6168338b69bc62f17fdfe6a912878c9f",
+        "short": "9167450e6"
+      },
+      "goal": "Fix every BLOCKER/MAJOR/MINOR from the Test Architect join review and the Codex cross-vendor review, red-first, and re-verify the gates.",
+      "id": "al-01M3AVXEP8S9A636BXZWPWT0ZD",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Fix all Test Architect BLOCKED findings (verified with its own mutants on f266f09) and the Codex cross-vendor review findings (docs/notes/review-w1-copr-codex.md) red-first: the version-gate crash on an unhashable version, outcome_code leaking on success, the toolCallId pairing gap, US-14's untested zero-denial half, the untested single-request clock/normalize requests+outcome_code columns/session_id fallback/fixture-provenance row, the TOOL_CLASS mapping gap, and the US-11 sample's KeyError-prone mutant. Merge main 5529dcc first (W1-ACP's classify rewrite); do not touch classify.",
+      "session": "w1-cop-r",
+      "shortname": "W1-COP-R join fixes (TA BLOCKED + Codex review)",
+      "skill": "implement",
+      "summary": "3 real bugs fixed in copilot.py: version-gate type check (type(v) is int, fixes a TypeError crash on unhashable/bool/float versions), outcome_code null-on-success, session_id directory-name fallback. 25 new tests added to test_telemetry_copilot.py; tests/test_telemetry.py (granted seam) extended to run copilot through the 3 shared T-TEL-fuzz tests. tests/mutations/copilot_reader.json grew from 7 to 16 mutants (TA1/TA1b/TA2/TA8/TA9/TA10, Codex F1/F2, an emptied-modelMetrics guard), all killed. Red-first evidence: an empty-Extraction stub run against the whole test file (32/34 test IDs go red; the residual vacuous cases are either named by a mutant, test sibling-reader regressions already red at 086f85c, or are fixture-provenance facts independent of the reader). Merged main 5529dcc; classify untouched. Full suite 722 passed/5 deselected; ruff clean.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M3AWKRVR1SDEEA7BRAQNK4P0",
+      "shortname": "Goal: W1-COP-I slice 4 (plan docs/coordination/coordination-finish-harne…",
+      "datetime": "2026-09-24T23:39:33Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W1-COP-I slice 4 (plan docs/coordination/coordination-finish-harness-bench.md, W1-COP-I row, \"Ownership additions\" and the verbatim W1-COP-I join condition; design docs/design/phase2-copilot-profile.md revision 3.1 sections 3, 6 and 13; docs/adr/0006 Amendment 1): the model_calls key widened with `model`, one row mapper, calls_per_cell = sum(requests) with its guard, and the views-level Copilot proofs — red-first, in the owned paths only.\nDone when: src/harness_bench/views.py: the `model_calls` key (views.py:33) gains `model` per ADR-0006 Amendment 1; ledger rows are read into ModelCall through ONE mapper whose absent-`requests` default comes only from `ModelCall.requests = 1` (no second `.get(\"requests\", 1)` anywhere — design D&P C-b); `calls_per_cell` = sum(requests) over the current extraction, and a guard test shows a single-row fixture with requests == 2 gives calls_per_cell == 2.; These tests through `views.load` on a Copilot run dir built from tests/fixtures/native/copilot/off exist and pass, each observed red first (a–c against a READERS without copilot — revert that line in your tree to observe, then restore; e against a calls_per_cell that counts rows): (a) only the session.shutdown.data.modelMetrics key renamed (currentModel, selectedModel and every assistant.message.model untouched) → `invalid (model mismatch)` / HB-VAL-002; (b) modelMetrics emptied → `invalid (no model call)` / HB-VAL-001; (c) the unmutated sample → `valid`; (d) the shutdown line removed → `invalid (no model call)` in wave 1, the test citing rulings R-15 and R-21; (e) a single-row fixture with requests == 2 → calls_per_cell == 2.; tests/mutations/views_copilot.json has at least: the key without `model`, the mapper default duplicated as 0, calls_per_cell counting rows — each killed (`uv run python tools/mutate_check.py tests/mutations/views_copilot.json`).; `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red with the failing assertion observed, each green SHA, and the mutate_check result.\nNot in scope: profiles.py, telemetry/*, driver.py, engine.py, plan.py (other slices or tracks); `bench run`, any model turn, tests/e2e, `-m \"\"`; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: the design and ADR sections named above, docs/notes/rulings.md R-15, R-21, R-26, R-27, src/harness_bench/views.py, src/harness_bench/telemetry/{__init__,normalize,copilot}.py, tests/test_views.py, tests/fixtures/native/copilot/**. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3AWKS8PT9J60ZH7RS2SCEHA",
+      "shortname": "compile-Goal: W1-COP-I slice 4 (plan docs/coordination/coordination-finish-harne…",
+      "datetime": "2026-09-24T23:39:33Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-COP-I slice 4 (plan docs/coordination/coordination-finish-harness-bench.md, W1-COP-I row, \"Ownership additions\" and the verbatim W1-COP-I join condition; design docs/design/phase2-copilot-profile.md revision 3.1 sections 3, 6 and 13; docs/adr/0006 Amendment 1): the model_calls key widened with `model`, one row mapper, calls_per_cell = sum(requests) with its guard, and the views-level Copilot proofs — red-first, in the owned paths only.\nDone when: src/harness_bench/views.py: the `model_calls` key (views.py:33) gains `model` per ADR-0006 Amendment 1; ledger rows are read into ModelCall through ONE mapper whose absent-`requests` default comes only from `ModelCall.requests = 1` (no second `.get(\"requests\", 1)` anywhere — design D&P C-b); `calls_per_cell` = sum(requests) over the current extraction, and a guard test shows a single-row fixture with requests == 2 gives calls_per_cell == 2.; These tests through `views.load` on a Copilot run dir built from tests/fixtures/native/copilot/off exist and pass, each observed red first (a–c against a READERS without copilot — revert that line in your tree to observe, then restore; e against a calls_per_cell that counts rows): (a) only the session.shutdown.data.modelMetrics key renamed (currentModel, selectedModel and every assistant.message.model untouched) → `invalid (model mismatch)` / HB-VAL-002; (b) modelMetrics emptied → `invalid (no model call)` / HB-VAL-001; (c) the unmutated sample → `valid`; (d) the shutdown line removed → `invalid (no model call)` in wave 1, the test citing rulings R-15 and R-21; (e) a single-row fixture with requests == 2 → calls_per_cell == 2.; tests/mutations/views_copilot.json has at least: the key without `model`, the mapper default duplicated as 0, calls_per_cell counting rows — each killed (`uv run python tools/mutate_check.py tests/mutations/views_copilot.json`).; `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red with the failing assertion observed, each green SHA, and the mutate_check result.\nNot in scope: profiles.py, telemetry/*, driver.py, engine.py, plan.py (other slices or tracks); `bench run`, any model turn, tests/e2e, `-m \"\"`; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: the design and ADR sections named above, docs/notes/rulings.md R-15, R-21, R-26, R-27, src/harness_bench/views.py, src/harness_bench/telemetry/{__init__,normalize,copilot}.py, tests/test_views.py, tests/fixtures/native/copilot/**. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: src/harness_bench/views.py: the `model_calls` key (views.py:33) gains `model` per ADR-0006 Amendment 1 | phrase: src/harness_bench/views.py: the `model_calls` key (views.py:33) gains `model` per ADR-0006 Amendment 1 |\n| done_when: ledger rows are read into ModelCall through ONE mapper whose absent-`requests` default comes only from `ModelCall.requests = 1` (no second `.get(\"requests\", 1)` anywhere — design D&P C-b) | phrase: ledger rows are read into ModelCall through ONE mapper whose absent-`requests` default comes only from `ModelCall.requests = 1` (no second `.get(\"requests\", 1)` anywhere — design D&P C-b) |\n| done_when: `calls_per_cell` = sum(requests) over the current extraction, and a guard test shows a single-row fixture with requests == 2 gives calls_per_cell == 2. | phrase: `calls_per_cell` = sum(requests) over the current extraction, and a guard test shows a single-row fixture with requests == 2 gives calls_per_cell == 2. |\n| done_when: These tests through `views.load` on a Copilot run dir built from tests/fixtures/native/copilot/off exist and pass, each observed red first (a–c against a READERS without copilot — revert that line in your tree to observe, then restore | phrase: These tests through `views.load` on a Copilot run dir built from tests/fixtures/native/copilot/off exist and pass, each observed red first (a–c against a READERS without copilot — revert that line in your tree to observe, then restore |\n| done_when: e against a calls_per_cell that counts rows): (a) only the session.shutdown.data.modelMetrics key renamed (currentModel, selectedModel and every assistant.message.model untouched) → `invalid (model mismatch)` / HB-VAL-002 | phrase: e against a calls_per_cell that counts rows): (a) only the session.shutdown.data.modelMetrics key renamed (currentModel, selectedModel and every assistant.message.model untouched) → `invalid (model mismatch)` / HB-VAL-002 |\n| done_when: (b) modelMetrics emptied → `invalid (no model call)` / HB-VAL-001 | phrase: (b) modelMetrics emptied → `invalid (no model call)` / HB-VAL-001 |\n| done_when: (c) the unmutated sample → `valid` | phrase: (c) the unmutated sample → `valid` |\n| done_when: (d) the shutdown line removed → `invalid (no model call)` in wave 1, the test citing rulings R-15 and R-21 | phrase: (d) the shutdown line removed → `invalid (no model call)` in wave 1, the test citing rulings R-15 and R-21 |\n| done_when: (e) a single-row fixture with requests == 2 → calls_per_cell == 2. | phrase: (e) a single-row fixture with requests == 2 → calls_per_cell == 2. |\n| done_when: tests/mutations/views_copilot.json has at least: the key without `model`, the mapper default duplicated as 0, calls_per_cell counting rows — each killed (`uv run python tools/mutate_check.py tests/mutations/views_copilot.json`). | phrase: tests/mutations/views_copilot.json has at least: the key without `model`, the mapper default duplicated as 0, calls_per_cell counting rows — each killed (`uv run python tools/mutate_check.py tests/mutations/views_copilot.json`). |\n| done_when: `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean. | phrase: `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean. |\n| done_when: Your final message lists each red with the failing assertion observed, each green SHA, and the mutate_check result. | phrase: Your final message lists each red with the failing assertion observed, each green SHA, and the mutate_check result. |\n| not_in_scope: profiles.py, telemetry/*, driver.py, engine.py, plan.py (other slices or tracks) | phrase: profiles.py, telemetry/*, driver.py, engine.py, plan.py (other slices or tracks) |\n| not_in_scope: `bench run`, any model turn, tests/e2e, `-m \"\"` | phrase: `bench run`, any model turn, tests/e2e, `-m \"\"` |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- model: unresolved (not found)\n- model_calls: unresolved (not found)\n- requests: unresolved (not found)\n- ModelCall.requests = 1: unresolved (not found)\n- .get(\"requests\", 1: unresolved (not found)\n- calls_per_cell: unresolved (not found)\n- views.load: unresolved (not found)\n- invalid (model mismatch: unresolved (not found)\n- invalid (no model call: unresolved (not found)\n- valid: unresolved (not found)\n- uv run python tools/mutate_check.py tests/mutations/views_copilot.json: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider: unresolved (not found)\n- uv run ruff check src tests tools: unresolved (not found)\n- bench run: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 17b74cfa2175c94a17b6469bd10c90bad93c7f94c70e83590680bd99d309cc1e\n- docs/design/phase2-copilot-profile.md: docs/design/phase2-copilot-profile.md sha256 b15244d34330ebd4917bbc7599bd30944f2de10767b6a719ec18a0e19c25ee7f\n- docs/adr/0006: unresolved (not found)\n- src/harness_bench/views.py: src/harness_bench/views.py sha256 dda67bd6871a0ee97cd28e0f816f77a0ec3c180cb75cb008c5dde44399ffc76f\n- tests/fixtures/native/copilot/off: unresolved (not found)\n- /: unresolved (outside repo)\n- tests/mutations/views_copilot.json: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- profiles.py: src/harness_bench/profiles.py sha256 3afb30e7a768577cbdbff2082489fec22887895c7d7ea64c7ac77f805a3830ac\n- telemetry/*: unresolved (not found)\n- driver.py: src/harness_bench/driver.py sha256 05678eb095d49ea508be521dc628a7e4693dfc0772d2e83f9194c132a62a2da5\n- engine.py: src/harness_bench/engine.py sha256 fd8b33c00711c1b0fbb348d4e7be802c88f608c901c30053112e465559ffbca4\n- plan.py: src/harness_bench/plan.py sha256 b3038b0d5f683fa449249902f8292533a5b7b88f19e4ef9d0d221a89631facc3\n- tests/e2e: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 2 matches)\n- src/harness_bench/telemetry/{__init__,normalize,copilot}.py: unresolved (not found)\n- tests/test_views.py: tests/test_views.py sha256 84c9edd9ff89e5e066df9b0694a2ef4314b93516402cd0f8c00ca32f2c462cb4\n- tests/fixtures/native/copilot/**: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AWKRVR1SDEEA7BRAQNK4P0\nraw sha256: 166dd3ba81f902921e72575eebba5f176b3f0200e853319201b955b287660a11\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3AWKRVR1SDEEA7BRAQNK4P0 for codex v1: 15 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "src/harness_bench/views.py: the `model_calls` key (views.py:33) gains `model` per ADR-0006 Amendment 1",
+            "trace": {
+              "kind": "phrase",
+              "ref": "src/harness_bench/views.py: the `model_calls` key (views.py:33) gains `model` per ADR-0006 Amendment 1"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "ledger rows are read into ModelCall through ONE mapper whose absent-`requests` default comes only from `ModelCall.requests = 1` (no second `.get(\"requests\", 1)` anywhere — design D&P C-b)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "ledger rows are read into ModelCall through ONE mapper whose absent-`requests` default comes only from `ModelCall.requests = 1` (no second `.get(\"requests\", 1)` anywhere — design D&P C-b)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`calls_per_cell` = sum(requests) over the current extraction, and a guard test shows a single-row fixture with requests == 2 gives calls_per_cell == 2.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`calls_per_cell` = sum(requests) over the current extraction, and a guard test shows a single-row fixture with requests == 2 gives calls_per_cell == 2."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "These tests through `views.load` on a Copilot run dir built from tests/fixtures/native/copilot/off exist and pass, each observed red first (a–c against a READERS without copilot — revert that line in your tree to observe, then restore",
+            "trace": {
+              "kind": "phrase",
+              "ref": "These tests through `views.load` on a Copilot run dir built from tests/fixtures/native/copilot/off exist and pass, each observed red first (a–c against a READERS without copilot — revert that line in your tree to observe, then restore"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "e against a calls_per_cell that counts rows): (a) only the session.shutdown.data.modelMetrics key renamed (currentModel, selectedModel and every assistant.message.model untouched) → `invalid (model mismatch)` / HB-VAL-002",
+            "trace": {
+              "kind": "phrase",
+              "ref": "e against a calls_per_cell that counts rows): (a) only the session.shutdown.data.modelMetrics key renamed (currentModel, selectedModel and every assistant.message.model untouched) → `invalid (model mismatch)` / HB-VAL-002"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "(b) modelMetrics emptied → `invalid (no model call)` / HB-VAL-001",
+            "trace": {
+              "kind": "phrase",
+              "ref": "(b) modelMetrics emptied → `invalid (no model call)` / HB-VAL-001"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "(c) the unmutated sample → `valid`",
+            "trace": {
+              "kind": "phrase",
+              "ref": "(c) the unmutated sample → `valid`"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "(d) the shutdown line removed → `invalid (no model call)` in wave 1, the test citing rulings R-15 and R-21",
+            "trace": {
+              "kind": "phrase",
+              "ref": "(d) the shutdown line removed → `invalid (no model call)` in wave 1, the test citing rulings R-15 and R-21"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "(e) a single-row fixture with requests == 2 → calls_per_cell == 2.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "(e) a single-row fixture with requests == 2 → calls_per_cell == 2."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/views_copilot.json has at least: the key without `model`, the mapper default duplicated as 0, calls_per_cell counting rows — each killed (`uv run python tools/mutate_check.py tests/mutations/views_copilot.json`).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/views_copilot.json has at least: the key without `model`, the mapper default duplicated as 0, calls_per_cell counting rows — each killed (`uv run python tools/mutate_check.py tests/mutations/views_copilot.json`)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red with the failing assertion observed, each green SHA, and the mutate_check result.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red with the failing assertion observed, each green SHA, and the mutate_check result."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "profiles.py, telemetry/*, driver.py, engine.py, plan.py (other slices or tracks)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "profiles.py, telemetry/*, driver.py, engine.py, plan.py (other slices or tracks)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "`bench run`, any model turn, tests/e2e, `-m \"\"`",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`bench run`, any model turn, tests/e2e, `-m \"\"`"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "src/harness_bench/views.py: the `model_calls` key (views.py:33) gains `model` per ADR-0006 Amendment 1",
+            "ledger rows are read into ModelCall through ONE mapper whose absent-`requests` default comes only from `ModelCall.requests = 1` (no second `.get(\"requests\", 1)` anywhere — design D&P C-b)",
+            "`calls_per_cell` = sum(requests) over the current extraction, and a guard test shows a single-row fixture with requests == 2 gives calls_per_cell == 2.",
+            "These tests through `views.load` on a Copilot run dir built from tests/fixtures/native/copilot/off exist and pass, each observed red first (a–c against a READERS without copilot — revert that line in your tree to observe, then restore",
+            "e against a calls_per_cell that counts rows): (a) only the session.shutdown.data.modelMetrics key renamed (currentModel, selectedModel and every assistant.message.model untouched) → `invalid (model mismatch)` / HB-VAL-002",
+            "(b) modelMetrics emptied → `invalid (no model call)` / HB-VAL-001",
+            "(c) the unmutated sample → `valid`",
+            "(d) the shutdown line removed → `invalid (no model call)` in wave 1, the test citing rulings R-15 and R-21",
+            "(e) a single-row fixture with requests == 2 → calls_per_cell == 2.",
+            "tests/mutations/views_copilot.json has at least: the key without `model`, the mapper default duplicated as 0, calls_per_cell counting rows — each killed (`uv run python tools/mutate_check.py tests/mutations/views_copilot.json`).",
+            "`uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.",
+            "Your final message lists each red with the failing assertion observed, each green SHA, and the mutate_check result."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W1-COP-I slice 4 (plan docs/coordination/coordination-finish-harness-bench.md, W1-COP-I row, \"Ownership additions\" and the verbatim W1-COP-I join condition; design docs/design/phase2-copilot-profile.md revision 3.1 sections 3, 6 and 13; docs/adr/0006 Amendment 1): the model_calls key widened with `model`, one row mapper, calls_per_cell = sum(requests) with its guard, and the views-level Copilot proofs — red-first, in the owned paths only.",
+          "main_line_budget": "one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: the design and ADR sections named above, docs/notes/rulings.md R-15, R-21, R-26, R-27, src/harness_bench/views.py, src/harness_bench/telemetry/{__init__,normalize,copilot}.py, tests/test_views.py, tests/fixtures/native/copilot/**. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
+          "not_in_scope": [
+            "profiles.py, telemetry/*, driver.py, engine.py, plan.py (other slices or tracks)",
+            "`bench run`, any model turn, tests/e2e, `-m \"\"`",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.002,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3AWKRVR1SDEEA7BRAQNK4P0",
+        "raw_sha256": "166dd3ba81f902921e72575eebba5f176b3f0200e853319201b955b287660a11",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model_calls"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "requests"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ModelCall.requests = 1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".get(\"requests\", 1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "calls_per_cell"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "views.load"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "invalid (model mismatch"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "invalid (no model call"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "valid"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run python tools/mutate_check.py tests/mutations/views_copilot.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q -p no:cacheprovider"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run ruff check src tests tools"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench run"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-m "
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python3"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench.md",
+            "reason": null,
+            "sha256": "17b74cfa2175c94a17b6469bd10c90bad93c7f94c70e83590680bd99d309cc1e",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-finish-harness-bench.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase2-copilot-profile.md",
+            "reason": null,
+            "sha256": "b15244d34330ebd4917bbc7599bd30944f2de10767b6a719ec18a0e19c25ee7f",
+            "status": "resolved",
+            "token": "docs/design/phase2-copilot-profile.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/adr/0006"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/views.py",
+            "reason": null,
+            "sha256": "dda67bd6871a0ee97cd28e0f816f77a0ec3c180cb75cb008c5dde44399ffc76f",
+            "status": "resolved",
+            "token": "src/harness_bench/views.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/native/copilot/off"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/views_copilot.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/profiles.py",
+            "reason": null,
+            "sha256": "3afb30e7a768577cbdbff2082489fec22887895c7d7ea64c7ac77f805a3830ac",
+            "status": "resolved",
+            "token": "profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "telemetry/*"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/driver.py",
+            "reason": null,
+            "sha256": "05678eb095d49ea508be521dc628a7e4693dfc0772d2e83f9194c132a62a2da5",
+            "status": "resolved",
+            "token": "driver.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/engine.py",
+            "reason": null,
+            "sha256": "fd8b33c00711c1b0fbb348d4e7be802c88f608c901c30053112e465559ffbca4",
+            "status": "resolved",
+            "token": "engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "b3038b0d5f683fa449249902f8292533a5b7b88f19e4ef9d0d221a89631facc3",
+            "status": "resolved",
+            "token": "plan.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/telemetry/{__init__,normalize,copilot}.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_views.py",
+            "reason": null,
+            "sha256": "84c9edd9ff89e5e066df9b0694a2ef4314b93516402cd0f8c00ca32f2c462cb4",
+            "status": "resolved",
+            "token": "tests/test_views.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/native/copilot/**"
           }
         ],
         "schema": "compiled-prompt/1",

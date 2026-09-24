@@ -40,7 +40,7 @@ summary: >-
 | `QueryUnbiasedInterruptTime` | 5.8 s |
 
 - **The engine behaved as designed.** `SleepDetector` (wall minus unbiased > 60 s) fired on the first loop after the wake. The cell ended `failed` with cause `host_suspended` (HB-CELL-106). The ledger reads, in order: `run.started`, `cell.launch_intent`, `cell.workspace_built`, `attempt.process_started`, `attempt.session_opened`, `cell.prompt_sent`, `attempt.process_ended`, `cell.outcome`, `cell.archived`, `cell.workspace_deleted`, `run.completed`.
-- **`turn_ms` includes the sleep:** the recorded value is 292,839 ms, for about 56 s of awake turn plus about 237 s asleep. The engine measures the turn with `time.monotonic`, which counts suspended time on this host.
+- **`turn_ms` includes the sleep:** the recorded value is 292,839 ms. By the samples, that is about 53.8 s awake plus the 238.6 s monotonic step across the standby (prompt to end by `time.monotonic`: 292.4 s). The engine measures the turn with `time.monotonic`, which counts suspended time on this host.
 - This Claude Code session and its background jobs survived the standby.
 
 ## What it means
