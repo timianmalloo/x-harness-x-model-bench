@@ -209,16 +209,108 @@ PAIRING = {
     "session/set_mode.result": "spike N4: codex-acp set_mode agent-full-access returned {}",
     "session/set_model.result": "spike N4: copilot set_model returned {}",
     "session/update.agent_message_chunk": "spike R11 container_acp.py counted real session/update notifications",
-    "session/prompt.result": "spike N4: stopReason end_turn from all three adapters",
+    "session/prompt.result": "recorded: tests/fixtures/acp/*-prompt-response.json, replayed through the driver (D5)",
     "session/request_permission": "ACP schema (agentclientprotocol.com, RequestPermissionRequest); no real exemplar yet - "
                                   "flagged for the phase-2 permission probe",
 }
 
 
-def test_fake_agent_message_types_are_paired():
-    source = FAKE.read_text(encoding="utf-8")
-    emitted = {"initialize.result", "session/new.result", "session/set_mode.result", "session/set_model.result",
-               "session/update.agent_message_chunk", "session/prompt.result", "session/request_permission"}
-    assert '"session/request_permission"' in source and "agent_message_chunk" in source
+class _Tap:
+    """One side of the adapter's stdio, passed through unchanged and recorded."""
+
+    def __init__(self, stream) -> None:
+        self.stream, self.data = stream, bytearray()
+
+    def read1(self, n: int) -> bytes:
+        chunk = self.stream.read1(n)
+        self.data += chunk
+        return chunk
+
+    def write(self, data: bytes) -> int:
+        self.data += data
+        return self.stream.write(data)
+
+    def flush(self) -> None:
+        self.stream.flush()
+
+    def close(self) -> None:
+        self.stream.close()
+
+
+def _objects(data: bytes) -> list[dict]:
+    out = []
+    for line in data.split(b"\n"):
+        try:
+            obj = json.loads(line)
+        except (ValueError, RecursionError):
+            continue
+        if isinstance(obj, dict):
+            out.append(obj)
+    return out
+
+
+def _message_types(agent: bytes, client: bytes) -> set[str]:
+    """Each agent message as `method[.sessionUpdate]` or `<the client request's method>.result|error`."""
+    asked = {m["id"]: m["method"] for m in _objects(client) if "method" in m and "id" in m}
+    types = set()
+    for m in _objects(agent):
+        if "method" in m:
+            update = (m.get("params") or {}).get("update") or {}
+            types.add(m["method"] + (f".{update['sessionUpdate']}" if "sessionUpdate" in update else ""))
+        elif "id" in m:
+            types.add(f"{asked.get(m['id'], '?')}.{'error' if 'error' in m else 'result'}")
+    return types
+
+
+def _tapped_turn(tmp_path, argv, env, acp_mode=None) -> set[str]:
+    import threading
+    cell = procs.spawn(argv, cwd=str(tmp_path), env=env)
+    cell.proc.stdout, cell.proc.stdin = _Tap(cell.proc.stdout), _Tap(cell.proc.stdin)
+    stop = threading.Timer(4, lambda: cell.terminate_and_confirm(timeout=10))  # ends the hang modes
+    stop.start()
+    try:
+        driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=acp_mode, handshake_timeout=3, before_send=lambda sid: None)
+    finally:
+        stop.cancel()
+        cell.terminate_and_confirm(timeout=10)
+        cell.close()
+    return _message_types(bytes(cell.proc.stdout.data), bytes(cell.proc.stdin.data))
+
+
+def _fake_modes() -> list[str]:
+    """Every mode the fake agent declares in its docstring, so a new mode is exercised without editing this test."""
+    import re
+    doc = FAKE.read_text(encoding="utf-8").split('"mode":', 1)[1].split('"record_dir"', 1)[0]
+    return re.findall(r'"(\w+)"', doc)
+
+
+def _assert_paired(emitted: set[str]) -> None:
     unpaired = emitted - set(PAIRING)
-    assert not unpaired, f"fake message types with no real transcript or schema: {sorted(unpaired)}"
+    assert not unpaired, f"message types with no real transcript or schema: {sorted(unpaired)}"
+
+
+@pytestmark_native
+def test_every_message_type_the_fake_emits_is_paired_and_every_pairing_is_emitted(tmp_path):  # D7
+    from concurrent.futures import ThreadPoolExecutor
+    modes = _fake_modes()
+    assert {"ok", "permission", "eof_mid_turn"} <= set(modes)
+    env = {m: dict(os.environ, FAKE_ACP=json.dumps({"mode": m, "usage": [{"model": "m", "token_count": {}}]})) for m in modes}
+    with ThreadPoolExecutor(max_workers=len(modes)) as pool:
+        runs = [pool.submit(_tapped_turn, tmp_path / m, [sys.executable, str(FAKE)], env[m], "agent-full-access")
+                for m in modes if (tmp_path / m).mkdir() is None]
+        emitted = set().union(*(r.result() for r in runs))
+    _assert_paired(emitted)
+    stale = set(PAIRING) - emitted
+    assert not stale, f"pairings no real run of the fake emits: {sorted(stale)}"
+
+
+@pytestmark_native
+def test_the_fidelity_check_fails_on_a_seeded_unpaired_type(tmp_path):  # D7 negative control, through a real run
+    seed = {"jsonrpc": "2.0", "method": "session/update",
+            "params": {"sessionId": "replay-session", "update": {"sessionUpdate": "plan", "entries": []}}}
+    env = dict(os.environ, REPLAY_ACP=json.dumps({"prompt_result": str(ACP_FIX / "codex-prompt-response.json"),
+                                                  "before_result": [seed]}))
+    emitted = _tapped_turn(tmp_path, [sys.executable, str(REPLAY)], env)
+    assert "session/update.plan" in emitted
+    with pytest.raises(AssertionError, match=r"session/update\.plan"):
+        _assert_paired(emitted)
