@@ -101,7 +101,7 @@ def test_real_handshake_with_the_pinned_build(harness, model, tmp_path):
         cell = procs.spawn(p.argv(build), cwd=str(ws), env=env)
         try:
             result = driver.run_turn(cell, cwd=ws, prompt="unused", mode=p.mode, handshake_timeout=60,
-                                     before_send=lambda: (_ for _ in ()).throw(KeyboardInterrupt))
+                                     before_send=lambda sid: (_ for _ in ()).throw(KeyboardInterrupt))
         except KeyboardInterrupt:  # stop at the barrier: the handshake succeeded, no prompt is sent
             result = None
         finally:

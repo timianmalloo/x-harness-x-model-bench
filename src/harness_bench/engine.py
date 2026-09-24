@@ -1,0 +1,424 @@
+"""The run engine (ADR-0007, ADR-0013; design: Error & concurrency model), built to models/run_lifecycle.tla.
+
+Pattern: Producer-Consumer over a bounded buffer, with a Single Writer. One worker thread per running
+cell does the long work (working copy, spawn, the ACP turn, archive); the engine thread is the only
+appender to every ledger fact of this process. A worker hands each record to the engine thread through
+a bounded queue and blocks on a Future until the record is durable (the write-ahead intent / ack
+barrier: `cell.prompt_sent` is fsynced before the prompt is written, model QueuePromptSent ->
+PersistPromptSent -> SendPrompt). A failed append (HB-RUN-001) propagates to the worker, which then
+never sends the prompt.
+
+Per cell, in order: launch intent -> working copy -> build check -> spawn into a Job Object -> handshake
+-> session opened -> prompt sent -> the turn -> the job terminated and confirmed empty (process ended)
+-> cause classified (provider-error scan first) -> outcome -> archive -> verify -> delete.
+A budget or a detected host sleep terminates the cell's job; the outcome is recorded only after the job
+reports no active process (kill -> confirm -> record). The parallelism slot is held from the launch
+intent until the process is confirmed gone. The lock file's mtime is the heartbeat.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import logging
+import queue
+import re
+import shutil
+import subprocess
+import threading
+import time
+from concurrent.futures import Future
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Protocol
+
+from harness_bench import archive, driver, host, ledger, oslock, procs
+from harness_bench.errors import BenchError, Cause
+from harness_bench.gitsafe import GitError
+from harness_bench.telemetry import normalize
+from harness_bench.tools import BuildChanged
+
+ENGINE_TRANSITIONS = frozenset({
+    "run.started", "cell.launch_intent", "cell.workspace_built", "attempt.process_started", "attempt.session_opened",
+    "cell.prompt_sent", "attempt.process_ended", "cell.outcome", "cell.archived", "cell.workspace_deleted",
+    "cell.workspace_kept", "run.launch_stopped", "run.completed",
+})
+FACTS = ("events", "turn_usage", "archive_files")
+NO_MEMORY_STATUSES = {0xC0000017, 0xC000012D}
+OOM_SIGNATURE = re.compile(rb"heap out of memory|out of memory|OutOfMemory", re.IGNORECASE)
+COMPLETED_STOP_REASONS = {"end_turn", "max_tokens", "max_turn_requests", "refusal"}
+CIRCUIT_BREAKER = 3
+log = logging.getLogger("harness_bench.engine")
+
+
+class Launcher(Protocol):
+    """How the engine starts one harness (profiles.ProfileLauncher for real ones; a fake in tests)."""
+
+    harness: str
+    credential_names: set[str]
+    usage_source: str
+    mode: str | None
+
+    def check_build(self) -> dict: ...
+    def seed(self, home: Path, model: str) -> None: ...
+    def clean(self, home: Path) -> None: ...
+    def argv_env(self, cell: dict, home: Path, traceparent: str) -> tuple[list[str], dict]: ...
+    def records(self, home: Path, session_id: str) -> list[Path]: ...
+    def read(self, path: Path): ...
+
+
+@dataclass
+class EngineConfig:
+    run_dir: Path
+    cells_root: Path
+    launchers: dict[str, Launcher]
+    build_workspace: object  # (cell, cell_dir) -> dict info; the working copy is cell_dir / "ws"
+    grade: object | None  # (engine) -> None, run after every cell is terminal, under grade.lock
+    end_grace: float = 10.0
+    loop_interval: float = 0.2
+
+
+@dataclass
+class RunSummary:
+    exit_code: int
+    outcomes: dict[str, dict] = field(default_factory=dict)
+
+
+@dataclass
+class _Active:
+    cell: dict
+    thread: threading.Thread
+    proc: procs.CellProcess | None = None
+    prompt_mono: float | None = None
+    kill_reason: str | None = None
+    ended: bool = False
+
+
+def read_events(run_dir: Path) -> list[dict]:
+    rows = []
+    for seg in sorted((run_dir / "events").glob("*.jsonl")):
+        rows.extend(ledger.read_segment(seg))
+    return rows
+
+
+def process_alive(pid: int, created: int) -> bool:
+    return host.process_alive(pid, created)
+
+
+def span_id(trace_id: str, entity: str, phase: str) -> str:
+    """Deterministic, so a log line written before its span is derived still joins it (design: Telemetry)."""
+    return hashlib.sha256(f"{trace_id}|{entity}|{phase}".encode()).hexdigest()[:16]
+
+
+class Engine:
+    def __init__(self, plan: dict, config: EngineConfig) -> None:
+        self.plan = plan
+        self.cfg = config
+        self.params = plan["parameters"]
+        self.trace_id = plan["trace_id"]
+        self.inbox: queue.Queue = queue.Queue(maxsize=64)
+        self.writers: dict[str, ledger.SegmentWriter] = {}
+        self.active: dict[str, _Active] = {}
+        self.outcomes: dict[str, dict] = {}
+        self.stopped: str | None = None
+        self.broken = False
+        self.infra_streak = 0
+
+    # the single writer ----------------------------------------------------------------------------
+
+    def _append_now(self, fact: str, record: dict) -> dict:
+        now = time.time()
+        stamped = {**record, "recorded_at": time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(now)) + f".{int(now * 1000) % 1000:03d}Z",
+                   "mono_ns": time.monotonic_ns()}  # ADR-0006: UTC for people, monotonic for durations
+        try:
+            return self.writers[fact].append(stamped)
+        except Exception as exc:  # the ledger cannot be written: stop launching, the run is incomplete
+            self.broken = True
+            log.error("ledger append failed", extra={"error_code": "HB-RUN-001", "detail": str(exc)})
+            raise BenchError("HB-RUN-001", f"append to {fact} failed: {exc}") from exc
+
+    def record(self, fact: str, record: dict) -> dict:
+        """Called by a worker: hand the record to the engine thread and wait until it is durable."""
+        future: Future = Future()
+        self.inbox.put((fact, record, future))
+        return future.result()
+
+    def _drain(self, wait: float) -> None:
+        deadline = time.monotonic() + wait
+        while True:
+            timeout = max(deadline - time.monotonic(), 0)
+            try:
+                fact, record, future = self.inbox.get(timeout=timeout)
+            except queue.Empty:
+                return
+            try:
+                future.set_result(self._append_now(fact, record))
+            except BenchError as exc:
+                future.set_exception(exc)
+            if record.get("kind") == "cell.prompt_sent":
+                a = self.active.get(record["cell_id"])
+                if a:
+                    a.prompt_mono = time.monotonic()
+
+    # run ------------------------------------------------------------------------------------------
+
+    def run(self) -> RunSummary:
+        run_dir = self.cfg.run_dir
+        if (run_dir / "events").exists():
+            raise BenchError("HB-USR-002", f"run {self.plan['run_id']} has already started; phase 1 re-runs under a new run id")
+        run_dir.mkdir(parents=True, exist_ok=True)
+        lock = oslock.RunLock.acquire(run_dir / ".lock", code="HB-RUN-003")
+        segment = f"engine-{int(time.time())}"
+        for fact in FACTS:
+            self.writers[fact] = ledger.SegmentWriter.create(run_dir / fact, segment)
+        host.keep_awake(True)
+        sleep = host.SleepDetector(self.params["suspend_gap"])
+        pending = list(self.plan["cells"])
+        try:
+            self._append_now("events", {"kind": "run.started", "run_id": self.plan["run_id"], "plan_hash": self.plan["plan_hash"],
+                                        "trace_id": self.trace_id})
+            while (pending and not self.stopped) or self.active:
+                lock.heartbeat()
+                self._drain(self.cfg.loop_interval)
+                if self.broken:
+                    self._abort_running()
+                    break
+                self._check_budgets()
+                if sleep.slept():
+                    self._kill_all("host_suspended")
+                if not self.stopped and shutil.disk_usage(self.cfg.cells_root.anchor or ".").free < self.params["disk_floor_bytes"]:
+                    self._stop_launching("HB-RUN-004", "free space below the floor")
+                while pending and not self.stopped and len(self.active) < self.params["parallelism"]:
+                    self._launch(pending.pop(0))
+                for cell_id, a in list(self.active.items()):
+                    if not a.thread.is_alive():
+                        self.active.pop(cell_id)
+            self._drain(0)
+            if not self.broken and self.cfg.grade is not None:
+                self.cfg.grade(self)
+            if not self.broken:
+                heads = {fact: w.seal() for fact, w in self.writers.items() if fact != "events"}
+                self._append_now("events", {"kind": "run.completed", "run_id": self.plan["run_id"],
+                                            "segment_heads": {**heads, "events": self.writers["events"].head_hash},
+                                            "cells_ended": len(self.outcomes)})
+                self.writers["events"].seal()
+        finally:
+            host.keep_awake(False)
+            for w in self.writers.values():
+                w.close()
+            lock.release()
+        complete = not self.broken and len(self.outcomes) == len(self.plan["cells"])
+        return RunSummary(0 if complete else 3, dict(self.outcomes))
+
+    def _stop_launching(self, code: str, reason: str) -> None:
+        if self.stopped:
+            return
+        self.stopped = code
+        self._append_now("events", {"kind": "run.launch_stopped", "code": code, "reason": reason})
+
+    def _launch(self, cell: dict) -> None:
+        self._append_now("events", {"kind": "cell.launch_intent", "cell_id": cell["cell_id"], "label": cell["label"]})
+        a = _Active(cell, threading.Thread(target=self._cell_worker, args=(cell,), daemon=True, name=f"cell-{cell['cell_id']}"))
+        self.active[cell["cell_id"]] = a
+        a.thread.start()
+
+    def _check_budgets(self) -> None:
+        now = time.monotonic()
+        for a in self.active.values():
+            if a.proc and a.prompt_mono and not a.kill_reason and now - a.prompt_mono > a.cell["budget_seconds"]:
+                a.kill_reason = "timeout"
+                a.proc.job.terminate()  # EngineKill: the worker's turn ends at EOF; it confirms and records
+
+    def _kill_all(self, reason: str) -> None:
+        for a in self.active.values():
+            if a.proc and not a.kill_reason:
+                a.kill_reason = reason
+                a.proc.job.terminate()
+
+    def _abort_running(self) -> None:
+        for a in self.active.values():
+            if a.proc:
+                a.proc.job.terminate()
+        for a in list(self.active.values()):
+            a.thread.join(timeout=60)
+
+    # one cell (worker thread) ---------------------------------------------------------------------
+
+    def _cell_worker(self, cell: dict) -> None:
+        cid = cell["cell_id"]
+        try:
+            self._run_cell(cell)
+        except BenchError as exc:
+            log.error("cell stopped: ledger unavailable", extra={"cell_id": cid, "error_code": exc.code})
+        except Exception as exc:  # the unclassified bucket (target 0): logged with its stack, recorded
+            log.exception("unclassified cell failure", extra={"cell_id": cid, "error_code": Cause.unclassified.code})
+            if cid not in self.outcomes:
+                try:
+                    self._outcome(cell, "failed", Cause.unclassified, detail=f"{type(exc).__name__}: {exc}")
+                except BenchError:
+                    pass
+
+    def _outcome(self, cell: dict, outcome: str, cause: Cause | None, **extra) -> dict:
+        row = {"kind": "cell.outcome", "cell_id": cell["cell_id"], "outcome": outcome,
+               "cause": cause.name if cause else None, "code": cause.code if cause else None,
+               "host_mem_available": host.available_memory(), **extra}
+        self.record("events", row)
+        self.outcomes[cell["cell_id"]] = row
+        if cause and cause.invalidates:
+            self.infra_streak += 1
+            if self.infra_streak >= CIRCUIT_BREAKER:
+                self.record("events", {"kind": "run.launch_stopped", "code": cause.code,
+                                       "reason": f"circuit breaker: {CIRCUIT_BREAKER} consecutive infrastructure failures"})
+                self.stopped = cause.code
+        else:
+            self.infra_streak = 0
+        return row
+
+    def _run_cell(self, cell: dict) -> None:
+        cid = cell["cell_id"]
+        launcher = self.cfg.launchers[cell["harness"]]
+        cell_dir = self.cfg.cells_root / self.plan["run_id"] / cid
+        home, ws = cell_dir / "home", cell_dir / "ws"
+        try:
+            info = self.cfg.build_workspace(cell, cell_dir)
+        except (BenchError, GitError, OSError) as exc:
+            self._outcome(cell, "failed", Cause.workspace, detail=f"{type(exc).__name__}: {exc}")
+            self._archive(cell, cell_dir, launcher)
+            return
+        self.record("events", {"kind": "cell.workspace_built", "cell_id": cid, **{k: v for k, v in info.items() if isinstance(v, (int, str))}})
+        try:
+            build = launcher.check_build()
+        except BuildChanged as exc:
+            self._outcome(cell, "failed", Cause.build_changed, detail=str(exc))
+            self.record("events", {"kind": "run.launch_stopped", "code": Cause.build_changed.code, "reason": str(exc)})
+            self.stopped = Cause.build_changed.code
+            self._archive(cell, cell_dir, launcher)
+            return
+        launcher.seed(home, cell["model"])
+        traceparent = f"00-{self.trace_id}-{span_id(self.trace_id, cid, 'cell')}-01"
+        argv, env = launcher.argv_env(cell, home, traceparent)
+        try:
+            cp = procs.spawn(argv, cwd=str(ws), env=env, stderr=subprocess.PIPE)
+        except procs.SpawnError as exc:
+            launcher.clean(home)
+            self._outcome(cell, "failed", Cause.spawn, detail=str(exc), win32_error=exc.win32_error or 0)
+            self._archive(cell, cell_dir, launcher)
+            return
+        a = self.active[cid]
+        a.proc = cp
+        tail = bytearray()
+        drain = threading.Thread(target=_keep_tail, args=(cp.proc.stderr, tail, self.params["stderr_tail_bytes"]), daemon=True)
+        drain.start()
+        self.record("events", {"kind": "attempt.process_started", "cell_id": cid, "attempt": 1, "pid": cp.pid,
+                               "created_at": host.creation_time(cp.pid), "harness": launcher.harness,
+                               "build_version": build.get("version"), "build_sha256": build.get("sha256"),
+                               "credential_kind": "subscription login (copied)", "network_mode": "unrestricted"})
+
+        def barrier(session_id: str | None) -> None:
+            self.record("events", {"kind": "attempt.session_opened", "cell_id": cid, "session_id": session_id or ""})
+            self.record("events", {"kind": "cell.prompt_sent", "cell_id": cid})
+
+        result = driver.run_turn(cp, cwd=ws, prompt=cell.get("prompt", ""), mode=launcher.mode,
+                                 handshake_timeout=self.params["handshake_timeout"], before_send=barrier)
+        exit_status, confirmed = self._end_process(cp)
+        drain.join(timeout=5)
+        self.record("events", {"kind": "attempt.process_ended", "cell_id": cid, "exit_status": exit_status if exit_status is not None else -1,
+                               "confirmed": int(confirmed), "peak_memory": cp.job.peak_memory(), "cpu_ms": cp.job.cpu_time_ms()})
+        cp.close()
+        a.ended = True
+        cause = self._classify(result, launcher, home, exit_status, bytes(tail), a.kill_reason)
+        for u in normalize.turn_usage({"_meta": (result.usage or {}).get("meta")}):
+            self.record("turn_usage", {"kind": "turn_usage", "run_id": self.plan["run_id"], "cell_id": cid, "attempt": 1,
+                                       "model": u.model, "uncached_input": u.uncached_input, "cache_read": u.cache_read,
+                                       "cache_write": u.cache_write, "output": u.output, "reasoning": u.reasoning})
+        launcher.clean(home)
+        if tail:
+            (cell_dir / "adapter-stderr-tail.log").write_bytes(bytes(tail))
+        outcome = "completed" if cause is None else ("timed_out" if cause is Cause.timed_out else "failed")
+        self._outcome(cell, outcome, cause, detail=result.detail[:300], stop_reason=result.stop_reason or "",
+                      session_id=result.session_id or "", permission_requests=result.permission_requests,
+                      exit_status=exit_status if exit_status is not None else -1,
+                      handshake_ms=int(result.handshake_seconds * 1000), turn_ms=int(result.turn_seconds * 1000))
+        self._archive(cell, cell_dir, launcher)
+
+    def _end_process(self, cp: procs.CellProcess) -> tuple[int | None, bool]:
+        """Graceful first (stdin closed, the adapter flushes and exits), then terminate and confirm."""
+        try:
+            cp.proc.stdin.close()
+        except OSError:
+            pass
+        deadline = time.monotonic() + self.cfg.end_grace
+        while cp.job.active() and time.monotonic() < deadline:
+            time.sleep(0.1)
+        confirmed = cp.terminate_and_confirm(timeout=self.params["kill_escalation"])
+        while not confirmed:  # a kill that never takes effect: logged once, retried, the slot stays held
+            log.error("kill unconfirmed", extra={"error_code": "HB-RUN-002", "pids": sorted(cp.job.pids())})
+            confirmed = cp.terminate_and_confirm(timeout=30)
+        try:
+            return cp.wait(timeout=10), confirmed
+        except subprocess.TimeoutExpired:
+            return None, confirmed
+
+    def _classify(self, result: driver.TurnResult, launcher: Launcher, home: Path, exit_status: int | None,
+                  tail: bytes, kill_reason: str | None) -> Cause | None:
+        """Precedence: provider/model error in the native record > budget kill > host sleep > memory > driver cause."""
+        errors = []
+        for path in launcher.records(home, result.session_id or ""):
+            errors.extend(launcher.read(path).errors)
+        scanned = normalize.classify(errors)
+        if scanned:
+            return scanned
+        if kill_reason == "timeout":
+            return Cause.timed_out
+        if kill_reason == "host_suspended":
+            return Cause.host_suspended
+        if exit_status in NO_MEMORY_STATUSES or OOM_SIGNATURE.search(tail):
+            return Cause.memory
+        if result.cause:
+            return result.cause
+        if result.stop_reason in COMPLETED_STOP_REASONS:
+            return None
+        return Cause.adapter_crash
+
+    def _archive(self, cell: dict, cell_dir: Path, launcher: Launcher) -> None:
+        cid = cell["cell_id"]
+        if not cell_dir.exists():
+            cell_dir.mkdir(parents=True)
+        result = archive.archive_cell(cell_dir, self.cfg.run_dir / "archive" / cid, attempt=1, exclude_names=launcher.credential_names)
+        for row in result.rows:
+            self.record("archive_files", {"kind": "archive_file", "run_id": self.plan["run_id"], "cell_id": cid, **row})
+        self.record("events", {"kind": "cell.archived", "cell_id": cid, "archive_attempt": 1, "archive_hash": result.archive_hash,
+                               "archive_bytes": result.total_bytes})
+        if archive.delete_after_verify(cell_dir, result.folder, result.rows):
+            self.record("events", {"kind": "cell.workspace_deleted", "cell_id": cid})
+        else:
+            self.record("events", {"kind": "cell.workspace_kept", "cell_id": cid, "reason": "sharing violation after retries"})
+
+
+def _keep_tail(stream, tail: bytearray, limit: int) -> None:
+    try:
+        for chunk in iter(lambda: stream.read1(65536), b""):
+            tail.extend(chunk)
+            if len(tail) > limit:
+                del tail[:-limit]
+    except (OSError, ValueError):
+        pass
+
+
+def configure_logging(run_dir: Path, trace_id: str) -> None:
+    """engine.log: JSON lines with trace context and error codes; no cell text, no credentials, no argv."""
+
+    class _Json(logging.Formatter):
+        def format(self, record: logging.LogRecord) -> str:
+            entity = getattr(record, "cell_id", "run")
+            body = {"ts": self.formatTime(record, "%Y-%m-%dT%H:%M:%S"), "severity_number": record.levelno,
+                    "severity_text": record.levelname, "trace_id": trace_id, "span_id": span_id(trace_id, entity, "engine"),
+                    "event": record.getMessage(), "error_code": getattr(record, "error_code", None), "cell_id": entity}
+            if record.exc_info:
+                body["exception.stacktrace"] = self.formatException(record.exc_info)
+            return json.dumps(body)
+
+    handler = logging.FileHandler(run_dir / "engine.log", encoding="utf-8")
+    handler.setFormatter(_Json())
+    log.addHandler(handler)
+    log.setLevel(logging.INFO)

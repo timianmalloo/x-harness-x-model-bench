@@ -186,13 +186,15 @@ class CellProcess:
         return self.job.active() == 0
 
     def close(self) -> None:
+        """Close the job first (kill-on-close ends any remaining tree), then the pipes. In that order a
+        close never blocks: closing a pipe that a reader thread is blocked on waits for the child to exit."""
+        self.job.close()
         for stream in (self.proc.stdin, self.proc.stdout, self.proc.stderr):
             if stream is not None:
                 try:
                     stream.close()
                 except OSError:
                     pass
-        self.job.close()
 
 
 def spawn(argv: list[str], cwd, env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL) -> CellProcess:

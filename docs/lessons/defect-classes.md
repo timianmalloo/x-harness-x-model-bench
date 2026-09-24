@@ -25,7 +25,7 @@ summary: >-
 3. Climb the control ladder (CI6) and record the highest rung that actually holds: *make it impossible* > *automated control* > *always-loaded instruction* > *knowledge doc* > *register entry only*.
 4. A control is not a control until it has been **observed failing** on the un-fixed code.
 
-**Status counts:** controlled 2 · partially-controlled 2 · uncontrolled 0 (project classes)
+**Status counts:** controlled 2 · partially-controlled 3 · uncontrolled 0 (project classes)
 **Recurrence since last review:** 4 instances of MOD-A in one session: the control was built after the fourth.
 
 ---
@@ -61,6 +61,16 @@ summary: >-
   - `2026-09-23` removing the coordinator from the model broke the witness invariant's name. `check_models.py` failed closed ("not defined in the specification"), and the name was fixed before the commit.
 - **Control:** renames use whole-word matching (`\b…\b`, as the later `container` → `proc` rename did). `check_models.py` fails on any undefined invariant, and `test_every_seeded_variant_targets_a_declared_property` checks the names. Observed failing, 2026-09-23.
 - **Status:** `controlled`
+
+### EDIT-B — Escape sequences corrupted by nested string generation
+- **Signature:** code or data written by a script that is itself inside a shell heredoc or a string literal. A `\n`, `\\` or `\\?\` in the intended text arrives as a real newline, a single backslash or a lost prefix.
+- **Why it survives:** the generating script runs without error; the damage shows only when the written file is parsed or run later.
+- **Instances:**
+  - `2026-09-23` `tests/fake_acp_agent.py`: `"\n"` became a line break, so every engine test failed.
+  - `2026-09-23` `tests/mutations/engine.json`: `\n` inside JSON strings became line breaks, making the JSON invalid.
+  - `2026-09-23` the fixture scrubber: a `\\?\` long-path prefix lost a backslash.
+- **Control:** source code and data files are changed with the Edit tool (exact text), never by a replacement script whose own literals contain escapes. After any scripted change, parse the result (`ast.parse`, `json.load`) before running anything. The suite fails at once on an unparseable module (observed 2026-09-23).
+- **Status:** `partially-controlled` (the rule is a working practice; the parse check is not yet automatic)
 
 ### INS-A — Progress hidden by buffered output
 - **Signature:** a long check writes to a log file that stays empty until the process exits, so nobody can tell which stage is slow or hung.

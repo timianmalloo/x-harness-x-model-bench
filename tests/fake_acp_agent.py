@@ -2,9 +2,11 @@
 
 Behaviour comes from the FAKE_ACP environment variable (JSON):
   {"mode": "ok" | "permission" | "hang_prompt" | "hang_handshake" | "eof_mid_turn" | "junk_lines" | "huge_line"
-          | "exit_before_prompt" | "provider_error" | "no_model_call",
+          | "exit_before_prompt" | "provider_error" | "no_model_call" | "no_memory",
    "record_dir": "<folder for a Claude-shaped native record>", "write_file": "<name written into cwd>",
-   "sleep": <seconds to run the turn>, "model": "<served model>"}
+   "sleep": <seconds to run the turn>, "model": "<served model>",
+   "usage": [<model_usage entries for the prompt result, as claude-agent-acp reports them>],
+   "hang": <hang after writing the record, any mode>, "flush_on_eof": <append a record row after stdin closes>}
 
 Messages it emits (each paired with a recorded real transcript or the ACP schema in
 tests/test_driver.py::test_fake_agent_message_types_are_paired): the initialize result, the session/new
@@ -54,6 +56,9 @@ def record(session_id: str, cwd: str, prompt: str) -> None:
 def main() -> int:
     if MODE == "exit_before_prompt":
         return 3
+    if MODE == "no_memory":
+        import ctypes
+        ctypes.windll.kernel32.ExitProcess(0xC0000017)
     if MODE == "junk_lines":
         for _ in range(25):
             OUT.write(b"Update available! Run npm i -g something\n")
@@ -80,7 +85,7 @@ def main() -> int:
             text = msg["params"]["prompt"][0]["text"]
             Path(os.getcwd(), ".fake-prompt.txt").write_text(text, encoding="utf-8", newline="")
             record(session_id, os.getcwd(), text)
-            if MODE == "hang_prompt":
+            if MODE == "hang_prompt" or CFG.get("hang"):
                 time.sleep(600)
             if MODE == "eof_mid_turn":
                 send({"jsonrpc": "2.0", "method": "session/update", "params": {"sessionId": session_id,
@@ -97,9 +102,17 @@ def main() -> int:
             time.sleep(CFG.get("sleep", 0))
             send({"jsonrpc": "2.0", "method": "session/update", "params": {"sessionId": session_id,
                   "update": {"sessionUpdate": "agent_message_chunk", "content": {"type": "text", "text": "DONE"}}}})
-            send({"jsonrpc": "2.0", "id": mid, "result": {"stopReason": "end_turn"}})
+            result = {"stopReason": "end_turn"}
+            if CFG.get("usage"):  # shaped like claude-agent-acp's prompt response (tests/fixtures/acp)
+                result.update({"usage": {"inputTokens": 1}, "_meta": {"quota": {"model_usage": CFG["usage"]}}})
+            send({"jsonrpc": "2.0", "id": mid, "result": result})
         elif mid is not None:
             send({"jsonrpc": "2.0", "id": mid, "error": {"code": -32601, "message": "method not found"}})
+    if CFG.get("flush_on_eof") and CFG.get("record_dir"):  # like a CLI that writes its last rows on exit
+        time.sleep(0.5)
+        for rec in Path(CFG["record_dir"]).glob("projects/**/*.jsonl"):
+            with rec.open("a", encoding="utf-8") as out:
+                out.write(json.dumps({"type": "flushed-on-exit"}) + "\n")
     return 0
 
 

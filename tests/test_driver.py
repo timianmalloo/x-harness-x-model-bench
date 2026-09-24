@@ -25,7 +25,7 @@ def _turn(tmp_path, prompt="Do the task.", before_send=None, acp_mode=None, hand
     cell = _spawn(tmp_path, fake=fake, **cfg)
     try:
         return driver.run_turn(cell, cwd=tmp_path, prompt=prompt, mode=acp_mode, handshake_timeout=handshake,
-                               before_send=before_send or (lambda: None))
+                               before_send=before_send or (lambda sid: None))
     finally:
         cell.terminate_and_confirm(timeout=10)
         cell.close()
@@ -75,7 +75,7 @@ def test_happy_turn_delivers_the_prompt_verbatim_and_ends_the_turn(tmp_path):
 
 @pytestmark_native
 def test_ack_barrier_failure_means_the_prompt_is_never_sent(tmp_path):  # T-ENG-ack (driver half)
-    def refuse():
+    def refuse(sid):
         raise OSError("HB-RUN-001: append failed")
 
     with pytest.raises(OSError):
@@ -134,7 +134,7 @@ def test_a_killed_turn_returns_promptly_with_eof(tmp_path):
     cell = _spawn(tmp_path, fake="hang_prompt")
     timer = threading.Timer(1.5, lambda: cell.terminate_and_confirm(timeout=10))
     timer.start()
-    result = driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=None, handshake_timeout=10, before_send=lambda: None)
+    result = driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=None, handshake_timeout=10, before_send=lambda sid: None)
     timer.join()
     cell.close()
     assert result.prompt_sent and result.stop_reason is None and result.eof

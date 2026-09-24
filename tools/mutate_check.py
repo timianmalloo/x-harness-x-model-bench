@@ -26,9 +26,12 @@ def main(argv: list[str]) -> int:
             continue
         try:
             path.write_text(original.replace(m["find"], m["replace"], 1), encoding="utf-8")
-            result = subprocess.run([sys.executable, "-m", "pytest", "-q", "-x", *m["tests"]], cwd=ROOT,
-                                    capture_output=True, text=True, check=False, timeout=600)
-            killed = result.returncode != 0
+            try:
+                result = subprocess.run([sys.executable, "-m", "pytest", "-q", "-x", *m["tests"]], cwd=ROOT,
+                                        capture_output=True, text=True, check=False, timeout=m.get("timeout", 180))
+                killed = result.returncode != 0
+            except subprocess.TimeoutExpired:  # the suite could not pass: the mutation is caught (as a hang)
+                killed = True
             print(f"{'killed  ' if killed else 'SURVIVED'} {m['name']}", flush=True)
             survivors += 0 if killed else 1
         finally:

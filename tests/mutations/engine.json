@@ -1,0 +1,129 @@
+[
+ {
+  "name": "record the outcome before the process is confirmed gone",
+  "file": "src/harness_bench/engine.py",
+  "find": "        exit_status, confirmed = self._end_process(cp)\n",
+  "replace": "        exit_status, confirmed = None, True\n",
+  "tests": [
+   "tests/test_engine.py::test_happy_run_completes_archives_and_deletes_every_cell",
+   "tests/test_engine.py::test_the_adapter_is_given_time_to_flush_its_record_before_the_kill"
+  ]
+ },
+ {
+  "name": "no ack barrier: prompt_sent not recorded before sending",
+  "file": "src/harness_bench/engine.py",
+  "find": "            self.record(\"events\", {\"kind\": \"cell.prompt_sent\", \"cell_id\": cid})\n",
+  "replace": "            pass\n",
+  "tests": [
+   "tests/test_engine.py::test_happy_run_completes_archives_and_deletes_every_cell"
+  ]
+ },
+ {
+  "name": "budget never enforced",
+  "file": "src/harness_bench/engine.py",
+  "find": "                self._check_budgets()\n",
+  "replace": "",
+  "tests": [
+   "tests/test_engine.py::test_budget_kill_is_timed_out_and_recorded_only_after_the_tree_is_gone"
+  ]
+ },
+ {
+  "name": "timeout outranks the provider error",
+  "file": "src/harness_bench/engine.py",
+  "find": "        if scanned:\n            return scanned\n        if kill_reason == \"timeout\":\n            return Cause.timed_out\n",
+  "replace": "        if kill_reason == \"timeout\":\n            return Cause.timed_out\n        if scanned:\n            return scanned\n",
+  "tests": [
+   "tests/test_engine.py::test_a_provider_error_outranks_a_budget_kill"
+  ]
+ },
+ {
+  "name": "parallelism off by one",
+  "file": "src/harness_bench/engine.py",
+  "find": "len(self.active) < self.params[\"parallelism\"]",
+  "replace": "len(self.active) <= self.params[\"parallelism\"]",
+  "tests": [
+   "tests/test_engine.py::test_parallelism_is_never_exceeded"
+  ]
+ },
+ {
+  "name": "launch after a stop",
+  "file": "src/harness_bench/engine.py",
+  "find": "while pending and not self.stopped and len(self.active)",
+  "replace": "while pending and len(self.active)",
+  "tests": [
+   "tests/test_engine.py::test_no_launch_after_a_stop_while_another_cell_still_runs"
+  ]
+ },
+ {
+  "name": "credentials not cleaned",
+  "file": "src/harness_bench/engine.py",
+  "find": "        launcher.clean(home)\n        if tail:",
+  "replace": "        if tail:",
+  "tests": [
+   "tests/test_engine.py::test_credentials_are_gone_after_every_cell_even_when_the_workspace_is_kept"
+  ]
+ },
+ {
+  "name": "memory status not detected",
+  "file": "src/harness_bench/engine.py",
+  "find": "        if exit_status in NO_MEMORY_STATUSES or OOM_SIGNATURE.search(tail):\n            return Cause.memory\n",
+  "replace": "",
+  "tests": [
+   "tests/test_engine.py::test_out_of_memory_exit_is_a_memory_failure"
+  ]
+ },
+ {
+  "name": "disk floor ignored",
+  "file": "src/harness_bench/engine.py",
+  "find": "                    self._stop_launching(\"HB-RUN-004\", \"free space below the floor\")\n",
+  "replace": "                    pass\n",
+  "tests": [
+   "tests/test_engine.py::test_disk_floor_stops_launching_before_any_cell"
+  ]
+ },
+ {
+  "name": "a started run is re-run",
+  "file": "src/harness_bench/engine.py",
+  "find": "        if (run_dir / \"events\").exists():\n",
+  "replace": "        if False:\n",
+  "tests": [
+   "tests/test_engine.py::test_a_started_run_is_refused"
+  ]
+ },
+ {
+  "name": "replay: outcome allowed while running",
+  "file": "src/harness_bench/lifecycle.py",
+  "find": "        if kind == \"cell.outcome\" and cell in running:\n",
+  "replace": "        if False:\n",
+  "tests": [
+   "tests/test_lifecycle_conformance.py"
+  ]
+ },
+ {
+  "name": "replay: second prompt allowed",
+  "file": "src/harness_bench/lifecycle.py",
+  "find": "        if kind in done and kind != \"cell.launch_intent\":\n",
+  "replace": "        if False:\n",
+  "tests": [
+   "tests/test_lifecycle_conformance.py"
+  ]
+ },
+ {
+  "name": "replay: delete before archive allowed",
+  "file": "src/harness_bench/lifecycle.py",
+  "find": "and \"cell.archived\" not in done:\n",
+  "replace": "and False:\n",
+  "tests": [
+   "tests/test_lifecycle_conformance.py"
+  ]
+ },
+ {
+  "name": "replay: unmapped transitions allowed",
+  "file": "src/harness_bench/lifecycle.py",
+  "find": "        if kind not in MAPPING:\n",
+  "replace": "        if False:\n",
+  "tests": [
+   "tests/test_lifecycle_conformance.py"
+  ]
+ }
+]
