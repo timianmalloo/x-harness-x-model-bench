@@ -54,7 +54,8 @@ def _system_message_markers(path: Path) -> list[str]:
     fixture-provenance fact, never a US-9 proof (design section 13)."""
     content = next(r["data"]["content"] for r in _load_events(path) if r["type"] == "system.message")
     match = re.search(r"markers=(\[.*\])>", content)
-    return ast.literal_eval(match.group(1)) if match else []
+    assert match, "no scrub annotation on system.message"
+    return ast.literal_eval(match.group(1))
 
 
 def _row(kind: str, data: dict, ts: str = "2026-01-01T00:00:00.000Z", **extra) -> dict:
