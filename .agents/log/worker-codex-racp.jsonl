@@ -1,1 +1,2 @@
 {"agent": "worker-codex-racp", "at": 1790289401.8636477, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-codex-racp", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-review-w1-acp-codex"}
+{"agent": "worker-codex-racp", "at": 1790290489.3920896, "kind": "session-end", "path": "-", "seq": 2, "session": "worker-codex-racp", "wi": "WI-0", "worktree": "x-harness-x-model-bench-review-w1-acp-codex"}

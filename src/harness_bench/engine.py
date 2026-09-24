@@ -61,8 +61,10 @@ class Launcher(Protocol):
 
     harness: str
     credential_names: set[str]
+    credential_kind: str  # what attempt.process_started records, as the launcher reports it (R-13)
     usage_source: str
     mode: str | None
+    set_model: bool  # run_turn gets model= (the ACP session/set_model pin) only when true (R-13)
 
     def check_build(self) -> dict: ...
     def seed(self, home: Path, model: str) -> None: ...
@@ -394,8 +396,11 @@ class Engine:
         drain = threading.Thread(target=_keep_tail, args=(cp.proc.stderr, tail, self.params["stderr_tail_bytes"]), daemon=True)
         drain.start()
 
+        result = driver.TurnResult()  # filled by run_turn; the barrier reads agent_version from it (R-28)
+
         def barrier(session_id: str | None) -> None:
-            self.record("events", {"kind": "attempt.session_opened", "cell_id": cid, "session_id": session_id or ""})
+            self.record("events", {"kind": "attempt.session_opened", "cell_id": cid, "session_id": session_id or "",
+                                   "agent_version": result.agent_version})
             self.record("events", {"kind": "cell.prompt_sent", "cell_id": cid})
 
         exit_status: int | None = None
@@ -404,10 +409,11 @@ class Engine:
             self.record("events", {"kind": "attempt.process_started", "cell_id": cid, "attempt": 1, "pid": cp.pid,
                                    "created_at": host.creation_time(cp.pid), "harness": launcher.harness,
                                    "build_version": build.get("version"), "build_sha256": build.get("sha256"),
-                                   "credential_kind": "subscription login (copied)", "network_mode": "unrestricted"})
+                                   "credential_kind": launcher.credential_kind, "network_mode": "unrestricted"})
             started = True
             result = driver.run_turn(cp, cwd=ws, prompt=self.plan["tasks"][cell["task"]]["prompt"], mode=launcher.mode,
-                                     handshake_timeout=self.params["handshake_timeout"], before_send=barrier)
+                                     handshake_timeout=self.params["handshake_timeout"], before_send=barrier,
+                                     model=cell["model"] if launcher.set_model else None, result=result)
         finally:
             with a.lock:
                 a.ended = True
@@ -416,7 +422,8 @@ class Engine:
                 drain.join(timeout=5)
                 ended = {"kind": "attempt.process_ended", "cell_id": cid, "exit_status": -1 if exit_status is None else exit_status,
                          "confirmed": int(confirmed), "peak_memory": _job_query(cp.job.peak_memory, None),
-                         "cpu_ms": _job_query(cp.job.cpu_time_ms, None)}  # null: not recorded, never a zeroed guess
+                         "cpu_ms": _job_query(cp.job.cpu_time_ms, None),  # null: not recorded, never a zeroed guess
+                         "acp_usage": result.usage}  # R-24: the adapter's usage and _meta halves verbatim, or null
             finally:
                 with a.lock:
                     cp.close()

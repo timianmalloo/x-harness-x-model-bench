@@ -1,0 +1,24 @@
+{
+ "format": "acp-recording/1",
+ "harness": "claude-code",
+ "model": "claude-opus-5-5",
+ "task": "X1",
+ "mode": null,
+ "prompt_sha256": "802dfde4c609549fd864c9b6cdc5c65bd5a5a2fe1f43246563d00c5e4dd9dc49",
+ "build": {
+  "version": "2.1.274",
+  "sha256": "4e4c1746aff835bb05e5ed14cda72d21ee6fbda4147aa99b3135718614da117e",
+  "adapter_version": "0.79.0",
+  "adapter_sha256": "c25adcceb38d3041a7ae8cd4c182da17a3c95dc0f1e141fbcca62505c8a9156d"
+ },
+ "captured_utc": "2026-09-24T21:50:07+00:00",
+ "result": {
+  "stop_reason": null,
+  "cause": "HB-CELL-105",
+  "session_id": "c27d2f8d-7edf-480e-887b-f57c07104a86",
+  "updates": 4,
+  "permission_requests": 0,
+  "prompt_sent": true,
+  "usage_reported": false
+ }
+}

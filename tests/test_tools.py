@@ -22,6 +22,8 @@ def _fake_tree(base: Path) -> Path:
         "@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe": "codex-binary",
         "@agentclientprotocol/codex-acp/dist/index.js": "adapter2",
         "@agentclientprotocol/codex-acp/package.json": json.dumps({"version": "1.12.0"}),
+        "@github/copilot-win32-x64/package.json": json.dumps({"version": "1.0.89-1"}),
+        "@github/copilot-win32-x64/copilot.exe": "copilot-binary",
     }
     for rel, text in files.items():
         f = nm / rel
@@ -46,6 +48,34 @@ def test_hash_covers_the_adapter_too(tmp_path):
     (tmp_path / "node_modules/@agentclientprotocol/claude-agent-acp/dist/index.js").write_text("changed", encoding="utf-8")
     after = tools.resolve(tmp_path)["claude-code"]
     assert after.adapter_sha256 != before.adapter_sha256
+
+
+def test_copilot_resolves_platform_build_without_adapter(tmp_path):
+    copilot = tools.resolve(_fake_tree(tmp_path))["copilot"]
+    assert copilot.version == "1.0.89-1"
+    assert copilot.exe.name == "copilot.exe"
+    assert len(copilot.sha256) == 64
+    assert copilot.adapter is None
+    assert copilot.record() == {"version": "1.0.89-1", "sha256": copilot.sha256,
+                                "adapter_version": None, "adapter_sha256": None}
+    tools.check_build(copilot, copilot.record())
+
+
+def test_copilot_missing_exe_is_hb_pre_007(tmp_path):
+    tree = _fake_tree(tmp_path)
+    (tree / "node_modules/@github/copilot-win32-x64/copilot.exe").unlink()
+    with pytest.raises(BenchError) as error:
+        tools.resolve(tree)
+    assert error.value.code == "HB-PRE-007"
+
+
+def test_copilot_binary_change_is_detected_at_cell_start(tmp_path):
+    tree = _fake_tree(tmp_path)
+    planned = tools.resolve(tree)["copilot"].record()
+    (tree / "node_modules/@github/copilot-win32-x64/copilot.exe").write_text("changed", encoding="utf-8")
+    with pytest.raises(tools.BuildChanged) as error:
+        tools.check_build(tools.resolve(tree)["copilot"], planned)
+    assert error.value.cause is Cause.build_changed
 
 
 def test_check_passes_on_the_planned_build(tmp_path):
@@ -82,6 +112,8 @@ def test_real_install_resolves_the_pinned_builds():
     dest = ROOT / ".tools" / "harness"
     tools.install(ROOT / "bench" / "tools", dest, timeout=900)
     builds = tools.resolve(dest)
-    assert builds["claude-code"].version == "2.1.274"
+    assert builds["claude-code"].version == "2.1.282"
     assert builds["codex"].version == "0.156.0"
+    assert builds["copilot"].version == "1.0.89-1"
+    assert builds["copilot"].adapter is None
     assert builds["codex"].exe.is_file() and builds["claude-code"].exe.is_file()

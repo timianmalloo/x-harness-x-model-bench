@@ -62,6 +62,30 @@ def _launcher(tmp_path, harness="codex"):
     return profiles.ProfileLauncher(profiles.load(ROOT, harness, credential_source=tmp_path / "c"), tools_dir, planned), tools_dir
 
 
+@pytest.mark.parametrize("harness", ["claude-code", "codex"])
+def test_the_launcher_reports_no_model_setter_and_a_copied_login(tmp_path, harness):  # R-13 condition 2
+    launcher, _ = _launcher(tmp_path, harness)
+    assert (launcher.set_model, launcher.credential_kind) == (False, "subscription login (copied)")
+
+
+@pytest.mark.native
+def test_a_real_profile_launcher_gets_the_engine_past_attempt_start(base, tmp_path):  # R-13: no AttributeError
+    """The engine reads set_model and credential_kind from every launcher; a real ProfileLauncher (only its argv
+    swapped for the fake agent, so no node is needed) must carry both."""
+    import os
+    import sys
+
+    from test_engine import FAKE, _plan, _run
+    launcher, _ = _launcher(tmp_path, "codex")
+    launcher.argv_env = lambda cell, home, tp: ([sys.executable, str(FAKE)], launcher.profile.cell_env(
+        dict(os.environ), home, launcher.build, cell["model"], tp))
+    p = _plan(n_cells=1)
+    _, events, _ = _run(base, p, launcher)
+    started = [e for e in events if e["kind"] == "attempt.process_started"]
+    assert [e["credential_kind"] for e in started] == ["subscription login (copied)"]
+    assert [e for e in events if e["kind"] == "attempt.session_opened"]  # the turn ran past the handshake
+
+
 def test_the_launcher_rehashes_the_build_at_every_cell_start(tmp_path):  # US-12, HB-CELL-115
     launcher, tools_dir = _launcher(tmp_path)
     assert launcher.check_build()["version"] == "0.156.0"

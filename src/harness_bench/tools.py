@@ -3,7 +3,8 @@
 Why: the report must name the build that was measured, and harness CLIs update themselves (the
 installed Claude Code went 2.1.280 -> 2.1.281 during the 2026-09-23 session). So cells never run a CLI
 from PATH: `bench/tools/package-lock.json` pins both ACP adapters, the Claude Code build bundled with
-the adapter's SDK, and Codex 0.156.0 (0.154.0 rejects gpt-6-sol, spike R11.5). `npm ci` installs them
+the adapter's SDK, Codex 0.156.0 (0.154.0 rejects gpt-6-sol, spike R11.5), and Copilot 1.0.89-1.
+`npm ci` installs them
 into `.tools/harness/`; each build is invoked by path and re-hashed at every cell start.
 """
 
@@ -29,6 +30,11 @@ LAYOUT = {
         "version_file": "@openai/codex/package.json", "version_key": "version",
         "exe": "@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe",
         "adapter": "@agentclientprotocol/codex-acp",
+    },
+    "copilot": {
+        "version_file": "@github/copilot-win32-x64/package.json", "version_key": "version",
+        "exe": "@github/copilot-win32-x64/copilot.exe",
+        "adapter": None,
     },
 }
 
@@ -63,9 +69,9 @@ class Build:
     version: str
     exe: Path
     sha256: str
-    adapter: Path  # the adapter's entry script, run with node
-    adapter_version: str
-    adapter_sha256: str
+    adapter: Path | None  # the adapter's entry script, run with node when present
+    adapter_version: str | None
+    adapter_sha256: str | None
 
     def record(self) -> dict:
         """What the plan freezes and every cell start re-checks."""
@@ -77,14 +83,18 @@ def resolve(tools_dir: Path) -> dict[str, Build]:
     nm = tools_dir / "node_modules"
     builds = {}
     for harness, spec in LAYOUT.items():
-        version_file, exe, adapter_dir = nm / spec["version_file"], nm / spec["exe"], nm / spec["adapter"]
-        adapter = adapter_dir / "dist" / "index.js"
-        missing = [p for p in (version_file, exe, adapter) if not p.is_file()]
+        version_file, exe = nm / spec["version_file"], nm / spec["exe"]
+        adapter_dir = nm / spec["adapter"] if spec["adapter"] is not None else None
+        adapter = adapter_dir / "dist" / "index.js" if adapter_dir is not None else None
+        required = (version_file, exe, adapter) if adapter is not None else (version_file, exe)
+        missing = [p for p in required if not p.is_file()]
         if missing:
             raise BenchError("HB-PRE-007", f"{harness}: missing {missing[0]}; run `bench tools install`")
         version = json.loads(version_file.read_text(encoding="utf-8"))[spec["version_key"]]
-        adapter_version = json.loads((adapter_dir / "package.json").read_text(encoding="utf-8"))["version"]
-        builds[harness] = Build(harness, version, exe, _sha_file(exe), adapter, adapter_version, _sha_tree(adapter_dir / "dist"))
+        adapter_version = (json.loads((adapter_dir / "package.json").read_text(encoding="utf-8"))["version"]
+                           if adapter_dir is not None else None)
+        adapter_sha256 = _sha_tree(adapter_dir / "dist") if adapter_dir is not None else None
+        builds[harness] = Build(harness, version, exe, _sha_file(exe), adapter, adapter_version, adapter_sha256)
     return builds
 
 

@@ -73,11 +73,17 @@ def served_models(source: str, ex: Extraction, usage: list[TurnUsage]) -> set[st
 
 
 def classify(errors: list[ProviderError]) -> Cause | None:
+    """One classifier for the native record and the driver's prompt errors (R-23). A status is evidence and decides
+    first: 408, 429 or 5xx is provider, any other status is model_unavailable; only without a status does the error
+    type decide (a provider type is provider)."""
     if not errors:
         return None
     for e in errors:
-        etype = e.error_type.lower()
-        if e.status in (408, 429) or (e.status is not None and e.status >= 500) or any(t in etype for t in PROVIDER_TYPES):
+        if e.status is not None:
+            provider = e.status in (408, 429) or e.status >= 500
+        else:
+            provider = any(t in e.error_type.lower() for t in PROVIDER_TYPES)
+        if provider:
             return Cause.provider
     return Cause.model_unavailable
 

@@ -866,6 +866,31 @@ window.DOCS_INDEX = {
       "sourceSha256": "ae8bad06929fef9c35c9441ae785431384dba3da6c77c4d9e1b9e8c594ed79c8"
     },
     {
+      "id": "review-w1-acp-codex",
+      "path": "docs/notes/review-w1-acp-codex.md",
+      "title": "W1-ACP cross-vendor join review",
+      "type": "decision-note",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-24",
+      "reviewSuggested": [],
+      "summary": "Codex review of W1-ACP at 48e4150: the recorded replay, model setter, nullable last update, and ruled engine scope pass focused checks; a 400 plus api_error classification conflicts with R-23.",
+      "tags": [
+        "coordination",
+        "review",
+        "acp"
+      ],
+      "links": [
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "08b1265b915e12b73fe5621627df931828825128e684c695262dd11c5fa642a6"
+    },
+    {
       "id": "review-w1-toolb-codex",
       "path": "docs/notes/review-w1-toolb-codex.md",
       "title": "W1-TOOLB cross-vendor join review",
@@ -913,7 +938,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "25759cc44a425597f24a70f2bb2ad71fe3c32715870dd5d6bbccdd8c70d3b97d"
+      "sourceSha256": "3d0867539e7a2ed2333605d1bf09f5df02ac40b27710fffd475caaf7198e6e70"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -1212,7 +1237,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "fb97043e54e541d5a71f28d4613a6d376e0ca79732b0755a863057344b783b61"
+      "sourceSha256": "90b7bbd0ac283847357f7795932ff5ce850d2ca64affe3f1af39ed5bb4d0b546"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -1394,7 +1419,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d8b4aad01c5ab5caca868e612a8d02039d02c40cbd4af7d6e599dca484feecd0"
+      "sourceSha256": "5839d74945bfb453ab1eea2faf0b611029fced6f3279547702bc71be99e7d77f"
     },
     {
       "id": "proposal-cross-harness-benchmarking",
@@ -1453,7 +1478,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "fb6329fabdc1f2ddd3b858cd9ac213a69bba46c649136cd882bda173669dbaf8"
+      "sourceSha256": "53ce579b4ef3f99190c6e974512b25a2a02fe850d9e209d0e134e844d2929021"
     },
     {
       "id": "coordination-phase1-finish",
@@ -2075,5 +2100,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "37b589cc9f5e7a773f526b3b1c8904b7d6c29a8fc8d9eb3d3ffbd60b1fd34351"
+  "graphSha256": "5c98080cfe1bdd1d94240be561f5c673515cf1b16e1b524b6a816749d4161b78"
 };
