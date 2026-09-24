@@ -376,10 +376,14 @@ class Engine:
         if tail:
             (cell_dir / "adapter-stderr-tail.log").write_bytes(bytes(tail))
         outcome = "completed" if cause is None else ("timed_out" if cause is Cause.timed_out else "failed")
+        # assume: the driver reports `last_update_seconds` (seam request req-01M38KX8503601BEP857749VVF to T3); until it
+        # does, last_update_ms is null (not recorded), never a guessed number.
+        last_update = getattr(result, "last_update_seconds", None)
         self._outcome(cell, outcome, cause, detail=result.detail[:300], stop_reason=result.stop_reason or "",
                       session_id=result.session_id or "", permission_requests=result.permission_requests,
                       exit_status=exit_status if exit_status is not None else -1,
-                      handshake_ms=int(result.handshake_seconds * 1000), turn_ms=int(result.turn_seconds * 1000))
+                      handshake_ms=int(result.handshake_seconds * 1000), turn_ms=int(result.turn_seconds * 1000),
+                      updates=result.updates, last_update_ms=None if last_update is None else int(last_update * 1000))
         self._archive(cell, cell_dir, launcher)
 
     def _attempt(self, a: _Active, cell: dict, launcher: Launcher, build: dict, argv: list[str], env: dict, ws: Path,
