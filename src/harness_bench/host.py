@@ -21,6 +21,7 @@ _k32.GetProcessTimes.argtypes = [wt.HANDLE] + [ctypes.POINTER(wt.FILETIME)] * 4
 _k32.GetExitCodeProcess.argtypes = [wt.HANDLE, ctypes.POINTER(wt.DWORD)]
 _k32.CloseHandle.argtypes = [wt.HANDLE]
 _k32.QueryUnbiasedInterruptTime.argtypes = [ctypes.POINTER(ctypes.c_ulonglong)]
+_k32.QueryUnbiasedInterruptTime.restype = wt.BOOL
 _k32.SetThreadExecutionState.argtypes = [wt.DWORD]
 _k32.SetThreadExecutionState.restype = wt.DWORD
 
@@ -35,6 +36,10 @@ class _MemoryStatus(ctypes.Structure):
                 ("ullAvailPhys", ctypes.c_ulonglong), ("ullTotalPageFile", ctypes.c_ulonglong),
                 ("ullAvailPageFile", ctypes.c_ulonglong), ("ullTotalVirtual", ctypes.c_ulonglong),
                 ("ullAvailVirtual", ctypes.c_ulonglong), ("ullAvailExtendedVirtual", ctypes.c_ulonglong)]
+
+
+_k32.GlobalMemoryStatusEx.argtypes = [ctypes.POINTER(_MemoryStatus)]
+_k32.GlobalMemoryStatusEx.restype = wt.BOOL
 
 
 def creation_time(pid: int) -> int:
@@ -68,7 +73,8 @@ def process_alive(pid: int, created: int) -> bool:
 def unbiased_seconds() -> float:
     """Seconds since boot, excluding time the host was suspended."""
     value = ctypes.c_ulonglong()
-    _k32.QueryUnbiasedInterruptTime(ctypes.byref(value))
+    if not _k32.QueryUnbiasedInterruptTime(ctypes.byref(value)):
+        raise ctypes.WinError(ctypes.get_last_error())
     return value.value / 1e7
 
 
@@ -93,5 +99,6 @@ def keep_awake(on: bool) -> None:
 def available_memory() -> int:
     status = _MemoryStatus()
     status.dwLength = ctypes.sizeof(status)
-    ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status))
+    if not _k32.GlobalMemoryStatusEx(ctypes.byref(status)):
+        raise ctypes.WinError(ctypes.get_last_error())
     return int(status.ullAvailPhys)
