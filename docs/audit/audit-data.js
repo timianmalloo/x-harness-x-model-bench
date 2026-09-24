@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T01:56:46Z",
+  "generated": "2026-09-24T02:53:12Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -429,6 +429,39 @@ window.AUDIT_DATA = {
       },
       "mode": "compiled",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M38N9FKM9P6VAYG6YW70HMBD",
+      "shortname": "T5 N5 spike: Codex host skill discovery",
+      "datetime": "2026-09-24T02:53:07Z",
+      "session": "T5",
+      "prompt": "Track T5 n5-spike: find an observed Codex 0.156 mechanism that removes user skill roots from a cell; make the US-13 canary green for Codex without xfail, or report the negative result within the timebox.",
+      "summary": "Read the installed Codex 0.156 binary and codex-acp adapter (Spike Protocol). Found candidate features.skip_host_skill_discovery, applied it via a red-first unit test (1678c43a), then proved by a real US-13 canary run that it does NOT stop ~/.agents/skills reaching a Codex cell (microsoft-foundry still leaked). Independently corroborated by a third-party issue testing the same flag plus other CLI flags on 0.154.0. Reverted the ineffective change; restored xfail(strict) with an updated reason. Wrote docs/notes/spike-n5-codex-skill-roots.md and docs/proof/findings-T5.md with the T5 fallback decision request (recommend option a). Gates green: ruff clean, 304 passed / 5 deselected.",
+      "kind": "skill",
+      "skill": "investigate",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/notes/spike-n5-codex-skill-roots.md",
+        "docs/proof/findings-T5.md",
+        "bench/profiles/codex.yaml",
+        "tests/test_profiles.py",
+        "tests/e2e/test_us13_canary.py"
+      ],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "Find an observed Codex 0.156 mechanism that removes ~/.agents/skills from a cell (N5); make the US-13 canary green for Codex without xfail.",
+      "done_when": "Codex canary green with xfail removed and Claude canary still green, or the research/track timebox expires with a written negative result.",
+      "tier": "T1",
+      "started_at": "2026-09-24T02:38:58Z",
+      "duration_seconds": 849.0,
+      "git": {
+        "sha": "5e4cf31d35dcf6beab58258a3e0a6ddddfb324d6",
+        "short": "5e4cf31d3",
+        "branch": "track/t5-n5-spike",
+        "pushed": null
+      }
     }
   ],
   "changes": [
