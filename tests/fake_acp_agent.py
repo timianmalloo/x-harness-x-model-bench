@@ -6,11 +6,18 @@ Behaviour comes from the FAKE_ACP environment variable (JSON):
    "record_dir": "<folder for a Claude-shaped native record>", "write_file": "<name written into cwd>",
    "sleep": <seconds to run the turn>, "model": "<served model>",
    "usage": [<model_usage entries for the prompt result, as claude-agent-acp reports them>],
-   "hang": <hang after writing the record, any mode>, "flush_on_eof": <append a record row after stdin closes>}
+   "hang": <hang after writing the record, any mode>, "flush_on_eof": <append a record row after stdin closes>,
+   "linger": <seconds to stay alive after stdin closes, like a CLI that is slow to exit>,
+   "stderr": "<text written to stderr at start>", "mkdir": "<a folder created relative to cwd at start>",
+   "handshake_delay": <seconds before answering initialize>,
+   "echo_credential": <at the prompt, echo record_dir/.credentials.json to stderr, a message chunk, echo.txt in cwd,
+                       and the prompt's error reply>,
+   "daemon": <at the prompt, start a detached grandchild that outlives the turn (a build server), trying breakaway
+              first; it writes its own "pid creation_time" to daemon.pid in cwd>}
 
 Messages it emits (each paired with a recorded real transcript or the ACP schema in
 tests/test_driver.py::test_fake_agent_message_types_are_paired): the initialize result, the session/new
-result, the set_mode / set_model results, session/update notifications (agent_message_chunk),
+result, the set_mode result, session/update notifications (agent_message_chunk),
 session/request_permission, and the session/prompt result with a stopReason.
 """
 
@@ -53,7 +60,38 @@ def record(session_id: str, cwd: str, prompt: str) -> None:
             f.write(json.dumps(r) + "\n")
 
 
+DAEMON = """
+import os, sys, time
+from harness_bench import host  # the venv's package: the same (pid, creation time) identity the engine uses
+pid = os.getpid()
+open(sys.argv[1] + ".tmp", "w").write(f"{pid} {host.creation_time(pid)}")
+os.replace(sys.argv[1] + ".tmp", sys.argv[1])
+time.sleep(120)
+"""
+
+
+def start_daemon() -> None:
+    """The daemon writes its own identity: sys.executable may be a venv launcher whose child is the real process."""
+    import subprocess
+
+    marker = Path(os.getcwd(), "daemon.pid")
+    detached = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
+    argv = [sys.executable, "-c", DAEMON, str(marker)]
+    try:  # breakaway is never allowed by the cell's job, so this must fail
+        subprocess.Popen(argv, creationflags=detached | subprocess.CREATE_BREAKAWAY_FROM_JOB, close_fds=True)
+    except OSError:
+        subprocess.Popen(argv, creationflags=detached, close_fds=True)
+    deadline = time.monotonic() + 20
+    while not marker.exists() and time.monotonic() < deadline:
+        time.sleep(0.05)
+
+
 def main() -> int:
+    if CFG.get("stderr"):
+        sys.stderr.write(CFG["stderr"])
+        sys.stderr.flush()
+    if CFG.get("mkdir"):
+        Path(os.getcwd(), CFG["mkdir"]).mkdir(parents=True, exist_ok=True)
     if MODE == "exit_before_prompt":
         return 3
     if MODE == "no_memory":
@@ -71,6 +109,7 @@ def main() -> int:
         msg = json.loads(raw)
         method, mid = msg.get("method"), msg.get("id")
         if method == "initialize":
+            time.sleep(CFG.get("handshake_delay", 0))
             if MODE == "hang_handshake":
                 time.sleep(600)
             send({"jsonrpc": "2.0", "id": mid, "result": {"protocolVersion": 1, "agentCapabilities": {},
@@ -78,13 +117,24 @@ def main() -> int:
         elif method == "session/new":
             send({"jsonrpc": "2.0", "id": mid, "result": {"sessionId": session_id,
                                                            "modes": {"currentModeId": "agent", "availableModes": [{"id": "agent"}, {"id": "agent-full-access"}]}}})
-        elif method in ("session/set_mode", "session/set_model"):
-            Path(os.getcwd(), f".fake-{method.split('/')[1]}").write_text(json.dumps(msg["params"]), encoding="utf-8")
+        elif method == "session/set_mode":
+            Path(os.getcwd(), ".fake-set_mode").write_text(json.dumps(msg["params"]), encoding="utf-8")
             send({"jsonrpc": "2.0", "id": mid, "result": {}})
         elif method == "session/prompt":
             text = msg["params"]["prompt"][0]["text"]
             Path(os.getcwd(), ".fake-prompt.txt").write_text(text, encoding="utf-8", newline="")
             record(session_id, os.getcwd(), text)
+            if CFG.get("echo_credential"):  # T-LOG-nosecret: an agent that prints its login everywhere it can
+                secret = (Path(CFG["record_dir"]) / ".credentials.json").read_text(encoding="utf-8")
+                sys.stderr.write(secret + "\n")
+                sys.stderr.flush()
+                Path(os.getcwd(), "echo.txt").write_text(secret, encoding="utf-8")
+                send({"jsonrpc": "2.0", "method": "session/update", "params": {"sessionId": session_id,
+                      "update": {"sessionUpdate": "agent_message_chunk", "content": {"type": "text", "text": secret}}}})
+                send({"jsonrpc": "2.0", "id": mid, "error": {"code": -32000, "message": secret}})
+                continue
+            if CFG.get("daemon"):  # T-JOB-daemon: like `dotnet build` leaving its build server behind
+                start_daemon()
             if MODE == "hang_prompt" or CFG.get("hang"):
                 time.sleep(600)
             if MODE == "eof_mid_turn":
@@ -113,6 +163,7 @@ def main() -> int:
         for rec in Path(CFG["record_dir"]).glob("projects/**/*.jsonl"):
             with rec.open("a", encoding="utf-8") as out:
                 out.write(json.dumps({"type": "flushed-on-exit"}) + "\n")
+    time.sleep(CFG.get("linger", 0))
     return 0
 
 

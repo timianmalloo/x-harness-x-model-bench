@@ -21,7 +21,7 @@
  {
   "name": "budget never enforced",
   "file": "src/harness_bench/engine.py",
-  "find": "                self._check_budgets()\n",
+  "find": "                    self._check_budgets()\n",
   "replace": "",
   "tests": [
    "tests/test_engine.py::test_budget_kill_is_timed_out_and_recorded_only_after_the_tree_is_gone"
@@ -48,8 +48,8 @@
  {
   "name": "launch after a stop",
   "file": "src/harness_bench/engine.py",
-  "find": "while pending and not self.stopped and len(self.active)",
-  "replace": "while pending and len(self.active)",
+  "find": "while pending and not self.stopped and not self.broken and len(self.active)",
+  "replace": "while pending and not self.broken and len(self.active)",
   "tests": [
    "tests/test_engine.py::test_no_launch_after_a_stop_while_another_cell_still_runs"
   ]
@@ -57,10 +57,11 @@
  {
   "name": "credentials not cleaned",
   "file": "src/harness_bench/engine.py",
-  "find": "        launcher.clean(home)\n        if tail:",
-  "replace": "        if tail:",
+  "find": "            launcher.clean(home)  # every end: a spawn failure, a kill, a ledger failure, a bug (T-CELL-credclean)\n",
+  "replace": "            pass\n",
   "tests": [
-   "tests/test_engine.py::test_credentials_are_gone_after_every_cell_even_when_the_workspace_is_kept"
+   "tests/test_engine.py::test_credentials_are_gone_after_every_cell_even_when_the_workspace_is_kept",
+   "tests/test_engine.py::test_credentials_are_gone_after_a_spawn_failure"
   ]
  },
  {
@@ -75,8 +76,8 @@
  {
   "name": "disk floor ignored",
   "file": "src/harness_bench/engine.py",
-  "find": "                    self._stop_launching(\"HB-RUN-004\", \"free space below the floor\")\n",
-  "replace": "                    pass\n",
+  "find": "                        self._stop_launching(\"HB-RUN-004\", \"free space below the floor\")\n",
+  "replace": "                        pass\n",
   "tests": [
    "tests/test_engine.py::test_disk_floor_stops_launching_before_any_cell"
   ]
@@ -91,6 +92,244 @@
   ]
  },
  {
+  "name": "T1-1 a turn that has ended is still killed by its budget",
+  "file": "src/harness_bench/engine.py",
+  "find": "            if a.proc is None or a.ended or a.kill_reason:\n",
+  "replace": "            if a.proc is None or a.kill_reason:\n",
+  "tests": [
+   "tests/test_engine.py::test_a_budget_expiring_after_the_turn_ended_is_not_a_timeout"
+  ]
+ },
+ {
+  "name": "T1-2 seed before argv_env",
+  "file": "src/harness_bench/engine.py",
+  "find": "        argv, env = launcher.argv_env(cell, home, traceparent)  # before seed: a failure here leaves no credential copy\n        try:\n            launcher.seed(home, cell[\"model\"])\n",
+  "replace": "        launcher.seed(home, cell[\"model\"])\n        argv, env = launcher.argv_env(cell, home, traceparent)\n        try:\n",
+  "tests": [
+   "tests/test_engine.py::test_a_failing_argv_env_leaves_no_credential_copy"
+  ]
+ },
+ {
+  "name": "T1-2 a failure after spawn skips ending the process",
+  "file": "src/harness_bench/engine.py",
+  "find": "        finally:\n            with a.lock:\n                a.ended = True\n",
+  "replace": "        except RuntimeError:\n            raise\n        if True:\n            with a.lock:\n                a.ended = True\n",
+  "tests": [
+   "tests/test_engine.py::test_a_failure_after_spawn_ends_the_process_and_cleans_the_credentials"
+  ]
+ },
+ {
+  "name": "T1-3 an archive failure after the outcome is not recorded",
+  "file": "src/harness_bench/engine.py",
+  "find": "                    self.record(\"events\", {\"kind\": \"cell.archive_failed\", \"cell_id\": cid, \"code\": code, \"detail\": detail})\n                    self.archive_failed.add(cid)\n",
+  "replace": "                    pass\n",
+  "tests": [
+   "tests/test_engine.py::test_an_archive_failure_is_recorded_and_the_run_is_incomplete",
+   "tests/test_engine.py::test_a_full_disk_during_the_archive_records_archive_failed_as_disk"
+  ]
+ },
+ {
+  "name": "T1-3 a run with a failed archive still reports complete",
+  "file": "src/harness_bench/engine.py",
+  "find": "            ended_whole = not self.broken and not self.archive_failed",
+  "replace": "            ended_whole = not self.broken",
+  "tests": [
+   "tests/test_engine.py::test_an_archive_failure_is_recorded_and_the_run_is_incomplete"
+  ]
+ },
+ {
+  "name": "T1-4 the engine stops draining once the ledger breaks",
+  "file": "src/harness_bench/engine.py",
+  "find": "                if self.broken:  # nothing more is recorded: kill every live turn, keep draining until the workers exit\n                    self._kill_all(\"aborted\")\n",
+  "replace": "                if self.broken:\n                    break\n",
+  "tests": [
+   "tests/test_engine.py::test_after_the_ledger_breaks_no_worker_blocks_forever"
+  ]
+ },
+ {
+  "name": "T1-5 no worker-side canonical check",
+  "file": "src/harness_bench/engine.py",
+  "find": "        ledger.canonical(ledger.stamp(record))  # a bad record fails its own worker (TypeError), never the run\n",
+  "replace": "",
+  "tests": [
+   "tests/test_engine.py::test_record_rejects_a_non_canonical_value_on_the_worker_side"
+  ]
+ },
+ {
+  "name": "T1-5 an unrecorded start gets a recorded end",
+  "file": "src/harness_bench/engine.py",
+  "find": "            if started:  # an unrecorded start has no recorded end\n",
+  "replace": "            if True:\n",
+  "tests": [
+   "tests/test_engine.py::test_a_bad_record_fails_its_cell_not_the_run"
+  ]
+ },
+ {
+  "name": "T1-6 turn_usage not summed per model",
+  "file": "src/harness_bench/engine.py",
+  "find": "            bucket[name] += getattr(u, name)\n",
+  "replace": "            bucket[name] = getattr(u, name)\n",
+  "tests": [
+   "tests/test_engine.py::test_turn_usage_is_summed_per_model_before_it_is_recorded"
+  ]
+ },
+ {
+  "name": "T1-7 launch_stopped appended more than once",
+  "file": "src/harness_bench/engine.py",
+  "find": "        if self.stopped:\n            return\n        self.stopped = code\n",
+  "replace": "        self.stopped = code\n",
+  "tests": [
+   "tests/test_engine.py::test_two_workers_asking_to_stop_give_one_launch_stopped",
+   "tests/test_engine.py::test_the_circuit_breaker_stops_launching_once"
+  ]
+ },
+ {
+  "name": "T1-8 HB-RUN-002 logged on every retry",
+  "file": "src/harness_bench/engine.py",
+  "find": "        wait = 1.0\n        while not confirmed:\n",
+  "replace": "        wait = 1.0\n        while not confirmed:\n            log.error(\"kill unconfirmed; retrying\", extra={\"error_code\": \"HB-RUN-002\"})\n",
+  "tests": [
+   "tests/test_engine.py::test_an_unconfirmed_kill_is_logged_once_and_retried_with_capped_backoff"
+  ]
+ },
+ {
+  "name": "T1-8 no backoff between kill retries",
+  "file": "src/harness_bench/engine.py",
+  "find": "            wait = min(wait * 2, KILL_RETRY_CAP)\n",
+  "replace": "            wait = 30\n",
+  "tests": [
+   "tests/test_engine.py::test_an_unconfirmed_kill_is_logged_once_and_retried_with_capped_backoff"
+  ]
+ },
+ {
+  "name": "T1-8b a failed job query escapes the kill path",
+  "file": "src/harness_bench/engine.py",
+  "find": "    except OSError:\n        return failed\n",
+  "replace": "    except ValueError:\n        return failed\n",
+  "tests": [
+   "tests/test_engine.py::test_a_failing_job_query_is_an_unconfirmed_kill_not_a_crash",
+   "tests/test_engine.py::test_job_queries_failing_through_the_procs_seam_hold_the_slot_until_confirmed"
+  ]
+ },
+ {
+  "name": "T1-9 engine.log drops the extras",
+  "file": "src/harness_bench/engine.py",
+  "find": "            body.update({k: getattr(record, k) for k in LOG_EXTRAS if hasattr(record, k)})\n",
+  "replace": "",
+  "tests": [
+   "tests/test_engine.py::test_engine_log_keeps_the_whitelisted_extras_only"
+  ]
+ },
+ {
+  "name": "T1-9 engine.log keeps every extra (no whitelist)",
+  "file": "src/harness_bench/engine.py",
+  "find": "            body.update({k: getattr(record, k) for k in LOG_EXTRAS if hasattr(record, k)})\n",
+  "replace": "            body.update({k: v for k, v in vars(record).items() if k not in body and k not in (\"args\", \"exc_info\", \"msg\")})\n",
+  "tests": [
+   "tests/test_engine.py::test_engine_log_keeps_the_whitelisted_extras_only"
+  ]
+ },
+ {
+  "name": "T1-10 no heartbeat while grading",
+  "file": "src/harness_bench/engine.py",
+  "find": "with _beating(lock, self.cfg.loop_interval):",
+  "replace": "with _beating(lock, 3600):",
+  "tests": [
+   "tests/test_engine.py::test_the_heartbeat_runs_during_the_grading_hook"
+  ]
+ },
+ {
+  "name": "T1-11 updates and last_update_ms not recorded",
+  "file": "src/harness_bench/engine.py",
+  "find": "updates=result.updates, last_update_ms=None if last_update is None else int(last_update * 1000))",
+  "replace": "updates=0, last_update_ms=None)",
+  "tests": [
+   "tests/test_engine.py::test_the_outcome_records_updates_and_last_update_ms"
+  ]
+ },
+ {
+  "name": "T1-12 a full disk is not recognised",
+  "file": "src/harness_bench/engine.py",
+  "find": "    return isinstance(exc, OSError) and (exc.errno == errno.ENOSPC or",
+  "replace": "    return False and (exc.errno == errno.ENOSPC or",
+  "tests": [
+   "tests/test_engine.py::test_a_full_disk_while_building_the_workspace_is_a_disk_failure",
+   "tests/test_engine.py::test_a_full_disk_during_the_archive_records_archive_failed_as_disk"
+  ]
+ },
+ {
+  "name": "T1-12 the disk floor ignores run_dir's volume",
+  "file": "src/harness_bench/engine.py",
+  "find": "min(_free_bytes(self.cfg.cells_root), _free_bytes(run_dir))",
+  "replace": "_free_bytes(self.cfg.cells_root)",
+  "tests": [
+   "tests/test_engine.py::test_the_disk_floor_also_checks_the_run_dirs_volume"
+  ]
+ },
+ {
+  "name": "T1-12 a failed stderr-tail write costs the cell",
+  "file": "src/harness_bench/engine.py",
+  "find": "            except OSError as exc:\n                log.warning(",
+  "replace": "            except FileNotFoundError as exc:\n                log.warning(",
+  "tests": [
+   "tests/test_engine.py::test_the_outcome_is_recorded_before_the_best_effort_files"
+  ]
+ },
+ {
+  "name": "T1-13 a held run lock reported as teardown refused",
+  "file": "src/harness_bench/engine.py",
+  "find": "code=\"HB-RUN-005\")",
+  "replace": "code=\"HB-RUN-003\")",
+  "tests": [
+   "tests/test_engine.py::test_a_second_engine_on_a_held_run_is_refused_with_run_lock_held"
+  ]
+ },
+ {
+  "name": "T1-14 the outcome's detail logged (a credential leak into engine.log)",
+  "file": "src/harness_bench/engine.py",
+  "find": "        return self.record(\"events\", row)  # the engine thread counts it",
+  "replace": "        log.warning(\"cell outcome\", extra={\"cell_id\": cell[\"cell_id\"], \"detail\": str(extra.get(\"detail\"))})\n        return self.record(\"events\", row)  # the engine thread counts it",
+  "tests": [
+   "tests/test_engine.py::test_an_echoed_credential_reaches_the_archive_but_never_engine_log_or_status"
+  ]
+ },
+ {
+  "name": "T1-15 a host sleep is ignored (T-ENG-suspend)",
+  "file": "src/harness_bench/engine.py",
+  "find": "                        self._kill_all(\"host_suspended\")\n",
+  "replace": "                        pass\n",
+  "tests": [
+   "tests/test_engine.py::test_a_host_sleep_mid_turn_kills_the_cell_as_host_suspended"
+  ]
+ },
+ {
+  "name": "T1-15 the job is not ended at end_turn (T-JOB-daemon)",
+  "file": "src/harness_bench/engine.py",
+  "find": "        confirmed = _confirm(cp, self.params[\"kill_escalation\"])\n",
+  "replace": "        confirmed = True\n",
+  "tests": [
+   "tests/test_engine.py::test_a_build_server_left_by_the_turn_is_gone_before_the_job_is_closed"
+  ]
+ },
+ {
+  "name": "T1-15 a full disk during the archive is not a disk code (T-ARC-full)",
+  "file": "src/harness_bench/engine.py",
+  "find": "    return Cause.disk.code if _disk_full(exc) else Cause.unclassified.code\n",
+  "replace": "    return Cause.unclassified.code\n",
+  "tests": [
+   "tests/test_engine.py::test_a_full_disk_during_the_archive_records_archive_failed_as_disk"
+  ]
+ },
+ {
+  "name": "T1-16 the engine does not consult the lifecycle table",
+  "file": "src/harness_bench/engine.py",
+  "find": "        if fact == \"events\":  # the lifecycle table is the one source of the transitions the engine may write\n            lifecycle.check_writer(record.get(\"kind\"), \"engine\")\n",
+  "replace": "",
+  "tests": [
+   "tests/test_lifecycle_conformance.py::test_the_engine_consults_the_table_and_writes_only_its_own_rows"
+  ]
+ },
+ {
   "name": "replay: outcome allowed while running",
   "file": "src/harness_bench/lifecycle.py",
   "find": "        if kind == \"cell.outcome\" and cell in running:\n",
@@ -102,8 +341,8 @@
  {
   "name": "replay: second prompt allowed",
   "file": "src/harness_bench/lifecycle.py",
-  "find": "        if kind in done and kind != \"cell.launch_intent\":\n",
-  "replace": "        if False:\n",
+  "find": "        if kind in done:  #",
+  "replace": "        if False:  #",
   "tests": [
    "tests/test_lifecycle_conformance.py"
   ]
@@ -111,8 +350,8 @@
  {
   "name": "replay: delete before archive allowed",
   "file": "src/harness_bench/lifecycle.py",
-  "find": "and \"cell.archived\" not in done:\n",
-  "replace": "and False:\n",
+  "find": "    \"cell.workspace_deleted\": Transition(\"DeleteWorkspace\", \"engine\", after=(\"cell.archived\",),",
+  "replace": "    \"cell.workspace_deleted\": Transition(\"DeleteWorkspace\", \"engine\", after=(),",
   "tests": [
    "tests/test_lifecycle_conformance.py"
   ]
@@ -120,8 +359,44 @@
  {
   "name": "replay: unmapped transitions allowed",
   "file": "src/harness_bench/lifecycle.py",
-  "find": "        if kind not in MAPPING:\n",
+  "find": "        if t is None:\n            raise ConformanceError(f\"{UNMAPPED}",
+  "replace": "        if False:\n            raise ConformanceError(f\"{UNMAPPED}",
+  "tests": [
+   "tests/test_lifecycle_conformance.py"
+  ]
+ },
+ {
+  "name": "replay: order prerequisites ignored",
+  "file": "src/harness_bench/lifecycle.py",
+  "find": "        if any(k not in done for k in t.after):\n",
   "replace": "        if False:\n",
+  "tests": [
+   "tests/test_lifecycle_conformance.py"
+  ]
+ },
+ {
+  "name": "replay: order exclusions ignored",
+  "file": "src/harness_bench/lifecycle.py",
+  "find": "        if any(k in done for k in t.not_after):\n",
+  "replace": "        if False:\n",
+  "tests": [
+   "tests/test_lifecycle_conformance.py"
+  ]
+ },
+ {
+  "name": "replay: launch after a stop allowed",
+  "file": "src/harness_bench/lifecycle.py",
+  "find": "            if stopped:\n                fail(cell, NO_LAUNCH_AFTER_STOP",
+  "replace": "            if False:\n                fail(cell, NO_LAUNCH_AFTER_STOP",
+  "tests": [
+   "tests/test_lifecycle_conformance.py"
+  ]
+ },
+ {
+  "name": "replay: the engine may write a grading row",
+  "file": "src/harness_bench/lifecycle.py",
+  "find": "    if t is None or t.writer != writer:\n",
+  "replace": "    if t is None:\n",
   "tests": [
    "tests/test_lifecycle_conformance.py"
   ]

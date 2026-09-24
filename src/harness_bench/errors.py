@@ -51,6 +51,7 @@ RUN_CODES: dict[str, str] = {
     "HB-RUN-002": "a kill unconfirmed after 5 minutes (retries continue; the slot stays held)",
     "HB-RUN-003": "teardown refused: the run's lock is held by a live engine",
     "HB-RUN-004": "free space below the floor: launching stopped, running cells continue",
+    "HB-RUN-005": "run lock held: another engine is running this run",
     "HB-LED-001": "torn tail repaired by its writer",
     "HB-LED-002": "chain or seal break",
     "HB-LED-003": "duplicate key or second outcome",
