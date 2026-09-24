@@ -202,6 +202,16 @@
   ]
  },
  {
+  "name": "T1-8b a failed job query escapes the kill path",
+  "file": "src/harness_bench/engine.py",
+  "find": "    except OSError:\n        return failed\n",
+  "replace": "    except ValueError:\n        return failed\n",
+  "tests": [
+   "tests/test_engine.py::test_a_failing_job_query_is_an_unconfirmed_kill_not_a_crash",
+   "tests/test_engine.py::test_job_queries_failing_through_the_procs_seam_hold_the_slot_until_confirmed"
+  ]
+ },
+ {
   "name": "T1-9 engine.log drops the extras",
   "file": "src/harness_bench/engine.py",
   "find": "            body.update({k: getattr(record, k) for k in LOG_EXTRAS if hasattr(record, k)})\n",
@@ -295,7 +305,7 @@
  {
   "name": "T1-15 the job is not ended at end_turn (T-JOB-daemon)",
   "file": "src/harness_bench/engine.py",
-  "find": "        confirmed = cp.terminate_and_confirm(timeout=self.params[\"kill_escalation\"])\n",
+  "find": "        confirmed = _confirm(cp, self.params[\"kill_escalation\"])\n",
   "replace": "        confirmed = True\n",
   "tests": [
    "tests/test_engine.py::test_a_build_server_left_by_the_turn_is_gone_before_the_job_is_closed"
@@ -331,8 +341,8 @@
  {
   "name": "replay: second prompt allowed",
   "file": "src/harness_bench/lifecycle.py",
-  "find": "        if kind in done and kind != \"cell.launch_intent\":\n",
-  "replace": "        if False:\n",
+  "find": "        if kind in done:  #",
+  "replace": "        if False:  #",
   "tests": [
    "tests/test_lifecycle_conformance.py"
   ]
