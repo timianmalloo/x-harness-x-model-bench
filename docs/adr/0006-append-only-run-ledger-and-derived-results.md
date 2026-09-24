@@ -21,6 +21,7 @@ summary: >-
 # ADR-0006: A hash-chained, append-only record per run; every result is a derived view
 
 - **Status:** Proposed
+- **Amended (2026-09-24, ruling R-26; design `design-phase2-copilot-profile` section 3):** the `model_calls` grain is re-declared as one native usage report per model, with an additive `requests` count and `model` in the key; `tool_calls` gains `outcome_code` (ruling R-27). See "Amendment 1" under Facts and their grains.
 - **Date:** 2026-09-23 (revised after council round 1)
 - **Deciders:** @timianmalloo; authored by Claude Code with the Data & Persistence Architect lens
 - **Context spec/architecture:** `docs/specs/harness-bench.md` (conceptual model; US-4, US-17–US-19, US-22–US-27, US-47, US-52)
@@ -62,14 +63,36 @@ The domain standard defaults to dimensions plus append-only facts (DM5), with an
 | Fact | Grain: one row is exactly one … | Key | Measures and additivity | Writer |
 | --- | --- | --- | --- | --- |
 | `events` | state transition of one run-scoped entity: the run, a cell, an attempt, a decision request, a control input, a grading pass, or the ledger itself (`ledger.tail_repaired`, `segment.sealed`). Its states are those of `models/run_lifecycle.tla`. | `(run_id, segment_id, seq)`, plus `entity_kind`, `entity_id` and `recorded_at` | none. Rows carry the transition's attributes: e.g. `attempt.process_started` holds the executed harness build and its hash, the PID and process creation time; `attempt.session_opened` the native session id; `cell.archived` the `archive_attempt` and `archive_hash`. | run engine (its engine thread only); grade process for grading passes |
-| `model_calls` | model request made by one principal (a cell, or the model gateway), as read by one extraction | `(run_id, extraction_id, principal, native_session_id, native_ordinal)`; `cell_id` when the principal is a cell. `extraction_id` is the normaliser build hash; `native_ordinal` is the 1-based line number in the native file, unique per file. | Tokens in **disjoint buckets**: uncached input, cache read, cache write, output (additive). Reasoning is a component of output, never added to it. Start and end timestamps (not durations). Native billing units (additive). | grading pass (normaliser) |
-| `tool_calls` | tool invocation inside one cell, as read by one extraction | `(run_id, extraction_id, cell_id, native_session_id, native_ordinal)` | start and end timestamps | grading pass (normaliser) |
+| `model_calls` | model's token usage in one native usage report, by one principal (a cell, or the model gateway), as read by one extraction (Amendment 1; was "model request") | `(run_id, extraction_id, principal, native_session_id, native_ordinal, model)`; `cell_id` when the principal is a cell. `extraction_id` is the normaliser build hash; `native_ordinal` is the 1-based line number of the report in the native file; `model` separates the entries of one report | Tokens in **disjoint buckets**: uncached input, cache read, cache write, output (additive). Reasoning is a component of output, never added to it. `requests`: the number of model requests the report covers (additive; 1 when absent). Start and end timestamps (not durations), only when `requests` is 1. Native billing units (additive). | grading pass (normaliser) |
+| `tool_calls` | tool invocation inside one cell, as read by one extraction | `(run_id, extraction_id, cell_id, native_session_id, native_ordinal)` | start and end timestamps; `ok` (the native success flag, null when not recorded); `outcome_code` (the native error code of a failed call, e.g. Copilot `denied`; null on success or when not recorded) (Amendment 1) | grading pass (normaliser) |
 | `archive_files` | file or link in one archive attempt of one cell | `(run_id, cell_id, archive_attempt, path)` | size (additive); sha256; kind (file or link, never followed) | archiver, through the engine thread |
 | `scores` | value of one metric for one cell in one grading pass | `(run_id, grading_id, cell_id, metric_id)` | value (non-additive); NULL with a reason when NOT_RECORDED; the `archive_attempt` graded and the `extraction_id` read (references by identity; the archive hash is not repeated) | grade process |
 | `verdict_uses` | use of a cached verdict or match by one grading pass | `(run_id, grading_id, cell_id, item_id, judge_or_matcher)` | cache hit (yes/no) | grade process |
 | `egress_events` | scan-and-send attempt | `(scope_id, seq)`, where the scope is a run or a report (a report over two runs publishes once) | payload hash; destination; purpose; result: sent, withheld or quarantined | egress gate |
 
 A grading pass is an entity in `events` (`grading.started` / `grading.completed`), carrying `grading_id`, catalog version and grader build hash. The **current score** of a cell for a catalog version is the value from the latest completed grading pass for that catalog version: the greatest `recorded_at` on `grading.completed`, tie-broken by `grading_id`. This rule is defined once, in the projection. A re-grade (after a judge outage or a grader fix) is a new grading pass. Nothing is overwritten.
+
+**Amendment 1 (2026-09-24, ruling R-26 adopting the Data & Persistence Architect's C1–C3; R-27 for `tool_calls`).**
+- **Grain.** One `model_calls` row is exactly one model's token usage in one native usage report, by one principal, as read by one extraction.
+  - For Claude Code and Codex, a report is one model request: the phase-1 rows, unchanged.
+  - For Copilot, a report is the per-model entry in the **last** `session.shutdown` event's `data.modelMetrics` in `session-state/<id>/events.jsonl`. A per-cell Copilot ACP home writes no per-request usage (capture window 1).
+- **`requests`.** An additive count of the model requests one row covers:
+  - Claude Code and Codex: 1;
+  - Copilot: `modelMetrics.<model>.requests.count`;
+  - a row written before this amendment, which has no field: 1.
+- **`start` and `end`** are set only when `requests` is 1. Otherwise they are null, and model time is NOT_RECORDED rather than a span that includes tool time.
+- **A row count is not a call count.** The number of model calls of a cell is Σ `requests` over its current extraction, read by one compute reader. A guard test asserts that no view counts rows.
+- **Key.** Two models in one Copilot `session.shutdown` share its line number, so `model` joins the key: `(…, native_session_id, native_ordinal, model)`.
+  - One report has at most one entry per model, because `modelMetrics` is keyed by model id.
+  - For Claude Code and Codex, a line names one model, so the key is unchanged in effect.
+  - Rejected: a packed ordinal (`line × 1000 + index`), which is a synthetic key hidden in a native field; and a new sub-ordinal column, which adds a field for what `model` already identifies.
+- **`tool_calls.outcome_code`.** The native error code of a failed tool call (Copilot `tool.execution_complete.error.code`, for example `denied` when a hook refuses the call). Null on success, or when the harness records no code. It is the signal that sees a native permission denial below ACP (US-14; R-27).
+- **Migration.** The ledgers are append-only. `requests` is absent from phase-1 rows and reads as 1; `outcome_code` is absent and reads as null. A phase-1 ledger has one model per line, so it satisfies the new key. No rewrite and no backfill.
+- **Writers and readers.**
+  - The grading pass (normaliser) stays the only writer.
+  - `ModelCall.requests` and its docstring stating this grain live in `telemetry/__init__.py` (W1-COP-R).
+  - `normalize.model_call_rows` and `tool_call_rows` emit `requests` and `outcome_code` (W1-COP-R).
+  - The `views.py` key tuple (`views.py:33`), the `calls_per_cell` compute reader and the guard test belong to W1-COP-I, which wires row 4.
 
 **Extractions are written once.** A grading pass writes `model_calls` and `tool_calls` for a cell only if no completed pass already holds that cell's `extraction_id`; it checks this under `grade.lock`. A re-grade with the same normaliser build therefore reuses the existing rows, and its scores name that `extraction_id`. A normaliser fix gives a new `extraction_id` and new rows beside the old. **The current extraction** of a cell, for a catalog version, is the one named by its current scores for that version, so totals never sum two extractions.
 

@@ -10,7 +10,8 @@ links:
   - { to: adr-0006-results-data-model, rel: relates-to }
   - { to: design-phase1-walking-skeleton, rel: relates-to }
 review-by: "2027-03-22"
-review-suggested: []
+review-suggested:
+  - { by: adr-0006-results-data-model, on: 2026-09-24, reason: "Amendment 1: model_calls grain re-declared per native usage report with requests and model in the key; tool_calls.outcome_code (R-26, R-27)" }
 summary: >-
   The derived results views (ADR-0006) are pure-Python functions over the verified fact dataclasses; no
   SQL engine (DuckDB or sqlite3) is used. Blast radius: views.py only; the facts on disk are unchanged.

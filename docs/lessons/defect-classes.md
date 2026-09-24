@@ -210,6 +210,15 @@ summary: >-
 - **Control:** upstream pack fixes (R-11, track W1-PACK-2). Until they land: Grok slices of 12 minutes or less, Agy held, and each slice records `total_output_bytes`, `extension_notifications` and wall clock.
 - **Status:** `uncontrolled` (the fix is in flight upstream)
 
+### REG-A: a squash merge drops lines from an append-only register
+- **Signature:** `git merge --squash` resolves a `register`-class file (`docs/audit/*.jsonl`, `docs/notes/rulings.md`) as an ordinary text merge, not through the `coord-register` union driver. Lines appended on `main` after the branch point are silently removed from the staged result.
+- **Why it survives:** the merge reports "Automatic merge went well"; the lost lines are the newest ones, so nobody reads them at the time; the derived audit view is regenerated from whatever was staged.
+- **Instances:**
+  - `2026-09-24`, the W1-COP-D join: a squash merge was needed to keep an unscrubbed fixture blob out of `main` (R-30 c3). The staged `audit-log.jsonl` deleted 2 entries of `main`'s (the Codex W1-ACP review compile). The Leader caught it in `git diff --cached --numstat` (a non-zero deletion count on a register) before committing.
+- **Sweep:** the only squash merge in this plan so far; every other join is `--no-ff`, which runs the registered driver.
+- **Control:** at any squash join, rebuild each register as the union of `HEAD`'s lines plus the staged new lines (the Leader's `union_register.py` step), then assert `git diff --cached --numstat -- <register>` shows 0 deletions before committing. Not yet a test or gate. The upgrade trigger is a second squash join, at which point it becomes a join-gate check.
+- **Status:** `observed` (the procedure is followed by the Leader; no automated gate yet)
+
 ---
 
 ## Inherited classes (seeded from the pack)

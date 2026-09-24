@@ -393,7 +393,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3bc0d51e529542e271b8ad4d63d45d3c1a58d890cebb56ed9d56829f9e4af309"
+      "sourceSha256": "2dd7fc470bb7405cc0beef47fc5422391e2a0013274d4ff75d2654722796b2b2"
     },
     {
       "id": "adr-0007-run-engine",
@@ -810,7 +810,13 @@ window.DOCS_INDEX = {
       "owner": "@timianmalloo",
       "phase": "Phase 1 · walking skeleton",
       "reviewBy": "2027-03-22",
-      "reviewSuggested": [],
+      "reviewSuggested": [
+        {
+          "by": "adr-0006-results-data-model",
+          "on": "2026-09-24",
+          "reason": "Amendment 1: model_calls grain re-declared per native usage report with requests and model in the key; tool_calls.outcome_code (R-26, R-27)"
+        }
+      ],
       "summary": "The derived results views (ADR-0006) are pure-Python functions over the verified fact dataclasses; no SQL engine (DuckDB or sqlite3) is used. Blast radius: views.py only; the facts on disk are unchanged.",
       "tags": [
         "decision-note",
@@ -828,7 +834,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "41027ae770a5fe7fa2980604d3d89240ff3f55594bdda9be39dbbcf2716aeafc"
+      "sourceSha256": "18cc58d385da432e2f2bee6a95d654c91b7ad717750e5ae538b636fc3a83f514"
     },
     {
       "id": "note-20260923-token-source",
@@ -857,7 +863,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "246f0a3686348504280a109df10b0f4f82f65129cbce930623d995d7643acada"
+      "sourceSha256": "ae8bad06929fef9c35c9441ae785431384dba3da6c77c4d9e1b9e8c594ed79c8"
     },
     {
       "id": "review-w1-toolb-codex",
@@ -907,7 +913,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4bc9e17062aea5d57a67ee533fd0d81f89401ca5d7048d57645eefac7867c705"
+      "sourceSha256": "25759cc44a425597f24a70f2bb2ad71fe3c32715870dd5d6bbccdd8c70d3b97d"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -918,7 +924,13 @@ window.DOCS_INDEX = {
       "owner": "@timianmalloo",
       "phase": "Phase 1 · walking skeleton (S-05, S-06, S-07, S-08a/b/f, S-10 skeleton)",
       "reviewBy": "2027-03-22",
-      "reviewSuggested": [],
+      "reviewSuggested": [
+        {
+          "by": "adr-0006-results-data-model",
+          "on": "2026-09-24",
+          "reason": "Amendment 1: model_calls grain re-declared per native usage report with requests and model in the key; tool_calls.outcome_code (R-26, R-27)"
+        }
+      ],
       "summary": "The detailed design of the thinnest end-to-end path: prose → confirmed plan → run engine → native cells, each in its own git working copy and Job Object, driven over ACP (Claude, Codex) → verified archive → telemetry from native records → correctness and cost graded in grading working copies → pure projections → CLI table and a minimal HTML report. Version 4: cells run natively in their own working copies and Job Objects (ADR-0013); validity-first; the engine's launch, kill and record order matched to the checked lifecycle model.",
       "tags": [
         "benchmark",
@@ -973,7 +985,80 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ab894f88dae0bfc912c33f7df312784c5d422555a6c0793d9bfc5295e6c3ba47"
+      "sourceSha256": "78ab25577cbd309b85a4b28378ba4ee6886a2a248a3a6b16b696366e5d62d097"
+    },
+    {
+      "id": "design-phase2-copilot-profile",
+      "path": "docs/design/phase2-copilot-profile.md",
+      "title": "Design: the Copilot harness profile (phase 2, to-do rows 1-5)",
+      "type": "design",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 2 · smoke on all harnesses (wave 1: the Copilot-vs-Codex capability)",
+      "reviewBy": "2027-03-24",
+      "reviewSuggested": [],
+      "summary": "How a Copilot cell runs: a data-only profile (bench/profiles/copilot.yaml) whose templated command launches the pinned native binary @github/copilot-win32-x64 1.0.89-1 by path with no ACP adapter; an ACP session/set_model before the prompt (driver.py changes); a reader over the per-cell events.jsonl that writes per-report model_calls rows under the ADR-0006 grain amendment (R-26) and records each tool call's outcome_code, so the pack-on hook denial measured on revision 92 (R-27) is visible. Also HB-PRE-002 for Copilot's instruction files, the US-9 scan, the US-9..US-14 promise-to-test table, and the Leader's capture and scrub procedure. Revision 3, after the design gate and rulings R-12..R-28.",
+      "tags": [
+        "benchmark",
+        "harness",
+        "copilot",
+        "profile",
+        "acp",
+        "telemetry",
+        "isolation"
+      ],
+      "links": [
+        {
+          "to": "design-phase1-walking-skeleton",
+          "rel": "refines"
+        },
+        {
+          "to": "arch-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0003-harness-profile",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0008-telemetry",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0002-cell-driver",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-spike-isolation-permissions",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-spike-runner-path",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-20260923-token-source",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        },
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b15244d34330ebd4917bbc7599bd30944f2de10767b6a719ec18a0e19c25ee7f"
     },
     {
       "id": "design-run-lifecycle-model",
@@ -984,7 +1069,13 @@ window.DOCS_INDEX = {
       "owner": "@timianmalloo",
       "phase": "Phase 1 · walking skeleton (S-13)",
       "reviewBy": "2027-03-22",
-      "reviewSuggested": [],
+      "reviewSuggested": [
+        {
+          "by": "adr-0006-results-data-model",
+          "on": "2026-09-24",
+          "reason": "Amendment 1: model_calls grain re-declared per native usage report with requests and model in the key; tool_calls.outcome_code (R-26, R-27)"
+        }
+      ],
       "summary": "The TLA+ model of one run's lifecycle, the proof obligation the run engine is built against (US-44). TLC checks 16 safety invariants at the US-44 bounds (3 cells, parallelism 2, 1 engine crash) and at small bounds with `bench grade` contending, grading mutual exclusion at 2 passes, and 5 liveness properties at 1 cell; each of 21 seeded-bug variants is rejected by its own target checked alone, and a witness shows every cell can finish. A mapping table binds every model action to the engine's ledger events, and a conformance test keeps the two in step.",
       "tags": [
         "benchmark",
@@ -1016,7 +1107,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ab7d72ebcd01e682384553aa51f8163a62a377f079112421a77397dcef4e3e88"
+      "sourceSha256": "77323517b6789bd05c44b00838b099b2754907afa8fcc7fa7dea4933accb4196"
     },
     {
       "id": "audit-log",
@@ -1303,7 +1394,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "bcb722361f669fbcff4c34c6ece48d7f8e7e02676cb60940e8046710ad0c96ed"
+      "sourceSha256": "d8b4aad01c5ab5caca868e612a8d02039d02c40cbd4af7d6e599dca484feecd0"
     },
     {
       "id": "proposal-cross-harness-benchmarking",
@@ -1362,7 +1453,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "aa0ba91b5eebd0762f2a0f75d0627125223d76c8a242455ac6a4cb5f2403d1eb"
+      "sourceSha256": "fb6329fabdc1f2ddd3b858cd9ac213a69bba46c649136cd882bda173669dbaf8"
     },
     {
       "id": "coordination-phase1-finish",
@@ -1450,10 +1541,14 @@ window.DOCS_INDEX = {
         {
           "to": "design-run-lifecycle-model",
           "rel": "documents"
+        },
+        {
+          "to": "design-phase2-copilot-profile",
+          "rel": "documents"
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d54e510a81dfb32ebc3f256b4fd6be310d719fba944dcdef11213e6d9ab50dad"
+      "sourceSha256": "f4809e11dc8d98e2ac33d92d6682d73ee7a9fb282fd3b96cd0f6b15b4d3802bc"
     },
     {
       "id": "findings-t1-engine-hardening",
@@ -1917,6 +2012,10 @@ window.DOCS_INDEX = {
           "rel": "documents"
         },
         {
+          "to": "design-phase2-copilot-profile",
+          "rel": "documents"
+        },
+        {
           "to": "adr-0012-proportionate-security",
           "rel": "depends-on"
         },
@@ -1932,7 +2031,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart LR\n  subgraph Host[\"Host (trusted: the operator)\"]\n    Engine[\"bench engine\\n(single writer)\"]\n    Runs[\"runs/&lt;id&gt;\\nledger + archives\"]\n    Creds[\"subscription logins\\n(harness homes)\"]\n    Report[\"report HTML\"]\n  end\n  subgraph Cell[\"Cell (the agent, with the operator's rights)\"]\n    Agent[\"harness + model\"]\n    WS[\"own git working copy\"]\n  end\n  Oracle[\"hidden tests / oracle\"]\n  Engine -- \"B1 spawn into Job Object, kill\" --> Cell\n  Creds -- \"B1 per-cell copy\" --> Cell\n  Cell -- \"B4 archive\" --> Runs\n  Oracle -. \"B2 never in the task clone\" .- Cell\n  Runs --> Report\n  Report -- \"B5 publish\" --> Shared[\"shared report\"]"
         }
       ],
-      "sourceSha256": "b7ad3fbf99ce707c6676c51ad16878540dc191bcc63ae47b6b905c9fe54a7798"
+      "sourceSha256": "5e3283637a1cecac92b20b5b71104ef359b3f270c38c46814b1361a2247cb71f"
     }
   ],
   "surfaces": [
@@ -1976,5 +2075,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "901ea7e9b0bd5c6e2a18e21abb202b1e7bae01e8b8a0d90e6b3633dd89d9e27a"
+  "graphSha256": "37b589cc9f5e7a773f526b3b1c8904b7d6c29a8fc8d9eb3d3ffbd60b1fd34351"
 };

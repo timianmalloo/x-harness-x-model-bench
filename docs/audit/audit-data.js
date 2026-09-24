@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T22:36:41Z",
+  "generated": "2026-09-24T22:38:22Z",
   "audit": [
     {
       "actor": null,
@@ -4388,6 +4388,489 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-09-24T22:36:41Z",
+      "id": "al-01M3AS0NCXQQPQY5172851NDH3",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: Cross-vendor join review of track W1-ACP (plan docs/coordination/coordination-finish-harness-bench.md, the W1-ACP row and the version-3 amendments): judge the branch phase2-acp-transcript and write the review to docs/notes/review-w1-acp-codex.md in your own worktree.\nDone when: docs/notes/review-w1-acp-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line, for the changes in `git diff 62d8b0c..48e4150` on branch phase2-acp-transcript, whose checkout is C:\\Projects\\x-harness-x-model-bench-phase2-acp-transcript (read it by absolute path; do not edit it).; The review answers: does the verbatim replayer (tests/fixtures/acp/replay_agent.py) replay recorded agent lines exactly with no synthesised handshake; does the driver's one error classifier map statuses as ruled in docs/notes/rulings.md R-18 and R-23; does the session/set_model step run after session/new and before set_mode, and does a refusal end the cell as HB-CELL-116 without sending the prompt; is last_update_seconds null (never 0) with no session/update; are the engine hunks limited to the model= call site, credential_kind, agent_version and acp_usage (R-13, R-24, R-28, R-30).; The review lists 3 mutants of your own against src/harness_bench/driver.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 48e4150 (removed afterwards), with the named test that killed it, or \"survived\".; The review file has V2 frontmatter (id, title, type: decision-note, status, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by, summary) and is committed on your branch.\nNot in scope: Editing any file other than docs/notes/review-w1-acp-codex.md.; Editing the phase2-acp-transcript checkout.; Running the full suite, anything under tests/e2e, or `-m \"\"`.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 45 minutes; commit the review before the deadline even if a mutant is unfinished, and say so.\n\nGrounding: docs/proof/phase1.md residual 9 (the D5/D7 condition), docs/notes/rulings.md R-13, R-18, R-22..R-24, R-28, R-30. Use `python`, not `python3` (Windows); in the throwaway worktree run `uv run pytest -q -p no:cacheprovider tests/test_driver.py tests/test_acp_record.py`. Set AGENT_SESSION to your session id before committing.",
+      "session": "prompt-compile",
+      "shortname": "Goal: Cross-vendor join review of track W1-ACP (plan docs/coordination/c…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "docs/notes/review-w1-acp-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line, for the changes in `git diff 62d8b0c..48e4150` on branch phase2-acp-transcript, whose checkout is C:\\Projects\\x-harness-x-model-bench-phase2-acp-transcript (read it by absolute path",
+            "trace": {
+              "kind": "phrase",
+              "ref": "docs/notes/review-w1-acp-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line, for the changes in `git diff 62d8b0c..48e4150` on branch phase2-acp-transcript, whose checkout is C:\\Projects\\x-harness-x-model-bench-phase2-acp-transcript (read it by absolute path"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "do not edit it).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "do not edit it)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The review answers: does the verbatim replayer (tests/fixtures/acp/replay_agent.py) replay recorded agent lines exactly with no synthesised handshake",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The review answers: does the verbatim replayer (tests/fixtures/acp/replay_agent.py) replay recorded agent lines exactly with no synthesised handshake"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "does the driver's one error classifier map statuses as ruled in docs/notes/rulings.md R-18 and R-23",
+            "trace": {
+              "kind": "phrase",
+              "ref": "does the driver's one error classifier map statuses as ruled in docs/notes/rulings.md R-18 and R-23"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "does the session/set_model step run after session/new and before set_mode, and does a refusal end the cell as HB-CELL-116 without sending the prompt",
+            "trace": {
+              "kind": "phrase",
+              "ref": "does the session/set_model step run after session/new and before set_mode, and does a refusal end the cell as HB-CELL-116 without sending the prompt"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "is last_update_seconds null (never 0) with no session/update",
+            "trace": {
+              "kind": "phrase",
+              "ref": "is last_update_seconds null (never 0) with no session/update"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "are the engine hunks limited to the model= call site, credential_kind, agent_version and acp_usage (R-13, R-24, R-28, R-30).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "are the engine hunks limited to the model= call site, credential_kind, agent_version and acp_usage (R-13, R-24, R-28, R-30)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The review lists 3 mutants of your own against src/harness_bench/driver.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 48e4150 (removed afterwards), with the named test that killed it, or \"survived\".",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The review lists 3 mutants of your own against src/harness_bench/driver.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 48e4150 (removed afterwards), with the named test that killed it, or \"survived\"."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The review file has V2 frontmatter (id, title, type: decision-note, status, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by, summary) and is committed on your branch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The review file has V2 frontmatter (id, title, type: decision-note, status, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by, summary) and is committed on your branch."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing any file other than docs/notes/review-w1-acp-codex.md.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Editing any file other than docs/notes/review-w1-acp-codex.md."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing the phase2-acp-transcript checkout.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Editing the phase2-acp-transcript checkout."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Running the full suite, anything under tests/e2e, or `-m \"\"`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Running the full suite, anything under tests/e2e, or `-m \"\"`."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "docs/notes/review-w1-acp-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line, for the changes in `git diff 62d8b0c..48e4150` on branch phase2-acp-transcript, whose checkout is C:\\Projects\\x-harness-x-model-bench-phase2-acp-transcript (read it by absolute path",
+            "do not edit it).",
+            "The review answers: does the verbatim replayer (tests/fixtures/acp/replay_agent.py) replay recorded agent lines exactly with no synthesised handshake",
+            "does the driver's one error classifier map statuses as ruled in docs/notes/rulings.md R-18 and R-23",
+            "does the session/set_model step run after session/new and before set_mode, and does a refusal end the cell as HB-CELL-116 without sending the prompt",
+            "is last_update_seconds null (never 0) with no session/update",
+            "are the engine hunks limited to the model= call site, credential_kind, agent_version and acp_usage (R-13, R-24, R-28, R-30).",
+            "The review lists 3 mutants of your own against src/harness_bench/driver.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 48e4150 (removed afterwards), with the named test that killed it, or \"survived\".",
+            "The review file has V2 frontmatter (id, title, type: decision-note, status, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by, summary) and is committed on your branch."
+          ],
+          "fan_out_cap": 0,
+          "goal": "Cross-vendor join review of track W1-ACP (plan docs/coordination/coordination-finish-harness-bench.md, the W1-ACP row and the version-3 amendments): judge the branch phase2-acp-transcript and write the review to docs/notes/review-w1-acp-codex.md in your own worktree.",
+          "main_line_budget": "one slice of at most 45 minutes; commit the review before the deadline even if a mutant is unfinished, and say so.\nGrounding: docs/proof/phase1.md residual 9 (the D5/D7 condition), docs/notes/rulings.md R-13, R-18, R-22..R-24, R-28, R-30. Use `python`, not `python3` (Windows); in the throwaway worktree run `uv run pytest -q -p no:cacheprovider tests/test_driver.py tests/test_acp_record.py`. Set AGENT_SESSION to your session id before committing.",
+          "not_in_scope": [
+            "Editing any file other than docs/notes/review-w1-acp-codex.md.",
+            "Editing the phase2-acp-transcript checkout.",
+            "Running the full suite, anything under tests/e2e, or `-m \"\"`.",
+            "Any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [
+          "coordination-phase1-finish-run",
+          "design-phase1-walking-skeleton",
+          "rulings-register"
+        ],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.001,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3AS0NCXQQPQY5172851NDH3",
+        "raw_sha256": "007dd5ada8433110f19c15767232dff19357b88b6416bcea1d91820f3c0c8a89",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git diff 62d8b0c..48e4150"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git worktree add --detach"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-m "
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python3"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q -p no:cacheprovider tests/test_driver.py tests/test_acp_record.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench.md",
+            "reason": null,
+            "sha256": "fb6329fabdc1f2ddd3b858cd9ac213a69bba46c649136cd882bda173669dbaf8",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-finish-harness-bench.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/review-w1-acp-codex.md"
+          },
+          {
+            "nearest": null,
+            "path": "tests/fixtures/acp/replay_agent.py",
+            "reason": null,
+            "sha256": "229b5473a78345464a378582b254c4528ced93375c3b0b03bfe6e26aeff8cb92",
+            "status": "resolved",
+            "token": "tests/fixtures/acp/replay_agent.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "session/set_model"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "session/new"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "session/update"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/driver.py",
+            "reason": null,
+            "sha256": "85b85d7fea48c41a1ce9dad263e921f64e6d0e681317a8dabb0365a4270d5329",
+            "status": "resolved",
+            "token": "src/harness_bench/driver.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench.md",
+            "reason": null,
+            "sha256": "fb6329fabdc1f2ddd3b858cd9ac213a69bba46c649136cd882bda173669dbaf8",
+            "status": "resolved",
+            "token": "coordination-finish-harness-bench"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e"
+          },
+          {
+            "nearest": null,
+            "path": "docs/proof/phase1.md",
+            "reason": null,
+            "sha256": "3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428",
+            "status": "resolved",
+            "token": "docs/proof/phase1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "D5/D7"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_driver.py",
+            "reason": null,
+            "sha256": "a70721db735dd83cbdcda23f579a31a2a01ade8104baebe52f34f6d7a20a62ff",
+            "status": "resolved",
+            "token": "tests/test_driver.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_acp_record.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "datetime": "2026-09-24T22:36:41Z",
+      "dispatchable": true,
+      "id": "al-01M3AS0NPMYTZ0YDMQB6P47FGX",
+      "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: Cross-vendor join review of track W1-ACP (plan docs/coordination/coordination-finish-harness-bench.md, the W1-ACP row and the version-3 amendments): judge the branch phase2-acp-transcript and write the review to docs/notes/review-w1-acp-codex.md in your own worktree.\nDone when: docs/notes/review-w1-acp-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line, for the changes in `git diff 62d8b0c..48e4150` on branch phase2-acp-transcript, whose checkout is C:\\Projects\\x-harness-x-model-bench-phase2-acp-transcript (read it by absolute path; do not edit it).; The review answers: does the verbatim replayer (tests/fixtures/acp/replay_agent.py) replay recorded agent lines exactly with no synthesised handshake; does the driver's one error classifier map statuses as ruled in docs/notes/rulings.md R-18 and R-23; does the session/set_model step run after session/new and before set_mode, and does a refusal end the cell as HB-CELL-116 without sending the prompt; is last_update_seconds null (never 0) with no session/update; are the engine hunks limited to the model= call site, credential_kind, agent_version and acp_usage (R-13, R-24, R-28, R-30).; The review lists 3 mutants of your own against src/harness_bench/driver.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 48e4150 (removed afterwards), with the named test that killed it, or \"survived\".; The review file has V2 frontmatter (id, title, type: decision-note, status, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by, summary) and is committed on your branch.\nNot in scope: Editing any file other than docs/notes/review-w1-acp-codex.md.; Editing the phase2-acp-transcript checkout.; Running the full suite, anything under tests/e2e, or `-m \"\"`.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 45 minutes; commit the review before the deadline even if a mutant is unfinished, and say so.\nGrounding: docs/proof/phase1.md residual 9 (the D5/D7 condition), docs/notes/rulings.md R-13, R-18, R-22..R-24, R-28, R-30. Use `python`, not `python3` (Windows); in the throwaway worktree run `uv run pytest -q -p no:cacheprovider tests/test_driver.py tests/test_acp_record.py`. Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: docs/notes/review-w1-acp-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line, for the changes in `git diff 62d8b0c..48e4150` on branch phase2-acp-transcript, whose checkout is C:\\Projects\\x-harness-x-model-bench-phase2-acp-transcript (read it by absolute path | phrase: docs/notes/review-w1-acp-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line, for the changes in `git diff 62d8b0c..48e4150` on branch phase2-acp-transcript, whose checkout is C:\\Projects\\x-harness-x-model-bench-phase2-acp-transcript (read it by absolute path |\n| done_when: do not edit it). | phrase: do not edit it). |\n| done_when: The review answers: does the verbatim replayer (tests/fixtures/acp/replay_agent.py) replay recorded agent lines exactly with no synthesised handshake | phrase: The review answers: does the verbatim replayer (tests/fixtures/acp/replay_agent.py) replay recorded agent lines exactly with no synthesised handshake |\n| done_when: does the driver's one error classifier map statuses as ruled in docs/notes/rulings.md R-18 and R-23 | phrase: does the driver's one error classifier map statuses as ruled in docs/notes/rulings.md R-18 and R-23 |\n| done_when: does the session/set_model step run after session/new and before set_mode, and does a refusal end the cell as HB-CELL-116 without sending the prompt | phrase: does the session/set_model step run after session/new and before set_mode, and does a refusal end the cell as HB-CELL-116 without sending the prompt |\n| done_when: is last_update_seconds null (never 0) with no session/update | phrase: is last_update_seconds null (never 0) with no session/update |\n| done_when: are the engine hunks limited to the model= call site, credential_kind, agent_version and acp_usage (R-13, R-24, R-28, R-30). | phrase: are the engine hunks limited to the model= call site, credential_kind, agent_version and acp_usage (R-13, R-24, R-28, R-30). |\n| done_when: The review lists 3 mutants of your own against src/harness_bench/driver.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 48e4150 (removed afterwards), with the named test that killed it, or \"survived\". | phrase: The review lists 3 mutants of your own against src/harness_bench/driver.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 48e4150 (removed afterwards), with the named test that killed it, or \"survived\". |\n| done_when: The review file has V2 frontmatter (id, title, type: decision-note, status, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by, summary) and is committed on your branch. | phrase: The review file has V2 frontmatter (id, title, type: decision-note, status, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by, summary) and is committed on your branch. |\n| not_in_scope: Editing any file other than docs/notes/review-w1-acp-codex.md. | phrase: Editing any file other than docs/notes/review-w1-acp-codex.md. |\n| not_in_scope: Editing the phase2-acp-transcript checkout. | phrase: Editing the phase2-acp-transcript checkout. |\n| not_in_scope: Running the full suite, anything under tests/e2e, or `-m \"\"`. | phrase: Running the full suite, anything under tests/e2e, or `-m \"\"`. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- git diff 62d8b0c..48e4150: unresolved (not found)\n- git worktree add --detach: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider tests/test_driver.py tests/test_acp_record.py: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 fb6329fabdc1f2ddd3b858cd9ac213a69bba46c649136cd882bda173669dbaf8\n- docs/notes/review-w1-acp-codex.md: unresolved (not found)\n- tests/fixtures/acp/replay_agent.py: tests/fixtures/acp/replay_agent.py sha256 229b5473a78345464a378582b254c4528ced93375c3b0b03bfe6e26aeff8cb92\n- docs/notes/rulings.md: unresolved (ambiguous: 2 matches)\n- session/set_model: unresolved (not found)\n- session/new: unresolved (not found)\n- session/update: unresolved (not found)\n- src/harness_bench/driver.py: src/harness_bench/driver.py sha256 85b85d7fea48c41a1ce9dad263e921f64e6d0e681317a8dabb0365a4270d5329\n- coordination-finish-harness-bench: docs/coordination/coordination-finish-harness-bench.md sha256 fb6329fabdc1f2ddd3b858cd9ac213a69bba46c649136cd882bda173669dbaf8\n- tests/e2e: unresolved (not found)\n- docs/proof/phase1.md: docs/proof/phase1.md sha256 3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428\n- D5/D7: unresolved (not found)\n- tests/test_driver.py: tests/test_driver.py sha256 a70721db735dd83cbdcda23f579a31a2a01ade8104baebe52f34f6d7a20a62ff\n- tests/test_acp_record.py: unresolved (not found)\n- graph neighbours: coordination-phase1-finish-run, design-phase1-walking-skeleton, rulings-register\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AS0NCXQQPQY5172851NDH3\nraw sha256: 007dd5ada8433110f19c15767232dff19357b88b6416bcea1d91820f3c0c8a89\ncompiler model: claude-opus-5-5\nengine seconds: 0.001\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: Cross-vendor join review of track W1-ACP (plan docs/coordination/c…",
+      "skill": null,
+      "summary": "compiled al-01M3AS0NCXQQPQY5172851NDH3 for codex v1: 13 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/phase2-copilot-profile.md",
+        "tests/fixtures/native/copilot/capture_sample.py",
+        "tests/fixtures/native/copilot/scrub_sample.py"
+      ],
+      "change": "cl-01M3ANSZ8QJWV9AJ0K1DYW3TED",
+      "compiled": false,
+      "datetime": "2026-09-24T21:40:45Z",
+      "done_when": "contracts fixed for profile, build, launch, reader+SQLite bound, pack-on probe, HB-PRE-002; driver statement; US-9..US-14 test table; capture procedure and scrub rule; committed with AGENT_SESSION=w1-cop-d",
+      "duration_seconds": 1495.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "phase2-copilot-design",
+        "pushed": null,
+        "sha": "62d8b0cf2e42082739eb655468a0b7b540898f85",
+        "short": "62d8b0cf2"
+      },
+      "goal": "Design the Copilot harness profile (to-do rows 1-5) as docs/design/phase2-copilot-profile.md via /design-slice",
+      "id": "al-01M3ANT7XBMDJBYM89P7DQER2H",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "You are track **W1-COP-D** of the coordination plan `C:\\projects\\x-harness-x-model-bench\\docs\\coordination\\coordination-finish-harness-bench.md` (read your row, the Wave-1 exit block, the Seams and the Serial spine first). The Leader is session `coord-opus-cq`; you are a delegate, not the coordinator.\n\nFirst command: `python docs/ai-forward-pack/scripts/audit-log.py start --session w1-cop-d --skill design-slice` (run it in your tree).\n\nGoal: Design the Copilot harness profile for harness-bench (to-do rows 1–5) as `docs/design/phase2-copilot-profile.md`, via the `/design-slice` method (`.claude/skills/design-slice/SKILL.md`; read it and follow its stages).\nDone when:\n- The design (V2 frontmatter, linked to `design-phase1-walking-skeleton`) fixes the contracts for: `bench/profiles/copilot.yaml`; allowing `copilot` in `profiles.py`; the pinned `@github/copilot` build in `bench/tools/package*.json` and `tools.py` `LAYOUT`; the launch shape (native ACP `--acp --model <id> --allow-tool shell --allow-tool write`, no adapter; how `Profile.argv()` changes); the `session-store.db` reader contract against the existing Canonical Data Model in `src/harness_bench/telemetry/__init__.py`, including the SQLite bound (read-only open, file-size cap, row cap; an unknown schema version degrades to \"not recorded\"); the pack-on probe and extending HB-PRE-002 (`workspace.py:25`) to Copilot's instruction files.\n- It states exactly one of \"`driver.py` unchanged\" or \"`driver.py` changed (what)\", with the reason.\n- It carries a promise→test table for US-9 (pack-off marker scan over Copilot's instruction files), US-10, US-11, US-12, US-13 and US-14 for Copilot (see `docs/specs/harness-bench.md`).\n- It specifies an exact, copy-pasteable capture procedure the Leader will run to produce a pack-on and a pack-off `session-store.db` sample from one X1 Copilot turn each (empty per-cell `COPILOT_HOME`, as spike N1.2), and the scrub rule that will be applied before those samples are committed under `tests/fixtures/native/copilot/`.\n- The design is committed on your branch with `AGENT_SESSION=w1-cop-d` set in the shell for the commit.\nNot in scope: any implementation code or test in `src/`, `tests/` (other than `tests/fixtures/native/copilot/**` later), `bench/`; running Copilot, Codex, Claude or `bench run` yourself (every model-harness turn is a Leader seam); any push; editing the plan.\nTier: T2 · Fan-out cap: 0 · Context ceiling: 400k tokens · Main-line budget: 150 tool calls, 2 h.\n\nWhere to work: ONLY in `C:\\Projects\\x-harness-x-model-bench-phase2-copilot-design` (branch `phase2-copilot-design`, already created and registered). Use absolute paths; never use the worktree-entering tool; use `python`, not `python3` (Windows). A multi-line program is a file, then a run — never a heredoc. A gate's exit status is never behind a pipe.\n\nGround in (cite what you read): `docs/architecture.md` (Copilot rows, phase 2), `docs/adr/0003-*`, `0008-*`, `0013-*`, `docs/notes/spike-isolation-permissions.md` (R1, R2, N1.2), `docs/notes/spike-runner-path.md`, `docs/notes/decision-token-source-per-harness.md`, `.claude/skills/execute-with-coordination/reference/copilot.md` (the pack's Copilot ACP profile, model binding and qualification evidence), `src/harness_bench/{profiles,tools,driver,workspace,errors}.py`, `src/harness_bench/telemetry/*`, `bench/profiles/*.yaml`, `docs/proof/phase1.md`. No guessing: check it, mark it (`assume:` with belief · confirm · breaks), or raise it. You may read `C:\\Users\\malla\\.copilot` layout and run `copilot --help` / `copilot --version` (no model turn) to check flags.\n\nDecisions the plan did not make go to the Owner: tell the Leader in your hand-back; do not decide them silently.\n\nHand back: the design path and commit SHA; the driver statement; the capture procedure verbatim; open questions; tool calls used.",
+      "session": "w1-cop-d",
+      "shortname": "design-slice-phase2-copilot-profile",
+      "skill": "design-slice",
+      "started_at": "2026-09-24T21:15:50Z",
+      "summary": "Design for the Copilot harness profile (rows 1-5): profile, pinned build, launch shape, driver.py changed (optional session/set_model), SQLite-bounded reader contract, HB-PRE-002 extension, pack-on probe, US-9..US-14 promise-to-test table, capture procedure and scrub rule with two self-tested scripts; nine open questions for the Owner. Design gate pending at the join.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/phase2-copilot-profile.md",
+        "tests/fixtures/native/copilot/scrub_sample.py"
+      ],
+      "change": "cl-01M3AQ0Y9MZ3GDXNH3YW5398GT",
+      "compiled": false,
+      "datetime": "2026-09-24T22:01:53Z",
+      "duration_seconds": 458.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "phase2-copilot-design",
+        "pushed": null,
+        "sha": "f3e5c3f4e6b0f4bd6da580c1acd56a4551a1a1f6",
+        "short": "f3e5c3f4e"
+      },
+      "id": "al-01M3AQ0YCJ04FADSXVC643E5CT",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "W1-COP-D revision slice after capture window 1 (see change cl-01M3AQ0Y9MZ3GDXNH3YW5398GT)",
+      "session": "w1-cop-d",
+      "shortname": "design-slice-phase2-copilot-profile-r2",
+      "skill": "design-slice",
+      "started_at": "2026-09-24T21:54:15Z",
+      "summary": "Design revision 2 and scrub-rule/2 committed; reader source decided (native events.jsonl, ACP usage cross-check); 14 Owner questions; fixtures left for the Leader's scrub run.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/phase2-copilot-profile.md",
+        "docs/adr/0006-append-only-run-ledger-and-derived-results.md",
+        "tests/fixtures/native/copilot/scrub_sample.py"
+      ],
+      "change": "cl-01M3ARDA5PCTTAR8G04GJYMG3H",
+      "compiled": false,
+      "datetime": "2026-09-24T22:26:07Z",
+      "duration_seconds": 795.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "phase2-copilot-design",
+        "pushed": null,
+        "sha": "aef5ca54af71845b4b2546673c2e903dba69af12",
+        "short": "aef5ca54a"
+      },
+      "id": "al-01M3ARDAJQAZ9917N9P36CAHDF",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "W1-COP-D revision 3 after the design gate and rulings R-12..R-28 (see change cl-01M3ARDA5PCTTAR8G04GJYMG3H)",
+      "session": "w1-cop-d",
+      "shortname": "design-slice-phase2-copilot-profile-r3",
+      "skill": "design-slice",
+      "started_at": "2026-09-24T22:12:52Z",
+      "summary": "Revision 3 committed: every gate finding applied or defended; ADR-0006 Amendment 1; note corrected; scrub-rule/3 --rescrub verified on a copy of 9c6c615; open items O-1..O-5.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/phase2-copilot-profile.md",
+        "tests/fixtures/native/copilot/scrub_sample.py"
+      ],
+      "change": "cl-01M3ARX0DEJ35TKQXTVPWC7Q61",
+      "compiled": false,
+      "datetime": "2026-09-24T22:34:41Z",
+      "duration_seconds": 178.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "phase2-copilot-design",
+        "pushed": null,
+        "sha": "4601b17249e166a65c184dfd98eb3ded7dbc932e",
+        "short": "4601b1724"
+      },
+      "id": "al-01M3ARX0GMRSCQ1BFN5V6DCN3X",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "W1-COP-D revision 3.1 (see change cl-01M3ARX0DEJ35TKQXTVPWC7Q61)",
+      "session": "w1-cop-d",
+      "shortname": "design-slice-phase2-copilot-profile-r3-1",
+      "skill": "design-slice",
+      "started_at": "2026-09-24T22:31:43Z",
+      "summary": "Revision 3.1 committed; every Minor condition applied; open: O-3 ownership, O-5 rev-95 capture.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     }
   ],
   "changes": [
@@ -4522,6 +5005,141 @@ window.AUDIT_DATA = {
         "commits": []
       },
       "audit_ref": "al-01M3882EA0534C9VTDAZHQF1PD"
+    },
+    {
+      "id": "cl-01M3ANSZ8QJWV9AJ0K1DYW3TED",
+      "datetime": "2026-09-24T21:40:36Z",
+      "session": "w1-cop-d",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "Copilot profile: native ACP with session/set_model; bounded copy-then-read-only session-store.db reader",
+      "prompt": "You are track **W1-COP-D** of the coordination plan `C:\\projects\\x-harness-x-model-bench\\docs\\coordination\\coordination-finish-harness-bench.md` (read your row, the Wave-1 exit block, the Seams and the Serial spine first). The Leader is session `coord-opus-cq`; you are a delegate, not the coordinator.\n\nFirst command: `python docs/ai-forward-pack/scripts/audit-log.py start --session w1-cop-d --skill design-slice` (run it in your tree).\n\nGoal: Design the Copilot harness profile for harness-bench (to-do rows 1–5) as `docs/design/phase2-copilot-profile.md`, via the `/design-slice` method (`.claude/skills/design-slice/SKILL.md`; read it and follow its stages).\nDone when:\n- The design (V2 frontmatter, linked to `design-phase1-walking-skeleton`) fixes the contracts for: `bench/profiles/copilot.yaml`; allowing `copilot` in `profiles.py`; the pinned `@github/copilot` build in `bench/tools/package*.json` and `tools.py` `LAYOUT`; the launch shape (native ACP `--acp --model <id> --allow-tool shell --allow-tool write`, no adapter; how `Profile.argv()` changes); the `session-store.db` reader contract against the existing Canonical Data Model in `src/harness_bench/telemetry/__init__.py`, including the SQLite bound (read-only open, file-size cap, row cap; an unknown schema version degrades to \"not recorded\"); the pack-on probe and extending HB-PRE-002 (`workspace.py:25`) to Copilot's instruction files.\n- It states exactly one of \"`driver.py` unchanged\" or \"`driver.py` changed (what)\", with the reason.\n- It carries a promise→test table for US-9 (pack-off marker scan over Copilot's instruction files), US-10, US-11, US-12, US-13 and US-14 for Copilot (see `docs/specs/harness-bench.md`).\n- It specifies an exact, copy-pasteable capture procedure the Leader will run to produce a pack-on and a pack-off `session-store.db` sample from one X1 Copilot turn each (empty per-cell `COPILOT_HOME`, as spike N1.2), and the scrub rule that will be applied before those samples are committed under `tests/fixtures/native/copilot/`.\n- The design is committed on your branch with `AGENT_SESSION=w1-cop-d` set in the shell for the commit.\nNot in scope: any implementation code or test in `src/`, `tests/` (other than `tests/fixtures/native/copilot/**` later), `bench/`; running Copilot, Codex, Claude or `bench run` yourself (every model-harness turn is a Leader seam); any push; editing the plan.\nTier: T2 · Fan-out cap: 0 · Context ceiling: 400k tokens · Main-line budget: 150 tool calls, 2 h.\n\nWhere to work: ONLY in `C:\\Projects\\x-harness-x-model-bench-phase2-copilot-design` (branch `phase2-copilot-design`, already created and registered). Use absolute paths; never use the worktree-entering tool; use `python`, not `python3` (Windows). A multi-line program is a file, then a run — never a heredoc. A gate's exit status is never behind a pipe.\n\nGround in (cite what you read): `docs/architecture.md` (Copilot rows, phase 2), `docs/adr/0003-*`, `0008-*`, `0013-*`, `docs/notes/spike-isolation-permissions.md` (R1, R2, N1.2), `docs/notes/spike-runner-path.md`, `docs/notes/decision-token-source-per-harness.md`, `.claude/skills/execute-with-coordination/reference/copilot.md` (the pack's Copilot ACP profile, model binding and qualification evidence), `src/harness_bench/{profiles,tools,driver,workspace,errors}.py`, `src/harness_bench/telemetry/*`, `bench/profiles/*.yaml`, `docs/proof/phase1.md`. No guessing: check it, mark it (`assume:` with belief · confirm · breaks), or raise it. You may read `C:\\Users\\malla\\.copilot` layout and run `copilot --help` / `copilot --version` (no model turn) to check flags.\n\nDecisions the plan did not make go to the Owner: tell the Leader in your hand-back; do not decide them silently.\n\nHand back: the design path and commit SHA; the driver statement; the capture procedure verbatim; open questions; tool calls used.",
+      "summary": "docs/design/phase2-copilot-profile.md: copilot.yaml contract, pinned @github/copilot-win32-x64 1.0.89-1 (no adapter), argv from profile args, driver.py changed (optional session/set_model), reader over events.jsonl + session-store.db (copy, mode=ro, 256 MiB, 10,000 rows, schema_version gate), HB-PRE-002 extended, pack-on probe, US-9..US-14 test map, capture and scrub scripts; Q1-Q9 open for the Owner.",
+      "rationale": "ADR-0003 pins Copilot with --model plus session/set_model and the pack's qualification observed an advertised model differing from the inference model; the store is WAL-mode and opening evidence in place writes beside it, so the reader copies first; the profile table carries every harness difference as data.",
+      "artifacts": [
+        "docs/design/phase2-copilot-profile.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "62d8b0c",
+        "after": "62d8b0cf2e42082739eb655468a0b7b540898f85",
+        "branch": "phase2-copilot-design",
+        "pushed": null,
+        "commits": []
+      }
+    },
+    {
+      "id": "cl-01M3AQ0Y9MZ3GDXNH3YW5398GT",
+      "datetime": "2026-09-24T22:01:53Z",
+      "session": "w1-cop-d",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "Copilot reader source: events.jsonl session.shutdown modelMetrics (native_record); ACP turn usage as cross-check",
+      "prompt": "W1-COP-D revision slice (Leader coord-opus-cq): capture window 1 found no session-store.db in per-cell ACP homes; revise the reader source (events.jsonl and/or ACP turn usage) against ADR-0008 and the token-source decision note, fill every sample value, update the promise-to-test table and residuals, fix scrub_sample.py, commit; do not commit fixtures.",
+      "summary": "Revision 2 of docs/design/phase2-copilot-profile.md: reader from events.jsonl (version gate, shutdown modelMetrics per model, uncached = input - cache read - cache write), SQLite bound withdrawn, all sample values filled from the capture, Q4 revised (hooks fire and fail under pwsh), Q10-Q14 new; scrub-rule/2 verified on the real capture.",
+      "rationale": "The native modelMetrics is complete (equals the ACP usage exactly in both arms), names each served model (US-11) and needs no engine or normalize change; the ACP usage names no model and is not kept by the engine.",
+      "artifacts": [
+        "docs/design/phase2-copilot-profile.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "f3e5c3f",
+        "after": "f3e5c3f4e6b0f4bd6da580c1acd56a4551a1a1f6",
+        "branch": "phase2-copilot-design",
+        "pushed": null,
+        "commits": []
+      }
+    },
+    {
+      "id": "cl-01M3ARDA5PCTTAR8G04GJYMG3H",
+      "datetime": "2026-09-24T22:26:07Z",
+      "session": "w1-cop-d",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "ADR-0006 Amendment 1: model_calls per native usage report (requests, model in key); tool_calls.outcome_code; Copilot design revision 3",
+      "prompt": "W1-COP-D revision 3 (Leader coord-opus-cq): merge main 38e024a; apply the design-gate findings (Test Architect block, Simplifier soft block, Patterns Expert and D&P conditions) and rulings R-12..R-28; write the ADR-0006 grain amendment and the token-source note correction; fix the fixture scripts; commit.",
+      "summary": "Design revision 3 with a per-finding disposition table; ADR-0006 Amendment 1 (grain per native usage report, additive requests, model in the key, tool_calls.outcome_code); token-source note line 40 corrected; scrub-rule/3 with --rescrub (the vendor system prompt in contentBlocks leaked past rule/2 into 9c6c615); dead SQLite code removed from capture_sample.py.",
+      "rationale": "R-26 adopts the D&P grain; R-27 makes the hook denial a measured tool_calls outcome; the contentBlocks leak was found by re-reading the committed fixture.",
+      "artifacts": [
+        "docs/design/phase2-copilot-profile.md",
+        "docs/adr/0006-append-only-run-ledger-and-derived-results.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "7f2a7c1",
+        "after": "aef5ca54af71845b4b2546673c2e903dba69af12",
+        "branch": "phase2-copilot-design",
+        "pushed": null,
+        "commits": [
+          "aef5ca5 Merge commit '38e024a' into phase2-copilot-design",
+          "38e024a docs(rulings): R-26 model_calls grain re-declared (D&P C1-C3; R-20 placement withdrawn), R-27 pack-on Copilot not a treatment on rev 92 (exit run uses rev 95 via --pack-source), R-28 agent_version narrowed",
+          "87eb250 docs(proof): phase-2 Proof Pack - SUITE-A, W1-HOST slices 1-2, W1-TOOLB",
+          "697d87b chore(coord): coordination ledger",
+          "df36706 docs: W1-TOOLB review note frontmatter to V2; rulings R-20..R-25 (Copilot usage to turn_usage, graceful end, agentInfo version, one classifier, acp_usage attribute, pack hooks failed on Copilot)",
+          "b54399a join the W1-TOOLB cross-vendor review note (Codex)",
+          "f141610 join W1-TOOLB: the TOOL-B control (Claude Sonnet per R-10; red re-run by the Leader; Codex cross-vendor review CLEAR; R-19 unit-level scope)",
+          "7d73ada join W1-HOST slice 2: host readings degrade to not recorded (Grok; reds re-run by the Leader)",
+          "d3e3df9 docs(review): clear W1-TOOLB unit-level join",
+          "dc15b2c fix(W1-HOST): a failed unbiased clock is not recorded, and is not sleep",
+          "9c6c615 test(fixtures): scrubbed Copilot events.jsonl samples, pack on and off (W1-COP-D capture window 1)",
+          "c48492c test(W1-HOST): a failed unbiased clock is not recorded, and sleep stays false (red)",
+          "dce41ce fix(W1-HOST): a failed GlobalMemoryStatusEx is not recorded",
+          "ed2fa1d test(W1-HOST): a failed memory query is not recorded, and the outcome stays (red)",
+          "054092a docs(rulings): R-12..R-19 (Copilot pin and launch env, engine lines to W1-ACP, no trust seeding, validity/AI-unit rows, canary and markers to COP-I, Claude Code 2.1.282 bump, HB-CELL-116, TOOL-B re-run window)",
+          "9d56bd2 chore(coord): coordination ledger for wave 1 so far",
+          "9892dcc docs(coord): SUITE-A sweep corrected (5 credentials items: 3 e2e + 2 real handshakes); plan text avoids a dangling ruling number",
+          "0e5ddb3 fix(TOOL-B): re-derive a cosmic-ray kill from a named test failing, not any non-zero exit",
+          "2b5743b join W1-HOST slice 1: row-28 hardening (Grok; reds re-run by the Leader; R-10 joined on git evidence)",
+          "3198c68 style(SUITE-A): explicit check=False in the collection probe",
+          "e53a7bc test(TOOL-B): a cosmic-ray kill is re-derived from a named test failing (red)",
+          "7ea8ebf fix(SUITE-A): real model cells run only on an explicit opt-in; record SUITE-A and RUN-A",
+          "5013299 test(SUITE-A): a bare pytest run selects no credentials test (red)",
+          "38982aa docs(rulings): R-10 W1-TOOLB to Claude Code, W1-HOST joined on git evidence; R-11 runner limits fixed upstream (W1-PACK-2)",
+          "a7cc351 test(W1-HOST): the base fixture leaves zero folders behind",
+          "95d705f fix(W1-HOST): scan credentials before cmd_report prints the CLI table",
+          "0c254d2 test(W1-HOST): cmd_report prints a credential-bearing label before the scan (red)",
+          "3c0f962 fix(W1-HOST): raise when GlobalMemoryStatusEx or QueryUnbiasedInterruptTime fails",
+          "de2bdc5 test(W1-HOST): a failed memory or unbiased-time query is not a zero reading (red)",
+          "e8ec45c fix(W1-HOST): close the job when a failed assignment's wait times out",
+          "76bb0ae test(W1-HOST): spawn raises TimeoutExpired before job.close after a failed assignment (red)"
+        ]
+      }
+    },
+    {
+      "id": "cl-01M3ARX0DEJ35TKQXTVPWC7Q61",
+      "datetime": "2026-09-24T22:34:41Z",
+      "session": "w1-cop-d",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "Copilot design revision 3.1: gate Minor conditions applied (credential: null, bench plan instruction_list, positive control, vendor-prompt scrub control)",
+      "prompt": "W1-COP-D revision 3.1 (Leader coord-opus-cq): merge main (R-29, R-30); apply the Test Architect, D&P and Simplifier Minor conditions; commit.",
+      "summary": "Revision 3.1: US-14 positive control and one named assertion; D&P C-a..C-d; Simplifier N1-N4, N6; R-30 typed Launcher fields; section 12 vendor-system-prompt class with a fail-closed script control (verified both ways).",
+      "rationale": "All three lenses cleared their vetoes with Minor conditions; the scrub class needs a control, not prose (R-30 c3).",
+      "artifacts": [
+        "docs/design/phase2-copilot-profile.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "b260dd1",
+        "after": "4601b17249e166a65c184dfd98eb3ded7dbc932e",
+        "branch": "phase2-copilot-design",
+        "pushed": null,
+        "commits": [
+          "4601b17 Merge branch 'main' into phase2-copilot-design",
+          "267cb46 docs(rulings): R-30 typed Launcher.set_model and credential_kind (R-13 c1 amended; getattr not restored)",
+          "6cf7755 join W1-HOST slice 4: host success paths and sleep recovery proven (Claude Sonnet per R-29; M4 and M5 killed)",
+          "8cfb94f chore(coord): coordination ledger and audit rows (session ends, compiles, slice runs)",
+          "012e9d7 chore(audit): W1-HOST slice 4 audit entry",
+          "e6536b5 docs(coord): ownership additions after COP-D revision 3; Leader seam to W1-ACP for ProfileLauncher",
+          "23c21be test(host): real success paths for available_memory/unbiased_seconds; sleep detector recovers after a missing first reading",
+          "f952f87 test(fixtures): re-scrub Copilot samples to scrub-rule/3 (system.message contentBlocks digested)",
+          "9e4472a docs(rulings): R-29 W1-HOST slice 4 to Claude Sonnet (R-4); Grok held for new runner tracks until the runner records protocol_error detail (upstream, W1-PACK-2)",
+          "c57cbcb join W1-HOST slice 3: leftovers test owns its folder; the untested extra kill removed (Grok)",
+          "9322191 fix(W1-HOST): drop the untested extra kill after a failed assignment",
+          "b6d1535 test(W1-HOST): the base fixture removes only this test's folder",
+          "6ae3bcd docs(coord): plan version 3 amendments after capture window 1 and R-12..R-28"
+        ]
+      }
     }
   ],
   "messages": []
