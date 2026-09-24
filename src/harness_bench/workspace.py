@@ -22,7 +22,8 @@ from pathlib import Path
 from harness_bench import archive, gitsafe, procs
 from harness_bench.errors import BenchError
 
-INSTRUCTION_FILES = ("CLAUDE.md", ".claude/CLAUDE.md", "AGENTS.md")
+INSTRUCTION_FILES = ("CLAUDE.md", ".claude/CLAUDE.md", "AGENTS.md", "GEMINI.md", ".github/copilot-instructions.md")
+INSTRUCTION_DIRS = (".github/instructions",)
 GIT_TIMEOUT = 120
 # pack-apply rows that wrote a file; SKIP and UNCHANGED rows name no change (probe W1)
 WRITE_ACTIONS = ("ADD", "UPDATE", "MERGE")
@@ -35,6 +36,10 @@ def check_cells_root(root: Path) -> None:
         for name in INSTRUCTION_FILES:
             if (folder / name).is_file():
                 raise BenchError("HB-PRE-002", f"{folder / name} is above the cells root {root}; every cell would load it")
+        for name in INSTRUCTION_DIRS:
+            for path in (folder / name).rglob("*.instructions.md"):
+                if path.is_file():
+                    raise BenchError("HB-PRE-002", f"{path} is above the cells root {root}; every cell would load it")
 
 
 def _fresh(dest: Path) -> Path:

@@ -38,10 +38,20 @@ def test_infrastructure_and_benchmark_causes_invalidate_the_cell():
     assert not errors.Cause.adapter_crash.invalidates
 
 
+def test_copilot_set_model_refusal_uses_the_existing_model_unavailable_cause():
+    # R-18/R-23: driver classifies the -32602 setter reply by step, not message text.
+    cause = errors.Cause.model_unavailable
+    assert (cause.code, cause.label, cause.attribution, cause.invalidates) == (
+        "HB-CELL-116", "failed (model unavailable)", "benchmark", True
+    )
+
+
 def test_run_level_codes_are_unique_and_named():
     assert len(errors.RUN_CODES) == len(set(errors.RUN_CODES))
     for code in ("HB-PRE-002", "HB-RUN-001", "HB-LED-002", "HB-LED-005", "HB-SEC-001", "HB-USR-001"):
         assert errors.RUN_CODES[code]
+    for name in ("GEMINI.md", ".github/copilot-instructions.md", ".github/instructions/**/*.instructions.md"):
+        assert name in errors.RUN_CODES["HB-PRE-002"]
 
 
 def test_a_held_run_lock_and_a_refused_teardown_have_their_own_codes():  # T1-13
