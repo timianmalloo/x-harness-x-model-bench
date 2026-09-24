@@ -61,5 +61,12 @@
   "find": "    if code == OK:\n        print(f\"report: {html.write(run_dir, view)}\")\n",
   "replace": "    print(f\"report: {html.write(run_dir, view)}\")\n",
   "tests": ["tests/test_cli.py::test_grade_then_report_writes_the_page"]
+ },
+ {
+  "name": "plan --json ids use the bare task id, not the real task version",
+  "file": "src/harness_bench/cli.py",
+  "find": "        print(json.dumps([c.__dict__ | {\"id\": c.id} for c in plan.expand(matrix, bom, versions)], indent=2))\n",
+  "replace": "        print(json.dumps([c.__dict__ | {\"id\": c.id} for c in plan.expand(matrix, bom)], indent=2))\n",
+  "tests": ["tests/test_cli.py::test_plan_json_ids_equal_the_frozen_plans_cell_ids"]
  }
 ]
