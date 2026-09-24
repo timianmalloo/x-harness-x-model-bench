@@ -70,6 +70,55 @@ def test_engine_crash_kills_every_descendant(tmp_path):
     assert not any(_alive(p) for p in pids)
 
 
+def test_a_timed_out_wait_after_a_failed_assignment_still_closes_the_job(monkeypatch):
+    """A failed assignment must raise SpawnError, and job.close() must already have run.
+
+    proc.wait(timeout=30) sits before job.close(). A TimeoutExpired there skips the close
+    (residual 6). The process is created suspended and terminated before the wait.
+    """
+    jobs, pids, closed = [], [], []
+    real_init, real_open, real_close = procs.Job.__init__, procs._open_process, procs.Job.close
+
+    def spy_init(self):
+        real_init(self)
+        jobs.append(self)
+
+    def spy_open(pid):
+        pids.append(pid)
+        return real_open(pid)
+
+    def spy_close(self):
+        closed.append(self)
+        real_close(self)
+
+    def boom(self, timeout=None):
+        raise subprocess.TimeoutExpired(self.args, timeout)
+
+    monkeypatch.setattr(procs.Job, "__init__", spy_init)
+    monkeypatch.setattr(procs.Job, "close", spy_close)
+    monkeypatch.setattr(procs, "_open_process", spy_open)
+    monkeypatch.setattr(procs, "_assign", lambda job, handle: False)
+    monkeypatch.setattr(subprocess.Popen, "wait", boom)
+    kind = None
+    try:
+        try:
+            procs.spawn([sys.executable, "-c", "import time;time.sleep(30)"], cwd=None, env=None)
+        except subprocess.TimeoutExpired:
+            kind = "TimeoutExpired"
+        except procs.SpawnError as exc:
+            kind = "SpawnError"
+            assert exc.cause is Cause.spawn
+        assert (kind, bool(closed)) == ("SpawnError", True)
+    finally:
+        monkeypatch.undo()
+        for job in jobs:
+            if job.handle:
+                job.close()
+        for pid in pids:
+            if _alive(pid):
+                subprocess.run(["taskkill", "/F", "/PID", str(pid)], capture_output=True, check=False)
+
+
 def test_failed_assignment_leaves_no_process_and_raises_spawn(monkeypatch):
     seen = []
     real_open = procs._open_process

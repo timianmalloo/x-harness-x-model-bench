@@ -96,6 +96,22 @@ def test_report_refuses_when_the_hosts_credential_value_leaks_into_the_report(ca
     assert not (run_dir / "report.html").exists()
 
 
+def test_report_does_not_print_a_label_before_the_credential_scan(capsys, root, tmp_path):
+    """cmd_report prints the CLI table before html.write scans. A label that carries a
+    credential value must not reach stdout (residual 5)."""
+    fake_home = tmp_path / "fake-home"
+    (fake_home / ".claude").mkdir(parents=True)
+    token = "ROTATEDLABELSCAN0123456789"
+    (fake_home / ".claude" / ".credentials.json").write_text(json.dumps({"accessToken": token}), encoding="utf-8")
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": token})
+    code, _, _ = _bench(capsys, root, tmp_path, "grade", "r1")
+    assert code == 0
+    code, out, err = _bench(capsys, root, tmp_path, "report", "r1")
+    assert token not in out
+    assert code == 5 and "HB-SEC-001" in err and token not in err
+    assert not (run_dir / "report.html").exists()
+
+
 def test_grade_while_another_pass_holds_the_lock_is_exit_1(capsys, root, tmp_path):
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     with oslock.RunLock.acquire(run_dir / "grade.lock"):

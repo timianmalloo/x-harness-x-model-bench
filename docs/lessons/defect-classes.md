@@ -192,6 +192,24 @@ summary: >-
   Until then, the Proof Pack does not count this gate as evidence.
 - **Status:** `uncontrolled`
 
+### SUITE-A: "run the full suite" starts real model cells
+- **Signature:** a bare `pytest` runs tests marked `credentials`, which start real harness cells on the operator's logins. So an instruction to "run the full suite" (a worker's brief, a join gate) starts benchmark cells inside the coordination layer. That breaks owner ruling 3 (ADR-0002) and R-9 vendor exclusivity, and it rewrites `docs/proof/phase1-e2e-last.json`.
+- **Why it survives:** the phase-1 Proof Pack documents `-m ""` as the opt-in for e2e, which reads as though the default excludes them. Nothing enforced that: `tests/conftest.py` only skips `native` tests off Windows, and `pyproject.toml` had no `addopts`. The e2e run passes, so nothing looks wrong.
+- **Instances:**
+  - `2026-09-24` (coordination-finish-harness-bench, wave 1): the Leader wrote "the default suite excludes the real-harness tests" into the worker briefs without checking. W1-ACP's suite run, the Leader's W1-HOST join run and the reviewer's runs each started the 4-cell walking skeleton and the N5 canary on the Anthropic and OpenAI logins while other workers were live. It was found through a modified `phase1-e2e-last.json` in two worktrees, and a leftover `e2e-*` folder the reviewer saw.
+- **Sweep:** `-m credentials` collects 5 items: 3 in `tests/e2e/` (the walking skeleton and the US-13 canary) and 2 in `tests/test_profiles.py::test_real_handshake_with_the_pinned_build` (a real handshake on the login). The first write of this entry said "5 items in tests/e2e", which was wrong; the W1-TOOLB worker found it. The control is marker-based, so it covers all 5.
+- **Control:** `pyproject.toml` `addopts = "-m 'not credentials'"`; the documented opt-in `-m ""` still works. `tests/test_default_suite_is_offline.py` fails if a bare run selects any e2e item, or if the opt-in stops selecting them (red `5013299`).
+- **Status:** `controlled`
+
+### RUN-A: a runner bound that fails committed work
+- **Signature:** the coordination runner fails a long worker attempt on a transport bound, even though the work is already committed. Output over 16 MiB gives `output_limit_exceeded`. Any native tool error step gives `native_tool_error`, even one the agent could recover from, such as reading `.git/hooks` in a linked worktree where `.git` is a file.
+- **Why it survives:** the runner was qualified on single short turns (23–101 s), where neither bound is reached.
+- **Instances:**
+  - `2026-09-24`, run `w1-s1`: Grok (W1-HOST) had all 7 commits in place and then exceeded 16 MiB at 906 s. Agy (W1-TOOLB) failed at 292 s with no commit.
+- **Sweep:** every runner track longer than a qualification turn (Grok and Agy in waves 1–2).
+- **Control:** upstream pack fixes (R-11, track W1-PACK-2). Until they land: Grok slices of 12 minutes or less, Agy held, and each slice records `total_output_bytes`, `extension_notifications` and wall clock.
+- **Status:** `uncontrolled` (the fix is in flight upstream)
+
 ---
 
 ## Inherited classes (seeded from the pack)

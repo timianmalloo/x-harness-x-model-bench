@@ -28,3 +28,5 @@ packages = ["src/harness_bench"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Real model cells (the `credentials` marker) run only on an explicit opt-in: `-m ""` or `-m credentials` (SUITE-A).
+addopts = "-m 'not credentials'"
