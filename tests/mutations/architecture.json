@@ -2,8 +2,8 @@
  {
   "name": "the engine runs a subprocess itself",
   "file": "src/harness_bench/engine.py",
-  "find": "def process_alive(pid: int, created: int) -> bool:\n",
-  "replace": "def _leak() -> None:\n    subprocess.run([\"cmd\"], check=False)\n\n\ndef process_alive(pid: int, created: int) -> bool:\n",
+  "find": "log = logging.getLogger(\"harness_bench.engine\")\n",
+  "replace": "log = logging.getLogger(\"harness_bench.engine\")\n\n\ndef _leak() -> None:\n    subprocess.run([\"cmd\"], check=False)\n",
   "tests": ["tests/test_architecture.py::test_only_procs_calls_subprocess_or_spawns"]
  },
  {
