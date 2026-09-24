@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T03:06:09Z",
+  "generated": "2026-09-24T03:17:54Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -516,6 +516,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-09-24T03:04:49Z",
       "duration_seconds": 80.0
+    },
+    {
+      "id": "al-01M38PPWARHAG7VCDR8E12D5HJ",
+      "shortname": "join-t4",
+      "datetime": "2026-09-24T03:17:54Z",
+      "session": "coord-opus",
+      "prompt": "the join of track/t4-surfaces into impl/phase1",
+      "summary": "T4: exact-value credential scan, bench-status/1 stop_code+phase (R-3), plan ids, N5 flag (R-5); status 12/12, report 21/21, cli 11/11 killed recount_seconds=99 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "merge T4's verified evidence",
+      "done_when": "join gates green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-24T03:16:14Z",
+      "duration_seconds": 100.0
     }
   ],
   "changes": [
