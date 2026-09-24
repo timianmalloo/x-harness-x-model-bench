@@ -38,6 +38,7 @@ _BASIC_ACCOUNTING = 1
 _BASIC_PID_LIST = 3
 _EXTENDED_LIMIT = 9
 _MAX_PIDS = 1024
+_ERROR_INVALID_HANDLE = 6
 
 _k32 = ctypes.WinDLL("kernel32", use_last_error=True)
 _ntdll = ctypes.WinDLL("ntdll")
@@ -102,6 +103,11 @@ def _open_process(pid: int) -> int:
     return _k32.OpenProcess(_PROCESS_ALL_ACCESS, False, pid)
 
 
+# Fault seam: a failed query must raise, never leave a zeroed struct that reads as "no processes".
+def _query(job: int | None, info_class: int, buf: ctypes.Structure) -> bool:
+    return bool(_k32.QueryInformationJobObject(job, info_class, ctypes.byref(buf), ctypes.sizeof(buf), None))
+
+
 class Job:
     """One kill-on-close Job Object with breakaway never allowed."""
 
@@ -117,30 +123,34 @@ class Job:
             raise SpawnError("SetInformationJobObject failed", err)
         self.handle = handle
 
+    def _query[S: ctypes.Structure](self, info_class: int, buf: S) -> S:
+        """Fill `buf` from the job, or raise OSError from the last error."""
+        if not self.handle:  # a NULL handle would query the job of the calling process instead
+            raise ctypes.WinError(_ERROR_INVALID_HANDLE)
+        if not _query(self.handle, info_class, buf):
+            raise ctypes.WinError(ctypes.get_last_error())
+        return buf
+
     def _extended(self) -> _ExtendedLimit:
-        info = _ExtendedLimit()
-        _k32.QueryInformationJobObject(self.handle, _EXTENDED_LIMIT, ctypes.byref(info), ctypes.sizeof(info), None)
-        return info
+        return self._query(_EXTENDED_LIMIT, _ExtendedLimit())
 
     def _accounting(self) -> _BasicAccounting:
-        acc = _BasicAccounting()
-        _k32.QueryInformationJobObject(self.handle, _BASIC_ACCOUNTING, ctypes.byref(acc), ctypes.sizeof(acc), None)
-        return acc
+        return self._query(_BASIC_ACCOUNTING, _BasicAccounting())
 
     def limit_flags(self) -> int:
         return self._extended().Basic.LimitFlags
 
     def inheritable(self) -> bool:
         flags = wt.DWORD()
-        _k32.GetHandleInformation(self.handle, ctypes.byref(flags))
+        if not self.handle or not _k32.GetHandleInformation(self.handle, ctypes.byref(flags)):  # same class: no zeroed answer
+            raise ctypes.WinError(ctypes.get_last_error() or _ERROR_INVALID_HANDLE)
         return bool(flags.value & _HANDLE_FLAG_INHERIT)
 
     def active(self) -> int:
         return self._accounting().ActiveProcesses
 
     def pids(self) -> set[int]:
-        buf = _PidList()
-        _k32.QueryInformationJobObject(self.handle, _BASIC_PID_LIST, ctypes.byref(buf), ctypes.sizeof(buf), None)
+        buf = self._query(_BASIC_PID_LIST, _PidList())
         return {int(buf.Ids[i]) for i in range(buf.InList)}
 
     def peak_memory(self) -> int:
