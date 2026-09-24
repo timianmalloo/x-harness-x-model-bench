@@ -16,7 +16,7 @@ Rules, each defined once here:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
@@ -168,14 +168,18 @@ def _ts(value) -> datetime | None:
         return None
 
 
-def busy_ms(calls: list[dict]) -> Measure:
-    """Milliseconds covered by the union of the calls' [start, end] intervals (overlaps counted once)."""
-    spans = []
-    for c in calls:
-        start, end = _ts(c.get("start")), _ts(c.get("end"))
-        if start is None or end is None or end < start:
-            return Measure(None, "an interval has no start or end")
-        spans.append((start, end))
+NO_MODEL_START = "the native record gives no model-call start time"
+
+
+def busy_ms(calls: list[dict], *, positive: bool = False, missing: str = "an interval has no start or end") -> Measure:
+    """Milliseconds covered by the union of the calls' [start, end] spans (overlaps counted once).
+
+    The one span rule: both ends recorded and the end not before the start; with `positive`, strictly after it
+    (a model call with no length means its start was not recorded). One call that breaks it makes the whole
+    measure NOT_RECORDED with `missing` as the reason, never a partial sum."""
+    spans = [(_ts(c.get("start")), _ts(c.get("end"))) for c in calls]
+    if any(start is None or end is None or end < start or (positive and end == start) for start, end in spans):
+        return Measure(None, missing)
     total, cur_start, cur_end = 0.0, None, None
     for start, end in sorted(spans):
         if cur_end is None or start > cur_end:
@@ -203,14 +207,14 @@ def _model_time(source: str, calls: list[dict] | None) -> Measure:
         return Measure(None, "the native record misses calls (token source acp_turn)")
     if calls is None:
         return Measure(None, "not graded")
-    if not calls or not all(_has_duration(c) for c in calls):
-        return Measure(None, "the native record gives no model-call start time")
-    return busy_ms(calls)
+    if not calls:
+        return Measure(None, NO_MODEL_START)
+    return busy_ms(calls, positive=True, missing=NO_MODEL_START)
 
 
-def _has_duration(call: dict) -> bool:
-    start, end = _ts(call.get("start")), _ts(call.get("end"))
-    return start is not None and end is not None and end > start
+def turn_usage(row: dict) -> normalize.TurnUsage:
+    """The one mapping of a `turn_usage` row to its value object (views and the grading pass both read it)."""
+    return normalize.TurnUsage(**{f.name: row[f.name] for f in fields(normalize.TurnUsage)})
 
 
 def _idle(wall: Measure, model: Measure, tool: Measure) -> Measure:
@@ -248,8 +252,7 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     if extraction is not None:
         calls = [r for r in facts["model_calls"] if r["cell_id"] == cid and r["extraction_id"] == extraction]
         tools = [r for r in facts["tool_calls"] if r["cell_id"] == cid and r["extraction_id"] == extraction]
-    usage = [normalize.TurnUsage(r["model"], r["uncached_input"], r["cache_read"], r["cache_write"], r["output"], r["reasoning"])
-             for r in facts["turn_usage"] if r["cell_id"] == cid]
+    usage = [turn_usage(r) for r in facts["turn_usage"] if r["cell_id"] == cid]
     ex = Extraction(model_calls=[ModelCall(r["native_ordinal"], r["model"], r["uncached_input"], r["cache_read"], r["cache_write"],
                                            r["output"], r["reasoning"], r["start"], r["end"]) for r in calls or []])
     recorded = source == "acp_turn" or calls is not None

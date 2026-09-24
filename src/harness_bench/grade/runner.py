@@ -94,8 +94,7 @@ class _Pass:
         held = {(r["cell_id"], r["extraction_id"]) for fact in ("model_calls", "tool_calls") for r in views.rows(self.run_dir, fact)}
         usage: dict[str, list[normalize.TurnUsage]] = {}
         for r in views.rows(self.run_dir, "turn_usage"):
-            usage.setdefault(r["cell_id"], []).append(normalize.TurnUsage(r["model"], r["uncached_input"], r["cache_read"],
-                                                                           r["cache_write"], r["output"], r["reasoning"]))
+            usage.setdefault(r["cell_id"], []).append(views.turn_usage(r))
         archived = {e["cell_id"]: e["archive_attempt"] for e in events if e["kind"] == "cell.archived"}
         sessions = {e["cell_id"]: e["session_id"] for e in events if e["kind"] == "attempt.session_opened"}
         try:
