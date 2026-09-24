@@ -494,6 +494,50 @@ def test_the_fidelity_check_fails_on_a_seeded_unpaired_type(tmp_path):  # D7 neg
         _assert_paired(emitted)
 
 
+# the engine's side of the driver change (R-13, R-24, R-28: W1-ACP's engine.py hunks), through a real engine run
+
+@pytest.mark.parametrize("set_model", [False, True])
+def test_the_engine_passes_the_plan_model_only_to_a_launcher_that_sets_it(base, monkeypatch, set_model):  # R-13
+    from test_engine import FakeLauncher, _plan, _run
+    real, seen = driver.run_turn, []
+
+    def spy(*args, **kwargs):
+        seen.append(kwargs.get("model"))
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(driver, "run_turn", spy)
+    launcher = FakeLauncher({})
+    launcher.set_model = set_model
+    p = _plan(n_cells=1)
+    _run(base, p, launcher)
+    assert seen == [p["cells"][0]["model"] if set_model else None]
+
+
+def test_the_credential_kind_is_the_one_the_launcher_reports(base):  # R-13 condition 2
+    from test_engine import FakeLauncher, _plan, _run
+    launcher = FakeLauncher({})
+    launcher.credential_kind = "subscription login (credential store)"
+    _, events, _ = _run(base, _plan(n_cells=1), launcher)
+    assert [e["credential_kind"] for e in events if e["kind"] == "attempt.process_started"] == [launcher.credential_kind]
+
+
+def test_the_session_opened_event_carries_the_agent_version(base):  # R-28: one verbatim field
+    from test_engine import FakeLauncher, _plan, _run
+    _, events, _ = _run(base, _plan(n_cells=1), FakeLauncher({}))
+    opened = [e for e in events if e["kind"] == "attempt.session_opened"]
+    assert [e["agent_version"] for e in opened] == ["0"]  # the fake agent's initialize.agentInfo.version
+
+
+def test_the_attempt_end_records_the_acp_usage_verbatim_or_null(base):  # R-24
+    from test_engine import USAGE, FakeLauncher, _plan, _run
+    p = _plan(n_cells=2, labels=["with-usage", "no-usage"])
+    _, events, _ = _run(base, p, FakeLauncher({"no-usage": {"usage": []}}))
+    ended = {e["cell_id"]: e for e in events if e["kind"] == "attempt.process_ended"}
+    with_usage, no_usage = (ended[c["cell_id"]]["acp_usage"] for c in p["cells"])
+    assert with_usage == {"usage": {"inputTokens": 1}, "meta": {"quota": {"model_usage": USAGE}}}  # the fake's halves
+    assert no_usage is None  # not recorded: never {} or zeros
+
+
 def _with_set_model(tmp_path: Path, reply: dict) -> Path:
     """The codex recording with a session/set_model exchange right after session/new (ids after it shifted by one),
     answered by `reply` (a result or an error)."""

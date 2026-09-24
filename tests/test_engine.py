@@ -37,8 +37,10 @@ class FakeLauncher:
 
     harness = "fake"
     credential_names = frozenset({".credentials.json"})
+    credential_kind = "subscription login (copied)"
     usage_source = "acp_turn"
     mode = None
+    set_model = False
 
     def __init__(self, behaviours: dict[str, dict], build_changed: bool = False, missing_exe: bool = False,
                  build_changed_for: set[str] | None = None):
