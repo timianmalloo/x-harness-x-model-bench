@@ -1,0 +1,86 @@
+[
+ {
+  "name": "NA rendered as zero",
+  "file": "src/harness_bench/report/__init__.py",
+  "find": "    return f\"NA ({m.reason})\"\n",
+  "replace": "    return \"$0\"\n",
+  "tests": ["tests/test_report.py::test_not_recorded_never_renders_as_zero"]
+ },
+ {
+  "name": "an ungraded run exits 0",
+  "file": "src/harness_bench/report/cli_table.py",
+  "find": "NOT_GRADED_EXIT = 4\n",
+  "replace": "NOT_GRADED_EXIT = 0\n",
+  "tests": ["tests/test_report.py::test_an_ungraded_run_says_so_and_exits_4"]
+ },
+ {
+  "name": "the plain table draws a unicode box",
+  "file": "src/harness_bench/report/cli_table.py",
+  "find": "box.ASCII if plain else box.SIMPLE_HEAVY",
+  "replace": "box.SIMPLE_HEAVY",
+  "tests": ["tests/test_report.py::test_the_plain_table_is_ascii_with_textual_na_and_invalid_marks"]
+ },
+ {
+  "name": "a colour literal outside :root",
+  "file": "src/harness_bench/report/html.py",
+  "find": ".muted,dt{color:var(--ink-2)}",
+  "replace": ".muted,dt{color:#4b5563}",
+  "tests": ["tests/test_report.py::test_no_colour_size_or_radius_literal_outside_root"]
+ },
+ {
+  "name": "a focus colour below 3:1",
+  "file": "src/harness_bench/report/html.py",
+  "find": "--focus:#1d6fd6;",
+  "replace": "--focus:#9fb8d8;",
+  "tests": ["tests/test_report.py::test_text_and_focus_contrast_meet_wcag_aa"]
+ },
+ {
+  "name": "header cells without scope",
+  "file": "src/harness_bench/report/html.py",
+  "find": "f'<th scope=\"col\"{",
+  "replace": "f'<th{",
+  "tests": ["tests/test_report.py::test_the_page_is_structurally_accessible"]
+ },
+ {
+  "name": "a scroll region not focusable",
+  "file": "src/harness_bench/report/html.py",
+  "find": "role=\"region\" tabindex=\"0\" aria-labelledby",
+  "replace": "role=\"region\" aria-labelledby",
+  "tests": ["tests/test_report.py::test_the_page_is_structurally_accessible"]
+ },
+ {
+  "name": "the credential scan disabled",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    if found:\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_report.py::test_a_planted_credential_is_found_and_the_report_refused"]
+ },
+ {
+  "name": "a missing archive not stated",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    if archive_present:\n",
+  "replace": "    if True:\n",
+  "tests": ["tests/test_report.py::test_evidence_without_the_archive_says_so"]
+ },
+ {
+  "name": "numbers left-aligned",
+  "file": "src/harness_bench/report/html.py",
+  "find": ".num{text-align: right;",
+  "replace": ".num{text-align: left;",
+  "tests": ["tests/test_report.py::test_numeric_cells_are_tabular_right_aligned_and_carry_units"]
+ },
+ {
+  "name": "the all-valid banner missing",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    if n and all(c.validity == \"valid\" for c in view.cells):\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_report.py::test_the_banner_says_so_when_every_cell_is_valid"]
+ },
+ {
+  "name": "a missing header fact rendered empty",
+  "file": "src/harness_bench/report/html.py",
+  "find": "else \"not recorded\"",
+  "replace": "else \"\"",
+  "tests": ["tests/test_report.py::test_the_header_shows_recorded_facts_and_not_recorded_for_the_rest"]
+ }
+]

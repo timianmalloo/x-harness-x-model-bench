@@ -108,6 +108,7 @@ class RunView:
     grading_id: str | None  # the current pass
     catalog_version: str | None
     cells: list[CellView]
+    header: dict[str, str | None] = field(default_factory=dict)  # credential kind, network mode, executed builds
 
 
 @dataclass
@@ -271,7 +272,19 @@ def load(run_dir: Path, catalog_version: str | None = None) -> RunView:
     grading_id, catalog = _current_pass(facts["events"], catalog_version)
     cells = [_cell_view(plan, c, facts, grading_id) for c in plan["cells"]]
     completed = any(e["kind"] == "run.completed" for e in facts["events"])
-    return RunView(plan["run_id"], plan, completed, grading_id, catalog, cells)
+    return RunView(plan["run_id"], plan, completed, grading_id, catalog, cells, _header(facts["events"]))
+
+
+def _header(events: list[dict]) -> dict[str, str | None]:
+    """Report-header facts as recorded at process start; None = not recorded."""
+    started = [e for e in events if e["kind"] == "attempt.process_started"]
+
+    def one(field_name: str) -> str | None:
+        values = sorted({str(e[field_name]) for e in started if e.get(field_name)})
+        return ", ".join(values) or None
+
+    builds = sorted({f"{e['harness']} {e['build_version']}" for e in started if e.get("harness") and e.get("build_version")})
+    return {"credential_kind": one("credential_kind"), "network_mode": one("network_mode"), "executed_builds": ", ".join(builds) or None}
 
 
 def _mean(values: list) -> Decimal:
