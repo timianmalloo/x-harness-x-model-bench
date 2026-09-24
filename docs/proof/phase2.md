@@ -55,7 +55,22 @@ Each join follows the plan's join rule. A non-author re-runs every cited red in 
 
 **Suite on `main` after both joins:** 617 passed, 5 deselected; ruff clean.
 
-**Open (Minor, advisory):**
+**Veto read-back (Claude Test Architect, round 2): CLEARS THE VETO.** Its mutant M2b (the memory check inverted, run on the joined code) was killed by `test_host.py::test_a_failed_global_memory_status_ex_is_not_recorded` and `test_engine.py::test_a_failed_memory_query_still_records_the_outcome_with_null` (2 failed, 109 passed). The M2 row above names the slice-1 test; that test was renamed in `ed2fa1d`.
+
+**Slice 3** (Grok, `w1-host-s3`, 279 s, 1,755,132 bytes; joined `c57cbcb`). `test_no_leftovers.py` now asserts only that its own `base` folder is gone, not a snapshot of the shared folder (the concurrency flake). The untested extra `proc.kill()` is removed (M1).
+
+**Slice 4** (Claude Sonnet 5 per R-29, after Grok failed `protocol_error` at 3.36 s with no commit; joined `6cf7755`), `23c21be`, tests only:
+
+| mutant (applied, run, reverted by the author) | killing test |
+| --- | --- |
+| M5 `available_memory()` returns `None` on success | `test_host.py::test_available_memory_and_unbiased_seconds_return_real_positive_values` ("isinstance(None, int)" is False) |
+| M4 `SleepDetector.slept()` never anchors the first good reading | `test_host.py::test_sleep_detector_recovers_after_a_missing_first_reading` ("assert False is True") |
+
+**Suite on `main` after slice 4:** 619 passed, 5 deselected.
+
+**Still open (Minor):** residual 11 is only partly proven (a suite-wide leftover count is not enforced). The residual-5 sweep of `status`, `run` and `plan` goes to the Security lens.
+
+**Open after slice 2 (Minor, advisory; see slices 3 and 4 below for what closed):**
 - M1 survives.
 - `test_no_leftovers.py` compares a snapshot of the shared `bench-test` folder, so a concurrent suite can fail it. One flake was seen on `main` while another suite ran.
 - Residual 11 is only partly proven.
