@@ -60,3 +60,151 @@ def test_a_same_size_mutation_leaves_no_stale_bytecode(tmp_path, monkeypatch):
     loaded = subprocess.run([sys.executable, "-c", "import m; print(m.X)"], cwd=tmp_path, capture_output=True, text=True,
                             timeout=60, check=True)
     assert loaded.stdout.strip() == "30.0"
+
+
+# --- TOOL-B: a cosmic-ray "killed" is re-derived from a named test failing --------------------
+#
+# cosmic-ray 8.7.0's WorkResult (cosmic_ray/work_item.py) has no exit code: `testing.run_tests`
+# (read at C:\Users\malla\AppData\Local\uv\cache\archive-v0\PdlzIZscLpkdaw3H\Lib\site-packages\
+# cosmic_ray\testing.py:73-75, cosmic-ray 8.7.0) calls TestOutcome.KILLED for *any* non-zero exit
+# from the test command -- a real test failure, a collection error, or any other non-zero exit
+# alike -- and KILLED with output=="timeout" (the literal sentinel string) for a hang. Only a
+# `FAILED <node id>` line naming one of the mutation's own tests is evidence of a real kill; a
+# collection error or an unrelated pytest failure carries no such line and must not be counted.
+# `cli.py:dump` (the only way session data leaves cosmic-ray; `cosmic_ray.commands.dump` is not a
+# module) serialises each WorkResult as {"worker_outcome", "output", "test_outcome", "diff"}.
+
+CR_NAMED = ["tests/test_ledger.py::test_tail_repaired", "tests/test_ledger.py"]
+
+
+@pytest.mark.parametrize(("result", "expected_verdict", "expected_test"), [
+    (
+        {"worker_outcome": "normal", "test_outcome": "killed",
+         "output": "FAILED tests/test_ledger.py::test_tail_repaired - assert 1 == 2\n1 failed", "diff": "x"},
+        "killed", "tests/test_ledger.py::test_tail_repaired",
+    ),
+    (
+        {"worker_outcome": "normal", "test_outcome": "survived", "output": "5 passed", "diff": "x"},
+        "survived", None,
+    ),
+    (
+        # the wrong test failed: a real pytest run, exit 1, but no FAILED line names this mutant's test
+        {"worker_outcome": "normal", "test_outcome": "killed",
+         "output": "FAILED tests/test_views.py::test_other - boom\n1 failed", "diff": "x"},
+        "survived", None,
+    ),
+    (
+        # a collection error (an ImportError before any test runs): cosmic-ray still calls this
+        # KILLED (testing.py:73, returncode != 0), but no FAILED line ever appears -- not a kill.
+        {"worker_outcome": "normal", "test_outcome": "killed",
+         "output": "ERRORS\nERROR tests/test_ledger.py - ImportError: cannot import name 'x'\n"
+                    "!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n1 error in 0.31s",
+         "diff": "x"},
+        "error", None,
+    ),
+    (
+        # an exit-2 run interrupted before producing a single FAILED line (e.g. -x on a fixture
+        # crash): still non-zero exit, still KILLED per cosmic-ray, still not a named kill.
+        {"worker_outcome": "normal", "test_outcome": "killed",
+         "output": "!!!!!!!!!!!!!!!!!!! Interrupted: fixture 'base' failed !!!!!!!!!!!!!!!!!!!!\n2 errors in 4.01s",
+         "diff": "x"},
+        "error", None,
+    ),
+    (
+        # cosmic-ray's own timeout sentinel (testing.py:69-71): a hang is not a kill.
+        {"worker_outcome": "normal", "test_outcome": "killed", "output": "timeout", "diff": None},
+        "timeout", None,
+    ),
+    (
+        # a launch failure (e.g. a bad interpreter path, T2's record): INCOMPETENT, not a kill.
+        {"worker_outcome": "normal", "test_outcome": "incompetent",
+         "output": "Traceback (most recent call last):\nFileNotFoundError", "diff": None},
+        "error", None,
+    ),
+    (
+        # the worker itself crashed applying the mutation (mutating.py's outer except): not a kill.
+        {"worker_outcome": "exception", "test_outcome": "incompetent", "output": "Traceback...", "diff": None},
+        "error", None,
+    ),
+    (
+        # no result yet (dump's pending_work_items: WorkResult is null).
+        None, "pending", None,
+    ),
+])
+def test_cosmic_ray_verdict_only_a_named_failure_is_a_kill(result, expected_verdict, expected_test):
+    assert mutate_check.cosmic_ray_verdict(result, CR_NAMED) == (expected_verdict, expected_test)
+
+
+def test_named_tests_for_matches_exact_file_then_directory_prefix_then_nothing():
+    test_map = {
+        "src/harness_bench/ledger.py": ["tests/test_ledger.py"],
+        "src/harness_bench/grade": ["tests/test_grade.py", "tests/test_report.py"],
+    }
+    assert mutate_check.named_tests_for(["src/harness_bench/ledger.py"], test_map) == ["tests/test_ledger.py"]
+    assert mutate_check.named_tests_for(["src/harness_bench/grade/runner.py"], test_map) == \
+        ["tests/test_grade.py", "tests/test_report.py"]
+    assert mutate_check.named_tests_for(["src/harness_bench/views.py"], test_map) == []
+
+
+def test_named_tests_for_normalises_windows_separators():
+    # cosmic-ray's dump stringifies module_path with Path.__str__, which is backslash-separated
+    # on Windows (cli.py:_work_item_to_dict), and this ran natively on Windows (mutation-record-t2.md).
+    test_map = {"src/harness_bench/grade": ["tests/test_grade.py"]}
+    assert mutate_check.named_tests_for([r"src\harness_bench\grade\runner.py"], test_map) == ["tests/test_grade.py"]
+
+
+def _dump_line(job_id, module_path, result):
+    work_item = {"job_id": job_id, "mutations": [
+        {"module_path": module_path, "operator_name": "op", "occurrence": 0,
+         "start_pos": [1, 0], "end_pos": [1, 1], "operator_args": {}, "definition_name": None},
+    ]}
+    return json.dumps([work_item, result])
+
+
+def test_derive_cosmic_ray_counts_overstated_kills():
+    test_map = {"src/harness_bench/ledger.py": ["tests/test_ledger.py::test_tail_repaired"]}
+    lines = [
+        _dump_line("j1", "src/harness_bench/ledger.py",
+                   {"worker_outcome": "normal", "test_outcome": "killed",
+                    "output": "FAILED tests/test_ledger.py::test_tail_repaired - x\n1 failed", "diff": "x"}),
+        _dump_line("j2", "src/harness_bench/ledger.py",
+                   {"worker_outcome": "normal", "test_outcome": "killed",
+                    "output": "ERROR tests/test_ledger.py - SyntaxError\n1 error", "diff": "x"}),
+        _dump_line("j3", "src/harness_bench/ledger.py",
+                   {"worker_outcome": "normal", "test_outcome": "survived", "output": "1 passed", "diff": "x"}),
+    ]
+    records, overstated = mutate_check.derive_cosmic_ray(lines, test_map)
+    assert [r["verdict"] for r in records] == ["killed", "error", "survived"]
+    assert overstated == 1  # j2: cosmic-ray called it killed, no named test failed
+
+
+def test_cli_cosmic_ray_mode_exits_1_on_an_overstated_kill(tmp_path, capsys):
+    test_map = tmp_path / "test-map.json"
+    test_map.write_text(json.dumps({"src/harness_bench/ledger.py": ["tests/test_ledger.py"]}), encoding="utf-8")
+    dump = tmp_path / "dump.jsonl"
+    dump.write_text(
+        _dump_line("j1", "src/harness_bench/ledger.py",
+                    {"worker_outcome": "normal", "test_outcome": "killed", "output": "timeout", "diff": None}) + "\n",
+        encoding="utf-8",
+    )
+    rc = mutate_check.main(["--cosmic-ray", str(test_map), str(dump)])
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "timeout" in out
+    assert "1 overstated" in out
+
+
+def test_cli_cosmic_ray_mode_exits_0_when_every_kill_is_named(tmp_path, capsys):
+    test_map = tmp_path / "test-map.json"
+    test_map.write_text(json.dumps({"src/harness_bench/ledger.py": ["tests/test_ledger.py::test_x"]}), encoding="utf-8")
+    dump = tmp_path / "dump.jsonl"
+    dump.write_text(
+        _dump_line("j1", "src/harness_bench/ledger.py",
+                    {"worker_outcome": "normal", "test_outcome": "killed",
+                     "output": "FAILED tests/test_ledger.py::test_x - x\n1 failed", "diff": "x"}) + "\n",
+        encoding="utf-8",
+    )
+    rc = mutate_check.main(["--cosmic-ray", str(test_map), str(dump)])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "0 overstated" in out

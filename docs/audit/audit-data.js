@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T21:13:10Z",
+  "generated": "2026-09-24T21:58:27Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -2241,6 +2241,1141 @@ window.AUDIT_DATA = {
       "duration_source": "session-start-hook",
       "started_at": "2026-09-24T21:11:35Z",
       "duration_seconds": 95.0
+    },
+    {
+      "id": "al-01M3AM98AY8D573BBJS41GBBVK",
+      "shortname": "Goal: W1-HOST slice 1 (plan docs/coordination/coordination-finish-harnes…",
+      "datetime": "2026-09-24T21:13:59Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W1-HOST slice 1 (plan docs/coordination/coordination-finish-harness-bench.md, row 28): fix three disclosed hardening defects red-first and add a leftover-folder test, in the owned paths only.\nDone when: A red commit (tests only, no src/ change) then a green commit exists for each of the three defects: (1) procs.spawn() can raise TimeoutExpired before job.close() after a failed assignment; (2) host.py does not check the results of GlobalMemoryStatusEx and QueryUnbiasedInterruptTime; (3) cmd_report in src/harness_bench/cli.py:191-194 prints the cli_table text before html.write runs the credential scan.; A new tests/test_no_leftovers.py asserts the base fixture leaves 0 folders behind.; `uv run pytest -q` passes on your branch and `uv run ruff check` is clean.; Your final message lists each red SHA, the green SHA, and the exact failing assertion each red produced.\nNot in scope: tests/conftest.py and every file outside src/harness_bench/procs.py, src/harness_bench/host.py, src/harness_bench/cli.py, src/harness_bench/report/cli_table.py, tests/test_procs.py, tests/test_host.py, tests/test_cli.py, tests/test_report.py, tests/test_no_leftovers.py, tests/mutations/cli.json.; Running any test with -m \"\" or anything under tests/e2e (those start real model cells).; The power request (row 11 is already built: host.keep_awake).; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit before the deadline even if a defect remains, and say which remains.\n\nGrounding: read docs/proof/phase1.md residuals 5 and 6, and AGENTS.md. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing so the commit floor enforces ownership. Red-first means the test commit fails on the current code for the stated reason before the fix commit. If a fix needs a file you do not own, stop and say which file and why; do not edit it.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3AM98NJS7TT1ZF8NXY9VWRY",
+      "shortname": "Goal: W1-TOOLB slice 1 (plan docs/coordination/coordination-finish-harne…",
+      "datetime": "2026-09-24T21:14:00Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W1-TOOLB slice 1 (plan docs/coordination/coordination-finish-harness-bench.md, row 26): build the TOOL-B control so a cosmic-ray kill counts only when a named test failed, red-first, in the owned paths only.\nDone when: tools/mutate_check.py re-derives each kill from `cosmic-ray dump` output and names the failing test for it.; Red-first seeded cases exist in tests/test_mutate_check.py: a mutant that causes a collection error, a timeout, and an exit-2 run are each reported NOT a named kill, and the red commit (tests only) fails on the current tool for that reason.; `uv run pytest -q tests/test_mutate_check.py` and `uv run pytest -q` pass on your branch and `uv run ruff check` is clean.; Your final message lists the red SHA, the green SHA, the failing assertion the red produced, and the command to run the control over the phase-1 modules.\nNot in scope: Every file outside tools/mutate_check.py and tests/test_mutate_check.py.; Running any test with -m \"\" or anything under tests/e2e (those start real model cells).; Running the full cosmic-ray sweep over the phase-1 modules (the Leader runs it at the join).; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit before the deadline even if a case remains, and say which remains.\n\nGrounding: read docs/lessons/defect-classes.md (the TOOL-A and TOOL-B classes), docs/proof/phase1.md (Claim 3 and residual 10), and AGENTS.md. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing so the commit floor enforces ownership. If the control needs a file you do not own, stop and say which file and why; do not edit it.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3AM9G9EP34TF3RD3CBQDBG5",
+      "shortname": "compile-Goal: W1-HOST slice 1 (plan docs/coordination/coordination-finish-harnes…",
+      "datetime": "2026-09-24T21:14:08Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-HOST slice 1 (plan docs/coordination/coordination-finish-harness-bench.md, row 28): fix three disclosed hardening defects red-first and add a leftover-folder test, in the owned paths only.\nDone when: A red commit (tests only, no src/ change) then a green commit exists for each of the three defects: (1) procs.spawn() can raise TimeoutExpired before job.close() after a failed assignment; (2) host.py does not check the results of GlobalMemoryStatusEx and QueryUnbiasedInterruptTime; (3) cmd_report in src/harness_bench/cli.py:191-194 prints the cli_table text before html.write runs the credential scan.; A new tests/test_no_leftovers.py asserts the base fixture leaves 0 folders behind.; `uv run pytest -q` passes on your branch and `uv run ruff check` is clean.; Your final message lists each red SHA, the green SHA, and the exact failing assertion each red produced.\nNot in scope: tests/conftest.py and every file outside src/harness_bench/procs.py, src/harness_bench/host.py, src/harness_bench/cli.py, src/harness_bench/report/cli_table.py, tests/test_procs.py, tests/test_host.py, tests/test_cli.py, tests/test_report.py, tests/test_no_leftovers.py, tests/mutations/cli.json.; Running any test with -m \"\" or anything under tests/e2e (those start real model cells).; The power request (row 11 is already built: host.keep_awake).; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit before the deadline even if a defect remains, and say which remains.\nGrounding: read docs/proof/phase1.md residuals 5 and 6, and AGENTS.md. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing so the commit floor enforces ownership. Red-first means the test commit fails on the current code for the stated reason before the fix commit. If a fix needs a file you do not own, stop and say which file and why; do not edit it.\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit (tests only, no src/ change) then a green commit exists for each of the three defects: (1) procs.spawn() can raise TimeoutExpired before job.close() after a failed assignment | phrase: A red commit (tests only, no src/ change) then a green commit exists for each of the three defects: (1) procs.spawn() can raise TimeoutExpired before job.close() after a failed assignment |\n| done_when: (2) host.py does not check the results of GlobalMemoryStatusEx and QueryUnbiasedInterruptTime | phrase: (2) host.py does not check the results of GlobalMemoryStatusEx and QueryUnbiasedInterruptTime |\n| done_when: (3) cmd_report in src/harness_bench/cli.py:191-194 prints the cli_table text before html.write runs the credential scan. | phrase: (3) cmd_report in src/harness_bench/cli.py:191-194 prints the cli_table text before html.write runs the credential scan. |\n| done_when: A new tests/test_no_leftovers.py asserts the base fixture leaves 0 folders behind. | phrase: A new tests/test_no_leftovers.py asserts the base fixture leaves 0 folders behind. |\n| done_when: `uv run pytest -q` passes on your branch and `uv run ruff check` is clean. | phrase: `uv run pytest -q` passes on your branch and `uv run ruff check` is clean. |\n| done_when: Your final message lists each red SHA, the green SHA, and the exact failing assertion each red produced. | phrase: Your final message lists each red SHA, the green SHA, and the exact failing assertion each red produced. |\n| not_in_scope: tests/conftest.py and every file outside src/harness_bench/procs.py, src/harness_bench/host.py, src/harness_bench/cli.py, src/harness_bench/report/cli_table.py, tests/test_procs.py, tests/test_host.py, tests/test_cli.py, tests/test_report.py, tests/test_no_leftovers.py, tests/mutations/cli.json. | phrase: tests/conftest.py and every file outside src/harness_bench/procs.py, src/harness_bench/host.py, src/harness_bench/cli.py, src/harness_bench/report/cli_table.py, tests/test_procs.py, tests/test_host.py, tests/test_cli.py, tests/test_report.py, tests/test_no_leftovers.py, tests/mutations/cli.json. |\n| not_in_scope: Running any test with -m \"\" or anything under tests/e2e (those start real model cells). | phrase: Running any test with -m \"\" or anything under tests/e2e (those start real model cells). |\n| not_in_scope: The power request (row 11 is already built: host.keep_awake). | phrase: The power request (row 11 is already built: host.keep_awake). |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- uv run pytest -q: unresolved (not found)\n- uv run ruff check: unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 a9243d44a4ace691b4c5f95a46d2ac5a89da8c42ddedccab907c19f92fd78e97\n- src/: unresolved (not found)\n- host.py: src/harness_bench/host.py sha256 6c367e4a2d52ef00b06e10e80d0b5cc429ed2bd9c04022afce0f2ab1fad82bb0\n- src/harness_bench/cli.py:191-194: unresolved (not found)\n- tests/test_no_leftovers.py: unresolved (not found)\n- tests/conftest.py: tests/conftest.py sha256 d0a1f176caaf1a66888a86bbd6a06e3dbfbfb7861e3c72383c06c54e6dbdbc29\n- src/harness_bench/procs.py: src/harness_bench/procs.py sha256 2be3acd5ff3aff0964471eebac9306c2108a044b7c83b5e48ba106c55503aa31\n- src/harness_bench/host.py: src/harness_bench/host.py sha256 6c367e4a2d52ef00b06e10e80d0b5cc429ed2bd9c04022afce0f2ab1fad82bb0\n- src/harness_bench/cli.py: src/harness_bench/cli.py sha256 8b0b789938e98e285768285abb2e86d4a3176fbb1536387fe9e15abf0517b308\n- src/harness_bench/report/cli_table.py: src/harness_bench/report/cli_table.py sha256 0df26f898a279276741e2e38d6517d1bff4f69e8fd8f614bf999f33213c0bf51\n- tests/test_procs.py: tests/test_procs.py sha256 1d8130f852f1cb7701175fe61cab4b38846c1ee9c24544a7835167f4df6b130a\n- tests/test_host.py: unresolved (not found)\n- tests/test_cli.py: tests/test_cli.py sha256 d0b9056b6929aa733a8636cc694579b6aff2b77478134433a2597752019c3524\n- tests/test_report.py: tests/test_report.py sha256 7272d22b1d1a0909dbd8a37d3a2b9a0a55de3fd47d9a1794a91aa0f4a7d8a9b5\n- tests/mutations/cli.json: tests/mutations/cli.json sha256 7438388b5294a1590f662036776dc2f11267693fe7e5334cbb36cc84cd852029\n- tests/e2e: unresolved (not found)\n- docs/proof/phase1.md: docs/proof/phase1.md sha256 3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428\n- AGENTS.md: unresolved (ambiguous: 2 matches)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AM98AY8D573BBJS41GBBVK\nraw sha256: 60b377e4b08b6e1419c970c2c2ae87feb16d712acf9c7632a7d0cd835d843226\ncompiler model: claude-opus-5-5\nengine seconds: 0.001\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3AM98AY8D573BBJS41GBBVK for codex v1: 10 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit (tests only, no src/ change) then a green commit exists for each of the three defects: (1) procs.spawn() can raise TimeoutExpired before job.close() after a failed assignment",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A red commit (tests only, no src/ change) then a green commit exists for each of the three defects: (1) procs.spawn() can raise TimeoutExpired before job.close() after a failed assignment"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "(2) host.py does not check the results of GlobalMemoryStatusEx and QueryUnbiasedInterruptTime",
+            "trace": {
+              "kind": "phrase",
+              "ref": "(2) host.py does not check the results of GlobalMemoryStatusEx and QueryUnbiasedInterruptTime"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "(3) cmd_report in src/harness_bench/cli.py:191-194 prints the cli_table text before html.write runs the credential scan.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "(3) cmd_report in src/harness_bench/cli.py:191-194 prints the cli_table text before html.write runs the credential scan."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A new tests/test_no_leftovers.py asserts the base fixture leaves 0 folders behind.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A new tests/test_no_leftovers.py asserts the base fixture leaves 0 folders behind."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`uv run pytest -q` passes on your branch and `uv run ruff check` is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`uv run pytest -q` passes on your branch and `uv run ruff check` is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA, the green SHA, and the exact failing assertion each red produced.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA, the green SHA, and the exact failing assertion each red produced."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "tests/conftest.py and every file outside src/harness_bench/procs.py, src/harness_bench/host.py, src/harness_bench/cli.py, src/harness_bench/report/cli_table.py, tests/test_procs.py, tests/test_host.py, tests/test_cli.py, tests/test_report.py, tests/test_no_leftovers.py, tests/mutations/cli.json.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/conftest.py and every file outside src/harness_bench/procs.py, src/harness_bench/host.py, src/harness_bench/cli.py, src/harness_bench/report/cli_table.py, tests/test_procs.py, tests/test_host.py, tests/test_cli.py, tests/test_report.py, tests/test_no_leftovers.py, tests/mutations/cli.json."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Running any test with -m \"\" or anything under tests/e2e (those start real model cells).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Running any test with -m \"\" or anything under tests/e2e (those start real model cells)."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "The power request (row 11 is already built: host.keep_awake).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The power request (row 11 is already built: host.keep_awake)."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "A red commit (tests only, no src/ change) then a green commit exists for each of the three defects: (1) procs.spawn() can raise TimeoutExpired before job.close() after a failed assignment",
+            "(2) host.py does not check the results of GlobalMemoryStatusEx and QueryUnbiasedInterruptTime",
+            "(3) cmd_report in src/harness_bench/cli.py:191-194 prints the cli_table text before html.write runs the credential scan.",
+            "A new tests/test_no_leftovers.py asserts the base fixture leaves 0 folders behind.",
+            "`uv run pytest -q` passes on your branch and `uv run ruff check` is clean.",
+            "Your final message lists each red SHA, the green SHA, and the exact failing assertion each red produced."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W1-HOST slice 1 (plan docs/coordination/coordination-finish-harness-bench.md, row 28): fix three disclosed hardening defects red-first and add a leftover-folder test, in the owned paths only.",
+          "main_line_budget": "one slice of at most 55 minutes; commit before the deadline even if a defect remains, and say which remains.\nGrounding: read docs/proof/phase1.md residuals 5 and 6, and AGENTS.md. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing so the commit floor enforces ownership. Red-first means the test commit fails on the current code for the stated reason before the fix commit. If a fix needs a file you do not own, stop and say which file and why; do not edit it.",
+          "not_in_scope": [
+            "tests/conftest.py and every file outside src/harness_bench/procs.py, src/harness_bench/host.py, src/harness_bench/cli.py, src/harness_bench/report/cli_table.py, tests/test_procs.py, tests/test_host.py, tests/test_cli.py, tests/test_report.py, tests/test_no_leftovers.py, tests/mutations/cli.json.",
+            "Running any test with -m \"\" or anything under tests/e2e (those start real model cells).",
+            "The power request (row 11 is already built: host.keep_awake).",
+            "Any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.001,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3AM98AY8D573BBJS41GBBVK",
+        "raw_sha256": "60b377e4b08b6e1419c970c2c2ae87feb16d712acf9c7632a7d0cd835d843226",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run ruff check"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python3"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench.md",
+            "reason": null,
+            "sha256": "a9243d44a4ace691b4c5f95a46d2ac5a89da8c42ddedccab907c19f92fd78e97",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-finish-harness-bench.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/host.py",
+            "reason": null,
+            "sha256": "6c367e4a2d52ef00b06e10e80d0b5cc429ed2bd9c04022afce0f2ab1fad82bb0",
+            "status": "resolved",
+            "token": "host.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/cli.py:191-194"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_no_leftovers.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/conftest.py",
+            "reason": null,
+            "sha256": "d0a1f176caaf1a66888a86bbd6a06e3dbfbfb7861e3c72383c06c54e6dbdbc29",
+            "status": "resolved",
+            "token": "tests/conftest.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/procs.py",
+            "reason": null,
+            "sha256": "2be3acd5ff3aff0964471eebac9306c2108a044b7c83b5e48ba106c55503aa31",
+            "status": "resolved",
+            "token": "src/harness_bench/procs.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/host.py",
+            "reason": null,
+            "sha256": "6c367e4a2d52ef00b06e10e80d0b5cc429ed2bd9c04022afce0f2ab1fad82bb0",
+            "status": "resolved",
+            "token": "src/harness_bench/host.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "8b0b789938e98e285768285abb2e86d4a3176fbb1536387fe9e15abf0517b308",
+            "status": "resolved",
+            "token": "src/harness_bench/cli.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/cli_table.py",
+            "reason": null,
+            "sha256": "0df26f898a279276741e2e38d6517d1bff4f69e8fd8f614bf999f33213c0bf51",
+            "status": "resolved",
+            "token": "src/harness_bench/report/cli_table.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_procs.py",
+            "reason": null,
+            "sha256": "1d8130f852f1cb7701175fe61cab4b38846c1ee9c24544a7835167f4df6b130a",
+            "status": "resolved",
+            "token": "tests/test_procs.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_host.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_cli.py",
+            "reason": null,
+            "sha256": "d0b9056b6929aa733a8636cc694579b6aff2b77478134433a2597752019c3524",
+            "status": "resolved",
+            "token": "tests/test_cli.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_report.py",
+            "reason": null,
+            "sha256": "7272d22b1d1a0909dbd8a37d3a2b9a0a55de3fd47d9a1794a91aa0f4a7d8a9b5",
+            "status": "resolved",
+            "token": "tests/test_report.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/cli.json",
+            "reason": null,
+            "sha256": "7438388b5294a1590f662036776dc2f11267693fe7e5334cbb36cc84cd852029",
+            "status": "resolved",
+            "token": "tests/mutations/cli.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e"
+          },
+          {
+            "nearest": null,
+            "path": "docs/proof/phase1.md",
+            "reason": null,
+            "sha256": "3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428",
+            "status": "resolved",
+            "token": "docs/proof/phase1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "AGENTS.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3AM9GEQBJ7VH0E4NSNWNXR2",
+      "shortname": "compile-Goal: W1-TOOLB slice 1 (plan docs/coordination/coordination-finish-harne…",
+      "datetime": "2026-09-24T21:14:08Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-TOOLB slice 1 (plan docs/coordination/coordination-finish-harness-bench.md, row 26): build the TOOL-B control so a cosmic-ray kill counts only when a named test failed, red-first, in the owned paths only.\nDone when: tools/mutate_check.py re-derives each kill from `cosmic-ray dump` output and names the failing test for it.; Red-first seeded cases exist in tests/test_mutate_check.py: a mutant that causes a collection error, a timeout, and an exit-2 run are each reported NOT a named kill, and the red commit (tests only) fails on the current tool for that reason.; `uv run pytest -q tests/test_mutate_check.py` and `uv run pytest -q` pass on your branch and `uv run ruff check` is clean.; Your final message lists the red SHA, the green SHA, the failing assertion the red produced, and the command to run the control over the phase-1 modules.\nNot in scope: Every file outside tools/mutate_check.py and tests/test_mutate_check.py.; Running any test with -m \"\" or anything under tests/e2e (those start real model cells).; Running the full cosmic-ray sweep over the phase-1 modules (the Leader runs it at the join).; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit before the deadline even if a case remains, and say which remains.\nGrounding: read docs/lessons/defect-classes.md (the TOOL-A and TOOL-B classes), docs/proof/phase1.md (Claim 3 and residual 10), and AGENTS.md. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing so the commit floor enforces ownership. If the control needs a file you do not own, stop and say which file and why; do not edit it.\nTrace\n| clause | trace |\n|---|---|\n| done_when: tools/mutate_check.py re-derives each kill from `cosmic-ray dump` output and names the failing test for it. | phrase: tools/mutate_check.py re-derives each kill from `cosmic-ray dump` output and names the failing test for it. |\n| done_when: Red-first seeded cases exist in tests/test_mutate_check.py: a mutant that causes a collection error, a timeout, and an exit-2 run are each reported NOT a named kill, and the red commit (tests only) fails on the current tool for that reason. | phrase: Red-first seeded cases exist in tests/test_mutate_check.py: a mutant that causes a collection error, a timeout, and an exit-2 run are each reported NOT a named kill, and the red commit (tests only) fails on the current tool for that reason. |\n| done_when: `uv run pytest -q tests/test_mutate_check.py` and `uv run pytest -q` pass on your branch and `uv run ruff check` is clean. | phrase: `uv run pytest -q tests/test_mutate_check.py` and `uv run pytest -q` pass on your branch and `uv run ruff check` is clean. |\n| done_when: Your final message lists the red SHA, the green SHA, the failing assertion the red produced, and the command to run the control over the phase-1 modules. | phrase: Your final message lists the red SHA, the green SHA, the failing assertion the red produced, and the command to run the control over the phase-1 modules. |\n| not_in_scope: Every file outside tools/mutate_check.py and tests/test_mutate_check.py. | phrase: Every file outside tools/mutate_check.py and tests/test_mutate_check.py. |\n| not_in_scope: Running any test with -m \"\" or anything under tests/e2e (those start real model cells). | phrase: Running any test with -m \"\" or anything under tests/e2e (those start real model cells). |\n| not_in_scope: Running the full cosmic-ray sweep over the phase-1 modules (the Leader runs it at the join). | phrase: Running the full cosmic-ray sweep over the phase-1 modules (the Leader runs it at the join). |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- cosmic-ray dump: unresolved (not found)\n- uv run pytest -q tests/test_mutate_check.py: unresolved (not found; nearest: tests/test_mutate_check.py)\n- uv run pytest -q: unresolved (not found)\n- uv run ruff check: unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 a9243d44a4ace691b4c5f95a46d2ac5a89da8c42ddedccab907c19f92fd78e97\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf05cc77536737a78e92e027f861d3af0517237c1204905feddd2bb256465ffe\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 ce920dde88aceaac893ca8bb52c027d0df7385b64b226a7b6638b29d68386df3\n- tests/e2e: unresolved (not found)\n- docs/lessons/defect-classes.md: unresolved (ambiguous: 2 matches)\n- docs/proof/phase1.md: docs/proof/phase1.md sha256 3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428\n- AGENTS.md: unresolved (ambiguous: 2 matches)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AM98NJS7TT1ZF8NXY9VWRY\nraw sha256: 6e991de1cc1365bd2fed56f1556980cffbe46e6f88aa5868a2237c3fa209cdd5\ncompiler model: claude-opus-5-5\nengine seconds: 0.001\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3AM98NJS7TT1ZF8NXY9VWRY for codex v1: 8 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "tools/mutate_check.py re-derives each kill from `cosmic-ray dump` output and names the failing test for it.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tools/mutate_check.py re-derives each kill from `cosmic-ray dump` output and names the failing test for it."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Red-first seeded cases exist in tests/test_mutate_check.py: a mutant that causes a collection error, a timeout, and an exit-2 run are each reported NOT a named kill, and the red commit (tests only) fails on the current tool for that reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Red-first seeded cases exist in tests/test_mutate_check.py: a mutant that causes a collection error, a timeout, and an exit-2 run are each reported NOT a named kill, and the red commit (tests only) fails on the current tool for that reason."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`uv run pytest -q tests/test_mutate_check.py` and `uv run pytest -q` pass on your branch and `uv run ruff check` is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`uv run pytest -q tests/test_mutate_check.py` and `uv run pytest -q` pass on your branch and `uv run ruff check` is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists the red SHA, the green SHA, the failing assertion the red produced, and the command to run the control over the phase-1 modules.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists the red SHA, the green SHA, the failing assertion the red produced, and the command to run the control over the phase-1 modules."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Every file outside tools/mutate_check.py and tests/test_mutate_check.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Every file outside tools/mutate_check.py and tests/test_mutate_check.py."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Running any test with -m \"\" or anything under tests/e2e (those start real model cells).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Running any test with -m \"\" or anything under tests/e2e (those start real model cells)."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Running the full cosmic-ray sweep over the phase-1 modules (the Leader runs it at the join).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Running the full cosmic-ray sweep over the phase-1 modules (the Leader runs it at the join)."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "tools/mutate_check.py re-derives each kill from `cosmic-ray dump` output and names the failing test for it.",
+            "Red-first seeded cases exist in tests/test_mutate_check.py: a mutant that causes a collection error, a timeout, and an exit-2 run are each reported NOT a named kill, and the red commit (tests only) fails on the current tool for that reason.",
+            "`uv run pytest -q tests/test_mutate_check.py` and `uv run pytest -q` pass on your branch and `uv run ruff check` is clean.",
+            "Your final message lists the red SHA, the green SHA, the failing assertion the red produced, and the command to run the control over the phase-1 modules."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W1-TOOLB slice 1 (plan docs/coordination/coordination-finish-harness-bench.md, row 26): build the TOOL-B control so a cosmic-ray kill counts only when a named test failed, red-first, in the owned paths only.",
+          "main_line_budget": "one slice of at most 55 minutes; commit before the deadline even if a case remains, and say which remains.\nGrounding: read docs/lessons/defect-classes.md (the TOOL-A and TOOL-B classes), docs/proof/phase1.md (Claim 3 and residual 10), and AGENTS.md. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing so the commit floor enforces ownership. If the control needs a file you do not own, stop and say which file and why; do not edit it.",
+          "not_in_scope": [
+            "Every file outside tools/mutate_check.py and tests/test_mutate_check.py.",
+            "Running any test with -m \"\" or anything under tests/e2e (those start real model cells).",
+            "Running the full cosmic-ray sweep over the phase-1 modules (the Leader runs it at the join).",
+            "Any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.001,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3AM98NJS7TT1ZF8NXY9VWRY",
+        "raw_sha256": "6e991de1cc1365bd2fed56f1556980cffbe46e6f88aa5868a2237c3fa209cdd5",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cosmic-ray dump"
+          },
+          {
+            "nearest": "tests/test_mutate_check.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run ruff check"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python3"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench.md",
+            "reason": null,
+            "sha256": "a9243d44a4ace691b4c5f95a46d2ac5a89da8c42ddedccab907c19f92fd78e97",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-finish-harness-bench.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "bf05cc77536737a78e92e027f861d3af0517237c1204905feddd2bb256465ffe",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "ce920dde88aceaac893ca8bb52c027d0df7385b64b226a7b6638b29d68386df3",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/proof/phase1.md",
+            "reason": null,
+            "sha256": "3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428",
+            "status": "resolved",
+            "token": "docs/proof/phase1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "AGENTS.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3APM3JK2X6ZZA4JE5A4EP2D",
+      "shortname": "Goal: W1-HOST slice 2 (loop-back from the join review): a failed host me…",
+      "datetime": "2026-09-24T21:54:52Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W1-HOST slice 2 (loop-back from the join review): a failed host memory or clock query degrades to \"not recorded\" (None) instead of raising, so the engine never loses an outcome row, red-first.\nDone when: A red commit (tests only) then a green commit: when GlobalMemoryStatusEx fails, host.available_memory() returns None, and an engine-level test in tests/test_engine.py shows the cell.outcome row is still written with host_mem_available null.; A red commit then a green commit: when QueryUnbiasedInterruptTime fails, host.unbiased_seconds() returns None, and SleepDetector.slept() returns False on a None reading instead of raising.; `uv run pytest -q -p no:cacheprovider tests/test_host.py tests/test_engine.py` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, and each green SHA.\nNot in scope: Every file outside src/harness_bench/host.py, tests/test_host.py and tests/test_engine.py.; The full test suite (the Leader runs it at the join); anything under tests/e2e and `-m \"\"`.; Reading or editing .git internals.; Printing long outputs: run pytest with -q and no -v or -s.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 12 minutes wall clock; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: read src/harness_bench/host.py (unbiased_seconds, SleepDetector, available_memory), src/harness_bench/engine.py around line 328 (the outcome row), and tests/test_host.py. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing. If a fix needs a file you do not own, stop and say which file and why.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3APM3T9SAHMEYAPSARK0AEA",
+      "shortname": "compile-Goal: W1-HOST slice 2 (loop-back from the join review): a failed host me…",
+      "datetime": "2026-09-24T21:54:52Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-HOST slice 2 (loop-back from the join review): a failed host memory or clock query degrades to \"not recorded\" (None) instead of raising, so the engine never loses an outcome row, red-first.\nDone when: A red commit (tests only) then a green commit: when GlobalMemoryStatusEx fails, host.available_memory() returns None, and an engine-level test in tests/test_engine.py shows the cell.outcome row is still written with host_mem_available null.; A red commit then a green commit: when QueryUnbiasedInterruptTime fails, host.unbiased_seconds() returns None, and SleepDetector.slept() returns False on a None reading instead of raising.; `uv run pytest -q -p no:cacheprovider tests/test_host.py tests/test_engine.py` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, and each green SHA.\nNot in scope: Every file outside src/harness_bench/host.py, tests/test_host.py and tests/test_engine.py.; The full test suite (the Leader runs it at the join); anything under tests/e2e and `-m \"\"`.; Reading or editing .git internals.; Printing long outputs: run pytest with -q and no -v or -s.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 12 minutes wall clock; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: read src/harness_bench/host.py (unbiased_seconds, SleepDetector, available_memory), src/harness_bench/engine.py around line 328 (the outcome row), and tests/test_host.py. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing. If a fix needs a file you do not own, stop and say which file and why.\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit (tests only) then a green commit: when GlobalMemoryStatusEx fails, host.available_memory() returns None, and an engine-level test in tests/test_engine.py shows the cell.outcome row is still written with host_mem_available null. | phrase: A red commit (tests only) then a green commit: when GlobalMemoryStatusEx fails, host.available_memory() returns None, and an engine-level test in tests/test_engine.py shows the cell.outcome row is still written with host_mem_available null. |\n| done_when: A red commit then a green commit: when QueryUnbiasedInterruptTime fails, host.unbiased_seconds() returns None, and SleepDetector.slept() returns False on a None reading instead of raising. | phrase: A red commit then a green commit: when QueryUnbiasedInterruptTime fails, host.unbiased_seconds() returns None, and SleepDetector.slept() returns False on a None reading instead of raising. |\n| done_when: `uv run pytest -q -p no:cacheprovider tests/test_host.py tests/test_engine.py` passes and `uv run ruff check src tests tools` is clean. | phrase: `uv run pytest -q -p no:cacheprovider tests/test_host.py tests/test_engine.py` passes and `uv run ruff check src tests tools` is clean. |\n| done_when: Your final message lists each red SHA with the failing assertion it produced, and each green SHA. | phrase: Your final message lists each red SHA with the failing assertion it produced, and each green SHA. |\n| not_in_scope: Every file outside src/harness_bench/host.py, tests/test_host.py and tests/test_engine.py. | phrase: Every file outside src/harness_bench/host.py, tests/test_host.py and tests/test_engine.py. |\n| not_in_scope: The full test suite (the Leader runs it at the join) | phrase: The full test suite (the Leader runs it at the join) |\n| not_in_scope: anything under tests/e2e and `-m \"\"`. | phrase: anything under tests/e2e and `-m \"\"`. |\n| not_in_scope: Reading or editing .git internals. | phrase: Reading or editing .git internals. |\n| not_in_scope: Printing long outputs: run pytest with -q and no -v or -s. | phrase: Printing long outputs: run pytest with -q and no -v or -s. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- uv run pytest -q -p no:cacheprovider tests/test_host.py tests/test_engine.py: unresolved (not found; nearest: tests/test_engine.py)\n- uv run ruff check src tests tools: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- tests/test_engine.py: tests/test_engine.py sha256 85a860bf6406d6b63fe15d9620c3969338c32c7a5333d8b351d08d62ba5a6dca\n- tests/test_host.py: tests/test_host.py sha256 b5c1242a9cf03cb4d72629df00b09a270a14bc1a3b656cd287c24f857f70c09f\n- src/harness_bench/host.py: src/harness_bench/host.py sha256 1f9a6980d74c0338f8703ef0622b50d2f1368f214712b0ee990b18a784c3dd08\n- tests/e2e: unresolved (not found)\n- src/harness_bench/engine.py: src/harness_bench/engine.py sha256 646a517457604a4aaefb5ceedd8e65cc08bebeca67cbde847736abd493b434c4\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3APM3JK2X6ZZA4JE5A4EP2D\nraw sha256: fa90732a4a46ac4bf825247789bace109300cc0043b591ea65a19f2bc2d8119f\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3APM3JK2X6ZZA4JE5A4EP2D for codex v1: 10 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit (tests only) then a green commit: when GlobalMemoryStatusEx fails, host.available_memory() returns None, and an engine-level test in tests/test_engine.py shows the cell.outcome row is still written with host_mem_available null.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A red commit (tests only) then a green commit: when GlobalMemoryStatusEx fails, host.available_memory() returns None, and an engine-level test in tests/test_engine.py shows the cell.outcome row is still written with host_mem_available null."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A red commit then a green commit: when QueryUnbiasedInterruptTime fails, host.unbiased_seconds() returns None, and SleepDetector.slept() returns False on a None reading instead of raising.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A red commit then a green commit: when QueryUnbiasedInterruptTime fails, host.unbiased_seconds() returns None, and SleepDetector.slept() returns False on a None reading instead of raising."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`uv run pytest -q -p no:cacheprovider tests/test_host.py tests/test_engine.py` passes and `uv run ruff check src tests tools` is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`uv run pytest -q -p no:cacheprovider tests/test_host.py tests/test_engine.py` passes and `uv run ruff check src tests tools` is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA with the failing assertion it produced, and each green SHA.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA with the failing assertion it produced, and each green SHA."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Every file outside src/harness_bench/host.py, tests/test_host.py and tests/test_engine.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Every file outside src/harness_bench/host.py, tests/test_host.py and tests/test_engine.py."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "The full test suite (the Leader runs it at the join)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The full test suite (the Leader runs it at the join)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "anything under tests/e2e and `-m \"\"`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "anything under tests/e2e and `-m \"\"`."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Reading or editing .git internals.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Reading or editing .git internals."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Printing long outputs: run pytest with -q and no -v or -s.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Printing long outputs: run pytest with -q and no -v or -s."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "A red commit (tests only) then a green commit: when GlobalMemoryStatusEx fails, host.available_memory() returns None, and an engine-level test in tests/test_engine.py shows the cell.outcome row is still written with host_mem_available null.",
+            "A red commit then a green commit: when QueryUnbiasedInterruptTime fails, host.unbiased_seconds() returns None, and SleepDetector.slept() returns False on a None reading instead of raising.",
+            "`uv run pytest -q -p no:cacheprovider tests/test_host.py tests/test_engine.py` passes and `uv run ruff check src tests tools` is clean.",
+            "Your final message lists each red SHA with the failing assertion it produced, and each green SHA."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W1-HOST slice 2 (loop-back from the join review): a failed host memory or clock query degrades to \"not recorded\" (None) instead of raising, so the engine never loses an outcome row, red-first.",
+          "main_line_budget": "one slice of at most 12 minutes wall clock; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: read src/harness_bench/host.py (unbiased_seconds, SleepDetector, available_memory), src/harness_bench/engine.py around line 328 (the outcome row), and tests/test_host.py. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing. If a fix needs a file you do not own, stop and say which file and why.",
+          "not_in_scope": [
+            "Every file outside src/harness_bench/host.py, tests/test_host.py and tests/test_engine.py.",
+            "The full test suite (the Leader runs it at the join)",
+            "anything under tests/e2e and `-m \"\"`.",
+            "Reading or editing .git internals.",
+            "Printing long outputs: run pytest with -q and no -v or -s.",
+            "Any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.002,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3APM3JK2X6ZZA4JE5A4EP2D",
+        "raw_sha256": "fa90732a4a46ac4bf825247789bace109300cc0043b591ea65a19f2bc2d8119f",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": "tests/test_engine.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q -p no:cacheprovider tests/test_host.py tests/test_engine.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run ruff check src tests tools"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-m "
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python3"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_engine.py",
+            "reason": null,
+            "sha256": "85a860bf6406d6b63fe15d9620c3969338c32c7a5333d8b351d08d62ba5a6dca",
+            "status": "resolved",
+            "token": "tests/test_engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_host.py",
+            "reason": null,
+            "sha256": "b5c1242a9cf03cb4d72629df00b09a270a14bc1a3b656cd287c24f857f70c09f",
+            "status": "resolved",
+            "token": "tests/test_host.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/host.py",
+            "reason": null,
+            "sha256": "1f9a6980d74c0338f8703ef0622b50d2f1368f214712b0ee990b18a784c3dd08",
+            "status": "resolved",
+            "token": "src/harness_bench/host.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/engine.py",
+            "reason": null,
+            "sha256": "646a517457604a4aaefb5ceedd8e65cc08bebeca67cbde847736abd493b434c4",
+            "status": "resolved",
+            "token": "src/harness_bench/engine.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3APTNHE65PYRQF2TQ3ZTENJ",
+      "shortname": "Goal: Cross-vendor join review of track W1-TOOLB (plan docs/coordination…",
+      "datetime": "2026-09-24T21:58:27Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: Cross-vendor join review of track W1-TOOLB (plan docs/coordination/coordination-finish-harness-bench.md, the \"Join rule\"): judge the TOOL-B control on branch w1-toolb-control and write the review to docs/notes/review-w1-toolb-codex.md in your own worktree.\nDone when: docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path; do not edit it).; The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed; are a collection error, a timeout and an exit-2 run each reported not-a-kill; is the dump format read from cosmic-ray 8.7.0's own source rather than assumed.; The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\".; The review file is committed on your branch.\nNot in scope: Editing any file other than docs/notes/review-w1-toolb-codex.md.; Editing the w1-toolb-control checkout.; Running the full suite, anything under tests/e2e, or `-m \"\"`.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 45 minutes; commit the review before the deadline even if a mutant is unfinished, and say so.\n\nGrounding: docs/lessons/defect-classes.md (TOOL-A, TOOL-B), docs/proof/phase1.md residual 10, docs/notes/rulings.md R-19 (the phase-1 re-derivation is deferred to a named window; judge the unit-level proof). Use `python`, not `python3` (Windows); `uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py` in the throwaway worktree. Set AGENT_SESSION to your session id before committing.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3APTNSSDZ2ACY4ZD43MJGMN",
+      "shortname": "compile-Goal: Cross-vendor join review of track W1-TOOLB (plan docs/coordination…",
+      "datetime": "2026-09-24T21:58:27Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: Cross-vendor join review of track W1-TOOLB (plan docs/coordination/coordination-finish-harness-bench.md, the \"Join rule\"): judge the TOOL-B control on branch w1-toolb-control and write the review to docs/notes/review-w1-toolb-codex.md in your own worktree.\nDone when: docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path; do not edit it).; The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed; are a collection error, a timeout and an exit-2 run each reported not-a-kill; is the dump format read from cosmic-ray 8.7.0's own source rather than assumed.; The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\".; The review file is committed on your branch.\nNot in scope: Editing any file other than docs/notes/review-w1-toolb-codex.md.; Editing the w1-toolb-control checkout.; Running the full suite, anything under tests/e2e, or `-m \"\"`.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 45 minutes; commit the review before the deadline even if a mutant is unfinished, and say so.\nGrounding: docs/lessons/defect-classes.md (TOOL-A, TOOL-B), docs/proof/phase1.md residual 10, docs/notes/rulings.md R-19 (the phase-1 re-derivation is deferred to a named window; judge the unit-level proof). Use `python`, not `python3` (Windows); `uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py` in the throwaway worktree. Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path | phrase: docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path |\n| done_when: do not edit it). | phrase: do not edit it). |\n| done_when: The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed | phrase: The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed |\n| done_when: are a collection error, a timeout and an exit-2 run each reported not-a-kill | phrase: are a collection error, a timeout and an exit-2 run each reported not-a-kill |\n| done_when: is the dump format read from cosmic-ray 8.7.0's own source rather than assumed. | phrase: is the dump format read from cosmic-ray 8.7.0's own source rather than assumed. |\n| done_when: The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\". | phrase: The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\". |\n| done_when: The review file is committed on your branch. | phrase: The review file is committed on your branch. |\n| not_in_scope: Editing any file other than docs/notes/review-w1-toolb-codex.md. | phrase: Editing any file other than docs/notes/review-w1-toolb-codex.md. |\n| not_in_scope: Editing the w1-toolb-control checkout. | phrase: Editing the w1-toolb-control checkout. |\n| not_in_scope: Running the full suite, anything under tests/e2e, or `-m \"\"`. | phrase: Running the full suite, anything under tests/e2e, or `-m \"\"`. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- git worktree add --detach: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py: unresolved (not found; nearest: tests/test_mutate_check.py)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 48b5e321fda1a62dffa261d3ee310be854edb40b7a68adebeb4fccf968adcc49\n- docs/notes/review-w1-toolb-codex.md: unresolved (not found)\n- tools/mutate_check.py's: unresolved (not found; nearest: tools/mutate_check.py)\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf05cc77536737a78e92e027f861d3af0517237c1204905feddd2bb256465ffe\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 ce920dde88aceaac893ca8bb52c027d0df7385b64b226a7b6638b29d68386df3\n- tests/e2e: unresolved (not found)\n- docs/lessons/defect-classes.md: unresolved (ambiguous: 2 matches)\n- docs/proof/phase1.md: docs/proof/phase1.md sha256 3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428\n- docs/notes/rulings.md: unresolved (ambiguous: 2 matches)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3APTNHE65PYRQF2TQ3ZTENJ\nraw sha256: 82dbacc35df0bea823665dcceb35f89d49e4a1a89e8d76a0e84e6e1291206e0c\ncompiler model: claude-opus-5-5\nengine seconds: 0.001\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3APTNHE65PYRQF2TQ3ZTENJ for codex v1: 11 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path",
+            "trace": {
+              "kind": "phrase",
+              "ref": "docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "do not edit it).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "do not edit it)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "are a collection error, a timeout and an exit-2 run each reported not-a-kill",
+            "trace": {
+              "kind": "phrase",
+              "ref": "are a collection error, a timeout and an exit-2 run each reported not-a-kill"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "is the dump format read from cosmic-ray 8.7.0's own source rather than assumed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "is the dump format read from cosmic-ray 8.7.0's own source rather than assumed."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\".",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\"."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The review file is committed on your branch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The review file is committed on your branch."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing any file other than docs/notes/review-w1-toolb-codex.md.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Editing any file other than docs/notes/review-w1-toolb-codex.md."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing the w1-toolb-control checkout.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Editing the w1-toolb-control checkout."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Running the full suite, anything under tests/e2e, or `-m \"\"`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Running the full suite, anything under tests/e2e, or `-m \"\"`."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path",
+            "do not edit it).",
+            "The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed",
+            "are a collection error, a timeout and an exit-2 run each reported not-a-kill",
+            "is the dump format read from cosmic-ray 8.7.0's own source rather than assumed.",
+            "The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\".",
+            "The review file is committed on your branch."
+          ],
+          "fan_out_cap": 0,
+          "goal": "Cross-vendor join review of track W1-TOOLB (plan docs/coordination/coordination-finish-harness-bench.md, the \"Join rule\"): judge the TOOL-B control on branch w1-toolb-control and write the review to docs/notes/review-w1-toolb-codex.md in your own worktree.",
+          "main_line_budget": "one slice of at most 45 minutes; commit the review before the deadline even if a mutant is unfinished, and say so.\nGrounding: docs/lessons/defect-classes.md (TOOL-A, TOOL-B), docs/proof/phase1.md residual 10, docs/notes/rulings.md R-19 (the phase-1 re-derivation is deferred to a named window; judge the unit-level proof). Use `python`, not `python3` (Windows); `uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py` in the throwaway worktree. Set AGENT_SESSION to your session id before committing.",
+          "not_in_scope": [
+            "Editing any file other than docs/notes/review-w1-toolb-codex.md.",
+            "Editing the w1-toolb-control checkout.",
+            "Running the full suite, anything under tests/e2e, or `-m \"\"`.",
+            "Any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.001,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3APTNHE65PYRQF2TQ3ZTENJ",
+        "raw_sha256": "82dbacc35df0bea823665dcceb35f89d49e4a1a89e8d76a0e84e6e1291206e0c",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git worktree add --detach"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-m "
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python3"
+          },
+          {
+            "nearest": "tests/test_mutate_check.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench.md",
+            "reason": null,
+            "sha256": "48b5e321fda1a62dffa261d3ee310be854edb40b7a68adebeb4fccf968adcc49",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-finish-harness-bench.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/review-w1-toolb-codex.md"
+          },
+          {
+            "nearest": "tools/mutate_check.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/mutate_check.py's"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "bf05cc77536737a78e92e027f861d3af0517237c1204905feddd2bb256465ffe",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "ce920dde88aceaac893ca8bb52c027d0df7385b64b226a7b6638b29d68386df3",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/proof/phase1.md",
+            "reason": null,
+            "sha256": "3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428",
+            "status": "resolved",
+            "token": "docs/proof/phase1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
     }
   ],
   "changes": [

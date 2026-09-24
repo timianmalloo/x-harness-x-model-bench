@@ -860,6 +860,31 @@ window.DOCS_INDEX = {
       "sourceSha256": "246f0a3686348504280a109df10b0f4f82f65129cbce930623d995d7643acada"
     },
     {
+      "id": "review-w1-toolb-codex",
+      "path": "docs/notes/review-w1-toolb-codex.md",
+      "title": "W1-TOOLB cross-vendor join review",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-24",
+      "reviewSuggested": [],
+      "summary": "Codex (gpt-6-sol, worker-codex-rtoolb) cleared W1-TOOLB for the R-19 unit-level scope; three review mutants each killed by a named test.",
+      "tags": [
+        "coordination",
+        "review",
+        "TOOL-B"
+      ],
+      "links": [
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "0eb44e13d5b0174835d76d56681a8e5d32f9296d8a827a0cb6fe762379b43fcc"
+    },
+    {
       "id": "rulings-register",
       "path": "docs/notes/rulings.md",
       "title": "Owner rulings",
@@ -882,7 +907,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "63901d3795a636545a076650fbc40d987282654191929cf9ab4f661d7c4c7c64"
+      "sourceSha256": "4bc9e17062aea5d57a67ee533fd0d81f89401ca5d7048d57645eefac7867c705"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -1251,6 +1276,36 @@ window.DOCS_INDEX = {
       "sourceSha256": "6be48da395ad06a2e18cf0e664f395e84f62f915bd6629db4ca86712b119edda"
     },
     {
+      "id": "proof-phase2",
+      "path": "docs/proof/phase2.md",
+      "title": "Proof Pack - phase 2 (wave-by-wave joins)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 2 · smoke on all harnesses",
+      "reviewBy": "2026-10-08",
+      "reviewSuggested": [],
+      "summary": "The evidence for each phase-2 join: what was claimed, the red observed by a non-author, the mutation result, the reviewer's verdict, and the residuals. One Claim table per join.",
+      "tags": [
+        "proof",
+        "phase2",
+        "red-first",
+        "joins"
+      ],
+      "links": [
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        },
+        {
+          "to": "proof-phase1",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "bcb722361f669fbcff4c34c6ece48d7f8e7e02676cb60940e8046710ad0c96ed"
+    },
+    {
       "id": "proposal-cross-harness-benchmarking",
       "path": "docs/proposals/cross-harness-benchmarking-proposal.md",
       "title": "Cross-Harness Benchmarking Proposal (ai-forward)",
@@ -1307,7 +1362,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "48b5e321fda1a62dffa261d3ee310be854edb40b7a68adebeb4fccf968adcc49"
+      "sourceSha256": "aa0ba91b5eebd0762f2a0f75d0627125223d76c8a242455ac6a4cb5f2403d1eb"
     },
     {
       "id": "coordination-phase1-finish",
@@ -1921,5 +1976,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "0701cb156f690690be0b3d70438e1170be5e242a4f53c312f63446bdbe436676"
+  "graphSha256": "901ea7e9b0bd5c6e2a18e21abb202b1e7bae01e8b8a0d90e6b3633dd89d9e27a"
 };

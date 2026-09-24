@@ -5,6 +5,7 @@ fake agent and the working-copy builder is a stub (the real one is covered in te
 Every run's events are replayed against the model's phase-1 guards (lifecycle.replay, US-44 AC3).
 """
 
+import ctypes
 import errno
 import json
 import os
@@ -987,6 +988,19 @@ def test_the_host_is_kept_awake_for_the_run_and_released_at_its_end(base, monkey
     p = _plan(n_cells=1)
     _run(base, p, FakeLauncher({}))
     assert calls == [True, False]
+
+
+def test_a_failed_memory_query_still_records_the_outcome_with_null(base, monkeypatch):
+    # GlobalMemoryStatusEx failing is "not recorded": the cell.outcome row is still written.
+    def fail(out):
+        ctypes.set_last_error(6)
+        return 0
+
+    monkeypatch.setattr(host._k32, "GlobalMemoryStatusEx", fail)
+    p = _plan(n_cells=1)
+    _, events, _ = _run(base, p, FakeLauncher({}))
+    out = _outcomes(events).get(p["cells"][0]["cell_id"])
+    assert out is not None and out["host_mem_available"] is None
 
 
 def test_a_run_with_nothing_left_to_launch_ends_without_an_idle_wait(base):  # the end drains without waiting
