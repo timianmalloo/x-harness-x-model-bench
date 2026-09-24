@@ -4,6 +4,7 @@ Runs are built with the shared archived-run builder and graded for real, then pr
 """
 
 from decimal import Decimal
+from types import SimpleNamespace
 
 import pytest
 from archived_runs import (
@@ -37,6 +38,19 @@ def _usage(cell_id: str, model: str, output: int = 50) -> dict:
 
 def _cell(view: views.RunView, cell_id: str) -> views.CellView:
     return next(c for c in view.cells if c.cell_id == cell_id)
+
+
+# First in the file on purpose (T12): a `-` -> `**` mutant of `_wall` never returns on the builder's mono_ns
+# (31e9 ** 1e9), so the mutation run needs a test with small readings to fail before any run is loaded.
+def test_wall_time_is_whole_milliseconds_of_the_monotonic_readings():
+    events = {"cell.launch_intent": {}, "attempt.process_started": {"mono_ns": 0},
+              "attempt.process_ended": {"mono_ns": 999_999_999}}
+    assert views._wall(events) == views.Measure(999)
+
+
+def _runtime(text: str) -> str:
+    """An equal string that is not the literal's object: values read from a ledger are compared by value."""
+    return "".join(list(text))
 
 
 # --- current pass, verified reads, duplicate refusal (ADR-0006) ------------------------------------
@@ -266,6 +280,82 @@ def test_cells_with_long_ids_keep_their_own_events_and_calls(root, tmp_path):  #
         assert (c.outcome, c.validity, c.wall_ms) == ("completed", "valid", views.Measure(30_000))
         assert c.tokens == {CODEX_MODEL: {"uncached_input": 4032, "cache_read": 41856, "cache_write": 0, "output": 566}}  # one record each
         assert c.tool_ms == views.Measure(592)
+
+
+def test_the_acp_token_source_is_matched_by_value():
+    assert views._model_time(_runtime("acp_turn"), None) == views.Measure(None, "the native record misses calls (token source acp_turn)")
+
+
+def test_touching_spans_measure_as_the_one_span_they_form():  # merged before rounding: 3330.5 ms rounds once (T12)
+    touching = [{"start": "2026-09-23T10:00:03.981663Z", "end": "2026-09-23T10:00:06.398014Z"},
+                {"start": "2026-09-23T10:00:06.398014Z", "end": "2026-09-23T10:00:07.312163Z"}]
+    whole = [{"start": "2026-09-23T10:00:03.981663Z", "end": "2026-09-23T10:00:07.312163Z"}]
+    assert views.busy_ms(touching) == views.busy_ms(whole) == views.Measure(3330)
+
+
+def test_the_current_pass_is_chosen_within_its_catalog_version_only():
+    events = [{"kind": "grading.started", "grading_id": "grade-1", "catalog_version": "0.3"},
+              {"kind": "grading.completed", "grading_id": "grade-1", "recorded_at": "2026-09-23T10:00:00.000Z"},
+              {"kind": "grading.started", "grading_id": "grade-2", "catalog_version": "0.4"},  # later, and sorts above 0.3
+              {"kind": "grading.completed", "grading_id": "grade-2", "recorded_at": "2026-09-23T11:00:00.000Z"}]
+    assert views._current_pass(events, "0.3") == ("grade-1", "0.3")
+
+
+def test_a_cell_view_reads_only_its_own_rows_of_the_current_pass():  # by value: ids read from a ledger are new objects (T12)
+    cid, gid = _runtime("cell-b"), _runtime("grade-new")
+    plan = {"profiles": {"claude-code": {"usage_source": "acp_turn", "auxiliary_models": []}}}
+    cell = {"cell_id": cid, "harness": "claude-code", "combo": "c", "pack": "off", "model": SONNET}
+
+    def score(grading_id, cell_id, value):
+        return {"grading_id": grading_id, "cell_id": cell_id, "metric_id": "pass_at_1", "value": value, "reason": None,
+                "extraction_id": "x1"}
+
+    def tool(cell_id, start, end):
+        return {"cell_id": cell_id, "extraction_id": "x1", "start": f"2026-09-23T10:00:{start}.000Z",
+                "end": f"2026-09-23T10:00:{end}.000Z"}
+
+    facts = {"events": [], "model_calls": [],
+             "scores": [score("grade-new", "cell-b", 1), score("grade-new", "cell-a", 0), score("grade-old", "cell-b", 0)],
+             "tool_calls": [tool("cell-b", "01", "02"), tool("cell-a", "10", "13")],
+             "turn_usage": [_usage("cell-a", SONNET, 70), _usage("cell-b", SONNET, 50), _usage("cell-c", SONNET, 90)]}
+    view = views._cell_view(plan, cell, facts, gid)
+    assert view.scores == {"pass_at_1": views.Measure(1)}
+    assert view.tool_ms == views.Measure(1000)
+    assert view.tokens == {SONNET: {"uncached_input": 100, "cache_read": 1000, "cache_write": 10, "output": 50}}
+
+
+def test_an_executed_build_needs_both_a_harness_and_a_version():
+    started = [{"kind": "attempt.process_started", "harness": "codex"}, {"kind": "attempt.process_started", "build_version": "1"}]
+    assert views._header(started)["executed_builds"] is None
+
+
+def _fake_cell(combo: str, **fields) -> SimpleNamespace:
+    base = {"combo": combo, "pack": "off", "harness": "codex", "model": CODEX_MODEL, "validity": "valid", "scores": {},
+            "tokens": None, "wall_ms": views.Measure(None, "x")}
+    return SimpleNamespace(**{**base, **fields})
+
+
+def test_a_row_averages_wall_time_names_the_first_missing_cost_and_needs_two_cells_for_no_interval():
+    cells = [_fake_cell("c", wall_ms=views.Measure(ms), scores={"cost_usd": views.Measure(None, f"reason {i}")})
+             for i, ms in enumerate((100, 200, 600))]
+    row = views._row(SimpleNamespace(grading_id="grade-1"), cells)
+    assert row.wall_ms == views.Measure(Decimal(300))
+    assert row.cost_usd == views.Measure(None, "3 of 3 valid cells have no cost: reason 0")
+    assert row.interval == "interval not computed (statistics are phase 4)"
+
+
+def test_a_zero_pass_rate_sorts_after_every_positive_one():
+    cells = [_fake_cell("a-zero", scores={"pass_at_1": views.Measure(0)}),
+             _fake_cell("b-half", scores={"pass_at_1": views.Measure(Decimal("0.5"))})]
+    rows = views.leaderboard(SimpleNamespace(grading_id="grade-1", cells=cells))
+    assert [(r.combo, r.rank) for r in rows] == [("b-half", "1"), ("a-zero", "2")]
+
+
+def test_a_finding_is_a_frozen_value():
+    from dataclasses import FrozenInstanceError
+
+    with pytest.raises(FrozenInstanceError):
+        views.Finding("HB-LED-002", "error", "m").level = "warning"  # type: ignore[misc]
 
 
 def test_a_zero_length_tool_call_is_a_measured_zero():  # only model calls need a positive span
