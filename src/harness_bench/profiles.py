@@ -20,12 +20,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from harness_bench import config, tools
-from harness_bench.telemetry import claude_code, codex
+from harness_bench.errors import BenchError
+from harness_bench.telemetry import claude_code, codex, copilot
 
-HARNESSES = ("claude-code", "codex")
+HARNESSES = ("claude-code", "codex", "copilot")
 USAGE_SOURCES = ("acp_turn", "native_record")
 DROP_EXACT = {"CLAUDECODE", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "COPILOT_HOME", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN",
-              "OPENAI_API_KEY", "ANTHROPIC_MODEL", "CODEX_PATH", "CLAUDE_CODE_EXECUTABLE", "FAKE_ACP"}
+              "OPENAI_API_KEY", "ANTHROPIC_MODEL", "CODEX_PATH", "CLAUDE_CODE_EXECUTABLE", "FAKE_ACP",
+              "GH_TOKEN", "GITHUB_TOKEN", "GH_HOST"}
 DROP_PREFIXES = ("CLAUDE_CODE_", "CODEX_", "COPILOT_", "GIT_CONFIG_")
 CELL_ENV = {
     "MSBUILDDISABLENODEREUSE": "1",
@@ -40,8 +42,9 @@ CELL_ENV = {
 class Profile:
     harness: str
     home_env: str
-    credential_source: Path
-    credential_name: str
+    credential_source: Path | None
+    credential_name: str | None
+    command: tuple[str, ...] = ()
     files: dict[str, str] = field(default_factory=dict)
     env: dict[str, str] = field(default_factory=dict)
     mode: str | None = None
@@ -58,12 +61,13 @@ class Profile:
         home.mkdir(parents=True, exist_ok=True)
         for name, template in self.files.items():
             (home / name).write_text(template.replace("{model}", model) + "\n", encoding="utf-8")
-        if self.credential_source.is_file():
+        if self.credential_source is not None and self.credential_name is not None and self.credential_source.is_file():
             shutil.copyfile(self.credential_source, home / self.credential_name)
 
     def clean_home(self, home: Path) -> None:
         """Delete the credential copy (the native records stay for the archive)."""
-        (home / self.credential_name).unlink(missing_ok=True)
+        if self.credential_name is not None:
+            (home / self.credential_name).unlink(missing_ok=True)
 
     def cell_env(self, base: dict[str, str], home: Path, build, model: str, traceparent: str) -> dict[str, str]:
         env = {k: v for k, v in base.items() if k.upper() not in DROP_EXACT and not k.upper().startswith(DROP_PREFIXES)}
@@ -75,11 +79,18 @@ class Profile:
             env["TRACEPARENT"] = traceparent
         return env
 
-    def argv(self, build) -> list[str]:
-        node = shutil.which("node")
-        if not node:
-            raise FileNotFoundError("node is required to run the ACP adapters")
-        return [node, str(build.adapter)]
+    def argv(self, build, model: str) -> list[str]:
+        values = {"exe": str(build.exe), "model": model}
+        if any("{node}" in part for part in self.command):
+            node = shutil.which("node")
+            if not node:
+                raise BenchError("HB-PRE-007", "node is required to run the ACP adapters")
+            values["node"] = node
+        if any("{adapter}" in part for part in self.command):
+            if build.adapter is None:
+                raise BenchError("HB-PRE-007", f"{self.harness}: command needs an ACP adapter")
+            values["adapter"] = str(build.adapter)
+        return [part.format_map(values) for part in self.command]
 
     def native_records(self, home: Path, session_id: str) -> list[Path]:
         return find_records(home, self.record_glob, session_id)
@@ -99,7 +110,7 @@ def find_records(home: Path, record_glob: str, session_id: str) -> list[Path]:
 
 def load(root: Path, harness: str, credential_source: Path | None = None) -> Profile:
     if harness not in HARNESSES:
-        raise ValueError(f"no phase-1 profile for harness {harness!r} (have {HARNESSES})")
+        raise ValueError(f"no profile for harness {harness!r} (have {HARNESSES})")
     data = config.load_yaml(root / "bench" / "profiles" / f"{harness}.yaml")
     cred = data["credential"]
     if data.get("usage_source", "native_record") not in USAGE_SOURCES:
@@ -107,8 +118,10 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
     return Profile(
         harness=data["harness"],
         home_env=data["home_env"],
-        credential_source=credential_source or Path(cred["source"]).expanduser(),
-        credential_name=cred["name"],
+        credential_source=(credential_source if credential_source is not None else Path(cred["source"]).expanduser())
+        if cred is not None else None,
+        credential_name=cred["name"] if cred is not None else None,
+        command=tuple(data["command"]),
         files=dict(data.get("files") or {}),
         env=dict(data.get("env") or {}),
         mode=data.get("mode"),
@@ -120,7 +133,7 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
     )
 
 
-READERS = {"claude-code": claude_code.read, "codex": codex.read}
+READERS = {"claude-code": claude_code.read, "codex": codex.read, "copilot": copilot.read}
 
 
 class ProfileLauncher:
@@ -129,7 +142,7 @@ class ProfileLauncher:
     def __init__(self, profile: Profile, tools_dir: Path, planned: dict) -> None:
         self.profile, self.tools_dir, self.planned = profile, tools_dir, planned
         self.harness = profile.harness
-        self.credential_names = frozenset({profile.credential_name})
+        self.credential_names = frozenset({profile.credential_name}) if profile.credential_name is not None else frozenset()
         self.usage_source = profile.usage_source
         self.mode = profile.mode
         self.set_model = profile.set_model
@@ -152,7 +165,8 @@ class ProfileLauncher:
     def argv_env(self, cell: dict, home: Path, traceparent: str) -> tuple[list[str], dict[str, str]]:
         if self.build is None:
             raise RuntimeError("check_build must run before argv_env")
-        return self.profile.argv(self.build), self.profile.cell_env(dict(os.environ), home, self.build, cell["model"], traceparent)
+        return self.profile.argv(self.build, cell["model"]), self.profile.cell_env(
+            dict(os.environ), home, self.build, cell["model"], traceparent)
 
     def records(self, home: Path, session_id: str) -> list[Path]:
         return self.profile.native_records(home, session_id)

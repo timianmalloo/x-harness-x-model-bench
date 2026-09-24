@@ -192,7 +192,7 @@ def test_the_launcher_speaks_for_its_profile(tmp_path):
 
 def test_argv_runs_the_pinned_adapter_with_node(tmp_path):
     p = profiles.load(ROOT, "codex", credential_source=tmp_path / "c")
-    argv = p.argv(FakeBuild())
+    argv = p.argv(FakeBuild(), "gpt-6-sol")
     assert argv[0].lower().endswith(("node.exe", "node")) and argv[1] == str(FakeBuild.adapter)
 
 
@@ -234,7 +234,7 @@ def test_real_handshake_with_the_pinned_build(harness, model, tmp_path):
     p.seed_home(home, model=model)
     try:
         env = p.cell_env(dict(__import__("os").environ), home=home, build=build, model=model, traceparent="")
-        cell = procs.spawn(p.argv(build), cwd=str(ws), env=env)
+        cell = procs.spawn(p.argv(build, model), cwd=str(ws), env=env)
         try:
             result = driver.run_turn(cell, cwd=ws, prompt="unused", mode=p.mode, handshake_timeout=60,
                                      before_send=lambda sid: (_ for _ in ()).throw(KeyboardInterrupt))
