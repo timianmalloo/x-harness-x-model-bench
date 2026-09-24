@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from harness_bench import cli, host, plan, profiles, views
+from harness_bench import archive, cli, host, plan, profiles, views
 
 pytestmark = [pytest.mark.native, pytest.mark.credentials]
 ROOT = Path(__file__).resolve().parents[2]
@@ -100,4 +100,7 @@ def test_the_walking_skeleton_runs_end_to_end(kept):
     (ROOT / "docs" / "proof").mkdir(parents=True, exist_ok=True)
     (ROOT / "docs" / "proof" / "phase1-e2e-last.json").write_text(json.dumps({"run_id": rid, **timings}, indent=2, default=str),
                                                                   encoding="utf-8")
-    shutil.rmtree(kept, ignore_errors=True)  # the last step: every assertion above passed, so the evidence is not needed
+    # the last step: every assertion above passed, so the evidence is not needed. Not ignore_errors: a file the
+    # run left open or read-only is a leak, and it fails here (T9: the race's tmp folder, the engine.log handler)
+    shutil.rmtree(kept, onexc=archive.make_writable)
+    assert not kept.exists()
