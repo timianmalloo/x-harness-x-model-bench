@@ -110,6 +110,8 @@ def _scan(path: Path) -> tuple[SegmentReport, list[dict], int]:
         return report, rows, offset
 
     for index, line in enumerate(complete):
+        if report.sealed:  # anything after the seal, parsed or not, is a break: a sealed segment has no torn tail
+            return broken(f"bytes after the seal (line {index + 1})")
         last = index == len(complete) - 1 and tail == b""
         try:
             row = json.loads(line.decode("utf-8"))
@@ -120,8 +122,6 @@ def _scan(path: Path) -> tuple[SegmentReport, list[dict], int]:
                 report.torn_tail = True
                 break
             return broken(f"line {index + 1} does not parse")
-        if report.sealed:
-            return broken(f"line {index + 1} follows the seal")
         stored = row.get("hash")
         body = {k: v for k, v in row.items() if k != "hash"}
         try:

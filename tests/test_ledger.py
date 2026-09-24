@@ -196,7 +196,7 @@ def test_bytes_after_the_seal_are_a_break_not_a_torn_tail(tmp_path, extra):
     with path.open("ab") as f:
         f.write(extra)
     report = ledger.verify_segment(path)
-    assert (report.error, report.detail) == ("HB-LED-002", "bytes after the seal")
+    assert report.error == "HB-LED-002" and report.detail.startswith("bytes after the seal") and not report.torn_tail
 
 
 def test_a_chained_line_after_the_seal_is_a_break(tmp_path):
@@ -204,7 +204,7 @@ def test_a_chained_line_after_the_seal_is_a_break(tmp_path):
     seal = json.loads(path.read_bytes().splitlines()[-1])
     _append_raw(path, ledger._chain({"kind": "cell.prompt_sent"}, 4, seal["hash"]))
     report = ledger.verify_segment(path)
-    assert (report.error, report.detail) == ("HB-LED-002", "line 4 follows the seal")
+    assert (report.error, report.detail) == ("HB-LED-002", "bytes after the seal (line 4)")
 
 
 def test_a_line_not_in_canonical_form_is_a_break(tmp_path):
