@@ -220,13 +220,23 @@ def spawn(argv: list[str], cwd, env, stdin=subprocess.PIPE, stdout=subprocess.PI
     handle = _open_process(proc.pid)
     if not handle or not _assign(job.handle, handle):
         err = ctypes.get_last_error()
-        if handle:
-            _k32.TerminateProcess(handle, 1)
-            _k32.CloseHandle(handle)
-        else:
-            proc.kill()
-        proc.wait(timeout=30)
-        job.close()
+        try:
+            if handle:
+                _k32.TerminateProcess(handle, 1)
+                _k32.CloseHandle(handle)
+            else:
+                proc.kill()
+            try:
+                proc.wait(timeout=30)
+            except subprocess.TimeoutExpired:
+                # The process is not in the job (assignment failed), so closing the job does not
+                # kill it. One more kill, then close below. The caller still gets SpawnError.
+                try:
+                    proc.kill()
+                except OSError:
+                    pass
+        finally:
+            job.close()
         raise SpawnError(f"cannot assign pid {proc.pid} to its job", err)
     _ntdll.NtResumeProcess(handle)
     _k32.CloseHandle(handle)
