@@ -296,6 +296,27 @@ def test_an_unconfirmed_kill_is_logged_once_and_retried_with_capped_backoff(base
     assert timeouts[1:] == sorted(timeouts[1:]) and max(timeouts) <= engine.KILL_RETRY_CAP
 
 
+def test_a_failing_job_query_is_an_unconfirmed_kill_not_a_crash(base, monkeypatch, caplog):  # T1-8b (T3-5 seam notice)
+    from harness_bench import procs
+    real_confirm = procs.CellProcess.terminate_and_confirm
+    calls = []
+
+    def failing(self, timeout, **kwargs):  # T3-5: a failed or closed-handle job query raises OSError
+        calls.append(timeout)
+        if len(calls) <= 2:
+            raise OSError(6, "The handle is invalid")
+        return real_confirm(self, timeout, **kwargs)
+
+    monkeypatch.setattr(procs.CellProcess, "terminate_and_confirm", failing)
+    p = _plan(n_cells=1)
+    p["parameters"]["kill_escalation"] = 1
+    _, events, _ = _run(base, p, FakeLauncher({}), end_grace=1)
+    assert _outcomes(events)[p["cells"][0]["cell_id"]]["outcome"] == "completed"
+    assert next(e for e in events if e["kind"] == "attempt.process_ended")["confirmed"] == 1
+    assert len([r for r in caplog.records if getattr(r, "error_code", None) == "HB-RUN-002"]) == 1
+    assert calls[:3] == [1, 1, 2]  # kill_escalation, then the capped backoff: the slot stayed held
+
+
 def test_eof_mid_turn_is_an_adapter_crash(base):
     p = _plan(n_cells=1)
     _, events, _ = _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"mode": "eof_mid_turn"}}))
