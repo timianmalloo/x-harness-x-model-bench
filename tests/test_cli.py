@@ -5,6 +5,7 @@ Exit codes: 0 ok · 1 invalid input · 2 usage (argparse) · 3 run incomplete ·
 
 import hashlib
 import json
+import sys
 
 import pytest
 from archived_runs import GOOD, make_root, make_run
@@ -53,6 +54,16 @@ def test_status_json_writes_only_bench_status_to_stdout(capsys, root, tmp_path, 
     code, out, err = _bench(capsys, root, tmp_path, "status", "r1", "--json")
     assert code == 0 and err == ""
     assert status.parse(out).run_id == "r1" and out.endswith("\n") and out.count("\n") == 1
+
+
+def test_status_json_is_plain_even_under_a_tty(capsys, root, tmp_path, monkeypatch):  # T4-7
+    make_run(root, tmp_path, {"a": GOOD})
+    monkeypatch.delenv("NO_COLOR", raising=False)
+    monkeypatch.setattr(sys.stdout, "isatty", lambda: True, raising=False)
+    code, out, err = _bench(capsys, root, tmp_path, "status", "r1", "--json")
+    assert code == 0 and err == ""
+    assert status.parse(out).run_id == "r1" and out.endswith("\n") and out.count("\n") == 1
+    assert "\x1b[" not in out  # no ANSI escapes leak in under a real terminal
 
 
 def test_status_text(capsys, root, tmp_path):

@@ -133,6 +133,17 @@ def test_the_leaderboard_empty_state(root, tmp_path):
     assert "No cell completed in this run. Run bench status r1 to see why." in html.render(view, archive_present=True)
 
 
+def test_no_cells_in_this_run(root, tmp_path):  # T4-6
+    _, view = _graded(root, tmp_path, {})
+    assert "No cells in this run." in html.render(view, archive_present=True)
+
+
+def test_the_incomplete_run_banner_counts_cells_that_never_started(root, tmp_path):  # T4-6
+    _, view = _graded(root, tmp_path, {"a": GOOD}, unstarted=("b",))
+    doc = html.render(view, archive_present=True)
+    assert "The run is incomplete. 1 cells never started." in doc
+
+
 def test_evidence_without_the_archive_says_so(root, tmp_path):
     _, view = _graded(root, tmp_path, {"a": GOOD})
     doc = html.render(view, archive_present=False)
