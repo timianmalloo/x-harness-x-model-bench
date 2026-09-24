@@ -65,6 +65,8 @@ def test_a_gate_behind_a_pipe_is_blocked(command):  # E2E-E / CT27: a pipe repor
     "uv run pytest -q || echo failed",
     "grep -E 'passed|failed' log.txt | tail -1",
     "uv run ruff check src && echo ok",
+    'grep -h -E "run:.*(pytest|unittest)" .github/workflows/*.yml | head -5',  # observed false positive, 2026-09-24
+    "grep -c 'pytest|ruff check' notes.txt",
 ])
 def test_a_gate_without_a_pipe_passes(command):
     assert _run(command).returncode == 0
