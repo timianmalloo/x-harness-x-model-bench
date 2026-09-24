@@ -79,7 +79,9 @@ class Profile:
             env["TRACEPARENT"] = traceparent
         return env
 
-    def argv(self, build, model: str) -> list[str]:
+    def argv(self, build, model: str | None = None) -> list[str]:
+        if model is None and any("{model}" in part for part in self.command):
+            raise ValueError(f"{self.harness}: model is required by the command template")
         values = {"exe": str(build.exe), "model": model}
         if any("{node}" in part for part in self.command):
             node = shutil.which("node")

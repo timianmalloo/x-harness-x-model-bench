@@ -14,6 +14,13 @@
     "tests": ["tests/test_profiles.py::test_copilot_null_credential_seeds_and_cleans_without_touching_other_files"]
   },
   {
+    "name": "model placeholder requires a model",
+    "file": "src/harness_bench/profiles.py",
+    "find": "if model is None and any(\"{model}\" in part for part in self.command):",
+    "replace": "if False:",
+    "tests": ["tests/test_profiles.py::test_copilot_command_requires_an_explicit_model"]
+  },
+  {
     "name": "native command must not resolve node",
     "file": "src/harness_bench/profiles.py",
     "find": "if any(\"{node}\" in part for part in self.command):",
