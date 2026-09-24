@@ -192,6 +192,14 @@ def test_a_pass_seals_its_own_segments_and_brackets_its_scores(root, tmp_path):
     assert all(s["archive_attempt"] == 1 for s in pass_rows(run_dir, "scores", result.grading_id))
 
 
+def test_grading_completed_records_the_sealed_heads_of_its_other_facts(root, tmp_path):  # ruling R-2
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    result = runner.run_pass(run_dir, root)
+    completed = pass_rows(run_dir, "events", result.grading_id)[-1]
+    assert completed["kind"] == "grading.completed"
+    assert completed["heads"] == {fact: result.heads[fact] for fact in ("model_calls", "tool_calls", "scores")}  # never events
+
+
 def test_only_archived_cells_are_graded(root, tmp_path):  # T-GRD-unarchived
     run_dir = make_run(root, tmp_path, {"a": GOOD, "b": GOOD}, archived={"a"})
     s = scores(run_dir, runner.run_pass(run_dir, root).grading_id)
