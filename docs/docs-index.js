@@ -1276,6 +1276,32 @@ window.DOCS_INDEX = {
       "sourceSha256": "d54e510a81dfb32ebc3f256b4fd6be310d719fba944dcdef11213e6d9ab50dad"
     },
     {
+      "id": "findings-t2-ledger-verify",
+      "path": "docs/proof/findings-T2.md",
+      "title": "Findings → tests: track T2 ledger-verify",
+      "type": "proof-pack",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2026-12-22",
+      "reviewSuggested": [],
+      "summary": "Track T2's findings→tests map: twelve findings on the ledger, verify and grading, each with its red commit, test nodes and failing line. The harness refused the sub-agent's writes of this file, so the Coordinator transcribed it from the track's report and re-ran two red SHAs itself.",
+      "tags": [
+        "proof",
+        "findings",
+        "red-first",
+        "T2"
+      ],
+      "links": [
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "8841a8960ad9e868cfa3a92aa173b67a2551f582a5a4d12b832cac89cddbde65"
+    },
+    {
       "id": "findings-t3-process-edges",
       "path": "docs/proof/findings-T3.md",
       "title": "Findings → tests: track T3 process-edges",
@@ -1510,5 +1536,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "4ad85ebff7c62f008fac368ac8c52ee4c2a8717cfb256dc517dd331d0b053308"
+  "graphSha256": "0e596f724c0a554d9cec00a53325a4d8ad15f14b8ca308d425620247710cbb49"
 };

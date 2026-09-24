@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T04:22:45Z",
+  "generated": "2026-09-24T04:26:09Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -568,6 +568,33 @@ window.AUDIT_DATA = {
       "tier": "T2",
       "started_at": "2026-09-24T02:07:41Z",
       "duration_seconds": 8104.0
+    },
+    {
+      "id": "al-01M38TKV4AS6MNPYPCAYYD478H",
+      "shortname": "join-t2",
+      "datetime": "2026-09-24T04:26:09Z",
+      "session": "coord-opus",
+      "prompt": "the join of track/t2-ledger-verify into impl/phase1",
+      "summary": "T2: 12 findings red-first; verify catches cut/deleted segments (R-2); D2 properties; D6 golden ledgers; cosmic-ray 1803 mutants 0 open recount_seconds=79 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "merge T2's verified evidence",
+      "done_when": "join gates green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-24T04:24:49Z",
+      "duration_seconds": 80.0
     }
   ],
   "changes": [
