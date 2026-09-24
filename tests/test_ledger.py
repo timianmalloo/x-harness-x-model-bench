@@ -190,10 +190,11 @@ def test_a_re_hashed_seal_must_still_match_its_segment(tmp_path, forged, detail)
     assert (report.error, report.detail) == ("HB-LED-002", detail)
 
 
-def test_bytes_after_the_seal_are_a_break_not_a_torn_tail(tmp_path):
+@pytest.mark.parametrize("extra", [b'{"kind":"cell.prompt_se', b"\n", b"garbage\n"])  # T2-8: newline-ended too
+def test_bytes_after_the_seal_are_a_break_not_a_torn_tail(tmp_path, extra):
     path = _write(tmp_path, seal=True)
     with path.open("ab") as f:
-        f.write(b'{"kind":"cell.prompt_se')
+        f.write(extra)
     report = ledger.verify_segment(path)
     assert (report.error, report.detail) == ("HB-LED-002", "bytes after the seal")
 
@@ -260,14 +261,58 @@ def test_any_single_byte_change_is_detected(tmp_path_factory, n, data):
 
 
 @settings(max_examples=100, deadline=None)
-@given(records=st.lists(st.dictionaries(st.sampled_from(["a", "b", "kind", "x"]),
-                                        st.one_of(st.integers(-10**12, 10**12), st.text(max_size=20)),
-                                        min_size=1, max_size=4), min_size=1, max_size=8))
-def test_round_trip_preserves_every_record(tmp_path_factory, records):
+@given(n=st.integers(min_value=1, max_value=6), data=st.data())
+def test_any_cut_or_insert_is_detected(tmp_path_factory, n, data):  # D2
+    tmp = tmp_path_factory.mktemp("cut")
+    path = _write(tmp, n=n, seal=True)
+    raw = path.read_bytes()
+    if data.draw(st.booleans()):  # cut raw[i:j], at least one byte
+        i = data.draw(st.integers(min_value=0, max_value=len(raw) - 1))
+        tampered = raw[:i] + raw[data.draw(st.integers(min_value=i + 1, max_value=len(raw))):]
+    else:  # insert at least one byte at i
+        i = data.draw(st.integers(min_value=0, max_value=len(raw)))
+        tampered = raw[:i] + data.draw(st.binary(min_size=1, max_size=40)) + raw[i:]
+    path.write_bytes(tampered)
+    report = ledger.verify_segment(path)
+    # a cut or insert breaks the chain, or leaves an unsealed prefix (then the recorded head exposes it: test_verify)
+    assert report.error == "HB-LED-002" or not report.sealed
+
+
+RECORDS = st.lists(st.dictionaries(st.sampled_from(["a", "b", "kind", "x"]),
+                                   st.one_of(st.integers(-10**12, 10**12), st.text(max_size=20)),
+                                   min_size=1, max_size=4).filter(lambda r: r.get("kind") != ledger.SEAL), min_size=1, max_size=8)
+
+
+@settings(max_examples=100, deadline=None)
+@given(records=RECORDS, seal=st.booleans())
+def test_append_then_verify_round_trips(tmp_path_factory, records, seal):  # D2
     tmp = tmp_path_factory.mktemp("rt")
-    w = ledger.SegmentWriter.create(tmp / "f", "s")
-    for r in records:
-        w.append(dict(r))
-    w.close()
+    with ledger.SegmentWriter.create(tmp / "f", "s") as w:
+        for r in records:
+            w.append(dict(r))
+        head = w.seal() if seal else w.head_hash
+    report = ledger.verify_segment(tmp / "f" / "s.jsonl")
+    assert (report.error, report.sealed, report.torn_tail, report.lines, report.head_hash) == (None, seal, False, len(records), head)
     rows = ledger.read_segment(tmp / "f" / "s.jsonl")
-    assert [{k: v for k, v in row.items() if k not in ("seq", "prev_hash", "hash")} for row in rows] == records
+    assert [{k: v for k, v in row.items() if k not in ledger.CHAIN_FIELDS} for row in rows] == records
+
+
+@settings(max_examples=150, deadline=None)
+@given(n=st.integers(min_value=0, max_value=5), data=st.data())
+def test_a_torn_tail_is_handled_at_any_offset(tmp_path_factory, n, data):  # D2: a crash mid-write, at any byte
+    tmp = tmp_path_factory.mktemp("torn")
+    path = _write(tmp, n=n)
+    raw = path.read_bytes()
+    k = data.draw(st.integers(min_value=0, max_value=len(raw)))
+    kept = raw[:k]
+    path.write_bytes(kept)
+    whole = kept.count(b"\n")  # lines that were written in full
+    torn = not kept.endswith(b"\n") and kept != b""
+    report = ledger.verify_segment(path)
+    assert (report.error, report.lines, report.torn_tail) == (None, whole, torn)
+    with ledger.SegmentWriter.reopen(path) as w:  # the owner cuts the torn line back and records the repair
+        assert w.repaired == torn
+        w.append({"kind": "after"})
+    rows = ledger.read_segment(path)
+    assert [r["kind"] for r in rows] == ["cell.launch_intent"] * whole + [ledger.TAIL_REPAIRED] * torn + ["after"]
+    assert ledger.verify_segment(path).torn_tail is False

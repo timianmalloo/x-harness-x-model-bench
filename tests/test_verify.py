@@ -13,8 +13,10 @@ from pathlib import Path
 
 import pytest
 from archived_runs import GOOD, complete_run, make_root, make_run
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 
-from harness_bench import cli, ledger
+from harness_bench import cli, ledger, views
 from harness_bench.grade import runner
 
 GOLDEN = Path(__file__).parent / "fixtures" / "ledger"
@@ -93,6 +95,38 @@ def test_a_run_completed_naming_the_wrong_events_head_is_exit_5(capsys, root, tm
     complete_run(run_dir, events_head=ledger.genesis("forged"))
     code, _, err = _verify(capsys, tmp_path)
     assert code == 5 and "HB-LED-002: events/engine-1" in err
+
+
+# --- D2: any byte change, cut or insert in a completed run is detected ------------------------------------
+
+
+@pytest.fixture(scope="module")
+def completed_run(tmp_path_factory):
+    tmp = tmp_path_factory.mktemp("completed")
+    run_dir = make_run(make_root(tmp), tmp, {"a": GOOD})
+    complete_run(run_dir)
+    return run_dir
+
+
+@settings(max_examples=120, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(data=st.data())
+def test_any_change_to_a_completed_run_ledger_is_detected(tmp_path_factory, completed_run, data):
+    run_dir = tmp_path_factory.mktemp("tamper") / "r1"
+    shutil.copytree(completed_run, run_dir)
+    seg = run_dir / data.draw(st.sampled_from(["events", "turn_usage", "archive_files"])) / "engine-1.jsonl"
+    raw = seg.read_bytes()
+    op = data.draw(st.sampled_from(["byte", "cut", "insert"]))
+    i = data.draw(st.integers(min_value=0, max_value=len(raw) - (0 if op == "insert" else 1)))
+    if op == "byte":
+        tampered = raw[:i] + bytes([data.draw(st.integers(0, 255).filter(lambda b: b != raw[i]))]) + raw[i + 1:]
+    elif op == "cut":
+        tampered = raw[:i] + raw[data.draw(st.integers(min_value=i + 1, max_value=len(raw))):]
+    else:
+        tampered = raw[:i] + data.draw(st.binary(min_size=1, max_size=40)) + raw[i:]
+    seg.write_bytes(tampered)
+    errors = [f for f in views.verify(run_dir) if f.level == "error"]
+    # detected: an integrity error, or the run no longer reads as completed (cut back to before run.completed)
+    assert errors or not any(e["kind"] == "run.completed" for e in views.rows(run_dir, "events"))
 
 
 # --- D6 golden ledgers ----------------------------------------------------------------------------------
