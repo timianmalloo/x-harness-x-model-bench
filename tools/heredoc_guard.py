@@ -25,6 +25,7 @@ HEREDOC = (
 )
 GATE = r"(?:\bpytest\b|\bruff\s+check\b|\b(?:mutate_check|conductor-join|run-verify-gates)\.py\b)"
 PIPED_GATE = re.compile(rf"(?:^|[\s;&(/\\]){GATE}[^\n;&|]*(?<!\|)\|(?!\|)")  # uv run pytest -q | tail -1
+QUOTED = re.compile(r"'[^']*'|\"(?:[^\"\\]|\\.)*\"")  # a quoted argument: a | inside it is data, not a pipe
 MESSAGES = {
     "heredoc": ("EDIT-B / CT27: a heredoc into Python corrupts escapes in the text it writes. "
                 "Change code with the Edit tool, or write the program to a file (scratchpad) and run it."),
@@ -36,7 +37,7 @@ MESSAGES = {
 def verdict(command: str) -> str | None:
     if any(shape.search(command) for shape in HEREDOC):
         return "heredoc"
-    if "pipefail" not in command and PIPED_GATE.search(command):
+    if "pipefail" not in command and PIPED_GATE.search(QUOTED.sub("''", command)):
         return "pipe"
     return None
 
