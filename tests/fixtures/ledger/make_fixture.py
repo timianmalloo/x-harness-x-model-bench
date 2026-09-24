@@ -7,7 +7,8 @@ The fixture is a completed run of two cells (one passes, one fails its hidden te
 - `run/`: the run folder (`plan.json`, the segments, `archive/`), without `grading/` and the locks;
 - `expected.json`: every segment's head hash, row count, seal state and file sha256, and the producing commit;
 - `tampered/`: an overlay on `run/` holding only the changed file: the later pass's scores segment cut by its
-  seal and last row. The run with the overlay applied must exit 5.
+  seal and last row. When the pass records `heads` (ruling R-2), the cut segment is also re-sealed, so only
+  the recorded head can expose it. The run with the overlay applied must exit 5.
 
 Usage (from the checkout whose code must produce it): python tests/fixtures/ledger/make_fixture.py <out>
 """
@@ -63,9 +64,15 @@ def main(out: Path) -> None:
     cut = f"scores/{later.grading_id}.jsonl"
     (out / "tampered" / "scores").mkdir(parents=True)
     (out / "tampered" / cut).write_bytes(b"".join((out / "run" / cut).read_bytes().splitlines(keepends=True)[:-2]))
+    completed = ledger.read_segment(out / "run" / "events" / f"{later.grading_id}.jsonl")[-1]
+    resealed = "heads" in completed
+    if resealed:
+        with ledger.SegmentWriter.reopen(out / "tampered" / cut) as w:
+            w.seal()
     doc = {"produced_at": _git("rev-parse", "HEAD"), "src_dirty": bool(_git("status", "--porcelain", "--", "src")),
            "in_run_pass": in_run.grading_id, "later_pass": later.grading_id,
-           "tampered": f"{cut}: seal and last row cut", "segments": expected(out / "run")}
+           "tampered": f"{cut}: seal and last row cut" + (", then re-sealed" if resealed else ""),
+           "segments": expected(out / "run")}
     (out / "expected.json").write_text(json.dumps(doc, indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
 
 

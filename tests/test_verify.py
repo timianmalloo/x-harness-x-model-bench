@@ -107,7 +107,7 @@ def _golden(tmp_path: Path, name: str, tampered: bool = False) -> tuple[Path, di
     return run_dir, json.loads((src / "expected.json").read_text(encoding="utf-8"))
 
 
-@pytest.mark.parametrize("name", ["c44dd2b-no-heads"])
+@pytest.mark.parametrize("name", ["c44dd2b-no-heads", "heads"])
 def test_a_golden_ledger_keeps_its_hashes_and_row_counts(tmp_path, name):
     run_dir, expected = _golden(tmp_path, name)
     got = {}
@@ -128,7 +128,14 @@ def test_the_ledger_written_before_heads_verifies_with_a_warning(capsys, tmp_pat
         assert f"events/{gid}: grading.completed records no heads" in err and "(warning)" in err
 
 
-@pytest.mark.parametrize("name", ["c44dd2b-no-heads"])
+def test_the_ledger_written_with_heads_verifies_clean(capsys, tmp_path):
+    run_dir, expected = _golden(tmp_path, "heads")
+    completed = ledger.read_segment(run_dir / "events" / f"{expected['later_pass']}.jsonl")[-1]
+    assert completed["kind"] == "grading.completed" and set(completed["heads"]) == {"model_calls", "tool_calls", "scores"}
+    assert _verify(capsys, tmp_path) == (0, "verify: ok\n", "")
+
+
+@pytest.mark.parametrize("name", ["c44dd2b-no-heads", "heads"])
 def test_a_tampered_golden_ledger_is_exit_5(capsys, tmp_path, name):
     _, expected = _golden(tmp_path, name, tampered=True)
     code, _, err = _verify(capsys, tmp_path)
