@@ -62,6 +62,11 @@ summary: >-
 - The Coordinator (T7) fixed N2, N3 and N6. It also fixed TOOL-A in its own `mutate_check` (red `3ecd1eb`, fix `6d26c76`).
 - **A Coordinator error, recorded:** the TOOL-A sweep concluded that the cosmic-ray runs were exposed, without first reading how cosmic-ray runs its tests. They were not exposed. The T12 re-run it triggered still paid: it found TOOL-B, 29 overstated kills, and a false equivalence.
 
+**Audit self-check at the close** (`audit-log.py selfcheck`, entry `coordinate-phase1-finish`):
+- **Over budget:** T8 (98 against 80) and T9 (81 against 60).
+- **Fan-out over cap:** 11 track runs against a declared cap of 5. At most 5 ran at once (T1–T5). The other six were loop-backs and veto tracks that arrived later, one or three at a time. So the cap held for concurrency, but the plan never budgeted the loop-backs. The next plan should budget them explicitly, because three real E2E failures produced three loop-backs here.
+- **Main-line budget gap:** the Coordinator's own loop declared no budget (class CTX-M). That is a finding for the next plan, which should give the Coordinator a budget like any track.
+
 T6, T8 and T9 are loop-backs. Each real E2E found defects in files owned by tracks that had already closed, so the loop-back rule reopened them as small fix tracks. T7 is the Coordinator's own close (this record). No planned track exceeded its call budget. Two loop-backs did: T8 (98 against 80) and T9 (81 against 60). Both went over on calls while taking a quarter or less of their wall-clock budget. Loop-back briefs therefore set call budgets too low for a red-first cycle across several test files. That is a signal about how those budgets were estimated, not a reason to raise the next one without asking why. Every planned track finished well under its wall-clock estimate. The estimates were Inferred and too high by a factor of 2–14.
 
 **Which of the plan's parallelism justifications paid:**

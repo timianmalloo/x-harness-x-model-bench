@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T13:11:56Z",
+  "generated": "2026-09-24T13:35:17Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -833,6 +833,143 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-09-24T13:09:31Z",
       "duration_seconds": 145.0
+    },
+    {
+      "id": "al-01M39T1AM29MBHDWE46VE4MHQF",
+      "shortname": "coordinate-phase1-finish",
+      "datetime": "2026-09-24T13:35:17Z",
+      "session": "coord-opus",
+      "prompt": "commit and push all and merge so main is clean / then / /execute-with-coordination docs/coordination/coordination-phase1-finish.md",
+      "summary": "Executed the phase-1 finish plan as Coordinator. Tracks T1-T5 (planned), T6/T8/T9 (E2E loop-backs), T10/T11/T12 (Test Architect round-1 veto) joined via conductor-join; T7 close by the Coordinator. Real E2E green on the final code (e2e-1790255669); 2699 cosmic-ray mutants 0 open; 198/198 hand-written mutations; Test Architect round 2 CLEAR. Defect classes CONC-A, PATH-A, CLN-A, COORD-A, GATE-A, TOOL-A, TOOL-B registered; E2E-E and TOOL-A controls built red-first. Rulings R-4..R-6 (Owner seat). Planned vs actual in docs/coordination/coordination-phase1-finish-run.md.",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/coordination/coordination-phase1-finish.md",
+        "docs/coordination/coordination-phase1-finish-run.md",
+        "docs/proof/phase1.md",
+        "docs/notes/mutation-record-phase1.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Finish phase 1 of harness-bench to usable (M1) and merge-ready (M2) with full rigor",
+      "done_when": "real E2E green on the joined branch; bench verify 0; mutation bar met with 0 open; Proof Pack complete; Test Architect veto cleared; main fast-forwarded and pushed",
+      "tier": "T2",
+      "fan_out": 5,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "agent_runs": [
+        {
+          "agent": "T1",
+          "started_at": "2026-09-24T02:07:35Z",
+          "ended_at": "2026-09-24T07:32:13Z",
+          "duration_seconds": 19478.0,
+          "calls": 415,
+          "budget_calls": 450,
+          "over_budget": false
+        },
+        {
+          "agent": "T10",
+          "started_at": "2026-09-24T09:00:42Z",
+          "ended_at": "2026-09-24T10:33:40Z",
+          "duration_seconds": 5578.0,
+          "calls": 160,
+          "budget_calls": 280,
+          "over_budget": false
+        },
+        {
+          "agent": "T11",
+          "started_at": "2026-09-24T09:00:42Z",
+          "ended_at": "2026-09-24T09:25:05Z",
+          "duration_seconds": 1463.0,
+          "calls": 59,
+          "budget_calls": 120,
+          "over_budget": false
+        },
+        {
+          "agent": "T12",
+          "started_at": "2026-09-24T10:42:55Z",
+          "ended_at": "2026-09-24T13:05:56Z",
+          "duration_seconds": 8581.0,
+          "calls": 120,
+          "budget_calls": 250,
+          "over_budget": false
+        },
+        {
+          "agent": "T2",
+          "started_at": "2026-09-24T02:07:35Z",
+          "ended_at": "2026-09-24T04:23:27Z",
+          "duration_seconds": 8152.0,
+          "calls": 297,
+          "budget_calls": 350,
+          "over_budget": false
+        },
+        {
+          "agent": "T3",
+          "started_at": "2026-09-24T02:38:53Z",
+          "ended_at": "2026-09-24T03:04:02Z",
+          "duration_seconds": 1509.0,
+          "calls": 145,
+          "budget_calls": 250,
+          "over_budget": false
+        },
+        {
+          "agent": "T4",
+          "started_at": "2026-09-24T02:38:53Z",
+          "ended_at": "2026-09-24T03:14:50Z",
+          "duration_seconds": 2157.0,
+          "calls": 199,
+          "budget_calls": 200,
+          "over_budget": false
+        },
+        {
+          "agent": "T5",
+          "started_at": "2026-09-24T02:38:53Z",
+          "ended_at": "2026-09-24T02:53:42Z",
+          "duration_seconds": 889.0,
+          "calls": 88,
+          "budget_calls": 120,
+          "over_budget": false
+        },
+        {
+          "agent": "T6",
+          "started_at": "2026-09-24T07:41:44Z",
+          "ended_at": "2026-09-24T07:48:40Z",
+          "duration_seconds": 416.0,
+          "calls": 34,
+          "budget_calls": 60,
+          "over_budget": false
+        },
+        {
+          "agent": "T8",
+          "started_at": "2026-09-24T07:57:44Z",
+          "ended_at": "2026-09-24T08:14:08Z",
+          "duration_seconds": 984.0,
+          "calls": 98,
+          "budget_calls": 80,
+          "over_budget": true
+        },
+        {
+          "agent": "T9",
+          "started_at": "2026-09-24T08:24:16Z",
+          "ended_at": "2026-09-24T08:39:31Z",
+          "duration_seconds": 915.0,
+          "calls": 81,
+          "budget_calls": 60,
+          "over_budget": true
+        }
+      ],
+      "parallelism": {
+        "agent_seconds": 50122.0,
+        "span_seconds": 35952.0,
+        "speedup": 1.39,
+        "peak_concurrency": 5
+      }
     }
   ],
   "changes": [
