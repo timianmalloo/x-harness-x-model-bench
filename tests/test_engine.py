@@ -892,6 +892,308 @@ def test_the_heartbeat_keeps_beating_after_a_failed_beat():
     assert Lock.calls >= 3
 
 
+# --- _classify, the cause precedence table (T10: cosmic-ray survivors, docs/notes/mutation-record-t1.md) ---------------
+
+class _NativeRecords:
+    """A launcher stub for `_classify`: each native record found for the session carries these provider errors."""
+
+    def __init__(self, *errors_per_record):
+        self.errors_per_record = errors_per_record
+        self.asked: list[str] = []
+
+    def records(self, home: Path, session_id: str) -> list[Path]:
+        self.asked.append(session_id)
+        return [home / f"{i}.jsonl" for i in range(len(self.errors_per_record))]
+
+    def read(self, path: Path):
+        from types import SimpleNamespace
+        return SimpleNamespace(errors=list(self.errors_per_record[int(path.stem)]))
+
+
+def _provider_error(status, error_type="overloaded_error"):
+    from harness_bench.telemetry import ProviderError
+    return ProviderError(native_ordinal=1, status=status, error_type=error_type, message="")
+
+
+def _classify(base, launcher=None, kill_reason=None, exit_status=0, tail=b"", **result):
+    from harness_bench import driver
+    turn = driver.TurnResult(**{"session_id": "s-1", "stop_reason": "end_turn", **result})
+    config = engine.EngineConfig(run_dir=base / "runs" / "r", cells_root=base / "cells", launchers={},
+                                 build_workspace=_build_workspace, grade=None)
+    return engine.Engine(_plan(n_cells=1), config)._classify(turn, launcher or _NativeRecords(), base, exit_status, tail, kill_reason)
+
+
+NO_MEMORY = 0xC0000017  # STATUS_NO_MEMORY
+OOM_TAIL = b"<--- Last few GCs --->\nFATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory\n"
+
+
+@pytest.mark.parametrize(("case", "expected"), [
+    # each row differs from the next rule down in exactly the input that rule reads
+    ({"launcher": _NativeRecords([_provider_error(529)]), "kill_reason": "timeout", "exit_status": NO_MEMORY}, "provider"),
+    ({"launcher": _NativeRecords([_provider_error(400, "invalid_request_error")]), "kill_reason": "timeout"}, "model_unavailable"),
+    ({"kill_reason": "timeout", "exit_status": NO_MEMORY, "cause": "protocol"}, "timed_out"),
+    ({"kill_reason": "host_suspended", "exit_status": NO_MEMORY, "tail": OOM_TAIL}, "host_suspended"),  # host_suspended > memory
+    ({"kill_reason": "host_suspended", "cause": "protocol"}, "host_suspended"),
+    ({"exit_status": NO_MEMORY, "cause": "protocol"}, "memory"),
+    ({"exit_status": 0xC000012D, "cause": "protocol"}, "memory"),  # STATUS_COMMITMENT_LIMIT
+    ({"tail": OOM_TAIL, "cause": "protocol"}, "memory"),  # the OOM stderr signature, with a clean exit status
+    ({"tail": b"System.OutOfMemoryException", "stop_reason": None}, "memory"),
+    ({"tail": b"fatal: OUT OF MEMORY", "stop_reason": None}, "memory"),  # case-insensitive
+    ({"exit_status": None, "tail": b"out of memory"}, "memory"),  # an exit status that never arrived
+    ({"kill_reason": "aborted", "cause": "protocol"}, "protocol"),  # a kill with no rule of its own falls through
+    ({"cause": "protocol", "stop_reason": "end_turn"}, "protocol"),  # the driver's cause outranks a completed stop reason
+    ({"cause": "blocked_auth", "stop_reason": None}, "blocked_auth"),
+    ({"stop_reason": "cancelled"}, "adapter_crash"),  # the adapter_crash fallback: a stop reason that is not completion
+    ({"stop_reason": None}, "adapter_crash"),
+    ({"stop_reason": "end_turn"}, None),
+    ({"stop_reason": "max_tokens"}, None),
+    ({"stop_reason": "max_turn_requests"}, None),
+    ({"stop_reason": "refusal"}, None),
+    ({"exit_status": 1, "tail": b"memory usage: 12 MB\n"}, None),  # neither a no-memory status nor the signature
+    ({"kill_reason": "timeout-ish"}, None),  # only the exact kill reasons count
+    ({"kill_reason": "TIMEOUT".lower()}, "timed_out"),  # a new str object: compared by value, not by identity
+    ({"kill_reason": "HOST_SUSPENDED".lower()}, "host_suspended"),
+])
+def test_classify_applies_the_cause_precedence_in_order(base, case, expected):
+    from harness_bench.errors import Cause
+    case = dict(case)
+    if "cause" in case:
+        case["cause"] = Cause[case["cause"]]
+    cause = _classify(base, **case)
+    assert (cause.name if cause else None) == expected
+
+
+def test_classify_reads_every_native_record_of_the_session(base):
+    launcher = _NativeRecords([], [_provider_error(429, "rate_limit_error")])  # the error is in the second record only
+    assert _classify(base, launcher, session_id="s-7").name == "provider"
+    assert launcher.asked == ["s-7"]
+    missing = _NativeRecords()
+    assert _classify(base, missing, session_id=None, stop_reason="end_turn") is None
+    assert missing.asked == [""]  # a session that never opened is looked up as "", never as None
+
+
+# --- run, _run_cell, _keep_tail (T10: cosmic-ray survivors) ------------------------------------------------------------
+
+def test_the_inbox_is_the_designs_bounded_queue(base):  # design: Error & concurrency model, queue.Queue(maxsize=64)
+    config = engine.EngineConfig(run_dir=base / "r", cells_root=base / "c", launchers={}, build_workspace=_build_workspace, grade=None)
+    assert engine.Engine(_plan(n_cells=1), config).inbox.maxsize == 64
+
+
+def test_the_host_is_kept_awake_for_the_run_and_released_at_its_end(base, monkeypatch):
+    calls = []
+    monkeypatch.setattr(host, "keep_awake", calls.append)
+    p = _plan(n_cells=1)
+    _run(base, p, FakeLauncher({}))
+    assert calls == [True, False]
+
+
+def test_a_run_with_nothing_left_to_launch_ends_without_an_idle_wait(base):  # the end drains without waiting
+    p = _plan(n_cells=1)
+    p["cells"] = []
+    started = time.monotonic()
+    summary, events, _ = _run(base, p, FakeLauncher({}))
+    assert time.monotonic() - started < 0.8
+    assert [e["kind"] for e in events] == ["run.started", "run.completed"] and summary.exit_code == 0
+
+
+def test_the_engine_loop_passes_every_fifth_of_a_second_and_never_spins(base, monkeypatch):  # loop_interval = 0.2 s
+    import itertools
+    import statistics
+
+    from harness_bench import oslock
+    beats = []
+    real = oslock.RunLock.heartbeat
+
+    def timed(self):  # one beat per pass of the loop
+        beats.append(time.monotonic())
+        return real(self)
+
+    monkeypatch.setattr(oslock.RunLock, "heartbeat", timed)
+    p = _plan(n_cells=1)
+    _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"sleep": 1}}))
+    gaps = [b - a for a, b in itertools.pairwise(beats)]
+    assert len(gaps) >= 3 and 0.15 <= statistics.median(gaps) <= 0.6
+
+
+def test_free_space_exactly_at_the_floor_is_not_below_it(base, monkeypatch):  # HB-RUN-004: "below the floor"
+    real = shutil.disk_usage
+    p = _plan(n_cells=1)
+    monkeypatch.setattr(shutil, "disk_usage", lambda path: real(path)._replace(free=p["parameters"]["disk_floor_bytes"]))
+    summary, events, _ = _run(base, p, FakeLauncher({}))
+    assert not any(e["kind"] == "run.launch_stopped" for e in events) and summary.exit_code == 0
+
+
+def test_a_plan_of_more_than_256_cells_can_end_complete(base):  # cell counts are compared by value, not identity
+    class NoArgv(FakeLauncher):  # every cell fails fast and unclassified: no process, no circuit breaker
+        def argv_env(self, cell, home, traceparent):
+            raise RuntimeError("profile cannot build argv")
+
+    p = _plan(n_cells=257, parallelism=64)
+    summary, events, _ = _run(base, p, NoArgv({}))
+    assert len(_outcomes(events)) == 257 and events[-1]["kind"] == "run.completed" and summary.exit_code == 0
+
+
+def test_grading_never_runs_on_a_run_that_needs_recovery(base, monkeypatch):  # no run.completed, so no pass
+    from harness_bench import archive
+
+    def boom(*args, **kwargs):
+        raise OSError("archive volume unavailable")
+
+    graded = []
+    monkeypatch.setattr(archive, "archive_cell", boom)
+    summary, _, _ = _run(base, _plan(n_cells=1), FakeLauncher({}), grade=graded.append)
+    assert graded == [] and summary.exit_code == 3
+
+
+def test_a_spawn_failure_with_no_win32_error_records_zero(base, monkeypatch):
+    from harness_bench import procs
+
+    def refused(*args, **kwargs):
+        raise procs.SpawnError("refused", None)
+
+    monkeypatch.setattr(procs, "spawn", refused)
+    p = _plan(n_cells=1)
+    _, events, _ = _run(base, p, FakeLauncher({}))
+    out = _outcomes(events)[p["cells"][0]["cell_id"]]
+    assert (out["cause"], out["win32_error"]) == ("spawn", 0)
+
+
+def test_the_outcome_records_times_in_milliseconds_and_a_capped_detail(base, monkeypatch):
+    from harness_bench import driver
+    real = driver.run_turn
+
+    def timed(*args, **kwargs):
+        result = real(*args, **kwargs)
+        result.handshake_seconds, result.turn_seconds, result.last_update_seconds = 1.25, 2.5, 2.0
+        result.detail = "d" * 1000
+        return result
+
+    monkeypatch.setattr(driver, "run_turn", timed)
+    p = _plan(n_cells=1)
+    _, events, _ = _run(base, p, FakeLauncher({}))
+    out = _outcomes(events)[p["cells"][0]["cell_id"]]
+    assert (out["handshake_ms"], out["turn_ms"], out["last_update_ms"]) == (1250, 2500, 2000)
+    assert out["detail"] == "d" * 300  # the driver's detail is capped at 300 characters
+
+
+def test_span_ids_are_w3c_parent_ids():  # 16 lowercase hex characters (W3C Trace Context), deterministic
+    sid = engine.span_id("a" * 32, "cell-1", "cell")
+    assert len(sid) == 16 and int(sid, 16) >= 0 and sid == sid.lower()
+    assert sid == engine.span_id("a" * 32, "cell-1", "cell") != engine.span_id("a" * 32, "cell-2", "cell")
+
+
+def test_a_failed_append_of_the_launch_intent_ends_the_run_incomplete_not_raised(base, monkeypatch):
+    real = ledger.SegmentWriter.append
+
+    def failing(self, record):
+        if record.get("kind") == "cell.launch_intent":
+            raise OSError("disk full")
+        return real(self, record)
+
+    monkeypatch.setattr(ledger.SegmentWriter, "append", failing)
+    p = _plan(n_cells=1)
+    config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
+                                 launchers={"fake": FakeLauncher({})}, build_workspace=_build_workspace, grade=None)
+    assert _engine_run(p, config).exit_code == 3
+    assert not (base / "cells").exists()  # the cell was never launched
+
+
+def test_a_workspace_that_fails_before_any_folder_exists_is_still_archived(base):
+    def broken(cell, cell_dir):
+        raise OSError("disk says no")
+
+    p = _plan(n_cells=1)
+    summary, events, _ = _run(base, p, FakeLauncher({}), build_workspace=broken)
+    assert not any(e["kind"] == "cell.archive_failed" for e in events)
+    assert [e["kind"] for e in events if e.get("cell_id")][-2:] == ["cell.archived", "cell.workspace_deleted"]
+    assert summary.exit_code == 0
+
+
+def test_a_worker_still_running_when_the_run_fails_is_refused_at_once_not_left_waiting(base, monkeypatch):
+    calls = []
+
+    def slept(self):  # the engine thread fails on its second pass, while the only cell is mid-turn
+        calls.append(1)
+        if len(calls) == 2:
+            raise RuntimeError("engine thread bug")
+        return False
+
+    monkeypatch.setattr(host.SleepDetector, "slept", slept)
+    p = _plan(n_cells=1)
+    config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
+                                 launchers={"fake": FakeLauncher({p["cells"][0]["label"]: {"sleep": 2}})},
+                                 build_workspace=_build_workspace, grade=None, end_grace=3)
+    with pytest.raises(RuntimeError):
+        engine.Engine(p, config).run()
+    worker = next(t for t in threading.enumerate() if t.name == f"cell-{p['cells'][0]['cell_id']}")
+    worker.join(30)
+    assert not worker.is_alive(), "the worker waits forever on a record the ended engine will never drain"
+
+
+def test_turn_usage_is_recorded_under_attempt_one(base):  # the row key is (run, cell, attempt, model)
+    p = _plan(n_cells=1)
+    _, _, config = _run(base, p, FakeLauncher({}))
+    rows = ledger.read_segment(next((config.run_dir / "turn_usage").glob("*.jsonl")))
+    assert [(r["cell_id"], r["attempt"]) for r in rows] == [(p["cells"][0]["cell_id"], 1)]
+
+
+def test_the_archive_is_recorded_as_attempt_one(base):
+    p = _plan(n_cells=1)
+    _, events, _ = _run(base, p, FakeLauncher({}))
+    assert [(e["cell_id"], e["archive_attempt"]) for e in events if e["kind"] == "cell.archived"] == [(p["cells"][0]["cell_id"], 1)]
+
+
+def _unlink_segments(run_dir: Path) -> None:
+    segments = [seg for fact in engine.FACTS for seg in (run_dir / fact).glob("*.jsonl")]
+    assert len(segments) == len(engine.FACTS)
+    for seg in segments:
+        seg.unlink()  # PermissionError while the engine still holds the file open (Windows)
+
+
+def test_the_run_releases_every_ledger_segment_when_it_returns(base, monkeypatch):
+    from harness_bench import archive
+
+    def boom(*args, **kwargs):
+        raise OSError("archive volume unavailable")
+
+    monkeypatch.setattr(archive, "archive_cell", boom)  # a run that needs recovery: no segment is sealed
+    _, _, config = _run(base, _plan(n_cells=1), FakeLauncher({}))
+    _unlink_segments(config.run_dir)
+    monkeypatch.undo()  # a whole run: every segment is sealed
+    _, _, config = _run(base, _plan(n_cells=1), FakeLauncher({}))
+    _unlink_segments(config.run_dir)
+
+
+def test_a_windows_disk_full_error_is_a_full_disk():  # ERROR_HANDLE_DISK_FULL maps to EINVAL, not ENOSPC
+    handle_disk_full = OSError(0, "The disk is full", None, 39)
+    assert handle_disk_full.errno != errno.ENOSPC and engine._disk_full(handle_disk_full)
+    assert engine._disk_full(OSError(0, "There is not enough space on the disk", None, 112))
+    assert not engine._disk_full(OSError(0, "Access is denied", None, 5))
+
+
+def test_the_stderr_tail_keeps_the_last_bytes_up_to_its_limit():
+    import io
+    tail = bytearray()
+    engine._keep_tail(io.BytesIO(bytes(range(100))), tail, 10)
+    assert tail == bytes(range(90, 100))
+
+
+@pytest.mark.parametrize("error", [OSError(109, "The pipe has been ended"), ValueError("read of closed file")])
+def test_a_stderr_pipe_that_fails_ends_the_tail_quietly(error):  # the tail is best effort; its reader thread never raises
+    class Failing:
+        calls = 0
+
+        def read1(self, size):
+            Failing.calls += 1
+            if Failing.calls > 1:
+                raise error
+            return b"last words"
+
+    tail = bytearray()
+    engine._keep_tail(Failing(), tail, 64)
+    assert tail == b"last words"
+
+
 CRASHER = """
 import json, sys, uuid
 from concurrent.futures import Future
@@ -927,3 +1229,75 @@ def test_engine_crash_leaves_no_cell_running(base):  # T-ENG-crash-no-orphan
     time.sleep(2)
     for pid, created in pids:
         assert not host.process_alive(pid, created), f"cell process {pid} survived the engine"
+
+
+FAILER = """
+import sys
+from pathlib import Path
+sys.path.insert(0, {tests!r}); sys.path.insert(0, {src!r})
+import test_engine as t
+from harness_bench import engine, host
+cells = Path({cells!r})
+
+def slept(self):  # the engine thread fails once the only cell is mid-turn (its prompt is on disk)
+    if any(cells.rglob(".fake-prompt.txt")):
+        raise RuntimeError("engine thread bug")
+    return False
+
+host.SleepDetector.slept = slept
+p = t._plan(n_cells=1)
+p["run_id"] = {run_id!r}
+launcher = t.FakeLauncher({{c["label"]: {{"mode": "hang_prompt"}} for c in p["cells"]}})
+config = engine.EngineConfig(run_dir=Path({run_dir!r}), cells_root=cells, launchers={{"fake": launcher}},
+                             build_workspace=t._build_workspace, grade=None)
+engine.Engine(p, config).run()
+"""
+
+
+def test_an_engine_thread_failure_exits_the_process_and_leaves_no_cell_running(base):  # workers are daemon threads
+    run_id = "fail-" + uuid.uuid4().hex[:4]
+    script = base / "failer.py"
+    script.write_text(FAILER.format(tests=str(Path(__file__).parent), src=str(ROOT / "src"), run_id=run_id,
+                                    run_dir=str(base / "runs" / run_id), cells=str(base / "cells")), encoding="utf-8")
+    proc = subprocess.Popen([sys.executable, str(script)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        assert proc.wait(timeout=60) == 1, "the process did not exit: a worker thread holds it open"
+    finally:
+        if proc.poll() is None:
+            subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)], capture_output=True, check=False)
+            proc.wait(timeout=30)
+    time.sleep(2)
+    [started] = [e for e in _events(base / "runs" / run_id) if e["kind"] == "attempt.process_started"]
+    assert not host.process_alive(started["pid"], started["created_at"])
+
+
+# --- the kill-retry backoff cap (T10: the code had drifted to 60 s; the design says 30 s) -----------------------------
+
+class _UnconfirmedKill:
+    """A CellProcess stand-in whose kill is confirmed only on its n-th check; it records each check's timeout."""
+
+    def __init__(self, confirmed_on: int):
+        import io
+        from types import SimpleNamespace
+        self.proc = SimpleNamespace(stdin=io.BytesIO())
+        self.job = SimpleNamespace(active=lambda: 0, pids=list)
+        self.confirmed_on = confirmed_on
+        self.timeouts: list[float] = []
+
+    def terminate_and_confirm(self, timeout):
+        self.timeouts.append(timeout)
+        return len(self.timeouts) >= self.confirmed_on
+
+    def wait(self, timeout=None):
+        return 0
+
+
+def test_an_unconfirmed_kill_backs_off_from_1_s_doubling_to_the_designs_30_s_cap(base):
+    """design/phase1-walking-skeleton.md:189: "Retries use capped exponential backoff (1 s doubling to 30 s)".
+    Red at 70531dc, while KILL_RETRY_CAP was 60.0 (3d14c73, T1-8): the waits after 16 s were 32 and 60."""
+    config = engine.EngineConfig(run_dir=base / "r", cells_root=base / "c", launchers={}, build_workspace=_build_workspace,
+                                 grade=None, end_grace=0)
+    eng = engine.Engine(_plan(n_cells=1), config)
+    cp = _UnconfirmedKill(confirmed_on=9)
+    assert eng._end_process(cp) == (0, True)
+    assert cp.timeouts == [eng.params["kill_escalation"], 1, 2, 4, 8, 16, 30, 30, 30]
