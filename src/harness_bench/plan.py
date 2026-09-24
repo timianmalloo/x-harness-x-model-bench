@@ -8,6 +8,8 @@ innermost, so provider load and time-of-day drift affect every combo alike (prop
   tree or the hidden tests is a new version.
 - `bench plan --confirm` writes `runs/<run_id>/plan.json` once; `plan_hash` covers every field, and
   loading a confirmed plan re-checks it (an edited plan is an integrity failure).
+- The plan records each harness profile it uses (content hash, token source, auxiliary models), so
+  grading and views read the run's own dimensions, never today's profile files (US-26).
 """
 
 from __future__ import annotations
@@ -20,6 +22,7 @@ from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+from harness_bench import profiles
 from harness_bench.errors import BenchError
 from harness_bench.ledger import canonical
 
@@ -114,6 +117,12 @@ def file_hash(path: Path) -> str:
     return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest() if path.exists() else ""
 
 
+def profile_record(root: Path, harness: str) -> dict:
+    p = profiles.load(root, harness)
+    return {"profile_hash": file_hash(root / "bench" / "profiles" / f"{harness}.yaml"), "usage_source": p.usage_source,
+            "auxiliary_models": list(p.auxiliary_models), "record_glob": p.record_glob}
+
+
 def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, pack: dict,
                parallelism: int = DEFAULT_PARAMETERS["parallelism"], parameters: dict | None = None) -> dict:
     if not 1 <= parallelism <= PHASE1_MAX_PARALLELISM:
@@ -137,6 +146,7 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, p
         "tasks": {t["id"]: {"version_hash": versions[t["id"]], "scenario": t["scenario"],
                             "budget_seconds": t["budget_minutes"] * 60} for t in tasks},
         "builds": {h: builds[h] for h in sorted(harnesses)},
+        "profiles": {h: profile_record(root, h) for h in sorted(harnesses)},
         "pack": pack,
         "parameters": params,
         "price_list_hash": file_hash(root / "bench" / "prices.yaml"),

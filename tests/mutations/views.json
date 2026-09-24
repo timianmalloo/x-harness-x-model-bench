@@ -1,0 +1,114 @@
+[
+ {
+  "name": "a second outcome is accepted (latest wins)",
+  "file": "src/harness_bench/views.py",
+  "find": "            if e[\"cell_id\"] in seen:\n",
+  "replace": "            if False:\n",
+  "tests": ["tests/test_views.py::test_a_second_outcome_for_a_cell_is_refused"]
+ },
+ {
+  "name": "a duplicate fact key is accepted",
+  "file": "src/harness_bench/views.py",
+  "find": "            if k in keys:\n",
+  "replace": "            if False:\n",
+  "tests": ["tests/test_views.py::test_a_duplicate_fact_key_is_refused"]
+ },
+ {
+  "name": "the oldest pass is current",
+  "file": "src/harness_bench/views.py",
+  "find": "    gid = max(done)[1]\n",
+  "replace": "    gid = min(done)[1]\n",
+  "tests": ["tests/test_views.py::test_the_current_pass_is_the_latest_completed_one_and_an_unfinished_pass_is_ignored"]
+ },
+ {
+  "name": "an infrastructure cause does not invalidate",
+  "file": "src/harness_bench/views.py",
+  "find": "    if cause is not None and cause.invalidates:\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_views.py::test_an_infrastructure_or_benchmark_cause_invalidates_the_cell"]
+ },
+ {
+  "name": "no model call is valid",
+  "file": "src/harness_bench/views.py",
+  "find": "    if not served:\n        return \"invalid (no model call)\", \"HB-VAL-001\"\n",
+  "replace": "",
+  "tests": ["tests/test_views.py::test_a_cell_with_no_model_call_is_invalid"]
+ },
+ {
+  "name": "a served model is never checked against the pin",
+  "file": "src/harness_bench/views.py",
+  "find": "    if any(not profiles.model_allowed(m, cell[\"model\"], prof[\"auxiliary_models\"]) for m in served):\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_views.py::test_a_served_model_other_than_the_pin_is_a_mismatch"]
+ },
+ {
+  "name": "declared auxiliary models ignored",
+  "file": "src/harness_bench/views.py",
+  "find": "profiles.model_allowed(m, cell[\"model\"], prof[\"auxiliary_models\"])",
+  "replace": "profiles.model_allowed(m, cell[\"model\"], ())",
+  "tests": ["tests/test_views.py::test_a_declared_auxiliary_model_is_not_a_mismatch"]
+ },
+ {
+  "name": "idle invented without model time",
+  "file": "src/harness_bench/views.py",
+  "find": "    for name, m in ((\"wall\", wall), (\"model\", model), (\"tool\", tool)):\n",
+  "replace": "    model = Measure(0)\n    for name, m in ((\"wall\", wall), (\"model\", model), (\"tool\", tool)):\n",
+  "tests": ["tests/test_views.py::test_the_time_split_records_what_the_harness_exposes_and_never_invents_idle"]
+ },
+ {
+  "name": "overlapping tool calls counted twice",
+  "file": "src/harness_bench/views.py",
+  "find": "        if cur_end is None or start > cur_end:\n",
+  "replace": "        if True:\n",
+  "tests": ["tests/test_views.py::test_overlapping_tool_calls_are_counted_once"]
+ },
+ {
+  "name": "an acp_turn harness's incomplete record used for model time",
+  "file": "src/harness_bench/views.py",
+  "find": "    if source == \"acp_turn\":\n        return Measure(None, \"the native record misses calls (token source acp_turn)\")\n",
+  "replace": "",
+  "tests": ["tests/test_views.py::test_model_time_needs_a_real_duration_for_every_call"]
+ },
+ {
+  "name": "a zero-length model call counted as a duration",
+  "file": "src/harness_bench/views.py",
+  "find": "    return start is not None and end is not None and end > start\n",
+  "replace": "    return start is not None and end is not None and end >= start\n",
+  "tests": ["tests/test_views.py::test_model_time_needs_a_real_duration_for_every_call"]
+ },
+ {
+  "name": "invalid cells counted toward their combo",
+  "file": "src/harness_bench/views.py",
+  "find": "    valid = [c for c in cells if c.validity == \"valid\"]\n",
+  "replace": "    valid = list(cells)\n",
+  "tests": ["tests/test_views.py::test_an_invalid_cell_never_counts_toward_its_combo"]
+ },
+ {
+  "name": "rank inverted (a failure outranks a pass)",
+  "file": "src/harness_bench/views.py",
+  "find": "sum(1 for o in ranked if o > v)",
+  "replace": "sum(1 for o in ranked if o < v)",
+  "tests": ["tests/test_views.py::test_the_leaderboard_ranks_by_pass_rate_and_shows_ties"]
+ },
+ {
+  "name": "ties not marked",
+  "file": "src/harness_bench/views.py",
+  "find": " + (\"=\" if ranked.count(v) > 1 else \"\")",
+  "replace": "",
+  "tests": ["tests/test_views.py::test_the_leaderboard_ranks_by_pass_rate_and_shows_ties"]
+ },
+ {
+  "name": "a combo's cost shown when some valid cell has none",
+  "file": "src/harness_bench/views.py",
+  "find": "    elif no_cost:\n",
+  "replace": "    elif False:\n",
+  "tests": ["tests/test_views.py::test_cost_is_na_for_a_combo_when_any_valid_cell_has_no_cost"]
+ },
+ {
+  "name": "the pass identity leaks into the export",
+  "file": "src/harness_bench/views.py",
+  "find": "\"extraction_id\": c.extraction_id} for c in sorted(",
+  "replace": "\"extraction_id\": c.extraction_id, \"evidence\": c.evidence} for c in sorted(",
+  "tests": ["tests/test_views.py::test_a_regrade_gives_a_byte_identical_canonical_export"]
+ }
+]

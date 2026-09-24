@@ -80,9 +80,16 @@
  {
   "name": "acp_turn harness priced from the native record",
   "file": "src/harness_bench/grade/runner.py",
-  "find": "        source = profiles.load(self.root, cell[\"harness\"]).usage_source\n",
+  "find": "        source = self.plan[\"profiles\"][cell[\"harness\"]][\"usage_source\"]\n",
   "replace": "        source = \"native_record\"\n",
   "tests": ["tests/test_grade.py::test_cost_reads_turn_usage_for_an_acp_turn_harness"]
+ },
+ {
+  "name": "hidden tests graded after the task changed",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "        if task_version_hash(task_dir) != cell[\"task_version\"]:",
+  "replace": "        if False:",
+  "tests": ["tests/test_grade.py::test_hidden_tests_changed_since_the_plan_are_na_not_graded"]
  },
  {
   "name": "replay: a score for an unarchived cell allowed",

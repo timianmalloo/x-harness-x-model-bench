@@ -44,8 +44,7 @@ class Profile:
     auxiliary_models: tuple[str, ...] = ()
 
     def model_allowed(self, served: str, pinned: str) -> bool:
-        """The pin, or a declared auxiliary model (prefix match: builds date-stamp them) (US-11)."""
-        return served == pinned or any(served.startswith(a) for a in self.auxiliary_models)
+        return model_allowed(served, pinned, self.auxiliary_models)
 
     def seed_home(self, home: Path, model: str) -> None:
         home.mkdir(parents=True, exist_ok=True)
@@ -75,9 +74,19 @@ class Profile:
         return [node, str(build.adapter)]
 
     def native_records(self, home: Path, session_id: str) -> list[Path]:
-        if not session_id:
-            return []
-        return sorted(home.glob(self.record_glob.replace("{session_id}", session_id)))
+        return find_records(home, self.record_glob, session_id)
+
+
+def model_allowed(served: str, pinned: str, auxiliary_models) -> bool:
+    """The pin, or a declared auxiliary model (prefix match: builds date-stamp them) (US-11)."""
+    return served == pinned or any(served.startswith(a) for a in auxiliary_models)
+
+
+def find_records(home: Path, record_glob: str, session_id: str) -> list[Path]:
+    """The native records of one session, by its id only, never by time window (US-22)."""
+    if not session_id:
+        return []
+    return sorted(home.glob(record_glob.replace("{session_id}", session_id)))
 
 
 def load(root: Path, harness: str, credential_source: Path | None = None) -> Profile:

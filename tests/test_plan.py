@@ -101,6 +101,18 @@ def test_phase1_plan_has_four_cells_and_every_recorded_field():
     assert p["parameters"]["parallelism"] == 2
 
 
+def test_the_plan_records_each_harness_profile_it_uses():  # grading and views read the run, not today's files (US-26)
+    p = _phase1_plan()
+    assert p["profiles"] == {
+        "claude-code": {"profile_hash": plan.file_hash(ROOT / "bench" / "profiles" / "claude-code.yaml"),
+                        "usage_source": "acp_turn", "auxiliary_models": ["claude-haiku-4-5"],
+                        "record_glob": "projects/**/{session_id}.jsonl"},
+        "codex": {"profile_hash": plan.file_hash(ROOT / "bench" / "profiles" / "codex.yaml"),
+                  "usage_source": "native_record", "auxiliary_models": [],
+                  "record_glob": "sessions/**/rollout-*-{session_id}.jsonl"},
+    }
+
+
 def test_plan_hash_covers_every_field():
     p = _phase1_plan()
     assert plan.plan_hash(p) == p["plan_hash"]

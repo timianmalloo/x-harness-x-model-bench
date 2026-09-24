@@ -23,7 +23,7 @@ from pathlib import Path
 
 from harness_bench import config, ledger, oslock, profiles, views
 from harness_bench.grade import correctness, cost
-from harness_bench.plan import file_hash, load_confirmed
+from harness_bench.plan import file_hash, load_confirmed, task_version_hash
 from harness_bench.telemetry import Extraction, claude_code, codex, normalize
 
 PASS_FACTS = ("events", "model_calls", "tool_calls", "scores")
@@ -120,8 +120,7 @@ class _Pass:
         return PassResult(self.grading_id, heads, graded, [f"{fact}/{r.segment_id}" for fact, r in abandoned])
 
     def _extract(self, cell: dict, folder: Path, session_id: str, held: set) -> tuple[Extraction | None, str | None]:
-        profile = profiles.load(self.root, cell["harness"])
-        records = profile.native_records(folder / "home", session_id)
+        records = profiles.find_records(folder / "home", self.plan["profiles"][cell["harness"]]["record_glob"], session_id)
         if len(records) != 1:
             return None, "no native record for the session" if not records else "more than one native record for the session"
         ex = READERS[cell["harness"]](records[0])
@@ -140,11 +139,14 @@ class _Pass:
         out_dir.mkdir(parents=True)
         ex, missing = self._extract(cell, folder, session_id, held)
         task_dir = self.root / "tasks" / cell["task"]
-        oracle = config.load_yaml(task_dir / "task.yaml").get("oracle") or {}
-        c = correctness.grade(folder / "ws", task_dir, oracle, out_dir, self.run_dir, self.plan["parameters"]["grading_step_timeout"])
+        if task_version_hash(task_dir) != cell["task_version"]:  # the hidden tests must be the ones the plan named
+            c = correctness.Result(None, None, "task changed since the plan (version hash mismatch)", "")
+        else:
+            oracle = config.load_yaml(task_dir / "task.yaml").get("oracle") or {}
+            c = correctness.grade(folder / "ws", task_dir, oracle, out_dir, self.run_dir, self.plan["parameters"]["grading_step_timeout"])
         self._score(cell, attempt, "pass_at_1", c.passed, c.reason, c.evidence)
         self._score(cell, attempt, "partial_credit", c.partial_credit, c.reason, c.evidence)
-        source = profiles.load(self.root, cell["harness"]).usage_source
+        source = self.plan["profiles"][cell["harness"]]["usage_source"]
         if not self.prices_ok:
             value, reason, evidence = None, "price list changed since the plan (hash mismatch)", ""
         elif source == "native_record" and ex is None:
