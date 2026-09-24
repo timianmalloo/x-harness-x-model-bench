@@ -199,6 +199,25 @@ def test_scrub_catches_a_literal_split_across_streamed_chunks(tmp_path):
         rec.scrub(raw, tmp_path / "again.jsonl", {}, forbid=["someone"])
 
 
+def test_scrub_replaces_account_plan_labels_in_auth_status_updates(tmp_path):  # data minimisation (Leader, join prep)
+    rec = _recorder()
+    status = {"kind": "account", "label": "Claude Max", "account": {"plan": "max", "tier": "t2", "email": "a@b.co"}}
+    msg = {"jsonrpc": "2.0", "method": "_auth/status_update", "params": {"authStatus": status}}
+    other = {"jsonrpc": "2.0", "method": "session/update", "params": {"update": {"label": "keep", "plan": "keep"}}}
+    raw = tmp_path / "raw.jsonl"
+    raw.write_text("".join(json.dumps(r) + "\n" for r in [
+        {"kind": "header", "argv": [], "cwd": "x", "started_utc": "x", "caps": {}},
+        {"kind": "line", "seq": 1, "t": 0.0, "dir": "to_client", "text": json.dumps(msg, separators=(",", ":")), "nl": True},
+        {"kind": "line", "seq": 2, "t": 0.0, "dir": "to_client", "text": json.dumps(other), "nl": True}]), encoding="utf-8")
+    out = tmp_path / "scrubbed.jsonl"
+    rec.scrub(raw, out, {}, forbid=[])
+    rows = _read(out)
+    scrubbed = json.loads(rows[1]["text"])["params"]["authStatus"]
+    assert scrubbed == {"kind": "account", "label": "<PLAN>", "account": {"plan": "<PLAN>", "tier": "<PLAN>", "email": "<EMAIL>"}}
+    assert json.loads(rows[2]["text"]) == other  # only the auth status is touched
+    assert rows[0]["scrub"]["plans"]
+
+
 @pytest.mark.native
 def test_turn_runs_one_cell_through_the_recorder_into_a_new_out_folder(base, tmp_path, monkeypatch):
     """`turn` end to end with the fake agent as the adapter: the --out folder does not exist yet (Leader,
