@@ -1071,7 +1071,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2cc7cba42d2a9efebd4e74527d7e8d12e0e807766466577a99e51d3af112f556"
+      "sourceSha256": "b5663f328aada45b1ece09c05b4a44280e7e8a09d5bb95f52b8c589f754c9640"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -1700,7 +1700,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "7b58e3f31a53c2c927e9bf89eff0a8971c7d24ee8775407f324d6032e256a21e"
+      "sourceSha256": "367b9d601c59718f7f38b02e0c26dff42db7abdd7c50727796e66f622501e063"
     },
     {
       "id": "spec-harness-bench",
@@ -1854,5 +1854,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "1c57b8b525f0bde3118c061f8fb216f163fe94ac971f1bc33d0278b7812ee1bd"
+  "graphSha256": "e2f2cbf30cc403c4e512c2263b172023d454b6d2109061ec3e5f52deaea961cc"
 };

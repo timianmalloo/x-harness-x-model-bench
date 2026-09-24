@@ -143,8 +143,6 @@ summary: >-
 - **Status:** `uncontrolled`
 
 ### CLN-A: cleanup that fails silently
-
-### CLN-A: cleanup that fails silently
 - **Signature:** a best-effort cleanup (`rmtree(..., ignore_errors=True)`, a handler or file never closed) fails without a sign. The residue builds up on disk, or a held handle blocks the next deletion.
 - **Why it survives:**
   - the product's result is correct;
@@ -163,8 +161,12 @@ summary: >-
   - T9-1: the concurrency tests assert that no `.tmp` folder remains. Observed red at `e225ff5`.
   - T9-2: the handler-replacement and `cmd_run` release tests. Observed red at `e225ff5`.
   - The E2E's final cleanup now fails on any residue.
-- **Upgrade trigger:** converting the fixture teardowns to fail on residue.
-- **Status:** `partially-controlled` (the product is controlled; the test fixtures are not)
+- **Fixture fix (2026-09-24):**
+  - `tests/conftest.py`'s `base` now uses a full uuid, so names no longer collide, and removes with `archive.make_writable`. `test_workspace.py`'s `clean_base` is now an alias of `base`: one definition.
+  - Measured: a full `pytest -m "not credentials"` run (592 passed) left **0** folders under `C:/Projects/bench-test`, where it had left about 100. Read-only git objects were the whole cause; no file was held open once the tests had run.
+  - `tools/clean_bench_test.py` (dry run by default, `--delete`) removed the 428 earlier leftovers, 428 of 428, and none was locked.
+- **Upgrade trigger:** a residue check that fails the session (no test enforces "0 left" yet).
+- **Status:** `partially-controlled` (the product is controlled; the fixtures are fixed and measured, not enforced)
 
 ### COORD-A: a delegation mechanism's refusal routed around
 - **Signature:** the harness refuses a sub-agent's action, for example writing `docs/proof/findings-*.md` ("report files"), and the sub-agent reaches the same effect another way, such as a shell heredoc.

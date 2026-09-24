@@ -178,7 +178,7 @@ A gate's exit status is read on its own line (CT27). `tools/heredoc_guard.py` no
 
 ## Flagged risks / residual unknowns
 
-1. **Cost is `NA` for every cell.** The price list lacks `claude-haiku-4-5-20251001` and `gpt-6-sol`. To compare cost, add sourced prices for both. Guessed prices are not acceptable.
+1. **Cost is `NA` for every cell, by decision.** The operator benchmarks on subscriptions only (2026-09-24), so there is no metered price to source. Tokens and wall time are the cost measures. Guessed prices are not acceptable.
 2. **N5** (Claim 5). Codex results carry the operator's user-level skills. **Next step for the human (R-6):** run the pack-seeded canary probe. R-5 reopens if the pack-on leaked set differs from pack-off, or if `<recommended_plugins>` turns out to have a pack-dependent source.
 3. **One repetition, one task.** No confidence interval until `repetitions ≥ 2`.
 4. `last_update_ms` records null. Seam `req-01M38KX8503601BEP857749VVF` (T1 → T3: `TurnResult.last_update_seconds`) is still open, because T3 had closed. It is a phase-2 follow-up.
@@ -192,17 +192,17 @@ A gate's exit status is read on its own line (CT27). `tools/heredoc_guard.py` no
     - Detecting (A) needs an anchor outside the run's own segments. That is a design decision for ADR-0006, not a `verify` change.
     - Until then, the scores of a run graded more than once are only as trustworthy as the filesystem that holds them.
 8. `peak_memory` and `cpu_ms` are null when a job query fails (T1).
-9. The D5 replay transcripts are partly schema shapes, not recordings (T3).
+9. The D5 replay transcripts are partly schema shapes, not recordings (T3). **A condition carried from round 1, now a named next step (Test Architect, round 2):** capture one cell's full ACP stream from the next real run, replace the schema-shaped fixture with it, and re-run D5/D7. Deadline: before phase 2 changes the driver.
 10. cosmic-ray kill counts are non-zero-exit verdicts, not named-test failures (TOOL-B, Claim 3). The engine's partial scope is closed (T10, T12).
-11. Test-fixture teardowns still use `rmtree(ignore_errors=True)`. About 170 folders from earlier test runs remain under `C:/Projects/bench-test` (CLN-A, partially controlled). Deleting them was refused by this session's permission check, so the human deletes them.
+11. **Fixed after round 2 (CLN-A).** The `base` fixture now removes read-only git objects and uses a full uuid. A full suite now leaves 0 folders, where it left about 100. `tools/clean_bench_test.py` removed all 428 earlier leftovers at the operator's request. No test enforces "0 left" yet.
 12. `verify-ruling-citations.py` checks nothing here (GATE-A): it reads only `### Ruling NN` headings, and the rulings use `## R-n`. The rulings R-1..R-5 are cited by hand in this pack and the design; no gate checks those citations.
 
 ## Status & next action
 
 | | |
 | --- | --- |
-| **Completed** | Phase 1 walking skeleton, usable: the real E2E passes; every findings file is red-first; all mutation files are killed; A6 committed; deviations and the defect register updated. |
-| **Remaining** | The Test Architect's re-review (M2), then fast-forward `main` and push. The human's list: prices (1), N5 review (2), grok ≥ 1.0.34 or agy's mode, then re-qualify (R-4), the leftover folders (11), the ruling heading format (12). |
+| **Completed** | Phase 1 walking skeleton, usable and merge-ready: the real E2E passes on the final code; every finding is closed red-first; 2699 cosmic-ray mutants with 0 open; 198/198 hand-written mutations; the Test Architect cleared the veto in round 2. |
+| **Remaining** | These are next steps, not merge gates:<br>1. the TOOL-B control (a named-test re-derivation from `cosmic-ray dump`);<br>2. the D5/D7 transcript capture (9);<br>3. the pack-seeded N5 probe (R-6);<br>4. grok and agy re-qualification (R-4);<br>5. the ruling heading format (12).<br>Prices: the operator runs on subscriptions only, so cost stays `NA` by decision (US-23 allows NA), and tokens and wall time are the cost measures. N5: accepted as disclosed for now (operator, 2026-09-24). |
 | **Best next action** | Run `bench plan --matrix <yours> --confirm`, then `bench run <id>`, then `bench report <id>` (the `start-benchmark` skill walks through it). |
 
 ## Gate record
@@ -231,3 +231,26 @@ The reviewer re-ran the suite (516 passed), `ledger.json` (20/20) and `engine.js
 - **Required item 1: done, no waiver.**
   - **T10 (joined `db2cca4`)** ran the 466 remaining `engine.py` mutants: 0 open. It found and fixed the kill-retry cap drift, and found TOOL-A in `mutate_check`, which is fixed.
   - **T12 (joined `f28b272`)** re-ran all 2699 cosmic-ray mutants with bytecode off: 0 open. It closed 29 overstated kills with tests.
+
+### Round 2: Test Architect, Adversary Mode, at `acbe8e0` (2026-09-24): **CLEAR** (pass with conditions)
+
+**What the reviewer re-ran itself:**
+- the suite: 592 passed;
+- reds `8edd94f`, `70531dc` and `3ecd1eb`, each test-only, each failing;
+- `engine.json`: 49/49; `views.json`: 34/34;
+- its own seeded sample of 13 mutants under the named-test checker: 13/13 killed by a named test.
+
+**It confirmed** that `src` is unchanged since the mutation re-run (`ceed6c1`) and since the E2E commit.
+
+**Every round-1 item is closed, or accepted as disclosed:**
+- TOOL-B is accepted as an upper bound;
+- whole-tail deletion is accepted as residual 7a.
+
+**Conditions, carried as next steps rather than merge gates:**
+- **[Major] D5/D7:** round 1's condition, capturing a full ACP transcript, had been dropped without a disposition. It is now residual 9, with a deadline.
+- **TOOL-B control:** build it before the next mutation-bar claim, and keep the cosmic-ray session databases as evidence.
+- **[Minor] The TOOL-A test passed when `PYTHONDONTWRITEBYTECODE` was set in the environment.** Fixed: the test now removes it with `monkeypatch.delenv`.
+- **[Nit] Canary strings collide on this host.** The first line of `CLAUDE.md` and a skill name are both "graphify", so the instruction-file class is never reported. Detection still works. Keying canaries by (string, class) is a next step.
+- **[Nit] The defect register had a duplicate `### CLN-A` heading.** Fixed.
+
+**After the review**, at the operator's request, the Coordinator made a test-only fixture fix and added a cleanup tool (CLN-A, residual 11). The suite stayed at 592 passed, with 0 folders left behind.
