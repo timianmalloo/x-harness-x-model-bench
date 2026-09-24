@@ -18,6 +18,7 @@ from pathlib import Path
 
 from harness_bench import report, views
 from harness_bench.errors import BenchError
+from harness_bench.report.credentials import encodings
 
 SECRET_SHAPES = (
     re.compile(r"sk-ant-[A-Za-z0-9_\-]{20,}"),  # Anthropic keys and OAuth tokens
@@ -138,14 +139,18 @@ def render(view: views.RunView, archive_present: bool) -> str:
             f"<body><main>{_header(view)}{_validity(view)}{_leaderboard(view)}{_runs(view, archive_present)}</main></body></html>\n")
 
 
-def scan(text: str) -> int:
-    """How many credential-shaped strings the text holds."""
-    return sum(len(p.findall(text)) for p in SECRET_SHAPES)
+def scan(text: str, credential_values: set[str] = frozenset()) -> int:
+    """How many credential-shaped strings the text holds, plus (supplementing the shapes) exact
+    matches of any known credential value or its base64/URL-encoded form (HB-SEC-001)."""
+    found = sum(len(p.findall(text)) for p in SECRET_SHAPES)
+    if credential_values:
+        found += sum(1 for v in encodings(credential_values) if v and v in text)
+    return found
 
 
-def write(run_dir: Path, view: views.RunView) -> Path:
+def write(run_dir: Path, view: views.RunView, credential_values: set[str] = frozenset()) -> Path:
     doc = render(view, archive_present=(run_dir / "archive").is_dir())
-    found = scan(doc)
+    found = scan(doc, credential_values)
     if found:
         raise BenchError("HB-SEC-001", f"{found} credential-shaped string(s) in the report; nothing was written")
     path = run_dir / "report.html"

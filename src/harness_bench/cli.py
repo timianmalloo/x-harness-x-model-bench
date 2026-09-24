@@ -34,6 +34,7 @@ from harness_bench import (
 from harness_bench.errors import BenchError
 from harness_bench.grade import runner
 from harness_bench.report import cli_table, html
+from harness_bench.report import credentials as report_credentials
 
 OK, INVALID, INCOMPLETE, NOT_BUILT, INTEGRITY = 0, 1, 3, 4, 5
 
@@ -156,13 +157,23 @@ def cmd_grade(args) -> int:
     return OK
 
 
+def _credential_values(root: Path, run_dir: Path) -> set[str]:
+    """Every credential value html.write's exact-value scan checks for: the host's own credential
+    files (named by bench/profiles/*.yaml) and any leftover copy in an archived cell home."""
+    files = report_credentials.credential_files(root)
+    values = report_credentials.host_values(root)
+    values |= report_credentials.archived_home_values(run_dir, {name for _, name in files.values()})
+    return values
+
+
 def cmd_report(args) -> int:
     run_dir = _run_dir(args)
+    root = Path(args.root)
     view = views.load(run_dir)
     text, code = cli_table.render(view, plain=_plain())
     print(text, end="")
     if code == OK:
-        print(f"report: {html.write(run_dir, view)}")
+        print(f"report: {html.write(run_dir, view, _credential_values(root, run_dir))}")
     return code
 
 
