@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T22:38:22Z",
+  "generated": "2026-09-24T23:06:10Z",
   "audit": [
     {
       "actor": null,
@@ -4871,6 +4871,33 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "id": "al-01M3ATPNHPRKNF41QG1ZE1NHVH",
+      "shortname": "w1-toolb-2 mutate_check no-summary=error",
+      "datetime": "2026-09-24T23:06:10Z",
+      "session": "w1-toolb-2",
+      "prompt": "W1-TOOLB row 26: fix mutate_check.py verdict()/cosmic_ray_verdict() to report error (not survived/killed) when pytest output has no summary/FAILED line, red-first",
+      "summary": "Added _ran_to_completion() gate (FAILED line or N passed/failed/error/... summary line) to both verdict() and cosmic_ray_verdict()'s survived branch. Red b5847f8 (3 failing), green fix 63a4465, ruff-lint fix 0d31868. Targeted suite 26 passed; full suite 666 passed, 5 deselected; ruff clean.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "tools/mutate_check.py must report error, never survived/killed, when a test run's output has no pytest summary line",
+      "done_when": "red commit (tests only), green commit (tools/mutate_check.py only), targeted + full pytest green, ruff clean",
+      "tier": "T0",
+      "started_at": "2026-09-24T22:56:25Z",
+      "duration_seconds": 585.0,
+      "git": {
+        "sha": "0d31868c1d332ed9bf31944cf5aa66c0e3047b07",
+        "short": "0d31868c1",
+        "branch": "w1-toolb-no-summary",
+        "pushed": null
+      }
     }
   ],
   "changes": [
