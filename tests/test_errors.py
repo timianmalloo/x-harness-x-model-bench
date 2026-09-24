@@ -44,6 +44,11 @@ def test_run_level_codes_are_unique_and_named():
         assert errors.RUN_CODES[code]
 
 
+def test_a_held_run_lock_and_a_refused_teardown_have_their_own_codes():  # T1-13
+    assert "lock held" in errors.RUN_CODES["HB-RUN-005"]
+    assert errors.RUN_CODES["HB-RUN-003"].startswith("teardown refused")
+
+
 def test_bench_error_carries_its_code():
     exc = errors.BenchError("HB-LED-002", "chain break at seq 4")
     assert exc.code == "HB-LED-002"

@@ -568,6 +568,16 @@ def test_a_started_run_is_refused(base):
     assert e.value.code == "HB-USR-002"
 
 
+def test_a_second_engine_on_a_held_run_is_refused_with_run_lock_held(base):  # T1-13: HB-RUN-005, not teardown's code
+    from harness_bench import oslock
+    p = _plan(n_cells=1)
+    config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
+                                 launchers={"fake": FakeLauncher({})}, build_workspace=_build_workspace, grade=None)
+    with oslock.RunLock.acquire(config.run_dir / ".lock", "HB-RUN-005"), pytest.raises(BenchError) as e:
+        engine.Engine(p, config).run()
+    assert e.value.code == "HB-RUN-005"
+
+
 CRASHER = """
 import json, sys, uuid
 from pathlib import Path
