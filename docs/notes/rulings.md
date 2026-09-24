@@ -208,3 +208,81 @@ Append only. One entry per ruling. Newest last.
   2. Each Grok slice's result records `total_output_bytes`, `extension_notifications` and wall clock in the run record, so the 12-minute figure is replaced by a measured one at the wave-1 join.
   3. `/updatepack` timing is unchanged: after the wave-1 merge, then `qualify-codex-3`, then the Grok and Agy re-qualification before any wave-2 dispatch on them.
   4. If W1-PACK-2 has not landed by the wave-2 dispatch, W2-CANARY stays on Grok under item 2; no wave-2 track is dispatched to Agy.
+
+## R-12 · 2026-09-24 · Owner seat (Fable) · Q1, Q2: pin `@github/copilot` 1.0.89-1 with auto-update off
+
+- **Ruling:** pin **1.0.89-1**, and set **`COPILOT_AUTO_UPDATE=false`** in the profile environment as part of the launch shape.
+- **Reasoning:**
+  - 1.0.89-1 is the build the capture measured (ACP in a per-cell home, `set_model` accepting `gpt-6-sol` and refusing unknown ids with -32602) and the build installed on this host (`copilot --version`: 1.0.89-1). 1.0.88 (npm `latest`, published 2026-09-22) was not measured here; pinning it would trade an observed build for an inferred one.
+  - 1.0.89-1 is on npm (`npm view @github/copilot@1.0.89-1`: 1.0.89-1, published 2026-09-23) under the prerelease channel, whose tag has since moved to 1.0.89-3. A prerelease is a version like any other once the lockfile pins it and `tools.py` hashes it at every cell start (US-12).
+  - Auto-update is exactly the silent build change US-12 forbids; the phase-1 record already has Claude Code updating itself mid-session (ADR-0013, "Pinned harness builds").
+- **Conditions:**
+  1. The report header names the build and marks it `prerelease`.
+  2. If the profile qualification suite (ADR-0011) fails on 1.0.89-1, the fallback is the newest build that passes it, chosen by W1-COP-I and recorded with the failing evidence; never `latest` by tag.
+  3. `COPILOT_AUTO_UPDATE=false` is asserted by `tests/test_profiles.py` as data in the profile, and its effect is observed once: the build hash is identical at the first and last cell of the wave-1 X1 run.
+
+## R-13 · 2026-09-24 · Owner seat (Fable) · Q3, Q9: the two `engine.py` lines go to W1-ACP
+
+- **Ruling:** yes. The one call-site line (`model=` passed to `run_turn` when the launcher sets `set_model`) and the `credential_kind` wording ("nothing copied" for Copilot) go to **W1-ACP**, in its step (f), as the only caller of its driver change. The plan's ownership table gains the row: `engine.py` — wave-1 owner W1-ACP, **those two lines only**; W2-STOP owns it from wave 2.
+- **Reasoning:** the line exists only because the driver gains `model=`; splitting caller and callee across tracks makes the driver change untestable end to end at W1-ACP's own join (E7 surface list). W2-STOP does not exist yet, and the Leader authors no track work.
+- **Conditions:**
+  1. The `getattr(launcher, "set_model", False)` default stands as designed (`simplify:` one call site; upgrade trigger: a second per-launcher option moves it to the `Launcher` Protocol).
+  2. `credential_kind` becomes a value the launcher reports, not a string the engine assumes: Copilot reports `subscription login (credential store)`; Claude and Codex keep `subscription login (copied)`. A test asserts each.
+  3. W1-ACP's `git diff` scope for `engine.py` is those two hunks; anything else in `engine.py` is a seam request.
+
+## R-14 · 2026-09-24 · Owner seat (Fable) · Q4: no `trustedFolders` seeding; the treatment stays as measured
+
+- **Ruling:** **no.** The per-cell `config.json` does not mark the working copy trusted. "Pack on" for Copilot is what the capture measured: 21 instruction files loaded and 8 pack hooks run under ACP in a per-cell home without it.
+- **Reasoning:** the design's concern (R6: hooks may not run under Copilot ACP) was a reading of the pack's reference; the capture is the measurement and it contradicts it. Seeding trust would widen the treatment beyond what the other harnesses get and change the meaning of pack on for one harness only (US-14 symmetry).
+- **Conditions:**
+  1. The wave-1 report records the pack-on counts per Copilot cell: instruction files loaded, `hook.start`, `skill.invoked`. If `skill.invoked` is 0 in every pack-on cell while a Claude Code pack-on cell shows skills, that is a disclosed treatment difference, not a reason to seed trust; it reopens this ruling with the counts as evidence.
+  2. The 528,166-token pack-on turn against 59,501 pack-off is recorded in the design's capture section as the measured cost of the treatment on Copilot.
+
+## R-15 · 2026-09-24 · Owner seat (Fable) · Q5, Q6: "not recorded" validity is a wave-2 row; AI units are a wave-3 row
+
+- **Ruling:**
+  - **Q5:** yes, a new validity state for an unreadable native record (a `HB-VAL` code, `views.py`), for all harnesses, as a **wave-2 row** drawn at the wave-1 join. Not wave 1: `views.py` has no wave-1 owner and the defect pre-dates Copilot (`views.py:237` returns `invalid (no model call)` for every unreadable store).
+  - **Q6:** AI units (`total_nano_aiu`) become a Canonical measure in a **wave-3 row** (graders and catalog), with a catalog version bump. Wave 1 keeps them in the sample's provenance only, as designed.
+- **Reasoning:** an unreadable record is "not recorded", never a plausible wrong label (IO: degrade to not recorded). A new measure is a new column, additive per call, keyed like tokens; it needs the catalog version because the report's cost section reads the catalog (DM: declare the grain, then the column).
+- **Conditions:**
+  1. Q5's state is distinct from `invalid (no model call)`: the latter stays for a readable record with no call.
+  2. Q6 stores the native value; no second definition of tokens is derived from it (the design's "derive, don't store" note stands).
+
+## R-16 · 2026-09-24 · Owner seat (Fable) · Q7, Q8: the Copilot canary branch and `bench/pack-markers.txt` go to W1-COP-I
+
+- **Ruling:**
+  - **Q7:** W1-COP-I authors the Copilot branch of `tests/e2e/test_us13_canary.py` (control home seeded with an instruction file, a skill and a `settings.json` model; the probe shows none). The Leader runs it in a capture window under R-9 rule 1. If no window occurs before the wave-1 exit, the report states "Copilot user-config isolation: not measured" on every Copilot cell, as the plan allows (line 111); the test still lands.
+  - **Q8:** W1-COP-I creates `bench/pack-markers.txt` seeded with `AI-Forward Pack`, `Agent Knowledge Pack`, `Rigor Protocol`.
+- **Reasoning:** W1-COP-I owns the isolation surface the canary tests (`cell_env` drops, `workspace.py`) and the US-9 scan that reads the marker file. The three markers are verified by the design's dry run: 76, 66 and 138 pack-on files, 0 pack-off (pack `ca032f0`, revision 92).
+- **Conditions:**
+  1. The scan carries a positive control (the pack-on copy must match at least one marker) so a scan that cannot fire is void.
+  2. The marker list is re-verified when the pack revision changes (`/updatepack` after the wave-1 merge): a marker that no longer matches any pack-on file is removed, and the change is recorded.
+
+## R-17 · 2026-09-24 · Owner seat (Fable) · NEW-1: bump the pinned Claude Code build in W1-COP-I
+
+- **Ruling:** yes. W1-COP-I (owner of `bench/tools/package*.json`) bumps the pinned Claude Code to **2.1.282** (`@anthropic-ai/claude-agent-sdk` 0.3.282, npm `latest` on 2026-09-24, with whatever `@agentclientprotocol/claude-agent-acp` release pairs with it) before the wave-1 exit. If the profile qualification suite fails on 2.1.282, the pin is **2.1.281**, the build installed and used on this host today (`claude --version`: 2.1.281). The user's choice of `claude-opus-5-5` stands; the pinned 2.1.274 cannot serve it ("version 2.1.280 or newer is required", measured).
+- **Reasoning:** a pin exists so the report names the measured build, not so the build never moves. The operator asked for Opus 5.5 in Claude Code; the only way to measure that is a build that serves it. Both candidate builds are one qualification run away from being evidence.
+- **Conditions:**
+  1. The profile qualification suite (ADR-0011, risk A8) runs on the new build before any wave-1 X1 run; its result is in the run record.
+  2. The phase-1 X1 run (cc-sonnet on 2.1.274) is **not comparable** with the wave-1 X1 run. The wave-1 run is the new baseline. The wave-1 report says so in its header, and `bench compare` (row 24) refuses or flags a comparison across harness builds (a test asserts which).
+  3. `bench plan` refuses a model the pinned build cannot serve, where the profile can know it; where it cannot, R-18's cause is the detection.
+
+## R-18 · 2026-09-24 · Owner seat (Fable) · NEW-2: an unsupported-model refusal is `failed (model unavailable)` on every harness
+
+- **Ruling:** yes. HB-CELL-116 `failed (model unavailable)` (attribution `benchmark`) is the cause whenever the model named in the plan cannot be served: a refused `session/set_model` (Copilot, -32602), a provider or CLI rejection of the model id (Claude Code 2.1.274 on `claude-opus-5-5`), or an "unsupported model" 400 in the native record. **W1-ACP** maps the driver-side forms (the adapter error and the transport-level rejection before any call); **W1-COP-I** adds the Copilot setter form in `errors.py` and its tests.
+- **Reasoning:** the code already exists (`errors.py:24`, since `818f646`) and `normalize.classify` already returns it for a non-provider error in the native record (`normalize.py:82`). The gap is the path where the rejection never reaches a native record: the driver sees an adapter error and the engine's precedence falls through to the driver cause, `adapter_crash` (`engine.py:451`). A plan defect labelled as a harness crash mis-attributes the failure and would count against the harness in the report.
+- **Conditions:**
+  1. Red-first, with the measured w1 record (the 2.1.274 rejection) as the fixture for the driver path and a fake agent that errors `set_model` for the setter path.
+  2. `adapter_crash` (HB-CELL-105) keeps its meaning: the adapter exited or the pipe closed with no classifiable error text. A classifier that needs the error text degrades to `adapter_crash` with the text in `detail`, never to `model_unavailable` by guess.
+  3. The report's validity banner attributes HB-CELL-116 to the benchmark (the plan), not to the harness; the phase-2 proof carries one such cell as evidence.
+
+## R-19 · 2026-09-24 · Owner seat (Fable) · NEW-3: accept the TOOL-B control's unit-level proof; the phase-1 count is Flagged; the re-run is a named window
+
+- **Ruling:** option (c) now, with a named later window. W1-TOOLB's exit is met by the control's unit-level proof (the three seeded cases: a collection error, a timeout and an exit-2 run are each NOT a named kill). The phase-1 figure 2267 is recorded in `docs/proof/phase2.md` as **"not re-derivable (Flagged): the phase-1 cosmic-ray session databases were not kept"**. The re-run is a named window, not now.
+- **Reasoning:**
+  - Nothing survives to re-derive from: no `*.sqlite` under the primary checkout or the phase-1 worktrees, and the round-2 condition "keep the cosmic-ray session databases as evidence" (`docs/proof/phase1.md:251`) was not met. That is a defect of evidence retention, and a re-run would not restore the phase-1 count: the code has moved, so the mutant set differs, and the result would be a new count beside 2267, not a re-derivation of it.
+  - A full cosmic-ray run costs hours of CPU on the host but no vendor login, so it does not break R-9 rule 1. It does compete with runner slices and the Leader for the host, so it is scheduled, not started.
+- **Conditions:**
+  1. **The window:** the first day-hours slot after the wave-1 merge with no benchmark run live and no runner slice active, or the next night not used by a benchmark run. The Leader runs cosmic-ray over the merged `main`'s phase-1 modules with the control, stores the session database with its sha256 in the run record (W1-TOOLB's own exit condition), and writes the **new** kill count and the re-derived named-kill count side by side in `docs/proof/phase2.md`. 2267 stays Flagged.
+  2. No mutation-bar claim is made in any phase-2 artifact until that window has run (the round-2 condition, unchanged).
+  3. Defect class: "evidence named as a condition was not retained" is recorded in `docs/lessons/defect-classes.md`; the control is that every mutation run stores its database and hash in the run record before the proof cites the count.
