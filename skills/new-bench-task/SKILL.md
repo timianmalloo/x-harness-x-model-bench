@@ -25,7 +25,7 @@ runs_as: either
 
 ## Rules
 
-- The task must fit its budget with headroom. coord-run/1 caps a worker at 3600 seconds.
+- The task must fit its budget with headroom: the engine kills a cell at its budget (`budget.minutes`) and records it `timed_out`.
 - Scenario 6 tasks declare a `model_map`; scenario 1 tasks set `scripted_user: true`.
 - Scenario 7 tasks (formalize and find bugs) declare `formal:` and list the `formal` grader. Pin the toolchain (Lean via `elan`, TLA+ tools and JDK). Hash any given statements or properties into `formal.statement_hash`. Ship at least one bug-seeded variant and a reproducing test for each seeded bug: a model or proof that also accepts the variant proves nothing. Take the properties from the source project's own docs and tests, not from your reading of its code. No Mathlib in BOM v0.
 - No real secrets, customer data or private repo content in a public task folder. TheTerrace is out of scope for BOM v0.

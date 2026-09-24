@@ -22,7 +22,7 @@ TASK_STATUSES = ("stub", "draft", "ready")
 HARNESSES = ("claude-code", "codex", "copilot", "grok", "agy")
 PACKS = ("on", "off")
 METRIC_SOURCES = ("D", "J", "H", "P")
-# coord-run/1 refuses a worker deadline above one hour (coord-runner.py RUN-BOUNDS).
+# A cell budget is 1-60 minutes: every BOM task fits, so a larger one is an input error until a task needs it.
 MAX_BUDGET_MINUTES = 60
 # Files in tests/ or oracle/ that do not count as content.
 PLACEHOLDERS = {"README.md", ".gitkeep"}

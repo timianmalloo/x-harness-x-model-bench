@@ -12,16 +12,18 @@ permissions:
 
 jobs:
   test:
+    # Windows: cells run in Job Objects (ADR-0013). The credentials tests need the operator's harness
+    # logins and real model calls, so they run on the workstation only.
     if: github.event_name != 'schedule'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    runs-on: windows-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --locked
       - run: uv run bench validate
-      - run: uv run pytest -q
-      - run: python3 docs/ai-forward-pack/scripts/docs-graph.py validate
+      - run: uv run pytest -q -m "not credentials"
+      - run: uv run python docs/ai-forward-pack/scripts/docs-graph.py validate
 
   models:
     # TLA+ lifecycle model (spec US-44). Every push: all invariants at small bounds, grading at

@@ -1,0 +1,37 @@
+[
+ {
+  "name": "the engine runs a subprocess itself",
+  "file": "src/harness_bench/engine.py",
+  "find": "def process_alive(pid: int, created: int) -> bool:\n",
+  "replace": "def _leak() -> None:\n    subprocess.run([\"cmd\"], check=False)\n\n\ndef process_alive(pid: int, created: int) -> bool:\n",
+  "tests": ["tests/test_architecture.py::test_only_procs_calls_subprocess_or_spawns"]
+ },
+ {
+  "name": "the engine imports a grader",
+  "file": "src/harness_bench/engine.py",
+  "find": "from harness_bench.tools import BuildChanged\n",
+  "replace": "from harness_bench.tools import BuildChanged\nfrom harness_bench.grade import runner as _runner\n",
+  "tests": ["tests/test_architecture.py::test_the_run_path_never_imports_grading_or_reports"]
+ },
+ {
+  "name": "a module other than gitsafe runs git",
+  "file": "src/harness_bench/workspace.py",
+  "find": "GIT_TIMEOUT = 120\n",
+  "replace": "GIT_TIMEOUT = 120\nGIT = \"git\"\n",
+  "tests": ["tests/test_architecture.py::test_only_gitsafe_runs_git"]
+ },
+ {
+  "name": "a module other than the driver speaks ACP",
+  "file": "src/harness_bench/engine.py",
+  "find": "CIRCUIT_BREAKER = 3\n",
+  "replace": "CIRCUIT_BREAKER = 3\nCANCEL = \"session/cancel\"\n",
+  "tests": ["tests/test_architecture.py::test_only_driver_speaks_acp"]
+ },
+ {
+  "name": "a coordinator-runner path returns",
+  "file": "README.md",
+  "find": "## License\n",
+  "replace": "Cells run through coord-runner.py.\n\n## License\n",
+  "tests": ["tests/test_architecture.py::test_no_coordinator_runner_path_remains"]
+ }
+]
