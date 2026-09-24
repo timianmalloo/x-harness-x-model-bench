@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T21:58:27Z",
+  "generated": "2026-09-24T22:27:48Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -3376,6 +3376,43 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3ARGDBR0NSQ6Z5B6GT5QQVF",
+      "shortname": "W1-HOST slice 4: host readings + sleep-recovery tests",
+      "datetime": "2026-09-24T22:27:48Z",
+      "session": "w1-host-s4",
+      "prompt": "W1-HOST slice 4 (moved from Grok by Owner ruling R-29): prove host.available_memory()/unbiased_seconds() success paths return real values, and SleepDetector recovers when the first reading is missing. Tests only, each shown to kill its mutant (M5, M4).",
+      "summary": "Added test_available_memory_and_unbiased_seconds_return_real_positive_values and test_sleep_detector_recovers_after_a_missing_first_reading to tests/test_host.py. Verified each kills its named mutant (M5: available_memory return None; M4: anchor assignment in SleepDetector.slept() replaced with pass), src restored via git checkout after each. Full tests/test_host.py + tests/test_engine.py (113 tests) pass; ruff check src tests tools clean. Committed 23c21be on branch w1-host-s4-sonnet.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [
+        "w1-host-s4",
+        "mutation-testing"
+      ],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Prove host.available_memory()/unbiased_seconds() success paths return real values, and SleepDetector recovers after a missing first reading; tests only, each shown to kill its mutant (M5, M4).",
+      "done_when": "tests/test_host.py has a native test calling the real host.available_memory()/unbiased_seconds() and a SleepDetector recovery test; both kill their mutants (observed red), restored, then pass; uv run pytest tests/test_host.py tests/test_engine.py passes; ruff check src tests tools clean; committed with AGENT_SESSION=w1-host-s4.",
+      "tier": "T0",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-24T22:24:07Z",
+      "duration_seconds": 221.0,
+      "git": {
+        "sha": "23c21be4fe9ce5a02f3fa725b3101dd479f51035",
+        "short": "23c21be4f",
+        "branch": "w1-host-s4-sonnet",
+        "pushed": null
+      }
     }
   ],
   "changes": [
