@@ -25,7 +25,7 @@ summary: >-
 3. Climb the control ladder (CI6) and record the highest rung that actually holds: *make it impossible* > *automated control* > *always-loaded instruction* > *knowledge doc* > *register entry only*.
 4. A control is not a control until it has been **observed failing** on the un-fixed code.
 
-**Status counts:** controlled 5 · partially-controlled 4 · uncontrolled 1 (project classes). Inherited E2E-E: partially-controlled.
+**Status counts:** controlled 6 · partially-controlled 4 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled.
 **Recurrence since last review:**
 - 4 instances of MOD-A in one session; the control was built after the fourth.
 - 2026-09-23: EDIT-B recurred once after registration, and its hook control was then built.
@@ -51,6 +51,7 @@ summary: >-
 - **Signature:** a design names a mechanism (`git worktree`, a Job Object flag, a CLI mode) and relies on a property it was never observed to have.
 - **Why it survives:** the mechanism is familiar, so the property feels checked. Design text is not executed.
 - **Instances:**
+  - `2026-09-24`, the Coordinator: the TOOL-A sweep concluded that the cosmic-ray runs were exposed to stale bytecode. It measured collection time, but did not read how cosmic-ray launches its tests, and cosmic-ray already sets `PYTHONDONTWRITEBYTECODE=1`. The cost was a 2.4 h re-run. The re-run found real overstated kills (TOOL-B), but for a reason other than the one assumed.
   - `2026-09-24`: the Codex reader assumed injected context always starts with `<`. With the pack on, Codex 0.156 prepends `# AGENTS.md instructions for <cwd>`, and the reader took that block as the prompt (US-10 failed in the second real E2E). The control is a real, scrubbed pack-on record: `tests/fixtures/native/codex/pack-on.jsonl`. Its test was observed red at `05f52fa`. The E2E also checks US-10 for every cell.
   - `2026-09-23` ADR-0013 draft: "each cell gets its own worktree of one clone". Worktrees share refs, stashes and config, so one cell's commits and remotes were visible in every other cell. Distributed Systems and the Test Architect caught it at the gate, each checking in a scratch repository.
   - `2026-09-23` ADR-0008 assumed the native session record is a complete token source. Measured with the pinned builds, Claude Code's record under the ACP adapter omits the final and auxiliary calls. Found by comparing the same turn's two sources during `/implement`; fixed per harness (`usage_source`), with fixtures that pin both sources.
@@ -115,9 +116,33 @@ summary: >-
   - it needs a sub-second test run and a size-preserving mutation, which is rare enough to look like flakiness.
 - **Instances:**
   - `2026-09-24`: T10's full `pytest` after a `mutate_check` run of the cap mutation (`30.0` ↔ `60.0`) loaded `KILL_RETRY_CAP = 60.0` from a `.pyc` whose mtime and size matched the restored source.
-- **Sweep:** measured warm collection is 0.41–0.51 s for every cosmic-ray test command recorded (T1, T2, T10, T11). So a `-x` run can finish inside the second of its mutant's write, and the cosmic-ray runs were exposed too. They are re-run with bytecode writing off (track T12). `mutate_check`'s own earlier results (the 188/188 re-run) are re-run with the fixed tool.
+- **Sweep:**
+  - Measured warm collection is 0.41–0.51 s for every recorded cosmic-ray test command, so a `-x` run *could* finish inside its mutant's second. The Coordinator first concluded that the cosmic-ray runs were exposed, and re-ran all of them (T12).
+  - **That conclusion was wrong:** cosmic-ray 8.7.0 already forces `PYTHONDONTWRITEBYTECODE=1` for its test subprocess (`cosmic_ray/testing.py:52-56`, read by T12 and the Coordinator). Only `tools/mutate_check.py` was exposed.
+  - Its results were re-run with the fixed tool: 198/198 at `ceed6c1`.
+  - The re-run still paid for itself, because it exposed TOOL-B.
 - **Control:** `tools/mutate_check.py` runs pytest with `PYTHONDONTWRITEBYTECODE=1` (fix `6d26c76`). `tests/test_mutate_check.py::test_a_same_size_mutation_leaves_no_stale_bytecode` makes the race deterministic by giving the restored source the `.pyc`'s recorded mtime. It was observed red at `3ecd1eb`, loading `60.0`.
-- **Status:** `partially-controlled` (`mutate_check` is controlled; cosmic-ray runs rely on the environment variable being set by whoever runs them)
+- **Status:** `controlled` (2026-09-24). cosmic-ray guards itself.
+
+### TOOL-B: a mutation "kill" that is not a named test failing, and counts that are transcribed
+- **Signature:** a mutation record counts a mutant killed when no test actually caught it. Either the tool calls any non-zero exit or timeout a kill, or the record's counts were computed by hand (total minus the listed survivors). The mutation bar then looks met while real gaps stay open.
+- **Why it survives:** cosmic-ray 8.7.0 returns `KILLED` for every non-zero exit, including collection errors and fixture collisions, and for every timeout (output `"timeout"`, `testing.py:73-75`). Its summary does not separate these. A hand-written table then turns a count into a claim nobody re-derives.
+- **Instances:**
+  - `2026-09-24`: T12's bytecode-off re-run found 29 mutants recorded killed in ledger, views and grade that survive under each record's own command. The Coordinator re-verified three of them with the named-test checker: each survived before T12's tests and was killed after.
+  - Other errors in the same records:
+    - 8 duplicate equivalent rows;
+    - impossible per-line annotation counts;
+    - one false equivalence (engine L394).
+  - A timeout (views `202:35`, `31e9 ** 1e9`) very likely counted as a kill (Inferred).
+  - A false kill by `FileExistsError` on a leftover fixture folder (engine L325, T12's own run).
+- **Sweep:** every cosmic-ray record was re-run (T12). Every disagreement is dispositioned: killed by a new test (`a0c4f52`) or argued equivalent. 0 open.
+- **Control:**
+  - `tools/mutate_check.py` already counts only a named test failing (`ae6e8f0`).
+  - For cosmic-ray, **none is built yet.** The upgrade: commit a report script that derives every record table from `cosmic-ray dump`, counts `"timeout"` and error outputs separately, and re-verifies each kill with the named-test rule. T12's scratch `t12_report.py` is a starting point.
+  - Until that exists, a record's kill count is an upper bound unless it says its killing outputs were read.
+- **Status:** `uncontrolled`
+
+### CLN-A: cleanup that fails silently
 
 ### CLN-A: cleanup that fails silently
 - **Signature:** a best-effort cleanup (`rmtree(..., ignore_errors=True)`, a handler or file never closed) fails without a sign. The residue builds up on disk, or a held handle blocks the next deletion.
@@ -128,7 +153,8 @@ summary: >-
 - **Instances:**
   - `2026-09-24`, third real E2E: the race loser's temp folder, holding read-only git objects, stayed under `cells/.sources` (T9-1).
   - Same run: `engine.log` stayed open because `configure_logging` added a handler per call and never released one. That also sent one run's log lines into another run's log (T9-2).
-  - The unit tests' teardowns left ~170 folders under `C:/Projects/bench-test`.
+  - The unit tests' teardowns left ~170 folders under `C:/Projects/bench-test`. By T12's measure that grew to 421, because each full suite adds about 100.
+  - `2026-09-24` (T12): the residue caused a **false mutation kill**. `conftest.base`'s random 8-hex folder name collided with a leftover folder, which raised `FileExistsError`. That turns cleanup residue from a disk issue into a correctness issue for any test tool that counts a non-zero exit (see TOOL-B).
 - **Sweep:** T9 listed every `ignore_errors=True` site. No product-source site remains.
   - `tests/e2e/test_walking_skeleton.py` now removes its folder with `make_writable` and asserts the folder is gone.
   - Test-fixture teardowns (`tests/conftest.py:23`, `tests/test_workspace.py:159`, `tests/test_profiles.py:143`, `tests/fixtures/ledger/make_fixture.py:61-62`) are still `ignore_errors`.

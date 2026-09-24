@@ -404,7 +404,8 @@ Scoped by ADR-0012 and ADR-0013: each cell works in its own working copy, and no
   - **Mutation tool (recorded 2026-09-24):** cosmic-ray 8.7.0, not mutmut.
     - mutmut refuses to run natively on Windows (R13, measured). cosmic-ray runs natively.
     - The records are `docs/notes/mutation-record-t1.md` and `mutation-record-t2.md`, compiled in `mutation-record-phase1.md`.
-    - `engine.py` is covered for 299 of its 765 mutants. The other functions rely on `tests/mutations/engine.json` (disclosed in the Proof Pack).
+    - Every mutant of the in-scope modules was run: 2699, including all 767 of `engine.py` (T1 plus T10). All were then re-run with bytecode off (T12), with 0 open.
+    - cosmic-ray counts any non-zero exit or timeout as a kill, so its kill counts are an upper bound (defect class TOOL-B).
   - **`bench-status/1` fields (Ruling R-3, 2026-09-24):** the document gains `stop_code` and `phase` (`starting` | `running`). The schema stays version 1, because the fields are additive.
   - **N5, user skill roots reach Codex cells (Ruling R-5, 2026-09-24):**
     - No mechanism in Codex 0.156 removes `~/.agents/skills` from a cell. `features.skip_host_skill_discovery` was tried and did not work (`docs/notes/spike-n5-codex-skill-roots.md`).

@@ -12,10 +12,9 @@ links:
   - { to: coordination-phase1-finish, rel: relates-to }
 review-by: "2026-12-22"
 summary: >-
-  Phase 1's mutation evidence in one place. cosmic-ray 8.7.0 ran over lifecycle, errors, 299 of engine's 765 mutants,
-  ledger, views and grade/**: no mutant is open. Every hand-written tests/mutations/*.json file was re-run under the
-  hardened checker on the integrated code, and every entry was killed. The one gap is engine.py's 466 out-of-scope
-  cosmic-ray mutants.
+  Phase 1's mutation evidence in one place. Every cosmic-ray mutant of lifecycle, errors, engine, ledger, views and
+  grade/** (2699) was run, then re-run with bytecode off (T12): 0 open. The re-run closed 29 kills the records had
+  overstated. Every hand-written tests/mutations/*.json entry (198) is killed under the fixed named-test checker.
 ---
 
 # Mutation record: phase 1 (compiled)
@@ -26,17 +25,28 @@ The tool is **cosmic-ray 8.7.0**, run natively on Windows. mutmut refuses native
 
 ## cosmic-ray, per module
 
-| module | record | mutants run | killed | equivalent (argued) | open | record current at the close? |
-| --- | --- | --- | --- | --- | --- | --- |
-| `lifecycle.py` | T1 | 107 | 91 | 16 | 0 | yes: `git diff 67e956b HEAD` is empty |
-| `errors.py` | T1 | 13 | 12 (1 after a new test) | 1 | 0 | yes: `git diff 67e956b HEAD` is empty |
-| `engine.py` (in scope) | T1 | 299 (247 run and 52 annotations skipped) | 216 (30 after new tests) | 83 (28 argued, 55 annotations) | 0 | yes for the in-scope functions. The diff since `769fb90` is two hunks inside `configure_logging` (T9-2), which is outside the record's scope |
-| `engine.py` (out of scope) | T1 | 466 not run | - | - | - | covered only by `tests/mutations/engine.json` (see below) |
-| `ledger.py` | T2 | 379 | 376 | 3 | 0 | yes: `git diff 2263575 HEAD` is empty |
-| `views.py` | T2 | 781 | 631 | 150 | 0 | yes |
-| `grade/**` | T2 | 643 | 539 | 104 | 0 | yes |
+These are the final counts from T12's full re-run with bytecode off: `src` at `ceed6c1`, each module's recorded command, survivors re-run one by one at `a0c4f52`. They supersede the per-track counts, which T12 found overstated (below).
+
+| module | mutants | killed | equivalent (argued) | open | first run |
+| --- | --- | --- | --- | --- | --- |
+| `lifecycle.py` | 107 | 91 | 16 | 0 | T1 |
+| `errors.py` | 13 | 12 | 1 | 0 | T1 |
+| `engine.py` | 767 | 624 | 143 (99 annotation, 44 argued) | 0 | T1 (301) + T10 (466) |
+| `ledger.py` | 379 | 375 | 4 | 0 | T2 |
+| `views.py` | 790 | 630 | 160 (143 annotation, 17 argued) | 0 | T2, T11 |
+| `grade/**` | 643 | 535 | 108 (99 annotation, 9 argued) | 0 | T2 |
+| **total** | **2699** | **2267** | **432** | **0** | |
 
 "Open" means survived and not argued equivalent, timed out, incompetent, or not exercised on this platform. It is 0 everywhere.
+
+**Current while** `git diff ceed6c1 HEAD -- src/harness_bench/{lifecycle,errors,engine,ledger,views}.py src/harness_bench/grade` is empty.
+
+**What the re-run corrected (classes TOOL-A, TOOL-B):**
+- **29 mutants recorded killed were not killed** (ledger 8, views 20, grade 1). New test-only commit `a0c4f52` kills them. Five more are equivalent. The Coordinator re-verified three with the named-test checker: each survived at `ceed6c1` and was killed at `a0c4f52`.
+- **Engine L394's equivalence argument was wrong.** The mutant is killed.
+- **Transcription errors:** duplicate equivalent rows and impossible annotation counts, corrected in `mutation-record-t2.md`.
+- **The cause was not stale bytecode**, because cosmic-ray already disables it. The likely causes: cosmic-ray counts any non-zero exit or timeout as KILLED, and some counts were derived by hand.
+- **Caution:** each "killed" count is cosmic-ray's verdict, meaning a non-zero exit. Every disagreement with the records was dispositioned one mutant at a time, but the 2267 kills were not each re-checked for a named test failing. A named-test re-derivation from `cosmic-ray dump` is the TOOL-B control, and it is not built yet.
 
 ## Hand-written mutation files, re-run at the close
 
@@ -64,8 +74,7 @@ The first close re-run (`d13b222`, 188/188) was made with the pre-TOOL-A checker
 | `workspace.json` | 2 | every mutation killed |
 | **total** | **198** | **198 killed; each checker run exited 0** |
 
-## Gap carried to the Proof Pack
+## Gaps
 
-`engine.py`'s `run`, `_launch`, `_run_cell`, `_archive`, `_classify`, `configure_logging`, `_job_query` and `_confirm` have no cosmic-ray run: 466 mutants. They are covered by the hand-written `engine.json` and `t9.json` entries and by the unit, conformance and E2E tests. Running them would take about 6.5 h at the measured ~50 s per mutant.
-
-**Re-run trigger:** any change to those functions, or a phase-2 hardening pass.
+- **The engine gap is closed.** T10 ran the 466 out-of-scope mutants, and T12 re-ran all 767.
+- **Remaining:** the kill counts are cosmic-ray's non-zero-exit verdicts, not each re-checked for a named test (TOOL-B, above).

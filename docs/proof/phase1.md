@@ -20,7 +20,7 @@ summary: >-
 
 # Proof Pack: phase 1 walking skeleton
 
-- **Change:** `impl/phase1`, from `e5ee302` (main before the finish plan) to the close commit. Joins: T5 `f47c5c9`, T3 `eb3ac27`, T4 `861ac76`, T2 `e69dc38`, T1 `9c32b00`, T6 `51a39e1`, T8 `0e24cb9`, T9 `81c5b10`.
+- **Change:** `impl/phase1`, from `e5ee302` (main before the finish plan) to the close commit. Joins: T5 `f47c5c9`, T3 `eb3ac27`, T4 `861ac76`, T2 `e69dc38`, T1 `9c32b00`, T6 `51a39e1`, T8 `0e24cb9`, T9 `81c5b10`, T11 `e37d223`, T10 `db2cca4`, T12 `f28b272`.
 - **Spec / design:** `docs/specs/harness-bench.md` · `docs/design/phase1-walking-skeleton.md` (v4, native cells) · `docs/design/run-lifecycle-model.md`.
 - **Tier:** T2.
 - **Author / date:** the Coordinator seat (Claude Code, Opus 5.5), 2026-09-24. Plan: `docs/coordination/coordination-phase1-finish.md`. Run record: `docs/coordination/coordination-phase1-finish-run.md`.
@@ -91,6 +91,9 @@ Its history shows it can fail. Run 1 failed on HB-CELL-113 (the race, T6). Run 2
 | T8 reader and paths | US-10 Codex reader; relative `--tools-dir` (E2E run 2) | `findings-T8.md` | both reds re-run; fixture scanned |
 | T9 cleanup and log | a lost build's temp folder; engine log handlers (E2E run 3) | `findings-T9.md` | red `e225ff5` re-run, 4 of 4 failed as stated |
 | T11 verify later pass | Test Architect N1: a re-sealed later pass with no `grading.completed` | `findings-T11.md` | red `8edd94f` re-run (`0 == 5`); `views.json` 34/34 |
+| T10 engine mutation | the 466 engine mutants never run; the kill-retry cap drift (60 s against the design's 30 s) | `findings-T10.md` | cap red `70531dc` re-run (`32.0 != 30`); two kills and one equivalent spot-checked |
+| T12 mutation re-run | 29 overstated kills; one false equivalence | `findings-T12.md` | three overstated kills re-run before and after `a0c4f52` |
+| T7 (Coordinator) | E2E-E piped gate; TOOL-A stale bytecode in `mutate_check` | this pack, `defect-classes.md` | reds `291468b`, `3ecd1eb` |
 
 **Oracle:** a test that failed on the commit before its fix, for the stated reason, backed by a named mutant killed by that test.
 
@@ -103,19 +106,25 @@ Its history shows it can fail. Run 1 failed on HB-CELL-113 (the race, T6). Run 2
 
 **Residual risk:** see the list below.
 
-### Claim 3: the mutation bar is met, with one disclosed gap
+### Claim 3: the mutation bar is met
 
 **Evidence:** `docs/notes/mutation-record-phase1.md`.
-- cosmic-ray 8.7.0 has no open mutant over lifecycle, errors, 299 of engine's 765 mutants, ledger, views and grade.
-- All 13 `tests/mutations/*.json` files, 188 entries, were re-run under the hardened checker on the integrated code (`d13b222`, after the last join). All 188 were killed, and `src` was clean afterwards.
+- **cosmic-ray, every mutant:** 2699 across lifecycle, errors, engine (all 767), ledger, views and grade. Each was run, then re-run with bytecode off (T12, `src` at `ceed6c1`): 2267 killed, 432 argued equivalent, **0 open**.
+- **The re-run corrected the per-track records.** 29 mutants recorded killed were not (now killed by test-only `a0c4f52`), and one engine equivalence argument was wrong (L394, killed).
+- **Hand-written mutations:** all 13 `tests/mutations/*.json` files, 198 entries, were re-run with the fixed checker at `ceed6c1`. All 198 were killed, and `src` was clean afterwards. This supersedes the earlier 188/188 at `d13b222`, which ran on the pre-TOOL-A checker.
+- **Design drift found by the engine run:** the kill-retry cap was 60 s against the design's 30 s. It is fixed red-first (T10: `70531dc` → `e10b1e9`).
 
-**Oracle:** the hardened `tools/mutate_check.py` (`ae6e8f0`, `9dcbc90`) counts a kill only when pytest exits 1 with a named test failing. A timeout or an error is not a kill. The first sweep under this rule exposed one false kill, `engine.json`'s "budget never enforced", which was killed only by a timeout; T1 fixed it.
+**Oracle:**
+- The hardened `tools/mutate_check.py` counts a kill only when pytest exits 1 with a named test failing (`ae6e8f0`). Since `6d26c76`, it writes no bytecode from a mutant (TOOL-A: red `3ecd1eb`).
+- For cosmic-ray, the Coordinator re-verified sampled dispositions with that checker:
+  - T10's two kills and one equivalent;
+  - T12's three overstated kills: survived at `ceed6c1`, killed at `a0c4f52`.
 
 **Red observed before green:** n/a. A mutant is a seeded red.
 
-**Confidence:** Verified.
+**Confidence:** Verified for 0 open mutants, and for every disagreement T12 dispositioned one at a time.
 
-**Residual risk:** `engine.py`'s 466 out-of-scope cosmic-ray mutants (`run`, `_launch`, `_run_cell`, `_archive`, `_classify`, `configure_logging`, `_job_query`, `_confirm`). They are covered only by hand-written entries and by the unit, conformance and E2E tests.
+**Residual risk:** cosmic-ray counts any non-zero exit or timeout as KILLED (TOOL-B), so its 2267 kills are an upper bound. They were not each re-checked for a named test failing. A named-test re-derivation from `cosmic-ray dump` is the unbuilt control.
 
 ### Claim 4: the start-benchmark skill edit is better than the old skill (A6)
 
@@ -157,7 +166,7 @@ Each class is in `docs/lessons/defect-classes.md` with its sweep and control.
 ## Verification commands
 
 ```
-uv run pytest -q -p no:cacheprovider -m "not credentials"   # 516 passed, 5 deselected at the T9 join (recount)
+uv run pytest -q -p no:cacheprovider -m "not credentials"   # 592 passed, 5 deselected at the T12 join (recount)
 uv run ruff check src tests tools                            # clean
 uv run pytest -q -p no:cacheprovider -m "" tests/e2e -s -rf  # real models: 2 passed, 1 xfailed
 uv run python tools/mutate_check.py tests/mutations/<file>.json   # per file: "every mutation killed"
@@ -182,7 +191,7 @@ A gate's exit status is read on its own line (CT27). `tools/heredoc_guard.py` no
     - Until then, the scores of a run graded more than once are only as trustworthy as the filesystem that holds them.
 8. `peak_memory` and `cpu_ms` are null when a job query fails (T1).
 9. The D5 replay transcripts are partly schema shapes, not recordings (T3).
-10. `engine.py` has partial cosmic-ray scope (Claim 3).
+10. cosmic-ray kill counts are non-zero-exit verdicts, not named-test failures (TOOL-B, Claim 3). The engine's partial scope is closed (T10, T12).
 11. Test-fixture teardowns still use `rmtree(ignore_errors=True)`. About 170 folders from earlier test runs remain under `C:/Projects/bench-test` (CLN-A, partially controlled). Deleting them was refused by this session's permission check, so the human deletes them.
 12. `verify-ruling-citations.py` checks nothing here (GATE-A): it reads only `### Ruling NN` headings, and the rulings use `## R-n`. The rulings R-1..R-5 are cited by hand in this pack and the design; no gate checks those citations.
 
@@ -217,4 +226,6 @@ The reviewer re-ran the suite (516 passed), `ledger.json` (20/20) and `engine.js
 - **N4 [Minor]:** R-5's claim that the leak is the same with the pack on and off is unmeasured. Routed to the Owner.
 - **N5 [Nit]:** the report points to the evidence instead of naming the skill. Routed to the Owner.
 - **N6 [Nit]:** the E2E did not run verify after the re-grade. Fixed in `6362c6e`.
-- **Required item 1:** track T10 runs cosmic-ray over the remaining 466 `engine.py` mutants. No waiver is sought.
+- **Required item 1: done, no waiver.**
+  - **T10 (joined `db2cca4`)** ran the 466 remaining `engine.py` mutants: 0 open. It found and fixed the kill-retry cap drift, and found TOOL-A in `mutate_check`, which is fixed.
+  - **T12 (joined `f28b272`)** re-ran all 2699 cosmic-ray mutants with bytecode off: 0 open. It closed 29 overstated kills with tests.

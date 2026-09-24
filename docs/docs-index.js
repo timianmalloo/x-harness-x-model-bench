@@ -691,7 +691,7 @@ window.DOCS_INDEX = {
       "phase": "Phase 1 · walking skeleton",
       "reviewBy": "2026-12-22",
       "reviewSuggested": [],
-      "summary": "Phase 1's mutation evidence in one place. cosmic-ray 8.7.0 ran over lifecycle, errors, 299 of engine's 765 mutants, ledger, views and grade/**: no mutant is open. Every hand-written tests/mutations/*.json file was re-run under the hardened checker on the integrated code, and every entry was killed. The one gap is engine.py's 466 out-of-scope cosmic-ray mutants.",
+      "summary": "Phase 1's mutation evidence in one place. Every cosmic-ray mutant of lifecycle, errors, engine, ledger, views and grade/** (2699) was run, then re-run with bytecode off (T12): 0 open. The re-run closed 29 kills the records had overstated. Every hand-written tests/mutations/*.json entry (198) is killed under the fixed named-test checker.",
       "tags": [
         "mutation",
         "cosmic-ray",
@@ -713,7 +713,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f74ad8837f216a21d54753e0214204905c81d8a759357bc89fb10d605d134824"
+      "sourceSha256": "c113b0e000ece4868159592d0e5e50eb67d6bb5b46d20ca62b843e999012808a"
     },
     {
       "id": "mutation-record-t1",
@@ -948,7 +948,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ad09ff851abc52b3f9592f0b2301b72325a944f3824a5be6ef322a2d3851d396"
+      "sourceSha256": "ab894f88dae0bfc912c33f7df312784c5d422555a6c0793d9bfc5295e6c3ba47"
     },
     {
       "id": "design-run-lifecycle-model",
@@ -1042,7 +1042,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "83310072c116f954f9cd7c4fde409288dc6dae445e701cffab78b6284c4567b3"
+      "sourceSha256": "bc3e504715596a3c9208da7faf9353986a744c044783e0d390bb53a4e4fe0fc1"
     },
     {
       "id": "defect-classes",
@@ -1071,7 +1071,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "fa9b9d2251f48f21bacc7ffd2bb4245e2627612729153af35811cbf52a90ee47"
+      "sourceSha256": "2cc7cba42d2a9efebd4e74527d7e8d12e0e807766466577a99e51d3af112f556"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -1700,7 +1700,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "0d927c36df11fa27c472e76cd426693b10c146d797364dfc7719e1ef6d5cf1f0"
+      "sourceSha256": "7b58e3f31a53c2c927e9bf89eff0a8971c7d24ee8775407f324d6032e256a21e"
     },
     {
       "id": "spec-harness-bench",
@@ -1854,5 +1854,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "b14d215cc08808d0489d48ca34a89ad42a54d6941fd4e6f0fb297433d7d363ee"
+  "graphSha256": "1c57b8b525f0bde3118c061f8fb216f163fe94ac971f1bc33d0278b7812ee1bd"
 };

@@ -50,6 +50,18 @@ summary: >-
 | T8 reader-and-paths (loop-back, unplanned) | Claude Code | `0e24cb9` | 80 calls · 1–1.5 h (brief) → **98 · 0.27 h** | 185,688 | both red SHAs re-run; `t8.json` 2/2 killed; fixture scanned. **Over its call budget, 98 against 80** |
 | T9 cleanup-and-log (loop-back, unplanned) | Claude Code, Sonnet | `81c5b10` | 60 calls · 1 h → **81 · 0.25 h** | 156,927 | red `e225ff5` re-run (4 of 4 failed as stated); `t9.json` 3/3 killed; `engine.py` diff confined to `configure_logging`. **Over its call budget, 81 against 60.** Cause (Inferred): the budget did not allow for the four-test red set across three test files |
 
+**Round-1 veto tracks** (the Test Architect blocked M2; see the Proof Pack's gate record):
+
+| track | harness | joined | budget → spend (calls · wall) | exit evidence verified by the Coordinator |
+| --- | --- | --- | --- | --- |
+| T11 verify-later-pass | Claude Code, Opus | `e37d223` | 120 · 2 h → **59 · 0.41 h** | red `8edd94f` re-run; `views.json` 34/34 |
+| T10 engine-mutation | Claude Code, Opus | `db2cca4` | 250 · 3 h, plus a 30-call resume → **160 · 1.55 h** | cap red `70531dc` re-run; two kills and one equivalent spot-checked |
+| T12 mutation-rerun | Claude Code, Opus | `f28b272` | 250 · 3.5 h → **120 · 2.38 h** | cosmic-ray source read; three overstated kills re-run before and after |
+
+- The Owner seat ruled R-6 on N4 and N5.
+- The Coordinator (T7) fixed N2, N3 and N6. It also fixed TOOL-A in its own `mutate_check` (red `3ecd1eb`, fix `6d26c76`).
+- **A Coordinator error, recorded:** the TOOL-A sweep concluded that the cosmic-ray runs were exposed, without first reading how cosmic-ray runs its tests. They were not exposed. The T12 re-run it triggered still paid: it found TOOL-B, 29 overstated kills, and a false equivalence.
+
 T6, T8 and T9 are loop-backs. Each real E2E found defects in files owned by tracks that had already closed, so the loop-back rule reopened them as small fix tracks. T7 is the Coordinator's own close (this record). No planned track exceeded its call budget. Two loop-backs did: T8 (98 against 80) and T9 (81 against 60). Both went over on calls while taking a quarter or less of their wall-clock budget. Loop-back briefs therefore set call budgets too low for a red-first cycle across several test files. That is a signal about how those budgets were estimated, not a reason to raise the next one without asking why. Every planned track finished well under its wall-clock estimate. The estimates were Inferred and too high by a factor of 2–14.
 
 **Which of the plan's parallelism justifications paid:**
