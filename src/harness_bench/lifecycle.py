@@ -2,7 +2,8 @@
 
 MAPPING binds every ledger transition the engine can write to the model action it implements
 (docs/design/run-lifecycle-model.md, mapping table). `replay(events)` checks a run's `events` in ledger
-order against the phase-1 guards of `models/run_lifecycle.tla`; a violation is a ConformanceError
+order, and a run's `scores` against the grading guards, per the phase-1 guards of
+`models/run_lifecycle.tla`; a violation is a ConformanceError
 naming the guard. An unmapped transition is itself a violation, so the engine cannot drift from the
 table silently.
 """
@@ -29,6 +30,7 @@ MAPPING: dict[str, tuple[str, int]] = {
     "grading.completed": ("GradeEnd", 1),
     "run.completed": ("(run end)", 1),
     "ledger.tail_repaired": ("(ledger)", 1),
+    "segment.abandoned": ("(ledger: a dead pass named by the next, HB-LED-004)", 1),
 }
 
 
@@ -36,10 +38,11 @@ class ConformanceError(Exception):
     pass
 
 
-def replay(events: list[dict], parallelism: int) -> None:
+def replay(events: list[dict], parallelism: int, scores: list[dict] = ()) -> None:
     seen: dict[str, list[str]] = defaultdict(list)
     running: set[str] = set()
     stopped = False
+    archived_at_start: dict[str, set[str]] = {}  # grading_id -> cells archived when the pass started
 
     def fail(cell: str, rule: str, kind: str) -> None:
         raise ConformanceError(f"{rule}: {kind} for cell {cell} after {seen[cell]}")
@@ -50,6 +53,8 @@ def replay(events: list[dict], parallelism: int) -> None:
             raise ConformanceError(f"unmapped transition {kind!r} (not in the phase-1 mapping table)")
         if kind == "run.launch_stopped":
             stopped = True
+        if kind == "grading.started":
+            archived_at_start[e["grading_id"]] = {c for c, d in seen.items() if "cell.archived" in d}
         cell = e.get("cell_id")
         if cell is None:
             continue
@@ -88,3 +93,11 @@ def replay(events: list[dict], parallelism: int) -> None:
         if kind in ("cell.workspace_deleted", "cell.workspace_kept") and "cell.archived" not in done:
             fail(cell, "NothingDeletedUnarchived", kind)
         done.append(kind)
+    graded: set[tuple[str, str, str]] = set()
+    for sc in scores:
+        key = (sc["grading_id"], sc["cell_id"], sc["metric_id"])
+        if sc["cell_id"] not in archived_at_start.get(sc["grading_id"], set()):
+            raise ConformanceError(f"ArchivedCellsGetGraded: score {key} for a cell not archived when its pass started")
+        if key in graded:
+            raise ConformanceError(f"GradedOncePerPass: score {key} written twice")
+        graded.add(key)

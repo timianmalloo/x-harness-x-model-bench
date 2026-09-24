@@ -8,7 +8,8 @@
 # check > trace conformance > tests > judge). J metrics cover only what no rung above can measure.
 # Changing a definition, weight or rubric bumps `version` (historical scores must not move silently).
 schema: bench-metrics/1
-version: "0.2"   # 0.2: formal metrics (scenario 7) and protocol conformance
+version: "0.3"   # 0.3: decimal scales for non-integer values (ADR-0006: no floats in the ledger); 0.2: formal metrics and protocol conformance
+# scale: a non-integer value is stored as a decimal string with this many places.
 composite:
   area_score: weighted mean of normalised metrics in the area
   overall: correctness-gated   # a cheap failure never outranks an expensive pass
@@ -18,7 +19,7 @@ areas:
     title: Cost & efficiency
     metrics:
       - { id: tokens_by_type,          source: [H],    better: lower,  grader: cost,        weight: 0, note: "raw only; in/out/cacheRead/cacheWrite by model" }
-      - { id: cost_usd,                source: [H, D], better: lower,  grader: cost,        weight: 1, note: "NA when no cost basis; never 0" }
+      - { id: cost_usd,                source: [H, D], better: lower,  grader: cost,        weight: 1, scale: 6, note: "NA when no cost basis; never 0" }
       - { id: cost_of_pass,            source: [D],    better: lower,  grader: cost,        weight: 1 }
       - { id: tokens_per_solved,       source: [D],    better: lower,  grader: cost,        weight: 1 }
       - { id: wall_clock_split,        source: [H],    better: lower,  grader: cost,        weight: 1, note: "wall, model, tool, idle" }
@@ -36,7 +37,7 @@ areas:
       - { id: pass_at_1,               source: [D], better: higher, grader: correctness, weight: 1 }
       - { id: pass_at_k,               source: [D], better: higher, grader: correctness, weight: 0 }
       - { id: pass_hat_k,              source: [D], better: higher, grader: correctness, weight: 1, note: "all k reps pass" }
-      - { id: partial_credit,          source: [D], better: higher, grader: correctness, weight: 1 }
+      - { id: partial_credit,          source: [D], better: higher, grader: correctness, weight: 1, scale: 4 }
       - { id: build_and_suite_clean,   source: [D], better: higher, grader: correctness, weight: 1 }
       - { id: mutation_score,          source: [D], better: higher, grader: mutation,    weight: 1 }
       - { id: regression_count,        source: [D], better: lower,  grader: correctness, weight: 1 }

@@ -110,7 +110,7 @@ def plan_hash(plan: dict) -> str:
     return _sha({k: v for k, v in plan.items() if k != "plan_hash"})
 
 
-def _file_hash(path: Path) -> str:
+def file_hash(path: Path) -> str:
     return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest() if path.exists() else ""
 
 
@@ -139,7 +139,7 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, p
         "builds": {h: builds[h] for h in sorted(harnesses)},
         "pack": pack,
         "parameters": params,
-        "price_list_hash": _file_hash(root / "bench" / "prices.yaml"),
+        "price_list_hash": file_hash(root / "bench" / "prices.yaml"),
         "envelope_seconds": envelope_seconds(cells, parallelism),
         "cells": [{"cell_id": c.id, "label": c.label, **asdict(c)} for c in cells],
     }

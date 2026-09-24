@@ -98,7 +98,7 @@ def _build_workspace(cell: dict, cell_dir: Path) -> dict:
 def _run(base, p, launcher, **cfg):
     config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
                                  launchers={"fake": launcher}, build_workspace=cfg.pop("build_workspace", _build_workspace),
-                                 grade=None, end_grace=cfg.pop("end_grace", 5), **cfg)
+                                 grade=cfg.pop("grade", None), end_grace=cfg.pop("end_grace", 5), **cfg)
     summary = engine.Engine(p, config).run()
     events = engine.read_events(config.run_dir)
     lifecycle.replay(events, parallelism=p["parameters"]["parallelism"])  # conformance (US-44 AC3)
@@ -127,6 +127,31 @@ def test_happy_run_completes_archives_and_deletes_every_cell(base):
     for fact in ("events", "turn_usage", "archive_files"):
         for seg in (config.run_dir / fact).glob("*.jsonl"):
             assert ledger.verify_segment(seg).sealed
+
+
+def test_the_engine_grades_once_after_every_cell_is_archived_and_records_the_pass(base):
+    p = _plan()
+    calls = []
+
+    def grade(run_dir):
+        archived = [e["cell_id"] for e in engine.read_events(run_dir) if e["kind"] == "cell.archived"]
+        calls.append(sorted(archived))
+        return {"grading_id": "grade-x", "heads": {"scores": "h" * 64}, "cells_graded": len(archived)}
+
+    summary, events, _ = _run(base, p, FakeLauncher({}), grade=grade)
+    assert calls == [sorted(c["cell_id"] for c in p["cells"])]
+    assert events[-1]["grading"] == {"grading_id": "grade-x", "heads": {"scores": "h" * 64}, "cells_graded": 2}
+    assert summary.exit_code == 0
+
+
+def test_a_failed_grading_pass_never_costs_the_run(base):  # re-gradable from the archive (US-26)
+    def grade(run_dir):
+        raise BenchError("HB-GRD-001", "held by bench grade")
+
+    summary, events, config = _run(base, _plan(n_cells=1), FakeLauncher({}), grade=grade)
+    assert events[-1]["kind"] == "run.completed" and summary.exit_code == 0
+    assert events[-1]["grading"] == {"error_code": "HB-GRD-001"}
+    assert ledger.verify_segment(next((config.run_dir / "events").glob("*.jsonl"))).sealed
 
 
 def test_verbatim_prompt_reaches_the_agent_and_turn_usage_is_recorded(base):

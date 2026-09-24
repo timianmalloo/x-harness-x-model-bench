@@ -158,10 +158,11 @@ The physical rules are ADR-0006's (one definition); in short:
 - Views read only verified, sealed segments and only **completed** grading passes; the current score rule is ADR-0006's.
 - **Current extraction:** the `extraction_id` named by the cell's current scores for the catalog version being reported. Token, cost and time views read only that extraction's rows, so a normaliser fix never double-counts.
 - Views **refuse** duplicates: a second `cell.outcome` for a cell, or a duplicate key in any fact, is an integrity error (HB-LED-003), never "latest wins".
-- Derived, never stored: current outcome and validity (incl. `invalid (no model call | model mismatch | infrastructure)`), wall time, the US-24 time split, token totals, `cost_usd`, pass@1, leaderboard rows, banner counts.
+- Derived, never stored: current outcome and validity (incl. `invalid (no model call | model mismatch | infrastructure)`), wall time, the US-24 time split, token totals, pass@1 over repetitions, leaderboard rows, banner counts.
+- Stored per cell by the grading pass (`scores`, catalog 0.3): `pass_at_1` (this cell's hidden tests all passed: 1 or 0), `partial_credit` (decimal string, scale 4), `cost_usd` (decimal string, scale 6, or NA with a reason). A `cost_usd` score is a rebuildable cache of the current extraction × the plan's price list. A view test checks it against a fresh derivation (spec, data model).
 - Canonical exports are produced in Python (sorted keys and rows) for the byte-identical re-grade test.
 
-**Store (E7 #1):** `runs/<run_id>/{plan.json, events/, model_calls/, tool_calls/, archive_files/, scores/, archive/<cell>/, engine.log, report.html}`, `.lock`, `grade.lock`.
+**Store (E7 #1):** `runs/<run_id>/{plan.json, events/, model_calls/, tool_calls/, turn_usage/, archive_files/, scores/, archive/<cell>/, grading/<grading_id>/<cell>/oracle.log, engine.log, report.html}`, `.lock`, `grade.lock`.
 
 ## Change-surface list (E7)
 
@@ -194,7 +195,7 @@ The physical rules are ADR-0006's (one definition); in short:
 - **Crash (phase 1).** No resume: the run stays `incomplete`, and a new run id re-executes. The phase-5 resume implements `ReconcileKill/ReconcileRecord`.
   - **No launch beside an orphan (the phase-1 form of `NoLaunchBesideOrphan`)** holds by construction: every cell job is kill-on-close, so the engine's death kills every cell (spike N2.2).
   - `bench teardown <run_id>` refuses while that run's lock is held by a live engine (HB-RUN-003), so it never kills live cells.
-- **Grading.** After all cells are terminal. Each pass (engine or `bench grade`) takes `grade.lock`, writes its own segment and grades only archived cells.
+- **Grading.** After all cells are terminal. Each pass (engine or `bench grade`) takes `grade.lock`, writes its own segment and grades only archived cells. It seals its other segments, then writes `grading.completed`, then seals its events segment, so a pass that dies at any point is not completed. The engine records its pass's summary (`grading_id`, heads) in `run.completed`. A failed pass is recorded there as `{error_code}` and never costs the run, because the run can be re-graded from the archive (US-26). The hidden tests run in a grading copy (archived working copy + the task's `tests/`), in their own job, under `grading_step_timeout` (HB-GRD-002). The copy is removed afterwards, and the oracle output is kept as evidence.
 - **Deadlines** (plan parameters): git calls 120 s; spawn and job calls 30 s; handshake 60 s; cell budget from the task; grading step 15 min; lock staleness 120 s.
 
 ## Failure taxonomy (`errors.py`; one definition: cause → code, attribution)

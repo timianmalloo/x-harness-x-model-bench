@@ -1,0 +1,101 @@
+[
+ {
+  "name": "extraction written on every pass",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "        if (cid, self.extraction) not in held:\n",
+  "replace": "        if True:\n",
+  "tests": ["tests/test_grade.py::test_a_regrade_with_the_same_normaliser_writes_no_new_calls"]
+ },
+ {
+  "name": "an abandoned pass holds an extraction (views admit unfinished passes)",
+  "file": "src/harness_bench/views.py",
+  "find": "        if sid.startswith(GRADE_PREFIX) and sid not in done:\n            continue\n",
+  "replace": "",
+  "tests": ["tests/test_grade.py::test_an_abandoned_pass_does_not_hold_an_extraction"]
+ },
+ {
+  "name": "an abandoned segment named again by every pass",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": " and (fact, sid) not in named:\n",
+  "replace": ":\n",
+  "tests": ["tests/test_grade.py::test_an_abandoned_segment_is_named_once_in_the_next_pass_own_segment"]
+ },
+ {
+  "name": "a completed pass counted without its grading.completed row",
+  "file": "src/harness_bench/views.py",
+  "find": "if report.sealed and not report.error and any(r[\"kind\"] == \"grading.completed\" for r in ledger.read_segment(path)):",
+  "replace": "if not report.error:",
+  "tests": ["tests/test_grade.py::test_an_abandoned_segment_is_named_once_in_the_next_pass_own_segment",
+            "tests/test_grade.py::test_an_abandoned_pass_does_not_hold_an_extraction"]
+ },
+ {
+  "name": "unarchived cells graded",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "                if cell[\"cell_id\"] in archived:\n",
+  "replace": "                if True:\n",
+  "tests": ["tests/test_grade.py::test_only_archived_cells_are_graded"]
+ },
+ {
+  "name": "a skipped hidden test counts as a pass",
+  "file": "src/harness_bench/grade/correctness.py",
+  "find": "int(done.returncode == 0 and passed == total)",
+  "replace": "int(done.returncode == 0)",
+  "tests": ["tests/test_grade.py::test_a_skipped_hidden_test_is_not_a_pass_even_though_unittest_exits_0"]
+ },
+ {
+  "name": "an oracle timeout scored instead of NA",
+  "file": "src/harness_bench/grade/correctness.py",
+  "find": "    if done.timed_out:\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_grade.py::test_an_oracle_timeout_is_na_with_hb_grd_002"]
+ },
+ {
+  "name": "unknown unittest counters ignored",
+  "file": "src/harness_bench/grade/correctness.py",
+  "find": "        if name not in NOT_PASSED or not count.isdigit():\n",
+  "replace": "        if not count.isdigit():\n",
+  "tests": ["tests/test_grade.py::test_the_unittest_summary_is_parsed_strictly"]
+ },
+ {
+  "name": "no usage priced at $0",
+  "file": "src/harness_bench/grade/cost.py",
+  "find": "    if not totals:\n        return None, \"no usage recorded\", \"\"\n",
+  "replace": "",
+  "tests": ["tests/test_grade.py::test_cost_is_na_when_no_usage_was_recorded"]
+ },
+ {
+  "name": "a future price entry applied",
+  "file": "src/harness_bench/grade/cost.py",
+  "find": " and str(e.get(\"effective\")) <= run_date]",
+  "replace": "]",
+  "tests": ["tests/test_grade.py::test_cost_is_tokens_by_type_times_the_entry_in_force_on_the_run_date"]
+ },
+ {
+  "name": "a changed price list used",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "        if not self.prices_ok:\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_grade.py::test_cost_is_na_when_the_price_list_changed_after_the_plan"]
+ },
+ {
+  "name": "acp_turn harness priced from the native record",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "        source = profiles.load(self.root, cell[\"harness\"]).usage_source\n",
+  "replace": "        source = \"native_record\"\n",
+  "tests": ["tests/test_grade.py::test_cost_reads_turn_usage_for_an_acp_turn_harness"]
+ },
+ {
+  "name": "replay: a score for an unarchived cell allowed",
+  "file": "src/harness_bench/lifecycle.py",
+  "find": "        if sc[\"cell_id\"] not in archived_at_start.get(sc[\"grading_id\"], set()):\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_grade.py::test_a_score_for_an_unarchived_cell_is_rejected_by_the_replay"]
+ },
+ {
+  "name": "replay: a cell graded twice in a pass allowed",
+  "file": "src/harness_bench/lifecycle.py",
+  "find": "        if key in graded:\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_grade.py::test_a_cell_graded_twice_in_one_pass_is_rejected_by_the_replay"]
+ }
+]

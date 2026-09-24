@@ -39,7 +39,7 @@ def _swap(k1, k2):
 
 def test_the_engine_writes_exactly_the_phase1_transitions_of_the_mapping_table():
     phase1 = {k for k, (_, phase) in lifecycle.MAPPING.items() if phase == 1}
-    grading = {"grading.started", "grading.completed", "ledger.tail_repaired"}  # written by the grading pass / the ledger
+    grading = {"grading.started", "grading.completed", "segment.abandoned", "ledger.tail_repaired"}  # grading pass / ledger
     assert engine.ENGINE_TRANSITIONS <= phase1, sorted(engine.ENGINE_TRANSITIONS - phase1)
     assert phase1 - grading <= engine.ENGINE_TRANSITIONS, sorted(phase1 - grading - engine.ENGINE_TRANSITIONS)
 

@@ -22,3 +22,5 @@ graders:
   - cost
 oracle:
   summary: "Hidden unittest cases for slugify in tests/test_slug_hidden.py (stdlib only), run against the cell's working copy."
+  runner: unittest          # the summary format correctness.py parses
+  command: ["{python}", "-m", "unittest", "-v", "test_slug_hidden"]   # run in a grading copy: archive ws + tests/

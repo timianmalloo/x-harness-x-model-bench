@@ -88,7 +88,7 @@ def verify(folder: Path, rows: list[dict]) -> None:
             raise BenchError("HB-LED-005", f"archived file {r['path']} does not match its archive_files row")
 
 
-def _make_writable(func, path, _exc) -> None:
+def make_writable(func, path, _exc) -> None:
     os.chmod(path, stat.S_IWRITE)
     func(path)
 
@@ -98,7 +98,7 @@ def delete_after_verify(cell_dir: Path, folder: Path, rows: list[dict], retries:
     verify(folder, rows)
     for attempt in range(retries + 1):
         try:
-            shutil.rmtree(cell_dir, onexc=_make_writable)
+            shutil.rmtree(cell_dir, onexc=make_writable)
             return True
         except OSError:
             if attempt == retries:

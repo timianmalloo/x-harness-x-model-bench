@@ -21,6 +21,7 @@ import hashlib
 import json
 import os
 import threading
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Self
@@ -62,6 +63,13 @@ def _digest(data: bytes) -> str:
 
 def genesis(segment_id: str) -> str:
     return _digest(f"genesis:{segment_id}".encode())
+
+
+def stamp(record: dict) -> dict:
+    """A record with `recorded_at` (UTC, for people) and `mono_ns` (monotonic, for durations) (ADR-0006)."""
+    now = time.time()
+    return {**record, "recorded_at": time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(now)) + f".{int(now * 1000) % 1000:03d}Z",
+            "mono_ns": time.monotonic_ns()}
 
 
 def _chain(record: dict, seq: int, prev_hash: str) -> dict:

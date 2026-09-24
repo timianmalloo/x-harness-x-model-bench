@@ -25,7 +25,7 @@ summary: >-
 3. Climb the control ladder (CI6) and record the highest rung that actually holds: *make it impossible* > *automated control* > *always-loaded instruction* > *knowledge doc* > *register entry only*.
 4. A control is not a control until it has been **observed failing** on the un-fixed code.
 
-**Status counts:** controlled 2 · partially-controlled 3 · uncontrolled 0 (project classes)
+**Status counts:** controlled 3 · partially-controlled 2 · uncontrolled 0 (project classes)
 **Recurrence since last review:** 4 instances of MOD-A in one session: the control was built after the fourth.
 
 ---
@@ -69,8 +69,9 @@ summary: >-
   - `2026-09-23` `tests/fake_acp_agent.py`: `"\n"` became a line break, so every engine test failed.
   - `2026-09-23` `tests/mutations/engine.json`: `\n` inside JSON strings became line breaks, making the JSON invalid.
   - `2026-09-23` the fixture scrubber: a `\\?\` long-path prefix lost a backslash.
-- **Control:** source code and data files are changed with the Edit tool (exact text), never by a replacement script whose own literals contain escapes. After any scripted change, parse the result (`ast.parse`, `json.load`) before running anything. The suite fails at once on an unparseable module (observed 2026-09-23).
-- **Status:** `partially-controlled` (the rule is a working practice; the parse check is not yet automatic)
+  - `2026-09-23` `tests/test_grade.py`: the class recurred after it was registered. A heredoc edit script's `\\n` arrived as a line break, and the script's own `assert` stopped it before any write. The prose control had not held.
+- **Control:** `tools/heredoc_guard.py`, a `PreToolUse` hook on Bash wired in `.claude/settings.json`. It blocks (exit 2) any heredoc fed to a Python interpreter, so a program is written to a file and then run (CT27), and code is changed with the Edit tool. `tests/test_heredoc_guard.py` pins the blocked and the allowed shapes; it was observed red before the guard existed. The suite still fails at once on an unparseable module.
+- **Status:** `controlled` (2026-09-23)
 
 ### INS-A — Progress hidden by buffered output
 - **Signature:** a long check writes to a log file that stays empty until the process exits, so nobody can tell which stage is slow or hung.

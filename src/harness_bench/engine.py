@@ -73,7 +73,7 @@ class EngineConfig:
     cells_root: Path
     launchers: dict[str, Launcher]
     build_workspace: object  # (cell, cell_dir) -> dict info; the working copy is cell_dir / "ws"
-    grade: object | None  # (engine) -> None, run after every cell is terminal, under grade.lock
+    grade: object | None  # (run_dir) -> pass summary dict; run once after every cell is terminal (grade/runner.py)
     end_grace: float = 10.0
     loop_interval: float = 0.2
 
@@ -127,9 +127,7 @@ class Engine:
     # the single writer ----------------------------------------------------------------------------
 
     def _append_now(self, fact: str, record: dict) -> dict:
-        now = time.time()
-        stamped = {**record, "recorded_at": time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(now)) + f".{int(now * 1000) % 1000:03d}Z",
-                   "mono_ns": time.monotonic_ns()}  # ADR-0006: UTC for people, monotonic for durations
+        stamped = ledger.stamp(record)
         try:
             return self.writers[fact].append(stamped)
         except Exception as exc:  # the ledger cannot be written: stop launching, the run is incomplete
@@ -194,13 +192,19 @@ class Engine:
                     if not a.thread.is_alive():
                         self.active.pop(cell_id)
             self._drain(0)
+            grading = None
             if not self.broken and self.cfg.grade is not None:
-                self.cfg.grade(self)
+                try:
+                    grading = self.cfg.grade(self.cfg.run_dir)
+                except Exception as exc:  # grading is re-runnable from the archive (US-26): never costs the run
+                    code = exc.code if isinstance(exc, BenchError) else Cause.unclassified.code
+                    log.exception("grading pass failed; run bench grade", extra={"error_code": code})
+                    grading = {"error_code": code}
             if not self.broken:
                 heads = {fact: w.seal() for fact, w in self.writers.items() if fact != "events"}
                 self._append_now("events", {"kind": "run.completed", "run_id": self.plan["run_id"],
                                             "segment_heads": {**heads, "events": self.writers["events"].head_hash},
-                                            "cells_ended": len(self.outcomes)})
+                                            "cells_ended": len(self.outcomes), "grading": grading})
                 self.writers["events"].seal()
         finally:
             host.keep_awake(False)

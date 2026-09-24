@@ -39,7 +39,7 @@ Umbrella spec: [`harness-bench.md`](harness-bench.md) ([HTML](harness-bench.html
 | S-01 | `/start-benchmark` compilation: prose → `matrix.yaml`, model-id resolution, run id | `/specify` → `/design-slice` | S-02 | — | `skills/start-benchmark` stage 0 |
 | ◆ S-06 | Harness adapters over ACP: Claude Code, Codex, Copilot; model pin and served-model check | Spike Protocol per harness → `/design-slice` | S-02 | F3 | `adapters/*.py` |
 | ◆ S-05 | Runner: bootstrap (pack on/off), coord-run/1 contracts, archive, teardown; states map 1:1 onto the S-13 model | `/design-slice` → `/implement` | S-02, S-06, S-13 | F2 | `runner/*.py`, `bench run`, `bench teardown` |
-| ◆ S-07 | Telemetry: one event schema, OTel GenAI names; Codex reader first, then wrap `session-profile.py` | `/design-slice` → `/implement` | S-05 | — | `grade/telemetry/*`, `grade/normalize_telemetry.py` |
+| ◆ S-07 | Telemetry: one event schema, OTel GenAI names; Codex reader first, then wrap `session-profile.py` | `/design-slice` → `/implement` | S-05 | — | `telemetry/*` (Claude Code, Codex; Copilot in phase 2), `telemetry/normalize.py` |
 
 Phase 1 exit (proposal): one E-task runs end to end on every combo, and `usage.parquet` is populated from every harness.
 
