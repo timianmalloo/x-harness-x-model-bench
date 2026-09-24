@@ -71,6 +71,19 @@ def test_grade_then_report_writes_the_page(capsys, root, tmp_path):
     assert code == 0 and "pass@1" in out and (run_dir / "report.html").is_file()
 
 
+def test_report_refuses_when_the_hosts_credential_value_leaks_into_the_report(capsys, root, tmp_path):  # T4-1
+    fake_home = tmp_path / "fake-home"  # _no_real_credential_home points USERPROFILE/HOME here
+    (fake_home / ".claude").mkdir(parents=True)
+    token = "ROTATEDINTEGRATIONtoken0123456789"
+    (fake_home / ".claude" / ".credentials.json").write_text(json.dumps({"accessToken": token}), encoding="utf-8")
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": token})  # the value leaks into the cell's label
+    code, _, err = _bench(capsys, root, tmp_path, "grade", "r1")
+    assert code == 0
+    code, _, err = _bench(capsys, root, tmp_path, "report", "r1")
+    assert code == 5 and "HB-SEC-001" in err and token not in err
+    assert not (run_dir / "report.html").exists()
+
+
 def test_grade_while_another_pass_holds_the_lock_is_exit_1(capsys, root, tmp_path):
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     with oslock.RunLock.acquire(run_dir / "grade.lock"):
