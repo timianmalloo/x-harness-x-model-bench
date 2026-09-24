@@ -36,17 +36,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol
 
-from harness_bench import archive, driver, host, ledger, oslock, procs
+from harness_bench import archive, driver, host, ledger, lifecycle, oslock, procs
 from harness_bench.errors import BenchError, Cause
 from harness_bench.gitsafe import GitError
 from harness_bench.telemetry import normalize
 from harness_bench.tools import BuildChanged
 
-ENGINE_TRANSITIONS = frozenset({
-    "run.started", "cell.launch_intent", "cell.workspace_built", "attempt.process_started", "attempt.session_opened",
-    "cell.prompt_sent", "attempt.process_ended", "cell.outcome", "cell.archived", "cell.archive_failed", "cell.workspace_deleted",
-    "cell.workspace_kept", "run.launch_stopped", "run.completed",
-})
 FACTS = ("events", "turn_usage", "archive_files")
 USAGE_BUCKETS = ("uncached_input", "cache_read", "cache_write", "output", "reasoning")
 STOP = "stop"  # the inbox item a worker sends to ask the engine thread to stop launching (not a ledger fact)
@@ -140,6 +135,8 @@ class Engine:
     # the single writer ----------------------------------------------------------------------------
 
     def _append_now(self, fact: str, record: dict) -> dict:
+        if fact == "events":  # the lifecycle table is the one source of the transitions the engine may write
+            lifecycle.check_writer(record.get("kind"), "engine")
         stamped = ledger.stamp(record)
         try:
             return self.writers[fact].append(stamped)
@@ -152,6 +149,8 @@ class Engine:
         """Called by a worker: hand the record to the engine thread and wait until it is durable. Once the ledger
         is broken or the engine has ended, it fails at once (HB-RUN-001): no worker ever waits on a dead drain."""
         ledger.canonical(ledger.stamp(record))  # a bad record fails its own worker (TypeError), never the run
+        if fact == "events":
+            lifecycle.check_writer(record.get("kind"), "engine")  # ConformanceError, also in the worker
         future: Future = Future()
         while not self.closed:
             if self.broken:

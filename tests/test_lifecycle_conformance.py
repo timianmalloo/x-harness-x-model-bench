@@ -30,7 +30,6 @@ GOOD = [
 ]
 
 
-
 def _swap(k1, k2):
     events = list(GOOD)
     i = next(n for n, e in enumerate(events) if e["kind"] == k1)
