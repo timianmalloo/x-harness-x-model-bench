@@ -1269,3 +1269,35 @@ def test_an_engine_thread_failure_exits_the_process_and_leaves_no_cell_running(b
     time.sleep(2)
     [started] = [e for e in _events(base / "runs" / run_id) if e["kind"] == "attempt.process_started"]
     assert not host.process_alive(started["pid"], started["created_at"])
+
+
+# --- T10 defect report: the kill-retry backoff cap (design 30 s, code 60 s) -------------------------------------------
+
+class _UnconfirmedKill:
+    """A CellProcess stand-in whose kill is confirmed only on its n-th check; it records each check's timeout."""
+
+    def __init__(self, confirmed_on: int):
+        import io
+        from types import SimpleNamespace
+        self.proc = SimpleNamespace(stdin=io.BytesIO())
+        self.job = SimpleNamespace(active=lambda: 0, pids=list)
+        self.confirmed_on = confirmed_on
+        self.timeouts: list[float] = []
+
+    def terminate_and_confirm(self, timeout):
+        self.timeouts.append(timeout)
+        return len(self.timeouts) >= self.confirmed_on
+
+    def wait(self, timeout=None):
+        return 0
+
+
+def test_an_unconfirmed_kill_backs_off_from_1_s_doubling_to_the_designs_30_s_cap(base):
+    """design/phase1-walking-skeleton.md:189: "Retries use capped exponential backoff (1 s doubling to 30 s)".
+    engine.KILL_RETRY_CAP is 60.0 (commit 3d14c73, T1-8), so the waits after 16 s are 32 and 60, not 30 and 30."""
+    config = engine.EngineConfig(run_dir=base / "r", cells_root=base / "c", launchers={}, build_workspace=_build_workspace,
+                                 grade=None, end_grace=0)
+    eng = engine.Engine(_plan(n_cells=1), config)
+    cp = _UnconfirmedKill(confirmed_on=9)
+    assert eng._end_process(cp) == (0, True)
+    assert cp.timeouts == [eng.params["kill_escalation"], 1, 2, 4, 8, 16, 30, 30, 30]
