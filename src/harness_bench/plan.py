@@ -22,7 +22,7 @@ from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
-from harness_bench import profiles
+from harness_bench import config, profiles
 from harness_bench.errors import BenchError
 from harness_bench.ledger import canonical
 
@@ -123,6 +123,16 @@ def _prompt(task_dir: Path) -> dict:
     return {"prompt": text, "prompt_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest()}
 
 
+def _validate_ids(cells: list[dict]) -> None:
+    """Every frozen cell_id and label must match bench-status/1's id and label patterns (config.py),
+    so status never has to emit a document its own strict parser would reject."""
+    for c in cells:
+        if not config.CELL_ID.fullmatch(c["cell_id"]):
+            raise BenchError("HB-USR-002", f"cell_id {c['cell_id']!r} does not match the status id pattern")
+        if not config.LABEL.fullmatch(c["label"]):
+            raise BenchError("HB-USR-002", f"label {c['label']!r} does not match the status label pattern")
+
+
 def profile_record(root: Path, harness: str) -> dict:
     p = profiles.load(root, harness)
     return {"profile_hash": file_hash(root / "bench" / "profiles" / f"{harness}.yaml"), "usage_source": p.usage_source,
@@ -159,6 +169,7 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, p
         "envelope_seconds": envelope_seconds(cells, parallelism),
         "cells": [{"cell_id": c.id, "label": c.label, **asdict(c)} for c in cells],
     }
+    _validate_ids(body["cells"])
     body["plan_hash"] = plan_hash(body)
     return body
 

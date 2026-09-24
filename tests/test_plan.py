@@ -159,3 +159,11 @@ def test_load_confirmed_without_a_plan_is_unknown_run(tmp_path):
 def test_parallelism_above_the_phase1_cap_is_refused():
     with pytest.raises(BenchError):
         _phase1_plan(parallelism=3)
+
+
+def test_a_combo_id_that_breaks_the_status_label_regex_is_refused_at_plan_time():  # T4-5
+    m = config.load_yaml(ROOT / "bench" / "matrix.phase1.yaml")
+    m["combos"][0]["id"] = "cc sonnet"  # a space is not in the status label pattern
+    with pytest.raises(BenchError) as e:
+        _phase1_plan(matrix=m)
+    assert e.value.code == "HB-USR-002"
