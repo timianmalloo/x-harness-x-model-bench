@@ -74,3 +74,31 @@ Append only. One entry per ruling. Newest last.
      - the strict xfail goes green (a fix to verify).
   4. No ADR-0013 amendment.
 - **Coordinator's implementation note:** the report names the spike note and the canary as the evidence. The leaked skill's name, which is specific to this operator's profile, is recorded in the Proof Pack rather than hard-coded in the report source.
+
+## R-6 · 2026-09-24 · Owner seat (Fable) · R-5 re-review: N4 (pack-on/off claim) and N5 (skill name)
+
+- **Ruling:**
+  - **N4: amend R-5's reasoning by reference.** The sentence "the leak is identical for pack on and off, so pack comparisons stay valid" is **Inferred**, not Verified. It must not be stated as fact anywhere. The pack-seeded probe is a **named, dated next step, not a merge gate**.
+  - **N5: accept the Coordinator's implementation** of condition 1.
+- **Reasoning:**
+  - **N4:**
+    - The canary's probe is always a bare cell (`test_us13_canary.py:59-60`: `seed_home` and an empty pack argument), so pack-on was never measured.
+    - The inference rests on a mechanism: the leak is `~/.agents/skills`, resolved from the operator's `USERPROFILE`, a path the pack does not touch. That is a model. The `<recommended_plugins>` block seen only in the pack-on Codex context is one observed difference between the two contexts, and its source is unverified.
+    - So the claim keeps its model, gains its label, and names the probe that would confirm or break it.
+    - The merge is not blocked. The report already flags every Codex cell, pack on or off, so no unflagged comparison reaches a reader. The probe is one extra canary turn, and the benchmark is wanted today.
+  - **N5:**
+    - The report is an operator-independent surface. An operator's skill name belongs in the run's proof record, not in source.
+    - `report/__init__.py` names the note and the canary, and `docs/proof/phase1.md` Claim 5 names `microsoft-foundry`. That satisfies condition 1's intent: the evidence is findable from the flag.
+    - One gap: the canary prints leaked *classes* only (`sorted(leaked.values())`). The name in the Proof Pack was transcribed by hand from a pytest introspection line; the measurement did not emit it (IO: emitted on the normal path).
+- **Conditions:**
+  1. Before merge, `docs/proof/phase1.md` Claim 5 splits its confidence:
+     - the leak's existence is **Verified**;
+     - pack-invariance is **Inferred**. The model: the leak path is profile-resolved and pack-independent. The probe: run the US-13 canary with the pack seeded into the probe cell, pack on and pack off, and compare the leaked sets;
+     - `<recommended_plugins>` is **Flagged** (source unverified, seen pack-on only).
+
+     Any other surface that repeats the pack-invariance claim carries the same label.
+  2. The pack-seeded probe joins the human's list beside "N5 review (2)". **R-5 reopens** if either of these happens (add both to R-5 condition 3 by reference):
+     - a pack-on leaked set differs from the pack-off set;
+     - `<recommended_plugins>` turns out to have a pack-dependent source.
+  3. The canary's `Leaked` message and its printed summary name the leaked items (the canary keys), not only their classes. Then the Proof Pack's skill name is copied from a measurement.
+  4. R-5 condition 1 is read as: the flag names where the evidence is (the note and the canary), and the run's Proof Pack names the observed item. No skill name goes in report source.

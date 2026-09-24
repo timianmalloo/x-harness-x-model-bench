@@ -101,8 +101,8 @@ def test_user_level_configuration_does_not_reach_a_cell(harness, base, capsys):
     leaked = {c: cls for c, cls in shown.items() if c in probe}
     with capsys.disabled():
         print(f"\nUS-13 {harness}: shown by the control {sorted(shown.values())}; void (control did not show) {sorted(void.values())}; "
-              f"leaked into the probe {sorted(leaked.values())}")
+              f"leaked into the probe {sorted(leaked.values())}; leaked items {sorted(leaked)}")  # items: ruling R-6 condition 3
     # the positive control: a probe that shows nothing proves nothing unless the control showed a canary (spec US-13)
     assert shown, f"{harness}: the control showed no canary, so the probe's result is void"
     if leaked:
-        raise Leaked(f"user-level configuration reached a {harness} cell: {sorted(leaked.values())}")
+        raise Leaked(f"user-level configuration reached a {harness} cell: {sorted(leaked.items())}")

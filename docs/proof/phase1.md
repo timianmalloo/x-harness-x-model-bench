@@ -134,7 +134,12 @@ Its history shows it can fail. Run 1 failed on HB-CELL-113 (the race, T6). Run 2
 
 **Also seen:** a `<recommended_plugins>` block in the Codex pack-on context. Its source is not verified; it may be the operator's plugin marketplace configuration. It is flagged, not investigated.
 
-**Confidence:** Verified (observed in the canary and the report).
+**Confidence (split per ruling R-6):**
+- **Verified:** the leak exists, and the report flags it. Both were observed in the canary and in the report.
+- **Inferred:** the leak is the same with the pack on and off. The model: the leak path, `~/.agents/skills`, is resolved from the operator's profile, and the pack does not touch it. **Not measured**, because the canary's probe is always a bare cell. The probe that would decide it: run the US-13 canary with the pack seeded into the probe cell, pack on and pack off, and compare the leaked sets. Until then, pack-on against pack-off comparisons for Codex rest on that model.
+- **Flagged:** the `<recommended_plugins>` block. Its source is unverified, and it was seen only with the pack on.
+
+**The skill name is not yet measurement-emitted.** `microsoft-foundry` was transcribed from a pytest introspection line in the spike. The canary now prints the leaked item names and puts them in its `Leaked` message (R-6 condition 3). The next canary run confirms the name.
 
 ## Failure modes found by the real E2E (none were visible in unit tests)
 
@@ -162,7 +167,7 @@ A gate's exit status is read on its own line (CT27). `tools/heredoc_guard.py` no
 ## Flagged risks / residual unknowns
 
 1. **Cost is `NA` for every cell.** The price list lacks `claude-haiku-4-5-20251001` and `gpt-6-sol`. To compare cost, add sourced prices for both. Guessed prices are not acceptable.
-2. **N5** (Claim 5). Codex results carry the operator's user-level skills.
+2. **N5** (Claim 5). Codex results carry the operator's user-level skills. **Next step for the human (R-6):** run the pack-seeded canary probe. R-5 reopens if the pack-on leaked set differs from pack-off, or if `<recommended_plugins>` turns out to have a pack-dependent source.
 3. **One repetition, one task.** No confidence interval until `repetitions ≥ 2`.
 4. `last_update_ms` records null. Seam `req-01M38KX8503601BEP857749VVF` (T1 → T3: `TurnResult.last_update_seconds`) is still open, because T3 had closed. It is a phase-2 follow-up.
 5. `cli_table.render` prints cell labels to stdout before `report.html`'s credential scan runs (T4). A credential that leaked into a label would reach the terminal. Labels are built from plan ids, which are validated against a regex (T4-5), so this needs a plan-id path to carry a secret. It is flagged for the Security lens.
