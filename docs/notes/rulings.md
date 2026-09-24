@@ -405,3 +405,9 @@ Append only. One entry per ruling. Newest last.
   1. Every `Launcher` implementation and every test fake declares both fields explicitly; no default on the Protocol, no `getattr` anywhere on the engine's launcher surface (a grep-level test or lint asserts it).
   2. `tests/test_driver.py` / the engine tests include the negative control: a launcher with `set_model = False` never sends `session/set_model`, and one with `set_model = True` sends it before `session/prompt`.
   3. **For the record, agreed (no ruling needed):** the committed Copilot fixture `9c6c615` carried Copilot's vendor system prompt (no personal data), only on the unpushed design branch; it is re-scrubbed in `f952f87`, and the Leader squash-merges the branch at its join so the blob never reaches `main` or the remote. Condition: the scrub rule in the design's section 12 gains the vendor-system-prompt class so the next capture cannot repeat it, and the join record cites the squash commit.
+
+## R-31 · 2026-09-24 · Owner seat (Fable) · Record: R-26 narrows R-20 condition 4 to `totalNanoAiu` only
+
+- **Ruling (record-only):** R-20 condition 4 read "`requests.count` per model and `totalNanoAiu` stay in provenance for wave 1". R-26, by adopting the Data & Persistence Architect's C2, put `requests` on the `model_calls` row, so that condition is **narrowed by reference to `totalNanoAiu` only**: `requests` is a column of `model_calls` from wave 1 (R-26 conditions 2 and 3); `totalNanoAiu` stays in the sample's provenance until the wave-3 catalog row (Q6, R-15). This matches the design at revision 3.1, squash-joined to `main` at `2e9cc3b`.
+- **Reasoning:** R-26 restated condition 4 as "AIU stays in provenance" without saying that `requests` had moved; a register entry that contradicts a later one is read newest-last, but the contradiction is recorded here so no reader has to infer it.
+- **Conditions:** none new. R-26's conditions govern `requests`; R-15's govern `totalNanoAiu`.
