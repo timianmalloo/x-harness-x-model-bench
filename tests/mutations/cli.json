@@ -58,8 +58,8 @@
  {
   "name": "the report written for an ungraded run",
   "file": "src/harness_bench/cli.py",
-  "find": "    if code == OK:\n        print(f\"report: {html.write(run_dir, view, _credential_values(root, run_dir))}\")\n",
-  "replace": "    print(f\"report: {html.write(run_dir, view, _credential_values(root, run_dir))}\")\n",
+  "find": "    if code == OK:\n        # html.write's credential scan must run before a label reaches the terminal (residual 5).\n        report_path = html.write(run_dir, view, _credential_values(root, run_dir))\n        print(text, end=\"\")\n        print(f\"report: {report_path}\")\n    else:\n        print(text, end=\"\")\n",
+  "replace": "    report_path = html.write(run_dir, view, _credential_values(root, run_dir))\n    print(text, end=\"\")\n    print(f\"report: {report_path}\")\n",
   "tests": ["tests/test_cli.py::test_grade_then_report_writes_the_page"]
  },
  {
@@ -72,8 +72,15 @@
  {
   "name": "cmd_report ignores the host's and archived homes' credential values",
   "file": "src/harness_bench/cli.py",
-  "find": "print(f\"report: {html.write(run_dir, view, _credential_values(root, run_dir))}\")",
-  "replace": "print(f\"report: {html.write(run_dir, view)}\")",
+  "find": "report_path = html.write(run_dir, view, _credential_values(root, run_dir))",
+  "replace": "report_path = html.write(run_dir, view)",
   "tests": ["tests/test_cli.py::test_report_refuses_when_the_hosts_credential_value_leaks_into_the_report"]
+ },
+ {
+  "name": "cmd_report prints the table before the credential scan",
+  "file": "src/harness_bench/cli.py",
+  "find": "        report_path = html.write(run_dir, view, _credential_values(root, run_dir))\n        print(text, end=\"\")\n",
+  "replace": "        print(text, end=\"\")\n        report_path = html.write(run_dir, view, _credential_values(root, run_dir))\n",
+  "tests": ["tests/test_cli.py::test_report_does_not_print_a_label_before_the_credential_scan"]
  }
 ]
