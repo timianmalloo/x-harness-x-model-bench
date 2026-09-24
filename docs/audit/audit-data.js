@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T07:38:51Z",
+  "generated": "2026-09-24T07:51:12Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -660,6 +660,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-09-24T07:36:43Z",
       "duration_seconds": 128.0
+    },
+    {
+      "id": "al-01M396B9S7MAX6TY3J6RBMZ627",
+      "shortname": "join-t6",
+      "datetime": "2026-09-24T07:51:12Z",
+      "session": "coord-opus",
+      "prompt": "the join of track/t6-workspace-race into impl/phase1",
+      "summary": "T6: concurrent task_source/pack_checkout builds no longer fail; red 0082875; workspace.json 2/2 killed recount_seconds=128 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "merge the E2E-driven loop-back fix",
+      "done_when": "join gates green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-24T07:49:03Z",
+      "duration_seconds": 129.0
     }
   ],
   "changes": [

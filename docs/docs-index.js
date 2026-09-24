@@ -1418,6 +1418,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "5f6f1d6d3af88c81fba61ee0cb18a6cc49c6a9356fabcba9ef7a6fa9cd189f66"
     },
     {
+      "id": "findings-t6-workspace-race",
+      "path": "docs/proof/findings-T6.md",
+      "title": "Findings → tests: track T6 workspace race",
+      "type": "proof-pack",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2026-12-22",
+      "reviewSuggested": [],
+      "summary": "The first real E2E failed one cell with HB-CELL-113: two workers building the same task source or pack checkout at once collided on a Windows rename. Red 0082875 (the Coordinator re-ran it), fixed in a76e7c3, with both workspace.json mutations killed.",
+      "tags": [
+        "proof",
+        "findings",
+        "red-first",
+        "T6",
+        "workspace"
+      ],
+      "links": [
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "d6fd2b79eed4773f5d2220b5c439eca0f717c3f49801a1fdad26666c3dc81d2b"
+    },
+    {
       "id": "proof-findings-t5",
       "path": "docs/proof/findings-T5.md",
       "title": "T5 findings: N5 spike (Codex host skill discovery)",
@@ -1600,5 +1627,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "b6236b6b773a9b9a243c116362cbac71d6fbe25b77a43131da9929aed5534008"
+  "graphSha256": "78a8c39db45d265eb66add3062f8b76460e1acfc57ce0528ddc5f8cb998205e6"
 };
