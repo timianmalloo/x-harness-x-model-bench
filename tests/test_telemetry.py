@@ -56,6 +56,17 @@ def test_codex_first_user_text_skips_tagged_context():
     assert codex.read(FIX / "native/codex/ok.jsonl").first_user_text == PROMPT
 
 
+X1_PROMPT = ("Implement the function `slugify` in `slug.py` so that it does exactly what its docstring says. "
+             "Keep the function name and signature. Do not add dependencies.\n")
+
+
+def test_codex_first_user_text_skips_the_agents_md_instructions_block():  # US-10, real E2E (T8 defect 1)
+    """The pack-on cell's first user message is <recommended_plugins> + '# AGENTS.md instructions for
+    ...<INSTRUCTIONS>...</INSTRUCTIONS>' + <environment_context>: none of those is the prompt, which is
+    the next user message, verbatim."""
+    assert codex.read(FIX / "native/codex/pack-on.jsonl").first_user_text == X1_PROMPT
+
+
 def test_codex_tool_calls_are_found():
     ex = codex.read(FIX / "native/codex/ok.jsonl")
     assert len(ex.tool_calls) == 2 and all(t.tool_class == "shell" for t in ex.tool_calls)

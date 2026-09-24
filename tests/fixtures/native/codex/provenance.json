@@ -1,0 +1,13 @@
+{
+ "note": "Follows tests/fixtures/acp/provenance.json's pattern for a native record fixture, which has no README of its own.",
+ "fixtures": {
+  "pack-on.jsonl": {
+   "message": "A real Codex rollout record for a pack-on X1 cell (US-10 defect: the first user message is harness-injected context, not the prompt)",
+   "adapter": "codex-acp",
+   "harness_version": "Codex 0.156.0",
+   "captured": "2026-09-24",
+   "scrub": "Scrubbed from the archived record at C:/Projects/bench-test/repro-us10b/runs/r1/archive/d8f0a58e7e7449d5/attempt-1/home/sessions/2026/09/24/rollout-2026-09-24T00-54-38-01a0d268-cb9b-7992-9c60-b75947994970.jsonl (the Coordinator's US-10b repro, read-only). Every occurrence of the operator's home path (C:\\Users\\malla, in both backslash and forward-slash form) was replaced with C:\\Users\\operator, and the cell-specific path (C:\\Projects\\bench-test\\repro-us10b\\cells\\r1\\d8f0a58e7e7449d5, all backslash/forward-slash/escaped variants) was replaced with C:\\cells\\cell -- the same generic form tests/fixtures/native/codex/ok.jsonl already uses (git show b82d28b). No operator email or name string was present in the record. session_id, cli_version and git commit hashes are the real captured values (not identifying).",
+   "source": "T8 track (docs/coordination/coordination-phase1-finish.md loop-back); real run kept at the path above"
+  }
+ }
+}
