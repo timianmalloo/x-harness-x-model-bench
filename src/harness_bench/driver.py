@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 import queue
+import re
 import threading
 import time
 from collections.abc import Callable, Iterator
@@ -27,6 +28,7 @@ from pathlib import Path
 
 from harness_bench.errors import Cause
 from harness_bench.procs import CellProcess
+from harness_bench.telemetry import ProviderError, normalize
 
 MAX_LINE = 1 << 20
 MAX_JUNK = 20
@@ -102,7 +104,9 @@ class _Eof(Exception):
 
 
 class _AcpError(Exception):
-    pass
+    def __init__(self, error) -> None:
+        super().__init__(json.dumps(error)[:500])
+        self.error = error if isinstance(error, dict) else {}
 
 
 class _Timeout(Exception):
@@ -174,13 +178,36 @@ class _Channel:
                         self.result.last_update_seconds = time.monotonic() - self.turn_start
             elif msg.get("id") == rid:
                 if "error" in msg:
-                    raise _AcpError(json.dumps(msg["error"])[:500])
+                    raise _AcpError(msg["error"])
                 return msg.get("result") or {}
 
 
 def _auth_failure(detail: str) -> bool:
     low = detail.lower()
     return "auth" in low or "login" in low or "credential" in low
+
+
+# assume: an adapter reports a provider's HTTP status as "API Error: <status>" in the JSON-RPC error message and its
+# type as data.errorKind. Confirm: the one measured form, claude-agent-acp 0.79.0 refusing claude-opus-5-5
+# (tests/fixtures/acp/recordings/claude-code-x1-model-unsupported.jsonl). Breaks: another adapter's form is not
+# parsed, so its error stays adapter_crash with the text in detail (R-18 condition 2), never a guessed cause.
+_API_STATUS = re.compile(r"\bAPI Error: (\d{3})\b")
+
+
+def _prompt_error_cause(exc: _AcpError) -> Cause:
+    """R-23: a prompt-time error with a status or a provider type goes through the native-record classifier
+    (`normalize.classify`, one classifier for both paths); an auth failure keeps its precedence; an error with
+    neither status nor type is adapter_crash."""
+    if _auth_failure(str(exc)):
+        return Cause.blocked_auth
+    message = exc.error.get("message") if isinstance(exc.error.get("message"), str) else ""
+    data = exc.error.get("data") if isinstance(exc.error.get("data"), dict) else {}
+    found = _API_STATUS.search(message)
+    status = int(found.group(1)) if found else None
+    error_type = data.get("errorKind") if isinstance(data.get("errorKind"), str) else ""
+    if status is None and not error_type:
+        return Cause.adapter_crash
+    return normalize.classify([ProviderError(0, status, error_type, message[:300])]) or Cause.adapter_crash
 
 
 def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handshake_timeout: float,
@@ -223,7 +250,7 @@ def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handsh
     except ProtocolError as exc:
         result.cause, result.detail = Cause.protocol, exc.detail
     except _AcpError as exc:
-        result.cause, result.detail = Cause.adapter_crash, f"prompt error: {exc}"
+        result.cause, result.detail = _prompt_error_cause(exc), f"prompt error: {exc}"
     result.turn_seconds = time.monotonic() - turn_start
     return result
 
