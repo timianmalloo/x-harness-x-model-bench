@@ -49,23 +49,25 @@ class LineParser:
         self.junk = 0
         self._buf = b""
 
+    def _too_long(self) -> ProtocolError:
+        self._buf = b""  # the parser is finished; it keeps nothing
+        return ProtocolError(f"a line over {self.max_line // (1 << 20) or self.max_line} "
+                             f"{'MiB' if self.max_line >= 1 << 20 else 'bytes'} from the adapter")
+
     def feed(self, data: bytes) -> Iterator[dict]:
         self._buf += data
         while True:
             nl = self._buf.find(b"\n")
             if nl < 0:
                 if len(self._buf) > self.max_line:
-                    self._buf = b""
-                    raise ProtocolError(f"a line over {self.max_line // (1 << 20) or self.max_line} "
-                                        f"{'MiB' if self.max_line >= 1 << 20 else 'bytes'} from the adapter")
+                    raise self._too_long()
                 return
             line, self._buf = self._buf[:nl], self._buf[nl + 1:]
             if len(line) > self.max_line:
-                raise ProtocolError(f"a line over {self.max_line // (1 << 20) or self.max_line} "
-                                    f"{'MiB' if self.max_line >= 1 << 20 else 'bytes'} from the adapter")
+                raise self._too_long()
             try:
                 msg = json.loads(line.decode("utf-8"))
-            except (UnicodeDecodeError, ValueError):
+            except (UnicodeDecodeError, ValueError, RecursionError):  # nesting too deep to parse is junk, not a crash
                 msg = None
             if isinstance(msg, dict):
                 yield msg
