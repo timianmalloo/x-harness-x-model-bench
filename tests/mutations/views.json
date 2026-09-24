@@ -223,5 +223,19 @@
   "find": "                if fact == \"events\" and report.sealed:  # a pass seals its events only after grading.completed\n",
   "replace": "                if fact == \"events\":\n",
   "tests": ["tests/test_verify.py::test_an_in_progress_or_interrupted_pass_is_a_warning_never_an_error"]
+ },
+ {
+  "name": "a warning stops verify before load and the archive checks",
+  "file": "src/harness_bench/views.py",
+  "find": "    out += _sealed_record(run_dir)\n    if any(f.level == \"error\" for f in out):\n",
+  "replace": "    out += _sealed_record(run_dir)\n    if any(f.level >= \"error\" for f in out):\n",
+  "tests": ["tests/test_verify.py::test_a_warning_never_stops_the_archive_checks_and_every_edited_archive_is_reported"]
+ },
+ {
+  "name": "the first edited archive raises instead of being reported",
+  "file": "src/harness_bench/views.py",
+  "find": "            archive.verify(folder, cell_rows)\n        except BenchError as exc:\n",
+  "replace": "            archive.verify(folder, cell_rows)\n        except OSError as exc:\n",
+  "tests": ["tests/test_verify.py::test_a_warning_never_stops_the_archive_checks_and_every_edited_archive_is_reported"]
  }
 ]

@@ -150,6 +150,17 @@ def test_each_archive_attempt_is_checked_against_its_own_rows(capsys, root, tmp_
     assert _verify(capsys, tmp_path) == (0, "verify: ok\n", "")
 
 
+def test_a_warning_never_stops_the_archive_checks_and_every_edited_archive_is_reported(capsys, root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD, "b": GOOD})
+    with ledger.SegmentWriter.create(run_dir / "events", "grade-dead") as dead:  # an abandoned pass: HB-LED-004, a warning
+        dead.append({"kind": "grading.started", "grading_id": "grade-dead"})
+    for cid in ("a", "b"):
+        (run_dir / "archive" / cid / "attempt-1" / "ws" / "slug.py").write_text("tampered", encoding="utf-8")
+    code, _, err = _verify(capsys, tmp_path)
+    assert code == 5 and "HB-LED-004: events/grade-dead" in err
+    assert "HB-LED-005: a: " in err and "HB-LED-005: b: " in err  # each a finding, not the first one raised
+
+
 @pytest.mark.parametrize("forged", ["0" * 64, "f" * 64])
 def test_an_archive_hash_mismatch_is_found_whichever_way_it_sorts(capsys, root, tmp_path, monkeypatch, forged):
     make_run(root, tmp_path, {"a": GOOD, "b": GOOD})
