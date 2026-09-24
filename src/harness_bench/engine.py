@@ -305,46 +305,23 @@ class Engine:
             self.stopped = Cause.build_changed.code
             self._archive(cell, cell_dir, launcher)
             return
-        launcher.seed(home, cell["model"])
         traceparent = f"00-{self.trace_id}-{span_id(self.trace_id, cid, 'cell')}-01"
-        argv, env = launcher.argv_env(cell, home, traceparent)
+        argv, env = launcher.argv_env(cell, home, traceparent)  # before seed: a failure here leaves no credential copy
         try:
-            cp = procs.spawn(argv, cwd=str(ws), env=env, stderr=subprocess.PIPE)
-        except procs.SpawnError as exc:
-            launcher.clean(home)
-            self._outcome(cell, "failed", Cause.spawn, detail=str(exc), win32_error=exc.win32_error or 0)
+            launcher.seed(home, cell["model"])
+            ended = self._attempt(self.active[cid], cell, launcher, build, argv, env, ws, home)
+        finally:
+            launcher.clean(home)  # every end: a spawn failure, a kill, a ledger failure, a bug (T-CELL-credclean)
+        if isinstance(ended, procs.SpawnError):
+            self._outcome(cell, "failed", Cause.spawn, detail=str(ended), win32_error=ended.win32_error or 0)
             self._archive(cell, cell_dir, launcher)
             return
-        a = self.active[cid]
-        a.proc = cp
-        tail = bytearray()
-        drain = threading.Thread(target=_keep_tail, args=(cp.proc.stderr, tail, self.params["stderr_tail_bytes"]), daemon=True)
-        drain.start()
-        self.record("events", {"kind": "attempt.process_started", "cell_id": cid, "attempt": 1, "pid": cp.pid,
-                               "created_at": host.creation_time(cp.pid), "harness": launcher.harness,
-                               "build_version": build.get("version"), "build_sha256": build.get("sha256"),
-                               "credential_kind": "subscription login (copied)", "network_mode": "unrestricted"})
-
-        def barrier(session_id: str | None) -> None:
-            self.record("events", {"kind": "attempt.session_opened", "cell_id": cid, "session_id": session_id or ""})
-            self.record("events", {"kind": "cell.prompt_sent", "cell_id": cid})
-
-        result = driver.run_turn(cp, cwd=ws, prompt=self.plan["tasks"][cell["task"]]["prompt"], mode=launcher.mode,
-                                 handshake_timeout=self.params["handshake_timeout"], before_send=barrier)
-        with a.lock:
-            a.ended = True
-        exit_status, confirmed = self._end_process(cp)
-        drain.join(timeout=5)
-        self.record("events", {"kind": "attempt.process_ended", "cell_id": cid, "exit_status": exit_status if exit_status is not None else -1,
-                               "confirmed": int(confirmed), "peak_memory": cp.job.peak_memory(), "cpu_ms": cp.job.cpu_time_ms()})
-        with a.lock:
-            cp.close()
-        cause = self._classify(result, launcher, home, exit_status, bytes(tail), a.kill_reason)
+        result, exit_status, tail = ended
+        cause = self._classify(result, launcher, home, exit_status, tail, self.active[cid].kill_reason)
         for u in normalize.turn_usage({"_meta": (result.usage or {}).get("meta")}):
             self.record("turn_usage", {"kind": "turn_usage", "run_id": self.plan["run_id"], "cell_id": cid, "attempt": 1,
                                        "model": u.model, "uncached_input": u.uncached_input, "cache_read": u.cache_read,
                                        "cache_write": u.cache_write, "output": u.output, "reasoning": u.reasoning})
-        launcher.clean(home)
         if tail:
             (cell_dir / "adapter-stderr-tail.log").write_bytes(bytes(tail))
         outcome = "completed" if cause is None else ("timed_out" if cause is Cause.timed_out else "failed")
@@ -353,6 +330,48 @@ class Engine:
                       exit_status=exit_status if exit_status is not None else -1,
                       handshake_ms=int(result.handshake_seconds * 1000), turn_ms=int(result.turn_seconds * 1000))
         self._archive(cell, cell_dir, launcher)
+
+    def _attempt(self, a: _Active, cell: dict, launcher: Launcher, build: dict, argv: list[str], env: dict, ws: Path,
+                 home: Path) -> procs.SpawnError | tuple[driver.TurnResult, int | None, bytes]:
+        """Spawn, the turn, then always: end the process, close the job, clean the credential copy, and only then
+        record `attempt.process_ended` (a record can fail or wait; nothing live or secret is left behind it)."""
+        cid = cell["cell_id"]
+        try:
+            cp = procs.spawn(argv, cwd=str(ws), env=env, stderr=subprocess.PIPE)
+        except procs.SpawnError as exc:
+            return exc
+        with a.lock:
+            a.proc = cp
+        tail = bytearray()
+        drain = threading.Thread(target=_keep_tail, args=(cp.proc.stderr, tail, self.params["stderr_tail_bytes"]), daemon=True)
+        drain.start()
+
+        def barrier(session_id: str | None) -> None:
+            self.record("events", {"kind": "attempt.session_opened", "cell_id": cid, "session_id": session_id or ""})
+            self.record("events", {"kind": "cell.prompt_sent", "cell_id": cid})
+
+        exit_status: int | None = None
+        try:
+            self.record("events", {"kind": "attempt.process_started", "cell_id": cid, "attempt": 1, "pid": cp.pid,
+                                   "created_at": host.creation_time(cp.pid), "harness": launcher.harness,
+                                   "build_version": build.get("version"), "build_sha256": build.get("sha256"),
+                                   "credential_kind": "subscription login (copied)", "network_mode": "unrestricted"})
+            result = driver.run_turn(cp, cwd=ws, prompt=self.plan["tasks"][cell["task"]]["prompt"], mode=launcher.mode,
+                                     handshake_timeout=self.params["handshake_timeout"], before_send=barrier)
+        finally:
+            with a.lock:
+                a.ended = True
+            try:
+                exit_status, confirmed = self._end_process(cp)
+                drain.join(timeout=5)
+                ended = {"kind": "attempt.process_ended", "cell_id": cid, "exit_status": -1 if exit_status is None else exit_status,
+                         "confirmed": int(confirmed), "peak_memory": cp.job.peak_memory(), "cpu_ms": cp.job.cpu_time_ms()}
+            finally:
+                with a.lock:
+                    cp.close()
+                launcher.clean(home)
+            self.record("events", ended)
+        return result, exit_status, bytes(tail)
 
     def _end_process(self, cp: procs.CellProcess) -> tuple[int | None, bool]:
         """Graceful first (stdin closed, the adapter flushes and exits), then terminate and confirm."""

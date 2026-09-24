@@ -93,7 +93,7 @@ def _engine_run(p, config, limit=RUN_LIMIT):
     def target():
         try:
             box["summary"] = engine.Engine(p, config).run()
-        except BaseException as exc:  # handed back to the test thread below
+        except BenchError as exc:  # handed back to the test thread below; anything else fails the test on "summary"
             box["error"] = exc
 
     t = threading.Thread(target=target, daemon=True, name="engine-under-test")
