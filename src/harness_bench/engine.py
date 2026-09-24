@@ -91,7 +91,8 @@ class _Active:
     proc: procs.CellProcess | None = None
     prompt_mono: float | None = None
     kill_reason: str | None = None
-    ended: bool = False
+    ended: bool = False  # the turn is over: the worker ends the process itself; the engine never kills it now
+    lock: threading.Lock = field(default_factory=threading.Lock)  # guards kill_reason/ended and terminate vs close
 
 
 def read_events(run_dir: Path) -> list[dict]:
@@ -226,23 +227,29 @@ class Engine:
         self.active[cell["cell_id"]] = a
         a.thread.start()
 
+    @staticmethod
+    def _kill(a: _Active, reason: str | None) -> None:
+        """EngineKill: terminate a live turn's job; the worker's turn ends at EOF, then it confirms and records.
+        A turn that has already ended is never killed (nor classified by the kill): its worker is ending it."""
+        with a.lock:
+            if a.proc is None or a.ended or a.kill_reason:
+                return
+            a.kill_reason = reason
+            a.proc.job.terminate()
+
     def _check_budgets(self) -> None:
         now = time.monotonic()
         for a in self.active.values():
-            if a.proc and a.prompt_mono and not a.kill_reason and now - a.prompt_mono > a.cell["budget_seconds"]:
-                a.kill_reason = "timeout"
-                a.proc.job.terminate()  # EngineKill: the worker's turn ends at EOF; it confirms and records
+            if a.prompt_mono and now - a.prompt_mono > a.cell["budget_seconds"]:
+                self._kill(a, "timeout")
 
     def _kill_all(self, reason: str) -> None:
         for a in self.active.values():
-            if a.proc and not a.kill_reason:
-                a.kill_reason = reason
-                a.proc.job.terminate()
+            self._kill(a, reason)
 
     def _abort_running(self) -> None:
         for a in self.active.values():
-            if a.proc:
-                a.proc.job.terminate()
+            self._kill(a, "aborted")
         for a in list(self.active.values()):
             a.thread.join(timeout=60)
 
@@ -324,12 +331,14 @@ class Engine:
 
         result = driver.run_turn(cp, cwd=ws, prompt=self.plan["tasks"][cell["task"]]["prompt"], mode=launcher.mode,
                                  handshake_timeout=self.params["handshake_timeout"], before_send=barrier)
+        with a.lock:
+            a.ended = True
         exit_status, confirmed = self._end_process(cp)
         drain.join(timeout=5)
         self.record("events", {"kind": "attempt.process_ended", "cell_id": cid, "exit_status": exit_status if exit_status is not None else -1,
                                "confirmed": int(confirmed), "peak_memory": cp.job.peak_memory(), "cpu_ms": cp.job.cpu_time_ms()})
-        cp.close()
-        a.ended = True
+        with a.lock:
+            cp.close()
         cause = self._classify(result, launcher, home, exit_status, bytes(tail), a.kill_reason)
         for u in normalize.turn_usage({"_meta": (result.usage or {}).get("meta")}):
             self.record("turn_usage", {"kind": "turn_usage", "run_id": self.plan["run_id"], "cell_id": cid, "attempt": 1,
