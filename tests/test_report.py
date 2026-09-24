@@ -295,10 +295,11 @@ def test_the_leaderboard_and_cells_table_flag_only_the_codex_rows():
     board = re.search(r'<section id="leaderboard".*?</section>', doc, re.DOTALL).group(0)
     runs = re.search(r'<section id="runs".*?</section>', doc, re.DOTALL).group(0)
     for section in (board, runs):
-        codex_line = next(line for line in section.splitlines() if "codex-sol" in line)
-        cc_line = next(line for line in section.splitlines() if "cc-sonnet" in line)
-        assert N5_FLAG in codex_line
-        assert N5_FLAG not in cc_line
+        rows = re.findall(r"<tr>.*?</tr>", section, re.DOTALL)
+        codex_row = next(r for r in rows if "codex-sol" in r)
+        cc_row = next(r for r in rows if "cc-sonnet" in r)
+        assert N5_FLAG in codex_row
+        assert N5_FLAG not in cc_row
 
 
 def test_the_cli_table_prints_the_flag_as_ascii_after_the_table_when_a_codex_cell_is_present():
