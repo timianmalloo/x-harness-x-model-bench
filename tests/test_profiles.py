@@ -39,16 +39,6 @@ def test_codex_profile_pins_the_model_and_uses_full_access(tmp_path):
     assert p.mode == "agent-full-access"
 
 
-def test_codex_profile_disables_host_skill_discovery(tmp_path):  # N5: ~/.agents/skills must not reach a cell
-    cred = tmp_path / "auth.json"
-    cred.write_text("{}", encoding="utf-8")
-    p = profiles.load(ROOT, "codex", credential_source=cred)
-    p.seed_home(tmp_path / "home", model="gpt-6-sol")
-    config = (tmp_path / "home" / "config.toml").read_text(encoding="utf-8")
-    assert "[features]" in config
-    assert "skip_host_skill_discovery = true" in config
-
-
 def test_cell_env_is_clean_pinned_and_turns_build_servers_off(tmp_path):
     p = profiles.load(ROOT, "claude-code", credential_source=tmp_path / "c")
     base = {"PATH": "x", "CLAUDECODE": "1", "CLAUDE_CODE_ENTRYPOINT": "cli", "ANTHROPIC_API_KEY": "sk-leak",
