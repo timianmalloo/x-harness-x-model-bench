@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from harness_bench import engine, ledger, lifecycle, plan
+from harness_bench import engine, host, ledger, lifecycle, plan
 from harness_bench.errors import BenchError
 from harness_bench.telemetry import claude_code
 
@@ -279,6 +279,61 @@ def test_credentials_are_gone_after_every_cell_even_when_the_workspace_is_kept(b
     assert sum(1 for e in events if e["kind"] == "cell.workspace_kept") == 2
     assert list(config.cells_root.rglob("home")) and not list(config.cells_root.rglob(".credentials.json"))
     assert not list((config.run_dir / "archive").rglob(".credentials.json"))
+
+
+def test_credentials_are_gone_after_a_spawn_failure(base):  # T-CELL-credclean, the spawn-failure variant
+    p = _plan(n_cells=1)
+    _, events, config = _run(base, p, FakeLauncher({}, missing_exe=True))
+    assert _outcomes(events)[p["cells"][0]["cell_id"]]["cause"] == "spawn"
+    assert not list(config.cells_root.rglob(".credentials.json"))
+
+
+def test_a_failing_argv_env_leaves_no_credential_copy(base):  # T1-2: argv_env runs before seed
+    class NoArgv(FakeLauncher):
+        def argv_env(self, cell, home, traceparent):
+            raise RuntimeError("profile cannot build argv")
+
+    p = _plan(n_cells=1)
+    _, events, config = _run(base, p, NoArgv({}))
+    assert _outcomes(events)[p["cells"][0]["cell_id"]]["cause"] == "unclassified"
+    assert not list(config.cells_root.rglob(".credentials.json"))
+
+
+def test_a_failure_after_spawn_ends_the_process_and_cleans_the_credentials(base, monkeypatch):  # T1-2
+    from harness_bench import driver
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("driver bug")
+
+    monkeypatch.setattr(driver, "run_turn", boom)
+    p = _plan(n_cells=1)
+    _, events, config = _run(base, p, FakeLauncher({}))  # the replay: process_ended (confirmed) before the outcome
+    out = _outcomes(events)[p["cells"][0]["cell_id"]]
+    assert out["cause"] == "unclassified"
+    ended = next(e for e in events if e["kind"] == "attempt.process_ended")
+    assert ended["confirmed"] == 1 and ended["seq"] < out["seq"]
+    started = next(e for e in events if e["kind"] == "attempt.process_started")
+    assert not host.process_alive(started["pid"], started["created_at"])
+    assert not list(config.cells_root.rglob(".credentials.json"))
+
+
+def test_a_ledger_failure_after_spawn_still_cleans_the_credentials(base, monkeypatch):  # T1-2
+    p = _plan(n_cells=1)
+    real = ledger.SegmentWriter.append
+
+    def failing(self, record):
+        if record.get("kind") == "cell.prompt_sent":
+            raise OSError("disk full")
+        return real(self, record)
+
+    monkeypatch.setattr(ledger.SegmentWriter, "append", failing)
+    config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
+                                 launchers={"fake": FakeLauncher({})}, build_workspace=_build_workspace, grade=None, end_grace=3)
+    assert _engine_run(p, config).exit_code == 3
+    started = next(e for e in ledger.read_segment(next((config.run_dir / "events").glob("*.jsonl")))
+                   if e["kind"] == "attempt.process_started")
+    assert not host.process_alive(started["pid"], started["created_at"])
+    assert not list(config.cells_root.rglob(".credentials.json"))
 
 
 def test_disk_floor_stops_launching_before_any_cell(base):
