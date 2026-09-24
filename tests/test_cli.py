@@ -158,3 +158,19 @@ def test_plan_confirm_freezes_builds_pack_and_prompt(capsys, root, tmp_path):
     assert "envelope" in out and "4 cells" in out
     assert _bench(capsys, root, tmp_path, "--tools-dir", str(tools_dir), "plan", "--matrix", str(root / "bench" / "matrix.phase1.yaml"),
                   "--run-id", "p1", "--pack-source", str(tmp_path / "ai-forward"), "--confirm")[0] == 1  # frozen
+
+
+def test_plan_json_ids_equal_the_frozen_plans_cell_ids(capsys, root, tmp_path):  # T4-2: two cell-id definitions (Simplifier)
+    for name in ("bom.yaml", "matrix.phase1.yaml"):
+        (root / "bench" / name).write_bytes((cli.config.repo_root() / "bench" / name).read_bytes())
+    _pack_repo(tmp_path / "ai-forward")
+    tools_dir = _fake_tree(tmp_path / "tools")
+    matrix_path = str(root / "bench" / "matrix.phase1.yaml")
+    code, out, err = _bench(capsys, root, tmp_path, "--tools-dir", str(tools_dir), "plan", "--matrix", matrix_path, "--json")
+    assert code == 0, err
+    json_ids = {c["id"] for c in json.loads(out)}
+    code, out, err = _bench(capsys, root, tmp_path, "--tools-dir", str(tools_dir), "plan", "--matrix", matrix_path,
+                            "--run-id", "p2", "--pack-source", str(tmp_path / "ai-forward"), "--confirm")
+    assert code == 0, err
+    frozen = json.loads((tmp_path / "runs" / "p2" / "plan.json").read_text(encoding="utf-8"))
+    assert json_ids == {c["cell_id"] for c in frozen["cells"]}
