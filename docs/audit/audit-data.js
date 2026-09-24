@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T10:38:20Z",
+  "generated": "2026-09-24T13:11:56Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -804,6 +804,35 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-09-24T10:35:56Z",
       "duration_seconds": 144.0
+    },
+    {
+      "id": "al-01M39RPJPEPHKBXTGRTWEDQJV1",
+      "shortname": "join-t12",
+      "datetime": "2026-09-24T13:11:56Z",
+      "session": "coord-opus",
+      "prompt": "the join of track/t12-mutation-rerun into impl/phase1",
+      "summary": "T12: 2699 mutants bytecode off, 0 open; 29 recorded kills were not kills (now killed by test-only a0c4f52), 5 equivalent; engine L394 equivalence was wrong; cosmic-ray already disables bytecode but counts any nonzero/timeout as KILLED; record transcription errors corrected recount_seconds=144 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/proof/findings-T12.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Sweep TOOL-A across every cosmic-ray record",
+      "done_when": "join green; 0 open; three overstated kills re-verified with the named-test checker",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-24T13:09:31Z",
+      "duration_seconds": 145.0
     }
   ],
   "changes": [

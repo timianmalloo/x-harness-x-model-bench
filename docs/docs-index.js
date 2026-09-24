@@ -713,7 +713,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2f70a00611b3a90f47ac7ba5db4bee70ac4e1e54534eae2b8094626212267a04"
+      "sourceSha256": "f74ad8837f216a21d54753e0214204905c81d8a759357bc89fb10d605d134824"
     },
     {
       "id": "mutation-record-t1",
@@ -745,7 +745,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "1151691b517941ca371e1bb70662035fb337592bd141e974ac53988f8e3ac506"
+      "sourceSha256": "8b85b7221b79bec551a0fc3c8a1ffdba03e1c7770d98fc2f16176a5b8971c585"
     },
     {
       "id": "mutation-record-t2",
@@ -773,7 +773,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "92fcde27552e0e7c042d1f2bdbca0308b988a34a37294e864751fd5d74f363b6"
+      "sourceSha256": "87b462c6b4079b228aef2002e899ba13843cc082b191992f740ac934699ab352"
     },
     {
       "id": "note-20260923-a6-start-benchmark",
@@ -1071,7 +1071,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "7759da7501ca473a710bbd7a35c867635a050574c0b2af3544a7927886487fbb"
+      "sourceSha256": "fa9b9d2251f48f21bacc7ffd2bb4245e2627612729153af35811cbf52a90ee47"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -1437,6 +1437,42 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "78e212cce869f500958b32917b024ffab97230043a22fc5615f6facbc9cfe5ee"
+    },
+    {
+      "id": "findings-t12-mutation-rerun",
+      "path": "docs/proof/findings-T12.md",
+      "title": "Findings → tests: track T12 mutation-rerun",
+      "type": "proof-pack",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2026-12-22",
+      "reviewSuggested": [],
+      "summary": "Every cosmic-ray mutant (2699) re-run with bytecode off. 0 open. The records overstated 29 kills in ledger, views and grade (now killed by new tests in a0c4f52) and argued one engine mutant equivalent on a false argument. Stale bytecode was not the cause, because cosmic-ray already disables it. The likely causes are cosmic-ray counting any non-zero exit or timeout as a kill, and hand-transcribed counts.",
+      "tags": [
+        "proof",
+        "findings",
+        "mutation",
+        "cosmic-ray",
+        "T12",
+        "records"
+      ],
+      "links": [
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        },
+        {
+          "to": "mutation-record-t1",
+          "rel": "relates-to"
+        },
+        {
+          "to": "mutation-record-t2",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b709fb2ac5b32bd1237f3c30b3b91e4ae849e0c415d3282a713d8af37c432e5e"
     },
     {
       "id": "findings-t2-ledger-verify",
@@ -1818,5 +1854,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "4ea924cd40dd7b67228132ee62b0a00239d4bdd1246809f758b51c1461371fb6"
+  "graphSha256": "b14d215cc08808d0489d48ca34a89ad42a54d6941fd4e6f0fb297433d7d363ee"
 };
