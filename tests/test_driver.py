@@ -162,17 +162,71 @@ def test_a_killed_turn_returns_promptly_with_eof(tmp_path):
 ACP_FIX = Path(__file__).parent / "fixtures" / "acp"
 REPLAY = ACP_FIX / "replay_agent.py"
 RECORDED = sorted(p for p in ACP_FIX.glob("*.json") if p.name != "provenance.json")
+RECORDINGS = sorted((ACP_FIX / "recordings").glob("*.jsonl"))  # full ACP transcripts (tools/acp_record.py)
 PROVENANCE_KEYS = ("adapter", "adapter_version", "harness_version", "captured", "scrub", "source")
+X1_PROMPT = (Path(__file__).parents[1] / "tasks" / "X1" / "prompt.md").read_bytes().replace(b"\r\n", b"\n").decode("utf-8")
 
 
-def _replay(tmp_path, **cfg):
-    env = dict(os.environ, REPLAY_ACP=json.dumps(cfg))
+def _records(recording: Path) -> list[dict]:
+    return [json.loads(line) for line in recording.read_text(encoding="utf-8").splitlines()]
+
+
+def _stream(records: list[dict], direction: str) -> bytes:
+    """The bytes one direction carried (the acp-recording/1 line records, rebuilt)."""
+    import base64
+    return b"".join((r["text"].encode("utf-8") if "text" in r else base64.b64decode(r["b64"])) + (b"\n" if r["nl"] else b"")
+                    for r in records if r["kind"] == "line" and r["dir"] == direction)
+
+
+def _derive(recording: Path, tmp_path: Path, edit) -> Path:
+    """A derived copy: `edit(msg)` returns the agent message to keep (changed or not), a list to insert, or None to drop."""
+    out = []
+    for r in _records(recording):
+        if r["kind"] == "line" and r["dir"] == "to_client":
+            kept = edit(json.loads(r["text"]))
+            for msg in kept if isinstance(kept, list) else [] if kept is None else [kept]:
+                out.append({**r, "text": json.dumps(msg, ensure_ascii=False, separators=(",", ":"))})
+        else:
+            out.append(r)
+    path = tmp_path / f"derived-{recording.name}"
+    path.write_text("".join(json.dumps(r) + "\n" for r in out), encoding="utf-8")
+    return path
+
+
+def _replay(tmp_path, recording: Path, mode: str | None = None):
+    """The driver against a verbatim replay of a recording, both pipes tapped: (TurnResult, read, written)."""
+    env = dict(os.environ, REPLAY_ACP=json.dumps({"recording": str(recording)}))
     cell = procs.spawn([sys.executable, str(REPLAY)], cwd=str(tmp_path), env=env)
+    cell.proc.stdout, cell.proc.stdin = _Tap(cell.proc.stdout), _Tap(cell.proc.stdin)
     try:
-        return driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=None, handshake_timeout=10, before_send=lambda sid: None)
+        result = driver.run_turn(cell, cwd=tmp_path, prompt=X1_PROMPT, mode=mode, handshake_timeout=10,
+                                 before_send=lambda sid: None)
     finally:
         cell.terminate_and_confirm(timeout=10)
         cell.close()
+    return result, bytes(cell.proc.stdout.data), bytes(cell.proc.stdin.data)
+
+
+def _meta(recording: Path) -> dict:
+    return json.loads(recording.with_suffix(".meta.json").read_text(encoding="utf-8"))
+
+
+def _prompt_reply(records: list[dict]) -> dict:
+    return [m for m in map(json.loads, _stream(records, "to_client").splitlines()) if "id" in m and "method" not in m][-1]
+
+
+def _assert_replays(tmp_path, recording: Path) -> None:
+    """D5: the driver reads every recorded agent byte, writes what it wrote live, and returns the live TurnResult."""
+    meta, records = _meta(recording), _records(recording)
+    result, read, written = _replay(tmp_path, recording, meta["mode"])
+    assert read == _stream(records, "to_client")  # every agent line, verbatim, nothing synthesised
+    cwd = json.dumps(str(tmp_path))[1:-1].encode()
+    assert written == _stream(records, "to_agent").replace(b"<CWD>", cwd)  # the driver still sends the live bytes
+    live = meta["result"]
+    assert (result.stop_reason, result.cause.code if result.cause else None, result.session_id, result.updates,
+            result.permission_requests, result.prompt_sent, result.usage is not None) == (
+        live["stop_reason"], live["cause"], live["session_id"], live["updates"], live["permission_requests"],
+        live["prompt_sent"], live["usage_reported"])
 
 
 def test_every_recorded_acp_fixture_states_its_provenance():  # D5: adapter version, capture date, scrub
@@ -183,11 +237,17 @@ def test_every_recorded_acp_fixture_states_its_provenance():  # D5: adapter vers
 
 
 @pytestmark_native
-@pytest.mark.parametrize("fixture", RECORDED, ids=[p.stem for p in RECORDED])
-def test_a_recorded_prompt_result_replays_through_the_driver(tmp_path, fixture):  # D5
-    recorded = json.loads(fixture.read_text(encoding="utf-8"))
-    result = _replay(tmp_path, prompt_result=str(fixture))
-    assert result.cause is None and result.stop_reason == recorded["stopReason"] and result.prompt_sent
+@pytest.mark.parametrize("recording", RECORDINGS, ids=[p.stem for p in RECORDINGS])
+def test_a_recorded_transcript_replays_verbatim_through_the_driver(tmp_path, recording):  # D5
+    _assert_replays(tmp_path, recording)
+
+
+@pytestmark_native
+@pytest.mark.parametrize("name", ["claude-code-x1.jsonl", "codex-x1.jsonl"])
+def test_the_recorded_usage_reaches_the_engine_unchanged(tmp_path, name):  # D5, the usage half
+    recording = ACP_FIX / "recordings" / name
+    recorded = _prompt_reply(_records(recording))["result"]
+    result, _, _ = _replay(tmp_path, recording, _meta(recording)["mode"])
     assert result.usage == {"usage": recorded["usage"], "meta": recorded["_meta"]}
     # the engine's reading of the driver's result is the reading of the recorded bytes
     assert normalize.turn_usage({"_meta": result.usage["meta"]}) == normalize.turn_usage(recorded) != []
@@ -195,8 +255,15 @@ def test_a_recorded_prompt_result_replays_through_the_driver(tmp_path, fixture):
 
 @pytestmark_native
 def test_meta_is_kept_when_the_adapter_reports_no_usage(tmp_path):  # derived variant: the codex result without `usage`
-    recorded = json.loads((ACP_FIX / "codex-prompt-response.json").read_text(encoding="utf-8"))
-    result = _replay(tmp_path, prompt_result=str(ACP_FIX / "codex-prompt-response.json"), drop=["usage"])
+    recording = ACP_FIX / "recordings" / "codex-x1.jsonl"
+    recorded = _prompt_reply(_records(recording))["result"]
+
+    def drop_usage(msg):
+        if msg.get("result", {}).get("stopReason"):
+            msg["result"].pop("usage")
+        return msg
+
+    result, _, _ = _replay(tmp_path, _derive(recording, tmp_path, drop_usage), "agent-full-access")
     assert result.usage == {"usage": None, "meta": recorded["_meta"]}  # the TurnResult.usage shape is unchanged
 
 
@@ -308,8 +375,12 @@ def test_every_message_type_the_fake_emits_is_paired_and_every_pairing_is_emitte
 def test_the_fidelity_check_fails_on_a_seeded_unpaired_type(tmp_path):  # D7 negative control, through a real run
     seed = {"jsonrpc": "2.0", "method": "session/update",
             "params": {"sessionId": "replay-session", "update": {"sessionUpdate": "plan", "entries": []}}}
-    env = dict(os.environ, REPLAY_ACP=json.dumps({"prompt_result": str(ACP_FIX / "codex-prompt-response.json"),
-                                                  "before_result": [seed]}))
+
+    def seed_before_result(msg):
+        return [seed, msg] if msg.get("result", {}).get("stopReason") else msg
+
+    recording = _derive(ACP_FIX / "recordings" / "claude-code-x1.jsonl", tmp_path, seed_before_result)
+    env = dict(os.environ, REPLAY_ACP=json.dumps({"recording": str(recording)}))
     emitted = _tapped_turn(tmp_path, [sys.executable, str(REPLAY)], env)
     assert "session/update.plan" in emitted
     with pytest.raises(AssertionError, match=r"session/update\.plan"):
