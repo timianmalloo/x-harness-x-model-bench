@@ -54,5 +54,33 @@
   "find": " and value >= 0, f\"{what} must be a non-negative integer\")",
   "replace": ", f\"{what} must be a non-negative integer\")",
   "tests": ["tests/test_status.py::test_the_json_form_round_trips_and_is_strict"]
+ },
+ {
+  "name": "phase never advances past starting",
+  "file": "src/harness_bench/status.py",
+  "find": "phase = \"running\" if started else \"starting\"",
+  "replace": "phase = \"starting\"",
+  "tests": ["tests/test_status.py::test_phase_is_running_once_a_cell_process_has_started"]
+ },
+ {
+  "name": "stop_code ignores run.launch_stopped",
+  "file": "src/harness_bench/status.py",
+  "find": "stop_code = stopped[-1][\"code\"] if stopped else None",
+  "replace": "stop_code = None",
+  "tests": ["tests/test_status.py::test_stop_code_is_set_only_when_run_launch_stopped_was_recorded"]
+ },
+ {
+  "name": "an unknown phase value accepted",
+  "file": "src/harness_bench/status.py",
+  "find": "_require(data[\"phase\"] in PHASE, \"phase is not a known value\")",
+  "replace": "pass",
+  "tests": ["tests/test_status.py::test_the_json_form_round_trips_and_is_strict"]
+ },
+ {
+  "name": "a malformed stop_code accepted",
+  "file": "src/harness_bench/status.py",
+  "find": "bool(STOP_CODE.fullmatch(data[\"stop_code\"]))",
+  "replace": "True",
+  "tests": ["tests/test_status.py::test_the_json_form_round_trips_and_is_strict"]
  }
 ]
