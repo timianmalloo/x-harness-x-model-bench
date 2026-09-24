@@ -351,7 +351,7 @@ class Engine:
         argv, env = launcher.argv_env(cell, home, traceparent)  # before seed: a failure here leaves no credential copy
         try:
             launcher.seed(home, cell["model"])
-            ended = self._attempt(self.active[cid], cell, launcher, build, argv, env, ws, home)
+            ended = self._attempt(self.active[cid], cell, launcher, build, argv, env, ws)
         finally:
             launcher.clean(home)  # every end: a spawn failure, a kill, a ledger failure, a bug (T-CELL-credclean)
         if isinstance(ended, procs.SpawnError):
@@ -379,10 +379,10 @@ class Engine:
                 log.warning("adapter stderr tail not kept", extra={"cell_id": cid, "error_code": _code(exc), "detail": str(exc)})
         self._archive(cell, cell_dir, launcher)
 
-    def _attempt(self, a: _Active, cell: dict, launcher: Launcher, build: dict, argv: list[str], env: dict, ws: Path,
-                 home: Path) -> procs.SpawnError | tuple[driver.TurnResult, int | None, bytes]:
-        """Spawn, the turn, then always: end the process, close the job, clean the credential copy, and only then
-        record `attempt.process_ended` (a record can fail or wait; nothing live or secret is left behind it)."""
+    def _attempt(self, a: _Active, cell: dict, launcher: Launcher, build: dict, argv: list[str], env: dict,
+                 ws: Path) -> procs.SpawnError | tuple[driver.TurnResult, int | None, bytes]:
+        """Spawn, the turn, then always: end the process and close the job, and only then record
+        `attempt.process_ended` (a record can fail; nothing live is left behind it). The caller cleans the home."""
         cid = cell["cell_id"]
         try:
             cp = procs.spawn(argv, cwd=str(ws), env=env, stderr=subprocess.PIPE)
@@ -419,7 +419,6 @@ class Engine:
             finally:
                 with a.lock:
                     cp.close()
-                launcher.clean(home)
             if started:  # an unrecorded start has no recorded end
                 self.record("events", ended)
         return result, exit_status, bytes(tail)
