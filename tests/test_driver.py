@@ -193,6 +193,13 @@ def test_a_recorded_prompt_result_replays_through_the_driver(tmp_path, fixture):
     assert normalize.turn_usage({"_meta": result.usage["meta"]}) == normalize.turn_usage(recorded) != []
 
 
+@pytestmark_native
+def test_meta_is_kept_when_the_adapter_reports_no_usage(tmp_path):  # derived variant: the codex result without `usage`
+    recorded = json.loads((ACP_FIX / "codex-prompt-response.json").read_text(encoding="utf-8"))
+    result = _replay(tmp_path, prompt_result=str(ACP_FIX / "codex-prompt-response.json"), drop=["usage"])
+    assert result.usage == {"usage": None, "meta": recorded["_meta"]}  # the TurnResult.usage shape is unchanged
+
+
 # D7: every message type the fake emits is paired with a real transcript or the ACP schema ------
 
 PAIRING = {
