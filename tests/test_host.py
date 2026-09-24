@@ -24,12 +24,7 @@ def test_a_failed_query_unbiased_interrupt_time_is_not_a_zero_reading(monkeypatc
     assert raised is not None and raised.winerror == 6, reading
 
 
-def test_a_failed_global_memory_status_ex_is_not_a_zero_reading(monkeypatch):
+def test_a_failed_global_memory_status_ex_is_not_recorded(monkeypatch):
     monkeypatch.setattr(host._k32, "GlobalMemoryStatusEx", _fail)
     monkeypatch.setattr(ctypes.windll.kernel32, "GlobalMemoryStatusEx", _fail)
-    raised = None
-    try:
-        reading = host.available_memory()
-    except OSError as exc:
-        raised = exc
-    assert raised is not None and raised.winerror == 6, reading
+    assert host.available_memory() is None
