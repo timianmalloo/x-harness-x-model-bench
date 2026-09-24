@@ -3,9 +3,11 @@
 - Liveness comes from the run lock: `alive` (held, heartbeat within the plan's `lock_staleness`),
   `stalled` (held, heartbeat stale), `not running` (free). Completion: `complete` once `run.completed` is
   recorded, `in progress` while the lock is held, otherwise `incomplete`.
-- A running cell is one with `attempt.process_started` and no `attempt.process_ended`. One past its
-  budget is being killed (the engine kills at the budget and records the end only once the kill is
-  confirmed), shown as `killing (unconfirmed, <s> s)`.
+- A running cell is one with `attempt.process_started` and no `attempt.process_ended`. Its budget
+  clock starts at `cell.prompt_sent` (matching the engine's own kill check), so a cell still
+  handshaking shows `elapsed_s` 0 and is never `killing`. One past its budget is being killed (the
+  engine kills at the budget and records the end only once the kill is confirmed), shown as
+  `killing (unconfirmed, <s> s)`.
 - `bench-status/1` is a strict type: `parse` rejects unknown or missing fields, wrong types, unknown
   enum values and malformed ids. It carries enums, ids, counts and times only: no text from a cell.
 - Phase 1 has no decision requests, so `decisions` is always empty.
@@ -20,6 +22,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from harness_bench import oslock, views
+from harness_bench.config import CELL_ID, LABEL
 from harness_bench.errors import BenchError
 from harness_bench.plan import DEFAULT_PARAMETERS
 
@@ -30,9 +33,13 @@ OUTCOMES = ("completed", "timed_out", "failed", "no outcome", "not started")
 VALIDITY = ("valid", "invalid (infrastructure)", "invalid (benchmark)", "invalid (no model call)", "invalid (model mismatch)",
             "not graded")
 RUN_ID = r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}"
-CELL_ID = re.compile(r"[0-9a-z]{1,16}")
-LABEL = re.compile(r"[A-Za-z0-9.\-]{1,80}")
+# CELL_ID, LABEL: the ids and labels plan.py freezes (config.py owns the one definition; plan.py
+# validates every cell against it at plan time, so status never emits what its own parser rejects).
+# PHASE (ruling R-3): a closed enum. "starting": launch has begun (cell.launch_intent recorded) but
+# no cell has reached attempt.process_started yet. "running": at least one has (a one-way move).
+PHASE = ("starting", "running")
 CAUSE_CODE = re.compile(r"HB-CELL-[0-9]{3}")
+STOP_CODE = re.compile(r"HB-[A-Z]+-[0-9]{3}")
 TIME = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z")
 
 
@@ -60,6 +67,8 @@ class Status:
     causes: dict[str, int]
     running: list[RunningCell]
     decisions: list
+    stop_code: str | None  # run.launch_stopped's code; null unless one was recorded (ruling R-3)
+    phase: str  # starting | running (ruling R-3)
     graded: bool
 
 
@@ -71,13 +80,19 @@ def unknown_run_message(run_id: str) -> str:
     return str(unknown_run_error(run_id))
 
 
+def require_known(run_dir: Path) -> None:
+    """The one definition of "is this a known run" (a frozen plan.json): cli.py's `_run_dir` and
+    `build` both call this rather than each re-checking the file (Simplifier: exists once)."""
+    if not (run_dir / "plan.json").is_file():
+        raise unknown_run_error(run_dir.name)
+
+
 def _when(recorded_at: str) -> datetime:
     return datetime.fromisoformat(recorded_at)
 
 
 def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = None) -> Status:
-    if not (run_dir / "plan.json").is_file():
-        raise unknown_run_error(run_dir.name)
+    require_known(run_dir)
     now = now or datetime.now(UTC)
     view = views.load(run_dir)
     events = views.rows(run_dir, "events")
@@ -91,12 +106,16 @@ def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = N
     completion = "complete" if view.completed else ("in progress" if held else "incomplete")
     started = {e["cell_id"]: e for e in events if e["kind"] == "attempt.process_started"}
     ended = {e["cell_id"] for e in events if e["kind"] == "attempt.process_ended"}
+    prompt_sent = {e["cell_id"]: e for e in events if e["kind"] == "cell.prompt_sent"}
     running = []
     for c in view.plan["cells"]:
         cid = c["cell_id"]
         if cid in started and cid not in ended:
-            elapsed = max(0, int((now - _when(started[cid]["recorded_at"])).total_seconds()))
-            running.append(RunningCell(cid, c.get("label", cid), elapsed, c["budget_seconds"], elapsed > c["budget_seconds"]))
+            sent = prompt_sent.get(cid)
+            # The budget clock starts at cell.prompt_sent, matching the engine's own kill check
+            # (_check_budgets measures from prompt_mono): a cell still handshaking has elapsed 0.
+            elapsed = max(0, int((now - _when(sent["recorded_at"])).total_seconds())) if sent else 0
+            running.append(RunningCell(cid, c.get("label", cid), elapsed, c["budget_seconds"], bool(sent) and elapsed > c["budget_seconds"]))
     outcomes: dict[str, int] = {}
     validity: dict[str, int] = {}
     causes: dict[str, int] = {}
@@ -109,8 +128,11 @@ def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = N
         if cell.code:
             causes[cell.code] = causes.get(cell.code, 0) + 1
     ended_count = sum(1 for c in view.cells if c.outcome in ("completed", "timed_out", "failed"))
+    phase = "running" if started else "starting"
+    stopped = [e for e in events if e["kind"] == "run.launch_stopped"]
+    stop_code = stopped[-1]["code"] if stopped else None
     return Status(SCHEMA, view.run_id, now.strftime("%Y-%m-%dT%H:%M:%SZ"), liveness, completion, age, len(view.cells), ended_count,
-                  outcomes, validity, causes, running, [], view.grading_id is not None)
+                  outcomes, validity, causes, running, [], stop_code, phase, view.grading_id is not None)
 
 
 def _counts(title: str, order: tuple[str, ...], counts: dict[str, int]) -> str | None:
@@ -180,6 +202,9 @@ def parse(document: str) -> Status:
     _count_map(data["validity"], VALIDITY, "validity")
     _count_map(data["causes"], CAUSE_CODE, "causes")
     _require(data["decisions"] == [], "decisions must be empty in phase 1")
+    _require(data["stop_code"] is None or (isinstance(data["stop_code"], str) and bool(STOP_CODE.fullmatch(data["stop_code"]))),
+              "stop_code is malformed")
+    _require(data["phase"] in PHASE, "phase is not a known value")
     _require(isinstance(data["graded"], bool), "graded must be a boolean")
     _require(isinstance(data["running"], list), "running must be a list")
     running = []

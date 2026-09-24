@@ -113,25 +113,152 @@ def test_served_models_and_the_one_call_rule():  # US-11
 
 # bounded readers never crash (D2) ------------------------------------------------------------------
 
-@settings(max_examples=150, deadline=None)
-@given(st.lists(st.one_of(st.binary(max_size=200).map(lambda b: b.decode("latin-1")),
-                          st.dictionaries(st.sampled_from(["type", "message", "payload", "isApiErrorMessage"]),
-                                          st.one_of(st.none(), st.integers(), st.text(max_size=10),
-                                                    st.dictionaries(st.text(max_size=5), st.integers(), max_size=3)),
-                                          max_size=4).map(json.dumps)), max_size=12))
-def test_fuzzed_records_never_crash_either_reader(tmp_path_factory, lines):
+# Every key and enum value either reader looks at, so fuzzed rows reach deep into both readers.
+_WORDS = ["type", "message", "payload", "content", "id", "model", "usage", "tool_use_id", "tool_use", "tool_result", "name",
+          "call_id", "info", "total_token_usage", "last_token_usage", "error", "isApiErrorMessage", "apiErrorStatus",
+          "sessionId", "session_id", "timestamp", "role", "text", "is_error", "user", "assistant", "session_meta",
+          "turn_context", "event_msg", "response_item", "token_count", "task_complete", "function_call",
+          "function_call_output", "custom_tool_call", "local_shell_call_output", "input_tokens", "output_tokens",
+          "cached_input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens", "cache_write_input_tokens",
+          "reasoning_output_tokens", "status", "claude-sonnet-5", "<synthetic>", "Bash", "shell", "t1"]
+_LEAF = st.one_of(st.none(), st.booleans(), st.integers(), st.floats(allow_nan=False), st.sampled_from(_WORDS),
+                  st.text(max_size=8))
+_VALUE = st.recursive(_LEAF, lambda kids: st.one_of(st.lists(kids, max_size=4),
+                                                    st.dictionaries(st.sampled_from(_WORDS), kids, max_size=5)), max_leaves=30)
+_ROW = st.dictionaries(st.sampled_from(_WORDS), _VALUE, max_size=6).map(json.dumps)
+_WRONG = st.one_of(st.lists(_LEAF, max_size=3), st.dictionaries(st.sampled_from(_WORDS), _LEAF, max_size=3),
+                   st.integers(), st.floats(allow_nan=False), st.booleans(), st.text(max_size=8))  # wrong type or range
+_GOLDEN = [[json.loads(line) for line in f.read_text(encoding="utf-8").splitlines() if line.strip()]
+           for f in sorted((FIX / "native").glob("*/*.jsonl"))]
+
+
+def _paths(value, prefix=()):
+    yield prefix
+    items = value.items() if isinstance(value, dict) else enumerate(value) if isinstance(value, list) else ()
+    for k, v in items:
+        yield from _paths(v, (*prefix, k))
+
+
+@st.composite
+def _mutated_golden(draw) -> list[str]:
+    """A real record with one to five values (anywhere in it) replaced by fuzz: ids still pair up, so the
+    fuzz reaches every reader branch (model calls, tool calls closed by their results, errors)."""
+    rows = json.loads(json.dumps(draw(st.sampled_from(_GOLDEN))))
+    for _ in range(draw(st.integers(1, 5))):
+        row = draw(st.sampled_from(rows))
+        path = draw(st.sampled_from([p for p in _paths(row) if p and p[-1] in _WORDS] or [("type",)]))
+        parent = row
+        for k in path[:-1]:
+            parent = parent[k]
+        parent[path[-1]] = draw(_WRONG)
+    return [json.dumps(r) for r in rows]
+
+
+_NESTED = st.integers(min_value=1, max_value=100_000).flatmap(
+    lambda n: st.sampled_from(["[" * n, '{"a":' * n, '{"type":"user","timestamp":' + "[" * n]))
+_LINE = st.one_of(_ROW, _ROW, _ROW, st.binary(max_size=200).map(lambda b: b.decode("latin-1")), _NESTED)
+_BUCKETS = ("uncached_input", "cache_read", "cache_write", "output")
+
+
+def _assert_typed(ex) -> None:
+    """The reader's output is the canonical shape, whatever the record held: no foreign type leaks into a row."""
+    assert ex.session_id is None or isinstance(ex.session_id, str)
+    assert ex.first_user_text is None or isinstance(ex.first_user_text, str)
+    for c in ex.model_calls:
+        assert type(c.native_ordinal) is int and isinstance(c.model, str)
+        assert all(type(getattr(c, b)) is int and 0 <= getattr(c, b) < 1 << 63 for b in _BUCKETS)
+        assert c.reasoning is None or (type(c.reasoning) is int and 0 <= c.reasoning < 1 << 63)
+        assert all(v is None or isinstance(v, str) for v in (c.start, c.end))
+    for t in ex.tool_calls:
+        assert isinstance(t.name, str) and t.tool_class in ("shell", "edit", "read", "other")
+        assert all(v is None or isinstance(v, str) for v in (t.start, t.end)) and t.ok in (True, False, None)
+    for e in ex.errors:
+        assert (e.status is None or type(e.status) is int) and isinstance(e.error_type, str) and isinstance(e.message, str)
+    json.dumps(normalize.model_call_rows("r", "c", "s", ex, "x") + normalize.tool_call_rows("r", "c", "s", ex, "x"))
+
+
+@settings(max_examples=300, deadline=None)
+@given(st.one_of(st.lists(_LINE, max_size=12), _mutated_golden()))
+def test_fuzzed_records_never_crash_either_reader_and_stay_typed(tmp_path_factory, lines):  # T-TEL-fuzz (D2)
     path = tmp_path_factory.mktemp("fz") / "r.jsonl"
     path.write_text("\n".join(lines), encoding="utf-8", errors="replace")
     for reader in (claude_code, codex):
-        ex = reader.read(path)
-        assert isinstance(ex.model_calls, list)
+        _assert_typed(reader.read(path))
 
 
-def test_deeply_nested_and_huge_lines_are_skipped_as_malformed(tmp_path):
+@pytest.mark.parametrize("line", [
+    '{"type":"user","message":{"content":[{"type":"tool_result","tool_use_id":[1]}]}}',
+    '{"type":"response_item","payload":{"type":"function_call_output","call_id":{"a":1}}}',
+    '{"type":"session_meta","payload":{"id":[1]}}',
+    '{"type":"response_item","timestamp":[1],"payload":{"type":"function_call","call_id":"c1","name":["x"]}}',
+], ids=["claude-list-tool-id", "codex-dict-call-id", "codex-list-session-id", "codex-list-timestamp-and-name"])
+def test_foreign_types_in_known_fields_are_ignored_not_crashed_on(tmp_path, line):  # T-TEL-fuzz regressions
     path = tmp_path / "r.jsonl"
-    path.write_text("[" * 100_000 + "\n" + "x" * (2 << 20) + "\n", encoding="utf-8")
-    ex = claude_code.read(path)
-    assert ex.model_calls == [] and ex.malformed_lines == 2
+    path.write_text(line + "\n", encoding="utf-8")
+    for reader in (claude_code, codex):
+        _assert_typed(reader.read(path))
+
+
+@pytest.mark.parametrize("reader", [claude_code, codex], ids=["claude-code", "codex"])
+def test_deeply_nested_and_huge_lines_are_skipped_as_malformed(tmp_path, reader):  # T-TEL-fuzz: 100,000-deep nesting
+    path = tmp_path / "r.jsonl"
+    path.write_text("[" * 100_000 + "\n" + '{"a":' * 100_000 + "\n" + "x" * (2 << 20) + "\n", encoding="utf-8")
+    ex = reader.read(path)
+    assert ex.model_calls == [] and ex.malformed_lines == 3
+
+
+def _without(src: Path, dest: Path, usage_key: str, field: str) -> None:
+    """Copy a golden record, dropping one usage field from every row that carries it."""
+    out = []
+    for line in src.read_text(encoding="utf-8").splitlines():
+        row = json.loads(line)
+        for holder in (row.get("message", {}).get("usage"), row.get("payload", {}).get("info", {}).get(usage_key)):
+            if isinstance(holder, dict):
+                holder.pop(field, None)
+        out.append(json.dumps(row))
+    dest.write_text("\n".join(out) + "\n", encoding="utf-8")
+
+
+@pytest.mark.parametrize("reader, golden, field", [
+    (claude_code, "claude-code/ok.jsonl", "output_tokens"),
+    (codex, "codex/ok.jsonl", "cache_write_input_tokens"),
+], ids=["claude-code", "codex"])
+def test_a_missing_usage_field_is_hb_tel_001_not_a_silent_zero(tmp_path, reader, golden, field):  # T-TEL-missing
+    from harness_bench.errors import RUN_CODES
+    whole = reader.read(FIX / "native" / golden)
+    assert whole.missing == []
+    _without(FIX / "native" / golden, tmp_path / "r.jsonl", "last_token_usage", field)
+    ex = reader.read(tmp_path / "r.jsonl")
+    assert ex.missing and {(m.code, m.field) for m in ex.missing} == {("HB-TEL-001", field)}
+    assert {m.native_ordinal for m in ex.missing} == {c.native_ordinal for c in ex.model_calls}
+    assert "HB-TEL-001" in RUN_CODES
+
+
+def test_a_negative_or_oversized_count_is_hb_tel_001_not_a_number(tmp_path):  # a count must fit a signed 64-bit column
+    usage = {"input_tokens": -5, "output_tokens": 1 << 70, "cache_read_input_tokens": True, "cache_creation_input_tokens": 3}
+    row = {"type": "assistant", "message": {"id": "m1", "model": "claude-sonnet-5", "usage": usage}}
+    (tmp_path / "r.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8")
+    ex = claude_code.read(tmp_path / "r.jsonl")
+    call = ex.model_calls[0]
+    assert (call.uncached_input, call.cache_read, call.cache_write, call.output) == (0, 0, 3, 0)
+    assert {m.field for m in ex.missing} == {"input_tokens", "output_tokens", "cache_read_input_tokens"}
+
+
+def test_a_newline_free_record_is_read_in_bounded_memory(tmp_path, monkeypatch):  # the reader holds one line at most
+    import tracemalloc
+
+    from harness_bench import telemetry
+    monkeypatch.setattr(telemetry, "MAX_LINE", 1024)
+    path = tmp_path / "r.jsonl"
+    path.write_bytes(b"x" * (8 << 20) + b"\n" + json.dumps({"type": "user", "sessionId": "s1"}).encode() + b"\n")
+    tracemalloc.start()
+    try:
+        ex = claude_code.read(path)
+        peak = tracemalloc.get_traced_memory()[1]
+    finally:
+        tracemalloc.stop()
+    assert peak < 1 << 20, f"peak {peak} bytes for an 8 MiB line"
+    assert ex.malformed_lines == 1 and ex.session_id == "s1"  # the long line is skipped whole; the next line is read
 
 
 def test_extraction_id_is_the_normaliser_build_hash():

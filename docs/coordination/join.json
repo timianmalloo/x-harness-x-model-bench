@@ -1,0 +1,9 @@
+{
+  "checks": [["uv", "run", "ruff", "check", "src", "tests", "tools"]],
+  "recount": [["uv", "run", "pytest", "-q", "-p", "no:cacheprovider", "-m", "not credentials"]],
+  "regenerate": [["python", "docs/ai-forward-pack/scripts/coord-core.py", "regen"],
+                 ["python", "docs/ai-forward-pack/scripts/docs-graph.py", "derive"]],
+  "gates": [["python", "docs/ai-forward-pack/scripts/docs-graph.py", "validate"],
+            ["python", "docs/ai-forward-pack/scripts/verify-ruling-citations.py"]],
+  "session": "coord-opus"
+}

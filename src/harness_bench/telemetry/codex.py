@@ -21,11 +21,14 @@ from pathlib import Path
 
 from harness_bench.telemetry import (
     Extraction,
+    MissingField,
     ModelCall,
     ProviderError,
     ToolCall,
     as_dict,
-    as_int,
+    as_list,
+    as_status,
+    as_str,
     rows,
 )
 
@@ -49,9 +52,8 @@ def _parse_error(message: str) -> tuple[int | None, str]:
     except (ValueError, RecursionError):
         return None, "unknown"
     body = as_dict(body)
-    status = body.get("status")
-    etype = as_dict(body.get("error")).get("type") or body.get("type") or "unknown"
-    return (status if isinstance(status, int) else None), str(etype)
+    etype = as_str(as_dict(body.get("error")).get("type")) or as_str(body.get("type")) or "unknown"
+    return as_status(body.get("status")), etype
 
 
 def read(path: Path) -> Extraction:
@@ -63,8 +65,10 @@ def read(path: Path) -> Extraction:
         kind = row.get("type")
         payload = as_dict(row.get("payload"))
         ptype = payload.get("type")
+        stamp = as_str(row.get("timestamp"))
+        call_id = as_str(payload.get("call_id"))
         if kind == "session_meta" and ex.session_id is None:
-            ex.session_id = payload.get("id") or payload.get("session_id")
+            ex.session_id = as_str(payload.get("id")) or as_str(payload.get("session_id"))
         elif kind == "turn_context" and isinstance(payload.get("model"), str):
             model = payload["model"]
         elif kind == "event_msg" and ptype == "token_count":
@@ -73,25 +77,27 @@ def read(path: Path) -> Extraction:
             if not last or total == last_total:
                 continue
             last_total = total
-            cached = as_int(last.get("cached_input_tokens"))
-            ex.model_calls.append(ModelCall(n, model or "NOT_RECORDED", max(as_int(last.get("input_tokens")) - cached, 0), cached,
-                                            as_int(last.get("cache_write_input_tokens")), as_int(last.get("output_tokens")),
-                                            as_int(last.get("reasoning_output_tokens")), row.get("timestamp"), row.get("timestamp")))
+            if model is None:
+                ex.missing.append(MissingField(n, "model"))
+            cached = ex.count(n, last, "cached_input_tokens")
+            ex.model_calls.append(ModelCall(n, model or "NOT_RECORDED", max(ex.count(n, last, "input_tokens") - cached, 0), cached,
+                                            ex.count(n, last, "cache_write_input_tokens"), ex.count(n, last, "output_tokens"),
+                                            ex.count(n, last, "reasoning_output_tokens"), stamp, stamp))
         elif kind == "event_msg" and ptype == "task_complete":
             err = as_dict(payload.get("error"))
             if err:
-                status, etype = _parse_error(str(err.get("message") or ""))
-                ex.errors.append(ProviderError(n, status, etype, str(err.get("message") or "")[:300]))
+                message = as_str(err.get("message")) or ""
+                status, etype = _parse_error(message)
+                ex.errors.append(ProviderError(n, status, etype, message[:300]))
         elif kind == "response_item" and ptype == "message" and payload.get("role") == "user" and ex.first_user_text is None:
-            texts = [c.get("text") for c in payload.get("content") or [] if isinstance(c, dict) and isinstance(c.get("text"), str)]
+            texts = [c.get("text") for c in as_list(payload.get("content")) if isinstance(c, dict) and isinstance(c.get("text"), str)]
             if texts and not all(t.lstrip().startswith("<") for t in texts):
                 ex.first_user_text = "".join(t for t in texts if not t.lstrip().startswith("<"))
-        elif kind == "response_item" and ptype in CALL_TYPES and isinstance(payload.get("call_id"), str):
-            name = str(payload.get("name") or ptype)
-            open_tools[payload["call_id"]] = {"n": n, "name": name, "start": row.get("timestamp")}
-        elif kind == "response_item" and ptype in OUTPUT_TYPES and payload.get("call_id") in open_tools:
-            tool = open_tools.pop(payload["call_id"])
-            ex.tool_calls.append(ToolCall(tool["n"], tool["name"], _tool_class(tool["name"]), tool["start"], row.get("timestamp"), None))
+        elif kind == "response_item" and ptype in CALL_TYPES and call_id is not None:
+            open_tools[call_id] = {"n": n, "name": as_str(payload.get("name")) or ptype, "start": stamp}
+        elif kind == "response_item" and ptype in OUTPUT_TYPES and call_id in open_tools:
+            tool = open_tools.pop(call_id)
+            ex.tool_calls.append(ToolCall(tool["n"], tool["name"], _tool_class(tool["name"]), tool["start"], stamp, None))
     for tool in open_tools.values():
         ex.tool_calls.append(ToolCall(tool["n"], tool["name"], _tool_class(tool["name"]), tool["start"], None, None))
     ex.tool_calls.sort(key=lambda t: t.native_ordinal)

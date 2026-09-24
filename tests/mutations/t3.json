@@ -1,0 +1,107 @@
+[
+ {
+  "name": "T3-1 ACP line reader lets RecursionError escape",
+  "file": "src/harness_bench/driver.py",
+  "find": "            except (UnicodeDecodeError, ValueError, RecursionError):  # nesting too deep to parse is junk, not a crash\n",
+  "replace": "            except (UnicodeDecodeError, ValueError):\n",
+  "tests": ["tests/test_driver.py::test_a_deeply_nested_line_is_junk_never_a_crash"]
+ },
+ {
+  "name": "T3-1 ACP line reader keeps its buffer after a too-long line",
+  "file": "src/harness_bench/driver.py",
+  "find": "        self._buf = b\"\"  # the parser is finished; it keeps nothing\n",
+  "replace": "",
+  "tests": ["tests/test_driver.py::test_line_reader_never_crashes_and_stays_bounded"]
+ },
+ {
+  "name": "T3-2 Claude reader uses a foreign-typed tool_use_id as a key",
+  "file": "src/harness_bench/telemetry/claude_code.py",
+  "find": "as_str(block.get(\"tool_use_id\"))",
+  "replace": "block.get(\"tool_use_id\")",
+  "tests": ["tests/test_telemetry.py::test_foreign_types_in_known_fields_are_ignored_not_crashed_on"]
+ },
+ {
+  "name": "T3-2 Codex reader uses a foreign-typed call_id as a key",
+  "file": "src/harness_bench/telemetry/codex.py",
+  "find": "        call_id = as_str(payload.get(\"call_id\"))\n",
+  "replace": "        call_id = payload.get(\"call_id\")\n",
+  "tests": ["tests/test_telemetry.py::test_foreign_types_in_known_fields_are_ignored_not_crashed_on"]
+ },
+ {
+  "name": "T3-2 Codex reader passes a foreign-typed timestamp into a row",
+  "file": "src/harness_bench/telemetry/codex.py",
+  "find": "        stamp = as_str(row.get(\"timestamp\"))\n",
+  "replace": "        stamp = row.get(\"timestamp\")\n",
+  "tests": ["tests/test_telemetry.py::test_foreign_types_in_known_fields_are_ignored_not_crashed_on"]
+ },
+ {
+  "name": "T3-2 Codex reader passes a foreign-typed session id",
+  "file": "src/harness_bench/telemetry/codex.py",
+  "find": "            ex.session_id = as_str(payload.get(\"id\")) or as_str(payload.get(\"session_id\"))\n",
+  "replace": "            ex.session_id = payload.get(\"id\") or payload.get(\"session_id\")\n",
+  "tests": ["tests/test_telemetry.py::test_foreign_types_in_known_fields_are_ignored_not_crashed_on"]
+ },
+ {
+  "name": "T3-2 a negative or over-64-bit count is accepted",
+  "file": "src/harness_bench/telemetry/__init__.py",
+  "find": "    return type(value) is int and 0 <= value < 1 << 63\n",
+  "replace": "    return type(value) is int\n",
+  "tests": ["tests/test_telemetry.py::test_a_negative_or_oversized_count_is_hb_tel_001_not_a_number"]
+ },
+ {
+  "name": "T3-3 native reader reads a whole newline-free line",
+  "file": "src/harness_bench/telemetry/__init__.py",
+  "find": "        while raw := f.readline(MAX_LINE + 1):",
+  "replace": "        while raw := f.readline():",
+  "tests": ["tests/test_telemetry.py::test_a_newline_free_record_is_read_in_bounded_memory"]
+ },
+ {
+  "name": "T3-4 a missing usage field is a silent 0",
+  "file": "src/harness_bench/telemetry/__init__.py",
+  "find": "        self.missing.append(MissingField(n, key))\n",
+  "replace": "",
+  "tests": ["tests/test_telemetry.py::test_a_missing_usage_field_is_hb_tel_001_not_a_silent_zero"]
+ },
+ {
+  "name": "T3-5 a failed job query reads a zeroed struct",
+  "file": "src/harness_bench/procs.py",
+  "find": "        if not _query(self.handle, info_class, buf):\n            raise ctypes.WinError(ctypes.get_last_error())\n",
+  "replace": "        _query(self.handle, info_class, buf)\n",
+  "tests": ["tests/test_procs.py::test_a_failed_job_query_raises_from_the_last_error"]
+ },
+ {
+  "name": "T3-5 a closed job queries the caller's own job",
+  "file": "src/harness_bench/procs.py",
+  "find": "        if not self.handle:  # a NULL handle would query the job of the calling process instead\n            raise ctypes.WinError(_ERROR_INVALID_HANDLE)\n",
+  "replace": "",
+  "tests": ["tests/test_procs.py::test_a_closed_job_is_not_reported_empty"]
+ },
+ {
+  "name": "T3-5 a failed handle-information query reads as not inheritable",
+  "file": "src/harness_bench/procs.py",
+  "find": "        if not self.handle or not _k32.GetHandleInformation(self.handle, ctypes.byref(flags)):  # same class: no zeroed answer\n            raise ctypes.WinError(ctypes.get_last_error() or _ERROR_INVALID_HANDLE)\n",
+  "replace": "        _k32.GetHandleInformation(self.handle, ctypes.byref(flags))\n",
+  "tests": ["tests/test_procs.py::test_a_closed_job_is_not_reported_empty"]
+ },
+ {
+  "name": "T3-6 run lets TimeoutExpired escape on an unconfirmed kill",
+  "file": "src/harness_bench/procs.py",
+  "find": "            except subprocess.TimeoutExpired:\n                pass  # an unconfirmed kill",
+  "replace": "            except OSError:\n                pass  # an unconfirmed kill",
+  "tests": ["tests/test_procs.py::test_run_with_an_unconfirmed_kill_raises_nothing_and_leaks_nothing"]
+ },
+ {
+  "name": "T3-6 run does not close the job and pipes",
+  "file": "src/harness_bench/procs.py",
+  "find": "        cell.close()  # the job (kill-on-close) and the pipes, on every path\n",
+  "replace": "        pass\n",
+  "tests": ["tests/test_procs.py::test_run_with_an_unconfirmed_kill_raises_nothing_and_leaks_nothing"]
+ },
+ {
+  "name": "T3-8 the driver drops _meta when usage is absent",
+  "file": "src/harness_bench/driver.py",
+  "find": "        if usage is not None or meta is not None:",
+  "replace": "        if usage is not None:",
+  "tests": ["tests/test_driver.py::test_meta_is_kept_when_the_adapter_reports_no_usage"]
+ }
+]

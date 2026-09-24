@@ -6,12 +6,18 @@ Validation returns a list of problems rather than raising on the first one, so
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
 
 from harness_bench.errors import BenchError
+
+# bench-status/1's id and label patterns (status.py): plan.py validates every cell_id and label
+# against them at plan time, so status never has to emit a document its own parser would reject.
+CELL_ID = re.compile(r"[0-9a-z]{1,16}")
+LABEL = re.compile(r"[A-Za-z0-9.\-]{1,80}")
 
 SCENARIOS = range(1, 8)
 # The smoke BOM needs exactly one task per scenario 1-6. Scenario 7 may add one after the

@@ -24,11 +24,25 @@ def root(tmp_path):
 
 
 def _live_run(root, tmp_path):
-    """A run whose engine segment shows cell `a` ended and cell `b` still running since 11:59:00."""
+    """A run whose engine segment shows cell `a` ended and cell `b` still running since 11:59:00
+    (process started and its prompt sent at the same instant, so old and new budget math agree)."""
     run_dir = make_run(root, tmp_path, {"a": GOOD}, unstarted=("b",))
     with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
         ev.append({"kind": "cell.launch_intent", "cell_id": "b"})
         ev.append({"kind": "attempt.process_started", "cell_id": "b", "recorded_at": "2026-09-23T11:59:00.000Z"})
+        ev.append({"kind": "attempt.session_opened", "cell_id": "b"})
+        ev.append({"kind": "cell.prompt_sent", "cell_id": "b", "recorded_at": "2026-09-23T11:59:00.000Z"})
+    return run_dir
+
+
+def _handshaking_run(root, tmp_path):
+    """Cell `b`'s process started at 11:58:00 (handshake) but its prompt was only sent at 11:59:00."""
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, unstarted=("b",))
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
+        ev.append({"kind": "cell.launch_intent", "cell_id": "b"})
+        ev.append({"kind": "attempt.process_started", "cell_id": "b", "recorded_at": "2026-09-23T11:58:00.000Z"})
+        ev.append({"kind": "attempt.session_opened", "cell_id": "b"})
+        ev.append({"kind": "cell.prompt_sent", "cell_id": "b", "recorded_at": "2026-09-23T11:59:00.000Z"})
     return run_dir
 
 
@@ -74,6 +88,36 @@ def test_a_cell_past_its_budget_is_being_killed(root, tmp_path):
     assert "b: killing (unconfirmed, 90 s)" in status.text(s).splitlines()
 
 
+def test_a_running_cells_budget_is_measured_from_prompt_sent_not_process_started(root, tmp_path):  # T4-3
+    run_dir = _handshaking_run(root, tmp_path)
+    with oslock.RunLock.acquire(run_dir / ".lock", "HB-RUN-003"):
+        s = status.build(run_dir, now=NOW)  # NOW 12:00:00; process_started 11:58 (120s), prompt_sent 11:59 (60s)
+    assert s.running[0].elapsed_s == 60
+    assert not s.running[0].killing  # budget 300s: 60s elapsed, not 120s
+
+
+def test_phase_is_starting_before_any_cell_process_has_started(root, tmp_path):  # T4-4 (ruling R-3)
+    run_dir = make_run(root, tmp_path, {}, unstarted=("b",))
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
+        ev.append({"kind": "cell.launch_intent", "cell_id": "b"})
+    s = status.build(run_dir, now=NOW)
+    assert s.phase == "starting"
+    assert s.stop_code is None
+
+
+def test_phase_is_running_once_a_cell_process_has_started(root, tmp_path):
+    s = status.build(_live_run(root, tmp_path), now=NOW)
+    assert s.phase == "running"
+
+
+def test_stop_code_is_set_only_when_run_launch_stopped_was_recorded(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
+        ev.append({"kind": "run.launch_stopped", "code": "HB-RUN-004", "reason": "disk floor"})
+    s = status.build(run_dir, now=NOW)
+    assert s.stop_code == "HB-RUN-004"
+
+
 def test_an_unknown_run_is_hb_usr_001(tmp_path):
     with pytest.raises(BenchError) as err:
         status.build(tmp_path / "runs" / "nope", now=NOW)
@@ -96,7 +140,8 @@ def test_the_json_form_round_trips_and_is_strict(root, tmp_path):
     for broken in ({**data, "extra": 1}, {k: v for k, v in data.items() if k != "graded"}, {**data, "schema": "bench-status/2"},
                    {**data, "liveness": "sleeping"}, {**data, "cells_ended": -1}, {**data, "graded": 1},
                    {**data, "outcomes": {**data["outcomes"], "exploded": 1}},
-                   {**data, "running": [{**data["running"][0], "cell_id": "not a cell id"}]}):
+                   {**data, "running": [{**data["running"][0], "cell_id": "not a cell id"}]},
+                   {**data, "phase": "grading"}, {**data, "stop_code": "not-a-code"}):
         with pytest.raises(ValueError):
             status.parse(json.dumps(broken))
 
@@ -112,7 +157,9 @@ _statuses = st.builds(
     outcomes=st.dictionaries(st.sampled_from(status.OUTCOMES), st.integers(0, 600)),
     validity=st.dictionaries(st.sampled_from(status.VALIDITY), st.integers(0, 600)),
     causes=st.dictionaries(st.from_regex(r"HB-CELL-[0-9]{3}", fullmatch=True), st.integers(0, 600)),
-    running=st.lists(_running, max_size=4), decisions=st.just([]), graded=st.booleans())
+    running=st.lists(_running, max_size=4), decisions=st.just([]),
+    stop_code=st.none() | st.from_regex(r"HB-[A-Z]+-[0-9]{3}", fullmatch=True), phase=st.sampled_from(status.PHASE),
+    graded=st.booleans())
 
 
 @given(_statuses)

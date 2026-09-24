@@ -42,4 +42,6 @@ def render(view: views.RunView, plain: bool) -> tuple[str, int]:
         console.print("Invalid cells:")
         for c in invalid:
             console.print(f"  {c.label}: {c.validity} {c.validity_code}")
+    if report.has_codex_cell(view.plan):
+        console.print(f"{report.N5_FLAG}: see {report.N5_EVIDENCE}")
     return buf.getvalue(), 0

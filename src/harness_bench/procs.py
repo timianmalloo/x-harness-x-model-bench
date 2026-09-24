@@ -38,6 +38,8 @@ _BASIC_ACCOUNTING = 1
 _BASIC_PID_LIST = 3
 _EXTENDED_LIMIT = 9
 _MAX_PIDS = 1024
+_ERROR_INVALID_HANDLE = 6
+_KILL_GRACE = 30.0  # seconds run() allows to confirm a kill, then to collect the exit status and the output
 
 _k32 = ctypes.WinDLL("kernel32", use_last_error=True)
 _ntdll = ctypes.WinDLL("ntdll")
@@ -102,6 +104,11 @@ def _open_process(pid: int) -> int:
     return _k32.OpenProcess(_PROCESS_ALL_ACCESS, False, pid)
 
 
+# Fault seam: a failed query must raise, never leave a zeroed struct that reads as "no processes".
+def _query(job: int | None, info_class: int, buf: ctypes.Structure) -> bool:
+    return bool(_k32.QueryInformationJobObject(job, info_class, ctypes.byref(buf), ctypes.sizeof(buf), None))
+
+
 class Job:
     """One kill-on-close Job Object with breakaway never allowed."""
 
@@ -117,30 +124,34 @@ class Job:
             raise SpawnError("SetInformationJobObject failed", err)
         self.handle = handle
 
+    def _query[S: ctypes.Structure](self, info_class: int, buf: S) -> S:
+        """Fill `buf` from the job, or raise OSError from the last error."""
+        if not self.handle:  # a NULL handle would query the job of the calling process instead
+            raise ctypes.WinError(_ERROR_INVALID_HANDLE)
+        if not _query(self.handle, info_class, buf):
+            raise ctypes.WinError(ctypes.get_last_error())
+        return buf
+
     def _extended(self) -> _ExtendedLimit:
-        info = _ExtendedLimit()
-        _k32.QueryInformationJobObject(self.handle, _EXTENDED_LIMIT, ctypes.byref(info), ctypes.sizeof(info), None)
-        return info
+        return self._query(_EXTENDED_LIMIT, _ExtendedLimit())
 
     def _accounting(self) -> _BasicAccounting:
-        acc = _BasicAccounting()
-        _k32.QueryInformationJobObject(self.handle, _BASIC_ACCOUNTING, ctypes.byref(acc), ctypes.sizeof(acc), None)
-        return acc
+        return self._query(_BASIC_ACCOUNTING, _BasicAccounting())
 
     def limit_flags(self) -> int:
         return self._extended().Basic.LimitFlags
 
     def inheritable(self) -> bool:
         flags = wt.DWORD()
-        _k32.GetHandleInformation(self.handle, ctypes.byref(flags))
+        if not self.handle or not _k32.GetHandleInformation(self.handle, ctypes.byref(flags)):  # same class: no zeroed answer
+            raise ctypes.WinError(ctypes.get_last_error() or _ERROR_INVALID_HANDLE)
         return bool(flags.value & _HANDLE_FLAG_INHERIT)
 
     def active(self) -> int:
         return self._accounting().ActiveProcesses
 
     def pids(self) -> set[int]:
-        buf = _PidList()
-        _k32.QueryInformationJobObject(self.handle, _BASIC_PID_LIST, ctypes.byref(buf), ctypes.sizeof(buf), None)
+        buf = self._query(_BASIC_PID_LIST, _PidList())
         return {int(buf.Ids[i]) for i in range(buf.InList)}
 
     def peak_memory(self) -> int:
@@ -172,14 +183,14 @@ class CellProcess:
         """The main process's exit status, unsigned (e.g. 0xC0000017 for STATUS_NO_MEMORY)."""
         return self.proc.wait(timeout=timeout) & 0xFFFFFFFF
 
-    def terminate_and_confirm(self, timeout: float, retry_every: float = 1.0) -> bool:
-        """Kill the whole tree; True once the job reports no active process."""
+    def terminate_and_confirm(self, timeout: float) -> bool:
+        """Kill the whole tree, re-sending the kill every second; True once the job reports no active process."""
         deadline = time.monotonic() + timeout
         next_kill = 0.0
         while time.monotonic() < deadline:
             if time.monotonic() >= next_kill:
                 self.job.terminate()
-                next_kill = time.monotonic() + retry_every
+                next_kill = time.monotonic() + 1.0
             if self.job.active() == 0:
                 return True
             time.sleep(0.05)
@@ -243,34 +254,34 @@ def _drain(stream, limit: int, sink: list, flags: list) -> None:
             flags.append(True)
 
 
-def run(argv: list[str], cwd, env, timeout: float, max_output: int = 1 << 20, stdin_data: bytes | None = None) -> Completed:
+def run(argv: list[str], cwd, env, timeout: float, max_output: int = 1 << 20) -> Completed:
     """Run a bounded command in its own job; the whole tree is terminated when it ends or times out."""
     started = time.monotonic()
-    cell = spawn(argv, cwd, env, stdin=subprocess.PIPE if stdin_data is not None else subprocess.DEVNULL,
-                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cell = spawn(argv, cwd, env, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err, trunc = [], [], []
     readers = [threading.Thread(target=_drain, args=(cell.proc.stdout, max_output, out, trunc), daemon=True),
                threading.Thread(target=_drain, args=(cell.proc.stderr, max_output, err, trunc), daemon=True)]
     for t in readers:
         t.start()
-    if stdin_data is not None:
-        try:
-            cell.proc.stdin.write(stdin_data)
-            cell.proc.stdin.close()
-        except OSError:
-            pass
     timed_out = False
+    code: int | None = None
     try:
-        code: int | None = cell.wait(timeout=timeout)
-    except subprocess.TimeoutExpired:
-        timed_out = True
-        code = None
-    cell.terminate_and_confirm(timeout=30)
-    if code is None:
-        code = cell.proc.wait(timeout=30) & 0xFFFFFFFF
-    for t in readers:
-        t.join(timeout=10)
-    cell.close()
+        try:
+            code = cell.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            timed_out = True
+        cell.terminate_and_confirm(timeout=_KILL_GRACE)
+        if code is None:
+            try:
+                code = cell.wait(timeout=_KILL_GRACE)
+            except subprocess.TimeoutExpired:
+                pass  # an unconfirmed kill: no exit status is reported; closing the job below ends the tree
+        deadline = time.monotonic() + _KILL_GRACE
+        for t in readers:
+            t.join(timeout=max(0.0, deadline - time.monotonic()))
+    finally:
+        cell.close()  # the job (kill-on-close) and the pipes, on every path
+
     def decode(parts: list) -> str:
         return b"".join(parts).decode("utf-8", errors="replace")
 

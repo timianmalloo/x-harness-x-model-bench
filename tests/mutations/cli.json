@@ -58,8 +58,22 @@
  {
   "name": "the report written for an ungraded run",
   "file": "src/harness_bench/cli.py",
-  "find": "    if code == OK:\n        print(f\"report: {html.write(run_dir, view)}\")\n",
-  "replace": "    print(f\"report: {html.write(run_dir, view)}\")\n",
+  "find": "    if code == OK:\n        print(f\"report: {html.write(run_dir, view, _credential_values(root, run_dir))}\")\n",
+  "replace": "    print(f\"report: {html.write(run_dir, view, _credential_values(root, run_dir))}\")\n",
   "tests": ["tests/test_cli.py::test_grade_then_report_writes_the_page"]
+ },
+ {
+  "name": "plan --json ids use the bare task id, not the real task version",
+  "file": "src/harness_bench/cli.py",
+  "find": "        print(json.dumps([c.__dict__ | {\"id\": c.id} for c in plan.expand(matrix, bom, versions)], indent=2))\n",
+  "replace": "        print(json.dumps([c.__dict__ | {\"id\": c.id} for c in plan.expand(matrix, bom)], indent=2))\n",
+  "tests": ["tests/test_cli.py::test_plan_json_ids_equal_the_frozen_plans_cell_ids"]
+ },
+ {
+  "name": "cmd_report ignores the host's and archived homes' credential values",
+  "file": "src/harness_bench/cli.py",
+  "find": "print(f\"report: {html.write(run_dir, view, _credential_values(root, run_dir))}\")",
+  "replace": "print(f\"report: {html.write(run_dir, view)}\")",
+  "tests": ["tests/test_cli.py::test_report_refuses_when_the_hosts_credential_value_leaks_into_the_report"]
  }
 ]
