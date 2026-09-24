@@ -96,22 +96,24 @@ def test_a_failed_write_poisons_the_writer(tmp_path):  # SRE-5: nothing is appen
     assert (report.error, report.lines, report.torn_tail) == (None, 1, True)  # the half line stays a torn tail
 
 
-@pytest.mark.parametrize("tamper", ["rewrite", "insert", "delete_middle", "cut_sealed_tail"])
-def test_tampering_is_detected(tmp_path, tamper):
+@pytest.mark.parametrize(("tamper", "detail"), [("rewrite", "chain break at line 2"), ("insert", "chain break at line 3"),
+                                                ("delete_middle", "chain break at line 3"), ("cut_sealed_tail", "")])
+def test_tampering_is_detected(tmp_path, tamper, detail):  # bytes, never text: text mode on Windows writes \r\n (T2-10)
     path = _write(tmp_path, n=4, seal=True)
-    lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+    lines = path.read_bytes().splitlines(keepends=True)
     if tamper == "rewrite":
-        lines[1] = lines[1].replace('"c1"', '"cX"')
+        lines[1] = lines[1].replace(b'"c1"', b'"cX"')
     elif tamper == "insert":
         lines.insert(2, lines[1])
     elif tamper == "delete_middle":
         del lines[2]
     elif tamper == "cut_sealed_tail":
         del lines[-1]
-    path.write_text("".join(lines), encoding="utf-8")
+    path.write_bytes(b"".join(lines))
     report = ledger.verify_segment(path)
+    assert report.detail == detail
     if tamper == "cut_sealed_tail":
-        assert not report.sealed  # a completed run then fails on the unsealed segment (engine rule)
+        assert not report.sealed and report.error is None  # the recorded head exposes it (test_verify)
     else:
         assert report.error == "HB-LED-002"
 
@@ -142,10 +144,11 @@ def test_owner_reopen_repairs_the_torn_tail_and_records_it(tmp_path):
 
 def test_a_torn_line_that_is_not_the_tail_is_a_break(tmp_path):
     path = _write(tmp_path)
-    text = path.read_text(encoding="utf-8").splitlines(keepends=True)
-    text[1] = '{"kind":"hal\n'
-    path.write_text("".join(text), encoding="utf-8")
-    assert ledger.verify_segment(path).error == "HB-LED-002"
+    lines = path.read_bytes().splitlines(keepends=True)
+    lines[1] = b'{"kind":"hal\n'
+    path.write_bytes(b"".join(lines))
+    report = ledger.verify_segment(path)
+    assert (report.error, report.detail) == ("HB-LED-002", "line 2 does not parse")
 
 
 # the structural rules a re-hashing forger must still meet (the chain is keyless) --------------------
