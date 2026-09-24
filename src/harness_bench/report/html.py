@@ -18,6 +18,7 @@ from pathlib import Path
 
 from harness_bench import report, views
 from harness_bench.errors import BenchError
+from harness_bench.report.credentials import encodings
 
 SECRET_SHAPES = (
     re.compile(r"sk-ant-[A-Za-z0-9_\-]{20,}"),  # Anthropic keys and OAuth tokens
@@ -75,6 +76,8 @@ def _header(view: views.RunView) -> str:
              ("Executed builds", view.header.get("executed_builds")), ("Credential kind", view.header.get("credential_kind")),
              ("Network mode", view.header.get("network_mode")), ("Defender real-time exclusion", None),
              ("Price list hash", (plan.get("price_list_hash") or "")[:12])]
+    if report.has_codex_cell(plan):
+        facts.append((report.N5_FLAG, f"see {report.N5_EVIDENCE}"))
     rows = "".join(f"<dt>{_e(k)}</dt><dd>{_fact(v)}</dd>" for k, v in facts)
     return f'<section id="header"><h1>harness-bench run {_e(view.run_id)}</h1><dl>{rows}</dl></section>'
 
@@ -101,7 +104,8 @@ def _leaderboard(view: views.RunView) -> str:
                 f"Run bench status {_e(view.run_id)} to see why.</p></section>")
     headers = [("Rank", False), ("Combo", False), ("Pack", False), ("Valid cells", True), ("pass@1", True), ("Interval", False),
                ("Tokens per cell", True), ("Wall per cell", True), ("Cost per cell", True)]
-    rows = [[(_e(r.rank or "unranked"), False), (_e(r.combo), False), (_e(r.pack), False), (f"{r.n_valid}/{r.n_cells} cells", True),
+    rows = [[(_e(r.rank or "unranked"), False), (_e(report.flag_if_codex(r.combo, r.harness)), False), (_e(r.pack), False),
+             (f"{r.n_valid}/{r.n_cells} cells", True),
              (_e(report.rate(r.pass_at_1)), True), (_e(r.interval), False), (_e(report.tokens(r.tokens)), True),
              (_e(report.seconds(r.wall_ms)), True), (_e(report.usd(r.cost_usd)), True)] for r in views.leaderboard(view)]
     return f'<section id="leaderboard"><h2>Leaderboard</h2>{_table("leaderboard", "One row per combo and pack", headers, rows)}</section>'
@@ -122,7 +126,7 @@ def _runs(view: views.RunView, archive_present: bool) -> str:
     headers = [("Cell", False), ("Outcome", False), ("Validity", False), ("pass@1", True), ("Partial credit", True), ("Tokens", True),
                ("Wall", True), ("Tool time", True), ("Model time", True), ("Idle", True), ("Cost", True), ("Evidence", False)]
     na = views.Measure(None, "not graded")
-    rows = [[(_e(c.label), False), (_e(c.outcome + (f" ({c.cause}, {c.code})" if c.code else "")), False),
+    rows = [[(_e(report.flag_if_codex(c.label, c.harness)), False), (_e(c.outcome + (f" ({c.cause}, {c.code})" if c.code else "")), False),
              (_e(c.validity + (f" {c.validity_code}" if c.validity_code else "")), False),
              (_e(report.rate(c.scores.get("pass_at_1", na))), True), (_e(report.rate(c.scores.get("partial_credit", na))), True),
              (_e(report.cell_tokens(c.tokens, c.tokens_reason)), True), (_e(report.seconds(c.wall_ms)), True),
@@ -138,14 +142,18 @@ def render(view: views.RunView, archive_present: bool) -> str:
             f"<body><main>{_header(view)}{_validity(view)}{_leaderboard(view)}{_runs(view, archive_present)}</main></body></html>\n")
 
 
-def scan(text: str) -> int:
-    """How many credential-shaped strings the text holds."""
-    return sum(len(p.findall(text)) for p in SECRET_SHAPES)
+def scan(text: str, credential_values: set[str] = frozenset()) -> int:
+    """How many credential-shaped strings the text holds, plus (supplementing the shapes) exact
+    matches of any known credential value or its base64/URL-encoded form (HB-SEC-001)."""
+    found = sum(len(p.findall(text)) for p in SECRET_SHAPES)
+    if credential_values:
+        found += sum(1 for v in encodings(credential_values) if v and v in text)
+    return found
 
 
-def write(run_dir: Path, view: views.RunView) -> Path:
+def write(run_dir: Path, view: views.RunView, credential_values: set[str] = frozenset()) -> Path:
     doc = render(view, archive_present=(run_dir / "archive").is_dir())
-    found = scan(doc)
+    found = scan(doc, credential_values)
     if found:
         raise BenchError("HB-SEC-001", f"{found} credential-shaped string(s) in the report; nothing was written")
     path = run_dir / "report.html"

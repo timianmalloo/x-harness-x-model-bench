@@ -10,6 +10,20 @@ from decimal import Decimal
 
 from harness_bench.views import Measure
 
+# N5 (ruling R-5, Coordinator seam request): Codex 0.156 cells reach the operator's own skill roots
+# (finding N5, unfixed, disclosed). Every surface that names a combo or cell flags a Codex one with
+# this text; no operator path or skill name is named here, only the flag and where the evidence is.
+N5_FLAG = "user-config exposed (N5)"
+N5_EVIDENCE = "docs/notes/spike-n5-codex-skill-roots.md, the US-13 canary"
+
+
+def has_codex_cell(plan: dict) -> bool:
+    return any(c.get("harness") == "codex" for c in plan.get("cells", []))
+
+
+def flag_if_codex(text: str, harness: str) -> str:
+    return f"{text} ({N5_FLAG})" if harness == "codex" else text
+
 
 def na(m: Measure) -> str:
     return f"NA ({m.reason})"

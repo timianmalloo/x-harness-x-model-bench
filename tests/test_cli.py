@@ -5,6 +5,7 @@ Exit codes: 0 ok · 1 invalid input · 2 usage (argparse) · 3 run incomplete ·
 
 import hashlib
 import json
+import sys
 
 import pytest
 from archived_runs import GOOD, make_root, make_run
@@ -16,6 +17,17 @@ from harness_bench import cli, gitsafe, ledger, oslock, status
 @pytest.fixture
 def root(tmp_path):
     return make_root(tmp_path)
+
+
+@pytest.fixture(autouse=True)
+def _no_real_credential_home(monkeypatch, tmp_path):
+    """bench/profiles/*.yaml (copied by make_root) still points at ~/.claude, ~/.codex: `bench report`'s
+    exact-value credential scan (HB-SEC-001) resolves that with Path.expanduser(). Redirect every test's
+    `~` to an empty, unwritten folder so no test in this file ever reads the operator's real credential
+    file -- tests that exercise the scan itself always plant fake tokens under tmp_path instead."""
+    fake_home = tmp_path / "fake-home"
+    monkeypatch.setenv("USERPROFILE", str(fake_home))
+    monkeypatch.setenv("HOME", str(fake_home))
 
 
 def _bench(capsys, root, tmp_path, *args):
@@ -44,6 +56,16 @@ def test_status_json_writes_only_bench_status_to_stdout(capsys, root, tmp_path, 
     assert status.parse(out).run_id == "r1" and out.endswith("\n") and out.count("\n") == 1
 
 
+def test_status_json_is_plain_even_under_a_tty(capsys, root, tmp_path, monkeypatch):  # T4-7
+    make_run(root, tmp_path, {"a": GOOD})
+    monkeypatch.delenv("NO_COLOR", raising=False)
+    monkeypatch.setattr(sys.stdout, "isatty", lambda: True, raising=False)
+    code, out, err = _bench(capsys, root, tmp_path, "status", "r1", "--json")
+    assert code == 0 and err == ""
+    assert status.parse(out).run_id == "r1" and out.endswith("\n") and out.count("\n") == 1
+    assert "\x1b[" not in out  # no ANSI escapes leak in under a real terminal
+
+
 def test_status_text(capsys, root, tmp_path):
     make_run(root, tmp_path, {"a": GOOD})
     code, out, _ = _bench(capsys, root, tmp_path, "status", "r1")
@@ -58,6 +80,19 @@ def test_grade_then_report_writes_the_page(capsys, root, tmp_path):
     assert code == 0 and "graded 1 cell" in out
     code, out, _ = _bench(capsys, root, tmp_path, "report", "r1")
     assert code == 0 and "pass@1" in out and (run_dir / "report.html").is_file()
+
+
+def test_report_refuses_when_the_hosts_credential_value_leaks_into_the_report(capsys, root, tmp_path):  # T4-1
+    fake_home = tmp_path / "fake-home"  # _no_real_credential_home points USERPROFILE/HOME here
+    (fake_home / ".claude").mkdir(parents=True)
+    token = "ROTATEDINTEGRATIONtoken0123456789"
+    (fake_home / ".claude" / ".credentials.json").write_text(json.dumps({"accessToken": token}), encoding="utf-8")
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": token})  # the value leaks into the cell's label
+    code, _, err = _bench(capsys, root, tmp_path, "grade", "r1")
+    assert code == 0
+    code, _, err = _bench(capsys, root, tmp_path, "report", "r1")
+    assert code == 5 and "HB-SEC-001" in err and token not in err
+    assert not (run_dir / "report.html").exists()
 
 
 def test_grade_while_another_pass_holds_the_lock_is_exit_1(capsys, root, tmp_path):
@@ -158,3 +193,19 @@ def test_plan_confirm_freezes_builds_pack_and_prompt(capsys, root, tmp_path):
     assert "envelope" in out and "4 cells" in out
     assert _bench(capsys, root, tmp_path, "--tools-dir", str(tools_dir), "plan", "--matrix", str(root / "bench" / "matrix.phase1.yaml"),
                   "--run-id", "p1", "--pack-source", str(tmp_path / "ai-forward"), "--confirm")[0] == 1  # frozen
+
+
+def test_plan_json_ids_equal_the_frozen_plans_cell_ids(capsys, root, tmp_path):  # T4-2: two cell-id definitions (Simplifier)
+    for name in ("bom.yaml", "matrix.phase1.yaml"):
+        (root / "bench" / name).write_bytes((cli.config.repo_root() / "bench" / name).read_bytes())
+    _pack_repo(tmp_path / "ai-forward")
+    tools_dir = _fake_tree(tmp_path / "tools")
+    matrix_path = str(root / "bench" / "matrix.phase1.yaml")
+    code, out, err = _bench(capsys, root, tmp_path, "--tools-dir", str(tools_dir), "plan", "--matrix", matrix_path, "--json")
+    assert code == 0, err
+    json_ids = {c["id"] for c in json.loads(out)}
+    code, out, err = _bench(capsys, root, tmp_path, "--tools-dir", str(tools_dir), "plan", "--matrix", matrix_path,
+                            "--run-id", "p2", "--pack-source", str(tmp_path / "ai-forward"), "--confirm")
+    assert code == 0, err
+    frozen = json.loads((tmp_path / "runs" / "p2" / "plan.json").read_text(encoding="utf-8"))
+    assert json_ids == {c["cell_id"] for c in frozen["cells"]}
