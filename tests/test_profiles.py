@@ -52,11 +52,25 @@ def test_existing_profiles_declare_commands_equal_to_the_old_adapter_argv(tmp_pa
         assert p.argv(FakeBuild(), "model-is-unused") == [shutil.which("node"), str(FakeBuild.adapter)]
 
 
+def test_existing_adapter_profiles_keep_the_old_argv_call_shape(tmp_path):
+    import shutil
+
+    for harness in ("claude-code", "codex"):
+        p = profiles.load(ROOT, harness, credential_source=tmp_path / "c")
+        assert p.argv(FakeBuild()) == [shutil.which("node"), str(FakeBuild.adapter)]
+
+
 def test_copilot_argv_uses_the_pinned_exe_and_each_cells_model():
     p = profiles.load(ROOT, "copilot")
     for model in ("gpt-6-sol", "other-advertised-model"):
         assert p.argv(FakeBuild(), model) == [str(FakeBuild.exe), "--acp", "--model", model,
                                                "--allow-tool", "shell", "--allow-tool", "write"]
+
+
+def test_copilot_command_requires_an_explicit_model():
+    p = profiles.load(ROOT, "copilot")
+    with pytest.raises(ValueError, match="model is required"):
+        p.argv(FakeBuild())
 
 
 def test_command_template_rejects_an_adapter_placeholder_without_an_adapter(tmp_path):
