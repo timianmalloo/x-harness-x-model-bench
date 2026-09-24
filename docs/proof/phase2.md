@@ -84,6 +84,8 @@ Each join follows the plan's join rule. A non-author re-runs every cited red in 
 
 **R-19:** the phase-1 figure of 2267 mutation kills is **not re-derivable (Flagged): the phase-1 cosmic-ray session databases were not kept.** The re-run is a named later window, and no mutation-bar claim is made in phase-2 artifacts until then.
 
+**Follow-up (T0, Claude Sonnet 5; joined `a9f8bbc`).** `mutate_check` reports `error`, never `survived` or `killed`, when a run's output has no pytest summary (for example, the interpreter vanished mid-run; CLN-B). Red `b5847f8`: 3 failed, 23 passed (re-run by the Leader), then green `63a4465`. Leader mutant: `if False and not _ran_to_completion(output):` was killed by `test_only_a_named_failure_is_a_kill[…no-summary…]` ×2. The review was scaled to the tier (T0): the Leader, a non-author, was the reviewer.
+
 ## Join: W1-ACP (rows 6, 14), Claude Opus 5.5, 2026-09-24 (joined `124af8e`)
 
 This discharges phase-1 residual 9: "capture one cell's full ACP stream … replace the schema-shaped fixture … re-run D5/D7. Deadline: before phase 2 changes the driver." The recordings were made in the Leader's capture window 1:
