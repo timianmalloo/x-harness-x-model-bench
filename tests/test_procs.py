@@ -165,3 +165,9 @@ def test_run_with_an_unconfirmed_kill_raises_nothing_and_leaks_nothing(monkeypat
 def test_run_bounds_output():
     result = procs.run([sys.executable, "-c", "print('x'*5000000)"], cwd=None, env=None, timeout=30, max_output=1024)
     assert result.returncode == 0 and len(result.stdout) <= 1024 and result.truncated
+
+
+def test_unused_knobs_are_gone():  # Simplifier minors: no caller passes stdin_data= or retry_every=
+    import inspect
+    assert "stdin_data" not in inspect.signature(procs.run).parameters
+    assert "retry_every" not in inspect.signature(procs.CellProcess.terminate_and_confirm).parameters

@@ -314,3 +314,9 @@ def test_the_fidelity_check_fails_on_a_seeded_unpaired_type(tmp_path):  # D7 neg
     assert "session/update.plan" in emitted
     with pytest.raises(AssertionError, match=r"session/update\.plan"):
         _assert_paired(emitted)
+
+
+def test_run_turn_has_no_model_switch():  # Simplifier minor: no caller passes model=, so no session/set_model path
+    import inspect
+    assert "model" not in inspect.signature(driver.run_turn).parameters
+    assert "session/set_model" not in Path(driver.__file__).read_text(encoding="utf-8")
