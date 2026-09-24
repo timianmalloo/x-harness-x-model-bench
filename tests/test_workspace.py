@@ -1,6 +1,7 @@
 """Per-cell working copies (ADR-0013; US-8, US-9, US-49) and safe host git (ADR-0010 B6)."""
 
 import subprocess
+import threading
 from pathlib import Path
 
 import pytest
@@ -16,6 +17,74 @@ PACK_SOURCE = (ROOT / ".." / "ai-forward").resolve()
 
 def _git(cwd, *args):
     return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, check=False).stdout
+
+
+def _local_pack_repo(path):  # mirrors tests/test_cli.py::_pack_repo; no dependency on ../ai-forward
+    (path / "pack" / "adapters").mkdir(parents=True)
+    (path / "pack" / "adapters" / "INSTALL.md").write_text("revision: 7\n", encoding="utf-8")
+    for args in (["init", "-q", "-b", "main"], ["add", "-A"], ["commit", "-q", "-m", "pack"]):
+        gitsafe.git(args, cwd=path, timeout=60, identity=True)
+    return gitsafe.git(["rev-parse", "HEAD"], cwd=path, timeout=60).stdout.strip()
+
+
+def _run_concurrently(build) -> list:
+    """Run `build()` on two threads released together by a barrier; collect each result or exception."""
+    results: list = []
+    barrier = threading.Barrier(2)
+
+    def worker():
+        barrier.wait()
+        try:
+            results.append(build())
+        except Exception as exc:  # noqa: BLE001 - the test asserts on what actually happened
+            results.append(exc)
+
+    threads = [threading.Thread(target=worker) for _ in range(2)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    return results
+
+
+def test_task_source_built_concurrently_gives_every_caller_the_same_dest(base):  # T6-1 (HB-CELL-113)
+    sources_root = base / "sources"
+    dest = sources_root / "X1" / "v-race"[:16]
+    results = _run_concurrently(lambda: workspace.task_source(X1, "v-race", sources_root))
+    assert results == [dest, dest], results
+    assert (dest / ".git").is_dir()
+
+
+def test_task_source_reraises_when_a_colliding_dest_is_not_a_valid_build(base):
+    sources_root = base / "sources"
+    dest = sources_root / "X1" / "v-bad"[:16]
+    dest.mkdir(parents=True)
+    (dest / "not-a-build").write_text("x", encoding="utf-8")  # occupies dest but has no .git
+    with pytest.raises(OSError):
+        workspace.task_source(X1, "v-bad", sources_root)
+
+
+def test_pack_checkout_built_concurrently_gives_every_caller_the_same_dest(base):  # T6-2 (HB-CELL-113)
+    pack_src = base / "ai-forward"
+    pack_src.mkdir()
+    commit = _local_pack_repo(pack_src)
+    tools_root = base / "tools"
+    dest = tools_root / commit[:12]
+    results = _run_concurrently(lambda: workspace.pack_checkout(pack_src, commit, tools_root))
+    assert results == [dest, dest], results
+    assert _git(dest, "rev-parse", "HEAD").strip() == commit
+
+
+def test_pack_checkout_reraises_when_a_colliding_dest_is_not_a_valid_build(base):
+    pack_src = base / "ai-forward"
+    pack_src.mkdir()
+    commit = _local_pack_repo(pack_src)
+    tools_root = base / "tools"
+    dest = tools_root / commit[:12]
+    dest.mkdir(parents=True)
+    (dest / "not-a-build").write_text("x", encoding="utf-8")  # occupies dest but has no .git
+    with pytest.raises(OSError):
+        workspace.pack_checkout(pack_src, commit, tools_root)
 
 
 @pytest.fixture

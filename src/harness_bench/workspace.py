@@ -43,6 +43,20 @@ def _fresh(dest: Path) -> Path:
     return tmp
 
 
+def _land(tmp: Path, dest: Path, valid) -> Path:
+    """Publish tmp as dest. A build is content-addressed and written once: when two callers race to
+    build the same dest, `os.replace` fails for whichever lands second (HB-CELL-113, Windows cannot
+    rename onto a non-empty dest). If dest is by then a valid build, the other writer won; discard
+    tmp (the caller's `finally` does that) and hand back dest. Any other failure is real and propagates.
+    """
+    try:
+        os.replace(tmp, dest)
+    except OSError:
+        if not valid(dest):
+            raise
+    return dest
+
+
 def task_source(task_dir: Path, version: str, sources_root: Path) -> Path:
     """The bench-owned repository of one task version's base tree (created once, then reused)."""
     dest = sources_root / task_dir.name / version[:16]
@@ -55,11 +69,10 @@ def task_source(task_dir: Path, version: str, sources_root: Path) -> Path:
         gitsafe.git(["init", "-q", "-b", "main"], cwd=tmp, timeout=GIT_TIMEOUT)
         gitsafe.git(["add", "-A"], cwd=tmp, timeout=GIT_TIMEOUT)
         gitsafe.git(["commit", "-q", "-m", f"{task_dir.name} base ({version[:12]})"], cwd=tmp, timeout=GIT_TIMEOUT, identity=True)
-        os.replace(tmp, dest)
+        return _land(tmp, dest, lambda d: (d / ".git").is_dir())
     finally:
         if tmp.exists():
             shutil.rmtree(tmp, ignore_errors=True)
-    return dest
 
 
 def cell_working_copy(source: Path, dest: Path) -> Path:
@@ -72,11 +85,15 @@ def cell_working_copy(source: Path, dest: Path) -> Path:
     return dest
 
 
+def _pack_head(dest: Path) -> str:
+    return gitsafe.git(["rev-parse", "HEAD"], cwd=dest, timeout=GIT_TIMEOUT).stdout.strip()
+
+
 def pack_checkout(source: Path, commit: str, tools_root: Path) -> Path:
     """A bench-owned checkout of the pinned ai-forward commit (the source clone is never modified)."""
     dest = tools_root / commit[:12]
     if (dest / ".git").is_dir():
-        head = gitsafe.git(["rev-parse", "HEAD"], cwd=dest, timeout=GIT_TIMEOUT).stdout.strip()
+        head = _pack_head(dest)
         if head == commit:
             return dest
         raise BenchError("HB-PRE-007", f"{dest} is at {head}, not the pinned pack commit {commit}")
@@ -85,11 +102,10 @@ def pack_checkout(source: Path, commit: str, tools_root: Path) -> Path:
     try:
         gitsafe.git(["clone", "--quiet", "--no-checkout", str(source), str(tmp)], cwd=dest.parent, timeout=GIT_TIMEOUT * 5)
         gitsafe.git(["checkout", "--quiet", commit], cwd=tmp, timeout=GIT_TIMEOUT * 5)
-        os.replace(tmp, dest)
+        return _land(tmp, dest, lambda d: (d / ".git").is_dir() and _pack_head(d) == commit)
     finally:
         if tmp.exists():
             shutil.rmtree(tmp, ignore_errors=True)
-    return dest
 
 
 def pack_revision(pack_dir: Path) -> int:
