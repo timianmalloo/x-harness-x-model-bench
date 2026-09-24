@@ -9,7 +9,8 @@ Pattern: append-only log as a linear hash chain (Schneier & Kelsey 1999) with se
   segment id, so a segment cannot be replayed under another name.
 - Canonical form: sorted keys, compact separators, UTF-8, and only str / int / None / list / dict
   (no floats, no bools); a subset of JCS (RFC 8785).
-- One write + flush + fsync per line.
+- One write + flush + fsync per line. A failed write raises its `OSError` and poisons the writer: every later
+  append or seal raises HB-LED-002.
 - `seal()` appends `segment.sealed{count, head_hash}`; nothing may follow it.
 - Only the segment's own writer repairs a torn tail (on reopen), and records `ledger.tail_repaired`.
   Readers ignore the torn tail of an unsealed segment. Anything else broken is HB-LED-002.
@@ -109,6 +110,8 @@ def _scan(path: Path) -> tuple[SegmentReport, list[dict], int]:
         return report, rows, offset
 
     for index, line in enumerate(complete):
+        if report.sealed:  # anything after the seal, parsed or not, is a break: a sealed segment has no torn tail
+            return broken(f"bytes after the seal (line {index + 1})")
         last = index == len(complete) - 1 and tail == b""
         try:
             row = json.loads(line.decode("utf-8"))
@@ -119,8 +122,6 @@ def _scan(path: Path) -> tuple[SegmentReport, list[dict], int]:
                 report.torn_tail = True
                 break
             return broken(f"line {index + 1} does not parse")
-        if report.sealed:
-            return broken(f"line {index + 1} follows the seal")
         stored = row.get("hash")
         body = {k: v for k, v in row.items() if k != "hash"}
         try:
@@ -169,6 +170,7 @@ class SegmentWriter:
         self.head_hash = head
         self.sealed = sealed
         self.repaired = repaired
+        self.failed: OSError | None = None  # the first failed write; set once, never cleared
         key = str(path.resolve())
         with _open_lock:
             if key in _open_writers:
@@ -204,13 +206,24 @@ class SegmentWriter:
         return cls(path, seq_rows, report.head_hash, False, report.torn_tail)
 
     def _write(self, row: dict) -> None:
-        self._file.write(canonical(row) + b"\n")
-        self._file.flush()
-        os.fsync(self._file.fileno())
+        """One line, flushed and fsynced. The first failed write poisons the writer: part of the line may be on
+        disk, so every later append or seal is refused (HB-LED-002) rather than written after a torn line."""
+        if self.failed is not None:
+            raise BenchError("HB-LED-002", f"{self.path.name}: an earlier write failed ({self.failed}); append refused") from self.failed
+        line = canonical(row) + b"\n"
+        try:
+            self._file.write(line)
+            self._file.flush()
+            os.fsync(self._file.fileno())
+        except OSError as exc:
+            self.failed = exc
+            raise
 
     def append(self, record: dict) -> dict:
         if self.sealed:
             raise BenchError("HB-LED-002", f"{self.path.name} is sealed; append refused")
+        if record.get("kind") == SEAL:
+            raise ValueError(f"record may not be of kind {SEAL!r}; only seal() writes it")
         row = _chain(record, self.count + 1, self.head_hash)
         self._write(row)
         self.count += 1

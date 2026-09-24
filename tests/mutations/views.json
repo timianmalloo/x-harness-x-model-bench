@@ -72,8 +72,8 @@
  {
   "name": "a zero-length model call counted as a duration",
   "file": "src/harness_bench/views.py",
-  "find": "    return start is not None and end is not None and end > start\n",
-  "replace": "    return start is not None and end is not None and end >= start\n",
+  "find": " or (positive and end == start)",
+  "replace": "",
   "tests": ["tests/test_views.py::test_model_time_needs_a_real_duration_for_every_call"]
  },
  {
@@ -110,5 +110,97 @@
   "find": "\"extraction_id\": c.extraction_id} for c in sorted(",
   "replace": "\"extraction_id\": c.extraction_id, \"evidence\": c.evidence} for c in sorted(",
   "tests": ["tests/test_views.py::test_a_regrade_gives_a_byte_identical_canonical_export"]
+ },
+ {
+  "name": "verify skips the recorded heads and seals (R-2)",
+  "file": "src/harness_bench/views.py",
+  "find": "    out += _sealed_record(run_dir)\n",
+  "replace": "",
+  "tests": ["tests/test_verify.py"]
+ },
+ {
+  "name": "a completed pass's heads are not checked",
+  "file": "src/harness_bench/views.py",
+  "find": "        if \"heads\" in row:\n            out += _heads(run_dir, gid, row[\"heads\"], owner)\n",
+  "replace": "        if \"heads\" in row:\n            pass\n",
+  "tests": ["tests/test_verify.py::test_deleting_a_completed_pass_fact_segment_is_exit_5",
+            "tests/test_verify.py::test_a_tampered_golden_ledger_is_exit_5"]
+ },
+ {
+  "name": "a segment named by heads may be missing",
+  "file": "src/harness_bench/views.py",
+  "find": "        if not path.is_file():\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_verify.py::test_deleting_a_completed_pass_fact_segment_is_exit_5"]
+ },
+ {
+  "name": "a segment named by heads may be unsealed",
+  "file": "src/harness_bench/views.py",
+  "find": "        if not report.sealed:\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_verify.py::test_cutting_or_deleting_a_completed_run_segment_is_exit_5"]
+ },
+ {
+  "name": "a segment named by heads may end at another head",
+  "file": "src/harness_bench/views.py",
+  "find": "        elif report.head_hash != head:\n",
+  "replace": "        elif False:\n",
+  "tests": ["tests/test_verify.py::test_a_tampered_golden_ledger_is_exit_5"]
+ },
+ {
+  "name": "a completed pass's segments need not be sealed",
+  "file": "src/harness_bench/views.py",
+  "find": "            if path.is_file() and not ledger.verify_segment(path).sealed:\n",
+  "replace": "            if False:\n",
+  "tests": ["tests/test_verify.py::test_a_tampered_golden_ledger_is_exit_5"]
+ },
+ {
+  "name": "a pass without heads is an error (R-2 says warning)",
+  "file": "src/harness_bench/views.py",
+  "find": "Finding(\"HB-LED-002\", \"warning\", f\"events/{gid}: grading.completed records no heads \"",
+  "replace": "Finding(\"HB-LED-002\", \"error\", f\"events/{gid}: grading.completed records no heads \"",
+  "tests": ["tests/test_verify.py::test_the_ledger_written_before_heads_verifies_with_a_warning"]
+ },
+ {
+  "name": "a pass without heads is not reported",
+  "file": "src/harness_bench/views.py",
+  "find": "            out.append(Finding(\"HB-LED-002\", \"warning\", f\"events/{gid}: grading.completed records no heads \"\n                                                        \"(written before ruling R-2); only its seals are checked\"))\n",
+  "replace": "            pass\n",
+  "tests": ["tests/test_verify.py::test_the_ledger_written_before_heads_verifies_with_a_warning"]
+ },
+ {
+  "name": "run.completed's events head is not checked",
+  "file": "src/harness_bench/views.py",
+  "find": "            if heads.pop(\"events\", None) != row[\"prev_hash\"] or not ledger.verify_segment(path).sealed:\n",
+  "replace": "            if heads.pop(\"events\", None) and False:\n",
+  "tests": ["tests/test_verify.py::test_a_run_completed_naming_the_wrong_events_head_is_exit_5"]
+ },
+ {
+  "name": "the events segment may stay unsealed after run.completed",
+  "file": "src/harness_bench/views.py",
+  "find": " or not ledger.verify_segment(path).sealed:\n",
+  "replace": ":\n",
+  "tests": ["tests/test_verify.py::test_cutting_the_seal_after_run_completed_is_exit_5"]
+ },
+ {
+  "name": "run.completed's segment_heads are not checked",
+  "file": "src/harness_bench/views.py",
+  "find": "            out += _heads(run_dir, path.stem, heads, owner)\n",
+  "replace": "",
+  "tests": ["tests/test_verify.py::test_cutting_or_deleting_a_completed_run_segment_is_exit_5"]
+ },
+ {
+  "name": "the in-run pass named by run.completed is not checked",
+  "file": "src/harness_bench/views.py",
+  "find": "            if isinstance(grading, dict) and \"heads\" in grading:\n",
+  "replace": "            if False:\n",
+  "tests": ["tests/test_verify.py::test_the_in_run_pass_cannot_be_turned_into_an_abandoned_one"]
+ },
+ {
+  "name": "a malformed heads record is trusted",
+  "file": "src/harness_bench/views.py",
+  "find": "    if not isinstance(heads, dict):\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_verify.py::test_a_malformed_heads_record_is_exit_5_not_a_crash"]
  }
 ]

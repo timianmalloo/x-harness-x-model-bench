@@ -682,6 +682,34 @@ window.DOCS_INDEX = {
       "sourceSha256": "3818fd2d2aab1026085f985ce30b198952054a67b41518fd26edf40ce4c12272"
     },
     {
+      "id": "mutation-record-t2",
+      "path": "docs/notes/mutation-record-t2.md",
+      "title": "Mutation record - track T2 (ledger, views, grade)",
+      "type": "decision-note",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2026-12-22",
+      "reviewSuggested": [],
+      "summary": "cosmic-ray 8.7.0 over ledger.py, views.py and grade/**, run natively on Windows at the track's final src: 1803 mutants, 1546 killed, 257 survived, 0 timeout, 0 incompetent, 0 not-exercised-on-platform. Every survivor is an equivalent mutant with its diff and a one-line argument: 225 inside type annotations, 32 argued one by one.",
+      "tags": [
+        "mutation",
+        "cosmic-ray",
+        "T2",
+        "ledger",
+        "views",
+        "grade"
+      ],
+      "links": [
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "f54ea8545aabc6a07d972e57c9b85f5dad4106f52ce026b54098fafa75567bfc"
+    },
+    {
       "id": "note-20260923-a6-start-benchmark",
       "path": "docs/notes/a6-start-benchmark-golden-cases.md",
       "title": "A6 golden cases: the start-benchmark skill, old against new",
@@ -1482,5 +1510,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "ea6f710efbf1bcd6212b201ed61dc1293e5db7268c6cf9137e167f4106624eae"
+  "graphSha256": "4ad85ebff7c62f008fac368ac8c52ee4c2a8717cfb256dc517dd331d0b053308"
 };

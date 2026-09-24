@@ -1,5 +1,12 @@
 [
  {
+  "name": "a native record missing a usage field is costed as 0 (HB-TEL-001, seam T3 -> T2)",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "        elif source == \"native_record\" and ex.missing:",
+  "replace": "        elif False:",
+  "tests": ["tests/test_grade.py::test_cost_is_na_naming_hb_tel_001_when_the_native_record_misses_a_usage_field"]
+ },
+ {
   "name": "extraction written on every pass",
   "file": "src/harness_bench/grade/runner.py",
   "find": "        if (cid, self.extraction) not in held:\n",
@@ -23,8 +30,8 @@
  {
   "name": "a completed pass counted without its grading.completed row",
   "file": "src/harness_bench/views.py",
-  "find": "if report.sealed and not report.error and any(r[\"kind\"] == \"grading.completed\" for r in ledger.read_segment(path)):",
-  "replace": "if not report.error:",
+  "find": "        if report.sealed and not report.error:\n            row = next((r for r in ledger.read_segment(path) if r[\"kind\"] == \"grading.completed\"), None)\n",
+  "replace": "        if not report.error:\n            row = next(iter(ledger.read_segment(path)), None)\n",
   "tests": ["tests/test_grade.py::test_an_abandoned_segment_is_named_once_in_the_next_pass_own_segment",
             "tests/test_grade.py::test_an_abandoned_pass_does_not_hold_an_extraction"]
  },
@@ -97,6 +104,14 @@
   "find": "        if sc[\"cell_id\"] not in archived_at_start.get(sc[\"grading_id\"], set()):\n",
   "replace": "        if False:\n",
   "tests": ["tests/test_grade.py::test_a_score_for_an_unarchived_cell_is_rejected_by_the_replay"]
+ },
+ {
+  "name": "grading.completed records no heads (R-2)",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": ",\n                                   \"heads\": dict(heads)})",
+  "replace": "})",
+  "tests": ["tests/test_grade.py::test_grading_completed_records_the_sealed_heads_of_its_other_facts",
+            "tests/test_verify.py::test_deleting_a_completed_pass_fact_segment_is_exit_5"]
  },
  {
   "name": "replay: a cell graded twice in a pass allowed",

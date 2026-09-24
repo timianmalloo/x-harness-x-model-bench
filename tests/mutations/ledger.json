@@ -1,0 +1,144 @@
+[
+ {
+  "name": "a second writer is allowed",
+  "file": "src/harness_bench/ledger.py",
+  "find": "            if key in _open_writers:\n",
+  "replace": "            if False:\n",
+  "tests": ["tests/test_ledger.py::test_a_segment_has_one_writer_until_it_closes"]
+ },
+ {
+  "name": "a closed writer keeps its claim",
+  "file": "src/harness_bench/ledger.py",
+  "find": "            _open_writers.discard(self._key)\n",
+  "replace": "            pass\n",
+  "tests": ["tests/test_ledger.py::test_a_segment_has_one_writer_until_it_closes"]
+ },
+ {
+  "name": "the seal's count is not checked",
+  "file": "src/harness_bench/ledger.py",
+  "find": "row.get(\"count\") != len(rows) or ",
+  "replace": "",
+  "tests": ["tests/test_ledger.py::test_a_re_hashed_seal_must_still_match_its_segment"]
+ },
+ {
+  "name": "the seal's head is not checked",
+  "file": "src/harness_bench/ledger.py",
+  "find": " or row.get(\"head_hash\") != prev:",
+  "replace": ":",
+  "tests": ["tests/test_ledger.py::test_a_re_hashed_seal_must_still_match_its_segment"]
+ },
+ {
+  "name": "seq is not checked",
+  "file": "src/harness_bench/ledger.py",
+  "find": " or body.get(\"seq\") != len(rows) + 1:",
+  "replace": ":",
+  "tests": ["tests/test_ledger.py::test_a_re_hashed_seal_must_still_match_its_segment"]
+ },
+ {
+  "name": "bytes after the seal are a torn tail",
+  "file": "src/harness_bench/ledger.py",
+  "find": "        if report.sealed:\n            return broken(\"bytes after the seal\")\n",
+  "replace": "",
+  "tests": ["tests/test_ledger.py::test_bytes_after_the_seal_are_a_break_not_a_torn_tail"]
+ },
+ {
+  "name": "a line after the seal is accepted (T2-8)",
+  "file": "src/harness_bench/ledger.py",
+  "find": "        if report.sealed:  # anything after the seal, parsed or not, is a break: a sealed segment has no torn tail\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_ledger.py::test_bytes_after_the_seal_are_a_break_not_a_torn_tail",
+            "tests/test_ledger.py::test_a_chained_line_after_the_seal_is_a_break"]
+ },
+ {
+  "name": "the first line is not bound to its segment id",
+  "file": "src/harness_bench/ledger.py",
+  "find": "    return _digest(f\"genesis:{segment_id}\".encode())\n",
+  "replace": "    return _digest(b\"genesis\")\n",
+  "tests": ["tests/test_ledger.py::test_first_line_is_bound_to_its_segment_id"]
+ },
+ {
+  "name": "a non-canonical line is accepted",
+  "file": "src/harness_bench/ledger.py",
+  "find": "            if canonical(row) != line:\n",
+  "replace": "            if False:\n",
+  "tests": ["tests/test_ledger.py::test_a_line_not_in_canonical_form_is_a_break"]
+ },
+ {
+  "name": "a float in a stored line crashes the reader",
+  "file": "src/harness_bench/ledger.py",
+  "find": "        except TypeError as exc:\n            return broken(f\"line {index + 1}: {exc}\")\n",
+  "replace": "        except KeyError as exc:\n            return broken(f\"line {index + 1}: {exc}\")\n",
+  "tests": ["tests/test_ledger.py::test_a_float_in_a_stored_line_is_a_break_not_a_crash"]
+ },
+ {
+  "name": "a torn line in the middle is a torn tail",
+  "file": "src/harness_bench/ledger.py",
+  "find": "            if last:  # a final line that fails to parse is a torn tail\n",
+  "replace": "            if True:\n",
+  "tests": ["tests/test_ledger.py::test_a_torn_line_that_is_not_the_tail_is_a_break"]
+ },
+ {
+  "name": "reopen keeps the torn tail",
+  "file": "src/harness_bench/ledger.py",
+  "find": "                f.truncate(good)\n",
+  "replace": "                pass\n",
+  "tests": ["tests/test_ledger.py::test_owner_reopen_repairs_the_torn_tail_and_records_it",
+            "tests/test_ledger.py::test_a_torn_tail_is_handled_at_any_offset"]
+ },
+ {
+  "name": "a sealed segment is reopened",
+  "file": "src/harness_bench/ledger.py",
+  "find": "        if report.sealed:\n            raise BenchError(\"HB-LED-002\", f\"{path.name} is sealed\")\n",
+  "replace": "",
+  "tests": ["tests/test_ledger.py::test_a_sealed_segment_is_never_reopened"]
+ },
+ {
+  "name": "append after the seal",
+  "file": "src/harness_bench/ledger.py",
+  "find": "        if self.sealed:\n            raise BenchError(\"HB-LED-002\", f\"{self.path.name} is sealed; append refused\")\n",
+  "replace": "",
+  "tests": ["tests/test_ledger.py::test_append_after_seal_is_refused"]
+ },
+ {
+  "name": "a caller record may be of the seal's kind (T2-7)",
+  "file": "src/harness_bench/ledger.py",
+  "find": "        if record.get(\"kind\") == SEAL:\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_ledger.py::test_a_record_may_not_forge_a_seal_or_its_chain_fields"]
+ },
+ {
+  "name": "a record may set the chain fields",
+  "file": "src/harness_bench/ledger.py",
+  "find": "        if f in record:\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_ledger.py::test_a_record_may_not_forge_a_seal_or_its_chain_fields"]
+ },
+ {
+  "name": "a failed write does not poison the writer (SRE-5)",
+  "file": "src/harness_bench/ledger.py",
+  "find": "            self.failed = exc\n",
+  "replace": "            pass\n",
+  "tests": ["tests/test_ledger.py::test_a_failed_write_poisons_the_writer"]
+ },
+ {
+  "name": "a poisoned writer still appends (SRE-5)",
+  "file": "src/harness_bench/ledger.py",
+  "find": "        if self.failed is not None:\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_ledger.py::test_a_failed_write_poisons_the_writer"]
+ },
+ {
+  "name": "bools pass the canonical form",
+  "file": "src/harness_bench/ledger.py",
+  "find": "    if isinstance(value, bool) or not isinstance(value, (int, list, dict)):\n",
+  "replace": "    if not isinstance(value, (int, list, dict)):\n",
+  "tests": ["tests/test_ledger.py::test_canonical_rejects_floats_bools_and_bytes"]
+ },
+ {
+  "name": "non-string keys pass the canonical form",
+  "file": "src/harness_bench/ledger.py",
+  "find": "            if not isinstance(k, str):\n",
+  "replace": "            if False:\n",
+  "tests": ["tests/test_ledger.py::test_canonical_rejects_a_non_string_key"]
+ }
+]

@@ -111,6 +111,31 @@ def make_run(root: Path, tmp_path: Path, cells: dict[str, str | None], harness: 
     return run_dir
 
 
+ENGINE_FACTS = ("events", "turn_usage", "archive_files")  # engine.FACTS: the engine writes one segment per fact
+
+
+def complete_run(run_dir: Path, grading: dict | None = None, events_head: str | None = None) -> dict:
+    """Close the engine segments the way `Engine.run` does: seal every other fact, append `run.completed` with
+    `segment_heads` (events: the head before `run.completed`) and `grading` (a pass summary), then seal events.
+    `events_head` overrides the recorded events head (a forged record). Returns the `run.completed` row."""
+    for fact in ENGINE_FACTS:
+        if not (run_dir / fact / "engine-1.jsonl").exists():
+            ledger.SegmentWriter.create(run_dir / fact, "engine-1").close()
+    ended = sum(1 for e in ledger.read_segment(run_dir / "events" / "engine-1.jsonl") if e["kind"] == "cell.outcome")
+    writers = {fact: ledger.SegmentWriter.reopen(run_dir / fact / "engine-1.jsonl") for fact in ENGINE_FACTS}
+    try:
+        heads = {fact: w.seal() for fact, w in writers.items() if fact != "events"}
+        ev = writers["events"]
+        done = ev.append(ledger.stamp({"kind": "run.completed", "run_id": "r1",
+                                       "segment_heads": {**heads, "events": events_head or ev.head_hash},
+                                       "cells_ended": ended, "grading": grading}))
+        ev.seal()
+    finally:
+        for w in writers.values():
+            w.close()
+    return done
+
+
 def pass_rows(run_dir: Path, fact: str, grading_id: str) -> list[dict]:
     return ledger.read_segment(run_dir / fact / f"{grading_id}.jsonl")
 
