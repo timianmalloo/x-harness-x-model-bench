@@ -303,14 +303,14 @@ def test_every_recording_states_its_provenance_from_its_capture():  # W1-ACP (e)
 # D7: every message type the fake emits is paired with a real transcript or the ACP schema ------
 
 PAIRING = {
-    # type: evidence (a recorded real transcript from the spikes, or the ACP schema)
-    "initialize.result": "spike N4: real initialize results from claude-agent-acp, codex-acp, copilot --acp",
-    "session/new.result": "spike N4: real session/new results (sessionId, modes.availableModes)",
-    "session/set_mode.result": "spike N4: codex-acp set_mode agent-full-access returned {}",
-    "session/update.agent_message_chunk": "spike R11 container_acp.py counted real session/update notifications",
-    "session/prompt.result": "recorded: tests/fixtures/acp/*-prompt-response.json, replayed through the driver (D5)",
-    "session/request_permission": "ACP schema (agentclientprotocol.com, RequestPermissionRequest); no real exemplar yet - "
-                                  "flagged for the phase-2 permission probe",
+    # type: evidence (the real recordings it is present in, checked by parsing them; or the ACP schema)
+    "initialize.result": "recorded: recordings/claude-code-x1.jsonl, recordings/codex-x1.jsonl",
+    "session/new.result": "recorded: recordings/claude-code-x1.jsonl, recordings/codex-x1.jsonl",
+    "session/set_mode.result": "recorded: recordings/codex-x1.jsonl (agent-full-access returned {})",
+    "session/update.agent_message_chunk": "recorded: recordings/claude-code-x1.jsonl, recordings/codex-x1.jsonl",
+    "session/prompt.result": "recorded: recordings/claude-code-x1.jsonl, recordings/codex-x1.jsonl (replayed verbatim, D5)",
+    "session/request_permission": "ACP schema (agentclientprotocol.com, RequestPermissionRequest); no real exemplar: every "
+                                  "capture made 0 permission requests (the static profile, US-14)",
 }
 
 
