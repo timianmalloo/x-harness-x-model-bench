@@ -194,6 +194,24 @@ def test_cost_is_na_when_the_native_record_is_missing(root, tmp_path):
     assert (s["a", "cost_usd"]["value"], s["a", "cost_usd"]["reason"]) == (None, "no native record for the session")
 
 
+def test_cost_is_na_naming_hb_tel_001_when_the_native_record_misses_a_usage_field(root, tmp_path):  # seam T3 -> T2
+    set_prices(root, [{"model": CODEX_MODEL, "effective": "2026-09-01", "source": "s", "input": "1.25", "output": 10,
+                       "cache_read": "0.125", "cache_write": 0}])
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    record = next((run_dir / "archive" / "a" / "attempt-1" / "home").rglob("*.jsonl"))
+    lines = []
+    for line in record.read_text(encoding="utf-8").splitlines():
+        row = json.loads(line)
+        last = ((row.get("payload") or {}).get("info") or {}).get("last_token_usage")
+        if isinstance(last, dict):
+            last.pop("output_tokens", None)
+        lines.append(json.dumps(row))
+    record.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    s = scores(run_dir, runner.run_pass(run_dir, root).grading_id)
+    assert (s["a", "cost_usd"]["value"], s["a", "cost_usd"]["reason"]) == (None, "HB-TEL-001 native-record fields missing: output_tokens")
+    assert s["a", "pass_at_1"]["value"] == 1  # only the measures built from usage are NOT_RECORDED
+
+
 def test_a_grading_id_names_its_utc_start_and_a_random_suffix(root, tmp_path):
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     assert re.fullmatch(r"grade-\d{8}T\d{6}-[0-9a-f]{6}", runner.run_pass(run_dir, root).grading_id)
