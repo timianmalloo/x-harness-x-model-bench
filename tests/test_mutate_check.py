@@ -28,10 +28,10 @@ NAMED = ["tests/test_engine.py::test_parallelism_is_never_exceeded"]
     # T2/W1-ACP join finding: the .venv vanished mid-run (the interpreter itself is gone). No
     # pytest summary line and no FAILED line ever appears -- a broken environment, not a real
     # test outcome -- regardless of what exit code the shell happens to report.
-    (1, "python: can't open file 'C:\\\\proj\\\\.venv\\\\Scripts\\\\python.exe': "
-        "[Errno 2] No such file or directory\n", "error"),
-    (0, "python: can't open file 'C:\\\\proj\\\\.venv\\\\Scripts\\\\python.exe': "
-        "[Errno 2] No such file or directory\n", "error"),  # exit 0 with no summary is not a pass
+    (1, ("python: can't open file 'C:\\\\proj\\\\.venv\\\\Scripts\\\\python.exe': "
+         "[Errno 2] No such file or directory\n"), "error"),
+    (0, ("python: can't open file 'C:\\\\proj\\\\.venv\\\\Scripts\\\\python.exe': "
+         "[Errno 2] No such file or directory\n"), "error"),  # exit 0 with no summary is not a pass
 ])
 def test_only_a_named_failure_is_a_kill(returncode, output, expected):
     assert mutate_check.verdict(returncode, output, NAMED) == expected
