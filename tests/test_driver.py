@@ -207,7 +207,6 @@ PAIRING = {
     "initialize.result": "spike N4: real initialize results from claude-agent-acp, codex-acp, copilot --acp",
     "session/new.result": "spike N4: real session/new results (sessionId, modes.availableModes)",
     "session/set_mode.result": "spike N4: codex-acp set_mode agent-full-access returned {}",
-    "session/set_model.result": "spike N4: copilot set_model returned {}",
     "session/update.agent_message_chunk": "spike R11 container_acp.py counted real session/update notifications",
     "session/prompt.result": "recorded: tests/fixtures/acp/*-prompt-response.json, replayed through the driver (D5)",
     "session/request_permission": "ACP schema (agentclientprotocol.com, RequestPermissionRequest); no real exemplar yet - "
@@ -295,9 +294,10 @@ def test_every_message_type_the_fake_emits_is_paired_and_every_pairing_is_emitte
     modes = _fake_modes()
     assert {"ok", "permission", "eof_mid_turn"} <= set(modes)
     env = {m: dict(os.environ, FAKE_ACP=json.dumps({"mode": m, "usage": [{"model": "m", "token_count": {}}]})) for m in modes}
+    for m in modes:
+        (tmp_path / m).mkdir()
     with ThreadPoolExecutor(max_workers=len(modes)) as pool:
-        runs = [pool.submit(_tapped_turn, tmp_path / m, [sys.executable, str(FAKE)], env[m], "agent-full-access")
-                for m in modes if (tmp_path / m).mkdir() is None]
+        runs = [pool.submit(_tapped_turn, tmp_path / m, [sys.executable, str(FAKE)], env[m], "agent-full-access") for m in modes]
         emitted = set().union(*(r.result() for r in runs))
     _assert_paired(emitted)
     stale = set(PAIRING) - emitted
