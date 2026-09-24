@@ -219,6 +219,15 @@ summary: >-
 - **Control:** at any squash join, rebuild each register as the union of `HEAD`'s lines plus the staged new lines (the Leader's `union_register.py` step), then assert `git diff --cached --numstat -- <register>` shows 0 deletions before committing. Not yet a test or gate. The upgrade trigger is a second squash join, at which point it becomes a join-gate check.
 - **Status:** `observed` (the procedure is followed by the Leader; no automated gate yet)
 
+### CLN-B: a joined tree removed while a reviewer still reads it
+- **Signature:** the Leader cleans up a merged worktree while a review of that track is still running, and the reviewer's run depends on a file in that tree, such as its `.venv` interpreter. The reviewer's tool then fails in the middle of the run.
+- **Why it survives:** `coord worktree cleanup` checks that a tree is clean, merged and not held by a live session. A reviewer reading the tree from outside holds no session there, so the tree looks free.
+- **Instances:**
+  - `2026-09-24`: after the W1-ACP join, the Leader removed `phase2-acp-transcript` while the Test Architect's veto read-back ran `mutate_check` with that tree's `.venv`. The run printed "4 not killed". A re-run with `main`'s `.venv` killed all 5. The false result was safe (exit 1), but it exposed that `mutate_check` reports `survived` instead of `error` when there is no pytest output (fix: W1-TOOLB follow-up `w1-toolb-no-summary`).
+- **Sweep:** every cleanup the Leader runs after a join while reviewers or read-backs of that track are live.
+- **Control:** the Leader cleans up a track's tree only after every review and read-back of that track has handed back. Reviewers are briefed to use a throwaway `git worktree add --detach` tree, never the branch checkout. The tool-side half is the `mutate_check` no-summary → `error` fix.
+- **Status:** `observed` (Leader procedure; the tool-side fix is in flight)
+
 ---
 
 ## Inherited classes (seeded from the pack)
