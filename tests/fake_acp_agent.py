@@ -6,7 +6,8 @@ Behaviour comes from the FAKE_ACP environment variable (JSON):
    "record_dir": "<folder for a Claude-shaped native record>", "write_file": "<name written into cwd>",
    "sleep": <seconds to run the turn>, "model": "<served model>",
    "usage": [<model_usage entries for the prompt result, as claude-agent-acp reports them>],
-   "hang": <hang after writing the record, any mode>, "flush_on_eof": <append a record row after stdin closes>}
+   "hang": <hang after writing the record, any mode>, "flush_on_eof": <append a record row after stdin closes>,
+   "linger": <seconds to stay alive after stdin closes, like a CLI that is slow to exit>}
 
 Messages it emits (each paired with a recorded real transcript or the ACP schema in
 tests/test_driver.py::test_fake_agent_message_types_are_paired): the initialize result, the session/new
@@ -113,6 +114,7 @@ def main() -> int:
         for rec in Path(CFG["record_dir"]).glob("projects/**/*.jsonl"):
             with rec.open("a", encoding="utf-8") as out:
                 out.write(json.dumps({"type": "flushed-on-exit"}) + "\n")
+    time.sleep(CFG.get("linger", 0))
     return 0
 
 

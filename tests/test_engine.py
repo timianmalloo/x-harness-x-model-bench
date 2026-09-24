@@ -9,6 +9,7 @@ import json
 import os
 import subprocess
 import sys
+import threading
 import time
 import uuid
 from pathlib import Path
@@ -22,6 +23,7 @@ from harness_bench.telemetry import claude_code
 pytestmark = pytest.mark.native
 FAKE = Path(__file__).parent / "fake_acp_agent.py"
 ROOT = Path(__file__).resolve().parents[1]
+RUN_LIMIT = 120  # seconds: the bound on any one engine run in these tests
 USAGE = [{"model": "fake-model", "token_count": {"inputTokens": 3, "cachedInputTokens": 30, "cachedWriteTokens": 7,
                                                  "outputTokens": 5, "reasoningOutputTokens": 0}}]
 
@@ -84,11 +86,30 @@ def _build_workspace(cell: dict, cell_dir: Path) -> dict:
     return {"pack_manifest": 0}
 
 
-def _run(base, p, launcher, **cfg):
+def _engine_run(p, config, limit=RUN_LIMIT):
+    """Run the engine on its own thread with a bounded wait, so a missing guard fails the test fast, never hangs it."""
+    box = {}
+
+    def target():
+        try:
+            box["summary"] = engine.Engine(p, config).run()
+        except BaseException as exc:  # handed back to the test thread below
+            box["error"] = exc
+
+    t = threading.Thread(target=target, daemon=True, name="engine-under-test")
+    t.start()
+    t.join(limit)
+    assert not t.is_alive(), f"the engine did not finish within {limit} s"
+    if "error" in box:
+        raise box["error"]
+    return box["summary"]
+
+
+def _run(base, p, launcher, limit=RUN_LIMIT, **cfg):
     config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
                                  launchers={"fake": launcher}, build_workspace=cfg.pop("build_workspace", _build_workspace),
                                  grade=cfg.pop("grade", None), end_grace=cfg.pop("end_grace", 5), **cfg)
-    summary = engine.Engine(p, config).run()
+    summary = _engine_run(p, config, limit)
     events = engine.read_events(config.run_dir)
     lifecycle.replay(events, parallelism=p["parameters"]["parallelism"])  # conformance (US-44 AC3)
     return summary, events, config
@@ -156,12 +177,19 @@ def test_verbatim_prompt_reaches_the_agent_and_turn_usage_is_recorded(base):
 def test_budget_kill_is_timed_out_and_recorded_only_after_the_tree_is_gone(base):  # T-ENG-budget
     p = _plan(n_cells=1, budget=2)
     started = time.monotonic()
-    _, events, _ = _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"mode": "hang_prompt"}}))
+    _, events, _ = _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"mode": "hang_prompt"}}), limit=45)
     out = _outcomes(events)[p["cells"][0]["cell_id"]]
     assert out["outcome"] == "timed_out" and out["code"] == "HB-CELL-301"
     ended = next(e for e in events if e["kind"] == "attempt.process_ended")
     assert ended["confirmed"] == 1 and ended["seq"] < out["seq"]
     assert time.monotonic() - started < 45
+
+
+def test_a_budget_expiring_after_the_turn_ended_is_not_a_timeout(base):  # T1-1: ended before the graceful end
+    p = _plan(n_cells=1, budget=2)
+    _, events, _ = _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"linger": 8}}), end_grace=6)
+    out = _outcomes(events)[p["cells"][0]["cell_id"]]
+    assert (out["outcome"], out["stop_reason"], out["cause"]) == ("completed", "end_turn", None)
 
 
 def test_provider_error_takes_precedence_and_invalidates(base):  # T-ENG-provider-timeout
@@ -274,7 +302,7 @@ def test_an_append_failure_means_the_prompt_is_never_sent(base, monkeypatch):  #
     monkeypatch.setattr(ledger.SegmentWriter, "append", failing)
     config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
                                  launchers={"fake": FakeLauncher({})}, build_workspace=_build_workspace, grade=None, end_grace=3)
-    summary = engine.Engine(p, config).run()
+    summary = _engine_run(p, config)
     assert summary.exit_code == 3
     assert not list((base / "cells").rglob(".fake-prompt.txt")) and not list((config.run_dir / "archive").rglob(".fake-prompt.txt"))
 
