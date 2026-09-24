@@ -397,6 +397,36 @@ def test_after_the_ledger_breaks_no_worker_blocks_forever(base, monkeypatch):  #
     assert alive == [], f"workers still blocked after the run returned: {alive}"
 
 
+def test_record_rejects_a_non_canonical_value_on_the_worker_side(base):  # T1-5
+    config = engine.EngineConfig(run_dir=base / "runs" / "r", cells_root=base / "cells", launchers={},
+                                 build_workspace=_build_workspace, grade=None)
+    eng = engine.Engine(_plan(n_cells=1), config)
+    box = {}
+
+    def call():
+        try:
+            eng.record("events", {"kind": "cell.outcome", "cell_id": "x", "ratio": 0.5})
+        except TypeError as exc:
+            box["error"] = exc
+
+    t = threading.Thread(target=call, daemon=True)
+    t.start()
+    t.join(5)
+    assert not t.is_alive() and isinstance(box.get("error"), TypeError)
+    assert eng.inbox.empty() and not eng.broken
+
+
+def test_a_bad_record_fails_its_cell_not_the_run(base):  # T1-5: only a write or fsync OSError breaks the run
+    class FloatVersion(FakeLauncher):
+        def check_build(self):
+            return {**super().check_build(), "version": 1.5}  # not in the canonical form
+
+    p = _plan(n_cells=1)
+    summary, events, _ = _run(base, p, FloatVersion({}))
+    assert _outcomes(events)[p["cells"][0]["cell_id"]]["cause"] == "unclassified"
+    assert events[-1]["kind"] == "run.completed" and summary.exit_code == 0
+
+
 def test_a_started_run_is_refused(base):
     p = _plan(n_cells=1)
     _run(base, p, FakeLauncher({}))
