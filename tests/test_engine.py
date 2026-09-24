@@ -336,6 +336,22 @@ def test_a_ledger_failure_after_spawn_still_cleans_the_credentials(base, monkeyp
     assert not list(config.cells_root.rglob(".credentials.json"))
 
 
+def test_an_archive_failure_is_recorded_and_the_run_is_incomplete(base, monkeypatch):  # T1-3
+    from harness_bench import archive
+
+    def boom(*args, **kwargs):
+        raise OSError("archive volume unavailable")
+
+    monkeypatch.setattr(archive, "archive_cell", boom)
+    p = _plan(n_cells=1)
+    cid = p["cells"][0]["cell_id"]
+    summary, events, config = _run(base, p, FakeLauncher({}))
+    assert [(e["cell_id"], e["code"]) for e in events if e["kind"] == "cell.archive_failed"] == [(cid, "HB-CELL-199")]
+    assert _outcomes(events)[cid]["outcome"] == "completed"  # the outcome stands; its archive is what failed
+    assert summary.exit_code == 3 and not any(e["kind"] == "run.completed" for e in events)
+    assert (config.cells_root / p["run_id"] / cid / "ws").is_dir()  # the only copy of the work is kept
+
+
 def test_disk_floor_stops_launching_before_any_cell(base):
     p = _plan(n_cells=2)
     p["parameters"]["disk_floor_bytes"] = 1 << 60
