@@ -229,12 +229,9 @@ def spawn(argv: list[str], cwd, env, stdin=subprocess.PIPE, stdout=subprocess.PI
             try:
                 proc.wait(timeout=30)
             except subprocess.TimeoutExpired:
-                # The process is not in the job (assignment failed), so closing the job does not
-                # kill it. One more kill, then close below. The caller still gets SpawnError.
-                try:
-                    proc.kill()
-                except OSError:
-                    pass
+                # Already terminated above (TerminateProcess, or kill when OpenProcess failed).
+                # Swallow the timeout so the finally closes the job and the caller gets SpawnError.
+                pass
         finally:
             job.close()
         raise SpawnError(f"cannot assign pid {proc.pid} to its job", err)
