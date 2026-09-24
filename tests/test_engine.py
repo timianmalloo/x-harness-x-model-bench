@@ -174,6 +174,16 @@ def test_verbatim_prompt_reaches_the_agent_and_turn_usage_is_recorded(base):
     assert [(u["model"], u["uncached_input"], u["cache_read"], u["cache_write"], u["output"]) for u in usage] == [("fake-model", 3, 30, 7, 5)]
 
 
+def test_turn_usage_is_summed_per_model_before_it_is_recorded(base):  # T1-6: one row per (cell, attempt, model)
+    tc = {"inputTokens": 1, "cachedInputTokens": 2, "cachedWriteTokens": 3, "outputTokens": 4, "reasoningOutputTokens": 5}
+    usage = [{"model": "m-a", "token_count": tc}, {"model": "m-b", "token_count": tc}, {"model": "m-a", "token_count": tc}]
+    p = _plan(n_cells=1)
+    _, _, config = _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"usage": usage}}))
+    rows = ledger.read_segment(next((config.run_dir / "turn_usage").glob("*.jsonl")))
+    assert sorted((u["model"], u["uncached_input"], u["cache_read"], u["cache_write"], u["output"], u["reasoning"]) for u in rows) == [
+        ("m-a", 2, 4, 6, 8, 10), ("m-b", 1, 2, 3, 4, 5)]
+
+
 def test_budget_kill_is_timed_out_and_recorded_only_after_the_tree_is_gone(base):  # T-ENG-budget
     p = _plan(n_cells=1, budget=2)
     started = time.monotonic()
