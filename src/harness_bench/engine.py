@@ -221,7 +221,7 @@ class Engine:
         if (run_dir / "events").exists():
             raise BenchError("HB-USR-002", f"run {self.plan['run_id']} has already started; phase 1 re-runs under a new run id")
         run_dir.mkdir(parents=True, exist_ok=True)
-        lock = oslock.RunLock.acquire(run_dir / ".lock", code="HB-RUN-003")
+        lock = oslock.RunLock.acquire(run_dir / ".lock", code="HB-RUN-005")
         segment = f"engine-{int(time.time())}"
         for fact in FACTS:
             self.writers[fact] = ledger.SegmentWriter.create(run_dir / fact, segment)
