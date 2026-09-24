@@ -141,6 +141,27 @@ def test_run_times_out_and_kills_the_tree():
     assert result.returncode is not None
 
 
+def test_run_with_an_unconfirmed_kill_raises_nothing_and_leaks_nothing(monkeypatch):
+    cells = []
+    real_spawn = procs.spawn
+
+    def spy(*args, **kwargs):
+        cells.append(real_spawn(*args, **kwargs))
+        return cells[-1]
+
+    monkeypatch.setattr(procs, "spawn", spy)
+    monkeypatch.setattr(procs.Job, "terminate", lambda self, exit_code=1: None)  # fault: the kill never lands
+    monkeypatch.setattr(procs, "_KILL_GRACE", 0.5, raising=False)
+    result = procs.run([sys.executable, "-c", "import time;time.sleep(600)"], cwd=None, env=None, timeout=0.5)
+    assert result.timed_out and result.returncode is None  # no exit status was observed, so none is reported
+    cell = cells[0]
+    assert cell.job.handle is None and cell.proc.stdout.closed and cell.proc.stderr.closed
+    deadline = time.monotonic() + 10
+    while _alive(cell.pid) and time.monotonic() < deadline:  # closing the job (kill-on-close) ended the tree
+        time.sleep(0.2)
+    assert not _alive(cell.pid)
+
+
 def test_run_bounds_output():
     result = procs.run([sys.executable, "-c", "print('x'*5000000)"], cwd=None, env=None, timeout=30, max_output=1024)
     assert result.returncode == 0 and len(result.stdout) <= 1024 and result.truncated
