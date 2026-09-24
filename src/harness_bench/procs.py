@@ -183,14 +183,14 @@ class CellProcess:
         """The main process's exit status, unsigned (e.g. 0xC0000017 for STATUS_NO_MEMORY)."""
         return self.proc.wait(timeout=timeout) & 0xFFFFFFFF
 
-    def terminate_and_confirm(self, timeout: float, retry_every: float = 1.0) -> bool:
-        """Kill the whole tree; True once the job reports no active process."""
+    def terminate_and_confirm(self, timeout: float) -> bool:
+        """Kill the whole tree, re-sending the kill every second; True once the job reports no active process."""
         deadline = time.monotonic() + timeout
         next_kill = 0.0
         while time.monotonic() < deadline:
             if time.monotonic() >= next_kill:
                 self.job.terminate()
-                next_kill = time.monotonic() + retry_every
+                next_kill = time.monotonic() + 1.0
             if self.job.active() == 0:
                 return True
             time.sleep(0.05)
@@ -254,22 +254,15 @@ def _drain(stream, limit: int, sink: list, flags: list) -> None:
             flags.append(True)
 
 
-def run(argv: list[str], cwd, env, timeout: float, max_output: int = 1 << 20, stdin_data: bytes | None = None) -> Completed:
+def run(argv: list[str], cwd, env, timeout: float, max_output: int = 1 << 20) -> Completed:
     """Run a bounded command in its own job; the whole tree is terminated when it ends or times out."""
     started = time.monotonic()
-    cell = spawn(argv, cwd, env, stdin=subprocess.PIPE if stdin_data is not None else subprocess.DEVNULL,
-                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cell = spawn(argv, cwd, env, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err, trunc = [], [], []
     readers = [threading.Thread(target=_drain, args=(cell.proc.stdout, max_output, out, trunc), daemon=True),
                threading.Thread(target=_drain, args=(cell.proc.stderr, max_output, err, trunc), daemon=True)]
     for t in readers:
         t.start()
-    if stdin_data is not None:
-        try:
-            cell.proc.stdin.write(stdin_data)
-            cell.proc.stdin.close()
-        except OSError:
-            pass
     timed_out = False
     code: int | None = None
     try:

@@ -176,7 +176,7 @@ def _auth_failure(detail: str) -> bool:
 
 
 def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handshake_timeout: float,
-             before_send: Callable[[str | None], None], model: str | None = None) -> TurnResult:
+             before_send: Callable[[str | None], None]) -> TurnResult:
     """Handshake, ack barrier, one verbatim prompt. `before_send` exceptions propagate unsent."""
     result = TurnResult()
     ch = _Channel(cell, result)
@@ -188,8 +188,6 @@ def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handsh
         result.session_id = created.get("sessionId")
         if mode:
             ch.rpc("session/set_mode", {"sessionId": result.session_id, "modeId": mode}, deadline)
-        if model:
-            ch.rpc("session/set_model", {"sessionId": result.session_id, "modelId": model}, deadline)
     except _Timeout as exc:
         return _fail(result, Cause.handshake_timeout, f"no answer to {exc} within {handshake_timeout} s", started)
     except _Eof:
