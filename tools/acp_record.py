@@ -223,18 +223,62 @@ def scrub(raw: Path, out: Path, replacements: dict[str, str], forbid: list[str])
         return value
 
     records = [clean(json.loads(line)) for line in raw.read_text(encoding="utf-8").splitlines() if line.strip()]
+    joined_texts = _scrub_streams(records, clean)
     rule = {"placeholders": sorted(set(replacements.values())), "email": "<EMAIL>", "forms": "as written, forward "
-            "slashes, JSON-escaped; case-insensitive", "forbidden_words_checked": len(forbid),
+            "slashes, JSON-escaped; case-insensitive", "streams": "also on the joined text of each streamed message "
+            "(chunks per messageId, terminal output per toolCallId); a changed stream is re-serialised with its "
+            "whole scrubbed text in its first chunk and the rest empty", "forbidden_words_checked": len(forbid),
             "scrubbed_utc": datetime.now(UTC).isoformat(timespec="seconds")}
     if records and records[0].get("kind") == "header":
         records[0]["scrub"] = rule
     body = "".join(json.dumps(r) + "\n" for r in records)
-    left = [w for w in forbid if w and w.lower() in body.lower()]
+    left = [w for w in forbid if w and any(w.lower() in text.lower() for text in (body, *joined_texts))]
     if left:
         raise ValueError(f"{len(left)} forbidden word(s) left after the scrub; nothing written")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(body, encoding="utf-8", newline="\n")
     return rule
+
+
+def _streamed_text(record: dict):
+    """(stream key, message, the dict holding the text, its field) for a streamed session/update line, else None.
+    Adapters stream text a token per line, so a literal can be split across lines (codex X1 capture)."""
+    if record.get("kind") != "line" or "text" not in record:
+        return None
+    try:
+        msg = json.loads(record["text"])
+    except ValueError:
+        return None
+    update = (msg.get("params") or {}).get("update") if isinstance(msg, dict) else None
+    if not isinstance(update, dict):
+        return None
+    kind, content = update.get("sessionUpdate"), update.get("content")
+    if kind in ("agent_message_chunk", "agent_thought_chunk") and isinstance(content, dict) and isinstance(content.get("text"), str):
+        return (record["dir"], kind, update.get("messageId")), msg, content, "text"
+    delta = (update.get("_meta") or {}).get("terminal_output_delta")
+    if isinstance(delta, dict) and isinstance(delta.get("data"), str):
+        return (record["dir"], "terminal", update.get("toolCallId")), msg, delta, "data"
+    return None
+
+
+def _scrub_streams(records: list[dict], clean) -> list[str]:
+    """Scrub each streamed message as one joined text; returns the joined texts for the forbidden-word check."""
+    streams: dict[tuple, list] = {}
+    for record in records:
+        found = _streamed_text(record)
+        if found:
+            key, *part = found
+            streams.setdefault(key, []).append((record, *part))
+    joined_texts = []
+    for parts in streams.values():
+        joined = "".join(holder[field] for _, _, holder, field in parts)
+        cleaned = clean(joined)
+        if cleaned != joined:
+            for i, (record, msg, holder, field) in enumerate(parts):
+                holder[field] = cleaned if i == 0 else ""
+                record["text"] = json.dumps(msg, ensure_ascii=False, separators=(",", ":"))
+        joined_texts.append(cleaned)
+    return joined_texts
 
 
 def turn(args: argparse.Namespace) -> int:
@@ -244,6 +288,7 @@ def turn(args: argparse.Namespace) -> int:
     from harness_bench.plan import _prompt
 
     task_dir, cells_root, out = ROOT / "tasks" / args.task, Path(args.cells_root), Path(args.out).resolve()
+    out.parent.mkdir(parents=True, exist_ok=True)  # <out>.stderr.log is opened before `record` would create it
     workspace.check_cells_root(cells_root)  # HB-PRE-002: no instruction file above the cell
     cell_dir = cells_root / f"acp-capture-{args.harness}-{datetime.now(UTC):%Y%m%dT%H%M%SZ}"
     home, ws = cell_dir / "home", cell_dir / "ws"
