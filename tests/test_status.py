@@ -140,7 +140,8 @@ def test_the_json_form_round_trips_and_is_strict(root, tmp_path):
     for broken in ({**data, "extra": 1}, {k: v for k, v in data.items() if k != "graded"}, {**data, "schema": "bench-status/2"},
                    {**data, "liveness": "sleeping"}, {**data, "cells_ended": -1}, {**data, "graded": 1},
                    {**data, "outcomes": {**data["outcomes"], "exploded": 1}},
-                   {**data, "running": [{**data["running"][0], "cell_id": "not a cell id"}]}):
+                   {**data, "running": [{**data["running"][0], "cell_id": "not a cell id"}]},
+                   {**data, "phase": "grading"}, {**data, "stop_code": "not-a-code"}):
         with pytest.raises(ValueError):
             status.parse(json.dumps(broken))
 
@@ -156,7 +157,9 @@ _statuses = st.builds(
     outcomes=st.dictionaries(st.sampled_from(status.OUTCOMES), st.integers(0, 600)),
     validity=st.dictionaries(st.sampled_from(status.VALIDITY), st.integers(0, 600)),
     causes=st.dictionaries(st.from_regex(r"HB-CELL-[0-9]{3}", fullmatch=True), st.integers(0, 600)),
-    running=st.lists(_running, max_size=4), decisions=st.just([]), graded=st.booleans())
+    running=st.lists(_running, max_size=4), decisions=st.just([]),
+    stop_code=st.none() | st.from_regex(r"HB-[A-Z]+-[0-9]{3}", fullmatch=True), phase=st.sampled_from(status.PHASE),
+    graded=st.booleans())
 
 
 @given(_statuses)
