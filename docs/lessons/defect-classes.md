@@ -106,6 +106,19 @@ summary: >-
 - **Control:** `tests/test_cli.py::test_a_relative_tools_dir_resolves_absolute_and_the_pack_on_build_succeeds`, observed red at `62c38ba`. The `t8.json` T8-2 mutant is killed.
 - **Status:** `controlled` (2026-09-24)
 
+### TOOL-A: an in-place mutation leaves stale bytecode
+- **Signature:** a tool mutates a source file on disk, runs tests, and restores it byte for byte. When the mutant has the same size and the restore lands in the same mtime second as the mutant's write, the mutant's `.pyc` still passes Python's mtime+size check. `import` then loads the mutant while `git status` is clean. Consequences:
+  - a later gate goes red for no source reason;
+  - a later mutation can be tested as the previous one, giving a **false kill or a false survival**.
+- **Why it survives:**
+  - the restore is byte-exact, so every check that reads the source says clean;
+  - it needs a sub-second test run and a size-preserving mutation, which is rare enough to look like flakiness.
+- **Instances:**
+  - `2026-09-24`: T10's full `pytest` after a `mutate_check` run of the cap mutation (`30.0` ↔ `60.0`) loaded `KILL_RETRY_CAP = 60.0` from a `.pyc` whose mtime and size matched the restored source.
+- **Sweep:** measured warm collection is 0.41–0.51 s for every cosmic-ray test command recorded (T1, T2, T10, T11). So a `-x` run can finish inside the second of its mutant's write, and the cosmic-ray runs were exposed too. They are re-run with bytecode writing off (track T12). `mutate_check`'s own earlier results (the 188/188 re-run) are re-run with the fixed tool.
+- **Control:** `tools/mutate_check.py` runs pytest with `PYTHONDONTWRITEBYTECODE=1` (fix `6d26c76`). `tests/test_mutate_check.py::test_a_same_size_mutation_leaves_no_stale_bytecode` makes the race deterministic by giving the restored source the `.pyc`'s recorded mtime. It was observed red at `3ecd1eb`, loading `60.0`.
+- **Status:** `partially-controlled` (`mutate_check` is controlled; cosmic-ray runs rely on the environment variable being set by whoever runs them)
+
 ### CLN-A: cleanup that fails silently
 - **Signature:** a best-effort cleanup (`rmtree(..., ignore_errors=True)`, a handler or file never closed) fails without a sign. The residue builds up on disk, or a held handle blocks the next deletion.
 - **Why it survives:**
