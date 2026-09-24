@@ -3,7 +3,8 @@
 - A pass holds `grade.lock` (HB-GRD-001 when held) and writes only its own segments, one per fact, named
   by its `grading_id` (`grade-<utc>-<rand>`). It seals them all; `grading.completed` is written after the
   other facts are sealed and before the events segment is sealed, so a pass that died at any point is
-  simply not completed, and views skip it.
+  simply not completed, and views skip it. `grading.completed` records `heads` (fact -> sealed head) for
+  the other facts, never events (a segment cannot carry its own head), so `bench verify` can tie them to it.
 - A grading segment of a pass that did not complete is named once, in this pass's own events segment
   (`segment.abandoned`, HB-LED-004). Nobody writes into another writer's file.
 - Extractions are written once: a cell's `model_calls` and `tool_calls` are written only when no
@@ -111,7 +112,8 @@ class _Pass:
                     self._grade_cell(cell, archived[cell["cell_id"]], sessions.get(cell["cell_id"], ""), held, usage)
                     graded += 1
             heads = {fact: self.writers[fact].seal() for fact in PASS_FACTS if fact != "events"}
-            self.append("events", {"kind": "grading.completed", "grading_id": self.grading_id, "cells_graded": graded})
+            self.append("events", {"kind": "grading.completed", "grading_id": self.grading_id, "cells_graded": graded,
+                                   "heads": dict(heads)})  # ruling R-2: bench verify checks each against its seal
             heads["events"] = self.writers["events"].seal()
         finally:
             for w in self.writers.values():

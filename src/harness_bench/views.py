@@ -43,15 +43,22 @@ def segment_paths(run_dir: Path, fact: str) -> list[Path]:
     return sorted(folder.glob("*.jsonl")) if folder.is_dir() else []
 
 
-def completed_passes(run_dir: Path) -> set[str]:
-    done = set()
+def _completions(run_dir: Path) -> dict[str, dict]:
+    """grading_id -> its `grading.completed` row, for each completed pass (a sealed events segment holding one)."""
+    done = {}
     for path in segment_paths(run_dir, "events"):
         if not path.stem.startswith(GRADE_PREFIX):
             continue
         report = ledger.verify_segment(path)
-        if report.sealed and not report.error and any(r["kind"] == "grading.completed" for r in ledger.read_segment(path)):
-            done.add(path.stem)
+        if report.sealed and not report.error:
+            row = next((r for r in ledger.read_segment(path) if r["kind"] == "grading.completed"), None)
+            if row is not None:
+                done[path.stem] = row
     return done
+
+
+def completed_passes(run_dir: Path) -> set[str]:
+    return set(_completions(run_dir))
 
 
 def rows(run_dir: Path, fact: str) -> list[dict]:
@@ -359,9 +366,65 @@ class Finding:
     message: str
 
 
+def _heads(run_dir: Path, segment_id: str, heads, owner: str) -> list[Finding]:
+    """Each segment `heads` names (`<fact>/<segment_id>`) exists, is sealed, and ends at the recorded head."""
+    if not isinstance(heads, dict):
+        return [Finding("HB-LED-002", "error", f"{owner}: heads is not a fact -> head map")]
+    out = []
+    for fact, head in sorted(heads.items()):
+        path = run_dir / fact / f"{segment_id}.jsonl"
+        if not path.is_file():
+            out.append(Finding("HB-LED-002", "error", f"{fact}/{segment_id}: missing, but {owner} records its head"))
+            continue
+        report = ledger.verify_segment(path)
+        if not report.sealed:
+            out.append(Finding("HB-LED-002", "error", f"{fact}/{segment_id}: not sealed, but {owner} records its head"))
+        elif report.head_hash != head:
+            out.append(Finding("HB-LED-002", "error", f"{fact}/{segment_id}: head does not match the one {owner} records"))
+    return out
+
+
+def _sealed_record(run_dir: Path) -> list[Finding]:
+    """Every completed pass and every completed run against the heads it recorded (ruling R-2).
+
+    - A completed pass: all its segments are sealed, and `grading.completed.heads` (never events) match. A pass
+      recorded before `heads` existed verifies with a warning.
+    - A completed run: `run.completed.segment_heads` match its engine segments; its events head is the row
+      `run.completed` follows, and the in-run pass its `grading` summary names matches that summary's heads
+      (events included), so the pass cannot be cut back into an abandoned one."""
+    out: list[Finding] = []
+    for gid, row in sorted(_completions(run_dir).items()):
+        owner = f"grading.completed in events/{gid}"
+        for fact in FACTS:
+            path = run_dir / fact / f"{gid}.jsonl"
+            if path.is_file() and not ledger.verify_segment(path).sealed:
+                out.append(Finding("HB-LED-002", "error", f"{fact}/{gid}: not sealed, but {owner} marks the pass complete"))
+        if "heads" in row:
+            out += _heads(run_dir, gid, row["heads"], owner)
+        else:
+            out.append(Finding("HB-LED-002", "warning", f"events/{gid}: grading.completed records no heads "
+                                                        "(written before ruling R-2); only its seals are checked"))
+    for path in segment_paths(run_dir, "events"):
+        if not path.stem.startswith(ENGINE_PREFIX):
+            continue
+        for row in ledger.read_segment(path):
+            if row["kind"] != "run.completed":
+                continue
+            owner = f"run.completed in events/{path.stem}"
+            heads = dict(row.get("segment_heads") or {})
+            if heads.pop("events", None) != row["prev_hash"] or not ledger.verify_segment(path).sealed:
+                out.append(Finding("HB-LED-002", "error", f"events/{path.stem}: {owner} does not follow the events head it records"))
+            out += _heads(run_dir, path.stem, heads, owner)
+            grading = row.get("grading")
+            if isinstance(grading, dict) and "heads" in grading:
+                out += _heads(run_dir, str(grading.get("grading_id")), grading["heads"], f"{owner} (grading)")
+    return out
+
+
 def verify(run_dir: Path) -> list[Finding]:
-    """`bench verify`: every segment's chain and seal, abandoned passes, duplicates, and each archive against
-    its `archive_hash` and its `archive_files` rows. An error is an integrity failure; a warning is not."""
+    """`bench verify`: every segment's chain and seal, the heads each completed pass and run recorded, abandoned
+    passes, duplicates, and each archive against its `archive_hash` and its `archive_files` rows. An error is an
+    integrity failure; a warning is not."""
     out: list[Finding] = []
     done = completed_passes(run_dir)
     for fact in FACTS:
@@ -371,6 +434,9 @@ def verify(run_dir: Path) -> list[Finding]:
                 out.append(Finding("HB-LED-002", "error", f"{fact}/{path.name}: {report.detail}"))
             elif path.stem.startswith(GRADE_PREFIX) and path.stem not in done:
                 out.append(Finding("HB-LED-004", "warning", f"{fact}/{path.stem}: abandoned grading segment, skipped by views"))
+    if any(f.level == "error" for f in out):
+        return out
+    out += _sealed_record(run_dir)
     if any(f.level == "error" for f in out):
         return out
     try:
