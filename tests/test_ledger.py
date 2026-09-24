@@ -151,18 +151,29 @@ def test_an_unparseable_last_line_of_an_unsealed_segment_is_a_torn_tail(tmp_path
 
 
 def test_stamp_records_utc_milliseconds_and_a_monotonic_clock(monkeypatch):
-    monkeypatch.setattr(ledger.time, "time", lambda: 1_790_000_000.25)
+    monkeypatch.setattr(ledger.time, "time", lambda: 1_790_000_007.25)  # whole seconds not a multiple of 1000
     monkeypatch.setattr(ledger.time, "monotonic_ns", lambda: 42)
-    assert ledger.stamp({"kind": "x"}) == {"kind": "x", "recorded_at": "2026-09-21T14:13:20.250Z", "mono_ns": 42}
+    assert ledger.stamp({"kind": "x"}) == {"kind": "x", "recorded_at": "2026-09-21T14:13:27.250Z", "mono_ns": 42}
 
 
 def test_a_torn_line_that_is_not_the_tail_is_a_break(tmp_path):
     path = _write(tmp_path)
     lines = path.read_bytes().splitlines(keepends=True)
-    lines[1] = b'{"kind":"hal\n'
+    lines[2] = b'{"kind":"hal\n'
+    lines.append(b'{"kind":"more')  # a torn tail after it does not make it the tail
     path.write_bytes(b"".join(lines))
     report = ledger.verify_segment(path)
-    assert (report.error, report.detail) == ("HB-LED-002", "line 2 does not parse")
+    assert (report.error, report.detail, report.lines) == ("HB-LED-002", "line 3 does not parse", 0)
+
+
+def test_a_long_segment_verifies(tmp_path):  # seq and count past the small-int cache: compared by value
+    w = ledger.SegmentWriter.create(tmp_path / "runs" / "r" / "events", "engine-1")  # parents are created
+    for i in range(300):
+        w.append({"kind": "x", "i": i})
+    w.seal()
+    w.close()
+    report = ledger.verify_segment(tmp_path / "runs" / "r" / "events" / "engine-1.jsonl")
+    assert (report.error, report.sealed, report.lines) == (None, True, 300)
 
 
 # the structural rules a re-hashing forger must still meet (the chain is keyless) --------------------
@@ -193,17 +204,18 @@ def test_a_sealed_segment_is_never_reopened(tmp_path):
     assert e.value.code == "HB-LED-002" and "is sealed" in e.value.message
 
 
-@pytest.mark.parametrize(("forged", "detail"), [
-    ("count", "seal does not match the segment"),
-    ("head", "seal does not match the segment"),
-    ("seq", "chain break at line 4"),
+@pytest.mark.parametrize(("count", "head", "seq", "detail"), [  # each forged value both below and above the true one
+    (2, None, 4, "seal does not match the segment"),
+    (4, None, 4, "seal does not match the segment"),
+    (3, "0" * 64, 4, "seal does not match the segment"),
+    (3, "f" * 64, 4, "seal does not match the segment"),
+    (3, None, 3, "chain break at line 4"),
+    (3, None, 5, "chain break at line 4"),
 ])
-def test_a_re_hashed_seal_must_still_match_its_segment(tmp_path, forged, detail):
+def test_a_re_hashed_seal_must_still_match_its_segment(tmp_path, count, head, seq, detail):
     path = _write(tmp_path, n=3)
-    rows = ledger.read_segment(path)
-    head = rows[-1]["hash"]
-    seal = {"kind": ledger.SEAL, "count": 2 if forged == "count" else 3, "head_hash": rows[0]["hash"] if forged == "head" else head}
-    _append_raw(path, ledger._chain(seal, 5 if forged == "seq" else 4, head))
+    last = ledger.read_segment(path)[-1]["hash"]
+    _append_raw(path, ledger._chain({"kind": ledger.SEAL, "count": count, "head_hash": head or last}, seq, last))
     report = ledger.verify_segment(path)
     assert (report.error, report.detail) == ("HB-LED-002", detail)
 
@@ -225,24 +237,27 @@ def test_a_chained_line_after_the_seal_is_a_break(tmp_path):
     assert (report.error, report.detail) == ("HB-LED-002", "bytes after the seal (line 4)")
 
 
-def test_a_line_not_in_canonical_form_is_a_break(tmp_path):
+@pytest.mark.parametrize("sort_keys", [True, False])  # spaced (sorts after the canonical bytes) or unsorted (before)
+def test_a_line_not_in_canonical_form_is_a_break(tmp_path, sort_keys):
     path = _write(tmp_path)
     lines = path.read_bytes().splitlines(keepends=True)
-    lines[1] = json.dumps(json.loads(lines[1]), sort_keys=True).encode() + b"\n"  # same content, spaced: its hash still holds
+    row = json.loads(lines[1])
+    reordered = {"seq": row["seq"], **row} if not sort_keys else row
+    lines[1] = (json.dumps(reordered, sort_keys=True) if sort_keys else json.dumps(reordered, separators=(",", ":"))).encode() + b"\n"
     path.write_bytes(b"".join(lines))
     report = ledger.verify_segment(path)
-    assert (report.error, report.detail) == ("HB-LED-002", "line 2 is not in canonical form")
+    assert (report.error, report.detail, report.lines) == ("HB-LED-002", "line 2 is not in canonical form", 0)
 
 
 def test_a_float_in_a_stored_line_is_a_break_not_a_crash(tmp_path):
-    path = _write(tmp_path, n=1)
+    path = _write(tmp_path, n=2)
     rows = ledger.read_segment(path)
-    body = {"kind": "x", "v": 1, "seq": 2, "prev_hash": rows[0]["hash"]}
+    body = {"kind": "x", "v": 1, "seq": 3, "prev_hash": rows[1]["hash"]}
     line = ledger.canonical(body)[:-1] + b',"hash":"0"}'
     with path.open("ab") as f:
         f.write(line.replace(b'"v":1', b'"v":1.5') + b"\n")
     report = ledger.verify_segment(path)
-    assert report.error == "HB-LED-002" and report.detail.startswith("line 2: $.v: float is not allowed")
+    assert report.error == "HB-LED-002" and report.detail.startswith("line 3: $.v: float is not allowed")
 
 
 def test_canonical_rejects_a_non_string_key():

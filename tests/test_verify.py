@@ -16,7 +16,7 @@ from archived_runs import GOOD, complete_run, make_root, make_run
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from harness_bench import cli, ledger, views
+from harness_bench import archive, cli, ledger, views
 from harness_bench.grade import runner
 
 GOLDEN = Path(__file__).parent / "fixtures" / "ledger"
@@ -118,6 +118,44 @@ def test_archives_are_not_checked_against_a_ledger_whose_heads_fail(capsys, root
     (run_dir / "archive" / "a" / "attempt-1" / "ws" / "slug.py").write_text("tampered", encoding="utf-8")
     code, _, err = _verify(capsys, tmp_path)
     assert code == 5 and err == f"HB-LED-002: scores/{done.grading_id}: missing, but grading.completed in events/{done.grading_id} records its head\n"
+
+
+@pytest.mark.parametrize("forged", ["0" * 64, "f" * 64])  # a wrong head sorting below, or above, the true one
+def test_a_recorded_head_that_does_not_match_is_exit_5(capsys, root, tmp_path, forged):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    done = runner.run_pass(run_dir, root)
+    complete_run(run_dir, grading={"grading_id": done.grading_id, "heads": {**done.heads, "scores": forged}})
+    code, _, err = _verify(capsys, tmp_path)
+    assert code == 5 and f"HB-LED-002: scores/{done.grading_id}: head does not match the one run.completed" in err
+
+
+def test_a_duplicate_outcome_is_an_integrity_finding_not_a_crash(capsys, root, tmp_path):  # HB-LED-003
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
+        ev.append({"kind": "cell.outcome", "cell_id": "a", "outcome": "failed", "cause": "spawn", "code": "HB-CELL-114"})
+    code, _, err = _verify(capsys, tmp_path)
+    assert code == 5 and err.startswith("HB-LED-003: a second cell.outcome for cell a")
+
+
+def test_each_archive_attempt_is_checked_against_its_own_rows(capsys, root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    shutil.copytree(run_dir / "archive" / "a" / "attempt-1", run_dir / "archive" / "a" / "attempt-2")
+    rows = [{k: v for k, v in r.items() if k not in ledger.CHAIN_FIELDS} | {"archive_attempt": 2}
+            for r in ledger.read_segment(run_dir / "archive_files" / "engine-1.jsonl")]
+    with ledger.SegmentWriter.create(run_dir / "archive_files", "engine-2") as af:
+        for r in rows:
+            af.append(r)
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
+        ev.append({"kind": "cell.archived", "cell_id": "a", "archive_attempt": 2, "archive_hash": archive.archive_hash(rows)})
+    assert _verify(capsys, tmp_path) == (0, "verify: ok\n", "")
+
+
+@pytest.mark.parametrize("forged", ["0" * 64, "f" * 64])
+def test_an_archive_hash_mismatch_is_found_whichever_way_it_sorts(capsys, root, tmp_path, monkeypatch, forged):
+    make_run(root, tmp_path, {"a": GOOD, "b": GOOD})
+    monkeypatch.setattr(views.archive, "archive_hash", lambda rows: forged)
+    code, _, err = _verify(capsys, tmp_path)
+    assert code == 5 and err.count("archive_hash does not match") == 2  # every cell is checked, not only the first
 
 
 def test_a_run_completed_naming_the_wrong_events_head_is_exit_5(capsys, root, tmp_path):

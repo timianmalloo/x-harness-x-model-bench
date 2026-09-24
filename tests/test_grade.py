@@ -28,7 +28,7 @@ from archived_runs import (
 
 from harness_bench import ledger, lifecycle, oslock, views
 from harness_bench.errors import BenchError
-from harness_bench.grade import correctness, runner
+from harness_bench.grade import correctness, cost, runner
 from harness_bench.telemetry import codex, normalize
 
 
@@ -101,22 +101,50 @@ def test_a_cell_with_no_working_copy_is_na(root, tmp_path):
     ("Ran 3 tests in 0.0s\n\nFAILED (errors=1, unexpected successes=1)\n", (3, 1)),
     ("Traceback (most recent call last):\nSyntaxError\n", None),
     ("Ran 4 tests in 0.001s\n\nFAILED (flakes=1)\n", None),
+    ("Ran 9 tests in 0.1s\n\nFAILED (failures=9)\nRan 4 tests in 0.001s\n\nFAILED (failures=1)\n", (4, 3)),  # the last summary
 ])
 def test_the_unittest_summary_is_parsed_strictly(stderr, expected):
     assert correctness.parse_unittest(stderr) == expected
 
 
-@pytest.mark.parametrize("oracle", [{"runner": "pytest", "command": ["{python}", "-m", "pytest"]}, {"runner": "unittest"}])
+@pytest.mark.parametrize("oracle", [{"runner": "pytest", "command": ["{python}", "-m", "pytest"]}, {"runner": "unittest"},
+                                    {"runner": "zeta", "command": ["{python}", "-c", "pass"]}])
 def test_an_oracle_phase_1_cannot_run_is_na_before_anything_runs(tmp_path, oracle):
     result = correctness.grade(tmp_path / "ws", tmp_path / "task", oracle, tmp_path / "out", tmp_path, 10)
     assert (result.passed, result.partial_credit, result.evidence) == (None, None, "")
     assert result.reason == f"oracle runner {oracle['runner']!r} not built (phase 1 runs unittest)"
 
 
-def test_not_recorded_is_one_falsy_sentinel():
+@pytest.mark.parametrize(("summary", "exit_code", "expected"), [
+    ("Ran 0 tests in 0.0s\\n\\nOK\\n", 0, (None, None, "no hidden test ran")),
+    ("Ran 2 tests in 0.0s\\n\\nOK\\n", 1, (0, Decimal(1), None)),  # every test passed but the oracle failed: not a pass
+    ("Ran 2 tests in 0.0s\\n\\nOK\\n", 0, (1, Decimal(1), None)),
+])
+def test_a_pass_needs_tests_to_run_and_the_oracle_to_exit_0(tmp_path, summary, exit_code, expected):
+    (tmp_path / "ws").mkdir()
+    (tmp_path / "task" / "tests").mkdir(parents=True)
+    oracle = {"runner": "unittest", "command": ["{python}", "-c", f"import sys; sys.stderr.write('{summary}'); sys.exit({exit_code})"]}
+    result = correctness.grade(tmp_path / "ws", tmp_path / "task", oracle, tmp_path / "run" / "out", tmp_path / "run", 60)
+    assert (result.passed, result.partial_credit, result.reason) == expected
+
+
+def test_not_recorded_is_one_falsy_sentinel_and_a_score_is_frozen():
+    from dataclasses import FrozenInstanceError
+
     from harness_bench import grade
 
     assert grade.NOT_RECORDED is grade._NotRecorded() and not grade.NOT_RECORDED and repr(grade.NOT_RECORDED) == "NOT_RECORDED"
+    with pytest.raises(FrozenInstanceError):
+        grade.Score(1.0, "e").value = 2.0  # type: ignore[misc]
+
+
+def test_cost_uses_only_the_exact_model_entry_in_force_on_the_run_date():
+    prices = {"entries": [{"model": "a-model", "effective": "2026-01-01", "output": 1},
+                          {"model": "z-model", "effective": "2026-01-01", "output": 1}]}
+    usage = {"m-model": {"uncached_input": 0, "cache_read": 0, "cache_write": 0, "output": 1_000_000}}
+    assert cost.cost_usd(usage, prices, "2026-09-23") == (None, "no price list entry for m-model", "")
+    prices["entries"].append({"model": "m-model", "effective": "2026-09-23", "output": 10})  # in force on its own date
+    assert cost.cost_usd(usage, prices, "2026-09-23") == (Decimal(10), None, "bench/prices.yaml#m-model@2026-09-23")
 
 
 # --- cost (US-23) ----------------------------------------------------------------------------------
@@ -154,6 +182,31 @@ def test_cost_is_na_when_the_price_list_changed_after_the_plan(root, tmp_path):
     s = scores(run_dir, runner.run_pass(run_dir, root).grading_id)
     assert s["a", "cost_usd"]["value"] is None
     assert s["a", "cost_usd"]["reason"] == "price list changed since the plan (hash mismatch)"
+
+
+@pytest.mark.parametrize("forged", ["0" * 64, "g" * 64])  # a mismatch that sorts below, or above, the plan's hash
+def test_a_changed_price_list_or_task_is_refused_whichever_way_its_hash_sorts(root, tmp_path, monkeypatch, forged):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    monkeypatch.setattr(runner, "file_hash", lambda path: forged)
+    monkeypatch.setattr(runner, "task_version_hash", lambda path: forged)
+    s = scores(run_dir, runner.run_pass(run_dir, root).grading_id)
+    assert s["a", "cost_usd"]["reason"] == "price list changed since the plan (hash mismatch)"
+    assert s["a", "pass_at_1"]["reason"] == "task changed since the plan (version hash mismatch)"
+
+
+def test_the_run_date_is_the_plan_day_so_an_entry_effective_that_day_applies(root, tmp_path):
+    set_prices(root, [{"model": CODEX_MODEL, "effective": "2026-09-23", "source": "s", "input": 1, "output": 1,
+                       "cache_read": 1, "cache_write": 1}])  # the plan was created 2026-09-23
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    s = scores(run_dir, runner.run_pass(run_dir, root).grading_id)
+    assert s["a", "cost_usd"]["evidence"] == f"bench/prices.yaml#{CODEX_MODEL}@2026-09-23"
+
+
+def test_a_pass_closes_every_segment_it_wrote(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    done = runner.run_pass(run_dir, root)
+    for fact in runner.PASS_FACTS:
+        (run_dir / fact / f"{done.grading_id}.jsonl").unlink()  # Windows refuses to delete a file still open
 
 
 def test_cost_reads_turn_usage_for_an_acp_turn_harness(root, tmp_path):

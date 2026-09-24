@@ -20,6 +20,7 @@ from archived_runs import (
 from harness_bench import ledger, views
 from harness_bench.errors import BenchError
 from harness_bench.grade import cost, runner
+from harness_bench.telemetry import normalize
 
 SONNET = "claude-sonnet-5"
 
@@ -47,6 +48,55 @@ def test_an_ungraded_run_has_no_scores_and_says_so(root, tmp_path):
     assert view.grading_id is None
     a = _cell(view, "a")
     assert a.scores == {} and a.validity == "not graded" and a.tokens is None  # never {} or 0
+    assert a.tokens_reason == "not graded"
+    runner.run_pass(run_dir, root)
+    a = _cell(views.load(run_dir), "a")
+    assert a.tokens and a.tokens_reason is None
+
+
+def test_a_pass_is_current_only_for_its_catalog_version(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    done = runner.run_pass(run_dir, root)
+    assert (views.load(run_dir).grading_id, views.load(run_dir).catalog_version) == (done.grading_id, "0.3")
+    assert views.load(run_dir, "0.3").grading_id == done.grading_id
+    assert (views.load(run_dir, "9.9").grading_id, views.load(run_dir, "9.9").catalog_version) == (None, "9.9")
+
+
+@pytest.mark.parametrize("second", ["0" * 64, "f" * 64])  # a new normaliser's id sorting below, or above, the first
+def test_a_cell_reads_only_the_current_extraction(root, tmp_path, monkeypatch, second):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    runner.run_pass(run_dir, root)
+    before = _cell(views.load(run_dir), "a")
+    monkeypatch.setattr(normalize, "extraction_id", lambda: second)
+    runner.run_pass(run_dir, root)
+    after = _cell(views.load(run_dir), "a")
+    assert after.extraction_id == second and (after.tokens, after.tool_ms) == (before.tokens, before.tool_ms)
+
+
+def test_a_cell_reads_only_its_own_tool_calls(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD, "b": GOOD})
+    record = next((run_dir / "archive" / "b" / "attempt-1" / "home").rglob("*.jsonl"))
+    record.write_text(record.read_text(encoding="utf-8").replace('"timestamp": "2026-', '"timestamp": "2027-'), encoding="utf-8")
+    runner.run_pass(run_dir, root)
+    assert _cell(views.load(run_dir), "a").tool_ms == views.Measure(592)  # b's calls, a year later, are not a's
+
+
+def test_the_header_reads_only_process_starts(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
+        ev.append({"kind": "attempt.process_started", "cell_id": "a", "credential_kind": "subscription", "network_mode": "open",
+                   "harness": "codex", "build_version": "0.156.0"})
+        for kind in ("attempt.process_ended", "cell.prompt_sent", "agent.x"):  # kinds sorting before and after it
+            ev.append({"kind": kind, "cell_id": "z", "credential_kind": "leak", "network_mode": "leak", "harness": "x", "build_version": "1"})
+    assert views.load(run_dir).header == {"credential_kind": "subscription", "network_mode": "open", "executed_builds": "codex 0.156.0"}
+
+
+def test_a_measure_is_a_frozen_hashable_value():
+    from dataclasses import FrozenInstanceError
+
+    assert {views.Measure(1), views.Measure(1)} == {views.Measure(1)}
+    with pytest.raises(FrozenInstanceError):
+        views.Measure(1).value = 2  # type: ignore[misc]
 
 
 def test_the_current_pass_is_the_latest_completed_one_and_an_unfinished_pass_is_ignored(root, tmp_path):
@@ -173,9 +223,27 @@ def test_model_time_needs_a_real_duration_for_every_call(calls, expected):
     (1000, 300, 200, views.Measure(500)),
     (1000, 700, 400, views.Measure(None, "model and tool time exceed wall time")),
     (1000, 1000, 0, views.Measure(0)),
+    (1000, 700, 301, views.Measure(None, "model and tool time exceed wall time")),  # -1 ms is never idle
 ])
 def test_idle_is_wall_minus_model_minus_tool(wall, model, tool, expected):
     assert views._idle(views.Measure(wall), views.Measure(model), views.Measure(tool)) == expected
+
+
+@pytest.mark.parametrize("call", [
+    {"start": "not a time", "end": "2026-09-23T10:00:01.000Z"},
+    {"start": "2026-09-23T10:00:00.000Z", "end": None},
+    {"start": "2026-09-23T10:00:02.000Z", "end": "2026-09-23T10:00:01.000Z"},  # ends before it starts
+])
+def test_a_span_without_both_valid_ends_in_order_is_not_recorded(call):
+    assert views.busy_ms([call]) == views.Measure(None, "an interval has no start or end")
+
+
+@pytest.mark.parametrize("events", [
+    {"cell.launch_intent": {}, "attempt.process_started": {"mono_ns": 1}},
+    {"cell.launch_intent": {}, "attempt.process_ended": {"mono_ns": 1}},
+])
+def test_wall_time_needs_both_process_start_and_end(events):
+    assert views._wall(events) == views.Measure(None, "no process start or end recorded")
 
 
 def test_cells_with_long_ids_keep_their_own_events_and_calls(root, tmp_path):  # ids compared by value, never identity
@@ -248,6 +316,15 @@ def test_an_invalid_cell_never_counts_toward_its_combo(root, tmp_path):
     (row,) = views.leaderboard(views.load(run_dir))
     assert (row.n_cells, row.n_valid, row.rank) == (1, 0, "")
     assert row.pass_at_1 == views.Measure(None, "no valid graded cell")
+
+
+def test_an_unranked_combo_sorts_last_and_two_valid_cells_still_get_no_interval(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a1": GOOD, "a2": GOOD, "b1": GOOD}, combos={"a1": "a-two", "a2": "a-two", "b1": "b-bad"},
+                       outcomes={"b1": {"outcome": "failed", "cause": "provider", "code": "HB-CELL-108"}})
+    runner.run_pass(run_dir, root)
+    rows = views.leaderboard(views.load(run_dir))
+    assert [(r.combo, r.rank) for r in rows] == [("a-two", "1"), ("b-bad", "")]
+    assert rows[0].interval == "interval not computed (statistics are phase 4)"
 
 
 def test_cost_is_na_for_a_combo_when_any_valid_cell_has_no_cost(root, tmp_path):
