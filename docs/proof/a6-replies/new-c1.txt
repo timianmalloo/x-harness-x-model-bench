@@ -1,0 +1,13 @@
+(1)
+```yaml
+schema: bench-matrix/1
+run_id: phase1-a
+bom: { file: bench/bom.yaml, subset: [X1] }
+repetitions: 1
+packs: ["on", "off"]
+combos:
+  - { id: cc-sonnet, harness: claude-code, model: claude-sonnet-5 }
+  - { id: codex-sol, harness: codex,       model: gpt-6-sol }
+```
+
+(2) Decision requests: none

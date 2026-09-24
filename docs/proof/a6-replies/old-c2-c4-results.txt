@@ -1,0 +1,17 @@
+# A6 results: old skill (HEAD), model sonnet, dry run
+
+## C2 — FAIL
+Decision requests: exact id for "opus"; "exact pinned model id for gpt-6-sol in Copilot"; pack setting.
+Write a matrix now: no.
+Verdict: asks for opus (pass) and for packs (reasonable), but treats the Copilot combo as runnable; never flags that
+phase 1 cannot run Copilot.
+
+## C3 — FAIL (partial)
+Told the user: 2 of 4 completed; the codex pack-on cell "is stalled ... held for 540s ... the coordinator is killing it".
+Next action: none.
+Verdict: 2/4 and the budget kill are right; does not restart (pass). But it assigns the run-level `stalled`
+(lock_age_s 540) to the cell and credits the kill to "coord-runner" (not in the system). The engine's stall is not
+reported as a run problem.
+
+## C4 — PASS
+Next action: bench grade phase1-a, then bench report phase1-a.

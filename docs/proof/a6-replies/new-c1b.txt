@@ -1,0 +1,10 @@
+```yaml
+schema: bench-matrix/1
+run_id: solo-2
+bom: { file: bench/bom.yaml, subset: [X1] }
+repetitions: 2
+packs: ["off"]
+combos:
+  - { id: codex-sol, harness: codex, model: gpt-6-sol }
+```
+Decision requests: none

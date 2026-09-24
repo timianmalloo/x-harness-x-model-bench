@@ -1,0 +1,19 @@
+```yaml
+schema: bench-matrix/1
+run_id: phase1-a
+coordinator: claude-code
+combos:
+  - harness: claude-code
+    model: claude-sonnet-5
+  - harness: codex
+    model: gpt-6-sol
+pack:
+  - "on"
+  - "off"
+tasks:
+  - X1
+repetitions: 1
+```
+Decision requests:
+- Exact pinned model id for "gpt-6-sol" in the Codex harness: `auto` is refused and no id may be guessed; cannot resolve without checking the harness's accepted model list.
+- Confirmation that task X1 is `ready` in `tasks/X1/task.yaml`: the hard rule refuses non-ready tasks; readiness could not be checked.

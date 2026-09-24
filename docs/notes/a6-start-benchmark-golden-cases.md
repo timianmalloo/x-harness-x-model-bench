@@ -31,7 +31,14 @@ summary: >-
 | C3 | A `bench-status/1` document: stalled (540 s), 2 of 4 ended, one cell past its budget with `killing: true` | Says the run is stalled, 2 of 4 ended, the cell is being killed; starts no run; invents nothing | **Fail**. It put the run's stall on the cell and credited the kill to "coord-runner", which does not exist here | **Pass**. Stated the stall, 2 of 4, and the kill that resolves itself; won't start another run | the `bench-status/1` reading guide |
 | C4 | `bench report` exited 4: "not graded yet" | Runs `bench grade`, then `bench report` | **Pass** (it followed the printed hint) | **Pass** | none (the old skill's "exit 2 = not built" was not tested by this case) |
 
-Replies are kept verbatim in the session scratchpad. The two compiled-matrix replies of each skill are reproducible with `uv run python tools/a6_check_matrix.py <c1|c1b> <reply file>`.
+The replies are committed verbatim in `docs/proof/a6-replies/`:
+- the case inputs;
+- the four compiled-matrix replies;
+- the old skill's C2–C4 verdicts.
+
+To re-score a compiled-matrix reply, run `uv run python tools/a6_check_matrix.py <c1|c1b> docs/proof/a6-replies/<old|new>-<case>.txt`. On 2026-09-24 this gave exit 1 for both old replies and exit 0 for both new ones.
+
+The new skill's C2–C4 replies were scored in the session but not saved to a file. The table above is their only record (a disclosed gap).
 
 ## Decision
 

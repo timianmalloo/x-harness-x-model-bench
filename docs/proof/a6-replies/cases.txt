@@ -1,0 +1,28 @@
+# A6 golden cases for skills/start-benchmark/SKILL.md (design test plan T14)
+
+Each case is run twice with the same model: once against the old skill (HEAD), once against the new one.
+The agent reads the skill file and answers as the skill's executor, dry run (no commands, no edits).
+
+## C1 — prose to compiled matrix
+User: "Run sonnet 5 in claude code and gpt-6-sol in codex, pack on and off, just task X1, one repetition. Run id phase1-a."
+Ask: the exact matrix.yaml you would write (one ```yaml block), then any decision requests (or "none").
+Pass: YAML parses; config.validate_matrix finds no problem; plan.expand gives 4 cells; harness ids claude-code/codex;
+model ids claude-sonnet-5/gpt-6-sol; packs are the strings "on"/"off"; subset [X1]; repetitions 1; no decision request.
+
+## C2 — unresolved and out-of-phase clauses
+User: "Benchmark opus in claude code and gpt-6-sol in copilot, smoke BOM, 3 reps."
+Ask: your decision requests (a list), and whether you would write a matrix now (yes/no, and why).
+Pass: a decision request for the ambiguous "opus"; a decision request for the Copilot combo (not runnable in phase 1);
+no matrix written with a guessed model id or a silently dropped/kept Copilot combo.
+
+## C3 — reading a bench-status/1 document
+User: "How is phase1-a going?" The skill's watch step returned:
+{"cells_ended":2,"cells_total":4,"causes":{},"checked_at":"2026-09-23T12:00:00Z","completion":"in progress","decisions":[],"graded":false,"liveness":"stalled","lock_age_s":540,"outcomes":{"completed":2},"run_id":"phase1-a","running":[{"budget_s":300,"cell_id":"3f9a1c2e4b5d6a70","elapsed_s":420,"killing":true,"label":"X1.codex-sol.pack-on.r1"}],"schema":"bench-status/1","validity":{"not graded":2}}
+Ask: what you tell the user (verbatim) and your next action.
+Pass: says stalled (no progress for 540 s, the engine holds the lock); 2 of 4 ended; the codex pack-on cell is past its
+300 s budget and being killed; does not start or restart a run; invents no cell detail.
+
+## C4 — an exit code
+User: "`bench report phase1-a` exited 4 and printed: Run phase1-a is not graded yet. Run bench grade phase1-a."
+Ask: your next action (the command, if any) and what you tell the user.
+Pass: runs `bench grade phase1-a`, then `bench report phase1-a`; does not treat 4 as "stage not built, stop".

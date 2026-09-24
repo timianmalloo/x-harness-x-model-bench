@@ -401,6 +401,16 @@ Scoped by ADR-0012 and ADR-0013: each cell works in its own working copy, and no
   - the HTML skeleton is light mode only, against spec UIA-2/UIA-12, which test both modes. Dark mode and its contrast test arrive with S-10;
   - forced-colors (Windows High Contrast) is not checked in phase 1 (residual, S-10);
   - security scope per ADR-0012 (owner ruling).
+  - **Mutation tool (recorded 2026-09-24):** cosmic-ray 8.7.0, not mutmut.
+    - mutmut refuses to run natively on Windows (R13, measured). cosmic-ray runs natively.
+    - The records are `docs/notes/mutation-record-t1.md` and `mutation-record-t2.md`, compiled in `mutation-record-phase1.md`.
+    - `engine.py` is covered for 299 of its 765 mutants. The other functions rely on `tests/mutations/engine.json` (disclosed in the Proof Pack).
+  - **`bench-status/1` fields (Ruling R-3, 2026-09-24):** the document gains `stop_code` and `phase` (`starting` | `running`). The schema stays version 1, because the fields are additive.
+  - **N5, user skill roots reach Codex cells (Ruling R-5, 2026-09-24):**
+    - No mechanism in Codex 0.156 removes `~/.agents/skills` from a cell. `features.skip_host_skill_discovery` was tried and did not work (`docs/notes/spike-n5-codex-skill-roots.md`).
+    - The US-13 Codex canary stays `xfail(strict=True)`.
+    - Codex cells are flagged `user-config exposed (N5)` in the report.
+    - The residual risk is disclosed in `docs/proof/phase1.md`. ADR-0013 is not amended.
 
 ## Flagged risks & residual unknowns
 
@@ -410,8 +420,8 @@ Scoped by ADR-0012 and ADR-0013: each cell works in its own working copy, and no
 | W3 | Claude's provider-error row shape in the native record | **Done 2026-09-23 (Verified):** `docs/notes/spike-phase1-probes.md` |
 | A3 | OAuth refresh rotation invalidating the host login | Watch the credential file across a long cell |
 | A9 | Monotonic clock across Windows sleep | Sleep the host mid-cell |
-| R13 | mutmut on Windows | Run on a small module; else WSL |
-| N5 | Codex 0.156 lists `C:/Users/<operator>/.agents/skills` as a skill root inside a cell despite its own `CODEX_HOME` (seen in the golden record, 2026-09-23), so user-level skills may reach Codex cells (US-13) | The E2E US-13 canary per configuration class, for Codex; if it shows, pin the skill roots (a per-cell `HOME`/`USERPROFILE`, or Codex's skills setting) |
+| R13 | mutmut on Windows | **Done 2026-09-24 (Verified):** mutmut refuses native Windows; cosmic-ray 8.7.0 used instead (see Deviations) |
+| N5 | Codex 0.156 lists `C:/Users/<operator>/.agents/skills` as a skill root inside a cell despite its own `CODEX_HOME` (seen in the golden record, 2026-09-23), so user-level skills may reach Codex cells (US-13) | **Open, disclosed (2026-09-24):** the canary shows the leak. A per-cell `HOME`/`USERPROFILE` and `features.skip_host_skill_discovery` were both tried, and neither removes the root (`docs/notes/spike-n5-codex-skill-roots.md`). Ruling R-5 keeps the strict xfail and flags Codex cells (see Deviations) |
 | N4 | A node adapter's child CLI stays in the cell's Job Object | **Done 2026-09-23 (Verified):** `docs/notes/spike-phase1-probes.md` |
 
 ## Status & next action

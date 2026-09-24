@@ -1,0 +1,16 @@
+```yaml
+schema: bench-matrix/1
+run_id: solo-2
+coordinator: claude-code
+combos:
+  - harness: codex
+    model: gpt-6-sol
+pack: "off"
+bom:
+  tasks:
+    - X1
+repetitions: 2
+```
+
+Decision requests:
+- Confirm "gpt-6-sol" is the exact model id the codex harness accepts (hard rule: models are pinned to the exact accepted id, `auto` is refused) — not verifiable in this dry run.

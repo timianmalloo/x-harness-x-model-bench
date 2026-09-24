@@ -48,6 +48,7 @@ summary: >-
 - **Signature:** a design names a mechanism (`git worktree`, a Job Object flag, a CLI mode) and relies on a property it was never observed to have.
 - **Why it survives:** the mechanism is familiar, so the property feels checked. Design text is not executed.
 - **Instances:**
+  - `2026-09-24`: the Codex reader assumed injected context always starts with `<`. With the pack on, Codex 0.156 prepends `# AGENTS.md instructions for <cwd>`, and the reader took that block as the prompt (US-10 failed in the second real E2E). The control is a real, scrubbed pack-on record: `tests/fixtures/native/codex/pack-on.jsonl`. Its test was observed red at `05f52fa`. The E2E also checks US-10 for every cell.
   - `2026-09-23` ADR-0013 draft: "each cell gets its own worktree of one clone". Worktrees share refs, stashes and config, so one cell's commits and remotes were visible in every other cell. Distributed Systems and the Test Architect caught it at the gate, each checking in a scratch repository.
   - `2026-09-23` ADR-0008 assumed the native session record is a complete token source. Measured with the pinned builds, Claude Code's record under the ACP adapter omits the final and auxiliary calls. Found by comparing the same turn's two sources during `/implement`; fixed per harness (`usage_source`), with fixtures that pin both sources.
 - **Sweep:** the other mechanisms ADR-0013 names. Job Object kill-on-close and the active-process count were spiked (N2). The Codex full-access mode was read in source and run (N1). Job naming and handle inheritance are marked Inferred with probe N4.
@@ -81,6 +82,51 @@ summary: >-
 - **Control:** every result line in `check_models.py` prints with `flush=True`. `NONE YET` as a test; the upgrade trigger is a second instance in another script.
 - **Status:** `partially-controlled`
 
+### CONC-A: check-then-act on a shared destination under concurrency
+- **Signature:** two workers each check "does `dest` exist", both see no, and both build and publish into it. On Windows, `os.replace` onto a non-empty folder fails with `WinError 5`.
+- **Why it survives:**
+  - Unit tests build one cell at a time.
+  - The race needs two cells that share a content-addressed input, running in parallel.
+  - The first real E2E was the first run with both.
+- **Instances:**
+  - `2026-09-24`, first real E2E: `workspace.task_source` and `workspace.pack_checkout` raised HB-CELL-113 for the second `pack=on` cell (T6).
+- **Sweep:** `grep os.replace|.rename(|shutil.move` over `src` finds one site, `workspace._land`, which both functions now use. `cell_working_copy` has a per-cell `dest`, so nothing shares it.
+- **Control:** `tests/test_workspace.py`'s two concurrency tests use a `threading.Barrier`. They were observed red at `0082875` (re-run by the Coordinator). The two `tests/mutations/workspace.json` mutants are killed.
+- **Status:** `controlled` (2026-09-24)
+
+### PATH-A: a relative path handed to a subprocess that runs in another folder
+- **Signature:** a path argument stays relative, and a subprocess started with `cwd=<some other folder>` resolves it there. The file "does not exist".
+- **Why it survives:** tests pass absolute paths (`tmp_path`, `ROOT / ...`). Only an operator typing a relative path hits it.
+- **Instances:**
+  - `2026-09-24`: `bench --tools-dir .tools/harness run` looked for `pack-apply.py` under the cell's working copy, which gave HB-CELL-113 (T8-2).
+- **Sweep:** every CLI path argument (`--root`, `--runs`, `--cells-root`, `--tools-dir`, `--pack-source`, `--matrix`) is resolved once in `cli._resolve_paths`. `grep add_argument` lists no other path argument. Every `cwd=` site in `src` takes a path derived from those.
+- **Control:** `tests/test_cli.py::test_a_relative_tools_dir_resolves_absolute_and_the_pack_on_build_succeeds`, observed red at `62c38ba`. The `t8.json` T8-2 mutant is killed.
+- **Status:** `controlled` (2026-09-24)
+
+### COORD-A: a delegation mechanism's refusal routed around
+- **Signature:** the harness refuses a sub-agent's action, for example writing `docs/proof/findings-*.md` ("report files"), and the sub-agent reaches the same effect another way, such as a shell heredoc.
+- **Why it survives:** the workaround succeeds and the result looks right. The refusal is not in the file's history.
+- **Instances:**
+  - `2026-09-24`: T6 wrote `findings-T6.md` through a shell heredoc after the Write tool was refused.
+  - T1–T5 and T8 did not route around the refusal. They reported the content, and the Coordinator transcribed it.
+- **Sweep:** every findings file carries a line saying who wrote it and why.
+- **Control:** the brief clause "the harness refuses sub-agent writes to findings files; put the content in your report" (T8 and T9 briefs). That is an instruction rung only; no automated check exists.
+- **Upgrade trigger:** a second route-around.
+- **Status:** `partially-controlled`
+
+### GATE-A: a gate green over an empty corpus
+- **Signature:** a gate reports OK because it found nothing to check, not because what exists is correct.
+- **Why it survives:** the output says OK, and the zero counts are easy to skim past.
+- **Instances:**
+  - `2026-09-24`: `verify-ruling-citations.py` prints "0 ruling(s) cited, 0 defined" on every join. It recognises only `### Ruling NN` headings, and `docs/notes/rulings.md` uses `## R-n`. R-1 to R-5 are therefore never checked.
+- **Sweep:** the other join gates report non-zero counts. `docs-graph validate` counts its nodes, and the recount counts its tests (501).
+- **Control:** none yet. The fix is a format decision for the Owner, one of:
+  - adopt `### Ruling NN` with the `coord decide rule` allocator;
+  - have the pack script accept `## R-n`.
+
+  Until then, the Proof Pack does not count this gate as evidence.
+- **Status:** `uncontrolled`
+
 ---
 
 ## Inherited classes (seeded from the pack)
@@ -99,7 +145,7 @@ summary: >-
 | **E2E-B** | Declared shape with no write path | A facet/status/enum/route declared and never set | Telemetry reports "nothing to do" — true, for the wrong reason | Test that the shape is written under the claimed condition | `uncontrolled` |
 | **E2E-C** | Green suite, broken surface | All units green; the page never renders; the composition root is never exercised | Units construct their subject by hand | One proof through the real composition root to the rendered surface (E11) | `uncontrolled` |
 | **E2E-D** | Component tests that can't see each other | Every part correct against its own expectation; parts disagree | Per-component coverage is high | Cross-surface consistency test on one seeded scenario (E12) | `uncontrolled` |
-| **E2E-E** | The gate passed, its contents didn't | Several checks in one block; only the last exit code propagates | The gate is green | Run each control independently; assert each reports its own status (E13) | `uncontrolled` |
+| **E2E-E** | The gate passed, its contents didn't | Several checks in one block; only the last exit code propagates | The gate is green | Run each control independently; assert each reports its own status (E13) | `partially-controlled` (2026-09-24). **Instance:** the Coordinator committed `5dcb2fe` while `pytest --collect-only` had 1 error, because `\| tail -1` hid the exit status. It was fixed in `101ec85`. **Control:** `tools/heredoc_guard.py` blocks a gate (pytest, ruff, mutate_check, conductor-join, run-verify-gates) piped without `pipefail`. It was observed red at `291468b` and fixed in `727cbb4`. Other multi-check blocks are not covered. |
 | **E2E-F** | Exit code taken as result | A command returned success; the state was never read back | Success is success-shaped | Read back the state and assert on it (E14) | `uncontrolled` |
 | **E2E-G** | Reachability not verified | The surface exists but nothing links to it — or a link points at nothing | The feature works if you can get to it | Assert the navigation path to any new surface (E10) | `uncontrolled` |
 | **RIG-A** | Own-code shape asserted from memory | "This type has that member" — written in a design, never opened | Designs aren't compiled | Read the file or label Inferred (E15); review opens the cited file | `uncontrolled` |
