@@ -1,0 +1,23 @@
+{
+ "note": "Only the session/prompt results below are recorded bytes. No full ACP transcript (initialize, session/new, notifications) was kept from the spikes: the probe outputs went to C:\\Projects\\bench-probe-* folders that were deleted (docs/notes/spike-phase1-probes.md). replay_agent.py supplies minimal ACP-schema handshake replies and is not a recording. 'unknown' means not recorded anywhere found (git history from b82d28b, the spike notes); it is never a guess.",
+ "fixtures": {
+  "claude-code-prompt-response.json": {
+   "message": "session/prompt result (the whole result object)",
+   "adapter": "claude-agent-acp",
+   "adapter_version": "0.79.0",
+   "harness_version": "Claude Code 2.1.274",
+   "captured": "2026-09-23",
+   "scrub": "Scrubbed at capture (commit b82d28b: 'Golden fixtures from real captures (scrubbed)'); the rule applied is unknown. Checked 2026-09-24: the file holds only stopReason and token counts, with no path, email, account or session id.",
+   "source": "tests/fixtures/acp/README.md; commit b82d28b; docs/notes/decision-token-source-per-harness.md (same turn as ../native/claude-code/ok.jsonl)"
+  },
+  "codex-prompt-response.json": {
+   "message": "session/prompt result (the whole result object)",
+   "adapter": "codex-acp",
+   "adapter_version": "1.12.0",
+   "harness_version": "Codex 0.156.0",
+   "captured": "2026-09-23",
+   "scrub": "Scrubbed at capture (commit b82d28b: 'Golden fixtures from real captures (scrubbed)'); the rule applied is unknown. Checked 2026-09-24: the file holds only stopReason and token counts, with no path, email, account or session id.",
+   "source": "tests/fixtures/acp/README.md; commit b82d28b; docs/notes/decision-token-source-per-harness.md (same turn as ../native/codex/ok.jsonl)"
+  }
+ }
+}

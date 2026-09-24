@@ -788,7 +788,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b586635d0cf4bf610dca3be2b929c2c8af128770b63ebc4759e13e0ea033054c"
+      "sourceSha256": "83f83dc18722c834011563e42fbce2e14719f2bac3de1bcf655e84fdf4025ea2"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -926,6 +926,31 @@ window.DOCS_INDEX = {
       "sourceSha256": "b278432234edb1a4ac1320f18bc276401296d16169fd21a648088a947e401364"
     },
     {
+      "id": "coordination-phase1-finish-run",
+      "path": "docs/coordination/coordination-phase1-finish-run.md",
+      "title": "Run record - coordination-phase1-finish",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2026-10-08",
+      "reviewSuggested": [],
+      "summary": "What happened when the phase-1 finish plan was executed: the measured qualification of grok and agy (both failed; ruling R-4 moved the tracks to Claude Code), the mutation-tool probes, the hardened checker's findings, and planned against actual time for each track.",
+      "tags": [
+        "coordination",
+        "run-record",
+        "planned-vs-actual"
+      ],
+      "links": [
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "1d431712be77972ccbc69fe0b73ac947598f301beb99021aa33a2eb489ff49a5"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -1010,6 +1035,38 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "8d2699649e9e22be2315839714c9683713119b0cb163420a455eed0bb9101a9d"
+    },
+    {
+      "id": "note-spike-n5-codex-skill-roots",
+      "path": "docs/notes/spike-n5-codex-skill-roots.md",
+      "title": "Spike N5: no observed Codex 0.156 mechanism removes ~/.agents/skills from a cell",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-23",
+      "reviewSuggested": [],
+      "summary": "T5's 1.5h research timebox found one candidate (features.skip_host_skill_discovery in config.toml) and ran it for real against the US-13 canary: the operator's ~/.agents/skills skill still reached the Codex cell. A third party independently reports the same flag, plus --ignore-user-config, --ignore-rules and project_doc_max_bytes=0, all fail the same way on 0.154.0. Negative result: no Codex 0.156 mechanism observed (source or run) removes a user skill root from a cell. The change is reverted; N5 stays open, xfail(strict) with an updated reason.",
+      "tags": [
+        "benchmark",
+        "spike",
+        "phase-1",
+        "codex",
+        "skills",
+        "N5"
+      ],
+      "links": [
+        {
+          "to": "design-phase1-walking-skeleton",
+          "rel": "refines"
+        },
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "2327898c1d68749562fe1335e2bba74eb712a2399989eb601e21a868601e813f"
     },
     {
       "id": "note-spike-phase1-probes",
@@ -1191,6 +1248,63 @@ window.DOCS_INDEX = {
       "sourceSha256": "d54e510a81dfb32ebc3f256b4fd6be310d719fba944dcdef11213e6d9ab50dad"
     },
     {
+      "id": "findings-t3-process-edges",
+      "path": "docs/proof/findings-T3.md",
+      "title": "Findings → tests: track T3 process-edges",
+      "type": "proof-pack",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2026-12-22",
+      "reviewSuggested": [],
+      "summary": "Track T3's findings→tests map: nine findings, each with a test-only red commit and a separate fix. The harness refused the sub-agent's write of this file, so the Coordinator transcribed it from the track's report and re-ran two red SHAs itself.",
+      "tags": [
+        "proof",
+        "findings",
+        "red-first",
+        "T3"
+      ],
+      "links": [
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "114ec6faaf780d5362cf308c4152f05daa2373ca85d3acf68fc5ff0859836655"
+    },
+    {
+      "id": "proof-findings-t5",
+      "path": "docs/proof/findings-T5.md",
+      "title": "T5 findings: N5 spike (Codex host skill discovery)",
+      "type": "proof-pack",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2026-10-08",
+      "reviewSuggested": [],
+      "summary": "T5's findings->tests map and the T5 fallback decision request. One mechanism was tried for real (features.skip_host_skill_discovery); the canary still leaked, so the change is reverted and N5 stays open. Recommends fallback option (a): keep xfail(strict), record the exposure, flag Codex cells in the report header.",
+      "tags": [
+        "proof",
+        "phase-1",
+        "codex",
+        "N5",
+        "T5"
+      ],
+      "links": [
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        },
+        {
+          "to": "note-spike-n5-codex-skill-roots",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "ff77e25774f861cfac57df5ed5d9a09b31b33820b87031899c92a6b3fe88e337"
+    },
+    {
       "id": "spec-harness-bench",
       "path": "docs/specs/harness-bench.md",
       "title": "Spec: harness-bench, a cross-harness, cross-model benchmark with the pack as a factor",
@@ -1342,5 +1456,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "703acbc6a6e4df90fe925337ac10e57068e97f94b6824189cc2ee6fb7bc72083"
+  "graphSha256": "addfe430ec838f987fff3952a42157335e1da8b945afe41706a8042aceebcfdd"
 };

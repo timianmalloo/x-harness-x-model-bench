@@ -76,8 +76,13 @@ def _turn(harness: str, folder: Path, control: bool) -> str:
     return "\n".join(r.read_text(encoding="utf-8", errors="replace") for r in records)
 
 
-N5 = pytest.mark.xfail(strict=True, reason="N5 open: Codex 0.156 reads ~/.agents/skills even with a per-cell USERPROFILE/HOME "
-                                           "(canary 2026-09-24); strict, so the fix turns this red until the mark is removed")
+N5 = pytest.mark.xfail(strict=True, reason="N5 open (docs/notes/spike-n5-codex-skill-roots.md): Codex 0.156 still reads "
+                                           "~/.agents/skills into a cell. Tried and confirmed ineffective by a real canary "
+                                           "run: a per-cell USERPROFILE/HOME (reverted before this spike), and "
+                                           "features.skip_host_skill_discovery=true in the per-cell config.toml (this spike, "
+                                           "2026-09-24); a third party independently reports the same flag plus "
+                                           "--ignore-user-config/--ignore-rules/project_doc_max_bytes=0 also fail on 0.154.0. "
+                                           "strict, so a real fix turns this red until the mark is removed")
 
 
 @pytest.mark.parametrize("harness", ["claude-code", pytest.param("codex", marks=N5)])

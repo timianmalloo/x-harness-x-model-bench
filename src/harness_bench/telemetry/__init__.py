@@ -6,7 +6,8 @@ cache write, output; reasoning is a component of output), tool calls, and provid
 
 Readers are bounded (ADR-0008, design): a line over 1 MiB, a line nested deep enough to raise
 RecursionError, or a line that does not parse is counted as malformed and skipped; a record over
-256 MiB is read only to that size. A field that is absent is NOT_RECORDED, never 0.
+256 MiB is read only to that size. A field of the wrong type is treated as absent. A usage field that is
+absent is listed in `Extraction.missing` as HB-TEL-001: NOT_RECORDED, never a silent 0.
 """
 
 from __future__ import annotations
@@ -51,6 +52,15 @@ class ProviderError:
     message: str
 
 
+@dataclass(frozen=True)
+class MissingField:
+    """A field the record should carry for a model call but does not (HB-TEL-001). The call's bucket holds 0,
+    so a consumer treats a measure built from this call as NOT_RECORDED, never as 0."""
+    native_ordinal: int
+    field: str
+    code: str = "HB-TEL-001"
+
+
 @dataclass
 class Extraction:
     session_id: str | None = None
@@ -60,18 +70,31 @@ class Extraction:
     first_user_text: str | None = None
     malformed_lines: int = 0
     truncated: bool = False
+    missing: list[MissingField] = field(default_factory=list)
+
+    def count(self, n: int, usage: dict, key: str) -> int:
+        """The usage field `key` of the call at line `n`; absent or not a count is HB-TEL-001 (and 0 in the bucket)."""
+        value = usage.get(key)
+        if is_count(value):
+            return value
+        self.missing.append(MissingField(n, key))
+        return 0
 
 
 def rows(path: Path, ex: Extraction) -> Iterator[tuple[int, dict]]:
     """(1-based line number, object) for every well-formed JSON object line, bounded."""
-    read = 0
+    read = n = 0
     with path.open("rb") as f:
-        for n, raw in enumerate(f, 1):
+        while raw := f.readline(MAX_LINE + 1):  # never more than one bounded piece in memory
+            n += 1
             read += len(raw)
+            too_long = len(raw) > MAX_LINE
+            while too_long and not raw.endswith(b"\n") and read <= MAX_FILE and (raw := f.readline(MAX_LINE + 1)):
+                read += len(raw)  # skip the rest of the over-long line, piece by piece
             if read > MAX_FILE:
                 ex.truncated = True
                 return
-            if len(raw) > MAX_LINE:
+            if too_long:
                 ex.malformed_lines += 1
                 continue
             try:
@@ -86,9 +109,27 @@ def rows(path: Path, ex: Extraction) -> Iterator[tuple[int, dict]]:
                 ex.malformed_lines += 1
 
 
+# The record is untrusted input: a field of the wrong type is treated as absent, so no foreign type reaches a row.
+def is_count(value) -> bool:
+    """A token count: an int (never a bool) that fits a signed 64-bit column and is not negative."""
+    return type(value) is int and 0 <= value < 1 << 63
+
+
 def as_int(value) -> int:
-    return value if isinstance(value, int) and not isinstance(value, bool) else 0
+    return value if is_count(value) else 0
+
+
+def as_status(value) -> int | None:
+    return value if type(value) is int else None
+
+
+def as_str(value) -> str | None:
+    return value if isinstance(value, str) else None
 
 
 def as_dict(value) -> dict:
     return value if isinstance(value, dict) else {}
+
+
+def as_list(value) -> list:
+    return value if isinstance(value, list) else []

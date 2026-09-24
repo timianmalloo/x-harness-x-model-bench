@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T01:56:46Z",
+  "generated": "2026-09-24T03:06:09Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -429,6 +429,93 @@ window.AUDIT_DATA = {
       },
       "mode": "compiled",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M38N9FKM9P6VAYG6YW70HMBD",
+      "shortname": "T5 N5 spike: Codex host skill discovery",
+      "datetime": "2026-09-24T02:53:07Z",
+      "session": "T5",
+      "prompt": "Track T5 n5-spike: find an observed Codex 0.156 mechanism that removes user skill roots from a cell; make the US-13 canary green for Codex without xfail, or report the negative result within the timebox.",
+      "summary": "Read the installed Codex 0.156 binary and codex-acp adapter (Spike Protocol). Found candidate features.skip_host_skill_discovery, applied it via a red-first unit test (1678c43a), then proved by a real US-13 canary run that it does NOT stop ~/.agents/skills reaching a Codex cell (microsoft-foundry still leaked). Independently corroborated by a third-party issue testing the same flag plus other CLI flags on 0.154.0. Reverted the ineffective change; restored xfail(strict) with an updated reason. Wrote docs/notes/spike-n5-codex-skill-roots.md and docs/proof/findings-T5.md with the T5 fallback decision request (recommend option a). Gates green: ruff clean, 304 passed / 5 deselected.",
+      "kind": "skill",
+      "skill": "investigate",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/notes/spike-n5-codex-skill-roots.md",
+        "docs/proof/findings-T5.md",
+        "bench/profiles/codex.yaml",
+        "tests/test_profiles.py",
+        "tests/e2e/test_us13_canary.py"
+      ],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "Find an observed Codex 0.156 mechanism that removes ~/.agents/skills from a cell (N5); make the US-13 canary green for Codex without xfail.",
+      "done_when": "Codex canary green with xfail removed and Claude canary still green, or the research/track timebox expires with a written negative result.",
+      "tier": "T1",
+      "started_at": "2026-09-24T02:38:58Z",
+      "duration_seconds": 849.0,
+      "git": {
+        "sha": "5e4cf31d35dcf6beab58258a3e0a6ddddfb324d6",
+        "short": "5e4cf31d3",
+        "branch": "track/t5-n5-spike",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M38NFPS079Q5X83GP8PV2GTT",
+      "shortname": "join-t5",
+      "datetime": "2026-09-24T02:56:31Z",
+      "session": "coord-opus",
+      "prompt": "the join of track/t5-n5-spike into impl/phase1",
+      "summary": "T5 N5 spike: skip_host_skill_discovery disproven by a real canary; strict xfail kept (R-5) recount_seconds=78 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "merge T5's verified evidence",
+      "done_when": "join gates green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-24T02:55:12Z",
+      "duration_seconds": 79.0
+    },
+    {
+      "id": "al-01M38P1BA1KF64HEQ8N8QA74KD",
+      "shortname": "join-t3",
+      "datetime": "2026-09-24T03:06:09Z",
+      "session": "coord-opus",
+      "prompt": "the join of track/t3-process-edges into impl/phase1",
+      "summary": "T3: 10 red-first findings, t3.json 15/15 killed, D5/D7/D2 applied recount_seconds=78 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "merge T3's verified evidence",
+      "done_when": "join gates green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-24T03:04:49Z",
+      "duration_seconds": 80.0
     }
   ],
   "changes": [

@@ -12,6 +12,7 @@ from hypothesis import strategies as st
 
 from harness_bench import driver, procs
 from harness_bench.errors import Cause
+from harness_bench.telemetry import normalize
 
 FAKE = Path(__file__).parent / "fake_acp_agent.py"
 
@@ -33,16 +34,32 @@ def _turn(tmp_path, prompt="Do the task.", before_send=None, acp_mode=None, hand
 
 # the line reader: bounded, never crashes (D2) ------------------------------------------------
 
+_NESTED = st.integers(min_value=1, max_value=120_000).flatmap(
+    lambda n: st.sampled_from([b"[" * n, b'{"a":' * n, b"[" * n + b"]" * n])).map(lambda b: b + b"\n")
+_CHUNK = st.one_of(st.binary(max_size=600), _NESTED, st.sampled_from([b"\n", b'{"a":1}\n', b"x" * 300, b"[1]\n"]))
+
+
 @settings(max_examples=200, deadline=None)
-@given(st.binary(max_size=4096))
-def test_line_reader_never_crashes_and_stays_bounded(data):
-    reader = driver.LineParser(max_line=256, max_junk=20)
-    try:
-        for msg in reader.feed(data):
-            assert isinstance(msg, dict)
-    except driver.ProtocolError:
-        pass
-    assert len(reader._buf) <= 256 + 4096
+@given(st.sampled_from([16, 256, 1 << 18]), st.lists(_CHUNK, max_size=12))
+def test_line_reader_never_crashes_and_stays_bounded(max_line, chunks):  # D2
+    """Any bytes in any chunking: only messages (dicts) or ProtocolError come out, and the buffer never
+    holds more than one line, including after the error."""
+    reader = driver.LineParser(max_line=max_line, max_junk=20)
+    for chunk in chunks:
+        try:
+            for msg in reader.feed(chunk):
+                assert isinstance(msg, dict)
+        except driver.ProtocolError:
+            assert len(reader._buf) <= max_line
+            return
+        assert len(reader._buf) <= max_line
+
+
+@pytest.mark.parametrize("line", [b"[" * 100_000, b'{"a":' * 100_000], ids=["list", "object"])
+def test_a_deeply_nested_line_is_junk_never_a_crash(line):  # D2: 100,000-deep nesting
+    reader = driver.LineParser()
+    assert list(reader.feed(line + b"\n" + b'{"ok":1}\n')) == [{"ok": 1}]
+    assert reader.junk == 1
 
 
 def test_line_reader_rejects_an_oversized_line():
@@ -140,6 +157,49 @@ def test_a_killed_turn_returns_promptly_with_eof(tmp_path):
     assert result.prompt_sent and result.stop_reason is None and result.eof
 
 
+# D5: recorded adapter output replayed through the driver ------------------------------------------
+
+ACP_FIX = Path(__file__).parent / "fixtures" / "acp"
+REPLAY = ACP_FIX / "replay_agent.py"
+RECORDED = sorted(p for p in ACP_FIX.glob("*.json") if p.name != "provenance.json")
+PROVENANCE_KEYS = ("adapter", "adapter_version", "harness_version", "captured", "scrub", "source")
+
+
+def _replay(tmp_path, **cfg):
+    env = dict(os.environ, REPLAY_ACP=json.dumps(cfg))
+    cell = procs.spawn([sys.executable, str(REPLAY)], cwd=str(tmp_path), env=env)
+    try:
+        return driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=None, handshake_timeout=10, before_send=lambda sid: None)
+    finally:
+        cell.terminate_and_confirm(timeout=10)
+        cell.close()
+
+
+def test_every_recorded_acp_fixture_states_its_provenance():  # D5: adapter version, capture date, scrub
+    provenance = json.loads((ACP_FIX / "provenance.json").read_text(encoding="utf-8"))["fixtures"]
+    assert RECORDED and {p.name for p in RECORDED} == set(provenance)
+    for name, record in provenance.items():
+        assert all(isinstance(record.get(k), str) and record[k].strip() for k in PROVENANCE_KEYS), name
+
+
+@pytestmark_native
+@pytest.mark.parametrize("fixture", RECORDED, ids=[p.stem for p in RECORDED])
+def test_a_recorded_prompt_result_replays_through_the_driver(tmp_path, fixture):  # D5
+    recorded = json.loads(fixture.read_text(encoding="utf-8"))
+    result = _replay(tmp_path, prompt_result=str(fixture))
+    assert result.cause is None and result.stop_reason == recorded["stopReason"] and result.prompt_sent
+    assert result.usage == {"usage": recorded["usage"], "meta": recorded["_meta"]}
+    # the engine's reading of the driver's result is the reading of the recorded bytes
+    assert normalize.turn_usage({"_meta": result.usage["meta"]}) == normalize.turn_usage(recorded) != []
+
+
+@pytestmark_native
+def test_meta_is_kept_when_the_adapter_reports_no_usage(tmp_path):  # derived variant: the codex result without `usage`
+    recorded = json.loads((ACP_FIX / "codex-prompt-response.json").read_text(encoding="utf-8"))
+    result = _replay(tmp_path, prompt_result=str(ACP_FIX / "codex-prompt-response.json"), drop=["usage"])
+    assert result.usage == {"usage": None, "meta": recorded["_meta"]}  # the TurnResult.usage shape is unchanged
+
+
 # D7: every message type the fake emits is paired with a real transcript or the ACP schema ------
 
 PAIRING = {
@@ -147,18 +207,116 @@ PAIRING = {
     "initialize.result": "spike N4: real initialize results from claude-agent-acp, codex-acp, copilot --acp",
     "session/new.result": "spike N4: real session/new results (sessionId, modes.availableModes)",
     "session/set_mode.result": "spike N4: codex-acp set_mode agent-full-access returned {}",
-    "session/set_model.result": "spike N4: copilot set_model returned {}",
     "session/update.agent_message_chunk": "spike R11 container_acp.py counted real session/update notifications",
-    "session/prompt.result": "spike N4: stopReason end_turn from all three adapters",
+    "session/prompt.result": "recorded: tests/fixtures/acp/*-prompt-response.json, replayed through the driver (D5)",
     "session/request_permission": "ACP schema (agentclientprotocol.com, RequestPermissionRequest); no real exemplar yet - "
                                   "flagged for the phase-2 permission probe",
 }
 
 
-def test_fake_agent_message_types_are_paired():
-    source = FAKE.read_text(encoding="utf-8")
-    emitted = {"initialize.result", "session/new.result", "session/set_mode.result", "session/set_model.result",
-               "session/update.agent_message_chunk", "session/prompt.result", "session/request_permission"}
-    assert '"session/request_permission"' in source and "agent_message_chunk" in source
+class _Tap:
+    """One side of the adapter's stdio, passed through unchanged and recorded."""
+
+    def __init__(self, stream) -> None:
+        self.stream, self.data = stream, bytearray()
+
+    def read1(self, n: int) -> bytes:
+        chunk = self.stream.read1(n)
+        self.data += chunk
+        return chunk
+
+    def write(self, data: bytes) -> int:
+        self.data += data
+        return self.stream.write(data)
+
+    def flush(self) -> None:
+        self.stream.flush()
+
+    def close(self) -> None:
+        self.stream.close()
+
+
+def _objects(data: bytes) -> list[dict]:
+    out = []
+    for line in data.split(b"\n"):
+        try:
+            obj = json.loads(line)
+        except (ValueError, RecursionError):
+            continue
+        if isinstance(obj, dict):
+            out.append(obj)
+    return out
+
+
+def _message_types(agent: bytes, client: bytes) -> set[str]:
+    """Each agent message as `method[.sessionUpdate]` or `<the client request's method>.result|error`."""
+    asked = {m["id"]: m["method"] for m in _objects(client) if "method" in m and "id" in m}
+    types = set()
+    for m in _objects(agent):
+        if "method" in m:
+            update = (m.get("params") or {}).get("update") or {}
+            types.add(m["method"] + (f".{update['sessionUpdate']}" if "sessionUpdate" in update else ""))
+        elif "id" in m:
+            types.add(f"{asked.get(m['id'], '?')}.{'error' if 'error' in m else 'result'}")
+    return types
+
+
+def _tapped_turn(tmp_path, argv, env, acp_mode=None) -> set[str]:
+    import threading
+    cell = procs.spawn(argv, cwd=str(tmp_path), env=env)
+    cell.proc.stdout, cell.proc.stdin = _Tap(cell.proc.stdout), _Tap(cell.proc.stdin)
+    stop = threading.Timer(4, lambda: cell.terminate_and_confirm(timeout=10))  # ends the hang modes
+    stop.start()
+    try:
+        driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=acp_mode, handshake_timeout=3, before_send=lambda sid: None)
+    finally:
+        stop.cancel()
+        cell.terminate_and_confirm(timeout=10)
+        cell.close()
+    return _message_types(bytes(cell.proc.stdout.data), bytes(cell.proc.stdin.data))
+
+
+def _fake_modes() -> list[str]:
+    """Every mode the fake agent declares in its docstring, so a new mode is exercised without editing this test."""
+    import re
+    doc = FAKE.read_text(encoding="utf-8").split('"mode":', 1)[1].split('"record_dir"', 1)[0]
+    return re.findall(r'"(\w+)"', doc)
+
+
+def _assert_paired(emitted: set[str]) -> None:
     unpaired = emitted - set(PAIRING)
-    assert not unpaired, f"fake message types with no real transcript or schema: {sorted(unpaired)}"
+    assert not unpaired, f"message types with no real transcript or schema: {sorted(unpaired)}"
+
+
+@pytestmark_native
+def test_every_message_type_the_fake_emits_is_paired_and_every_pairing_is_emitted(tmp_path):  # D7
+    from concurrent.futures import ThreadPoolExecutor
+    modes = _fake_modes()
+    assert {"ok", "permission", "eof_mid_turn"} <= set(modes)
+    env = {m: dict(os.environ, FAKE_ACP=json.dumps({"mode": m, "usage": [{"model": "m", "token_count": {}}]})) for m in modes}
+    for m in modes:
+        (tmp_path / m).mkdir()
+    with ThreadPoolExecutor(max_workers=len(modes)) as pool:
+        runs = [pool.submit(_tapped_turn, tmp_path / m, [sys.executable, str(FAKE)], env[m], "agent-full-access") for m in modes]
+        emitted = set().union(*(r.result() for r in runs))
+    _assert_paired(emitted)
+    stale = set(PAIRING) - emitted
+    assert not stale, f"pairings no real run of the fake emits: {sorted(stale)}"
+
+
+@pytestmark_native
+def test_the_fidelity_check_fails_on_a_seeded_unpaired_type(tmp_path):  # D7 negative control, through a real run
+    seed = {"jsonrpc": "2.0", "method": "session/update",
+            "params": {"sessionId": "replay-session", "update": {"sessionUpdate": "plan", "entries": []}}}
+    env = dict(os.environ, REPLAY_ACP=json.dumps({"prompt_result": str(ACP_FIX / "codex-prompt-response.json"),
+                                                  "before_result": [seed]}))
+    emitted = _tapped_turn(tmp_path, [sys.executable, str(REPLAY)], env)
+    assert "session/update.plan" in emitted
+    with pytest.raises(AssertionError, match=r"session/update\.plan"):
+        _assert_paired(emitted)
+
+
+def test_run_turn_has_no_model_switch():  # Simplifier minor: no caller passes model=, so no session/set_model path
+    import inspect
+    assert "model" not in inspect.signature(driver.run_turn).parameters
+    assert "session/set_model" not in Path(driver.__file__).read_text(encoding="utf-8")
