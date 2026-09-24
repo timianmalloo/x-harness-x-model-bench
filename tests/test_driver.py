@@ -494,7 +494,99 @@ def test_the_fidelity_check_fails_on_a_seeded_unpaired_type(tmp_path):  # D7 neg
         _assert_paired(emitted)
 
 
-def test_run_turn_has_no_model_switch():  # Simplifier minor: no caller passes model=, so no session/set_model path
-    import inspect
-    assert "model" not in inspect.signature(driver.run_turn).parameters
-    assert "session/set_model" not in Path(driver.__file__).read_text(encoding="utf-8")
+def _with_set_model(tmp_path: Path, reply: dict) -> Path:
+    """The codex recording with a session/set_model exchange right after session/new (ids after it shifted by one),
+    answered by `reply` (a result or an error)."""
+    out, shifted = [], False
+    for r in _records(ACP_FIX / "recordings" / "codex-x1.jsonl"):
+        if r["kind"] == "line" and r["dir"] == "to_client":
+            msg = json.loads(r["text"])
+            if shifted and "id" in msg and "method" not in msg:
+                msg["id"] += 1
+                r = {**r, "text": json.dumps(msg, separators=(",", ":"))}
+            out.append(r)
+            if msg.get("id") == 2 and "sessionId" in msg.get("result", {}):  # the session/new result
+                out.append({**r, "text": '{"jsonrpc":"2.0","id":3,"method":"session/set_model"}'} | {"dir": "to_agent"})
+                out.append({**r, "text": json.dumps({"jsonrpc": "2.0", "id": 3, **reply})})
+                shifted = True
+        else:
+            out.append(r)
+    path = tmp_path / "with-set-model.jsonl"
+    path.write_text("".join(json.dumps(r) + "\n" for r in out), encoding="utf-8")
+    return path
+
+
+def _methods(written: bytes) -> list[str]:
+    return [m["method"] for m in map(json.loads, written.splitlines()) if "method" in m]
+
+
+def _run_with_model(tmp_path, recording: Path, model: str):
+    env = dict(os.environ, REPLAY_ACP=json.dumps({"recording": str(recording)}))
+    cell = procs.spawn([sys.executable, str(REPLAY)], cwd=str(tmp_path), env=env)
+    cell.proc.stdin = _Tap(cell.proc.stdin)
+    try:
+        result = driver.run_turn(cell, cwd=tmp_path, prompt=X1_PROMPT, mode="agent-full-access", handshake_timeout=10,
+                                 before_send=lambda sid: None, model=model)
+    finally:
+        cell.terminate_and_confirm(timeout=10)
+        cell.close()
+    return result, bytes(cell.proc.stdin.data)
+
+
+@pytestmark_native
+def test_the_model_is_set_right_after_session_new_and_before_the_mode(tmp_path):  # R-13, ADR-0003 (Copilot pin)
+    result, written = _run_with_model(tmp_path, _with_set_model(tmp_path, {"result": {}}), "gpt-6-sol")
+    assert result.cause is None and result.stop_reason == "end_turn"
+    assert _methods(written) == ["initialize", "session/new", "session/set_model", "session/set_mode", "session/prompt"]
+    setter = next(m for m in map(json.loads, written.splitlines()) if m.get("method") == "session/set_model")
+    assert setter["params"] == {"sessionId": result.session_id, "modelId": "gpt-6-sol"}
+
+
+@pytestmark_native
+@pytest.mark.parametrize("message", ["Invalid modelId 'x': not one of this session's models.",
+                                     "model not available for this login"], ids=["copilot-32602", "auth-words"])
+def test_a_refused_model_setter_is_model_unavailable_and_the_prompt_is_never_sent(tmp_path, message):  # R-18
+    """By step, not by text: even an error whose text reads like an auth failure is HB-CELL-116 at the setter."""
+    error = {"error": {"code": -32602, "message": message}}
+    result, written = _run_with_model(tmp_path, _with_set_model(tmp_path, error), "no-such-model")
+    assert result.cause is Cause.model_unavailable and message in result.detail
+    assert not result.prompt_sent and _methods(written) == ["initialize", "session/new", "session/set_model"]
+
+
+@pytestmark_native
+def test_no_model_means_no_setter(tmp_path):  # Claude Code and Codex stay byte-identical (design section on driver)
+    result, _, written = _replay(tmp_path, ACP_FIX / "recordings" / "codex-x1.jsonl", "agent-full-access")
+    assert result.cause is None and "session/set_model" not in _methods(written)
+
+
+@pytestmark_native
+@pytest.mark.parametrize(("name", "version"), [("claude-code-x1.jsonl", "0.79.0"), ("codex-x1.jsonl", "1.12.0")])
+def test_the_agent_version_is_initialize_agent_info_verbatim(tmp_path, name, version):  # R-22 as narrowed by R-28
+    recording = ACP_FIX / "recordings" / name
+    result, _, _ = _replay(tmp_path, recording, _meta(recording)["mode"])
+    assert result.agent_version == version
+
+
+@pytestmark_native
+def test_the_agent_version_is_null_when_initialize_has_no_agent_info(tmp_path):  # R-28 condition 1
+    def no_agent_info(msg):
+        if msg.get("id") == 1 and "result" in msg:
+            msg["result"].pop("agentInfo")
+        return msg
+
+    result, _, _ = _replay(tmp_path, _derive(ACP_FIX / "recordings" / "claude-code-x1.jsonl", tmp_path, no_agent_info))
+    assert result.cause is None and result.agent_version is None
+
+
+@pytestmark_native
+def test_run_turn_fills_the_result_its_caller_supplies(tmp_path):  # so the ack barrier can read agent_version
+    supplied, seen = driver.TurnResult(), []
+    env = dict(os.environ, REPLAY_ACP=json.dumps({"recording": str(ACP_FIX / "recordings" / "claude-code-x1.jsonl")}))
+    cell = procs.spawn([sys.executable, str(REPLAY)], cwd=str(tmp_path), env=env)
+    try:
+        result = driver.run_turn(cell, cwd=tmp_path, prompt=X1_PROMPT, mode=None, handshake_timeout=10,
+                                 before_send=lambda sid: seen.append(supplied.agent_version), result=supplied)
+    finally:
+        cell.terminate_and_confirm(timeout=10)
+        cell.close()
+    assert result is supplied and seen == ["0.79.0"]  # known before the prompt goes out
