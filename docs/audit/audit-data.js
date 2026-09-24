@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T08:42:56Z",
+  "generated": "2026-09-24T09:29:15Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -745,6 +745,35 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-09-24T08:40:46Z",
       "duration_seconds": 130.0
+    },
+    {
+      "id": "al-01M39BYTTQSK52SMRDRPPVPPB8",
+      "shortname": "join-t11",
+      "datetime": "2026-09-24T09:29:15Z",
+      "session": "coord-opus",
+      "prompt": "the join of track/t11-verify-later-pass into impl/phase1",
+      "summary": "T11: a sealed events/grade-* segment without grading.completed is HB-LED-002; in-progress/interrupted pass stays a warning; red 8edd94f re-verified; views.json 34/34; scoped cosmic-ray 98 mutants 0 open; shape A disclosed recount_seconds=152 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/proof/findings-T11.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Close Test Architect N1",
+      "done_when": "join green; red re-run by the Coordinator; views.json all killed; cosmic-ray 0 open",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-24T09:26:42Z",
+      "duration_seconds": 153.0
     }
   ],
   "changes": [

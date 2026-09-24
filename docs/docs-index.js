@@ -773,7 +773,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f54ea8545aabc6a07d972e57c9b85f5dad4106f52ce026b54098fafa75567bfc"
+      "sourceSha256": "92fcde27552e0e7c042d1f2bdbca0308b988a34a37294e864751fd5d74f363b6"
     },
     {
       "id": "note-20260923-a6-start-benchmark",
@@ -882,7 +882,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "83f83dc18722c834011563e42fbce2e14719f2bac3de1bcf655e84fdf4025ea2"
+      "sourceSha256": "f0579734fdd9487efb5298aa3b0d3d3d07f8e488a4e9a36f5cb53c63b66023a3"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -1042,7 +1042,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "e43d7ca766af2b9ceb636ace9e819d179a3a2dfd541ee006399a5b5944a4b26d"
+      "sourceSha256": "83310072c116f954f9cd7c4fde409288dc6dae445e701cffab78b6284c4567b3"
     },
     {
       "id": "defect-classes",
@@ -1374,6 +1374,39 @@ window.DOCS_INDEX = {
       "sourceSha256": "0a3c0381356c52433eb75d4eb66a69da834f768906a63e8e5b06a78d6839762f"
     },
     {
+      "id": "findings-t11-verify-later-pass",
+      "path": "docs/proof/findings-T11.md",
+      "title": "Findings → tests: track T11 verify-later-pass",
+      "type": "proof-pack",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2026-12-22",
+      "reviewSuggested": [],
+      "summary": "Test Architect N1: a later grading pass whose events segment was cut back before grading.completed and re-sealed verified with warnings and exit 0, silently rolling the current scores back. The honest runner seals events only after grading.completed, so bench verify now reports such a segment as HB-LED-002 (exit 5). Red 8edd94f, fixed in bdcd2ef, survivors killed in 98414f5; views.json 34/34; scoped cosmic-ray on verify 98 mutants, 0 open. Whole-tail deletion (shape A) is disclosed, not fixed.",
+      "tags": [
+        "proof",
+        "findings",
+        "red-first",
+        "T11",
+        "views",
+        "verify",
+        "ledger"
+      ],
+      "links": [
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        },
+        {
+          "to": "mutation-record-t2",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "78e212cce869f500958b32917b024ffab97230043a22fc5615f6facbc9cfe5ee"
+    },
+    {
       "id": "findings-t2-ledger-verify",
       "path": "docs/proof/findings-T2.md",
       "title": "Findings → tests: track T2 ledger-verify",
@@ -1599,7 +1632,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "914bfe137d05e75a58687873b0d0a9fba00c696b066333f321c5da673d8a3b4c"
+      "sourceSha256": "74d6ca37f667c55f1070984fec5b654ab73f80e2d3aaf906a215bb621bb87e6c"
     },
     {
       "id": "spec-harness-bench",
@@ -1753,5 +1786,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "f021918c5732a4a21e9cd1982ed5cd979d175331ba739e58ebedae9ec38b7485"
+  "graphSha256": "2d589353cdde04abbf121e31b3aa9044dd848a4f1372c7e89c9d02844770ede5"
 };
