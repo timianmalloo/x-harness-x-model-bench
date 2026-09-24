@@ -198,6 +198,25 @@ def test_turn_usage_is_summed_per_model_before_it_is_recorded(base):  # T1-6: on
         ("m-a", 2, 4, 6, 8, 10), ("m-b", 1, 2, 3, 4, 5)]
 
 
+def test_the_outcome_records_updates_and_last_update_ms(base, monkeypatch):  # T1-11
+    from harness_bench import driver
+    real = driver.run_turn
+
+    def with_last_update(*args, **kwargs):  # the driver half is seam request req-01M38KX8503601BEP857749VVF (T3)
+        result = real(*args, **kwargs)
+        result.last_update_seconds = 0.25
+        return result
+
+    p = _plan(n_cells=1)
+    _, events, _ = _run(base, p, FakeLauncher({}))
+    first = _outcomes(events)[p["cells"][0]["cell_id"]]
+    assert first["updates"] == 1 and "last_update_ms" in first  # null (not recorded) until the driver reports it
+    monkeypatch.setattr(driver, "run_turn", with_last_update)
+    p = _plan(n_cells=1)
+    _, events, _ = _run(base, p, FakeLauncher({}))
+    assert _outcomes(events)[p["cells"][0]["cell_id"]]["last_update_ms"] == 250
+
+
 def test_budget_kill_is_timed_out_and_recorded_only_after_the_tree_is_gone(base):  # T-ENG-budget
     p = _plan(n_cells=1, budget=2)
     started = time.monotonic()
