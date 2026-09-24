@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def _collect(*args: str) -> str:
     result = subprocess.run([sys.executable, "-m", "pytest", "--collect-only", "-q", "-p", "no:cacheprovider", *args],
-                            cwd=ROOT, capture_output=True, text=True, timeout=120)
+                            cwd=ROOT, capture_output=True, text=True, timeout=120, check=False)
     return result.stdout
 
 
