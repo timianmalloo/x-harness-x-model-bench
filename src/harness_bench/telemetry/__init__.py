@@ -64,14 +64,18 @@ class Extraction:
 
 def rows(path: Path, ex: Extraction) -> Iterator[tuple[int, dict]]:
     """(1-based line number, object) for every well-formed JSON object line, bounded."""
-    read = 0
+    read = n = 0
     with path.open("rb") as f:
-        for n, raw in enumerate(f, 1):
+        while raw := f.readline(MAX_LINE + 1):  # never more than one bounded piece in memory
+            n += 1
             read += len(raw)
+            too_long = len(raw) > MAX_LINE
+            while too_long and not raw.endswith(b"\n") and read <= MAX_FILE and (raw := f.readline(MAX_LINE + 1)):
+                read += len(raw)  # skip the rest of the over-long line, piece by piece
             if read > MAX_FILE:
                 ex.truncated = True
                 return
-            if len(raw) > MAX_LINE:
+            if too_long:
                 ex.malformed_lines += 1
                 continue
             try:
