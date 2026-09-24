@@ -207,6 +207,33 @@ def test_deeply_nested_and_huge_lines_are_skipped_as_malformed(tmp_path, reader)
     assert ex.model_calls == [] and ex.malformed_lines == 3
 
 
+def _without(src: Path, dest: Path, usage_key: str, field: str) -> None:
+    """Copy a golden record, dropping one usage field from every row that carries it."""
+    out = []
+    for line in src.read_text(encoding="utf-8").splitlines():
+        row = json.loads(line)
+        for holder in (row.get("message", {}).get("usage"), row.get("payload", {}).get("info", {}).get(usage_key)):
+            if isinstance(holder, dict):
+                holder.pop(field, None)
+        out.append(json.dumps(row))
+    dest.write_text("\n".join(out) + "\n", encoding="utf-8")
+
+
+@pytest.mark.parametrize("reader, golden, field", [
+    (claude_code, "claude-code/ok.jsonl", "output_tokens"),
+    (codex, "codex/ok.jsonl", "cache_write_input_tokens"),
+], ids=["claude-code", "codex"])
+def test_a_missing_usage_field_is_hb_tel_001_not_a_silent_zero(tmp_path, reader, golden, field):  # T-TEL-missing
+    from harness_bench.errors import RUN_CODES
+    whole = reader.read(FIX / "native" / golden)
+    assert whole.missing == []
+    _without(FIX / "native" / golden, tmp_path / "r.jsonl", "last_token_usage", field)
+    ex = reader.read(tmp_path / "r.jsonl")
+    assert ex.missing and {(m.code, m.field) for m in ex.missing} == {("HB-TEL-001", field)}
+    assert {m.native_ordinal for m in ex.missing} == {c.native_ordinal for c in ex.model_calls}
+    assert "HB-TEL-001" in RUN_CODES
+
+
 def test_a_newline_free_record_is_read_in_bounded_memory(tmp_path, monkeypatch):  # the reader holds one line at most
     import tracemalloc
 
