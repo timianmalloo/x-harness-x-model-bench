@@ -176,6 +176,33 @@ def test_a_run_completed_naming_the_wrong_events_head_is_exit_5(capsys, root, tm
     assert code == 5 and "HB-LED-002: events/engine-1" in err
 
 
+@pytest.mark.parametrize("forged", ["0" * 64, "f" * 64])  # a forged events head sorting below, or above, the real one (T12)
+def test_a_wrong_events_head_is_found_whichever_way_it_sorts(capsys, root, tmp_path, forged):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    complete_run(run_dir, events_head=forged)
+    code, _, err = _verify(capsys, tmp_path)
+    assert code == 5 and "HB-LED-002: events/engine-1: run.completed in events/engine-1 does not follow" in err
+
+
+def test_a_foreign_segment_sorting_first_hides_no_run_finding(capsys, root, tmp_path):  # every engine segment is read (T12)
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    complete_run(run_dir, events_head="0" * 64)
+    with ledger.SegmentWriter.create(run_dir / "events", "aaa-1") as stray:
+        stray.append({"kind": "x"})
+    code, _, err = _verify(capsys, tmp_path)
+    assert code == 5 and "does not follow the events head it records" in err
+
+
+@pytest.mark.parametrize("fact", ["model_calls", "tool_calls", "turn_usage", "archive_files", "scores"])
+def test_a_sealed_segment_of_an_abandoned_pass_other_than_events_is_a_warning(capsys, root, tmp_path, fact):  # T12
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    with ledger.SegmentWriter.create(run_dir / fact, "grade-dead") as dead:
+        dead.append({"kind": "x"})
+        dead.seal()
+    code, _, err = _verify(capsys, tmp_path)
+    assert code == 0 and f"HB-LED-004: {fact}/grade-dead: abandoned grading segment, skipped by views (warning)" in err
+
+
 # --- D2: any byte change, cut or insert in a completed run is detected ------------------------------------
 
 

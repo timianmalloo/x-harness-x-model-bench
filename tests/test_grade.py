@@ -143,6 +143,19 @@ def test_an_oracle_killed_by_a_signal_is_not_a_pass(tmp_path, monkeypatch):  # P
     assert (result.passed, result.partial_credit) == (0, Decimal(1))
 
 
+def test_only_the_exact_python_placeholder_is_replaced(tmp_path, monkeypatch):  # arguments sorting above it stay (T12)
+    import sys
+
+    (tmp_path / "ws").mkdir()
+    (tmp_path / "task" / "tests").mkdir(parents=True)
+    seen = []
+    done = SimpleNamespace(returncode=0, stdout="", stderr="Ran 1 test in 0.0s\n\nOK\n", timed_out=False)
+    monkeypatch.setattr(correctness.procs, "run", lambda argv, **k: seen.append(argv) or done)
+    oracle = {"runner": "unittest", "command": ["{python}", "-m", "unittest", "{workspace}", "~tests"]}
+    correctness.grade(tmp_path / "ws", tmp_path / "task", oracle, tmp_path / "run" / "out", tmp_path / "run", 60)
+    assert seen == [[sys.executable, "-m", "unittest", "{workspace}", "~tests"]]
+
+
 def test_not_recorded_is_one_falsy_sentinel_and_scores_and_results_are_frozen():
     from dataclasses import FrozenInstanceError
 

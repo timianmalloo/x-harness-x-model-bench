@@ -276,6 +276,60 @@ def test_a_record_may_not_forge_a_seal_or_its_chain_fields(tmp_path):  # T2-7: a
     assert ledger.verify_segment(tmp_path / "events" / "engine-1.jsonl").error is None
 
 
+def test_a_seal_kind_built_at_runtime_is_still_refused(tmp_path):  # compared by value, not by identity (T12)
+    kind = "".join(list(ledger.SEAL))  # an equal string that is not the constant's object
+    assert kind == ledger.SEAL and kind is not ledger.SEAL
+    w = ledger.SegmentWriter.create(tmp_path / "events", "engine-1")
+    try:
+        with pytest.raises(ValueError):
+            w.append({"kind": kind, "count": 0, "head_hash": w.head_hash})
+    finally:
+        w.close()
+
+
+# a break names the line it found, counted from 1 (T12) ------------------------------------
+
+def test_an_unparseable_middle_line_of_a_newline_ended_segment_is_a_break(tmp_path):  # only the last line is the tail
+    path = _write(tmp_path)
+    lines = path.read_bytes().splitlines(keepends=True)
+    lines[1] = b'{"kind":"hal\n'
+    path.write_bytes(b"".join(lines))
+    report = ledger.verify_segment(path)
+    assert (report.error, report.detail, report.torn_tail) == ("HB-LED-002", "line 2 does not parse", False)
+
+
+def test_a_first_line_not_in_canonical_form_is_line_1(tmp_path):
+    path = _write(tmp_path)
+    lines = path.read_bytes().splitlines(keepends=True)
+    lines[0] = json.dumps(json.loads(lines[0]), sort_keys=True).encode() + b"\n"
+    path.write_bytes(b"".join(lines))
+    report = ledger.verify_segment(path)
+    assert (report.error, report.detail) == ("HB-LED-002", "line 1 is not in canonical form")
+
+
+def test_a_float_in_the_second_line_names_line_2(tmp_path):
+    path = _write(tmp_path, n=1)
+    first = ledger.read_segment(path)[0]
+    body = {"kind": "x", "v": 1, "seq": 2, "prev_hash": first["hash"]}
+    line = ledger.canonical(body)[:-1] + b',"hash":"0"}'
+    with path.open("ab") as f:
+        f.write(line.replace(b'"v":1', b'"v":1.5') + b"\n")
+    report = ledger.verify_segment(path)
+    assert report.error == "HB-LED-002" and report.detail.startswith("line 2: $.v: float is not allowed")
+
+
+def test_a_torn_tail_past_the_small_int_cache_is_still_the_tail(tmp_path):  # the last index is compared by value
+    w = ledger.SegmentWriter.create(tmp_path / "events", "engine-1")
+    for i in range(300):
+        w.append({"kind": "x", "i": i})
+    w.close()
+    path = tmp_path / "events" / "engine-1.jsonl"
+    with path.open("ab") as f:
+        f.write(b'{"kind":"hal\n')
+    report = ledger.verify_segment(path)
+    assert (report.error, report.torn_tail, report.lines) == (None, True, 300)
+
+
 # property: any byte change, cut or insert is detected -------------------------------------
 
 @settings(max_examples=150, deadline=None)

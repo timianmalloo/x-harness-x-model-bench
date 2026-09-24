@@ -152,4 +152,73 @@ Both are also pinned in `tests/mutations/views.json`.
 
 T2's E28–E32 at `views.py:440/443` now sit at `443/446`, three lines lower.
 
-**This record, with this addendum, is current while `git diff 98414f5 HEAD -- src/harness_bench/ledger.py src/harness_bench/views.py src/harness_bench/grade` is empty.**
+**This record, with this addendum, is current while `git diff 98414f5 HEAD -- src/harness_bench/ledger.py src/harness_bench/views.py src/harness_bench/grade` is empty.** *Superseded by the T12 re-run below.*
+
+## Re-run with bytecode off (T12, TOOL-A): this supersedes the counts above
+
+*Run by track T12 and transcribed by the Coordinator. Setup as in `mutation-record-t1.md` (T12):*
+- *cosmic-ray 8.7.0 with `PYTHONDONTWRITEBYTECODE=1`, in 16 shards;*
+- *`src` at `ceed6c1`, each module run with its recorded command;*
+- *survivors re-run with `mutate-and-test` at `a0c4f52`.*
+
+*The Coordinator re-ran `ledger.py:115:21`, `ledger.py:225:30` and `views.py:365:18` with the named-test checker. All three survived at `ceed6c1` and were killed at `a0c4f52`.*
+
+| module | mutants | killed | equivalent | open |
+| --- | --- | --- | --- | --- |
+| `ledger.py` | 379 | 375 (8 by new tests) | 4 | 0 |
+| `views.py` | 790 | 630 (20 by new tests) | 160 (143 annotation, 17 argued) | 0 |
+| `grade/**` | 643 | 535 (1 by a new test) | 108 (99 annotation, 9 argued) | 0 |
+
+**Recorded killed, now survived** under each module's recorded command. Each is confirmed killed by `mutate-and-test` at `a0c4f52`, unless marked equivalent.
+- **ledger (10):**
+  - `115:21` Eq_Is and Eq_LtE;
+  - `124:40` Add_BitOr and BitXor;
+  - `129:44` Add_LShift;
+  - `131:40` Add_BitOr and BitXor;
+  - `225:30` Eq_Is;
+  - **equivalent** `115:51` Eq_LtE: `tail <= b""` is `tail == b""`, because `b""` is the least bytes value;
+  - **equivalent** `123:16` break → continue: `last` holds only on the final iteration and the loop has no `else`.
+- **views (21 argued):**
+  - `157:53`;
+  - `185:36`: touching spans, where a split sum rounds 3330.5 ms differently;
+  - `202:35`: the phase-1 timeout, `31e9 ** 1e9`;
+  - `202:58`, `206:14`;
+  - `249:73`, `249:104`, `254:64`;
+  - `255:72` ×3;
+  - `296:97`, `312:63`, `317:25`, `323:61`;
+  - `339:88` (`or 1`);
+  - `365:18`: `Finding` not frozen;
+  - `412:12`, `418:41`, `439:24`;
+  - **equivalent** `305:44` Eq_GtE: every other validity value sorts below "valid".
+- **views annotations:** 143 survive, against 132 recorded. The extra 11 are equivalent.
+- **grade (3 argued):**
+  - `correctness.py:65:32`: only the exact `{python}` token is replaced;
+  - **equivalent** `correctness.py:82:54` Eq_GtE: `passed = max(total - failed, 0) <= total`;
+  - **equivalent** `runner.py:152:20` Eq_GtE: as E10, because `usage_source` is validated against `USAGE_SOURCES` at `profiles.py:103`.
+- **grade annotations:** 99 survive, against 93 recorded. The extra 6 are equivalent.
+
+The new tests are in `tests/test_ledger.py`, `tests/test_views.py`, `tests/test_verify.py` and `tests/test_grade.py` (commit `a0c4f52`).
+
+**Corrections to this record:**
+- **Duplicate rows.** E2, E5, E7, E9, E14, E18, E20 and T11-E3 repeat another row. At their `(file, line, column, operator)` there is only one job.
+  - For E9, the other NumberReplacer job is `records[1]`, and it is killed.
+  - E14 is most likely `ledger.py:115:21` Eq_Is, which is not equivalent past the small-int cache and is now killed (Inferred).
+- **Annotation counts.** The per-line counts above cannot occur. Each `|` in an annotation yields 11 jobs, and all of them survive. The measured counts are:
+  - `correctness.py:38` ×11;
+  - `cost.py:19` ×11 and `:24` ×22;
+  - `runner.py:122` ×22 and `:162` ×33;
+  - `views.py` lines 118, 164, 205, 243, 278, 288 and 292: ×11 each;
+  - `views.py` lines 153 and 228: ×33 each.
+- **New mutants the record does not list:** none.
+
+**Cause of the disagreements (Flagged: not verified).**
+- **Not stale bytecode:** cosmic-ray 8.7.0 already sets `PYTHONDONTWRITEBYTECODE=1`.
+- **Not the survivor re-run's extra test files.** With `test_status` and `test_engine` added at `ceed6c1`:
+  - 32 of the 33 mutants that finished still survive;
+  - `views.py:202:35` hangs.
+- **Likely causes:**
+  - killed counts derived by hand as total minus the listed survivors;
+  - cosmic-ray reporting every timeout and every non-zero exit as KILLED (`testing.py:73-75`), so a hang or a collection error reads as a kill (class TOOL-B);
+  - flaky kills.
+
+**This record, with this re-run, is current while `git diff ceed6c1 HEAD -- src/harness_bench/ledger.py src/harness_bench/views.py src/harness_bench/grade` is empty.**
