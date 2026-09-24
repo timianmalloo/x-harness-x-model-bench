@@ -49,23 +49,25 @@ class LineParser:
         self.junk = 0
         self._buf = b""
 
+    def _too_long(self) -> ProtocolError:
+        self._buf = b""  # the parser is finished; it keeps nothing
+        return ProtocolError(f"a line over {self.max_line // (1 << 20) or self.max_line} "
+                             f"{'MiB' if self.max_line >= 1 << 20 else 'bytes'} from the adapter")
+
     def feed(self, data: bytes) -> Iterator[dict]:
         self._buf += data
         while True:
             nl = self._buf.find(b"\n")
             if nl < 0:
                 if len(self._buf) > self.max_line:
-                    self._buf = b""
-                    raise ProtocolError(f"a line over {self.max_line // (1 << 20) or self.max_line} "
-                                        f"{'MiB' if self.max_line >= 1 << 20 else 'bytes'} from the adapter")
+                    raise self._too_long()
                 return
             line, self._buf = self._buf[:nl], self._buf[nl + 1:]
             if len(line) > self.max_line:
-                raise ProtocolError(f"a line over {self.max_line // (1 << 20) or self.max_line} "
-                                    f"{'MiB' if self.max_line >= 1 << 20 else 'bytes'} from the adapter")
+                raise self._too_long()
             try:
                 msg = json.loads(line.decode("utf-8"))
-            except (UnicodeDecodeError, ValueError):
+            except (UnicodeDecodeError, ValueError, RecursionError):  # nesting too deep to parse is junk, not a crash
                 msg = None
             if isinstance(msg, dict):
                 yield msg
@@ -174,7 +176,7 @@ def _auth_failure(detail: str) -> bool:
 
 
 def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handshake_timeout: float,
-             before_send: Callable[[str | None], None], model: str | None = None) -> TurnResult:
+             before_send: Callable[[str | None], None]) -> TurnResult:
     """Handshake, ack barrier, one verbatim prompt. `before_send` exceptions propagate unsent."""
     result = TurnResult()
     ch = _Channel(cell, result)
@@ -186,8 +188,6 @@ def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handsh
         result.session_id = created.get("sessionId")
         if mode:
             ch.rpc("session/set_mode", {"sessionId": result.session_id, "modeId": mode}, deadline)
-        if model:
-            ch.rpc("session/set_model", {"sessionId": result.session_id, "modelId": model}, deadline)
     except _Timeout as exc:
         return _fail(result, Cause.handshake_timeout, f"no answer to {exc} within {handshake_timeout} s", started)
     except _Eof:
@@ -206,8 +206,9 @@ def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handsh
     try:
         done = ch.rpc("session/prompt", {"sessionId": result.session_id, "prompt": [{"type": "text", "text": prompt}]}, None)
         result.stop_reason = done.get("stopReason")
-        if isinstance(done.get("usage"), dict):
-            result.usage = {"usage": done["usage"], "meta": done.get("_meta")}
+        usage, meta = (v if isinstance(v, dict) else None for v in (done.get("usage"), done.get("_meta")))
+        if usage is not None or meta is not None:  # either half alone is still the adapter's report
+            result.usage = {"usage": usage, "meta": meta}
     except _Eof:
         result.eof = True
         result.cause, result.detail = Cause.adapter_crash, "EOF before end_turn"

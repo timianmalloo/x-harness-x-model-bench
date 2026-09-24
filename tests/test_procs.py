@@ -1,5 +1,6 @@
 """Job Object process control (ADR-0013; spikes N2, N4): kill -> confirm, kill-on-close, containment."""
 
+import ctypes
 import json
 import subprocess
 import sys
@@ -85,6 +86,34 @@ def test_failed_assignment_leaves_no_process_and_raises_spawn(monkeypatch):
     assert seen and not _alive(seen[0])
 
 
+def test_a_failed_job_query_raises_from_the_last_error(monkeypatch):  # never a zeroed struct read as "no processes"
+    cell = procs.spawn([sys.executable, "-c", "import time;time.sleep(30)"], cwd=None, env=None)
+    try:
+        def fail(job, info_class, buf):  # fault seam: QueryInformationJobObject fails with ERROR_INVALID_HANDLE
+            ctypes.set_last_error(6)
+            return False
+
+        monkeypatch.setattr(procs, "_query", fail)
+        for probe in (cell.job.active, cell.job.pids, cell.job.peak_memory, cell.job.cpu_time_ms, cell.job.limit_flags):
+            with pytest.raises(OSError) as e:
+                probe()
+            assert e.value.winerror == 6
+        with pytest.raises(OSError):
+            cell.terminate_and_confirm(timeout=1)  # an unanswerable query is not a confirmed kill
+    finally:
+        monkeypatch.undo()
+        cell.terminate_and_confirm(timeout=10)
+        cell.close()
+
+
+def test_a_closed_job_is_not_reported_empty():
+    job = procs.Job()
+    job.close()
+    for probe in (job.active, job.inheritable):  # a NULL handle must never answer for the caller's own job
+        with pytest.raises(OSError):
+            probe()
+
+
 def test_spawn_of_a_missing_executable_is_a_spawn_error(tmp_path):
     with pytest.raises(procs.SpawnError) as e:
         procs.spawn([str(tmp_path / "nope.exe")], cwd=None, env=None)
@@ -112,6 +141,33 @@ def test_run_times_out_and_kills_the_tree():
     assert result.returncode is not None
 
 
+def test_run_with_an_unconfirmed_kill_raises_nothing_and_leaks_nothing(monkeypatch):
+    cells = []
+    real_spawn = procs.spawn
+
+    def spy(*args, **kwargs):
+        cells.append(real_spawn(*args, **kwargs))
+        return cells[-1]
+
+    monkeypatch.setattr(procs, "spawn", spy)
+    monkeypatch.setattr(procs.Job, "terminate", lambda self, exit_code=1: None)  # fault: the kill never lands
+    monkeypatch.setattr(procs, "_KILL_GRACE", 0.5, raising=False)
+    result = procs.run([sys.executable, "-c", "import time;time.sleep(600)"], cwd=None, env=None, timeout=0.5)
+    assert result.timed_out and result.returncode is None  # no exit status was observed, so none is reported
+    cell = cells[0]
+    assert cell.job.handle is None and cell.proc.stdout.closed and cell.proc.stderr.closed
+    deadline = time.monotonic() + 10
+    while _alive(cell.pid) and time.monotonic() < deadline:  # closing the job (kill-on-close) ended the tree
+        time.sleep(0.2)
+    assert not _alive(cell.pid)
+
+
 def test_run_bounds_output():
     result = procs.run([sys.executable, "-c", "print('x'*5000000)"], cwd=None, env=None, timeout=30, max_output=1024)
     assert result.returncode == 0 and len(result.stdout) <= 1024 and result.truncated
+
+
+def test_unused_knobs_are_gone():  # Simplifier minors: no caller passes stdin_data= or retry_every=
+    import inspect
+    assert "stdin_data" not in inspect.signature(procs.run).parameters
+    assert "retry_every" not in inspect.signature(procs.CellProcess.terminate_and_confirm).parameters
