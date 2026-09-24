@@ -224,10 +224,13 @@ def scrub(raw: Path, out: Path, replacements: dict[str, str], forbid: list[str])
 
     records = [clean(json.loads(line)) for line in raw.read_text(encoding="utf-8").splitlines() if line.strip()]
     joined_texts = _scrub_streams(records, clean)
+    for record in records:
+        _scrub_plan_labels(record)
     rule = {"placeholders": sorted(set(replacements.values())), "email": "<EMAIL>", "forms": "as written, forward "
             "slashes, JSON-escaped; case-insensitive", "streams": "also on the joined text of each streamed message "
             "(chunks per messageId, terminal output per toolCallId); a changed stream is re-serialised with its "
-            "whole scrubbed text in its first chunk and the rest empty", "forbidden_words_checked": len(forbid),
+            "whole scrubbed text in its first chunk and the rest empty", "plans": "every label, plan and tier value "
+            "under authStatus in _auth/status_update -> <PLAN> (data minimisation)", "forbidden_words_checked": len(forbid),
             "scrubbed_utc": datetime.now(UTC).isoformat(timespec="seconds")}
     if records and records[0].get("kind") == "header":
         records[0]["scrub"] = rule
@@ -259,6 +262,32 @@ def _streamed_text(record: dict):
     if isinstance(delta, dict) and isinstance(delta.get("data"), str):
         return (record["dir"], "terminal", update.get("toolCallId")), msg, delta, "data"
     return None
+
+
+PLAN_KEYS = ("label", "plan", "tier")
+
+
+def _scrub_plan_labels(record: dict) -> None:
+    """The account's plan or tier label in an `_auth/status_update` becomes <PLAN>: no test needs it."""
+    if record.get("kind") != "line" or "_auth/status_update" not in record.get("text", ""):
+        return
+    try:
+        msg = json.loads(record["text"])
+    except ValueError:
+        return
+    status = (msg.get("params") or {}).get("authStatus") if isinstance(msg, dict) else None
+    if not isinstance(status, dict) or msg.get("method") != "_auth/status_update":
+        return
+
+    def walk(node: dict) -> None:
+        for key, value in node.items():
+            if key in PLAN_KEYS and isinstance(value, str):
+                node[key] = "<PLAN>"
+            elif isinstance(value, dict):
+                walk(value)
+
+    walk(status)
+    record["text"] = json.dumps(msg, ensure_ascii=False, separators=(",", ":"))
 
 
 def _scrub_streams(records: list[dict], clean) -> list[str]:
