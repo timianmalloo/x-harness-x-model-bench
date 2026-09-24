@@ -13,3 +13,4 @@ docs/specs/harness-bench.html merge=coord-regen
 .agents/skills/new-bench-task/* merge=coord-regen
 docs/audit/audit-log.jsonl merge=coord-register
 docs/audit/change-log.jsonl merge=coord-register
+docs/notes/rulings.md merge=coord-register

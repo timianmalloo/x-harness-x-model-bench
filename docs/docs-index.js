@@ -766,6 +766,31 @@ window.DOCS_INDEX = {
       "sourceSha256": "246f0a3686348504280a109df10b0f4f82f65129cbce930623d995d7643acada"
     },
     {
+      "id": "rulings-register",
+      "path": "docs/notes/rulings.md",
+      "title": "Owner rulings",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2027-03-22",
+      "reviewSuggested": [],
+      "summary": "The append-only register of Owner rulings (class `register`, union-merged). Each entry records the ruling verbatim or its chosen option, who ruled, when, and what it decided.",
+      "tags": [
+        "rulings",
+        "register",
+        "coordination"
+      ],
+      "links": [
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b586635d0cf4bf610dca3be2b929c2c8af128770b63ebc4759e13e0ea033054c"
+    },
+    {
       "id": "design-phase1-walking-skeleton",
       "path": "docs/design/phase1-walking-skeleton.md",
       "title": "Design: phase 1 walking skeleton (engine, cells, telemetry, grading, report)",
@@ -1075,6 +1100,36 @@ window.DOCS_INDEX = {
       "sourceSha256": "0d970fba92ab07db3c068eb4a1bc87122b8fd0c821b3f4df299807aa36efa410"
     },
     {
+      "id": "coordination-phase1-finish",
+      "path": "docs/coordination/coordination-phase1-finish.md",
+      "title": "Coordination plan - finish harness-bench phase 1 (pre-merge findings, N5, mutation bar, E2E)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2026-10-08",
+      "reviewSuggested": [],
+      "summary": "Finish phase 1 with the pre-merge gate cleared. Five parallel fix tracks own disjoint files: engine, ledger and verify, process edges, surfaces, and the Codex N5 spike. Each runs its own red-first commits and mutation testing. The sub-agents run on Grok (subscription) and Agy, under an Opus 5.5 Coordinator and a Fable Owner (ruling R-1). Joins happen in completion order, then comes a serial close: the real E2E (\"usable\"), then the Proof Pack and re-review (\"merge-ready\").",
+      "tags": [
+        "coordination",
+        "worktrees",
+        "parallelism",
+        "phase-1"
+      ],
+      "links": [
+        {
+          "to": "design-phase1-walking-skeleton",
+          "rel": "implements"
+        },
+        {
+          "to": "design-run-lifecycle-model",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b0dfc4a36341adc1f4b1772a4d4f8933e89f36ada5fd9a50332f73d7fa0939f6"
+    },
+    {
       "id": "plan-spec-backlog",
       "path": "docs/specs/README.md",
       "title": "Spec backlog: from proposal to a running benchmark",
@@ -1264,6 +1319,14 @@ window.DOCS_INDEX = {
       "artifactId": "audit-log"
     },
     {
+      "id": "surface-coordination-coordination-phase1-finish",
+      "path": "docs/coordination/coordination-phase1-finish.html",
+      "title": "Coordination plan - finish harness-bench phase 1 (pre-merge findings, N5, mutation bar, E2E)",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "coordination-phase1-finish"
+    },
+    {
       "id": "surface-proposals-harness-bench-report-mockup",
       "path": "docs/proposals/harness-bench-report-mockup.html",
       "title": "harness-bench · run 2026-09-23 (mockup)",
@@ -1279,5 +1342,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "d80d9ff4e3f0bd26385a902564a3221f1b9220187864a69f01cbb61952bd0d96"
+  "graphSha256": "703acbc6a6e4df90fe925337ac10e57068e97f94b6824189cc2ee6fb7bc72083"
 };

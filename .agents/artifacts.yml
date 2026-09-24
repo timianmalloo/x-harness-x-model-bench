@@ -29,3 +29,6 @@ docs/specs/harness-bench.html: derived python tools/render-doc-html.py
 .agents/skills/start-benchmark/**: derived python tools/sync-skills.py
 .claude/skills/new-bench-task/**: derived python tools/sync-skills.py
 .agents/skills/new-bench-task/**: derived python tools/sync-skills.py
+
+# Owner rulings: append-only, union-merged (coordination-phase1-finish).
+docs/notes/rulings.md: register
