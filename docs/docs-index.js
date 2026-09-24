@@ -1020,6 +1020,31 @@ window.DOCS_INDEX = {
       "sourceSha256": "b278432234edb1a4ac1320f18bc276401296d16169fd21a648088a947e401364"
     },
     {
+      "id": "coordination-finish-harness-bench-run",
+      "path": "docs/coordination/coordination-finish-harness-bench-run.md",
+      "title": "Run record - coordination-finish-harness-bench",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 2 · smoke on all harnesses",
+      "reviewBy": "2026-10-08",
+      "reviewSuggested": [],
+      "summary": "What happened when the finish-harness-bench plan was executed: qualifications, gate rounds, dispatches, slice joins, capture windows and planned against actual per track.",
+      "tags": [
+        "coordination",
+        "run-record",
+        "planned-vs-actual"
+      ],
+      "links": [
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b53b70fc4e0520f7293841d316b347b2ee47a7278b19a2b7cff7ccac6541fce8"
+    },
+    {
       "id": "coordination-phase1-finish-run",
       "path": "docs/coordination/coordination-phase1-finish-run.md",
       "title": "Run record - coordination-phase1-finish",
@@ -1249,6 +1274,40 @@ window.DOCS_INDEX = {
         }
       ],
       "sourceSha256": "0d970fba92ab07db3c068eb4a1bc87122b8fd0c821b3f4df299807aa36efa410"
+    },
+    {
+      "id": "coordination-finish-harness-bench",
+      "path": "docs/coordination/coordination-finish-harness-bench.md",
+      "title": "Coordination plan - finish harness-bench (phases 2-5, the 31 outstanding to-dos)",
+      "type": "plan",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "Phase 2 · smoke on all harnesses",
+      "reviewBy": "2026-10-08",
+      "reviewSuggested": [],
+      "summary": "A rolling-wave plan for the 31 outstanding to-dos. Waves 0-1 are planned to the track (the Copilot-vs-Codex capability, the real ACP transcript, hardening and the upstream pack fixes); waves 2-5 are planned to the row, with the gate's exit conditions carried. Each later wave is re-derived at the previous join. Owner Fable, Leader Opus 5.5, workers on Codex gpt-6-sol, Grok, Agy and Claude subagents.",
+      "tags": [
+        "coordination",
+        "worktrees",
+        "parallelism",
+        "phase-2"
+      ],
+      "links": [
+        {
+          "to": "design-phase1-walking-skeleton",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-phase1-finish-run",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "a9243d44a4ace691b4c5f95a46d2ac5a89da8c42ddedccab907c19f92fd78e97"
     },
     {
       "id": "coordination-phase1-finish",
@@ -1846,6 +1905,14 @@ window.DOCS_INDEX = {
       "description": "Open an interactive knowledge artifact."
     },
     {
+      "id": "surface-coordination-coordination-finish-harness-bench",
+      "path": "docs/coordination/coordination-finish-harness-bench.html",
+      "title": "harness-bench — Documentation",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "coordination-finish-harness-bench"
+    },
+    {
       "id": "surface-specs-harness-bench",
       "path": "docs/specs/harness-bench.html",
       "title": "harness-bench — Documentation",
@@ -1854,5 +1921,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "ae358fea54c0c1ad6b74161090f078a7e9708a43378aac3a2fb9f335f898f050"
+  "graphSha256": "0fb24b5a8e5b42ed5f6aad1f4642c83e4a9daa4b8006cf969f7db687c1177088"
 };
