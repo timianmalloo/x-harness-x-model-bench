@@ -56,7 +56,7 @@ def test_the_engine_consults_the_table_and_writes_only_its_own_rows(tmp_path):  
 
 def test_every_engine_row_of_the_table_is_written_by_the_engine():
     # a table cannot show that a row is still written, only the writer's source can: a literal scan, no AST
-    written = set(re.findall(r'"kind": "([a-z_.]+)"', ENGINE_SOURCE))
+    written = set(re.findall(r'"kind": "([a-z_]+\.[a-z_.]+)"', ENGINE_SOURCE))  # events kinds are dotted; turn_usage is not
     assert lifecycle.ENGINE_TRANSITIONS == written, sorted(lifecycle.ENGINE_TRANSITIONS ^ written)
 
 
