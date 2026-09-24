@@ -110,6 +110,27 @@ Waves 0–1: planned to the track. This is version 2, after the Stage 8 gate (se
 
 Also: one Copilot turn is recorded through the W1-ACP recorder and added to D5/D7. The US-13 canary runs for Copilot (the control shows every canary; the isolated probe shows none), or the wave-1 report states "Copilot user-config isolation: not measured" on every Copilot cell.
 
+**Version 3 amendments (2026-09-24, after capture window 1 and rulings R-12..R-28).** These supersede the wording of the rows above where they differ.
+- **Copilot record (W1-COP-D, W1-COP-R).** In a per-cell ACP home, Copilot 1.0.89-1 writes `session-state/<sid>/events.jsonl` and **no `session-store.db`**, so every "SQLite bound", "`session-store.db` sample" and "`sqlite3`" requirement above is void.
+  - The reader reads `events.jsonl`: per-model usage from the last `session.shutdown.modelMetrics`.
+  - The independent oracle is the ACP `usage` (Σ uncached, cache read, cache write and output = `totalTokens`).
+  - The samples are committed (`9c6c615`, scrub-rule/2).
+  - `model_calls` keeps Copilot under a re-declared grain with an additive `requests` column (R-26). The ADR-0006 amendment is W1-COP-D's.
+  - W1-COP-R adds `tests/mutations/copilot_reader.json` and records each tool call's `error.code` on its `tool_calls` row (R-27).
+- **W1-COP-I** also owns the Claude Code pin bump to 2.1.282, or 2.1.281 as fallback (R-17). The phase-1 X1 run is declared not comparable.
+  - It also owns: the Copilot `set_model` refusal form (R-18); the Copilot branch of the US-13 canary and `bench/pack-markers.txt` (R-16); `COPILOT_AUTO_UPDATE=false` and the `@github/copilot` 1.0.89-1 pin, marked prerelease (R-12).
+- **W1-ACP** also owns:
+  - `session/set_model` as a typed `Launcher` field;
+  - one error classifier (R-18, R-23);
+  - `agent_version` on `attempt.session_opened` (R-28);
+  - `acp_usage` on the terminal events row (R-24);
+  - the engine call-site and `credential_kind` lines (R-13).
+- **Wave-1 exit.** Pack-on Copilot on revision 92 is not a treatment: its failing hook denies every tool call (R-27).
+  - The exit run installs the treatment from `--pack-source` at the revision-95 commit, with the header "pack revision 95". `/updatepack` stays after the wave-1 merge.
+  - The exit E2E asserts zero hook denials per Copilot cell, with the revision-92 fixture kept as the negative control.
+  - US-14 for Copilot means ACP permission requests AND native hook denials, both 0.
+  - If revision 95 is not upstream by then, Copilot pack-on cells are reported "pack on: all tools denied", excluded from every comparison, and re-run as wave 2's first act.
+
 **Wave 2: planned to the row.** Its tracks are drawn at the wave-1 join from the merged code. Only the facts the spine needs are fixed now: W2-STOP owns `engine.py`, `cli.py` and `errors.py`. The exit conditions below are fixed now and carried into the re-derivation (Test Architect, Stage 8).
 
 | row(s) | intended track · harness | exit conditions carried from the gate |
