@@ -577,6 +577,65 @@ def test_an_echoed_credential_reaches_the_archive_but_never_engine_log_or_status
     assert any(SECRET.encode() in b for b in archived)  # allowed there: the archive is the cell's record
 
 
+def test_a_host_sleep_mid_turn_kills_the_cell_as_host_suspended(base, monkeypatch):  # T-ENG-suspend (T1-15)
+    real = host.unbiased_seconds
+    cells = base / "cells"
+    slept = []
+
+    def clock():  # the injected clock: once the prompt is on disk, suspended time stops counting (a 120 s sleep)
+        if not slept and any(cells.rglob(".fake-prompt.txt")):
+            slept.append(True)
+        return real() - (120 if slept else 0)
+
+    monkeypatch.setattr(host, "unbiased_seconds", clock)
+    p = _plan(n_cells=1, budget=60)
+    _, events, _ = _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"mode": "hang_prompt"}}), limit=45)
+    out = _outcomes(events)[p["cells"][0]["cell_id"]]
+    assert (out["outcome"], out["cause"], out["code"]) == ("failed", "host_suspended", "HB-CELL-106")
+    ended = next(e for e in events if e["kind"] == "attempt.process_ended")
+    assert ended["confirmed"] == 1 and ended["seq"] < out["seq"]
+
+
+def test_a_build_server_left_by_the_turn_is_gone_when_the_end_is_recorded(base, monkeypatch):  # T-JOB-daemon (T1-15)
+    sibling = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(120)"])  # another build, in no cell's job
+    seen = {}
+    real = engine.Engine.record
+
+    def spy(self, fact, record):
+        if record.get("kind") == "attempt.process_ended":  # the daemon must already be gone: the job reports 0 processes
+            daemon = next(self.cfg.cells_root.rglob("daemon.pid")).read_text(encoding="utf-8").split()
+            seen["daemon_alive"] = host.process_alive(int(daemon[0]), int(daemon[1]))
+        return real(self, fact, record)
+
+    monkeypatch.setattr(engine.Engine, "record", spy)
+    try:
+        p = _plan(n_cells=1)
+        _, events, _ = _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"daemon": True}}))
+        assert _outcomes(events)[p["cells"][0]["cell_id"]]["outcome"] == "completed"
+        assert seen == {"daemon_alive": False}
+        assert next(e for e in events if e["kind"] == "attempt.process_ended")["confirmed"] == 1
+        assert sibling.poll() is None, "a process outside the cell's job was killed"
+    finally:
+        sibling.kill()
+        sibling.wait(timeout=30)
+
+
+def test_a_full_disk_during_the_archive_records_archive_failed_as_disk(base, monkeypatch):  # T-ARC-full (T1-15)
+    from harness_bench import archive
+
+    def full(src, dst, **kwargs):
+        raise OSError(errno.ENOSPC, "No space left on device")
+
+    monkeypatch.setattr(archive.shutil, "copyfile", full)
+    p = _plan(n_cells=1)
+    cid = p["cells"][0]["cell_id"]
+    summary, events, config = _run(base, p, FakeLauncher({}))
+    assert [(e["cell_id"], e["code"]) for e in events if e["kind"] == "cell.archive_failed"] == [(cid, "HB-CELL-112")]
+    assert not any(e["kind"] in ("cell.archived", "cell.workspace_deleted") for e in events)
+    assert (config.cells_root / p["run_id"] / cid / "ws" / "slug.py").is_file()  # the work is kept
+    assert summary.exit_code == 3
+
+
 def test_a_started_run_is_refused(base):
     p = _plan(n_cells=1)
     _run(base, p, FakeLauncher({}))

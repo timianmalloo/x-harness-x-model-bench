@@ -10,7 +10,9 @@ Behaviour comes from the FAKE_ACP environment variable (JSON):
    "linger": <seconds to stay alive after stdin closes, like a CLI that is slow to exit>,
    "stderr": "<text written to stderr at start>", "mkdir": "<a folder created relative to cwd at start>",
    "echo_credential": <at the prompt, echo record_dir/.credentials.json to stderr, a message chunk, echo.txt in cwd,
-                       and the prompt's error reply>}
+                       and the prompt's error reply>,
+   "daemon": <at the prompt, start a detached grandchild that outlives the turn (a build server), trying breakaway
+              first; its "pid creation_time" goes to daemon.pid in cwd>}
 
 Messages it emits (each paired with a recorded real transcript or the ACP schema in
 tests/test_driver.py::test_fake_agent_message_types_are_paired): the initialize result, the session/new
@@ -55,6 +57,21 @@ def record(session_id: str, cwd: str, prompt: str) -> None:
     with path.open("a", encoding="utf-8") as f:
         for r in rows:
             f.write(json.dumps(r) + "\n")
+
+
+def start_daemon() -> None:
+    # the venv's package: the same (pid, creation time) identity the engine uses
+    import subprocess
+
+    from harness_bench import host
+
+    detached = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
+    argv = [sys.executable, "-c", "import time; time.sleep(120)"]
+    try:  # breakaway is never allowed by the cell's job, so this must fail
+        child = subprocess.Popen(argv, creationflags=detached | subprocess.CREATE_BREAKAWAY_FROM_JOB, close_fds=True)
+    except OSError:
+        child = subprocess.Popen(argv, creationflags=detached, close_fds=True)
+    Path(os.getcwd(), "daemon.pid").write_text(f"{child.pid} {host.creation_time(child.pid)}", encoding="utf-8")
 
 
 def main() -> int:
@@ -103,6 +120,8 @@ def main() -> int:
                       "update": {"sessionUpdate": "agent_message_chunk", "content": {"type": "text", "text": secret}}}})
                 send({"jsonrpc": "2.0", "id": mid, "error": {"code": -32000, "message": secret}})
                 continue
+            if CFG.get("daemon"):  # T-JOB-daemon: like `dotnet build` leaving its build server behind
+                start_daemon()
             if MODE == "hang_prompt" or CFG.get("hang"):
                 time.sleep(600)
             if MODE == "eof_mid_turn":
