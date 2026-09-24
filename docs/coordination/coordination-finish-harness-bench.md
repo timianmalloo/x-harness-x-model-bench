@@ -125,6 +125,11 @@ Also: one Copilot turn is recorded through the W1-ACP recorder and added to D5/D
   - `agent_version` on `attempt.session_opened` (R-28);
   - `acp_usage` on the terminal events row (R-24);
   - the engine call-site and `credential_kind` lines (R-13).
+- **Ownership additions (after COP-D revision 3).**
+  - W1-COP-R: `src/harness_bench/telemetry/normalize.py` (`ModelCall.requests`, its docstring, `ToolCall.outcome_code`).
+  - W1-COP-I: `src/harness_bench/views.py` (the `model_calls` key with `model`, `calls_per_cell`, the row-count guard); `src/harness_bench/report/credentials.py` (the `credentials` list); the "instruction files loaded" `bench plan` datum in `cli.py` (W1-HOST has joined, so `cli.py` is free).
+  - **Seam granted by the Leader to W1-ACP** (COP-I had not started): `ProfileLauncher` gains `set_model` and `credential_kind` in `profiles.py`, so a real `bench run` does not raise once the typed `Launcher` fields land. W1-COP-I builds on it.
+  - Seams to W2-STOP: `last_update` in `bench status`; the stale `assume:` comment at `engine.py:367`.
 - **Wave-1 exit.** Pack-on Copilot on revision 92 is not a treatment: its failing hook denies every tool call (R-27).
   - The exit run installs the treatment from `--pack-source` at the revision-95 commit, with the header "pack revision 95". `/updatepack` stays after the wave-1 merge.
   - The exit E2E asserts zero hook denials per Copilot cell, with the revision-92 fixture kept as the negative control.
