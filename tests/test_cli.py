@@ -18,6 +18,17 @@ def root(tmp_path):
     return make_root(tmp_path)
 
 
+@pytest.fixture(autouse=True)
+def _no_real_credential_home(monkeypatch, tmp_path):
+    """bench/profiles/*.yaml (copied by make_root) still points at ~/.claude, ~/.codex: `bench report`'s
+    exact-value credential scan (HB-SEC-001) resolves that with Path.expanduser(). Redirect every test's
+    `~` to an empty, unwritten folder so no test in this file ever reads the operator's real credential
+    file -- tests that exercise the scan itself always plant fake tokens under tmp_path instead."""
+    fake_home = tmp_path / "fake-home"
+    monkeypatch.setenv("USERPROFILE", str(fake_home))
+    monkeypatch.setenv("HOME", str(fake_home))
+
+
 def _bench(capsys, root, tmp_path, *args):
     code = cli.main(["--root", str(root), "--runs", str(tmp_path / "runs"), *args])
     out, err = capsys.readouterr()

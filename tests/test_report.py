@@ -5,6 +5,7 @@ T-UI-keyboard, T-UI-numerics, structural accessibility (lang, title, caption, th
 T-SEC-report (a planted token is found and the report is refused).
 """
 
+import json
 import re
 
 import pytest
@@ -13,7 +14,7 @@ from archived_runs import GOOD, STUB, make_root, make_run
 from harness_bench import ledger, views
 from harness_bench.errors import BenchError
 from harness_bench.grade import runner
-from harness_bench.report import cli_table, html
+from harness_bench.report import cli_table, credentials, html
 
 
 @pytest.fixture
@@ -165,3 +166,70 @@ def test_a_clean_report_is_written(root, tmp_path):  # the negative control
     run_dir, view = _graded(root, tmp_path, {"a": GOOD})
     path = html.write(run_dir, view)
     assert path == run_dir / "report.html" and path.read_text(encoding="utf-8").startswith("<!doctype html>")
+
+
+# --- exact-value credential scan (HB-SEC-001; T4-1) --------------------------------------------------
+
+FAKE_ROTATED_TOKEN = "ROTATED/9f8e+7d6c=5b4a3210planted"  # a planted fake; never a real credential
+
+
+def _plant_archived_credential(run_dir, cell_id: str, name: str, value: str) -> None:
+    home = run_dir / "archive" / cell_id / "attempt-1" / "home"
+    home.mkdir(parents=True, exist_ok=True)
+    (home / name).write_text(json.dumps({"accessToken": value}), encoding="utf-8")
+
+
+def test_the_exact_value_scan_collects_a_leftover_token_from_an_archived_home(root, tmp_path):
+    run_dir, _ = _graded(root, tmp_path, {"a": GOOD})
+    _plant_archived_credential(run_dir, "a", ".credentials.json", FAKE_ROTATED_TOKEN)
+    names = {name for _, name in credentials.credential_files(root).values()}
+    assert ".credentials.json" in names  # sanity: the real profile names this file
+    assert FAKE_ROTATED_TOKEN in credentials.archived_home_values(run_dir, names)
+
+
+def test_a_rotated_token_found_only_in_an_archived_home_is_refused(root, tmp_path):  # T4-1 (HB-SEC-001)
+    run_dir, view = _graded(root, tmp_path, {"a": GOOD})
+    _plant_archived_credential(run_dir, "a", ".credentials.json", FAKE_ROTATED_TOKEN)
+    names = {name for _, name in credentials.credential_files(root).values()}
+    values = credentials.archived_home_values(run_dir, names)
+    view.cells[0].label = FAKE_ROTATED_TOKEN  # the value leaked into a rendered field
+    with pytest.raises(BenchError) as err:
+        html.write(run_dir, view, values)
+    assert err.value.code == "HB-SEC-001"
+    assert FAKE_ROTATED_TOKEN not in str(err.value)  # a hit never names the value, only a count
+    assert not (run_dir / "report.html").exists()
+
+
+def test_the_rotated_tokens_base64_and_url_encoded_forms_are_also_refused(root, tmp_path):
+    run_dir, view = _graded(root, tmp_path, {"a": GOOD})
+    _plant_archived_credential(run_dir, "a", ".credentials.json", FAKE_ROTATED_TOKEN)
+    names = {name for _, name in credentials.credential_files(root).values()}
+    values = credentials.archived_home_values(run_dir, names)
+    encoded = credentials.encodings(values) - values
+    assert len(encoded) == 2  # base64 and URL-encoded forms of the one planted value
+    for form in encoded:
+        view.cells[0].label = form
+        with pytest.raises(BenchError) as err:
+            html.write(run_dir, view, values)
+        assert err.value.code == "HB-SEC-001"
+
+
+def test_a_value_found_only_on_the_host_side_is_refused(root, tmp_path, monkeypatch, tmp_path_factory):
+    fake_home = tmp_path_factory.mktemp("fake-home")
+    monkeypatch.setenv("USERPROFILE", str(fake_home))
+    monkeypatch.setenv("HOME", str(fake_home))
+    (fake_home / ".claude").mkdir()
+    (fake_home / ".claude" / ".credentials.json").write_text(json.dumps({"accessToken": FAKE_ROTATED_TOKEN}), encoding="utf-8")
+    run_dir, view = _graded(root, tmp_path, {"a": GOOD})
+    values = credentials.host_values(root)
+    assert FAKE_ROTATED_TOKEN in values
+    view.cells[0].label = FAKE_ROTATED_TOKEN
+    with pytest.raises(BenchError) as err:
+        html.write(run_dir, view, values)
+    assert err.value.code == "HB-SEC-001"
+
+
+def test_a_clean_report_still_writes_when_credential_values_are_supplied(root, tmp_path):
+    run_dir, view = _graded(root, tmp_path, {"a": GOOD})
+    path = html.write(run_dir, view, {FAKE_ROTATED_TOKEN})
+    assert path == run_dir / "report.html"
