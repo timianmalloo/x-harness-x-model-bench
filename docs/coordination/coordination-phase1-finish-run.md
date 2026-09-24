@@ -29,11 +29,21 @@ summary: >-
 
 ## Harness and tool findings (for the human)
 
-- **Agent tool worktree isolation refused, twice.** The session's cwd is `C:\projects\…` and git reports `C:/Projects/…`; the tool compared the two case-sensitively and refused both of its own worktrees ("a core.worktree redirect, or a checkout discovered above it"). Two locked, unused worktrees remain under `.claude/worktrees/agent-*` (created by the tool, holding no work). They were not removed; that is left to the human. The tracks run instead in trees made with `coord worktree new`, the skill's own Stage 2 path.
-- **Next steps for the human (R-4 conditions):**
-  - upgrade grok to 1.0.34 or later, and re-qualify it;
-  - decide whether agy may run in a mode that allows shell commands;
-  - R-1 stands for re-qualification.
+- **Agent tool worktree isolation refused, twice.** The session's cwd is `C:\projects\…` and git reports `C:/Projects/…`; the tool compared the two case-sensitively and refused both of its own worktrees ("a core.worktree redirect, or a checkout discovered above it"). The tool had also locked them (under this Claude Code process's pid) and never released them. After the close, the Coordinator confirmed they were clean and held no unique commit, then unlocked and removed them. The tracks ran instead in trees made with `coord worktree new`, the skill's own Stage 2 path.
+- **R-4 next steps, done: grok and agy are re-qualified on this host (run `qualify-5`, 2026-09-24).**
+  - **grok.** The operator upgraded grok from 1.0.30 to 1.0.41. It still failed (`qualify-2..4`: `protocol_error` 2.4 s into the prompt). The cause was **not a version or PC issue**; it was the pack's runner.
+    - A probe driving the pack's own transport showed grok 1.0.41 completing full turns on the subscription login, including the exact compiled brief.
+    - Recording the runner's messages showed grok's `{"id": "skills-reload", ...}` response rejected at `coord_transport.py:619`, because the compatibility exception was pinned to `agentVersion == "1.0.34"`.
+  - **agy.** The operator's auto-approve setting worked. The failure was the pack's agy hooks.
+    - Antigravity runs hook commands through **cmd.exe** on Windows, from `<repo>/.agents`. Its Go launcher escapes inner `"`.
+    - The POSIX-only hook commands (`py=$(...)`) therefore failed on every tool call, and agy marked each tool step `ERROR` even when the tool succeeded. Measured: `echo hello` gave ERROR in this repo and DONE in a hook-free repo, while a failing `exit 3` gave DONE there.
+  - **The fixes, in the AI-Forward pack (revision 93, ai-forward `fc365ff`, pushed; applied here in `bfd09e9`):**
+    - the grok exception covers any release ≥ 1.0.34;
+    - every agy hook is a quote-free `git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh <hook>.py ...` that cmd.exe and sh parse alike.
+    - Each fix was red-first in the pack. The pack's suite ran 1231 passed on Windows, and its POSIX transport tests passed in WSL.
+  - **Result (`qualify-5`, through the unchanged runner).** grok (38 s, 9 reload responses accepted) and agy (23 s) each completed the brief: one commit touching only `docs/notes/qualify-worker.md` with one line. Both are `ready_for_review`.
+  - agy's hooks now also record: a live run wrote `heartbeat` and `owner-review-stop` rows with `host: agy`. The pack had never observed these on Windows.
+  - Capabilities stay `observed-only`, as qualified.
 
 ## Tracks: planned against actual
 

@@ -202,7 +202,7 @@ A gate's exit status is read on its own line (CT27). `tools/heredoc_guard.py` no
 | | |
 | --- | --- |
 | **Completed** | Phase 1 walking skeleton, usable and merge-ready: the real E2E passes on the final code; every finding is closed red-first; 2699 cosmic-ray mutants with 0 open; 198/198 hand-written mutations; the Test Architect cleared the veto in round 2. |
-| **Remaining** | These are next steps, not merge gates:<br>1. the TOOL-B control (a named-test re-derivation from `cosmic-ray dump`);<br>2. the D5/D7 transcript capture (9);<br>3. the pack-seeded N5 probe (R-6);<br>4. grok and agy re-qualification (R-4);<br>5. the ruling heading format (12).<br>Prices: the operator runs on subscriptions only, so cost stays `NA` by decision (US-23 allows NA), and tokens and wall time are the cost measures. N5: accepted as disclosed for now (operator, 2026-09-24). |
+| **Remaining** | These are next steps, not merge gates:<br>1. the TOOL-B control (a named-test re-derivation from `cosmic-ray dump`);<br>2. the D5/D7 transcript capture (9);<br>3. the pack-seeded N5 probe (R-6);<br>4. the ruling heading format (12).<br>Done after the merge: grok and agy re-qualified (run `qualify-5`, pack revision 93; see the run record).<br>Prices: the operator runs on subscriptions only, so cost stays `NA` by decision (US-23 allows NA), and tokens and wall time are the cost measures. N5: accepted as disclosed for now (operator, 2026-09-24). |
 | **Best next action** | Run `bench plan --matrix <yours> --confirm`, then `bench run <id>`, then `bench report <id>` (the `start-benchmark` skill walks through it). |
 
 ## Gate record
