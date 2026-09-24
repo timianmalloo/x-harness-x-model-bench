@@ -9,7 +9,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from harness_bench.errors import Cause
-from harness_bench.telemetry import claude_code, codex, normalize
+from harness_bench.telemetry import claude_code, codex, copilot, normalize
 
 FIX = Path(__file__).parent / "fixtures"
 PROMPT = 'Run this shell command: python -c "print(6*7)" and write its exact output to answer.txt in the current directory. Then reply DONE.'
@@ -124,14 +124,20 @@ def test_served_models_and_the_one_call_rule():  # US-11
 
 # bounded readers never crash (D2) ------------------------------------------------------------------
 
-# Every key and enum value either reader looks at, so fuzzed rows reach deep into both readers.
+# Every key and enum value either reader looks at, so fuzzed rows reach deep into all three readers.
 _WORDS = ["type", "message", "payload", "content", "id", "model", "usage", "tool_use_id", "tool_use", "tool_result", "name",
           "call_id", "info", "total_token_usage", "last_token_usage", "error", "isApiErrorMessage", "apiErrorStatus",
           "sessionId", "session_id", "timestamp", "role", "text", "is_error", "user", "assistant", "session_meta",
           "turn_context", "event_msg", "response_item", "token_count", "task_complete", "function_call",
           "function_call_output", "custom_tool_call", "local_shell_call_output", "input_tokens", "output_tokens",
           "cached_input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens", "cache_write_input_tokens",
-          "reasoning_output_tokens", "status", "claude-sonnet-5", "<synthetic>", "Bash", "shell", "t1"]
+          "reasoning_output_tokens", "status", "claude-sonnet-5", "<synthetic>", "Bash", "shell", "t1",
+          # Copilot (telemetry/copilot.py): event types, the version gate, model_calls/tool_calls/hooks fields.
+          "data", "version", "session.start", "session.shutdown", "session.error", "user.message", "agentId",
+          "toolCallId", "toolName", "toolType", "success", "code", "modelMetrics", "requests", "count",
+          "tokenDetails", "cacheReadTokens", "cacheWriteTokens", "outputTokens", "reasoningTokens", "inputTokens",
+          "tool.execution_start", "tool.execution_complete", "hook.start", "hook.end", "hookType",
+          "transformedContent", "currentModel", "errorType", "gpt-6-sol"]
 _LEAF = st.one_of(st.none(), st.booleans(), st.integers(), st.floats(allow_nan=False), st.sampled_from(_WORDS),
                   st.text(max_size=8))
 _VALUE = st.recursive(_LEAF, lambda kids: st.one_of(st.lists(kids, max_size=4),
@@ -140,7 +146,7 @@ _ROW = st.dictionaries(st.sampled_from(_WORDS), _VALUE, max_size=6).map(json.dum
 _WRONG = st.one_of(st.lists(_LEAF, max_size=3), st.dictionaries(st.sampled_from(_WORDS), _LEAF, max_size=3),
                    st.integers(), st.floats(allow_nan=False), st.booleans(), st.text(max_size=8))  # wrong type or range
 _GOLDEN = [[json.loads(line) for line in f.read_text(encoding="utf-8").splitlines() if line.strip()]
-           for f in sorted((FIX / "native").glob("*/*.jsonl"))]
+           for f in sorted((FIX / "native").glob("**/*.jsonl"))]  # "**" also reaches native/copilot/{off,on}/session-state/<sid>/
 
 
 def _paths(value, prefix=()):
@@ -193,7 +199,7 @@ def _assert_typed(ex) -> None:
 def test_fuzzed_records_never_crash_either_reader_and_stay_typed(tmp_path_factory, lines):  # T-TEL-fuzz (D2)
     path = tmp_path_factory.mktemp("fz") / "r.jsonl"
     path.write_text("\n".join(lines), encoding="utf-8", errors="replace")
-    for reader in (claude_code, codex):
+    for reader in (claude_code, codex, copilot):
         _assert_typed(reader.read(path))
 
 
@@ -202,15 +208,18 @@ def test_fuzzed_records_never_crash_either_reader_and_stay_typed(tmp_path_factor
     '{"type":"response_item","payload":{"type":"function_call_output","call_id":{"a":1}}}',
     '{"type":"session_meta","payload":{"id":[1]}}',
     '{"type":"response_item","timestamp":[1],"payload":{"type":"function_call","call_id":"c1","name":["x"]}}',
-], ids=["claude-list-tool-id", "codex-dict-call-id", "codex-list-session-id", "codex-list-timestamp-and-name"])
+    '{"type":"session.start","data":{"version":[1]}}',
+    '{"type":"session.start","data":{"version":{"a":1}}}',
+], ids=["claude-list-tool-id", "codex-dict-call-id", "codex-list-session-id", "codex-list-timestamp-and-name",
+        "copilot-list-version", "copilot-dict-version"])
 def test_foreign_types_in_known_fields_are_ignored_not_crashed_on(tmp_path, line):  # T-TEL-fuzz regressions
     path = tmp_path / "r.jsonl"
     path.write_text(line + "\n", encoding="utf-8")
-    for reader in (claude_code, codex):
+    for reader in (claude_code, codex, copilot):
         _assert_typed(reader.read(path))
 
 
-@pytest.mark.parametrize("reader", [claude_code, codex], ids=["claude-code", "codex"])
+@pytest.mark.parametrize("reader", [claude_code, codex, copilot], ids=["claude-code", "codex", "copilot"])
 def test_deeply_nested_and_huge_lines_are_skipped_as_malformed(tmp_path, reader):  # T-TEL-fuzz: 100,000-deep nesting
     path = tmp_path / "r.jsonl"
     path.write_text("[" * 100_000 + "\n" + '{"a":' * 100_000 + "\n" + "x" * (2 << 20) + "\n", encoding="utf-8")

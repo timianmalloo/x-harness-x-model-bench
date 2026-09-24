@@ -92,10 +92,10 @@ def model_call_rows(run_id: str, cell_id: str, session_id: str, ex: Extraction, 
     return [{"kind": "model_call", "run_id": run_id, "extraction_id": extraction, "principal": cell_id, "cell_id": cell_id,
              "native_session_id": session_id, "native_ordinal": c.native_ordinal, "model": c.model,
              "uncached_input": c.uncached_input, "cache_read": c.cache_read, "cache_write": c.cache_write, "output": c.output,
-             "reasoning": c.reasoning, "start": c.start, "end": c.end} for c in ex.model_calls]
+             "reasoning": c.reasoning, "start": c.start, "end": c.end, "requests": c.requests} for c in ex.model_calls]
 
 
 def tool_call_rows(run_id: str, cell_id: str, session_id: str, ex: Extraction, extraction: str) -> list[dict]:
     return [{"kind": "tool_call", "run_id": run_id, "extraction_id": extraction, "cell_id": cell_id, "native_session_id": session_id,
              "native_ordinal": t.native_ordinal, "name": t.name, "tool_class": t.tool_class, "start": t.start, "end": t.end,
-             "ok": None if t.ok is None else int(t.ok)} for t in ex.tool_calls]
+             "ok": None if t.ok is None else int(t.ok), "outcome_code": t.outcome_code} for t in ex.tool_calls]

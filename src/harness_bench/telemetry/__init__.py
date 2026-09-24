@@ -23,6 +23,13 @@ MAX_FILE = 256 << 20
 
 @dataclass(frozen=True)
 class ModelCall:
+    """One row is exactly one model's token usage in one native usage report, by one principal, as read
+    by one extraction (ADR-0006 Amendment 1). For Claude Code and Codex a report is one request, so
+    `requests` is always 1. For Copilot a report is the per-model entry in the **last**
+    `session.shutdown.modelMetrics`, and it can summarise several requests: `requests` there is
+    `requests.count`. `requests` is additive (calls per cell = Σ `requests`); **a row count is not a
+    call count**. Its default of 1 is the single home of that default (design D&P C-b) -- a reader that
+    does not report it (a pre-amendment ledger, or Claude Code/Codex) reads as one call per row."""
     native_ordinal: int
     model: str
     uncached_input: int
@@ -32,6 +39,7 @@ class ModelCall:
     reasoning: int | None  # a component of output; None when the harness does not report it
     start: str | None = None
     end: str | None = None
+    requests: int = 1
 
 
 @dataclass(frozen=True)
@@ -42,6 +50,7 @@ class ToolCall:
     start: str | None
     end: str | None
     ok: bool | None
+    outcome_code: str | None = None  # the native error code of a failed call (e.g. "denied"); null on success
 
 
 @dataclass(frozen=True)
@@ -71,6 +80,11 @@ class Extraction:
     malformed_lines: int = 0
     truncated: bool = False
     missing: list[MissingField] = field(default_factory=list)
+    # US-9 live signal (Copilot only): hook invocations and hook failures seen in the record.
+    # None = the harness records no hooks at all (Claude Code, Codex); an int, possibly 0, means the
+    # harness's format supports hook telemetry and this many were counted (design section 4.5).
+    hook_starts: int | None = None
+    hook_failures: int | None = None
 
     def count(self, n: int, usage: dict, key: str) -> int:
         """The usage field `key` of the call at line `n`; absent or not a count is HB-TEL-001 (and 0 in the bucket)."""

@@ -123,3 +123,46 @@ All three are scrubbed (paths, emails, account plan labels). The user-level comm
 - Replay has no timing, so intra-turn times are replay-speed values.
 - The codex recording's chunk boundaries are a scrub artifact (see `provenance.json`).
 - The stale `engine.py:369-371` comment is a seam to W2-STOP.
+
+## Join: W1-COP-R (row 4), the Copilot reader, Claude Sonnet 5 (R-29), 2026-09-24
+
+This implements design `phase2-copilot-profile.md` revision 3.1 §4.4 and §14, and the §13 rows owned by W1-COP-R. Branch `w1-copilot-reader`: `086f85c` (red) → `84f9988` → `f7ef047` → the join fixes `9167450`, and the Leader's `679e293` (TA read-back Minor: the provenance marker check fails loudly when a record has no scrub annotation).
+
+| claim | evidence | red observed |
+| --- | --- | --- |
+| One `model_calls` row per model from the last `session.shutdown.modelMetrics`; `requests` = `requests.count`; uncached = `tokenDetails.input`; reasoning never added; start and end only for a single-request report | `test_off_/test_on_yields_one_row_per_model…`, `test_a_single_request_report_takes_the_shutdown_timestamp`, `test_last_shutdown_wins_over_first` | mutants: uncached=inputTokens, reasoning dropped, cache read/write swapped, first-vs-last shutdown, TA2 (single-request clock): all killed |
+| Σ(uncached, cache_read, cache_write, output) == ACP `totalTokens` on both arms, the oracle read from `provenance.json` | the golden-sample cross-check test | assertion-level red (a stub reader: see below) |
+| US-10: first `user.message` content, not `transformedContent`; sub-agent-first; the hash on both arms | four named tests | mutants content→transformedContent and agentId-removed killed |
+| US-11: only the `modelMetrics` key renamed (sample derived from `off/`), so the model comes from the key, not the pin or `currentModel`; `model_allowed` is False; an emptied `modelMetrics` gives no rows | `test_us11_*` | the pin/`currentModel` mutant was rewritten at the `ModelCall` argument, so the assertion kills it; a leaked-default-row mutant was killed |
+| F6 fail-closed version gate: `type(v) is int` (v2, absent, `true`, `1.0`, list, dict) | `test_f6_*` | the gate-removed mutant, RB1 and RB2 killed |
+| D2: fuzzed records never crash the Copilot reader | `tests/test_telemetry.py`: `test_fuzzed_records_never_crash_either_reader_and_stay_typed`, `test_foreign_types_…`, `test_deeply_nested_…` with `copilot` added, plus version `[1]` and `{}` regressions | `TypeError` (unhashable) on `f266f09`, from the Test Architect's probe |
+| `session_id` falls back to the `session-state` directory name | `test_session_id_falls_back_to_the_session_state_directory_name` | red on `f266f09`; RB3 killed |
+| Tool calls paired by `toolCallId` even when completions arrive out of order; `outcome_code` only on failure; tool class; R-14 counts (rev-92 on: 8 denied, 2 skill; off: 0 and 0) | `test_tool_calls_pair_by_id_under_out_of_order_completions`, the `outcome_code`-null-on-success test, `test_tool_class_mapping[*]`, `test_off_tool_calls…` | Codex F1 (FIFO pop) and F2 (stale code on success), TA8, RB4 killed |
+| Hooks: off 0 and 0, rev-92 on 8 and 8; `None` for the other harnesses and when the gate fails | the hook tests | the hook-failures-never-counted and hooks-before-gate mutants killed |
+| US-14: one named function over ledger rows, requiring zero `denied` AND at least one `ok == 1` | `test_us14_*`, including `…one_denial_among_successes_is_not_valid` and `…no_tool_calls_at_all_is_not_valid_by_default` | TA1, TA1b, TA9 and RB5 killed |
+| `normalize` emits `requests` and `outcome_code`; Claude Code and Codex default to `requests == 1` and hook fields `None` | row-level assertions; `test_claude_code_and_codex_still_default_requests_to_one` | TA9 and TA10 killed; `AttributeError` at `086f85c` before the fields existed |
+| Fixture provenance: `off` markers `[]`; `on` has all three | `test_fixture_provenance_system_message_markers` | assertion red on a deliberately wrong marker list |
+
+**Stub-reader red record (author-run).** `copilot.read` was monkeypatched to return an empty `Extraction()`, and the test file was run against it: 32 of 34 test IDs failed. The residual passes and their cover:
+- `test_tool_class_mapping[*]` does not call `read()`; the TA8 mutant covers it.
+- `test_us11_an_emptied_modelmetrics_yields_no_model_calls` is vacuous under the stub; the leaked-default-row mutant covers it.
+- `test_us14_no_tool_calls_at_all_is_not_valid_by_default` is covered by TA1b.
+- The two sibling-reader default tests failed with `AttributeError` at `086f85c`.
+- The provenance test failed on a deliberately wrong marker list.
+
+The initial collection-`ImportError` red at `086f85c` is recorded, but it is not relied on alone (Test Architect ruling).
+
+**Mutation (Leader-run):** `uv run python tools/mutate_check.py tests/mutations/copilot_reader.json` killed every mutation (16) at `c8ee1db`. The Test Architect independently re-ran all 16, plus its own RB1–RB5, and all 21 were killed.
+
+**Reviewers:**
+- Codex `gpt-6-sol` (`docs/notes/review-w1-copr-codex.md`): BLOCK on F1 and F2, both fixed.
+- Claude Test Architect: BLOCK in round 1 (2 Blockers, 4 Majors); round 2 CLEARS THE VETO, conditional on this entry being in the join commit.
+
+**Suite (Leader-run):** 722 passed, 5 deselected on the branch; ruff clean; clean merge with `main`. `-m ""` and `tests/e2e` were not run.
+
+**Carried forward:** the views-level US-11, F5 and `calls_per_cell` rows are a W1-COP-I join condition, quoted verbatim in `docs/coordination/coordination-finish-harness-bench.md` under "Ownership additions".
+
+**Residuals:**
+- The version gate does not cover `tool_calls` or `first_user_text` (by design; documented in the docstring).
+- No committed revision-95 pack-on fixture exists yet. It was captured on 2026-09-24 (16 of 17 tools succeeded, 27 of 27 hooks) and scrubbed, but stays uncommitted until the fixture swap.
+- Tool-class names not seen in the fixtures remain Inferred.
