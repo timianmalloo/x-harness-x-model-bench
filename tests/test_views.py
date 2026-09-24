@@ -73,6 +73,17 @@ def test_a_cell_reads_only_the_current_extraction(root, tmp_path, monkeypatch, s
     assert after.extraction_id == second and (after.tokens, after.tool_ms) == (before.tokens, before.tool_ms)
 
 
+@pytest.mark.parametrize("second", ["0" * 64, "f" * 64])
+def test_a_new_extraction_with_other_tool_times_replaces_the_old(root, tmp_path, monkeypatch, second):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    runner.run_pass(run_dir, root)
+    record = next((run_dir / "archive" / "a" / "attempt-1" / "home").rglob("*.jsonl"))  # a normaliser that reads other times
+    record.write_text(record.read_text(encoding="utf-8").replace('"timestamp": "2026-', '"timestamp": "2027-'), encoding="utf-8")
+    monkeypatch.setattr(normalize, "extraction_id", lambda: second)
+    runner.run_pass(run_dir, root)
+    assert _cell(views.load(run_dir), "a").tool_ms == views.Measure(592)  # never the union of both extractions
+
+
 def test_a_cell_reads_only_its_own_tool_calls(root, tmp_path):
     run_dir = make_run(root, tmp_path, {"a": GOOD, "b": GOOD})
     record = next((run_dir / "archive" / "b" / "attempt-1" / "home").rglob("*.jsonl"))

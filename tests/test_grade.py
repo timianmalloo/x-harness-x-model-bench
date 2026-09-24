@@ -6,10 +6,12 @@ record as the cell's native record. The grading pass runs for real, including th
 own job.
 """
 
+import hashlib
 import json
 import re
 import shutil
 from decimal import Decimal
+from types import SimpleNamespace
 
 import pytest
 from archived_runs import (
@@ -102,6 +104,8 @@ def test_a_cell_with_no_working_copy_is_na(root, tmp_path):
     ("Traceback (most recent call last):\nSyntaxError\n", None),
     ("Ran 4 tests in 0.001s\n\nFAILED (flakes=1)\n", None),
     ("Ran 9 tests in 0.1s\n\nFAILED (failures=9)\nRan 4 tests in 0.001s\n\nFAILED (failures=1)\n", (4, 3)),  # the last summary
+    ("Ran 4 tests in 0.001s\n", None),  # a count with no verdict line
+    ("Ran 1 test in 0.0s\n\nFAILED (failures=1, errors=1)\n", (1, 0)),  # never a negative pass count
 ])
 def test_the_unittest_summary_is_parsed_strictly(stderr, expected):
     assert correctness.parse_unittest(stderr) == expected
@@ -119,6 +123,7 @@ def test_an_oracle_phase_1_cannot_run_is_na_before_anything_runs(tmp_path, oracl
     ("Ran 0 tests in 0.0s\\n\\nOK\\n", 0, (None, None, "no hidden test ran")),
     ("Ran 2 tests in 0.0s\\n\\nOK\\n", 1, (0, Decimal(1), None)),  # every test passed but the oracle failed: not a pass
     ("Ran 2 tests in 0.0s\\n\\nOK\\n", 0, (1, Decimal(1), None)),
+    ("Ran 300 tests in 0.0s\\n\\nOK\\n", 0, (1, Decimal(1), None)),  # counts compared by value, past the small-int cache
 ])
 def test_a_pass_needs_tests_to_run_and_the_oracle_to_exit_0(tmp_path, summary, exit_code, expected):
     (tmp_path / "ws").mkdir()
@@ -128,7 +133,17 @@ def test_a_pass_needs_tests_to_run_and_the_oracle_to_exit_0(tmp_path, summary, e
     assert (result.passed, result.partial_credit, result.reason) == expected
 
 
-def test_not_recorded_is_one_falsy_sentinel_and_a_score_is_frozen():
+def test_an_oracle_killed_by_a_signal_is_not_a_pass(tmp_path, monkeypatch):  # POSIX gives a negative return code
+    (tmp_path / "ws").mkdir()
+    (tmp_path / "task" / "tests").mkdir(parents=True)
+    done = SimpleNamespace(returncode=-9, stdout="", stderr="Ran 2 tests in 0.0s\n\nOK\n", timed_out=False)
+    monkeypatch.setattr(correctness.procs, "run", lambda *a, **k: done)
+    oracle = {"runner": "unittest", "command": ["{python}", "-m", "unittest"]}
+    result = correctness.grade(tmp_path / "ws", tmp_path / "task", oracle, tmp_path / "run" / "out", tmp_path / "run", 60)
+    assert (result.passed, result.partial_credit) == (0, Decimal(1))
+
+
+def test_not_recorded_is_one_falsy_sentinel_and_scores_and_results_are_frozen():
     from dataclasses import FrozenInstanceError
 
     from harness_bench import grade
@@ -136,6 +151,12 @@ def test_not_recorded_is_one_falsy_sentinel_and_a_score_is_frozen():
     assert grade.NOT_RECORDED is grade._NotRecorded() and not grade.NOT_RECORDED and repr(grade.NOT_RECORDED) == "NOT_RECORDED"
     with pytest.raises(FrozenInstanceError):
         grade.Score(1.0, "e").value = 2.0  # type: ignore[misc]
+    with pytest.raises(FrozenInstanceError):
+        correctness.Result(1, None, None, "").passed = 0  # type: ignore[misc]
+
+
+def test_the_grader_build_hashes_the_grader_sources():
+    assert runner.grader_build() != hashlib.sha256().hexdigest()  # never the hash of nothing
 
 
 def test_cost_uses_only_the_exact_model_entry_in_force_on_the_run_date():
@@ -205,8 +226,17 @@ def test_the_run_date_is_the_plan_day_so_an_entry_effective_that_day_applies(roo
 def test_a_pass_closes_every_segment_it_wrote(root, tmp_path):
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     done = runner.run_pass(run_dir, root)
+    assert not [k for k in ledger._open_writers if done.grading_id in k]  # every writer released its claim
     for fact in runner.PASS_FACTS:
         (run_dir / fact / f"{done.grading_id}.jsonl").unlink()  # Windows refuses to delete a file still open
+
+
+def test_two_native_records_for_one_session_are_na(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    record = next((run_dir / "archive" / "a" / "attempt-1" / "home").rglob("*.jsonl"))
+    shutil.copy(record, record.with_name("rollout-2026-09-23-copy-sess-a.jsonl"))
+    s = scores(run_dir, runner.run_pass(run_dir, root).grading_id)
+    assert (s["a", "cost_usd"]["value"], s["a", "cost_usd"]["reason"]) == (None, "more than one native record for the session")
 
 
 def test_cost_reads_turn_usage_for_an_acp_turn_harness(root, tmp_path):

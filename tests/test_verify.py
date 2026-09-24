@@ -139,14 +139,14 @@ def test_a_duplicate_outcome_is_an_integrity_finding_not_a_crash(capsys, root, t
 
 def test_each_archive_attempt_is_checked_against_its_own_rows(capsys, root, tmp_path):
     run_dir = make_run(root, tmp_path, {"a": GOOD})
-    shutil.copytree(run_dir / "archive" / "a" / "attempt-1", run_dir / "archive" / "a" / "attempt-2")
-    rows = [{k: v for k, v in r.items() if k not in ledger.CHAIN_FIELDS} | {"archive_attempt": 2}
+    shutil.copytree(run_dir / "archive" / "a" / "attempt-1", run_dir / "archive" / "a" / "attempt-300")  # past the small-int cache
+    rows = [{k: v for k, v in r.items() if k not in ledger.CHAIN_FIELDS} | {"archive_attempt": 300}
             for r in ledger.read_segment(run_dir / "archive_files" / "engine-1.jsonl")]
     with ledger.SegmentWriter.create(run_dir / "archive_files", "engine-2") as af:
         for r in rows:
             af.append(r)
     with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
-        ev.append({"kind": "cell.archived", "cell_id": "a", "archive_attempt": 2, "archive_hash": archive.archive_hash(rows)})
+        ev.append({"kind": "cell.archived", "cell_id": "a", "archive_attempt": 300, "archive_hash": archive.archive_hash(rows)})
     assert _verify(capsys, tmp_path) == (0, "verify: ok\n", "")
 
 
