@@ -222,11 +222,56 @@ def _assert_replays(tmp_path, recording: Path) -> None:
     assert read == _stream(records, "to_client")  # every agent line, verbatim, nothing synthesised
     cwd = json.dumps(str(tmp_path))[1:-1].encode()
     assert written == _stream(records, "to_agent").replace(b"<CWD>", cwd)  # the driver still sends the live bytes
-    live = meta["result"]
+    live = dict(meta["result"])
+    if recording.name in RECLASSIFIED:  # a cause a ruling changed since the capture: the capture's own value first
+        captured, live["cause"] = RECLASSIFIED[recording.name]
+        assert meta["result"]["cause"] == captured
     assert (result.stop_reason, result.cause.code if result.cause else None, result.session_id, result.updates,
             result.permission_requests, result.prompt_sent, result.usage is not None) == (
         live["stop_reason"], live["cause"], live["session_id"], live["updates"], live["permission_requests"],
         live["prompt_sent"], live["usage_reported"])
+
+
+UNSUPPORTED = ACP_FIX / "recordings" / "claude-code-x1-model-unsupported.jsonl"
+RECLASSIFIED = {UNSUPPORTED.name: ("HB-CELL-105", "HB-CELL-116")}  # R-18/R-23: capture-time cause -> today's
+
+
+@pytestmark_native
+def test_a_model_the_harness_refuses_at_the_prompt_is_model_unavailable(tmp_path):  # R-18, R-23: the measured w1 record
+    result, _, _ = _replay(tmp_path, UNSUPPORTED)
+    assert result.cause is Cause.model_unavailable and result.prompt_sent
+    assert "2.1.280 or newer is required" in result.detail  # the adapter's text stays in the detail
+
+
+@pytestmark_native
+@pytest.mark.parametrize(("message", "data", "cause"), [
+    ("Internal error: API Error: 529 overloaded", {"errorKind": "overloaded_error"}, Cause.provider),
+    ("Internal error: API Error: 429 rate limited", None, Cause.provider),
+    ("Internal error: API Error: 401 Invalid credentials. Please run /login", {"errorKind": "authentication_error"},
+     Cause.blocked_auth),
+    ("Internal error: something broke", None, Cause.adapter_crash),  # no status, no type: never 116 by guess
+], ids=["overloaded", "rate-limit", "auth", "no-status-no-type"])
+def test_a_prompt_error_is_classified_by_its_status_and_type(tmp_path, message, data, cause):  # R-23
+    error = {"code": -32603, "message": message, **({"data": data} if data else {})}
+    derived = _derive(UNSUPPORTED, tmp_path, lambda m: {**m, "error": error} if "error" in m else m)
+    result, _, _ = _replay(tmp_path, derived)
+    assert result.cause is cause and message in result.detail
+
+
+@pytestmark_native
+def test_the_prompt_error_path_calls_the_native_record_classifier(tmp_path, monkeypatch):  # R-23 condition 1
+    from harness_bench.telemetry import ProviderError
+    real, seen = normalize.classify, []
+
+    def spy(errors):
+        seen.append(errors)
+        return real(errors)
+
+    monkeypatch.setattr(normalize, "classify", spy)
+    result, _, _ = _replay(tmp_path, UNSUPPORTED)
+    assert seen and result.cause is real(seen[-1]) is Cause.model_unavailable
+    # the same refusal as a native record row (status 400, an invalid-request type) reads the same cause
+    assert real([ProviderError(0, 400, "invalid_request", "does not support this model")]) is result.cause
 
 
 def test_every_recorded_acp_fixture_states_its_provenance():  # D5: adapter version, capture date, scrub
