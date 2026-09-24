@@ -96,6 +96,28 @@ def test_a_running_cells_budget_is_measured_from_prompt_sent_not_process_started
     assert not s.running[0].killing  # budget 300s: 60s elapsed, not 120s
 
 
+def test_phase_is_starting_before_any_cell_process_has_started(root, tmp_path):  # T4-4 (ruling R-3)
+    run_dir = make_run(root, tmp_path, {}, unstarted=("b",))
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
+        ev.append({"kind": "cell.launch_intent", "cell_id": "b"})
+    s = status.build(run_dir, now=NOW)
+    assert s.phase == "starting"
+    assert s.stop_code is None
+
+
+def test_phase_is_running_once_a_cell_process_has_started(root, tmp_path):
+    s = status.build(_live_run(root, tmp_path), now=NOW)
+    assert s.phase == "running"
+
+
+def test_stop_code_is_set_only_when_run_launch_stopped_was_recorded(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
+        ev.append({"kind": "run.launch_stopped", "code": "HB-RUN-004", "reason": "disk floor"})
+    s = status.build(run_dir, now=NOW)
+    assert s.stop_code == "HB-RUN-004"
+
+
 def test_an_unknown_run_is_hb_usr_001(tmp_path):
     with pytest.raises(BenchError) as err:
         status.build(tmp_path / "runs" / "nope", now=NOW)
