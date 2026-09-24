@@ -207,6 +207,23 @@ def test_deeply_nested_and_huge_lines_are_skipped_as_malformed(tmp_path, reader)
     assert ex.model_calls == [] and ex.malformed_lines == 3
 
 
+def test_a_newline_free_record_is_read_in_bounded_memory(tmp_path, monkeypatch):  # the reader holds one line at most
+    import tracemalloc
+
+    from harness_bench import telemetry
+    monkeypatch.setattr(telemetry, "MAX_LINE", 1024)
+    path = tmp_path / "r.jsonl"
+    path.write_bytes(b"x" * (8 << 20) + b"\n" + json.dumps({"type": "user", "sessionId": "s1"}).encode() + b"\n")
+    tracemalloc.start()
+    try:
+        ex = claude_code.read(path)
+        peak = tracemalloc.get_traced_memory()[1]
+    finally:
+        tracemalloc.stop()
+    assert peak < 1 << 20, f"peak {peak} bytes for an 8 MiB line"
+    assert ex.malformed_lines == 1 and ex.session_id == "s1"  # the long line is skipped whole; the next line is read
+
+
 def test_extraction_id_is_the_normaliser_build_hash():
     a = normalize.extraction_id()
     assert len(a) == 64 and a == normalize.extraction_id()
