@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T23:11:19Z",
+  "generated": "2026-09-24T23:28:40Z",
   "audit": [
     {
       "actor": null,
@@ -5772,6 +5772,564 @@ window.AUDIT_DATA = {
             "sha256": null,
             "status": "unresolved",
             "token": "harness_bench.tools.resolve(\".tools/harness\")[\"copilot"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3AVZV3PTNC9Z0MH86KVMDP0",
+      "shortname": "Goal: W1-COP-I slice 2 (plan docs/coordination/coordination-finish-harne…",
+      "datetime": "2026-09-24T23:28:40Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W1-COP-I slice 2 (plan docs/coordination/coordination-finish-harness-bench.md, W1-COP-I row and version-3 amendments; design docs/design/phase2-copilot-profile.md revision 3.1 sections 4.1 to 4.3, 5 and 13): the Copilot harness profile and the harness registry, red-first, in the owned paths only.\nDone when: bench/profiles/copilot.yaml exists per design section 4.1: `credential: null`, `files: {}`, a `command:` template ([exe, --acp, --model, {model}, --allow-tool, shell, --allow-tool, write]), `env: COPILOT_AUTO_UPDATE: \"false\"` (R-12), `set_model: true`, `credential_kind: \"subscription login (credential store)\"` (R-13), `record_glob: session-state/{session_id}/events.jsonl`, `usage_source: native_record`, `auxiliary_models: []`.; src/harness_bench/profiles.py: `copilot` added to HARNESSES and `READERS[\"copilot\"] = copilot.read` (the reader is on main from W1-COP-R); the nullable singular credential (`credential: null`) handled in load, seed_home, clean_home and credential_names; `argv()` built from the profile's `command:` template for all three harnesses (bench/profiles/claude-code.yaml and codex.yaml gain `command:` templates that produce exactly today's argv, proven by a test that compares old and new argv for both); the cell environment drops GH_TOKEN, GITHUB_TOKEN and GH_HOST (design section 4.1).; One registry-consistency test asserts set(HARNESSES) == set(READERS) == set(tools.LAYOUT) == the stems of bench/profiles/*.yaml.; Tests in tests/test_profiles.py for each item above were committed red first (failing on the old code for the stated reason), then green; tests/mutations/copilot.json has at least one mutant per new branch in profiles.py, all killed (`uv run python tools/mutate_check.py tests/mutations/copilot.json`).; `uv run bench plan --matrix <a scratch matrix with one copilot combo, model gpt-6-sol, task X1, pack \"off\"> --run-id <scratch id>` accepts the combo (without --confirm; delete the scratch run folder afterwards); `uv run pytest -q -p no:cacheprovider` passes; `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result.\nNot in scope: views.py, plan.py, driver.py, engine.py, errors.py, workspace.py, telemetry/* (other slices or tracks); `bench run`, any model turn, tests/e2e, `-m \"\"`; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: the design sections named above, docs/notes/rulings.md R-12, R-13, R-30, src/harness_bench/profiles.py, bench/profiles/*.yaml, tests/test_profiles.py, src/harness_bench/tools.py (LAYOUT, copilot entry from slice 1). Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3AVZVGGX33VY0AQWYJPSX87",
+      "shortname": "compile-Goal: W1-COP-I slice 2 (plan docs/coordination/coordination-finish-harne…",
+      "datetime": "2026-09-24T23:28:40Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-COP-I slice 2 (plan docs/coordination/coordination-finish-harness-bench.md, W1-COP-I row and version-3 amendments; design docs/design/phase2-copilot-profile.md revision 3.1 sections 4.1 to 4.3, 5 and 13): the Copilot harness profile and the harness registry, red-first, in the owned paths only.\nDone when: bench/profiles/copilot.yaml exists per design section 4.1: `credential: null`, `files: {}`, a `command:` template ([exe, --acp, --model, {model}, --allow-tool, shell, --allow-tool, write]), `env: COPILOT_AUTO_UPDATE: \"false\"` (R-12), `set_model: true`, `credential_kind: \"subscription login (credential store)\"` (R-13), `record_glob: session-state/{session_id}/events.jsonl`, `usage_source: native_record`, `auxiliary_models: []`.; src/harness_bench/profiles.py: `copilot` added to HARNESSES and `READERS[\"copilot\"] = copilot.read` (the reader is on main from W1-COP-R); the nullable singular credential (`credential: null`) handled in load, seed_home, clean_home and credential_names; `argv()` built from the profile's `command:` template for all three harnesses (bench/profiles/claude-code.yaml and codex.yaml gain `command:` templates that produce exactly today's argv, proven by a test that compares old and new argv for both); the cell environment drops GH_TOKEN, GITHUB_TOKEN and GH_HOST (design section 4.1).; One registry-consistency test asserts set(HARNESSES) == set(READERS) == set(tools.LAYOUT) == the stems of bench/profiles/*.yaml.; Tests in tests/test_profiles.py for each item above were committed red first (failing on the old code for the stated reason), then green; tests/mutations/copilot.json has at least one mutant per new branch in profiles.py, all killed (`uv run python tools/mutate_check.py tests/mutations/copilot.json`).; `uv run bench plan --matrix <a scratch matrix with one copilot combo, model gpt-6-sol, task X1, pack \"off\"> --run-id <scratch id>` accepts the combo (without --confirm; delete the scratch run folder afterwards); `uv run pytest -q -p no:cacheprovider` passes; `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result.\nNot in scope: views.py, plan.py, driver.py, engine.py, errors.py, workspace.py, telemetry/* (other slices or tracks); `bench run`, any model turn, tests/e2e, `-m \"\"`; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: the design sections named above, docs/notes/rulings.md R-12, R-13, R-30, src/harness_bench/profiles.py, bench/profiles/*.yaml, tests/test_profiles.py, src/harness_bench/tools.py (LAYOUT, copilot entry from slice 1). Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: bench/profiles/copilot.yaml exists per design section 4.1: `credential: null`, `files: {}`, a `command:` template ([exe, --acp, --model, {model}, --allow-tool, shell, --allow-tool, write]), `env: COPILOT_AUTO_UPDATE: \"false\"` (R-12), `set_model: true`, `credential_kind: \"subscription login (credential store)\"` (R-13), `record_glob: session-state/{session_id}/events.jsonl`, `usage_source: native_record`, `auxiliary_models: []`. | phrase: bench/profiles/copilot.yaml exists per design section 4.1: `credential: null`, `files: {}`, a `command:` template ([exe, --acp, --model, {model}, --allow-tool, shell, --allow-tool, write]), `env: COPILOT_AUTO_UPDATE: \"false\"` (R-12), `set_model: true`, `credential_kind: \"subscription login (credential store)\"` (R-13), `record_glob: session-state/{session_id}/events.jsonl`, `usage_source: native_record`, `auxiliary_models: []`. |\n| done_when: src/harness_bench/profiles.py: `copilot` added to HARNESSES and `READERS[\"copilot\"] = copilot.read` (the reader is on main from W1-COP-R) | phrase: src/harness_bench/profiles.py: `copilot` added to HARNESSES and `READERS[\"copilot\"] = copilot.read` (the reader is on main from W1-COP-R) |\n| done_when: the nullable singular credential (`credential: null`) handled in load, seed_home, clean_home and credential_names | phrase: the nullable singular credential (`credential: null`) handled in load, seed_home, clean_home and credential_names |\n| done_when: `argv()` built from the profile's `command:` template for all three harnesses (bench/profiles/claude-code.yaml and codex.yaml gain `command:` templates that produce exactly today's argv, proven by a test that compares old and new argv for both) | phrase: `argv()` built from the profile's `command:` template for all three harnesses (bench/profiles/claude-code.yaml and codex.yaml gain `command:` templates that produce exactly today's argv, proven by a test that compares old and new argv for both) |\n| done_when: the cell environment drops GH_TOKEN, GITHUB_TOKEN and GH_HOST (design section 4.1). | phrase: the cell environment drops GH_TOKEN, GITHUB_TOKEN and GH_HOST (design section 4.1). |\n| done_when: One registry-consistency test asserts set(HARNESSES) == set(READERS) == set(tools.LAYOUT) == the stems of bench/profiles/*.yaml. | phrase: One registry-consistency test asserts set(HARNESSES) == set(READERS) == set(tools.LAYOUT) == the stems of bench/profiles/*.yaml. |\n| done_when: Tests in tests/test_profiles.py for each item above were committed red first (failing on the old code for the stated reason), then green | phrase: Tests in tests/test_profiles.py for each item above were committed red first (failing on the old code for the stated reason), then green |\n| done_when: tests/mutations/copilot.json has at least one mutant per new branch in profiles.py, all killed (`uv run python tools/mutate_check.py tests/mutations/copilot.json`). | phrase: tests/mutations/copilot.json has at least one mutant per new branch in profiles.py, all killed (`uv run python tools/mutate_check.py tests/mutations/copilot.json`). |\n| done_when: `uv run bench plan --matrix <a scratch matrix with one copilot combo, model gpt-6-sol, task X1, pack \"off\"> --run-id <scratch id>` accepts the combo (without --confirm | phrase: `uv run bench plan --matrix <a scratch matrix with one copilot combo, model gpt-6-sol, task X1, pack \"off\"> --run-id <scratch id>` accepts the combo (without --confirm |\n| done_when: delete the scratch run folder afterwards) | phrase: delete the scratch run folder afterwards) |\n| done_when: `uv run pytest -q -p no:cacheprovider` passes | phrase: `uv run pytest -q -p no:cacheprovider` passes |\n| done_when: `uv run ruff check src tests tools` is clean. | phrase: `uv run ruff check src tests tools` is clean. |\n| done_when: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result. | phrase: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result. |\n| not_in_scope: views.py, plan.py, driver.py, engine.py, errors.py, workspace.py, telemetry/* (other slices or tracks) | phrase: views.py, plan.py, driver.py, engine.py, errors.py, workspace.py, telemetry/* (other slices or tracks) |\n| not_in_scope: `bench run`, any model turn, tests/e2e, `-m \"\"` | phrase: `bench run`, any model turn, tests/e2e, `-m \"\"` |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- credential: null: unresolved (not found)\n- files: {}: unresolved (not found)\n- command: unresolved (not found)\n- env: COPILOT_AUTO_UPDATE: \"false: unresolved (not found)\n- set_model: true: unresolved (not found)\n- credential_kind: \"subscription login (credential store: unresolved (not found)\n- record_glob: session-state/{session_id}/events.jsonl: unresolved (not found)\n- usage_source: native_record: unresolved (not found)\n- auxiliary_models: : unresolved (not found)\n- copilot: unresolved (not found)\n- READERS[\"copilot\"] = copilot.read: unresolved (not found)\n- argv: unresolved (not found)\n- uv run python tools/mutate_check.py tests/mutations/copilot.json: unresolved (not found)\n- uv run bench plan --matrix <a scratch matrix with one copilot combo, model gpt-6-sol, task X1, pack \"off\"> --run-id <scratch id: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider: unresolved (not found)\n- uv run ruff check src tests tools: unresolved (not found)\n- bench run: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 17b74cfa2175c94a17b6469bd10c90bad93c7f94c70e83590680bd99d309cc1e\n- docs/design/phase2-copilot-profile.md: docs/design/phase2-copilot-profile.md sha256 b15244d34330ebd4917bbc7599bd30944f2de10767b6a719ec18a0e19c25ee7f\n- bench/profiles/copilot.yaml: unresolved (not found)\n- session-state/{session_id}/events.jsonl: unresolved (not found)\n- src/harness_bench/profiles.py: src/harness_bench/profiles.py sha256 3afb30e7a768577cbdbff2082489fec22887895c7d7ea64c7ac77f805a3830ac\n- bench/profiles/claude-code.yaml: bench/profiles/claude-code.yaml sha256 8290069b642f5e11b954eabc9e8e3c105582e9dd6a6c171c9f762b675946076c\n- codex.yaml: bench/profiles/codex.yaml sha256 b2df1423992b7285c36e2346f9ed8b9d58d6199165631e537f9e5fd8a022c4fe\n- bench/profiles/*.yaml: unresolved (not found)\n- tests/test_profiles.py: tests/test_profiles.py sha256 06aea27b8e472fc83be53e24d4236741668eb7fffd665c05cef283b10b0210ef\n- tests/mutations/copilot.json: unresolved (not found)\n- profiles.py: src/harness_bench/profiles.py sha256 3afb30e7a768577cbdbff2082489fec22887895c7d7ea64c7ac77f805a3830ac\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- views.py: src/harness_bench/views.py sha256 dda67bd6871a0ee97cd28e0f816f77a0ec3c180cb75cb008c5dde44399ffc76f\n- plan.py: src/harness_bench/plan.py sha256 b3038b0d5f683fa449249902f8292533a5b7b88f19e4ef9d0d221a89631facc3\n- driver.py: src/harness_bench/driver.py sha256 05678eb095d49ea508be521dc628a7e4693dfc0772d2e83f9194c132a62a2da5\n- engine.py: src/harness_bench/engine.py sha256 fd8b33c00711c1b0fbb348d4e7be802c88f608c901c30053112e465559ffbca4\n- errors.py: src/harness_bench/errors.py sha256 a5e3cccc80432da69d4323eec63af41d88829def2dd1adcd8536d08e832c23e4\n- workspace.py: src/harness_bench/workspace.py sha256 7191f42853803fbdeba608ff6d3fcfa970d7629eb53e5b90e5c628192fb67536\n- telemetry/*: unresolved (not found)\n- tests/e2e: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 2 matches)\n- src/harness_bench/tools.py: src/harness_bench/tools.py sha256 f669a5da58671cc29d1725e15b09265ee359a5d41570735d406a7fea7f0e7940\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AVZV3PTNC9Z0MH86KVMDP0\nraw sha256: 62c21707a8bb3677111a65cb6ad4523866df45b6e5c3a7d86d79e1fbe79a27b6\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3AVZV3PTNC9Z0MH86KVMDP0 for codex v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "bench/profiles/copilot.yaml exists per design section 4.1: `credential: null`, `files: {}`, a `command:` template ([exe, --acp, --model, {model}, --allow-tool, shell, --allow-tool, write]), `env: COPILOT_AUTO_UPDATE: \"false\"` (R-12), `set_model: true`, `credential_kind: \"subscription login (credential store)\"` (R-13), `record_glob: session-state/{session_id}/events.jsonl`, `usage_source: native_record`, `auxiliary_models: []`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/profiles/copilot.yaml exists per design section 4.1: `credential: null`, `files: {}`, a `command:` template ([exe, --acp, --model, {model}, --allow-tool, shell, --allow-tool, write]), `env: COPILOT_AUTO_UPDATE: \"false\"` (R-12), `set_model: true`, `credential_kind: \"subscription login (credential store)\"` (R-13), `record_glob: session-state/{session_id}/events.jsonl`, `usage_source: native_record`, `auxiliary_models: []`."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "src/harness_bench/profiles.py: `copilot` added to HARNESSES and `READERS[\"copilot\"] = copilot.read` (the reader is on main from W1-COP-R)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "src/harness_bench/profiles.py: `copilot` added to HARNESSES and `READERS[\"copilot\"] = copilot.read` (the reader is on main from W1-COP-R)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the nullable singular credential (`credential: null`) handled in load, seed_home, clean_home and credential_names",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the nullable singular credential (`credential: null`) handled in load, seed_home, clean_home and credential_names"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`argv()` built from the profile's `command:` template for all three harnesses (bench/profiles/claude-code.yaml and codex.yaml gain `command:` templates that produce exactly today's argv, proven by a test that compares old and new argv for both)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`argv()` built from the profile's `command:` template for all three harnesses (bench/profiles/claude-code.yaml and codex.yaml gain `command:` templates that produce exactly today's argv, proven by a test that compares old and new argv for both)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the cell environment drops GH_TOKEN, GITHUB_TOKEN and GH_HOST (design section 4.1).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the cell environment drops GH_TOKEN, GITHUB_TOKEN and GH_HOST (design section 4.1)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "One registry-consistency test asserts set(HARNESSES) == set(READERS) == set(tools.LAYOUT) == the stems of bench/profiles/*.yaml.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "One registry-consistency test asserts set(HARNESSES) == set(READERS) == set(tools.LAYOUT) == the stems of bench/profiles/*.yaml."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Tests in tests/test_profiles.py for each item above were committed red first (failing on the old code for the stated reason), then green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Tests in tests/test_profiles.py for each item above were committed red first (failing on the old code for the stated reason), then green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/copilot.json has at least one mutant per new branch in profiles.py, all killed (`uv run python tools/mutate_check.py tests/mutations/copilot.json`).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/copilot.json has at least one mutant per new branch in profiles.py, all killed (`uv run python tools/mutate_check.py tests/mutations/copilot.json`)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`uv run bench plan --matrix <a scratch matrix with one copilot combo, model gpt-6-sol, task X1, pack \"off\"> --run-id <scratch id>` accepts the combo (without --confirm",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`uv run bench plan --matrix <a scratch matrix with one copilot combo, model gpt-6-sol, task X1, pack \"off\"> --run-id <scratch id>` accepts the combo (without --confirm"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "delete the scratch run folder afterwards)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "delete the scratch run folder afterwards)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`uv run pytest -q -p no:cacheprovider` passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`uv run pytest -q -p no:cacheprovider` passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`uv run ruff check src tests tools` is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`uv run ruff check src tests tools` is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "views.py, plan.py, driver.py, engine.py, errors.py, workspace.py, telemetry/* (other slices or tracks)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "views.py, plan.py, driver.py, engine.py, errors.py, workspace.py, telemetry/* (other slices or tracks)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "`bench run`, any model turn, tests/e2e, `-m \"\"`",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`bench run`, any model turn, tests/e2e, `-m \"\"`"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "bench/profiles/copilot.yaml exists per design section 4.1: `credential: null`, `files: {}`, a `command:` template ([exe, --acp, --model, {model}, --allow-tool, shell, --allow-tool, write]), `env: COPILOT_AUTO_UPDATE: \"false\"` (R-12), `set_model: true`, `credential_kind: \"subscription login (credential store)\"` (R-13), `record_glob: session-state/{session_id}/events.jsonl`, `usage_source: native_record`, `auxiliary_models: []`.",
+            "src/harness_bench/profiles.py: `copilot` added to HARNESSES and `READERS[\"copilot\"] = copilot.read` (the reader is on main from W1-COP-R)",
+            "the nullable singular credential (`credential: null`) handled in load, seed_home, clean_home and credential_names",
+            "`argv()` built from the profile's `command:` template for all three harnesses (bench/profiles/claude-code.yaml and codex.yaml gain `command:` templates that produce exactly today's argv, proven by a test that compares old and new argv for both)",
+            "the cell environment drops GH_TOKEN, GITHUB_TOKEN and GH_HOST (design section 4.1).",
+            "One registry-consistency test asserts set(HARNESSES) == set(READERS) == set(tools.LAYOUT) == the stems of bench/profiles/*.yaml.",
+            "Tests in tests/test_profiles.py for each item above were committed red first (failing on the old code for the stated reason), then green",
+            "tests/mutations/copilot.json has at least one mutant per new branch in profiles.py, all killed (`uv run python tools/mutate_check.py tests/mutations/copilot.json`).",
+            "`uv run bench plan --matrix <a scratch matrix with one copilot combo, model gpt-6-sol, task X1, pack \"off\"> --run-id <scratch id>` accepts the combo (without --confirm",
+            "delete the scratch run folder afterwards)",
+            "`uv run pytest -q -p no:cacheprovider` passes",
+            "`uv run ruff check src tests tools` is clean.",
+            "Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W1-COP-I slice 2 (plan docs/coordination/coordination-finish-harness-bench.md, W1-COP-I row and version-3 amendments; design docs/design/phase2-copilot-profile.md revision 3.1 sections 4.1 to 4.3, 5 and 13): the Copilot harness profile and the harness registry, red-first, in the owned paths only.",
+          "main_line_budget": "one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: the design sections named above, docs/notes/rulings.md R-12, R-13, R-30, src/harness_bench/profiles.py, bench/profiles/*.yaml, tests/test_profiles.py, src/harness_bench/tools.py (LAYOUT, copilot entry from slice 1). Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
+          "not_in_scope": [
+            "views.py, plan.py, driver.py, engine.py, errors.py, workspace.py, telemetry/* (other slices or tracks)",
+            "`bench run`, any model turn, tests/e2e, `-m \"\"`",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.002,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3AVZV3PTNC9Z0MH86KVMDP0",
+        "raw_sha256": "62c21707a8bb3677111a65cb6ad4523866df45b6e5c3a7d86d79e1fbe79a27b6",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "credential: null"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "files: {}"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "command"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "env: COPILOT_AUTO_UPDATE: \"false"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "set_model: true"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "credential_kind: \"subscription login (credential store"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "record_glob: session-state/{session_id}/events.jsonl"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "usage_source: native_record"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "auxiliary_models: "
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "copilot"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "READERS[\"copilot\"] = copilot.read"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "argv"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run python tools/mutate_check.py tests/mutations/copilot.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run bench plan --matrix <a scratch matrix with one copilot combo, model gpt-6-sol, task X1, pack \"off\"> --run-id <scratch id"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q -p no:cacheprovider"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run ruff check src tests tools"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench run"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-m "
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python3"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench.md",
+            "reason": null,
+            "sha256": "17b74cfa2175c94a17b6469bd10c90bad93c7f94c70e83590680bd99d309cc1e",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-finish-harness-bench.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase2-copilot-profile.md",
+            "reason": null,
+            "sha256": "b15244d34330ebd4917bbc7599bd30944f2de10767b6a719ec18a0e19c25ee7f",
+            "status": "resolved",
+            "token": "docs/design/phase2-copilot-profile.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/profiles/copilot.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "session-state/{session_id}/events.jsonl"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/profiles.py",
+            "reason": null,
+            "sha256": "3afb30e7a768577cbdbff2082489fec22887895c7d7ea64c7ac77f805a3830ac",
+            "status": "resolved",
+            "token": "src/harness_bench/profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": "bench/profiles/claude-code.yaml",
+            "reason": null,
+            "sha256": "8290069b642f5e11b954eabc9e8e3c105582e9dd6a6c171c9f762b675946076c",
+            "status": "resolved",
+            "token": "bench/profiles/claude-code.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "bench/profiles/codex.yaml",
+            "reason": null,
+            "sha256": "b2df1423992b7285c36e2346f9ed8b9d58d6199165631e537f9e5fd8a022c4fe",
+            "status": "resolved",
+            "token": "codex.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/profiles/*.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_profiles.py",
+            "reason": null,
+            "sha256": "06aea27b8e472fc83be53e24d4236741668eb7fffd665c05cef283b10b0210ef",
+            "status": "resolved",
+            "token": "tests/test_profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/copilot.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/profiles.py",
+            "reason": null,
+            "sha256": "3afb30e7a768577cbdbff2082489fec22887895c7d7ea64c7ac77f805a3830ac",
+            "status": "resolved",
+            "token": "profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/views.py",
+            "reason": null,
+            "sha256": "dda67bd6871a0ee97cd28e0f816f77a0ec3c180cb75cb008c5dde44399ffc76f",
+            "status": "resolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "b3038b0d5f683fa449249902f8292533a5b7b88f19e4ef9d0d221a89631facc3",
+            "status": "resolved",
+            "token": "plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/driver.py",
+            "reason": null,
+            "sha256": "05678eb095d49ea508be521dc628a7e4693dfc0772d2e83f9194c132a62a2da5",
+            "status": "resolved",
+            "token": "driver.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/engine.py",
+            "reason": null,
+            "sha256": "fd8b33c00711c1b0fbb348d4e7be802c88f608c901c30053112e465559ffbca4",
+            "status": "resolved",
+            "token": "engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "a5e3cccc80432da69d4323eec63af41d88829def2dd1adcd8536d08e832c23e4",
+            "status": "resolved",
+            "token": "errors.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/workspace.py",
+            "reason": null,
+            "sha256": "7191f42853803fbdeba608ff6d3fcfa970d7629eb53e5b90e5c628192fb67536",
+            "status": "resolved",
+            "token": "workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "telemetry/*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/tools.py",
+            "reason": null,
+            "sha256": "f669a5da58671cc29d1725e15b09265ee359a5d41570735d406a7fea7f0e7940",
+            "status": "resolved",
+            "token": "src/harness_bench/tools.py"
           }
         ],
         "schema": "compiled-prompt/1",
