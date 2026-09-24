@@ -1,3 +1,4 @@
 {"agent": "worker-agy-q2", "at": 1790257417.5741317, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-agy-q2", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-qualify-agy-2"}
 {"agent": "worker-agy-q2", "at": 1790270465.8005037, "calls": 1, "event": "Stop", "files": 0, "host": "agy", "kind": "heartbeat", "leader_renewed": null, "path": "-", "seq": 2, "session": "worker-agy-q2", "since": null, "tokens": "not recorded", "wi": "probe", "worktree": "agy-hooktest"}
 {"agent": "agy", "at": 1790270466.0375495, "checked": true, "event": "Stop", "hook_cwd": "C:\\Projects\\bench-test\\agy-hooktest", "hook_host": "agy", "kind": "owner-review-stop", "open_count": 0, "open_ids": [], "result": "allowed", "seq": 3, "session": "worker-agy-q2", "truncated": false}
+{"agent": "worker-agy-q2", "at": 1790288665.4020076, "kind": "session-end", "path": "-", "seq": 4, "session": "worker-agy-q2", "wi": "WI-0", "worktree": "x-harness-x-model-bench"}

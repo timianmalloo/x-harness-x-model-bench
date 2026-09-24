@@ -1,1 +1,2 @@
 {"agent": "worker-codex-q2", "at": 1790281073.5104163, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-codex-q2", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-qualify-codex-2"}
+{"agent": "worker-codex-q2", "at": 1790288665.757573, "kind": "session-end", "path": "-", "seq": 2, "session": "worker-codex-q2", "wi": "WI-0", "worktree": "x-harness-x-model-bench"}

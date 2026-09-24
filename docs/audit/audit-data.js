@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T21:58:27Z",
+  "generated": "2026-09-24T22:21:23Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -3368,6 +3368,622 @@ window.AUDIT_DATA = {
             "sha256": null,
             "status": "unresolved",
             "token": "docs/notes/rulings.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3AQP6NWC5S8SH7ZJS3CVE58",
+      "shortname": "Goal: W1-HOST slice 3 (two Minors from the join review): make the leftov…",
+      "datetime": "2026-09-24T22:13:29Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W1-HOST slice 3 (two Minors from the join review): make the leftovers test immune to concurrent suites, and remove the untested extra kill, in the owned paths only.\nDone when: tests/test_no_leftovers.py asserts only that this test's own `base` folder no longer exists after teardown, instead of comparing a snapshot of the shared C:/Projects/bench-test folder (another suite running at the same time made it fail on main); commit it.; In src/harness_bench/procs.py the extra `proc.kill()` inside `except TimeoutExpired` (around line 235) is deleted, because TerminateProcess was already sent and no test observes it (the reviewer's mutant M1 survived); `uv run pytest -q -p no:cacheprovider tests/test_procs.py tests/test_no_leftovers.py` passes; commit it.; `uv run ruff check src tests tools` is clean.; Your final message lists the two commit SHAs.\nNot in scope: Every file outside tests/test_no_leftovers.py and src/harness_bench/procs.py.; The full test suite; anything under tests/e2e; `-m \"\"`.; Reading or editing .git internals.; Printing long outputs: run pytest with -q and no -v or -s.; Any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 12 minutes wall clock; commit at every green.\n\nGrounding: read tests/test_no_leftovers.py, tests/conftest.py (the `base` fixture), and src/harness_bench/procs.py around the TimeoutExpired handler. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3AQP6YBH13PA5NNDN6FBHS9",
+      "shortname": "compile-Goal: W1-HOST slice 3 (two Minors from the join review): make the leftov…",
+      "datetime": "2026-09-24T22:13:30Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-HOST slice 3 (two Minors from the join review): make the leftovers test immune to concurrent suites, and remove the untested extra kill, in the owned paths only.\nDone when: tests/test_no_leftovers.py asserts only that this test's own `base` folder no longer exists after teardown, instead of comparing a snapshot of the shared C:/Projects/bench-test folder (another suite running at the same time made it fail on main); commit it.; In src/harness_bench/procs.py the extra `proc.kill()` inside `except TimeoutExpired` (around line 235) is deleted, because TerminateProcess was already sent and no test observes it (the reviewer's mutant M1 survived); `uv run pytest -q -p no:cacheprovider tests/test_procs.py tests/test_no_leftovers.py` passes; commit it.; `uv run ruff check src tests tools` is clean.; Your final message lists the two commit SHAs.\nNot in scope: Every file outside tests/test_no_leftovers.py and src/harness_bench/procs.py.; The full test suite; anything under tests/e2e; `-m \"\"`.; Reading or editing .git internals.; Printing long outputs: run pytest with -q and no -v or -s.; Any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 12 minutes wall clock; commit at every green.\nGrounding: read tests/test_no_leftovers.py, tests/conftest.py (the `base` fixture), and src/harness_bench/procs.py around the TimeoutExpired handler. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: tests/test_no_leftovers.py asserts only that this test's own `base` folder no longer exists after teardown, instead of comparing a snapshot of the shared C:/Projects/bench-test folder (another suite running at the same time made it fail on main) | phrase: tests/test_no_leftovers.py asserts only that this test's own `base` folder no longer exists after teardown, instead of comparing a snapshot of the shared C:/Projects/bench-test folder (another suite running at the same time made it fail on main) |\n| done_when: commit it. | phrase: commit it. |\n| done_when: In src/harness_bench/procs.py the extra `proc.kill()` inside `except TimeoutExpired` (around line 235) is deleted, because TerminateProcess was already sent and no test observes it (the reviewer's mutant M1 survived) | phrase: In src/harness_bench/procs.py the extra `proc.kill()` inside `except TimeoutExpired` (around line 235) is deleted, because TerminateProcess was already sent and no test observes it (the reviewer's mutant M1 survived) |\n| done_when: `uv run pytest -q -p no:cacheprovider tests/test_procs.py tests/test_no_leftovers.py` passes | phrase: `uv run pytest -q -p no:cacheprovider tests/test_procs.py tests/test_no_leftovers.py` passes |\n| done_when: commit it. | phrase: commit it. |\n| done_when: `uv run ruff check src tests tools` is clean. | phrase: `uv run ruff check src tests tools` is clean. |\n| done_when: Your final message lists the two commit SHAs. | phrase: Your final message lists the two commit SHAs. |\n| not_in_scope: Every file outside tests/test_no_leftovers.py and src/harness_bench/procs.py. | phrase: Every file outside tests/test_no_leftovers.py and src/harness_bench/procs.py. |\n| not_in_scope: The full test suite | phrase: The full test suite |\n| not_in_scope: anything under tests/e2e | phrase: anything under tests/e2e |\n| not_in_scope: `-m \"\"`. | phrase: `-m \"\"`. |\n| not_in_scope: Reading or editing .git internals. | phrase: Reading or editing .git internals. |\n| not_in_scope: Printing long outputs: run pytest with -q and no -v or -s. | phrase: Printing long outputs: run pytest with -q and no -v or -s. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- base: unresolved (not found)\n- proc.kill: unresolved (not found)\n- except TimeoutExpired: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider tests/test_procs.py tests/test_no_leftovers.py: unresolved (not found; nearest: tests/test_no_leftovers.py)\n- uv run ruff check src tests tools: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- tests/test_no_leftovers.py: tests/test_no_leftovers.py sha256 6020c1b9cc04cbb30d741d830e75f69966d008372e130cfc975af1d9b7d715e9\n- C:/Projects/bench-test: unresolved (outside repo)\n- src/harness_bench/procs.py: src/harness_bench/procs.py sha256 1bb51ba88d1c95ad501d6baa6e0097afe6514a678aef861f5892b82975d5af9f\n- tests/test_procs.py: tests/test_procs.py sha256 f818bb0eaca79ac6bd75732f124c757257553c2959654e3edca6d889e0f89b83\n- tests/e2e: unresolved (not found)\n- tests/conftest.py: tests/conftest.py sha256 d0a1f176caaf1a66888a86bbd6a06e3dbfbfb7861e3c72383c06c54e6dbdbc29\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AQP6NWC5S8SH7ZJS3CVE58\nraw sha256: 525710db1b205923ef9b5eb7ec65b73635d593f0e0bf45cca4a58d8d20a39384\ncompiler model: claude-opus-5-5\nengine seconds: 0.001\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3AQP6NWC5S8SH7ZJS3CVE58 for codex v1: 14 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "tests/test_no_leftovers.py asserts only that this test's own `base` folder no longer exists after teardown, instead of comparing a snapshot of the shared C:/Projects/bench-test folder (another suite running at the same time made it fail on main)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/test_no_leftovers.py asserts only that this test's own `base` folder no longer exists after teardown, instead of comparing a snapshot of the shared C:/Projects/bench-test folder (another suite running at the same time made it fail on main)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "commit it.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "commit it."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "In src/harness_bench/procs.py the extra `proc.kill()` inside `except TimeoutExpired` (around line 235) is deleted, because TerminateProcess was already sent and no test observes it (the reviewer's mutant M1 survived)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "In src/harness_bench/procs.py the extra `proc.kill()` inside `except TimeoutExpired` (around line 235) is deleted, because TerminateProcess was already sent and no test observes it (the reviewer's mutant M1 survived)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`uv run pytest -q -p no:cacheprovider tests/test_procs.py tests/test_no_leftovers.py` passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`uv run pytest -q -p no:cacheprovider tests/test_procs.py tests/test_no_leftovers.py` passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "commit it.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "commit it."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`uv run ruff check src tests tools` is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`uv run ruff check src tests tools` is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists the two commit SHAs.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists the two commit SHAs."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Every file outside tests/test_no_leftovers.py and src/harness_bench/procs.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Every file outside tests/test_no_leftovers.py and src/harness_bench/procs.py."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "The full test suite",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The full test suite"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "anything under tests/e2e",
+            "trace": {
+              "kind": "phrase",
+              "ref": "anything under tests/e2e"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "`-m \"\"`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`-m \"\"`."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Reading or editing .git internals.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Reading or editing .git internals."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Printing long outputs: run pytest with -q and no -v or -s.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Printing long outputs: run pytest with -q and no -v or -s."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "tests/test_no_leftovers.py asserts only that this test's own `base` folder no longer exists after teardown, instead of comparing a snapshot of the shared C:/Projects/bench-test folder (another suite running at the same time made it fail on main)",
+            "commit it.",
+            "In src/harness_bench/procs.py the extra `proc.kill()` inside `except TimeoutExpired` (around line 235) is deleted, because TerminateProcess was already sent and no test observes it (the reviewer's mutant M1 survived)",
+            "`uv run pytest -q -p no:cacheprovider tests/test_procs.py tests/test_no_leftovers.py` passes",
+            "commit it.",
+            "`uv run ruff check src tests tools` is clean.",
+            "Your final message lists the two commit SHAs."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W1-HOST slice 3 (two Minors from the join review): make the leftovers test immune to concurrent suites, and remove the untested extra kill, in the owned paths only.",
+          "main_line_budget": "one slice of at most 12 minutes wall clock; commit at every green.\nGrounding: read tests/test_no_leftovers.py, tests/conftest.py (the `base` fixture), and src/harness_bench/procs.py around the TimeoutExpired handler. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
+          "not_in_scope": [
+            "Every file outside tests/test_no_leftovers.py and src/harness_bench/procs.py.",
+            "The full test suite",
+            "anything under tests/e2e",
+            "`-m \"\"`.",
+            "Reading or editing .git internals.",
+            "Printing long outputs: run pytest with -q and no -v or -s.",
+            "Any push."
+          ],
+          "tier": "T0"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.001,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3AQP6NWC5S8SH7ZJS3CVE58",
+        "raw_sha256": "525710db1b205923ef9b5eb7ec65b73635d593f0e0bf45cca4a58d8d20a39384",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "base"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "proc.kill"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "except TimeoutExpired"
+          },
+          {
+            "nearest": "tests/test_no_leftovers.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q -p no:cacheprovider tests/test_procs.py tests/test_no_leftovers.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run ruff check src tests tools"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-m "
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python3"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_no_leftovers.py",
+            "reason": null,
+            "sha256": "6020c1b9cc04cbb30d741d830e75f69966d008372e130cfc975af1d9b7d715e9",
+            "status": "resolved",
+            "token": "tests/test_no_leftovers.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/bench-test"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/procs.py",
+            "reason": null,
+            "sha256": "1bb51ba88d1c95ad501d6baa6e0097afe6514a678aef861f5892b82975d5af9f",
+            "status": "resolved",
+            "token": "src/harness_bench/procs.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_procs.py",
+            "reason": null,
+            "sha256": "f818bb0eaca79ac6bd75732f124c757257553c2959654e3edca6d889e0f89b83",
+            "status": "resolved",
+            "token": "tests/test_procs.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e"
+          },
+          {
+            "nearest": null,
+            "path": "tests/conftest.py",
+            "reason": null,
+            "sha256": "d0a1f176caaf1a66888a86bbd6a06e3dbfbfb7861e3c72383c06c54e6dbdbc29",
+            "status": "resolved",
+            "token": "tests/conftest.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3AR4MZQKSMSTAKQ21PYP8TR",
+      "shortname": "Goal: W1-HOST slice 4 (two Minors from the veto read-back): prove the ho…",
+      "datetime": "2026-09-24T22:21:23Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W1-HOST slice 4 (two Minors from the veto read-back): prove the host readings' success paths return real values, and that sleep detection recovers when the first reading is missing, with tests only.\nDone when: A native test in tests/test_host.py calls the real host.available_memory() and asserts it returns an int greater than 0, and the real host.unbiased_seconds() and asserts a float greater than 0 (these kill the mutant `return int(status.ullAvailPhys)` → `return None`); commit it.; A test in tests/test_host.py builds a SleepDetector whose first unbiased reading is None, then feeds two good readings whose wall-minus-unbiased gap exceeds `gap`, and asserts slept() is True (this kills the mutant that stops the first good reading becoming the anchor); commit it.; You show each new test fails against its mutant: apply the mutant in your tree, run the test, see it fail, restore the file with `git checkout -- src`, and state the failing output in your final message.; `uv run pytest -q -p no:cacheprovider tests/test_host.py` passes and `uv run ruff check src tests tools` is clean.\nNot in scope: Every file outside tests/test_host.py (src/harness_bench/host.py is read-only here; mutants are applied and reverted, never committed).; The full test suite; tests/e2e; `-m \"\"`.; Reading or editing .git internals.; Printing long outputs: run pytest with -q and no -v or -s.; Any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 12 minutes wall clock; commit at every green.\n\nGrounding: read src/harness_bench/host.py (available_memory, unbiased_seconds, SleepDetector) and tests/test_host.py. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3AR4N83TF60QW0JYQFN1X2C",
+      "shortname": "compile-Goal: W1-HOST slice 4 (two Minors from the veto read-back): prove the ho…",
+      "datetime": "2026-09-24T22:21:23Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-HOST slice 4 (two Minors from the veto read-back): prove the host readings' success paths return real values, and that sleep detection recovers when the first reading is missing, with tests only.\nDone when: A native test in tests/test_host.py calls the real host.available_memory() and asserts it returns an int greater than 0, and the real host.unbiased_seconds() and asserts a float greater than 0 (these kill the mutant `return int(status.ullAvailPhys)` → `return None`); commit it.; A test in tests/test_host.py builds a SleepDetector whose first unbiased reading is None, then feeds two good readings whose wall-minus-unbiased gap exceeds `gap`, and asserts slept() is True (this kills the mutant that stops the first good reading becoming the anchor); commit it.; You show each new test fails against its mutant: apply the mutant in your tree, run the test, see it fail, restore the file with `git checkout -- src`, and state the failing output in your final message.; `uv run pytest -q -p no:cacheprovider tests/test_host.py` passes and `uv run ruff check src tests tools` is clean.\nNot in scope: Every file outside tests/test_host.py (src/harness_bench/host.py is read-only here; mutants are applied and reverted, never committed).; The full test suite; tests/e2e; `-m \"\"`.; Reading or editing .git internals.; Printing long outputs: run pytest with -q and no -v or -s.; Any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 12 minutes wall clock; commit at every green.\nGrounding: read src/harness_bench/host.py (available_memory, unbiased_seconds, SleepDetector) and tests/test_host.py. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: A native test in tests/test_host.py calls the real host.available_memory() and asserts it returns an int greater than 0, and the real host.unbiased_seconds() and asserts a float greater than 0 (these kill the mutant `return int(status.ullAvailPhys)` → `return None`) | phrase: A native test in tests/test_host.py calls the real host.available_memory() and asserts it returns an int greater than 0, and the real host.unbiased_seconds() and asserts a float greater than 0 (these kill the mutant `return int(status.ullAvailPhys)` → `return None`) |\n| done_when: commit it. | phrase: commit it. |\n| done_when: A test in tests/test_host.py builds a SleepDetector whose first unbiased reading is None, then feeds two good readings whose wall-minus-unbiased gap exceeds `gap`, and asserts slept() is True (this kills the mutant that stops the first good reading becoming the anchor) | phrase: A test in tests/test_host.py builds a SleepDetector whose first unbiased reading is None, then feeds two good readings whose wall-minus-unbiased gap exceeds `gap`, and asserts slept() is True (this kills the mutant that stops the first good reading becoming the anchor) |\n| done_when: commit it. | phrase: commit it. |\n| done_when: You show each new test fails against its mutant: apply the mutant in your tree, run the test, see it fail, restore the file with `git checkout -- src`, and state the failing output in your final message. | phrase: You show each new test fails against its mutant: apply the mutant in your tree, run the test, see it fail, restore the file with `git checkout -- src`, and state the failing output in your final message. |\n| done_when: `uv run pytest -q -p no:cacheprovider tests/test_host.py` passes and `uv run ruff check src tests tools` is clean. | phrase: `uv run pytest -q -p no:cacheprovider tests/test_host.py` passes and `uv run ruff check src tests tools` is clean. |\n| not_in_scope: Every file outside tests/test_host.py (src/harness_bench/host.py is read-only here | phrase: Every file outside tests/test_host.py (src/harness_bench/host.py is read-only here |\n| not_in_scope: mutants are applied and reverted, never committed). | phrase: mutants are applied and reverted, never committed). |\n| not_in_scope: The full test suite | phrase: The full test suite |\n| not_in_scope: tests/e2e | phrase: tests/e2e |\n| not_in_scope: `-m \"\"`. | phrase: `-m \"\"`. |\n| not_in_scope: Reading or editing .git internals. | phrase: Reading or editing .git internals. |\n| not_in_scope: Printing long outputs: run pytest with -q and no -v or -s. | phrase: Printing long outputs: run pytest with -q and no -v or -s. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- return int(status.ullAvailPhys: unresolved (not found)\n- return None: unresolved (not found)\n- gap: unresolved (not found)\n- git checkout -- src: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider tests/test_host.py: unresolved (not found; nearest: tests/test_host.py)\n- uv run ruff check src tests tools: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- tests/test_host.py: tests/test_host.py sha256 97b52270a8e9cd7ebe385ee54511025fcb52acd9719500bfe10f6fae879143f6\n- src/harness_bench/host.py: src/harness_bench/host.py sha256 395d2b966101c18714f899221fd8cb5100fb7354e7eeaad55524bed479eba832\n- tests/e2e: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AR4MZQKSMSTAKQ21PYP8TR\nraw sha256: 979f177bce1b1482889863dacf45e698a71d96b5d6485132da13d59a89b57270\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3AR4MZQKSMSTAKQ21PYP8TR for codex v1: 14 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A native test in tests/test_host.py calls the real host.available_memory() and asserts it returns an int greater than 0, and the real host.unbiased_seconds() and asserts a float greater than 0 (these kill the mutant `return int(status.ullAvailPhys)` → `return None`)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A native test in tests/test_host.py calls the real host.available_memory() and asserts it returns an int greater than 0, and the real host.unbiased_seconds() and asserts a float greater than 0 (these kill the mutant `return int(status.ullAvailPhys)` → `return None`)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "commit it.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "commit it."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A test in tests/test_host.py builds a SleepDetector whose first unbiased reading is None, then feeds two good readings whose wall-minus-unbiased gap exceeds `gap`, and asserts slept() is True (this kills the mutant that stops the first good reading becoming the anchor)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A test in tests/test_host.py builds a SleepDetector whose first unbiased reading is None, then feeds two good readings whose wall-minus-unbiased gap exceeds `gap`, and asserts slept() is True (this kills the mutant that stops the first good reading becoming the anchor)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "commit it.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "commit it."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "You show each new test fails against its mutant: apply the mutant in your tree, run the test, see it fail, restore the file with `git checkout -- src`, and state the failing output in your final message.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "You show each new test fails against its mutant: apply the mutant in your tree, run the test, see it fail, restore the file with `git checkout -- src`, and state the failing output in your final message."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`uv run pytest -q -p no:cacheprovider tests/test_host.py` passes and `uv run ruff check src tests tools` is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`uv run pytest -q -p no:cacheprovider tests/test_host.py` passes and `uv run ruff check src tests tools` is clean."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Every file outside tests/test_host.py (src/harness_bench/host.py is read-only here",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Every file outside tests/test_host.py (src/harness_bench/host.py is read-only here"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "mutants are applied and reverted, never committed).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "mutants are applied and reverted, never committed)."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "The full test suite",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The full test suite"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "tests/e2e",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/e2e"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "`-m \"\"`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`-m \"\"`."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Reading or editing .git internals.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Reading or editing .git internals."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Printing long outputs: run pytest with -q and no -v or -s.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Printing long outputs: run pytest with -q and no -v or -s."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "A native test in tests/test_host.py calls the real host.available_memory() and asserts it returns an int greater than 0, and the real host.unbiased_seconds() and asserts a float greater than 0 (these kill the mutant `return int(status.ullAvailPhys)` → `return None`)",
+            "commit it.",
+            "A test in tests/test_host.py builds a SleepDetector whose first unbiased reading is None, then feeds two good readings whose wall-minus-unbiased gap exceeds `gap`, and asserts slept() is True (this kills the mutant that stops the first good reading becoming the anchor)",
+            "commit it.",
+            "You show each new test fails against its mutant: apply the mutant in your tree, run the test, see it fail, restore the file with `git checkout -- src`, and state the failing output in your final message.",
+            "`uv run pytest -q -p no:cacheprovider tests/test_host.py` passes and `uv run ruff check src tests tools` is clean."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W1-HOST slice 4 (two Minors from the veto read-back): prove the host readings' success paths return real values, and that sleep detection recovers when the first reading is missing, with tests only.",
+          "main_line_budget": "one slice of at most 12 minutes wall clock; commit at every green.\nGrounding: read src/harness_bench/host.py (available_memory, unbiased_seconds, SleepDetector) and tests/test_host.py. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
+          "not_in_scope": [
+            "Every file outside tests/test_host.py (src/harness_bench/host.py is read-only here",
+            "mutants are applied and reverted, never committed).",
+            "The full test suite",
+            "tests/e2e",
+            "`-m \"\"`.",
+            "Reading or editing .git internals.",
+            "Printing long outputs: run pytest with -q and no -v or -s.",
+            "Any push."
+          ],
+          "tier": "T0"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.002,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3AR4MZQKSMSTAKQ21PYP8TR",
+        "raw_sha256": "979f177bce1b1482889863dacf45e698a71d96b5d6485132da13d59a89b57270",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "return int(status.ullAvailPhys"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "return None"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gap"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git checkout -- src"
+          },
+          {
+            "nearest": "tests/test_host.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q -p no:cacheprovider tests/test_host.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run ruff check src tests tools"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-m "
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python3"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_host.py",
+            "reason": null,
+            "sha256": "97b52270a8e9cd7ebe385ee54511025fcb52acd9719500bfe10f6fae879143f6",
+            "status": "resolved",
+            "token": "tests/test_host.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/host.py",
+            "reason": null,
+            "sha256": "395d2b966101c18714f899221fd8cb5100fb7354e7eeaad55524bed479eba832",
+            "status": "resolved",
+            "token": "src/harness_bench/host.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e"
           }
         ],
         "schema": "compiled-prompt/1",

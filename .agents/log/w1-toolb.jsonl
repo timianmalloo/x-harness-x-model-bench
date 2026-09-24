@@ -1,1 +1,3 @@
 {"agent": "w1-toolb", "at": 1790285620.8635845, "kind": "session-start", "path": "-", "seq": 1, "session": "w1-toolb", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w1-toolb-control"}
+{"agent": "w1-toolb", "at": 1790288666.4767337, "kind": "session-end", "path": "-", "seq": 2, "session": "w1-toolb", "wi": "WI-0", "worktree": "x-harness-x-model-bench"}
+{"agent": "w1-toolb", "at": 1790288678.5583181, "kind": "session-end", "path": "-", "seq": 3, "session": "w1-toolb", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w1-toolb-control"}
