@@ -171,3 +171,49 @@ def test_scrub_replaces_each_literal_in_raw_and_json_escaped_form_and_refuses_a_
     with pytest.raises(ValueError, match="left"):
         rec.scrub(raw, tmp_path / "again.jsonl", {}, forbid=["someone"])
     assert not (tmp_path / "again.jsonl").exists()  # a refused scrub writes nothing
+
+
+def _chunk(seq: int, text: str, kind: str = "agent_message_chunk") -> dict:
+    msg = {"jsonrpc": "2.0", "method": "session/update",
+           "params": {"sessionId": "s", "update": {"sessionUpdate": kind, "messageId": "m1", "content": {"type": "text", "text": text}}}}
+    return {"kind": "line", "seq": seq, "t": 0.0, "dir": "to_client", "text": json.dumps(msg, separators=(",", ":")), "nl": True}
+
+
+def test_scrub_catches_a_literal_split_across_streamed_chunks(tmp_path):
+    """The codex X1 capture streamed a cell path one token per agent_message_chunk (seq 93-118), so no single
+    string held the literal and the per-string scrub passed it through."""
+    rec = _recorder()
+    home = r"C:\Users\someone\cells\home"
+    raw = tmp_path / "raw.jsonl"
+    rows = [{"kind": "header", "argv": [], "cwd": "x", "started_utc": "x", "caps": {}},
+            _chunk(1, "Done in ["), _chunk(2, "C"), _chunk(3, ":/Users/some"), _chunk(4, "one/cells/home/slug.py"), _chunk(5, "].")]
+    raw.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    out = tmp_path / "scrubbed.jsonl"
+    rec.scrub(raw, out, {home: "<HOME>"}, forbid=["someone"])
+    lines = [r for r in _read(out) if r["kind"] == "line"]
+    texts = [json.loads(r["text"])["params"]["update"]["content"]["text"] for r in lines]
+    assert "".join(texts) == "Done in [<HOME>/slug.py]." and len(lines) == 5  # every chunk kept, the stream rebuilt
+    assert "someone" not in out.read_text(encoding="utf-8")
+    with pytest.raises(ValueError, match="left"):  # a forbidden word split across chunks is refused too
+        rec.scrub(raw, tmp_path / "again.jsonl", {}, forbid=["someone"])
+
+
+@pytest.mark.native
+def test_turn_runs_one_cell_through_the_recorder_into_a_new_out_folder(base, tmp_path, monkeypatch):
+    """`turn` end to end with the fake agent as the adapter: the --out folder does not exist yet (Leader,
+    capture window 1: FileNotFoundError on the .stderr.log open)."""
+    from harness_bench import profiles, tools
+    rec = _recorder()
+    fake_build = tools.Build("codex", "0.0-fake", Path(sys.executable), "0" * 64, FAKE, "0.0-fake", "0" * 64)
+    monkeypatch.setattr(tools, "resolve", lambda tools_dir: {"codex": fake_build})
+    monkeypatch.setattr(profiles.Profile, "argv", lambda self, build: [sys.executable, str(FAKE)])
+    real_load = profiles.load
+    monkeypatch.setattr(profiles, "load", lambda root, harness: real_load(root, harness, credential_source=tmp_path / "none"))
+    out = tmp_path / "not" / "yet" / "codex-x1.raw.jsonl"
+    code = rec.main(["turn", "--harness", "codex", "--model", "gpt-6-sol", "--out", str(out), "--tools-dir", str(tmp_path),
+                     "--cells-root", str(base), "--budget", "60", "--handshake", "10"])
+    meta = json.loads(out.with_suffix(".meta.json").read_text(encoding="utf-8"))
+    assert code == 0 and meta["result"]["stop_reason"] == "end_turn" and meta["mode"] == "agent-full-access"
+    records = _read(out)
+    assert records[0]["kind"] == "header" and records[-1] == {**records[-1], "kind": "exit", "code": 0}
+    assert not list(base.rglob("auth.json"))  # no credential copy is left in the cell
