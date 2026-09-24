@@ -70,7 +70,7 @@ Each join follows the plan's join rule. A non-author re-runs every cited red in 
 
 **Still open (Minor):** residual 11 is only partly proven (a suite-wide leftover count is not enforced). The residual-5 sweep of `status`, `run` and `plan` goes to the Security lens.
 
-**Open after slice 2 (Minor, advisory; see slices 3 and 4 below for what closed):**
+**Open after slice 2 (Minor, advisory; slices 3 and 4 above closed M1 and the leftovers flake):**
 - M1 survives.
 - `test_no_leftovers.py` compares a snapshot of the shared `bench-test` folder, so a concurrent suite can fail it. One flake was seen on `main` while another suite ran.
 - Residual 11 is only partly proven.
