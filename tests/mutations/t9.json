@@ -1,0 +1,23 @@
+[
+ {
+  "name": "T9-1 workspace._discard stops making a losing tmp folder writable before removing it",
+  "file": "src/harness_bench/workspace.py",
+  "find": "        try:\n            shutil.rmtree(tmp, onexc=archive.make_writable)\n        except OSError:\n            pass",
+  "replace": "        try:\n            shutil.rmtree(tmp, ignore_errors=True)\n        except OSError:\n            pass",
+  "tests": ["tests/test_workspace.py::test_task_source_built_concurrently_leaves_no_tmp_folder_behind", "tests/test_workspace.py::test_pack_checkout_built_concurrently_leaves_no_tmp_folder_behind"]
+ },
+ {
+  "name": "T9-2 configure_logging stops closing and removing its previous handler",
+  "file": "src/harness_bench/engine.py",
+  "find": "    previous = getattr(configure_logging, \"_installed\", None)\n    if previous is not None:\n        log.removeHandler(previous)\n        previous.close()\n\n",
+  "replace": "",
+  "tests": ["tests/test_engine.py::test_configure_logging_replaces_the_previous_handler"]
+ },
+ {
+  "name": "T9-2 cmd_run stops releasing its engine.log handler",
+  "file": "src/harness_bench/cli.py",
+  "find": "    finally:\n        engine.log.removeHandler(log_handler)\n        log_handler.close()\n",
+  "replace": "    finally:\n        pass\n",
+  "tests": ["tests/test_cli.py::test_run_closes_its_engine_log_handler_so_the_file_is_deletable"]
+ }
+]

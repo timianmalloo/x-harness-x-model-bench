@@ -622,6 +622,26 @@ def _engine_log(run_dir: Path, emit) -> list[dict]:
     return [json.loads(line) for line in (run_dir / "engine.log").read_text(encoding="utf-8").splitlines()]
 
 
+def test_configure_logging_replaces_the_previous_handler(base):  # T9-2: cross-run contamination + Windows delete leak
+    run_a, run_b = base / "a", base / "b"
+    run_a.mkdir()
+    run_b.mkdir()
+    before = list(engine.log.handlers)
+    try:
+        handler_a = engine.configure_logging(run_a, "a" * 32)
+        handler_b = engine.configure_logging(run_b, "b" * 32)
+        assert handler_a not in engine.log.handlers and handler_b in engine.log.handlers  # replaced, not accumulated
+        engine.log.info("after B")
+        assert "after B" not in (run_a / "engine.log").read_text(encoding="utf-8")
+        assert "after B" in (run_b / "engine.log").read_text(encoding="utf-8")
+    finally:
+        for h in [h for h in engine.log.handlers if h not in before]:
+            engine.log.removeHandler(h)
+            h.close()
+    (run_a / "engine.log").unlink()  # only succeeds once handler_a was closed by configure_logging(B)
+    assert not (run_a / "engine.log").exists()
+
+
 def test_engine_log_keeps_the_whitelisted_extras_only(base):  # T1-9
     extra = {"error_code": "HB-RUN-002", "pids": [4, 8], "detail": "why", "fact": "events", "win32_error": 5, "argv": ["x"]}
     [line] = _engine_log(base, lambda: engine.log.error("kill unconfirmed", extra=extra))
