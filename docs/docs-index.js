@@ -866,6 +866,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "ae8bad06929fef9c35c9441ae785431384dba3da6c77c4d9e1b9e8c594ed79c8"
     },
     {
+      "id": "note-20260924-spike-a9-host-sleep",
+      "path": "docs/notes/spike-a9-host-sleep.md",
+      "title": "Spike A9 - the engine and Windows clocks across a real host suspend",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-12-24",
+      "reviewSuggested": [],
+      "summary": "Measured on the operator's Windows 11 host (Modern Standby, about 236 s): the engine's SleepDetector detects a real suspend and ends the live cell as host_suspended (HB-CELL-106); time.monotonic counts sleep time, QueryUnbiasedInterruptTime does not; a standby shorter than suspend_gap is not detected and inflates turn_ms.",
+      "tags": [
+        "spike",
+        "host",
+        "clock",
+        "sleep",
+        "risk-A9"
+      ],
+      "links": [
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "2ded1d9d6e9579bfd70d2c78ec4156a1417706b3b6f48b0474cb8afbbebf97e1"
+    },
+    {
       "id": "review-w1-acp-codex",
       "path": "docs/notes/review-w1-acp-codex.md",
       "title": "W1-ACP cross-vendor join review",
@@ -2147,5 +2174,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "dc2188772e108130fa3ff6253a11b948ed2ded65f497e7efa3240ede697b98da"
+  "graphSha256": "2826d7a356b59560b56f6734df88b3265307e9ad3d24f5a63e4323b3ccf3145f"
 };
