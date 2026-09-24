@@ -231,7 +231,8 @@ def _assert_replays(tmp_path, recording: Path) -> None:
 
 def test_every_recorded_acp_fixture_states_its_provenance():  # D5: adapter version, capture date, scrub
     provenance = json.loads((ACP_FIX / "provenance.json").read_text(encoding="utf-8"))["fixtures"]
-    assert RECORDED and {p.name for p in RECORDED} == set(provenance)
+    assert RECORDED and RECORDINGS
+    assert {p.name for p in RECORDED} | {f"recordings/{p.name}" for p in RECORDINGS} == set(provenance)
     for name, record in provenance.items():
         assert all(isinstance(record.get(k), str) and record[k].strip() for k in PROVENANCE_KEYS), name
 
@@ -265,6 +266,38 @@ def test_meta_is_kept_when_the_adapter_reports_no_usage(tmp_path):  # derived va
 
     result, _, _ = _replay(tmp_path, _derive(recording, tmp_path, drop_usage), "agent-full-access")
     assert result.usage == {"usage": None, "meta": recorded["_meta"]}  # the TurnResult.usage shape is unchanged
+
+
+@pytestmark_native
+def test_d5_fails_when_one_byte_of_a_recorded_session_new_result_changes(tmp_path):  # D5 negative control (W1-ACP d)
+    import shutil
+    recording = ACP_FIX / "recordings" / "codex-x1.jsonl"
+    lines = recording.read_text(encoding="utf-8").splitlines(keepends=True)
+    i = next(i for i, line in enumerate(lines) if '\\"id\\":2,\\"result\\":{\\"sessionId\\":\\"' in line)
+    at = lines[i].index('sessionId\\":\\"') + len('sessionId\\":\\"')
+    lines[i] = lines[i][:at] + ("f" if lines[i][at] != "f" else "e") + lines[i][at + 1:]
+    mutated = tmp_path / "mutated" / recording.name
+    mutated.parent.mkdir()
+    mutated.write_text("".join(lines), encoding="utf-8", newline="")
+    shutil.copyfile(recording.with_suffix(".meta.json"), mutated.with_suffix(".meta.json"))
+    original, changed = recording.read_bytes(), mutated.read_bytes()
+    assert len(original) == len(changed) and sum(a != b for a, b in zip(original, changed, strict=True)) == 1
+    for cwd in ("control", "mutant"):
+        (tmp_path / cwd).mkdir()
+    _assert_replays(tmp_path / "control", recording)  # the unmutated recording passes, so the failure below is the byte
+    with pytest.raises(AssertionError):
+        _assert_replays(tmp_path / "mutant", mutated)
+
+
+def test_every_recording_states_its_provenance_from_its_capture():  # W1-ACP (e)
+    provenance = json.loads((ACP_FIX / "provenance.json").read_text(encoding="utf-8"))
+    assert "No full ACP transcript" not in provenance["note"]
+    for recording in RECORDINGS:
+        record, build = provenance["fixtures"].get(f"recordings/{recording.name}"), _meta(recording)["build"]
+        assert record and all(isinstance(record.get(k), str) and record[k].strip() for k in PROVENANCE_KEYS), recording.name
+        assert record["adapter_version"] == build["adapter_version"] and build["version"] in record["harness_version"]
+        header = _records(recording)[0]
+        assert header["kind"] == "header" and header["scrub"]["placeholders"] and "acp_record.py scrub" in record["scrub"]
 
 
 # D7: every message type the fake emits is paired with a real transcript or the ACP schema ------
@@ -348,6 +381,17 @@ def _fake_modes() -> list[str]:
     import re
     doc = FAKE.read_text(encoding="utf-8").split('"mode":', 1)[1].split('"record_dir"', 1)[0]
     return re.findall(r'"(\w+)"', doc)
+
+
+def test_every_pairing_but_permission_is_present_in_the_recordings_it_cites():  # D7, W1-ACP (c)
+    for mtype, evidence in PAIRING.items():
+        if mtype == "session/request_permission":  # no real exemplar: 0 permission requests in every capture (US-14)
+            continue
+        cited = [p for p in RECORDINGS if f"recordings/{p.name}" in evidence]
+        assert cited, f"{mtype}: its evidence cites no recording"
+        for p in cited:
+            records = _records(p)
+            assert mtype in _message_types(_stream(records, "to_client"), _stream(records, "to_agent")), f"{mtype} not in {p.name}"
 
 
 def _assert_paired(emitted: set[str]) -> None:
