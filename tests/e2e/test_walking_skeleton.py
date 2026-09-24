@@ -7,10 +7,12 @@ then asserts the design's exit list. Workstation only (marked native and credent
 import hashlib
 import json
 import re
+import shutil
 import time
 from pathlib import Path
 
 import pytest
+from conftest import CLEAN_PARENT
 
 from harness_bench import cli, host, plan, profiles, views
 
@@ -18,10 +20,19 @@ pytestmark = [pytest.mark.native, pytest.mark.credentials]
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_the_walking_skeleton_runs_end_to_end(base):
+@pytest.fixture
+def kept():
+    """A clean-ancestry folder the test removes as its own last step, so a failed run stays on disk as evidence.
+    (A fixture teardown would run after a failure too, which is how two failed runs lost their evidence.)"""
+    folder = CLEAN_PARENT / f"e2e-{int(time.time())}"
+    folder.mkdir(parents=True)
+    return folder
+
+
+def test_the_walking_skeleton_runs_end_to_end(kept):
     tools_dir = ROOT / ".tools" / "harness"  # installed by the e2e conftest
-    runs, cells = base / "runs", base / "cells"
-    rid = f"e2e-{int(time.time())}"
+    runs, cells = kept / "runs", kept / "cells"
+    rid = kept.name
     common = ["--root", str(ROOT), "--runs", str(runs), "--cells-root", str(cells), "--tools-dir", str(tools_dir)]
     timings = {}
 
@@ -90,3 +101,4 @@ def test_the_walking_skeleton_runs_end_to_end(base):
     (ROOT / "docs" / "proof").mkdir(parents=True, exist_ok=True)
     (ROOT / "docs" / "proof" / "phase1-e2e-last.json").write_text(json.dumps({"run_id": rid, **timings}, indent=2, default=str),
                                                                   encoding="utf-8")
+    shutil.rmtree(kept, ignore_errors=True)  # the last step: every assertion above passed, so the evidence is not needed
