@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T04:26:09Z",
+  "generated": "2026-09-24T07:30:29Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -595,6 +595,44 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-09-24T04:24:49Z",
       "duration_seconds": 80.0
+    },
+    {
+      "id": "al-01M3955BFQE43ZK2NBQE4KX6BN",
+      "shortname": "t1-engine-hardening",
+      "datetime": "2026-09-24T07:30:28Z",
+      "session": "T1",
+      "prompt": "Coordinator dispatch: T1 engine-hardening (17 items), plus the T3-5 OSError seam notice",
+      "summary": "17 items + T1-8b (T3-5 seam) red-first then fixed; engine.json 44/44 killed; cosmic-ray: lifecycle 107 (91 killed, 16 equivalent), errors 13 (12 killed after a new test, 1 equivalent), engine scoped 299 (216 killed incl. 30 re-verified after new tests, 83 equivalent incl. 55 annotations); gates: 495 passed, ruff clean. docs/proof/findings-T1.md and docs/notes/mutation-record-t1.md were refused by the harness for a sub-agent and are returned in the report for the Coordinator to commit.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "claude-opus-5-5 (T1 sub-agent)",
+      "artifacts": [
+        "src/harness_bench/engine.py",
+        "src/harness_bench/lifecycle.py",
+        "src/harness_bench/errors.py",
+        "tests/mutations/engine.json"
+      ],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "T1 checklist of coordination-phase1-finish: one red-first test per item, engine.json all killed, cosmic-ray record, suite and ruff green on a branch merged with impl/phase1",
+      "done_when": "every item has a red SHA and a green fix; engine.json all killed under the hardened checker; cosmic-ray record with no open mutant; both gates green",
+      "tier": "T2",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": false
+      },
+      "started_at": "2026-09-24T02:07:41Z",
+      "duration_seconds": 19367.0,
+      "git": {
+        "sha": "c7f554879404038e1e28af77e0b31435fd20a1fc",
+        "short": "c7f554879",
+        "branch": "track/t1-engine-hardening",
+        "pushed": null
+      }
     }
   ],
   "changes": [
