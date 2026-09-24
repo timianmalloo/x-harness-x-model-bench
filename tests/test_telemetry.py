@@ -234,6 +234,16 @@ def test_a_missing_usage_field_is_hb_tel_001_not_a_silent_zero(tmp_path, reader,
     assert "HB-TEL-001" in RUN_CODES
 
 
+def test_a_negative_or_oversized_count_is_hb_tel_001_not_a_number(tmp_path):  # a count must fit a signed 64-bit column
+    usage = {"input_tokens": -5, "output_tokens": 1 << 70, "cache_read_input_tokens": True, "cache_creation_input_tokens": 3}
+    row = {"type": "assistant", "message": {"id": "m1", "model": "claude-sonnet-5", "usage": usage}}
+    (tmp_path / "r.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8")
+    ex = claude_code.read(tmp_path / "r.jsonl")
+    call = ex.model_calls[0]
+    assert (call.uncached_input, call.cache_read, call.cache_write, call.output) == (0, 0, 3, 0)
+    assert {m.field for m in ex.missing} == {"input_tokens", "output_tokens", "cache_read_input_tokens"}
+
+
 def test_a_newline_free_record_is_read_in_bounded_memory(tmp_path, monkeypatch):  # the reader holds one line at most
     import tracemalloc
 
