@@ -18,6 +18,7 @@ intent until the process is confirmed gone. The lock file's mtime is the heartbe
 
 from __future__ import annotations
 
+import errno
 import hashlib
 import json
 import logging
@@ -54,6 +55,7 @@ OOM_SIGNATURE = re.compile(rb"heap out of memory|out of memory|OutOfMemory", re.
 COMPLETED_STOP_REASONS = {"end_turn", "max_tokens", "max_turn_requests", "refusal"}
 CIRCUIT_BREAKER = 3
 LOG_EXTRAS = ("detail", "pids", "fact", "win32_error")  # the only extras engine.log keeps (never argv, env or cell text)
+DISK_FULL_WINERRORS = (39, 112)  # ERROR_HANDLE_DISK_FULL, ERROR_DISK_FULL
 KILL_RETRY_CAP = 60.0  # seconds: the longest wait between retries of an unconfirmed kill (HB-RUN-002)
 RECORD_POLL = 0.5  # seconds: how often a waiting worker re-checks that the engine can still record
 log = logging.getLogger("harness_bench.engine")
@@ -238,7 +240,7 @@ class Engine:
                     self._check_budgets()
                     if sleep.slept():
                         self._kill_all("host_suspended")
-                    if not self.stopped and shutil.disk_usage(self.cfg.cells_root.anchor or ".").free < self.params["disk_floor_bytes"]:
+                    if not self.stopped and min(_free_bytes(self.cfg.cells_root), _free_bytes(run_dir)) < self.params["disk_floor_bytes"]:
                         self._stop_launching("HB-RUN-004", "free space below the floor")
                     while pending and not self.stopped and not self.broken and len(self.active) < self.params["parallelism"]:
                         self._launch(pending.pop(0))
@@ -325,7 +327,7 @@ class Engine:
             detail = f"{type(exc).__name__}: {exc}"[:300]
             try:
                 if cid not in self.outcomes:
-                    self._outcome(cell, "failed", Cause.unclassified, detail=detail)
+                    self._outcome(cell, "failed", Cause.disk if _disk_full(exc) else Cause.unclassified, detail=detail)
                 else:  # after the outcome: its archive failed; the workspace is the only copy, so it is kept
                     self.record("events", {"kind": "cell.archive_failed", "cell_id": cid, "code": code, "detail": detail})
                     self.archive_failed.add(cid)
@@ -346,7 +348,7 @@ class Engine:
         try:
             info = self.cfg.build_workspace(cell, cell_dir)
         except (BenchError, GitError, OSError) as exc:
-            self._outcome(cell, "failed", Cause.workspace, detail=f"{type(exc).__name__}: {exc}")
+            self._outcome(cell, "failed", Cause.disk if _disk_full(exc) else Cause.workspace, detail=f"{type(exc).__name__}: {exc}")
             self._archive(cell, cell_dir, launcher)
             return
         self.record("events", {"kind": "cell.workspace_built", "cell_id": cid, **{k: v for k, v in info.items() if isinstance(v, (int, str))}})
@@ -373,8 +375,6 @@ class Engine:
         for model, buckets in _usage_per_model(normalize.turn_usage({"_meta": (result.usage or {}).get("meta")})).items():
             self.record("turn_usage", {"kind": "turn_usage", "run_id": self.plan["run_id"], "cell_id": cid, "attempt": 1,
                                        "model": model, **buckets})
-        if tail:
-            (cell_dir / "adapter-stderr-tail.log").write_bytes(bytes(tail))
         outcome = "completed" if cause is None else ("timed_out" if cause is Cause.timed_out else "failed")
         # assume: the driver reports `last_update_seconds` (seam request req-01M38KX8503601BEP857749VVF to T3); until it
         # does, last_update_ms is null (not recorded), never a guessed number.
@@ -384,6 +384,11 @@ class Engine:
                       exit_status=exit_status if exit_status is not None else -1,
                       handshake_ms=int(result.handshake_seconds * 1000), turn_ms=int(result.turn_seconds * 1000),
                       updates=result.updates, last_update_ms=None if last_update is None else int(last_update * 1000))
+        if tail:  # best effort, after the outcome: a failed write loses only the tail, never the outcome
+            try:
+                (cell_dir / "adapter-stderr-tail.log").write_bytes(tail)
+            except OSError as exc:
+                log.warning("adapter stderr tail not kept", extra={"cell_id": cid, "error_code": _code(exc), "detail": str(exc)})
         self._archive(cell, cell_dir, launcher)
 
     def _attempt(self, a: _Active, cell: dict, launcher: Launcher, build: dict, argv: list[str], env: dict, ws: Path,
@@ -521,7 +526,21 @@ def _usage_per_model(entries: list[normalize.TurnUsage]) -> dict[str, dict[str, 
 
 def _code(exc: BaseException) -> str:
     """The stable code a failure is recorded under: its own, or the unclassified bucket."""
-    return exc.code if isinstance(exc, BenchError) else Cause.unclassified.code
+    if isinstance(exc, BenchError):
+        return exc.code
+    return Cause.disk.code if _disk_full(exc) else Cause.unclassified.code
+
+
+def _disk_full(exc: BaseException) -> bool:
+    """ENOSPC, or Windows ERROR_HANDLE_DISK_FULL / ERROR_DISK_FULL."""
+    return isinstance(exc, OSError) and (exc.errno == errno.ENOSPC or getattr(exc, "winerror", None) in DISK_FULL_WINERRORS)
+
+
+def _free_bytes(path: Path) -> int:
+    """Free bytes on the volume that holds `path` (or its nearest existing ancestor: a mount point counts)."""
+    while not path.exists() and path.parent != path:
+        path = path.parent
+    return shutil.disk_usage(path).free
 
 
 def _keep_tail(stream, tail: bytearray, limit: int) -> None:
