@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T01:52:14Z",
+  "generated": "2026-09-24T01:56:46Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -316,6 +316,119 @@ window.AUDIT_DATA = {
       "done_when": "plan md+html committed, layer measured and installed, gate reviewers cleared the plan",
       "tier": "T1",
       "fan_out": 3
+    },
+    {
+      "id": "al-01M38J1NYKEKT63WDBWZ6P0NJD",
+      "shortname": "Qualification smoke turn for the coordination run. Create the file docs/…",
+      "datetime": "2026-09-24T01:56:25Z",
+      "session": "prompt-compile",
+      "prompt": "Qualification smoke turn for the coordination run. Create the file docs/notes/qualify-worker.md containing exactly one line: \"qualified: <your harness name> <your model id> <UTC time>\". Then commit only that file with the message \"chore: qualification smoke turn\". Done when the file exists with that one line and the commit is on your branch. Not in scope: any other file, any test run, any push.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M38J29Z3V8YNRWCNF44W9XDC",
+      "shortname": "compile-Qualification smoke turn for the coordination run. Create the file docs/…",
+      "datetime": "2026-09-24T01:56:46Z",
+      "session": "coord-opus",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus --skill <skill>\nGoal state\nGoal: Qualification smoke turn: create docs/notes/qualify-worker.md with one line and commit only that file.\nDone when: The file docs/notes/qualify-worker.md exists with that one line.; The commit is on your branch.\nNot in scope: Any other file, any test run, any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: 10 tool calls, 600 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: The file docs/notes/qualify-worker.md exists with that one line. | phrase: Done when the file exists with that one line |\n| done_when: The commit is on your branch. | phrase: the commit is on your branch |\n| not_in_scope: Any other file, any test run, any push. | phrase: Not in scope: any other file, any test run, any push. |\nReferences\n- docs/notes/qualify-worker.md: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: at most 1, pre-prompt startup failure only\nper_branch_exit: one commit touching only docs/notes/qualify-worker.md\njoin_rule: none: qualification only, never joined\ncontainment: own worktree only\ntermination: one turn\ndeadline: 600 s\nfallback: the retained brief, after Owner review\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M38J1NYKEKT63WDBWZ6P0NJD\nraw sha256: 98e568f2a1938f34e0f597deb8f3ba45ee830b68f2b784b060e283e614695fab\ncompiler model: claude-opus-5-5\nengine seconds: 0.001\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M38J1NYKEKT63WDBWZ6P0NJD for claude-code v1: 3 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "The file docs/notes/qualify-worker.md exists with that one line.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Done when the file exists with that one line"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The commit is on your branch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the commit is on your branch"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any other file, any test run, any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Not in scope: any other file, any test run, any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree only",
+          "deadline": "600 s",
+          "fallback": "the retained brief, after Owner review",
+          "join_rule": "none: qualification only, never joined",
+          "per_branch_exit": "one commit touching only docs/notes/qualify-worker.md",
+          "termination": "one turn",
+          "transient_retry": "at most 1, pre-prompt startup failure only",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "The file docs/notes/qualify-worker.md exists with that one line.",
+            "The commit is on your branch."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Qualification smoke turn: create docs/notes/qualify-worker.md with one line and commit only that file.",
+          "main_line_budget": "10 tool calls, 600 s",
+          "not_in_scope": [
+            "Any other file, any test run, any push."
+          ],
+          "tier": "T0"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.001,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M38J1NYKEKT63WDBWZ6P0NJD",
+        "raw_sha256": "98e568f2a1938f34e0f597deb8f3ba45ee830b68f2b784b060e283e614695fab",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/qualify-worker.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
     }
   ],
   "changes": [
