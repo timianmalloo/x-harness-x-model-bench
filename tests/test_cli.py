@@ -165,6 +165,40 @@ def test_teardown_removes_archived_cells_and_keeps_the_rest(capsys, root, tmp_pa
     assert "kept b: not archived" in out
 
 
+def test_run_closes_its_engine_log_handler_so_the_file_is_deletable(capsys, root, tmp_path, monkeypatch):  # T9-2
+    """cmd_run must release the FileHandler configure_logging installs, or engine.log stays open and
+    (on Windows) the run's folder can never be removed. The engine itself is stubbed out: this test is
+    about cmd_run's own handler lifecycle, not a full run."""
+    from harness_bench import engine, plan, preflight, status
+
+    run_dir = tmp_path / "runs" / "r1"
+    run_dir.mkdir(parents=True)
+    (run_dir / "plan.json").write_text("{}", encoding="utf-8")
+    p = {"run_id": "r1", "trace_id": "a" * 32, "tasks": {}, "builds": {}}
+    monkeypatch.setattr(plan, "load_confirmed", lambda rd: p)
+    monkeypatch.setattr(preflight, "check", lambda *a, **k: None)
+
+    class _Summary:
+        exit_code = 0
+
+    class _FakeEngine:
+        def __init__(self, *a, **k):
+            pass
+
+        def run(self):
+            return _Summary()
+
+    monkeypatch.setattr(engine, "Engine", _FakeEngine)
+    monkeypatch.setattr(status, "build", lambda rd: object())
+    monkeypatch.setattr(status, "text", lambda s: "")
+
+    code, _, err = _bench(capsys, root, tmp_path, "--cells-root", str(tmp_path / "cells"),
+                          "--tools-dir", str(tmp_path / "tools"), "run", "r1")
+    assert code == 0, err
+    (run_dir / "engine.log").unlink()  # only succeeds once cmd_run closed its handler
+    assert not (run_dir / "engine.log").exists()
+
+
 def test_run_refuses_a_run_that_already_started(capsys, root, tmp_path, base):
     make_run(root, tmp_path, {"a": GOOD})
     code, _, err = _bench(capsys, root, tmp_path, "--cells-root", str(base / "cells"), "--tools-dir", str(_fake_tree(tmp_path / "t")),

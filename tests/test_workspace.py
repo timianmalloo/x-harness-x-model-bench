@@ -75,6 +75,23 @@ def test_pack_checkout_built_concurrently_gives_every_caller_the_same_dest(base)
     assert _git(dest, "rev-parse", "HEAD").strip() == commit
 
 
+def test_task_source_built_concurrently_leaves_no_tmp_folder_behind(base):  # T9-1 (HB-CELL-113 loser leak)
+    sources_root = base / "sources"
+    _run_concurrently(lambda: workspace.task_source(X1, "v-race-tmp", sources_root))
+    leftovers = list((sources_root / "X1").glob(".*.tmp"))
+    assert leftovers == [], leftovers
+
+
+def test_pack_checkout_built_concurrently_leaves_no_tmp_folder_behind(base):  # T9-1 (HB-CELL-113 loser leak)
+    pack_src = base / "ai-forward"
+    pack_src.mkdir()
+    commit = _local_pack_repo(pack_src)
+    tools_root = base / "tools"
+    _run_concurrently(lambda: workspace.pack_checkout(pack_src, commit, tools_root))
+    leftovers = list(tools_root.glob(".*.tmp"))
+    assert leftovers == [], leftovers
+
+
 def test_pack_checkout_reraises_when_a_colliding_dest_is_not_a_valid_build(base):
     pack_src = base / "ai-forward"
     pack_src.mkdir()
