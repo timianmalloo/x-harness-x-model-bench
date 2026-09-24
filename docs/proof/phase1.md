@@ -93,7 +93,10 @@ Its history shows it can fail. Run 1 failed on HB-CELL-113 (the race, T6). Run 2
 
 **Oracle:** a test that failed on the commit before its fix, for the stated reason, backed by a named mutant killed by that test.
 
-**Red observed before green:** yes, for every defect. T1 items 14 and 15 were missing controls rather than defects. Their red is shown under a named mutant.
+**Red observed before green:** yes, for every defect, with these exceptions:
+- T1 items 14 and 15 were missing controls rather than defects. Their red is shown under a named mutant.
+- **T4-1's red commit `3c6db13` is not test-only.** It adds `src/harness_bench/report/credentials.py` (99 lines), and its red is a signature `TypeError`, not the behaviour under test (found by the Test Architect's re-review, N3). The helpers are backed by `report.json` mutants. The behaviour tests (`test_a_rotated_token_found_only_in_an_archived_home_is_refused` and the base64/URL-encoded variant) use a token that matches none of the shape regexes, so only the exact-value path can catch it.
+- The Test Architect checked 18 other sampled reds (`git show --stat`), and none touches `src/`.
 
 **Confidence:** Verified for the sampled reds and all mutation files. For reds the Coordinator did not re-run, it is as reported by the track (Inferred).
 
@@ -181,4 +184,25 @@ A gate's exit status is read on its own line (CT27). `tools/heredoc_guard.py` no
 
 ## Gate record
 
-The Test Architect re-review for M2 is recorded below when it returns.
+### Round 1: Test Architect, Adversary Mode, at `2da830a` (2026-09-24): **BLOCK**
+
+The reviewer re-ran the suite (516 passed), `ledger.json` (20/20) and `engine.json` (44/44). It read the sampled reds and the cited tests, and probed the golden ledger.
+
+| original item | verdict |
+| --- | --- |
+| verify misses a cut or deleted segment | CLOSED for the R-2 scope |
+| mutation bar | CLOSED for ledger, errors, views and grade. **OPEN for `engine.py`:** 466 of 765 mutants were not run. The partial-scope deviation was written by the author, so it cannot clear the author's veto |
+| E2E, canary and Proof Pack | CLOSED |
+| exact-value secret scan, T-LOG-nosecret, T-FI-unkillable, fault tests, D6 golden ledgers | CLOSED |
+| D5/D7 transcript replay | ACCEPTED-AS-DISCLOSED, on condition that a full ACP transcript is captured at the next E2E |
+| cosmic-ray instead of mutmut | ACCEPTED-AS-DISCLOSED |
+| N5 strict xfail | ACCEPTED-AS-DISCLOSED, with N2 below |
+
+**New findings, and how each is handled:**
+- **N1 [Major]:** `verify` exits 0 when a later grading pass is deleted, or cut and re-sealed. Track T11 handles it.
+- **N2 [Major]:** the canary had no positive control, and its xfail had no `raises=`. Fixed in `6362c6e`.
+- **N3 [Minor]:** Claim 2 overstated test-only reds (T4-1). Corrected above.
+- **N4 [Minor]:** R-5's claim that the leak is the same with the pack on and off is unmeasured. Routed to the Owner.
+- **N5 [Nit]:** the report points to the evidence instead of naming the skill. Routed to the Owner.
+- **N6 [Nit]:** the E2E did not run verify after the re-grade. Fixed in `6362c6e`.
+- **Required item 1:** track T10 runs cosmic-ray over the remaining 466 `engine.py` mutants. No waiver is sought.
