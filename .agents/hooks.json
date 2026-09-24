@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); [ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); \"$py\" \"$(git rev-parse --show-toplevel)/docs/ai-forward-pack/hooks/reread-guard.py\" --host agy",
+            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh reread-guard.py --host agy",
             "timeout": 10
           }
         ]
@@ -18,7 +18,7 @@
     "PreInvocation": [
       {
         "type": "command",
-        "command": "py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); [ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); \"$py\" \"$(git rev-parse --show-toplevel)/docs/ai-forward-pack/hooks/session-start.py\" --host agy",
+        "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh session-start.py --host agy",
         "timeout": 15
       }
     ],
@@ -28,7 +28,7 @@
     "PreInvocation": [
       {
         "type": "command",
-        "command": "py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); [ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); \"$py\" \"$(git rev-parse --show-toplevel)/docs/ai-forward-pack/hooks/mail-doorbell.py\" --host agy --event PreInvocation",
+        "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh mail-doorbell.py --host agy --event PreInvocation",
         "timeout": 10
       }
     ],
@@ -41,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); [ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); \"$py\" \"$(git rev-parse --show-toplevel)/docs/ai-forward-pack/hooks/heartbeat.py\" --host agy --event PostToolUse",
+            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh heartbeat.py --host agy --event PostToolUse",
             "timeout": 10
           }
         ]
@@ -50,7 +50,7 @@
     "Stop": [
       {
         "type": "command",
-        "command": "py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); [ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); \"$py\" \"$(git rev-parse --show-toplevel)/docs/ai-forward-pack/hooks/heartbeat.py\" --host agy --event Stop",
+        "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh heartbeat.py --host agy --event Stop",
         "timeout": 10
       }
     ],
@@ -61,7 +61,7 @@
     "Stop": [
       {
         "type": "command",
-        "command": "py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); [ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); \"$py\" \"$(git rev-parse --show-toplevel)/docs/ai-forward-pack/hooks/owner-review-gate.py\" --host agy --event Stop",
+        "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh owner-review-gate.py --host agy --event Stop",
         "timeout": 10
       }
     ]

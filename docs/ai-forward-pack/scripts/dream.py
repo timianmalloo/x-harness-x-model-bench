@@ -134,7 +134,8 @@ def parse_defect_classes(path):
 def grep_markers(root):
     """Harvest simplify:/assume: markers (bounded; skip generated/vendored trees)."""
     skip = {".git", "node_modules", "dist", "_site", ".claude", ".github"}
-    rx = re.compile(r"(?:#|//)\s?(simplify|assume|ponytail):\s*(.+)")
+    # A comment leader glued to a quote or escape is a string literal, not a marker (LINT-A).
+    rx = re.compile(r"(?:^|(?<=\s))(?:#|//)\s?(simplify|assume|ponytail):\s*(.+)")
     out = []
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = [d for d in dirnames if d not in skip]

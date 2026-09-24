@@ -74,6 +74,16 @@ def _identifier(value):
     return isinstance(value, str) and re.fullmatch(r"[A-Za-z0-9._:/+-]{1,256}", value) is not None
 
 
+GROK_RELOAD_FLOOR = (1, 0, 34)  # the first grok release measured to inject the skills-reload response
+
+
+def _grok_release_at_least(value, floor):
+    """A plain release version (digits.digits.digits) at or above floor. A pre-release, a build suffix or any
+    other shape is not a measured release, so it never unlocks a compatibility exception."""
+    match = re.fullmatch(r"(\d{1,6})\.(\d{1,6})\.(\d{1,6})", value) if isinstance(value, str) else None
+    return match is not None and tuple(int(part) for part in match.groups()) >= floor
+
+
 def _signal_group(process, sig):
     # macOS can return EPERM for an unreaped zombie. Reap before signalling,
     # and retry once if exit raced the first poll. Still signal live descendants.
@@ -608,7 +618,8 @@ class _Session:
                 else:
                     raise _Failure("protocol_error")
                 continue
-            # Grok 1.0.34 injects its own skills watcher acknowledgement into ACP.
+            # Grok 1.0.34 and later inject their own skills watcher acknowledgement into ACP
+            # (measured on 1.0.34, and on 1.0.41 on Windows, 2026-09-24).
             # This exact, measured exception never completes our pending request.
             if (self.grok_reload_compat and method == "session/prompt" and self.result["session_id"]
                     and message == {"jsonrpc": "2.0", "id": "skills-reload", "result": {"result": {"reloaded": 1}}}
@@ -653,8 +664,8 @@ class _Session:
             if self.result["reported_version"] is None and _identifier(metadata.get("agentVersion")):
                 self.result["reported_version"] = metadata["agentVersion"]
                 self.result["reported_version_source"] = "grok._meta.agentVersion"
-            self.grok_reload_compat = (metadata.get("agentVersion") == "1.0.34"
-                                       and self.result["reported_version"] == "1.0.34")
+            self.grok_reload_compat = (_grok_release_at_least(metadata.get("agentVersion"), GROK_RELOAD_FLOOR)
+                                       and self.result["reported_version"] == metadata.get("agentVersion"))
         auth = info.get("authMethods", [])
         if not isinstance(auth, list):
             raise _Failure("protocol_error")
