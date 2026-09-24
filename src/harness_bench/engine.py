@@ -45,6 +45,7 @@ ENGINE_TRANSITIONS = frozenset({
     "cell.workspace_kept", "run.launch_stopped", "run.completed",
 })
 FACTS = ("events", "turn_usage", "archive_files")
+USAGE_BUCKETS = ("uncached_input", "cache_read", "cache_write", "output", "reasoning")
 NO_MEMORY_STATUSES = {0xC0000017, 0xC000012D}
 OOM_SIGNATURE = re.compile(rb"heap out of memory|out of memory|OutOfMemory", re.IGNORECASE)
 COMPLETED_STOP_REASONS = {"end_turn", "max_tokens", "max_turn_requests", "refusal"}
@@ -350,10 +351,9 @@ class Engine:
             return
         result, exit_status, tail = ended
         cause = self._classify(result, launcher, home, exit_status, tail, self.active[cid].kill_reason)
-        for u in normalize.turn_usage({"_meta": (result.usage or {}).get("meta")}):
+        for model, buckets in _usage_per_model(normalize.turn_usage({"_meta": (result.usage or {}).get("meta")})).items():
             self.record("turn_usage", {"kind": "turn_usage", "run_id": self.plan["run_id"], "cell_id": cid, "attempt": 1,
-                                       "model": u.model, "uncached_input": u.uncached_input, "cache_read": u.cache_read,
-                                       "cache_write": u.cache_write, "output": u.output, "reasoning": u.reasoning})
+                                       "model": model, **buckets})
         if tail:
             (cell_dir / "adapter-stderr-tail.log").write_bytes(bytes(tail))
         outcome = "completed" if cause is None else ("timed_out" if cause is Cause.timed_out else "failed")
@@ -460,6 +460,16 @@ class Engine:
             self.record("events", {"kind": "cell.workspace_deleted", "cell_id": cid})
         else:
             self.record("events", {"kind": "cell.workspace_kept", "cell_id": cid, "reason": "sharing violation after retries"})
+
+
+def _usage_per_model(entries: list[normalize.TurnUsage]) -> dict[str, dict[str, int]]:
+    """One total per model: a turn_usage row's key is (run, cell, attempt, model), so entries are summed first."""
+    totals: dict[str, dict[str, int]] = {}
+    for u in entries:
+        bucket = totals.setdefault(u.model, dict.fromkeys(USAGE_BUCKETS, 0))
+        for name in USAGE_BUCKETS:
+            bucket[name] += getattr(u, name)
+    return totals
 
 
 def _code(exc: BaseException) -> str:
