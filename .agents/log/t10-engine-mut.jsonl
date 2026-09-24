@@ -1,0 +1,2 @@
+{"agent": "coord-opus", "at": 1790240392.3793428, "kind": "session-start", "path": "-", "seq": 1, "session": "t10-engine-mut", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-track-t10-engine-mutation"}
+{"agent": "t10-engine-mut", "at": 1790256955.4092083, "kind": "session-end", "path": "-", "seq": 2, "session": "t10-engine-mut", "wi": "WI-0", "worktree": "x-harness-x-model-bench-track-t10-engine-mutation"}

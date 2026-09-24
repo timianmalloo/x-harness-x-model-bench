@@ -1,0 +1,2 @@
+{"action": "receive", "agent": "anon", "at": 1790219067.3500419, "id": "req-01M38NTSV1RDHVS8SX2TEES0RQ", "kind": "request", "path": "-", "seq": 1, "session": "anon", "type": "request", "wi": "WI-0"}
+{"action": "resolve", "agent": "anon", "at": 1790219387.6831038, "id": "req-01M38NTSV1RDHVS8SX2TEES0RQ", "kind": "request", "outcome": "resolution", "path": "-", "seq": 2, "session": "anon", "type": "request", "wi": "WI-0"}

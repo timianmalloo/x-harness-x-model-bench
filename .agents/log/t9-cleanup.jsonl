@@ -1,0 +1,2 @@
+{"agent": "coord-opus", "at": 1790238194.9246614, "kind": "session-start", "path": "-", "seq": 1, "session": "t9-cleanup", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-track-t9-cleanup-and-log"}
+{"agent": "t9-cleanup", "at": 1790256955.8817694, "kind": "session-end", "path": "-", "seq": 2, "session": "t9-cleanup", "wi": "WI-0", "worktree": "x-harness-x-model-bench-track-t9-cleanup-and-log"}

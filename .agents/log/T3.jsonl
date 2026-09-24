@@ -1,0 +1,2 @@
+{"agent": "coord-opus", "at": 1790217444.6624029, "kind": "session-start", "path": "-", "seq": 1, "session": "T3", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-track-t3-process-edges"}
+{"action": "add", "agent": "T3", "at": 1790218954.5923147, "deadline_at": 1790219854.5923147, "id": "req-01M38NTSV1RDHVS8SX2TEES0RQ", "kind": "request", "path": "-", "seq": 2, "session": "T3", "to": "T2", "type": "request", "wi": "WI-0"}

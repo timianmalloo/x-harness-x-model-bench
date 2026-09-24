@@ -1,0 +1,2 @@
+{"agent": "coord-opus", "at": 1790246545.2879822, "kind": "session-start", "path": "-", "seq": 1, "session": "t12-rerun", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-track-t12-mutation-rerun"}
+{"agent": "t12-rerun", "at": 1790256955.5988297, "kind": "session-end", "path": "-", "seq": 2, "session": "t12-rerun", "wi": "WI-0", "worktree": "x-harness-x-model-bench-track-t12-mutation-rerun"}

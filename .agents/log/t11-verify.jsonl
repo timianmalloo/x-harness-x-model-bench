@@ -1,0 +1,2 @@
+{"agent": "coord-opus", "at": 1790240392.7672188, "kind": "session-start", "path": "-", "seq": 1, "session": "t11-verify", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-track-t11-verify-later-pass"}
+{"agent": "t11-verify", "at": 1790256955.5022001, "kind": "session-end", "path": "-", "seq": 2, "session": "t11-verify", "wi": "WI-0", "worktree": "x-harness-x-model-bench-track-t11-verify-later-pass"}

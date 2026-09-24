@@ -1,0 +1,2 @@
+{"agent": "coord-opus", "at": 1790215596.7072177, "kind": "session-start", "path": "-", "seq": 1, "session": "T1", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-track-t1-engine-hardening"}
+{"action": "add", "agent": "T1", "at": 1790216937.6324608, "deadline_at": 1790231337.6324608, "id": "req-01M38KX8503601BEP857749VVF", "kind": "request", "path": "-", "seq": 2, "session": "T1", "to": "T3", "type": "request", "wi": "WI-0"}

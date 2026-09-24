@@ -1,0 +1,2 @@
+{"agent": "coord-opus", "at": 1790236663.7043893, "kind": "session-start", "path": "-", "seq": 1, "session": "T8", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-track-t8-reader-and-paths"}
+{"agent": "T8", "at": 1790256955.7840087, "kind": "session-end", "path": "-", "seq": 2, "session": "T8", "wi": "WI-0", "worktree": "x-harness-x-model-bench-track-t8-reader-and-paths"}
