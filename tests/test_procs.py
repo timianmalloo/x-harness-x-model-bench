@@ -109,8 +109,9 @@ def test_a_failed_job_query_raises_from_the_last_error(monkeypatch):  # never a 
 def test_a_closed_job_is_not_reported_empty():
     job = procs.Job()
     job.close()
-    with pytest.raises(OSError):
-        job.active()
+    for probe in (job.active, job.inheritable):  # a NULL handle must never answer for the caller's own job
+        with pytest.raises(OSError):
+            probe()
 
 
 def test_spawn_of_a_missing_executable_is_a_spawn_error(tmp_path):
