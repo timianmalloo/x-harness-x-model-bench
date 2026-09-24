@@ -78,6 +78,7 @@ def test_the_walking_skeleton_runs_end_to_end(kept):
     first = views.export(view)
     assert cli.main([*common, "grade", rid]) == 0
     assert views.export(views.load(run_dir)) == first
+    assert cli.main([*common, "verify", rid]) == 0  # R-2: the later pass's heads verify on real data (Test Architect N6)
 
     # the CLI table and report.html render offline
     assert cli.main([*common, "report", rid]) == 0

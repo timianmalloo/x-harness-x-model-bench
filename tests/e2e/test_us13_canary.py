@@ -76,7 +76,11 @@ def _turn(harness: str, folder: Path, control: bool) -> str:
     return "\n".join(r.read_text(encoding="utf-8", errors="replace") for r in records)
 
 
-N5 = pytest.mark.xfail(strict=True, reason="N5 open (docs/notes/spike-n5-codex-skill-roots.md): Codex 0.156 still reads "
+class Leaked(AssertionError):
+    """The one failure the N5 xfail may absorb. Any other error on the Codex path fails the test (Test Architect N2)."""
+
+
+N5 = pytest.mark.xfail(strict=True, raises=Leaked, reason="N5 open (docs/notes/spike-n5-codex-skill-roots.md): Codex 0.156 still reads "
                                            "~/.agents/skills into a cell. Tried and confirmed ineffective by a real canary "
                                            "run: a per-cell USERPROFILE/HOME (reverted before this spike), and "
                                            "features.skip_host_skill_discovery=true in the per-cell config.toml (this spike, "
@@ -98,4 +102,7 @@ def test_user_level_configuration_does_not_reach_a_cell(harness, base, capsys):
     with capsys.disabled():
         print(f"\nUS-13 {harness}: shown by the control {sorted(shown.values())}; void (control did not show) {sorted(void.values())}; "
               f"leaked into the probe {sorted(leaked.values())}")
-    assert leaked == {}, f"user-level configuration reached a {harness} cell: {sorted(leaked.values())}"
+    # the positive control: a probe that shows nothing proves nothing unless the control showed a canary (spec US-13)
+    assert shown, f"{harness}: the control showed no canary, so the probe's result is void"
+    if leaked:
+        raise Leaked(f"user-level configuration reached a {harness} cell: {sorted(leaked.values())}")
