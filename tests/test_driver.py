@@ -355,6 +355,42 @@ def test_last_update_is_null_never_zero_with_no_session_update(tmp_path):  # W1-
     assert result.last_update_seconds is None  # not recorded, never a zeroed guess
 
 
+@pytestmark_native
+def test_last_update_is_the_turn_time_of_the_last_update_not_the_first(tmp_path, monkeypatch):  # TA mutant M1
+    """A clock that advances 1.0 per read: the last of the recording's in-turn updates reads at least `updates`."""
+    import types
+    ticks = iter(range(1, 1_000_000))
+    monkeypatch.setattr(driver, "time", types.SimpleNamespace(monotonic=lambda: float(next(ticks))))  # the driver's clock only
+    env = dict(os.environ, REPLAY_ACP=json.dumps({"recording": str(ACP_FIX / "recordings" / "claude-code-x1.jsonl")}))
+    cell = procs.spawn([sys.executable, str(REPLAY)], cwd=str(tmp_path), env=env)
+    try:
+        result = driver.run_turn(cell, cwd=tmp_path, prompt=X1_PROMPT, mode=None, handshake_timeout=1e6,
+                                 before_send=lambda sid: None)
+    finally:
+        cell.terminate_and_confirm(timeout=10)
+        cell.close()
+    assert result.stop_reason == "end_turn" and result.updates == 57
+    assert result.last_update_seconds >= result.updates
+
+
+@pytestmark_native
+def test_a_handshake_time_update_leaves_last_update_null(tmp_path):  # TA mutant M2
+    """One session/update read during the handshake and none in the turn. The update goes before the session/new
+    result: the driver reads only inside an rpc, so an update after that result is read in the prompt's rpc (the turn)."""
+    update = {"jsonrpc": "2.0", "method": "session/update",
+              "params": {"sessionId": "s", "update": {"sessionUpdate": "available_commands_update", "availableCommands": []}}}
+
+    def one_handshake_update(msg):
+        if msg.get("method") == "session/update":
+            return None
+        return [update, msg] if msg.get("id") == 2 and "sessionId" in msg.get("result", {}) else msg
+
+    derived = _derive(ACP_FIX / "recordings" / "claude-code-x1.jsonl", tmp_path, one_handshake_update)
+    result, _, _ = _replay(tmp_path, derived, None)
+    assert result.stop_reason == "end_turn" and result.updates == 1
+    assert result.last_update_seconds is None
+
+
 def test_every_recording_states_its_provenance_from_its_capture():  # W1-ACP (e)
     provenance = json.loads((ACP_FIX / "provenance.json").read_text(encoding="utf-8"))
     assert "No full ACP transcript" not in provenance["note"]
@@ -362,6 +398,7 @@ def test_every_recording_states_its_provenance_from_its_capture():  # W1-ACP (e)
         record, build = provenance["fixtures"].get(f"recordings/{recording.name}"), _meta(recording)["build"]
         assert record and all(isinstance(record.get(k), str) and record[k].strip() for k in PROVENANCE_KEYS), recording.name
         assert record["adapter_version"] == build["adapter_version"] and build["version"] in record["harness_version"]
+        assert record["captured"] == _meta(recording)["captured_utc"][:10]
         header = _records(recording)[0]
         assert header["kind"] == "header" and header["scrub"]["placeholders"] and "acp_record.py scrub" in record["scrub"]
 
