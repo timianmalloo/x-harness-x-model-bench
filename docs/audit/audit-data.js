@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T22:54:35Z",
+  "generated": "2026-09-24T23:06:07Z",
   "audit": [
     {
       "actor": null,
@@ -5277,6 +5277,350 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3ATPHEWS67FQ72DSH940523",
+      "shortname": "Goal: Cross-vendor join review of track W1-COP-R, the Copilot telemetry …",
+      "datetime": "2026-09-24T23:06:06Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: Cross-vendor join review of track W1-COP-R, the Copilot telemetry reader (plan docs/coordination/coordination-finish-harness-bench.md; design docs/design/phase2-copilot-profile.md revision 3.1, sections 4.4, 13 and 14): judge branch w1-copilot-reader and write the review to docs/notes/review-w1-copr-codex.md in your own worktree.\nDone when: docs/notes/review-w1-copr-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line for the changes in `git diff 2e9cc3b..f266f09` on branch w1-copilot-reader, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-copilot-reader (read it by absolute path; do not edit it).; The review answers: are model_calls taken from the LAST session.shutdown modelMetrics, one row per model with requests = requests.count and uncached input = tokenDetails.input.tokenCount, reasoning never added; does the version gate fail closed to \"not recorded\"; are tool calls paired by toolCallId with outcome_code from error.code; is the US-10 prompt the first user.message content with no top-level agentId; does us14_valid require zero denied AND at least one ok tool call and read ledger-row dicts; are Claude Code and Codex reader outputs unchanged apart from the new defaults.; The review lists 3 mutants of your own against src/harness_bench/telemetry/copilot.py, each applied one at a time in a throwaway `git worktree add --detach` of commit f266f09 (removed afterwards), with the named test that killed it, or \"survived\".; The review file has V2 frontmatter (id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-08\", summary) and is committed on your branch.\nNot in scope: Editing any file other than docs/notes/review-w1-copr-codex.md.; Editing the w1-copilot-reader checkout.; The full suite, tests/e2e, `-m \"\"`.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 45 minutes; commit the review before the deadline even if a mutant is unfinished, and say so.\n\nGrounding: docs/adr/0006-append-only-run-ledger-and-derived-results.md (Amendment 1), docs/notes/rulings.md R-26 and R-27, the committed fixtures tests/fixtures/native/copilot/**. Use `python`, not `python3` (Windows); in the throwaway worktree run `uv run pytest -q -p no:cacheprovider tests/test_telemetry_copilot.py tests/test_telemetry.py`. Set AGENT_SESSION to your session id before committing.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3ATPHS2GJD021R7FJCMTPM3",
+      "shortname": "compile-Goal: Cross-vendor join review of track W1-COP-R, the Copilot telemetry …",
+      "datetime": "2026-09-24T23:06:07Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: Cross-vendor join review of track W1-COP-R, the Copilot telemetry reader (plan docs/coordination/coordination-finish-harness-bench.md; design docs/design/phase2-copilot-profile.md revision 3.1, sections 4.4, 13 and 14): judge branch w1-copilot-reader and write the review to docs/notes/review-w1-copr-codex.md in your own worktree.\nDone when: docs/notes/review-w1-copr-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line for the changes in `git diff 2e9cc3b..f266f09` on branch w1-copilot-reader, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-copilot-reader (read it by absolute path; do not edit it).; The review answers: are model_calls taken from the LAST session.shutdown modelMetrics, one row per model with requests = requests.count and uncached input = tokenDetails.input.tokenCount, reasoning never added; does the version gate fail closed to \"not recorded\"; are tool calls paired by toolCallId with outcome_code from error.code; is the US-10 prompt the first user.message content with no top-level agentId; does us14_valid require zero denied AND at least one ok tool call and read ledger-row dicts; are Claude Code and Codex reader outputs unchanged apart from the new defaults.; The review lists 3 mutants of your own against src/harness_bench/telemetry/copilot.py, each applied one at a time in a throwaway `git worktree add --detach` of commit f266f09 (removed afterwards), with the named test that killed it, or \"survived\".; The review file has V2 frontmatter (id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-08\", summary) and is committed on your branch.\nNot in scope: Editing any file other than docs/notes/review-w1-copr-codex.md.; Editing the w1-copilot-reader checkout.; The full suite, tests/e2e, `-m \"\"`.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 45 minutes; commit the review before the deadline even if a mutant is unfinished, and say so.\nGrounding: docs/adr/0006-append-only-run-ledger-and-derived-results.md (Amendment 1), docs/notes/rulings.md R-26 and R-27, the committed fixtures tests/fixtures/native/copilot/**. Use `python`, not `python3` (Windows); in the throwaway worktree run `uv run pytest -q -p no:cacheprovider tests/test_telemetry_copilot.py tests/test_telemetry.py`. Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: docs/notes/review-w1-copr-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line for the changes in `git diff 2e9cc3b..f266f09` on branch w1-copilot-reader, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-copilot-reader (read it by absolute path | phrase: docs/notes/review-w1-copr-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line for the changes in `git diff 2e9cc3b..f266f09` on branch w1-copilot-reader, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-copilot-reader (read it by absolute path |\n| done_when: do not edit it). | phrase: do not edit it). |\n| done_when: The review answers: are model_calls taken from the LAST session.shutdown modelMetrics, one row per model with requests = requests.count and uncached input = tokenDetails.input.tokenCount, reasoning never added | phrase: The review answers: are model_calls taken from the LAST session.shutdown modelMetrics, one row per model with requests = requests.count and uncached input = tokenDetails.input.tokenCount, reasoning never added |\n| done_when: does the version gate fail closed to \"not recorded\" | phrase: does the version gate fail closed to \"not recorded\" |\n| done_when: are tool calls paired by toolCallId with outcome_code from error.code | phrase: are tool calls paired by toolCallId with outcome_code from error.code |\n| done_when: is the US-10 prompt the first user.message content with no top-level agentId | phrase: is the US-10 prompt the first user.message content with no top-level agentId |\n| done_when: does us14_valid require zero denied AND at least one ok tool call and read ledger-row dicts | phrase: does us14_valid require zero denied AND at least one ok tool call and read ledger-row dicts |\n| done_when: are Claude Code and Codex reader outputs unchanged apart from the new defaults. | phrase: are Claude Code and Codex reader outputs unchanged apart from the new defaults. |\n| done_when: The review lists 3 mutants of your own against src/harness_bench/telemetry/copilot.py, each applied one at a time in a throwaway `git worktree add --detach` of commit f266f09 (removed afterwards), with the named test that killed it, or \"survived\". | phrase: The review lists 3 mutants of your own against src/harness_bench/telemetry/copilot.py, each applied one at a time in a throwaway `git worktree add --detach` of commit f266f09 (removed afterwards), with the named test that killed it, or \"survived\". |\n| done_when: The review file has V2 frontmatter (id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-08\", summary) and is committed on your branch. | phrase: The review file has V2 frontmatter (id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-08\", summary) and is committed on your branch. |\n| not_in_scope: Editing any file other than docs/notes/review-w1-copr-codex.md. | phrase: Editing any file other than docs/notes/review-w1-copr-codex.md. |\n| not_in_scope: Editing the w1-copilot-reader checkout. | phrase: Editing the w1-copilot-reader checkout. |\n| not_in_scope: The full suite, tests/e2e, `-m \"\"`. | phrase: The full suite, tests/e2e, `-m \"\"`. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- git diff 2e9cc3b..f266f09: unresolved (not found)\n- git worktree add --detach: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider tests/test_telemetry_copilot.py tests/test_telemetry.py: unresolved (not found; nearest: tests/test_telemetry.py)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 53ce579b4ef3f99190c6e974512b25a2a02fe850d9e209d0e134e844d2929021\n- docs/design/phase2-copilot-profile.md: docs/design/phase2-copilot-profile.md sha256 b15244d34330ebd4917bbc7599bd30944f2de10767b6a719ec18a0e19c25ee7f\n- docs/notes/review-w1-copr-codex.md: unresolved (not found)\n- src/harness_bench/telemetry/copilot.py: unresolved (not found)\n- coordination-finish-harness-bench: docs/coordination/coordination-finish-harness-bench.md sha256 53ce579b4ef3f99190c6e974512b25a2a02fe850d9e209d0e134e844d2929021\n- tests/e2e: unresolved (not found)\n- docs/adr/0006-append-only-run-ledger-and-derived-results.md: docs/adr/0006-append-only-run-ledger-and-derived-results.md sha256 2dd7fc470bb7405cc0beef47fc5422391e2a0013274d4ff75d2654722796b2b2\n- docs/notes/rulings.md: unresolved (ambiguous: 2 matches)\n- tests/fixtures/native/copilot/**: unresolved (not found)\n- tests/test_telemetry_copilot.py: unresolved (not found)\n- tests/test_telemetry.py: tests/test_telemetry.py sha256 a17078bd333de5762fd6efc30ed64a211ac7943a733ec44f9d623263508288a5\n- graph neighbours: coordination-phase1-finish-run, design-phase1-walking-skeleton, rulings-register\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3ATPHEWS67FQ72DSH940523\nraw sha256: 6f33dc21d6d42466c048ba51d1cf7ff18f7631a5ff9ad27386eaf160fabc03f0\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3ATPHEWS67FQ72DSH940523 for codex v1: 14 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "docs/notes/review-w1-copr-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line for the changes in `git diff 2e9cc3b..f266f09` on branch w1-copilot-reader, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-copilot-reader (read it by absolute path",
+            "trace": {
+              "kind": "phrase",
+              "ref": "docs/notes/review-w1-copr-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line for the changes in `git diff 2e9cc3b..f266f09` on branch w1-copilot-reader, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-copilot-reader (read it by absolute path"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "do not edit it).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "do not edit it)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The review answers: are model_calls taken from the LAST session.shutdown modelMetrics, one row per model with requests = requests.count and uncached input = tokenDetails.input.tokenCount, reasoning never added",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The review answers: are model_calls taken from the LAST session.shutdown modelMetrics, one row per model with requests = requests.count and uncached input = tokenDetails.input.tokenCount, reasoning never added"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "does the version gate fail closed to \"not recorded\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "does the version gate fail closed to \"not recorded\""
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "are tool calls paired by toolCallId with outcome_code from error.code",
+            "trace": {
+              "kind": "phrase",
+              "ref": "are tool calls paired by toolCallId with outcome_code from error.code"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "is the US-10 prompt the first user.message content with no top-level agentId",
+            "trace": {
+              "kind": "phrase",
+              "ref": "is the US-10 prompt the first user.message content with no top-level agentId"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "does us14_valid require zero denied AND at least one ok tool call and read ledger-row dicts",
+            "trace": {
+              "kind": "phrase",
+              "ref": "does us14_valid require zero denied AND at least one ok tool call and read ledger-row dicts"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "are Claude Code and Codex reader outputs unchanged apart from the new defaults.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "are Claude Code and Codex reader outputs unchanged apart from the new defaults."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The review lists 3 mutants of your own against src/harness_bench/telemetry/copilot.py, each applied one at a time in a throwaway `git worktree add --detach` of commit f266f09 (removed afterwards), with the named test that killed it, or \"survived\".",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The review lists 3 mutants of your own against src/harness_bench/telemetry/copilot.py, each applied one at a time in a throwaway `git worktree add --detach` of commit f266f09 (removed afterwards), with the named test that killed it, or \"survived\"."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The review file has V2 frontmatter (id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-08\", summary) and is committed on your branch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The review file has V2 frontmatter (id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-08\", summary) and is committed on your branch."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing any file other than docs/notes/review-w1-copr-codex.md.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Editing any file other than docs/notes/review-w1-copr-codex.md."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing the w1-copilot-reader checkout.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Editing the w1-copilot-reader checkout."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "The full suite, tests/e2e, `-m \"\"`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The full suite, tests/e2e, `-m \"\"`."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "docs/notes/review-w1-copr-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line for the changes in `git diff 2e9cc3b..f266f09` on branch w1-copilot-reader, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-copilot-reader (read it by absolute path",
+            "do not edit it).",
+            "The review answers: are model_calls taken from the LAST session.shutdown modelMetrics, one row per model with requests = requests.count and uncached input = tokenDetails.input.tokenCount, reasoning never added",
+            "does the version gate fail closed to \"not recorded\"",
+            "are tool calls paired by toolCallId with outcome_code from error.code",
+            "is the US-10 prompt the first user.message content with no top-level agentId",
+            "does us14_valid require zero denied AND at least one ok tool call and read ledger-row dicts",
+            "are Claude Code and Codex reader outputs unchanged apart from the new defaults.",
+            "The review lists 3 mutants of your own against src/harness_bench/telemetry/copilot.py, each applied one at a time in a throwaway `git worktree add --detach` of commit f266f09 (removed afterwards), with the named test that killed it, or \"survived\".",
+            "The review file has V2 frontmatter (id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-08\", summary) and is committed on your branch."
+          ],
+          "fan_out_cap": 0,
+          "goal": "Cross-vendor join review of track W1-COP-R, the Copilot telemetry reader (plan docs/coordination/coordination-finish-harness-bench.md; design docs/design/phase2-copilot-profile.md revision 3.1, sections 4.4, 13 and 14): judge branch w1-copilot-reader and write the review to docs/notes/review-w1-copr-codex.md in your own worktree.",
+          "main_line_budget": "one slice of at most 45 minutes; commit the review before the deadline even if a mutant is unfinished, and say so.\nGrounding: docs/adr/0006-append-only-run-ledger-and-derived-results.md (Amendment 1), docs/notes/rulings.md R-26 and R-27, the committed fixtures tests/fixtures/native/copilot/**. Use `python`, not `python3` (Windows); in the throwaway worktree run `uv run pytest -q -p no:cacheprovider tests/test_telemetry_copilot.py tests/test_telemetry.py`. Set AGENT_SESSION to your session id before committing.",
+          "not_in_scope": [
+            "Editing any file other than docs/notes/review-w1-copr-codex.md.",
+            "Editing the w1-copilot-reader checkout.",
+            "The full suite, tests/e2e, `-m \"\"`.",
+            "Any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [
+          "coordination-phase1-finish-run",
+          "design-phase1-walking-skeleton",
+          "rulings-register"
+        ],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.002,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3ATPHEWS67FQ72DSH940523",
+        "raw_sha256": "6f33dc21d6d42466c048ba51d1cf7ff18f7631a5ff9ad27386eaf160fabc03f0",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git diff 2e9cc3b..f266f09"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git worktree add --detach"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-m "
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python3"
+          },
+          {
+            "nearest": "tests/test_telemetry.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q -p no:cacheprovider tests/test_telemetry_copilot.py tests/test_telemetry.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench.md",
+            "reason": null,
+            "sha256": "53ce579b4ef3f99190c6e974512b25a2a02fe850d9e209d0e134e844d2929021",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-finish-harness-bench.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase2-copilot-profile.md",
+            "reason": null,
+            "sha256": "b15244d34330ebd4917bbc7599bd30944f2de10767b6a719ec18a0e19c25ee7f",
+            "status": "resolved",
+            "token": "docs/design/phase2-copilot-profile.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/review-w1-copr-codex.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/telemetry/copilot.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench.md",
+            "reason": null,
+            "sha256": "53ce579b4ef3f99190c6e974512b25a2a02fe850d9e209d0e134e844d2929021",
+            "status": "resolved",
+            "token": "coordination-finish-harness-bench"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e"
+          },
+          {
+            "nearest": null,
+            "path": "docs/adr/0006-append-only-run-ledger-and-derived-results.md",
+            "reason": null,
+            "sha256": "2dd7fc470bb7405cc0beef47fc5422391e2a0013274d4ff75d2654722796b2b2",
+            "status": "resolved",
+            "token": "docs/adr/0006-append-only-run-ledger-and-derived-results.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/native/copilot/**"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_telemetry_copilot.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_telemetry.py",
+            "reason": null,
+            "sha256": "a17078bd333de5762fd6efc30ed64a211ac7943a733ec44f9d623263508288a5",
+            "status": "resolved",
+            "token": "tests/test_telemetry.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
     }
   ],
   "changes": [
@@ -5548,5 +5892,15 @@ window.AUDIT_DATA = {
       }
     }
   ],
-  "messages": []
+  "messages": [
+    {
+      "id": "mail-01M3ATCZXZW2565F999EH567XK",
+      "ts": "2026-09-24T23:00:53Z",
+      "from": "worker-codex-copi1",
+      "to": "coord-opus-cq",
+      "kind": "done",
+      "ref": "docs/notes/review-w1-copi-design-codex.md@df7e0a8",
+      "session": "worker-codex-copi1"
+    }
+  ]
 };
