@@ -7,7 +7,8 @@ Behaviour comes from the FAKE_ACP environment variable (JSON):
    "sleep": <seconds to run the turn>, "model": "<served model>",
    "usage": [<model_usage entries for the prompt result, as claude-agent-acp reports them>],
    "hang": <hang after writing the record, any mode>, "flush_on_eof": <append a record row after stdin closes>,
-   "linger": <seconds to stay alive after stdin closes, like a CLI that is slow to exit>}
+   "linger": <seconds to stay alive after stdin closes, like a CLI that is slow to exit>,
+   "stderr": "<text written to stderr at start>", "mkdir": "<a folder created relative to cwd at start>"}
 
 Messages it emits (each paired with a recorded real transcript or the ACP schema in
 tests/test_driver.py::test_fake_agent_message_types_are_paired): the initialize result, the session/new
@@ -55,6 +56,11 @@ def record(session_id: str, cwd: str, prompt: str) -> None:
 
 
 def main() -> int:
+    if CFG.get("stderr"):
+        sys.stderr.write(CFG["stderr"])
+        sys.stderr.flush()
+    if CFG.get("mkdir"):
+        Path(os.getcwd(), CFG["mkdir"]).mkdir(parents=True, exist_ok=True)
     if MODE == "exit_before_prompt":
         return 3
     if MODE == "no_memory":

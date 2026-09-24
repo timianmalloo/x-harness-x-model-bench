@@ -5,8 +5,10 @@ fake agent and the working-copy builder is a stub (the real one is covered in te
 Every run's events are replayed against the model's phase-1 guards (lifecycle.replay, US-44 AC3).
 """
 
+import errno
 import json
 import os
+import shutil
 import subprocess
 import sys
 import threading
@@ -431,6 +433,33 @@ def test_an_archive_failure_is_recorded_and_the_run_is_incomplete(base, monkeypa
     assert _outcomes(events)[cid]["outcome"] == "completed"  # the outcome stands; its archive is what failed
     assert summary.exit_code == 3 and not any(e["kind"] == "run.completed" for e in events)
     assert (config.cells_root / p["run_id"] / cid / "ws").is_dir()  # the only copy of the work is kept
+
+
+def test_a_full_disk_while_building_the_workspace_is_a_disk_failure(base):  # T1-12: ENOSPC -> Cause.disk
+    def full(cell, cell_dir):
+        raise OSError(errno.ENOSPC, "No space left on device")
+
+    p = _plan(n_cells=1)
+    _, events, _ = _run(base, p, FakeLauncher({}), build_workspace=full)
+    out = _outcomes(events)[p["cells"][0]["cell_id"]]
+    assert (out["cause"], out["code"]) == ("disk", "HB-CELL-112")
+
+
+def test_the_disk_floor_also_checks_the_run_dirs_volume(base, monkeypatch):  # T1-12
+    real = shutil.disk_usage
+    monkeypatch.setattr(shutil, "disk_usage", lambda path: real(path)._replace(free=0) if "runs" in str(path) else real(path))
+    p = _plan(n_cells=1)
+    summary, events, _ = _run(base, p, FakeLauncher({}))
+    assert [e["code"] for e in events if e["kind"] == "run.launch_stopped"] == ["HB-RUN-004"]
+    assert summary.exit_code == 3
+
+
+def test_the_outcome_is_recorded_before_the_best_effort_files(base):  # T1-12: the stderr tail cannot cost the outcome
+    p = _plan(n_cells=1)
+    blocked = {"stderr": "adapter noise\n", "mkdir": "../adapter-stderr-tail.log"}  # a folder where the tail file goes
+    _, events, _ = _run(base, p, FakeLauncher({p["cells"][0]["label"]: blocked}))
+    assert _outcomes(events)[p["cells"][0]["cell_id"]]["outcome"] == "completed"
+    assert any(e["kind"] == "cell.archived" for e in events)
 
 
 def test_disk_floor_stops_launching_before_any_cell(base):
