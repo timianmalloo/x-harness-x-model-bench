@@ -1,126 +1,117 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T22:21:23Z",
+  "generated": "2026-09-24T22:36:41Z",
   "audit": [
     {
-      "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
-      "shortname": "addpacktorepo-x-harness-x-model-bench",
-      "datetime": "2026-09-23T17:37:23Z",
-      "session": "ebf50c4d",
-      "prompt": "consider the following files: harness-bench-mockup.html; Cross-Harness Benchmarking Proposal (ai-forward).md. these form the basis for a proposal for a cross-harness benchmarking tool. create a new public repo, x-harness-x-model-bench under c:\\projects and in my tim.ian.malloo github account and apply my ai-forward pack to it. ground yourself in the benchmarking proposal and mockup and build out the scaffolding for us to spec and implement the benchmarking workflow and skills in this new repo",
-      "summary": "Installed AI-Forward Pack revision 92 (2026.09.21.3) via pack-apply.py --install: 433 ADD, 3 UPDATE, 1 MERGE; docs-index.js not seeded by install; CI docs-health workflow not installed.",
-      "kind": "command",
-      "skill": "addpacktorepo",
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
-      "tier": "T0"
-    },
-    {
-      "id": "al-01M37NFXET1B4GABG9PP6YF14A",
-      "shortname": "scaffold-benchmark",
       "datetime": "2026-09-23T17:37:23Z",
-      "session": "ebf50c4d",
+      "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
+      "kind": "command",
+      "outcome": "success",
       "prompt": "consider the following files: harness-bench-mockup.html; Cross-Harness Benchmarking Proposal (ai-forward).md. these form the basis for a proposal for a cross-harness benchmarking tool. create a new public repo, x-harness-x-model-bench under c:\\projects and in my tim.ian.malloo github account and apply my ai-forward pack to it. ground yourself in the benchmarking proposal and mockup and build out the scaffolding for us to spec and implement the benchmarking workflow and skills in this new repo",
-      "summary": "bench/ inputs (22-task BOM, metrics, example matrix, prices), 22 task stubs + template, harness_bench package (validate and plan built; run/grade/report stubbed with spec ids), skills start-benchmark and new-bench-task, spec backlog S-01..S-11, grounding findings F1-F8 (F1 worker isolation blocks runner), CI.",
-      "kind": "manual",
-      "skill": null,
-      "tool": null,
-      "actor": "claude-code",
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success",
-      "goal": "Scaffold the benchmark repo so the team can spec and implement the workflow and skills",
-      "done_when": "bench validate ok; pytest green; spec backlog and findings committed; repo public on GitHub",
-      "tier": "T1",
-      "git": {
-        "sha": "2cbc0ed46849079b6a531807b6148d8490f40fdb",
-        "short": "2cbc0ed46",
-        "branch": "main",
-        "pushed": null
-      }
-    },
-    {
-      "id": "al-01M37P4VRR93REDR8PW3FSMK8Q",
-      "shortname": "formal-methods-revision",
-      "datetime": "2026-09-23T17:48:49Z",
       "session": "ebf50c4d",
-      "prompt": "also... consider how this: https://explainx.ai/blog/boris-cherny-opus-5-5-lean-tla-formal-verification-sdk-2026 could influence how we think of benchmarking and grading. update the proposal and any seed content before i switch to a session in the repo",
-      "summary": "Scenario 7 (G1 TLA+, G2 Lean 4 on coord-core lease fold); oracle ladder; four-part formal grading; protocol_conformance; run-lifecycle TLA+ model; BOM v0.2 24 tasks/576 runs; metrics v0.2; S-12/S-13/S-14/S-08g; F9; mockup aligned to BOM v0.2. Sources: primary X post, secondary write-up (unverified counts), SysMoBench, Verina, VeriBench, TLA+-Bench, TraceFix, Lean4Agent.",
-      "kind": "manual",
-      "skill": null,
-      "tool": null,
-      "actor": "claude-code",
-      "artifacts": [],
+      "shortname": "addpacktorepo-x-harness-x-model-bench",
+      "skill": "addpacktorepo",
+      "summary": "Installed AI-Forward Pack revision 92 (2026.09.21.3) via pack-apply.py --install: 433 ADD, 3 UPDATE, 1 MERGE; docs-index.js not seeded by install; CI docs-health workflow not installed.",
       "tags": [],
-      "outcome": "success",
-      "goal": "Fold the formal-verification result into the proposal and seed content",
-      "done_when": "proposal, BOM, metrics, tasks, graders, skills, specs, findings, mockup updated; gates green; pushed",
-      "tier": "T1",
-      "git": {
-        "sha": "77c4034eed7e58d49a8550ce0bbc55541dbd8de8",
-        "short": "77c4034ee",
-        "branch": "main",
-        "pushed": true
-      }
+      "tier": "T0",
+      "tool": null
     },
     {
-      "id": "al-01M37SPX9RFQ9MHTJBVT37ATG1",
-      "shortname": "spike-runner-path",
-      "datetime": "2026-09-23T18:51:06Z",
-      "session": "290c6347",
-      "prompt": "you install docker desktop for me and yes run spikes 1 and 2",
-      "summary": "Docker Desktop 4.91.0 installed (engine 29.8.0, hello-world ok). Spike 1: all three harnesses complete over ACP; usage only in native stores (Copilot has native AIU cost basis); model pin enforced for Copilot only; adapters run bundled CLIs; user-level config leaks into cells. Spike 2: generated per-cell repo isolates workers (F1 option b); runner prompt delivery is a pack treatment in pack=off; unattended deny blocks Claude/Copilot shell, Codex completes. Note: docs/notes/spike-runner-path.md.",
+      "actor": "claude-code",
+      "artifacts": [],
+      "datetime": "2026-09-23T17:37:23Z",
+      "done_when": "bench validate ok; pytest green; spec backlog and findings committed; repo public on GitHub",
+      "git": {
+        "branch": "main",
+        "pushed": null,
+        "sha": "2cbc0ed46849079b6a531807b6148d8490f40fdb",
+        "short": "2cbc0ed46"
+      },
+      "goal": "Scaffold the benchmark repo so the team can spec and implement the workflow and skills",
+      "id": "al-01M37NFXET1B4GABG9PP6YF14A",
       "kind": "manual",
+      "outcome": "success",
+      "prompt": "consider the following files: harness-bench-mockup.html; Cross-Harness Benchmarking Proposal (ai-forward).md. these form the basis for a proposal for a cross-harness benchmarking tool. create a new public repo, x-harness-x-model-bench under c:\\projects and in my tim.ian.malloo github account and apply my ai-forward pack to it. ground yourself in the benchmarking proposal and mockup and build out the scaffolding for us to spec and implement the benchmarking workflow and skills in this new repo",
+      "session": "ebf50c4d",
+      "shortname": "scaffold-benchmark",
       "skill": null,
-      "tool": null,
+      "summary": "bench/ inputs (22-task BOM, metrics, example matrix, prices), 22 task stubs + template, harness_bench package (validate and plan built; run/grade/report stubbed with spec ids), skills start-benchmark and new-bench-task, spec backlog S-01..S-11, grounding findings F1-F8 (F1 worker isolation blocks runner), CI.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": "claude-code",
+      "artifacts": [],
+      "datetime": "2026-09-23T17:48:49Z",
+      "done_when": "proposal, BOM, metrics, tasks, graders, skills, specs, findings, mockup updated; gates green; pushed",
+      "git": {
+        "branch": "main",
+        "pushed": true,
+        "sha": "77c4034eed7e58d49a8550ce0bbc55541dbd8de8",
+        "short": "77c4034ee"
+      },
+      "goal": "Fold the formal-verification result into the proposal and seed content",
+      "id": "al-01M37P4VRR93REDR8PW3FSMK8Q",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "also... consider how this: https://explainx.ai/blog/boris-cherny-opus-5-5-lean-tla-formal-verification-sdk-2026 could influence how we think of benchmarking and grading. update the proposal and any seed content before i switch to a session in the repo",
+      "session": "ebf50c4d",
+      "shortname": "formal-methods-revision",
+      "skill": null,
+      "summary": "Scenario 7 (G1 TLA+, G2 Lean 4 on coord-core lease fold); oracle ladder; four-part formal grading; protocol_conformance; run-lifecycle TLA+ model; BOM v0.2 24 tasks/576 runs; metrics v0.2; S-12/S-13/S-14/S-08g; F9; mockup aligned to BOM v0.2. Sources: primary X post, secondary write-up (unverified counts), SysMoBench, Verina, VeriBench, TLA+-Bench, TraceFix, Lean4Agent.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
       "actor": "claude-code",
       "artifacts": [
         "docs/notes/spike-runner-path.md"
       ],
-      "tags": [],
-      "outcome": "success",
-      "goal": "Install Docker Desktop; run spike 1 (ACP launch + telemetry per harness) and spike 2 (worker in an external task workspace)",
+      "datetime": "2026-09-23T18:51:06Z",
       "done_when": "Docker runs hello-world; each spike has a written result with evidence",
-      "tier": "T1"
+      "goal": "Install Docker Desktop; run spike 1 (ACP launch + telemetry per harness) and spike 2 (worker in an external task workspace)",
+      "id": "al-01M37SPX9RFQ9MHTJBVT37ATG1",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "you install docker desktop for me and yes run spikes 1 and 2",
+      "session": "290c6347",
+      "shortname": "spike-runner-path",
+      "skill": null,
+      "summary": "Docker Desktop 4.91.0 installed (engine 29.8.0, hello-world ok). Spike 1: all three harnesses complete over ACP; usage only in native stores (Copilot has native AIU cost basis); model pin enforced for Copilot only; adapters run bundled CLIs; user-level config leaks into cells. Spike 2: generated per-cell repo isolates workers (F1 option b); runner prompt delivery is a pack treatment in pack=off; unattended deny blocks Claude/Copilot shell, Codex completes. Note: docs/notes/spike-runner-path.md.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     },
     {
-      "id": "al-01M37VDJVDTD7NA1MKXN29MFMY",
-      "shortname": "specify-harness-bench",
-      "datetime": "2026-09-23T19:20:58Z",
-      "session": "290c6347",
-      "prompt": "three things: commit and push (you dont need a PR); stay here and contiue to work; /specify use the spikes and the proposal and mockup to do the full specification, provide in md and html",
-      "summary": "docs/specs/harness-bench.md (+ generated .html via tools/render-doc-html.py, drift test tests/test_docs_html_in_sync.py): domain model, 52 stories tagged smoke/full/G, ISO 25010, threat model, UX flows UF-1..5, UI archetype B3 with deviations, WCAG 2.2 AA + TQ criteria. Gate: 6 lenses, 3 rounds, round 1 all blocked, 23 veto items resolved; carried conditions to /implement.",
-      "kind": "skill",
-      "skill": "specify",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/specs/harness-bench.md",
         "docs/specs/harness-bench.html"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Full three-layer specification of harness-bench from the proposal, mockup and spikes, in md and html",
+      "datetime": "2026-09-23T19:20:58Z",
       "done_when": "spec committed as md + html; three layers; falsifiable criteria; adversarial gate passed; docs graph valid",
-      "tier": "T1",
+      "duration_seconds": 1572.0,
+      "goal": "Full three-layer specification of harness-bench from the proposal, mockup and spikes, in md and html",
+      "id": "al-01M37VDJVDTD7NA1MKXN29MFMY",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "three things: commit and push (you dont need a PR); stay here and contiue to work; /specify use the spikes and the proposal and mockup to do the full specification, provide in md and html",
+      "session": "290c6347",
+      "shortname": "specify-harness-bench",
+      "skill": "specify",
       "started_at": "2026-09-23T18:54:46Z",
-      "duration_seconds": 1572.0
+      "summary": "docs/specs/harness-bench.md (+ generated .html via tools/render-doc-html.py, drift test tests/test_docs_html_in_sync.py): domain model, 52 stories tagged smoke/full/G, ISO 25010, threat model, UX flows UF-1..5, UI archetype B3 with deviations, WCAG 2.2 AA + TQ criteria. Gate: 6 lenses, 3 rounds, round 1 all blocked, 23 veto items resolved; carried conditions to /implement.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     },
     {
-      "id": "al-01M37X9W0YGNX3AQP3NZKJGYB3",
-      "shortname": "define-architecture-harness-bench",
-      "datetime": "2026-09-23T19:53:53Z",
-      "session": "290c6347",
-      "prompt": "run the R1, R2 and R11 spikes then /define-architecture",
-      "summary": "Spikes: per-cell homes keep auth and drop user skills (workspace must be outside the profile; Claude account context persists); static zero-prompt profiles on all three harnesses but only Codex sandboxes natively; Claude and Codex ran in hardened Linux containers, Copilot needs a token. Architecture: deterministic Pipes-and-Filters pipeline; cells in per-cell hardened containers via a bench-owned ACP driver; per-cell profiles with scoped credential kinds; static permissions; egress proxy + egress gate; hash-chained append-only facts with declared grains and derived views; single-writer run engine with failure taxonomy; telemetry from native records; tool-less model gateway; B6 untrusted cell output; LOA mapping. 11 ADRs; council passed in 2 rounds (16 blocking items resolved). Spec amended (containers, ACL, NFR, C9, US-11).",
-      "kind": "skill",
-      "skill": "define-architecture",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/architecture.md",
@@ -137,25 +128,25 @@ window.AUDIT_DATA = {
         "docs/adr/0011-loa-conformance-in-python.md",
         "docs/notes/spike-isolation-permissions.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Run spikes R1, R2, R11; produce the S-02 architecture of record with ADRs through the architect council",
+      "datetime": "2026-09-23T19:53:53Z",
       "done_when": "spike results committed; architecture + ADRs pass the council gate; committed and pushed",
-      "tier": "T1",
+      "duration_seconds": 1878.0,
+      "goal": "Run spikes R1, R2, R11; produce the S-02 architecture of record with ADRs through the architect council",
+      "id": "al-01M37X9W0YGNX3AQP3NZKJGYB3",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "run the R1, R2 and R11 spikes then /define-architecture",
+      "session": "290c6347",
+      "shortname": "define-architecture-harness-bench",
+      "skill": "define-architecture",
       "started_at": "2026-09-23T19:22:35Z",
-      "duration_seconds": 1878.0
+      "summary": "Spikes: per-cell homes keep auth and drop user skills (workspace must be outside the profile; Claude account context persists); static zero-prompt profiles on all three harnesses but only Codex sandboxes natively; Claude and Codex ran in hardened Linux containers, Copilot needs a token. Architecture: deterministic Pipes-and-Filters pipeline; cells in per-cell hardened containers via a bench-owned ACP driver; per-cell profiles with scoped credential kinds; static permissions; egress proxy + egress gate; hash-chained append-only facts with declared grains and derived views; single-writer run engine with failure taxonomy; telemetry from native records; tool-less model gateway; B6 untrusted cell output; LOA mapping. 11 ADRs; council passed in 2 rounds (16 blocking items resolved). Spec amended (containers, ACL, NFR, C9, US-11).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     },
     {
-      "id": "al-01M3845ZP7VPQK317STN5Z7DF6",
-      "shortname": "design-slice-phase1-lifecycle",
-      "datetime": "2026-09-23T21:54:06Z",
-      "session": "290c6347",
-      "prompt": "C:/Program Files/Git/design-slice phase 1, starting with the lifecycle model",
-      "summary": "Lifecycle model (17 invariants, 5 liveness properties, 22 seeded variants each rejected by its own target; US-44 bounds 77,212,448 states, no error). Phase-1 walking-skeleton design v3 passed the gate at round 3 with conditions (T3 conformance red-first, mutation bar, probes W1/W3, Proof Pack). ADR-0006/0007 amended in place; ADR-0012 added (proportionate security). Threat model, privacy review and the defect-class register (MOD-A, INS-A) created. CI: --quick on push, US-44 bounds nightly.",
-      "kind": "skill",
-      "skill": "design-slice",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/design/run-lifecycle-model.md",
@@ -167,80 +158,80 @@ window.AUDIT_DATA = {
         "docs/security/privacy-review.md",
         "docs/lessons/defect-classes.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Phase-1 detailed design, starting with the TLA+ lifecycle model, through the design gate",
+      "datetime": "2026-09-23T21:54:06Z",
       "done_when": "Lifecycle model checked at the US-44 bounds with every seeded variant rejected by its own target; phase-1 design passes the gate with every hard veto cleared by its lens; rollups, index and audit updated",
-      "tier": "T2",
-      "fan_out": 8,
-      "signals": {
-        "verification_path": true,
-        "verification_executed": true,
-        "acceptance_met": true,
-        "regression": false
-      },
-      "started_at": "2026-09-23T19:59:55Z",
       "duration_seconds": 6851.0,
+      "fan_out": 8,
+      "git": {
+        "branch": "design/phase1",
+        "pushed": true,
+        "sha": "0c82414a074a1e969c7e3426cdd762e36cc43182",
+        "short": "0c82414a0"
+      },
+      "goal": "Phase-1 detailed design, starting with the TLA+ lifecycle model, through the design gate",
+      "id": "al-01M3845ZP7VPQK317STN5Z7DF6",
+      "kind": "skill",
+      "outcome": "success",
       "persona_yield": [
         {
+          "accepted": 9,
           "persona": "test-architect",
-          "raised": 9,
-          "accepted": 9
+          "raised": 9
         },
         {
+          "accepted": 7,
           "persona": "data-persistence-architect",
-          "raised": 7,
-          "accepted": 7
+          "raised": 7
         },
         {
+          "accepted": 6,
           "persona": "distributed-systems-architect",
-          "raised": 6,
-          "accepted": 6
+          "raised": 6
         },
         {
+          "accepted": 4,
           "persona": "security-identity-architect",
-          "raised": 4,
-          "accepted": 4
+          "raised": 4
         },
         {
+          "accepted": 4,
           "persona": "sre-diagnostician",
-          "raised": 4,
-          "accepted": 4
+          "raised": 4
         },
         {
+          "accepted": 3,
           "persona": "ux-accessibility",
-          "raised": 4,
-          "accepted": 3
+          "raised": 4
         },
         {
+          "accepted": 3,
           "persona": "the-simplifier",
-          "raised": 5,
-          "accepted": 3
+          "raised": 5
         },
         {
+          "accepted": 4,
           "persona": "patterns-expert",
-          "raised": 4,
-          "accepted": 4
+          "raised": 4
         }
       ],
-      "git": {
-        "sha": "0c82414a074a1e969c7e3426cdd762e36cc43182",
-        "short": "0c82414a0",
-        "branch": "design/phase1",
-        "pushed": true
-      }
+      "prompt": "C:/Program Files/Git/design-slice phase 1, starting with the lifecycle model",
+      "session": "290c6347",
+      "shortname": "design-slice-phase1-lifecycle",
+      "signals": {
+        "acceptance_met": true,
+        "regression": false,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "design-slice",
+      "started_at": "2026-09-23T19:59:55Z",
+      "summary": "Lifecycle model (17 invariants, 5 liveness properties, 22 seeded variants each rejected by its own target; US-44 bounds 77,212,448 states, no error). Phase-1 walking-skeleton design v3 passed the gate at round 3 with conditions (T3 conformance red-first, mutation bar, probes W1/W3, Proof Pack). ADR-0006/0007 amended in place; ADR-0012 added (proportionate security). Threat model, privacy review and the defect-class register (MOD-A, INS-A) created. CI: --quick on push, US-44 bounds nightly.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     },
     {
-      "id": "al-01M3882EA0534C9VTDAZHQF1PD",
-      "shortname": "define-architecture-native-cells",
-      "datetime": "2026-09-23T23:02:04Z",
-      "session": "290c6347",
-      "prompt": "yes run the codex spike and write the superseding ADR and the revised design",
-      "summary": "Spikes N1 (all three harnesses native, symmetric, unsandboxed, 0 prompts, commands logged; Copilot needs no token) and N2 (Job Object kill/confirm, kill-on-close, peak memory). ADR-0013: cells run natively, each in its own git working copy (per-cell git clone --local; worktrees rejected because they share refs/stash/config) and Job Object; owner accepts the agent's reach outside it. ADR-0001 superseded for authored tasks; ADR-0002/3/4/5/7/9/10/12 amended; spec US-8/13/14/48/49/C9/R11 amended; model renamed container->proc (same state counts, 21/21 variants). Native revision gate passed round 2.",
-      "kind": "skill",
-      "skill": "define-architecture",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/adr/0013-native-cells-own-working-copy.md",
@@ -250,58 +241,58 @@ window.AUDIT_DATA = {
         "docs/architecture.md",
         "docs/specs/harness-bench.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Replace per-cell containers with native cells per the owner's ruling, backed by a Codex native spike, a superseding ADR and a revised, re-gated phase-1 design",
+      "datetime": "2026-09-23T23:02:04Z",
       "done_when": "Spike recorded; ADR-0013 supersedes ADR-0001; spec, architecture, ADRs, model and designs consistent; gate passed with vetoes cleared by their lenses; checks green",
-      "tier": "T2",
       "fan_out": 4,
-      "signals": {
-        "verification_path": true,
-        "verification_executed": true,
-        "acceptance_met": true,
-        "regression": false
+      "git": {
+        "branch": "arch/native-cells",
+        "pushed": null,
+        "sha": "bd2415dc55a6890afc6b54ef062aa32484798e86",
+        "short": "bd2415dc5"
       },
+      "goal": "Replace per-cell containers with native cells per the owner's ruling, backed by a Codex native spike, a superseding ADR and a revised, re-gated phase-1 design",
+      "id": "al-01M3882EA0534C9VTDAZHQF1PD",
+      "kind": "skill",
+      "outcome": "success",
       "persona_yield": [
         {
+          "accepted": 8,
           "persona": "test-architect",
-          "raised": 8,
-          "accepted": 8
+          "raised": 8
         },
         {
+          "accepted": 4,
           "persona": "distributed-systems-architect",
-          "raised": 5,
-          "accepted": 4
+          "raised": 5
         },
         {
+          "accepted": 5,
           "persona": "sre-diagnostician",
-          "raised": 7,
-          "accepted": 5
+          "raised": 7
         },
         {
+          "accepted": 7,
           "persona": "the-simplifier",
-          "raised": 7,
-          "accepted": 7
+          "raised": 7
         }
       ],
-      "git": {
-        "sha": "bd2415dc55a6890afc6b54ef062aa32484798e86",
-        "short": "bd2415dc5",
-        "branch": "arch/native-cells",
-        "pushed": null
-      }
+      "prompt": "yes run the codex spike and write the superseding ADR and the revised design",
+      "session": "290c6347",
+      "shortname": "define-architecture-native-cells",
+      "signals": {
+        "acceptance_met": true,
+        "regression": false,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "define-architecture",
+      "summary": "Spikes N1 (all three harnesses native, symmetric, unsandboxed, 0 prompts, commands logged; Copilot needs no token) and N2 (Job Object kill/confirm, kill-on-close, peak memory). ADR-0013: cells run natively, each in its own git working copy (per-cell git clone --local; worktrees rejected because they share refs/stash/config) and Job Object; owner accepts the agent's reach outside it. ADR-0001 superseded for authored tasks; ADR-0002/3/4/5/7/9/10/12 amended; spec US-8/13/14/48/49/C9/R11 amended; model renamed container->proc (same state counts, 21/21 variants). Native revision gate passed round 2.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     },
     {
-      "id": "al-01M38HT0S6CZ1YGHRVAJBWX3HA",
-      "shortname": "coordination-phase1-finish",
-      "datetime": "2026-09-24T01:52:14Z",
-      "session": "290c6347",
-      "prompt": "/prepare-for-coordination analyze where we are and how we can build a parallel execution plan that allows us to get this done quickly and efficiently but with full rigor - use grok, and agy for sub agent tasks - use the Owner (fable), Coordinator (opus 5.5), Sub.Agent (right model for the right job and delegate to instances of grok and agy) have this ready with a plan so we can run the execute-with-coordination skill next",
-      "summary": "Plan coordination-phase1-finish: 5 parallel tracks (T1 engine on agy opus-4-6-thinking; T2 ledger-verify grok-4.7; T3 process edges agy gemini-3.1-pro-high; T4 surfaces grok-4.6; T5 Codex N5 spike grok-4.7-build-fast) + T7 serial close; T6 struck. Layer installed (registry 11 patterns, merge drivers). Gate: Simplifier and Test Architect cleared the plan; Tech Lead kept 5+2. Rulings R-1 recorded; R-2/R-3 pending Owner.",
-      "kind": "skill",
-      "skill": "prepare-for-coordination",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/coordination/coordination-phase1-finish.md",
@@ -309,43 +300,41 @@ window.AUDIT_DATA = {
         "docs/notes/rulings.md",
         ".agents/artifacts.yml"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "a parallel plan to finish phase 1 with the veto cleared, ready for execute-with-coordination",
+      "datetime": "2026-09-24T01:52:14Z",
       "done_when": "plan md+html committed, layer measured and installed, gate reviewers cleared the plan",
-      "tier": "T1",
-      "fan_out": 3
-    },
-    {
-      "id": "al-01M38J1NYKEKT63WDBWZ6P0NJD",
-      "shortname": "Qualification smoke turn for the coordination run. Create the file docs/…",
-      "datetime": "2026-09-24T01:56:25Z",
-      "session": "prompt-compile",
-      "prompt": "Qualification smoke turn for the coordination run. Create the file docs/notes/qualify-worker.md containing exactly one line: \"qualified: <your harness name> <your model id> <UTC time>\". Then commit only that file with the message \"chore: qualification smoke turn\". Done when the file exists with that one line and the commit is on your branch. Not in scope: any other file, any test run, any push.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M38J29Z3V8YNRWCNF44W9XDC",
-      "shortname": "compile-Qualification smoke turn for the coordination run. Create the file docs/…",
-      "datetime": "2026-09-24T01:56:46Z",
-      "session": "coord-opus",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus --skill <skill>\nGoal state\nGoal: Qualification smoke turn: create docs/notes/qualify-worker.md with one line and commit only that file.\nDone when: The file docs/notes/qualify-worker.md exists with that one line.; The commit is on your branch.\nNot in scope: Any other file, any test run, any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: 10 tool calls, 600 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: The file docs/notes/qualify-worker.md exists with that one line. | phrase: Done when the file exists with that one line |\n| done_when: The commit is on your branch. | phrase: the commit is on your branch |\n| not_in_scope: Any other file, any test run, any push. | phrase: Not in scope: any other file, any test run, any push. |\nReferences\n- docs/notes/qualify-worker.md: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: at most 1, pre-prompt startup failure only\nper_branch_exit: one commit touching only docs/notes/qualify-worker.md\njoin_rule: none: qualification only, never joined\ncontainment: own worktree only\ntermination: one turn\ndeadline: 600 s\nfallback: the retained brief, after Owner review\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M38J1NYKEKT63WDBWZ6P0NJD\nraw sha256: 98e568f2a1938f34e0f597deb8f3ba45ee830b68f2b784b060e283e614695fab\ncompiler model: claude-opus-5-5\nengine seconds: 0.001\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M38J1NYKEKT63WDBWZ6P0NJD for claude-code v1: 3 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
+      "fan_out": 3,
+      "goal": "a parallel plan to finish phase 1 with the veto cleared, ready for execute-with-coordination",
+      "id": "al-01M38HT0S6CZ1YGHRVAJBWX3HA",
+      "kind": "skill",
       "outcome": "success",
+      "prompt": "/prepare-for-coordination analyze where we are and how we can build a parallel execution plan that allows us to get this done quickly and efficiently but with full rigor - use grok, and agy for sub agent tasks - use the Owner (fable), Coordinator (opus 5.5), Sub.Agent (right model for the right job and delegate to instances of grok and agy) have this ready with a plan so we can run the execute-with-coordination skill next",
+      "session": "290c6347",
+      "shortname": "coordination-phase1-finish",
+      "skill": "prepare-for-coordination",
+      "summary": "Plan coordination-phase1-finish: 5 parallel tracks (T1 engine on agy opus-4-6-thinking; T2 ledger-verify grok-4.7; T3 process edges agy gemini-3.1-pro-high; T4 surfaces grok-4.6; T5 Codex N5 spike grok-4.7-build-fast) + T7 serial close; T6 struck. Layer installed (registry 11 patterns, merge drivers). Gate: Simplifier and Test Architect cleared the plan; Tech Lead kept 5+2. Rulings R-1 recorded; R-2/R-3 pending Owner.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-09-24T01:56:25Z",
+      "id": "al-01M38J1NYKEKT63WDBWZ6P0NJD",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Qualification smoke turn for the coordination run. Create the file docs/notes/qualify-worker.md containing exactly one line: \"qualified: <your harness name> <your model id> <UTC time>\". Then commit only that file with the message \"chore: qualification smoke turn\". Done when the file exists with that one line and the commit is on your branch. Not in scope: any other file, any test run, any push.",
+      "session": "prompt-compile",
+      "shortname": "Qualification smoke turn for the coordination run. Create the file docs/…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -427,19 +416,21 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
+      "datetime": "2026-09-24T01:56:46Z",
+      "dispatchable": true,
+      "id": "al-01M38J29Z3V8YNRWCNF44W9XDC",
+      "kind": "compilation",
       "mode": "compiled",
-      "dispatchable": true
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus --skill <skill>\nGoal state\nGoal: Qualification smoke turn: create docs/notes/qualify-worker.md with one line and commit only that file.\nDone when: The file docs/notes/qualify-worker.md exists with that one line.; The commit is on your branch.\nNot in scope: Any other file, any test run, any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: 10 tool calls, 600 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: The file docs/notes/qualify-worker.md exists with that one line. | phrase: Done when the file exists with that one line |\n| done_when: The commit is on your branch. | phrase: the commit is on your branch |\n| not_in_scope: Any other file, any test run, any push. | phrase: Not in scope: any other file, any test run, any push. |\nReferences\n- docs/notes/qualify-worker.md: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: at most 1, pre-prompt startup failure only\nper_branch_exit: one commit touching only docs/notes/qualify-worker.md\njoin_rule: none: qualification only, never joined\ncontainment: own worktree only\ntermination: one turn\ndeadline: 600 s\nfallback: the retained brief, after Owner review\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M38J1NYKEKT63WDBWZ6P0NJD\nraw sha256: 98e568f2a1938f34e0f597deb8f3ba45ee830b68f2b784b060e283e614695fab\ncompiler model: claude-opus-5-5\nengine seconds: 0.001\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus",
+      "shortname": "compile-Qualification smoke turn for the coordination run. Create the file docs/…",
+      "skill": null,
+      "summary": "compiled al-01M38J1NYKEKT63WDBWZ6P0NJD for claude-code v1: 3 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
     },
     {
-      "id": "al-01M38N9FKM9P6VAYG6YW70HMBD",
-      "shortname": "T5 N5 spike: Codex host skill discovery",
-      "datetime": "2026-09-24T02:53:07Z",
-      "session": "T5",
-      "prompt": "Track T5 n5-spike: find an observed Codex 0.156 mechanism that removes user skill roots from a cell; make the US-13 canary green for Codex without xfail, or report the negative result within the timebox.",
-      "summary": "Read the installed Codex 0.156 binary and codex-acp adapter (Spike Protocol). Found candidate features.skip_host_skill_discovery, applied it via a red-first unit test (1678c43a), then proved by a real US-13 canary run that it does NOT stop ~/.agents/skills reaching a Codex cell (microsoft-foundry still leaked). Independently corroborated by a third-party issue testing the same flag plus other CLI flags on 0.154.0. Reverted the ineffective change; restored xfail(strict) with an updated reason. Wrote docs/notes/spike-n5-codex-skill-roots.md and docs/proof/findings-T5.md with the T5 fallback decision request (recommend option a). Gates green: ruff clean, 304 passed / 5 deselected.",
-      "kind": "skill",
-      "skill": "investigate",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/notes/spike-n5-codex-skill-roots.md",
@@ -448,164 +439,164 @@ window.AUDIT_DATA = {
         "tests/test_profiles.py",
         "tests/e2e/test_us13_canary.py"
       ],
-      "tags": [],
-      "outcome": "partial",
       "compiled": false,
-      "goal": "Find an observed Codex 0.156 mechanism that removes ~/.agents/skills from a cell (N5); make the US-13 canary green for Codex without xfail.",
+      "datetime": "2026-09-24T02:53:07Z",
       "done_when": "Codex canary green with xfail removed and Claude canary still green, or the research/track timebox expires with a written negative result.",
-      "tier": "T1",
-      "started_at": "2026-09-24T02:38:58Z",
       "duration_seconds": 849.0,
       "git": {
-        "sha": "5e4cf31d35dcf6beab58258a3e0a6ddddfb324d6",
-        "short": "5e4cf31d3",
         "branch": "track/t5-n5-spike",
-        "pushed": null
-      }
+        "pushed": null,
+        "sha": "5e4cf31d35dcf6beab58258a3e0a6ddddfb324d6",
+        "short": "5e4cf31d3"
+      },
+      "goal": "Find an observed Codex 0.156 mechanism that removes ~/.agents/skills from a cell (N5); make the US-13 canary green for Codex without xfail.",
+      "id": "al-01M38N9FKM9P6VAYG6YW70HMBD",
+      "kind": "skill",
+      "outcome": "partial",
+      "prompt": "Track T5 n5-spike: find an observed Codex 0.156 mechanism that removes user skill roots from a cell; make the US-13 canary green for Codex without xfail, or report the negative result within the timebox.",
+      "session": "T5",
+      "shortname": "T5 N5 spike: Codex host skill discovery",
+      "skill": "investigate",
+      "started_at": "2026-09-24T02:38:58Z",
+      "summary": "Read the installed Codex 0.156 binary and codex-acp adapter (Spike Protocol). Found candidate features.skip_host_skill_discovery, applied it via a red-first unit test (1678c43a), then proved by a real US-13 canary run that it does NOT stop ~/.agents/skills reaching a Codex cell (microsoft-foundry still leaked). Independently corroborated by a third-party issue testing the same flag plus other CLI flags on 0.154.0. Reverted the ineffective change; restored xfail(strict) with an updated reason. Wrote docs/notes/spike-n5-codex-skill-roots.md and docs/proof/findings-T5.md with the T5 fallback decision request (recommend option a). Gates green: ruff clean, 304 passed / 5 deselected.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     },
     {
-      "id": "al-01M38NFPS079Q5X83GP8PV2GTT",
-      "shortname": "join-t5",
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
       "datetime": "2026-09-24T02:56:31Z",
-      "session": "coord-opus",
-      "prompt": "the join of track/t5-n5-spike into impl/phase1",
-      "summary": "T5 N5 spike: skip_host_skill_discovery disproven by a real canary; strict xfail kept (R-5) recount_seconds=78 (docs_only=False).",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success",
-      "compiled": false,
+      "done_when": "join gates green",
+      "duration_seconds": 79.0,
+      "fan_out": 0,
       "goal": "merge T5's verified evidence",
-      "done_when": "join gates green",
-      "tier": "T1",
-      "fan_out": 0,
+      "id": "al-01M38NFPS079Q5X83GP8PV2GTT",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "the join of track/t5-n5-spike into impl/phase1",
+      "session": "coord-opus",
+      "shortname": "join-t5",
       "signals": {
-        "verification_path": true,
+        "acceptance_met": true,
         "verification_executed": true,
-        "acceptance_met": true
+        "verification_path": true
       },
+      "skill": "execute-with-coordination",
       "started_at": "2026-09-24T02:55:12Z",
-      "duration_seconds": 79.0
+      "summary": "T5 N5 spike: skip_host_skill_discovery disproven by a real canary; strict xfail kept (R-5) recount_seconds=78 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     },
     {
-      "id": "al-01M38P1BA1KF64HEQ8N8QA74KD",
-      "shortname": "join-t3",
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
       "datetime": "2026-09-24T03:06:09Z",
-      "session": "coord-opus",
-      "prompt": "the join of track/t3-process-edges into impl/phase1",
-      "summary": "T3: 10 red-first findings, t3.json 15/15 killed, D5/D7/D2 applied recount_seconds=78 (docs_only=False).",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success",
-      "compiled": false,
+      "done_when": "join gates green",
+      "duration_seconds": 80.0,
+      "fan_out": 0,
       "goal": "merge T3's verified evidence",
-      "done_when": "join gates green",
-      "tier": "T1",
-      "fan_out": 0,
+      "id": "al-01M38P1BA1KF64HEQ8N8QA74KD",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "the join of track/t3-process-edges into impl/phase1",
+      "session": "coord-opus",
+      "shortname": "join-t3",
       "signals": {
-        "verification_path": true,
+        "acceptance_met": true,
         "verification_executed": true,
-        "acceptance_met": true
+        "verification_path": true
       },
+      "skill": "execute-with-coordination",
       "started_at": "2026-09-24T03:04:49Z",
-      "duration_seconds": 80.0
+      "summary": "T3: 10 red-first findings, t3.json 15/15 killed, D5/D7/D2 applied recount_seconds=78 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     },
     {
-      "id": "al-01M38PPWARHAG7VCDR8E12D5HJ",
-      "shortname": "join-t4",
-      "datetime": "2026-09-24T03:17:54Z",
-      "session": "coord-opus",
-      "prompt": "the join of track/t4-surfaces into impl/phase1",
-      "summary": "T4: exact-value credential scan, bench-status/1 stop_code+phase (R-3), plan ids, N5 flag (R-5); status 12/12, report 21/21, cli 11/11 killed recount_seconds=99 (docs_only=False).",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "merge T4's verified evidence",
+      "datetime": "2026-09-24T03:17:54Z",
       "done_when": "join gates green",
-      "tier": "T1",
+      "duration_seconds": 100.0,
       "fan_out": 0,
+      "goal": "merge T4's verified evidence",
+      "id": "al-01M38PPWARHAG7VCDR8E12D5HJ",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "the join of track/t4-surfaces into impl/phase1",
+      "session": "coord-opus",
+      "shortname": "join-t4",
       "signals": {
-        "verification_path": true,
+        "acceptance_met": true,
         "verification_executed": true,
-        "acceptance_met": true
+        "verification_path": true
       },
+      "skill": "execute-with-coordination",
       "started_at": "2026-09-24T03:16:14Z",
-      "duration_seconds": 100.0
+      "summary": "T4: exact-value credential scan, bench-status/1 stop_code+phase (R-3), plan ids, N5 flag (R-5); status 12/12, report 21/21, cli 11/11 killed recount_seconds=99 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     },
     {
-      "id": "al-01M38TDM5GN2WF3Y0VGHJ101PS",
-      "shortname": "t2-ledger-verify",
-      "datetime": "2026-09-24T04:22:45Z",
-      "session": "T2",
-      "prompt": "Track T2 ledger-verify of coordination-phase1-finish: tamper probes, grading.completed heads, D2 properties, D6 golden ledgers, ledger survivors, mutation record, Simplifier minors, SRE-5 poison; seam req-01M38NTSV1RDHVS8SX2TEES0RQ.",
-      "summary": "12 findings red-first (T2-1..T2-12); mutation files 20/29/17 killed; cosmic-ray 1803 mutants, 1546 killed, 257 equivalent, none open; 442 passed, ruff clean. Partial: docs/proof/findings-T2.md refused by the harness for sub-agent writes; content handed to the Coordinator to transcribe.",
-      "kind": "skill",
-      "skill": "implement",
-      "tool": null,
       "actor": "claude-opus-5-5",
       "artifacts": [
         "docs/notes/mutation-record-t2.md",
         "tests/test_verify.py",
         "tests/fixtures/ledger"
       ],
-      "tags": [],
-      "outcome": "partial",
       "compiled": false,
-      "goal": "T2 exit list with red SHAs and green fixes; three mutation files killed; cosmic-ray record with nothing open; gates green.",
+      "datetime": "2026-09-24T04:22:45Z",
       "done_when": "every exit item has red SHA + fix; mutations killed; record written; pytest and ruff green",
-      "tier": "T2",
+      "duration_seconds": 8104.0,
+      "goal": "T2 exit list with red SHAs and green fixes; three mutation files killed; cosmic-ray record with nothing open; gates green.",
+      "id": "al-01M38TDM5GN2WF3Y0VGHJ101PS",
+      "kind": "skill",
+      "outcome": "partial",
+      "prompt": "Track T2 ledger-verify of coordination-phase1-finish: tamper probes, grading.completed heads, D2 properties, D6 golden ledgers, ledger survivors, mutation record, Simplifier minors, SRE-5 poison; seam req-01M38NTSV1RDHVS8SX2TEES0RQ.",
+      "session": "T2",
+      "shortname": "t2-ledger-verify",
+      "skill": "implement",
       "started_at": "2026-09-24T02:07:41Z",
-      "duration_seconds": 8104.0
+      "summary": "12 findings red-first (T2-1..T2-12); mutation files 20/29/17 killed; cosmic-ray 1803 mutants, 1546 killed, 257 equivalent, none open; 442 passed, ruff clean. Partial: docs/proof/findings-T2.md refused by the harness for sub-agent writes; content handed to the Coordinator to transcribe.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     },
     {
-      "id": "al-01M38TKV4AS6MNPYPCAYYD478H",
-      "shortname": "join-t2",
-      "datetime": "2026-09-24T04:26:09Z",
-      "session": "coord-opus",
-      "prompt": "the join of track/t2-ledger-verify into impl/phase1",
-      "summary": "T2: 12 findings red-first; verify catches cut/deleted segments (R-2); D2 properties; D6 golden ledgers; cosmic-ray 1803 mutants 0 open recount_seconds=79 (docs_only=False).",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "merge T2's verified evidence",
+      "datetime": "2026-09-24T04:26:09Z",
       "done_when": "join gates green",
-      "tier": "T1",
+      "duration_seconds": 80.0,
       "fan_out": 0,
+      "goal": "merge T2's verified evidence",
+      "id": "al-01M38TKV4AS6MNPYPCAYYD478H",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "the join of track/t2-ledger-verify into impl/phase1",
+      "session": "coord-opus",
+      "shortname": "join-t2",
       "signals": {
-        "verification_path": true,
+        "acceptance_met": true,
         "verification_executed": true,
-        "acceptance_met": true
+        "verification_path": true
       },
+      "skill": "execute-with-coordination",
       "started_at": "2026-09-24T04:24:49Z",
-      "duration_seconds": 80.0
+      "summary": "T2: 12 findings red-first; verify catches cut/deleted segments (R-2); D2 properties; D6 golden ledgers; cosmic-ray 1803 mutants 0 open recount_seconds=79 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     },
     {
-      "id": "al-01M3955BFQE43ZK2NBQE4KX6BN",
-      "shortname": "t1-engine-hardening",
-      "datetime": "2026-09-24T07:30:28Z",
-      "session": "T1",
-      "prompt": "Coordinator dispatch: T1 engine-hardening (17 items), plus the T3-5 OSError seam notice",
-      "summary": "17 items + T1-8b (T3-5 seam) red-first then fixed; engine.json 44/44 killed; cosmic-ray: lifecycle 107 (91 killed, 16 equivalent), errors 13 (12 killed after a new test, 1 equivalent), engine scoped 299 (216 killed incl. 30 re-verified after new tests, 83 equivalent incl. 55 annotations); gates: 495 passed, ruff clean. docs/proof/findings-T1.md and docs/notes/mutation-record-t1.md were refused by the harness for a sub-agent and are returned in the report for the Coordinator to commit.",
-      "kind": "skill",
-      "skill": "implement",
-      "tool": null,
       "actor": "claude-opus-5-5 (T1 sub-agent)",
       "artifacts": [
         "src/harness_bench/engine.py",
@@ -613,431 +604,429 @@ window.AUDIT_DATA = {
         "src/harness_bench/errors.py",
         "tests/mutations/engine.json"
       ],
-      "tags": [],
-      "outcome": "partial",
       "compiled": false,
-      "goal": "T1 checklist of coordination-phase1-finish: one red-first test per item, engine.json all killed, cosmic-ray record, suite and ruff green on a branch merged with impl/phase1",
+      "datetime": "2026-09-24T07:30:28Z",
       "done_when": "every item has a red SHA and a green fix; engine.json all killed under the hardened checker; cosmic-ray record with no open mutant; both gates green",
-      "tier": "T2",
-      "fan_out": 0,
-      "signals": {
-        "verification_path": true,
-        "verification_executed": true,
-        "acceptance_met": false
-      },
-      "started_at": "2026-09-24T02:07:41Z",
       "duration_seconds": 19367.0,
+      "fan_out": 0,
       "git": {
-        "sha": "c7f554879404038e1e28af77e0b31435fd20a1fc",
-        "short": "c7f554879",
         "branch": "track/t1-engine-hardening",
-        "pushed": null
-      }
+        "pushed": null,
+        "sha": "c7f554879404038e1e28af77e0b31435fd20a1fc",
+        "short": "c7f554879"
+      },
+      "goal": "T1 checklist of coordination-phase1-finish: one red-first test per item, engine.json all killed, cosmic-ray record, suite and ruff green on a branch merged with impl/phase1",
+      "id": "al-01M3955BFQE43ZK2NBQE4KX6BN",
+      "kind": "skill",
+      "outcome": "partial",
+      "prompt": "Coordinator dispatch: T1 engine-hardening (17 items), plus the T3-5 OSError seam notice",
+      "session": "T1",
+      "shortname": "t1-engine-hardening",
+      "signals": {
+        "acceptance_met": false,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "implement",
+      "started_at": "2026-09-24T02:07:41Z",
+      "summary": "17 items + T1-8b (T3-5 seam) red-first then fixed; engine.json 44/44 killed; cosmic-ray: lifecycle 107 (91 killed, 16 equivalent), errors 13 (12 killed after a new test, 1 equivalent), engine scoped 299 (216 killed incl. 30 re-verified after new tests, 83 equivalent incl. 55 annotations); gates: 495 passed, ruff clean. docs/proof/findings-T1.md and docs/notes/mutation-record-t1.md were refused by the harness for a sub-agent and are returned in the report for the Coordinator to commit.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     },
     {
-      "id": "al-01M395MNSFRP64BX8Z8ZGGTXP6",
-      "shortname": "join-t1",
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
       "datetime": "2026-09-24T07:38:51Z",
-      "session": "coord-opus",
-      "prompt": "the join of track/t1-engine-hardening into impl/phase1",
-      "summary": "T1: 17 checklist items + 8b red-first; engine.json 44/44 killed; cosmic-ray lifecycle/errors full, engine 299/765 mutants, 0 open recount_seconds=126 (docs_only=False).",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success",
-      "compiled": false,
+      "done_when": "join gates green",
+      "duration_seconds": 128.0,
+      "fan_out": 0,
       "goal": "merge T1's verified evidence",
-      "done_when": "join gates green",
-      "tier": "T1",
-      "fan_out": 0,
+      "id": "al-01M395MNSFRP64BX8Z8ZGGTXP6",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "the join of track/t1-engine-hardening into impl/phase1",
+      "session": "coord-opus",
+      "shortname": "join-t1",
       "signals": {
-        "verification_path": true,
+        "acceptance_met": true,
         "verification_executed": true,
-        "acceptance_met": true
+        "verification_path": true
       },
+      "skill": "execute-with-coordination",
       "started_at": "2026-09-24T07:36:43Z",
-      "duration_seconds": 128.0
+      "summary": "T1: 17 checklist items + 8b red-first; engine.json 44/44 killed; cosmic-ray lifecycle/errors full, engine 299/765 mutants, 0 open recount_seconds=126 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     },
     {
-      "id": "al-01M396B9S7MAX6TY3J6RBMZ627",
-      "shortname": "join-t6",
-      "datetime": "2026-09-24T07:51:12Z",
-      "session": "coord-opus",
-      "prompt": "the join of track/t6-workspace-race into impl/phase1",
-      "summary": "T6: concurrent task_source/pack_checkout builds no longer fail; red 0082875; workspace.json 2/2 killed recount_seconds=128 (docs_only=False).",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "merge the E2E-driven loop-back fix",
+      "datetime": "2026-09-24T07:51:12Z",
       "done_when": "join gates green",
-      "tier": "T1",
+      "duration_seconds": 129.0,
       "fan_out": 0,
+      "goal": "merge the E2E-driven loop-back fix",
+      "id": "al-01M396B9S7MAX6TY3J6RBMZ627",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "the join of track/t6-workspace-race into impl/phase1",
+      "session": "coord-opus",
+      "shortname": "join-t6",
       "signals": {
-        "verification_path": true,
+        "acceptance_met": true,
         "verification_executed": true,
-        "acceptance_met": true
+        "verification_path": true
       },
+      "skill": "execute-with-coordination",
       "started_at": "2026-09-24T07:49:03Z",
-      "duration_seconds": 129.0
+      "summary": "T6: concurrent task_source/pack_checkout builds no longer fail; red 0082875; workspace.json 2/2 killed recount_seconds=128 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     },
     {
-      "id": "al-01M397XXTARDXEHS0N3CST0CH5",
-      "shortname": "join-t8",
-      "datetime": "2026-09-24T08:18:51Z",
-      "session": "coord-opus",
-      "prompt": "the join of track/t8-reader-and-paths into impl/phase1",
-      "summary": "T8 loop-back: US-10 codex reader fix with real scrubbed pack-on fixture; relative --tools-dir resolved absolute (HB-CELL-113); red 05f52fa/62c38ba re-verified; t8.json 2/2 killed recount_seconds=128 (docs_only=False).",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/proof/findings-T8.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Close the two defects the real E2E found",
+      "datetime": "2026-09-24T08:18:51Z",
       "done_when": "join green; both red SHAs re-run by the Coordinator; t8.json all killed",
-      "tier": "T1",
+      "duration_seconds": 129.0,
       "fan_out": 0,
+      "goal": "Close the two defects the real E2E found",
+      "id": "al-01M397XXTARDXEHS0N3CST0CH5",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "the join of track/t8-reader-and-paths into impl/phase1",
+      "session": "coord-opus",
+      "shortname": "join-t8",
       "signals": {
-        "verification_path": true,
+        "acceptance_met": true,
         "verification_executed": true,
-        "acceptance_met": true
+        "verification_path": true
       },
+      "skill": "execute-with-coordination",
       "started_at": "2026-09-24T08:16:42Z",
-      "duration_seconds": 129.0
+      "summary": "T8 loop-back: US-10 codex reader fix with real scrubbed pack-on fixture; relative --tools-dir resolved absolute (HB-CELL-113); red 05f52fa/62c38ba re-verified; t8.json 2/2 killed recount_seconds=128 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     },
     {
-      "id": "al-01M399A0Y8V0QPE176XSANADEK",
-      "shortname": "join-t9",
-      "datetime": "2026-09-24T08:42:56Z",
-      "session": "coord-opus",
-      "prompt": "the join of track/t9-cleanup-and-log into impl/phase1",
-      "summary": "T9 loop-back from E2E run 3: _discard uses make_writable (read-only git objects); configure_logging replaces its previous handler and cmd_run releases it; red e225ff5 re-verified; t9.json 3/3 killed recount_seconds=129 (docs_only=False).",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/proof/findings-T9.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Close the two cleanup defects the third real E2E exposed",
+      "datetime": "2026-09-24T08:42:56Z",
       "done_when": "join green; red SHA re-run by the Coordinator; t9.json all killed; engine.py changed only inside configure_logging",
-      "tier": "T1",
+      "duration_seconds": 130.0,
       "fan_out": 0,
+      "goal": "Close the two cleanup defects the third real E2E exposed",
+      "id": "al-01M399A0Y8V0QPE176XSANADEK",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "the join of track/t9-cleanup-and-log into impl/phase1",
+      "session": "coord-opus",
+      "shortname": "join-t9",
       "signals": {
-        "verification_path": true,
+        "acceptance_met": true,
         "verification_executed": true,
-        "acceptance_met": true
+        "verification_path": true
       },
+      "skill": "execute-with-coordination",
       "started_at": "2026-09-24T08:40:46Z",
-      "duration_seconds": 130.0
+      "summary": "T9 loop-back from E2E run 3: _discard uses make_writable (read-only git objects); configure_logging replaces its previous handler and cmd_run releases it; red e225ff5 re-verified; t9.json 3/3 killed recount_seconds=129 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     },
     {
-      "id": "al-01M39BYTTQSK52SMRDRPPVPPB8",
-      "shortname": "join-t11",
-      "datetime": "2026-09-24T09:29:15Z",
-      "session": "coord-opus",
-      "prompt": "the join of track/t11-verify-later-pass into impl/phase1",
-      "summary": "T11: a sealed events/grade-* segment without grading.completed is HB-LED-002; in-progress/interrupted pass stays a warning; red 8edd94f re-verified; views.json 34/34; scoped cosmic-ray 98 mutants 0 open; shape A disclosed recount_seconds=152 (docs_only=False).",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/proof/findings-T11.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Close Test Architect N1",
+      "datetime": "2026-09-24T09:29:15Z",
       "done_when": "join green; red re-run by the Coordinator; views.json all killed; cosmic-ray 0 open",
-      "tier": "T1",
+      "duration_seconds": 153.0,
       "fan_out": 0,
+      "goal": "Close Test Architect N1",
+      "id": "al-01M39BYTTQSK52SMRDRPPVPPB8",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "the join of track/t11-verify-later-pass into impl/phase1",
+      "session": "coord-opus",
+      "shortname": "join-t11",
       "signals": {
-        "verification_path": true,
+        "acceptance_met": true,
         "verification_executed": true,
-        "acceptance_met": true
+        "verification_path": true
       },
+      "skill": "execute-with-coordination",
       "started_at": "2026-09-24T09:26:42Z",
-      "duration_seconds": 153.0
+      "summary": "T11: a sealed events/grade-* segment without grading.completed is HB-LED-002; in-progress/interrupted pass stays a warning; red 8edd94f re-verified; views.json 34/34; scoped cosmic-ray 98 mutants 0 open; shape A disclosed recount_seconds=152 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     },
     {
-      "id": "al-01M39FXAWBPQC5RN22D49RAE43",
-      "shortname": "join-t10",
-      "datetime": "2026-09-24T10:38:20Z",
-      "session": "coord-opus",
-      "prompt": "the join of track/t10-engine-mutation into impl/phase1",
-      "summary": "T10: cosmic-ray over the 466 engine mutants T1 did not run: 343 killed, 62 after new tests, 61 equivalent, 0 open; design drift KILL_RETRY_CAP 60->30 red 70531dc fix e10b1e9; engine.json 49/49; found mutate_check stale-pyc defect recount_seconds=143 (docs_only=False).",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/proof/findings-T10.md",
         "docs/notes/mutation-record-t1.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Clear the Test Architect's required item (engine mutation bar)",
+      "datetime": "2026-09-24T10:38:20Z",
       "done_when": "join green; red re-run; spot-checked mutants agree; 0 open mutants recorded",
-      "tier": "T1",
+      "duration_seconds": 144.0,
       "fan_out": 0,
+      "goal": "Clear the Test Architect's required item (engine mutation bar)",
+      "id": "al-01M39FXAWBPQC5RN22D49RAE43",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "the join of track/t10-engine-mutation into impl/phase1",
+      "session": "coord-opus",
+      "shortname": "join-t10",
       "signals": {
-        "verification_path": true,
+        "acceptance_met": true,
         "verification_executed": true,
-        "acceptance_met": true
+        "verification_path": true
       },
+      "skill": "execute-with-coordination",
       "started_at": "2026-09-24T10:35:56Z",
-      "duration_seconds": 144.0
+      "summary": "T10: cosmic-ray over the 466 engine mutants T1 did not run: 343 killed, 62 after new tests, 61 equivalent, 0 open; design drift KILL_RETRY_CAP 60->30 red 70531dc fix e10b1e9; engine.json 49/49; found mutate_check stale-pyc defect recount_seconds=143 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     },
     {
-      "id": "al-01M39RPJPEPHKBXTGRTWEDQJV1",
-      "shortname": "join-t12",
-      "datetime": "2026-09-24T13:11:56Z",
-      "session": "coord-opus",
-      "prompt": "the join of track/t12-mutation-rerun into impl/phase1",
-      "summary": "T12: 2699 mutants bytecode off, 0 open; 29 recorded kills were not kills (now killed by test-only a0c4f52), 5 equivalent; engine L394 equivalence was wrong; cosmic-ray already disables bytecode but counts any nonzero/timeout as KILLED; record transcription errors corrected recount_seconds=144 (docs_only=False).",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/proof/findings-T12.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Sweep TOOL-A across every cosmic-ray record",
+      "datetime": "2026-09-24T13:11:56Z",
       "done_when": "join green; 0 open; three overstated kills re-verified with the named-test checker",
-      "tier": "T1",
+      "duration_seconds": 145.0,
       "fan_out": 0,
+      "goal": "Sweep TOOL-A across every cosmic-ray record",
+      "id": "al-01M39RPJPEPHKBXTGRTWEDQJV1",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "the join of track/t12-mutation-rerun into impl/phase1",
+      "session": "coord-opus",
+      "shortname": "join-t12",
       "signals": {
-        "verification_path": true,
+        "acceptance_met": true,
         "verification_executed": true,
-        "acceptance_met": true
+        "verification_path": true
       },
+      "skill": "execute-with-coordination",
       "started_at": "2026-09-24T13:09:31Z",
-      "duration_seconds": 145.0
+      "summary": "T12: 2699 mutants bytecode off, 0 open; 29 recorded kills were not kills (now killed by test-only a0c4f52), 5 equivalent; engine L394 equivalence was wrong; cosmic-ray already disables bytecode but counts any nonzero/timeout as KILLED; record transcription errors corrected recount_seconds=144 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     },
     {
-      "id": "al-01M39T1AM29MBHDWE46VE4MHQF",
-      "shortname": "coordinate-phase1-finish",
-      "datetime": "2026-09-24T13:35:17Z",
-      "session": "coord-opus",
-      "prompt": "commit and push all and merge so main is clean / then / /execute-with-coordination docs/coordination/coordination-phase1-finish.md",
-      "summary": "Executed the phase-1 finish plan as Coordinator. Tracks T1-T5 (planned), T6/T8/T9 (E2E loop-backs), T10/T11/T12 (Test Architect round-1 veto) joined via conductor-join; T7 close by the Coordinator. Real E2E green on the final code (e2e-1790255669); 2699 cosmic-ray mutants 0 open; 198/198 hand-written mutations; Test Architect round 2 CLEAR. Defect classes CONC-A, PATH-A, CLN-A, COORD-A, GATE-A, TOOL-A, TOOL-B registered; E2E-E and TOOL-A controls built red-first. Rulings R-4..R-6 (Owner seat). Planned vs actual in docs/coordination/coordination-phase1-finish-run.md.",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
       "actor": null,
+      "agent_runs": [
+        {
+          "agent": "T1",
+          "budget_calls": 450,
+          "calls": 415,
+          "duration_seconds": 19478.0,
+          "ended_at": "2026-09-24T07:32:13Z",
+          "over_budget": false,
+          "started_at": "2026-09-24T02:07:35Z"
+        },
+        {
+          "agent": "T10",
+          "budget_calls": 280,
+          "calls": 160,
+          "duration_seconds": 5578.0,
+          "ended_at": "2026-09-24T10:33:40Z",
+          "over_budget": false,
+          "started_at": "2026-09-24T09:00:42Z"
+        },
+        {
+          "agent": "T11",
+          "budget_calls": 120,
+          "calls": 59,
+          "duration_seconds": 1463.0,
+          "ended_at": "2026-09-24T09:25:05Z",
+          "over_budget": false,
+          "started_at": "2026-09-24T09:00:42Z"
+        },
+        {
+          "agent": "T12",
+          "budget_calls": 250,
+          "calls": 120,
+          "duration_seconds": 8581.0,
+          "ended_at": "2026-09-24T13:05:56Z",
+          "over_budget": false,
+          "started_at": "2026-09-24T10:42:55Z"
+        },
+        {
+          "agent": "T2",
+          "budget_calls": 350,
+          "calls": 297,
+          "duration_seconds": 8152.0,
+          "ended_at": "2026-09-24T04:23:27Z",
+          "over_budget": false,
+          "started_at": "2026-09-24T02:07:35Z"
+        },
+        {
+          "agent": "T3",
+          "budget_calls": 250,
+          "calls": 145,
+          "duration_seconds": 1509.0,
+          "ended_at": "2026-09-24T03:04:02Z",
+          "over_budget": false,
+          "started_at": "2026-09-24T02:38:53Z"
+        },
+        {
+          "agent": "T4",
+          "budget_calls": 200,
+          "calls": 199,
+          "duration_seconds": 2157.0,
+          "ended_at": "2026-09-24T03:14:50Z",
+          "over_budget": false,
+          "started_at": "2026-09-24T02:38:53Z"
+        },
+        {
+          "agent": "T5",
+          "budget_calls": 120,
+          "calls": 88,
+          "duration_seconds": 889.0,
+          "ended_at": "2026-09-24T02:53:42Z",
+          "over_budget": false,
+          "started_at": "2026-09-24T02:38:53Z"
+        },
+        {
+          "agent": "T6",
+          "budget_calls": 60,
+          "calls": 34,
+          "duration_seconds": 416.0,
+          "ended_at": "2026-09-24T07:48:40Z",
+          "over_budget": false,
+          "started_at": "2026-09-24T07:41:44Z"
+        },
+        {
+          "agent": "T8",
+          "budget_calls": 80,
+          "calls": 98,
+          "duration_seconds": 984.0,
+          "ended_at": "2026-09-24T08:14:08Z",
+          "over_budget": true,
+          "started_at": "2026-09-24T07:57:44Z"
+        },
+        {
+          "agent": "T9",
+          "budget_calls": 60,
+          "calls": 81,
+          "duration_seconds": 915.0,
+          "ended_at": "2026-09-24T08:39:31Z",
+          "over_budget": true,
+          "started_at": "2026-09-24T08:24:16Z"
+        }
+      ],
       "artifacts": [
         "docs/coordination/coordination-phase1-finish.md",
         "docs/coordination/coordination-phase1-finish-run.md",
         "docs/proof/phase1.md",
         "docs/notes/mutation-record-phase1.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Finish phase 1 of harness-bench to usable (M1) and merge-ready (M2) with full rigor",
+      "datetime": "2026-09-24T13:35:17Z",
       "done_when": "real E2E green on the joined branch; bench verify 0; mutation bar met with 0 open; Proof Pack complete; Test Architect veto cleared; main fast-forwarded and pushed",
-      "tier": "T2",
       "fan_out": 5,
-      "signals": {
-        "verification_path": true,
-        "verification_executed": true,
-        "acceptance_met": true
-      },
-      "agent_runs": [
-        {
-          "agent": "T1",
-          "started_at": "2026-09-24T02:07:35Z",
-          "ended_at": "2026-09-24T07:32:13Z",
-          "duration_seconds": 19478.0,
-          "calls": 415,
-          "budget_calls": 450,
-          "over_budget": false
-        },
-        {
-          "agent": "T10",
-          "started_at": "2026-09-24T09:00:42Z",
-          "ended_at": "2026-09-24T10:33:40Z",
-          "duration_seconds": 5578.0,
-          "calls": 160,
-          "budget_calls": 280,
-          "over_budget": false
-        },
-        {
-          "agent": "T11",
-          "started_at": "2026-09-24T09:00:42Z",
-          "ended_at": "2026-09-24T09:25:05Z",
-          "duration_seconds": 1463.0,
-          "calls": 59,
-          "budget_calls": 120,
-          "over_budget": false
-        },
-        {
-          "agent": "T12",
-          "started_at": "2026-09-24T10:42:55Z",
-          "ended_at": "2026-09-24T13:05:56Z",
-          "duration_seconds": 8581.0,
-          "calls": 120,
-          "budget_calls": 250,
-          "over_budget": false
-        },
-        {
-          "agent": "T2",
-          "started_at": "2026-09-24T02:07:35Z",
-          "ended_at": "2026-09-24T04:23:27Z",
-          "duration_seconds": 8152.0,
-          "calls": 297,
-          "budget_calls": 350,
-          "over_budget": false
-        },
-        {
-          "agent": "T3",
-          "started_at": "2026-09-24T02:38:53Z",
-          "ended_at": "2026-09-24T03:04:02Z",
-          "duration_seconds": 1509.0,
-          "calls": 145,
-          "budget_calls": 250,
-          "over_budget": false
-        },
-        {
-          "agent": "T4",
-          "started_at": "2026-09-24T02:38:53Z",
-          "ended_at": "2026-09-24T03:14:50Z",
-          "duration_seconds": 2157.0,
-          "calls": 199,
-          "budget_calls": 200,
-          "over_budget": false
-        },
-        {
-          "agent": "T5",
-          "started_at": "2026-09-24T02:38:53Z",
-          "ended_at": "2026-09-24T02:53:42Z",
-          "duration_seconds": 889.0,
-          "calls": 88,
-          "budget_calls": 120,
-          "over_budget": false
-        },
-        {
-          "agent": "T6",
-          "started_at": "2026-09-24T07:41:44Z",
-          "ended_at": "2026-09-24T07:48:40Z",
-          "duration_seconds": 416.0,
-          "calls": 34,
-          "budget_calls": 60,
-          "over_budget": false
-        },
-        {
-          "agent": "T8",
-          "started_at": "2026-09-24T07:57:44Z",
-          "ended_at": "2026-09-24T08:14:08Z",
-          "duration_seconds": 984.0,
-          "calls": 98,
-          "budget_calls": 80,
-          "over_budget": true
-        },
-        {
-          "agent": "T9",
-          "started_at": "2026-09-24T08:24:16Z",
-          "ended_at": "2026-09-24T08:39:31Z",
-          "duration_seconds": 915.0,
-          "calls": 81,
-          "budget_calls": 60,
-          "over_budget": true
-        }
-      ],
+      "goal": "Finish phase 1 of harness-bench to usable (M1) and merge-ready (M2) with full rigor",
+      "id": "al-01M39T1AM29MBHDWE46VE4MHQF",
+      "kind": "skill",
+      "outcome": "success",
       "parallelism": {
         "agent_seconds": 50122.0,
+        "peak_concurrency": 5,
         "span_seconds": 35952.0,
-        "speedup": 1.39,
-        "peak_concurrency": 5
-      }
+        "speedup": 1.39
+      },
+      "prompt": "commit and push all and merge so main is clean / then / /execute-with-coordination docs/coordination/coordination-phase1-finish.md",
+      "session": "coord-opus",
+      "shortname": "coordinate-phase1-finish",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "execute-with-coordination",
+      "summary": "Executed the phase-1 finish plan as Coordinator. Tracks T1-T5 (planned), T6/T8/T9 (E2E loop-backs), T10/T11/T12 (Test Architect round-1 veto) joined via conductor-join; T7 close by the Coordinator. Real E2E green on the final code (e2e-1790255669); 2699 cosmic-ray mutants 0 open; 198/198 hand-written mutations; Test Architect round 2 CLEAR. Defect classes CONC-A, PATH-A, CLN-A, COORD-A, GATE-A, TOOL-A, TOOL-B registered; E2E-E and TOOL-A controls built red-first. Rulings R-4..R-6 (Owner seat). Planned vs actual in docs/coordination/coordination-phase1-finish-run.md.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     },
     {
-      "id": "al-01M3AJSES11YSP2G098MYPAY1M",
-      "shortname": "/compile then /prepare-for-coordination then /execute-with-coordination …",
+      "actor": null,
+      "artifacts": [],
       "datetime": "2026-09-24T20:47:53Z",
-      "session": "prompt-compile",
-      "prompt": "/compile then /prepare-for-coordination then /execute-with-coordination --launch\n\n# Finish harness-bench end to end: all 31 outstanding to-dos\n\n## Goal state (CO-S0 — compile this before anything else)\n- **Goal:** take harness-bench from the finished phase-1 walking skeleton to the full design (phases 2–5 in `docs/architecture.md` \"Delivery phasing\"), closing all 31 outstanding to-dos below. Do it in dependency-ordered waves, across a mixed-harness team, at the best throughput the rigor floors allow.\n- **Done when:** every row below is either (a) merged to `main` with its exit evidence observed at a join, (b) closed by an Owner ruling in `docs/notes/rulings.md`, or (c) handed to the human with a named reason (rows marked HUMAN). Also: the coordination plan and run record are committed, and `bench verify` passes on the final smoke run.\n- **Not in scope:** new metrics, UI or harnesses beyond the spec (`grok` and `agy` as *measured* harnesses are out: `config.py:28` lists them, but the spec names three harnesses); changing the X1 fixture; any API key (subscriptions only, ADR-0003); rewriting phase-1 code except where a row names it.\n- **Tier:** T2 (multi-phase, multi-harness, touches the ledger and the engine).\n- **Fan-out cap:** at most 5 concurrent tracks per wave. The plan may recommend fewer, and must say so if that is the honest answer (GO6: parallelism is a cost multiplier).\n- **Objective order:** (1) completeness and rigor · (2) token cost · (3) speed. Rigor floors are immovable nodes: red-first TDD, the E7 surface list, Test Architect exit evidence, and audit entries.\n\n## Seats (CO-S1) and model allocation\n| Seat | Harness · model | Holds |\n| --- | --- | --- |\n| **Owner** | Claude Code · Fable 5.1 (`claude-fable-5-1`) | Rules every decision request (`coord decide request --to <owner-session>`) into `docs/notes/rulings.md`; clears or upholds hard vetoes the author cannot clear; `coord leader pin`. |\n| **Leader / Coordinator** | Claude Code · Opus 5.5 (`claude-opus-5-5`) | Runs the three skills, owns the plan, dispatches, arbitrates seams, runs every join. **Authors no track work.** Starts every real benchmark run itself via `/start-benchmark` (see Hard rules). |\n| **Complex tracks** | Codex · `gpt-6-sol` | Work you would give Opus 5.5: design-heavy or cross-module changes (engine, driver, ledger, graders, statistics, judges). |\n| **Well-defined tracks** | Grok and Agy, each on its **harness default model** | Distinct, bounded work with a fixed contract and fixture: readers, gates, small hardening fixes, task authoring from a fixed source, tests against a given spec. |\n| **Claude subagents** | Opus 5.5 for design or ambiguous work; Sonnet 5 (`claude-sonnet-5`) for mechanical work | Personas (Test Architect, Simplifier, Security, Data & Persistence, …) at gates; reviews at joins; small fixes. |\n\n**Allocation rules for Stage 7:**\n- Give a track to Grok or Agy only when its contract is fully specified: owned paths, the red test named, fixtures present. If writing that brief takes a design decision, the track is complex, not well-defined.\n- Pair each track author with a **reviewer from a different vendor** at the join (author ≠ reviewer, and never the same model family). A Codex author gets a Claude reviewer; a Grok or Agy author gets a Codex or Claude reviewer.\n- **Grok and Agy run on their harness default models, with no `--model` pin** (operator decision, 2026-09-24). The operator reports the defaults as **Grok: grok 4.7 high** and **Agy: Gemini 3.8 Flash High**. Agy may use Claude or Gemini models, but for now it stays on the Gemini default. The exact served model ids are not yet observed. At qualification, read the served id from each worker's native record or ACP session and record it in the qualification file. If the served model is not the reported default, that is a finding for the Owner, not a reason to pin.\n- **Qualification is measured, never assumed.** Grok 1.0.41 and Agy 1.2.10 qualified on this host in `qualify-5` (pack revision 93). Re-check each at Stage 1 on its default model.\n- **Codex is qualified on this machine in `agent-full-access`** (operator decision and approval of no sandbox, 2026-09-24). The record is in `docs/coordination/coordination-phase1-finish-run.md` (commit `e22ca74`; ledger `3db84fc`).\n  - **`qualify-codex-2`:** `ready_for_review` in 84 s, 1 turn, one commit touching only `docs/notes/qualify-worker.md`. Served model **`gpt-6-sol`** (native `turn_context`). `approval_policy: never` and `danger-full-access`, with 0 escalations, 0 permission requests and 0 native denials.\n  - **The Codex worker profile to reuse in every Codex track's contract row:**\n    - `\"argv\": [\"node\", \"C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@agentclientprotocol/codex-acp/dist/index.js\"]` (adapter 1.12.0).\n    - `\"runtime\": {\"unattended\": true, \"mailbox\": <per track>, \"max_turns\": <per track>, \"max_retries\": 0, \"permissions\": \"deny\", \"mode_id\": \"agent-full-access\"}`.\n    - `binding_files`: `AGENTS.md`, the adapter's `dist/index.js` and `package.json`, the pinned 0.156.0 `codex.exe`, and `C:/Users/malla/.codex/config.toml` (it holds `model = \"gpt-6-sol\"`).\n    - All four capabilities at `observed-only`.\n  - **The default ACP mode is rejected** (`qualify-codex-1`). It runs `workspace-write` and overrides the operator's `approvals_reviewer` with `auto_review`. A linked worktree's index is outside the sandbox, so every `git add` and `git commit` escalated and Codex's model reviewer approved it, out of the runner's sight.\n- **Every `coord-runner.py` call goes through the operator-approved wrapper:** `sh C:/Users/malla/AppData/Local/Temp/claude/C--projects-x-harness-x-model-bench/c44c669c-d0a8-41c1-b4b5-8376f17cf0be/scratchpad/coord-runner.sh <subcommand> …`.\n  - It is the only allow-listed entry point. The Claude Code auto-mode classifier refuses a direct launch of an unsandboxed worker, and refuses the agent adding its own rule.\n  - The wrapper sets `AGENT_SESSION=coord-opus-cq`, `AGENT_HOST=claude` and `CODEX_PATH` (the pinned codex-cli 0.156.0; without it the adapter runs its nested 0.154.0, which rejects `gpt-6-sol`, spike R11.5). So the Owner in every contract is **`coord-opus-cq`**, the Leader session.\n  - The runner's fingerprint hashes the whole environment. **Compute `fingerprint` and `run` through the same wrapper**, or the qualification will not match.\n  - Leadership: the TTL cap is 900 s. Keep `coord leader renew` running (the `qualify-5` practice: a renewal every 90 s) for as long as any worker runs. Reclaim with `coord leader reclaim --ttl 900 --host claude coord-opus-cq` after a lapse.\n- The native Codex ownership hook (`coord-core.py hook --config --host codex`) is **not installed**. Its command is POSIX-only (`py=$(…)`), and Codex ran commands through `pwsh.exe` here. That is the same defect class `qualify-5` fixed for Agy's hooks. Ownership is observed at the shared git pre-commit floor and by the runner's evidence verifier, not enforced per edit.\n  - If a Codex track fails, the R-4 fallback applies. Diagnose the failure the way `qualify-5` did: from a recorded message trace, not a version guess.\n- **Fallback (the R-4 precedent):** a track whose harness fails qualification, or fails twice at run time, moves to Claude Code: Opus for complex work, Sonnet for well-defined work. Record the move with the measured cause in the run record. Moving a track is an Owner ruling, never an automatic retry.\n\n## Hard rules\n- **No benchmark cell runs inside the coordination layer** (owner ruling 3, ADR-0002; `/start-benchmark`). Only the Leader starts `bench run`, as its own process, via `/start-benchmark`. A track that needs a real run (rows 5, 6, 13, 15, 25) raises a seam request to the Leader and receives the run id and archive paths.\n- Phase 2+ features are **designed before they are built**. Architecture \"Remaining\" lists \"Phase 2 designs (Copilot profile, stop/decisions, T0 matcher, Harbor E1)\". Each design goes through `/design-slice` with its adversarial gate, then `/implement` red-first.\n- **Row 6 is a hard predecessor of any driver change** (Test Architect condition, \"before phase 2 changes the driver\").\n- Models are pinned; `auto` is refused. Never set or ask for an API key.\n- Every track follows the brief contract in `/execute-with-coordination` Stage 3: the `start` line first, absolute paths, no `EnterWorktree`, a gate's status never piped, a budget and a 400k context ceiling, exit evidence, and Not-in-scope.\n\n## Wave sketch (a starting hypothesis — Stage 4 must re-derive it from real edges and may overturn it)\n- **Wave 0 · serial spine:** layer on (`coord classify init`, `install`, `doctor`); Codex is already qualified in `agent-full-access` (`qualify-codex-2`); re-check Grok and Agy on their default models; the Owner rules DR-1, DR-2 and DR-4; the Leader runs one 4-cell X1 run (codex-sol and cc-opus, pack on and off) to capture the full ACP transcript for row 6.\n- **Wave 1 · Copilot vs Codex on X1:** rows 1–5 (Copilot profile, build, launch shape, reader, pack-on probe), plus row 6 D5/D7. Exit: the Leader runs X1 with `copilot-sol`, `codex-sol` and `cc-opus`, pack on and off; report plus `bench verify: ok`.\n- **Wave 2 · smoke on all harnesses:** rows 7–15 and the carried hardening items 26, 28 and 29, which have no dependency on the phase-2 designs. Exit: the smoke BOM runs overnight and `bench status` explains every cell that did not complete.\n- **Wave 3 · grading and judges:** rows 16–18 (row 17's gateway is ADR-0009). Exit: the smoke archive re-grades byte-identically; κ appears in the report header.\n- **Wave 4 · statistics and the full report:** rows 19–20. Exit: UIA-1..15, axe, offline load; two P3 readers name the leader and the pack effect (R9).\n- **Wave 5 · the full grid:** rows 21–25 and 27. Exit: 24 tasks × combos × packs × 3 reps; crash-then-resume in each state; a pack change validated by a re-run comparison.\n\n## Decision requests: the Owner answers these (the plan is not dispatchable until each is ruled)\nThe **Owner seat (Fable)** rules each one into `docs/notes/rulings.md`, via `coord decide request --to <owner-session>`. Do not ask the human. The Owner escalates to the human only when a ruling needs something no seat can verify from this host, such as access to a private repository or an account.\n\nAlready decided by the operator (2026-09-24), not a decision request: Agy uses its default Gemini model for now.\n\n- **DR-1 · Task sources.** Rows 7 and 21 depend on external or private sources (ClarifyCodeBench, cfd-bench, ai-de, SpecBench, ProjDevBench, ArchBench, Terminal-Bench 2.0, SWE-bench Verified, MultiPL-E). Which are reachable from this host, and which run as operator-authored substitutes (owner ruling 5, ADR-0012)?\n- **DR-2 · Row 27 anchor.** Which anchor outside the run's own segments detects a later grading pass being deleted whole? This is an ADR-0006 amendment.\n- **DR-4 · Machine time.** Which windows can the smoke run (wave 2) and the full grid (wave 5) use? The runs use the operator's subscriptions and share the host with coordination workers. Can a benchmark run and coordination tracks overlap (risk A5, resource contention)?\n\n## The 31 to-dos (priority: P0 blocks Copilot-vs-Codex · P1 phase 2 · P2 phase 3 · P3 phases 4–5 · H cleanup carried over from phase 1)\n| # | Task | Pri | What it does | Status at 2026-09-24 |\n| --- | --- | --- | --- | --- |\n| 1 | Copilot harness profile | P0 | `bench/profiles/copilot.yaml`; allow `copilot` in `src/harness_bench/profiles.py:25` | Spiked (N1.2, R2.1 verified); not built |\n| 2 | Copilot pinned build | P0 | `@github/copilot` in `bench/tools/package-lock.json`; `tools.py` `LAYOUT` entry; re-hashed each cell start | Not built |\n| 3 | Copilot launch shape | P0 | `Profile.argv()` always runs `node <adapter>`; Copilot is native ACP with `--acp --model --allow-tool shell --allow-tool write` | Not built (gap inferred from reading `argv()`) |\n| 4 | Copilot telemetry reader | P0 | `session-store.db` `assistant_usage_events` → `telemetry/copilot.py`; add to `READERS` (`profiles.py:119`) | Format verified in a spike; no reader |\n| 5 | Copilot pack-on probe + instruction-file preflight | P0 | Prove a Copilot cell loads the pack's `.github/` files; extend HB-PRE-002 (`workspace.py:25`) to Copilot instruction files | Not started (gap inferred) |\n| 6 | D5/D7 real ACP transcript | P0 | Replace the schema-shaped replay fixture with one real cell's full ACP stream; re-run D5/D7 | Open, carried condition (`docs/proof/phase1.md` residual 9) |\n| 7 | Smoke tasks A1, B1, C1, D1, E1, F1 | P1 | Stub → `ready` via `/new-bench-task` | All `stub` |\n| 8 | T0 scripted-user matcher | P1 | The scripted user for A1 | Not started |\n| 9 | Harbor E1 base image | P1 | Containerised Terminal-Bench tasks (risk A6) | Spike not run |\n| 10 | Stop, decision timeout, circuit breaker | P1 | Run-level stop within 30 s; decision requests with a default and a timeout | Modeled in TLC; not built |\n| 11 | Power request | P1 | Keep the host awake for overnight runs | Not built |\n| 12 | Per-class canaries (US-13) | P1 | Canaries per contamination class; key canaries by (string, class) | Partial |\n| 13 | N5 pack-seeded probe | P1 | Does the Codex `~/.agents/skills` leak differ between pack on and off? (R-6) | Open; Codex cells flagged |\n| 14 | `last_update_ms` seam | P1 | `TurnResult.last_update_seconds` (seam `req-01M38KX8503601BEP857749VVF`) | Open |\n| 15 | Resource check at parallelism ≥ 2 | P1 | Peak memory and CPU time on D1 (risk A5) | Not run |\n| 16 | Full graders | P2 | Drift, rigor, mutation, clarify, process | Not built |\n| 17 | Model gateway + judges | P2 | Headless CLIs with every tool denied (ADR-0009); blind two-vendor judges; calibration; κ | Designed; not built |\n| 18 | Egress gate + injection fixture | P2 | US-46 / US-47 | Not built |\n| 19 | Statistics | P3 | Bootstrap intervals, pack effect | Not built |\n| 20 | Full report + AI summaries | P3 | Every Part C section; summaries with a claim check; UIA/axe | Skeleton only |\n| 21 | Remaining 17 BOM tasks | P3 | A2–A5, B2–B3, C2, D2–D3, E2–E7, F2 → `ready` | All `stub` |\n| 22 | G1/G2 formal tasks | P3 | Scenario 7 after the formal-toolchain spike (S-12) | Spike not run |\n| 23 | Resume | P3 | Continue an `incomplete` run | Not built |\n| 24 | Run-to-run comparison + stability | P3 | A pack change validated by a re-run | Not built |\n| 25 | Full grid run | P3 | 24 tasks × combos × packs × 3 reps | Blocked by all of the above |\n| 26 | TOOL-B control | H | Map each cosmic-ray kill to the named test that caught it | Open |\n| 27 | Later-grading-pass anchor | H | Detect a later `bench grade` pass deleted whole (residual 7a; DR-2) | Open, disclosed |\n| 28 | Small hardening items | H | `procs.spawn` TimeoutExpired before `job.close()`; unchecked Win32 results in `host.py`; CLI labels printed before the credential scan; a test for \"0 folders left\" | Open |\n| 29 | Ruling-citation gate | H | `verify-ruling-citations.py` reads `### Ruling NN`; the rulings use `## R-n` | Open |\n| 30 | Host risks A3 / A9 | H · **HUMAN** | OAuth token rotation during a long cell; the monotonic clock across Windows sleep (the host must be put to sleep) | Probes not run |\n| 31 | Copilot USD cost | — | `NA` by decision; tokens, AI units and wall time are the cost measures | Decided; no work. Close as a ruling citation |\n\nSources: `docs/architecture.md` (Delivery phasing, Flagged risks), `docs/design/phase1-walking-skeleton.md` (Status), `docs/proof/phase1.md` (Residuals 1–12, Remaining), `docs/notes/rulings.md` (R-4..R-6), `bench/bom.yaml`, `tasks/*/task.yaml`. **Re-read them at grounding; this table is a snapshot, not evidence** (E15).\n\n## Close\nEvery wave ends with a join (Test Architect hard veto on observed exit evidence; Simplifier on scope growth) and a *Completed / Remaining / Next* block. The run ends with: the committed plan and run record (planned vs actual per track: calls, tokens, wall clock, harness, fallbacks), the final `bench report` path and leaderboard rows, the `bench verify` result, the rows handed to the human with reasons, and the audit entry (AL5b: full prompt, `goal`, `done_when`).",
-      "summary": "raw prompt logged for compilation",
+      "id": "al-01M3AJSES11YSP2G098MYPAY1M",
       "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3AKDQQBM19QYGTH91F71K07",
-      "shortname": "/compile then /prepare-for-coordination then /execute-with-coordination …",
-      "datetime": "2026-09-24T20:58:58Z",
-      "session": "prompt-compile",
-      "prompt": "/compile then /prepare-for-coordination then /execute-with-coordination --launch\n\n# Finish harness-bench end to end: all 31 outstanding to-dos\n\n## Goal state (CO-S0 — compile this before anything else)\n- **Goal:** take harness-bench from the finished phase-1 walking skeleton to the full design (phases 2–5 in `docs/architecture.md` \"Delivery phasing\"), closing all 31 outstanding to-dos below. Do it in dependency-ordered waves, across a mixed-harness team, at the best throughput the rigor floors allow.\n- **Done when:** every row below is either (a) merged to `main` with its exit evidence observed at a join, (b) closed by an Owner ruling in `docs/notes/rulings.md`, or (c) handed to the human with a named reason (rows marked HUMAN). Also: the coordination plan and run record are committed, and `bench verify` passes on the final smoke run.\n- **Not in scope:** new metrics, UI or harnesses beyond the spec (`grok` and `agy` as *measured* harnesses are out: `config.py:28` lists them, but the spec names three harnesses); changing the X1 fixture; any API key (subscriptions only, ADR-0003); rewriting phase-1 code except where a row names it.\n- **Tier:** T2 (multi-phase, multi-harness, touches the ledger and the engine).\n- **Fan-out cap:** at most 5 concurrent tracks per wave. The plan may recommend fewer, and must say so if that is the honest answer (GO6: parallelism is a cost multiplier).\n- **Objective order:** (1) completeness and rigor · (2) token cost · (3) speed. Rigor floors are immovable nodes: red-first TDD, the E7 surface list, Test Architect exit evidence, and audit entries.\n\n## Seats (CO-S1) and model allocation\n| Seat | Harness · model | Holds |\n| --- | --- | --- |\n| **Owner** | Claude Code · Fable 5.1 (`claude-fable-5-1`) | Rules every decision request (`coord decide request --to <owner-session>`) into `docs/notes/rulings.md`; clears or upholds hard vetoes the author cannot clear; `coord leader pin`. |\n| **Leader / Coordinator** | Claude Code · Opus 5.5 (`claude-opus-5-5`) | Runs the three skills, owns the plan, dispatches, arbitrates seams, runs every join. **Authors no track work.** Starts every real benchmark run itself via `/start-benchmark` (see Hard rules). |\n| **Complex tracks** | Codex · `gpt-6-sol` | Work you would give Opus 5.5: design-heavy or cross-module changes (engine, driver, ledger, graders, statistics, judges). |\n| **Well-defined tracks** | Grok and Agy, each on its **harness default model** | Distinct, bounded work with a fixed contract and fixture: readers, gates, small hardening fixes, task authoring from a fixed source, tests against a given spec. |\n| **Claude subagents** | Opus 5.5 for design or ambiguous work; Sonnet 5 (`claude-sonnet-5`) for mechanical work | Personas (Test Architect, Simplifier, Security, Data & Persistence, …) at gates; reviews at joins; small fixes. |\n\n**Allocation rules for Stage 7:**\n- Give a track to Grok or Agy only when its contract is fully specified: owned paths, the red test named, fixtures present. If writing that brief takes a design decision, the track is complex, not well-defined.\n- Pair each track author with a **reviewer from a different vendor** at the join (author ≠ reviewer, and never the same model family). A Codex author gets a Claude reviewer; a Grok or Agy author gets a Codex or Claude reviewer.\n- **Grok and Agy run on their harness default models, with no `--model` pin** (operator decision, 2026-09-24). The operator reports the defaults as **Grok: grok 4.7 high** and **Agy: Gemini 3.8 Flash High**. Agy may use Claude or Gemini models, but for now it stays on the Gemini default. The exact served model ids are not yet observed. At qualification, read the served id from each worker's native record or ACP session and record it in the qualification file. If the served model is not the reported default, that is a finding for the Owner, not a reason to pin.\n- **Qualification is measured, never assumed.** Grok 1.0.41 and Agy 1.2.10 qualified on this host in `qualify-5` (pack revision 93). Re-check each at Stage 1 on its default model.\n- **Codex is qualified on this machine in `agent-full-access`** (operator decision and approval of no sandbox, 2026-09-24). The record is in `docs/coordination/coordination-phase1-finish-run.md` (commit `e22ca74`; ledger `3db84fc`).\n  - **`qualify-codex-2`:** `ready_for_review` in 84 s, 1 turn, one commit touching only `docs/notes/qualify-worker.md`. Served model **`gpt-6-sol`** (native `turn_context`). `approval_policy: never` and `danger-full-access`, with 0 escalations, 0 permission requests and 0 native denials.\n  - **The Codex worker profile to reuse in every Codex track's contract row:**\n    - `\"argv\": [\"node\", \"C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@agentclientprotocol/codex-acp/dist/index.js\"]` (adapter 1.12.0).\n    - `\"runtime\": {\"unattended\": true, \"mailbox\": <per track>, \"max_turns\": <per track>, \"max_retries\": 0, \"permissions\": \"deny\", \"mode_id\": \"agent-full-access\"}`.\n    - `binding_files`: `AGENTS.md`, the adapter's `dist/index.js` and `package.json`, the pinned 0.156.0 `codex.exe`, and `C:/Users/malla/.codex/config.toml` (it holds `model = \"gpt-6-sol\"`).\n    - All four capabilities at `observed-only`.\n  - **The default ACP mode is rejected** (`qualify-codex-1`). It runs `workspace-write` and overrides the operator's `approvals_reviewer` with `auto_review`. A linked worktree's index is outside the sandbox, so every `git add` and `git commit` escalated and Codex's model reviewer approved it, out of the runner's sight.\n- **Every `coord-runner.py` call goes through the operator-approved wrapper:** `sh C:/Users/malla/AppData/Local/Temp/claude/C--projects-x-harness-x-model-bench/c44c669c-d0a8-41c1-b4b5-8376f17cf0be/scratchpad/coord-runner.sh <subcommand> …`.\n  - It is the only allow-listed entry point. The Claude Code auto-mode classifier refuses a direct launch of an unsandboxed worker, and refuses the agent adding its own rule.\n  - The wrapper sets `AGENT_SESSION=coord-opus-cq`, `AGENT_HOST=claude` and `CODEX_PATH` (the pinned codex-cli 0.156.0; without it the adapter runs its nested 0.154.0, which rejects `gpt-6-sol`, spike R11.5). So the Owner in every contract is **`coord-opus-cq`**, the Leader session.\n  - The runner's fingerprint hashes the whole environment. **Compute `fingerprint` and `run` through the same wrapper**, or the qualification will not match.\n  - Leadership: the TTL cap is 900 s. Keep `coord leader renew` running (the `qualify-5` practice: a renewal every 90 s) for as long as any worker runs. Reclaim with `coord leader reclaim --ttl 900 --host claude coord-opus-cq` after a lapse.\n- The native Codex ownership hook (`coord-core.py hook --config --host codex`) is **not installed**. Its command is POSIX-only (`py=$(…)`), and Codex ran commands through `pwsh.exe` here. That is the same defect class `qualify-5` fixed for Agy's hooks. Ownership is observed at the shared git pre-commit floor and by the runner's evidence verifier, not enforced per edit.\n  - If a Codex track fails, the R-4 fallback applies. Diagnose the failure the way `qualify-5` did: from a recorded message trace, not a version guess.\n- **Fallback (the R-4 precedent):** a track whose harness fails qualification, or fails twice at run time, moves to Claude Code: Opus for complex work, Sonnet for well-defined work. Record the move with the measured cause in the run record. Moving a track is an Owner ruling, never an automatic retry.\n\n## Hard rules\n- **No benchmark cell runs inside the coordination layer** (owner ruling 3, ADR-0002; `/start-benchmark`). Only the Leader starts `bench run`, as its own process, via `/start-benchmark`. A track that needs a real run (rows 5, 6, 13, 15, 25) raises a seam request to the Leader and receives the run id and archive paths.\n- Phase 2+ features are **designed before they are built**. Architecture \"Remaining\" lists \"Phase 2 designs (Copilot profile, stop/decisions, T0 matcher, Harbor E1)\". Each design goes through `/design-slice` with its adversarial gate, then `/implement` red-first.\n- **Row 6 is a hard predecessor of any driver change** (Test Architect condition, \"before phase 2 changes the driver\").\n- Models are pinned; `auto` is refused. Never set or ask for an API key.\n- Every track follows the brief contract in `/execute-with-coordination` Stage 3: the `start` line first, absolute paths, no `EnterWorktree`, a gate's status never piped, a budget and a 400k context ceiling, exit evidence, and Not-in-scope.\n\n## Wave sketch (a starting hypothesis — Stage 4 must re-derive it from real edges and may overturn it)\n- **Wave 0 · serial spine:** layer on (`coord classify init`, `install`, `doctor`); Codex is already qualified in `agent-full-access` (`qualify-codex-2`); re-check Grok and Agy on their default models; the Leader runs one 4-cell X1 run (codex-sol and cc-opus, pack on and off) to capture the full ACP transcript for row 6.\n- **Wave 1 · Copilot vs Codex on X1:** rows 1–5 (Copilot profile, build, launch shape, reader, pack-on probe), plus row 6 D5/D7. Exit: the Leader runs X1 with `copilot-sol`, `codex-sol` and `cc-opus`, pack on and off; report plus `bench verify: ok`.\n- **Wave 2 · smoke on all harnesses:** rows 7–15 and the carried hardening items 26, 28 and 29, which have no dependency on the phase-2 designs. Exit: the smoke BOM runs overnight and `bench status` explains every cell that did not complete.\n- **Wave 3 · grading and judges:** rows 16–18 (row 17's gateway is ADR-0009). Exit: the smoke archive re-grades byte-identically; κ appears in the report header.\n- **Wave 4 · statistics and the full report:** rows 19–20. Exit: UIA-1..15, axe, offline load; two P3 readers name the leader and the pack effect (R9).\n- **Wave 5 · the full grid:** rows 21–25 and 27. Exit: 24 tasks × combos × packs × 3 reps; crash-then-resume in each state; a pack change validated by a re-run comparison.\n\n## Rulings in force (decided before dispatch; read them verbatim in `docs/notes/rulings.md`, commit `0a64b0c`)\nAny new decision a track raises goes to the **Owner seat (Fable)** with `coord decide request --to <owner-session>` and is ruled into `docs/notes/rulings.md`. Do not ask the human. The Owner escalates to the human only when a ruling needs something no seat can verify from this host, such as access to a private repository or an account.\n\n- **Operator (2026-09-24):** Agy uses its default Gemini model for now. Codex runs in `agent-full-access`.\n- **R-7 · Task sources (rows 7 and 21).** Nothing is deferred.\n  - Reachable as is: ClarifyCodeBench, MultiPL-E, and Terminal-Bench 2.0 and SWE-bench Verified (these two gated by row 9).\n  - Reachable locally: cfd-bench (plus the `CFD-Bench-ClaudeCode` and `CFD-Bench-GHCP` clones) and ai-de. Pin a commit; ai-de has uncommitted paths.\n  - ProjDevBench: the prompt is used, with a locally authored oracle (no ACMOJ).\n  - Operator-authored substitutes: SpecBench (B3) and ArchBench (C2). Change `bench/bom.yaml` `source` accordingly.\n  - If row 9 has not passed by the wave-2 join, E1 is deferred and E6 takes the scenario-5 smoke slot.\n- **R-8 · Row 27 anchor.** The anchor is a git-committed, append-only index of grading-pass heads, stored as `kind: grading-pass` entries in `docs/audit/audit-log.jsonl` (written only through `audit-log.py`).\n  - `bench verify` exits 5 on a missing anchored pass or a head mismatch.\n  - It warns `anchor: not recorded` for ledgers from before the ruling, and `anchor: uncommitted` when the entry is not yet committed.\n  - This is an ADR-0006 amendment. It goes through `/design-slice` with the tamper tests R-8 lists.\n- **R-9 · Machine time.**\n  - **Vendor exclusivity during any benchmark run:** no worker or subagent runs on a vendor login that a cell uses (Anthropic, OpenAI, GitHub). Grok and Agy may overlap up to the fan-out cap, and the Leader only polls status.\n  - Smoke runs 22:00–07:00 PDT. It runs at parallelism 4 only after row 15 measures D1 at ≥2 and `plan.py:30` (`PHASE1_MAX_PARALLELISM = 2`) is raised; otherwise split it by combo pair, one night each.\n  - Full grid (≈91 h at parallelism 4): an exclusive block in nightly segments through resume (row 23), or a weekend.\n  - Day hours: X1 and qualification runs of ≤4 cells only.\n  - A `failed (provider)` cell under overlap is attributed to the overlap; two in one run mean full exclusivity for that run and the next.\n  - Every window is recorded in the run record.\n\n## The 31 to-dos (priority: P0 blocks Copilot-vs-Codex · P1 phase 2 · P2 phase 3 · P3 phases 4–5 · H cleanup carried over from phase 1)\n| # | Task | Pri | What it does | Status at 2026-09-24 |\n| --- | --- | --- | --- | --- |\n| 1 | Copilot harness profile | P0 | `bench/profiles/copilot.yaml`; allow `copilot` in `src/harness_bench/profiles.py:25` | Spiked (N1.2, R2.1 verified); not built |\n| 2 | Copilot pinned build | P0 | `@github/copilot` in `bench/tools/package-lock.json`; `tools.py` `LAYOUT` entry; re-hashed each cell start | Not built |\n| 3 | Copilot launch shape | P0 | `Profile.argv()` always runs `node <adapter>`; Copilot is native ACP with `--acp --model --allow-tool shell --allow-tool write` | Not built (gap inferred from reading `argv()`) |\n| 4 | Copilot telemetry reader | P0 | `session-store.db` `assistant_usage_events` → `telemetry/copilot.py`; add to `READERS` (`profiles.py:119`) | Format verified in a spike; no reader |\n| 5 | Copilot pack-on probe + instruction-file preflight | P0 | Prove a Copilot cell loads the pack's `.github/` files; extend HB-PRE-002 (`workspace.py:25`) to Copilot instruction files | Not started (gap inferred) |\n| 6 | D5/D7 real ACP transcript | P0 | Replace the schema-shaped replay fixture with one real cell's full ACP stream; re-run D5/D7 | Open, carried condition (`docs/proof/phase1.md` residual 9) |\n| 7 | Smoke tasks A1, B1, C1, D1, E1, F1 | P1 | Stub → `ready` via `/new-bench-task` | All `stub` |\n| 8 | T0 scripted-user matcher | P1 | The scripted user for A1 | Not started |\n| 9 | Harbor E1 base image | P1 | Containerised Terminal-Bench tasks (risk A6) | Spike not run |\n| 10 | Stop, decision timeout, circuit breaker | P1 | Run-level stop within 30 s; decision requests with a default and a timeout | Modeled in TLC; not built |\n| 11 | Power request | P1 | Keep the host awake for overnight runs | Not built |\n| 12 | Per-class canaries (US-13) | P1 | Canaries per contamination class; key canaries by (string, class) | Partial |\n| 13 | N5 pack-seeded probe | P1 | Does the Codex `~/.agents/skills` leak differ between pack on and off? (R-6) | Open; Codex cells flagged |\n| 14 | `last_update_ms` seam | P1 | `TurnResult.last_update_seconds` (seam `req-01M38KX8503601BEP857749VVF`) | Open |\n| 15 | Resource check at parallelism ≥ 2 | P1 | Peak memory and CPU time on D1 (risk A5) | Not run |\n| 16 | Full graders | P2 | Drift, rigor, mutation, clarify, process | Not built |\n| 17 | Model gateway + judges | P2 | Headless CLIs with every tool denied (ADR-0009); blind two-vendor judges; calibration; κ | Designed; not built |\n| 18 | Egress gate + injection fixture | P2 | US-46 / US-47 | Not built |\n| 19 | Statistics | P3 | Bootstrap intervals, pack effect | Not built |\n| 20 | Full report + AI summaries | P3 | Every Part C section; summaries with a claim check; UIA/axe | Skeleton only |\n| 21 | Remaining 17 BOM tasks | P3 | A2–A5, B2–B3, C2, D2–D3, E2–E7, F2 → `ready` | All `stub` |\n| 22 | G1/G2 formal tasks | P3 | Scenario 7 after the formal-toolchain spike (S-12) | Spike not run |\n| 23 | Resume | P3 | Continue an `incomplete` run | Not built |\n| 24 | Run-to-run comparison + stability | P3 | A pack change validated by a re-run | Not built |\n| 25 | Full grid run | P3 | 24 tasks × combos × packs × 3 reps | Blocked by all of the above |\n| 26 | TOOL-B control | H | Map each cosmic-ray kill to the named test that caught it | Open |\n| 27 | Later-grading-pass anchor | H | Detect a later `bench grade` pass deleted whole (residual 7a; DR-2) | Open, disclosed |\n| 28 | Small hardening items | H | `procs.spawn` TimeoutExpired before `job.close()`; unchecked Win32 results in `host.py`; CLI labels printed before the credential scan; a test for \"0 folders left\" | Open |\n| 29 | Ruling-citation gate | H | `verify-ruling-citations.py` reads `### Ruling NN`; the rulings use `## R-n` | Open |\n| 30 | Host risks A3 / A9 | H · **HUMAN** | OAuth token rotation during a long cell; the monotonic clock across Windows sleep (the host must be put to sleep) | Probes not run |\n| 31 | Copilot USD cost | — | `NA` by decision; tokens, AI units and wall time are the cost measures | Decided; no work. Close as a ruling citation |\n\nSources: `docs/architecture.md` (Delivery phasing, Flagged risks), `docs/design/phase1-walking-skeleton.md` (Status), `docs/proof/phase1.md` (Residuals 1–12, Remaining), `docs/notes/rulings.md` (R-4..R-6), `bench/bom.yaml`, `tasks/*/task.yaml`. **Re-read them at grounding; this table is a snapshot, not evidence** (E15).\n\n## Close\nEvery wave ends with a join (Test Architect hard veto on observed exit evidence; Simplifier on scope growth) and a *Completed / Remaining / Next* block. The run ends with: the committed plan and run record (planned vs actual per track: calls, tokens, wall clock, harness, fallbacks), the final `bench report` path and leaderboard rows, the `bench verify` result, the rows handed to the human with reasons, and the audit entry (AL5b: full prompt, `goal`, `done_when`).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3AKF5D9FSZ2BE0ARDZCXNKQ",
-      "shortname": "/compile then /prepare-for-coordination then /execute-with-coordination …",
-      "datetime": "2026-09-24T20:59:44Z",
-      "session": "prompt-compile",
-      "prompt": "/compile then /prepare-for-coordination then /execute-with-coordination --launch\n\n# Finish harness-bench end to end: all 31 outstanding to-dos\n\n## Goal state (CO-S0 — compile this before anything else)\n- **Goal:** take harness-bench from the finished phase-1 walking skeleton to the full design (phases 2–5 in `docs/architecture.md` \"Delivery phasing\"), closing all 31 outstanding to-dos below. Do it in dependency-ordered waves, across a mixed-harness team, at the best throughput the rigor floors allow.\n- **Done when:** every row below is either (a) merged to `main` with its exit evidence observed at a join, (b) closed by an Owner ruling in `docs/notes/rulings.md`, or (c) handed to the human with a named reason (rows marked HUMAN). Also: the coordination plan and run record are committed, and `bench verify` passes on the final smoke run.\n- **Not in scope:** new metrics, UI or harnesses beyond the spec (`grok` and `agy` as *measured* harnesses are out: `config.py:28` lists them, but the spec names three harnesses); changing the X1 fixture; any API key (subscriptions only, ADR-0003); rewriting phase-1 code except where a row names it.\n- **Tier:** T2 (multi-phase, multi-harness, touches the ledger and the engine).\n- **Fan-out cap:** at most 5 concurrent tracks per wave. The plan may recommend fewer, and must say so if that is the honest answer (GO6: parallelism is a cost multiplier).\n- **Objective order:** (1) completeness and rigor · (2) token cost · (3) speed. Rigor floors are immovable nodes: red-first TDD, the E7 surface list, Test Architect exit evidence, and audit entries.\n\n## Seats (CO-S1) and model allocation\n| Seat | Harness · model | Holds |\n| --- | --- | --- |\n| **Owner** | Claude Code · Fable 5.1 (`claude-fable-5-1`) | Rules every decision request (`coord decide request --to <owner-session>`) into `docs/notes/rulings.md`; clears or upholds hard vetoes the author cannot clear; `coord leader pin`. |\n| **Leader / Coordinator** | Claude Code · Opus 5.5 (`claude-opus-5-5`) | Runs the three skills, owns the plan, dispatches, arbitrates seams, runs every join. **Authors no track work.** Starts every real benchmark run itself via `/start-benchmark` (see Hard rules). |\n| **Complex tracks** | Codex · `gpt-6-sol` | Work you would give Opus 5.5: design-heavy or cross-module changes (engine, driver, ledger, graders, statistics, judges). |\n| **Well-defined tracks** | Grok and Agy, each on its **harness default model** | Distinct, bounded work with a fixed contract and fixture: readers, gates, small hardening fixes, task authoring from a fixed source, tests against a given spec. |\n| **Claude subagents** | Opus 5.5 for design or ambiguous work; Sonnet 5 (`claude-sonnet-5`) for mechanical work | Personas (Test Architect, Simplifier, Security, Data & Persistence, …) at gates; reviews at joins; small fixes. |\n\n**Allocation rules for Stage 7:**\n- Give a track to Grok or Agy only when its contract is fully specified: owned paths, the red test named, fixtures present. If writing that brief takes a design decision, the track is complex, not well-defined.\n- Pair each track author with a **reviewer from a different vendor** at the join (author ≠ reviewer, and never the same model family). A Codex author gets a Claude reviewer; a Grok or Agy author gets a Codex or Claude reviewer.\n- **Grok and Agy run on their harness default models, with no `--model` pin** (operator decision, 2026-09-24). The operator reports the defaults as **Grok: grok 4.7 high** and **Agy: Gemini 3.8 Flash High**. Agy may use Claude or Gemini models, but for now it stays on the Gemini default. The exact served model ids are not yet observed. At qualification, read the served id from each worker's native record or ACP session and record it in the qualification file. If the served model is not the reported default, that is a finding for the Owner, not a reason to pin.\n- **Qualification is measured, never assumed.** Grok 1.0.41 and Agy 1.2.10 qualified on this host in `qualify-5` (pack revision 93). Re-check each at Stage 1 on its default model.\n- **Codex is qualified on this machine in `agent-full-access`** (operator decision and approval of no sandbox, 2026-09-24). The record is in `docs/coordination/coordination-phase1-finish-run.md` (commit `e22ca74`; ledger `3db84fc`).\n  - **`qualify-codex-2`:** `ready_for_review` in 84 s, 1 turn, one commit touching only `docs/notes/qualify-worker.md`. Served model **`gpt-6-sol`** (native `turn_context`). `approval_policy: never` and `danger-full-access`, with 0 escalations, 0 permission requests and 0 native denials.\n  - **The Codex worker profile to reuse in every Codex track's contract row:**\n    - `\"argv\": [\"node\", \"C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@agentclientprotocol/codex-acp/dist/index.js\"]` (adapter 1.12.0).\n    - `\"runtime\": {\"unattended\": true, \"mailbox\": <per track>, \"max_turns\": <per track>, \"max_retries\": 0, \"permissions\": \"deny\", \"mode_id\": \"agent-full-access\"}`.\n    - `binding_files`: `AGENTS.md`, the adapter's `dist/index.js` and `package.json`, the pinned 0.156.0 `codex.exe`, and `C:/Users/malla/.codex/config.toml` (it holds `model = \"gpt-6-sol\"`).\n    - All four capabilities at `observed-only`.\n  - **The default ACP mode is rejected** (`qualify-codex-1`). It runs `workspace-write` and overrides the operator's `approvals_reviewer` with `auto_review`. A linked worktree's index is outside the sandbox, so every `git add` and `git commit` escalated and Codex's model reviewer approved it, out of the runner's sight.\n- **Every `coord-runner.py` call goes through the operator-approved wrapper:** `sh C:/Users/malla/AppData/Local/Temp/claude/C--projects-x-harness-x-model-bench/c44c669c-d0a8-41c1-b4b5-8376f17cf0be/scratchpad/coord-runner.sh <subcommand> …`.\n  - It is the only allow-listed entry point. The Claude Code auto-mode classifier refuses a direct launch of an unsandboxed worker, and refuses the agent adding its own rule.\n  - The wrapper sets `AGENT_SESSION=coord-opus-cq`, `AGENT_HOST=claude` and `CODEX_PATH` (the pinned codex-cli 0.156.0; without it the adapter runs its nested 0.154.0, which rejects `gpt-6-sol`, spike R11.5). So the Owner in every contract is **`coord-opus-cq`**, the Leader session.\n  - The runner's fingerprint hashes the whole environment. **Compute `fingerprint` and `run` through the same wrapper**, or the qualification will not match.\n  - Leadership: the TTL cap is 900 s. Keep `coord leader renew` running (the `qualify-5` practice: a renewal every 90 s) for as long as any worker runs. Reclaim with `coord leader reclaim --ttl 900 --host claude coord-opus-cq` after a lapse.\n- The native Codex ownership hook (`coord-core.py hook --config --host codex`) is **not installed**. Its command is POSIX-only (`py=$(…)`), and Codex ran commands through `pwsh.exe` here. That is the same defect class `qualify-5` fixed for Agy's hooks. Ownership is observed at the shared git pre-commit floor and by the runner's evidence verifier, not enforced per edit.\n  - If a Codex track fails, the R-4 fallback applies. Diagnose the failure the way `qualify-5` did: from a recorded message trace, not a version guess.\n- **Fallback (the R-4 precedent):** a track whose harness fails qualification, or fails twice at run time, moves to Claude Code: Opus for complex work, Sonnet for well-defined work. Record the move with the measured cause in the run record. Moving a track is an Owner ruling, never an automatic retry.\n\n## Hard rules\n- **No benchmark cell runs inside the coordination layer** (owner ruling 3, ADR-0002; `/start-benchmark`). Only the Leader starts `bench run`, as its own process, via `/start-benchmark`. A track that needs a real run (rows 5, 6, 13, 15, 25) raises a seam request to the Leader and receives the run id and archive paths.\n- Phase 2+ features are **designed before they are built**. Architecture \"Remaining\" lists \"Phase 2 designs (Copilot profile, stop/decisions, T0 matcher, Harbor E1)\". Each design goes through `/design-slice` with its adversarial gate, then `/implement` red-first.\n- **Row 6 is a hard predecessor of any driver change** (Test Architect condition, \"before phase 2 changes the driver\").\n- Models are pinned; `auto` is refused. Never set or ask for an API key.\n- Every track follows the brief contract in `/execute-with-coordination` Stage 3: the `start` line first, absolute paths, never the harness's worktree-entering tool, a gate's status never piped, a budget and a 400k context ceiling, exit evidence, and Not-in-scope.\n\n## Wave sketch (a starting hypothesis — Stage 4 must re-derive it from real edges and may overturn it)\n- **Wave 0 · serial spine:** layer on (`coord classify init`, `install`, `doctor`); Codex is already qualified in `agent-full-access` (`qualify-codex-2`); re-check Grok and Agy on their default models; the Leader runs one 4-cell X1 run (codex-sol and cc-opus, pack on and off) to capture the full ACP transcript for row 6.\n- **Wave 1 · Copilot vs Codex on X1:** rows 1–5 (Copilot profile, build, launch shape, reader, pack-on probe), plus row 6 D5/D7. Exit: the Leader runs X1 with `copilot-sol`, `codex-sol` and `cc-opus`, pack on and off; report plus `bench verify: ok`.\n- **Wave 2 · smoke on all harnesses:** rows 7–15 and the carried hardening items 26, 28 and 29, which have no dependency on the phase-2 designs. Exit: the smoke BOM runs overnight and `bench status` explains every cell that did not complete.\n- **Wave 3 · grading and judges:** rows 16–18 (row 17's gateway is ADR-0009). Exit: the smoke archive re-grades byte-identically; κ appears in the report header.\n- **Wave 4 · statistics and the full report:** rows 19–20. Exit: UIA-1..15, axe, offline load; two P3 readers name the leader and the pack effect (R9).\n- **Wave 5 · the full grid:** rows 21–25 and 27. Exit: 24 tasks × combos × packs × 3 reps; crash-then-resume in each state; a pack change validated by a re-run comparison.\n\n## Rulings in force (decided before dispatch; read them verbatim in `docs/notes/rulings.md`, commit `0a64b0c`)\nAny new decision a track raises goes to the **Owner seat (Fable)** with `coord decide request --to <owner-session>` and is ruled into `docs/notes/rulings.md`. Do not ask the human. The Owner escalates to the human only when a ruling needs something no seat can verify from this host, such as access to a private repository or an account.\n\n- **Operator (2026-09-24):** Agy uses its default Gemini model for now. Codex runs in `agent-full-access`.\n- **R-7 · Task sources (rows 7 and 21).** Nothing is deferred.\n  - Reachable as is: ClarifyCodeBench, MultiPL-E, and Terminal-Bench 2.0 and SWE-bench Verified (these two gated by row 9).\n  - Reachable locally: cfd-bench (plus the `CFD-Bench-ClaudeCode` and `CFD-Bench-GHCP` clones) and ai-de. Pin a commit; ai-de has uncommitted paths.\n  - ProjDevBench: the prompt is used, with a locally authored oracle (no ACMOJ).\n  - Operator-authored substitutes: SpecBench (B3) and ArchBench (C2). Change `bench/bom.yaml` `source` accordingly.\n  - If row 9 has not passed by the wave-2 join, E1 is deferred and E6 takes the scenario-5 smoke slot.\n- **R-8 · Row 27 anchor.** The anchor is a git-committed, append-only index of grading-pass heads, stored as `kind: grading-pass` entries in `docs/audit/audit-log.jsonl` (written only through `audit-log.py`).\n  - `bench verify` exits 5 on a missing anchored pass or a head mismatch.\n  - It warns `anchor: not recorded` for ledgers from before the ruling, and `anchor: uncommitted` when the entry is not yet committed.\n  - This is an ADR-0006 amendment. It goes through `/design-slice` with the tamper tests R-8 lists.\n- **R-9 · Machine time.**\n  - **Vendor exclusivity during any benchmark run:** no worker or subagent runs on a vendor login that a cell uses (Anthropic, OpenAI, GitHub). Grok and Agy may overlap up to the fan-out cap, and the Leader only polls status.\n  - Smoke runs 22:00–07:00 PDT. It runs at parallelism 4 only after row 15 measures D1 at ≥2 and `plan.py:30` (`PHASE1_MAX_PARALLELISM = 2`) is raised; otherwise split it by combo pair, one night each.\n  - Full grid (≈91 h at parallelism 4): an exclusive block in nightly segments through resume (row 23), or a weekend.\n  - Day hours: X1 and qualification runs of ≤4 cells only.\n  - A `failed (provider)` cell under overlap is attributed to the overlap; two in one run mean full exclusivity for that run and the next.\n  - Every window is recorded in the run record.\n\n## The 31 to-dos (priority: P0 blocks Copilot-vs-Codex · P1 phase 2 · P2 phase 3 · P3 phases 4–5 · H cleanup carried over from phase 1)\n| # | Task | Pri | What it does | Status at 2026-09-24 |\n| --- | --- | --- | --- | --- |\n| 1 | Copilot harness profile | P0 | `bench/profiles/copilot.yaml`; allow `copilot` in `src/harness_bench/profiles.py:25` | Spiked (N1.2, R2.1 verified); not built |\n| 2 | Copilot pinned build | P0 | `@github/copilot` in `bench/tools/package-lock.json`; `tools.py` `LAYOUT` entry; re-hashed each cell start | Not built |\n| 3 | Copilot launch shape | P0 | `Profile.argv()` always runs `node <adapter>`; Copilot is native ACP with `--acp --model --allow-tool shell --allow-tool write` | Not built (gap inferred from reading `argv()`) |\n| 4 | Copilot telemetry reader | P0 | `session-store.db` `assistant_usage_events` → `telemetry/copilot.py`; add to `READERS` (`profiles.py:119`) | Format verified in a spike; no reader |\n| 5 | Copilot pack-on probe + instruction-file preflight | P0 | Prove a Copilot cell loads the pack's `.github/` files; extend HB-PRE-002 (`workspace.py:25`) to Copilot instruction files | Not started (gap inferred) |\n| 6 | D5/D7 real ACP transcript | P0 | Replace the schema-shaped replay fixture with one real cell's full ACP stream; re-run D5/D7 | Open, carried condition (`docs/proof/phase1.md` residual 9) |\n| 7 | Smoke tasks A1, B1, C1, D1, E1, F1 | P1 | Stub → `ready` via `/new-bench-task` | All `stub` |\n| 8 | T0 scripted-user matcher | P1 | The scripted user for A1 | Not started |\n| 9 | Harbor E1 base image | P1 | Containerised Terminal-Bench tasks (risk A6) | Spike not run |\n| 10 | Stop, decision timeout, circuit breaker | P1 | Run-level stop within 30 s; decision requests with a default and a timeout | Modeled in TLC; not built |\n| 11 | Power request | P1 | Keep the host awake for overnight runs | Not built |\n| 12 | Per-class canaries (US-13) | P1 | Canaries per contamination class; key canaries by (string, class) | Partial |\n| 13 | N5 pack-seeded probe | P1 | Does the Codex `~/.agents/skills` leak differ between pack on and off? (R-6) | Open; Codex cells flagged |\n| 14 | `last_update_ms` seam | P1 | `TurnResult.last_update_seconds` (seam `req-01M38KX8503601BEP857749VVF`) | Open |\n| 15 | Resource check at parallelism ≥ 2 | P1 | Peak memory and CPU time on D1 (risk A5) | Not run |\n| 16 | Full graders | P2 | Drift, rigor, mutation, clarify, process | Not built |\n| 17 | Model gateway + judges | P2 | Headless CLIs with every tool denied (ADR-0009); blind two-vendor judges; calibration; κ | Designed; not built |\n| 18 | Egress gate + injection fixture | P2 | US-46 / US-47 | Not built |\n| 19 | Statistics | P3 | Bootstrap intervals, pack effect | Not built |\n| 20 | Full report + AI summaries | P3 | Every Part C section; summaries with a claim check; UIA/axe | Skeleton only |\n| 21 | Remaining 17 BOM tasks | P3 | A2–A5, B2–B3, C2, D2–D3, E2–E7, F2 → `ready` | All `stub` |\n| 22 | G1/G2 formal tasks | P3 | Scenario 7 after the formal-toolchain spike (S-12) | Spike not run |\n| 23 | Resume | P3 | Continue an `incomplete` run | Not built |\n| 24 | Run-to-run comparison + stability | P3 | A pack change validated by a re-run | Not built |\n| 25 | Full grid run | P3 | 24 tasks × combos × packs × 3 reps | Blocked by all of the above |\n| 26 | TOOL-B control | H | Map each cosmic-ray kill to the named test that caught it | Open |\n| 27 | Later-grading-pass anchor | H | Detect a later `bench grade` pass deleted whole (residual 7a; DR-2) | Open, disclosed |\n| 28 | Small hardening items | H | `procs.spawn` TimeoutExpired before `job.close()`; unchecked Win32 results in `host.py`; CLI labels printed before the credential scan; a test for \"0 folders left\" | Open |\n| 29 | Ruling-citation gate | H | `verify-ruling-citations.py` reads `### Ruling NN`; the rulings use `## R-n` | Open |\n| 30 | Host risks A3 / A9 | H · **HUMAN** | OAuth token rotation during a long cell; the monotonic clock across Windows sleep (the host must be put to sleep) | Probes not run |\n| 31 | Copilot USD cost | — | `NA` by decision; tokens, AI units and wall time are the cost measures | Decided; no work. Close as a ruling citation |\n\nSources: `docs/architecture.md` (Delivery phasing, Flagged risks), `docs/design/phase1-walking-skeleton.md` (Status), `docs/proof/phase1.md` (Residuals 1–12, Remaining), `docs/notes/rulings.md` (R-4..R-6), `bench/bom.yaml`, `tasks/*/task.yaml`. **Re-read them at grounding; this table is a snapshot, not evidence** (E15).\n\n## Close\nEvery wave ends with a join (Test Architect hard veto on observed exit evidence; Simplifier on scope growth) and a *Completed / Remaining / Next* block. The run ends with: the committed plan and run record (planned vs actual per track: calls, tokens, wall clock, harness, fallbacks), the final `bench report` path and leaderboard rows, the `bench verify` result, the rows handed to the human with reasons, and the audit entry (AL5b: full prompt, `goal`, `done_when`).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3AKF6FZSG1RCB5FB5MR3C76",
-      "shortname": "compile-/compile then /prepare-for-coordination then /execute-with-coordination …",
-      "datetime": "2026-09-24T20:59:46Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: Take harness-bench from the finished phase-1 walking skeleton to the full design (phases 2-5), closing all 31 outstanding to-dos in dependency-ordered waves across a mixed-harness team (Owner Fable, Leader Opus 5.5, Codex gpt-6-sol, Grok, Agy, Claude subagents).\nDone when: Every row below is either (a) merged to `main` with its exit evidence observed at a join, (b) closed by an Owner ruling in `docs/notes/rulings.md`, or (c) handed to the human with a named reason (rows marked HUMAN).; The coordination plan and run record are committed, and `bench verify` passes on the final smoke run.\nNot in scope: New metrics, UI or harnesses beyond the spec.; Changing the X1 fixture.; Any API key (subscriptions only, ADR-0003).; Rewriting phase-1 code except where a row names it.\nTier: T2\nFan-out cap: 5\nContext ceiling: 400k tokens per track\nMain-line budget: set per wave and per track in the coordination plan\nTrace\n| clause | trace |\n|---|---|\n| done_when: Every row below is either (a) merged to `main` with its exit evidence observed at a join, (b) closed by an Owner ruling in `docs/notes/rulings.md`, or (c) handed to the human with a named reason (rows marked HUMAN). | phrase: every row below is either (a) merged to `main` with its exit evidence observed at a join, (b) closed by an Owner ruling in `docs/notes/rulings.md`, or (c) handed to the human with a named reason (rows marked HUMAN) |\n| done_when: The coordination plan and run record are committed, and `bench verify` passes on the final smoke run. | phrase: the coordination plan and run record are committed, and `bench verify` passes on the final smoke run |\n| not_in_scope: New metrics, UI or harnesses beyond the spec. | phrase: new metrics, UI or harnesses beyond the spec |\n| not_in_scope: Changing the X1 fixture. | phrase: changing the X1 fixture |\n| not_in_scope: Any API key (subscriptions only, ADR-0003). | phrase: any API key (subscriptions only, ADR-0003) |\n| not_in_scope: Rewriting phase-1 code except where a row names it. | phrase: rewriting phase-1 code except where a row names it |\nReferences\n- docs/architecture.md: unresolved (ambiguous: 2 matches)\n- main: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 2 matches)\n- bench verify: unresolved (not found)\n- grok: unresolved (not found)\n- agy: unresolved (not found)\n- config.py:28: unresolved (not found)\n- claude-fable-5-1: unresolved (not found)\n- coord decide request --to <owner-session: unresolved (not found)\n- coord leader pin: unresolved (not found)\n- claude-opus-5-5: unresolved (not found)\n- /start-benchmark: unresolved (outside repo)\n- gpt-6-sol: unresolved (not found)\n- claude-sonnet-5: unresolved (not found)\n- --model: unresolved (not found)\n- qualify-5: unresolved (not found)\n- agent-full-access: unresolved (not found)\n- docs/coordination/coordination-phase1-finish-run.md: docs/coordination/coordination-phase1-finish-run.md sha256 93fa6763587ff34106f283575074265c0bbb69839affc718ca1c4a79a8b530e3\n- e22ca74: unresolved (not found)\n- 3db84fc: unresolved (not found)\n- qualify-codex-2: unresolved (not found)\n- ready_for_review: unresolved (not found)\n- docs/notes/qualify-worker.md: unresolved (not found)\n- turn_context: unresolved (not found)\n- approval_policy: never: unresolved (not found)\n- danger-full-access: unresolved (not found)\n- argv\": [\"node\", \"C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@agentclientprotocol/codex-acp/dist/index.js: unresolved (not found)\n- runtime\": {\"unattended\": true, \"mailbox\": <per track>, \"max_turns\": <per track>, \"max_retries\": 0, \"permissions\": \"deny\", \"mode_id\": \"agent-full-access\"}: unresolved (not found)\n- binding_files: unresolved (not found)\n- AGENTS.md: unresolved (ambiguous: 2 matches)\n- dist/index.js: unresolved (not found)\n- package.json: unresolved (ambiguous: 4 matches)\n- codex.exe: unresolved (not found)\n- C:/Users/malla/.codex/config.toml: unresolved (outside repo)\n- model = \"gpt-6-sol: unresolved (not found)\n- observed-only: unresolved (not found)\n- qualify-codex-1: unresolved (not found)\n- workspace-write: unresolved (not found)\n- approvals_reviewer: unresolved (not found)\n- auto_review: unresolved (not found)\n- git add: unresolved (not found)\n- git commit: unresolved (not found)\n- coord-runner.py: unresolved (ambiguous: 3 matches)\n- sh C:/Users/malla/AppData/Local/Temp/claude/C--projects-x-harness-x-model-bench/c44c669c-d0a8-41c1-b4b5-8376f17cf0be/scratchpad/coord-runner.sh <subcommand> …: unresolved (not found)\n- AGENT_SESSION=coord-opus-cq: unresolved (not found)\n- AGENT_HOST=claude: unresolved (not found)\n- CODEX_PATH: unresolved (not found)\n- coord-opus-cq: unresolved (not found)\n- fingerprint: unresolved (not found)\n- run: unresolved (not found)\n- coord leader renew: unresolved (not found)\n- coord leader reclaim --ttl 900 --host claude coord-opus-cq: unresolved (not found)\n- coord-core.py hook --config --host codex: unresolved (not found)\n- py=$(…: unresolved (not found)\n- pwsh.exe: unresolved (not found)\n- bench run: unresolved (not found)\n- /design-slice: unresolved (outside repo)\n- /implement: unresolved (outside repo)\n- auto: unresolved (not found)\n- /execute-with-coordination: unresolved (outside repo)\n- start: unresolved (not found)\n- coord classify init: unresolved (not found)\n- install: unresolved (not found)\n- doctor: unresolved (not found)\n- copilot-sol: unresolved (not found)\n- codex-sol: unresolved (not found)\n- cc-opus: unresolved (not found)\n- bench verify: ok: unresolved (not found)\n- bench status: unresolved (not found)\n- 0a64b0c: unresolved (not found)\n- CFD-Bench-ClaudeCode: unresolved (not found)\n- CFD-Bench-GHCP: unresolved (not found)\n- bench/bom.yaml: bench/bom.yaml sha256 81de7f13c470670937bc86bdd78067a6cd6c300be2adf7b5eff6e0031357c475\n- source: unresolved (not found)\n- kind: grading-pass: unresolved (not found)\n- docs/audit/audit-log.jsonl: unresolved (ambiguous: 2 matches)\n- audit-log.py: unresolved (ambiguous: 3 matches)\n- anchor: not recorded: unresolved (not found)\n- anchor: uncommitted: unresolved (not found)\n- plan.py:30: unresolved (not found)\n- PHASE1_MAX_PARALLELISM = 2: unresolved (not found)\n- failed (provider: unresolved (not found)\n- bench/profiles/copilot.yaml: unresolved (not found)\n- copilot: unresolved (not found)\n- src/harness_bench/profiles.py:25: unresolved (not found)\n- @github/copilot: unresolved (not found)\n- bench/tools/package-lock.json: bench/tools/package-lock.json sha256 9c961102d6d87cb948e01754832b03305563463269e0ce716d27b96a669df96b\n- tools.py: src/harness_bench/tools.py sha256 877dc6e59c2772baf8c7a63513e6fc214632b9169237b16d8c8a159d7db1966f\n- LAYOUT: unresolved (not found)\n- Profile.argv: unresolved (not found)\n- node <adapter: unresolved (not found)\n- --acp --model --allow-tool shell --allow-tool write: unresolved (not found)\n- argv: unresolved (not found)\n- session-store.db: unresolved (not found)\n- assistant_usage_events: unresolved (not found)\n- telemetry/copilot.py: unresolved (not found)\n- READERS: unresolved (not found)\n- profiles.py:119: unresolved (not found)\n- .github/: unresolved (not found)\n- workspace.py:25: unresolved (not found)\n- docs/proof/phase1.md: docs/proof/phase1.md sha256 3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428\n- ready: unresolved (not found)\n- /new-bench-task: unresolved (outside repo)\n- stub: unresolved (not found)\n- ~/.agents/skills: unresolved (not found)\n- last_update_ms: unresolved (not found)\n- TurnResult.last_update_seconds: unresolved (not found)\n- req-01M38KX8503601BEP857749VVF: unresolved (not found)\n- incomplete: unresolved (not found)\n- bench grade: unresolved (not found)\n- procs.spawn: unresolved (not found)\n- job.close: unresolved (not found)\n- host.py: src/harness_bench/host.py sha256 6c367e4a2d52ef00b06e10e80d0b5cc429ed2bd9c04022afce0f2ab1fad82bb0\n- verify-ruling-citations.py: unresolved (ambiguous: 3 matches)\n- ### Ruling NN: unresolved (not found)\n- ## R-n: unresolved (not found)\n- NA: unresolved (not found)\n- docs/design/phase1-walking-skeleton.md: docs/design/phase1-walking-skeleton.md sha256 ab894f88dae0bfc912c33f7df312784c5d422555a6c0793d9bfc5295e6c3ba47\n- tasks/*/task.yaml: unresolved (not found)\n- bench report: unresolved (not found)\n- goal: unresolved (not found)\n- done_when: unresolved (not found)\n- /compile: unresolved (outside repo)\n- /prepare-for-coordination: unresolved (outside repo)\n- /: unresolved (outside repo)\n- C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@agentclientprotocol/codex-acp/dist/index.js: unresolved (outside repo)\n- C:/Users/malla/AppData/Local/Temp/claude/C--projects-x-harness-x-model-bench/c44c669c-d0a8-41c1-b4b5-8376f17cf0be/scratchpad/coord-runner.sh: unresolved (outside repo)\n- coord-core.py: unresolved (ambiguous: 3 matches)\n- stop/decisions: unresolved (not found)\n- D5/D7: unresolved (not found)\n- UIA/axe: unresolved (not found)\n- G1/G2: unresolved (not found)\nAssumptions\n- #1 belief: The Grok and Agy default models are grok 4.7 high and Gemini 3.8 Flash High, as the operator reported · confirm: the served model id in each worker's native record at the wave-0 re-check · breaks: the qualification record names the wrong model; a finding for the Owner, not a re-pin · consequential: false\nDecision requests\n- none\nContract slot\nwidth_cap: 5\ntransient_retry: at most 1, pre-prompt startup failure only (coord-runner rule)\nper_branch_exit: each track's exit evidence as named in its plan row, observed at the join\njoin_rule: a join per wave: Test Architect hard veto on observed exit evidence, Simplifier on scope growth\ncontainment: one worktree per track; no benchmark cell inside the coordination layer (ADR-0002)\ntermination: every row done, ruled or handed to the human; a cap firing is a defect signal\ndeadline: per track in the plan; coord-runner sessions at most 3600 s each\nfallback: R-4: a failing track moves to Claude Code by Owner ruling\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AKF5D9FSZ2BE0ARDZCXNKQ\nraw sha256: ef329326f506414e20f9f4ee74fc66e48c4209bc38d386c54fb5b6507a179a1e\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3AKF5D9FSZ2BE0ARDZCXNKQ for claude-code v1: 6 clauses, 1 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
       "outcome": "success",
+      "prompt": "/compile then /prepare-for-coordination then /execute-with-coordination --launch\n\n# Finish harness-bench end to end: all 31 outstanding to-dos\n\n## Goal state (CO-S0 — compile this before anything else)\n- **Goal:** take harness-bench from the finished phase-1 walking skeleton to the full design (phases 2–5 in `docs/architecture.md` \"Delivery phasing\"), closing all 31 outstanding to-dos below. Do it in dependency-ordered waves, across a mixed-harness team, at the best throughput the rigor floors allow.\n- **Done when:** every row below is either (a) merged to `main` with its exit evidence observed at a join, (b) closed by an Owner ruling in `docs/notes/rulings.md`, or (c) handed to the human with a named reason (rows marked HUMAN). Also: the coordination plan and run record are committed, and `bench verify` passes on the final smoke run.\n- **Not in scope:** new metrics, UI or harnesses beyond the spec (`grok` and `agy` as *measured* harnesses are out: `config.py:28` lists them, but the spec names three harnesses); changing the X1 fixture; any API key (subscriptions only, ADR-0003); rewriting phase-1 code except where a row names it.\n- **Tier:** T2 (multi-phase, multi-harness, touches the ledger and the engine).\n- **Fan-out cap:** at most 5 concurrent tracks per wave. The plan may recommend fewer, and must say so if that is the honest answer (GO6: parallelism is a cost multiplier).\n- **Objective order:** (1) completeness and rigor · (2) token cost · (3) speed. Rigor floors are immovable nodes: red-first TDD, the E7 surface list, Test Architect exit evidence, and audit entries.\n\n## Seats (CO-S1) and model allocation\n| Seat | Harness · model | Holds |\n| --- | --- | --- |\n| **Owner** | Claude Code · Fable 5.1 (`claude-fable-5-1`) | Rules every decision request (`coord decide request --to <owner-session>`) into `docs/notes/rulings.md`; clears or upholds hard vetoes the author cannot clear; `coord leader pin`. |\n| **Leader / Coordinator** | Claude Code · Opus 5.5 (`claude-opus-5-5`) | Runs the three skills, owns the plan, dispatches, arbitrates seams, runs every join. **Authors no track work.** Starts every real benchmark run itself via `/start-benchmark` (see Hard rules). |\n| **Complex tracks** | Codex · `gpt-6-sol` | Work you would give Opus 5.5: design-heavy or cross-module changes (engine, driver, ledger, graders, statistics, judges). |\n| **Well-defined tracks** | Grok and Agy, each on its **harness default model** | Distinct, bounded work with a fixed contract and fixture: readers, gates, small hardening fixes, task authoring from a fixed source, tests against a given spec. |\n| **Claude subagents** | Opus 5.5 for design or ambiguous work; Sonnet 5 (`claude-sonnet-5`) for mechanical work | Personas (Test Architect, Simplifier, Security, Data & Persistence, …) at gates; reviews at joins; small fixes. |\n\n**Allocation rules for Stage 7:**\n- Give a track to Grok or Agy only when its contract is fully specified: owned paths, the red test named, fixtures present. If writing that brief takes a design decision, the track is complex, not well-defined.\n- Pair each track author with a **reviewer from a different vendor** at the join (author ≠ reviewer, and never the same model family). A Codex author gets a Claude reviewer; a Grok or Agy author gets a Codex or Claude reviewer.\n- **Grok and Agy run on their harness default models, with no `--model` pin** (operator decision, 2026-09-24). The operator reports the defaults as **Grok: grok 4.7 high** and **Agy: Gemini 3.8 Flash High**. Agy may use Claude or Gemini models, but for now it stays on the Gemini default. The exact served model ids are not yet observed. At qualification, read the served id from each worker's native record or ACP session and record it in the qualification file. If the served model is not the reported default, that is a finding for the Owner, not a reason to pin.\n- **Qualification is measured, never assumed.** Grok 1.0.41 and Agy 1.2.10 qualified on this host in `qualify-5` (pack revision 93). Re-check each at Stage 1 on its default model.\n- **Codex is qualified on this machine in `agent-full-access`** (operator decision and approval of no sandbox, 2026-09-24). The record is in `docs/coordination/coordination-phase1-finish-run.md` (commit `e22ca74`; ledger `3db84fc`).\n  - **`qualify-codex-2`:** `ready_for_review` in 84 s, 1 turn, one commit touching only `docs/notes/qualify-worker.md`. Served model **`gpt-6-sol`** (native `turn_context`). `approval_policy: never` and `danger-full-access`, with 0 escalations, 0 permission requests and 0 native denials.\n  - **The Codex worker profile to reuse in every Codex track's contract row:**\n    - `\"argv\": [\"node\", \"C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@agentclientprotocol/codex-acp/dist/index.js\"]` (adapter 1.12.0).\n    - `\"runtime\": {\"unattended\": true, \"mailbox\": <per track>, \"max_turns\": <per track>, \"max_retries\": 0, \"permissions\": \"deny\", \"mode_id\": \"agent-full-access\"}`.\n    - `binding_files`: `AGENTS.md`, the adapter's `dist/index.js` and `package.json`, the pinned 0.156.0 `codex.exe`, and `C:/Users/malla/.codex/config.toml` (it holds `model = \"gpt-6-sol\"`).\n    - All four capabilities at `observed-only`.\n  - **The default ACP mode is rejected** (`qualify-codex-1`). It runs `workspace-write` and overrides the operator's `approvals_reviewer` with `auto_review`. A linked worktree's index is outside the sandbox, so every `git add` and `git commit` escalated and Codex's model reviewer approved it, out of the runner's sight.\n- **Every `coord-runner.py` call goes through the operator-approved wrapper:** `sh C:/Users/malla/AppData/Local/Temp/claude/C--projects-x-harness-x-model-bench/c44c669c-d0a8-41c1-b4b5-8376f17cf0be/scratchpad/coord-runner.sh <subcommand> …`.\n  - It is the only allow-listed entry point. The Claude Code auto-mode classifier refuses a direct launch of an unsandboxed worker, and refuses the agent adding its own rule.\n  - The wrapper sets `AGENT_SESSION=coord-opus-cq`, `AGENT_HOST=claude` and `CODEX_PATH` (the pinned codex-cli 0.156.0; without it the adapter runs its nested 0.154.0, which rejects `gpt-6-sol`, spike R11.5). So the Owner in every contract is **`coord-opus-cq`**, the Leader session.\n  - The runner's fingerprint hashes the whole environment. **Compute `fingerprint` and `run` through the same wrapper**, or the qualification will not match.\n  - Leadership: the TTL cap is 900 s. Keep `coord leader renew` running (the `qualify-5` practice: a renewal every 90 s) for as long as any worker runs. Reclaim with `coord leader reclaim --ttl 900 --host claude coord-opus-cq` after a lapse.\n- The native Codex ownership hook (`coord-core.py hook --config --host codex`) is **not installed**. Its command is POSIX-only (`py=$(…)`), and Codex ran commands through `pwsh.exe` here. That is the same defect class `qualify-5` fixed for Agy's hooks. Ownership is observed at the shared git pre-commit floor and by the runner's evidence verifier, not enforced per edit.\n  - If a Codex track fails, the R-4 fallback applies. Diagnose the failure the way `qualify-5` did: from a recorded message trace, not a version guess.\n- **Fallback (the R-4 precedent):** a track whose harness fails qualification, or fails twice at run time, moves to Claude Code: Opus for complex work, Sonnet for well-defined work. Record the move with the measured cause in the run record. Moving a track is an Owner ruling, never an automatic retry.\n\n## Hard rules\n- **No benchmark cell runs inside the coordination layer** (owner ruling 3, ADR-0002; `/start-benchmark`). Only the Leader starts `bench run`, as its own process, via `/start-benchmark`. A track that needs a real run (rows 5, 6, 13, 15, 25) raises a seam request to the Leader and receives the run id and archive paths.\n- Phase 2+ features are **designed before they are built**. Architecture \"Remaining\" lists \"Phase 2 designs (Copilot profile, stop/decisions, T0 matcher, Harbor E1)\". Each design goes through `/design-slice` with its adversarial gate, then `/implement` red-first.\n- **Row 6 is a hard predecessor of any driver change** (Test Architect condition, \"before phase 2 changes the driver\").\n- Models are pinned; `auto` is refused. Never set or ask for an API key.\n- Every track follows the brief contract in `/execute-with-coordination` Stage 3: the `start` line first, absolute paths, no `EnterWorktree`, a gate's status never piped, a budget and a 400k context ceiling, exit evidence, and Not-in-scope.\n\n## Wave sketch (a starting hypothesis — Stage 4 must re-derive it from real edges and may overturn it)\n- **Wave 0 · serial spine:** layer on (`coord classify init`, `install`, `doctor`); Codex is already qualified in `agent-full-access` (`qualify-codex-2`); re-check Grok and Agy on their default models; the Owner rules DR-1, DR-2 and DR-4; the Leader runs one 4-cell X1 run (codex-sol and cc-opus, pack on and off) to capture the full ACP transcript for row 6.\n- **Wave 1 · Copilot vs Codex on X1:** rows 1–5 (Copilot profile, build, launch shape, reader, pack-on probe), plus row 6 D5/D7. Exit: the Leader runs X1 with `copilot-sol`, `codex-sol` and `cc-opus`, pack on and off; report plus `bench verify: ok`.\n- **Wave 2 · smoke on all harnesses:** rows 7–15 and the carried hardening items 26, 28 and 29, which have no dependency on the phase-2 designs. Exit: the smoke BOM runs overnight and `bench status` explains every cell that did not complete.\n- **Wave 3 · grading and judges:** rows 16–18 (row 17's gateway is ADR-0009). Exit: the smoke archive re-grades byte-identically; κ appears in the report header.\n- **Wave 4 · statistics and the full report:** rows 19–20. Exit: UIA-1..15, axe, offline load; two P3 readers name the leader and the pack effect (R9).\n- **Wave 5 · the full grid:** rows 21–25 and 27. Exit: 24 tasks × combos × packs × 3 reps; crash-then-resume in each state; a pack change validated by a re-run comparison.\n\n## Decision requests: the Owner answers these (the plan is not dispatchable until each is ruled)\nThe **Owner seat (Fable)** rules each one into `docs/notes/rulings.md`, via `coord decide request --to <owner-session>`. Do not ask the human. The Owner escalates to the human only when a ruling needs something no seat can verify from this host, such as access to a private repository or an account.\n\nAlready decided by the operator (2026-09-24), not a decision request: Agy uses its default Gemini model for now.\n\n- **DR-1 · Task sources.** Rows 7 and 21 depend on external or private sources (ClarifyCodeBench, cfd-bench, ai-de, SpecBench, ProjDevBench, ArchBench, Terminal-Bench 2.0, SWE-bench Verified, MultiPL-E). Which are reachable from this host, and which run as operator-authored substitutes (owner ruling 5, ADR-0012)?\n- **DR-2 · Row 27 anchor.** Which anchor outside the run's own segments detects a later grading pass being deleted whole? This is an ADR-0006 amendment.\n- **DR-4 · Machine time.** Which windows can the smoke run (wave 2) and the full grid (wave 5) use? The runs use the operator's subscriptions and share the host with coordination workers. Can a benchmark run and coordination tracks overlap (risk A5, resource contention)?\n\n## The 31 to-dos (priority: P0 blocks Copilot-vs-Codex · P1 phase 2 · P2 phase 3 · P3 phases 4–5 · H cleanup carried over from phase 1)\n| # | Task | Pri | What it does | Status at 2026-09-24 |\n| --- | --- | --- | --- | --- |\n| 1 | Copilot harness profile | P0 | `bench/profiles/copilot.yaml`; allow `copilot` in `src/harness_bench/profiles.py:25` | Spiked (N1.2, R2.1 verified); not built |\n| 2 | Copilot pinned build | P0 | `@github/copilot` in `bench/tools/package-lock.json`; `tools.py` `LAYOUT` entry; re-hashed each cell start | Not built |\n| 3 | Copilot launch shape | P0 | `Profile.argv()` always runs `node <adapter>`; Copilot is native ACP with `--acp --model --allow-tool shell --allow-tool write` | Not built (gap inferred from reading `argv()`) |\n| 4 | Copilot telemetry reader | P0 | `session-store.db` `assistant_usage_events` → `telemetry/copilot.py`; add to `READERS` (`profiles.py:119`) | Format verified in a spike; no reader |\n| 5 | Copilot pack-on probe + instruction-file preflight | P0 | Prove a Copilot cell loads the pack's `.github/` files; extend HB-PRE-002 (`workspace.py:25`) to Copilot instruction files | Not started (gap inferred) |\n| 6 | D5/D7 real ACP transcript | P0 | Replace the schema-shaped replay fixture with one real cell's full ACP stream; re-run D5/D7 | Open, carried condition (`docs/proof/phase1.md` residual 9) |\n| 7 | Smoke tasks A1, B1, C1, D1, E1, F1 | P1 | Stub → `ready` via `/new-bench-task` | All `stub` |\n| 8 | T0 scripted-user matcher | P1 | The scripted user for A1 | Not started |\n| 9 | Harbor E1 base image | P1 | Containerised Terminal-Bench tasks (risk A6) | Spike not run |\n| 10 | Stop, decision timeout, circuit breaker | P1 | Run-level stop within 30 s; decision requests with a default and a timeout | Modeled in TLC; not built |\n| 11 | Power request | P1 | Keep the host awake for overnight runs | Not built |\n| 12 | Per-class canaries (US-13) | P1 | Canaries per contamination class; key canaries by (string, class) | Partial |\n| 13 | N5 pack-seeded probe | P1 | Does the Codex `~/.agents/skills` leak differ between pack on and off? (R-6) | Open; Codex cells flagged |\n| 14 | `last_update_ms` seam | P1 | `TurnResult.last_update_seconds` (seam `req-01M38KX8503601BEP857749VVF`) | Open |\n| 15 | Resource check at parallelism ≥ 2 | P1 | Peak memory and CPU time on D1 (risk A5) | Not run |\n| 16 | Full graders | P2 | Drift, rigor, mutation, clarify, process | Not built |\n| 17 | Model gateway + judges | P2 | Headless CLIs with every tool denied (ADR-0009); blind two-vendor judges; calibration; κ | Designed; not built |\n| 18 | Egress gate + injection fixture | P2 | US-46 / US-47 | Not built |\n| 19 | Statistics | P3 | Bootstrap intervals, pack effect | Not built |\n| 20 | Full report + AI summaries | P3 | Every Part C section; summaries with a claim check; UIA/axe | Skeleton only |\n| 21 | Remaining 17 BOM tasks | P3 | A2–A5, B2–B3, C2, D2–D3, E2–E7, F2 → `ready` | All `stub` |\n| 22 | G1/G2 formal tasks | P3 | Scenario 7 after the formal-toolchain spike (S-12) | Spike not run |\n| 23 | Resume | P3 | Continue an `incomplete` run | Not built |\n| 24 | Run-to-run comparison + stability | P3 | A pack change validated by a re-run | Not built |\n| 25 | Full grid run | P3 | 24 tasks × combos × packs × 3 reps | Blocked by all of the above |\n| 26 | TOOL-B control | H | Map each cosmic-ray kill to the named test that caught it | Open |\n| 27 | Later-grading-pass anchor | H | Detect a later `bench grade` pass deleted whole (residual 7a; DR-2) | Open, disclosed |\n| 28 | Small hardening items | H | `procs.spawn` TimeoutExpired before `job.close()`; unchecked Win32 results in `host.py`; CLI labels printed before the credential scan; a test for \"0 folders left\" | Open |\n| 29 | Ruling-citation gate | H | `verify-ruling-citations.py` reads `### Ruling NN`; the rulings use `## R-n` | Open |\n| 30 | Host risks A3 / A9 | H · **HUMAN** | OAuth token rotation during a long cell; the monotonic clock across Windows sleep (the host must be put to sleep) | Probes not run |\n| 31 | Copilot USD cost | — | `NA` by decision; tokens, AI units and wall time are the cost measures | Decided; no work. Close as a ruling citation |\n\nSources: `docs/architecture.md` (Delivery phasing, Flagged risks), `docs/design/phase1-walking-skeleton.md` (Status), `docs/proof/phase1.md` (Residuals 1–12, Remaining), `docs/notes/rulings.md` (R-4..R-6), `bench/bom.yaml`, `tasks/*/task.yaml`. **Re-read them at grounding; this table is a snapshot, not evidence** (E15).\n\n## Close\nEvery wave ends with a join (Test Architect hard veto on observed exit evidence; Simplifier on scope growth) and a *Completed / Remaining / Next* block. The run ends with: the committed plan and run record (planned vs actual per track: calls, tokens, wall clock, harness, fallbacks), the final `bench report` path and leaderboard rows, the `bench verify` result, the rows handed to the human with reasons, and the audit entry (AL5b: full prompt, `goal`, `done_when`).",
+      "session": "prompt-compile",
+      "shortname": "/compile then /prepare-for-coordination then /execute-with-coordination …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-09-24T20:58:58Z",
+      "id": "al-01M3AKDQQBM19QYGTH91F71K07",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "/compile then /prepare-for-coordination then /execute-with-coordination --launch\n\n# Finish harness-bench end to end: all 31 outstanding to-dos\n\n## Goal state (CO-S0 — compile this before anything else)\n- **Goal:** take harness-bench from the finished phase-1 walking skeleton to the full design (phases 2–5 in `docs/architecture.md` \"Delivery phasing\"), closing all 31 outstanding to-dos below. Do it in dependency-ordered waves, across a mixed-harness team, at the best throughput the rigor floors allow.\n- **Done when:** every row below is either (a) merged to `main` with its exit evidence observed at a join, (b) closed by an Owner ruling in `docs/notes/rulings.md`, or (c) handed to the human with a named reason (rows marked HUMAN). Also: the coordination plan and run record are committed, and `bench verify` passes on the final smoke run.\n- **Not in scope:** new metrics, UI or harnesses beyond the spec (`grok` and `agy` as *measured* harnesses are out: `config.py:28` lists them, but the spec names three harnesses); changing the X1 fixture; any API key (subscriptions only, ADR-0003); rewriting phase-1 code except where a row names it.\n- **Tier:** T2 (multi-phase, multi-harness, touches the ledger and the engine).\n- **Fan-out cap:** at most 5 concurrent tracks per wave. The plan may recommend fewer, and must say so if that is the honest answer (GO6: parallelism is a cost multiplier).\n- **Objective order:** (1) completeness and rigor · (2) token cost · (3) speed. Rigor floors are immovable nodes: red-first TDD, the E7 surface list, Test Architect exit evidence, and audit entries.\n\n## Seats (CO-S1) and model allocation\n| Seat | Harness · model | Holds |\n| --- | --- | --- |\n| **Owner** | Claude Code · Fable 5.1 (`claude-fable-5-1`) | Rules every decision request (`coord decide request --to <owner-session>`) into `docs/notes/rulings.md`; clears or upholds hard vetoes the author cannot clear; `coord leader pin`. |\n| **Leader / Coordinator** | Claude Code · Opus 5.5 (`claude-opus-5-5`) | Runs the three skills, owns the plan, dispatches, arbitrates seams, runs every join. **Authors no track work.** Starts every real benchmark run itself via `/start-benchmark` (see Hard rules). |\n| **Complex tracks** | Codex · `gpt-6-sol` | Work you would give Opus 5.5: design-heavy or cross-module changes (engine, driver, ledger, graders, statistics, judges). |\n| **Well-defined tracks** | Grok and Agy, each on its **harness default model** | Distinct, bounded work with a fixed contract and fixture: readers, gates, small hardening fixes, task authoring from a fixed source, tests against a given spec. |\n| **Claude subagents** | Opus 5.5 for design or ambiguous work; Sonnet 5 (`claude-sonnet-5`) for mechanical work | Personas (Test Architect, Simplifier, Security, Data & Persistence, …) at gates; reviews at joins; small fixes. |\n\n**Allocation rules for Stage 7:**\n- Give a track to Grok or Agy only when its contract is fully specified: owned paths, the red test named, fixtures present. If writing that brief takes a design decision, the track is complex, not well-defined.\n- Pair each track author with a **reviewer from a different vendor** at the join (author ≠ reviewer, and never the same model family). A Codex author gets a Claude reviewer; a Grok or Agy author gets a Codex or Claude reviewer.\n- **Grok and Agy run on their harness default models, with no `--model` pin** (operator decision, 2026-09-24). The operator reports the defaults as **Grok: grok 4.7 high** and **Agy: Gemini 3.8 Flash High**. Agy may use Claude or Gemini models, but for now it stays on the Gemini default. The exact served model ids are not yet observed. At qualification, read the served id from each worker's native record or ACP session and record it in the qualification file. If the served model is not the reported default, that is a finding for the Owner, not a reason to pin.\n- **Qualification is measured, never assumed.** Grok 1.0.41 and Agy 1.2.10 qualified on this host in `qualify-5` (pack revision 93). Re-check each at Stage 1 on its default model.\n- **Codex is qualified on this machine in `agent-full-access`** (operator decision and approval of no sandbox, 2026-09-24). The record is in `docs/coordination/coordination-phase1-finish-run.md` (commit `e22ca74`; ledger `3db84fc`).\n  - **`qualify-codex-2`:** `ready_for_review` in 84 s, 1 turn, one commit touching only `docs/notes/qualify-worker.md`. Served model **`gpt-6-sol`** (native `turn_context`). `approval_policy: never` and `danger-full-access`, with 0 escalations, 0 permission requests and 0 native denials.\n  - **The Codex worker profile to reuse in every Codex track's contract row:**\n    - `\"argv\": [\"node\", \"C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@agentclientprotocol/codex-acp/dist/index.js\"]` (adapter 1.12.0).\n    - `\"runtime\": {\"unattended\": true, \"mailbox\": <per track>, \"max_turns\": <per track>, \"max_retries\": 0, \"permissions\": \"deny\", \"mode_id\": \"agent-full-access\"}`.\n    - `binding_files`: `AGENTS.md`, the adapter's `dist/index.js` and `package.json`, the pinned 0.156.0 `codex.exe`, and `C:/Users/malla/.codex/config.toml` (it holds `model = \"gpt-6-sol\"`).\n    - All four capabilities at `observed-only`.\n  - **The default ACP mode is rejected** (`qualify-codex-1`). It runs `workspace-write` and overrides the operator's `approvals_reviewer` with `auto_review`. A linked worktree's index is outside the sandbox, so every `git add` and `git commit` escalated and Codex's model reviewer approved it, out of the runner's sight.\n- **Every `coord-runner.py` call goes through the operator-approved wrapper:** `sh C:/Users/malla/AppData/Local/Temp/claude/C--projects-x-harness-x-model-bench/c44c669c-d0a8-41c1-b4b5-8376f17cf0be/scratchpad/coord-runner.sh <subcommand> …`.\n  - It is the only allow-listed entry point. The Claude Code auto-mode classifier refuses a direct launch of an unsandboxed worker, and refuses the agent adding its own rule.\n  - The wrapper sets `AGENT_SESSION=coord-opus-cq`, `AGENT_HOST=claude` and `CODEX_PATH` (the pinned codex-cli 0.156.0; without it the adapter runs its nested 0.154.0, which rejects `gpt-6-sol`, spike R11.5). So the Owner in every contract is **`coord-opus-cq`**, the Leader session.\n  - The runner's fingerprint hashes the whole environment. **Compute `fingerprint` and `run` through the same wrapper**, or the qualification will not match.\n  - Leadership: the TTL cap is 900 s. Keep `coord leader renew` running (the `qualify-5` practice: a renewal every 90 s) for as long as any worker runs. Reclaim with `coord leader reclaim --ttl 900 --host claude coord-opus-cq` after a lapse.\n- The native Codex ownership hook (`coord-core.py hook --config --host codex`) is **not installed**. Its command is POSIX-only (`py=$(…)`), and Codex ran commands through `pwsh.exe` here. That is the same defect class `qualify-5` fixed for Agy's hooks. Ownership is observed at the shared git pre-commit floor and by the runner's evidence verifier, not enforced per edit.\n  - If a Codex track fails, the R-4 fallback applies. Diagnose the failure the way `qualify-5` did: from a recorded message trace, not a version guess.\n- **Fallback (the R-4 precedent):** a track whose harness fails qualification, or fails twice at run time, moves to Claude Code: Opus for complex work, Sonnet for well-defined work. Record the move with the measured cause in the run record. Moving a track is an Owner ruling, never an automatic retry.\n\n## Hard rules\n- **No benchmark cell runs inside the coordination layer** (owner ruling 3, ADR-0002; `/start-benchmark`). Only the Leader starts `bench run`, as its own process, via `/start-benchmark`. A track that needs a real run (rows 5, 6, 13, 15, 25) raises a seam request to the Leader and receives the run id and archive paths.\n- Phase 2+ features are **designed before they are built**. Architecture \"Remaining\" lists \"Phase 2 designs (Copilot profile, stop/decisions, T0 matcher, Harbor E1)\". Each design goes through `/design-slice` with its adversarial gate, then `/implement` red-first.\n- **Row 6 is a hard predecessor of any driver change** (Test Architect condition, \"before phase 2 changes the driver\").\n- Models are pinned; `auto` is refused. Never set or ask for an API key.\n- Every track follows the brief contract in `/execute-with-coordination` Stage 3: the `start` line first, absolute paths, no `EnterWorktree`, a gate's status never piped, a budget and a 400k context ceiling, exit evidence, and Not-in-scope.\n\n## Wave sketch (a starting hypothesis — Stage 4 must re-derive it from real edges and may overturn it)\n- **Wave 0 · serial spine:** layer on (`coord classify init`, `install`, `doctor`); Codex is already qualified in `agent-full-access` (`qualify-codex-2`); re-check Grok and Agy on their default models; the Leader runs one 4-cell X1 run (codex-sol and cc-opus, pack on and off) to capture the full ACP transcript for row 6.\n- **Wave 1 · Copilot vs Codex on X1:** rows 1–5 (Copilot profile, build, launch shape, reader, pack-on probe), plus row 6 D5/D7. Exit: the Leader runs X1 with `copilot-sol`, `codex-sol` and `cc-opus`, pack on and off; report plus `bench verify: ok`.\n- **Wave 2 · smoke on all harnesses:** rows 7–15 and the carried hardening items 26, 28 and 29, which have no dependency on the phase-2 designs. Exit: the smoke BOM runs overnight and `bench status` explains every cell that did not complete.\n- **Wave 3 · grading and judges:** rows 16–18 (row 17's gateway is ADR-0009). Exit: the smoke archive re-grades byte-identically; κ appears in the report header.\n- **Wave 4 · statistics and the full report:** rows 19–20. Exit: UIA-1..15, axe, offline load; two P3 readers name the leader and the pack effect (R9).\n- **Wave 5 · the full grid:** rows 21–25 and 27. Exit: 24 tasks × combos × packs × 3 reps; crash-then-resume in each state; a pack change validated by a re-run comparison.\n\n## Rulings in force (decided before dispatch; read them verbatim in `docs/notes/rulings.md`, commit `0a64b0c`)\nAny new decision a track raises goes to the **Owner seat (Fable)** with `coord decide request --to <owner-session>` and is ruled into `docs/notes/rulings.md`. Do not ask the human. The Owner escalates to the human only when a ruling needs something no seat can verify from this host, such as access to a private repository or an account.\n\n- **Operator (2026-09-24):** Agy uses its default Gemini model for now. Codex runs in `agent-full-access`.\n- **R-7 · Task sources (rows 7 and 21).** Nothing is deferred.\n  - Reachable as is: ClarifyCodeBench, MultiPL-E, and Terminal-Bench 2.0 and SWE-bench Verified (these two gated by row 9).\n  - Reachable locally: cfd-bench (plus the `CFD-Bench-ClaudeCode` and `CFD-Bench-GHCP` clones) and ai-de. Pin a commit; ai-de has uncommitted paths.\n  - ProjDevBench: the prompt is used, with a locally authored oracle (no ACMOJ).\n  - Operator-authored substitutes: SpecBench (B3) and ArchBench (C2). Change `bench/bom.yaml` `source` accordingly.\n  - If row 9 has not passed by the wave-2 join, E1 is deferred and E6 takes the scenario-5 smoke slot.\n- **R-8 · Row 27 anchor.** The anchor is a git-committed, append-only index of grading-pass heads, stored as `kind: grading-pass` entries in `docs/audit/audit-log.jsonl` (written only through `audit-log.py`).\n  - `bench verify` exits 5 on a missing anchored pass or a head mismatch.\n  - It warns `anchor: not recorded` for ledgers from before the ruling, and `anchor: uncommitted` when the entry is not yet committed.\n  - This is an ADR-0006 amendment. It goes through `/design-slice` with the tamper tests R-8 lists.\n- **R-9 · Machine time.**\n  - **Vendor exclusivity during any benchmark run:** no worker or subagent runs on a vendor login that a cell uses (Anthropic, OpenAI, GitHub). Grok and Agy may overlap up to the fan-out cap, and the Leader only polls status.\n  - Smoke runs 22:00–07:00 PDT. It runs at parallelism 4 only after row 15 measures D1 at ≥2 and `plan.py:30` (`PHASE1_MAX_PARALLELISM = 2`) is raised; otherwise split it by combo pair, one night each.\n  - Full grid (≈91 h at parallelism 4): an exclusive block in nightly segments through resume (row 23), or a weekend.\n  - Day hours: X1 and qualification runs of ≤4 cells only.\n  - A `failed (provider)` cell under overlap is attributed to the overlap; two in one run mean full exclusivity for that run and the next.\n  - Every window is recorded in the run record.\n\n## The 31 to-dos (priority: P0 blocks Copilot-vs-Codex · P1 phase 2 · P2 phase 3 · P3 phases 4–5 · H cleanup carried over from phase 1)\n| # | Task | Pri | What it does | Status at 2026-09-24 |\n| --- | --- | --- | --- | --- |\n| 1 | Copilot harness profile | P0 | `bench/profiles/copilot.yaml`; allow `copilot` in `src/harness_bench/profiles.py:25` | Spiked (N1.2, R2.1 verified); not built |\n| 2 | Copilot pinned build | P0 | `@github/copilot` in `bench/tools/package-lock.json`; `tools.py` `LAYOUT` entry; re-hashed each cell start | Not built |\n| 3 | Copilot launch shape | P0 | `Profile.argv()` always runs `node <adapter>`; Copilot is native ACP with `--acp --model --allow-tool shell --allow-tool write` | Not built (gap inferred from reading `argv()`) |\n| 4 | Copilot telemetry reader | P0 | `session-store.db` `assistant_usage_events` → `telemetry/copilot.py`; add to `READERS` (`profiles.py:119`) | Format verified in a spike; no reader |\n| 5 | Copilot pack-on probe + instruction-file preflight | P0 | Prove a Copilot cell loads the pack's `.github/` files; extend HB-PRE-002 (`workspace.py:25`) to Copilot instruction files | Not started (gap inferred) |\n| 6 | D5/D7 real ACP transcript | P0 | Replace the schema-shaped replay fixture with one real cell's full ACP stream; re-run D5/D7 | Open, carried condition (`docs/proof/phase1.md` residual 9) |\n| 7 | Smoke tasks A1, B1, C1, D1, E1, F1 | P1 | Stub → `ready` via `/new-bench-task` | All `stub` |\n| 8 | T0 scripted-user matcher | P1 | The scripted user for A1 | Not started |\n| 9 | Harbor E1 base image | P1 | Containerised Terminal-Bench tasks (risk A6) | Spike not run |\n| 10 | Stop, decision timeout, circuit breaker | P1 | Run-level stop within 30 s; decision requests with a default and a timeout | Modeled in TLC; not built |\n| 11 | Power request | P1 | Keep the host awake for overnight runs | Not built |\n| 12 | Per-class canaries (US-13) | P1 | Canaries per contamination class; key canaries by (string, class) | Partial |\n| 13 | N5 pack-seeded probe | P1 | Does the Codex `~/.agents/skills` leak differ between pack on and off? (R-6) | Open; Codex cells flagged |\n| 14 | `last_update_ms` seam | P1 | `TurnResult.last_update_seconds` (seam `req-01M38KX8503601BEP857749VVF`) | Open |\n| 15 | Resource check at parallelism ≥ 2 | P1 | Peak memory and CPU time on D1 (risk A5) | Not run |\n| 16 | Full graders | P2 | Drift, rigor, mutation, clarify, process | Not built |\n| 17 | Model gateway + judges | P2 | Headless CLIs with every tool denied (ADR-0009); blind two-vendor judges; calibration; κ | Designed; not built |\n| 18 | Egress gate + injection fixture | P2 | US-46 / US-47 | Not built |\n| 19 | Statistics | P3 | Bootstrap intervals, pack effect | Not built |\n| 20 | Full report + AI summaries | P3 | Every Part C section; summaries with a claim check; UIA/axe | Skeleton only |\n| 21 | Remaining 17 BOM tasks | P3 | A2–A5, B2–B3, C2, D2–D3, E2–E7, F2 → `ready` | All `stub` |\n| 22 | G1/G2 formal tasks | P3 | Scenario 7 after the formal-toolchain spike (S-12) | Spike not run |\n| 23 | Resume | P3 | Continue an `incomplete` run | Not built |\n| 24 | Run-to-run comparison + stability | P3 | A pack change validated by a re-run | Not built |\n| 25 | Full grid run | P3 | 24 tasks × combos × packs × 3 reps | Blocked by all of the above |\n| 26 | TOOL-B control | H | Map each cosmic-ray kill to the named test that caught it | Open |\n| 27 | Later-grading-pass anchor | H | Detect a later `bench grade` pass deleted whole (residual 7a; DR-2) | Open, disclosed |\n| 28 | Small hardening items | H | `procs.spawn` TimeoutExpired before `job.close()`; unchecked Win32 results in `host.py`; CLI labels printed before the credential scan; a test for \"0 folders left\" | Open |\n| 29 | Ruling-citation gate | H | `verify-ruling-citations.py` reads `### Ruling NN`; the rulings use `## R-n` | Open |\n| 30 | Host risks A3 / A9 | H · **HUMAN** | OAuth token rotation during a long cell; the monotonic clock across Windows sleep (the host must be put to sleep) | Probes not run |\n| 31 | Copilot USD cost | — | `NA` by decision; tokens, AI units and wall time are the cost measures | Decided; no work. Close as a ruling citation |\n\nSources: `docs/architecture.md` (Delivery phasing, Flagged risks), `docs/design/phase1-walking-skeleton.md` (Status), `docs/proof/phase1.md` (Residuals 1–12, Remaining), `docs/notes/rulings.md` (R-4..R-6), `bench/bom.yaml`, `tasks/*/task.yaml`. **Re-read them at grounding; this table is a snapshot, not evidence** (E15).\n\n## Close\nEvery wave ends with a join (Test Architect hard veto on observed exit evidence; Simplifier on scope growth) and a *Completed / Remaining / Next* block. The run ends with: the committed plan and run record (planned vs actual per track: calls, tokens, wall clock, harness, fallbacks), the final `bench report` path and leaderboard rows, the `bench verify` result, the rows handed to the human with reasons, and the audit entry (AL5b: full prompt, `goal`, `done_when`).",
+      "session": "prompt-compile",
+      "shortname": "/compile then /prepare-for-coordination then /execute-with-coordination …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-09-24T20:59:44Z",
+      "id": "al-01M3AKF5D9FSZ2BE0ARDZCXNKQ",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "/compile then /prepare-for-coordination then /execute-with-coordination --launch\n\n# Finish harness-bench end to end: all 31 outstanding to-dos\n\n## Goal state (CO-S0 — compile this before anything else)\n- **Goal:** take harness-bench from the finished phase-1 walking skeleton to the full design (phases 2–5 in `docs/architecture.md` \"Delivery phasing\"), closing all 31 outstanding to-dos below. Do it in dependency-ordered waves, across a mixed-harness team, at the best throughput the rigor floors allow.\n- **Done when:** every row below is either (a) merged to `main` with its exit evidence observed at a join, (b) closed by an Owner ruling in `docs/notes/rulings.md`, or (c) handed to the human with a named reason (rows marked HUMAN). Also: the coordination plan and run record are committed, and `bench verify` passes on the final smoke run.\n- **Not in scope:** new metrics, UI or harnesses beyond the spec (`grok` and `agy` as *measured* harnesses are out: `config.py:28` lists them, but the spec names three harnesses); changing the X1 fixture; any API key (subscriptions only, ADR-0003); rewriting phase-1 code except where a row names it.\n- **Tier:** T2 (multi-phase, multi-harness, touches the ledger and the engine).\n- **Fan-out cap:** at most 5 concurrent tracks per wave. The plan may recommend fewer, and must say so if that is the honest answer (GO6: parallelism is a cost multiplier).\n- **Objective order:** (1) completeness and rigor · (2) token cost · (3) speed. Rigor floors are immovable nodes: red-first TDD, the E7 surface list, Test Architect exit evidence, and audit entries.\n\n## Seats (CO-S1) and model allocation\n| Seat | Harness · model | Holds |\n| --- | --- | --- |\n| **Owner** | Claude Code · Fable 5.1 (`claude-fable-5-1`) | Rules every decision request (`coord decide request --to <owner-session>`) into `docs/notes/rulings.md`; clears or upholds hard vetoes the author cannot clear; `coord leader pin`. |\n| **Leader / Coordinator** | Claude Code · Opus 5.5 (`claude-opus-5-5`) | Runs the three skills, owns the plan, dispatches, arbitrates seams, runs every join. **Authors no track work.** Starts every real benchmark run itself via `/start-benchmark` (see Hard rules). |\n| **Complex tracks** | Codex · `gpt-6-sol` | Work you would give Opus 5.5: design-heavy or cross-module changes (engine, driver, ledger, graders, statistics, judges). |\n| **Well-defined tracks** | Grok and Agy, each on its **harness default model** | Distinct, bounded work with a fixed contract and fixture: readers, gates, small hardening fixes, task authoring from a fixed source, tests against a given spec. |\n| **Claude subagents** | Opus 5.5 for design or ambiguous work; Sonnet 5 (`claude-sonnet-5`) for mechanical work | Personas (Test Architect, Simplifier, Security, Data & Persistence, …) at gates; reviews at joins; small fixes. |\n\n**Allocation rules for Stage 7:**\n- Give a track to Grok or Agy only when its contract is fully specified: owned paths, the red test named, fixtures present. If writing that brief takes a design decision, the track is complex, not well-defined.\n- Pair each track author with a **reviewer from a different vendor** at the join (author ≠ reviewer, and never the same model family). A Codex author gets a Claude reviewer; a Grok or Agy author gets a Codex or Claude reviewer.\n- **Grok and Agy run on their harness default models, with no `--model` pin** (operator decision, 2026-09-24). The operator reports the defaults as **Grok: grok 4.7 high** and **Agy: Gemini 3.8 Flash High**. Agy may use Claude or Gemini models, but for now it stays on the Gemini default. The exact served model ids are not yet observed. At qualification, read the served id from each worker's native record or ACP session and record it in the qualification file. If the served model is not the reported default, that is a finding for the Owner, not a reason to pin.\n- **Qualification is measured, never assumed.** Grok 1.0.41 and Agy 1.2.10 qualified on this host in `qualify-5` (pack revision 93). Re-check each at Stage 1 on its default model.\n- **Codex is qualified on this machine in `agent-full-access`** (operator decision and approval of no sandbox, 2026-09-24). The record is in `docs/coordination/coordination-phase1-finish-run.md` (commit `e22ca74`; ledger `3db84fc`).\n  - **`qualify-codex-2`:** `ready_for_review` in 84 s, 1 turn, one commit touching only `docs/notes/qualify-worker.md`. Served model **`gpt-6-sol`** (native `turn_context`). `approval_policy: never` and `danger-full-access`, with 0 escalations, 0 permission requests and 0 native denials.\n  - **The Codex worker profile to reuse in every Codex track's contract row:**\n    - `\"argv\": [\"node\", \"C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@agentclientprotocol/codex-acp/dist/index.js\"]` (adapter 1.12.0).\n    - `\"runtime\": {\"unattended\": true, \"mailbox\": <per track>, \"max_turns\": <per track>, \"max_retries\": 0, \"permissions\": \"deny\", \"mode_id\": \"agent-full-access\"}`.\n    - `binding_files`: `AGENTS.md`, the adapter's `dist/index.js` and `package.json`, the pinned 0.156.0 `codex.exe`, and `C:/Users/malla/.codex/config.toml` (it holds `model = \"gpt-6-sol\"`).\n    - All four capabilities at `observed-only`.\n  - **The default ACP mode is rejected** (`qualify-codex-1`). It runs `workspace-write` and overrides the operator's `approvals_reviewer` with `auto_review`. A linked worktree's index is outside the sandbox, so every `git add` and `git commit` escalated and Codex's model reviewer approved it, out of the runner's sight.\n- **Every `coord-runner.py` call goes through the operator-approved wrapper:** `sh C:/Users/malla/AppData/Local/Temp/claude/C--projects-x-harness-x-model-bench/c44c669c-d0a8-41c1-b4b5-8376f17cf0be/scratchpad/coord-runner.sh <subcommand> …`.\n  - It is the only allow-listed entry point. The Claude Code auto-mode classifier refuses a direct launch of an unsandboxed worker, and refuses the agent adding its own rule.\n  - The wrapper sets `AGENT_SESSION=coord-opus-cq`, `AGENT_HOST=claude` and `CODEX_PATH` (the pinned codex-cli 0.156.0; without it the adapter runs its nested 0.154.0, which rejects `gpt-6-sol`, spike R11.5). So the Owner in every contract is **`coord-opus-cq`**, the Leader session.\n  - The runner's fingerprint hashes the whole environment. **Compute `fingerprint` and `run` through the same wrapper**, or the qualification will not match.\n  - Leadership: the TTL cap is 900 s. Keep `coord leader renew` running (the `qualify-5` practice: a renewal every 90 s) for as long as any worker runs. Reclaim with `coord leader reclaim --ttl 900 --host claude coord-opus-cq` after a lapse.\n- The native Codex ownership hook (`coord-core.py hook --config --host codex`) is **not installed**. Its command is POSIX-only (`py=$(…)`), and Codex ran commands through `pwsh.exe` here. That is the same defect class `qualify-5` fixed for Agy's hooks. Ownership is observed at the shared git pre-commit floor and by the runner's evidence verifier, not enforced per edit.\n  - If a Codex track fails, the R-4 fallback applies. Diagnose the failure the way `qualify-5` did: from a recorded message trace, not a version guess.\n- **Fallback (the R-4 precedent):** a track whose harness fails qualification, or fails twice at run time, moves to Claude Code: Opus for complex work, Sonnet for well-defined work. Record the move with the measured cause in the run record. Moving a track is an Owner ruling, never an automatic retry.\n\n## Hard rules\n- **No benchmark cell runs inside the coordination layer** (owner ruling 3, ADR-0002; `/start-benchmark`). Only the Leader starts `bench run`, as its own process, via `/start-benchmark`. A track that needs a real run (rows 5, 6, 13, 15, 25) raises a seam request to the Leader and receives the run id and archive paths.\n- Phase 2+ features are **designed before they are built**. Architecture \"Remaining\" lists \"Phase 2 designs (Copilot profile, stop/decisions, T0 matcher, Harbor E1)\". Each design goes through `/design-slice` with its adversarial gate, then `/implement` red-first.\n- **Row 6 is a hard predecessor of any driver change** (Test Architect condition, \"before phase 2 changes the driver\").\n- Models are pinned; `auto` is refused. Never set or ask for an API key.\n- Every track follows the brief contract in `/execute-with-coordination` Stage 3: the `start` line first, absolute paths, never the harness's worktree-entering tool, a gate's status never piped, a budget and a 400k context ceiling, exit evidence, and Not-in-scope.\n\n## Wave sketch (a starting hypothesis — Stage 4 must re-derive it from real edges and may overturn it)\n- **Wave 0 · serial spine:** layer on (`coord classify init`, `install`, `doctor`); Codex is already qualified in `agent-full-access` (`qualify-codex-2`); re-check Grok and Agy on their default models; the Leader runs one 4-cell X1 run (codex-sol and cc-opus, pack on and off) to capture the full ACP transcript for row 6.\n- **Wave 1 · Copilot vs Codex on X1:** rows 1–5 (Copilot profile, build, launch shape, reader, pack-on probe), plus row 6 D5/D7. Exit: the Leader runs X1 with `copilot-sol`, `codex-sol` and `cc-opus`, pack on and off; report plus `bench verify: ok`.\n- **Wave 2 · smoke on all harnesses:** rows 7–15 and the carried hardening items 26, 28 and 29, which have no dependency on the phase-2 designs. Exit: the smoke BOM runs overnight and `bench status` explains every cell that did not complete.\n- **Wave 3 · grading and judges:** rows 16–18 (row 17's gateway is ADR-0009). Exit: the smoke archive re-grades byte-identically; κ appears in the report header.\n- **Wave 4 · statistics and the full report:** rows 19–20. Exit: UIA-1..15, axe, offline load; two P3 readers name the leader and the pack effect (R9).\n- **Wave 5 · the full grid:** rows 21–25 and 27. Exit: 24 tasks × combos × packs × 3 reps; crash-then-resume in each state; a pack change validated by a re-run comparison.\n\n## Rulings in force (decided before dispatch; read them verbatim in `docs/notes/rulings.md`, commit `0a64b0c`)\nAny new decision a track raises goes to the **Owner seat (Fable)** with `coord decide request --to <owner-session>` and is ruled into `docs/notes/rulings.md`. Do not ask the human. The Owner escalates to the human only when a ruling needs something no seat can verify from this host, such as access to a private repository or an account.\n\n- **Operator (2026-09-24):** Agy uses its default Gemini model for now. Codex runs in `agent-full-access`.\n- **R-7 · Task sources (rows 7 and 21).** Nothing is deferred.\n  - Reachable as is: ClarifyCodeBench, MultiPL-E, and Terminal-Bench 2.0 and SWE-bench Verified (these two gated by row 9).\n  - Reachable locally: cfd-bench (plus the `CFD-Bench-ClaudeCode` and `CFD-Bench-GHCP` clones) and ai-de. Pin a commit; ai-de has uncommitted paths.\n  - ProjDevBench: the prompt is used, with a locally authored oracle (no ACMOJ).\n  - Operator-authored substitutes: SpecBench (B3) and ArchBench (C2). Change `bench/bom.yaml` `source` accordingly.\n  - If row 9 has not passed by the wave-2 join, E1 is deferred and E6 takes the scenario-5 smoke slot.\n- **R-8 · Row 27 anchor.** The anchor is a git-committed, append-only index of grading-pass heads, stored as `kind: grading-pass` entries in `docs/audit/audit-log.jsonl` (written only through `audit-log.py`).\n  - `bench verify` exits 5 on a missing anchored pass or a head mismatch.\n  - It warns `anchor: not recorded` for ledgers from before the ruling, and `anchor: uncommitted` when the entry is not yet committed.\n  - This is an ADR-0006 amendment. It goes through `/design-slice` with the tamper tests R-8 lists.\n- **R-9 · Machine time.**\n  - **Vendor exclusivity during any benchmark run:** no worker or subagent runs on a vendor login that a cell uses (Anthropic, OpenAI, GitHub). Grok and Agy may overlap up to the fan-out cap, and the Leader only polls status.\n  - Smoke runs 22:00–07:00 PDT. It runs at parallelism 4 only after row 15 measures D1 at ≥2 and `plan.py:30` (`PHASE1_MAX_PARALLELISM = 2`) is raised; otherwise split it by combo pair, one night each.\n  - Full grid (≈91 h at parallelism 4): an exclusive block in nightly segments through resume (row 23), or a weekend.\n  - Day hours: X1 and qualification runs of ≤4 cells only.\n  - A `failed (provider)` cell under overlap is attributed to the overlap; two in one run mean full exclusivity for that run and the next.\n  - Every window is recorded in the run record.\n\n## The 31 to-dos (priority: P0 blocks Copilot-vs-Codex · P1 phase 2 · P2 phase 3 · P3 phases 4–5 · H cleanup carried over from phase 1)\n| # | Task | Pri | What it does | Status at 2026-09-24 |\n| --- | --- | --- | --- | --- |\n| 1 | Copilot harness profile | P0 | `bench/profiles/copilot.yaml`; allow `copilot` in `src/harness_bench/profiles.py:25` | Spiked (N1.2, R2.1 verified); not built |\n| 2 | Copilot pinned build | P0 | `@github/copilot` in `bench/tools/package-lock.json`; `tools.py` `LAYOUT` entry; re-hashed each cell start | Not built |\n| 3 | Copilot launch shape | P0 | `Profile.argv()` always runs `node <adapter>`; Copilot is native ACP with `--acp --model --allow-tool shell --allow-tool write` | Not built (gap inferred from reading `argv()`) |\n| 4 | Copilot telemetry reader | P0 | `session-store.db` `assistant_usage_events` → `telemetry/copilot.py`; add to `READERS` (`profiles.py:119`) | Format verified in a spike; no reader |\n| 5 | Copilot pack-on probe + instruction-file preflight | P0 | Prove a Copilot cell loads the pack's `.github/` files; extend HB-PRE-002 (`workspace.py:25`) to Copilot instruction files | Not started (gap inferred) |\n| 6 | D5/D7 real ACP transcript | P0 | Replace the schema-shaped replay fixture with one real cell's full ACP stream; re-run D5/D7 | Open, carried condition (`docs/proof/phase1.md` residual 9) |\n| 7 | Smoke tasks A1, B1, C1, D1, E1, F1 | P1 | Stub → `ready` via `/new-bench-task` | All `stub` |\n| 8 | T0 scripted-user matcher | P1 | The scripted user for A1 | Not started |\n| 9 | Harbor E1 base image | P1 | Containerised Terminal-Bench tasks (risk A6) | Spike not run |\n| 10 | Stop, decision timeout, circuit breaker | P1 | Run-level stop within 30 s; decision requests with a default and a timeout | Modeled in TLC; not built |\n| 11 | Power request | P1 | Keep the host awake for overnight runs | Not built |\n| 12 | Per-class canaries (US-13) | P1 | Canaries per contamination class; key canaries by (string, class) | Partial |\n| 13 | N5 pack-seeded probe | P1 | Does the Codex `~/.agents/skills` leak differ between pack on and off? (R-6) | Open; Codex cells flagged |\n| 14 | `last_update_ms` seam | P1 | `TurnResult.last_update_seconds` (seam `req-01M38KX8503601BEP857749VVF`) | Open |\n| 15 | Resource check at parallelism ≥ 2 | P1 | Peak memory and CPU time on D1 (risk A5) | Not run |\n| 16 | Full graders | P2 | Drift, rigor, mutation, clarify, process | Not built |\n| 17 | Model gateway + judges | P2 | Headless CLIs with every tool denied (ADR-0009); blind two-vendor judges; calibration; κ | Designed; not built |\n| 18 | Egress gate + injection fixture | P2 | US-46 / US-47 | Not built |\n| 19 | Statistics | P3 | Bootstrap intervals, pack effect | Not built |\n| 20 | Full report + AI summaries | P3 | Every Part C section; summaries with a claim check; UIA/axe | Skeleton only |\n| 21 | Remaining 17 BOM tasks | P3 | A2–A5, B2–B3, C2, D2–D3, E2–E7, F2 → `ready` | All `stub` |\n| 22 | G1/G2 formal tasks | P3 | Scenario 7 after the formal-toolchain spike (S-12) | Spike not run |\n| 23 | Resume | P3 | Continue an `incomplete` run | Not built |\n| 24 | Run-to-run comparison + stability | P3 | A pack change validated by a re-run | Not built |\n| 25 | Full grid run | P3 | 24 tasks × combos × packs × 3 reps | Blocked by all of the above |\n| 26 | TOOL-B control | H | Map each cosmic-ray kill to the named test that caught it | Open |\n| 27 | Later-grading-pass anchor | H | Detect a later `bench grade` pass deleted whole (residual 7a; DR-2) | Open, disclosed |\n| 28 | Small hardening items | H | `procs.spawn` TimeoutExpired before `job.close()`; unchecked Win32 results in `host.py`; CLI labels printed before the credential scan; a test for \"0 folders left\" | Open |\n| 29 | Ruling-citation gate | H | `verify-ruling-citations.py` reads `### Ruling NN`; the rulings use `## R-n` | Open |\n| 30 | Host risks A3 / A9 | H · **HUMAN** | OAuth token rotation during a long cell; the monotonic clock across Windows sleep (the host must be put to sleep) | Probes not run |\n| 31 | Copilot USD cost | — | `NA` by decision; tokens, AI units and wall time are the cost measures | Decided; no work. Close as a ruling citation |\n\nSources: `docs/architecture.md` (Delivery phasing, Flagged risks), `docs/design/phase1-walking-skeleton.md` (Status), `docs/proof/phase1.md` (Residuals 1–12, Remaining), `docs/notes/rulings.md` (R-4..R-6), `bench/bom.yaml`, `tasks/*/task.yaml`. **Re-read them at grounding; this table is a snapshot, not evidence** (E15).\n\n## Close\nEvery wave ends with a join (Test Architect hard veto on observed exit evidence; Simplifier on scope growth) and a *Completed / Remaining / Next* block. The run ends with: the committed plan and run record (planned vs actual per track: calls, tokens, wall clock, harness, fallbacks), the final `bench report` path and leaderboard rows, the `bench verify` result, the rows handed to the human with reasons, and the audit entry (AL5b: full prompt, `goal`, `done_when`).",
+      "session": "prompt-compile",
+      "shortname": "/compile then /prepare-for-coordination then /execute-with-coordination …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [
           {
-            "id": "#1",
             "belief": "The Grok and Agy default models are grok 4.7 high and Gemini 3.8 Flash High, as the operator reported",
-            "confirm": "the served model id in each worker's native record at the wave-0 re-check",
             "breaks": "the qualification record names the wrong model; a finding for the Owner, not a re-pin",
-            "consequential": false
+            "confirm": "the served model id in each worker's native record at the wave-0 re-check",
+            "consequential": false,
+            "id": "#1"
           }
         ],
         "clauses": [
@@ -1091,33 +1080,33 @@ window.AUDIT_DATA = {
           }
         ],
         "contract_slot": {
-          "width_cap": "5",
-          "transient_retry": "at most 1, pre-prompt startup failure only (coord-runner rule)",
-          "per_branch_exit": "each track's exit evidence as named in its plan row, observed at the join",
-          "join_rule": "a join per wave: Test Architect hard veto on observed exit evidence, Simplifier on scope growth",
           "containment": "one worktree per track; no benchmark cell inside the coordination layer (ADR-0002)",
-          "termination": "every row done, ruled or handed to the human; a cap firing is a defect signal",
           "deadline": "per track in the plan; coord-runner sessions at most 3600 s each",
-          "fallback": "R-4: a failing track moves to Claude Code by Owner ruling"
+          "fallback": "R-4: a failing track moves to Claude Code by Owner ruling",
+          "join_rule": "a join per wave: Test Architect hard veto on observed exit evidence, Simplifier on scope growth",
+          "per_branch_exit": "each track's exit evidence as named in its plan row, observed at the join",
+          "termination": "every row done, ruled or handed to the human; a cap firing is a defect signal",
+          "transient_retry": "at most 1, pre-prompt startup failure only (coord-runner rule)",
+          "width_cap": "5"
         },
         "decision_requests": [],
         "dispatchable": true,
         "goal_state": {
-          "goal": "Take harness-bench from the finished phase-1 walking skeleton to the full design (phases 2-5), closing all 31 outstanding to-dos in dependency-ordered waves across a mixed-harness team (Owner Fable, Leader Opus 5.5, Codex gpt-6-sol, Grok, Agy, Claude subagents).",
+          "context_ceiling": "400k tokens per track",
           "done_when": [
             "Every row below is either (a) merged to `main` with its exit evidence observed at a join, (b) closed by an Owner ruling in `docs/notes/rulings.md`, or (c) handed to the human with a named reason (rows marked HUMAN).",
             "The coordination plan and run record are committed, and `bench verify` passes on the final smoke run."
           ],
+          "fan_out_cap": "5",
+          "goal": "Take harness-bench from the finished phase-1 walking skeleton to the full design (phases 2-5), closing all 31 outstanding to-dos in dependency-ordered waves across a mixed-harness team (Owner Fable, Leader Opus 5.5, Codex gpt-6-sol, Grok, Agy, Claude subagents).",
+          "main_line_budget": "set per wave and per track in the coordination plan",
           "not_in_scope": [
             "New metrics, UI or harnesses beyond the spec.",
             "Changing the X1 fixture.",
             "Any API key (subscriptions only, ADR-0003).",
             "Rewriting phase-1 code except where a row names it."
           ],
-          "tier": "T2",
-          "fan_out_cap": "5",
-          "context_ceiling": "400k tokens per track",
-          "main_line_budget": "set per wave and per track in the coordination plan"
+          "tier": "T2"
         },
         "graph_neighbours": [],
         "harness": "claude-code",
@@ -2194,98 +2183,98 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
+      "datetime": "2026-09-24T20:59:46Z",
+      "dispatchable": true,
+      "id": "al-01M3AKF6FZSG1RCB5FB5MR3C76",
+      "kind": "compilation",
       "mode": "compiled",
-      "dispatchable": true
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: Take harness-bench from the finished phase-1 walking skeleton to the full design (phases 2-5), closing all 31 outstanding to-dos in dependency-ordered waves across a mixed-harness team (Owner Fable, Leader Opus 5.5, Codex gpt-6-sol, Grok, Agy, Claude subagents).\nDone when: Every row below is either (a) merged to `main` with its exit evidence observed at a join, (b) closed by an Owner ruling in `docs/notes/rulings.md`, or (c) handed to the human with a named reason (rows marked HUMAN).; The coordination plan and run record are committed, and `bench verify` passes on the final smoke run.\nNot in scope: New metrics, UI or harnesses beyond the spec.; Changing the X1 fixture.; Any API key (subscriptions only, ADR-0003).; Rewriting phase-1 code except where a row names it.\nTier: T2\nFan-out cap: 5\nContext ceiling: 400k tokens per track\nMain-line budget: set per wave and per track in the coordination plan\nTrace\n| clause | trace |\n|---|---|\n| done_when: Every row below is either (a) merged to `main` with its exit evidence observed at a join, (b) closed by an Owner ruling in `docs/notes/rulings.md`, or (c) handed to the human with a named reason (rows marked HUMAN). | phrase: every row below is either (a) merged to `main` with its exit evidence observed at a join, (b) closed by an Owner ruling in `docs/notes/rulings.md`, or (c) handed to the human with a named reason (rows marked HUMAN) |\n| done_when: The coordination plan and run record are committed, and `bench verify` passes on the final smoke run. | phrase: the coordination plan and run record are committed, and `bench verify` passes on the final smoke run |\n| not_in_scope: New metrics, UI or harnesses beyond the spec. | phrase: new metrics, UI or harnesses beyond the spec |\n| not_in_scope: Changing the X1 fixture. | phrase: changing the X1 fixture |\n| not_in_scope: Any API key (subscriptions only, ADR-0003). | phrase: any API key (subscriptions only, ADR-0003) |\n| not_in_scope: Rewriting phase-1 code except where a row names it. | phrase: rewriting phase-1 code except where a row names it |\nReferences\n- docs/architecture.md: unresolved (ambiguous: 2 matches)\n- main: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 2 matches)\n- bench verify: unresolved (not found)\n- grok: unresolved (not found)\n- agy: unresolved (not found)\n- config.py:28: unresolved (not found)\n- claude-fable-5-1: unresolved (not found)\n- coord decide request --to <owner-session: unresolved (not found)\n- coord leader pin: unresolved (not found)\n- claude-opus-5-5: unresolved (not found)\n- /start-benchmark: unresolved (outside repo)\n- gpt-6-sol: unresolved (not found)\n- claude-sonnet-5: unresolved (not found)\n- --model: unresolved (not found)\n- qualify-5: unresolved (not found)\n- agent-full-access: unresolved (not found)\n- docs/coordination/coordination-phase1-finish-run.md: docs/coordination/coordination-phase1-finish-run.md sha256 93fa6763587ff34106f283575074265c0bbb69839affc718ca1c4a79a8b530e3\n- e22ca74: unresolved (not found)\n- 3db84fc: unresolved (not found)\n- qualify-codex-2: unresolved (not found)\n- ready_for_review: unresolved (not found)\n- docs/notes/qualify-worker.md: unresolved (not found)\n- turn_context: unresolved (not found)\n- approval_policy: never: unresolved (not found)\n- danger-full-access: unresolved (not found)\n- argv\": [\"node\", \"C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@agentclientprotocol/codex-acp/dist/index.js: unresolved (not found)\n- runtime\": {\"unattended\": true, \"mailbox\": <per track>, \"max_turns\": <per track>, \"max_retries\": 0, \"permissions\": \"deny\", \"mode_id\": \"agent-full-access\"}: unresolved (not found)\n- binding_files: unresolved (not found)\n- AGENTS.md: unresolved (ambiguous: 2 matches)\n- dist/index.js: unresolved (not found)\n- package.json: unresolved (ambiguous: 4 matches)\n- codex.exe: unresolved (not found)\n- C:/Users/malla/.codex/config.toml: unresolved (outside repo)\n- model = \"gpt-6-sol: unresolved (not found)\n- observed-only: unresolved (not found)\n- qualify-codex-1: unresolved (not found)\n- workspace-write: unresolved (not found)\n- approvals_reviewer: unresolved (not found)\n- auto_review: unresolved (not found)\n- git add: unresolved (not found)\n- git commit: unresolved (not found)\n- coord-runner.py: unresolved (ambiguous: 3 matches)\n- sh C:/Users/malla/AppData/Local/Temp/claude/C--projects-x-harness-x-model-bench/c44c669c-d0a8-41c1-b4b5-8376f17cf0be/scratchpad/coord-runner.sh <subcommand> …: unresolved (not found)\n- AGENT_SESSION=coord-opus-cq: unresolved (not found)\n- AGENT_HOST=claude: unresolved (not found)\n- CODEX_PATH: unresolved (not found)\n- coord-opus-cq: unresolved (not found)\n- fingerprint: unresolved (not found)\n- run: unresolved (not found)\n- coord leader renew: unresolved (not found)\n- coord leader reclaim --ttl 900 --host claude coord-opus-cq: unresolved (not found)\n- coord-core.py hook --config --host codex: unresolved (not found)\n- py=$(…: unresolved (not found)\n- pwsh.exe: unresolved (not found)\n- bench run: unresolved (not found)\n- /design-slice: unresolved (outside repo)\n- /implement: unresolved (outside repo)\n- auto: unresolved (not found)\n- /execute-with-coordination: unresolved (outside repo)\n- start: unresolved (not found)\n- coord classify init: unresolved (not found)\n- install: unresolved (not found)\n- doctor: unresolved (not found)\n- copilot-sol: unresolved (not found)\n- codex-sol: unresolved (not found)\n- cc-opus: unresolved (not found)\n- bench verify: ok: unresolved (not found)\n- bench status: unresolved (not found)\n- 0a64b0c: unresolved (not found)\n- CFD-Bench-ClaudeCode: unresolved (not found)\n- CFD-Bench-GHCP: unresolved (not found)\n- bench/bom.yaml: bench/bom.yaml sha256 81de7f13c470670937bc86bdd78067a6cd6c300be2adf7b5eff6e0031357c475\n- source: unresolved (not found)\n- kind: grading-pass: unresolved (not found)\n- docs/audit/audit-log.jsonl: unresolved (ambiguous: 2 matches)\n- audit-log.py: unresolved (ambiguous: 3 matches)\n- anchor: not recorded: unresolved (not found)\n- anchor: uncommitted: unresolved (not found)\n- plan.py:30: unresolved (not found)\n- PHASE1_MAX_PARALLELISM = 2: unresolved (not found)\n- failed (provider: unresolved (not found)\n- bench/profiles/copilot.yaml: unresolved (not found)\n- copilot: unresolved (not found)\n- src/harness_bench/profiles.py:25: unresolved (not found)\n- @github/copilot: unresolved (not found)\n- bench/tools/package-lock.json: bench/tools/package-lock.json sha256 9c961102d6d87cb948e01754832b03305563463269e0ce716d27b96a669df96b\n- tools.py: src/harness_bench/tools.py sha256 877dc6e59c2772baf8c7a63513e6fc214632b9169237b16d8c8a159d7db1966f\n- LAYOUT: unresolved (not found)\n- Profile.argv: unresolved (not found)\n- node <adapter: unresolved (not found)\n- --acp --model --allow-tool shell --allow-tool write: unresolved (not found)\n- argv: unresolved (not found)\n- session-store.db: unresolved (not found)\n- assistant_usage_events: unresolved (not found)\n- telemetry/copilot.py: unresolved (not found)\n- READERS: unresolved (not found)\n- profiles.py:119: unresolved (not found)\n- .github/: unresolved (not found)\n- workspace.py:25: unresolved (not found)\n- docs/proof/phase1.md: docs/proof/phase1.md sha256 3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428\n- ready: unresolved (not found)\n- /new-bench-task: unresolved (outside repo)\n- stub: unresolved (not found)\n- ~/.agents/skills: unresolved (not found)\n- last_update_ms: unresolved (not found)\n- TurnResult.last_update_seconds: unresolved (not found)\n- req-01M38KX8503601BEP857749VVF: unresolved (not found)\n- incomplete: unresolved (not found)\n- bench grade: unresolved (not found)\n- procs.spawn: unresolved (not found)\n- job.close: unresolved (not found)\n- host.py: src/harness_bench/host.py sha256 6c367e4a2d52ef00b06e10e80d0b5cc429ed2bd9c04022afce0f2ab1fad82bb0\n- verify-ruling-citations.py: unresolved (ambiguous: 3 matches)\n- ### Ruling NN: unresolved (not found)\n- ## R-n: unresolved (not found)\n- NA: unresolved (not found)\n- docs/design/phase1-walking-skeleton.md: docs/design/phase1-walking-skeleton.md sha256 ab894f88dae0bfc912c33f7df312784c5d422555a6c0793d9bfc5295e6c3ba47\n- tasks/*/task.yaml: unresolved (not found)\n- bench report: unresolved (not found)\n- goal: unresolved (not found)\n- done_when: unresolved (not found)\n- /compile: unresolved (outside repo)\n- /prepare-for-coordination: unresolved (outside repo)\n- /: unresolved (outside repo)\n- C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@agentclientprotocol/codex-acp/dist/index.js: unresolved (outside repo)\n- C:/Users/malla/AppData/Local/Temp/claude/C--projects-x-harness-x-model-bench/c44c669c-d0a8-41c1-b4b5-8376f17cf0be/scratchpad/coord-runner.sh: unresolved (outside repo)\n- coord-core.py: unresolved (ambiguous: 3 matches)\n- stop/decisions: unresolved (not found)\n- D5/D7: unresolved (not found)\n- UIA/axe: unresolved (not found)\n- G1/G2: unresolved (not found)\nAssumptions\n- #1 belief: The Grok and Agy default models are grok 4.7 high and Gemini 3.8 Flash High, as the operator reported · confirm: the served model id in each worker's native record at the wave-0 re-check · breaks: the qualification record names the wrong model; a finding for the Owner, not a re-pin · consequential: false\nDecision requests\n- none\nContract slot\nwidth_cap: 5\ntransient_retry: at most 1, pre-prompt startup failure only (coord-runner rule)\nper_branch_exit: each track's exit evidence as named in its plan row, observed at the join\njoin_rule: a join per wave: Test Architect hard veto on observed exit evidence, Simplifier on scope growth\ncontainment: one worktree per track; no benchmark cell inside the coordination layer (ADR-0002)\ntermination: every row done, ruled or handed to the human; a cap firing is a defect signal\ndeadline: per track in the plan; coord-runner sessions at most 3600 s each\nfallback: R-4: a failing track moves to Claude Code by Owner ruling\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AKF5D9FSZ2BE0ARDZCXNKQ\nraw sha256: ef329326f506414e20f9f4ee74fc66e48c4209bc38d386c54fb5b6507a179a1e\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-/compile then /prepare-for-coordination then /execute-with-coordination …",
+      "skill": null,
+      "summary": "compiled al-01M3AKF5D9FSZ2BE0ARDZCXNKQ for claude-code v1: 6 clauses, 1 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
     },
     {
-      "id": "al-01M3AKGA9AGBK17MQ1NYC5Q0ZF",
-      "shortname": "compile-finish-harness-bench",
-      "datetime": "2026-09-24T21:00:22Z",
-      "session": "coord-opus-cq",
-      "prompt": "C:/Program Files/Git/compile finish-harness-bench-prompt.md",
-      "summary": "raw al-01M3AKF5D9FSZ2BE0ARDZCXNKQ, compiled al-01M3AKF6FZSG1RCB5FB5MR3C76, harness claude-code, 6 clauses (2 done_when, 4 not_in_scope), 1 assumption (non-consequential), 0 decision requests, dispatchable; retry 1: raw named a forbidden construct, rephrased",
-      "kind": "skill",
-      "skill": "compile",
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "tier": "T0",
+      "datetime": "2026-09-24T21:00:22Z",
+      "duration_seconds": 749.0,
       "fan_out": 0,
+      "id": "al-01M3AKGA9AGBK17MQ1NYC5Q0ZF",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "C:/Program Files/Git/compile finish-harness-bench-prompt.md",
+      "session": "coord-opus-cq",
+      "shortname": "compile-finish-harness-bench",
+      "skill": "compile",
       "started_at": "2026-09-24T20:47:53Z",
-      "duration_seconds": 749.0
+      "summary": "raw al-01M3AKF5D9FSZ2BE0ARDZCXNKQ, compiled al-01M3AKF6FZSG1RCB5FB5MR3C76, harness claude-code, 6 clauses (2 done_when, 4 not_in_scope), 1 assumption (non-consequential), 0 decision requests, dispatchable; retry 1: raw named a forbidden construct, rephrased",
+      "tags": [],
+      "tier": "T0",
+      "tool": null
     },
     {
-      "id": "al-01M3AM7QQC0QZCVP39FV8V3CZR",
-      "shortname": "coordination-finish-harness-bench",
-      "datetime": "2026-09-24T21:13:10Z",
-      "session": "coord-opus-cq",
-      "prompt": "C:/Program Files/Git/prepare-for-coordination from compiled al-01M3AKF6FZSG1RCB5FB5MR3C76 (finish-harness-bench-prompt)",
-      "summary": "Rolling-wave plan: 7 wave-1 tracks (max 5 live), W0-QUAL done, waves 2-5 by row with carried exit conditions. Gate: TA BLOCK->CLEAR, Simplifier BLOCK->CLEAR, Tech Lead PASS w/ conditions. Struck: row-11 work (already built), W2-DRIVER (into W1-ACP), W2-RES (into TASKS-b).",
-      "kind": "skill",
-      "skill": "prepare-for-coordination",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/coordination/coordination-finish-harness-bench.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled_from": "al-01M3AKF6FZSG1RCB5FB5MR3C76",
-      "goal": "Finish harness-bench phases 2-5: close all 31 to-dos",
+      "datetime": "2026-09-24T21:13:10Z",
       "done_when": "every row merged with observed exit evidence, ruled, or handed to the human; plan and run record committed; bench verify passes on the final smoke run",
-      "tier": "T2",
-      "fan_out": 5,
+      "duration_seconds": 95.0,
       "duration_source": "session-start-hook",
-      "started_at": "2026-09-24T21:11:35Z",
-      "duration_seconds": 95.0
-    },
-    {
-      "id": "al-01M3AM98AY8D573BBJS41GBBVK",
-      "shortname": "Goal: W1-HOST slice 1 (plan docs/coordination/coordination-finish-harnes…",
-      "datetime": "2026-09-24T21:13:59Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W1-HOST slice 1 (plan docs/coordination/coordination-finish-harness-bench.md, row 28): fix three disclosed hardening defects red-first and add a leftover-folder test, in the owned paths only.\nDone when: A red commit (tests only, no src/ change) then a green commit exists for each of the three defects: (1) procs.spawn() can raise TimeoutExpired before job.close() after a failed assignment; (2) host.py does not check the results of GlobalMemoryStatusEx and QueryUnbiasedInterruptTime; (3) cmd_report in src/harness_bench/cli.py:191-194 prints the cli_table text before html.write runs the credential scan.; A new tests/test_no_leftovers.py asserts the base fixture leaves 0 folders behind.; `uv run pytest -q` passes on your branch and `uv run ruff check` is clean.; Your final message lists each red SHA, the green SHA, and the exact failing assertion each red produced.\nNot in scope: tests/conftest.py and every file outside src/harness_bench/procs.py, src/harness_bench/host.py, src/harness_bench/cli.py, src/harness_bench/report/cli_table.py, tests/test_procs.py, tests/test_host.py, tests/test_cli.py, tests/test_report.py, tests/test_no_leftovers.py, tests/mutations/cli.json.; Running any test with -m \"\" or anything under tests/e2e (those start real model cells).; The power request (row 11 is already built: host.keep_awake).; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit before the deadline even if a defect remains, and say which remains.\n\nGrounding: read docs/proof/phase1.md residuals 5 and 6, and AGENTS.md. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing so the commit floor enforces ownership. Red-first means the test commit fails on the current code for the stated reason before the fix commit. If a fix needs a file you do not own, stop and say which file and why; do not edit it.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3AM98NJS7TT1ZF8NXY9VWRY",
-      "shortname": "Goal: W1-TOOLB slice 1 (plan docs/coordination/coordination-finish-harne…",
-      "datetime": "2026-09-24T21:14:00Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W1-TOOLB slice 1 (plan docs/coordination/coordination-finish-harness-bench.md, row 26): build the TOOL-B control so a cosmic-ray kill counts only when a named test failed, red-first, in the owned paths only.\nDone when: tools/mutate_check.py re-derives each kill from `cosmic-ray dump` output and names the failing test for it.; Red-first seeded cases exist in tests/test_mutate_check.py: a mutant that causes a collection error, a timeout, and an exit-2 run are each reported NOT a named kill, and the red commit (tests only) fails on the current tool for that reason.; `uv run pytest -q tests/test_mutate_check.py` and `uv run pytest -q` pass on your branch and `uv run ruff check` is clean.; Your final message lists the red SHA, the green SHA, the failing assertion the red produced, and the command to run the control over the phase-1 modules.\nNot in scope: Every file outside tools/mutate_check.py and tests/test_mutate_check.py.; Running any test with -m \"\" or anything under tests/e2e (those start real model cells).; Running the full cosmic-ray sweep over the phase-1 modules (the Leader runs it at the join).; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit before the deadline even if a case remains, and say which remains.\n\nGrounding: read docs/lessons/defect-classes.md (the TOOL-A and TOOL-B classes), docs/proof/phase1.md (Claim 3 and residual 10), and AGENTS.md. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing so the commit floor enforces ownership. If the control needs a file you do not own, stop and say which file and why; do not edit it.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3AM9G9EP34TF3RD3CBQDBG5",
-      "shortname": "compile-Goal: W1-HOST slice 1 (plan docs/coordination/coordination-finish-harnes…",
-      "datetime": "2026-09-24T21:14:08Z",
-      "session": "coord-opus-cq",
-      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-HOST slice 1 (plan docs/coordination/coordination-finish-harness-bench.md, row 28): fix three disclosed hardening defects red-first and add a leftover-folder test, in the owned paths only.\nDone when: A red commit (tests only, no src/ change) then a green commit exists for each of the three defects: (1) procs.spawn() can raise TimeoutExpired before job.close() after a failed assignment; (2) host.py does not check the results of GlobalMemoryStatusEx and QueryUnbiasedInterruptTime; (3) cmd_report in src/harness_bench/cli.py:191-194 prints the cli_table text before html.write runs the credential scan.; A new tests/test_no_leftovers.py asserts the base fixture leaves 0 folders behind.; `uv run pytest -q` passes on your branch and `uv run ruff check` is clean.; Your final message lists each red SHA, the green SHA, and the exact failing assertion each red produced.\nNot in scope: tests/conftest.py and every file outside src/harness_bench/procs.py, src/harness_bench/host.py, src/harness_bench/cli.py, src/harness_bench/report/cli_table.py, tests/test_procs.py, tests/test_host.py, tests/test_cli.py, tests/test_report.py, tests/test_no_leftovers.py, tests/mutations/cli.json.; Running any test with -m \"\" or anything under tests/e2e (those start real model cells).; The power request (row 11 is already built: host.keep_awake).; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit before the deadline even if a defect remains, and say which remains.\nGrounding: read docs/proof/phase1.md residuals 5 and 6, and AGENTS.md. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing so the commit floor enforces ownership. Red-first means the test commit fails on the current code for the stated reason before the fix commit. If a fix needs a file you do not own, stop and say which file and why; do not edit it.\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit (tests only, no src/ change) then a green commit exists for each of the three defects: (1) procs.spawn() can raise TimeoutExpired before job.close() after a failed assignment | phrase: A red commit (tests only, no src/ change) then a green commit exists for each of the three defects: (1) procs.spawn() can raise TimeoutExpired before job.close() after a failed assignment |\n| done_when: (2) host.py does not check the results of GlobalMemoryStatusEx and QueryUnbiasedInterruptTime | phrase: (2) host.py does not check the results of GlobalMemoryStatusEx and QueryUnbiasedInterruptTime |\n| done_when: (3) cmd_report in src/harness_bench/cli.py:191-194 prints the cli_table text before html.write runs the credential scan. | phrase: (3) cmd_report in src/harness_bench/cli.py:191-194 prints the cli_table text before html.write runs the credential scan. |\n| done_when: A new tests/test_no_leftovers.py asserts the base fixture leaves 0 folders behind. | phrase: A new tests/test_no_leftovers.py asserts the base fixture leaves 0 folders behind. |\n| done_when: `uv run pytest -q` passes on your branch and `uv run ruff check` is clean. | phrase: `uv run pytest -q` passes on your branch and `uv run ruff check` is clean. |\n| done_when: Your final message lists each red SHA, the green SHA, and the exact failing assertion each red produced. | phrase: Your final message lists each red SHA, the green SHA, and the exact failing assertion each red produced. |\n| not_in_scope: tests/conftest.py and every file outside src/harness_bench/procs.py, src/harness_bench/host.py, src/harness_bench/cli.py, src/harness_bench/report/cli_table.py, tests/test_procs.py, tests/test_host.py, tests/test_cli.py, tests/test_report.py, tests/test_no_leftovers.py, tests/mutations/cli.json. | phrase: tests/conftest.py and every file outside src/harness_bench/procs.py, src/harness_bench/host.py, src/harness_bench/cli.py, src/harness_bench/report/cli_table.py, tests/test_procs.py, tests/test_host.py, tests/test_cli.py, tests/test_report.py, tests/test_no_leftovers.py, tests/mutations/cli.json. |\n| not_in_scope: Running any test with -m \"\" or anything under tests/e2e (those start real model cells). | phrase: Running any test with -m \"\" or anything under tests/e2e (those start real model cells). |\n| not_in_scope: The power request (row 11 is already built: host.keep_awake). | phrase: The power request (row 11 is already built: host.keep_awake). |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- uv run pytest -q: unresolved (not found)\n- uv run ruff check: unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 a9243d44a4ace691b4c5f95a46d2ac5a89da8c42ddedccab907c19f92fd78e97\n- src/: unresolved (not found)\n- host.py: src/harness_bench/host.py sha256 6c367e4a2d52ef00b06e10e80d0b5cc429ed2bd9c04022afce0f2ab1fad82bb0\n- src/harness_bench/cli.py:191-194: unresolved (not found)\n- tests/test_no_leftovers.py: unresolved (not found)\n- tests/conftest.py: tests/conftest.py sha256 d0a1f176caaf1a66888a86bbd6a06e3dbfbfb7861e3c72383c06c54e6dbdbc29\n- src/harness_bench/procs.py: src/harness_bench/procs.py sha256 2be3acd5ff3aff0964471eebac9306c2108a044b7c83b5e48ba106c55503aa31\n- src/harness_bench/host.py: src/harness_bench/host.py sha256 6c367e4a2d52ef00b06e10e80d0b5cc429ed2bd9c04022afce0f2ab1fad82bb0\n- src/harness_bench/cli.py: src/harness_bench/cli.py sha256 8b0b789938e98e285768285abb2e86d4a3176fbb1536387fe9e15abf0517b308\n- src/harness_bench/report/cli_table.py: src/harness_bench/report/cli_table.py sha256 0df26f898a279276741e2e38d6517d1bff4f69e8fd8f614bf999f33213c0bf51\n- tests/test_procs.py: tests/test_procs.py sha256 1d8130f852f1cb7701175fe61cab4b38846c1ee9c24544a7835167f4df6b130a\n- tests/test_host.py: unresolved (not found)\n- tests/test_cli.py: tests/test_cli.py sha256 d0b9056b6929aa733a8636cc694579b6aff2b77478134433a2597752019c3524\n- tests/test_report.py: tests/test_report.py sha256 7272d22b1d1a0909dbd8a37d3a2b9a0a55de3fd47d9a1794a91aa0f4a7d8a9b5\n- tests/mutations/cli.json: tests/mutations/cli.json sha256 7438388b5294a1590f662036776dc2f11267693fe7e5334cbb36cc84cd852029\n- tests/e2e: unresolved (not found)\n- docs/proof/phase1.md: docs/proof/phase1.md sha256 3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428\n- AGENTS.md: unresolved (ambiguous: 2 matches)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AM98AY8D573BBJS41GBBVK\nraw sha256: 60b377e4b08b6e1419c970c2c2ae87feb16d712acf9c7632a7d0cd835d843226\ncompiler model: claude-opus-5-5\nengine seconds: 0.001\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
-      "summary": "compiled al-01M3AM98AY8D573BBJS41GBBVK for codex v1: 10 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
+      "fan_out": 5,
+      "goal": "Finish harness-bench phases 2-5: close all 31 to-dos",
+      "id": "al-01M3AM7QQC0QZCVP39FV8V3CZR",
+      "kind": "skill",
       "outcome": "success",
+      "prompt": "C:/Program Files/Git/prepare-for-coordination from compiled al-01M3AKF6FZSG1RCB5FB5MR3C76 (finish-harness-bench-prompt)",
+      "session": "coord-opus-cq",
+      "shortname": "coordination-finish-harness-bench",
+      "skill": "prepare-for-coordination",
+      "started_at": "2026-09-24T21:11:35Z",
+      "summary": "Rolling-wave plan: 7 wave-1 tracks (max 5 live), W0-QUAL done, waves 2-5 by row with carried exit conditions. Gate: TA BLOCK->CLEAR, Simplifier BLOCK->CLEAR, Tech Lead PASS w/ conditions. Struck: row-11 work (already built), W2-DRIVER (into W1-ACP), W2-RES (into TASKS-b).",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-09-24T21:13:59Z",
+      "id": "al-01M3AM98AY8D573BBJS41GBBVK",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: W1-HOST slice 1 (plan docs/coordination/coordination-finish-harness-bench.md, row 28): fix three disclosed hardening defects red-first and add a leftover-folder test, in the owned paths only.\nDone when: A red commit (tests only, no src/ change) then a green commit exists for each of the three defects: (1) procs.spawn() can raise TimeoutExpired before job.close() after a failed assignment; (2) host.py does not check the results of GlobalMemoryStatusEx and QueryUnbiasedInterruptTime; (3) cmd_report in src/harness_bench/cli.py:191-194 prints the cli_table text before html.write runs the credential scan.; A new tests/test_no_leftovers.py asserts the base fixture leaves 0 folders behind.; `uv run pytest -q` passes on your branch and `uv run ruff check` is clean.; Your final message lists each red SHA, the green SHA, and the exact failing assertion each red produced.\nNot in scope: tests/conftest.py and every file outside src/harness_bench/procs.py, src/harness_bench/host.py, src/harness_bench/cli.py, src/harness_bench/report/cli_table.py, tests/test_procs.py, tests/test_host.py, tests/test_cli.py, tests/test_report.py, tests/test_no_leftovers.py, tests/mutations/cli.json.; Running any test with -m \"\" or anything under tests/e2e (those start real model cells).; The power request (row 11 is already built: host.keep_awake).; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit before the deadline even if a defect remains, and say which remains.\n\nGrounding: read docs/proof/phase1.md residuals 5 and 6, and AGENTS.md. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing so the commit floor enforces ownership. Red-first means the test commit fails on the current code for the stated reason before the fix commit. If a fix needs a file you do not own, stop and say which file and why; do not edit it.",
+      "session": "prompt-compile",
+      "shortname": "Goal: W1-HOST slice 1 (plan docs/coordination/coordination-finish-harnes…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-09-24T21:14:00Z",
+      "id": "al-01M3AM98NJS7TT1ZF8NXY9VWRY",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: W1-TOOLB slice 1 (plan docs/coordination/coordination-finish-harness-bench.md, row 26): build the TOOL-B control so a cosmic-ray kill counts only when a named test failed, red-first, in the owned paths only.\nDone when: tools/mutate_check.py re-derives each kill from `cosmic-ray dump` output and names the failing test for it.; Red-first seeded cases exist in tests/test_mutate_check.py: a mutant that causes a collection error, a timeout, and an exit-2 run are each reported NOT a named kill, and the red commit (tests only) fails on the current tool for that reason.; `uv run pytest -q tests/test_mutate_check.py` and `uv run pytest -q` pass on your branch and `uv run ruff check` is clean.; Your final message lists the red SHA, the green SHA, the failing assertion the red produced, and the command to run the control over the phase-1 modules.\nNot in scope: Every file outside tools/mutate_check.py and tests/test_mutate_check.py.; Running any test with -m \"\" or anything under tests/e2e (those start real model cells).; Running the full cosmic-ray sweep over the phase-1 modules (the Leader runs it at the join).; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit before the deadline even if a case remains, and say which remains.\n\nGrounding: read docs/lessons/defect-classes.md (the TOOL-A and TOOL-B classes), docs/proof/phase1.md (Claim 3 and residual 10), and AGENTS.md. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing so the commit floor enforces ownership. If the control needs a file you do not own, stop and say which file and why; do not edit it.",
+      "session": "prompt-compile",
+      "shortname": "Goal: W1-TOOLB slice 1 (plan docs/coordination/coordination-finish-harne…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -2598,23 +2587,23 @@ window.AUDIT_DATA = {
         "template": "codex",
         "template_version": 1
       },
+      "datetime": "2026-09-24T21:14:08Z",
+      "dispatchable": true,
+      "id": "al-01M3AM9G9EP34TF3RD3CBQDBG5",
+      "kind": "compilation",
       "mode": "pass-through",
-      "dispatchable": true
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-HOST slice 1 (plan docs/coordination/coordination-finish-harness-bench.md, row 28): fix three disclosed hardening defects red-first and add a leftover-folder test, in the owned paths only.\nDone when: A red commit (tests only, no src/ change) then a green commit exists for each of the three defects: (1) procs.spawn() can raise TimeoutExpired before job.close() after a failed assignment; (2) host.py does not check the results of GlobalMemoryStatusEx and QueryUnbiasedInterruptTime; (3) cmd_report in src/harness_bench/cli.py:191-194 prints the cli_table text before html.write runs the credential scan.; A new tests/test_no_leftovers.py asserts the base fixture leaves 0 folders behind.; `uv run pytest -q` passes on your branch and `uv run ruff check` is clean.; Your final message lists each red SHA, the green SHA, and the exact failing assertion each red produced.\nNot in scope: tests/conftest.py and every file outside src/harness_bench/procs.py, src/harness_bench/host.py, src/harness_bench/cli.py, src/harness_bench/report/cli_table.py, tests/test_procs.py, tests/test_host.py, tests/test_cli.py, tests/test_report.py, tests/test_no_leftovers.py, tests/mutations/cli.json.; Running any test with -m \"\" or anything under tests/e2e (those start real model cells).; The power request (row 11 is already built: host.keep_awake).; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit before the deadline even if a defect remains, and say which remains.\nGrounding: read docs/proof/phase1.md residuals 5 and 6, and AGENTS.md. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing so the commit floor enforces ownership. Red-first means the test commit fails on the current code for the stated reason before the fix commit. If a fix needs a file you do not own, stop and say which file and why; do not edit it.\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit (tests only, no src/ change) then a green commit exists for each of the three defects: (1) procs.spawn() can raise TimeoutExpired before job.close() after a failed assignment | phrase: A red commit (tests only, no src/ change) then a green commit exists for each of the three defects: (1) procs.spawn() can raise TimeoutExpired before job.close() after a failed assignment |\n| done_when: (2) host.py does not check the results of GlobalMemoryStatusEx and QueryUnbiasedInterruptTime | phrase: (2) host.py does not check the results of GlobalMemoryStatusEx and QueryUnbiasedInterruptTime |\n| done_when: (3) cmd_report in src/harness_bench/cli.py:191-194 prints the cli_table text before html.write runs the credential scan. | phrase: (3) cmd_report in src/harness_bench/cli.py:191-194 prints the cli_table text before html.write runs the credential scan. |\n| done_when: A new tests/test_no_leftovers.py asserts the base fixture leaves 0 folders behind. | phrase: A new tests/test_no_leftovers.py asserts the base fixture leaves 0 folders behind. |\n| done_when: `uv run pytest -q` passes on your branch and `uv run ruff check` is clean. | phrase: `uv run pytest -q` passes on your branch and `uv run ruff check` is clean. |\n| done_when: Your final message lists each red SHA, the green SHA, and the exact failing assertion each red produced. | phrase: Your final message lists each red SHA, the green SHA, and the exact failing assertion each red produced. |\n| not_in_scope: tests/conftest.py and every file outside src/harness_bench/procs.py, src/harness_bench/host.py, src/harness_bench/cli.py, src/harness_bench/report/cli_table.py, tests/test_procs.py, tests/test_host.py, tests/test_cli.py, tests/test_report.py, tests/test_no_leftovers.py, tests/mutations/cli.json. | phrase: tests/conftest.py and every file outside src/harness_bench/procs.py, src/harness_bench/host.py, src/harness_bench/cli.py, src/harness_bench/report/cli_table.py, tests/test_procs.py, tests/test_host.py, tests/test_cli.py, tests/test_report.py, tests/test_no_leftovers.py, tests/mutations/cli.json. |\n| not_in_scope: Running any test with -m \"\" or anything under tests/e2e (those start real model cells). | phrase: Running any test with -m \"\" or anything under tests/e2e (those start real model cells). |\n| not_in_scope: The power request (row 11 is already built: host.keep_awake). | phrase: The power request (row 11 is already built: host.keep_awake). |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- uv run pytest -q: unresolved (not found)\n- uv run ruff check: unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 a9243d44a4ace691b4c5f95a46d2ac5a89da8c42ddedccab907c19f92fd78e97\n- src/: unresolved (not found)\n- host.py: src/harness_bench/host.py sha256 6c367e4a2d52ef00b06e10e80d0b5cc429ed2bd9c04022afce0f2ab1fad82bb0\n- src/harness_bench/cli.py:191-194: unresolved (not found)\n- tests/test_no_leftovers.py: unresolved (not found)\n- tests/conftest.py: tests/conftest.py sha256 d0a1f176caaf1a66888a86bbd6a06e3dbfbfb7861e3c72383c06c54e6dbdbc29\n- src/harness_bench/procs.py: src/harness_bench/procs.py sha256 2be3acd5ff3aff0964471eebac9306c2108a044b7c83b5e48ba106c55503aa31\n- src/harness_bench/host.py: src/harness_bench/host.py sha256 6c367e4a2d52ef00b06e10e80d0b5cc429ed2bd9c04022afce0f2ab1fad82bb0\n- src/harness_bench/cli.py: src/harness_bench/cli.py sha256 8b0b789938e98e285768285abb2e86d4a3176fbb1536387fe9e15abf0517b308\n- src/harness_bench/report/cli_table.py: src/harness_bench/report/cli_table.py sha256 0df26f898a279276741e2e38d6517d1bff4f69e8fd8f614bf999f33213c0bf51\n- tests/test_procs.py: tests/test_procs.py sha256 1d8130f852f1cb7701175fe61cab4b38846c1ee9c24544a7835167f4df6b130a\n- tests/test_host.py: unresolved (not found)\n- tests/test_cli.py: tests/test_cli.py sha256 d0b9056b6929aa733a8636cc694579b6aff2b77478134433a2597752019c3524\n- tests/test_report.py: tests/test_report.py sha256 7272d22b1d1a0909dbd8a37d3a2b9a0a55de3fd47d9a1794a91aa0f4a7d8a9b5\n- tests/mutations/cli.json: tests/mutations/cli.json sha256 7438388b5294a1590f662036776dc2f11267693fe7e5334cbb36cc84cd852029\n- tests/e2e: unresolved (not found)\n- docs/proof/phase1.md: docs/proof/phase1.md sha256 3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428\n- AGENTS.md: unresolved (ambiguous: 2 matches)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AM98AY8D573BBJS41GBBVK\nraw sha256: 60b377e4b08b6e1419c970c2c2ae87feb16d712acf9c7632a7d0cd835d843226\ncompiler model: claude-opus-5-5\nengine seconds: 0.001\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W1-HOST slice 1 (plan docs/coordination/coordination-finish-harnes…",
+      "skill": null,
+      "summary": "compiled al-01M3AM98AY8D573BBJS41GBBVK for codex v1: 10 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
     },
     {
-      "id": "al-01M3AM9GEQBJ7VH0E4NSNWNXR2",
-      "shortname": "compile-Goal: W1-TOOLB slice 1 (plan docs/coordination/coordination-finish-harne…",
-      "datetime": "2026-09-24T21:14:08Z",
-      "session": "coord-opus-cq",
-      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-TOOLB slice 1 (plan docs/coordination/coordination-finish-harness-bench.md, row 26): build the TOOL-B control so a cosmic-ray kill counts only when a named test failed, red-first, in the owned paths only.\nDone when: tools/mutate_check.py re-derives each kill from `cosmic-ray dump` output and names the failing test for it.; Red-first seeded cases exist in tests/test_mutate_check.py: a mutant that causes a collection error, a timeout, and an exit-2 run are each reported NOT a named kill, and the red commit (tests only) fails on the current tool for that reason.; `uv run pytest -q tests/test_mutate_check.py` and `uv run pytest -q` pass on your branch and `uv run ruff check` is clean.; Your final message lists the red SHA, the green SHA, the failing assertion the red produced, and the command to run the control over the phase-1 modules.\nNot in scope: Every file outside tools/mutate_check.py and tests/test_mutate_check.py.; Running any test with -m \"\" or anything under tests/e2e (those start real model cells).; Running the full cosmic-ray sweep over the phase-1 modules (the Leader runs it at the join).; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit before the deadline even if a case remains, and say which remains.\nGrounding: read docs/lessons/defect-classes.md (the TOOL-A and TOOL-B classes), docs/proof/phase1.md (Claim 3 and residual 10), and AGENTS.md. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing so the commit floor enforces ownership. If the control needs a file you do not own, stop and say which file and why; do not edit it.\nTrace\n| clause | trace |\n|---|---|\n| done_when: tools/mutate_check.py re-derives each kill from `cosmic-ray dump` output and names the failing test for it. | phrase: tools/mutate_check.py re-derives each kill from `cosmic-ray dump` output and names the failing test for it. |\n| done_when: Red-first seeded cases exist in tests/test_mutate_check.py: a mutant that causes a collection error, a timeout, and an exit-2 run are each reported NOT a named kill, and the red commit (tests only) fails on the current tool for that reason. | phrase: Red-first seeded cases exist in tests/test_mutate_check.py: a mutant that causes a collection error, a timeout, and an exit-2 run are each reported NOT a named kill, and the red commit (tests only) fails on the current tool for that reason. |\n| done_when: `uv run pytest -q tests/test_mutate_check.py` and `uv run pytest -q` pass on your branch and `uv run ruff check` is clean. | phrase: `uv run pytest -q tests/test_mutate_check.py` and `uv run pytest -q` pass on your branch and `uv run ruff check` is clean. |\n| done_when: Your final message lists the red SHA, the green SHA, the failing assertion the red produced, and the command to run the control over the phase-1 modules. | phrase: Your final message lists the red SHA, the green SHA, the failing assertion the red produced, and the command to run the control over the phase-1 modules. |\n| not_in_scope: Every file outside tools/mutate_check.py and tests/test_mutate_check.py. | phrase: Every file outside tools/mutate_check.py and tests/test_mutate_check.py. |\n| not_in_scope: Running any test with -m \"\" or anything under tests/e2e (those start real model cells). | phrase: Running any test with -m \"\" or anything under tests/e2e (those start real model cells). |\n| not_in_scope: Running the full cosmic-ray sweep over the phase-1 modules (the Leader runs it at the join). | phrase: Running the full cosmic-ray sweep over the phase-1 modules (the Leader runs it at the join). |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- cosmic-ray dump: unresolved (not found)\n- uv run pytest -q tests/test_mutate_check.py: unresolved (not found; nearest: tests/test_mutate_check.py)\n- uv run pytest -q: unresolved (not found)\n- uv run ruff check: unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 a9243d44a4ace691b4c5f95a46d2ac5a89da8c42ddedccab907c19f92fd78e97\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf05cc77536737a78e92e027f861d3af0517237c1204905feddd2bb256465ffe\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 ce920dde88aceaac893ca8bb52c027d0df7385b64b226a7b6638b29d68386df3\n- tests/e2e: unresolved (not found)\n- docs/lessons/defect-classes.md: unresolved (ambiguous: 2 matches)\n- docs/proof/phase1.md: docs/proof/phase1.md sha256 3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428\n- AGENTS.md: unresolved (ambiguous: 2 matches)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AM98NJS7TT1ZF8NXY9VWRY\nraw sha256: 6e991de1cc1365bd2fed56f1556980cffbe46e6f88aa5868a2237c3fa209cdd5\ncompiler model: claude-opus-5-5\nengine seconds: 0.001\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
-      "summary": "compiled al-01M3AM98NJS7TT1ZF8NXY9VWRY for codex v1: 8 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -2837,38 +2826,38 @@ window.AUDIT_DATA = {
         "template": "codex",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3APM3JK2X6ZZA4JE5A4EP2D",
-      "shortname": "Goal: W1-HOST slice 2 (loop-back from the join review): a failed host me…",
-      "datetime": "2026-09-24T21:54:52Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W1-HOST slice 2 (loop-back from the join review): a failed host memory or clock query degrades to \"not recorded\" (None) instead of raising, so the engine never loses an outcome row, red-first.\nDone when: A red commit (tests only) then a green commit: when GlobalMemoryStatusEx fails, host.available_memory() returns None, and an engine-level test in tests/test_engine.py shows the cell.outcome row is still written with host_mem_available null.; A red commit then a green commit: when QueryUnbiasedInterruptTime fails, host.unbiased_seconds() returns None, and SleepDetector.slept() returns False on a None reading instead of raising.; `uv run pytest -q -p no:cacheprovider tests/test_host.py tests/test_engine.py` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, and each green SHA.\nNot in scope: Every file outside src/harness_bench/host.py, tests/test_host.py and tests/test_engine.py.; The full test suite (the Leader runs it at the join); anything under tests/e2e and `-m \"\"`.; Reading or editing .git internals.; Printing long outputs: run pytest with -q and no -v or -s.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 12 minutes wall clock; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: read src/harness_bench/host.py (unbiased_seconds, SleepDetector, available_memory), src/harness_bench/engine.py around line 328 (the outcome row), and tests/test_host.py. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing. If a fix needs a file you do not own, stop and say which file and why.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3APM3T9SAHMEYAPSARK0AEA",
-      "shortname": "compile-Goal: W1-HOST slice 2 (loop-back from the join review): a failed host me…",
-      "datetime": "2026-09-24T21:54:52Z",
-      "session": "coord-opus-cq",
-      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-HOST slice 2 (loop-back from the join review): a failed host memory or clock query degrades to \"not recorded\" (None) instead of raising, so the engine never loses an outcome row, red-first.\nDone when: A red commit (tests only) then a green commit: when GlobalMemoryStatusEx fails, host.available_memory() returns None, and an engine-level test in tests/test_engine.py shows the cell.outcome row is still written with host_mem_available null.; A red commit then a green commit: when QueryUnbiasedInterruptTime fails, host.unbiased_seconds() returns None, and SleepDetector.slept() returns False on a None reading instead of raising.; `uv run pytest -q -p no:cacheprovider tests/test_host.py tests/test_engine.py` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, and each green SHA.\nNot in scope: Every file outside src/harness_bench/host.py, tests/test_host.py and tests/test_engine.py.; The full test suite (the Leader runs it at the join); anything under tests/e2e and `-m \"\"`.; Reading or editing .git internals.; Printing long outputs: run pytest with -q and no -v or -s.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 12 minutes wall clock; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: read src/harness_bench/host.py (unbiased_seconds, SleepDetector, available_memory), src/harness_bench/engine.py around line 328 (the outcome row), and tests/test_host.py. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing. If a fix needs a file you do not own, stop and say which file and why.\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit (tests only) then a green commit: when GlobalMemoryStatusEx fails, host.available_memory() returns None, and an engine-level test in tests/test_engine.py shows the cell.outcome row is still written with host_mem_available null. | phrase: A red commit (tests only) then a green commit: when GlobalMemoryStatusEx fails, host.available_memory() returns None, and an engine-level test in tests/test_engine.py shows the cell.outcome row is still written with host_mem_available null. |\n| done_when: A red commit then a green commit: when QueryUnbiasedInterruptTime fails, host.unbiased_seconds() returns None, and SleepDetector.slept() returns False on a None reading instead of raising. | phrase: A red commit then a green commit: when QueryUnbiasedInterruptTime fails, host.unbiased_seconds() returns None, and SleepDetector.slept() returns False on a None reading instead of raising. |\n| done_when: `uv run pytest -q -p no:cacheprovider tests/test_host.py tests/test_engine.py` passes and `uv run ruff check src tests tools` is clean. | phrase: `uv run pytest -q -p no:cacheprovider tests/test_host.py tests/test_engine.py` passes and `uv run ruff check src tests tools` is clean. |\n| done_when: Your final message lists each red SHA with the failing assertion it produced, and each green SHA. | phrase: Your final message lists each red SHA with the failing assertion it produced, and each green SHA. |\n| not_in_scope: Every file outside src/harness_bench/host.py, tests/test_host.py and tests/test_engine.py. | phrase: Every file outside src/harness_bench/host.py, tests/test_host.py and tests/test_engine.py. |\n| not_in_scope: The full test suite (the Leader runs it at the join) | phrase: The full test suite (the Leader runs it at the join) |\n| not_in_scope: anything under tests/e2e and `-m \"\"`. | phrase: anything under tests/e2e and `-m \"\"`. |\n| not_in_scope: Reading or editing .git internals. | phrase: Reading or editing .git internals. |\n| not_in_scope: Printing long outputs: run pytest with -q and no -v or -s. | phrase: Printing long outputs: run pytest with -q and no -v or -s. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- uv run pytest -q -p no:cacheprovider tests/test_host.py tests/test_engine.py: unresolved (not found; nearest: tests/test_engine.py)\n- uv run ruff check src tests tools: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- tests/test_engine.py: tests/test_engine.py sha256 85a860bf6406d6b63fe15d9620c3969338c32c7a5333d8b351d08d62ba5a6dca\n- tests/test_host.py: tests/test_host.py sha256 b5c1242a9cf03cb4d72629df00b09a270a14bc1a3b656cd287c24f857f70c09f\n- src/harness_bench/host.py: src/harness_bench/host.py sha256 1f9a6980d74c0338f8703ef0622b50d2f1368f214712b0ee990b18a784c3dd08\n- tests/e2e: unresolved (not found)\n- src/harness_bench/engine.py: src/harness_bench/engine.py sha256 646a517457604a4aaefb5ceedd8e65cc08bebeca67cbde847736abd493b434c4\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3APM3JK2X6ZZA4JE5A4EP2D\nraw sha256: fa90732a4a46ac4bf825247789bace109300cc0043b591ea65a19f2bc2d8119f\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
-      "summary": "compiled al-01M3APM3JK2X6ZZA4JE5A4EP2D for codex v1: 10 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-24T21:14:08Z",
+      "dispatchable": true,
+      "id": "al-01M3AM9GEQBJ7VH0E4NSNWNXR2",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-TOOLB slice 1 (plan docs/coordination/coordination-finish-harness-bench.md, row 26): build the TOOL-B control so a cosmic-ray kill counts only when a named test failed, red-first, in the owned paths only.\nDone when: tools/mutate_check.py re-derives each kill from `cosmic-ray dump` output and names the failing test for it.; Red-first seeded cases exist in tests/test_mutate_check.py: a mutant that causes a collection error, a timeout, and an exit-2 run are each reported NOT a named kill, and the red commit (tests only) fails on the current tool for that reason.; `uv run pytest -q tests/test_mutate_check.py` and `uv run pytest -q` pass on your branch and `uv run ruff check` is clean.; Your final message lists the red SHA, the green SHA, the failing assertion the red produced, and the command to run the control over the phase-1 modules.\nNot in scope: Every file outside tools/mutate_check.py and tests/test_mutate_check.py.; Running any test with -m \"\" or anything under tests/e2e (those start real model cells).; Running the full cosmic-ray sweep over the phase-1 modules (the Leader runs it at the join).; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit before the deadline even if a case remains, and say which remains.\nGrounding: read docs/lessons/defect-classes.md (the TOOL-A and TOOL-B classes), docs/proof/phase1.md (Claim 3 and residual 10), and AGENTS.md. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing so the commit floor enforces ownership. If the control needs a file you do not own, stop and say which file and why; do not edit it.\nTrace\n| clause | trace |\n|---|---|\n| done_when: tools/mutate_check.py re-derives each kill from `cosmic-ray dump` output and names the failing test for it. | phrase: tools/mutate_check.py re-derives each kill from `cosmic-ray dump` output and names the failing test for it. |\n| done_when: Red-first seeded cases exist in tests/test_mutate_check.py: a mutant that causes a collection error, a timeout, and an exit-2 run are each reported NOT a named kill, and the red commit (tests only) fails on the current tool for that reason. | phrase: Red-first seeded cases exist in tests/test_mutate_check.py: a mutant that causes a collection error, a timeout, and an exit-2 run are each reported NOT a named kill, and the red commit (tests only) fails on the current tool for that reason. |\n| done_when: `uv run pytest -q tests/test_mutate_check.py` and `uv run pytest -q` pass on your branch and `uv run ruff check` is clean. | phrase: `uv run pytest -q tests/test_mutate_check.py` and `uv run pytest -q` pass on your branch and `uv run ruff check` is clean. |\n| done_when: Your final message lists the red SHA, the green SHA, the failing assertion the red produced, and the command to run the control over the phase-1 modules. | phrase: Your final message lists the red SHA, the green SHA, the failing assertion the red produced, and the command to run the control over the phase-1 modules. |\n| not_in_scope: Every file outside tools/mutate_check.py and tests/test_mutate_check.py. | phrase: Every file outside tools/mutate_check.py and tests/test_mutate_check.py. |\n| not_in_scope: Running any test with -m \"\" or anything under tests/e2e (those start real model cells). | phrase: Running any test with -m \"\" or anything under tests/e2e (those start real model cells). |\n| not_in_scope: Running the full cosmic-ray sweep over the phase-1 modules (the Leader runs it at the join). | phrase: Running the full cosmic-ray sweep over the phase-1 modules (the Leader runs it at the join). |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- cosmic-ray dump: unresolved (not found)\n- uv run pytest -q tests/test_mutate_check.py: unresolved (not found; nearest: tests/test_mutate_check.py)\n- uv run pytest -q: unresolved (not found)\n- uv run ruff check: unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 a9243d44a4ace691b4c5f95a46d2ac5a89da8c42ddedccab907c19f92fd78e97\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf05cc77536737a78e92e027f861d3af0517237c1204905feddd2bb256465ffe\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 ce920dde88aceaac893ca8bb52c027d0df7385b64b226a7b6638b29d68386df3\n- tests/e2e: unresolved (not found)\n- docs/lessons/defect-classes.md: unresolved (ambiguous: 2 matches)\n- docs/proof/phase1.md: docs/proof/phase1.md sha256 3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428\n- AGENTS.md: unresolved (ambiguous: 2 matches)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AM98NJS7TT1ZF8NXY9VWRY\nraw sha256: 6e991de1cc1365bd2fed56f1556980cffbe46e6f88aa5868a2237c3fa209cdd5\ncompiler model: claude-opus-5-5\nengine seconds: 0.001\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W1-TOOLB slice 1 (plan docs/coordination/coordination-finish-harne…",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3AM98NJS7TT1ZF8NXY9VWRY for codex v1: 8 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-24T21:54:52Z",
+      "id": "al-01M3APM3JK2X6ZZA4JE5A4EP2D",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: W1-HOST slice 2 (loop-back from the join review): a failed host memory or clock query degrades to \"not recorded\" (None) instead of raising, so the engine never loses an outcome row, red-first.\nDone when: A red commit (tests only) then a green commit: when GlobalMemoryStatusEx fails, host.available_memory() returns None, and an engine-level test in tests/test_engine.py shows the cell.outcome row is still written with host_mem_available null.; A red commit then a green commit: when QueryUnbiasedInterruptTime fails, host.unbiased_seconds() returns None, and SleepDetector.slept() returns False on a None reading instead of raising.; `uv run pytest -q -p no:cacheprovider tests/test_host.py tests/test_engine.py` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, and each green SHA.\nNot in scope: Every file outside src/harness_bench/host.py, tests/test_host.py and tests/test_engine.py.; The full test suite (the Leader runs it at the join); anything under tests/e2e and `-m \"\"`.; Reading or editing .git internals.; Printing long outputs: run pytest with -q and no -v or -s.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 12 minutes wall clock; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: read src/harness_bench/host.py (unbiased_seconds, SleepDetector, available_memory), src/harness_bench/engine.py around line 328 (the outcome row), and tests/test_host.py. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing. If a fix needs a file you do not own, stop and say which file and why.",
+      "session": "prompt-compile",
+      "shortname": "Goal: W1-HOST slice 2 (loop-back from the join review): a failed host me…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -3085,38 +3074,38 @@ window.AUDIT_DATA = {
         "template": "codex",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3APTNHE65PYRQF2TQ3ZTENJ",
-      "shortname": "Goal: Cross-vendor join review of track W1-TOOLB (plan docs/coordination…",
-      "datetime": "2026-09-24T21:58:27Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: Cross-vendor join review of track W1-TOOLB (plan docs/coordination/coordination-finish-harness-bench.md, the \"Join rule\"): judge the TOOL-B control on branch w1-toolb-control and write the review to docs/notes/review-w1-toolb-codex.md in your own worktree.\nDone when: docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path; do not edit it).; The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed; are a collection error, a timeout and an exit-2 run each reported not-a-kill; is the dump format read from cosmic-ray 8.7.0's own source rather than assumed.; The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\".; The review file is committed on your branch.\nNot in scope: Editing any file other than docs/notes/review-w1-toolb-codex.md.; Editing the w1-toolb-control checkout.; Running the full suite, anything under tests/e2e, or `-m \"\"`.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 45 minutes; commit the review before the deadline even if a mutant is unfinished, and say so.\n\nGrounding: docs/lessons/defect-classes.md (TOOL-A, TOOL-B), docs/proof/phase1.md residual 10, docs/notes/rulings.md R-19 (the phase-1 re-derivation is deferred to a named window; judge the unit-level proof). Use `python`, not `python3` (Windows); `uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py` in the throwaway worktree. Set AGENT_SESSION to your session id before committing.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3APTNSSDZ2ACY4ZD43MJGMN",
-      "shortname": "compile-Goal: Cross-vendor join review of track W1-TOOLB (plan docs/coordination…",
-      "datetime": "2026-09-24T21:58:27Z",
-      "session": "coord-opus-cq",
-      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: Cross-vendor join review of track W1-TOOLB (plan docs/coordination/coordination-finish-harness-bench.md, the \"Join rule\"): judge the TOOL-B control on branch w1-toolb-control and write the review to docs/notes/review-w1-toolb-codex.md in your own worktree.\nDone when: docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path; do not edit it).; The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed; are a collection error, a timeout and an exit-2 run each reported not-a-kill; is the dump format read from cosmic-ray 8.7.0's own source rather than assumed.; The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\".; The review file is committed on your branch.\nNot in scope: Editing any file other than docs/notes/review-w1-toolb-codex.md.; Editing the w1-toolb-control checkout.; Running the full suite, anything under tests/e2e, or `-m \"\"`.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 45 minutes; commit the review before the deadline even if a mutant is unfinished, and say so.\nGrounding: docs/lessons/defect-classes.md (TOOL-A, TOOL-B), docs/proof/phase1.md residual 10, docs/notes/rulings.md R-19 (the phase-1 re-derivation is deferred to a named window; judge the unit-level proof). Use `python`, not `python3` (Windows); `uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py` in the throwaway worktree. Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path | phrase: docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path |\n| done_when: do not edit it). | phrase: do not edit it). |\n| done_when: The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed | phrase: The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed |\n| done_when: are a collection error, a timeout and an exit-2 run each reported not-a-kill | phrase: are a collection error, a timeout and an exit-2 run each reported not-a-kill |\n| done_when: is the dump format read from cosmic-ray 8.7.0's own source rather than assumed. | phrase: is the dump format read from cosmic-ray 8.7.0's own source rather than assumed. |\n| done_when: The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\". | phrase: The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\". |\n| done_when: The review file is committed on your branch. | phrase: The review file is committed on your branch. |\n| not_in_scope: Editing any file other than docs/notes/review-w1-toolb-codex.md. | phrase: Editing any file other than docs/notes/review-w1-toolb-codex.md. |\n| not_in_scope: Editing the w1-toolb-control checkout. | phrase: Editing the w1-toolb-control checkout. |\n| not_in_scope: Running the full suite, anything under tests/e2e, or `-m \"\"`. | phrase: Running the full suite, anything under tests/e2e, or `-m \"\"`. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- git worktree add --detach: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py: unresolved (not found; nearest: tests/test_mutate_check.py)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 48b5e321fda1a62dffa261d3ee310be854edb40b7a68adebeb4fccf968adcc49\n- docs/notes/review-w1-toolb-codex.md: unresolved (not found)\n- tools/mutate_check.py's: unresolved (not found; nearest: tools/mutate_check.py)\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf05cc77536737a78e92e027f861d3af0517237c1204905feddd2bb256465ffe\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 ce920dde88aceaac893ca8bb52c027d0df7385b64b226a7b6638b29d68386df3\n- tests/e2e: unresolved (not found)\n- docs/lessons/defect-classes.md: unresolved (ambiguous: 2 matches)\n- docs/proof/phase1.md: docs/proof/phase1.md sha256 3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428\n- docs/notes/rulings.md: unresolved (ambiguous: 2 matches)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3APTNHE65PYRQF2TQ3ZTENJ\nraw sha256: 82dbacc35df0bea823665dcceb35f89d49e4a1a89e8d76a0e84e6e1291206e0c\ncompiler model: claude-opus-5-5\nengine seconds: 0.001\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
-      "summary": "compiled al-01M3APTNHE65PYRQF2TQ3ZTENJ for codex v1: 11 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-24T21:54:52Z",
+      "dispatchable": true,
+      "id": "al-01M3APM3T9SAHMEYAPSARK0AEA",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-HOST slice 2 (loop-back from the join review): a failed host memory or clock query degrades to \"not recorded\" (None) instead of raising, so the engine never loses an outcome row, red-first.\nDone when: A red commit (tests only) then a green commit: when GlobalMemoryStatusEx fails, host.available_memory() returns None, and an engine-level test in tests/test_engine.py shows the cell.outcome row is still written with host_mem_available null.; A red commit then a green commit: when QueryUnbiasedInterruptTime fails, host.unbiased_seconds() returns None, and SleepDetector.slept() returns False on a None reading instead of raising.; `uv run pytest -q -p no:cacheprovider tests/test_host.py tests/test_engine.py` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, and each green SHA.\nNot in scope: Every file outside src/harness_bench/host.py, tests/test_host.py and tests/test_engine.py.; The full test suite (the Leader runs it at the join); anything under tests/e2e and `-m \"\"`.; Reading or editing .git internals.; Printing long outputs: run pytest with -q and no -v or -s.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 12 minutes wall clock; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: read src/harness_bench/host.py (unbiased_seconds, SleepDetector, available_memory), src/harness_bench/engine.py around line 328 (the outcome row), and tests/test_host.py. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing. If a fix needs a file you do not own, stop and say which file and why.\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit (tests only) then a green commit: when GlobalMemoryStatusEx fails, host.available_memory() returns None, and an engine-level test in tests/test_engine.py shows the cell.outcome row is still written with host_mem_available null. | phrase: A red commit (tests only) then a green commit: when GlobalMemoryStatusEx fails, host.available_memory() returns None, and an engine-level test in tests/test_engine.py shows the cell.outcome row is still written with host_mem_available null. |\n| done_when: A red commit then a green commit: when QueryUnbiasedInterruptTime fails, host.unbiased_seconds() returns None, and SleepDetector.slept() returns False on a None reading instead of raising. | phrase: A red commit then a green commit: when QueryUnbiasedInterruptTime fails, host.unbiased_seconds() returns None, and SleepDetector.slept() returns False on a None reading instead of raising. |\n| done_when: `uv run pytest -q -p no:cacheprovider tests/test_host.py tests/test_engine.py` passes and `uv run ruff check src tests tools` is clean. | phrase: `uv run pytest -q -p no:cacheprovider tests/test_host.py tests/test_engine.py` passes and `uv run ruff check src tests tools` is clean. |\n| done_when: Your final message lists each red SHA with the failing assertion it produced, and each green SHA. | phrase: Your final message lists each red SHA with the failing assertion it produced, and each green SHA. |\n| not_in_scope: Every file outside src/harness_bench/host.py, tests/test_host.py and tests/test_engine.py. | phrase: Every file outside src/harness_bench/host.py, tests/test_host.py and tests/test_engine.py. |\n| not_in_scope: The full test suite (the Leader runs it at the join) | phrase: The full test suite (the Leader runs it at the join) |\n| not_in_scope: anything under tests/e2e and `-m \"\"`. | phrase: anything under tests/e2e and `-m \"\"`. |\n| not_in_scope: Reading or editing .git internals. | phrase: Reading or editing .git internals. |\n| not_in_scope: Printing long outputs: run pytest with -q and no -v or -s. | phrase: Printing long outputs: run pytest with -q and no -v or -s. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- uv run pytest -q -p no:cacheprovider tests/test_host.py tests/test_engine.py: unresolved (not found; nearest: tests/test_engine.py)\n- uv run ruff check src tests tools: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- tests/test_engine.py: tests/test_engine.py sha256 85a860bf6406d6b63fe15d9620c3969338c32c7a5333d8b351d08d62ba5a6dca\n- tests/test_host.py: tests/test_host.py sha256 b5c1242a9cf03cb4d72629df00b09a270a14bc1a3b656cd287c24f857f70c09f\n- src/harness_bench/host.py: src/harness_bench/host.py sha256 1f9a6980d74c0338f8703ef0622b50d2f1368f214712b0ee990b18a784c3dd08\n- tests/e2e: unresolved (not found)\n- src/harness_bench/engine.py: src/harness_bench/engine.py sha256 646a517457604a4aaefb5ceedd8e65cc08bebeca67cbde847736abd493b434c4\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3APM3JK2X6ZZA4JE5A4EP2D\nraw sha256: fa90732a4a46ac4bf825247789bace109300cc0043b591ea65a19f2bc2d8119f\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W1-HOST slice 2 (loop-back from the join review): a failed host me…",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3APM3JK2X6ZZA4JE5A4EP2D for codex v1: 10 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-24T21:58:27Z",
+      "id": "al-01M3APTNHE65PYRQF2TQ3ZTENJ",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: Cross-vendor join review of track W1-TOOLB (plan docs/coordination/coordination-finish-harness-bench.md, the \"Join rule\"): judge the TOOL-B control on branch w1-toolb-control and write the review to docs/notes/review-w1-toolb-codex.md in your own worktree.\nDone when: docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path; do not edit it).; The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed; are a collection error, a timeout and an exit-2 run each reported not-a-kill; is the dump format read from cosmic-ray 8.7.0's own source rather than assumed.; The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\".; The review file is committed on your branch.\nNot in scope: Editing any file other than docs/notes/review-w1-toolb-codex.md.; Editing the w1-toolb-control checkout.; Running the full suite, anything under tests/e2e, or `-m \"\"`.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 45 minutes; commit the review before the deadline even if a mutant is unfinished, and say so.\n\nGrounding: docs/lessons/defect-classes.md (TOOL-A, TOOL-B), docs/proof/phase1.md residual 10, docs/notes/rulings.md R-19 (the phase-1 re-derivation is deferred to a named window; judge the unit-level proof). Use `python`, not `python3` (Windows); `uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py` in the throwaway worktree. Set AGENT_SESSION to your session id before committing.",
+      "session": "prompt-compile",
+      "shortname": "Goal: Cross-vendor join review of track W1-TOOLB (plan docs/coordination…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -3374,38 +3363,38 @@ window.AUDIT_DATA = {
         "template": "codex",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3AQP6NWC5S8SH7ZJS3CVE58",
-      "shortname": "Goal: W1-HOST slice 3 (two Minors from the join review): make the leftov…",
-      "datetime": "2026-09-24T22:13:29Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W1-HOST slice 3 (two Minors from the join review): make the leftovers test immune to concurrent suites, and remove the untested extra kill, in the owned paths only.\nDone when: tests/test_no_leftovers.py asserts only that this test's own `base` folder no longer exists after teardown, instead of comparing a snapshot of the shared C:/Projects/bench-test folder (another suite running at the same time made it fail on main); commit it.; In src/harness_bench/procs.py the extra `proc.kill()` inside `except TimeoutExpired` (around line 235) is deleted, because TerminateProcess was already sent and no test observes it (the reviewer's mutant M1 survived); `uv run pytest -q -p no:cacheprovider tests/test_procs.py tests/test_no_leftovers.py` passes; commit it.; `uv run ruff check src tests tools` is clean.; Your final message lists the two commit SHAs.\nNot in scope: Every file outside tests/test_no_leftovers.py and src/harness_bench/procs.py.; The full test suite; anything under tests/e2e; `-m \"\"`.; Reading or editing .git internals.; Printing long outputs: run pytest with -q and no -v or -s.; Any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 12 minutes wall clock; commit at every green.\n\nGrounding: read tests/test_no_leftovers.py, tests/conftest.py (the `base` fixture), and src/harness_bench/procs.py around the TimeoutExpired handler. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3AQP6YBH13PA5NNDN6FBHS9",
-      "shortname": "compile-Goal: W1-HOST slice 3 (two Minors from the join review): make the leftov…",
-      "datetime": "2026-09-24T22:13:30Z",
-      "session": "coord-opus-cq",
-      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-HOST slice 3 (two Minors from the join review): make the leftovers test immune to concurrent suites, and remove the untested extra kill, in the owned paths only.\nDone when: tests/test_no_leftovers.py asserts only that this test's own `base` folder no longer exists after teardown, instead of comparing a snapshot of the shared C:/Projects/bench-test folder (another suite running at the same time made it fail on main); commit it.; In src/harness_bench/procs.py the extra `proc.kill()` inside `except TimeoutExpired` (around line 235) is deleted, because TerminateProcess was already sent and no test observes it (the reviewer's mutant M1 survived); `uv run pytest -q -p no:cacheprovider tests/test_procs.py tests/test_no_leftovers.py` passes; commit it.; `uv run ruff check src tests tools` is clean.; Your final message lists the two commit SHAs.\nNot in scope: Every file outside tests/test_no_leftovers.py and src/harness_bench/procs.py.; The full test suite; anything under tests/e2e; `-m \"\"`.; Reading or editing .git internals.; Printing long outputs: run pytest with -q and no -v or -s.; Any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 12 minutes wall clock; commit at every green.\nGrounding: read tests/test_no_leftovers.py, tests/conftest.py (the `base` fixture), and src/harness_bench/procs.py around the TimeoutExpired handler. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: tests/test_no_leftovers.py asserts only that this test's own `base` folder no longer exists after teardown, instead of comparing a snapshot of the shared C:/Projects/bench-test folder (another suite running at the same time made it fail on main) | phrase: tests/test_no_leftovers.py asserts only that this test's own `base` folder no longer exists after teardown, instead of comparing a snapshot of the shared C:/Projects/bench-test folder (another suite running at the same time made it fail on main) |\n| done_when: commit it. | phrase: commit it. |\n| done_when: In src/harness_bench/procs.py the extra `proc.kill()` inside `except TimeoutExpired` (around line 235) is deleted, because TerminateProcess was already sent and no test observes it (the reviewer's mutant M1 survived) | phrase: In src/harness_bench/procs.py the extra `proc.kill()` inside `except TimeoutExpired` (around line 235) is deleted, because TerminateProcess was already sent and no test observes it (the reviewer's mutant M1 survived) |\n| done_when: `uv run pytest -q -p no:cacheprovider tests/test_procs.py tests/test_no_leftovers.py` passes | phrase: `uv run pytest -q -p no:cacheprovider tests/test_procs.py tests/test_no_leftovers.py` passes |\n| done_when: commit it. | phrase: commit it. |\n| done_when: `uv run ruff check src tests tools` is clean. | phrase: `uv run ruff check src tests tools` is clean. |\n| done_when: Your final message lists the two commit SHAs. | phrase: Your final message lists the two commit SHAs. |\n| not_in_scope: Every file outside tests/test_no_leftovers.py and src/harness_bench/procs.py. | phrase: Every file outside tests/test_no_leftovers.py and src/harness_bench/procs.py. |\n| not_in_scope: The full test suite | phrase: The full test suite |\n| not_in_scope: anything under tests/e2e | phrase: anything under tests/e2e |\n| not_in_scope: `-m \"\"`. | phrase: `-m \"\"`. |\n| not_in_scope: Reading or editing .git internals. | phrase: Reading or editing .git internals. |\n| not_in_scope: Printing long outputs: run pytest with -q and no -v or -s. | phrase: Printing long outputs: run pytest with -q and no -v or -s. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- base: unresolved (not found)\n- proc.kill: unresolved (not found)\n- except TimeoutExpired: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider tests/test_procs.py tests/test_no_leftovers.py: unresolved (not found; nearest: tests/test_no_leftovers.py)\n- uv run ruff check src tests tools: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- tests/test_no_leftovers.py: tests/test_no_leftovers.py sha256 6020c1b9cc04cbb30d741d830e75f69966d008372e130cfc975af1d9b7d715e9\n- C:/Projects/bench-test: unresolved (outside repo)\n- src/harness_bench/procs.py: src/harness_bench/procs.py sha256 1bb51ba88d1c95ad501d6baa6e0097afe6514a678aef861f5892b82975d5af9f\n- tests/test_procs.py: tests/test_procs.py sha256 f818bb0eaca79ac6bd75732f124c757257553c2959654e3edca6d889e0f89b83\n- tests/e2e: unresolved (not found)\n- tests/conftest.py: tests/conftest.py sha256 d0a1f176caaf1a66888a86bbd6a06e3dbfbfb7861e3c72383c06c54e6dbdbc29\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AQP6NWC5S8SH7ZJS3CVE58\nraw sha256: 525710db1b205923ef9b5eb7ec65b73635d593f0e0bf45cca4a58d8d20a39384\ncompiler model: claude-opus-5-5\nengine seconds: 0.001\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
-      "summary": "compiled al-01M3AQP6NWC5S8SH7ZJS3CVE58 for codex v1: 14 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-24T21:58:27Z",
+      "dispatchable": true,
+      "id": "al-01M3APTNSSDZ2ACY4ZD43MJGMN",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: Cross-vendor join review of track W1-TOOLB (plan docs/coordination/coordination-finish-harness-bench.md, the \"Join rule\"): judge the TOOL-B control on branch w1-toolb-control and write the review to docs/notes/review-w1-toolb-codex.md in your own worktree.\nDone when: docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path; do not edit it).; The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed; are a collection error, a timeout and an exit-2 run each reported not-a-kill; is the dump format read from cosmic-ray 8.7.0's own source rather than assumed.; The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\".; The review file is committed on your branch.\nNot in scope: Editing any file other than docs/notes/review-w1-toolb-codex.md.; Editing the w1-toolb-control checkout.; Running the full suite, anything under tests/e2e, or `-m \"\"`.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 45 minutes; commit the review before the deadline even if a mutant is unfinished, and say so.\nGrounding: docs/lessons/defect-classes.md (TOOL-A, TOOL-B), docs/proof/phase1.md residual 10, docs/notes/rulings.md R-19 (the phase-1 re-derivation is deferred to a named window; judge the unit-level proof). Use `python`, not `python3` (Windows); `uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py` in the throwaway worktree. Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path | phrase: docs/notes/review-w1-toolb-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings, each citing file:line, for the two commits e53a7bc (red, tests only) and 0e5ddb3 (fix) on branch w1-toolb-control, whose checkout is C:\\Projects\\x-harness-x-model-bench-w1-toolb-control (read it by absolute path |\n| done_when: do not edit it). | phrase: do not edit it). |\n| done_when: The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed | phrase: The review answers: does tools/mutate_check.py's --cosmic-ray mode count a kill only when a named test failed |\n| done_when: are a collection error, a timeout and an exit-2 run each reported not-a-kill | phrase: are a collection error, a timeout and an exit-2 run each reported not-a-kill |\n| done_when: is the dump format read from cosmic-ray 8.7.0's own source rather than assumed. | phrase: is the dump format read from cosmic-ray 8.7.0's own source rather than assumed. |\n| done_when: The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\". | phrase: The review lists 3 mutants of your own against tools/mutate_check.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 0e5ddb3 (removed afterwards), with the named test in tests/test_mutate_check.py that killed it, or \"survived\". |\n| done_when: The review file is committed on your branch. | phrase: The review file is committed on your branch. |\n| not_in_scope: Editing any file other than docs/notes/review-w1-toolb-codex.md. | phrase: Editing any file other than docs/notes/review-w1-toolb-codex.md. |\n| not_in_scope: Editing the w1-toolb-control checkout. | phrase: Editing the w1-toolb-control checkout. |\n| not_in_scope: Running the full suite, anything under tests/e2e, or `-m \"\"`. | phrase: Running the full suite, anything under tests/e2e, or `-m \"\"`. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- git worktree add --detach: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py: unresolved (not found; nearest: tests/test_mutate_check.py)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 48b5e321fda1a62dffa261d3ee310be854edb40b7a68adebeb4fccf968adcc49\n- docs/notes/review-w1-toolb-codex.md: unresolved (not found)\n- tools/mutate_check.py's: unresolved (not found; nearest: tools/mutate_check.py)\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf05cc77536737a78e92e027f861d3af0517237c1204905feddd2bb256465ffe\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 ce920dde88aceaac893ca8bb52c027d0df7385b64b226a7b6638b29d68386df3\n- tests/e2e: unresolved (not found)\n- docs/lessons/defect-classes.md: unresolved (ambiguous: 2 matches)\n- docs/proof/phase1.md: docs/proof/phase1.md sha256 3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428\n- docs/notes/rulings.md: unresolved (ambiguous: 2 matches)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3APTNHE65PYRQF2TQ3ZTENJ\nraw sha256: 82dbacc35df0bea823665dcceb35f89d49e4a1a89e8d76a0e84e6e1291206e0c\ncompiler model: claude-opus-5-5\nengine seconds: 0.001\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: Cross-vendor join review of track W1-TOOLB (plan docs/coordination…",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3APTNHE65PYRQF2TQ3ZTENJ for codex v1: 11 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-24T22:13:29Z",
+      "id": "al-01M3AQP6NWC5S8SH7ZJS3CVE58",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: W1-HOST slice 3 (two Minors from the join review): make the leftovers test immune to concurrent suites, and remove the untested extra kill, in the owned paths only.\nDone when: tests/test_no_leftovers.py asserts only that this test's own `base` folder no longer exists after teardown, instead of comparing a snapshot of the shared C:/Projects/bench-test folder (another suite running at the same time made it fail on main); commit it.; In src/harness_bench/procs.py the extra `proc.kill()` inside `except TimeoutExpired` (around line 235) is deleted, because TerminateProcess was already sent and no test observes it (the reviewer's mutant M1 survived); `uv run pytest -q -p no:cacheprovider tests/test_procs.py tests/test_no_leftovers.py` passes; commit it.; `uv run ruff check src tests tools` is clean.; Your final message lists the two commit SHAs.\nNot in scope: Every file outside tests/test_no_leftovers.py and src/harness_bench/procs.py.; The full test suite; anything under tests/e2e; `-m \"\"`.; Reading or editing .git internals.; Printing long outputs: run pytest with -q and no -v or -s.; Any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 12 minutes wall clock; commit at every green.\n\nGrounding: read tests/test_no_leftovers.py, tests/conftest.py (the `base` fixture), and src/harness_bench/procs.py around the TimeoutExpired handler. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
+      "session": "prompt-compile",
+      "shortname": "Goal: W1-HOST slice 3 (two Minors from the join review): make the leftov…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -3690,38 +3679,38 @@ window.AUDIT_DATA = {
         "template": "codex",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3AR4MZQKSMSTAKQ21PYP8TR",
-      "shortname": "Goal: W1-HOST slice 4 (two Minors from the veto read-back): prove the ho…",
-      "datetime": "2026-09-24T22:21:23Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W1-HOST slice 4 (two Minors from the veto read-back): prove the host readings' success paths return real values, and that sleep detection recovers when the first reading is missing, with tests only.\nDone when: A native test in tests/test_host.py calls the real host.available_memory() and asserts it returns an int greater than 0, and the real host.unbiased_seconds() and asserts a float greater than 0 (these kill the mutant `return int(status.ullAvailPhys)` → `return None`); commit it.; A test in tests/test_host.py builds a SleepDetector whose first unbiased reading is None, then feeds two good readings whose wall-minus-unbiased gap exceeds `gap`, and asserts slept() is True (this kills the mutant that stops the first good reading becoming the anchor); commit it.; You show each new test fails against its mutant: apply the mutant in your tree, run the test, see it fail, restore the file with `git checkout -- src`, and state the failing output in your final message.; `uv run pytest -q -p no:cacheprovider tests/test_host.py` passes and `uv run ruff check src tests tools` is clean.\nNot in scope: Every file outside tests/test_host.py (src/harness_bench/host.py is read-only here; mutants are applied and reverted, never committed).; The full test suite; tests/e2e; `-m \"\"`.; Reading or editing .git internals.; Printing long outputs: run pytest with -q and no -v or -s.; Any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 12 minutes wall clock; commit at every green.\n\nGrounding: read src/harness_bench/host.py (available_memory, unbiased_seconds, SleepDetector) and tests/test_host.py. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3AR4N83TF60QW0JYQFN1X2C",
-      "shortname": "compile-Goal: W1-HOST slice 4 (two Minors from the veto read-back): prove the ho…",
-      "datetime": "2026-09-24T22:21:23Z",
-      "session": "coord-opus-cq",
-      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-HOST slice 4 (two Minors from the veto read-back): prove the host readings' success paths return real values, and that sleep detection recovers when the first reading is missing, with tests only.\nDone when: A native test in tests/test_host.py calls the real host.available_memory() and asserts it returns an int greater than 0, and the real host.unbiased_seconds() and asserts a float greater than 0 (these kill the mutant `return int(status.ullAvailPhys)` → `return None`); commit it.; A test in tests/test_host.py builds a SleepDetector whose first unbiased reading is None, then feeds two good readings whose wall-minus-unbiased gap exceeds `gap`, and asserts slept() is True (this kills the mutant that stops the first good reading becoming the anchor); commit it.; You show each new test fails against its mutant: apply the mutant in your tree, run the test, see it fail, restore the file with `git checkout -- src`, and state the failing output in your final message.; `uv run pytest -q -p no:cacheprovider tests/test_host.py` passes and `uv run ruff check src tests tools` is clean.\nNot in scope: Every file outside tests/test_host.py (src/harness_bench/host.py is read-only here; mutants are applied and reverted, never committed).; The full test suite; tests/e2e; `-m \"\"`.; Reading or editing .git internals.; Printing long outputs: run pytest with -q and no -v or -s.; Any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 12 minutes wall clock; commit at every green.\nGrounding: read src/harness_bench/host.py (available_memory, unbiased_seconds, SleepDetector) and tests/test_host.py. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: A native test in tests/test_host.py calls the real host.available_memory() and asserts it returns an int greater than 0, and the real host.unbiased_seconds() and asserts a float greater than 0 (these kill the mutant `return int(status.ullAvailPhys)` → `return None`) | phrase: A native test in tests/test_host.py calls the real host.available_memory() and asserts it returns an int greater than 0, and the real host.unbiased_seconds() and asserts a float greater than 0 (these kill the mutant `return int(status.ullAvailPhys)` → `return None`) |\n| done_when: commit it. | phrase: commit it. |\n| done_when: A test in tests/test_host.py builds a SleepDetector whose first unbiased reading is None, then feeds two good readings whose wall-minus-unbiased gap exceeds `gap`, and asserts slept() is True (this kills the mutant that stops the first good reading becoming the anchor) | phrase: A test in tests/test_host.py builds a SleepDetector whose first unbiased reading is None, then feeds two good readings whose wall-minus-unbiased gap exceeds `gap`, and asserts slept() is True (this kills the mutant that stops the first good reading becoming the anchor) |\n| done_when: commit it. | phrase: commit it. |\n| done_when: You show each new test fails against its mutant: apply the mutant in your tree, run the test, see it fail, restore the file with `git checkout -- src`, and state the failing output in your final message. | phrase: You show each new test fails against its mutant: apply the mutant in your tree, run the test, see it fail, restore the file with `git checkout -- src`, and state the failing output in your final message. |\n| done_when: `uv run pytest -q -p no:cacheprovider tests/test_host.py` passes and `uv run ruff check src tests tools` is clean. | phrase: `uv run pytest -q -p no:cacheprovider tests/test_host.py` passes and `uv run ruff check src tests tools` is clean. |\n| not_in_scope: Every file outside tests/test_host.py (src/harness_bench/host.py is read-only here | phrase: Every file outside tests/test_host.py (src/harness_bench/host.py is read-only here |\n| not_in_scope: mutants are applied and reverted, never committed). | phrase: mutants are applied and reverted, never committed). |\n| not_in_scope: The full test suite | phrase: The full test suite |\n| not_in_scope: tests/e2e | phrase: tests/e2e |\n| not_in_scope: `-m \"\"`. | phrase: `-m \"\"`. |\n| not_in_scope: Reading or editing .git internals. | phrase: Reading or editing .git internals. |\n| not_in_scope: Printing long outputs: run pytest with -q and no -v or -s. | phrase: Printing long outputs: run pytest with -q and no -v or -s. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- return int(status.ullAvailPhys: unresolved (not found)\n- return None: unresolved (not found)\n- gap: unresolved (not found)\n- git checkout -- src: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider tests/test_host.py: unresolved (not found; nearest: tests/test_host.py)\n- uv run ruff check src tests tools: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- tests/test_host.py: tests/test_host.py sha256 97b52270a8e9cd7ebe385ee54511025fcb52acd9719500bfe10f6fae879143f6\n- src/harness_bench/host.py: src/harness_bench/host.py sha256 395d2b966101c18714f899221fd8cb5100fb7354e7eeaad55524bed479eba832\n- tests/e2e: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AR4MZQKSMSTAKQ21PYP8TR\nraw sha256: 979f177bce1b1482889863dacf45e698a71d96b5d6485132da13d59a89b57270\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
-      "summary": "compiled al-01M3AR4MZQKSMSTAKQ21PYP8TR for codex v1: 14 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-24T22:13:30Z",
+      "dispatchable": true,
+      "id": "al-01M3AQP6YBH13PA5NNDN6FBHS9",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-HOST slice 3 (two Minors from the join review): make the leftovers test immune to concurrent suites, and remove the untested extra kill, in the owned paths only.\nDone when: tests/test_no_leftovers.py asserts only that this test's own `base` folder no longer exists after teardown, instead of comparing a snapshot of the shared C:/Projects/bench-test folder (another suite running at the same time made it fail on main); commit it.; In src/harness_bench/procs.py the extra `proc.kill()` inside `except TimeoutExpired` (around line 235) is deleted, because TerminateProcess was already sent and no test observes it (the reviewer's mutant M1 survived); `uv run pytest -q -p no:cacheprovider tests/test_procs.py tests/test_no_leftovers.py` passes; commit it.; `uv run ruff check src tests tools` is clean.; Your final message lists the two commit SHAs.\nNot in scope: Every file outside tests/test_no_leftovers.py and src/harness_bench/procs.py.; The full test suite; anything under tests/e2e; `-m \"\"`.; Reading or editing .git internals.; Printing long outputs: run pytest with -q and no -v or -s.; Any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 12 minutes wall clock; commit at every green.\nGrounding: read tests/test_no_leftovers.py, tests/conftest.py (the `base` fixture), and src/harness_bench/procs.py around the TimeoutExpired handler. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: tests/test_no_leftovers.py asserts only that this test's own `base` folder no longer exists after teardown, instead of comparing a snapshot of the shared C:/Projects/bench-test folder (another suite running at the same time made it fail on main) | phrase: tests/test_no_leftovers.py asserts only that this test's own `base` folder no longer exists after teardown, instead of comparing a snapshot of the shared C:/Projects/bench-test folder (another suite running at the same time made it fail on main) |\n| done_when: commit it. | phrase: commit it. |\n| done_when: In src/harness_bench/procs.py the extra `proc.kill()` inside `except TimeoutExpired` (around line 235) is deleted, because TerminateProcess was already sent and no test observes it (the reviewer's mutant M1 survived) | phrase: In src/harness_bench/procs.py the extra `proc.kill()` inside `except TimeoutExpired` (around line 235) is deleted, because TerminateProcess was already sent and no test observes it (the reviewer's mutant M1 survived) |\n| done_when: `uv run pytest -q -p no:cacheprovider tests/test_procs.py tests/test_no_leftovers.py` passes | phrase: `uv run pytest -q -p no:cacheprovider tests/test_procs.py tests/test_no_leftovers.py` passes |\n| done_when: commit it. | phrase: commit it. |\n| done_when: `uv run ruff check src tests tools` is clean. | phrase: `uv run ruff check src tests tools` is clean. |\n| done_when: Your final message lists the two commit SHAs. | phrase: Your final message lists the two commit SHAs. |\n| not_in_scope: Every file outside tests/test_no_leftovers.py and src/harness_bench/procs.py. | phrase: Every file outside tests/test_no_leftovers.py and src/harness_bench/procs.py. |\n| not_in_scope: The full test suite | phrase: The full test suite |\n| not_in_scope: anything under tests/e2e | phrase: anything under tests/e2e |\n| not_in_scope: `-m \"\"`. | phrase: `-m \"\"`. |\n| not_in_scope: Reading or editing .git internals. | phrase: Reading or editing .git internals. |\n| not_in_scope: Printing long outputs: run pytest with -q and no -v or -s. | phrase: Printing long outputs: run pytest with -q and no -v or -s. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- base: unresolved (not found)\n- proc.kill: unresolved (not found)\n- except TimeoutExpired: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider tests/test_procs.py tests/test_no_leftovers.py: unresolved (not found; nearest: tests/test_no_leftovers.py)\n- uv run ruff check src tests tools: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- tests/test_no_leftovers.py: tests/test_no_leftovers.py sha256 6020c1b9cc04cbb30d741d830e75f69966d008372e130cfc975af1d9b7d715e9\n- C:/Projects/bench-test: unresolved (outside repo)\n- src/harness_bench/procs.py: src/harness_bench/procs.py sha256 1bb51ba88d1c95ad501d6baa6e0097afe6514a678aef861f5892b82975d5af9f\n- tests/test_procs.py: tests/test_procs.py sha256 f818bb0eaca79ac6bd75732f124c757257553c2959654e3edca6d889e0f89b83\n- tests/e2e: unresolved (not found)\n- tests/conftest.py: tests/conftest.py sha256 d0a1f176caaf1a66888a86bbd6a06e3dbfbfb7861e3c72383c06c54e6dbdbc29\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AQP6NWC5S8SH7ZJS3CVE58\nraw sha256: 525710db1b205923ef9b5eb7ec65b73635d593f0e0bf45cca4a58d8d20a39384\ncompiler model: claude-opus-5-5\nengine seconds: 0.001\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W1-HOST slice 3 (two Minors from the join review): make the leftov…",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3AQP6NWC5S8SH7ZJS3CVE58 for codex v1: 14 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-24T22:21:23Z",
+      "id": "al-01M3AR4MZQKSMSTAKQ21PYP8TR",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: W1-HOST slice 4 (two Minors from the veto read-back): prove the host readings' success paths return real values, and that sleep detection recovers when the first reading is missing, with tests only.\nDone when: A native test in tests/test_host.py calls the real host.available_memory() and asserts it returns an int greater than 0, and the real host.unbiased_seconds() and asserts a float greater than 0 (these kill the mutant `return int(status.ullAvailPhys)` → `return None`); commit it.; A test in tests/test_host.py builds a SleepDetector whose first unbiased reading is None, then feeds two good readings whose wall-minus-unbiased gap exceeds `gap`, and asserts slept() is True (this kills the mutant that stops the first good reading becoming the anchor); commit it.; You show each new test fails against its mutant: apply the mutant in your tree, run the test, see it fail, restore the file with `git checkout -- src`, and state the failing output in your final message.; `uv run pytest -q -p no:cacheprovider tests/test_host.py` passes and `uv run ruff check src tests tools` is clean.\nNot in scope: Every file outside tests/test_host.py (src/harness_bench/host.py is read-only here; mutants are applied and reverted, never committed).; The full test suite; tests/e2e; `-m \"\"`.; Reading or editing .git internals.; Printing long outputs: run pytest with -q and no -v or -s.; Any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 12 minutes wall clock; commit at every green.\n\nGrounding: read src/harness_bench/host.py (available_memory, unbiased_seconds, SleepDetector) and tests/test_host.py. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
+      "session": "prompt-compile",
+      "shortname": "Goal: W1-HOST slice 4 (two Minors from the veto read-back): prove the ho…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -3984,6 +3973,413 @@ window.AUDIT_DATA = {
             "sha256": null,
             "status": "unresolved",
             "token": "tests/e2e"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "datetime": "2026-09-24T22:21:23Z",
+      "dispatchable": true,
+      "id": "al-01M3AR4N83TF60QW0JYQFN1X2C",
+      "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-HOST slice 4 (two Minors from the veto read-back): prove the host readings' success paths return real values, and that sleep detection recovers when the first reading is missing, with tests only.\nDone when: A native test in tests/test_host.py calls the real host.available_memory() and asserts it returns an int greater than 0, and the real host.unbiased_seconds() and asserts a float greater than 0 (these kill the mutant `return int(status.ullAvailPhys)` → `return None`); commit it.; A test in tests/test_host.py builds a SleepDetector whose first unbiased reading is None, then feeds two good readings whose wall-minus-unbiased gap exceeds `gap`, and asserts slept() is True (this kills the mutant that stops the first good reading becoming the anchor); commit it.; You show each new test fails against its mutant: apply the mutant in your tree, run the test, see it fail, restore the file with `git checkout -- src`, and state the failing output in your final message.; `uv run pytest -q -p no:cacheprovider tests/test_host.py` passes and `uv run ruff check src tests tools` is clean.\nNot in scope: Every file outside tests/test_host.py (src/harness_bench/host.py is read-only here; mutants are applied and reverted, never committed).; The full test suite; tests/e2e; `-m \"\"`.; Reading or editing .git internals.; Printing long outputs: run pytest with -q and no -v or -s.; Any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 12 minutes wall clock; commit at every green.\nGrounding: read src/harness_bench/host.py (available_memory, unbiased_seconds, SleepDetector) and tests/test_host.py. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: A native test in tests/test_host.py calls the real host.available_memory() and asserts it returns an int greater than 0, and the real host.unbiased_seconds() and asserts a float greater than 0 (these kill the mutant `return int(status.ullAvailPhys)` → `return None`) | phrase: A native test in tests/test_host.py calls the real host.available_memory() and asserts it returns an int greater than 0, and the real host.unbiased_seconds() and asserts a float greater than 0 (these kill the mutant `return int(status.ullAvailPhys)` → `return None`) |\n| done_when: commit it. | phrase: commit it. |\n| done_when: A test in tests/test_host.py builds a SleepDetector whose first unbiased reading is None, then feeds two good readings whose wall-minus-unbiased gap exceeds `gap`, and asserts slept() is True (this kills the mutant that stops the first good reading becoming the anchor) | phrase: A test in tests/test_host.py builds a SleepDetector whose first unbiased reading is None, then feeds two good readings whose wall-minus-unbiased gap exceeds `gap`, and asserts slept() is True (this kills the mutant that stops the first good reading becoming the anchor) |\n| done_when: commit it. | phrase: commit it. |\n| done_when: You show each new test fails against its mutant: apply the mutant in your tree, run the test, see it fail, restore the file with `git checkout -- src`, and state the failing output in your final message. | phrase: You show each new test fails against its mutant: apply the mutant in your tree, run the test, see it fail, restore the file with `git checkout -- src`, and state the failing output in your final message. |\n| done_when: `uv run pytest -q -p no:cacheprovider tests/test_host.py` passes and `uv run ruff check src tests tools` is clean. | phrase: `uv run pytest -q -p no:cacheprovider tests/test_host.py` passes and `uv run ruff check src tests tools` is clean. |\n| not_in_scope: Every file outside tests/test_host.py (src/harness_bench/host.py is read-only here | phrase: Every file outside tests/test_host.py (src/harness_bench/host.py is read-only here |\n| not_in_scope: mutants are applied and reverted, never committed). | phrase: mutants are applied and reverted, never committed). |\n| not_in_scope: The full test suite | phrase: The full test suite |\n| not_in_scope: tests/e2e | phrase: tests/e2e |\n| not_in_scope: `-m \"\"`. | phrase: `-m \"\"`. |\n| not_in_scope: Reading or editing .git internals. | phrase: Reading or editing .git internals. |\n| not_in_scope: Printing long outputs: run pytest with -q and no -v or -s. | phrase: Printing long outputs: run pytest with -q and no -v or -s. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- return int(status.ullAvailPhys: unresolved (not found)\n- return None: unresolved (not found)\n- gap: unresolved (not found)\n- git checkout -- src: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider tests/test_host.py: unresolved (not found; nearest: tests/test_host.py)\n- uv run ruff check src tests tools: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- tests/test_host.py: tests/test_host.py sha256 97b52270a8e9cd7ebe385ee54511025fcb52acd9719500bfe10f6fae879143f6\n- src/harness_bench/host.py: src/harness_bench/host.py sha256 395d2b966101c18714f899221fd8cb5100fb7354e7eeaad55524bed479eba832\n- tests/e2e: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AR4MZQKSMSTAKQ21PYP8TR\nraw sha256: 979f177bce1b1482889863dacf45e698a71d96b5d6485132da13d59a89b57270\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W1-HOST slice 4 (two Minors from the veto read-back): prove the ho…",
+      "skill": null,
+      "summary": "compiled al-01M3AR4MZQKSMSTAKQ21PYP8TR for codex v1: 14 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-09-24T22:27:48Z",
+      "done_when": "tests/test_host.py has a native test calling the real host.available_memory()/unbiased_seconds() and a SleepDetector recovery test; both kill their mutants (observed red), restored, then pass; uv run pytest tests/test_host.py tests/test_engine.py passes; ruff check src tests tools clean; committed with AGENT_SESSION=w1-host-s4.",
+      "duration_seconds": 221.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w1-host-s4-sonnet",
+        "pushed": null,
+        "sha": "23c21be4fe9ce5a02f3fa725b3101dd479f51035",
+        "short": "23c21be4f"
+      },
+      "goal": "Prove host.available_memory()/unbiased_seconds() success paths return real values, and SleepDetector recovers after a missing first reading; tests only, each shown to kill its mutant (M5, M4).",
+      "id": "al-01M3ARGDBR0NSQ6Z5B6GT5QQVF",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "W1-HOST slice 4 (moved from Grok by Owner ruling R-29): prove host.available_memory()/unbiased_seconds() success paths return real values, and SleepDetector recovers when the first reading is missing. Tests only, each shown to kill its mutant (M5, M4).",
+      "session": "w1-host-s4",
+      "shortname": "W1-HOST slice 4: host readings + sleep-recovery tests",
+      "signals": {
+        "acceptance_met": true,
+        "regression": false,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "implement",
+      "started_at": "2026-09-24T22:24:07Z",
+      "summary": "Added test_available_memory_and_unbiased_seconds_return_real_positive_values and test_sleep_detector_recovers_after_a_missing_first_reading to tests/test_host.py. Verified each kills its named mutant (M5: available_memory return None; M4: anchor assignment in SleepDetector.slept() replaced with pass), src restored via git checkout after each. Full tests/test_host.py + tests/test_engine.py (113 tests) pass; ruff check src tests tools clean. Committed 23c21be on branch w1-host-s4-sonnet.",
+      "tags": [
+        "w1-host-s4",
+        "mutation-testing"
+      ],
+      "tier": "T0",
+      "tool": null
+    },
+    {
+      "id": "al-01M3AS0NCXQQPQY5172851NDH3",
+      "shortname": "Goal: Cross-vendor join review of track W1-ACP (plan docs/coordination/c…",
+      "datetime": "2026-09-24T22:36:41Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: Cross-vendor join review of track W1-ACP (plan docs/coordination/coordination-finish-harness-bench.md, the W1-ACP row and the version-3 amendments): judge the branch phase2-acp-transcript and write the review to docs/notes/review-w1-acp-codex.md in your own worktree.\nDone when: docs/notes/review-w1-acp-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line, for the changes in `git diff 62d8b0c..48e4150` on branch phase2-acp-transcript, whose checkout is C:\\Projects\\x-harness-x-model-bench-phase2-acp-transcript (read it by absolute path; do not edit it).; The review answers: does the verbatim replayer (tests/fixtures/acp/replay_agent.py) replay recorded agent lines exactly with no synthesised handshake; does the driver's one error classifier map statuses as ruled in docs/notes/rulings.md R-18 and R-23; does the session/set_model step run after session/new and before set_mode, and does a refusal end the cell as HB-CELL-116 without sending the prompt; is last_update_seconds null (never 0) with no session/update; are the engine hunks limited to the model= call site, credential_kind, agent_version and acp_usage (R-13, R-24, R-28, R-30).; The review lists 3 mutants of your own against src/harness_bench/driver.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 48e4150 (removed afterwards), with the named test that killed it, or \"survived\".; The review file has V2 frontmatter (id, title, type: decision-note, status, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by, summary) and is committed on your branch.\nNot in scope: Editing any file other than docs/notes/review-w1-acp-codex.md.; Editing the phase2-acp-transcript checkout.; Running the full suite, anything under tests/e2e, or `-m \"\"`.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 45 minutes; commit the review before the deadline even if a mutant is unfinished, and say so.\n\nGrounding: docs/proof/phase1.md residual 9 (the D5/D7 condition), docs/notes/rulings.md R-13, R-18, R-22..R-24, R-28, R-30. Use `python`, not `python3` (Windows); in the throwaway worktree run `uv run pytest -q -p no:cacheprovider tests/test_driver.py tests/test_acp_record.py`. Set AGENT_SESSION to your session id before committing.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3AS0NPMYTZ0YDMQB6P47FGX",
+      "shortname": "compile-Goal: Cross-vendor join review of track W1-ACP (plan docs/coordination/c…",
+      "datetime": "2026-09-24T22:36:41Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: Cross-vendor join review of track W1-ACP (plan docs/coordination/coordination-finish-harness-bench.md, the W1-ACP row and the version-3 amendments): judge the branch phase2-acp-transcript and write the review to docs/notes/review-w1-acp-codex.md in your own worktree.\nDone when: docs/notes/review-w1-acp-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line, for the changes in `git diff 62d8b0c..48e4150` on branch phase2-acp-transcript, whose checkout is C:\\Projects\\x-harness-x-model-bench-phase2-acp-transcript (read it by absolute path; do not edit it).; The review answers: does the verbatim replayer (tests/fixtures/acp/replay_agent.py) replay recorded agent lines exactly with no synthesised handshake; does the driver's one error classifier map statuses as ruled in docs/notes/rulings.md R-18 and R-23; does the session/set_model step run after session/new and before set_mode, and does a refusal end the cell as HB-CELL-116 without sending the prompt; is last_update_seconds null (never 0) with no session/update; are the engine hunks limited to the model= call site, credential_kind, agent_version and acp_usage (R-13, R-24, R-28, R-30).; The review lists 3 mutants of your own against src/harness_bench/driver.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 48e4150 (removed afterwards), with the named test that killed it, or \"survived\".; The review file has V2 frontmatter (id, title, type: decision-note, status, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by, summary) and is committed on your branch.\nNot in scope: Editing any file other than docs/notes/review-w1-acp-codex.md.; Editing the phase2-acp-transcript checkout.; Running the full suite, anything under tests/e2e, or `-m \"\"`.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 45 minutes; commit the review before the deadline even if a mutant is unfinished, and say so.\nGrounding: docs/proof/phase1.md residual 9 (the D5/D7 condition), docs/notes/rulings.md R-13, R-18, R-22..R-24, R-28, R-30. Use `python`, not `python3` (Windows); in the throwaway worktree run `uv run pytest -q -p no:cacheprovider tests/test_driver.py tests/test_acp_record.py`. Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: docs/notes/review-w1-acp-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line, for the changes in `git diff 62d8b0c..48e4150` on branch phase2-acp-transcript, whose checkout is C:\\Projects\\x-harness-x-model-bench-phase2-acp-transcript (read it by absolute path | phrase: docs/notes/review-w1-acp-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line, for the changes in `git diff 62d8b0c..48e4150` on branch phase2-acp-transcript, whose checkout is C:\\Projects\\x-harness-x-model-bench-phase2-acp-transcript (read it by absolute path |\n| done_when: do not edit it). | phrase: do not edit it). |\n| done_when: The review answers: does the verbatim replayer (tests/fixtures/acp/replay_agent.py) replay recorded agent lines exactly with no synthesised handshake | phrase: The review answers: does the verbatim replayer (tests/fixtures/acp/replay_agent.py) replay recorded agent lines exactly with no synthesised handshake |\n| done_when: does the driver's one error classifier map statuses as ruled in docs/notes/rulings.md R-18 and R-23 | phrase: does the driver's one error classifier map statuses as ruled in docs/notes/rulings.md R-18 and R-23 |\n| done_when: does the session/set_model step run after session/new and before set_mode, and does a refusal end the cell as HB-CELL-116 without sending the prompt | phrase: does the session/set_model step run after session/new and before set_mode, and does a refusal end the cell as HB-CELL-116 without sending the prompt |\n| done_when: is last_update_seconds null (never 0) with no session/update | phrase: is last_update_seconds null (never 0) with no session/update |\n| done_when: are the engine hunks limited to the model= call site, credential_kind, agent_version and acp_usage (R-13, R-24, R-28, R-30). | phrase: are the engine hunks limited to the model= call site, credential_kind, agent_version and acp_usage (R-13, R-24, R-28, R-30). |\n| done_when: The review lists 3 mutants of your own against src/harness_bench/driver.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 48e4150 (removed afterwards), with the named test that killed it, or \"survived\". | phrase: The review lists 3 mutants of your own against src/harness_bench/driver.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 48e4150 (removed afterwards), with the named test that killed it, or \"survived\". |\n| done_when: The review file has V2 frontmatter (id, title, type: decision-note, status, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by, summary) and is committed on your branch. | phrase: The review file has V2 frontmatter (id, title, type: decision-note, status, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by, summary) and is committed on your branch. |\n| not_in_scope: Editing any file other than docs/notes/review-w1-acp-codex.md. | phrase: Editing any file other than docs/notes/review-w1-acp-codex.md. |\n| not_in_scope: Editing the phase2-acp-transcript checkout. | phrase: Editing the phase2-acp-transcript checkout. |\n| not_in_scope: Running the full suite, anything under tests/e2e, or `-m \"\"`. | phrase: Running the full suite, anything under tests/e2e, or `-m \"\"`. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- git diff 62d8b0c..48e4150: unresolved (not found)\n- git worktree add --detach: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider tests/test_driver.py tests/test_acp_record.py: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 fb6329fabdc1f2ddd3b858cd9ac213a69bba46c649136cd882bda173669dbaf8\n- docs/notes/review-w1-acp-codex.md: unresolved (not found)\n- tests/fixtures/acp/replay_agent.py: tests/fixtures/acp/replay_agent.py sha256 229b5473a78345464a378582b254c4528ced93375c3b0b03bfe6e26aeff8cb92\n- docs/notes/rulings.md: unresolved (ambiguous: 2 matches)\n- session/set_model: unresolved (not found)\n- session/new: unresolved (not found)\n- session/update: unresolved (not found)\n- src/harness_bench/driver.py: src/harness_bench/driver.py sha256 85b85d7fea48c41a1ce9dad263e921f64e6d0e681317a8dabb0365a4270d5329\n- coordination-finish-harness-bench: docs/coordination/coordination-finish-harness-bench.md sha256 fb6329fabdc1f2ddd3b858cd9ac213a69bba46c649136cd882bda173669dbaf8\n- tests/e2e: unresolved (not found)\n- docs/proof/phase1.md: docs/proof/phase1.md sha256 3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428\n- D5/D7: unresolved (not found)\n- tests/test_driver.py: tests/test_driver.py sha256 a70721db735dd83cbdcda23f579a31a2a01ade8104baebe52f34f6d7a20a62ff\n- tests/test_acp_record.py: unresolved (not found)\n- graph neighbours: coordination-phase1-finish-run, design-phase1-walking-skeleton, rulings-register\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AS0NCXQQPQY5172851NDH3\nraw sha256: 007dd5ada8433110f19c15767232dff19357b88b6416bcea1d91820f3c0c8a89\ncompiler model: claude-opus-5-5\nengine seconds: 0.001\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3AS0NCXQQPQY5172851NDH3 for codex v1: 13 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "docs/notes/review-w1-acp-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line, for the changes in `git diff 62d8b0c..48e4150` on branch phase2-acp-transcript, whose checkout is C:\\Projects\\x-harness-x-model-bench-phase2-acp-transcript (read it by absolute path",
+            "trace": {
+              "kind": "phrase",
+              "ref": "docs/notes/review-w1-acp-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line, for the changes in `git diff 62d8b0c..48e4150` on branch phase2-acp-transcript, whose checkout is C:\\Projects\\x-harness-x-model-bench-phase2-acp-transcript (read it by absolute path"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "do not edit it).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "do not edit it)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The review answers: does the verbatim replayer (tests/fixtures/acp/replay_agent.py) replay recorded agent lines exactly with no synthesised handshake",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The review answers: does the verbatim replayer (tests/fixtures/acp/replay_agent.py) replay recorded agent lines exactly with no synthesised handshake"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "does the driver's one error classifier map statuses as ruled in docs/notes/rulings.md R-18 and R-23",
+            "trace": {
+              "kind": "phrase",
+              "ref": "does the driver's one error classifier map statuses as ruled in docs/notes/rulings.md R-18 and R-23"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "does the session/set_model step run after session/new and before set_mode, and does a refusal end the cell as HB-CELL-116 without sending the prompt",
+            "trace": {
+              "kind": "phrase",
+              "ref": "does the session/set_model step run after session/new and before set_mode, and does a refusal end the cell as HB-CELL-116 without sending the prompt"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "is last_update_seconds null (never 0) with no session/update",
+            "trace": {
+              "kind": "phrase",
+              "ref": "is last_update_seconds null (never 0) with no session/update"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "are the engine hunks limited to the model= call site, credential_kind, agent_version and acp_usage (R-13, R-24, R-28, R-30).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "are the engine hunks limited to the model= call site, credential_kind, agent_version and acp_usage (R-13, R-24, R-28, R-30)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The review lists 3 mutants of your own against src/harness_bench/driver.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 48e4150 (removed afterwards), with the named test that killed it, or \"survived\".",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The review lists 3 mutants of your own against src/harness_bench/driver.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 48e4150 (removed afterwards), with the named test that killed it, or \"survived\"."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The review file has V2 frontmatter (id, title, type: decision-note, status, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by, summary) and is committed on your branch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The review file has V2 frontmatter (id, title, type: decision-note, status, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by, summary) and is committed on your branch."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing any file other than docs/notes/review-w1-acp-codex.md.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Editing any file other than docs/notes/review-w1-acp-codex.md."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing the phase2-acp-transcript checkout.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Editing the phase2-acp-transcript checkout."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Running the full suite, anything under tests/e2e, or `-m \"\"`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Running the full suite, anything under tests/e2e, or `-m \"\"`."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "docs/notes/review-w1-acp-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line, for the changes in `git diff 62d8b0c..48e4150` on branch phase2-acp-transcript, whose checkout is C:\\Projects\\x-harness-x-model-bench-phase2-acp-transcript (read it by absolute path",
+            "do not edit it).",
+            "The review answers: does the verbatim replayer (tests/fixtures/acp/replay_agent.py) replay recorded agent lines exactly with no synthesised handshake",
+            "does the driver's one error classifier map statuses as ruled in docs/notes/rulings.md R-18 and R-23",
+            "does the session/set_model step run after session/new and before set_mode, and does a refusal end the cell as HB-CELL-116 without sending the prompt",
+            "is last_update_seconds null (never 0) with no session/update",
+            "are the engine hunks limited to the model= call site, credential_kind, agent_version and acp_usage (R-13, R-24, R-28, R-30).",
+            "The review lists 3 mutants of your own against src/harness_bench/driver.py, each applied one at a time in a throwaway `git worktree add --detach` of commit 48e4150 (removed afterwards), with the named test that killed it, or \"survived\".",
+            "The review file has V2 frontmatter (id, title, type: decision-note, status, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by, summary) and is committed on your branch."
+          ],
+          "fan_out_cap": 0,
+          "goal": "Cross-vendor join review of track W1-ACP (plan docs/coordination/coordination-finish-harness-bench.md, the W1-ACP row and the version-3 amendments): judge the branch phase2-acp-transcript and write the review to docs/notes/review-w1-acp-codex.md in your own worktree.",
+          "main_line_budget": "one slice of at most 45 minutes; commit the review before the deadline even if a mutant is unfinished, and say so.\nGrounding: docs/proof/phase1.md residual 9 (the D5/D7 condition), docs/notes/rulings.md R-13, R-18, R-22..R-24, R-28, R-30. Use `python`, not `python3` (Windows); in the throwaway worktree run `uv run pytest -q -p no:cacheprovider tests/test_driver.py tests/test_acp_record.py`. Set AGENT_SESSION to your session id before committing.",
+          "not_in_scope": [
+            "Editing any file other than docs/notes/review-w1-acp-codex.md.",
+            "Editing the phase2-acp-transcript checkout.",
+            "Running the full suite, anything under tests/e2e, or `-m \"\"`.",
+            "Any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [
+          "coordination-phase1-finish-run",
+          "design-phase1-walking-skeleton",
+          "rulings-register"
+        ],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.001,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3AS0NCXQQPQY5172851NDH3",
+        "raw_sha256": "007dd5ada8433110f19c15767232dff19357b88b6416bcea1d91820f3c0c8a89",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git diff 62d8b0c..48e4150"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git worktree add --detach"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-m "
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python3"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q -p no:cacheprovider tests/test_driver.py tests/test_acp_record.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench.md",
+            "reason": null,
+            "sha256": "fb6329fabdc1f2ddd3b858cd9ac213a69bba46c649136cd882bda173669dbaf8",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-finish-harness-bench.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/review-w1-acp-codex.md"
+          },
+          {
+            "nearest": null,
+            "path": "tests/fixtures/acp/replay_agent.py",
+            "reason": null,
+            "sha256": "229b5473a78345464a378582b254c4528ced93375c3b0b03bfe6e26aeff8cb92",
+            "status": "resolved",
+            "token": "tests/fixtures/acp/replay_agent.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "session/set_model"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "session/new"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "session/update"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/driver.py",
+            "reason": null,
+            "sha256": "85b85d7fea48c41a1ce9dad263e921f64e6d0e681317a8dabb0365a4270d5329",
+            "status": "resolved",
+            "token": "src/harness_bench/driver.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench.md",
+            "reason": null,
+            "sha256": "fb6329fabdc1f2ddd3b858cd9ac213a69bba46c649136cd882bda173669dbaf8",
+            "status": "resolved",
+            "token": "coordination-finish-harness-bench"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e"
+          },
+          {
+            "nearest": null,
+            "path": "docs/proof/phase1.md",
+            "reason": null,
+            "sha256": "3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428",
+            "status": "resolved",
+            "token": "docs/proof/phase1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "D5/D7"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_driver.py",
+            "reason": null,
+            "sha256": "a70721db735dd83cbdcda23f579a31a2a01ade8104baebe52f34f6d7a20a62ff",
+            "status": "resolved",
+            "token": "tests/test_driver.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_acp_record.py"
           }
         ],
         "schema": "compiled-prompt/1",
