@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T03:17:54Z",
+  "generated": "2026-09-24T04:22:45Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -543,6 +543,31 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-09-24T03:16:14Z",
       "duration_seconds": 100.0
+    },
+    {
+      "id": "al-01M38TDM5GN2WF3Y0VGHJ101PS",
+      "shortname": "t2-ledger-verify",
+      "datetime": "2026-09-24T04:22:45Z",
+      "session": "T2",
+      "prompt": "Track T2 ledger-verify of coordination-phase1-finish: tamper probes, grading.completed heads, D2 properties, D6 golden ledgers, ledger survivors, mutation record, Simplifier minors, SRE-5 poison; seam req-01M38NTSV1RDHVS8SX2TEES0RQ.",
+      "summary": "12 findings red-first (T2-1..T2-12); mutation files 20/29/17 killed; cosmic-ray 1803 mutants, 1546 killed, 257 equivalent, none open; 442 passed, ruff clean. Partial: docs/proof/findings-T2.md refused by the harness for sub-agent writes; content handed to the Coordinator to transcribe.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "docs/notes/mutation-record-t2.md",
+        "tests/test_verify.py",
+        "tests/fixtures/ledger"
+      ],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "T2 exit list with red SHAs and green fixes; three mutation files killed; cosmic-ray record with nothing open; gates green.",
+      "done_when": "every exit item has red SHA + fix; mutations killed; record written; pytest and ruff green",
+      "tier": "T2",
+      "started_at": "2026-09-24T02:07:41Z",
+      "duration_seconds": 8104.0
     }
   ],
   "changes": [
