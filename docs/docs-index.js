@@ -891,6 +891,53 @@ window.DOCS_INDEX = {
       "sourceSha256": "08b1265b915e12b73fe5621627df931828825128e684c695262dd11c5fa642a6"
     },
     {
+      "id": "review-w1-copi-design-codex",
+      "path": "docs/notes/review-w1-copi-design-codex.md",
+      "title": "W1-COP-I cross-vendor design review",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-08",
+      "reviewSuggested": [],
+      "summary": "Codex cross-vendor review of phase2-copilot-profile revision 3.1 found no defect that stops implementation of the W1-COP-I pinned-tools slice.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "a76c788ec0fb1701f589524c1ff6ca278830343368b65e3c19eb682ad64669fc"
+    },
+    {
+      "id": "review-w1-copr-codex",
+      "path": "docs/notes/review-w1-copr-codex.md",
+      "title": "W1-COP-R cross-vendor join review",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-08",
+      "reviewSuggested": [],
+      "summary": "Codex review of W1-COP-R at f266f09: the main Copilot extraction rules pass the focused suite, but a toolCallId pairing mutant survives and a successful tool call can carry a non-null outcome_code. Block the join until both are covered and the latter is fixed.",
+      "tags": [
+        "coordination",
+        "review",
+        "copilot",
+        "telemetry"
+      ],
+      "links": [
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "35671fe583069173fc176519d61a493be3a11ae77055b810aea82e435fae29e2"
+    },
+    {
       "id": "review-w1-toolb-codex",
       "path": "docs/notes/review-w1-toolb-codex.md",
       "title": "W1-TOOLB cross-vendor join review",
@@ -1237,7 +1284,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "90b7bbd0ac283847357f7795932ff5ce850d2ca64affe3f1af39ed5bb4d0b546"
+      "sourceSha256": "e98e36e8be6980cdca4187e2911fb508a62aea4d9269e7b95bb9a0141f423e0e"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -1419,7 +1466,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5839d74945bfb453ab1eea2faf0b611029fced6f3279547702bc71be99e7d77f"
+      "sourceSha256": "b2731f60584ae034fd905b371ccd5d34a754101d4319b76e7776f105ab518d02"
     },
     {
       "id": "proposal-cross-harness-benchmarking",
@@ -1478,7 +1525,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "53ce579b4ef3f99190c6e974512b25a2a02fe850d9e209d0e134e844d2929021"
+      "sourceSha256": "17b74cfa2175c94a17b6469bd10c90bad93c7f94c70e83590680bd99d309cc1e"
     },
     {
       "id": "coordination-phase1-finish",
@@ -2100,5 +2147,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "5c98080cfe1bdd1d94240be561f5c673515cf1b16e1b524b6a816749d4161b78"
+  "graphSha256": "dc2188772e108130fa3ff6253a11b948ed2ded65f497e7efa3240ede697b98da"
 };
