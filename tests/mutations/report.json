@@ -110,5 +110,48 @@
   "find": "        if len(data) >= MIN_VALUE_LEN:\n",
   "replace": "        if False:\n",
   "tests": ["tests/test_report.py::test_the_exact_value_scan_collects_a_leftover_token_from_an_archived_home"]
+ },
+ {
+  "name": "the N5 header flag never appears",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    if report.has_codex_cell(plan):\n        facts.append((report.N5_FLAG, f\"see {report.N5_EVIDENCE}\"))\n",
+  "replace": "",
+  "tests": ["tests/test_report.py::test_the_header_flags_a_run_with_a_codex_cell_and_names_the_evidence"]
+ },
+ {
+  "name": "the leaderboard combo cell never flags a codex row",
+  "file": "src/harness_bench/report/html.py",
+  "find": "(_e(report.flag_if_codex(r.combo, r.harness)), False)",
+  "replace": "(_e(r.combo), False)",
+  "tests": ["tests/test_report.py::test_the_leaderboard_and_cells_table_flag_only_the_codex_rows"]
+ },
+ {
+  "name": "the cells table label never flags a codex cell",
+  "file": "src/harness_bench/report/html.py",
+  "find": "(_e(report.flag_if_codex(c.label, c.harness)), False)",
+  "replace": "(_e(c.label), False)",
+  "tests": ["tests/test_report.py::test_the_leaderboard_and_cells_table_flag_only_the_codex_rows"]
+ },
+ {
+  "name": "has_codex_cell never sees a codex cell",
+  "file": "src/harness_bench/report/__init__.py",
+  "find": "    return any(c.get(\"harness\") == \"codex\" for c in plan.get(\"cells\", []))\n",
+  "replace": "    return False\n",
+  "tests": ["tests/test_report.py::test_the_header_flags_a_run_with_a_codex_cell_and_names_the_evidence",
+            "tests/test_report.py::test_the_cli_table_prints_the_flag_as_ascii_after_the_table_when_a_codex_cell_is_present"]
+ },
+ {
+  "name": "flag_if_codex never flags a codex row",
+  "file": "src/harness_bench/report/__init__.py",
+  "find": "    return f\"{text} ({N5_FLAG})\" if harness == \"codex\" else text\n",
+  "replace": "    return text\n",
+  "tests": ["tests/test_report.py::test_the_leaderboard_and_cells_table_flag_only_the_codex_rows"]
+ },
+ {
+  "name": "the CLI table never prints the N5 flag line",
+  "file": "src/harness_bench/report/cli_table.py",
+  "find": "    if report.has_codex_cell(view.plan):\n        console.print(f\"{report.N5_FLAG}: see {report.N5_EVIDENCE}\")\n",
+  "replace": "",
+  "tests": ["tests/test_report.py::test_the_cli_table_prints_the_flag_as_ascii_after_the_table_when_a_codex_cell_is_present"]
  }
 ]
