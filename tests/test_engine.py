@@ -317,6 +317,24 @@ def test_a_failing_job_query_is_an_unconfirmed_kill_not_a_crash(base, monkeypatc
     assert calls[:3] == [1, 1, 2]  # kill_escalation, then the capped backoff: the slot stayed held
 
 
+def test_job_queries_failing_through_the_procs_seam_hold_the_slot_until_confirmed(base, monkeypatch, caplog):  # T1-8b
+    from harness_bench import procs
+    real_query = procs._query
+    first: list[float] = []
+
+    def failing(job, info_class, buf):  # T3-5's fault seam: QueryInformationJobObject fails for 2.5 s
+        first.append(first[0] if first else time.monotonic())
+        return False if time.monotonic() - first[0] < 2.5 else real_query(job, info_class, buf)
+
+    monkeypatch.setattr(procs, "_query", failing)
+    p = _plan(n_cells=1)
+    p["parameters"]["kill_escalation"] = 1
+    _, events, _ = _run(base, p, FakeLauncher({}), end_grace=1)
+    assert _outcomes(events)[p["cells"][0]["cell_id"]]["outcome"] == "completed"
+    assert next(e for e in events if e["kind"] == "attempt.process_ended")["confirmed"] == 1
+    assert len([r for r in caplog.records if getattr(r, "error_code", None) == "HB-RUN-002"]) == 1
+
+
 def test_eof_mid_turn_is_an_adapter_crash(base):
     p = _plan(n_cells=1)
     _, events, _ = _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"mode": "eof_mid_turn"}}))
