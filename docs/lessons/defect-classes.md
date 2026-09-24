@@ -197,7 +197,7 @@ summary: >-
 - **Why it survives:** the phase-1 Proof Pack documents `-m ""` as the opt-in for e2e, which reads as though the default excludes them. Nothing enforced that: `tests/conftest.py` only skips `native` tests off Windows, and `pyproject.toml` had no `addopts`. The e2e run passes, so nothing looks wrong.
 - **Instances:**
   - `2026-09-24` (coordination-finish-harness-bench, wave 1): the Leader wrote "the default suite excludes the real-harness tests" into the worker briefs without checking. W1-ACP's suite run, the Leader's W1-HOST join run and the reviewer's runs each started the 4-cell walking skeleton and the N5 canary on the Anthropic and OpenAI logins while other workers were live. It was found through a modified `phase1-e2e-last.json` in two worktrees, and a leftover `e2e-*` folder the reviewer saw.
-- **Sweep:** the only `credentials`-marked tests are `tests/e2e/test_walking_skeleton.py` and `tests/e2e/test_us13_canary.py` (5 items). No other test starts a harness process with a login.
+- **Sweep:** `-m credentials` collects 5 items: 3 in `tests/e2e/` (the walking skeleton and the US-13 canary) and 2 in `tests/test_profiles.py::test_real_handshake_with_the_pinned_build` (a real handshake on the login). The first write of this entry said "5 items in tests/e2e", which was wrong; the W1-TOOLB worker found it. The control is marker-based, so it covers all 5.
 - **Control:** `pyproject.toml` `addopts = "-m 'not credentials'"`; the documented opt-in `-m ""` still works. `tests/test_default_suite_is_offline.py` fails if a bare run selects any e2e item, or if the opt-in stops selecting them (red `5013299`).
 - **Status:** `controlled`
 
