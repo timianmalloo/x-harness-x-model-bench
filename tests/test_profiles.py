@@ -69,6 +69,24 @@ def test_command_template_rejects_an_adapter_placeholder_without_an_adapter(tmp_
         p.argv(build, "gpt-6-sol")
 
 
+def test_native_copilot_command_does_not_need_node_or_an_adapter(monkeypatch):
+    p = profiles.load(ROOT, "copilot")
+    build = FakeBuild()
+    build.adapter = None
+    monkeypatch.setattr(profiles.shutil, "which", lambda _: None)
+    assert p.argv(build, "gpt-6-sol") == [str(build.exe), "--acp", "--model", "gpt-6-sol",
+                                          "--allow-tool", "shell", "--allow-tool", "write"]
+
+
+def test_adapter_command_rejects_missing_node(monkeypatch, tmp_path):
+    from harness_bench.errors import BenchError
+
+    p = profiles.load(ROOT, "codex", credential_source=tmp_path / "c")
+    monkeypatch.setattr(profiles.shutil, "which", lambda _: None)
+    with pytest.raises(BenchError, match="HB-PRE-007"):
+        p.argv(FakeBuild(), "gpt-6-sol")
+
+
 def test_copilot_cell_env_drops_hosted_github_credentials_and_copilot_overrides(tmp_path):
     p = profiles.load(ROOT, "copilot")
     seeded = {name: "leak" for name in ("GH_TOKEN", "GITHUB_TOKEN", "GH_HOST", "COPILOT_CUSTOM_INSTRUCTIONS_DIRS",
