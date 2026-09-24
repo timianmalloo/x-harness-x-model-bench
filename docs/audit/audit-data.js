@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T02:53:12Z",
+  "generated": "2026-09-24T02:56:31Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -462,6 +462,33 @@ window.AUDIT_DATA = {
         "branch": "track/t5-n5-spike",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M38NFPS079Q5X83GP8PV2GTT",
+      "shortname": "join-t5",
+      "datetime": "2026-09-24T02:56:31Z",
+      "session": "coord-opus",
+      "prompt": "the join of track/t5-n5-spike into impl/phase1",
+      "summary": "T5 N5 spike: skip_host_skill_discovery disproven by a real canary; strict xfail kept (R-5) recount_seconds=78 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "merge T5's verified evidence",
+      "done_when": "join gates green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-24T02:55:12Z",
+      "duration_seconds": 79.0
     }
   ],
   "changes": [
