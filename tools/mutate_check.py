@@ -6,10 +6,15 @@ meaning any test in it) is among the failures. A failure of some other test, a c
 not evidence that this guard is tested, so it is reported as survived, error or timeout. Exit 0 only if every
 mutation is killed.
 
+No bytecode is ever written from a mutant (TOOL-A): pytest runs with PYTHONDONTWRITEBYTECODE=1. Otherwise a same-size
+mutant restored within its own mtime second stays what `import` loads (the .pyc's mtime and size still match), so later
+runs test the mutant while `git status` is clean.
+
 Usage: python tools/mutate_check.py <mutations.json>
 """
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -46,7 +51,8 @@ def main(argv: list[str]) -> int:
             path.write_bytes(text.replace(m["find"], m["replace"], 1).encode("utf-8"))
             try:
                 result = subprocess.run([sys.executable, "-m", "pytest", "-q", "-rf", "-p", "no:cacheprovider", *m["tests"]],
-                                        cwd=ROOT, capture_output=True, text=True, check=False, timeout=m.get("timeout", 180))
+                                        cwd=ROOT, capture_output=True, text=True, check=False, timeout=m.get("timeout", 180),
+                                        env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"})
                 outcome = verdict(result.returncode, result.stdout + result.stderr, m["tests"])
             except subprocess.TimeoutExpired:
                 outcome = "timeout"
