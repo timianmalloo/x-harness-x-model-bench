@@ -1,7 +1,7 @@
 ---
 id: findings-t4
 title: "T4 surfaces -- findings, red SHAs, and mutation results"
-type: proof
+type: proof-pack
 status: accepted
 owner: "@timianmalloo"
 phase: "Phase 1 - walking skeleton"

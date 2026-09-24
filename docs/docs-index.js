@@ -1274,6 +1274,32 @@ window.DOCS_INDEX = {
       "sourceSha256": "114ec6faaf780d5362cf308c4152f05daa2373ca85d3acf68fc5ff0859836655"
     },
     {
+      "id": "findings-t4",
+      "path": "docs/proof/findings-T4.md",
+      "title": "T4 surfaces -- findings, red SHAs, and mutation results",
+      "type": "proof-pack",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 - walking skeleton",
+      "reviewBy": "2026-10-08",
+      "reviewSuggested": [],
+      "summary": "T4 surfaces' findings-to-tests map for the coordination plan's exit list, each with its red SHA and failing line, plus the mutation-check result for tests/mutations/{status,report,cli}.json.",
+      "tags": [
+        "proof",
+        "coordination",
+        "t4",
+        "mutation"
+      ],
+      "links": [
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "5f6f1d6d3af88c81fba61ee0cb18a6cc49c6a9356fabcba9ef7a6fa9cd189f66"
+    },
+    {
       "id": "proof-findings-t5",
       "path": "docs/proof/findings-T5.md",
       "title": "T5 findings: N5 spike (Codex host skill discovery)",
@@ -1456,5 +1482,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "addfe430ec838f987fff3952a42157335e1da8b945afe41706a8042aceebcfdd"
+  "graphSha256": "ea6f710efbf1bcd6212b201ed61dc1293e5db7268c6cf9137e167f4106624eae"
 };
