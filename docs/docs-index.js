@@ -682,6 +682,38 @@ window.DOCS_INDEX = {
       "sourceSha256": "3818fd2d2aab1026085f985ce30b198952054a67b41518fd26edf40ce4c12272"
     },
     {
+      "id": "mutation-record-t1",
+      "path": "docs/notes/mutation-record-t1.md",
+      "title": "Mutation record: T1 (engine, errors, lifecycle)",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2026-12-22",
+      "reviewSuggested": [],
+      "summary": "cosmic-ray 8.7.0, run natively on Windows (mutmut refuses native Windows, probe R13), over lifecycle, errors and 299 of engine's 765 mutants. Every mutant run is killed or argued equivalent; none is open, none timed out, none was not exercised on the platform. The engine functions outside that scope are covered only by tests/mutations/engine.json.",
+      "tags": [
+        "mutation",
+        "cosmic-ray",
+        "engine",
+        "lifecycle",
+        "errors",
+        "T1"
+      ],
+      "links": [
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        },
+        {
+          "to": "findings-t1-engine-hardening",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b646c384256284730c2e9d224c16264241e09dc2647be6cbb6c06a104db588f2"
+    },
+    {
       "id": "mutation-record-t2",
       "path": "docs/notes/mutation-record-t2.md",
       "title": "Mutation record - track T2 (ledger, views, grade)",
@@ -1276,6 +1308,38 @@ window.DOCS_INDEX = {
       "sourceSha256": "d54e510a81dfb32ebc3f256b4fd6be310d719fba944dcdef11213e6d9ab50dad"
     },
     {
+      "id": "findings-t1-engine-hardening",
+      "path": "docs/proof/findings-T1.md",
+      "title": "Findings to tests: T1 engine hardening",
+      "type": "proof-pack",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2026-12-22",
+      "reviewSuggested": [],
+      "summary": "The T1 checklist, finding by finding: the test node, the red commit that added the test alone, the failing line at that commit, and the fix commit. Items 14 and 15 were missing controls, not defects, so their red is shown under a named mutant. The Coordinator transcribed this file (the harness refused the sub-agent's write) and re-ran two red SHAs.",
+      "tags": [
+        "proof",
+        "red-first",
+        "engine",
+        "lifecycle",
+        "errors",
+        "T1"
+      ],
+      "links": [
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        },
+        {
+          "to": "mutation-record-t1",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "0a3c0381356c52433eb75d4eb66a69da834f768906a63e8e5b06a78d6839762f"
+    },
+    {
       "id": "findings-t2-ledger-verify",
       "path": "docs/proof/findings-T2.md",
       "title": "Findings → tests: track T2 ledger-verify",
@@ -1536,5 +1600,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "0e596f724c0a554d9cec00a53325a4d8ad15f14b8ca308d425620247710cbb49"
+  "graphSha256": "b6236b6b773a9b9a243c116362cbac71d6fbe25b77a43131da9929aed5534008"
 };

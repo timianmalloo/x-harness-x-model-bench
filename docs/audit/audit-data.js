@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T07:30:29Z",
+  "generated": "2026-09-24T07:38:51Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -633,6 +633,33 @@ window.AUDIT_DATA = {
         "branch": "track/t1-engine-hardening",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M395MNSFRP64BX8Z8ZGGTXP6",
+      "shortname": "join-t1",
+      "datetime": "2026-09-24T07:38:51Z",
+      "session": "coord-opus",
+      "prompt": "the join of track/t1-engine-hardening into impl/phase1",
+      "summary": "T1: 17 checklist items + 8b red-first; engine.json 44/44 killed; cosmic-ray lifecycle/errors full, engine 299/765 mutants, 0 open recount_seconds=126 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "merge T1's verified evidence",
+      "done_when": "join gates green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-24T07:36:43Z",
+      "duration_seconds": 128.0
     }
   ],
   "changes": [
