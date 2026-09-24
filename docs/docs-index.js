@@ -725,7 +725,7 @@ window.DOCS_INDEX = {
       "phase": "Phase 1 · walking skeleton",
       "reviewBy": "2026-12-22",
       "reviewSuggested": [],
-      "summary": "cosmic-ray 8.7.0, run natively on Windows (mutmut refuses native Windows, probe R13), over lifecycle, errors and 299 of engine's 765 mutants. Every mutant run is killed or argued equivalent; none is open, none timed out, none was not exercised on the platform. The engine functions outside that scope are covered only by tests/mutations/engine.json.",
+      "summary": "cosmic-ray 8.7.0, run natively on Windows (mutmut refuses native Windows, probe R13), over lifecycle, errors and every engine.py mutant: T1 ran 299 (301 at T10's count) and track T10 ran the remaining 466. Every mutant is killed or argued equivalent; none is open, none timed out, none was not exercised on the platform. T10 found and fixed one design drift (the kill-retry cap).",
       "tags": [
         "mutation",
         "cosmic-ray",
@@ -745,7 +745,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b646c384256284730c2e9d224c16264241e09dc2647be6cbb6c06a104db588f2"
+      "sourceSha256": "1151691b517941ca371e1bb70662035fb337592bd141e974ac53988f8e3ac506"
     },
     {
       "id": "mutation-record-t2",
@@ -1071,7 +1071,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "e407e946371c6b96d8d0c416cd40f329debdd749175a62901d63e23d619ad24c"
+      "sourceSha256": "7759da7501ca473a710bbd7a35c867635a050574c0b2af3544a7927886487fbb"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -1374,6 +1374,38 @@ window.DOCS_INDEX = {
       "sourceSha256": "0a3c0381356c52433eb75d4eb66a69da834f768906a63e8e5b06a78d6839762f"
     },
     {
+      "id": "findings-t10-engine-mutation",
+      "path": "docs/proof/findings-T10.md",
+      "title": "Findings → tests: track T10 engine-mutation",
+      "type": "proof-pack",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2026-12-22",
+      "reviewSuggested": [],
+      "summary": "The Test Architect's required item: the 466 engine.py mutants T1 never ran. All 466 ran under cosmic-ray: 343 killed, 62 killed after new tests, 61 argued equivalent, 0 open. One design drift was found and fixed red-first: the kill-retry backoff capped at 60 s against the design's 30 s (red 70531dc, fix e10b1e9). T10 also found that tools/mutate_check.py can leave a stale mutant .pyc.",
+      "tags": [
+        "proof",
+        "findings",
+        "mutation",
+        "cosmic-ray",
+        "T10",
+        "engine"
+      ],
+      "links": [
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        },
+        {
+          "to": "mutation-record-t1",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "e4181c96ac7770e101f6c37c5609c451a81a83eedb0d3bc0d531be0d797508b7"
+    },
+    {
       "id": "findings-t11-verify-later-pass",
       "path": "docs/proof/findings-T11.md",
       "title": "Findings → tests: track T11 verify-later-pass",
@@ -1632,7 +1664,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "74d6ca37f667c55f1070984fec5b654ab73f80e2d3aaf906a215bb621bb87e6c"
+      "sourceSha256": "0d927c36df11fa27c472e76cd426693b10c146d797364dfc7719e1ef6d5cf1f0"
     },
     {
       "id": "spec-harness-bench",
@@ -1786,5 +1818,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "2d589353cdde04abbf121e31b3aa9044dd848a4f1372c7e89c9d02844770ede5"
+  "graphSha256": "4ea924cd40dd7b67228132ee62b0a00239d4bdd1246809f758b51c1461371fb6"
 };

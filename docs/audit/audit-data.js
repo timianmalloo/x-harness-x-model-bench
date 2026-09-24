@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T09:29:15Z",
+  "generated": "2026-09-24T10:38:20Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -774,6 +774,36 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-09-24T09:26:42Z",
       "duration_seconds": 153.0
+    },
+    {
+      "id": "al-01M39FXAWBPQC5RN22D49RAE43",
+      "shortname": "join-t10",
+      "datetime": "2026-09-24T10:38:20Z",
+      "session": "coord-opus",
+      "prompt": "the join of track/t10-engine-mutation into impl/phase1",
+      "summary": "T10: cosmic-ray over the 466 engine mutants T1 did not run: 343 killed, 62 after new tests, 61 equivalent, 0 open; design drift KILL_RETRY_CAP 60->30 red 70531dc fix e10b1e9; engine.json 49/49; found mutate_check stale-pyc defect recount_seconds=143 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/proof/findings-T10.md",
+        "docs/notes/mutation-record-t1.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Clear the Test Architect's required item (engine mutation bar)",
+      "done_when": "join green; red re-run; spot-checked mutants agree; 0 open mutants recorded",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-24T10:35:56Z",
+      "duration_seconds": 144.0
     }
   ],
   "changes": [
