@@ -288,7 +288,7 @@ class Engine:
             if a.proc is None or a.ended or a.kill_reason:
                 return
             a.kill_reason = reason
-            a.proc.job.terminate()
+            _job_query(a.proc.job.terminate, None)  # a failed kill never stops the engine thread; the worker confirms
 
     def _check_budgets(self) -> None:
         now = time.monotonic()
@@ -415,7 +415,8 @@ class Engine:
                 exit_status, confirmed = self._end_process(cp)
                 drain.join(timeout=5)
                 ended = {"kind": "attempt.process_ended", "cell_id": cid, "exit_status": -1 if exit_status is None else exit_status,
-                         "confirmed": int(confirmed), "peak_memory": cp.job.peak_memory(), "cpu_ms": cp.job.cpu_time_ms()}
+                         "confirmed": int(confirmed), "peak_memory": _job_query(cp.job.peak_memory, None),
+                         "cpu_ms": _job_query(cp.job.cpu_time_ms, None)}  # null: not recorded, never a zeroed guess
             finally:
                 with a.lock:
                     cp.close()
@@ -430,14 +431,15 @@ class Engine:
         except OSError:
             pass
         deadline = time.monotonic() + self.cfg.end_grace
-        while cp.job.active() and time.monotonic() < deadline:
+        while _job_query(cp.job.active, 1) and time.monotonic() < deadline:
             time.sleep(0.1)
-        confirmed = cp.terminate_and_confirm(timeout=self.params["kill_escalation"])
+        confirmed = _confirm(cp, self.params["kill_escalation"])
         if not confirmed:  # a kill that never takes effect: logged once, retried with capped backoff, the slot held
-            log.error("kill unconfirmed; retrying", extra={"error_code": "HB-RUN-002", "pids": sorted(cp.job.pids())})
+            log.error("kill unconfirmed; retrying", extra={"error_code": "HB-RUN-002",
+                                                           "pids": _job_query(lambda: sorted(cp.job.pids()), [])})
         wait = 1.0
         while not confirmed:
-            confirmed = cp.terminate_and_confirm(timeout=wait)
+            confirmed = _confirm(cp, wait)
             wait = min(wait * 2, KILL_RETRY_CAP)
         try:
             return cp.wait(timeout=10), confirmed
@@ -499,6 +501,19 @@ def _beating(lock: oslock.RunLock, interval: float) -> Iterator[None]:
     finally:
         stop.set()
         thread.join()
+
+
+def _job_query(query, failed):
+    """A job query, or `failed` when it raises OSError (procs raises from the last Win32 error, T3-5)."""
+    try:
+        return query()
+    except OSError:
+        return failed
+
+
+def _confirm(cp: procs.CellProcess, timeout: float) -> bool:
+    """terminate_and_confirm; a failed job query means the kill is not confirmed (the slot stays held)."""
+    return _job_query(lambda: cp.terminate_and_confirm(timeout=timeout), False)
 
 
 def _usage_per_model(entries: list[normalize.TurnUsage]) -> dict[str, dict[str, int]]:
