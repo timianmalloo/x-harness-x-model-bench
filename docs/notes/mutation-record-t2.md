@@ -115,4 +115,41 @@ The **mutated line** column is the mutant's diff: the original line is at the lo
 
 - **E12, E23 and E28–E32 rest on CPython interning.** They would become live on an implementation that does not intern those constants. The bench runs on CPython (measured here: 3.14.6). No other interpreter was tried.
 - **E3, E10, E15, E21, E22 and E29 rest on closed sets:** event kinds, `USAGE_SOURCES` and finding levels. Adding a kind, a source or a level that sorts differently turns them into real mutants. Re-run cosmic-ray whenever one of those sets changes.
-- **This record is current while `git diff 2263575 HEAD -- src/harness_bench/ledger.py src/harness_bench/views.py src/harness_bench/grade` is empty** (T7's check). A later change to those modules needs a re-run.
+- **This record is current while `git diff 2263575 HEAD -- src/harness_bench/ledger.py src/harness_bench/views.py src/harness_bench/grade` is empty** (T7's check). A later change to those modules needs a re-run. *Superseded by the addendum below.*
+
+## Addendum: T11 (`views.verify`, 2026-09-24)
+
+*Transcribed by the Coordinator from track T11's report.*
+
+Track T11 changed `views.py` inside `verify` only. `git diff 2263575 HEAD -- src/harness_bench/views.py` is one hunk in `def verify`, +4/-1. `ledger.py` and `grade/**` are unchanged. So the record above stays current for them and for every other function in `views.py`.
+
+| item | value |
+| --- | --- |
+| tool | cosmic-ray 8.7.0; `PYTHONUTF8=1`; an absolute interpreter path per shard |
+| `src` SHA | `bdcd2ef`. Survivors were re-run at `98414f5`, and `git diff --quiet bdcd2ef 98414f5 -- src` exits 0 |
+| scope | `verify` only, `views.py:427-466` by AST line range: 98 of 790 mutants. The rest were marked SKIPPED |
+| tests | `test_views`, `test_verify`, `test_grade` (`-x -q -p no:cacheprovider`); the baseline passed 132 in every shard |
+| execution | 4 detached worktrees `C:/Projects/bench-test/cr-t11-{0..3}`, in-scope mutants split `idx % 4`. `git status -- src` was clean in each after every phase, and the worktrees were removed |
+| result | 98 mutants, 93 killed, 5 survived and all equivalent; 0 timeout, 0 incompetent, **0 open** |
+
+Phase 1 at `bdcd2ef`: 90 killed, 8 survived. Three survivors were real gaps, and `98414f5` kills them:
+- `views.py:446:19` Eq_GtE, two jobs: a warning returned before `load()` and the archive checks;
+- `views.py:464:15` ExceptionReplacer: the first bad archive raised instead of being reported.
+
+Both are also pinned in `tests/mutations/views.json`.
+
+**Flag:** T2's record lists neither of those `verify` mutants as equivalent, so it counted them killed. Under these three test files they survived. The likely cause is T2's survivor re-run with extra test files; this is not verified. They are now killed by `test_verify.py` itself.
+
+**Equivalent (T11):**
+
+| id | location | operator | mutant | argument |
+| --- | --- | --- | --- | --- |
+| T11-E1 | `views.py:439:24` | Eq_Is | `if fact is "events" and report.sealed:` | `fact` comes only from the module constant `FACTS`. Its identifier-like literals are interned like `"events"`, so `is` is `==` |
+| T11-E2 | `views.py:443:19` | Eq_Is | `if any(f.level is "error" for f in out):` | as E28: `level` is only the literal `"error"` or `"warning"`, checked by grepping every `Finding(` in `src` |
+| T11-E3 | `views.py:443:19` | Eq_Is | as T11-E2 | as E28 (a second job, as E30) |
+| T11-E4 | `views.py:446:19` | Eq_Is | as T11-E2, the second check | as E28 |
+| T11-E5 | `views.py:446:19` | Eq_LtE | `if any(f.level <= "error" for f in out):` | as E29 |
+
+T2's E28–E32 at `views.py:440/443` now sit at `443/446`, three lines lower.
+
+**This record, with this addendum, is current while `git diff 98414f5 HEAD -- src/harness_bench/ledger.py src/harness_bench/views.py src/harness_bench/grade` is empty.**
