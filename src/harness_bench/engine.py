@@ -135,14 +135,15 @@ class Engine:
         stamped = ledger.stamp(record)
         try:
             return self.writers[fact].append(stamped)
-        except Exception as exc:  # the ledger cannot be written: stop launching, the run is incomplete
+        except OSError as exc:  # a write or fsync failed: the ledger cannot be written; stop launching, run incomplete
             self.broken = True
-            log.error("ledger append failed", extra={"error_code": "HB-RUN-001", "detail": str(exc)})
+            log.error("ledger append failed", extra={"error_code": "HB-RUN-001", "detail": str(exc), "fact": fact})
             raise BenchError("HB-RUN-001", f"append to {fact} failed: {exc}") from exc
 
     def record(self, fact: str, record: dict) -> dict:
         """Called by a worker: hand the record to the engine thread and wait until it is durable. Once the ledger
         is broken or the engine has ended, it fails at once (HB-RUN-001): no worker ever waits on a dead drain."""
+        ledger.canonical(ledger.stamp(record))  # a bad record fails its own worker (TypeError), never the run
         future: Future = Future()
         while not self.closed:
             if self.broken:
@@ -174,7 +175,7 @@ class Engine:
                 continue
             try:
                 future.set_result(self._append_now(fact, record))
-            except BenchError as exc:
+            except (BenchError, TypeError, ValueError) as exc:  # handed to the worker; only an OSError broke the run
                 future.set_exception(exc)
             if record.get("kind") == "cell.prompt_sent":
                 a = self.active.get(record["cell_id"])
@@ -382,11 +383,13 @@ class Engine:
             self.record("events", {"kind": "cell.prompt_sent", "cell_id": cid})
 
         exit_status: int | None = None
+        started = False
         try:
             self.record("events", {"kind": "attempt.process_started", "cell_id": cid, "attempt": 1, "pid": cp.pid,
                                    "created_at": host.creation_time(cp.pid), "harness": launcher.harness,
                                    "build_version": build.get("version"), "build_sha256": build.get("sha256"),
                                    "credential_kind": "subscription login (copied)", "network_mode": "unrestricted"})
+            started = True
             result = driver.run_turn(cp, cwd=ws, prompt=self.plan["tasks"][cell["task"]]["prompt"], mode=launcher.mode,
                                      handshake_timeout=self.params["handshake_timeout"], before_send=barrier)
         finally:
@@ -401,7 +404,8 @@ class Engine:
                 with a.lock:
                     cp.close()
                 launcher.clean(home)
-            self.record("events", ended)
+            if started:  # an unrecorded start has no recorded end
+                self.record("events", ended)
         return result, exit_status, bytes(tail)
 
     def _end_process(self, cp: procs.CellProcess) -> tuple[int | None, bool]:
