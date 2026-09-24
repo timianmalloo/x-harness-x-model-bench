@@ -82,5 +82,33 @@
   "find": "else \"not recorded\"",
   "replace": "else \"\"",
   "tests": ["tests/test_report.py::test_the_header_shows_recorded_facts_and_not_recorded_for_the_rest"]
+ },
+ {
+  "name": "the exact-value credential scan ignores the supplied values",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    if credential_values:\n        found += sum(1 for v in encodings(credential_values) if v and v in text)\n",
+  "replace": "",
+  "tests": ["tests/test_report.py::test_a_rotated_token_found_only_in_an_archived_home_is_refused"]
+ },
+ {
+  "name": "the exact-value scan skips the base64 and URL-encoded forms",
+  "file": "src/harness_bench/report/html.py",
+  "find": "found += sum(1 for v in encodings(credential_values) if v and v in text)",
+  "replace": "found += sum(1 for v in credential_values if v and v in text)",
+  "tests": ["tests/test_report.py::test_the_rotated_tokens_base64_and_url_encoded_forms_are_also_refused"]
+ },
+ {
+  "name": "an archived home's leftover credential file is never read",
+  "file": "src/harness_bench/report/credentials.py",
+  "find": "    for home in sorted(archive_dir.glob(\"*/attempt-*/home\")):\n",
+  "replace": "    for home in ():\n",
+  "tests": ["tests/test_report.py::test_the_exact_value_scan_collects_a_leftover_token_from_an_archived_home"]
+ },
+ {
+  "name": "a string value below the minimum length is dropped without checking length at all",
+  "file": "src/harness_bench/report/credentials.py",
+  "find": "        if len(data) >= MIN_VALUE_LEN:\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_report.py::test_the_exact_value_scan_collects_a_leftover_token_from_an_archived_home"]
  }
 ]
