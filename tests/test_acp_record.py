@@ -49,16 +49,18 @@ def _run(cwd: Path, argv: list[str], fake: str) -> dict:
         cell.close()
     agent_files = {p.name: p.read_bytes() for p in cwd.glob(".fake-*")}  # what the agent itself received
     return {"result": result, "stdin": bytes(cell.proc.stdin.data), "stdout": bytes(cell.proc.stdout.data),
-            "agent_files": agent_files}
+            "agent_files": agent_files, "cwd": cwd}
 
 
 def _norm(run: dict) -> dict:
-    """The fake names its session with a fresh uuid, the one field two runs cannot share; timings vary."""
+    """Two runs cannot share the fake's fresh session uuid or their own cwd (sent in session/new); timings vary."""
     sid = run["result"].session_id
     assert sid
     fields = {k: v for k, v in dataclasses.asdict(run["result"]).items() if k not in TIMINGS | {"session_id"}}
+    cwd = json.dumps(str(run["cwd"]))[1:-1].encode()
+
     def swap(data: bytes) -> bytes:
-        return data.replace(sid.encode(), b"<sid>")
+        return data.replace(sid.encode(), b"<sid>").replace(cwd, b"<cwd>")
 
     return {"result": fields, "stdin": swap(run["stdin"]), "stdout": swap(run["stdout"]),
             "agent_files": {k: swap(v) for k, v in run["agent_files"].items()}}
