@@ -1,0 +1,16 @@
+[
+ {
+  "name": "T8-1 codex first_user_text stops skipping the AGENTS.md instructions block",
+  "file": "src/harness_bench/telemetry/codex.py",
+  "find": "    return stripped.startswith((\"<\", \"# AGENTS.md instructions for \"))\n",
+  "replace": "    return stripped.startswith(\"<\")\n",
+  "tests": ["tests/test_telemetry.py::test_codex_first_user_text_skips_the_agents_md_instructions_block"]
+ },
+ {
+  "name": "T8-2 cli._resolve_paths stops resolving path arguments to absolute",
+  "file": "src/harness_bench/cli.py",
+  "find": "            setattr(args, name, str(Path(value).resolve()))\n",
+  "replace": "            pass\n",
+  "tests": ["tests/test_cli.py::test_a_relative_tools_dir_resolves_absolute_and_the_pack_on_build_succeeds"]
+ }
+]
