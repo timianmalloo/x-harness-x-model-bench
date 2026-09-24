@@ -385,6 +385,21 @@ def test_the_circuit_breaker_stops_launching_once(base):  # T1-7: CIRCUIT_BREAKE
     assert [e["code"] for e in events if e["kind"] == "run.launch_stopped"] == ["HB-CELL-114"]
 
 
+def test_the_circuit_breaker_fires_at_its_threshold_not_before(base):  # CIRCUIT_BREAKER = 3 (a cosmic-ray survivor)
+    p = _plan(n_cells=5, parallelism=1)
+    _, events, _ = _run(base, p, FakeLauncher({}, missing_exe=True))
+    assert sum(1 for e in events if e["kind"] == "cell.launch_intent") == engine.CIRCUIT_BREAKER
+
+
+def test_a_drain_with_nothing_queued_returns_at_its_deadline(base):  # the loop never stalls on an empty inbox
+    config = engine.EngineConfig(run_dir=base / "r", cells_root=base / "c", launchers={}, build_workspace=_build_workspace, grade=None)
+    eng = engine.Engine(_plan(n_cells=1), config)
+    started = time.monotonic()
+    eng._drain(0)
+    eng._drain(0.2)
+    assert time.monotonic() - started < 0.6
+
+
 def test_no_launch_after_a_stop_while_another_cell_still_runs(base):  # NoLaunchAfterStop, a slot freeing up
     p = _plan(n_cells=3, parallelism=2, budget=60)
     a, b, c = (cell["cell_id"] for cell in p["cells"])
@@ -426,11 +441,12 @@ def test_credentials_are_gone_after_a_spawn_failure(base):  # T-CELL-credclean, 
 def test_a_failing_argv_env_leaves_no_credential_copy(base):  # T1-2: argv_env runs before seed
     class NoArgv(FakeLauncher):
         def argv_env(self, cell, home, traceparent):
-            raise RuntimeError("profile cannot build argv")
+            raise RuntimeError("profile cannot build argv " + "x" * 1000)
 
     p = _plan(n_cells=1)
     _, events, config = _run(base, p, NoArgv({}))
-    assert _outcomes(events)[p["cells"][0]["cell_id"]]["cause"] == "unclassified"
+    out = _outcomes(events)[p["cells"][0]["cell_id"]]
+    assert out["cause"] == "unclassified" and len(out["detail"]) == 300  # the detail is capped, not dropped
     assert not list(config.cells_root.rglob(".credentials.json"))
 
 
