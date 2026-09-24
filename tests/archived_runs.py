@@ -70,7 +70,8 @@ def make_run(root: Path, tmp_path: Path, cells: dict[str, str | None], harness: 
             "profiles": {harness: plan_mod.profile_record(root, harness)},
             "cells": [{"cell_id": cid, "label": f"X1.{combos.get(cid, 'c')}.pack-off.r1", "task": "X1",
                        "task_version": plan_mod.task_version_hash(root / "tasks" / "X1"), "harness": harness, "model": model,
-                       "combo": combos.get(cid, "c"), "pack": "off", "rep": 1} for cid in (*cells, *unstarted)]}
+                       "combo": combos.get(cid, "c"), "pack": "off", "rep": 1, "budget_seconds": 300}
+                      for cid in (*cells, *unstarted)]}
     plan["plan_hash"] = plan_mod.plan_hash(plan)
     (run_dir / "plan.json").write_text(json.dumps(plan), encoding="utf-8")
     archived = set(cells) if archived is None else archived

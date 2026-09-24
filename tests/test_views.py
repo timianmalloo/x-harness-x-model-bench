@@ -125,6 +125,14 @@ def test_a_cell_that_never_started_is_listed_as_not_started(root, tmp_path):
     assert (z.outcome, z.validity, z.wall_ms) == ("not started", "not started", views.Measure(None, "cell never started"))
 
 
+def test_a_launched_cell_with_no_outcome_is_not_called_not_started(root, tmp_path):  # an engine crash (run incomplete)
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, unstarted=("z",))
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
+        ev.append({"kind": "cell.launch_intent", "cell_id": "z"})
+    z = _cell(views.load(run_dir), "z")
+    assert (z.outcome, z.validity) == ("no outcome", "no outcome")
+
+
 # --- tokens, time split and cost (US-22, US-23, US-24, US-27) ---------------------------------------
 
 

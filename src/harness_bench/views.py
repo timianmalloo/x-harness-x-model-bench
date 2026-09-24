@@ -84,10 +84,10 @@ class CellView:
     pack: str
     harness: str
     model: str
-    outcome: str  # completed | timed_out | failed | not started
+    outcome: str  # completed | timed_out | failed | not started | no outcome (launched; the run is incomplete)
     cause: str | None  # the cause's report label
     code: str | None
-    validity: str  # valid | invalid (<attribution>) | invalid (no model call) | invalid (model mismatch) | not graded | not started
+    validity: str  # valid | invalid (<attribution>) | invalid (no model call) | invalid (model mismatch) | not graded | not started | no outcome
     validity_code: str | None
     wall_ms: Measure
     model_ms: Measure
@@ -182,7 +182,7 @@ def busy_ms(calls: list[dict]) -> Measure:
 
 
 def _wall(events: dict[str, dict]) -> Measure:
-    if "cell.outcome" not in events:
+    if "cell.launch_intent" not in events:
         return Measure(None, "cell never started")
     start, end = events.get("attempt.process_started", {}), events.get("attempt.process_ended", {})
     if "mono_ns" not in start or "mono_ns" not in end:
@@ -213,9 +213,9 @@ def _idle(wall: Measure, model: Measure, tool: Measure) -> Measure:
     return Measure(idle) if idle >= 0 else Measure(None, "model and tool time exceed wall time")
 
 
-def _validity(cell: dict, prof: dict, outcome: dict | None, source: str, served: set[str] | None) -> tuple[str, str | None]:
+def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: set[str] | None) -> tuple[str, str | None]:
     if outcome is None:
-        return "not started", None
+        return state, None  # not started | no outcome
     cause = Cause[outcome["cause"]] if outcome.get("cause") else None
     if cause is not None and cause.invalidates:
         return f"invalid ({cause.attribution})", cause.code
@@ -251,11 +251,12 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     wall = _wall(events)
     model = _model_time(source, calls)
     tool = Measure(None, "not graded") if tools is None else busy_ms(tools)
-    validity, validity_code = _validity(cell, prof, outcome, source, served)
+    state = outcome["outcome"] if outcome else ("no outcome" if "cell.launch_intent" in events else "not started")
+    validity, validity_code = _validity(cell, prof, outcome, state, served)
     cause = Cause[outcome["cause"]] if outcome and outcome.get("cause") else None
     return CellView(
         cell_id=cid, label=cell.get("label", cid), combo=cell["combo"], pack=cell["pack"], harness=cell["harness"], model=cell["model"],
-        outcome=outcome["outcome"] if outcome else "not started", cause=cause.label if cause else None,
+        outcome=state, cause=cause.label if cause else None,
         code=cause.code if cause else None, validity=validity, validity_code=validity_code,
         wall_ms=wall, model_ms=model, tool_ms=tool, idle_ms=_idle(wall, model, tool),
         tokens=totals or None, tokens_reason=tokens_reason,
