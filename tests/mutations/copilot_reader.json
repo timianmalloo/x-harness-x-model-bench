@@ -16,8 +16,8 @@
  {
   "name": "the model taken from the pin or currentModel",
   "file": "src/harness_bench/telemetry/copilot.py",
-  "find": "    for model in sorted(model_metrics):",
-  "replace": "    for model in sorted(model_metrics):\n        model = as_str(shutdown_data.get(\"currentModel\")) or model",
+  "find": "        ex.model_calls.append(ModelCall(n, model, uncached_input, cache_read, cache_write, output, reasoning,",
+  "replace": "        ex.model_calls.append(ModelCall(n, as_str(shutdown_data.get(\"currentModel\")) or model, uncached_input, cache_read, cache_write, output, reasoning,",
   "tests": ["tests/test_telemetry_copilot.py::test_us11_a_renamed_modelmetrics_key_is_not_the_pinned_model"]
  },
  {
@@ -25,7 +25,7 @@
   "file": "src/harness_bench/telemetry/copilot.py",
   "find": "    if not (version_seen and version_ok):",
   "replace": "    if False:",
-  "tests": ["tests/test_telemetry_copilot.py::test_f6_an_unsupported_version_gates_model_calls_and_hooks"]
+  "tests": ["tests/test_telemetry_copilot.py::test_f6_an_unsupported_or_wrongly_typed_version_gates_model_calls_and_hooks"]
  },
  {
   "name": "reasoning dropped",
@@ -47,5 +47,69 @@
   "find": "                text = as_str(data.get(\"content\"))",
   "replace": "                text = as_str(data.get(\"transformedContent\"))",
   "tests": ["tests/test_telemetry_copilot.py::test_us10_content_never_transformed_content"]
+ },
+ {
+  "name": "TA1: us14_valid ignores hook denials",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "    return not any(r.get(\"outcome_code\") == \"denied\" for r in tool_calls) and any(r.get(\"ok\") == 1 for r in tool_calls)",
+  "replace": "    return any(r.get(\"ok\") == 1 for r in tool_calls)",
+  "tests": ["tests/test_telemetry_copilot.py::test_us14_one_denial_among_successes_is_not_valid"]
+ },
+ {
+  "name": "TA1b: us14_valid uses or instead of and (the positive control alone would pass)",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "    return not any(r.get(\"outcome_code\") == \"denied\" for r in tool_calls) and any(r.get(\"ok\") == 1 for r in tool_calls)",
+  "replace": "    return not any(r.get(\"outcome_code\") == \"denied\" for r in tool_calls) or any(r.get(\"ok\") == 1 for r in tool_calls)",
+  "tests": ["tests/test_telemetry_copilot.py::test_us14_no_tool_calls_at_all_is_not_valid_by_default"]
+ },
+ {
+  "name": "TA2: single_request forced False",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "        single_request = requests == 1",
+  "replace": "        single_request = False",
+  "tests": ["tests/test_telemetry_copilot.py::test_a_single_request_report_takes_the_shutdown_timestamp"]
+ },
+ {
+  "name": "TA8: TOOL_CLASS mapping ignored",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "def _tool_class(name: str) -> str:\n    return TOOL_CLASS.get(name, \"other\")",
+  "replace": "def _tool_class(name: str) -> str:\n    return \"other\"",
+  "tests": ["tests/test_telemetry_copilot.py::test_tool_class_mapping"]
+ },
+ {
+  "name": "TA9: tool_call_rows without outcome_code",
+  "file": "src/harness_bench/telemetry/normalize.py",
+  "find": "             \"ok\": None if t.ok is None else int(t.ok), \"outcome_code\": t.outcome_code} for t in ex.tool_calls]",
+  "replace": "             \"ok\": None if t.ok is None else int(t.ok)} for t in ex.tool_calls]",
+  "tests": ["tests/test_telemetry_copilot.py::test_us14_one_denial_among_successes_is_not_valid",
+            "tests/test_telemetry_copilot.py::test_model_call_and_tool_call_rows_carry_requests_and_outcome_code"]
+ },
+ {
+  "name": "TA10: model_call_rows without requests",
+  "file": "src/harness_bench/telemetry/normalize.py",
+  "find": "             \"reasoning\": c.reasoning, \"start\": c.start, \"end\": c.end, \"requests\": c.requests} for c in ex.model_calls]",
+  "replace": "             \"reasoning\": c.reasoning, \"start\": c.start, \"end\": c.end} for c in ex.model_calls]",
+  "tests": ["tests/test_telemetry_copilot.py::test_model_call_and_tool_call_rows_carry_requests_and_outcome_code"]
+ },
+ {
+  "name": "F1 (Codex review): toolCallId correlation pops the wrong pending call",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "                tool = open_tools.pop(tool_call_id)",
+  "replace": "                tool = open_tools.pop(next(iter(open_tools)))",
+  "tests": ["tests/test_telemetry_copilot.py::test_tool_calls_pair_by_toolcallid_even_when_completions_are_out_of_order"]
+ },
+ {
+  "name": "F2 (Codex review): outcome_code leaks on success",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "                outcome_code = None if ok is True else as_str(error.get(\"code\"))",
+  "replace": "                outcome_code = as_str(error.get(\"code\"))",
+  "tests": ["tests/test_telemetry_copilot.py::test_outcome_code_is_null_on_success_even_with_a_stale_error_code"]
+ },
+ {
+  "name": "an empty modelMetrics falls back to a leaked default row",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "    model_metrics = as_dict(shutdown_data.get(\"modelMetrics\"))",
+  "replace": "    model_metrics = as_dict(shutdown_data.get(\"modelMetrics\")) or {\"leaked-default\": {}}",
+  "tests": ["tests/test_telemetry_copilot.py::test_us11_an_emptied_modelmetrics_yields_no_model_calls"]
  }
 ]

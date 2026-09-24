@@ -5,21 +5,25 @@ kept as the negative control until a revision-95 capture replaces it for every o
 
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
+import re
 from pathlib import Path
 
 import pytest
 
+from harness_bench import profiles
 from harness_bench.telemetry import copilot, normalize
 
 FIX = Path(__file__).parent / "fixtures"
 COPILOT_FIX = FIX / "native" / "copilot"
 OFF = next((COPILOT_FIX / "off").rglob("events.jsonl"))
 ON = next((COPILOT_FIX / "on").rglob("events.jsonl"))  # revision-92 pack-on (negative control)
+PROVENANCE = json.loads((COPILOT_FIX / "provenance.json").read_text(encoding="utf-8"))
 
-# provenance.json: capture.prompt_sha256, and each arm's shutdown/acp_prompt_usage (Leader capture window 1)
-PROMPT_SHA256 = "802dfde4c609549fd864c9b6cdc5c65bd5a5a2fe1f43246563d00c5e4dd9dc49"
+# provenance.json: capture.prompt_sha256 (the same prompt both arms; tasks/X1/prompt.md's own hash)
+PROMPT_SHA256 = PROVENANCE["capture"]["prompt_sha256"]
 
 
 def _us10_hash(text: str) -> str:
@@ -39,6 +43,18 @@ def _write(tmp_path: Path, lines: list[dict], session_id: str = "syn-sid") -> Pa
     path = d / "events.jsonl"
     path.write_text("\n".join(json.dumps(line) for line in lines) + "\n", encoding="utf-8")
     return path
+
+
+def _load_events(path: Path) -> list[dict]:
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
+def _system_message_markers(path: Path) -> list[str]:
+    """The scrubbed `system.message` line's own `markers=[...]` annotation (`scrub_sample.py`): a
+    fixture-provenance fact, never a US-9 proof (design section 13)."""
+    content = next(r["data"]["content"] for r in _load_events(path) if r["type"] == "system.message")
+    match = re.search(r"markers=(\[.*\])>", content)
+    return ast.literal_eval(match.group(1)) if match else []
 
 
 def _row(kind: str, data: dict, ts: str = "2026-01-01T00:00:00.000Z", **extra) -> dict:
@@ -92,10 +108,13 @@ def test_on_yields_one_row_per_model_in_the_last_shutdown_with_requests():
     assert ex.missing == []
 
 
-@pytest.mark.parametrize("path, total_tokens", [(OFF, 59501), (ON, 528166)], ids=["off", "on"])
-def test_golden_sample_cross_check_against_the_acp_usage_oracle(path, total_tokens):  # R-26 C3
-    """Σ(uncached, cache_read, cache_write, output) == the independent oracle's ACP usage.totalTokens
-    (provenance.json's acp_prompt_usage); reasoning is a component of output and is not added."""
+@pytest.mark.parametrize("arm, path", [("off", OFF), ("on", ON)])
+def test_golden_sample_cross_check_against_the_acp_usage_oracle(arm, path):  # R-26 C3
+    """Σ(uncached, cache_read, cache_write, output) == the independent oracle's ACP usage.totalTokens,
+    read from provenance.json's own `facts.<arm>.acp_prompt_usage.totalTokens` (never a hardcoded
+    number, so a re-capture can't silently drift from what this test checks); reasoning is a
+    component of output and is not added."""
+    total_tokens = PROVENANCE["facts"][arm]["acp_prompt_usage"]["totalTokens"]
     call = copilot.read(path).model_calls[0]
     assert call.uncached_input + call.cache_read + call.cache_write + call.output == total_tokens
 
@@ -128,6 +147,20 @@ def test_off_tool_calls_succeed_and_on_rev92_are_all_denied():
     assert len(on) == 8 and all((t.ok, t.outcome_code) == (False, "denied") for t in on)
     assert {t.name for t in on} == {"skill", "glob", "powershell", "view", "rg"}
     assert next(t.tool_class for t in on if t.name == "skill") == "other"  # C: skill is other (design 4.4)
+
+
+def test_r14c1_skill_tool_calls_requested_on_rev92_none_off():  # R-14 c1: skill calls, derived from tool_calls
+    assert sum(t.name == "skill" for t in copilot.read(ON).tool_calls) == 2
+    assert not any(t.name == "skill" for t in copilot.read(OFF).tool_calls)
+
+
+@pytest.mark.parametrize("name, cls", [
+    ("powershell", "shell"), ("bash", "shell"), ("shell", "shell"), ("apply_patch", "edit"), ("write", "edit"),
+    ("edit", "edit"), ("create", "edit"), ("view", "read"), ("glob", "read"), ("rg", "read"), ("grep", "read"),
+    ("skill", "other"), ("some-unknown-tool", "other"),
+])
+def test_tool_class_mapping(name, cls):  # TA8
+    assert copilot._tool_class(name) == cls
 
 
 # US-10: the first user message, the normaliser, the sub-agent and later-message edge cases -----------
@@ -167,20 +200,22 @@ def test_us10_takes_the_first_of_two_main_user_messages(tmp_path):
 # US-11: a renamed modelMetrics key, and an emptied modelMetrics ---------------------------------------
 
 def test_us11_a_renamed_modelmetrics_key_is_not_the_pinned_model(tmp_path):
-    """Only the key under `session.shutdown.data.modelMetrics` is renamed; `currentModel` (present on
-    the real record, holding the pin) and every `assistant.message.model` are untouched. The reader
-    must still name the model from the `modelMetrics` key, never from the pin or `currentModel` --
-    otherwise a real model mismatch goes undetected (US-11 clause 3; would feed `views`
-    `invalid (model mismatch)` once wired, W1-COP-I)."""
-    metrics = _model_metrics()
-    renamed = {"renamed-model": metrics["gpt-6-sol"]}
-    shutdown = _shutdown(renamed)
-    shutdown["data"]["currentModel"] = "gpt-6-sol"  # the pin, untouched by the mutation
-    path = _write(tmp_path, [_start(), _user("prompt"), shutdown])
+    """The real `off` record, with only the key under `session.shutdown.data.modelMetrics` renamed.
+    `currentModel` (real, holding the pin `gpt-6-sol`), `session.start.data.selectedModel` and every
+    `assistant.message.model` are untouched. The reader must still name the model from the
+    `modelMetrics` key, never from the pin or `currentModel` -- otherwise a real model mismatch goes
+    undetected (US-11 clause 3; would feed `views` `invalid (model mismatch)` once wired, W1-COP-I)."""
+    events = _load_events(OFF)
+    for row in events:
+        if row["type"] == "session.shutdown":
+            row["data"]["modelMetrics"] = {"renamed-model": row["data"]["modelMetrics"].pop("gpt-6-sol")}
+            assert row["data"]["currentModel"] == "gpt-6-sol"  # untouched by the mutation
+    path = _write(tmp_path, events)
     ex = copilot.read(path)
     assert [c.model for c in ex.model_calls] == ["renamed-model"]
     served = normalize.served_models("native_record", ex, [])
     assert "gpt-6-sol" not in served and served == {"renamed-model"}
+    assert not profiles.model_allowed("renamed-model", "gpt-6-sol", [])
 
 
 def test_us11_an_emptied_modelmetrics_yields_no_model_calls(tmp_path):
@@ -191,11 +226,21 @@ def test_us11_an_emptied_modelmetrics_yields_no_model_calls(tmp_path):
 
 # The version gate (F6): fail closed on an unsupported version, or on no session.start -----------------
 
-def test_f6_an_unsupported_version_gates_model_calls_and_hooks(tmp_path):
-    path = _write(tmp_path, [_start(version=2), _user("prompt"), _row("hook.start", {"hookType": "x"}),
+@pytest.mark.parametrize("version", [2, True, 1.0], ids=["unsupported-int", "bool-true", "float-one"])
+def test_f6_an_unsupported_or_wrongly_typed_version_gates_model_calls_and_hooks(tmp_path, version):
+    # `True`/`1.0` are the Minor: `== 1` (or a bare `in {1}`) would wrongly accept them since
+    # `bool` is an `int` subclass and `1.0 == 1`; the gate requires `type(version) is int`.
+    path = _write(tmp_path, [_start(version=version), _user("prompt"), _row("hook.start", {"hookType": "x"}),
                               _row("hook.end", {"hookType": "x", "success": True}), _shutdown(_model_metrics())])
     ex = copilot.read(path)
     assert ex.model_calls == [] and (ex.hook_starts, ex.hook_failures) == (None, None)
+    assert ("HB-TEL-001", "events.version") in {(m.code, m.field) for m in ex.missing}
+
+
+def test_f6_an_unhashable_version_does_not_crash(tmp_path):  # T-TEL-fuzz D2 regression: version=[1]
+    path = _write(tmp_path, [_start(version=[1]), _user("prompt"), _shutdown(_model_metrics())])
+    ex = copilot.read(path)  # must not raise TypeError: unhashable type: 'list'
+    assert ex.model_calls == []
     assert ("HB-TEL-001", "events.version") in {(m.code, m.field) for m in ex.missing}
 
 
@@ -260,6 +305,71 @@ def test_last_shutdown_wins_over_first(tmp_path):
     assert call.requests == 9 and call.uncached_input == 9
 
 
+def test_a_single_request_report_takes_the_shutdown_timestamp(tmp_path):  # TA2
+    """`start`/`end` are set only for a single-request report (`requests == 1`), from the shutdown
+    row's own timestamp -- Copilot keeps no per-call clock, so a multi-request report's model time
+    stays NOT_RECORDED (design section 3, and the golden-sample tests above)."""
+    shutdown = _shutdown(_model_metrics(count=1), ts="2026-01-01T00:12:34.000Z")
+    path = _write(tmp_path, [_start(), _user("prompt"), shutdown])
+    ex = copilot.read(path)
+    call = ex.model_calls[0]
+    assert call.requests == 1
+    assert call.start == call.end == "2026-01-01T00:12:34.000Z"
+
+
+def test_session_id_falls_back_to_the_session_state_directory_name(tmp_path):  # design section 4.4
+    path = _write(tmp_path, [_row("session.start", {"version": 1}), _user("prompt"), _shutdown(_model_metrics())],
+                  session_id="dir-sid")
+    assert copilot.read(path).session_id == "dir-sid"
+
+
+def test_fixture_provenance_system_message_markers():  # design section 13: a provenance fact, not a US-9 proof
+    assert _system_message_markers(OFF) == []
+    assert _system_message_markers(ON) == ["AI-Forward Pack", "Agent Knowledge Pack", "Rigor Protocol"]
+
+
+def test_model_call_and_tool_call_rows_carry_requests_and_outcome_code():  # TA9, TA10
+    off_ex = copilot.read(OFF)
+    model_rows = normalize.model_call_rows("r1", "c1", off_ex.session_id, off_ex, "x")
+    assert model_rows[0]["requests"] == 5  # a pre-amendment reader's `.get("requests", 1)` would under-count 5x
+
+    on_ex = copilot.read(ON)
+    tool_rows = normalize.tool_call_rows("r1", "c1", on_ex.session_id, on_ex, "x")
+    assert sum(r["outcome_code"] == "denied" for r in tool_rows) == 8
+
+
+# The toolCallId correlation, and outcome_code null on success (Codex cross-vendor review F1/F2) --------
+
+def test_tool_calls_pair_by_toolcallid_even_when_completions_are_out_of_order(tmp_path):  # F1
+    events = [
+        _start(), _user("prompt"),
+        _row("tool.execution_start", {"toolCallId": "A", "toolName": "glob"}, ts="2026-01-01T00:00:01.000Z"),
+        _row("tool.execution_start", {"toolCallId": "B", "toolName": "view"}, ts="2026-01-01T00:00:02.000Z"),
+        _row("tool.execution_complete", {"toolCallId": "B", "success": True}, ts="2026-01-01T00:00:03.000Z"),
+        _row("tool.execution_complete", {"toolCallId": "A", "success": True}, ts="2026-01-01T00:00:04.000Z"),
+        _shutdown(_model_metrics()),
+    ]
+    path = _write(tmp_path, events)
+    ex = copilot.read(path)
+    assert len(ex.tool_calls) == 2  # nothing left open
+    calls = {t.name: t for t in ex.tool_calls}
+    assert (calls["glob"].start, calls["glob"].end) == ("2026-01-01T00:00:01.000Z", "2026-01-01T00:00:04.000Z")
+    assert (calls["view"].start, calls["view"].end) == ("2026-01-01T00:00:02.000Z", "2026-01-01T00:00:03.000Z")
+
+
+def test_outcome_code_is_null_on_success_even_with_a_stale_error_code(tmp_path):  # F2
+    events = [
+        _start(), _user("prompt"),
+        _row("tool.execution_start", {"toolCallId": "A", "toolName": "glob"}, ts="2026-01-01T00:00:01.000Z"),
+        _row("tool.execution_complete", {"toolCallId": "A", "success": True, "error": {"code": "stale"}},
+             ts="2026-01-01T00:00:02.000Z"),
+        _shutdown(_model_metrics()),
+    ]
+    path = _write(tmp_path, events)
+    ex = copilot.read(path)
+    assert (ex.tool_calls[0].ok, ex.tool_calls[0].outcome_code) == (True, None)
+
+
 # US-14: zero hook denials AND a successful tool call, one named assertion function --------------------
 
 def test_us14_zero_hook_denials_and_a_successful_tool_call():
@@ -274,6 +384,26 @@ def test_us14_zero_hook_denials_and_a_successful_tool_call():
 
 def test_us14_no_tool_calls_at_all_is_not_valid_by_default():  # R-27 c1: the positive control
     assert copilot.us14_valid([]) is False
+
+
+def test_us14_one_denial_among_successes_is_not_valid(tmp_path):  # TA1, TA9 (R-27 c2: BOTH halves matter)
+    """A cell can have a successful tool call AND a denied one at the same time (a real cell is not
+    all-or-nothing): the zero-denial half of `us14_valid` must fail it on its own -- the positive
+    control (>=1 `ok==1`) is not enough by itself."""
+    events = [
+        _start(), _user("prompt"),
+        _row("tool.execution_start", {"toolCallId": "ok-1", "toolName": "glob"}, ts="2026-01-01T00:00:01.000Z"),
+        _row("tool.execution_complete", {"toolCallId": "ok-1", "success": True}, ts="2026-01-01T00:00:02.000Z"),
+        _row("tool.execution_start", {"toolCallId": "denied-1", "toolName": "write"}, ts="2026-01-01T00:00:03.000Z"),
+        _row("tool.execution_complete", {"toolCallId": "denied-1", "success": False, "error": {"code": "denied"}},
+             ts="2026-01-01T00:00:04.000Z"),
+        _shutdown(_model_metrics()),
+    ]
+    path = _write(tmp_path, events)
+    ex = copilot.read(path)
+    rows = normalize.tool_call_rows("r1", "c1", ex.session_id, ex, "x")
+    assert any(r["ok"] == 1 for r in rows) and any(r["outcome_code"] == "denied" for r in rows)
+    assert copilot.us14_valid(rows) is False
 
 
 # Bounds: the shared MAX_LINE/MAX_FILE caps apply unchanged to the Copilot reader -----------------------

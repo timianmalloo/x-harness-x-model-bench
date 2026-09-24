@@ -16,13 +16,25 @@ because its record carries the CLI build version, not a distinct format version 
   the shutdown row's own timestamp -- Copilot keeps no per-call clock (design section 3), so a
   multi-request report's model time is NOT_RECORDED.
 - `tool_calls`: `tool.execution_start` paired with `tool.execution_complete` by `toolCallId` (the
-  Correlation Identifier); `outcome_code` is `data.error.code`, null on success or when absent.
+  Correlation Identifier), even when completions arrive interleaved or out of order across several
+  open calls. `outcome_code` is `data.error.code`, but only when the call did not succeed: **null on
+  `success: true`** regardless of a stray `error.code` (`ToolCall.outcome_code`'s own contract), and
+  null too when there is no `error` object.
 - `hook_starts` / `hook_failures` (US-9's live signal, design section 4.5): counted only once the
-  version gate passes -- otherwise, like the model calls, NOT_RECORDED (`None`).
+  version gate passes -- otherwise, like the model calls, NOT_RECORDED (`None`). `tool_calls` and
+  `first_user_text` are **not** gated by the version check (the design scopes the gate to model rows
+  only, section 4.4): a consumer must not treat them as measured when `Extraction.missing` carries
+  `events.version` -- only `model_calls` and the hook counts are NOT_RECORDED in that case.
 - `first_user_text` (US-10): the first `user.message` with no top-level `agentId` (a sub-agent's
   message always carries one; `assume:` confirmed by `session-profile.py:708-716` and the operator-log
   census, O7 revision 2; breaks if a sub-agent's prompt were compared instead -- covered by a synthetic
   sub-agent-first sample). Its `data.content`, never `data.transformedContent` (the scrubbed value).
+- `session_id`: `session.start.data.sessionId`, else the record's own directory name
+  (`session-state/<session id>/events.jsonl`), so a session is still identified when the record itself
+  omits it.
+- The version gate is `type(version) is int and version in SUPPORTED_EVENT_VERSIONS` (never a bare
+  `in`, which raises on an unhashable `version` such as a list -- T-TEL-fuzz D2); a bare `True` or
+  `1.0` fails the gate too (`type(...) is int` excludes `bool` and `float`, unlike `==`).
 """
 
 from __future__ import annotations
@@ -69,7 +81,8 @@ def read(path: Path) -> Extraction:
 
         if kind == "session.start":
             version_seen = True
-            version_ok = data.get("version") in SUPPORTED_EVENT_VERSIONS
+            version = data.get("version")
+            version_ok = type(version) is int and version in SUPPORTED_EVENT_VERSIONS
             if ex.session_id is None:
                 ex.session_id = as_str(data.get("sessionId"))
         elif kind == "user.message":
@@ -89,8 +102,9 @@ def read(path: Path) -> Extraction:
                 success = data.get("success")
                 ok = success if isinstance(success, bool) else None
                 error = as_dict(data.get("error"))
+                outcome_code = None if ok is True else as_str(error.get("code"))
                 ex.tool_calls.append(ToolCall(tool["n"], tool["name"], _tool_class(tool["name"]), tool["start"], stamp, ok,
-                                              as_str(error.get("code"))))
+                                              outcome_code))
         elif kind == "hook.start":
             hook_starts += 1
         elif kind == "hook.end":
@@ -105,6 +119,9 @@ def read(path: Path) -> Extraction:
     for tool in open_tools.values():  # a start with no matching complete (killed turn)
         ex.tool_calls.append(ToolCall(tool["n"], tool["name"], _tool_class(tool["name"]), tool["start"], None, None))
     ex.tool_calls.sort(key=lambda t: t.native_ordinal)
+
+    if ex.session_id is None:  # no session.start, or no sessionId on it: the record's own directory name
+        ex.session_id = path.parent.name
 
     if not (version_seen and version_ok):
         ex.missing.append(MissingField(0, "events.version"))
