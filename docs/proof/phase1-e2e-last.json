@@ -1,42 +1,10 @@
 {
-  "run_id": "e2e-1790239442",
-  "plan_s": 0.40895050000108313,
-  "run_s": 69.4585444000113,
+  "run_id": "e2e-1790255669",
+  "plan_s": 0.4069842000026256,
+  "run_s": 147.72673720000603,
   "X1.cc-sonnet.pack-on.r1": {
     "outcome": "completed",
-    "wall_ms": 23416,
-    "tokens": {
-      "claude-haiku-4-5-20251001": {
-        "uncached_input": 929,
-        "cache_read": 0,
-        "cache_write": 0,
-        "output": 16
-      },
-      "claude-sonnet-5": {
-        "uncached_input": 12,
-        "cache_read": 290633,
-        "cache_write": 31479,
-        "output": 1629
-      }
-    },
-    "pass_at_1": 1
-  },
-  "X1.codex-sol.pack-on.r1": {
-    "outcome": "completed",
-    "wall_ms": 53475,
-    "tokens": {
-      "gpt-6-sol": {
-        "uncached_input": 35561,
-        "cache_read": 153600,
-        "cache_write": 0,
-        "output": 1663
-      }
-    },
-    "pass_at_1": 1
-  },
-  "X1.cc-sonnet.pack-off.r1": {
-    "outcome": "completed",
-    "wall_ms": 12464,
+    "wall_ms": 18116,
     "tokens": {
       "claude-haiku-4-5-20251001": {
         "uncached_input": 929,
@@ -46,22 +14,54 @@
       },
       "claude-sonnet-5": {
         "uncached_input": 12,
-        "cache_read": 203352,
-        "cache_write": 13780,
-        "output": 998
+        "cache_read": 288617,
+        "cache_write": 30769,
+        "output": 977
+      }
+    },
+    "pass_at_1": 1
+  },
+  "X1.codex-sol.pack-on.r1": {
+    "outcome": "completed",
+    "wall_ms": 142156,
+    "tokens": {
+      "gpt-6-sol": {
+        "uncached_input": 32168,
+        "cache_read": 529664,
+        "cache_write": 0,
+        "output": 3971
+      }
+    },
+    "pass_at_1": 1
+  },
+  "X1.cc-sonnet.pack-off.r1": {
+    "outcome": "completed",
+    "wall_ms": 12569,
+    "tokens": {
+      "claude-haiku-4-5-20251001": {
+        "uncached_input": 929,
+        "cache_read": 0,
+        "cache_write": 0,
+        "output": 13
+      },
+      "claude-sonnet-5": {
+        "uncached_input": 12,
+        "cache_read": 203361,
+        "cache_write": 13711,
+        "output": 929
       }
     },
     "pass_at_1": 1
   },
   "X1.codex-sol.pack-off.r1": {
     "outcome": "completed",
-    "wall_ms": 25759,
+    "wall_ms": 29516,
     "tokens": {
       "gpt-6-sol": {
-        "uncached_input": 8605,
-        "cache_read": 54016,
+        "uncached_input": 5115,
+        "cache_read": 73088,
         "cache_write": 0,
-        "output": 778
+        "output": 812
       }
     },
     "pass_at_1": 1

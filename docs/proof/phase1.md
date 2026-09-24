@@ -29,8 +29,8 @@ summary: >-
 
 ### Claim 1: the walking skeleton runs end to end with real harnesses and real models (M1, "usable")
 
-**Evidence:** `tests/e2e/test_walking_skeleton.py` passed on the integrated branch (`d13b222` plus the E2E's own cleanup change) in run `e2e-1790239442`, 2026-09-24:
-- `2 passed, 1 xfailed in 111.19s` (the xfail is Claim 5);
+**Evidence:** `tests/e2e/test_walking_skeleton.py` passed on the final integrated branch (`b641814`, after every join through T12) in run `e2e-1790255669`, 2026-09-24:
+- `2 passed, 1 xfailed in 188.72s` (the xfail is Claim 5). An earlier run, `e2e-1790239442`, also passed, at `d13b222`;
 - the real `bench` CLI, the pinned builds (Claude Code 2.1.274, Codex 0.156.0) and the operator's subscription logins;
 - the matrix `bench/matrix.phase1.yaml`: X1 × {cc-sonnet, codex-sol} × pack {on, off} × 1 repetition.
 
@@ -43,7 +43,7 @@ summary: >-
 | every cell valid: a served model, at least one call, no model mismatch | US-11 | `Validity: valid 4.` |
 | the executed build is the planned build (sha256) | US-12 | equal for all process starts |
 | zero permission requests | US-14 | `[0, 0, 0, 0]` |
-| `bench verify` exits 0: ledger chains, seals, heads, archive hashes and bytes | US-19, R-2 | `verify: ok` |
+| `bench verify` exits 0: ledger chains, seals, heads, archive hashes and bytes, both before and after the re-grade | US-19, R-2 | `verify: ok` twice (the second run was added for N6) |
 | a re-grade gives a byte-identical canonical export | US-26 | equal |
 | `report.html` renders with no network reference | US-40 | no `http(s)://`, `<script`, `@import`, `url(`, `<link` |
 | no process remains in any cell job | ADR-0013 | all dead |
@@ -54,12 +54,14 @@ summary: >-
 
 | cell | outcome | wall | tokens (all models) | pass@1 |
 | --- | --- | --- | --- | --- |
-| X1.cc-sonnet.pack-on.r1 | completed | 23.4 s | 324,698 | 1 |
-| X1.cc-sonnet.pack-off.r1 | completed | 12.5 s | 219,084 | 1 |
-| X1.codex-sol.pack-on.r1 | completed | 53.5 s | 190,824 | 1 |
-| X1.codex-sol.pack-off.r1 | completed | 25.8 s | 63,399 | 1 |
+| X1.cc-sonnet.pack-on.r1 | completed | 18.1 s | 321,317 | 1 |
+| X1.cc-sonnet.pack-off.r1 | completed | 12.6 s | 218,955 | 1 |
+| X1.codex-sol.pack-on.r1 | completed | 142.2 s | 565,803 | 1 |
+| X1.codex-sol.pack-off.r1 | completed | 29.5 s | 79,015 | 1 |
 
-`plan` took 0.4 s and `run` (all cells, then grading) took 69.5 s. Cost per cell is `NA`: the price list has no entry for `claude-haiku-4-5-20251001` (Claude Code's helper calls) or `gpt-6-sol`. The report says so for each cell, as US-23 requires: a sourced basis, or NA (see Residual risk 1).
+`plan` took 0.4 s and `run` (all cells, then grading) took 147.7 s.
+
+In the earlier run (`e2e-1790239442`), the Codex pack-on cell took 53.5 s and 190,824 tokens. That is one sample each, and model behaviour varies between runs (residual 3). Cost per cell is `NA`: the price list has no entry for `claude-haiku-4-5-20251001` (Claude Code's helper calls) or `gpt-6-sol`. The report says so for each cell, as US-23 requires: a sourced basis, or NA (see Residual risk 1).
 
 **Oracle:** the E2E runs the real composition root (`cli.main`) and asserts on ledger rows, native session records and the rendered report. It fails when:
 - any cell ends invalid;
@@ -149,7 +151,7 @@ Its history shows it can fail. Run 1 failed on HB-CELL-113 (the race, T6). Run 2
 - **Inferred:** the leak is the same with the pack on and off. The model: the leak path, `~/.agents/skills`, is resolved from the operator's profile, and the pack does not touch it. **Not measured**, because the canary's probe is always a bare cell. The probe that would decide it: run the US-13 canary with the pack seeded into the probe cell, pack on and pack off, and compare the leaked sets. Until then, pack-on against pack-off comparisons for Codex rest on that model.
 - **Flagged:** the `<recommended_plugins>` block. Its source is unverified, and it was seen only with the pack on.
 
-**The skill name is not yet measurement-emitted.** `microsoft-foundry` was transcribed from a pytest introspection line in the spike. The canary now prints the leaked item names and puts them in its `Leaked` message (R-6 condition 3). The next canary run confirms the name.
+**The skill name is now measurement-emitted (R-6 condition 3).** The canary in the final E2E printed `US-13 codex: ... leaked items ['microsoft-foundry']`. Its positive control showed the canary for both harnesses (N2), and Claude Code's leaked items were `[]`.
 
 ## Failure modes found by the real E2E (none were visible in unit tests)
 
