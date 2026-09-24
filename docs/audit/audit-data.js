@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T02:56:31Z",
+  "generated": "2026-09-24T03:06:09Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -489,6 +489,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-09-24T02:55:12Z",
       "duration_seconds": 79.0
+    },
+    {
+      "id": "al-01M38P1BA1KF64HEQ8N8QA74KD",
+      "shortname": "join-t3",
+      "datetime": "2026-09-24T03:06:09Z",
+      "session": "coord-opus",
+      "prompt": "the join of track/t3-process-edges into impl/phase1",
+      "summary": "T3: 10 red-first findings, t3.json 15/15 killed, D5/D7/D2 applied recount_seconds=78 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "merge T3's verified evidence",
+      "done_when": "join gates green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-24T03:04:49Z",
+      "duration_seconds": 80.0
     }
   ],
   "changes": [

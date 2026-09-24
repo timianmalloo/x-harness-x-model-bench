@@ -1248,6 +1248,32 @@ window.DOCS_INDEX = {
       "sourceSha256": "d54e510a81dfb32ebc3f256b4fd6be310d719fba944dcdef11213e6d9ab50dad"
     },
     {
+      "id": "findings-t3-process-edges",
+      "path": "docs/proof/findings-T3.md",
+      "title": "Findings → tests: track T3 process-edges",
+      "type": "proof-pack",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2026-12-22",
+      "reviewSuggested": [],
+      "summary": "Track T3's findings→tests map: nine findings, each with a test-only red commit and a separate fix. The harness refused the sub-agent's write of this file, so the Coordinator transcribed it from the track's report and re-ran two red SHAs itself.",
+      "tags": [
+        "proof",
+        "findings",
+        "red-first",
+        "T3"
+      ],
+      "links": [
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "114ec6faaf780d5362cf308c4152f05daa2373ca85d3acf68fc5ff0859836655"
+    },
+    {
       "id": "proof-findings-t5",
       "path": "docs/proof/findings-T5.md",
       "title": "T5 findings: N5 spike (Codex host skill discovery)",
@@ -1430,5 +1456,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "7b97e44146cbab076fe7dc0212193333775a95f9f7f0b08b3438d8211a6912e6"
+  "graphSha256": "addfe430ec838f987fff3952a42157335e1da8b945afe41706a8042aceebcfdd"
 };
