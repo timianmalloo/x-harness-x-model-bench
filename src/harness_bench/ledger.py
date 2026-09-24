@@ -222,6 +222,8 @@ class SegmentWriter:
     def append(self, record: dict) -> dict:
         if self.sealed:
             raise BenchError("HB-LED-002", f"{self.path.name} is sealed; append refused")
+        if record.get("kind") == SEAL:
+            raise ValueError(f"record may not be of kind {SEAL!r}; only seal() writes it")
         row = _chain(record, self.count + 1, self.head_hash)
         self._write(row)
         self.count += 1
