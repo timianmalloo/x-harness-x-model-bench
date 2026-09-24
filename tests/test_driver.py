@@ -33,16 +33,32 @@ def _turn(tmp_path, prompt="Do the task.", before_send=None, acp_mode=None, hand
 
 # the line reader: bounded, never crashes (D2) ------------------------------------------------
 
+_NESTED = st.integers(min_value=1, max_value=120_000).flatmap(
+    lambda n: st.sampled_from([b"[" * n, b'{"a":' * n, b"[" * n + b"]" * n])).map(lambda b: b + b"\n")
+_CHUNK = st.one_of(st.binary(max_size=600), _NESTED, st.sampled_from([b"\n", b'{"a":1}\n', b"x" * 300, b"[1]\n"]))
+
+
 @settings(max_examples=200, deadline=None)
-@given(st.binary(max_size=4096))
-def test_line_reader_never_crashes_and_stays_bounded(data):
-    reader = driver.LineParser(max_line=256, max_junk=20)
-    try:
-        for msg in reader.feed(data):
-            assert isinstance(msg, dict)
-    except driver.ProtocolError:
-        pass
-    assert len(reader._buf) <= 256 + 4096
+@given(st.sampled_from([16, 256, 1 << 18]), st.lists(_CHUNK, max_size=12))
+def test_line_reader_never_crashes_and_stays_bounded(max_line, chunks):  # D2
+    """Any bytes in any chunking: only messages (dicts) or ProtocolError come out, and the buffer never
+    holds more than one line, including after the error."""
+    reader = driver.LineParser(max_line=max_line, max_junk=20)
+    for chunk in chunks:
+        try:
+            for msg in reader.feed(chunk):
+                assert isinstance(msg, dict)
+        except driver.ProtocolError:
+            assert len(reader._buf) <= max_line
+            return
+        assert len(reader._buf) <= max_line
+
+
+@pytest.mark.parametrize("line", [b"[" * 100_000, b'{"a":' * 100_000], ids=["list", "object"])
+def test_a_deeply_nested_line_is_junk_never_a_crash(line):  # D2: 100,000-deep nesting
+    reader = driver.LineParser()
+    assert list(reader.feed(line + b"\n" + b'{"ok":1}\n')) == [{"ok": 1}]
+    assert reader.junk == 1
 
 
 def test_line_reader_rejects_an_oversized_line():
