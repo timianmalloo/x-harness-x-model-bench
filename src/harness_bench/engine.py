@@ -51,6 +51,7 @@ NO_MEMORY_STATUSES = {0xC0000017, 0xC000012D}
 OOM_SIGNATURE = re.compile(rb"heap out of memory|out of memory|OutOfMemory", re.IGNORECASE)
 COMPLETED_STOP_REASONS = {"end_turn", "max_tokens", "max_turn_requests", "refusal"}
 CIRCUIT_BREAKER = 3
+LOG_EXTRAS = ("detail", "pids", "fact", "win32_error")  # the only extras engine.log keeps (never argv, env or cell text)
 KILL_RETRY_CAP = 60.0  # seconds: the longest wait between retries of an unconfirmed kill (HB-RUN-002)
 RECORD_POLL = 0.5  # seconds: how often a waiting worker re-checks that the engine can still record
 log = logging.getLogger("harness_bench.engine")
@@ -514,6 +515,7 @@ def configure_logging(run_dir: Path, trace_id: str) -> None:
             body = {"ts": self.formatTime(record, "%Y-%m-%dT%H:%M:%S"), "severity_number": record.levelno,
                     "severity_text": record.levelname, "trace_id": trace_id, "span_id": span_id(trace_id, entity, "engine"),
                     "event": record.getMessage(), "error_code": getattr(record, "error_code", None), "cell_id": entity}
+            body.update({k: getattr(record, k) for k in LOG_EXTRAS if hasattr(record, k)})
             if record.exc_info:
                 body["exception.stacktrace"] = self.formatException(record.exc_info)
             return json.dumps(body)
