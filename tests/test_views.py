@@ -10,6 +10,7 @@ from archived_runs import (
     CODEX_MODEL,
     GOOD,
     STUB,
+    complete_run,
     make_root,
     make_run,
     pass_rows,
@@ -186,6 +187,18 @@ def test_cells_with_long_ids_keep_their_own_events_and_calls(root, tmp_path):  #
         assert (c.outcome, c.validity, c.wall_ms) == ("completed", "valid", views.Measure(30_000))
         assert c.tokens == {CODEX_MODEL: {"uncached_input": 4032, "cache_read": 41856, "cache_write": 0, "output": 566}}  # one record each
         assert c.tool_ms == views.Measure(592)
+
+
+def test_a_zero_length_tool_call_is_a_measured_zero():  # only model calls need a positive span
+    call = {"start": "2026-09-23T10:00:00.500Z", "end": "2026-09-23T10:00:00.500Z"}
+    assert views.busy_ms([call]) == views.Measure(0)
+
+
+def test_a_view_says_whether_the_run_completed(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    assert views.load(run_dir).completed is False
+    complete_run(run_dir)
+    assert views.load(run_dir).completed is True
 
 
 def test_an_abandoned_segment_sorted_first_hides_no_completed_pass(root, tmp_path):

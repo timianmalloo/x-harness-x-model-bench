@@ -105,6 +105,12 @@ def test_a_malformed_heads_record_is_exit_5_not_a_crash(capsys, root, tmp_path):
     assert code == 5 and "heads is not a fact -> head map" in err
 
 
+def test_a_sound_completed_run_with_long_cell_ids_verifies(capsys, root, tmp_path):  # ids compared by value
+    run_dir = make_run(root, tmp_path, {"cell-alpha-0001": GOOD, "cell-bravo-0002": GOOD})
+    complete_run(run_dir, grading=runner.run_pass(run_dir, root).summary())
+    assert _verify(capsys, tmp_path) == (0, "verify: ok\n", "")
+
+
 def test_archives_are_not_checked_against_a_ledger_whose_heads_fail(capsys, root, tmp_path):
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     done = runner.run_pass(run_dir, root)

@@ -183,6 +183,7 @@ def test_a_segment_has_one_writer_until_it_closes(tmp_path):
     finally:
         first.close()
     ledger.SegmentWriter.reopen(path).close()  # released on close
+    path.unlink()  # and its handle is closed: Windows refuses to delete an open file
 
 
 def test_a_sealed_segment_is_never_reopened(tmp_path):

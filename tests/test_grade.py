@@ -7,6 +7,7 @@ own job.
 """
 
 import json
+import re
 import shutil
 from decimal import Decimal
 
@@ -184,6 +185,18 @@ def test_cost_is_na_when_no_usage_was_recorded(root, tmp_path):
     run_dir = make_run(root, tmp_path, {"a": GOOD}, harness="claude-code", turn_usage=[])
     s = scores(run_dir, runner.run_pass(run_dir, root).grading_id)
     assert (s["a", "cost_usd"]["value"], s["a", "cost_usd"]["reason"]) == (None, "no usage recorded")
+
+
+def test_cost_is_na_when_the_native_record_is_missing(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    shutil.rmtree(run_dir / "archive" / "a" / "attempt-1" / "home")
+    s = scores(run_dir, runner.run_pass(run_dir, root).grading_id)
+    assert (s["a", "cost_usd"]["value"], s["a", "cost_usd"]["reason"]) == (None, "no native record for the session")
+
+
+def test_a_grading_id_names_its_utc_start_and_a_random_suffix(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    assert re.fullmatch(r"grade-\d{8}T\d{6}-[0-9a-f]{6}", runner.run_pass(run_dir, root).grading_id)
 
 
 # --- the pass: lock, segments, extractions, abandoned segments (ADR-0006/0007) ------------------
