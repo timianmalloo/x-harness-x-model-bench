@@ -59,19 +59,30 @@ def record(session_id: str, cwd: str, prompt: str) -> None:
             f.write(json.dumps(r) + "\n")
 
 
+DAEMON = """
+import os, sys, time
+from harness_bench import host  # the venv's package: the same (pid, creation time) identity the engine uses
+pid = os.getpid()
+open(sys.argv[1] + ".tmp", "w").write(f"{pid} {host.creation_time(pid)}")
+os.replace(sys.argv[1] + ".tmp", sys.argv[1])
+time.sleep(120)
+"""
+
+
 def start_daemon() -> None:
-    # the venv's package: the same (pid, creation time) identity the engine uses
+    """The daemon writes its own identity: sys.executable may be a venv launcher whose child is the real process."""
     import subprocess
 
-    from harness_bench import host
-
+    marker = Path(os.getcwd(), "daemon.pid")
     detached = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
-    argv = [sys.executable, "-c", "import time; time.sleep(120)"]
+    argv = [sys.executable, "-c", DAEMON, str(marker)]
     try:  # breakaway is never allowed by the cell's job, so this must fail
-        child = subprocess.Popen(argv, creationflags=detached | subprocess.CREATE_BREAKAWAY_FROM_JOB, close_fds=True)
+        subprocess.Popen(argv, creationflags=detached | subprocess.CREATE_BREAKAWAY_FROM_JOB, close_fds=True)
     except OSError:
-        child = subprocess.Popen(argv, creationflags=detached, close_fds=True)
-    Path(os.getcwd(), "daemon.pid").write_text(f"{child.pid} {host.creation_time(child.pid)}", encoding="utf-8")
+        subprocess.Popen(argv, creationflags=detached, close_fds=True)
+    deadline = time.monotonic() + 20
+    while not marker.exists() and time.monotonic() < deadline:
+        time.sleep(0.05)
 
 
 def main() -> int:

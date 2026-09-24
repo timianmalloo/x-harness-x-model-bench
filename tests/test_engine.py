@@ -507,17 +507,17 @@ def test_after_the_ledger_breaks_no_worker_blocks_forever(base, monkeypatch):  #
     real = ledger.SegmentWriter.append
 
     def failing(self, record):
-        if record.get("kind") == "cell.prompt_sent" and record.get("cell_id") == first["cell_id"]:
+        if record.get("kind") == "attempt.process_ended" and record.get("cell_id") == first["cell_id"]:  # second is mid-turn
             raise OSError("disk full")
         return real(self, record)
 
     monkeypatch.setattr(ledger.SegmentWriter, "append", failing)
     config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
-                                 launchers={"fake": FakeLauncher({second["label"]: {"sleep": 2}})},
+                                 launchers={"fake": FakeLauncher({first["label"]: {"sleep": 2}, second["label"]: {"mode": "hang_prompt"}})},
                                  build_workspace=_build_workspace, grade=None, end_grace=3)
     assert _engine_run(p, config, limit=30).exit_code == 3
     alive = [t.name for t in threading.enumerate() if t.name.startswith("cell-")]
-    assert alive == [], f"workers still blocked after the run returned: {alive}"
+    assert alive == [], f"workers still alive after the run returned: {alive}"  # the hung turn was killed, not left running
 
 
 def test_record_rejects_a_non_canonical_value_on_the_worker_side(base):  # T1-5
@@ -608,23 +608,24 @@ def test_a_host_sleep_mid_turn_kills_the_cell_as_host_suspended(base, monkeypatc
     assert ended["confirmed"] == 1 and ended["seq"] < out["seq"]
 
 
-def test_a_build_server_left_by_the_turn_is_gone_when_the_end_is_recorded(base, monkeypatch):  # T-JOB-daemon (T1-15)
+def test_a_build_server_left_by_the_turn_is_gone_before_the_job_is_closed(base, monkeypatch):  # T-JOB-daemon (T1-15)
+    from harness_bench import procs
     sibling = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(120)"])  # another build, in no cell's job
-    seen = {}
-    real = engine.Engine.record
+    seen = []
+    real_close = procs.CellProcess.close
 
-    def spy(self, fact, record):
-        if record.get("kind") == "attempt.process_ended":  # the daemon must already be gone: the job reports 0 processes
-            daemon = next(self.cfg.cells_root.rglob("daemon.pid")).read_text(encoding="utf-8").split()
-            seen["daemon_alive"] = host.process_alive(int(daemon[0]), int(daemon[1]))
-        return real(self, fact, record)
+    def spy(self):  # kill-on-close would hide a live daemon: the job must already be empty (terminated, confirmed)
+        if self.job.handle:
+            seen.append(sorted(self.job.pids()))
+        real_close(self)
 
-    monkeypatch.setattr(engine.Engine, "record", spy)
+    monkeypatch.setattr(procs.CellProcess, "close", spy)
     try:
         p = _plan(n_cells=1)
         _, events, _ = _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"daemon": True}}))
         assert _outcomes(events)[p["cells"][0]["cell_id"]]["outcome"] == "completed"
-        assert seen == {"daemon_alive": False}
+        assert seen == [[]]
+        assert list((base / "runs" / p["run_id"] / "archive").rglob("daemon.pid")), "the turn started no daemon"
         assert next(e for e in events if e["kind"] == "attempt.process_ended")["confirmed"] == 1
         assert sibling.poll() is None, "a process outside the cell's job was killed"
     finally:
