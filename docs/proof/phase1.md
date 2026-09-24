@@ -90,6 +90,7 @@ Its history shows it can fail. Run 1 failed on HB-CELL-113 (the race, T6). Run 2
 | T6 workspace race | HB-CELL-113 (E2E run 1) | `findings-T6.md` | red `0082875` re-run |
 | T8 reader and paths | US-10 Codex reader; relative `--tools-dir` (E2E run 2) | `findings-T8.md` | both reds re-run; fixture scanned |
 | T9 cleanup and log | a lost build's temp folder; engine log handlers (E2E run 3) | `findings-T9.md` | red `e225ff5` re-run, 4 of 4 failed as stated |
+| T11 verify later pass | Test Architect N1: a re-sealed later pass with no `grading.completed` | `findings-T11.md` | red `8edd94f` re-run (`0 == 5`); `views.json` 34/34 |
 
 **Oracle:** a test that failed on the commit before its fix, for the stated reason, backed by a named mutant killed by that test.
 
@@ -173,6 +174,12 @@ A gate's exit status is read on its own line (CT27). `tools/heredoc_guard.py` no
 5. `cli_table.render` prints cell labels to stdout before `report.html`'s credential scan runs (T4). A credential that leaked into a label would reach the terminal. Labels are built from plan ids, which are validated against a regex (T4-5), so this needs a plan-id path to carry a secret. It is flagged for the Security lens.
 6. `procs.spawn()` can raise `TimeoutExpired` before `job.close()` after a failed assignment. `host.py` does not check the results of `GlobalMemoryStatusEx` and `QueryUnbiasedInterruptTime` (T3).
 7. A grading pass without `heads` (a ledger from before R-2) gets only a warning on a cut or a deleted segment. Truncating past `run.completed` shows as incomplete, not as an integrity error (T2, per R-2).
+7a. **A later grading pass can be deleted whole without detection** (Test Architect N1, shape A; `findings-T11.md`).
+    - `run.completed` names only the in-run pass, and no later pass records the heads of an earlier one. So deleting all four segments of a later `bench grade` pass leaves an internally consistent ledger, and views fall back silently to the previous pass.
+    - Cutting a later pass's events segment without re-sealing it looks like an honest crash, which is a warning.
+    - T11 closed only the re-sealed form (B), which is now HB-LED-002 and exit 5.
+    - Detecting (A) needs an anchor outside the run's own segments. That is a design decision for ADR-0006, not a `verify` change.
+    - Until then, the scores of a run graded more than once are only as trustworthy as the filesystem that holds them.
 8. `peak_memory` and `cpu_ms` are null when a job query fails (T1).
 9. The D5 replay transcripts are partly schema shapes, not recordings (T3).
 10. `engine.py` has partial cosmic-ray scope (Claim 3).
@@ -204,7 +211,7 @@ The reviewer re-ran the suite (516 passed), `ledger.json` (20/20) and `engine.js
 | N5 strict xfail | ACCEPTED-AS-DISCLOSED, with N2 below |
 
 **New findings, and how each is handled:**
-- **N1 [Major]:** `verify` exits 0 when a later grading pass is deleted, or cut and re-sealed. Track T11 handles it.
+- **N1 [Major]:** `verify` exits 0 when a later grading pass is deleted, or cut and re-sealed. **Track T11 (joined `e37d223`)** makes the re-sealed form HB-LED-002, exit 5 (red `8edd94f`, fix `bdcd2ef`). Whole deletion is disclosed as residual 7a.
 - **N2 [Major]:** the canary had no positive control, and its xfail had no `raises=`. Fixed in `6362c6e`.
 - **N3 [Minor]:** Claim 2 overstated test-only reds (T4-1). Corrected above.
 - **N4 [Minor]:** R-5's claim that the leak is the same with the pack on and off is unmeasured. Routed to the Owner.
