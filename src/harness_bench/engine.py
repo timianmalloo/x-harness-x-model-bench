@@ -51,6 +51,7 @@ NO_MEMORY_STATUSES = {0xC0000017, 0xC000012D}
 OOM_SIGNATURE = re.compile(rb"heap out of memory|out of memory|OutOfMemory", re.IGNORECASE)
 COMPLETED_STOP_REASONS = {"end_turn", "max_tokens", "max_turn_requests", "refusal"}
 CIRCUIT_BREAKER = 3
+KILL_RETRY_CAP = 60.0  # seconds: the longest wait between retries of an unconfirmed kill (HB-RUN-002)
 RECORD_POLL = 0.5  # seconds: how often a waiting worker re-checks that the engine can still record
 log = logging.getLogger("harness_bench.engine")
 
@@ -432,9 +433,12 @@ class Engine:
         while cp.job.active() and time.monotonic() < deadline:
             time.sleep(0.1)
         confirmed = cp.terminate_and_confirm(timeout=self.params["kill_escalation"])
-        while not confirmed:  # a kill that never takes effect: logged once, retried, the slot stays held
-            log.error("kill unconfirmed", extra={"error_code": "HB-RUN-002", "pids": sorted(cp.job.pids())})
-            confirmed = cp.terminate_and_confirm(timeout=30)
+        if not confirmed:  # a kill that never takes effect: logged once, retried with capped backoff, the slot held
+            log.error("kill unconfirmed; retrying", extra={"error_code": "HB-RUN-002", "pids": sorted(cp.job.pids())})
+        wait = 1.0
+        while not confirmed:
+            confirmed = cp.terminate_and_confirm(timeout=wait)
+            wait = min(wait * 2, KILL_RETRY_CAP)
         try:
             return cp.wait(timeout=10), confirmed
         except subprocess.TimeoutExpired:
