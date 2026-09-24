@@ -175,6 +175,33 @@ def test_cells_root_below_an_agents_md_is_refused(clean_base):
         workspace.check_cells_root(clean_base / "bench-cells")
 
 
+@pytest.mark.parametrize("name", ["GEMINI.md", ".github/copilot-instructions.md"])
+def test_cells_root_below_a_copilot_instruction_file_is_refused(clean_base, name):
+    path = clean_base / name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("x", encoding="utf-8")
+    with pytest.raises(BenchError) as e:
+        workspace.check_cells_root(clean_base / "bench-cells")
+    assert e.value.code == "HB-PRE-002" and name.replace("/", "\\") in e.value.message
+
+
+@pytest.mark.parametrize("in_cells_root", [True, False], ids=["cells-root", "ancestor"])
+def test_cells_root_below_nested_copilot_instructions_is_refused(clean_base, in_cells_root):
+    cells_root = clean_base / "bench-cells"
+    folder = cells_root if in_cells_root else clean_base
+    path = folder / ".github" / "instructions" / "nested" / "review.instructions.md"
+    path.parent.mkdir(parents=True)
+    path.write_text("x", encoding="utf-8")
+    with pytest.raises(BenchError) as e:
+        workspace.check_cells_root(cells_root)
+    assert e.value.code == "HB-PRE-002" and "review.instructions.md" in e.value.message
+
+
+def test_empty_copilot_instructions_folder_is_allowed(clean_base):
+    (clean_base / ".github" / "instructions").mkdir(parents=True)
+    workspace.check_cells_root(clean_base / "bench-cells")
+
+
 def test_a_clean_cells_root_is_accepted(clean_base):
     workspace.check_cells_root(clean_base / "bench-cells")
 
