@@ -28,6 +28,7 @@ import subprocess
 import threading
 import time
 from concurrent.futures import Future
+from concurrent.futures import TimeoutError as FutureTimeout
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol
@@ -48,6 +49,7 @@ NO_MEMORY_STATUSES = {0xC0000017, 0xC000012D}
 OOM_SIGNATURE = re.compile(rb"heap out of memory|out of memory|OutOfMemory", re.IGNORECASE)
 COMPLETED_STOP_REASONS = {"end_turn", "max_tokens", "max_turn_requests", "refusal"}
 CIRCUIT_BREAKER = 3
+RECORD_POLL = 0.5  # seconds: how often a waiting worker re-checks that the engine can still record
 log = logging.getLogger("harness_bench.engine")
 
 
@@ -123,6 +125,7 @@ class Engine:
         self.outcomes: dict[str, dict] = {}
         self.stopped: str | None = None
         self.broken = False
+        self.closed = False
         self.archive_failed: set[str] = set()  # cells whose outcome stands but whose archive failed: the run is incomplete
         self.infra_streak = 0
 
@@ -138,10 +141,25 @@ class Engine:
             raise BenchError("HB-RUN-001", f"append to {fact} failed: {exc}") from exc
 
     def record(self, fact: str, record: dict) -> dict:
-        """Called by a worker: hand the record to the engine thread and wait until it is durable."""
+        """Called by a worker: hand the record to the engine thread and wait until it is durable. Once the ledger
+        is broken or the engine has ended, it fails at once (HB-RUN-001): no worker ever waits on a dead drain."""
         future: Future = Future()
-        self.inbox.put((fact, record, future))
-        return future.result()
+        while not self.closed:
+            if self.broken:
+                break
+            try:
+                self.inbox.put((fact, record, future), timeout=RECORD_POLL)
+                break
+            except queue.Full:
+                continue
+        while not future.done() and not self.closed and not self.broken:
+            try:
+                return future.result(timeout=RECORD_POLL)
+            except FutureTimeout:
+                continue
+        if future.done():
+            return future.result()
+        raise BenchError("HB-RUN-001", f"{record.get('kind')} not recorded: the ledger is broken or the engine has ended")
 
     def _drain(self, wait: float) -> None:
         deadline = time.monotonic() + wait
@@ -151,6 +169,9 @@ class Engine:
                 fact, record, future = self.inbox.get(timeout=timeout)
             except queue.Empty:
                 return
+            if self.broken or self.closed:  # queued behind the failure or the end: failed, never written
+                future.set_exception(BenchError("HB-RUN-001", f"{record.get('kind')} not recorded: the ledger is broken"))
+                continue
             try:
                 future.set_result(self._append_now(fact, record))
             except BenchError as exc:
@@ -177,19 +198,19 @@ class Engine:
         try:
             self._append_now("events", {"kind": "run.started", "run_id": self.plan["run_id"], "plan_hash": self.plan["plan_hash"],
                                         "trace_id": self.trace_id})
-            while (pending and not self.stopped) or self.active:
+            while (pending and not self.stopped and not self.broken) or self.active:
                 lock.heartbeat()
                 self._drain(self.cfg.loop_interval)
-                if self.broken:
-                    self._abort_running()
-                    break
-                self._check_budgets()
-                if sleep.slept():
-                    self._kill_all("host_suspended")
-                if not self.stopped and shutil.disk_usage(self.cfg.cells_root.anchor or ".").free < self.params["disk_floor_bytes"]:
-                    self._stop_launching("HB-RUN-004", "free space below the floor")
-                while pending and not self.stopped and len(self.active) < self.params["parallelism"]:
-                    self._launch(pending.pop(0))
+                if self.broken:  # nothing more is recorded: kill every live turn, keep draining until the workers exit
+                    self._kill_all("aborted")
+                else:
+                    self._check_budgets()
+                    if sleep.slept():
+                        self._kill_all("host_suspended")
+                    if not self.stopped and shutil.disk_usage(self.cfg.cells_root.anchor or ".").free < self.params["disk_floor_bytes"]:
+                        self._stop_launching("HB-RUN-004", "free space below the floor")
+                    while pending and not self.stopped and not self.broken and len(self.active) < self.params["parallelism"]:
+                        self._launch(pending.pop(0))
                 for cell_id, a in list(self.active.items()):
                     if not a.thread.is_alive():
                         self.active.pop(cell_id)
@@ -210,6 +231,8 @@ class Engine:
                                             "cells_ended": len(self.outcomes), "grading": grading})
                 self.writers["events"].seal()
         finally:
+            self.closed = True  # a record() from now on fails at once instead of waiting on a drain that never comes
+            self._drain(0)
             host.keep_awake(False)
             for w in self.writers.values():
                 w.close()
@@ -221,10 +244,16 @@ class Engine:
         if self.stopped:
             return
         self.stopped = code
-        self._append_now("events", {"kind": "run.launch_stopped", "code": code, "reason": reason})
+        try:
+            self._append_now("events", {"kind": "run.launch_stopped", "code": code, "reason": reason})
+        except BenchError:  # the ledger broke: the loop now aborts and drains
+            pass
 
     def _launch(self, cell: dict) -> None:
-        self._append_now("events", {"kind": "cell.launch_intent", "cell_id": cell["cell_id"], "label": cell["label"]})
+        try:
+            self._append_now("events", {"kind": "cell.launch_intent", "cell_id": cell["cell_id"], "label": cell["label"]})
+        except BenchError:  # the ledger broke: this cell is never launched; the loop aborts and drains
+            return
         a = _Active(cell, threading.Thread(target=self._cell_worker, args=(cell,), daemon=True, name=f"cell-{cell['cell_id']}"))
         self.active[cell["cell_id"]] = a
         a.thread.start()
@@ -248,12 +277,6 @@ class Engine:
     def _kill_all(self, reason: str) -> None:
         for a in self.active.values():
             self._kill(a, reason)
-
-    def _abort_running(self) -> None:
-        for a in self.active.values():
-            self._kill(a, "aborted")
-        for a in list(self.active.values()):
-            a.thread.join(timeout=60)
 
     # one cell (worker thread) ---------------------------------------------------------------------
 
