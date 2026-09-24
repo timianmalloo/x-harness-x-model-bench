@@ -43,10 +43,11 @@ class Cause(Enum):
 
 
 RUN_CODES: dict[str, str] = {
-    "HB-PRE-002": "an agent instruction file (CLAUDE.md, .claude/CLAUDE.md, AGENTS.md) in an ancestor of the cells root",
+    "HB-PRE-002": "an agent instruction file (CLAUDE.md, .claude/CLAUDE.md, AGENTS.md, GEMINI.md, .github/copilot-instructions.md, .github/instructions/**/*.instructions.md) in or above the cells root",
     "HB-PRE-003": "free disk below 20 GB, or below the projected need",
     "HB-PRE-005": "long paths not enabled (Windows LongPathsEnabled, git core.longpaths)",
     "HB-PRE-007": "a planned harness build is missing from the tools folder, or its hash differs",
+    "HB-PRE-008": "Copilot instruction list failed or pack-off loaded repository instructions",
     "HB-RUN-001": "ledger append failed: launching stopped, run incomplete",
     "HB-RUN-002": "a kill unconfirmed after 5 minutes (retries continue; the slot stays held)",
     "HB-RUN-003": "teardown refused: the run's lock is held by a live engine",

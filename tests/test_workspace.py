@@ -175,6 +175,33 @@ def test_cells_root_below_an_agents_md_is_refused(clean_base):
         workspace.check_cells_root(clean_base / "bench-cells")
 
 
+@pytest.mark.parametrize("name", ["GEMINI.md", ".github/copilot-instructions.md"])
+def test_cells_root_below_a_copilot_instruction_file_is_refused(clean_base, name):
+    path = clean_base / name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("x", encoding="utf-8")
+    with pytest.raises(BenchError) as e:
+        workspace.check_cells_root(clean_base / "bench-cells")
+    assert e.value.code == "HB-PRE-002" and name.replace("/", "\\") in e.value.message
+
+
+@pytest.mark.parametrize("in_cells_root", [True, False], ids=["cells-root", "ancestor"])
+def test_cells_root_below_nested_copilot_instructions_is_refused(clean_base, in_cells_root):
+    cells_root = clean_base / "bench-cells"
+    folder = cells_root if in_cells_root else clean_base
+    path = folder / ".github" / "instructions" / "nested" / "review.instructions.md"
+    path.parent.mkdir(parents=True)
+    path.write_text("x", encoding="utf-8")
+    with pytest.raises(BenchError) as e:
+        workspace.check_cells_root(cells_root)
+    assert e.value.code == "HB-PRE-002" and "review.instructions.md" in e.value.message
+
+
+def test_empty_copilot_instructions_folder_is_allowed(clean_base):
+    (clean_base / ".github" / "instructions").mkdir(parents=True)
+    workspace.check_cells_root(clean_base / "bench-cells")
+
+
 def test_a_clean_cells_root_is_accepted(clean_base):
     workspace.check_cells_root(clean_base / "bench-cells")
 
@@ -226,3 +253,25 @@ def test_pack_on_differs_from_pack_off_by_exactly_the_manifest(source, tmp_path)
     assert manifest and tree(on) - tree(off) == set(manifest)
     assert tree(off) <= tree(on)
     assert _git(on, "status", "--porcelain").strip() == ""  # the pack is committed before the clock starts
+
+
+@pytest.mark.skipif(not (PACK_SOURCE / "pack" / "scripts" / "pack-apply.py").exists(), reason="no ai-forward clone")
+def test_pack_markers_have_a_real_builder_positive_control(source, tmp_path):  # US-9, R-16
+    markers = [line.strip() for line in (ROOT / "bench" / "pack-markers.txt").read_text(encoding="utf-8").splitlines() if line.strip()]
+    assert markers == ["AI-Forward Pack", "Agent Knowledge Pack", "Rigor Protocol"]
+    off = workspace.cell_working_copy(source, tmp_path / "cells" / "r" / "off" / "ws")
+    on = workspace.cell_working_copy(source, tmp_path / "cells" / "r" / "on" / "ws")
+    commit = _git(PACK_SOURCE, "rev-parse", "HEAD").strip()
+    pack = workspace.pack_checkout(PACK_SOURCE, commit, tmp_path / "tools" / "pack")
+    workspace.install_pack(pack, on, project="X1", timeout=300)
+
+    def instruction_text(ws):
+        names = {"AGENTS.md", "CLAUDE.md", "GEMINI.md", "copilot-instructions.md"}
+        files = [p for p in ws.rglob("*") if p.is_file() and ".git" not in p.parts
+                 and (p.name in names or p.name.endswith(".instructions.md"))]
+        return "\n".join(p.read_text(encoding="utf-8") for p in files)
+
+    off_text = instruction_text(off) + (X1 / "prompt.md").read_text(encoding="utf-8")
+    on_text = instruction_text(on) + (X1 / "prompt.md").read_text(encoding="utf-8")
+    assert all(marker not in off_text for marker in markers)
+    assert all(marker in on_text for marker in markers)

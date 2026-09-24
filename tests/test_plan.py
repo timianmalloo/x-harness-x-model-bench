@@ -1,11 +1,13 @@
 import hashlib
 import json
+import os
 import shutil
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
-from harness_bench import config, plan
+from harness_bench import config, gitsafe, plan, tools, workspace
 from harness_bench.errors import BenchError
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -167,3 +169,106 @@ def test_a_combo_id_that_breaks_the_status_label_regex_is_refused_at_plan_time()
     with pytest.raises(BenchError) as e:
         _phase1_plan(matrix=m)
     assert e.value.code == "HB-USR-002"
+
+
+def test_instruction_list_uses_the_given_fake_exe_workspace_and_environment(monkeypatch, tmp_path):
+    calls = []
+    fake_exe = tmp_path / "fake-copilot.exe"
+    ws = tmp_path / "workspace"
+    env = {"COPILOT_HOME": str(tmp_path / "home")}
+
+    def fake_run(argv, **kwargs):
+        calls.append((argv, kwargs))
+        return SimpleNamespace(returncode=0, timed_out=False, stdout='[{"label":"AGENTS.md"}]', stderr="")
+
+    monkeypatch.setattr(plan, "procs", SimpleNamespace(run=fake_run), raising=False)
+    assert plan.instruction_list(fake_exe, ws, env) == [{"label": "AGENTS.md"}]
+    assert calls == [([str(fake_exe), "instruction", "list", "--json"],
+                      {"cwd": str(ws), "env": env, "timeout": 120})]
+
+
+def test_instruction_list_refuses_a_non_list_result_from_the_fake_exe(monkeypatch, tmp_path):
+    monkeypatch.setattr(plan, "procs", SimpleNamespace(run=lambda *a, **k: SimpleNamespace(
+        returncode=0, timed_out=False, stdout='{"instructions":[]}', stderr="")), raising=False)
+    with pytest.raises(BenchError) as e:
+        plan.instruction_list(tmp_path / "fake-copilot.exe", tmp_path, {})
+    assert e.value.code == "HB-PRE-008"
+
+
+def _fake_copilot_plan(monkeypatch, tmp_path, listing):
+    from harness_bench import workspace
+
+    m = config.load_yaml(ROOT / "bench" / "matrix.phase1.yaml")
+    m["combos"] = [{"id": "copilot-sol", "harness": "copilot", "model": "gpt-6-sol"}]
+    m["repetitions"] = 2
+    bom = config.load_yaml(ROOT / "bench" / "bom.yaml")
+    build = SimpleNamespace(exe=tmp_path / "fake-copilot.exe")
+    monkeypatch.setattr(plan, "tools", SimpleNamespace(resolve=lambda *_: {"copilot": build}, check_build=lambda *_: None), raising=False)
+    monkeypatch.setattr(plan, "profile_record", lambda *_: {"profile_hash": "fake"})
+    monkeypatch.setattr(plan.profiles, "load", lambda *_: SimpleNamespace(cell_env=lambda base, home, build, model, traceparent: {
+        "COPILOT_HOME": str(home)}))
+    monkeypatch.setattr(workspace, "check_cells_root", lambda *_: None)
+    monkeypatch.setattr(workspace, "task_source", lambda *_: tmp_path / "source")
+
+    def copy(_source, dest):
+        dest.mkdir(parents=True)
+        return dest
+
+    monkeypatch.setattr(workspace, "cell_working_copy", copy)
+    monkeypatch.setattr(workspace, "pack_checkout", lambda *_: tmp_path / "pack")
+    monkeypatch.setattr(workspace, "install_pack", lambda *_ , **__: [])
+    calls = []
+
+    def fake_list(exe, ws, env):
+        calls.append((exe, ws, env))
+        return listing(ws)
+
+    monkeypatch.setattr(plan, "instruction_list", fake_list, raising=False)
+    args = {"root": ROOT, "matrix": m, "bom": bom, "run_id": "copilot-plan", "builds": {"copilot": {
+        "version": "1.0.89-1", "sha256": "a" * 64}}, "pack": {"source": str(tmp_path / "pack-source"),
+        "commit": "c" * 40, "revision": 95}}
+    return args, calls
+
+
+def test_copilot_plan_lists_once_per_task_pack_build_and_freezes_counts(monkeypatch, tmp_path):
+    args, calls = _fake_copilot_plan(monkeypatch, tmp_path, lambda ws: [] if "off" in ws.parts else [
+        {"label": "AGENTS.md"}, {"label": "CLAUDE.md"}])
+    p = plan.build_plan(**args)
+    assert len(calls) == 2
+    assert {(c["pack"], c["instruction_count"]) for c in p["cells"]} == {("off", 0), ("on", 2)}
+    assert len(p["instruction_lists"]) == 2
+    assert all(c["build_sha256"] == "a" * 64 for c in p["instruction_lists"])
+    assert {(c["pack"], c["count"]) for c in p["instruction_lists"]} == {("off", 0), ("on", 2)}
+    assert next(c for c in p["instruction_lists"] if c["pack"] == "off")["instructions"] == []
+
+
+def test_copilot_plan_refuses_a_nonempty_pack_off_instruction_list(monkeypatch, tmp_path):
+    args, _ = _fake_copilot_plan(monkeypatch, tmp_path, lambda ws: [{"label": "leaked"}])
+    with pytest.raises(BenchError) as e:
+        plan.build_plan(**args)
+    assert e.value.code == "HB-PRE-008"
+
+
+@pytest.mark.native
+def test_pinned_copilot_instruction_list_repeats_for_both_real_working_copies(base):
+    tools_dir = ROOT / ".tools" / "harness"
+    if not tools_dir.exists():  # a coordination worktree shares the installed build in the primary checkout
+        tools_dir = ROOT.parent / "x-harness-x-model-bench" / ".tools" / "harness"
+    exe = tools.resolve(tools_dir)["copilot"].exe
+    pack_source = ROOT.parent / "ai-forward"
+    commit = gitsafe.git(["rev-parse", "HEAD"], cwd=pack_source, timeout=60).stdout.strip()
+    source = workspace.task_source(ROOT / "tasks" / "X1", plan.task_version_hash(ROOT / "tasks" / "X1"), base / "sources")
+    results = {}
+    for arm in ("off", "on"):
+        ws = workspace.cell_working_copy(source, base / "cells" / arm / "ws")
+        if arm == "on":
+            pack_dir = workspace.pack_checkout(pack_source, commit, base / "pack")
+            workspace.install_pack(pack_dir, ws, project="X1", timeout=300)
+        home = base / "homes" / arm
+        home.mkdir(parents=True)
+        env = {k: v for k, v in os.environ.items() if not k.upper().startswith("COPILOT_")}
+        env.update({"COPILOT_HOME": str(home), "COPILOT_AUTO_UPDATE": "false"})
+        results[arm] = [plan.instruction_list(exe, ws, env) for _ in range(2)]
+    assert results["off"] == [[], []]
+    assert results["on"][0] == results["on"][1]
+    assert any(row.get("sourcePath") == "AGENTS.md" for row in results["on"][0])
