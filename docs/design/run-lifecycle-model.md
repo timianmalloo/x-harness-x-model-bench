@@ -21,7 +21,8 @@ summary: >-
   and a witness shows every cell can finish.
   A mapping table binds every model action to the engine's ledger events, and a conformance test keeps
   the two in step.
-review-suggested: []
+review-suggested:
+  - { by: adr-0006-results-data-model, on: 2026-09-24, reason: "Amendment 1: model_calls grain re-declared per native usage report with requests and model in the key; tool_calls.outcome_code (R-26, R-27)" }
 ---
 
 # Design: run lifecycle model

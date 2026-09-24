@@ -10,6 +10,7 @@ links:
   - { to: arch-harness-bench, rel: documents }
   - { to: design-phase1-walking-skeleton, rel: documents }
   - { to: design-run-lifecycle-model, rel: documents }
+  - { to: design-phase2-copilot-profile, rel: documents }
 review-by: "2027-03-22"
 review-suggested: []
 summary: >-
@@ -41,8 +42,12 @@ python3 docs/ai-forward-pack/scripts/docs-graph.py rollup --heading "Privacy ana
 |---| --- | --- | --- | --- | --- |
 | [design-phase1-walking-skeleton](../design/phase1-walking-skeleton.md) | Operator email in Claude transcripts (account context) | Identifiability | mitigate | Archives local (`runs/`, gitignored); the report embeds no transcript text | Until the owner deletes `runs/<id>` |
 | [design-phase1-walking-skeleton](../design/phase1-walking-skeleton.md) | Username and home paths | Identifiability | mitigate | Cells root outside the profile; the report shows archive-relative paths | As above |
+| [design-phase2-copilot-profile](../design/phase2-copilot-profile.md) | User name in paths, account context in the cell home and its local archive | Identifiability | accept (local only) | The archive stays local; nothing new leaves the host; HB-SEC-001 unchanged | Until the owner deletes `runs/<id>` |
+| [design-phase2-copilot-profile](../design/phase2-copilot-profile.md) | The same, in the capture that becomes committed samples | Disclosure, linkability | mitigate | scrub-rule/3 (paths rewritten, identifiers replaced, opaque keys blanked, every `system.message` field except its identity digested); fail-closed leak check | Git history (scrubbed only) |
+| [design-phase2-copilot-profile](../design/phase2-copilot-profile.md) | Vendor system prompt and request bodies | Disclosure | mitigate | Digest plus marker list, as a class (section 12), with a scrub-time control. Rule 2 missed `system.message.contentBlocks`; it was re-scrubbed in `f952f87`, and the branch is squash-merged so the blob never reaches main (R-30 condition 3) | Not committed |
+| [design-phase2-copilot-profile](../design/phase2-copilot-profile.md) | What a committed sample holds | Unawareness | mitigate | `provenance.json` states the rule, the counts and the hashes | With the sample |
 
-<!-- rolled up from 1 artifact(s) by docs-graph.py rollup on 2026-09-23 -->
+<!-- rolled up from 2 artifact(s) by docs-graph.py rollup on 2026-09-24 -->
 
 `design-run-lifecycle-model` touches no personal data (its section says so and is not a findings table).
 

@@ -25,7 +25,8 @@ summary: >-
   projections → CLI table and a
   minimal HTML report. Version 4: cells run natively in their own working copies and Job Objects (ADR-0013);
   validity-first; the engine's launch, kill and record order matched to the checked lifecycle model.
-review-suggested: []
+review-suggested:
+  - { by: adr-0006-results-data-model, on: 2026-09-24, reason: "Amendment 1: model_calls grain re-declared per native usage report with requests and model in the key; tool_calls.outcome_code (R-26, R-27)" }
 ---
 
 # Design: phase 1 walking skeleton (v4)

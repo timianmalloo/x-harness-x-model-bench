@@ -1,1 +1,3 @@
 {"agent": "ctl-e2e-optin", "at": 1790285905.4976957, "kind": "session-start", "path": "-", "seq": 1, "session": "ctl-e2e-optin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-control-e2e-opt-in"}
+{"agent": "ctl-e2e-optin", "at": 1790288665.3108485, "kind": "session-end", "path": "-", "seq": 2, "session": "ctl-e2e-optin", "wi": "WI-0", "worktree": "x-harness-x-model-bench"}
+{"agent": "ctl-e2e-optin", "at": 1790288678.121959, "kind": "session-end", "path": "-", "seq": 3, "session": "ctl-e2e-optin", "wi": "WI-0", "worktree": "x-harness-x-model-bench-control-e2e-opt-in"}

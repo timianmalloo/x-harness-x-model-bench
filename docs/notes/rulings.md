@@ -393,3 +393,21 @@ Append only. One entry per ruling. Newest last.
   2. W1-PACK-2's scope gains: (i) record the rejected message on `protocol_error` (bounded to the runner's line limit, credential-scrubbed); (ii) one diagnostic Grok 1.0.41 attempt with that recording, its result committed as the fixture; (iii) the transport's Grok compatibility path is widened only from that recorded message, never from a guess.
   3. The W1-HOST join reads the Sonnet slice by the same gate as slices 2 and 3 (suite green, the two Minors closed with the real values named in the tests).
   4. R-1 stands for Grok's return: re-qualification after (ii) lands locally, recorded in the run record.
+
+## R-30 · 2026-09-24 · Owner seat (Fable) · O-1: R-13 condition 1 amended to the typed `Launcher` Protocol fields; the `getattr` form is not restored
+
+- **Ruling:** **amend R-13 condition 1.** `set_model: bool` and `credential_kind: str` are typed fields of `engine.Launcher` (the Protocol at `engine.py:59-70`, which already declares the parallel optional `mode`), and the call site is `model=cell["model"] if launcher.set_model else None`. This ratifies what W1-ACP built at `61acbd6` (`engine.py:64/67/412/416` in its worktree) and what `ProfileLauncher` is gaining. The `getattr(launcher, "set_model", False)` form must **not** be restored. R-13's other conditions stand; its `simplify:` marker is withdrawn, since the typed field is both the smaller and the safer form.
+- **Reasoning:**
+  - The Patterns Expert's finding is correct on reading: a `getattr` default of `False` fails **open**. Any launcher without the attribute (a test fake, a typo) silently skips `session/set_model`, and that setter is the design's Prevent control for US-11 (the served model is the pinned model). A control that a missing attribute disables without a failure is not a control.
+  - The Protocol is already the typed contract for the same class of per-launcher option (`mode: str | None`), so the typed field is reuse of the codebase's own idiom, not a new abstraction; a fake that omits the field fails at the type check and at first use, which is the failure the design wants.
+  - R-13 accepted the `getattr` on the author's `simplify:` rationale (sparing fakes a new attribute). The measured cost of the typed form was one fake updated, so the shortcut bought nothing.
+- **Conditions:**
+  1. Every `Launcher` implementation and every test fake declares both fields explicitly; no default on the Protocol, no `getattr` anywhere on the engine's launcher surface (a grep-level test or lint asserts it).
+  2. `tests/test_driver.py` / the engine tests include the negative control: a launcher with `set_model = False` never sends `session/set_model`, and one with `set_model = True` sends it before `session/prompt`.
+  3. **For the record, agreed (no ruling needed):** the committed Copilot fixture `9c6c615` carried Copilot's vendor system prompt (no personal data), only on the unpushed design branch; it is re-scrubbed in `f952f87`, and the Leader squash-merges the branch at its join so the blob never reaches `main` or the remote. Condition: the scrub rule in the design's section 12 gains the vendor-system-prompt class so the next capture cannot repeat it, and the join record cites the squash commit.
+
+## R-31 · 2026-09-24 · Owner seat (Fable) · Record: R-26 narrows R-20 condition 4 to `totalNanoAiu` only
+
+- **Ruling (record-only):** R-20 condition 4 read "`requests.count` per model and `totalNanoAiu` stay in provenance for wave 1". R-26, by adopting the Data & Persistence Architect's C2, put `requests` on the `model_calls` row, so that condition is **narrowed by reference to `totalNanoAiu` only**: `requests` is a column of `model_calls` from wave 1 (R-26 conditions 2 and 3); `totalNanoAiu` stays in the sample's provenance until the wave-3 catalog row (Q6, R-15). This matches the design at revision 3.1, squash-joined to `main` at `2e9cc3b`.
+- **Reasoning:** R-26 restated condition 4 as "AIU stays in provenance" without saying that `requests` had moved; a register entry that contradicts a later one is read newest-last, but the contradiction is recorded here so no reader has to infer it.
+- **Conditions:** none new. R-26's conditions govern `requests`; R-15's govern `totalNanoAiu`.

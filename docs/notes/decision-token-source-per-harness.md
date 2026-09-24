@@ -37,7 +37,7 @@ A graceful exit (stdin closed, the adapter left to exit, 0.2 s) did not change t
 - Each harness profile names `usage_source`: `acp_turn` for Claude Code, `native_record` for Codex.
 - The engine records the adapter's prompt response as a `turn_usage` fact. Grain: one model's usage in one turn of one cell. Writer: the engine thread, from the ACP stream, which is archived.
 - Token and cost views use the authoritative source. The other source is kept as a cross-check.
-- Per-call rows (`model_calls`, `tool_calls`) still come from the native record.
+- Per-report rows (`model_calls`: one model's usage in one native usage report, with an additive `requests` count; ADR-0006 Amendment 1, ruling R-26) and per-call `tool_calls` rows still come from the native record. For Claude Code and Codex a report is one request; for Copilot it is the per-model entry in the last `session.shutdown` (`usage_source: native_record`, with the ACP `usage` recorded as `acp_usage` for the cross-check, R-24). *(Corrected 2026-09-24 from "Per-call rows", R-26 C1.)*
 - The served-model check (US-11) uses the authoritative source. Each profile declares its auxiliary models: `claude-haiku-4-5*` for Claude Code's title generation. A served model that is neither the pin nor declared is `invalid (model mismatch)`.
 
 ## Alternatives dismissed

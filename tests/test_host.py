@@ -29,3 +29,26 @@ def test_a_failed_global_memory_status_ex_is_not_recorded(monkeypatch):
     monkeypatch.setattr(host._k32, "GlobalMemoryStatusEx", _fail)
     monkeypatch.setattr(ctypes.windll.kernel32, "GlobalMemoryStatusEx", _fail)
     assert host.available_memory() is None
+
+
+def test_available_memory_and_unbiased_seconds_return_real_positive_values():
+    memory = host.available_memory()
+    assert isinstance(memory, int)
+    assert memory > 0
+
+    unbiased = host.unbiased_seconds()
+    assert isinstance(unbiased, float)
+    assert unbiased > 0
+
+
+def test_sleep_detector_recovers_after_a_missing_first_reading(monkeypatch):
+    """The first unbiased reading is missing (None); the next good reading becomes the anchor,
+    and a gap detected against the reading after that still trips slept()."""
+    walls = iter([50.0, 100.0, 200.0])
+    unbiaseds = iter([None, 1000.0, 1090.0])
+    monkeypatch.setattr(host.time, "time", lambda: next(walls))
+    monkeypatch.setattr(host, "unbiased_seconds", lambda: next(unbiaseds))
+
+    detector = host.SleepDetector(5.0)
+    assert detector.slept() is False  # first good reading anchors; nothing to compare yet
+    assert detector.slept() is True  # wall advanced 100s, unbiased only 90s: a 10s gap > 5s

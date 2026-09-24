@@ -1,0 +1,1401 @@
+{
+ "note": "Leader capture window 1 for W1-COP-D (docs/design/phase2-copilot-profile.md, sections 11-12). Each arm folder is a minimal Copilot home: find_records(home, 'session-state/{session_id}/events.jsonl', sid) resolves in it. A per-cell ACP home holds no session-store.db.",
+ "scrub": {
+  "rule": "scrub-rule/3",
+  "replacements": 35,
+  "forbidden_values": 8,
+  "script_sha256": {
+   "capture_sample.py": "58a3cdbf49bbb66eef1961cc8d95a20746d502631fec035e936d5d1296f44225",
+   "scrub_sample.py": "3ab34e6e7cc5d2bee823ba16a3888baa3c60d2a5603bb106193d64ca2ffa86a5"
+  },
+  "rescrubbed_from": "scrub-rule/2",
+  "rescrub_replacements": 0
+ },
+ "capture": {
+  "schema": "copilot-capture/1",
+  "captured": "2026-09-24",
+  "model": "gpt-6-sol",
+  "exe_sha256": "417d0721237ff370a415cf5c11c7523f9332f220a6ee0f5eb8e802a9662ef246",
+  "task": "X1",
+  "task_version": "b7a29e0336256765ea908f9630217cf91f55fab5ca5311834b17826d001a8c2c",
+  "prompt_sha256": "802dfde4c609549fd864c9b6cdc5c65bd5a5a2fe1f43246563d00c5e4dd9dc49",
+  "pack": {
+   "source_head": "ca032f007b33e4424e50c04c5b2a2bd43f766c78"
+  },
+  "markers": [
+   "AI-Forward Pack",
+   "Agent Knowledge Pack",
+   "Rigor Protocol"
+  ],
+  "arms": {
+   "off": {
+    "instruction_list": {
+     "returncode": 0,
+     "json": []
+    },
+    "turn": {
+     "argv_tail": [
+      "--acp",
+      "--model",
+      "gpt-6-sol",
+      "--allow-tool",
+      "shell",
+      "--allow-tool",
+      "write"
+     ],
+     "initialize": {
+      "agentInfo": {
+       "name": "Copilot",
+       "title": "Copilot",
+       "version": "1.0.89-1"
+      },
+      "protocolVersion": 1,
+      "authMethods": [
+       "copilot-login"
+      ],
+      "outcome": [
+       "result"
+      ]
+     },
+     "session_new": {
+      "outcome": [
+       "result"
+      ],
+      "sessionId": "adc0e5ec-1ff9-42b0-a601-a1c3b8825c8e",
+      "advertised_currentModelId": "gpt-6-sol",
+      "available_model_ids": [
+       "auto",
+       "claude-sonnet-5",
+       "claude-opus-5.5",
+       "claude-opus-5",
+       "claude-opus-4.8",
+       "claude-opus-4.7",
+       "claude-haiku-4.5",
+       "gpt-6-sol",
+       "gpt-6-luna",
+       "gpt-6-astra",
+       "gpt-5.6-sol",
+       "gpt-5.6-sol-fast",
+       "gpt-5.6-terra",
+       "gpt-5.6-luna",
+       "gpt-5.5",
+       "gpt-5.4",
+       "gpt-5.4-mini",
+       "gpt-5.3-codex",
+       "gpt-5-mini",
+       "mai-code-1.1-flash",
+       "gemini-3.8-flash",
+       "gemini-3.7-flash",
+       "gemini-3.6-flash",
+       "gemini-3.5-flash",
+       "grok-4.5",
+       "grok-4.6",
+       "grok-4.7"
+      ],
+      "modes": {
+       "availableModes": [
+        {
+         "id": "https://agentclientprotocol.com/protocol/session-modes#agent",
+         "name": "Agent",
+         "description": "Default agent mode for conversational interactions"
+        },
+        {
+         "id": "https://agentclientprotocol.com/protocol/session-modes#plan",
+         "name": "Plan",
+         "description": "Plan mode for creating and executing multi-step plans"
+        },
+        {
+         "id": "https://agentclientprotocol.com/protocol/session-modes#autopilot",
+         "name": "Autopilot",
+         "description": "Autonomous mode that enables allow-all and runs until task completion without user interaction (experimental)"
+        }
+       ],
+       "currentModeId": "https://agentclientprotocol.com/protocol/session-modes#agent"
+      }
+     },
+     "set_model": {
+      "modelId": "gpt-6-sol",
+      "response": {
+       "result": {}
+      }
+     },
+     "prompt": {
+      "outcome": [
+       "result"
+      ],
+      "stopReason": "end_turn",
+      "seconds": 15.7,
+      "usage": {
+       "inputTokens": 58986,
+       "outputTokens": 515,
+       "totalTokens": 59501,
+       "thoughtTokens": 166,
+       "cachedReadTokens": 46801,
+       "cachedWriteTokens": 12170
+      },
+      "meta_keys": [],
+      "meta_quota": null,
+      "error": null
+     },
+     "permission_requests": 0,
+     "updates": 188,
+     "process": {
+      "graceful_exit": true,
+      "kill_confirmed": true
+     }
+    },
+    "events": {
+     "present": true,
+     "model_changes": [
+      {
+       "previousModel": "gpt-6-sol",
+       "newModel": "gpt-6-sol",
+       "source": "sdk"
+      }
+     ],
+     "tool_names": [
+      "glob",
+      "glob",
+      "powershell",
+      "view",
+      "apply_patch",
+      "powershell"
+     ],
+     "errors": [],
+     "markers": {
+      "user.message.content": [],
+      "user.message.transformedContent": [],
+      "system.message.content": []
+     },
+     "session_start": {
+      "sessionId": "adc0e5ec-1ff9-42b0-a601-a1c3b8825c8e",
+      "copilotVersion": "0.0.0",
+      "selectedModel": "gpt-6-sol",
+      "version": 1,
+      "producer": "copilot-agent"
+     },
+     "first_user_content_sha256": "802dfde4c609549fd864c9b6cdc5c65bd5a5a2fe1f43246563d00c5e4dd9dc49",
+     "event_counts": {
+      "assistant.message": 5,
+      "assistant.turn_end": 5,
+      "assistant.turn_start": 5,
+      "session.model_change": 1,
+      "session.shutdown": 1,
+      "session.start": 1,
+      "session.usage_checkpoint": 1,
+      "system.message": 1,
+      "tool.execution_complete": 6,
+      "tool.execution_start": 6,
+      "user.message": 1
+     }
+    },
+    "store": {
+     "present": false
+    },
+    "home": {
+     "files": [
+      [
+       "config.json",
+       131
+      ],
+      [
+       "logs/.copilot-log.lock",
+       0
+      ],
+      [
+       "logs/process-1790286721764-17444.log",
+       10927
+      ],
+      [
+       "session-state/.session-operation-locks/adc0e5ec-1ff9-42b0-a601-a1c3b8825c8e.lock",
+       0
+      ],
+      [
+       "session-state/adc0e5ec-1ff9-42b0-a601-a1c3b8825c8e/.workspace-fork.lock",
+       0
+      ],
+      [
+       "session-state/adc0e5ec-1ff9-42b0-a601-a1c3b8825c8e/checkpoints/index.md",
+       172
+      ],
+      [
+       "session-state/adc0e5ec-1ff9-42b0-a601-a1c3b8825c8e/events.jsonl",
+       117369
+      ],
+      [
+       "session-state/adc0e5ec-1ff9-42b0-a601-a1c3b8825c8e/workspace.yaml",
+       403
+      ]
+     ],
+     "config_keys": "unparseable",
+     "token_shaped_strings": 0
+    }
+   },
+   "on": {
+    "pack_revision": 92,
+    "pack_manifest": [
+     ".agents/hooks.json",
+     ".agents/rules/agy-surface.md",
+     ".agents/skills.json",
+     ".agents/skills/adddomainexperts/SKILL.md",
+     ".agents/skills/addpacktorepo/SKILL.md",
+     ".agents/skills/addpacktorepo/reference/co-s0.md",
+     ".agents/skills/adopt/SKILL.md",
+     ".agents/skills/adopt/reference/co-s0.md",
+     ".agents/skills/also/SKILL.md",
+     ".agents/skills/apply-learnings/SKILL.md",
+     ".agents/skills/apply-learnings/reference/co-s0.md",
+     ".agents/skills/auditlog/SKILL.md",
+     ".agents/skills/code-hygiene/SKILL.md",
+     ".agents/skills/collectknowledge/SKILL.md",
+     ".agents/skills/collectknowledge/reference/co-s0.md",
+     ".agents/skills/compile/SKILL.md",
+     ".agents/skills/define-architecture/SKILL.md",
+     ".agents/skills/design-slice/SKILL.md",
+     ".agents/skills/design-slice/reference/co-s0.md",
+     ".agents/skills/design-slice/reference/definition-of-done.md",
+     ".agents/skills/design-slice/reference/flow.md",
+     ".agents/skills/document/SKILL.md",
+     ".agents/skills/dream/SKILL.md",
+     ".agents/skills/dream/reference/co-s0.md",
+     ".agents/skills/execute-with-coordination/SKILL.md",
+     ".agents/skills/execute-with-coordination/reference/co-s0.md",
+     ".agents/skills/execute-with-coordination/reference/copilot.md",
+     ".agents/skills/execute-with-coordination/reference/join.md",
+     ".agents/skills/execute-with-coordination/reference/launch.md",
+     ".agents/skills/extendaibundle/SKILL.md",
+     ".agents/skills/extendaibundle/reference/co-s0.md",
+     ".agents/skills/forensicreview/SKILL.md",
+     ".agents/skills/forensicreview/reference/co-s0.md",
+     ".agents/skills/implement/SKILL.md",
+     ".agents/skills/implement/reference/co-s0.md",
+     ".agents/skills/implement/reference/definition-of-done.md",
+     ".agents/skills/implement/reference/flow.md",
+     ".agents/skills/investigate/SKILL.md",
+     ".agents/skills/migrate/SKILL.md",
+     ".agents/skills/migrate/reference/co-s0.md",
+     ".agents/skills/optimize-graph/SKILL.md",
+     ".agents/skills/prepare-for-coordination/SKILL.md",
+     ".agents/skills/prompts/SKILL.md",
+     ".agents/skills/searchprompts/SKILL.md",
+     ".agents/skills/session-profiler/SKILL.md",
+     ".agents/skills/session-profiler/reference/co-s0.md",
+     ".agents/skills/specify/SKILL.md",
+     ".agents/skills/ui-design/SKILL.md",
+     ".agents/skills/ui-design/reference/co-s0.md",
+     ".agents/skills/ui-design/reference/definition-of-done.md",
+     ".agents/skills/ui-design/reference/flow.md",
+     ".agents/skills/ui-design/reference/triggered-standards.md",
+     ".agents/skills/updatepack/SKILL.md",
+     ".agents/skills/updatepack/reference/co-s0.md",
+     ".agents/skills/visualize/SKILL.md",
+     ".claude/agents/ai-systems-engineer.md",
+     ".claude/agents/csharp-developer_agent.md",
+     ".claude/agents/data-persistence-architect.md",
+     ".claude/agents/distributed-systems-architect_agent.md",
+     ".claude/agents/documentation-steward.md",
+     ".claude/agents/domain-researcher.md",
+     ".claude/agents/enterprise-architect_agent.md",
+     ".claude/agents/mobile-app-developer.md",
+     ".claude/agents/native-desktop-developer.md",
+     ".claude/agents/orchestrator.md",
+     ".claude/agents/patterns-expert_agent.md",
+     ".claude/agents/privacy-data-governance.md",
+     ".claude/agents/product-strategist.md",
+     ".claude/agents/python-developer_agent.md",
+     ".claude/agents/release-engineer.md",
+     ".claude/agents/rust-developer_agent.md",
+     ".claude/agents/security-identity-architect_agent.md",
+     ".claude/agents/sre-diagnostician_agent.md",
+     ".claude/agents/tech-lead_agent.md",
+     ".claude/agents/test-architect_agent.md",
+     ".claude/agents/the-simplifier_agent.md",
+     ".claude/agents/ux-accessibility.md",
+     ".claude/agents/ux-researcher-ia.md",
+     ".claude/knowledge/FOUNDATION.md",
+     ".claude/knowledge/agent-body-of-knowledge.md",
+     ".claude/knowledge/agent-coordination.md",
+     ".claude/knowledge/agent-persona-catalog.md",
+     ".claude/knowledge/agent-rules-of-the-road.md",
+     ".claude/knowledge/ai-commercial-models.md",
+     ".claude/knowledge/audit-and-change-log.md",
+     ".claude/knowledge/ci-and-test-efficiency.md",
+     ".claude/knowledge/code-knowledge-graph.md",
+     ".claude/knowledge/collaborative-personas.md",
+     ".claude/knowledge/communication-and-task-discipline.md",
+     ".claude/knowledge/continuous-improvement.md",
+     ".claude/knowledge/csharp-style-guide.md",
+     ".claude/knowledge/domain-and-data-modelling.md",
+     ".claude/knowledge/end-to-end-integrity.md",
+     ".claude/knowledge/engineering-governance.md",
+     ".claude/knowledge/execution-graph-optimization.md",
+     ".claude/knowledge/instrumentation-over-inference.md",
+     ".claude/knowledge/knowledge-visualization.md",
+     ".claude/knowledge/layered-optimized-architecture.md",
+     ".claude/knowledge/no-guessing-protocol.md",
+     ".claude/knowledge/observability-and-instrumentation.md",
+     ".claude/knowledge/obsidian-lens.md",
+     ".claude/knowledge/persona-audit.md",
+     ".claude/knowledge/persona-cards.md",
+     ".claude/knowledge/project-memory-and-obsidian.md",
+     ".claude/knowledge/responsible-ai-policy.md",
+     ".claude/knowledge/rigor-protocol.md",
+     ".claude/knowledge/session-worktree-discipline.md",
+     ".claude/knowledge/solution-selection-ladder.md",
+     ".claude/knowledge/specification-standards.md",
+     ".claude/knowledge/spike-protocol.md",
+     ".claude/knowledge/technical-ui-design.md",
+     ".claude/knowledge/testing-strategy.md",
+     ".claude/knowledge/ui-archetype-catalog.md",
+     ".claude/knowledge/ui-archetype-grammar.md",
+     ".claude/knowledge/ui-craft-detection.md",
+     ".claude/knowledge/ui-design-craft.md",
+     ".claude/knowledge/ui-interaction-design.md",
+     ".claude/knowledge/ui-visual-assets.md",
+     ".claude/settings.json",
+     ".claude/skills/adddomainexperts/SKILL.md",
+     ".claude/skills/addpacktorepo/SKILL.md",
+     ".claude/skills/addpacktorepo/reference/co-s0.md",
+     ".claude/skills/adopt/SKILL.md",
+     ".claude/skills/adopt/reference/co-s0.md",
+     ".claude/skills/also/SKILL.md",
+     ".claude/skills/apply-learnings/SKILL.md",
+     ".claude/skills/apply-learnings/reference/co-s0.md",
+     ".claude/skills/auditlog/SKILL.md",
+     ".claude/skills/code-hygiene/SKILL.md",
+     ".claude/skills/collectknowledge/SKILL.md",
+     ".claude/skills/collectknowledge/reference/co-s0.md",
+     ".claude/skills/compile/SKILL.md",
+     ".claude/skills/define-architecture/SKILL.md",
+     ".claude/skills/design-slice/SKILL.md",
+     ".claude/skills/design-slice/reference/co-s0.md",
+     ".claude/skills/design-slice/reference/definition-of-done.md",
+     ".claude/skills/design-slice/reference/flow.md",
+     ".claude/skills/document/SKILL.md",
+     ".claude/skills/dream/SKILL.md",
+     ".claude/skills/dream/reference/co-s0.md",
+     ".claude/skills/execute-with-coordination/SKILL.md",
+     ".claude/skills/execute-with-coordination/reference/co-s0.md",
+     ".claude/skills/execute-with-coordination/reference/copilot.md",
+     ".claude/skills/execute-with-coordination/reference/join.md",
+     ".claude/skills/execute-with-coordination/reference/launch.md",
+     ".claude/skills/extendaibundle/SKILL.md",
+     ".claude/skills/extendaibundle/reference/co-s0.md",
+     ".claude/skills/forensicreview/SKILL.md",
+     ".claude/skills/forensicreview/reference/co-s0.md",
+     ".claude/skills/implement/SKILL.md",
+     ".claude/skills/implement/reference/co-s0.md",
+     ".claude/skills/implement/reference/definition-of-done.md",
+     ".claude/skills/implement/reference/flow.md",
+     ".claude/skills/investigate/SKILL.md",
+     ".claude/skills/migrate/SKILL.md",
+     ".claude/skills/migrate/reference/co-s0.md",
+     ".claude/skills/optimize-graph/SKILL.md",
+     ".claude/skills/prepare-for-coordination/SKILL.md",
+     ".claude/skills/prompts/SKILL.md",
+     ".claude/skills/searchprompts/SKILL.md",
+     ".claude/skills/session-profiler/SKILL.md",
+     ".claude/skills/session-profiler/reference/co-s0.md",
+     ".claude/skills/specify/SKILL.md",
+     ".claude/skills/ui-design/SKILL.md",
+     ".claude/skills/ui-design/reference/co-s0.md",
+     ".claude/skills/ui-design/reference/definition-of-done.md",
+     ".claude/skills/ui-design/reference/flow.md",
+     ".claude/skills/ui-design/reference/triggered-standards.md",
+     ".claude/skills/updatepack/SKILL.md",
+     ".claude/skills/updatepack/reference/co-s0.md",
+     ".claude/skills/visualize/SKILL.md",
+     ".editorconfig",
+     ".gitattributes",
+     ".github/agents/ai-systems-engineer.agent.md",
+     ".github/agents/csharp-developer.agent.md",
+     ".github/agents/data-persistence-architect.agent.md",
+     ".github/agents/distributed-systems-architect.agent.md",
+     ".github/agents/documentation-steward.agent.md",
+     ".github/agents/domain-researcher.agent.md",
+     ".github/agents/enterprise-architect.agent.md",
+     ".github/agents/mobile-app-developer.agent.md",
+     ".github/agents/native-desktop-developer.agent.md",
+     ".github/agents/orchestrator.agent.md",
+     ".github/agents/patterns-expert.agent.md",
+     ".github/agents/privacy-data-governance.agent.md",
+     ".github/agents/product-strategist.agent.md",
+     ".github/agents/python-developer.agent.md",
+     ".github/agents/release-engineer.agent.md",
+     ".github/agents/rust-developer.agent.md",
+     ".github/agents/security-identity-architect.agent.md",
+     ".github/agents/sre-diagnostician.agent.md",
+     ".github/agents/tech-lead.agent.md",
+     ".github/agents/test-architect.agent.md",
+     ".github/agents/the-simplifier.agent.md",
+     ".github/agents/ux-accessibility.agent.md",
+     ".github/agents/ux-researcher-ia.agent.md",
+     ".github/hooks/ai-forward.json",
+     ".github/instructions/FOUNDATION.md",
+     ".github/instructions/agent-coordination.instructions.md",
+     ".github/instructions/agent-rules-of-the-road.instructions.md",
+     ".github/instructions/ci-and-test-efficiency.instructions.md",
+     ".github/instructions/communication-and-task-discipline.instructions.md",
+     ".github/instructions/continuous-improvement.instructions.md",
+     ".github/instructions/csharp-style-guide.instructions.md",
+     ".github/instructions/domain-and-data-modelling.instructions.md",
+     ".github/instructions/end-to-end-integrity.instructions.md",
+     ".github/instructions/execution-graph-optimization.instructions.md",
+     ".github/instructions/instrumentation-over-inference.instructions.md",
+     ".github/instructions/no-guessing-protocol.instructions.md",
+     ".github/instructions/observability-and-instrumentation.instructions.md",
+     ".github/instructions/responsible-ai-policy.instructions.md",
+     ".github/instructions/rigor-protocol.instructions.md",
+     ".github/instructions/session-worktree-discipline.instructions.md",
+     ".github/instructions/solution-selection-ladder.instructions.md",
+     ".github/instructions/technical-ui-design.instructions.md",
+     ".github/instructions/testing-strategy.instructions.md",
+     ".github/instructions/ui-interaction-design.instructions.md",
+     ".github/knowledge/agent-body-of-knowledge.md",
+     ".github/knowledge/agent-persona-catalog.md",
+     ".github/knowledge/ai-commercial-models.md",
+     ".github/knowledge/audit-and-change-log.md",
+     ".github/knowledge/code-knowledge-graph.md",
+     ".github/knowledge/collaborative-personas.md",
+     ".github/knowledge/engineering-governance.md",
+     ".github/knowledge/knowledge-visualization.md",
+     ".github/knowledge/layered-optimized-architecture.md",
+     ".github/knowledge/obsidian-lens.md",
+     ".github/knowledge/persona-audit.md",
+     ".github/knowledge/persona-cards.md",
+     ".github/knowledge/project-memory-and-obsidian.md",
+     ".github/knowledge/specification-standards.md",
+     ".github/knowledge/spike-protocol.md",
+     ".github/knowledge/ui-archetype-catalog.md",
+     ".github/knowledge/ui-archetype-grammar.md",
+     ".github/knowledge/ui-craft-detection.md",
+     ".github/knowledge/ui-design-craft.md",
+     ".github/knowledge/ui-visual-assets.md",
+     ".github/prompts/adddomainexperts.prompt.md",
+     ".github/prompts/addpacktorepo.prompt.md",
+     ".github/prompts/adopt.prompt.md",
+     ".github/prompts/also.prompt.md",
+     ".github/prompts/apply-learnings.prompt.md",
+     ".github/prompts/auditlog.prompt.md",
+     ".github/prompts/code-hygiene.prompt.md",
+     ".github/prompts/collectknowledge.prompt.md",
+     ".github/prompts/compile.prompt.md",
+     ".github/prompts/define-architecture.prompt.md",
+     ".github/prompts/design-slice.prompt.md",
+     ".github/prompts/document.prompt.md",
+     ".github/prompts/dream.prompt.md",
+     ".github/prompts/execute-with-coordination.prompt.md",
+     ".github/prompts/extendaibundle.prompt.md",
+     ".github/prompts/forensicreview.prompt.md",
+     ".github/prompts/implement.prompt.md",
+     ".github/prompts/investigate.prompt.md",
+     ".github/prompts/migrate.prompt.md",
+     ".github/prompts/optimize-graph.prompt.md",
+     ".github/prompts/prepare-for-coordination.prompt.md",
+     ".github/prompts/prompts.prompt.md",
+     ".github/prompts/searchprompts.prompt.md",
+     ".github/prompts/session-profiler.prompt.md",
+     ".github/prompts/specify.prompt.md",
+     ".github/prompts/ui-design.prompt.md",
+     ".github/prompts/updatepack.prompt.md",
+     ".github/prompts/visualize.prompt.md",
+     ".gitignore",
+     ".grok/agents/ai-systems-engineer.md",
+     ".grok/agents/csharp-developer.md",
+     ".grok/agents/data-persistence-architect.md",
+     ".grok/agents/distributed-systems-architect.md",
+     ".grok/agents/documentation-steward.md",
+     ".grok/agents/domain-researcher.md",
+     ".grok/agents/enterprise-architect.md",
+     ".grok/agents/mobile-app-developer.md",
+     ".grok/agents/native-desktop-developer.md",
+     ".grok/agents/orchestrator.md",
+     ".grok/agents/patterns-expert.md",
+     ".grok/agents/privacy-data-governance.md",
+     ".grok/agents/product-strategist.md",
+     ".grok/agents/python-developer.md",
+     ".grok/agents/release-engineer.md",
+     ".grok/agents/rust-developer.md",
+     ".grok/agents/security-identity-architect.md",
+     ".grok/agents/sre-diagnostician.md",
+     ".grok/agents/tech-lead.md",
+     ".grok/agents/test-architect.md",
+     ".grok/agents/the-simplifier.md",
+     ".grok/agents/ux-accessibility.md",
+     ".grok/agents/ux-researcher-ia.md",
+     ".grok/hooks/ai-forward.json",
+     ".grok/rules/grok-surface.md",
+     ".grok/skills/adddomainexperts/SKILL.md",
+     ".grok/skills/addpacktorepo/SKILL.md",
+     ".grok/skills/addpacktorepo/reference/co-s0.md",
+     ".grok/skills/adopt/SKILL.md",
+     ".grok/skills/adopt/reference/co-s0.md",
+     ".grok/skills/also/SKILL.md",
+     ".grok/skills/apply-learnings/SKILL.md",
+     ".grok/skills/apply-learnings/reference/co-s0.md",
+     ".grok/skills/auditlog/SKILL.md",
+     ".grok/skills/code-hygiene/SKILL.md",
+     ".grok/skills/collectknowledge/SKILL.md",
+     ".grok/skills/collectknowledge/reference/co-s0.md",
+     ".grok/skills/compile/SKILL.md",
+     ".grok/skills/define-architecture/SKILL.md",
+     ".grok/skills/design-slice/SKILL.md",
+     ".grok/skills/design-slice/reference/co-s0.md",
+     ".grok/skills/design-slice/reference/definition-of-done.md",
+     ".grok/skills/design-slice/reference/flow.md",
+     ".grok/skills/document/SKILL.md",
+     ".grok/skills/dream/SKILL.md",
+     ".grok/skills/dream/reference/co-s0.md",
+     ".grok/skills/execute-with-coordination/SKILL.md",
+     ".grok/skills/execute-with-coordination/reference/co-s0.md",
+     ".grok/skills/execute-with-coordination/reference/copilot.md",
+     ".grok/skills/execute-with-coordination/reference/join.md",
+     ".grok/skills/execute-with-coordination/reference/launch.md",
+     ".grok/skills/extendaibundle/SKILL.md",
+     ".grok/skills/extendaibundle/reference/co-s0.md",
+     ".grok/skills/forensicreview/SKILL.md",
+     ".grok/skills/forensicreview/reference/co-s0.md",
+     ".grok/skills/implement/SKILL.md",
+     ".grok/skills/implement/reference/co-s0.md",
+     ".grok/skills/implement/reference/definition-of-done.md",
+     ".grok/skills/implement/reference/flow.md",
+     ".grok/skills/investigate/SKILL.md",
+     ".grok/skills/migrate/SKILL.md",
+     ".grok/skills/migrate/reference/co-s0.md",
+     ".grok/skills/optimize-graph/SKILL.md",
+     ".grok/skills/prepare-for-coordination/SKILL.md",
+     ".grok/skills/prompts/SKILL.md",
+     ".grok/skills/searchprompts/SKILL.md",
+     ".grok/skills/session-profiler/SKILL.md",
+     ".grok/skills/session-profiler/reference/co-s0.md",
+     ".grok/skills/specify/SKILL.md",
+     ".grok/skills/ui-design/SKILL.md",
+     ".grok/skills/ui-design/reference/co-s0.md",
+     ".grok/skills/ui-design/reference/definition-of-done.md",
+     ".grok/skills/ui-design/reference/flow.md",
+     ".grok/skills/ui-design/reference/triggered-standards.md",
+     ".grok/skills/updatepack/SKILL.md",
+     ".grok/skills/updatepack/reference/co-s0.md",
+     ".grok/skills/visualize/SKILL.md",
+     "AGENTS.md",
+     "CLAUDE.md",
+     "docs/ai-forward-pack/INSTALL.md",
+     "docs/ai-forward-pack/OVERVIEW.md",
+     "docs/ai-forward-pack/README.md",
+     "docs/ai-forward-pack/codex-skills.json",
+     "docs/ai-forward-pack/codex.md",
+     "docs/ai-forward-pack/context-budget.json",
+     "docs/ai-forward-pack/hooks/README.md",
+     "docs/ai-forward-pack/hooks/coord_identity.py",
+     "docs/ai-forward-pack/hooks/copilot.ai-forward-hooks.json",
+     "docs/ai-forward-pack/hooks/heartbeat.py",
+     "docs/ai-forward-pack/hooks/mail-doorbell.py",
+     "docs/ai-forward-pack/hooks/owner-review-gate.py",
+     "docs/ai-forward-pack/hooks/reread-guard.py",
+     "docs/ai-forward-pack/hooks/session-start.py",
+     "docs/ai-forward-pack/research-synthesis.md",
+     "docs/ai-forward-pack/scripts/apply-learnings.py",
+     "docs/ai-forward-pack/scripts/audit-log.py",
+     "docs/ai-forward-pack/scripts/bounded_process.py",
+     "docs/ai-forward-pack/scripts/conductor-join.py",
+     "docs/ai-forward-pack/scripts/context-budget.py",
+     "docs/ai-forward-pack/scripts/coord-board.py",
+     "docs/ai-forward-pack/scripts/coord-core.py",
+     "docs/ai-forward-pack/scripts/coord-decide.py",
+     "docs/ai-forward-pack/scripts/coord-mail.py",
+     "docs/ai-forward-pack/scripts/coord-runner.py",
+     "docs/ai-forward-pack/scripts/coord_files.py",
+     "docs/ai-forward-pack/scripts/coord_ids.py",
+     "docs/ai-forward-pack/scripts/coord_native.py",
+     "docs/ai-forward-pack/scripts/coord_runtime.py",
+     "docs/ai-forward-pack/scripts/coord_transport.py",
+     "docs/ai-forward-pack/scripts/design-lint.py",
+     "docs/ai-forward-pack/scripts/docs-explorer-core.js",
+     "docs/ai-forward-pack/scripts/docs-graph.py",
+     "docs/ai-forward-pack/scripts/dream.py",
+     "docs/ai-forward-pack/scripts/foundation-check.py",
+     "docs/ai-forward-pack/scripts/graphify-setup.py",
+     "docs/ai-forward-pack/scripts/marker-lint.py",
+     "docs/ai-forward-pack/scripts/named_hook_bundles.py",
+     "docs/ai-forward-pack/scripts/obsidian-setup.py",
+     "docs/ai-forward-pack/scripts/pack-apply.py",
+     "docs/ai-forward-pack/scripts/pack-doctor.py",
+     "docs/ai-forward-pack/scripts/platform_process.py",
+     "docs/ai-forward-pack/scripts/prompt-compile.py",
+     "docs/ai-forward-pack/scripts/prompt-log.py",
+     "docs/ai-forward-pack/scripts/repo_identity.py",
+     "docs/ai-forward-pack/scripts/run-verify-gates.py",
+     "docs/ai-forward-pack/scripts/scrub.py",
+     "docs/ai-forward-pack/scripts/session-profile.py",
+     "docs/ai-forward-pack/scripts/ui-craft-gate.py",
+     "docs/ai-forward-pack/scripts/verify-compiled-prompt.py",
+     "docs/ai-forward-pack/scripts/verify-documented-commands.py",
+     "docs/ai-forward-pack/scripts/verify-no-conflict-markers.py",
+     "docs/ai-forward-pack/scripts/verify-no-machine-paths.py",
+     "docs/ai-forward-pack/scripts/verify-no-new-console-launches.py",
+     "docs/ai-forward-pack/scripts/verify-portable-text-io.py",
+     "docs/ai-forward-pack/scripts/verify-ruling-citations.py",
+     "docs/ai-forward-pack/scripts/verify-skill-contracts.py",
+     "docs/ai-forward-pack/scripts/verify-subprocess-utf8.py",
+     "docs/ai-forward-pack/scripts/visual-assets-setup.py",
+     "docs/ai-forward-pack/scripts/xaml-token-lint.py",
+     "docs/ai-forward-pack/templates/adr.template.md",
+     "docs/ai-forward-pack/templates/architecture.template.md",
+     "docs/ai-forward-pack/templates/audit-explorer.template.html",
+     "docs/ai-forward-pack/templates/decision-note.template.md",
+     "docs/ai-forward-pack/templates/defect-classes.template.md",
+     "docs/ai-forward-pack/templates/design-language-preview.template.html",
+     "docs/ai-forward-pack/templates/design-language.template.md",
+     "docs/ai-forward-pack/templates/design.template.md",
+     "docs/ai-forward-pack/templates/doc-viewer.template.html",
+     "docs/ai-forward-pack/templates/docs-explorer.template.html",
+     "docs/ai-forward-pack/templates/documentation-bundle.template.md",
+     "docs/ai-forward-pack/templates/domain-expert.template.md",
+     "docs/ai-forward-pack/templates/dream-manifest.template.html",
+     "docs/ai-forward-pack/templates/dream-review.template.html",
+     "docs/ai-forward-pack/templates/glossary.template.md",
+     "docs/ai-forward-pack/templates/investigation.template.md",
+     "docs/ai-forward-pack/templates/knowledge-base.template.md",
+     "docs/ai-forward-pack/templates/mockup-harness.template.html",
+     "docs/ai-forward-pack/templates/native-ui-proof-pack.template.md",
+     "docs/ai-forward-pack/templates/privacy-review.template.md",
+     "docs/ai-forward-pack/templates/project-memory.template.md",
+     "docs/ai-forward-pack/templates/prompt-templates/claude-code.v1.md",
+     "docs/ai-forward-pack/templates/prompt-templates/codex.v1.md",
+     "docs/ai-forward-pack/templates/prompt-templates/copilot.v1.md",
+     "docs/ai-forward-pack/templates/proof-pack.template.md",
+     "docs/ai-forward-pack/templates/session-contract.template.md",
+     "docs/ai-forward-pack/templates/spec.template.md",
+     "docs/ai-forward-pack/templates/threat-model.template.md",
+     "docs/ai-forward-pack/templates/ui-capability-guide.template.html",
+     "docs/ai-forward-pack/templates/ui-guide-hub.template.md",
+     "docs/ai-forward-pack/templates/ui-review.template.md",
+     "docs/index.html"
+    ],
+    "instruction_list": {
+     "returncode": 0,
+     "json": [
+      {
+       "id": "model-agents-md",
+       "label": "AGENTS.md",
+       "location": "repository",
+       "type": "model",
+       "sourcePath": "AGENTS.md",
+       "defaultDisabled": false
+      },
+      {
+       "id": "model-claude-md",
+       "label": "CLAUDE.md",
+       "location": "repository",
+       "type": "model",
+       "sourcePath": "CLAUDE.md",
+       "defaultDisabled": false
+      },
+      {
+       "id": "vscode-instructions/.github\\instructions\\agent-coordination.instructions.md",
+       "label": "agent-coordination.instructions.md",
+       "location": "working-directory",
+       "type": "vscode",
+       "sourcePath": ".github\\instructions\\agent-coordination.instructions.md",
+       "defaultDisabled": false
+      },
+      {
+       "id": "vscode-instructions/.github\\instructions\\agent-rules-of-the-road.instructions.md",
+       "label": "agent-rules-of-the-road.instructions.md",
+       "location": "working-directory",
+       "type": "vscode",
+       "sourcePath": ".github\\instructions\\agent-rules-of-the-road.instructions.md",
+       "defaultDisabled": false
+      },
+      {
+       "id": "vscode-instructions/.github\\instructions\\ci-and-test-efficiency.instructions.md",
+       "label": "ci-and-test-efficiency.instructions.md",
+       "description": "",
+       "location": "working-directory",
+       "type": "vscode",
+       "sourcePath": ".github\\instructions\\ci-and-test-efficiency.instructions.md",
+       "defaultDisabled": false,
+       "applyTo": [
+        ".github/workflows/**",
+        "**/*.yml",
+        "**/*.yaml",
+        "**/Dockerfile",
+        "**/Makefile"
+       ]
+      },
+      {
+       "id": "vscode-instructions/.github\\instructions\\communication-and-task-discipline.instructions.md",
+       "label": "communication-and-task-discipline.instructions.md",
+       "location": "working-directory",
+       "type": "vscode",
+       "sourcePath": ".github\\instructions\\communication-and-task-discipline.instructions.md",
+       "defaultDisabled": false
+      },
+      {
+       "id": "vscode-instructions/.github\\instructions\\continuous-improvement.instructions.md",
+       "label": "continuous-improvement.instructions.md",
+       "location": "working-directory",
+       "type": "vscode",
+       "sourcePath": ".github\\instructions\\continuous-improvement.instructions.md",
+       "defaultDisabled": false
+      },
+      {
+       "id": "vscode-instructions/.github\\instructions\\csharp-style-guide.instructions.md",
+       "label": "csharp-style-guide.instructions.md",
+       "description": "",
+       "location": "working-directory",
+       "type": "vscode",
+       "sourcePath": ".github\\instructions\\csharp-style-guide.instructions.md",
+       "defaultDisabled": false,
+       "applyTo": [
+        "**/*.cs",
+        "**/*.csx"
+       ]
+      },
+      {
+       "id": "vscode-instructions/.github\\instructions\\domain-and-data-modelling.instructions.md",
+       "label": "domain-and-data-modelling.instructions.md",
+       "location": "working-directory",
+       "type": "vscode",
+       "sourcePath": ".github\\instructions\\domain-and-data-modelling.instructions.md",
+       "defaultDisabled": false
+      },
+      {
+       "id": "vscode-instructions/.github\\instructions\\end-to-end-integrity.instructions.md",
+       "label": "end-to-end-integrity.instructions.md",
+       "location": "working-directory",
+       "type": "vscode",
+       "sourcePath": ".github\\instructions\\end-to-end-integrity.instructions.md",
+       "defaultDisabled": false
+      },
+      {
+       "id": "vscode-instructions/.github\\instructions\\execution-graph-optimization.instructions.md",
+       "label": "execution-graph-optimization.instructions.md",
+       "location": "working-directory",
+       "type": "vscode",
+       "sourcePath": ".github\\instructions\\execution-graph-optimization.instructions.md",
+       "defaultDisabled": false
+      },
+      {
+       "id": "vscode-instructions/.github\\instructions\\instrumentation-over-inference.instructions.md",
+       "label": "instrumentation-over-inference.instructions.md",
+       "location": "working-directory",
+       "type": "vscode",
+       "sourcePath": ".github\\instructions\\instrumentation-over-inference.instructions.md",
+       "defaultDisabled": false
+      },
+      {
+       "id": "vscode-instructions/.github\\instructions\\no-guessing-protocol.instructions.md",
+       "label": "no-guessing-protocol.instructions.md",
+       "location": "working-directory",
+       "type": "vscode",
+       "sourcePath": ".github\\instructions\\no-guessing-protocol.instructions.md",
+       "defaultDisabled": false
+      },
+      {
+       "id": "vscode-instructions/.github\\instructions\\observability-and-instrumentation.instructions.md",
+       "label": "observability-and-instrumentation.instructions.md",
+       "description": "",
+       "location": "working-directory",
+       "type": "vscode",
+       "sourcePath": ".github\\instructions\\observability-and-instrumentation.instructions.md",
+       "defaultDisabled": false,
+       "applyTo": [
+        "**/*.py",
+        "**/*.ts",
+        "**/*.tsx",
+        "**/*.cs",
+        "**/*.go",
+        "**/*.rs",
+        "**/*.java",
+        "**/*.js"
+       ]
+      },
+      {
+       "id": "vscode-instructions/.github\\instructions\\responsible-ai-policy.instructions.md",
+       "label": "responsible-ai-policy.instructions.md",
+       "location": "working-directory",
+       "type": "vscode",
+       "sourcePath": ".github\\instructions\\responsible-ai-policy.instructions.md",
+       "defaultDisabled": false
+      },
+      {
+       "id": "vscode-instructions/.github\\instructions\\rigor-protocol.instructions.md",
+       "label": "rigor-protocol.instructions.md",
+       "location": "working-directory",
+       "type": "vscode",
+       "sourcePath": ".github\\instructions\\rigor-protocol.instructions.md",
+       "defaultDisabled": false
+      },
+      {
+       "id": "vscode-instructions/.github\\instructions\\session-worktree-discipline.instructions.md",
+       "label": "session-worktree-discipline.instructions.md",
+       "location": "working-directory",
+       "type": "vscode",
+       "sourcePath": ".github\\instructions\\session-worktree-discipline.instructions.md",
+       "defaultDisabled": false
+      },
+      {
+       "id": "vscode-instructions/.github\\instructions\\solution-selection-ladder.instructions.md",
+       "label": "solution-selection-ladder.instructions.md",
+       "location": "working-directory",
+       "type": "vscode",
+       "sourcePath": ".github\\instructions\\solution-selection-ladder.instructions.md",
+       "defaultDisabled": false
+      },
+      {
+       "id": "vscode-instructions/.github\\instructions\\technical-ui-design.instructions.md",
+       "label": "technical-ui-design.instructions.md",
+       "description": "",
+       "location": "working-directory",
+       "type": "vscode",
+       "sourcePath": ".github\\instructions\\technical-ui-design.instructions.md",
+       "defaultDisabled": false,
+       "applyTo": [
+        "**/*.tsx",
+        "**/*.jsx",
+        "**/*.vue",
+        "**/*.svelte",
+        "**/*.css",
+        "**/*.scss",
+        "**/*.html",
+        "**/DESIGN.md"
+       ]
+      },
+      {
+       "id": "vscode-instructions/.github\\instructions\\testing-strategy.instructions.md",
+       "label": "testing-strategy.instructions.md",
+       "description": "",
+       "location": "working-directory",
+       "type": "vscode",
+       "sourcePath": ".github\\instructions\\testing-strategy.instructions.md",
+       "defaultDisabled": false,
+       "applyTo": [
+        "**/tests/**",
+        "**/test/**",
+        "**/*.test.*",
+        "**/*.spec.*",
+        "**/test_*.py",
+        "**/*_test.go"
+       ]
+      },
+      {
+       "id": "vscode-instructions/.github\\instructions\\ui-interaction-design.instructions.md",
+       "label": "ui-interaction-design.instructions.md",
+       "description": "",
+       "location": "working-directory",
+       "type": "vscode",
+       "sourcePath": ".github\\instructions\\ui-interaction-design.instructions.md",
+       "defaultDisabled": false,
+       "applyTo": [
+        "**/*.tsx",
+        "**/*.jsx",
+        "**/*.vue",
+        "**/*.svelte",
+        "**/*.css",
+        "**/*.scss",
+        "**/*.html",
+        "**/DESIGN.md"
+       ]
+      }
+     ]
+    },
+    "turn": {
+     "argv_tail": [
+      "--acp",
+      "--model",
+      "gpt-6-sol",
+      "--allow-tool",
+      "shell",
+      "--allow-tool",
+      "write"
+     ],
+     "initialize": {
+      "agentInfo": {
+       "name": "Copilot",
+       "title": "Copilot",
+       "version": "1.0.89-1"
+      },
+      "protocolVersion": 1,
+      "authMethods": [
+       "copilot-login"
+      ],
+      "outcome": [
+       "result"
+      ]
+     },
+     "session_new": {
+      "outcome": [
+       "result"
+      ],
+      "sessionId": "c0d75ae3-d30c-4cfd-8b30-c0f04ecc07a6",
+      "advertised_currentModelId": "gpt-6-sol",
+      "available_model_ids": [
+       "auto",
+       "claude-sonnet-5",
+       "claude-opus-5.5",
+       "claude-opus-5",
+       "claude-opus-4.8",
+       "claude-opus-4.7",
+       "claude-haiku-4.5",
+       "gpt-6-sol",
+       "gpt-6-luna",
+       "gpt-6-astra",
+       "gpt-5.6-sol",
+       "gpt-5.6-sol-fast",
+       "gpt-5.6-terra",
+       "gpt-5.6-luna",
+       "gpt-5.5",
+       "gpt-5.4",
+       "gpt-5.4-mini",
+       "gpt-5.3-codex",
+       "gpt-5-mini",
+       "mai-code-1.1-flash",
+       "gemini-3.8-flash",
+       "gemini-3.7-flash",
+       "gemini-3.6-flash",
+       "gemini-3.5-flash",
+       "grok-4.5",
+       "grok-4.6",
+       "grok-4.7"
+      ],
+      "modes": {
+       "availableModes": [
+        {
+         "id": "https://agentclientprotocol.com/protocol/session-modes#agent",
+         "name": "Agent",
+         "description": "Default agent mode for conversational interactions"
+        },
+        {
+         "id": "https://agentclientprotocol.com/protocol/session-modes#plan",
+         "name": "Plan",
+         "description": "Plan mode for creating and executing multi-step plans"
+        },
+        {
+         "id": "https://agentclientprotocol.com/protocol/session-modes#autopilot",
+         "name": "Autopilot",
+         "description": "Autonomous mode that enables allow-all and runs until task completion without user interaction (experimental)"
+        }
+       ],
+       "currentModeId": "https://agentclientprotocol.com/protocol/session-modes#agent"
+      }
+     },
+     "set_model": {
+      "modelId": "gpt-6-sol",
+      "response": {
+       "result": {}
+      }
+     },
+     "prompt": {
+      "outcome": [
+       "result"
+      ],
+      "stopReason": "end_turn",
+      "seconds": 29.0,
+      "usage": {
+       "inputTokens": 527641,
+       "outputTokens": 525,
+       "totalTokens": 528166,
+       "thoughtTokens": 170,
+       "cachedReadTokens": 439386,
+       "cachedWriteTokens": 88237
+      },
+      "meta_keys": [],
+      "meta_quota": null,
+      "error": null
+     },
+     "permission_requests": 0,
+     "updates": 298,
+     "process": {
+      "graceful_exit": true,
+      "kill_confirmed": true
+     }
+    },
+    "events": {
+     "present": true,
+     "model_changes": [
+      {
+       "previousModel": "gpt-6-sol",
+       "newModel": "gpt-6-sol",
+       "source": "sdk"
+      }
+     ],
+     "tool_names": [
+      "skill",
+      "skill",
+      "glob",
+      "glob",
+      "glob",
+      "powershell",
+      "view",
+      "rg"
+     ],
+     "errors": [],
+     "markers": {
+      "user.message.content": [],
+      "user.message.transformedContent": [],
+      "system.message.content": [
+       "AI-Forward Pack",
+       "Agent Knowledge Pack",
+       "Rigor Protocol"
+      ]
+     },
+     "session_start": {
+      "sessionId": "c0d75ae3-d30c-4cfd-8b30-c0f04ecc07a6",
+      "copilotVersion": "0.0.0",
+      "selectedModel": "gpt-6-sol",
+      "version": 1,
+      "producer": "copilot-agent"
+     },
+     "first_user_content_sha256": "802dfde4c609549fd864c9b6cdc5c65bd5a5a2fe1f43246563d00c5e4dd9dc49",
+     "event_counts": {
+      "assistant.message": 6,
+      "assistant.turn_end": 6,
+      "assistant.turn_start": 6,
+      "hook.end": 8,
+      "hook.start": 8,
+      "session.model_change": 1,
+      "session.shutdown": 1,
+      "session.start": 1,
+      "session.usage_checkpoint": 1,
+      "system.message": 1,
+      "tool.execution_complete": 8,
+      "tool.execution_start": 8,
+      "user.message": 1
+     }
+    },
+    "store": {
+     "present": false
+    },
+    "home": {
+     "files": [
+      [
+       "config.json",
+       131
+      ],
+      [
+       "logs/.copilot-log.lock",
+       0
+      ],
+      [
+       "logs/process-1790286743008-34720.log",
+       17912
+      ],
+      [
+       "session-state/.session-operation-locks/c0d75ae3-d30c-4cfd-8b30-c0f04ecc07a6.lock",
+       0
+      ],
+      [
+       "session-state/c0d75ae3-d30c-4cfd-8b30-c0f04ecc07a6/.workspace-fork.lock",
+       0
+      ],
+      [
+       "session-state/c0d75ae3-d30c-4cfd-8b30-c0f04ecc07a6/checkpoints/index.md",
+       172
+      ],
+      [
+       "session-state/c0d75ae3-d30c-4cfd-8b30-c0f04ecc07a6/events.jsonl",
+       786306
+      ],
+      [
+       "session-state/c0d75ae3-d30c-4cfd-8b30-c0f04ecc07a6/workspace.yaml",
+       402
+      ]
+     ],
+     "config_keys": "unparseable",
+     "token_shaped_strings": 0
+    }
+   }
+  },
+  "exe_version": "GitHub Copilot CLI 1.0.89-1.\nRun 'copilot update' to check for updates.",
+  "refusal_probe": {
+   "argv_tail": [
+    "--acp",
+    "--model",
+    "gpt-6-sol",
+    "--allow-tool",
+    "shell",
+    "--allow-tool",
+    "write"
+   ],
+   "initialize": {
+    "agentInfo": {
+     "name": "Copilot",
+     "title": "Copilot",
+     "version": "1.0.89-1"
+    },
+    "protocolVersion": 1,
+    "authMethods": [
+     "copilot-login"
+    ],
+    "outcome": [
+     "result"
+    ]
+   },
+   "session_new": {
+    "outcome": [
+     "result"
+    ],
+    "sessionId": "f403e24c-64fc-4e39-a870-4e6a9a893149",
+    "advertised_currentModelId": "gpt-6-sol",
+    "available_model_ids": [
+     "auto",
+     "claude-sonnet-5",
+     "claude-opus-5.5",
+     "claude-opus-5",
+     "claude-opus-4.8",
+     "claude-opus-4.7",
+     "claude-haiku-4.5",
+     "gpt-6-sol",
+     "gpt-6-luna",
+     "gpt-6-astra",
+     "gpt-5.6-sol",
+     "gpt-5.6-sol-fast",
+     "gpt-5.6-terra",
+     "gpt-5.6-luna",
+     "gpt-5.5",
+     "gpt-5.4",
+     "gpt-5.4-mini",
+     "gpt-5.3-codex",
+     "gpt-5-mini",
+     "mai-code-1.1-flash",
+     "gemini-3.8-flash",
+     "gemini-3.7-flash",
+     "gemini-3.6-flash",
+     "gemini-3.5-flash",
+     "grok-4.5",
+     "grok-4.6",
+     "grok-4.7"
+    ],
+    "modes": {
+     "availableModes": [
+      {
+       "id": "https://agentclientprotocol.com/protocol/session-modes#agent",
+       "name": "Agent",
+       "description": "Default agent mode for conversational interactions"
+      },
+      {
+       "id": "https://agentclientprotocol.com/protocol/session-modes#plan",
+       "name": "Plan",
+       "description": "Plan mode for creating and executing multi-step plans"
+      },
+      {
+       "id": "https://agentclientprotocol.com/protocol/session-modes#autopilot",
+       "name": "Autopilot",
+       "description": "Autonomous mode that enables allow-all and runs until task completion without user interaction (experimental)"
+      }
+     ],
+     "currentModeId": "https://agentclientprotocol.com/protocol/session-modes#agent"
+    }
+   },
+   "set_model": {
+    "modelId": "harness-bench-no-such-model",
+    "response": {
+     "error": {
+      "code": -32602,
+      "message": "Invalid modelId 'harness-bench-no-such-model': not one of this session's models."
+     }
+    }
+   },
+   "stopped": "no prompt sent (refusal probe, or the setter did not succeed)",
+   "permission_requests": 0,
+   "updates": 2,
+   "process": {
+    "graceful_exit": true,
+    "kill_confirmed": true
+   }
+  }
+ },
+ "facts": {
+  "off": {
+   "readings": {
+    "assistant_message_models": [
+     "gpt-6-sol",
+     "gpt-6-sol",
+     "gpt-6-sol",
+     "gpt-6-sol",
+     "gpt-6-sol"
+    ],
+    "tool_names": [
+     "glob",
+     "glob",
+     "powershell",
+     "view",
+     "apply_patch",
+     "powershell"
+    ],
+    "hooks": {},
+    "session_errors": 0,
+    "first_user_content_sha256": "802dfde4c609549fd864c9b6cdc5c65bd5a5a2fe1f43246563d00c5e4dd9dc49",
+    "shutdown": {
+     "shutdownType": "routine",
+     "modelMetrics": {
+      "gpt-6-sol": {
+       "requests": {
+        "count": 5,
+        "cost": 1
+       },
+       "usage": {
+        "inputTokens": 58986,
+        "outputTokens": 515,
+        "cacheReadTokens": 46801,
+        "cacheWriteTokens": 12170,
+        "reasoningTokens": 166
+       },
+       "totalNanoAiu": 4496520000,
+       "tokenDetails": {
+        "input": {
+         "tokenCount": 15
+        },
+        "cache_read": {
+         "tokenCount": 46801
+        },
+        "cache_write": {
+         "tokenCount": 12170
+        },
+        "output": {
+         "tokenCount": 515
+        }
+       }
+      }
+     },
+     "tokenDetails": {
+      "input": {
+       "tokenCount": 15
+      },
+      "cache_read": {
+       "tokenCount": 46801
+      },
+      "cache_write": {
+       "tokenCount": 12170
+      },
+      "output": {
+       "tokenCount": 515
+      }
+     },
+     "totalApiDurationMs": 13459,
+     "totalNanoAiu": 4496520000
+    },
+    "tool_outcomes": {
+     "success=True:code=None": 6
+    }
+   },
+   "acp_prompt_usage": {
+    "inputTokens": 58986,
+    "outputTokens": 515,
+    "totalTokens": 59501,
+    "thoughtTokens": 166,
+    "cachedReadTokens": 46801,
+    "cachedWriteTokens": 12170
+   },
+   "events": {
+    "lines_kept": 33,
+    "lines_dropped": 0
+   }
+  },
+  "on": {
+   "readings": {
+    "assistant_message_models": [
+     "gpt-6-sol",
+     "gpt-6-sol",
+     "gpt-6-sol",
+     "gpt-6-sol",
+     "gpt-6-sol",
+     "gpt-6-sol"
+    ],
+    "tool_names": [
+     "skill",
+     "skill",
+     "glob",
+     "glob",
+     "glob",
+     "powershell",
+     "view",
+     "rg"
+    ],
+    "hooks": {
+     "hook.start:userPromptSubmitted": 1,
+     "hook.end:userPromptSubmitted:success=False": 1,
+     "hook.start:sessionStart": 1,
+     "hook.end:sessionStart:success=False": 1,
+     "hook.start:preToolUse": 5,
+     "hook.end:preToolUse:success=False": 5,
+     "hook.start:agentStop": 1,
+     "hook.end:agentStop:success=False": 1
+    },
+    "session_errors": 0,
+    "first_user_content_sha256": "802dfde4c609549fd864c9b6cdc5c65bd5a5a2fe1f43246563d00c5e4dd9dc49",
+    "shutdown": {
+     "shutdownType": "routine",
+     "modelMetrics": {
+      "gpt-6-sol": {
+       "requests": {
+        "count": 6,
+        "cost": 1
+       },
+       "usage": {
+        "inputTokens": 527641,
+        "outputTokens": 525,
+        "cacheReadTokens": 439386,
+        "cacheWriteTokens": 88237,
+        "reasoningTokens": 170
+       },
+       "totalNanoAiu": 31375570000,
+       "tokenDetails": {
+        "input": {
+         "tokenCount": 18
+        },
+        "cache_read": {
+         "tokenCount": 439386
+        },
+        "cache_write": {
+         "tokenCount": 88237
+        },
+        "output": {
+         "tokenCount": 525
+        }
+       }
+      }
+     },
+     "tokenDetails": {
+      "input": {
+       "tokenCount": 18
+      },
+      "cache_read": {
+       "tokenCount": 439386
+      },
+      "cache_write": {
+       "tokenCount": 88237
+      },
+      "output": {
+       "tokenCount": 525
+      }
+     },
+     "totalApiDurationMs": 19383,
+     "totalNanoAiu": 31375570000
+    },
+    "tool_outcomes": {
+     "success=False:code=denied": 8
+    }
+   },
+   "acp_prompt_usage": {
+    "inputTokens": 527641,
+    "outputTokens": 525,
+    "totalTokens": 528166,
+    "thoughtTokens": 170,
+    "cachedReadTokens": 439386,
+    "cachedWriteTokens": 88237
+   },
+   "events": {
+    "lines_kept": 56,
+    "lines_dropped": 0
+   }
+  }
+ },
+ "outputs": {
+  "off/session-state/adc0e5ec-1ff9-42b0-a601-a1c3b8825c8e/events.jsonl": "7dee53f7c71d13f3090cdb1b2c1293317783febf706e5162fee07d6cf7d22234",
+  "instruction-list-off.json": "550c34a3365f5e11ff9519f54f894ffbb6a578f01e5d33a453d04f3b87843d02",
+  "on/session-state/c0d75ae3-d30c-4cfd-8b30-c0f04ecc07a6/events.jsonl": "426d6aa69838dee62b190b24e03114003d91878e0a9f245cd7aeb7ab68f728ba",
+  "instruction-list-on.json": "128c270b0c9eb62a42baa9f8a57f10414eca6aa8893b2e412d2bbee658e5e092"
+ }
+}
