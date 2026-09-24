@@ -6,6 +6,8 @@
 - Deny-all permissions: every `session/request_permission` is answered `cancelled` and counted
   (the static profile should make it zero, US-14); any other client request gets -32601.
 - Verbatim prompt: the task text is sent exactly as given (US-10).
+- Optional model pin: `session/set_model` right after `session/new`, only when the caller passes `model=`; a
+  refusal is `failed (model unavailable)` and the prompt is never sent (ADR-0003, R-13, R-18).
 - Ack barrier: `before_send()` runs after the handshake and before `session/prompt` is written; the
   engine persists `prompt_sent` in it, so a failed append means the prompt is never sent (model
   QueuePromptSent -> PersistPromptSent -> SendPrompt). The driver never retries `session/prompt`.
@@ -97,6 +99,7 @@ class TurnResult:
     # engine test pairs 2.0 with turn 2.5 (test_engine.py:1067). Breaks: a reader that expects the handshake clock.
     # Null (not recorded, never 0) when the turn read no session/update; handshake-time updates do not set it.
     last_update_seconds: float | None = None
+    agent_version: str | None = None  # initialize.agentInfo.version, verbatim (R-28); null when not reported
 
 
 class _Eof(Exception):
@@ -211,16 +214,29 @@ def _prompt_error_cause(exc: _AcpError) -> Cause:
 
 
 def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handshake_timeout: float,
-             before_send: Callable[[str | None], None]) -> TurnResult:
-    """Handshake, ack barrier, one verbatim prompt. `before_send` exceptions propagate unsent."""
-    result = TurnResult()
+             before_send: Callable[[str | None], None], model: str | None = None,
+             result: TurnResult | None = None) -> TurnResult:
+    """Handshake, ack barrier, one verbatim prompt. `before_send` exceptions propagate unsent.
+
+    `model`: sent with `session/set_model` right after `session/new` (the ADR-0003 pin, for a profile that sets it);
+    a refusal is `model_unavailable` by step, whatever its text, and the prompt is never sent (R-18).
+    `result`: a TurnResult the caller supplies and can read in `before_send` (agent_version, R-28)."""
+    result = result if result is not None else TurnResult()
     ch = _Channel(cell, result)
     started = time.monotonic()
     deadline = started + handshake_timeout
     try:
-        ch.rpc("initialize", {"protocolVersion": PROTOCOL_VERSION, "clientCapabilities": {}, "clientInfo": CLIENT_INFO}, deadline)
+        init = ch.rpc("initialize", {"protocolVersion": PROTOCOL_VERSION, "clientCapabilities": {}, "clientInfo": CLIENT_INFO}, deadline)
+        info = init.get("agentInfo")
+        version = info.get("version") if isinstance(info, dict) else None
+        result.agent_version = version if isinstance(version, str) else None  # verbatim; null when not reported
         created = ch.rpc("session/new", {"cwd": str(cwd), "mcpServers": []}, deadline)
         result.session_id = created.get("sessionId")
+        if model:
+            try:
+                ch.rpc("session/set_model", {"sessionId": result.session_id, "modelId": model}, deadline)
+            except _AcpError as exc:  # tagged by step: the plan's model is not served here
+                return _fail(result, Cause.model_unavailable, f"set_model refused: {exc}", started)
         if mode:
             ch.rpc("session/set_mode", {"sessionId": result.session_id, "modeId": mode}, deadline)
     except _Timeout as exc:
