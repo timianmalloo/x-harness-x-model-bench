@@ -5,7 +5,7 @@
   and the wall clock over the plan's `suspend_gap` means the host slept during a cell (HB-CELL-106).
 - The power request (SetThreadExecutionState) keeps the host awake for the run; it is per thread, so
   the engine thread sets and clears it.
-- Available physical memory for each outcome (GlobalMemoryStatusEx).
+- Available physical memory for each outcome (GlobalMemoryStatusEx). A failed query is not recorded.
 """
 
 from __future__ import annotations
@@ -96,9 +96,10 @@ def keep_awake(on: bool) -> None:
     _k32.SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED if on else ES_CONTINUOUS)
 
 
-def available_memory() -> int:
+def available_memory() -> int | None:
+    """Available physical bytes, or None when the query fails (not recorded)."""
     status = _MemoryStatus()
     status.dwLength = ctypes.sizeof(status)
     if not _k32.GlobalMemoryStatusEx(ctypes.byref(status)):
-        raise ctypes.WinError(ctypes.get_last_error())
+        return None
     return int(status.ullAvailPhys)
