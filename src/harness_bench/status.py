@@ -20,6 +20,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from harness_bench import oslock, views
+from harness_bench.config import CELL_ID, LABEL
 from harness_bench.errors import BenchError
 from harness_bench.plan import DEFAULT_PARAMETERS
 
@@ -30,8 +31,8 @@ OUTCOMES = ("completed", "timed_out", "failed", "no outcome", "not started")
 VALIDITY = ("valid", "invalid (infrastructure)", "invalid (benchmark)", "invalid (no model call)", "invalid (model mismatch)",
             "not graded")
 RUN_ID = r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}"
-CELL_ID = re.compile(r"[0-9a-z]{1,16}")
-LABEL = re.compile(r"[A-Za-z0-9.\-]{1,80}")
+# CELL_ID, LABEL: the ids and labels plan.py freezes (config.py owns the one definition; plan.py
+# validates every cell against it at plan time, so status never emits what its own parser rejects).
 CAUSE_CODE = re.compile(r"HB-CELL-[0-9]{3}")
 TIME = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z")
 
