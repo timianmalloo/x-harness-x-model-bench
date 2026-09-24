@@ -788,7 +788,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "c0988ddee6d7dd731383591d9872ea89d0b1767891d9d32edabf20de526843a6"
+      "sourceSha256": "83f83dc18722c834011563e42fbce2e14719f2bac3de1bcf655e84fdf4025ea2"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -924,6 +924,31 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "b278432234edb1a4ac1320f18bc276401296d16169fd21a648088a947e401364"
+    },
+    {
+      "id": "coordination-phase1-finish-run",
+      "path": "docs/coordination/coordination-phase1-finish-run.md",
+      "title": "Run record - coordination-phase1-finish",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2026-10-08",
+      "reviewSuggested": [],
+      "summary": "What happened when the phase-1 finish plan was executed: the measured qualification of grok and agy (both failed; ruling R-4 moved the tracks to Claude Code), the mutation-tool probes, the hardened checker's findings, and planned against actual time for each track.",
+      "tags": [
+        "coordination",
+        "run-record",
+        "planned-vs-actual"
+      ],
+      "links": [
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "1d431712be77972ccbc69fe0b73ac947598f301beb99021aa33a2eb489ff49a5"
     },
     {
       "id": "defect-classes",
@@ -1405,5 +1430,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "071b57ac6984ff7846125cf516fb83bae4929916c2ff7d85e00d3530087ce7d4"
+  "graphSha256": "7b97e44146cbab076fe7dc0212193333775a95f9f7f0b08b3438d8211a6912e6"
 };
