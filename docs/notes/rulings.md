@@ -54,3 +54,23 @@ Append only. One entry per ruling. Newest last.
 - **Conditions:**
   - The Coordinator records each move with the measured evidence.
   - Nobody widens agy's permission mode or upgrades grok while the human is offline. Both are listed as next steps for the human, and R-1 stands for re-qualification when they return.
+
+## R-5 · 2026-09-24 · Owner seat (Fable) · N5: disclose, flag and keep the strict xfail
+
+- **Ruling:** (a) keep `xfail(strict)`, record the contamination in the Proof Pack, and flag Codex cells `user-config exposed (N5)`.
+- **Reasoning:** three independent attempts fail identically:
+  - a per-cell `USERPROFILE`/`HOME`;
+  - Codex's `skip_host_skill_discovery` flag;
+  - a third party's four-flag set on 0.154.
+
+  So a fourth guess is not evidence. The leak is one skill and is identical for pack on and off, so pack comparisons stay valid, and only Codex-against-Claude harness comparisons carry a disclosed confound.
+- **Conditions:**
+  1. The flag appears in the report header of every run with a Codex cell, and on each Codex row or cell in the harness-comparison view. The leaked skill (`microsoft-foundry`) is named as the evidence.
+  2. The `xfail` reason cites `docs/notes/spike-n5-codex-skill-roots.md`.
+  3. N5 reopens on any of these:
+     - the Windows known-folder probe (the note's "cheapest next probe") lands;
+     - Codex's version changes;
+     - a second leaked item appears in the canary;
+     - the strict xfail goes green (a fix to verify).
+  4. No ADR-0013 amendment.
+- **Coordinator's implementation note:** the report names the spike note and the canary as the evidence. The leaked skill's name, which is specific to this operator's profile, is recorded in the Proof Pack rather than hard-coded in the report source.
