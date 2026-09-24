@@ -48,8 +48,7 @@ def _plain() -> bool:
 
 def _run_dir(args) -> Path:
     run_dir = Path(args.runs) / args.run_id
-    if not (run_dir / "plan.json").is_file():
-        raise status.unknown_run_error(args.run_id)
+    status.require_known(run_dir)
     return run_dir
 
 

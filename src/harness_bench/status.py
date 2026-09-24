@@ -74,13 +74,19 @@ def unknown_run_message(run_id: str) -> str:
     return str(unknown_run_error(run_id))
 
 
+def require_known(run_dir: Path) -> None:
+    """The one definition of "is this a known run" (a frozen plan.json): cli.py's `_run_dir` and
+    `build` both call this rather than each re-checking the file (Simplifier: exists once)."""
+    if not (run_dir / "plan.json").is_file():
+        raise unknown_run_error(run_dir.name)
+
+
 def _when(recorded_at: str) -> datetime:
     return datetime.fromisoformat(recorded_at)
 
 
 def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = None) -> Status:
-    if not (run_dir / "plan.json").is_file():
-        raise unknown_run_error(run_dir.name)
+    require_known(run_dir)
     now = now or datetime.now(UTC)
     view = views.load(run_dir)
     events = views.rows(run_dir, "events")
