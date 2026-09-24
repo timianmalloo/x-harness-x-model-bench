@@ -57,7 +57,22 @@ def test_the_engine_consults_the_table_and_writes_only_its_own_rows(tmp_path):  
 def test_every_engine_row_of_the_table_is_written_by_the_engine():
     # a table cannot show that a row is still written, only the writer's source can: a literal scan, no AST
     written = set(re.findall(r'"kind": "([a-z_.]+)"', ENGINE_SOURCE))
-    assert lifecycle.ENGINE_TRANSITIONS <= written, sorted(lifecycle.ENGINE_TRANSITIONS - written)
+    assert lifecycle.ENGINE_TRANSITIONS == written, sorted(lifecycle.ENGINE_TRANSITIONS ^ written)
+
+
+def test_each_writer_may_write_its_own_rows_and_only_those():
+    for kind, t in lifecycle.TABLE.items():
+        lifecycle.check_writer(kind, t.writer)
+        for other in {"engine", "grading", "ledger"} - {t.writer}:
+            with pytest.raises(lifecycle.ConformanceError):
+                lifecycle.check_writer(kind, other)
+    with pytest.raises(lifecycle.ConformanceError):
+        lifecycle.check_writer(None, "engine")
+
+
+def test_the_table_is_immutable():
+    with pytest.raises(AttributeError):
+        lifecycle.TABLE["run.started"].writer = "grading"
 
 
 def test_a_well_ordered_run_conforms():

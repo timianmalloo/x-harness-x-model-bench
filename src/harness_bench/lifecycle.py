@@ -112,9 +112,9 @@ def replay(events: list[dict], parallelism: int, scores: list[dict] = ()) -> Non
                 fail(cell, WRITE_INTENT_ONCE, kind)
             if stopped:
                 fail(cell, NO_LAUNCH_AFTER_STOP, kind)
-        elif not done or done[0] != "cell.launch_intent":
+        elif not done:  # the intent is the only first transition, so a cell's record always starts with it
             fail(cell, FOLLOWS_INTENT, kind)
-        if kind in done and kind != "cell.launch_intent":
+        if kind in done:  # a second intent has already failed above
             fail(cell, AT_MOST_ONCE, kind)
         if any(k not in done for k in t.after):
             fail(cell, t.after_rule, kind)
