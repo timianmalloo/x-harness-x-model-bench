@@ -1445,6 +1445,34 @@ window.DOCS_INDEX = {
       "sourceSha256": "d6fd2b79eed4773f5d2220b5c439eca0f717c3f49801a1fdad26666c3dc81d2b"
     },
     {
+      "id": "findings-t8-reader-and-paths",
+      "path": "docs/proof/findings-T8.md",
+      "title": "Findings → tests: track T8 reader-and-paths",
+      "type": "proof-pack",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2026-12-22",
+      "reviewSuggested": [],
+      "summary": "Two loop-back defects found by the real E2E. T8-1: the Codex reader took the pack-on cell's injected AGENTS.md instructions block as the prompt (US-10). T8-2: a relative --tools-dir left the pack root relative, so pack-apply.py was looked up under the cell working copy and never found (HB-CELL-113). Red 05f52fa / 62c38ba, fixed in 9ddbe38, with both t8.json mutations killed.",
+      "tags": [
+        "proof",
+        "findings",
+        "red-first",
+        "T8",
+        "telemetry",
+        "cli"
+      ],
+      "links": [
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "711d2ead2e4fbe97630a41519ae01465d0b3cc9fe0ca8cb041b4fadd58495a45"
+    },
+    {
       "id": "proof-findings-t5",
       "path": "docs/proof/findings-T5.md",
       "title": "T5 findings: N5 spike (Codex host skill discovery)",
@@ -1627,5 +1655,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "78a8c39db45d265eb66add3062f8b76460e1acfc57ce0528ddc5f8cb998205e6"
+  "graphSha256": "49556f01af3422d985fd9503df1a31589cac3fcb2a191c24e03a472ae6b8a91d"
 };

@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T07:51:12Z",
+  "generated": "2026-09-24T08:18:51Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -686,6 +686,35 @@ window.AUDIT_DATA = {
         "acceptance_met": true
       },
       "started_at": "2026-09-24T07:49:03Z",
+      "duration_seconds": 129.0
+    },
+    {
+      "id": "al-01M397XXTARDXEHS0N3CST0CH5",
+      "shortname": "join-t8",
+      "datetime": "2026-09-24T08:18:51Z",
+      "session": "coord-opus",
+      "prompt": "the join of track/t8-reader-and-paths into impl/phase1",
+      "summary": "T8 loop-back: US-10 codex reader fix with real scrubbed pack-on fixture; relative --tools-dir resolved absolute (HB-CELL-113); red 05f52fa/62c38ba re-verified; t8.json 2/2 killed recount_seconds=128 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/proof/findings-T8.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Close the two defects the real E2E found",
+      "done_when": "join green; both red SHAs re-run by the Coordinator; t8.json all killed",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-24T08:16:42Z",
       "duration_seconds": 129.0
     }
   ],
