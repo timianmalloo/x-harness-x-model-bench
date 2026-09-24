@@ -16,7 +16,7 @@ Rules, each defined once here:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
@@ -43,15 +43,22 @@ def segment_paths(run_dir: Path, fact: str) -> list[Path]:
     return sorted(folder.glob("*.jsonl")) if folder.is_dir() else []
 
 
-def completed_passes(run_dir: Path) -> set[str]:
-    done = set()
+def _completions(run_dir: Path) -> dict[str, dict]:
+    """grading_id -> its `grading.completed` row, for each completed pass (a sealed events segment holding one)."""
+    done = {}
     for path in segment_paths(run_dir, "events"):
         if not path.stem.startswith(GRADE_PREFIX):
             continue
         report = ledger.verify_segment(path)
-        if report.sealed and not report.error and any(r["kind"] == "grading.completed" for r in ledger.read_segment(path)):
-            done.add(path.stem)
+        if report.sealed and not report.error:
+            row = next((r for r in ledger.read_segment(path) if r["kind"] == "grading.completed"), None)
+            if row is not None:
+                done[path.stem] = row
     return done
+
+
+def completed_passes(run_dir: Path) -> set[str]:
+    return set(_completions(run_dir))
 
 
 def rows(run_dir: Path, fact: str) -> list[dict]:
@@ -161,14 +168,18 @@ def _ts(value) -> datetime | None:
         return None
 
 
-def busy_ms(calls: list[dict]) -> Measure:
-    """Milliseconds covered by the union of the calls' [start, end] intervals (overlaps counted once)."""
-    spans = []
-    for c in calls:
-        start, end = _ts(c.get("start")), _ts(c.get("end"))
-        if start is None or end is None or end < start:
-            return Measure(None, "an interval has no start or end")
-        spans.append((start, end))
+NO_MODEL_START = "the native record gives no model-call start time"
+
+
+def busy_ms(calls: list[dict], *, positive: bool = False, missing: str = "an interval has no start or end") -> Measure:
+    """Milliseconds covered by the union of the calls' [start, end] spans (overlaps counted once).
+
+    The one span rule: both ends recorded and the end not before the start; with `positive`, strictly after it
+    (a model call with no length means its start was not recorded). One call that breaks it makes the whole
+    measure NOT_RECORDED with `missing` as the reason, never a partial sum."""
+    spans = [(_ts(c.get("start")), _ts(c.get("end"))) for c in calls]
+    if any(start is None or end is None or end < start or (positive and end == start) for start, end in spans):
+        return Measure(None, missing)
     total, cur_start, cur_end = 0.0, None, None
     for start, end in sorted(spans):
         if cur_end is None or start > cur_end:
@@ -196,14 +207,14 @@ def _model_time(source: str, calls: list[dict] | None) -> Measure:
         return Measure(None, "the native record misses calls (token source acp_turn)")
     if calls is None:
         return Measure(None, "not graded")
-    if not calls or not all(_has_duration(c) for c in calls):
-        return Measure(None, "the native record gives no model-call start time")
-    return busy_ms(calls)
+    if not calls:
+        return Measure(None, NO_MODEL_START)
+    return busy_ms(calls, positive=True, missing=NO_MODEL_START)
 
 
-def _has_duration(call: dict) -> bool:
-    start, end = _ts(call.get("start")), _ts(call.get("end"))
-    return start is not None and end is not None and end > start
+def turn_usage(row: dict) -> normalize.TurnUsage:
+    """The one mapping of a `turn_usage` row to its value object (views and the grading pass both read it)."""
+    return normalize.TurnUsage(**{f.name: row[f.name] for f in fields(normalize.TurnUsage)})
 
 
 def _idle(wall: Measure, model: Measure, tool: Measure) -> Measure:
@@ -241,8 +252,7 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     if extraction is not None:
         calls = [r for r in facts["model_calls"] if r["cell_id"] == cid and r["extraction_id"] == extraction]
         tools = [r for r in facts["tool_calls"] if r["cell_id"] == cid and r["extraction_id"] == extraction]
-    usage = [normalize.TurnUsage(r["model"], r["uncached_input"], r["cache_read"], r["cache_write"], r["output"], r["reasoning"])
-             for r in facts["turn_usage"] if r["cell_id"] == cid]
+    usage = [turn_usage(r) for r in facts["turn_usage"] if r["cell_id"] == cid]
     ex = Extraction(model_calls=[ModelCall(r["native_ordinal"], r["model"], r["uncached_input"], r["cache_read"], r["cache_write"],
                                            r["output"], r["reasoning"], r["start"], r["end"]) for r in calls or []])
     recorded = source == "acp_turn" or calls is not None
@@ -359,9 +369,65 @@ class Finding:
     message: str
 
 
+def _heads(run_dir: Path, segment_id: str, heads, owner: str) -> list[Finding]:
+    """Each segment `heads` names (`<fact>/<segment_id>`) exists, is sealed, and ends at the recorded head."""
+    if not isinstance(heads, dict):
+        return [Finding("HB-LED-002", "error", f"{owner}: heads is not a fact -> head map")]
+    out = []
+    for fact, head in sorted(heads.items()):
+        path = run_dir / fact / f"{segment_id}.jsonl"
+        if not path.is_file():
+            out.append(Finding("HB-LED-002", "error", f"{fact}/{segment_id}: missing, but {owner} records its head"))
+            continue
+        report = ledger.verify_segment(path)
+        if not report.sealed:
+            out.append(Finding("HB-LED-002", "error", f"{fact}/{segment_id}: not sealed, but {owner} records its head"))
+        elif report.head_hash != head:
+            out.append(Finding("HB-LED-002", "error", f"{fact}/{segment_id}: head does not match the one {owner} records"))
+    return out
+
+
+def _sealed_record(run_dir: Path) -> list[Finding]:
+    """Every completed pass and every completed run against the heads it recorded (ruling R-2).
+
+    - A completed pass: all its segments are sealed, and `grading.completed.heads` (never events) match. A pass
+      recorded before `heads` existed verifies with a warning.
+    - A completed run: `run.completed.segment_heads` match its engine segments; its events head is the row
+      `run.completed` follows, and the in-run pass its `grading` summary names matches that summary's heads
+      (events included), so the pass cannot be cut back into an abandoned one."""
+    out: list[Finding] = []
+    for gid, row in sorted(_completions(run_dir).items()):
+        owner = f"grading.completed in events/{gid}"
+        for fact in FACTS:
+            path = run_dir / fact / f"{gid}.jsonl"
+            if path.is_file() and not ledger.verify_segment(path).sealed:
+                out.append(Finding("HB-LED-002", "error", f"{fact}/{gid}: not sealed, but {owner} marks the pass complete"))
+        if "heads" in row:
+            out += _heads(run_dir, gid, row["heads"], owner)
+        else:
+            out.append(Finding("HB-LED-002", "warning", f"events/{gid}: grading.completed records no heads "
+                                                        "(written before ruling R-2); only its seals are checked"))
+    for path in segment_paths(run_dir, "events"):
+        if not path.stem.startswith(ENGINE_PREFIX):
+            continue
+        for row in ledger.read_segment(path):
+            if row["kind"] != "run.completed":
+                continue
+            owner = f"run.completed in events/{path.stem}"
+            heads = dict(row.get("segment_heads") or {})
+            if heads.pop("events", None) != row["prev_hash"] or not ledger.verify_segment(path).sealed:
+                out.append(Finding("HB-LED-002", "error", f"events/{path.stem}: {owner} does not follow the events head it records"))
+            out += _heads(run_dir, path.stem, heads, owner)
+            grading = row.get("grading")
+            if isinstance(grading, dict) and "heads" in grading:
+                out += _heads(run_dir, str(grading.get("grading_id")), grading["heads"], f"{owner} (grading)")
+    return out
+
+
 def verify(run_dir: Path) -> list[Finding]:
-    """`bench verify`: every segment's chain and seal, abandoned passes, duplicates, and each archive against
-    its `archive_hash` and its `archive_files` rows. An error is an integrity failure; a warning is not."""
+    """`bench verify`: every segment's chain and seal, the heads each completed pass and run recorded, abandoned
+    passes, duplicates, and each archive against its `archive_hash` and its `archive_files` rows. An error is an
+    integrity failure; a warning is not."""
     out: list[Finding] = []
     done = completed_passes(run_dir)
     for fact in FACTS:
@@ -371,6 +437,9 @@ def verify(run_dir: Path) -> list[Finding]:
                 out.append(Finding("HB-LED-002", "error", f"{fact}/{path.name}: {report.detail}"))
             elif path.stem.startswith(GRADE_PREFIX) and path.stem not in done:
                 out.append(Finding("HB-LED-004", "warning", f"{fact}/{path.stem}: abandoned grading segment, skipped by views"))
+    if any(f.level == "error" for f in out):
+        return out
+    out += _sealed_record(run_dir)
     if any(f.level == "error" for f in out):
         return out
     try:

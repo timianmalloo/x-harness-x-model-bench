@@ -3,7 +3,8 @@
 - A pass holds `grade.lock` (HB-GRD-001 when held) and writes only its own segments, one per fact, named
   by its `grading_id` (`grade-<utc>-<rand>`). It seals them all; `grading.completed` is written after the
   other facts are sealed and before the events segment is sealed, so a pass that died at any point is
-  simply not completed, and views skip it.
+  simply not completed, and views skip it. `grading.completed` records `heads` (fact -> sealed head) for
+  the other facts, never events (a segment cannot carry its own head), so `bench verify` can tie them to it.
 - A grading segment of a pass that did not complete is named once, in this pass's own events segment
   (`segment.abandoned`, HB-LED-004). Nobody writes into another writer's file.
 - Extractions are written once: a cell's `model_calls` and `tool_calls` are written only when no
@@ -93,8 +94,7 @@ class _Pass:
         held = {(r["cell_id"], r["extraction_id"]) for fact in ("model_calls", "tool_calls") for r in views.rows(self.run_dir, fact)}
         usage: dict[str, list[normalize.TurnUsage]] = {}
         for r in views.rows(self.run_dir, "turn_usage"):
-            usage.setdefault(r["cell_id"], []).append(normalize.TurnUsage(r["model"], r["uncached_input"], r["cache_read"],
-                                                                           r["cache_write"], r["output"], r["reasoning"]))
+            usage.setdefault(r["cell_id"], []).append(views.turn_usage(r))
         archived = {e["cell_id"]: e["archive_attempt"] for e in events if e["kind"] == "cell.archived"}
         sessions = {e["cell_id"]: e["session_id"] for e in events if e["kind"] == "attempt.session_opened"}
         try:
@@ -111,7 +111,8 @@ class _Pass:
                     self._grade_cell(cell, archived[cell["cell_id"]], sessions.get(cell["cell_id"], ""), held, usage)
                     graded += 1
             heads = {fact: self.writers[fact].seal() for fact in PASS_FACTS if fact != "events"}
-            self.append("events", {"kind": "grading.completed", "grading_id": self.grading_id, "cells_graded": graded})
+            self.append("events", {"kind": "grading.completed", "grading_id": self.grading_id, "cells_graded": graded,
+                                   "heads": dict(heads)})  # ruling R-2: bench verify checks each against its seal
             heads["events"] = self.writers["events"].seal()
         finally:
             for w in self.writers.values():
@@ -150,6 +151,9 @@ class _Pass:
             value, reason, evidence = None, "price list changed since the plan (hash mismatch)", ""
         elif source == "native_record" and ex is None:
             value, reason, evidence = None, missing, ""
+        elif source == "native_record" and ex.missing:  # a usage field the record lacks is NOT_RECORDED, never 0 (US-27)
+            fields = ", ".join(sorted({m.field for m in ex.missing}))
+            value, reason, evidence = None, f"HB-TEL-001 native-record fields missing: {fields}", ""
         else:
             totals = normalize.totals(source, ex or Extraction(), usage.get(cid, []))
             value, reason, evidence = cost.cost_usd(totals, self.prices, self.plan["created_at"][:10])

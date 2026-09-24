@@ -1,0 +1,75 @@
+{
+ "in_run_pass": "grade-20260924T021711-8dac72",
+ "later_pass": "grade-20260924T021711-5db7c6",
+ "produced_at": "bb993db44ed159622652081120deb8e5ce738466",
+ "segments": {
+  "archive_files/engine-1.jsonl": {
+   "head_hash": "a92c019ed5f555fa1a91bf9e2daabcd0fee9b2e8b39fcc33995c8de423443e8b",
+   "rows": 4,
+   "sealed": true,
+   "sha256": "16d12e90bc6ce1d013efb70f8e160f91584d62ef3b34f092fcdbd819abdd6576"
+  },
+  "events/engine-1.jsonl": {
+   "head_hash": "46f0fbb0cfe8ac01fc3a3e8dbaa5ab740467af1b595bf18b99ce653ab8f6c21c",
+   "rows": 20,
+   "sealed": true,
+   "sha256": "9fae874f434bbdb5d62918c8464c6961f26976545c452d34d46216514f80dc8a"
+  },
+  "events/grade-20260924T021711-5db7c6.jsonl": {
+   "head_hash": "c57c53c84bd4a85ec274cc19c1d8c3cee37561bc2ca9c2c72e2c6a6f12c88f8e",
+   "rows": 2,
+   "sealed": true,
+   "sha256": "b78efaebf49358c93d98b97e5923e26a550f3f6fc999f412aeea020b5f900564"
+  },
+  "events/grade-20260924T021711-8dac72.jsonl": {
+   "head_hash": "31cdbb6dc570128725060acdfffcf3ef2c195c15ac69d815799a1833b0e52555",
+   "rows": 2,
+   "sealed": true,
+   "sha256": "1d2f3b74e80e97aa05583907e3ed0951290508abd32d16135187352ae3dfe87f"
+  },
+  "model_calls/grade-20260924T021711-5db7c6.jsonl": {
+   "head_hash": "06b2bcbfbd149d695fa99243467c564a9b53f7cb8e82aa5ad844503d7bf4a196",
+   "rows": 0,
+   "sealed": true,
+   "sha256": "b46f8f486eb011d29a2738b1d8b2da61e029d7dd0b362a04e0b6beb375b48c99"
+  },
+  "model_calls/grade-20260924T021711-8dac72.jsonl": {
+   "head_hash": "e262ecc2edf79a41262ba15963a571f9a81dbe78510db6380dff5a768c20df42",
+   "rows": 6,
+   "sealed": true,
+   "sha256": "c89b629acd98e398ecfd7fd00788aefc812091e1c663282eba2e6e605687e75d"
+  },
+  "scores/grade-20260924T021711-5db7c6.jsonl": {
+   "head_hash": "32a270811a27a53cbcdf0c41c2e466487a1b8612b119d7fd7b68b22090cabcef",
+   "rows": 6,
+   "sealed": true,
+   "sha256": "1899ed3b59649cff82fb6e138b86037b85ca6c66f96db0acc74c757cde4d62eb"
+  },
+  "scores/grade-20260924T021711-8dac72.jsonl": {
+   "head_hash": "69d0c285b640fcb1be4a7beeda8ea8b35bf843c6e159b88de88a1453a9eeeeb1",
+   "rows": 6,
+   "sealed": true,
+   "sha256": "9aad90313610b102ccb944fff5fb0d2fce49e3bfe2388fd88640e94d12a20912"
+  },
+  "tool_calls/grade-20260924T021711-5db7c6.jsonl": {
+   "head_hash": "06b2bcbfbd149d695fa99243467c564a9b53f7cb8e82aa5ad844503d7bf4a196",
+   "rows": 0,
+   "sealed": true,
+   "sha256": "b46f8f486eb011d29a2738b1d8b2da61e029d7dd0b362a04e0b6beb375b48c99"
+  },
+  "tool_calls/grade-20260924T021711-8dac72.jsonl": {
+   "head_hash": "1273713a9e960cd0f66a3db01bad50d7904061ca885c73227acf4367198f0ea8",
+   "rows": 4,
+   "sealed": true,
+   "sha256": "47f60d013d49b319a9d1ba024708180634d2310d21cd602816809543a3ccb4a8"
+  },
+  "turn_usage/engine-1.jsonl": {
+   "head_hash": "e4ea7c910d68c366192ed722892dfbf0fac684c7d9b8ad443f0e33c70b1d91bf",
+   "rows": 2,
+   "sealed": true,
+   "sha256": "d5467e57dc9c63ddaf55e5d005b8ec55a2c63c9759d44696cef6e48746a2833c"
+  }
+ },
+ "src_dirty": false,
+ "tampered": "scores/grade-20260924T021711-5db7c6.jsonl: seal and last row cut, then re-sealed"
+}
