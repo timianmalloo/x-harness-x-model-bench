@@ -2,6 +2,8 @@
 harness: codex
 home_env: CODEX_HOME
 credential: { source: "~/.codex/auth.json", name: "auth.json" }
+credential_kind: "subscription login (copied)"
+command: ["{node}", "{adapter}"]
 files:
   config.toml: 'model = "{model}"'
 env:

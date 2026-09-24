@@ -2,6 +2,8 @@
 harness: claude-code
 home_env: CLAUDE_CONFIG_DIR
 credential: { source: "~/.claude/.credentials.json", name: ".credentials.json" }
+credential_kind: "subscription login (copied)"
+command: ["{node}", "{adapter}"]
 files:
   settings.json: '{"permissions": {"allow": ["Bash", "Edit", "Write", "Read", "Glob", "Grep"], "defaultMode": "dontAsk"}}'
 env:

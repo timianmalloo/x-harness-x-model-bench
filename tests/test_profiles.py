@@ -16,6 +16,122 @@ class FakeBuild:
     adapter = Path("C:/tools/adapter/dist/index.js")
 
 
+def test_profile_registry_has_one_reader_build_and_yaml_per_harness():
+    yaml_stems = {path.stem for path in (ROOT / "bench" / "profiles").glob("*.yaml")}
+    assert set(profiles.HARNESSES) == set(profiles.READERS) == set(tools.LAYOUT) == yaml_stems
+
+
+def test_copilot_profile_declares_native_acp_and_credential_store(tmp_path):
+    p = profiles.load(ROOT, "copilot")
+    assert (p.harness, p.home_env, p.credential_source, p.credential_name) == ("copilot", "COPILOT_HOME", None, None)
+    assert p.files == {} and p.mode is None
+    assert p.command == ("{exe}", "--acp", "--model", "{model}", "--allow-tool", "shell", "--allow-tool", "write")
+    assert p.env == {"COPILOT_AUTO_UPDATE": "false"}
+    assert (p.set_model, p.credential_kind) == (True, "subscription login (credential store)")
+    assert (p.record_glob, p.usage_source, p.auxiliary_models) == (
+        "session-state/{session_id}/events.jsonl", "native_record", ())
+
+
+def test_copilot_null_credential_seeds_and_cleans_without_touching_other_files(tmp_path):
+    p = profiles.Profile("copilot", "COPILOT_HOME", None, None)
+    home = tmp_path / "home"
+    p.seed_home(home, model="gpt-6-sol")
+    sentinel = home / "events.jsonl"
+    sentinel.write_text("native record", encoding="utf-8")
+    p.clean_home(home)
+    assert sentinel.read_text(encoding="utf-8") == "native record"
+    assert profiles.ProfileLauncher(p, tmp_path, {}).credential_names == frozenset()
+
+
+def test_existing_profiles_declare_commands_equal_to_the_old_adapter_argv(tmp_path):
+    import shutil
+
+    for harness in ("claude-code", "codex"):
+        p = profiles.load(ROOT, harness, credential_source=tmp_path / "c")
+        assert p.command == ("{node}", "{adapter}")
+        assert p.argv(FakeBuild(), "model-is-unused") == [shutil.which("node"), str(FakeBuild.adapter)]
+
+
+def test_existing_adapter_profiles_keep_the_old_argv_call_shape(tmp_path):
+    import shutil
+
+    for harness in ("claude-code", "codex"):
+        p = profiles.load(ROOT, harness, credential_source=tmp_path / "c")
+        assert p.argv(FakeBuild()) == [shutil.which("node"), str(FakeBuild.adapter)]
+
+
+def test_copilot_argv_uses_the_pinned_exe_and_each_cells_model():
+    p = profiles.load(ROOT, "copilot")
+    for model in ("gpt-6-sol", "other-advertised-model"):
+        assert p.argv(FakeBuild(), model) == [str(FakeBuild.exe), "--acp", "--model", model,
+                                               "--allow-tool", "shell", "--allow-tool", "write"]
+
+
+def test_copilot_command_requires_an_explicit_model():
+    p = profiles.load(ROOT, "copilot")
+    with pytest.raises(ValueError, match="model is required"):
+        p.argv(FakeBuild())
+
+
+def test_command_template_rejects_an_adapter_placeholder_without_an_adapter(tmp_path):
+    from harness_bench.errors import BenchError
+
+    p = profiles.load(ROOT, "codex", credential_source=tmp_path / "c")
+    build = FakeBuild()
+    build.adapter = None
+    with pytest.raises(BenchError, match="HB-PRE-007"):
+        p.argv(build, "gpt-6-sol")
+
+
+def test_native_copilot_command_does_not_need_node_or_an_adapter(monkeypatch):
+    p = profiles.load(ROOT, "copilot")
+    build = FakeBuild()
+    build.adapter = None
+    monkeypatch.setattr(profiles.shutil, "which", lambda _: None)
+    assert p.argv(build, "gpt-6-sol") == [str(build.exe), "--acp", "--model", "gpt-6-sol",
+                                          "--allow-tool", "shell", "--allow-tool", "write"]
+
+
+def test_adapter_command_rejects_missing_node(monkeypatch, tmp_path):
+    from harness_bench.errors import BenchError
+
+    p = profiles.load(ROOT, "codex", credential_source=tmp_path / "c")
+    monkeypatch.setattr(profiles.shutil, "which", lambda _: None)
+    with pytest.raises(BenchError, match="HB-PRE-007"):
+        p.argv(FakeBuild(), "gpt-6-sol")
+
+
+def test_copilot_cell_env_drops_hosted_github_credentials_and_copilot_overrides(tmp_path):
+    p = profiles.load(ROOT, "copilot")
+    seeded = {name: "leak" for name in ("GH_TOKEN", "GITHUB_TOKEN", "GH_HOST", "COPILOT_CUSTOM_INSTRUCTIONS_DIRS",
+                                        "COPILOT_MODEL", "COPILOT_ALLOW_ALL")}
+    env = p.cell_env({**seeded, "PATH": "safe"}, tmp_path / "home", FakeBuild(), "gpt-6-sol", "")
+    assert all(name not in env for name in seeded)
+    assert env["COPILOT_HOME"] == str(tmp_path / "home")
+    assert env["COPILOT_AUTO_UPDATE"] == "false"
+    assert env["PATH"] == "safe"
+
+
+def test_copilot_launcher_reports_model_setter_and_credential_store(tmp_path):
+    p = profiles.load(ROOT, "copilot")
+    launcher = profiles.ProfileLauncher(p, tmp_path, {})
+    assert (launcher.set_model, launcher.credential_kind, launcher.credential_names) == (
+        True, "subscription login (credential store)", frozenset())
+
+
+def test_copilot_launcher_fills_each_cells_model_and_finds_its_record(tmp_path):
+    p = profiles.load(ROOT, "copilot")
+    launcher = profiles.ProfileLauncher(p, tmp_path, {})
+    launcher.build = FakeBuild()
+    for model in ("gpt-6-sol", "second-model"):
+        argv, _ = launcher.argv_env({"model": model}, tmp_path / "home", "")
+        assert argv[3] == model
+    record = tmp_path / "home" / "session-state" / "session-a" / "events.jsonl"
+    record.parent.mkdir(parents=True)
+    record.write_text("{}\n", encoding="utf-8")
+    assert launcher.records(tmp_path / "home", "session-a") == [record]
+
+
 def test_claude_profile_seeds_settings_and_a_credential_copy(tmp_path):
     cred = tmp_path / "src-cred.json"
     cred.write_text('{"secret": "x"}', encoding="utf-8")
@@ -108,7 +224,7 @@ def test_the_launcher_speaks_for_its_profile(tmp_path):
 
 def test_argv_runs_the_pinned_adapter_with_node(tmp_path):
     p = profiles.load(ROOT, "codex", credential_source=tmp_path / "c")
-    argv = p.argv(FakeBuild())
+    argv = p.argv(FakeBuild(), "gpt-6-sol")
     assert argv[0].lower().endswith(("node.exe", "node")) and argv[1] == str(FakeBuild.adapter)
 
 
@@ -150,7 +266,7 @@ def test_real_handshake_with_the_pinned_build(harness, model, tmp_path):
     p.seed_home(home, model=model)
     try:
         env = p.cell_env(dict(__import__("os").environ), home=home, build=build, model=model, traceparent="")
-        cell = procs.spawn(p.argv(build), cwd=str(ws), env=env)
+        cell = procs.spawn(p.argv(build, model), cwd=str(ws), env=env)
         try:
             result = driver.run_turn(cell, cwd=ws, prompt="unused", mode=p.mode, handshake_timeout=60,
                                      before_send=lambda sid: (_ for _ in ()).throw(KeyboardInterrupt))

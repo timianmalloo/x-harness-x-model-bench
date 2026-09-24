@@ -1,0 +1,14 @@
+# Copilot cell profile (ADR-0003, ADR-0013; docs/design/phase2-copilot-profile.md). Native ACP: no adapter.
+harness: copilot
+home_env: COPILOT_HOME
+credential: null
+credential_kind: "subscription login (credential store)"
+files: {}
+command: ["{exe}", "--acp", "--model", "{model}", "--allow-tool", "shell", "--allow-tool", "write"]
+env:
+  COPILOT_AUTO_UPDATE: "false"
+mode: null
+set_model: true
+record_glob: "session-state/{session_id}/events.jsonl"
+usage_source: native_record
+auxiliary_models: []
