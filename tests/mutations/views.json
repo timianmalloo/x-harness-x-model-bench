@@ -202,5 +202,26 @@
   "find": "    if not isinstance(heads, dict):\n",
   "replace": "    if False:\n",
   "tests": ["tests/test_verify.py::test_a_malformed_heads_record_is_exit_5_not_a_crash"]
+ },
+ {
+  "name": "a later pass cut before grading.completed and re-sealed reads as abandoned (N1)",
+  "file": "src/harness_bench/views.py",
+  "find": "                if fact == \"events\" and report.sealed:  # a pass seals its events only after grading.completed\n",
+  "replace": "                if False:\n",
+  "tests": ["tests/test_verify.py::test_a_later_pass_cut_before_grading_completed_and_resealed_is_exit_5"]
+ },
+ {
+  "name": "a sealed fact segment of an interrupted pass is an error",
+  "file": "src/harness_bench/views.py",
+  "find": "                if fact == \"events\" and report.sealed:  # a pass seals its events only after grading.completed\n",
+  "replace": "                if report.sealed:\n",
+  "tests": ["tests/test_verify.py::test_an_in_progress_or_interrupted_pass_is_a_warning_never_an_error"]
+ },
+ {
+  "name": "an unsealed events segment of an interrupted pass is an error",
+  "file": "src/harness_bench/views.py",
+  "find": "                if fact == \"events\" and report.sealed:  # a pass seals its events only after grading.completed\n",
+  "replace": "                if fact == \"events\":\n",
+  "tests": ["tests/test_verify.py::test_an_in_progress_or_interrupted_pass_is_a_warning_never_an_error"]
  }
 ]

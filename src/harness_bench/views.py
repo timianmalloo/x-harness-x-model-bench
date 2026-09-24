@@ -436,7 +436,10 @@ def verify(run_dir: Path) -> list[Finding]:
             if report.error:
                 out.append(Finding("HB-LED-002", "error", f"{fact}/{path.name}: {report.detail}"))
             elif path.stem.startswith(GRADE_PREFIX) and path.stem not in done:
-                out.append(Finding("HB-LED-004", "warning", f"{fact}/{path.stem}: abandoned grading segment, skipped by views"))
+                if fact == "events" and report.sealed:  # a pass seals its events only after grading.completed
+                    out.append(Finding("HB-LED-002", "error", f"events/{path.stem}: sealed, but holds no grading.completed"))
+                else:
+                    out.append(Finding("HB-LED-004", "warning", f"{fact}/{path.stem}: abandoned grading segment, skipped by views"))
     if any(f.level == "error" for f in out):
         return out
     out += _sealed_record(run_dir)
