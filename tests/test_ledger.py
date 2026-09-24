@@ -148,6 +148,100 @@ def test_a_torn_line_that_is_not_the_tail_is_a_break(tmp_path):
     assert ledger.verify_segment(path).error == "HB-LED-002"
 
 
+# the structural rules a re-hashing forger must still meet (the chain is keyless) --------------------
+
+
+def _append_raw(path, row: dict) -> None:
+    with path.open("ab") as f:
+        f.write(ledger.canonical(row) + b"\n")
+
+
+def test_a_segment_has_one_writer_until_it_closes(tmp_path):
+    path = _write(tmp_path)
+    first = ledger.SegmentWriter.reopen(path)
+    try:
+        with pytest.raises(BenchError) as e:
+            ledger.SegmentWriter.reopen(path)
+        assert e.value.code == "HB-LED-002" and "already has a writer" in e.value.message
+    finally:
+        first.close()
+    ledger.SegmentWriter.reopen(path).close()  # released on close
+
+
+def test_a_sealed_segment_is_never_reopened(tmp_path):
+    path = _write(tmp_path, seal=True)
+    with pytest.raises(BenchError) as e:
+        ledger.SegmentWriter.reopen(path)
+    assert e.value.code == "HB-LED-002" and "is sealed" in e.value.message
+
+
+@pytest.mark.parametrize(("forged", "detail"), [
+    ("count", "seal does not match the segment"),
+    ("head", "seal does not match the segment"),
+    ("seq", "chain break at line 4"),
+])
+def test_a_re_hashed_seal_must_still_match_its_segment(tmp_path, forged, detail):
+    path = _write(tmp_path, n=3)
+    rows = ledger.read_segment(path)
+    head = rows[-1]["hash"]
+    seal = {"kind": ledger.SEAL, "count": 2 if forged == "count" else 3, "head_hash": rows[0]["hash"] if forged == "head" else head}
+    _append_raw(path, ledger._chain(seal, 5 if forged == "seq" else 4, head))
+    report = ledger.verify_segment(path)
+    assert (report.error, report.detail) == ("HB-LED-002", detail)
+
+
+def test_bytes_after_the_seal_are_a_break_not_a_torn_tail(tmp_path):
+    path = _write(tmp_path, seal=True)
+    with path.open("ab") as f:
+        f.write(b'{"kind":"cell.prompt_se')
+    report = ledger.verify_segment(path)
+    assert (report.error, report.detail) == ("HB-LED-002", "bytes after the seal")
+
+
+def test_a_chained_line_after_the_seal_is_a_break(tmp_path):
+    path = _write(tmp_path, n=2, seal=True)
+    seal = json.loads(path.read_bytes().splitlines()[-1])
+    _append_raw(path, ledger._chain({"kind": "cell.prompt_sent"}, 4, seal["hash"]))
+    report = ledger.verify_segment(path)
+    assert (report.error, report.detail) == ("HB-LED-002", "line 4 follows the seal")
+
+
+def test_a_line_not_in_canonical_form_is_a_break(tmp_path):
+    path = _write(tmp_path)
+    lines = path.read_bytes().splitlines(keepends=True)
+    lines[1] = json.dumps(json.loads(lines[1]), sort_keys=True).encode() + b"\n"  # same content, spaced: its hash still holds
+    path.write_bytes(b"".join(lines))
+    report = ledger.verify_segment(path)
+    assert (report.error, report.detail) == ("HB-LED-002", "line 2 is not in canonical form")
+
+
+def test_a_float_in_a_stored_line_is_a_break_not_a_crash(tmp_path):
+    path = _write(tmp_path, n=1)
+    rows = ledger.read_segment(path)
+    body = {"kind": "x", "v": 1, "seq": 2, "prev_hash": rows[0]["hash"]}
+    line = ledger.canonical(body)[:-1] + b',"hash":"0"}'
+    with path.open("ab") as f:
+        f.write(line.replace(b'"v":1', b'"v":1.5') + b"\n")
+    report = ledger.verify_segment(path)
+    assert report.error == "HB-LED-002" and report.detail.startswith("line 2: $.v: float is not allowed")
+
+
+def test_canonical_rejects_a_non_string_key():
+    with pytest.raises(TypeError, match="keys must be strings"):
+        ledger.canonical({"v": {1: "x"}})
+
+
+def test_a_record_may_not_forge_a_seal_or_its_chain_fields(tmp_path):  # T2-7: a caller's kind is never the seal's
+    w = ledger.SegmentWriter.create(tmp_path / "events", "engine-1")
+    try:
+        for record in ({"kind": ledger.SEAL, "count": 0, "head_hash": w.head_hash}, {"kind": "x", "seq": 1}):
+            with pytest.raises(ValueError):
+                w.append(record)
+    finally:
+        w.close()
+    assert ledger.verify_segment(tmp_path / "events" / "engine-1.jsonl").error is None
+
+
 # property: any byte change, cut or insert is detected -------------------------------------
 
 @settings(max_examples=150, deadline=None)
