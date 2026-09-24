@@ -19,7 +19,7 @@ import sys
 import uuid
 from pathlib import Path
 
-from harness_bench import gitsafe, procs
+from harness_bench import archive, gitsafe, procs
 from harness_bench.errors import BenchError
 
 INSTRUCTION_FILES = ("CLAUDE.md", ".claude/CLAUDE.md", "AGENTS.md")
@@ -41,6 +41,19 @@ def _fresh(dest: Path) -> Path:
     tmp = dest.parent / f".{dest.name}.{uuid.uuid4().hex[:8]}.tmp"
     tmp.mkdir(parents=True)
     return tmp
+
+
+def _discard(tmp: Path) -> None:
+    """Best-effort cleanup of a losing or abandoned tmp build. Git leaves its object files read-only
+    on Windows, so a plain rmtree fails silently (that failure is the T9-1 disk leak); make_writable
+    (archive.py) clears the bit first. A cleanup failure is still swallowed here rather than raised:
+    this runs in a `finally`, often while a real build exception is already propagating, and a
+    cleanup error must never replace or mask that exception."""
+    if tmp.exists():
+        try:
+            shutil.rmtree(tmp, onexc=archive.make_writable)
+        except OSError:
+            pass
 
 
 def _land(tmp: Path, dest: Path, valid) -> Path:
@@ -71,8 +84,7 @@ def task_source(task_dir: Path, version: str, sources_root: Path) -> Path:
         gitsafe.git(["commit", "-q", "-m", f"{task_dir.name} base ({version[:12]})"], cwd=tmp, timeout=GIT_TIMEOUT, identity=True)
         return _land(tmp, dest, lambda d: (d / ".git").is_dir())
     finally:
-        if tmp.exists():
-            shutil.rmtree(tmp, ignore_errors=True)
+        _discard(tmp)
 
 
 def cell_working_copy(source: Path, dest: Path) -> Path:
@@ -104,8 +116,7 @@ def pack_checkout(source: Path, commit: str, tools_root: Path) -> Path:
         gitsafe.git(["checkout", "--quiet", commit], cwd=tmp, timeout=GIT_TIMEOUT * 5)
         return _land(tmp, dest, lambda d: (d / ".git").is_dir() and _pack_head(d) == commit)
     finally:
-        if tmp.exists():
-            shutil.rmtree(tmp, ignore_errors=True)
+        _discard(tmp)
 
 
 def pack_revision(pack_dir: Path) -> int:

@@ -555,8 +555,15 @@ def _keep_tail(stream, tail: bytearray, limit: int) -> None:
         pass
 
 
-def configure_logging(run_dir: Path, trace_id: str) -> None:
-    """engine.log: JSON lines with trace context and error codes; no cell text, no credentials, no argv."""
+def configure_logging(run_dir: Path, trace_id: str) -> logging.FileHandler:
+    """engine.log: JSON lines with trace context and error codes; no cell text, no credentials, no argv.
+
+    Closes and removes any FileHandler a previous call left on this logger before installing the new
+    one (tracked as an attribute of this function, not a module global, so the change stays inside
+    this function): otherwise two runs in one process cross-contaminate each other's engine.log, and
+    a finished run's file is left open, which Windows then refuses to delete (T9-2). Returns the new
+    handler so the caller (cli.cmd_run) can release it once its own run ends.
+    """
 
     class _Json(logging.Formatter):
         def format(self, record: logging.LogRecord) -> str:
@@ -569,7 +576,14 @@ def configure_logging(run_dir: Path, trace_id: str) -> None:
                 body["exception.stacktrace"] = self.formatException(record.exc_info)
             return json.dumps(body)
 
+    previous = getattr(configure_logging, "_installed", None)
+    if previous is not None:
+        log.removeHandler(previous)
+        previous.close()
+
     handler = logging.FileHandler(run_dir / "engine.log", encoding="utf-8")
     handler.setFormatter(_Json())
     log.addHandler(handler)
     log.setLevel(logging.INFO)
+    configure_logging._installed = handler
+    return handler

@@ -630,7 +630,7 @@ def test_configure_logging_replaces_the_previous_handler(base):  # T9-2: cross-r
     try:
         handler_a = engine.configure_logging(run_a, "a" * 32)
         handler_b = engine.configure_logging(run_b, "b" * 32)
-        assert handler_a not in engine.log.handlers  # replaced, not accumulated
+        assert handler_a not in engine.log.handlers and handler_b in engine.log.handlers  # replaced, not accumulated
         engine.log.info("after B")
         assert "after B" not in (run_a / "engine.log").read_text(encoding="utf-8")
         assert "after B" in (run_b / "engine.log").read_text(encoding="utf-8")

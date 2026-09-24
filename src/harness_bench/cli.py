@@ -148,11 +148,15 @@ def cmd_run(args) -> int:
     cells_root, tools_dir = Path(args.cells_root), Path(args.tools_dir)
     preflight.check(p, cells_root, tools_dir)
     launchers = {h: profiles.ProfileLauncher(profiles.load(root, h), tools_dir, planned) for h, planned in p["builds"].items()}
-    engine.configure_logging(run_dir, p["trace_id"])
-    cfg = engine.EngineConfig(run_dir=run_dir, cells_root=cells_root, launchers=launchers,
-                              build_workspace=_workspace_builder(root, p, cells_root / ".sources", tools_dir.parent / "pack"),
-                              grade=lambda d: runner.run_pass(d, root).summary())
-    summary = engine.Engine(p, cfg).run()
+    log_handler = engine.configure_logging(run_dir, p["trace_id"])
+    try:
+        cfg = engine.EngineConfig(run_dir=run_dir, cells_root=cells_root, launchers=launchers,
+                                  build_workspace=_workspace_builder(root, p, cells_root / ".sources", tools_dir.parent / "pack"),
+                                  grade=lambda d: runner.run_pass(d, root).summary())
+        summary = engine.Engine(p, cfg).run()
+    finally:
+        engine.log.removeHandler(log_handler)
+        log_handler.close()
     print(status.text(status.build(run_dir)), end="")
     return OK if summary.exit_code == 0 else INCOMPLETE
 
