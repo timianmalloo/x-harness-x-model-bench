@@ -436,5 +436,14 @@
   "tests": [
    "tests/test_engine.py::test_classify_applies_the_cause_precedence_in_order"
   ]
+ },
+ {
+  "file": "src/harness_bench/engine.py",
+  "name": "T10 the kill-retry backoff caps at 60 s (the drift), not the design's 30 s",
+  "find": "KILL_RETRY_CAP = 30.0  #",
+  "replace": "KILL_RETRY_CAP = 60.0  #",
+  "tests": [
+   "tests/test_engine.py::test_an_unconfirmed_kill_backs_off_from_1_s_doubling_to_the_designs_30_s_cap"
+  ]
  }
 ]
