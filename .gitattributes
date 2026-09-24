@@ -3,3 +3,13 @@
 # derived files the coord merge drivers compare by byte identity mean the same thing
 # on Windows and macOS. Run `git add --renormalize .` once after adding this.
 * text=auto eol=lf
+docs/docs-index.js merge=coord-regen
+docs/audit/audit-data.js merge=coord-regen
+docs/audit/index.html merge=coord-regen
+docs/specs/harness-bench.html merge=coord-regen
+.claude/skills/start-benchmark/* merge=coord-regen
+.agents/skills/start-benchmark/* merge=coord-regen
+.claude/skills/new-bench-task/* merge=coord-regen
+.agents/skills/new-bench-task/* merge=coord-regen
+docs/audit/audit-log.jsonl merge=coord-register
+docs/audit/change-log.jsonl merge=coord-register

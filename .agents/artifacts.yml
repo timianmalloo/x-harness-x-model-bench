@@ -1,0 +1,31 @@
+# .agents/artifacts.yml - what each artifact IS decides how it merges.
+# Format: pattern: class [regenerate command]. Longest matching pattern wins.
+# Everything not listed stays `authored` - the safe default, resolved by a human through
+# conventional conflict markers. Do not enumerate it.
+#
+# Every `derived` command in the managed block was RUN before it was written: a wrong
+# command resolves the merge silently and leaves the artifact permanently stale while
+# reporting as handled. Re-verify with `coord classify init --force` after changing a
+# generator - it rewrites the managed block and leaves everything else alone.
+#
+# Add THIS repo's own generated and append-only artifacts below the end marker, under the
+# same rule: run the command first.
+#
+# Windows: the commands say `python`, not `python3`. On this workstation `python3` is the
+# Microsoft Store alias (it prints "Python was not found" and exits 9009), so a `python3`
+# regenerate command would fail at merge time (checked 2026-09-24).
+
+# >>> coord classify init - managed block. --force regenerates BETWEEN these
+docs/docs-index.js: derived python docs/ai-forward-pack/scripts/docs-graph.py derive
+docs/audit/audit-data.js: derived python docs/ai-forward-pack/scripts/audit-log.py --root docs --project x-harness-x-model-bench render
+docs/audit/index.html: derived python docs/ai-forward-pack/scripts/audit-log.py --root docs --project x-harness-x-model-bench render
+docs/audit/audit-log.jsonl: register
+docs/audit/change-log.jsonl: register
+# <<< coord classify init - end managed block. Add your own entries BELOW.
+
+# This repo's own generated copies (each command run literally before it was written, 2026-09-24).
+docs/specs/harness-bench.html: derived python tools/render-doc-html.py
+.claude/skills/start-benchmark/**: derived python tools/sync-skills.py
+.agents/skills/start-benchmark/**: derived python tools/sync-skills.py
+.claude/skills/new-bench-task/**: derived python tools/sync-skills.py
+.agents/skills/new-bench-task/**: derived python tools/sync-skills.py

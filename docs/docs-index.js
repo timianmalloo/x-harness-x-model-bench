@@ -682,6 +682,32 @@ window.DOCS_INDEX = {
       "sourceSha256": "3818fd2d2aab1026085f985ce30b198952054a67b41518fd26edf40ce4c12272"
     },
     {
+      "id": "note-20260923-a6-start-benchmark",
+      "path": "docs/notes/a6-start-benchmark-golden-cases.md",
+      "title": "A6 golden cases: the start-benchmark skill, old against new",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2027-03-22",
+      "reviewSuggested": [],
+      "summary": "The design gates the start-benchmark skill edit with golden cases run on the old and the new skill (test plan T14, A6). Five cases, run with the same model (sonnet) as a dry run: the new skill passes all five; the old passes one. The compiled matrices are checked by tools/a6_check_matrix.py against the real validator.",
+      "tags": [
+        "decision-note",
+        "skills",
+        "a6",
+        "evaluation"
+      ],
+      "links": [
+        {
+          "to": "design-phase1-walking-skeleton",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "308efde4ed027bd66a2041d7794ff268fa4bbcc643e7292e80edb676c86cebf5"
+    },
+    {
       "id": "note-20260923-sqlite-views",
       "path": "docs/notes/decision-sqlite-views.md",
       "title": "Results views are pure-Python projections, with no SQL engine, until a measured trigger",
@@ -803,7 +829,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "02a5504039052bf5a2491fb49a1e3802e1a3f2144bf68934e9d5f885737ad05b"
+      "sourceSha256": "39b32dc8ffae7afa860c3cfa61994c0581ea0251285cc93a553d5ac7d719d3e4"
     },
     {
       "id": "design-run-lifecycle-model",
@@ -901,7 +927,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "56cffd02fe52d7ddea05837da3ea862a0dfc7355731e8b661f2a0ce029a9c0a6"
+      "sourceSha256": "b892b9816cc6d8d7c8512e3b68cf7b388961f4fdbfe6c41e404656cd78f83dc8"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -1075,7 +1101,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "638b7bc5ce30570528fdd9cd0e2c215c3b55158c2676b69e3b7444562856d82e"
+      "sourceSha256": "b65007497b4bc047e0bd76b590acbf1fb40ac4fd7ed46805de21d675cfe2c40d"
     },
     {
       "id": "privacy-review",
@@ -1253,5 +1279,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "75aca654364ce8130e42b7106170b7a070a5c7cf539357e1f413198da616bfde"
+  "graphSha256": "d80d9ff4e3f0bd26385a902564a3221f1b9220187864a69f01cbb61952bd0d96"
 };
