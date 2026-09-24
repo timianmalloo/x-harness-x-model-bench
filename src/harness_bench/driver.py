@@ -208,8 +208,9 @@ def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handsh
     try:
         done = ch.rpc("session/prompt", {"sessionId": result.session_id, "prompt": [{"type": "text", "text": prompt}]}, None)
         result.stop_reason = done.get("stopReason")
-        if isinstance(done.get("usage"), dict):
-            result.usage = {"usage": done["usage"], "meta": done.get("_meta")}
+        usage, meta = (v if isinstance(v, dict) else None for v in (done.get("usage"), done.get("_meta")))
+        if usage is not None or meta is not None:  # either half alone is still the adapter's report
+            result.usage = {"usage": usage, "meta": meta}
     except _Eof:
         result.eof = True
         result.cause, result.detail = Cause.adapter_crash, "EOF before end_turn"
