@@ -9,6 +9,7 @@ Behaviour comes from the FAKE_ACP environment variable (JSON):
    "hang": <hang after writing the record, any mode>, "flush_on_eof": <append a record row after stdin closes>,
    "linger": <seconds to stay alive after stdin closes, like a CLI that is slow to exit>,
    "stderr": "<text written to stderr at start>", "mkdir": "<a folder created relative to cwd at start>",
+   "handshake_delay": <seconds before answering initialize>,
    "echo_credential": <at the prompt, echo record_dir/.credentials.json to stderr, a message chunk, echo.txt in cwd,
                        and the prompt's error reply>,
    "daemon": <at the prompt, start a detached grandchild that outlives the turn (a build server), trying breakaway
@@ -108,6 +109,7 @@ def main() -> int:
         msg = json.loads(raw)
         method, mid = msg.get("method"), msg.get("id")
         if method == "initialize":
+            time.sleep(CFG.get("handshake_delay", 0))
             if MODE == "hang_handshake":
                 time.sleep(600)
             send({"jsonrpc": "2.0", "id": mid, "result": {"protocolVersion": 1, "agentCapabilities": {},

@@ -14,6 +14,7 @@ import sys
 import threading
 import time
 import uuid
+from concurrent.futures import Future
 from pathlib import Path
 
 import pytest
@@ -146,6 +147,9 @@ def test_happy_run_completes_archives_and_deletes_every_cell(base):
         assert not (config.cells_root / p["run_id"] / cell["cell_id"]).exists()
     assert events[-1]["kind"] == "run.completed" and summary.exit_code == 0
     assert [e["exit_status"] for e in events if e["kind"] == "attempt.process_ended"] == [0, 0]  # the real status
+    assert {e["attempt"] for e in events if e["kind"] == "attempt.process_started"} == {1}
+    opened = {e["cell_id"]: e["session_id"] for e in events if e["kind"] == "attempt.session_opened"}
+    assert opened == {cid: o["session_id"] for cid, o in outs.items()} and all(opened.values())
     for e in events:
         if e["kind"] == "attempt.process_started":  # every cell process is gone, not just recorded as ended
             assert not host.process_alive(e["pid"], e["created_at"])
@@ -724,8 +728,151 @@ def test_a_second_engine_on_a_held_run_is_refused_with_run_lock_held(base):  # T
     assert e.value.code == "HB-RUN-005"
 
 
+# --- tests that kill cosmic-ray survivors (docs/notes/mutation-record-t1.md) ------------------------------------------
+
+def _bare_engine(base):
+    """An engine that is not running: its inbox, drain and record are driven by the test."""
+    config = engine.EngineConfig(run_dir=base / "runs" / "r", cells_root=base / "cells", launchers={},
+                                 build_workspace=_build_workspace, grade=None)
+    eng = engine.Engine(_plan(n_cells=1), config)
+    eng.writers["events"] = ledger.SegmentWriter.create(base / "runs" / "r" / "events", "engine-1")
+    return eng
+
+
+def test_record_waits_through_a_full_inbox_and_a_slow_drain(base):  # backpressure: never drops, never gives up early
+    eng = _bare_engine(base)
+    try:
+        for _ in range(eng.inbox.maxsize):
+            eng.inbox.put(("events", {"kind": "run.started"}, Future()))
+        box = {}
+        t = threading.Thread(target=lambda: box.update(row=eng.record("events", {"kind": "run.started"})), daemon=True)
+        t.start()
+        time.sleep(1.2)  # the inbox stays full for more than two RECORD_POLL periods
+        eng._drain(0.2)  # empties the inbox (and appends the fillers)
+        time.sleep(1.2)  # the worker's item is queued now, and waits more than two periods for the drain
+        eng._drain(0.5)
+        t.join(5)
+        assert not t.is_alive() and box["row"]["seq"] == eng.inbox.maxsize + 1
+    finally:
+        eng.closed = True
+        eng.writers["events"].close()
+
+
+def test_a_drain_appends_what_arrives_before_its_deadline(base):
+    eng = _bare_engine(base)
+    try:
+        future = Future()
+        threading.Timer(0.2, lambda: eng.inbox.put(("events", {"kind": "run.started"}, future))).start()
+        eng._drain(1.0)
+        assert future.done() and future.result()["seq"] == 1
+    finally:
+        eng.writers["events"].close()
+
+
+def test_once_the_engine_has_ended_a_queued_record_fails_unwritten(base):
+    eng = _bare_engine(base)
+    try:
+        future = Future()
+        eng.inbox.put(("events", {"kind": "run.started"}, future))
+        eng.closed = True
+        eng._drain(0)
+        assert isinstance(future.exception(), BenchError) and future.exception().code == "HB-RUN-001"
+        assert ledger.read_segment(base / "runs" / "r" / "events" / "engine-1.jsonl") == []
+    finally:
+        eng.writers["events"].close()
+
+
+def test_an_archive_refused_with_a_bench_error_is_recorded_under_its_code(base, monkeypatch):  # not mistaken for HB-RUN-001
+    from harness_bench import archive
+
+    def exists(*args, **kwargs):
+        raise BenchError("HB-USR-002", "an archive attempt is written once")
+
+    monkeypatch.setattr(archive, "archive_cell", exists)
+    p = _plan(n_cells=1)
+    _, events, _ = _run(base, p, FakeLauncher({}))
+    assert [e["code"] for e in events if e["kind"] == "cell.archive_failed"] == ["HB-USR-002"]
+
+
+def test_a_success_resets_the_infrastructure_streak(base):  # CIRCUIT_BREAKER counts consecutive failures only
+    p = _plan(n_cells=6, parallelism=1)
+    modes = ["provider_error", "ok", "provider_error", "provider_error", "provider_error", "ok"]
+    _, events, _ = _run(base, p, FakeLauncher({c["label"]: {"mode": m} for c, m in zip(p["cells"], modes, strict=True)}))
+    assert sum(1 for e in events if e["kind"] == "cell.launch_intent") == 5  # stopped after cells 3, 4, 5 failed
+
+
+def test_the_budget_runs_from_the_prompt_not_from_the_working_copy(base):  # a slow handshake is not the agent's time
+    p = _plan(n_cells=1, budget=2)
+    _, events, _ = _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"handshake_delay": 3}}))
+    assert _outcomes(events)[p["cells"][0]["cell_id"]]["outcome"] == "completed"
+
+
+def test_a_failed_append_of_the_stop_ends_the_run_incomplete_not_raised(base, monkeypatch):
+    real = ledger.SegmentWriter.append
+
+    def failing(self, record):
+        if record.get("kind") == "run.launch_stopped":
+            raise OSError("disk full")
+        return real(self, record)
+
+    monkeypatch.setattr(ledger.SegmentWriter, "append", failing)
+    p = _plan(n_cells=1)
+    p["parameters"]["disk_floor_bytes"] = 1 << 60
+    config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
+                                 launchers={"fake": FakeLauncher({})}, build_workspace=_build_workspace, grade=None)
+    assert _engine_run(p, config).exit_code == 3
+
+
+def test_a_stdin_that_fails_to_close_still_ends_the_turn(base, monkeypatch):
+    from harness_bench import driver
+    real = driver.run_turn
+
+    class BrokenPipe:
+        def close(self):
+            raise OSError(32, "The pipe is being closed")
+
+    def then_break_stdin(cell, *args, **kwargs):
+        result = real(cell, *args, **kwargs)
+        cell.proc.stdin.close()
+        cell.proc.stdin = BrokenPipe()
+        return result
+
+    monkeypatch.setattr(driver, "run_turn", then_break_stdin)
+    p = _plan(n_cells=1)
+    _, events, _ = _run(base, p, FakeLauncher({}))
+    assert _outcomes(events)[p["cells"][0]["cell_id"]]["outcome"] == "completed"
+
+
+def test_a_process_whose_status_never_arrives_is_recorded_as_minus_one(base, monkeypatch):
+    from harness_bench import procs
+
+    def no_status(self, timeout=None):
+        raise subprocess.TimeoutExpired("fake", timeout)
+
+    monkeypatch.setattr(procs.CellProcess, "wait", no_status)
+    p = _plan(n_cells=1)
+    _, events, _ = _run(base, p, FakeLauncher({}))
+    assert next(e for e in events if e["kind"] == "attempt.process_ended")["exit_status"] == -1
+    assert _outcomes(events)[p["cells"][0]["cell_id"]]["exit_status"] == -1
+
+
+def test_the_heartbeat_keeps_beating_after_a_failed_beat():
+    class Lock:
+        calls = 0
+
+        def heartbeat(self):
+            Lock.calls += 1
+            if Lock.calls == 1:
+                raise OSError(5, "Access is denied")
+
+    with engine._beating(Lock(), 0.05):
+        time.sleep(0.4)
+    assert Lock.calls >= 3
+
+
 CRASHER = """
 import json, sys, uuid
+from concurrent.futures import Future
 from pathlib import Path
 sys.path.insert(0, {tests!r}); sys.path.insert(0, {src!r})
 import test_engine as t
