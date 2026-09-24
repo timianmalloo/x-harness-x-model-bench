@@ -222,6 +222,32 @@ def test_the_adapter_is_given_time_to_flush_its_record_before_the_kill(base):  #
     assert "flushed-on-exit" in record.read_text(encoding="utf-8")
 
 
+def test_an_unconfirmed_kill_is_logged_once_and_retried_with_capped_backoff(base, monkeypatch, caplog):  # T-FI-unkillable
+    from harness_bench import procs
+    real_terminate, real_confirm = procs.Job.terminate, procs.CellProcess.terminate_and_confirm
+    first: list[float] = []
+    timeouts: list[float] = []
+
+    def failing_terminate(self, exit_code=1):  # TerminateJobObject fails for the first 4.5 s (the procs seam)
+        first.append(first[0] if first else time.monotonic())
+        if time.monotonic() - first[0] > 4.5:
+            real_terminate(self, exit_code)
+
+    def spy(self, timeout, **kwargs):
+        timeouts.append(timeout)
+        return real_confirm(self, timeout, **kwargs)
+
+    monkeypatch.setattr(procs.Job, "terminate", failing_terminate)
+    monkeypatch.setattr(procs.CellProcess, "terminate_and_confirm", spy)
+    p = _plan(n_cells=1)
+    p["parameters"]["kill_escalation"] = 1
+    _, events, _ = _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"linger": 60}}), end_grace=1)
+    assert next(e for e in events if e["kind"] == "attempt.process_ended")["confirmed"] == 1
+    assert [r for r in caplog.records if getattr(r, "error_code", None) == "HB-RUN-002"].__len__() == 1
+    assert timeouts[:3] == [1, 1, 2]  # kill_escalation, then a backoff from 1 s
+    assert timeouts[1:] == sorted(timeouts[1:]) and max(timeouts) <= engine.KILL_RETRY_CAP
+
+
 def test_eof_mid_turn_is_an_adapter_crash(base):
     p = _plan(n_cells=1)
     _, events, _ = _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"mode": "eof_mid_turn"}}))
