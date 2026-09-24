@@ -12,11 +12,11 @@ Behaviour comes from the FAKE_ACP environment variable (JSON):
    "echo_credential": <at the prompt, echo record_dir/.credentials.json to stderr, a message chunk, echo.txt in cwd,
                        and the prompt's error reply>,
    "daemon": <at the prompt, start a detached grandchild that outlives the turn (a build server), trying breakaway
-              first; its "pid creation_time" goes to daemon.pid in cwd>}
+              first; it writes its own "pid creation_time" to daemon.pid in cwd>}
 
 Messages it emits (each paired with a recorded real transcript or the ACP schema in
 tests/test_driver.py::test_fake_agent_message_types_are_paired): the initialize result, the session/new
-result, the set_mode / set_model results, session/update notifications (agent_message_chunk),
+result, the set_mode result, session/update notifications (agent_message_chunk),
 session/request_permission, and the session/prompt result with a stopReason.
 """
 
@@ -115,8 +115,8 @@ def main() -> int:
         elif method == "session/new":
             send({"jsonrpc": "2.0", "id": mid, "result": {"sessionId": session_id,
                                                            "modes": {"currentModeId": "agent", "availableModes": [{"id": "agent"}, {"id": "agent-full-access"}]}}})
-        elif method in ("session/set_mode", "session/set_model"):
-            Path(os.getcwd(), f".fake-{method.split('/')[1]}").write_text(json.dumps(msg["params"]), encoding="utf-8")
+        elif method == "session/set_mode":
+            Path(os.getcwd(), ".fake-set_mode").write_text(json.dumps(msg["params"]), encoding="utf-8")
             send({"jsonrpc": "2.0", "id": mid, "result": {}})
         elif method == "session/prompt":
             text = msg["params"]["prompt"][0]["text"]
