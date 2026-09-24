@@ -40,7 +40,7 @@ from harness_bench.tools import BuildChanged
 
 ENGINE_TRANSITIONS = frozenset({
     "run.started", "cell.launch_intent", "cell.workspace_built", "attempt.process_started", "attempt.session_opened",
-    "cell.prompt_sent", "attempt.process_ended", "cell.outcome", "cell.archived", "cell.workspace_deleted",
+    "cell.prompt_sent", "attempt.process_ended", "cell.outcome", "cell.archived", "cell.archive_failed", "cell.workspace_deleted",
     "cell.workspace_kept", "run.launch_stopped", "run.completed",
 })
 FACTS = ("events", "turn_usage", "archive_files")
@@ -123,6 +123,7 @@ class Engine:
         self.outcomes: dict[str, dict] = {}
         self.stopped: str | None = None
         self.broken = False
+        self.archive_failed: set[str] = set()  # cells whose outcome stands but whose archive failed: the run is incomplete
         self.infra_streak = 0
 
     # the single writer ----------------------------------------------------------------------------
@@ -194,14 +195,15 @@ class Engine:
                         self.active.pop(cell_id)
             self._drain(0)
             grading = None
-            if not self.broken and self.cfg.grade is not None:
+            ended_whole = not self.broken and not self.archive_failed  # else no run.completed: the run needs recovery
+            if ended_whole and self.cfg.grade is not None:
                 try:
                     grading = self.cfg.grade(self.cfg.run_dir)
                 except Exception as exc:  # grading is re-runnable from the archive (US-26): never costs the run
-                    code = exc.code if isinstance(exc, BenchError) else Cause.unclassified.code
+                    code = _code(exc)
                     log.exception("grading pass failed; run bench grade", extra={"error_code": code})
                     grading = {"error_code": code}
-            if not self.broken:
+            if ended_whole:
                 heads = {fact: w.seal() for fact, w in self.writers.items() if fact != "events"}
                 self._append_now("events", {"kind": "run.completed", "run_id": self.plan["run_id"],
                                             "segment_heads": {**heads, "events": self.writers["events"].head_hash},
@@ -212,7 +214,7 @@ class Engine:
             for w in self.writers.values():
                 w.close()
             lock.release()
-        complete = not self.broken and len(self.outcomes) == len(self.plan["cells"])
+        complete = not self.broken and not self.archive_failed and len(self.outcomes) == len(self.plan["cells"])
         return RunSummary(0 if complete else 3, dict(self.outcomes))
 
     def _stop_launching(self, code: str, reason: str) -> None:
@@ -259,15 +261,21 @@ class Engine:
         cid = cell["cell_id"]
         try:
             self._run_cell(cell)
-        except BenchError as exc:
-            log.error("cell stopped: ledger unavailable", extra={"cell_id": cid, "error_code": exc.code})
         except Exception as exc:  # the unclassified bucket (target 0): logged with its stack, recorded
-            log.exception("unclassified cell failure", extra={"cell_id": cid, "error_code": Cause.unclassified.code})
-            if cid not in self.outcomes:
-                try:
-                    self._outcome(cell, "failed", Cause.unclassified, detail=f"{type(exc).__name__}: {exc}")
-                except BenchError:
-                    pass
+            code = _code(exc)
+            if code == "HB-RUN-001":
+                log.error("cell stopped: ledger unavailable", extra={"cell_id": cid, "error_code": code})
+                return
+            log.exception("cell failure", extra={"cell_id": cid, "error_code": code})
+            detail = f"{type(exc).__name__}: {exc}"[:300]
+            try:
+                if cid not in self.outcomes:
+                    self._outcome(cell, "failed", Cause.unclassified, detail=detail)
+                else:  # after the outcome: its archive failed; the workspace is the only copy, so it is kept
+                    self.record("events", {"kind": "cell.archive_failed", "cell_id": cid, "code": code, "detail": detail})
+                    self.archive_failed.add(cid)
+            except BenchError:
+                pass
 
     def _outcome(self, cell: dict, outcome: str, cause: Cause | None, **extra) -> dict:
         row = {"kind": "cell.outcome", "cell_id": cell["cell_id"], "outcome": outcome,
@@ -425,6 +433,11 @@ class Engine:
             self.record("events", {"kind": "cell.workspace_deleted", "cell_id": cid})
         else:
             self.record("events", {"kind": "cell.workspace_kept", "cell_id": cid, "reason": "sharing violation after retries"})
+
+
+def _code(exc: BaseException) -> str:
+    """The stable code a failure is recorded under: its own, or the unclassified bucket."""
+    return exc.code if isinstance(exc, BenchError) else Cause.unclassified.code
 
 
 def _keep_tail(stream, tail: bytearray, limit: int) -> None:

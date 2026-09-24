@@ -23,6 +23,7 @@ MAPPING: dict[str, tuple[str, int]] = {
     "attempt.process_ended": ("CellExits / CellDies (confirmed)", 1),
     "cell.outcome": ("RecordExit / StartFails", 1),
     "cell.archived": ("Archive", 1),
+    "cell.archive_failed": ("(archive refused: workspace kept, run incomplete)", 1),
     "cell.workspace_deleted": ("DeleteWorkspace", 1),
     "cell.workspace_kept": ("(delete refused: archive kept, workspace kept)", 1),
     "run.launch_stopped": ("(no further WriteIntent)", 1),
@@ -88,7 +89,7 @@ def replay(events: list[dict], parallelism: int, scores: list[dict] = ()) -> Non
             running.discard(cell)
         if kind == "cell.outcome" and cell in running:
             fail(cell, "NoOutcomeWhileRunning: kill, confirm, then record", kind)
-        if kind == "cell.archived" and ("cell.outcome" not in done or cell in running):
+        if kind in ("cell.archived", "cell.archive_failed") and ("cell.outcome" not in done or cell in running):
             fail(cell, "NoArchiveWhileLive: archive after the outcome, with no live process", kind)
         if kind in ("cell.workspace_deleted", "cell.workspace_kept") and "cell.archived" not in done:
             fail(cell, "NothingDeletedUnarchived", kind)
