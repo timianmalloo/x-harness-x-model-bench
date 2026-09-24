@@ -400,5 +400,41 @@
   "tests": [
    "tests/test_lifecycle_conformance.py"
   ]
+ },
+ {
+  "file": "src/harness_bench/engine.py",
+  "name": "T10 memory outranks host_suspended",
+  "find": "        if kill_reason == \"host_suspended\":\n            return Cause.host_suspended\n        if exit_status in NO_MEMORY_STATUSES or OOM_SIGNATURE.search(tail):\n            return Cause.memory\n",
+  "replace": "        if exit_status in NO_MEMORY_STATUSES or OOM_SIGNATURE.search(tail):\n            return Cause.memory\n        if kill_reason == \"host_suspended\":\n            return Cause.host_suspended\n",
+  "tests": [
+   "tests/test_engine.py::test_classify_applies_the_cause_precedence_in_order"
+  ]
+ },
+ {
+  "file": "src/harness_bench/engine.py",
+  "name": "T10 the OOM stderr signature is not read",
+  "find": "        if exit_status in NO_MEMORY_STATUSES or OOM_SIGNATURE.search(tail):\n",
+  "replace": "        if exit_status in NO_MEMORY_STATUSES:\n",
+  "tests": [
+   "tests/test_engine.py::test_classify_applies_the_cause_precedence_in_order"
+  ]
+ },
+ {
+  "file": "src/harness_bench/engine.py",
+  "name": "T10 a completed stop reason outranks the driver's cause",
+  "find": "        if result.cause:\n            return result.cause\n        if result.stop_reason in COMPLETED_STOP_REASONS:\n            return None\n",
+  "replace": "        if result.stop_reason in COMPLETED_STOP_REASONS:\n            return None\n        if result.cause:\n            return result.cause\n",
+  "tests": [
+   "tests/test_engine.py::test_classify_applies_the_cause_precedence_in_order"
+  ]
+ },
+ {
+  "file": "src/harness_bench/engine.py",
+  "name": "T10 no adapter_crash fallback: an unknown stop reason is completed",
+  "find": "        return Cause.adapter_crash\n\n    def _archive(",
+  "replace": "        return None\n\n    def _archive(",
+  "tests": [
+   "tests/test_engine.py::test_classify_applies_the_cause_precedence_in_order"
+  ]
  }
 ]
