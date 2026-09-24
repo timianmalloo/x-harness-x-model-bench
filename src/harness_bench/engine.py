@@ -27,8 +27,10 @@ import shutil
 import subprocess
 import threading
 import time
+from collections.abc import Iterator
 from concurrent.futures import Future
 from concurrent.futures import TimeoutError as FutureTimeout
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol
@@ -248,7 +250,8 @@ class Engine:
             ended_whole = not self.broken and not self.archive_failed  # else no run.completed: the run needs recovery
             if ended_whole and self.cfg.grade is not None:
                 try:
-                    grading = self.cfg.grade(self.cfg.run_dir)
+                    with _beating(lock, self.cfg.loop_interval):  # the loop's heartbeat stops here; a pass can be long
+                        grading = self.cfg.grade(self.cfg.run_dir)
                 except Exception as exc:  # grading is re-runnable from the archive (US-26): never costs the run
                     code = _code(exc)
                     log.exception("grading pass failed; run bench grade", extra={"error_code": code})
@@ -479,6 +482,27 @@ class Engine:
             self.record("events", {"kind": "cell.workspace_deleted", "cell_id": cid})
         else:
             self.record("events", {"kind": "cell.workspace_kept", "cell_id": cid, "reason": "sharing violation after retries"})
+
+
+@contextmanager
+def _beating(lock: oslock.RunLock, interval: float) -> Iterator[None]:
+    """Keep the lock's mtime (the heartbeat) fresh while the engine thread is busy outside its loop."""
+    stop = threading.Event()
+
+    def beat() -> None:
+        while not stop.wait(interval):
+            try:
+                lock.heartbeat()
+            except OSError:  # a missed beat reads as stale in `bench status`; it never costs the run
+                pass
+
+    thread = threading.Thread(target=beat, daemon=True, name="heartbeat")
+    thread.start()
+    try:
+        yield
+    finally:
+        stop.set()
+        thread.join()
 
 
 def _usage_per_model(entries: list[normalize.TurnUsage]) -> dict[str, dict[str, int]]:
