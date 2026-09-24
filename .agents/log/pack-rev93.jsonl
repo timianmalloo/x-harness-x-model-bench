@@ -1,0 +1,2 @@
+{"agent": "coord-opus", "at": 1790271409.929801, "kind": "session-start", "path": "-", "seq": 1, "session": "pack-rev93", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-chore-pack-rev93"}
+{"agent": "pack-rev93", "at": 1790271775.6072557, "kind": "session-end", "path": "-", "seq": 2, "session": "pack-rev93", "wi": "WI-0", "worktree": "x-harness-x-model-bench-chore-pack-rev93"}
