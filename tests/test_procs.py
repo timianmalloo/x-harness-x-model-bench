@@ -1,5 +1,6 @@
 """Job Object process control (ADR-0013; spikes N2, N4): kill -> confirm, kill-on-close, containment."""
 
+import ctypes
 import json
 import subprocess
 import sys
@@ -83,6 +84,33 @@ def test_failed_assignment_leaves_no_process_and_raises_spawn(monkeypatch):
         procs.spawn([sys.executable, "-c", "import time;time.sleep(30)"], cwd=None, env=None)
     assert e.value.cause is Cause.spawn
     assert seen and not _alive(seen[0])
+
+
+def test_a_failed_job_query_raises_from_the_last_error(monkeypatch):  # never a zeroed struct read as "no processes"
+    cell = procs.spawn([sys.executable, "-c", "import time;time.sleep(30)"], cwd=None, env=None)
+    try:
+        def fail(job, info_class, buf):  # fault seam: QueryInformationJobObject fails with ERROR_INVALID_HANDLE
+            ctypes.set_last_error(6)
+            return False
+
+        monkeypatch.setattr(procs, "_query", fail)
+        for probe in (cell.job.active, cell.job.pids, cell.job.peak_memory, cell.job.cpu_time_ms, cell.job.limit_flags):
+            with pytest.raises(OSError) as e:
+                probe()
+            assert e.value.winerror == 6
+        with pytest.raises(OSError):
+            cell.terminate_and_confirm(timeout=1)  # an unanswerable query is not a confirmed kill
+    finally:
+        monkeypatch.undo()
+        cell.terminate_and_confirm(timeout=10)
+        cell.close()
+
+
+def test_a_closed_job_is_not_reported_empty():
+    job = procs.Job()
+    job.close()
+    with pytest.raises(OSError):
+        job.active()
 
 
 def test_spawn_of_a_missing_executable_is_a_spawn_error(tmp_path):
