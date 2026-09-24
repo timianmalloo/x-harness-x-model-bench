@@ -105,6 +105,19 @@ def test_the_unittest_summary_is_parsed_strictly(stderr, expected):
     assert correctness.parse_unittest(stderr) == expected
 
 
+@pytest.mark.parametrize("oracle", [{"runner": "pytest", "command": ["{python}", "-m", "pytest"]}, {"runner": "unittest"}])
+def test_an_oracle_phase_1_cannot_run_is_na_before_anything_runs(tmp_path, oracle):
+    result = correctness.grade(tmp_path / "ws", tmp_path / "task", oracle, tmp_path / "out", tmp_path, 10)
+    assert (result.passed, result.partial_credit, result.evidence) == (None, None, "")
+    assert result.reason == f"oracle runner {oracle['runner']!r} not built (phase 1 runs unittest)"
+
+
+def test_not_recorded_is_one_falsy_sentinel():
+    from harness_bench import grade
+
+    assert grade.NOT_RECORDED is grade._NotRecorded() and not grade.NOT_RECORDED and repr(grade.NOT_RECORDED) == "NOT_RECORDED"
+
+
 # --- cost (US-23) ----------------------------------------------------------------------------------
 
 
@@ -198,6 +211,13 @@ def test_grading_completed_records_the_sealed_heads_of_its_other_facts(root, tmp
     completed = pass_rows(run_dir, "events", result.grading_id)[-1]
     assert completed["kind"] == "grading.completed"
     assert completed["heads"] == {fact: result.heads[fact] for fact in ("model_calls", "tool_calls", "scores")}  # never events
+
+
+def test_a_pass_counts_the_cells_it_graded(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD, "b": STUB, "c": GOOD}, archived={"a", "b"})
+    result = runner.run_pass(run_dir, root)
+    assert result.cells_graded == 2 == pass_rows(run_dir, "events", result.grading_id)[-1]["cells_graded"]
+    assert result.summary() == {"grading_id": result.grading_id, "heads": result.heads, "cells_graded": 2}
 
 
 def test_only_archived_cells_are_graded(root, tmp_path):  # T-GRD-unarchived

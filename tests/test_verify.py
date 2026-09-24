@@ -105,6 +105,15 @@ def test_a_malformed_heads_record_is_exit_5_not_a_crash(capsys, root, tmp_path):
     assert code == 5 and "heads is not a fact -> head map" in err
 
 
+def test_archives_are_not_checked_against_a_ledger_whose_heads_fail(capsys, root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    done = runner.run_pass(run_dir, root)
+    (run_dir / "scores" / f"{done.grading_id}.jsonl").unlink()
+    (run_dir / "archive" / "a" / "attempt-1" / "ws" / "slug.py").write_text("tampered", encoding="utf-8")
+    code, _, err = _verify(capsys, tmp_path)
+    assert code == 5 and err == f"HB-LED-002: scores/{done.grading_id}: missing, but grading.completed in events/{done.grading_id} records its head\n"
+
+
 def test_a_run_completed_naming_the_wrong_events_head_is_exit_5(capsys, root, tmp_path):
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     complete_run(run_dir, events_head=ledger.genesis("forged"))

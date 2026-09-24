@@ -168,6 +168,34 @@ def test_model_time_needs_a_real_duration_for_every_call(calls, expected):
     assert views._model_time("acp_turn", calls).value is None
 
 
+@pytest.mark.parametrize(("wall", "model", "tool", "expected"), [
+    (1000, 300, 200, views.Measure(500)),
+    (1000, 700, 400, views.Measure(None, "model and tool time exceed wall time")),
+    (1000, 1000, 0, views.Measure(0)),
+])
+def test_idle_is_wall_minus_model_minus_tool(wall, model, tool, expected):
+    assert views._idle(views.Measure(wall), views.Measure(model), views.Measure(tool)) == expected
+
+
+def test_cells_with_long_ids_keep_their_own_events_and_calls(root, tmp_path):  # ids compared by value, never identity
+    run_dir = make_run(root, tmp_path, {"cell-alpha-0001": GOOD, "cell-bravo-0002": STUB})
+    runner.run_pass(run_dir, root)
+    view = views.load(run_dir)
+    for cid in ("cell-alpha-0001", "cell-bravo-0002"):
+        c = _cell(view, cid)
+        assert (c.outcome, c.validity, c.wall_ms) == ("completed", "valid", views.Measure(30_000))
+        assert c.tokens == {CODEX_MODEL: {"uncached_input": 4032, "cache_read": 41856, "cache_write": 0, "output": 566}}  # one record each
+        assert c.tool_ms == views.Measure(592)
+
+
+def test_an_abandoned_segment_sorted_first_hides_no_completed_pass(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    runner.run_pass(run_dir, root)
+    with ledger.SegmentWriter.create(run_dir / "scores", "grade-0000") as dead:  # sorts before every real pass
+        dead.append({"kind": "score"})
+    assert _cell(views.load(run_dir), "a").scores["pass_at_1"] == views.Measure(1)
+
+
 def test_overlapping_tool_calls_are_counted_once():
     calls = [{"start": "2026-09-23T10:00:00.000Z", "end": "2026-09-23T10:00:02.000Z"},
              {"start": "2026-09-23T10:00:01.000Z", "end": "2026-09-23T10:00:03.000Z"},
@@ -217,6 +245,15 @@ def test_cost_is_na_for_a_combo_when_any_valid_cell_has_no_cost(root, tmp_path):
 
 
 # --- canonical export (the byte-identical re-grade, US-26) -----------------------------------------
+
+
+def test_a_higher_pass_rate_sorts_first_whatever_the_combo_name(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a1": GOOD, "a2": STUB, "b1": GOOD},
+                       combos={"a1": "a-half", "a2": "a-half", "b1": "b-full"})
+    runner.run_pass(run_dir, root)
+    rows = views.leaderboard(views.load(run_dir))
+    assert [(r.combo, r.rank, r.pass_at_1) for r in rows] == [("b-full", "1", views.Measure(Decimal(1))),
+                                                              ("a-half", "2", views.Measure(Decimal("0.5")))]
 
 
 def test_a_regrade_gives_a_byte_identical_canonical_export(root, tmp_path):

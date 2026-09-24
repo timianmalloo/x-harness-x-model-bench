@@ -142,6 +142,20 @@ def test_owner_reopen_repairs_the_torn_tail_and_records_it(tmp_path):
     assert ledger.verify_segment(path).error is None
 
 
+def test_an_unparseable_last_line_of_an_unsealed_segment_is_a_torn_tail(tmp_path):  # newline-ended: still the tail
+    path = _write(tmp_path)
+    with path.open("ab") as f:
+        f.write(b'{"kind":"hal\n')
+    report = ledger.verify_segment(path)
+    assert (report.error, report.torn_tail, report.lines) == (None, True, 3)
+
+
+def test_stamp_records_utc_milliseconds_and_a_monotonic_clock(monkeypatch):
+    monkeypatch.setattr(ledger.time, "time", lambda: 1_790_000_000.25)
+    monkeypatch.setattr(ledger.time, "monotonic_ns", lambda: 42)
+    assert ledger.stamp({"kind": "x"}) == {"kind": "x", "recorded_at": "2026-09-21T14:13:20.250Z", "mono_ns": 42}
+
+
 def test_a_torn_line_that_is_not_the_tail_is_a_break(tmp_path):
     path = _write(tmp_path)
     lines = path.read_bytes().splitlines(keepends=True)
