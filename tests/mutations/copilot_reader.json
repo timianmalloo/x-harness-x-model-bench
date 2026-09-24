@@ -1,0 +1,51 @@
+[
+ {
+  "name": "uncached = inputTokens",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "uncached_input = ex.count(n, as_dict(token_details.get(\"input\")), \"tokenCount\")",
+  "replace": "uncached_input = ex.count(n, usage, \"inputTokens\")",
+  "tests": ["tests/test_telemetry_copilot.py::test_off_yields_one_row_per_model_in_the_last_shutdown_with_requests"]
+ },
+ {
+  "name": "first instead of last session.shutdown",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "            last_shutdown = (n, stamp, data)",
+  "replace": "            if last_shutdown is None:\n                last_shutdown = (n, stamp, data)",
+  "tests": ["tests/test_telemetry_copilot.py::test_last_shutdown_wins_over_first"]
+ },
+ {
+  "name": "the model taken from the pin or currentModel",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "    for model in sorted(model_metrics):",
+  "replace": "    for model in sorted(model_metrics):\n        model = as_str(shutdown_data.get(\"currentModel\")) or model",
+  "tests": ["tests/test_telemetry_copilot.py::test_us11_a_renamed_modelmetrics_key_is_not_the_pinned_model"]
+ },
+ {
+  "name": "the version gate removed",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "    if not (version_seen and version_ok):",
+  "replace": "    if False:",
+  "tests": ["tests/test_telemetry_copilot.py::test_f6_an_unsupported_version_gates_model_calls_and_hooks"]
+ },
+ {
+  "name": "reasoning dropped",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "        reasoning = ex.count(n, usage, \"reasoningTokens\")",
+  "replace": "        reasoning = None",
+  "tests": ["tests/test_telemetry_copilot.py::test_off_yields_one_row_per_model_in_the_last_shutdown_with_requests"]
+ },
+ {
+  "name": "cache read/write swapped",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "        cache_read = ex.count(n, usage, \"cacheReadTokens\")\n        cache_write = ex.count(n, usage, \"cacheWriteTokens\")",
+  "replace": "        cache_read = ex.count(n, usage, \"cacheWriteTokens\")\n        cache_write = ex.count(n, usage, \"cacheReadTokens\")",
+  "tests": ["tests/test_telemetry_copilot.py::test_off_yields_one_row_per_model_in_the_last_shutdown_with_requests"]
+ },
+ {
+  "name": "content -> transformedContent",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "                text = as_str(data.get(\"content\"))",
+  "replace": "                text = as_str(data.get(\"transformedContent\"))",
+  "tests": ["tests/test_telemetry_copilot.py::test_us10_content_never_transformed_content"]
+ }
+]
