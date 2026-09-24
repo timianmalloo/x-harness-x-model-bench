@@ -11,6 +11,11 @@ CLEAN_PARENT = Path("C:/Projects/bench-test")
 
 
 @pytest.fixture
+def clean_parent() -> Path:
+    return CLEAN_PARENT
+
+
+@pytest.fixture
 def base():
     root = CLEAN_PARENT / uuid.uuid4().hex[:8]
     root.mkdir(parents=True)

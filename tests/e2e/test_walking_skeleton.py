@@ -12,7 +12,6 @@ import time
 from pathlib import Path
 
 import pytest
-from conftest import CLEAN_PARENT
 
 from harness_bench import cli, host, plan, profiles, views
 
@@ -21,10 +20,10 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 @pytest.fixture
-def kept():
+def kept(clean_parent):
     """A clean-ancestry folder the test removes as its own last step, so a failed run stays on disk as evidence.
     (A fixture teardown would run after a failure too, which is how two failed runs lost their evidence.)"""
-    folder = CLEAN_PARENT / f"e2e-{int(time.time())}"
+    folder = clean_parent / f"e2e-{int(time.time())}"
     folder.mkdir(parents=True)
     return folder
 
