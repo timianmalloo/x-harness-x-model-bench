@@ -17,12 +17,15 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
 import secrets
+import shutil
+import tempfile
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
-from harness_bench import config, profiles
+from harness_bench import archive, config, procs, profiles, tools, workspace
 from harness_bench.errors import BenchError
 from harness_bench.ledger import canonical
 
@@ -139,6 +142,20 @@ def profile_record(root: Path, harness: str) -> dict:
             "auxiliary_models": list(p.auxiliary_models), "record_glob": p.record_glob}
 
 
+def instruction_list(exe: Path, ws: Path, env: dict[str, str]) -> list[dict]:
+    """Read the pinned Copilot build's effective repository instructions in one working copy."""
+    result = procs.run([str(exe), "instruction", "list", "--json"], cwd=str(ws), env=env, timeout=120)
+    if result.timed_out or result.returncode != 0:
+        raise BenchError("HB-PRE-008", f"Copilot instruction list failed ({result.returncode}): {result.stderr.strip()[-300:]}")
+    try:
+        rows = json.loads(result.stdout)
+    except ValueError as exc:
+        raise BenchError("HB-PRE-008", "Copilot instruction list did not return JSON") from exc
+    if not isinstance(rows, list) or not all(isinstance(row, dict) for row in rows):
+        raise BenchError("HB-PRE-008", "Copilot instruction list did not return an array of objects")
+    return rows
+
+
 def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, pack: dict,
                parallelism: int = DEFAULT_PARAMETERS["parallelism"], parameters: dict | None = None) -> dict:
     if not 1 <= parallelism <= PHASE1_MAX_PARALLELISM:
@@ -150,6 +167,34 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, p
     missing = harnesses - set(builds)
     if missing:
         raise BenchError("HB-PRE-007", f"no planned build for {sorted(missing)}")
+    instruction_counts: dict[tuple[str, str], int] = {}
+    instruction_lists: list[dict] = []
+    if "copilot" in harnesses:
+        build = tools.resolve(root / ".tools" / "harness")["copilot"]
+        tools.check_build(build, builds["copilot"])
+        copilot_profile = profiles.load(root, "copilot")
+        # A plan probe uses the same source, clone and pack installation as a cell, in a fresh home.
+        probe = Path(tempfile.mkdtemp(prefix="bench-plan-", dir=root.parent))
+        try:
+            workspace.check_cells_root(probe)
+            for task_id, arm in sorted({(c.task, c.pack) for c in cells if c.harness == "copilot"}):
+                source = workspace.task_source(root / "tasks" / task_id, versions[task_id], probe / "sources")
+                ws = workspace.cell_working_copy(source, probe / "cells" / task_id / arm / "ws")
+                if arm == "on":
+                    pack_dir = workspace.pack_checkout(Path(pack["source"]), pack["commit"], probe / "pack")
+                    workspace.install_pack(pack_dir, ws, project=task_id, timeout=300)
+                home = probe / "homes" / task_id / arm
+                home.mkdir(parents=True)
+                env = copilot_profile.cell_env(dict(os.environ), home, build, "", "")
+                rows = instruction_list(build.exe, ws, env)
+                if arm == "off" and rows:
+                    raise BenchError("HB-PRE-008", f"Copilot pack-off {task_id} loaded {len(rows)} instruction files")
+                instruction_counts[task_id, arm] = len(rows)
+                instruction_lists.append({"task": task_id, "task_version": versions[task_id], "pack": arm,
+                                          "build_sha256": builds["copilot"]["sha256"], "count": len(rows),
+                                          "instructions": rows})
+        finally:
+            shutil.rmtree(probe, onexc=archive.make_writable)
     params = {**DEFAULT_PARAMETERS, **(parameters or {}), "parallelism": parallelism}
     body = {
         "schema": SCHEMA,
@@ -167,8 +212,11 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, p
         "parameters": params,
         "price_list_hash": file_hash(root / "bench" / "prices.yaml"),
         "envelope_seconds": envelope_seconds(cells, parallelism),
-        "cells": [{"cell_id": c.id, "label": c.label, **asdict(c)} for c in cells],
+        "cells": [{"cell_id": c.id, "label": c.label, **asdict(c),
+                   **({"instruction_count": instruction_counts[c.task, c.pack]} if c.harness == "copilot" else {})} for c in cells],
     }
+    if instruction_lists:
+        body["instruction_lists"] = instruction_lists
     _validate_ids(body["cells"])
     body["plan_hash"] = plan_hash(body)
     return body

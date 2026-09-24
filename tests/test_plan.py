@@ -1,12 +1,13 @@
 import hashlib
 import json
+import os
 import shutil
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
-from harness_bench import config, plan
+from harness_bench import config, gitsafe, plan, tools, workspace
 from harness_bench.errors import BenchError
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -237,6 +238,8 @@ def test_copilot_plan_lists_once_per_task_pack_build_and_freezes_counts(monkeypa
     assert {(c["pack"], c["instruction_count"]) for c in p["cells"]} == {("off", 0), ("on", 2)}
     assert len(p["instruction_lists"]) == 2
     assert all(c["build_sha256"] == "a" * 64 for c in p["instruction_lists"])
+    assert {(c["pack"], c["count"]) for c in p["instruction_lists"]} == {("off", 0), ("on", 2)}
+    assert next(c for c in p["instruction_lists"] if c["pack"] == "off")["instructions"] == []
 
 
 def test_copilot_plan_refuses_a_nonempty_pack_off_instruction_list(monkeypatch, tmp_path):
@@ -244,3 +247,28 @@ def test_copilot_plan_refuses_a_nonempty_pack_off_instruction_list(monkeypatch, 
     with pytest.raises(BenchError) as e:
         plan.build_plan(**args)
     assert e.value.code == "HB-PRE-008"
+
+
+@pytest.mark.native
+def test_pinned_copilot_instruction_list_repeats_for_both_real_working_copies(base):
+    tools_dir = ROOT / ".tools" / "harness"
+    if not tools_dir.exists():  # a coordination worktree shares the installed build in the primary checkout
+        tools_dir = ROOT.parent / "x-harness-x-model-bench" / ".tools" / "harness"
+    exe = tools.resolve(tools_dir)["copilot"].exe
+    pack_source = ROOT.parent / "ai-forward"
+    commit = gitsafe.git(["rev-parse", "HEAD"], cwd=pack_source, timeout=60).stdout.strip()
+    source = workspace.task_source(ROOT / "tasks" / "X1", plan.task_version_hash(ROOT / "tasks" / "X1"), base / "sources")
+    results = {}
+    for arm in ("off", "on"):
+        ws = workspace.cell_working_copy(source, base / "cells" / arm / "ws")
+        if arm == "on":
+            pack_dir = workspace.pack_checkout(pack_source, commit, base / "pack")
+            workspace.install_pack(pack_dir, ws, project="X1", timeout=300)
+        home = base / "homes" / arm
+        home.mkdir(parents=True)
+        env = {k: v for k, v in os.environ.items() if not k.upper().startswith("COPILOT_")}
+        env.update({"COPILOT_HOME": str(home), "COPILOT_AUTO_UPDATE": "false"})
+        results[arm] = [plan.instruction_list(exe, ws, env) for _ in range(2)]
+    assert results["off"] == [[], []]
+    assert results["on"][0] == results["on"][1]
+    assert any(row.get("sourcePath") == "AGENTS.md" for row in results["on"][0])
