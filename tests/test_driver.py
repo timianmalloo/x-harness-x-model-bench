@@ -250,7 +250,10 @@ def test_a_model_the_harness_refuses_at_the_prompt_is_model_unavailable(tmp_path
     ("Internal error: API Error: 401 Invalid credentials. Please run /login", {"errorKind": "authentication_error"},
      Cause.blocked_auth),
     ("Internal error: something broke", None, Cause.adapter_crash),  # no status, no type: never 116 by guess
-], ids=["overloaded", "rate-limit", "auth", "no-status-no-type"])
+    # Codex cross-vendor review F2: a status decides before the broad `api_error` type
+    ("Internal error: API Error: 400 bad model", {"errorKind": "api_error"}, Cause.model_unavailable),
+    ("Internal error: overloaded", {"errorKind": "overloaded_error"}, Cause.provider),  # no status: the type decides
+], ids=["overloaded", "rate-limit", "auth", "no-status-no-type", "4xx-with-api_error-type", "overload-type-no-status"])
 def test_a_prompt_error_is_classified_by_its_status_and_type(tmp_path, message, data, cause):  # R-23
     error = {"code": -32603, "message": message, **({"data": data} if data else {})}
     derived = _derive(UNSUPPORTED, tmp_path, lambda m: {**m, "error": error} if "error" in m else m)
