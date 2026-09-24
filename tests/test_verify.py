@@ -90,6 +90,21 @@ def test_the_in_run_pass_cannot_be_turned_into_an_abandoned_one(capsys, root, tm
     assert code == 5 and f"events/{done.grading_id}" in err
 
 
+def test_cutting_the_seal_after_run_completed_is_exit_5(capsys, root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    complete_run(run_dir)
+    _cut(run_dir / "events" / "engine-1.jsonl", 1)
+    code, _, err = _verify(capsys, tmp_path)
+    assert code == 5 and "HB-LED-002: events/engine-1" in err
+
+
+def test_a_malformed_heads_record_is_exit_5_not_a_crash(capsys, root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    complete_run(run_dir, grading={"grading_id": "grade-x", "heads": ["scores"]})
+    code, _, err = _verify(capsys, tmp_path)
+    assert code == 5 and "heads is not a fact -> head map" in err
+
+
 def test_a_run_completed_naming_the_wrong_events_head_is_exit_5(capsys, root, tmp_path):
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     complete_run(run_dir, events_head=ledger.genesis("forged"))
