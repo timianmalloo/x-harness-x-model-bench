@@ -20,7 +20,7 @@ from test_driver import FAKE, _Tap
 from harness_bench import driver, procs
 
 RECORDER = Path(__file__).resolve().parents[1] / "tools" / "acp_record.py"
-TIMINGS = {"handshake_seconds", "turn_seconds"}
+TIMINGS = {"handshake_seconds", "turn_seconds", "last_update_seconds"}  # compared as recorded-or-null, never by value
 
 
 @functools.cache
@@ -57,6 +57,7 @@ def _norm(run: dict) -> dict:
     sid = run["result"].session_id
     assert sid
     fields = {k: v for k, v in dataclasses.asdict(run["result"]).items() if k not in TIMINGS | {"session_id"}}
+    fields |= {f"{k} recorded": getattr(run["result"], k) is not None for k in TIMINGS}
     cwd = json.dumps(str(run["cwd"]))[1:-1].encode()
 
     def swap(data: bytes) -> bytes:

@@ -90,6 +90,11 @@ class TurnResult:
     handshake_seconds: float = 0.0
     turn_seconds: float = 0.0
     usage: dict | None = None  # the adapter's per-turn usage from the prompt response, if it reports one
+    # assume: "last update" (seam req-01M38KX8503601BEP857749VVF) is on the turn clock of turn_seconds: seconds from
+    # the prompt being sent to the last session/update read in the turn, so 0 <= it <= turn_seconds. Confirm: the
+    # engine test pairs 2.0 with turn 2.5 (test_engine.py:1067). Breaks: a reader that expects the handshake clock.
+    # Null (not recorded, never 0) when the turn read no session/update; handshake-time updates do not set it.
+    last_update_seconds: float | None = None
 
 
 class _Eof(Exception):
@@ -112,6 +117,7 @@ class _Channel:
         self.result = result
         self.inbox: queue.Queue = queue.Queue()
         self.seq = 0
+        self.turn_start: float | None = None  # set when the prompt is sent
         threading.Thread(target=self._read, daemon=True).start()
 
     def _read(self) -> None:
@@ -164,6 +170,8 @@ class _Channel:
             elif "method" in msg:  # a notification
                 if msg["method"] == "session/update":
                     self.result.updates += 1
+                    if self.turn_start is not None:
+                        self.result.last_update_seconds = time.monotonic() - self.turn_start
             elif msg.get("id") == rid:
                 if "error" in msg:
                     raise _AcpError(json.dumps(msg["error"])[:500])
@@ -201,7 +209,7 @@ def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handsh
     result.handshake_seconds = time.monotonic() - started
 
     before_send(result.session_id)  # the ack barrier: prompt_sent is durable before the prompt goes out
-    turn_start = time.monotonic()
+    turn_start = ch.turn_start = time.monotonic()
     result.prompt_sent = True
     try:
         done = ch.rpc("session/prompt", {"sessionId": result.session_id, "prompt": [{"type": "text", "text": prompt}]}, None)
