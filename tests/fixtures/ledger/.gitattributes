@@ -1,0 +1,2 @@
+# Golden ledgers are byte-exact: no end-of-line conversion (their hashes and archive sha256 cover every byte).
+* -text
