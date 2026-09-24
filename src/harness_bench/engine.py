@@ -51,7 +51,7 @@ COMPLETED_STOP_REASONS = {"end_turn", "max_tokens", "max_turn_requests", "refusa
 CIRCUIT_BREAKER = 3
 LOG_EXTRAS = ("detail", "pids", "fact", "win32_error")  # the only extras engine.log keeps (never argv, env or cell text)
 DISK_FULL_WINERRORS = (39, 112)  # ERROR_HANDLE_DISK_FULL, ERROR_DISK_FULL
-KILL_RETRY_CAP = 60.0  # seconds: the longest wait between retries of an unconfirmed kill (HB-RUN-002)
+KILL_RETRY_CAP = 30.0  # seconds: the longest wait between retries of an unconfirmed kill (HB-RUN-002)
 RECORD_POLL = 0.5  # seconds: how often a waiting worker re-checks that the engine can still record
 log = logging.getLogger("harness_bench.engine")
 
