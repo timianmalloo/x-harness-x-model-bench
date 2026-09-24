@@ -1,4 +1,23 @@
+---
+id: "findings-t6-workspace-race"
+title: "Findings → tests: track T6 workspace race"
+type: proof-pack
+status: accepted
+owner: "@timianmalloo"
+phase: "Phase 1 · walking skeleton"
+tags: [proof, findings, red-first, T6, workspace]
+links:
+  - { to: coordination-phase1-finish, rel: relates-to }
+review-by: "2026-12-22"
+summary: >-
+  The first real E2E failed one cell with HB-CELL-113: two workers building the same task source or pack checkout at
+  once collided on a Windows rename. Red 0082875 (the Coordinator re-ran it), fixed in a76e7c3, with both
+  workspace.json mutations killed.
+---
+
 # T6: workspace race (HB-CELL-113)
+
+**The Coordinator re-ran** red `0082875` in a throwaway worktree: both concurrency tests failed with `PermissionError(13, 'Access is denied')`. `tests/mutations/workspace.json` was re-run: every mutation killed. The Coordinator added this frontmatter. The track wrote the body through a shell heredoc after the harness refused the write, which the run record notes as a finding.
 
 ## Defect
 
