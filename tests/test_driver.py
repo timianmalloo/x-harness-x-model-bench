@@ -289,6 +289,24 @@ def test_d5_fails_when_one_byte_of_a_recorded_session_new_result_changes(tmp_pat
         _assert_replays(tmp_path / "mutant", mutated)
 
 
+@pytestmark_native
+def test_last_update_is_the_turn_time_of_the_last_session_update(tmp_path):  # W1-ACP (f), seam req-01M38KX8
+    recording = ACP_FIX / "recordings" / "claude-code-x1.jsonl"
+    result, _, _ = _replay(tmp_path, recording, None)
+    assert result.updates == _meta(recording)["result"]["updates"] > 0
+    assert result.last_update_seconds is not None and 0 <= result.last_update_seconds <= result.turn_seconds
+
+
+@pytestmark_native
+def test_last_update_is_null_never_zero_with_no_session_update(tmp_path):  # W1-ACP (f)
+    def no_updates(msg):
+        return None if msg.get("method") == "session/update" else msg
+
+    result, _, _ = _replay(tmp_path, _derive(ACP_FIX / "recordings" / "claude-code-x1.jsonl", tmp_path, no_updates), None)
+    assert result.stop_reason == "end_turn" and result.updates == 0
+    assert result.last_update_seconds is None  # not recorded, never a zeroed guess
+
+
 def test_every_recording_states_its_provenance_from_its_capture():  # W1-ACP (e)
     provenance = json.loads((ACP_FIX / "provenance.json").read_text(encoding="utf-8"))
     assert "No full ACP transcript" not in provenance["note"]
