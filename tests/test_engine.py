@@ -154,6 +154,20 @@ def test_the_engine_grades_once_after_every_cell_is_archived_and_records_the_pas
     assert summary.exit_code == 0
 
 
+def test_the_heartbeat_runs_during_the_grading_hook(base):  # T1-10: a long pass never looks like a stalled engine
+    seen = []
+
+    def grade(run_dir):
+        lock = run_dir / ".lock"
+        start = lock.stat().st_mtime_ns
+        time.sleep(1.5)
+        seen.append(lock.stat().st_mtime_ns - start)
+        return {"grading_id": "grade-x"}
+
+    _run(base, _plan(n_cells=1), FakeLauncher({}), grade=grade)
+    assert seen and seen[0] > 0, "the lock's mtime (the heartbeat) did not move while grading"
+
+
 def test_a_failed_grading_pass_never_costs_the_run(base):  # re-gradable from the archive (US-26)
     def grade(run_dir):
         raise BenchError("HB-GRD-001", "held by bench grade")
