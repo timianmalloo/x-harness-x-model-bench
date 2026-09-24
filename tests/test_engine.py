@@ -26,6 +26,7 @@ pytestmark = pytest.mark.native
 FAKE = Path(__file__).parent / "fake_acp_agent.py"
 ROOT = Path(__file__).resolve().parents[1]
 RUN_LIMIT = 120  # seconds: the bound on any one engine run in these tests
+SECRET = "sk-ant-FAKE-login-5f1c0de"  # the copied login the fake launcher seeds (T-CELL-credclean, T-LOG-nosecret)
 USAGE = [{"model": "fake-model", "token_count": {"inputTokens": 3, "cachedInputTokens": 30, "cachedWriteTokens": 7,
                                                  "outputTokens": 5, "reasoningOutputTokens": 0}}]
 
@@ -54,7 +55,7 @@ class FakeLauncher:
 
     def seed(self, home: Path, model: str) -> None:
         home.mkdir(parents=True, exist_ok=True)
-        (home / ".credentials.json").write_text('{"token":"secret"}', encoding="utf-8")
+        (home / ".credentials.json").write_text(json.dumps({"token": SECRET}), encoding="utf-8")
 
     def clean(self, home: Path) -> None:
         (home / ".credentials.json").unlink(missing_ok=True)
@@ -556,6 +557,24 @@ def test_engine_log_keeps_the_whitelisted_extras_only(base):  # T1-9
     assert {k: line.get(k) for k in ("error_code", "pids", "detail", "fact", "win32_error")} == {
         "error_code": "HB-RUN-002", "pids": [4, 8], "detail": "why", "fact": "events", "win32_error": 5}
     assert "argv" not in line  # not whitelisted: argv may carry a credential
+
+
+def test_an_echoed_credential_reaches_the_archive_but_never_engine_log_or_status(base):  # T-LOG-nosecret (T1-14)
+    from harness_bench import status
+    p = _plan(n_cells=1)
+    p["profiles"] = {"fake": {"profile_hash": "", "usage_source": "acp_turn", "auxiliary_models": [],
+                              "record_glob": "projects/**/*.jsonl"}}  # what `bench status` reads from a confirmed plan
+    p["plan_hash"] = plan.plan_hash(p)
+    run_dir = base / "runs" / p["run_id"]
+    plan.confirm(run_dir, p)
+    echo = {"echo_credential": True, "mkdir": "../adapter-stderr-tail.log"}  # the blocked tail file logs a warning
+    lines = _engine_log(run_dir, lambda: _run(base, p, FakeLauncher({p["cells"][0]["label"]: echo})))
+    assert lines, "engine.log got no line; the probe proves nothing"
+    assert SECRET not in json.dumps(lines)
+    s = status.build(run_dir)
+    assert SECRET not in status.to_json(s) and SECRET not in status.text(s)
+    archived = [f.read_bytes() for f in (run_dir / "archive").rglob("*") if f.is_file()]
+    assert any(SECRET.encode() in b for b in archived)  # allowed there: the archive is the cell's record
 
 
 def test_a_started_run_is_refused(base):

@@ -8,7 +8,9 @@ Behaviour comes from the FAKE_ACP environment variable (JSON):
    "usage": [<model_usage entries for the prompt result, as claude-agent-acp reports them>],
    "hang": <hang after writing the record, any mode>, "flush_on_eof": <append a record row after stdin closes>,
    "linger": <seconds to stay alive after stdin closes, like a CLI that is slow to exit>,
-   "stderr": "<text written to stderr at start>", "mkdir": "<a folder created relative to cwd at start>"}
+   "stderr": "<text written to stderr at start>", "mkdir": "<a folder created relative to cwd at start>",
+   "echo_credential": <at the prompt, echo record_dir/.credentials.json to stderr, a message chunk, echo.txt in cwd,
+                       and the prompt's error reply>}
 
 Messages it emits (each paired with a recorded real transcript or the ACP schema in
 tests/test_driver.py::test_fake_agent_message_types_are_paired): the initialize result, the session/new
@@ -92,6 +94,15 @@ def main() -> int:
             text = msg["params"]["prompt"][0]["text"]
             Path(os.getcwd(), ".fake-prompt.txt").write_text(text, encoding="utf-8", newline="")
             record(session_id, os.getcwd(), text)
+            if CFG.get("echo_credential"):  # T-LOG-nosecret: an agent that prints its login everywhere it can
+                secret = (Path(CFG["record_dir"]) / ".credentials.json").read_text(encoding="utf-8")
+                sys.stderr.write(secret + "\n")
+                sys.stderr.flush()
+                Path(os.getcwd(), "echo.txt").write_text(secret, encoding="utf-8")
+                send({"jsonrpc": "2.0", "method": "session/update", "params": {"sessionId": session_id,
+                      "update": {"sessionUpdate": "agent_message_chunk", "content": {"type": "text", "text": secret}}}})
+                send({"jsonrpc": "2.0", "id": mid, "error": {"code": -32000, "message": secret}})
+                continue
             if MODE == "hang_prompt" or CFG.get("hang"):
                 time.sleep(600)
             if MODE == "eof_mid_turn":
