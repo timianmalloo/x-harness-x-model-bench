@@ -748,11 +748,13 @@ def test_record_waits_through_a_full_inbox_and_a_slow_drain(base):  # backpressu
         t = threading.Thread(target=lambda: box.update(row=eng.record("events", {"kind": "run.started"})), daemon=True)
         t.start()
         time.sleep(1.2)  # the inbox stays full for more than two RECORD_POLL periods
-        eng._drain(0.2)  # empties the inbox (and appends the fillers)
-        time.sleep(1.2)  # the worker's item is queued now, and waits more than two periods for the drain
+        for _ in range(eng.inbox.maxsize):  # make room without draining: the worker's item goes in, unanswered
+            eng.inbox.get()
+        time.sleep(1.2)  # the worker now waits on its future for more than two periods
+        assert t.is_alive()
         eng._drain(0.5)
         t.join(5)
-        assert not t.is_alive() and box["row"]["seq"] == eng.inbox.maxsize + 1
+        assert not t.is_alive() and box["row"]["seq"] == 1
     finally:
         eng.closed = True
         eng.writers["events"].close()
