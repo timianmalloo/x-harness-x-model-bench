@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T22:38:22Z",
+  "generated": "2026-09-24T23:02:45Z",
   "audit": [
     {
       "actor": null,
@@ -4871,6 +4871,34 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "id": "al-01M3ATGCG00WAYW4DFE2QZVGD5",
+      "shortname": "W1-COP-R Copilot telemetry reader",
+      "datetime": "2026-09-24T23:02:44Z",
+      "session": "w1-cop-r",
+      "prompt": "Implement the Copilot telemetry reader exactly to docs/design/phase2-copilot-profile.md (rev 3.1) sections 4.4, 13, 14: src/harness_bench/telemetry/copilot.py, the ModelCall.requests/ToolCall.outcome_code/Extraction.hook_starts+hook_failures additions in telemetry/__init__.py and normalize.py, tests/test_telemetry_copilot.py red-first, and tests/mutations/copilot_reader.json (the design's 7 named mutants).",
+      "summary": "Reader reads session-state/<sid>/events.jsonl: model_calls from the last session.shutdown.modelMetrics (additive requests, disjoint buckets, the input-token arithmetic cross-check), tool_calls paired by toolCallId with outcome_code, hook_starts/hook_failures, first_user_text (US-10, no top-level agentId), and a fail-closed version gate. Red 086f85c (ImportError, copilot module absent) -> green 84f9988 (58/58) -> mutations f7ef047 (7/7 killed). Full suite 645 passed/5 deselected; ruff clean. Seam: profiles.py READERS registration left to W1-COP-I; the design's 'through views.load' US-11 check done at reader+normalize level instead (views.py/profiles.py/bench/profiles/copilot.yaml are out of scope and do not exist yet in this tree).",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "Claude Sonnet 5",
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Implement the Copilot telemetry reader to the gated design, red-first, with the mutation file.",
+      "done_when": "copilot.py reads events.jsonl per section 4.4; __init__.py/normalize.py carry the new fields without changing Claude Code/Codex output; tests/test_telemetry_copilot.py covers every section-13 row owned by W1-COP-R, red first then green; tests/mutations/copilot_reader.json's 7 mutants all killed; full suite and ruff clean.",
+      "tier": "T2",
+      "fan_out": 0,
+      "started_at": "2026-09-24T22:42:11Z",
+      "duration_seconds": 1233.0,
+      "git": {
+        "sha": "f7ef0473cd89b69397fc1c61c1881368600e6781",
+        "short": "f7ef0473c",
+        "branch": "w1-copilot-reader",
+        "pushed": null
+      }
     }
   ],
   "changes": [
