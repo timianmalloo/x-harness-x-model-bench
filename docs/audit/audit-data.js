@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T22:38:22Z",
+  "generated": "2026-09-24T22:54:35Z",
   "audit": [
     {
       "actor": null,
@@ -4871,6 +4871,412 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "id": "al-01M3AT1DW1NHFWBDYWBNS5MTP8",
+      "shortname": "Goal: W1-COP-I slice 1 (plan docs/coordination/coordination-finish-harne…",
+      "datetime": "2026-09-24T22:54:34Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W1-COP-I slice 1 (plan docs/coordination/coordination-finish-harness-bench.md, W1-COP-I row and the version-3 amendments): a cross-vendor read of the Copilot design, then the pinned builds — Claude Code bumped to 2.1.282 (Owner ruling R-17) and the Copilot CLI 1.0.89-1 added to the pinned tools (R-12) — red-first, in the owned paths only.\nDone when: Your first commit adds docs/notes/review-w1-copi-design-codex.md (V2 frontmatter: id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-08\", summary) listing any defect you find in docs/design/phase2-copilot-profile.md (revision 3.1) that would stop you implementing it as written, each with section and reason, or \"none found\".; bench/tools/package.json and bench/tools/package-lock.json pin the Claude Code build 2.1.282 (the @anthropic-ai/claude-agent-sdk that bundles it, with the claude-agent-acp adapter version that supports it; fall back to 2.1.281 only if 2.1.282 cannot install, and say so) and add @github/copilot at exactly 1.0.89-1 (a prerelease, R-12); `npm ci` from the lockfile installs them.; src/harness_bench/tools.py LAYOUT gains a copilot entry per design section 5 (the platform package exe, the version from that package, no adapter) and resolve()/record()/check_build handle an absent adapter as the design says; tests in tests/test_tools.py were committed red first (failing on the old code for the stated reason) then green.; `uv run bench tools install` succeeds and prints or records the three builds; `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the installed build versions and sha256 values.\nNot in scope: Every file outside docs/notes/review-w1-copi-design-codex.md, bench/tools/package.json, bench/tools/package-lock.json, src/harness_bench/tools.py and tests/test_tools.py (profiles.py, profile YAML, errors.py, workspace.py, views.py and plan.py are later slices).; Running any model turn, any `bench run`, anything under tests/e2e, or `-m \"\"`.; Any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase2-copilot-profile.md (sections 4.1 to 5 and 13), docs/notes/rulings.md R-12 and R-17, src/harness_bench/tools.py, tests/test_tools.py, bench/tools/package.json. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing. No guessing: check a version with `npm view <pkg> versions` before pinning it.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3AT1E6DBZN4DGHYQHWMD85K",
+      "shortname": "compile-Goal: W1-COP-I slice 1 (plan docs/coordination/coordination-finish-harne…",
+      "datetime": "2026-09-24T22:54:35Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-COP-I slice 1 (plan docs/coordination/coordination-finish-harness-bench.md, W1-COP-I row and the version-3 amendments): a cross-vendor read of the Copilot design, then the pinned builds — Claude Code bumped to 2.1.282 (Owner ruling R-17) and the Copilot CLI 1.0.89-1 added to the pinned tools (R-12) — red-first, in the owned paths only.\nDone when: Your first commit adds docs/notes/review-w1-copi-design-codex.md (V2 frontmatter: id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-08\", summary) listing any defect you find in docs/design/phase2-copilot-profile.md (revision 3.1) that would stop you implementing it as written, each with section and reason, or \"none found\".; bench/tools/package.json and bench/tools/package-lock.json pin the Claude Code build 2.1.282 (the @anthropic-ai/claude-agent-sdk that bundles it, with the claude-agent-acp adapter version that supports it; fall back to 2.1.281 only if 2.1.282 cannot install, and say so) and add @github/copilot at exactly 1.0.89-1 (a prerelease, R-12); `npm ci` from the lockfile installs them.; src/harness_bench/tools.py LAYOUT gains a copilot entry per design section 5 (the platform package exe, the version from that package, no adapter) and resolve()/record()/check_build handle an absent adapter as the design says; tests in tests/test_tools.py were committed red first (failing on the old code for the stated reason) then green.; `uv run bench tools install` succeeds and prints or records the three builds; `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the installed build versions and sha256 values.\nNot in scope: Every file outside docs/notes/review-w1-copi-design-codex.md, bench/tools/package.json, bench/tools/package-lock.json, src/harness_bench/tools.py and tests/test_tools.py (profiles.py, profile YAML, errors.py, workspace.py, views.py and plan.py are later slices).; Running any model turn, any `bench run`, anything under tests/e2e, or `-m \"\"`.; Any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase2-copilot-profile.md (sections 4.1 to 5 and 13), docs/notes/rulings.md R-12 and R-17, src/harness_bench/tools.py, tests/test_tools.py, bench/tools/package.json. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing. No guessing: check a version with `npm view <pkg> versions` before pinning it.\nTrace\n| clause | trace |\n|---|---|\n| done_when: Your first commit adds docs/notes/review-w1-copi-design-codex.md (V2 frontmatter: id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-08\", summary) listing any defect you find in docs/design/phase2-copilot-profile.md (revision 3.1) that would stop you implementing it as written, each with section and reason, or \"none found\". | phrase: Your first commit adds docs/notes/review-w1-copi-design-codex.md (V2 frontmatter: id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-08\", summary) listing any defect you find in docs/design/phase2-copilot-profile.md (revision 3.1) that would stop you implementing it as written, each with section and reason, or \"none found\". |\n| done_when: bench/tools/package.json and bench/tools/package-lock.json pin the Claude Code build 2.1.282 (the @anthropic-ai/claude-agent-sdk that bundles it, with the claude-agent-acp adapter version that supports it | phrase: bench/tools/package.json and bench/tools/package-lock.json pin the Claude Code build 2.1.282 (the @anthropic-ai/claude-agent-sdk that bundles it, with the claude-agent-acp adapter version that supports it |\n| done_when: fall back to 2.1.281 only if 2.1.282 cannot install, and say so) and add @github/copilot at exactly 1.0.89-1 (a prerelease, R-12) | phrase: fall back to 2.1.281 only if 2.1.282 cannot install, and say so) and add @github/copilot at exactly 1.0.89-1 (a prerelease, R-12) |\n| done_when: `npm ci` from the lockfile installs them. | phrase: `npm ci` from the lockfile installs them. |\n| done_when: src/harness_bench/tools.py LAYOUT gains a copilot entry per design section 5 (the platform package exe, the version from that package, no adapter) and resolve()/record()/check_build handle an absent adapter as the design says | phrase: src/harness_bench/tools.py LAYOUT gains a copilot entry per design section 5 (the platform package exe, the version from that package, no adapter) and resolve()/record()/check_build handle an absent adapter as the design says |\n| done_when: tests in tests/test_tools.py were committed red first (failing on the old code for the stated reason) then green. | phrase: tests in tests/test_tools.py were committed red first (failing on the old code for the stated reason) then green. |\n| done_when: `uv run bench tools install` succeeds and prints or records the three builds | phrase: `uv run bench tools install` succeeds and prints or records the three builds |\n| done_when: `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean. | phrase: `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean. |\n| done_when: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the installed build versions and sha256 values. | phrase: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the installed build versions and sha256 values. |\n| not_in_scope: Every file outside docs/notes/review-w1-copi-design-codex.md, bench/tools/package.json, bench/tools/package-lock.json, src/harness_bench/tools.py and tests/test_tools.py (profiles.py, profile YAML, errors.py, workspace.py, views.py and plan.py are later slices). | phrase: Every file outside docs/notes/review-w1-copi-design-codex.md, bench/tools/package.json, bench/tools/package-lock.json, src/harness_bench/tools.py and tests/test_tools.py (profiles.py, profile YAML, errors.py, workspace.py, views.py and plan.py are later slices). |\n| not_in_scope: Running any model turn, any `bench run`, anything under tests/e2e, or `-m \"\"`. | phrase: Running any model turn, any `bench run`, anything under tests/e2e, or `-m \"\"`. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- npm ci: unresolved (not found)\n- uv run bench tools install: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider: unresolved (not found)\n- uv run ruff check src tests tools: unresolved (not found)\n- bench run: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- npm view <pkg> versions: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 53ce579b4ef3f99190c6e974512b25a2a02fe850d9e209d0e134e844d2929021\n- docs/notes/review-w1-copi-design-codex.md: unresolved (not found)\n- coordination-finish-harness-bench: docs/coordination/coordination-finish-harness-bench.md sha256 53ce579b4ef3f99190c6e974512b25a2a02fe850d9e209d0e134e844d2929021\n- docs/design/phase2-copilot-profile.md: docs/design/phase2-copilot-profile.md sha256 b15244d34330ebd4917bbc7599bd30944f2de10767b6a719ec18a0e19c25ee7f\n- bench/tools/package.json: bench/tools/package.json sha256 b652e909a12851407eb92eb8eb74c70038574433f94e2a71d32a1f741fea39c9\n- bench/tools/package-lock.json: bench/tools/package-lock.json sha256 9c961102d6d87cb948e01754832b03305563463269e0ce716d27b96a669df96b\n- @anthropic-ai/claude-agent-sdk: unresolved (not found)\n- @github/copilot: unresolved (not found)\n- src/harness_bench/tools.py: src/harness_bench/tools.py sha256 877dc6e59c2772baf8c7a63513e6fc214632b9169237b16d8c8a159d7db1966f\n- resolve()/record()/check_build: unresolved (not found)\n- tests/test_tools.py: tests/test_tools.py sha256 ac87b9f4482db62fe97f4c3e65258daec6848e7f1f21ac9de2adae3a5ec43a5d\n- profiles.py: src/harness_bench/profiles.py sha256 3afb30e7a768577cbdbff2082489fec22887895c7d7ea64c7ac77f805a3830ac\n- errors.py: src/harness_bench/errors.py sha256 67d4943bc7fa723cb2d3f989e2f11200e6aeec178c6ff745b1494312cdf2b3ed\n- workspace.py: src/harness_bench/workspace.py sha256 e49575ec0fcc8c8c598f9099fa74297be12d0a3383d3bffe78ceb1fbe006dd20\n- views.py: src/harness_bench/views.py sha256 dda67bd6871a0ee97cd28e0f816f77a0ec3c180cb75cb008c5dde44399ffc76f\n- plan.py: src/harness_bench/plan.py sha256 bb36075f56c7fb50478652f0358b6135b182136a2580c5d973f08b8978602a2c\n- tests/e2e: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 2 matches)\n- graph neighbours: coordination-phase1-finish-run, design-phase1-walking-skeleton, rulings-register\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3AT1DW1NHFWBDYWBNS5MTP8\nraw sha256: 65220ece335fef8c4a56dd0738d1046e4b7fbd4c5d34914e16b937cef0bdd11a\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3AT1DW1NHFWBDYWBNS5MTP8 for codex v1: 12 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "Your first commit adds docs/notes/review-w1-copi-design-codex.md (V2 frontmatter: id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-08\", summary) listing any defect you find in docs/design/phase2-copilot-profile.md (revision 3.1) that would stop you implementing it as written, each with section and reason, or \"none found\".",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your first commit adds docs/notes/review-w1-copi-design-codex.md (V2 frontmatter: id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-08\", summary) listing any defect you find in docs/design/phase2-copilot-profile.md (revision 3.1) that would stop you implementing it as written, each with section and reason, or \"none found\"."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "bench/tools/package.json and bench/tools/package-lock.json pin the Claude Code build 2.1.282 (the @anthropic-ai/claude-agent-sdk that bundles it, with the claude-agent-acp adapter version that supports it",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/tools/package.json and bench/tools/package-lock.json pin the Claude Code build 2.1.282 (the @anthropic-ai/claude-agent-sdk that bundles it, with the claude-agent-acp adapter version that supports it"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "fall back to 2.1.281 only if 2.1.282 cannot install, and say so) and add @github/copilot at exactly 1.0.89-1 (a prerelease, R-12)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "fall back to 2.1.281 only if 2.1.282 cannot install, and say so) and add @github/copilot at exactly 1.0.89-1 (a prerelease, R-12)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`npm ci` from the lockfile installs them.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`npm ci` from the lockfile installs them."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "src/harness_bench/tools.py LAYOUT gains a copilot entry per design section 5 (the platform package exe, the version from that package, no adapter) and resolve()/record()/check_build handle an absent adapter as the design says",
+            "trace": {
+              "kind": "phrase",
+              "ref": "src/harness_bench/tools.py LAYOUT gains a copilot entry per design section 5 (the platform package exe, the version from that package, no adapter) and resolve()/record()/check_build handle an absent adapter as the design says"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests in tests/test_tools.py were committed red first (failing on the old code for the stated reason) then green.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests in tests/test_tools.py were committed red first (failing on the old code for the stated reason) then green."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`uv run bench tools install` succeeds and prints or records the three builds",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`uv run bench tools install` succeeds and prints or records the three builds"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the installed build versions and sha256 values.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the installed build versions and sha256 values."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Every file outside docs/notes/review-w1-copi-design-codex.md, bench/tools/package.json, bench/tools/package-lock.json, src/harness_bench/tools.py and tests/test_tools.py (profiles.py, profile YAML, errors.py, workspace.py, views.py and plan.py are later slices).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Every file outside docs/notes/review-w1-copi-design-codex.md, bench/tools/package.json, bench/tools/package-lock.json, src/harness_bench/tools.py and tests/test_tools.py (profiles.py, profile YAML, errors.py, workspace.py, views.py and plan.py are later slices)."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Running any model turn, any `bench run`, anything under tests/e2e, or `-m \"\"`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Running any model turn, any `bench run`, anything under tests/e2e, or `-m \"\"`."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "Your first commit adds docs/notes/review-w1-copi-design-codex.md (V2 frontmatter: id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-08\", summary) listing any defect you find in docs/design/phase2-copilot-profile.md (revision 3.1) that would stop you implementing it as written, each with section and reason, or \"none found\".",
+            "bench/tools/package.json and bench/tools/package-lock.json pin the Claude Code build 2.1.282 (the @anthropic-ai/claude-agent-sdk that bundles it, with the claude-agent-acp adapter version that supports it",
+            "fall back to 2.1.281 only if 2.1.282 cannot install, and say so) and add @github/copilot at exactly 1.0.89-1 (a prerelease, R-12)",
+            "`npm ci` from the lockfile installs them.",
+            "src/harness_bench/tools.py LAYOUT gains a copilot entry per design section 5 (the platform package exe, the version from that package, no adapter) and resolve()/record()/check_build handle an absent adapter as the design says",
+            "tests in tests/test_tools.py were committed red first (failing on the old code for the stated reason) then green.",
+            "`uv run bench tools install` succeeds and prints or records the three builds",
+            "`uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.",
+            "Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the installed build versions and sha256 values."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W1-COP-I slice 1 (plan docs/coordination/coordination-finish-harness-bench.md, W1-COP-I row and the version-3 amendments): a cross-vendor read of the Copilot design, then the pinned builds — Claude Code bumped to 2.1.282 (Owner ruling R-17) and the Copilot CLI 1.0.89-1 added to the pinned tools (R-12) — red-first, in the owned paths only.",
+          "main_line_budget": "one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase2-copilot-profile.md (sections 4.1 to 5 and 13), docs/notes/rulings.md R-12 and R-17, src/harness_bench/tools.py, tests/test_tools.py, bench/tools/package.json. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing. No guessing: check a version with `npm view <pkg> versions` before pinning it.",
+          "not_in_scope": [
+            "Every file outside docs/notes/review-w1-copi-design-codex.md, bench/tools/package.json, bench/tools/package-lock.json, src/harness_bench/tools.py and tests/test_tools.py (profiles.py, profile YAML, errors.py, workspace.py, views.py and plan.py are later slices).",
+            "Running any model turn, any `bench run`, anything under tests/e2e, or `-m \"\"`.",
+            "Any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [
+          "coordination-phase1-finish-run",
+          "design-phase1-walking-skeleton",
+          "rulings-register"
+        ],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.002,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3AT1DW1NHFWBDYWBNS5MTP8",
+        "raw_sha256": "65220ece335fef8c4a56dd0738d1046e4b7fbd4c5d34914e16b937cef0bdd11a",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "npm ci"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run bench tools install"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q -p no:cacheprovider"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run ruff check src tests tools"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench run"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-m "
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python3"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "npm view <pkg> versions"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench.md",
+            "reason": null,
+            "sha256": "53ce579b4ef3f99190c6e974512b25a2a02fe850d9e209d0e134e844d2929021",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-finish-harness-bench.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/review-w1-copi-design-codex.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench.md",
+            "reason": null,
+            "sha256": "53ce579b4ef3f99190c6e974512b25a2a02fe850d9e209d0e134e844d2929021",
+            "status": "resolved",
+            "token": "coordination-finish-harness-bench"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase2-copilot-profile.md",
+            "reason": null,
+            "sha256": "b15244d34330ebd4917bbc7599bd30944f2de10767b6a719ec18a0e19c25ee7f",
+            "status": "resolved",
+            "token": "docs/design/phase2-copilot-profile.md"
+          },
+          {
+            "nearest": null,
+            "path": "bench/tools/package.json",
+            "reason": null,
+            "sha256": "b652e909a12851407eb92eb8eb74c70038574433f94e2a71d32a1f741fea39c9",
+            "status": "resolved",
+            "token": "bench/tools/package.json"
+          },
+          {
+            "nearest": null,
+            "path": "bench/tools/package-lock.json",
+            "reason": null,
+            "sha256": "9c961102d6d87cb948e01754832b03305563463269e0ce716d27b96a669df96b",
+            "status": "resolved",
+            "token": "bench/tools/package-lock.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "@anthropic-ai/claude-agent-sdk"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "@github/copilot"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/tools.py",
+            "reason": null,
+            "sha256": "877dc6e59c2772baf8c7a63513e6fc214632b9169237b16d8c8a159d7db1966f",
+            "status": "resolved",
+            "token": "src/harness_bench/tools.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "resolve()/record()/check_build"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_tools.py",
+            "reason": null,
+            "sha256": "ac87b9f4482db62fe97f4c3e65258daec6848e7f1f21ac9de2adae3a5ec43a5d",
+            "status": "resolved",
+            "token": "tests/test_tools.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/profiles.py",
+            "reason": null,
+            "sha256": "3afb30e7a768577cbdbff2082489fec22887895c7d7ea64c7ac77f805a3830ac",
+            "status": "resolved",
+            "token": "profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "67d4943bc7fa723cb2d3f989e2f11200e6aeec178c6ff745b1494312cdf2b3ed",
+            "status": "resolved",
+            "token": "errors.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/workspace.py",
+            "reason": null,
+            "sha256": "e49575ec0fcc8c8c598f9099fa74297be12d0a3383d3bffe78ceb1fbe006dd20",
+            "status": "resolved",
+            "token": "workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/views.py",
+            "reason": null,
+            "sha256": "dda67bd6871a0ee97cd28e0f816f77a0ec3c180cb75cb008c5dde44399ffc76f",
+            "status": "resolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "bb36075f56c7fb50478652f0358b6135b182136a2580c5d973f08b8978602a2c",
+            "status": "resolved",
+            "token": "plan.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
     }
   ],
   "changes": [
