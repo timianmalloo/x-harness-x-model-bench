@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-24T08:18:51Z",
+  "generated": "2026-09-24T08:42:56Z",
   "audit": [
     {
       "id": "al-01M37NFXCJQ90V6ZTBZX5KX9EN",
@@ -716,6 +716,35 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-09-24T08:16:42Z",
       "duration_seconds": 129.0
+    },
+    {
+      "id": "al-01M399A0Y8V0QPE176XSANADEK",
+      "shortname": "join-t9",
+      "datetime": "2026-09-24T08:42:56Z",
+      "session": "coord-opus",
+      "prompt": "the join of track/t9-cleanup-and-log into impl/phase1",
+      "summary": "T9 loop-back from E2E run 3: _discard uses make_writable (read-only git objects); configure_logging replaces its previous handler and cmd_run releases it; red e225ff5 re-verified; t9.json 3/3 killed recount_seconds=129 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/proof/findings-T9.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Close the two cleanup defects the third real E2E exposed",
+      "done_when": "join green; red SHA re-run by the Coordinator; t9.json all killed; engine.py changed only inside configure_logging",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-24T08:40:46Z",
+      "duration_seconds": 130.0
     }
   ],
   "changes": [

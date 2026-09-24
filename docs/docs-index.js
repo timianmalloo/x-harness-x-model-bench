@@ -765,7 +765,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "308efde4ed027bd66a2041d7794ff268fa4bbcc643e7292e80edb676c86cebf5"
+      "sourceSha256": "8d383befdccfbef3b7c7cf89a59a870450abdb47be5cd46e8518339f555f0092"
     },
     {
       "id": "note-20260923-sqlite-views",
@@ -914,7 +914,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "39b32dc8ffae7afa860c3cfa61994c0581ea0251285cc93a553d5ac7d719d3e4"
+      "sourceSha256": "ad09ff851abc52b3f9592f0b2301b72325a944f3824a5be6ef322a2d3851d396"
     },
     {
       "id": "design-run-lifecycle-model",
@@ -1008,7 +1008,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "1d431712be77972ccbc69fe0b73ac947598f301beb99021aa33a2eb489ff49a5"
+      "sourceSha256": "5661dde49bd5627561e43d049ceaffed0952152611d53ea7abe734f51ae51058"
     },
     {
       "id": "defect-classes",
@@ -1037,7 +1037,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b892b9816cc6d8d7c8512e3b68cf7b388961f4fdbfe6c41e404656cd78f83dc8"
+      "sourceSha256": "b418d9b3bea449ed8249fc85a971d1e54fe17d0d7eccb61f4af192085ead6d00"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -1473,6 +1473,35 @@ window.DOCS_INDEX = {
       "sourceSha256": "711d2ead2e4fbe97630a41519ae01465d0b3cc9fe0ca8cb041b4fadd58495a45"
     },
     {
+      "id": "findings-t9-cleanup-and-log",
+      "path": "docs/proof/findings-T9.md",
+      "title": "Findings → tests: track T9 cleanup-and-log",
+      "type": "proof-pack",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "Phase 1 · walking skeleton",
+      "reviewBy": "2026-12-22",
+      "reviewSuggested": [],
+      "summary": "Two loop-back defects found by the third real E2E. T9-1: the loser of a build race left its temp folder on disk, because git writes read-only object files on Windows and rmtree(ignore_errors=True) failed silently. T9-2: engine.configure_logging added a FileHandler per call, so runs in one process wrote into each other's engine.log and a finished run's log stayed open. Red e225ff5, fixed in 7f962fb, all three t9.json mutations killed.",
+      "tags": [
+        "proof",
+        "findings",
+        "red-first",
+        "T9",
+        "workspace",
+        "engine",
+        "logging"
+      ],
+      "links": [
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "2102aa6dd5fdb3137bf1340f0de21ef73c568387caff286c7eb2946330da92a6"
+    },
+    {
       "id": "proof-findings-t5",
       "path": "docs/proof/findings-T5.md",
       "title": "T5 findings: N5 spike (Codex host skill discovery)",
@@ -1655,5 +1684,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "49556f01af3422d985fd9503df1a31589cac3fcb2a191c24e03a472ae6b8a91d"
+  "graphSha256": "fe39565e15a07444ed0a97c173af6a276e93993b9fead5341527ae465265fa6e"
 };
