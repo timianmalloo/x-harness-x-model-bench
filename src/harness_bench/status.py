@@ -3,9 +3,11 @@
 - Liveness comes from the run lock: `alive` (held, heartbeat within the plan's `lock_staleness`),
   `stalled` (held, heartbeat stale), `not running` (free). Completion: `complete` once `run.completed` is
   recorded, `in progress` while the lock is held, otherwise `incomplete`.
-- A running cell is one with `attempt.process_started` and no `attempt.process_ended`. One past its
-  budget is being killed (the engine kills at the budget and records the end only once the kill is
-  confirmed), shown as `killing (unconfirmed, <s> s)`.
+- A running cell is one with `attempt.process_started` and no `attempt.process_ended`. Its budget
+  clock starts at `cell.prompt_sent` (matching the engine's own kill check), so a cell still
+  handshaking shows `elapsed_s` 0 and is never `killing`. One past its budget is being killed (the
+  engine kills at the budget and records the end only once the kill is confirmed), shown as
+  `killing (unconfirmed, <s> s)`.
 - `bench-status/1` is a strict type: `parse` rejects unknown or missing fields, wrong types, unknown
   enum values and malformed ids. It carries enums, ids, counts and times only: no text from a cell.
 - Phase 1 has no decision requests, so `decisions` is always empty.
@@ -92,12 +94,16 @@ def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = N
     completion = "complete" if view.completed else ("in progress" if held else "incomplete")
     started = {e["cell_id"]: e for e in events if e["kind"] == "attempt.process_started"}
     ended = {e["cell_id"] for e in events if e["kind"] == "attempt.process_ended"}
+    prompt_sent = {e["cell_id"]: e for e in events if e["kind"] == "cell.prompt_sent"}
     running = []
     for c in view.plan["cells"]:
         cid = c["cell_id"]
         if cid in started and cid not in ended:
-            elapsed = max(0, int((now - _when(started[cid]["recorded_at"])).total_seconds()))
-            running.append(RunningCell(cid, c.get("label", cid), elapsed, c["budget_seconds"], elapsed > c["budget_seconds"]))
+            sent = prompt_sent.get(cid)
+            # The budget clock starts at cell.prompt_sent, matching the engine's own kill check
+            # (_check_budgets measures from prompt_mono): a cell still handshaking has elapsed 0.
+            elapsed = max(0, int((now - _when(sent["recorded_at"])).total_seconds())) if sent else 0
+            running.append(RunningCell(cid, c.get("label", cid), elapsed, c["budget_seconds"], bool(sent) and elapsed > c["budget_seconds"]))
     outcomes: dict[str, int] = {}
     validity: dict[str, int] = {}
     causes: dict[str, int] = {}

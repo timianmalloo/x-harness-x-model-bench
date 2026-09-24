@@ -16,7 +16,7 @@
  {
   "name": "a cell past its budget not shown as killing",
   "file": "src/harness_bench/status.py",
-  "find": "elapsed > c[\"budget_seconds\"]))",
+  "find": "bool(sent) and elapsed > c[\"budget_seconds\"]))",
   "replace": "False))",
   "tests": ["tests/test_status.py::test_a_cell_past_its_budget_is_being_killed"]
  },
@@ -26,6 +26,13 @@
   "find": "        if cid in started and cid not in ended:\n",
   "replace": "        if cid in started:\n",
   "tests": ["tests/test_status.py::test_a_finished_run_is_not_running_and_complete"]
+ },
+ {
+  "name": "budget elapsed measured from process_started instead of prompt_sent",
+  "file": "src/harness_bench/status.py",
+  "find": "elapsed = max(0, int((now - _when(sent[\"recorded_at\"])).total_seconds())) if sent else 0\n",
+  "replace": "elapsed = max(0, int((now - _when(started[cid][\"recorded_at\"])).total_seconds()))\n",
+  "tests": ["tests/test_status.py::test_a_running_cells_budget_is_measured_from_prompt_sent_not_process_started"]
  },
  {
   "name": "unknown fields accepted",
