@@ -81,7 +81,9 @@ def cmd_plan(args) -> int:
             print(f"x {item}", file=sys.stderr)
         return INVALID
     if args.json:
-        print(json.dumps([c.__dict__ | {"id": c.id} for c in plan.expand(matrix, bom)], indent=2))
+        tasks = plan.select_tasks(bom, matrix["bom"]["subset"])
+        versions = {t["id"]: plan.task_version_hash(root / "tasks" / t["id"]) for t in tasks}
+        print(json.dumps([c.__dict__ | {"id": c.id} for c in plan.expand(matrix, bom, versions)], indent=2))
         return OK
     builds = {h: b.record() for h, b in tools.resolve(Path(args.tools_dir)).items()}
     pack = _pack(Path(args.pack_source), Path(args.tools_dir).parent / "pack")
