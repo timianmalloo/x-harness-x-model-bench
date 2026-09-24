@@ -20,7 +20,6 @@ from harness_bench.telemetry import (
     ProviderError,
     ToolCall,
     as_dict,
-    as_int,
     as_list,
     as_status,
     as_str,
@@ -78,8 +77,8 @@ def read(path: Path) -> Extraction:
         if isinstance(mid, str) and mid not in seen_messages:
             seen_messages.add(mid)
             usage = as_dict(message.get("usage"))
-            ex.model_calls.append(ModelCall(n, model, as_int(usage.get("input_tokens")), as_int(usage.get("cache_read_input_tokens")),
-                                            as_int(usage.get("cache_creation_input_tokens")), as_int(usage.get("output_tokens")),
+            ex.model_calls.append(ModelCall(n, model, ex.count(n, usage, "input_tokens"), ex.count(n, usage, "cache_read_input_tokens"),
+                                            ex.count(n, usage, "cache_creation_input_tokens"), ex.count(n, usage, "output_tokens"),
                                             None, stamp, stamp))
         for block in as_list(message.get("content")):
             if isinstance(block, dict) and block.get("type") == "tool_use" and isinstance(block.get("id"), str):

@@ -6,7 +6,8 @@ cache write, output; reasoning is a component of output), tool calls, and provid
 
 Readers are bounded (ADR-0008, design): a line over 1 MiB, a line nested deep enough to raise
 RecursionError, or a line that does not parse is counted as malformed and skipped; a record over
-256 MiB is read only to that size. A field that is absent is NOT_RECORDED, never 0.
+256 MiB is read only to that size. A field of the wrong type is treated as absent. A usage field that is
+absent is listed in `Extraction.missing` as HB-TEL-001: NOT_RECORDED, never a silent 0.
 """
 
 from __future__ import annotations
@@ -51,6 +52,15 @@ class ProviderError:
     message: str
 
 
+@dataclass(frozen=True)
+class MissingField:
+    """A field the record should carry for a model call but does not (HB-TEL-001). The call's bucket holds 0,
+    so a consumer treats a measure built from this call as NOT_RECORDED, never as 0."""
+    native_ordinal: int
+    field: str
+    code: str = "HB-TEL-001"
+
+
 @dataclass
 class Extraction:
     session_id: str | None = None
@@ -60,6 +70,15 @@ class Extraction:
     first_user_text: str | None = None
     malformed_lines: int = 0
     truncated: bool = False
+    missing: list[MissingField] = field(default_factory=list)
+
+    def count(self, n: int, usage: dict, key: str) -> int:
+        """The usage field `key` of the call at line `n`; absent or not a count is HB-TEL-001 (and 0 in the bucket)."""
+        value = usage.get(key)
+        if is_count(value):
+            return value
+        self.missing.append(MissingField(n, key))
+        return 0
 
 
 def rows(path: Path, ex: Extraction) -> Iterator[tuple[int, dict]]:

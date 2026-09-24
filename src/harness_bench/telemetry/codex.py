@@ -21,11 +21,11 @@ from pathlib import Path
 
 from harness_bench.telemetry import (
     Extraction,
+    MissingField,
     ModelCall,
     ProviderError,
     ToolCall,
     as_dict,
-    as_int,
     as_list,
     as_status,
     as_str,
@@ -77,10 +77,12 @@ def read(path: Path) -> Extraction:
             if not last or total == last_total:
                 continue
             last_total = total
-            cached = as_int(last.get("cached_input_tokens"))
-            ex.model_calls.append(ModelCall(n, model or "NOT_RECORDED", max(as_int(last.get("input_tokens")) - cached, 0), cached,
-                                            as_int(last.get("cache_write_input_tokens")), as_int(last.get("output_tokens")),
-                                            as_int(last.get("reasoning_output_tokens")), stamp, stamp))
+            if model is None:
+                ex.missing.append(MissingField(n, "model"))
+            cached = ex.count(n, last, "cached_input_tokens")
+            ex.model_calls.append(ModelCall(n, model or "NOT_RECORDED", max(ex.count(n, last, "input_tokens") - cached, 0), cached,
+                                            ex.count(n, last, "cache_write_input_tokens"), ex.count(n, last, "output_tokens"),
+                                            ex.count(n, last, "reasoning_output_tokens"), stamp, stamp))
         elif kind == "event_msg" and ptype == "task_complete":
             err = as_dict(payload.get("error"))
             if err:
