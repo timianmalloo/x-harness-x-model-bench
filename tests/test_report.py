@@ -244,3 +244,68 @@ def test_a_clean_report_still_writes_when_credential_values_are_supplied(root, t
     run_dir, view = _graded(root, tmp_path, {"a": GOOD})
     path = html.write(run_dir, view, {FAKE_ROTATED_TOKEN})
     assert path == run_dir / "report.html"
+
+
+# --- N5: user-config exposed flag (ruling R-5, Coordinator seam request) -----------------------------
+
+N5_FLAG = "user-config exposed (N5)"
+
+
+def _cell(cid, combo, harness, model):
+    na = views.Measure(None, "not graded")
+    return views.CellView(cell_id=cid, label=f"X1.{combo}.pack-off.r1", combo=combo, pack="off", harness=harness, model=model,
+                          outcome="completed", cause=None, code=None, validity="valid", validity_code=None,
+                          wall_ms=na, model_ms=na, tool_ms=na, idle_ms=na, tokens=None, tokens_reason="not graded")
+
+
+def _mixed_view():
+    codex_cell = _cell("a", "codex-sol", "codex", "gpt-6-sol")
+    cc_cell = _cell("b", "cc-sonnet", "claude-code", "claude-sonnet-5")
+    plan = {"cells": [{"harness": "codex"}, {"harness": "claude-code"}]}
+    return views.RunView("r1", plan, True, "grade-1", None, [codex_cell, cc_cell])
+
+
+def _codex_only_view():
+    v = _mixed_view()
+    v.cells = [v.cells[0]]
+    v.plan = {"cells": [{"harness": "codex"}]}
+    return v
+
+
+def _no_codex_view():
+    v = _mixed_view()
+    v.cells = [v.cells[1]]
+    v.plan = {"cells": [{"harness": "claude-code"}]}
+    return v
+
+
+def test_the_header_flags_a_run_with_a_codex_cell_and_names_the_evidence():
+    doc = html.render(_codex_only_view(), archive_present=True)
+    assert N5_FLAG in doc
+    assert "spike-n5-codex-skill-roots.md" in doc and "US-13" in doc
+
+
+def test_the_header_has_no_flag_when_the_run_has_no_codex_cell():
+    doc = html.render(_no_codex_view(), archive_present=True)
+    assert "N5" not in doc
+
+
+def test_the_leaderboard_and_cells_table_flag_only_the_codex_rows():
+    doc = html.render(_mixed_view(), archive_present=True)
+    board = re.search(r'<section id="leaderboard".*?</section>', doc, re.DOTALL).group(0)
+    runs = re.search(r'<section id="runs".*?</section>', doc, re.DOTALL).group(0)
+    for section in (board, runs):
+        codex_line = next(line for line in section.splitlines() if "codex-sol" in line)
+        cc_line = next(line for line in section.splitlines() if "cc-sonnet" in line)
+        assert N5_FLAG in codex_line
+        assert N5_FLAG not in cc_line
+
+
+def test_the_cli_table_prints_the_flag_as_ascii_after_the_table_when_a_codex_cell_is_present():
+    out, code = cli_table.render(_codex_only_view(), plain=True)
+    assert code == 0 and out.isascii() and N5_FLAG in out
+
+
+def test_the_cli_table_has_no_flag_when_no_codex_cell():
+    out, code = cli_table.render(_no_codex_view(), plain=True)
+    assert code == 0 and "N5" not in out
