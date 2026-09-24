@@ -1,6 +1,6 @@
 """Red-observation by targeted mutation: remove one guard at a time and require a named test file to fail.
 
-Each mutation is (file, exact text, replacement). The file is restored afterwards, even on error.
+Each mutation is (file, exact text, replacement). The file is restored byte for byte afterwards, even on error.
 Exit 0 only if every mutation made the suite fail (a surviving mutation means that guard is untested).
 
 Usage: python tools/mutate_check.py <mutations.json>
@@ -19,13 +19,14 @@ def main(argv: list[str]) -> int:
     survivors = 0
     for m in spec:
         path = ROOT / m["file"]
-        original = path.read_text(encoding="utf-8")
-        if m["find"] not in original:
+        original = path.read_bytes()
+        text = original.decode("utf-8").replace("\r\n", "\n")
+        if m["find"] not in text:
             print(f"SKIP {m['name']}: text not found", flush=True)
             survivors += 1
             continue
         try:
-            path.write_text(original.replace(m["find"], m["replace"], 1), encoding="utf-8")
+            path.write_bytes(text.replace(m["find"], m["replace"], 1).encode("utf-8"))
             try:
                 result = subprocess.run([sys.executable, "-m", "pytest", "-q", "-x", *m["tests"]], cwd=ROOT,
                                         capture_output=True, text=True, check=False, timeout=m.get("timeout", 180))
@@ -35,7 +36,7 @@ def main(argv: list[str]) -> int:
             print(f"{'killed  ' if killed else 'SURVIVED'} {m['name']}", flush=True)
             survivors += 0 if killed else 1
         finally:
-            path.write_text(original, encoding="utf-8")
+            path.write_bytes(original)
     print(f"{survivors} survivor(s)" if survivors else "every mutation killed", flush=True)
     return 1 if survivors else 0
 
