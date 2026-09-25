@@ -22,6 +22,7 @@ from archived_runs import (
 )
 
 from harness_bench import archive, ledger, profiles, views
+from harness_bench import plan as plan_mod
 from harness_bench.errors import BenchError
 from harness_bench.grade import cost, runner
 from harness_bench.telemetry import normalize
@@ -370,6 +371,77 @@ def test_the_cross_check_skips_a_harness_whose_acp_usage_is_not_the_turn_total(r
     _edit_events(run_dir, _with_acp_usage({"usage": {"inputTokens": 1, "outputTokens": 1}, "meta": None}))
     runner.run_pass(run_dir, root)
     assert _warnings(_cell(views.load(run_dir), "a"), "HB-VAL-005") == []
+
+
+# --- R-28 (R-22 narrowed): agent_version against the pinned build; a mismatch is flagged HB-CELL-115 -------------------
+
+
+def _edit_plan(run_dir: Path, change) -> None:
+    """Rewrite plan.json and its plan_hash (a plan as `bench plan` would have frozen it)."""
+    path = run_dir / "plan.json"
+    p = change(json.loads(path.read_text(encoding="utf-8")))
+    p["plan_hash"] = plan_mod.plan_hash(p)
+    path.write_text(json.dumps(p), encoding="utf-8")
+
+
+def _fake_agent_run(base: Path, pinned: str) -> views.CellView:
+    """A real engine run of the fake ACP agent (its initialize.agentInfo.version is "0"), under a plan pinning `pinned`."""
+    from test_engine import FakeLauncher, _plan, _run
+    p = _plan(n_cells=1)
+    p["builds"] = {"fake": {"version": "9", "sha256": "f" * 64, "adapter_version": pinned, "adapter_sha256": "e" * 64}}
+    p["profiles"] = {"fake": {"usage_source": "acp_turn", "auxiliary_models": [], "record_glob": "none/{session_id}"}}
+    _, _, config = _run(base, p, FakeLauncher({}))
+    p["plan_hash"] = plan_mod.plan_hash(p)
+    (config.run_dir / "plan.json").write_text(json.dumps(p), encoding="utf-8")
+    return views.load(config.run_dir).cells[0]
+
+
+def test_a_fake_agent_reporting_another_version_than_the_pin_is_flagged(base):  # R-28 c2: the red test it names
+    cell = _fake_agent_run(base, pinned="9.9.9")
+    assert _warnings(cell, "HB-CELL-115") == [("HB-CELL-115", "warning", "agent_version 0 differs from the pinned build 9.9.9")]
+    assert _warnings(cell, "HB-VAL-006") == []
+
+
+def test_a_fake_agent_reporting_the_pinned_version_is_not_flagged(base):  # the negative control
+    cell = _fake_agent_run(base, pinned="0")
+    assert _warnings(cell, "HB-CELL-115") == [] and _warnings(cell, "HB-VAL-006") == []
+
+
+def _session_run(root, tmp_path, agent_version, builds, harness="codex"):
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, harness=harness)
+    _edit_events(run_dir, lambda e: {**e, "agent_version": agent_version} if e["kind"] == "attempt.session_opened" else e)
+    _edit_plan(run_dir, lambda p: {**p, "builds": builds})
+    return _cell(views.load(run_dir), "a")
+
+
+def test_copilot_compares_its_own_version_when_there_is_no_adapter(root, tmp_path):  # F3: a newer cached binary answers
+    pin = {"copilot": {"version": "1.0.89-1", "sha256": "f" * 64, "adapter_version": None, "adapter_sha256": None}}
+    newer = _session_run(root, tmp_path / "1", "1.0.90", pin, harness="copilot")
+    assert _warnings(newer, "HB-CELL-115") == [("HB-CELL-115", "warning", "agent_version 1.0.90 differs from the pinned build 1.0.89-1")]
+    assert _warnings(_session_run(root, tmp_path / "2", "1.0.89-1", pin, harness="copilot"), "HB-CELL-115") == []
+
+
+def test_an_adapter_harness_compares_the_adapter_version(root, tmp_path):  # agentInfo names codex-acp 1.12.0, not codex 0.156.0
+    pin = {"codex": {"version": "0.156.0", "sha256": "f" * 64, "adapter_version": "1.12.0", "adapter_sha256": "e" * 64}}
+    cell = _session_run(root, tmp_path, "1.12.0", pin)
+    assert _warnings(cell, "HB-CELL-115") == [] and _warnings(cell, "HB-VAL-006") == []
+
+
+def test_a_null_agent_version_skips_the_check_with_a_warning_never_a_pass(root, tmp_path):  # R-22 c1, R-28 c1
+    pin = {"codex": {"version": "0.156.0", "sha256": "f" * 64, "adapter_version": "1.12.0", "adapter_sha256": "e" * 64}}
+    cell = _session_run(root, tmp_path, None, pin)
+    assert _warnings(cell, "HB-VAL-006") == [("HB-VAL-006", "warning", "executed-build check skipped: no agent_version recorded")]
+    assert _warnings(cell, "HB-CELL-115") == []
+
+
+def test_a_plan_with_no_pinned_version_skips_the_check_with_a_warning(root, tmp_path):
+    cell = _session_run(root, tmp_path, "1.12.0", {})
+    assert _warnings(cell, "HB-VAL-006") == [("HB-VAL-006", "warning", "executed-build check skipped: no pinned version for codex")]
+
+
+def test_a_cell_that_never_opened_a_session_has_no_build_check(root, tmp_path):
+    z = _cell(views.load(make_run(root, tmp_path, {"a": GOOD}, unstarted=("z",))), "z")
+    assert z.warnings == []
 
 
 # --- R-15 (Q5), R-21 c2: an unreadable native record is "not recorded" (HB-VAL-003), never HB-VAL-001 -------------
