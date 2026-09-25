@@ -197,7 +197,18 @@ TRANSFORMED = {
     "base64-of-utf16-canary": lambda s: (_b64b(s.canary.encode("utf-16-le")), "canary"),
     "base64-with-one-non-printable-byte": lambda s: (_b64b(b"\x07" + s.cred.encode()), "credential"),
     "base64-with-one-invalid-utf8-byte": lambda s: (_b64b(b"\xff" + s.cred.encode()), "credential"),
+    # Fable minors.
+    "backslash-newline-continued-credential": lambda s: (s.cred[:10] + chr(92) + "\n" + s.cred[10:], "credential"),
+    "line-split-email": lambda s: (s.email[:5] + "\n" + s.email[5:], "email"),
+    "line-split-username": lambda s: (f"by {s.username[:3]}\n{s.username[3:]}.", "username"),
+    "hex-credential": lambda s: (s.cred.encode("utf-8").hex(), "credential"),
+    "newline-wrapped-base64-token-shape": lambda s: (_wrapped(_b64("ghp_" + token_hex(18))), "token_shape"),
 }
+
+
+def _wrapped(text: str, width: int = 12) -> str:
+    """MIME-style: the text in lines of `width` characters."""
+    return "\n".join(text[i:i + width] for i in range(0, len(text), width))
 
 
 class _Synthetic:
