@@ -52,10 +52,10 @@ def test_claude_account_connector_tools_is_zero_when_a_read_record_advertises_no
     assert claude_code.read(FIX / "native/claude-code/ok.jsonl").account_connector_tools == 0
 
 
-def test_claude_account_connector_tools_is_none_when_the_record_is_missing():  # R-43: not read, never 0
-    missing = FIX / "native/claude-code/no-such-record.jsonl"
-    assert not missing.exists()
-    assert claude_code.read(missing).account_connector_tools is None
+def test_account_connector_tools_is_none_when_the_claude_reader_did_not_read_the_record():  # R-43: not read, never 0
+    """Only the Claude Code reader reads the field; any other extraction leaves it not recorded."""
+    assert Extraction().account_connector_tools is None
+    assert codex.read(FIX / "native/codex/ok.jsonl").account_connector_tools is None
 
 
 # Codex --------------------------------------------------------------------------------------------

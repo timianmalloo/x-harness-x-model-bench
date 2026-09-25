@@ -68,48 +68,45 @@ def read(path: Path) -> Extraction:
     seen_messages: set[str] = set()
     open_tools: dict[str, dict] = {}
     advertised: list[str] = []
-    try:
-        for n, row in rows(path, ex):
-            _note_advertised(advertised, row)
-            kind = row.get("type")
-            message = as_dict(row.get("message"))
-            stamp = as_str(row.get("timestamp"))
-            if ex.session_id is None:
-                ex.session_id = as_str(row.get("sessionId"))
-            if kind == "user":
-                content = message.get("content")
-                if ex.first_user_text is None:
-                    text = _text(content)
-                    if text is not None and not any(isinstance(b, dict) and b.get("type") == "tool_result" for b in as_list(content)):
-                        ex.first_user_text = text
-                for block in as_list(content):
-                    tool_id = as_str(block.get("tool_use_id")) if isinstance(block, dict) and block.get("type") == "tool_result" else None
-                    if tool_id in open_tools:
-                        tool = open_tools.pop(tool_id)
-                        ex.tool_calls.append(ToolCall(tool["n"], tool["name"], TOOL_CLASSES.get(tool["name"], "other"),
-                                                      tool["start"], stamp, not bool(block.get("is_error"))))
-                continue
-            if kind != "assistant":
-                continue
-            if row.get("isApiErrorMessage"):
-                ex.errors.append(ProviderError(n, as_status(row.get("apiErrorStatus")), as_str(row.get("error")) or "unknown",
-                                               (_text(message.get("content")) or "")[:300]))
-                continue
-            model = message.get("model")
-            if not isinstance(model, str) or model == "<synthetic>":
-                continue
-            mid = message.get("id")
-            if isinstance(mid, str) and mid not in seen_messages:
-                seen_messages.add(mid)
-                usage = as_dict(message.get("usage"))
-                ex.model_calls.append(ModelCall(n, model, ex.count(n, usage, "input_tokens"), ex.count(n, usage, "cache_read_input_tokens"),
-                                                ex.count(n, usage, "cache_creation_input_tokens"), ex.count(n, usage, "output_tokens"),
-                                                None, stamp, stamp))
-            for block in as_list(message.get("content")):
-                if isinstance(block, dict) and block.get("type") == "tool_use" and isinstance(block.get("id"), str):
-                    open_tools[block["id"]] = {"n": n, "name": as_str(block.get("name")) or "unknown", "start": stamp}
-    except OSError:
-        return ex
+    for n, row in rows(path, ex):
+        _note_advertised(advertised, row)
+        kind = row.get("type")
+        message = as_dict(row.get("message"))
+        stamp = as_str(row.get("timestamp"))
+        if ex.session_id is None:
+            ex.session_id = as_str(row.get("sessionId"))
+        if kind == "user":
+            content = message.get("content")
+            if ex.first_user_text is None:
+                text = _text(content)
+                if text is not None and not any(isinstance(b, dict) and b.get("type") == "tool_result" for b in as_list(content)):
+                    ex.first_user_text = text
+            for block in as_list(content):
+                tool_id = as_str(block.get("tool_use_id")) if isinstance(block, dict) and block.get("type") == "tool_result" else None
+                if tool_id in open_tools:
+                    tool = open_tools.pop(tool_id)
+                    ex.tool_calls.append(ToolCall(tool["n"], tool["name"], TOOL_CLASSES.get(tool["name"], "other"),
+                                                  tool["start"], stamp, not bool(block.get("is_error"))))
+            continue
+        if kind != "assistant":
+            continue
+        if row.get("isApiErrorMessage"):
+            ex.errors.append(ProviderError(n, as_status(row.get("apiErrorStatus")), as_str(row.get("error")) or "unknown",
+                                           (_text(message.get("content")) or "")[:300]))
+            continue
+        model = message.get("model")
+        if not isinstance(model, str) or model == "<synthetic>":
+            continue
+        mid = message.get("id")
+        if isinstance(mid, str) and mid not in seen_messages:
+            seen_messages.add(mid)
+            usage = as_dict(message.get("usage"))
+            ex.model_calls.append(ModelCall(n, model, ex.count(n, usage, "input_tokens"), ex.count(n, usage, "cache_read_input_tokens"),
+                                            ex.count(n, usage, "cache_creation_input_tokens"), ex.count(n, usage, "output_tokens"),
+                                            None, stamp, stamp))
+        for block in as_list(message.get("content")):
+            if isinstance(block, dict) and block.get("type") == "tool_use" and isinstance(block.get("id"), str):
+                open_tools[block["id"]] = {"n": n, "name": as_str(block.get("name")) or "unknown", "start": stamp}
     for tool in open_tools.values():  # a call with no result (killed turn)
         ex.tool_calls.append(ToolCall(tool["n"], tool["name"], TOOL_CLASSES.get(tool["name"], "other"), tool["start"], None, None))
     ex.tool_calls.sort(key=lambda t: t.native_ordinal)
