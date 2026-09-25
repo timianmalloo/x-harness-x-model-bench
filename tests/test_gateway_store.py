@@ -6,6 +6,8 @@ Offline: every store and ledger lives under tmp_path. Model ids, run ids and ses
 import hashlib
 import json
 
+import pytest
+
 from harness_bench.gateway import store
 
 SESSION = "00000000-0000-4000-8000-000000000001"
@@ -36,3 +38,18 @@ def test_t_gw_31_the_key_recomputes_from_key_inputs_and_names_the_file(tmp_path)
     assert store.key(entry["key_inputs"]) == expected
     assert sorted(entry["key_inputs"]) == sorted(store.KEY_FIELDS)
 
+
+@pytest.mark.parametrize("field", ["request_sha256", "schema_sha256", "model", "invocation_sha256"])
+def test_t_gw_12b_each_key_input_changes_the_key_and_misses(tmp_path, field):
+    base = _inputs()
+    store.write_once(tmp_path, store.key(base), _entry(base))
+    changed = _inputs(**{field: "judge-model-b" if field == "model" else "f" * 64})
+    assert store.key(changed) != store.key(base)
+    assert store.lookup(tmp_path, store.key(changed), (), ("judge-model-a", "judge-model-b"), None).state == "miss"
+
+
+def test_t_gw_12b_the_key_takes_exactly_the_four_inputs():
+    with pytest.raises(ValueError, match="exactly"):
+        store.key({k: v for k, v in _inputs().items() if k != "model"})
+    with pytest.raises(ValueError, match="exactly"):
+        store.key(_inputs() | {"timeout": "180"})
