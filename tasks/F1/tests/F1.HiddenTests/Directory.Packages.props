@@ -1,0 +1,12 @@
+<Project>
+  <!-- The hidden test project's own package pins, the versions D1 restores from the host cache.
+       The nearest Directory.Packages.props wins, so an agent-authored one does not change them. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+</Project>
