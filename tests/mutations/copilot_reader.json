@@ -4,152 +4,203 @@
   "file": "src/harness_bench/telemetry/copilot.py",
   "find": "uncached_input = ex.count(n, as_dict(token_details.get(\"input\")), \"tokenCount\")",
   "replace": "uncached_input = ex.count(n, usage, \"inputTokens\")",
-  "tests": ["tests/test_telemetry_copilot.py::test_off_yields_one_row_per_model_in_the_last_shutdown_with_requests"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_off_yields_one_row_per_model_in_the_last_shutdown_with_requests"
+  ]
  },
  {
   "name": "first instead of last session.shutdown",
   "file": "src/harness_bench/telemetry/copilot.py",
   "find": "            last_shutdown = (n, stamp, data)",
   "replace": "            if last_shutdown is None:\n                last_shutdown = (n, stamp, data)",
-  "tests": ["tests/test_telemetry_copilot.py::test_last_shutdown_wins_over_first"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_last_shutdown_wins_over_first"
+  ]
  },
  {
   "name": "the model taken from the pin or currentModel",
   "file": "src/harness_bench/telemetry/copilot.py",
   "find": "        ex.model_calls.append(ModelCall(n, model, uncached_input, cache_read, cache_write, output, reasoning,",
   "replace": "        ex.model_calls.append(ModelCall(n, as_str(shutdown_data.get(\"currentModel\")) or model, uncached_input, cache_read, cache_write, output, reasoning,",
-  "tests": ["tests/test_telemetry_copilot.py::test_us11_a_renamed_modelmetrics_key_is_not_the_pinned_model"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_us11_a_renamed_modelmetrics_key_is_not_the_pinned_model"
+  ]
  },
  {
   "name": "the version gate removed",
   "file": "src/harness_bench/telemetry/copilot.py",
   "find": "    if not (version_seen and version_ok):",
   "replace": "    if False:",
-  "tests": ["tests/test_telemetry_copilot.py::test_f6_an_unsupported_or_wrongly_typed_version_gates_model_calls_and_hooks"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_f6_an_unsupported_or_wrongly_typed_version_gates_model_calls_and_hooks"
+  ]
  },
  {
   "name": "reasoning dropped",
   "file": "src/harness_bench/telemetry/copilot.py",
   "find": "        reasoning = ex.count(n, usage, \"reasoningTokens\")",
   "replace": "        reasoning = None",
-  "tests": ["tests/test_telemetry_copilot.py::test_off_yields_one_row_per_model_in_the_last_shutdown_with_requests"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_off_yields_one_row_per_model_in_the_last_shutdown_with_requests"
+  ]
  },
  {
   "name": "cache read/write swapped",
   "file": "src/harness_bench/telemetry/copilot.py",
   "find": "        cache_read = ex.count(n, usage, \"cacheReadTokens\")\n        cache_write = ex.count(n, usage, \"cacheWriteTokens\")",
   "replace": "        cache_read = ex.count(n, usage, \"cacheWriteTokens\")\n        cache_write = ex.count(n, usage, \"cacheReadTokens\")",
-  "tests": ["tests/test_telemetry_copilot.py::test_off_yields_one_row_per_model_in_the_last_shutdown_with_requests"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_off_yields_one_row_per_model_in_the_last_shutdown_with_requests"
+  ]
  },
  {
   "name": "content -> transformedContent",
   "file": "src/harness_bench/telemetry/copilot.py",
   "find": "                text = as_str(data.get(\"content\"))",
   "replace": "                text = as_str(data.get(\"transformedContent\"))",
-  "tests": ["tests/test_telemetry_copilot.py::test_us10_content_never_transformed_content"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_us10_content_never_transformed_content"
+  ]
  },
  {
   "name": "TA1: us14_valid ignores hook denials",
   "file": "src/harness_bench/telemetry/copilot.py",
   "find": "    return not any(r.get(\"outcome_code\") == \"denied\" for r in tool_calls) and any(r.get(\"ok\") == 1 for r in tool_calls)",
   "replace": "    return any(r.get(\"ok\") == 1 for r in tool_calls)",
-  "tests": ["tests/test_telemetry_copilot.py::test_us14_one_denial_among_successes_is_not_valid"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_us14_one_denial_among_successes_is_not_valid"
+  ]
  },
  {
   "name": "TA1b: us14_valid uses or instead of and (the positive control alone would pass)",
   "file": "src/harness_bench/telemetry/copilot.py",
   "find": "    return not any(r.get(\"outcome_code\") == \"denied\" for r in tool_calls) and any(r.get(\"ok\") == 1 for r in tool_calls)",
   "replace": "    return not any(r.get(\"outcome_code\") == \"denied\" for r in tool_calls) or any(r.get(\"ok\") == 1 for r in tool_calls)",
-  "tests": ["tests/test_telemetry_copilot.py::test_us14_no_tool_calls_at_all_is_not_valid_by_default"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_us14_no_tool_calls_at_all_is_not_valid_by_default"
+  ]
  },
  {
   "name": "TA2: single_request forced False",
   "file": "src/harness_bench/telemetry/copilot.py",
   "find": "        single_request = requests == 1",
   "replace": "        single_request = False",
-  "tests": ["tests/test_telemetry_copilot.py::test_a_single_request_report_takes_the_shutdown_timestamp"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_a_single_request_report_takes_the_shutdown_timestamp"
+  ]
  },
  {
   "name": "TA8: TOOL_CLASS mapping ignored",
   "file": "src/harness_bench/telemetry/copilot.py",
   "find": "def _tool_class(name: str) -> str:\n    return TOOL_CLASS.get(name, \"other\")",
   "replace": "def _tool_class(name: str) -> str:\n    return \"other\"",
-  "tests": ["tests/test_telemetry_copilot.py::test_tool_class_mapping"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_tool_class_mapping"
+  ]
  },
  {
   "name": "TA9: tool_call_rows without outcome_code",
   "file": "src/harness_bench/telemetry/normalize.py",
   "find": "             \"ok\": None if t.ok is None else int(t.ok), \"outcome_code\": t.outcome_code} for t in ex.tool_calls]",
   "replace": "             \"ok\": None if t.ok is None else int(t.ok)} for t in ex.tool_calls]",
-  "tests": ["tests/test_telemetry_copilot.py::test_us14_one_denial_among_successes_is_not_valid",
-            "tests/test_telemetry_copilot.py::test_model_call_and_tool_call_rows_carry_requests_and_outcome_code"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_us14_one_denial_among_successes_is_not_valid",
+   "tests/test_telemetry_copilot.py::test_model_call_and_tool_call_rows_carry_requests_and_outcome_code"
+  ]
  },
  {
   "name": "TA10: model_call_rows without requests",
   "file": "src/harness_bench/telemetry/normalize.py",
   "find": "             \"reasoning\": c.reasoning, \"start\": c.start, \"end\": c.end, \"requests\": c.requests,\n             \"total_nano_aiu\": c.total_nano_aiu} for c in ex.model_calls]",
   "replace": "             \"reasoning\": c.reasoning, \"start\": c.start, \"end\": c.end,\n             \"total_nano_aiu\": c.total_nano_aiu} for c in ex.model_calls]",
-  "tests": ["tests/test_telemetry_copilot.py::test_model_call_and_tool_call_rows_carry_requests_and_outcome_code"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_model_call_and_tool_call_rows_carry_requests_and_outcome_code"
+  ]
  },
  {
   "name": "F1 (Codex review): toolCallId correlation pops the wrong pending call",
   "file": "src/harness_bench/telemetry/copilot.py",
   "find": "                tool = open_tools.pop(tool_call_id)",
   "replace": "                tool = open_tools.pop(next(iter(open_tools)))",
-  "tests": ["tests/test_telemetry_copilot.py::test_tool_calls_pair_by_toolcallid_even_when_completions_are_out_of_order"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_tool_calls_pair_by_toolcallid_even_when_completions_are_out_of_order"
+  ]
  },
  {
   "name": "F2 (Codex review): outcome_code leaks on success",
   "file": "src/harness_bench/telemetry/copilot.py",
   "find": "                outcome_code = None if ok is True else as_str(error.get(\"code\"))",
   "replace": "                outcome_code = as_str(error.get(\"code\"))",
-  "tests": ["tests/test_telemetry_copilot.py::test_outcome_code_is_null_on_success_even_with_a_stale_error_code"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_outcome_code_is_null_on_success_even_with_a_stale_error_code"
+  ]
  },
  {
   "name": "an empty modelMetrics falls back to a leaked default row",
   "file": "src/harness_bench/telemetry/copilot.py",
   "find": "    model_metrics = as_dict(shutdown_data.get(\"modelMetrics\"))",
   "replace": "    model_metrics = as_dict(shutdown_data.get(\"modelMetrics\")) or {\"leaked-default\": {}}",
-  "tests": ["tests/test_telemetry_copilot.py::test_us11_an_emptied_modelmetrics_yields_no_model_calls"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_us11_an_emptied_modelmetrics_yields_no_model_calls"
+  ]
  },
  {
   "name": "R-15 Q6: totalNanoAiu 0 instead of null when absent",
   "file": "src/harness_bench/telemetry/copilot.py",
   "find": "        total_nano_aiu = raw_nano_aiu if is_count(raw_nano_aiu) else None",
   "replace": "        total_nano_aiu = raw_nano_aiu if is_count(raw_nano_aiu) else 0",
-  "tests": ["tests/test_telemetry_copilot.py::test_total_nano_aiu_is_null_never_zero_when_the_key_is_absent",
-            "tests/test_telemetry_copilot.py::test_total_nano_aiu_is_null_for_a_non_int_value"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_total_nano_aiu_is_null_never_zero_when_the_key_is_absent",
+   "tests/test_telemetry_copilot.py::test_total_nano_aiu_is_null_for_a_non_int_value"
+  ]
  },
  {
   "name": "R-15 Q6: totalNanoAiu summed twice",
   "file": "src/harness_bench/telemetry/copilot.py",
   "find": "        total_nano_aiu = raw_nano_aiu if is_count(raw_nano_aiu) else None",
   "replace": "        total_nano_aiu = (raw_nano_aiu * 2) if is_count(raw_nano_aiu) else None",
-  "tests": ["tests/test_telemetry_copilot.py::test_off_yields_one_row_per_model_in_the_last_shutdown_with_requests",
-            "tests/test_telemetry_copilot.py::test_on_yields_one_row_per_model_in_the_last_shutdown_with_requests",
-            "tests/test_telemetry_copilot.py::test_on_rev92_yields_one_row_per_model_in_the_last_shutdown_with_requests"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_off_yields_one_row_per_model_in_the_last_shutdown_with_requests",
+   "tests/test_telemetry_copilot.py::test_on_yields_one_row_per_model_in_the_last_shutdown_with_requests",
+   "tests/test_telemetry_copilot.py::test_on_rev92_yields_one_row_per_model_in_the_last_shutdown_with_requests"
+  ]
  },
  {
   "name": "R-15 Q6: totalNanoAiu read from the wrong key",
   "file": "src/harness_bench/telemetry/copilot.py",
   "find": "        raw_nano_aiu = metrics.get(\"totalNanoAiu\")",
   "replace": "        raw_nano_aiu = metrics.get(\"totalPremiumRequests\")",
-  "tests": ["tests/test_telemetry_copilot.py::test_off_yields_one_row_per_model_in_the_last_shutdown_with_requests",
-            "tests/test_telemetry_copilot.py::test_on_yields_one_row_per_model_in_the_last_shutdown_with_requests",
-            "tests/test_telemetry_copilot.py::test_on_rev92_yields_one_row_per_model_in_the_last_shutdown_with_requests"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_off_yields_one_row_per_model_in_the_last_shutdown_with_requests",
+   "tests/test_telemetry_copilot.py::test_on_yields_one_row_per_model_in_the_last_shutdown_with_requests",
+   "tests/test_telemetry_copilot.py::test_on_rev92_yields_one_row_per_model_in_the_last_shutdown_with_requests"
+  ]
  },
  {
   "name": "R-15 Q6: model_call_rows drops total_nano_aiu",
   "file": "src/harness_bench/telemetry/normalize.py",
   "find": "             \"reasoning\": c.reasoning, \"start\": c.start, \"end\": c.end, \"requests\": c.requests,\n             \"total_nano_aiu\": c.total_nano_aiu} for c in ex.model_calls]",
   "replace": "             \"reasoning\": c.reasoning, \"start\": c.start, \"end\": c.end, \"requests\": c.requests} for c in ex.model_calls]",
-  "tests": ["tests/test_telemetry_copilot.py::test_model_call_and_tool_call_rows_carry_requests_and_outcome_code"]
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_model_call_and_tool_call_rows_carry_requests_and_outcome_code"
+  ]
  },
  {
   "name": "R-15 Q6 (nit): total_nano_aiu dropped from views.model_call's migrated-field list",
   "file": "src/harness_bench/views.py",
   "find": "_MODEL_CALL_MIGRATED_FIELDS = (\"requests\", \"total_nano_aiu\")  # optional: absent in a pre-amendment ledger row",
   "replace": "_MODEL_CALL_MIGRATED_FIELDS = (\"requests\",)  # optional: absent in a pre-amendment ledger row",
-  "tests": ["tests/test_views.py::test_pre_amendment_model_call_row_defaults_to_one_request"]
+  "tests": [
+   "tests/test_views.py::test_pre_amendment_model_call_row_defaults_to_one_request"
+  ]
+ },
+ {
+  "name": "an empty tools list collapses to not recorded",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "list(dict.fromkeys(advertised)) if listed else None",
+  "replace": "list(dict.fromkeys(advertised)) or None",
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_tools_advertised_is_an_empty_list_when_the_checkpoint_lists_no_tools"
+  ]
  }
 ]
