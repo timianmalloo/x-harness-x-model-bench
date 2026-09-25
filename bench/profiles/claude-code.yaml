@@ -15,11 +15,19 @@ files:
   # connectors out of the cell (the pinned 2.1.282 settings schema; env ENABLE_CLAUDEAI_MCP_SERVERS also exists,
   # the settings key is used per the Leader's ruling). Closure is measured by the re-qualification cell's
   # account_connector_tools count, not this line alone.
-  settings.json: '{"permissions": {"allow": ["Bash", "PowerShell", "Edit", "Write", "NotebookEdit", "Read", "Glob", "Grep", "mcp__scripted_user__ask_user"], "defaultMode": "default"}, "disableClaudeAiConnectors": true}'
+  # {delegate} (R-74 item 3): `, "Agent"` in a scenario-6 cell only, from the reader's class `delegate`; empty elsewhere,
+  # so every other cell's settings.json is byte for byte what it was.
+  settings.json: '{"permissions": {"allow": ["Bash", "PowerShell", "Edit", "Write", "NotebookEdit", "Read", "Glob", "Grep", "mcp__scripted_user__ask_user"{delegate}], "defaultMode": "default"}, "disableClaudeAiConnectors": true}'
 env:
   ANTHROPIC_MODEL: "{model}"
   CLAUDE_CODE_EXECUTABLE: "{exe}"
 mode: null
 record_glob: "projects/**/{session_id}.jsonl"
+# R-74 item 4: each sub-agent's transcript, its own file under the session's folder. assume: build 2.1.282 writes it there
+# (the shape the pack's session-profile.py reads from a measured store, F-18: <session>/subagents/agent-*.jsonl);
+# confirm: the R-74 c6 qualification turn lists the tree after one delegated turn; breaks: no such file, then sub-agent
+# calls are not recorded and the Claude Code allowance is withheld until a record source exists.
+subagent_glob: "projects/**/{session_id}/subagents/agent-*.jsonl"
+
 usage_source: acp_turn   # its native record misses the final and auxiliary calls (docs/notes/decision-token-source-per-harness.md)
 auxiliary_models: ["claude-haiku-4-5"]   # title generation; a served model starting with one of these is allowed (US-11)

@@ -231,7 +231,8 @@ def profile_record(root: Path, harness: str) -> dict:
     p = profiles.load(root, harness)
     # The plan's canonical form has no floats; the decimal string preserves a fractional profile value exactly.
     return {"profile_hash": file_hash(root / "bench" / "profiles" / f"{harness}.yaml"), "vendor": p.vendor, "usage_source": p.usage_source,
-            "auxiliary_models": list(p.auxiliary_models), "record_glob": p.record_glob,
+            "auxiliary_models": list(p.auxiliary_models), "record_glob": p.record_glob, "subagent_glob": p.subagent_glob,
+
             "shutdown_grace_seconds": format(p.shutdown_grace, "g")}
 
 

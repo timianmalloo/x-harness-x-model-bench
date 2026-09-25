@@ -57,14 +57,25 @@ class Profile:
     # R-73 item 1: the model vendor (anthropic | openai), a profile fact, never inferred from a model id. load() refuses
     # a profile without one; the default only keeps hand-built test profiles (gateway, judge) constructible.
     vendor: str = ""
+    # R-74 item 4: where a session's sub-agent records land beside the main one ({session_id} filled per cell); empty
+    # when a harness writes its sub-agents into the main record (Copilot: rows with a top-level agentId).
+    subagent_glob: str = ""
 
     def model_allowed(self, served: str, pinned: str) -> bool:
         return model_allowed(served, pinned, self.auxiliary_models)
 
-    def seed_home(self, home: Path, model: str) -> None:
+    def delegate_ids(self, scenario) -> tuple[str, ...]:
+        """R-74 item 3: the ids of class `delegate` this cell may be offered: the reader's own class map (item 1: static
+        in the reader), only in a scenario-6 cell. Every other cell is seeded and launched exactly as before."""
+        return DELEGATE_IDS.get(self.harness, ()) if scenario == 6 else ()
+
+    def seed_home(self, home: Path, model: str, scenario: int | None = None) -> None:
+        """Write the profile's files; `{delegate}` in a template becomes `, "<id>"` per delegate id of a scenario-6
+        cell (a JSON-list continuation, the Claude Code allowlist) and nothing in any other cell (R-74 item 3)."""
         home.mkdir(parents=True, exist_ok=True)
+        delegate = "".join(f', "{name}"' for name in self.delegate_ids(scenario))
         for name, template in self.files.items():
-            (home / name).write_text(template.replace("{model}", model) + "\n", encoding="utf-8")
+            (home / name).write_text(template.replace("{model}", model).replace("{delegate}", delegate) + "\n", encoding="utf-8")
         if self.credential_source is not None and self.credential_name is not None and self.credential_source.is_file():
             shutil.copyfile(self.credential_source, home / self.credential_name)
 
@@ -83,7 +94,8 @@ class Profile:
             env["TRACEPARENT"] = traceparent
         return env
 
-    def argv(self, build: tools.Build, model: str | None = None, mcp_config: Path | None = None) -> list[str]:
+    def argv(self, build: tools.Build, model: str | None = None, mcp_config: Path | None = None,
+             scenario: int | None = None) -> list[str]:
         if model is None and any("{model}" in part for part in self.command):
             raise ValueError(f"{self.harness}: model is required by the command template")
         values = {"exe": str(build.exe), "model": model}
@@ -99,6 +111,11 @@ class Profile:
         argv = [part.replace("{exe}", values["exe"]).replace("{model}", values["model"] or "")
                 .replace("{node}", values.get("node", "")).replace("{adapter}", values.get("adapter", ""))
                 for part in self.command]
+        delegate = self.delegate_ids(scenario) if self.harness == "copilot" else ()
+        if delegate:  # R-74 item 3: the four ids join the --available-tools list, before any scripted-user addition
+            if "--available-tools" not in argv:
+                raise BenchError("HB-USR-002", "a scenario-6 launch needs the Copilot tool allowlist (R-74 item 3)")
+            argv.extend(delegate)
         if mcp_config is not None:
             if self.harness != "copilot" or "--available-tools" not in argv:
                 raise BenchError("HB-USR-002", "a scripted-user launch config needs the Copilot tool allowlist")
@@ -109,6 +126,10 @@ class Profile:
     def native_records(self, home: Path, session_id: str) -> list[Path]:
         return find_records(home, self.record_glob, session_id)
 
+    def subagent_records(self, home: Path, session_id: str) -> list[Path]:
+        return find_records(home, self.subagent_glob, session_id)
+
+
 
 def model_allowed(served: str, pinned: str, auxiliary_models) -> bool:
     """The pin, or a declared auxiliary model (prefix match: builds date-stamp them) (US-11)."""
@@ -116,13 +137,22 @@ def model_allowed(served: str, pinned: str, auxiliary_models) -> bool:
 
 
 def find_records(home: Path, record_glob: str, session_id: str) -> list[Path]:
-    """The native records of one session, by its id only, never by time window (US-22)."""
-    if not session_id:
+    """The native records of one session, by its id only, never by time window (US-22). No glob names no record (a
+    profile or a plan without `subagent_glob`, R-74 item 4)."""
+    if not session_id or not record_glob:
         return []
     return sorted(home.glob(record_glob.replace("{session_id}", session_id)))
 
 
+def subagent_session_id(path: Path) -> str:
+    """A sub-agent record's native session id: the agent id its file is named by (`agent-<id>.jsonl`), unique within the
+    session (R-74 item 4; ADR-0008:49 keys a cell's sessions by native session id). assume: the file name carries the
+    agent id, as the store session-profile.py reads names it; confirm: the R-74 c6 turn's tree; breaks: two records one id."""
+    return path.stem.removeprefix("agent-")
+
+
 def load(root: Path, harness: str, credential_source: Path | None = None) -> Profile:
+
     if harness not in HARNESSES:
         raise ValueError(f"no profile for harness {harness!r} (have {HARNESSES})")
     data = config.load_yaml(root / "bench" / "profiles" / f"{harness}.yaml")
@@ -155,10 +185,16 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
         set_model=bool(data.get("set_model", False)),
         credential_kind=data.get("credential_kind", "subscription login (copied)"),
         shutdown_grace=float(grace),
+        subagent_glob=data.get("subagent_glob") or "",
     )
 
 
+
 READERS = {"claude-code": claude_code.read, "codex": codex.read, "copilot": copilot.read}
+# R-74 item 1: class `delegate` is static in each reader; the profile only reads it. Codex has none until its measured
+# qualification turn (item 5), so a Codex scenario-6 cell is seeded as today and a spawn there stays `other`.
+DELEGATE_IDS = {"claude-code": tuple(n for n, c in claude_code.TOOL_CLASSES.items() if c == "delegate"),
+                "copilot": tuple(n for n, c in copilot.TOOL_CLASS.items() if c == "delegate")}
 
 
 class ProfileLauncher:
@@ -182,8 +218,8 @@ class ProfileLauncher:
         self.build = build
         return build.record()
 
-    def seed(self, home: Path, model: str) -> None:
-        self.profile.seed_home(home, model)
+    def seed(self, home: Path, cell: dict) -> None:
+        self.profile.seed_home(home, cell["model"], cell.get("scenario"))  # R-74 item 3: the allowance is per cell
 
     def clean(self, home: Path) -> None:
         self.profile.clean_home(home)
@@ -191,7 +227,8 @@ class ProfileLauncher:
     def argv_env(self, cell: dict, home: Path, traceparent: str) -> tuple[list[str], dict[str, str]]:
         if self.build is None:
             raise RuntimeError("check_build must run before argv_env")
-        return self.profile.argv(self.build, cell["model"], mcp_config=cell.get("mcp_config")), self.profile.cell_env(
+        return self.profile.argv(self.build, cell["model"], mcp_config=cell.get("mcp_config"),
+                                 scenario=cell.get("scenario")), self.profile.cell_env(
             dict(os.environ), home, self.build, cell["model"], traceparent)
 
     def records(self, home: Path, session_id: str) -> list[Path]:

@@ -78,7 +78,7 @@ class Launcher(Protocol):
     shutdown_grace: float
 
     def check_build(self) -> dict: ...
-    def seed(self, home: Path, model: str) -> None: ...
+    def seed(self, home: Path, cell: dict) -> None: ...  # the cell: its model and scenario (R-74 item 3)
     def clean(self, home: Path) -> None: ...
     def argv_env(self, cell: dict, home: Path, traceparent: str) -> tuple[list[str], dict]: ...
     def records(self, home: Path, session_id: str) -> list[Path]: ...
@@ -640,7 +640,8 @@ class Engine:
             argv_cell = {**cell, "mcp_config": mcp_config}
         argv, env = launcher.argv_env(argv_cell, home, traceparent)  # before seed: no credential copy on failure
         try:
-            launcher.seed(home, cell["model"])
+            launcher.seed(home, cell)
+
             ended = self._attempt(self.active[cid], cell, launcher, build, argv, env, ws)
         finally:
             launcher.clean(home)  # every end: a spawn failure, a kill, a ledger failure, a bug (T-CELL-credclean)

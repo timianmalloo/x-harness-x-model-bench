@@ -26,7 +26,6 @@ import pytest
 from harness_bench import profiles, tools
 from harness_bench.telemetry import claude_code, copilot
 
-
 ROOT = Path(__file__).resolve().parents[1]
 FIX = Path(__file__).parent / "fixtures"
 TOOL_LIST = FIX / "native" / "claude-code" / "tools-2.1.282-win32.jsonl"
