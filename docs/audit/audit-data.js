@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T09:13:19Z",
+  "generated": "2026-09-25T09:29:40Z",
   "audit": [
     {
       "actor": null,
@@ -17521,6 +17521,42 @@ window.AUDIT_DATA = {
       "skill": "implement",
       "started_at": "2026-09-25T08:48:04Z",
       "summary": "W3-EGRESS loop-back (Codex BLOCK F1/F2/F3, D&P conditions). Merged main. Red-first: D&P Major 1 (required Operator refusing empty identifiers; Verdict.scanned) red 00e1fa6 green 9d264d0; Codex F3 (destination a clean lower-case backend id; payload repr=False; record() is destination/payload_sha256/classes/scanned) red baf1fc9 green 51f99de; D&P Major 2 (github_pat_, xai-, AIza shapes; runtime token_prefixes) red c290e81 green 6688912; Codex F1 (canonical views: NFKC, HTML entities, JSON escapes, URL layers, base64 runs, whitespace splits; any-case shapes; encoded identifiers; POSIX homes; unscannable fail-closed past MAX_LAYERS=4/MAX_VIEWS=64) red 978baea green fb70c54; Codex F2 (lint bound by behaviour: procs and injected-backend calls in gateway/ only inside egress.check(...).release; discovered spawners; outside-import ban; vacuity guard) red 4bb26e8 green a92e7b6, self-check 9/9 as expected, 0 findings over 49 real modules. tests/mutations/egress.json 32/32 killed. Full suite 1154 passed; ruff clean. No socket, listener, network, subprocess or real secret in the diff.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "Claude Opus 5.5",
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-09-25T09:20:50Z",
+      "done_when": "bench stop writes an atomic control file and the engine applies each once (CLI-1..2, control reader); the section-5 stop sequence with R10-1 (two stubborn cells, stopped within 30 s), R10-3, R10-5, R10-7a, R10-8..14 and R21-2 red first; bench-status/1 stopping/stopped with both skill copies (SK-1 green); LC stop/control rows and the ledger re-read tested; stop.json mutants each killed by mutate_check; full pytest green; ruff clean.",
+      "duration_seconds": 1358.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w2-stopi-4c",
+        "pushed": null,
+        "sha": "0cf9ceeec1dcca2b932c50b9c1cb0c12a928bac0",
+        "short": "0cf9ceeec"
+      },
+      "goal": "W2-STOP-I slice 4 (moved from Codex under R-4): an operator stop that ends a run within 30 s, red-first, on top of slice 3's grace; finish what b3baf80/0f24e77 did not cover.",
+      "id": "al-01M3BXW4CPAEPZ27A9ZZ9N3YK6",
+      "kind": "skill",
+      "main_budget": 150,
+      "main_calls": 62,
+      "main_over_budget": false,
+      "outcome": "success",
+      "prompt": "W2-STOP-I slice 4 moved from Codex to Claude Code under R-4; finish the brief (brief-stopi4.md) red-first on top of b3baf80 and 0f24e77.",
+      "session": "w2-stopi-4c",
+      "shortname": "w2-stopi-4c",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "implement",
+      "started_at": "2026-09-25T08:58:12Z",
+      "summary": "W2-STOP-I slice 4 finished on Claude Code (R-4) from Codex's b3baf80 (red: CLI-1/2, control reader) and 0f24e77 (green: bench stop, control reader, stop sequence, pre-spawn check, stopping/stopped phases, LC replay rules). 53edf5a: skills/start-benchmark source synced (0f24e77 had edited only the copies; test_skills_in_sync failed). ef1602d red: 8 failed (7 on exit_code == 3 for a stopped run, design 5 step 4; 1 on BenchError raised from a failed control.applied append, design 11). 80356c3 green: a stopped run exits 3; a control append failure aborts and drains. 0cf9cee: 23 stop.json mutants; mutate_check 50/50 killed. Full suite 1130 passed, ruff clean. R10-1 measured: last stopped outcome 10.16-10.20 s after control.applied (grace 10 s), status showed stopped at 10.43 s.",
       "tags": [],
       "tier": "T2",
       "tool": null

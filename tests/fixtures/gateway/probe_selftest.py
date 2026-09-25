@@ -22,7 +22,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-import probe_judge as pj  # noqa: E402
+import probe_judge as pj
 
 NATIVE = pj.ROOT / "tests" / "fixtures" / "native"
 FAILURES: list[str] = []
