@@ -69,3 +69,8 @@ def grade(tmp_path: Path, folder: Path, cell: dict) -> tuple:
 
 def test_the_c1_reference_with_no_imports_is_1(tmp_path):  # design: Architecture, Fixtures
     assert grade(tmp_path, *c1_cell(tmp_path, C1_REFERENCE)) == ("1.0000", None)
+
+
+def test_the_c1_reference_plus_import_numpy_is_0(tmp_path):  # design: Architecture, Fixtures
+    overlay = {**C1_REFERENCE, "priority_queue.py": "import numpy\n" + C1_REFERENCE["priority_queue.py"]}
+    assert grade(tmp_path, *c1_cell(tmp_path, overlay)) == ("0.0000", None)
