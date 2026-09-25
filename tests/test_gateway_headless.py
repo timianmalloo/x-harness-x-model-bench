@@ -432,6 +432,15 @@ def test_a_copilot_answer_is_none_without_an_assistant_message_never_stdout(tmp_
     assert gw_backend.final_text(reply) is None
 
 
+def test_a_copilot_answer_is_the_last_assistant_message(tmp_path):
+    rows = [{"type": "assistant.message", "data": {"content": "first"}},
+            {"type": "assistant.message", "data": {"content": "last"}},
+            {"type": "assistant.message", "data": {"content": "  "}}]  # an empty message is not an answer
+    record = tmp_path / "events.jsonl"
+    record.write_text("".join(json.dumps(r) + "\n" for r in rows) + "not json\n", encoding="utf-8")
+    assert gw_backend.final_text(gw_backend.Reply(BANNERS, record, "copilot")) == "last"
+
+
 @pytest.mark.parametrize(("record", "code"), [
     ("tool-event", "HB-GW-006"),  # a tool ran: 0 tool events is the rule (section 8.3 step 1)
     ("null-tools", "HB-GW-006"),  # tools_advertised not recorded is not [] (R-63 c1): fail-closed

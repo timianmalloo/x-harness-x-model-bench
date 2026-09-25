@@ -194,5 +194,89 @@
   "find": "if code.startswith(\"HB-GW-\")}",
   "replace": "if code.startswith(\"HB-\")}",
   "tests": ["tests/test_gateway_pipeline.py::test_t_gw_30_every_path_maps_to_exactly_one_outcome_and_code"]
+ },
+ {
+  "name": "the in-run pass reads the store (IN_RUN empty)",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "IN_RUN: Mapping[str, GraderFn] = {\"judge\": in_run}",
+  "replace": "IN_RUN: Mapping[str, GraderFn] = {}",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_22_the_in_run_pass_makes_no_lookup_no_call_and_no_verdict_uses_row"]
+ },
+ {
+  "name": "the in-run NA reason",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "NOT_ALLOWED = \"judge calls not allowed in this pass\"",
+  "replace": "NOT_ALLOWED = \"no qualified judge\"",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_22_the_in_run_pass_makes_no_lookup_no_call_and_no_verdict_uses_row"]
+ },
+ {
+  "name": "run_pass ignores the pass's judging",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "        self.graders = {**GRADERS, **judging}",
+  "replace": "        self.graders = dict(GRADERS)",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_22_the_in_run_pass_makes_no_lookup_no_call_and_no_verdict_uses_row", "tests/test_grade_judge.py::test_bench_grade_allow_model_calls_is_the_cli_path_that_calls_a_judge"]
+ },
+ {
+  "name": "calling does not allow calls",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "    return {\"judge\": lambda inp: grade(replace(inp, allow_model_calls=True), calls)}",
+  "replace": "    return {\"judge\": lambda inp: grade(replace(inp, allow_model_calls=False), calls)}",
+  "tests": ["tests/test_grade_judge.py::test_bench_grade_allow_model_calls_is_the_cli_path_that_calls_a_judge"]
+ },
+ {
+  "name": "misses counts stored calls",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "    return views.judge_calls(rows).get((\"not_allowed\", None), 0)",
+  "replace": "    return views.judge_calls(rows).get((\"stored\", None), 0)",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_22_bench_grade_without_the_flag_reads_the_store_only_and_prints_its_misses"]
+ },
+ {
+  "name": "known roots are this run's runs/ only",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "        store=inp.root / \"cache\" / \"verdicts\", known_roots=roots, own_run=inp.run_dir,",
+  "replace": "        store=inp.root / \"cache\" / \"verdicts\", known_roots=(inp.run_dir.parent,), own_run=inp.run_dir,",
+  "tests": ["tests/test_grade_judge.py::test_a_verdict_stored_by_a_run_in_another_worktree_is_a_hit_here"]
+ },
+ {
+  "name": "the in-run hook grades without IN_RUN",
+  "file": "src/harness_bench/cli.py",
+  "find": "runner.run_pass(d, root, judge.IN_RUN).summary()",
+  "replace": "runner.run_pass(d, root).summary()",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_22_the_in_run_pass_makes_no_lookup_no_call_and_no_verdict_uses_row"]
+ },
+ {
+  "name": "cmd_grade skips the up-front live-run refusal",
+  "file": "src/harness_bench/cli.py",
+  "find": "        gateway.refuse_if_live(gateway.run_roots(root, Path(args.runs)))\n",
+  "replace": "",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_19_bench_grade_allow_model_calls_refuses_a_live_run_before_the_pass_starts"]
+ },
+ {
+  "name": "cmd_grade's flag does not call",
+  "file": "src/harness_bench/cli.py",
+  "find": "        judging = judge.calling(_judge_calls(args, root))",
+  "replace": "        _judge_calls(args, root)",
+  "tests": ["tests/test_grade_judge.py::test_bench_grade_allow_model_calls_is_the_cli_path_that_calls_a_judge"]
+ },
+ {
+  "name": "the misses line printed with the flag too",
+  "file": "src/harness_bench/cli.py",
+  "find": "    if judging is None:\n        print(f\"judge misses",
+  "replace": "    if True:\n        print(f\"judge misses",
+  "tests": ["tests/test_grade_judge.py::test_bench_grade_allow_model_calls_is_the_cli_path_that_calls_a_judge"]
+ },
+ {
+  "name": "the misses line not printed",
+  "file": "src/harness_bench/cli.py",
+  "find": "    if judging is None:\n        print(f\"judge misses",
+  "replace": "    if False:\n        print(f\"judge misses",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_22_bench_grade_without_the_flag_reads_the_store_only_and_prints_its_misses"]
+ },
+ {
+  "name": "no operator e-mail check",
+  "file": "src/harness_bench/cli.py",
+  "find": "    if not email:\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_grade_judge.py::test_bench_grade_allow_model_calls_needs_the_operators_email_for_egress"]
  }
 ]

@@ -252,7 +252,8 @@ judges:
   `judge misses: <n calls>` (US-26 c2).
 - **`bench grade --allow-model-calls`** (spec `:438`) and **`tools/calibrate.py`**: the only callers that spawn a
   judge. The live-run refusal lives inside the gateway, so both get it. Before its first spawn, the gateway refuses
-  with `HB-GRD-003` when any run is live:
+  with `HB-GRD-005` when any run is live (review w3-gwi-1 A1: `HB-GRD-003` already means a grader failure, so
+  slice 4 took a new code; `errors.RUN_CODES`):
   - **Which runs:** every run folder under the `runs/` of every worktree of this repository (`git worktree list`),
     plus `--runs`, filtered by `status.require_known`. The cells root is shared across worktrees, but each worktree
     keeps its own `runs/`, so scanning only `--runs` would miss the primary checkout's live run.
@@ -601,7 +602,7 @@ one recipe. Its rows use the same `judge_or_matcher` key column.
 | service | `gateway/` (request, scrub, backend, store, breaker), `grade/judge.py` | GW-I |
 | process | `procs.run(..., input=)` | seam with the `procs.py` owner |
 | hash | `catalog_hash` covers each judge entry | GRADE-CORE (seam) |
-| CLI | `bench grade --allow-model-calls`, `HB-GRD-003` | GW-I after STOP-I joins |
+| CLI | `bench grade --allow-model-calls`, `HB-GRD-005` | GW-I after STOP-I joins |
 | validate | rubric byte-equality; rubric and template contain no denylist entry | GW-I |
 | projection | κ, agreement, vendor split, judge spend, `judge_calls`, `cli_context_classes`, `injection_patterns` | GW-I (`views`) |
 | UI | the header's judge block; the item view with both verdicts | GW-I (`report/html.py` hunk) |
@@ -634,7 +635,7 @@ turns stay the Leader's:
 
   | Code | Meaning |
   | --- | --- |
-  | `HB-GRD-003` | a run is live; model calls refused |
+  | `HB-GRD-005` | a run is live (lock liveness alive or stalled); judge model calls refused before any spawn |
   | `HB-GW-001` | judge unavailable: CLI error, timeout, provider error, breaker open, or a store write error other than a lost race |
   | `HB-GW-002` | invalid output |
   | `HB-GW-003` | served model not the pin |
@@ -671,7 +672,7 @@ turns stay the Leader's:
 | Judge switched after verdicts stored | stipulation | prevent | judge entry in `catalog_hash`; model and invocation in key | graders design §4 check (b) | T-GW-14, 12b |
 | Build or argv change | pinned CLI | prevent | build check; `invocation_sha256` | `HB-GW-011` | T-GW-15, 12b |
 | A run starts during a judge pass | operator timing | accept | checked before the first spawn. Residual: a run started mid-pass shares the account for up to the pass's length | pass and run events | — |
-| Live run in another worktree | per-worktree `runs/` | prevent | scan every worktree's `runs/` | `HB-GRD-003` | T-GW-19b |
+| Live run in another worktree | per-worktree `runs/` | prevent | scan every worktree's `runs/` | `HB-GRD-005` | T-GW-19b |
 | Blinding leak via artifact | scrub | prevent + detect | scrub, then independent scan | `HB-GW-004` | T-GW-03, 04 |
 | CLI adds identity, e-mail or skill root | harness context after `release` | detect; DR-GW-5 | report-time subtraction detector | header line | T-GW-24 |
 | Instruction files above the call folder | CLI discovery | prevent | cells-root folders; `check_cells_root` | refusal | T-GW-26b |
@@ -777,8 +778,8 @@ never a plausible number.
 | T-GW-17b | calibration join | only the labelled item of the 7-item verdict set is compared |
 | T-GW-17c | stale calibration (A6) | change each of the template, schema, rubric and invocation hashes in turn → header `not recorded: calibration stale` |
 | T-GW-18 | egress | a planted canary → `HB-GW-009`, 0 spawns |
-| T-GW-19 | live-run refusal | a held lock in this worktree's `runs/` → `HB-GRD-003`, 0 spawns |
-| T-GW-19b | across worktrees | a real sibling worktree (`git worktree add` in a temp repo, not a stub) with a held lock in its `runs/` → `HB-GRD-003` |
+| T-GW-19 | live-run refusal | a held lock in this worktree's `runs/` → `HB-GRD-005`, 0 spawns |
+| T-GW-19b | across worktrees | a real sibling worktree (`git worktree add` in a temp repo, not a stub) with a held lock in its `runs/` → `HB-GRD-005` |
 | T-GW-19c | known-run filter | `runs/calibration-*` (no `plan.json`) is skipped, not an error |
 | T-GW-20 | synthesis table | every (a, b) in {0,1,2}²: the mean, or NOT_RECORDED at distance 2 |
 | T-GW-21 | append-only `verdict_uses` | an attempted rewrite fails `bench verify` |

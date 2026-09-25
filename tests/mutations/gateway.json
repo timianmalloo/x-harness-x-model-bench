@@ -519,7 +519,7 @@
  {
   "name": "request sent without stdin",
   "file": "src/harness_bench/gateway/backend.py",
-  "find": "timeout=launch.timeout, input=request)",
+  "find": "timeout=launch.timeout, input=stdin)",
   "replace": "timeout=launch.timeout, input=None)",
   "tests": [
    "tests/test_gateway_headless.py::test_a_headless_call_sends_the_request_on_stdin_from_a_cells_root_folder_and_archives_the_record"
@@ -604,6 +604,134 @@
   "replace": "        return _run(judge, inputs, ctx, backend)\n    except ZeroDivisionError:",
   "tests": [
    "tests/test_gateway_headless.py::test_f6_an_egress_value_error_never_escapes_the_pipeline"
+  ]
+ },
+ {
+  "name": "live-run scan skips the other worktrees (only --runs)",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "    if (repo / \".git\").exists():",
+  "replace": "    if False:",
+  "tests": [
+   "tests/test_grade_judge.py::test_t_gw_19b_a_run_in_another_worktrees_runs_is_scanned"
+  ]
+ },
+ {
+  "name": "live-run scan drops --runs (only the worktrees)",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "    return tuple(dict.fromkeys([*roots, runs.resolve()]))",
+  "replace": "    return tuple(dict.fromkeys(roots))",
+  "tests": [
+   "tests/test_grade_judge.py::test_t_gw_19_a_live_run_in_this_worktrees_runs_refuses_model_calls_before_any_spawn"
+  ]
+ },
+ {
+  "name": "live-run scan without the require_known filter (a calibration ledger is an error)",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "                status.require_known(run)\n",
+  "replace": "                pass\n",
+  "tests": [
+   "tests/test_grade_judge.py::test_t_gw_19c_a_folder_under_runs_with_no_plan_json_is_skipped_not_an_error"
+  ]
+ },
+ {
+  "name": "an alive run is not refused",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "            if s.liveness == \"alive\":",
+  "replace": "            if False:",
+  "tests": [
+   "tests/test_grade_judge.py::test_t_gw_19_a_live_run_in_this_worktrees_runs_refuses_model_calls_before_any_spawn"
+  ]
+ },
+ {
+  "name": "a stalled run is not refused",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "            elif s.liveness == \"stalled\":",
+  "replace": "            elif False:",
+  "tests": [
+   "tests/test_grade_judge.py::test_t_gw_19b_a_run_in_another_worktrees_runs_is_scanned"
+  ]
+ },
+ {
+  "name": "judge_pass spawns without the live-run refusal",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "    refuse_if_live(roots)\n    workspace.check_cells_root(cells_root)",
+  "replace": "    workspace.check_cells_root(cells_root)",
+  "tests": [
+   "tests/test_grade_judge.py::test_t_gw_19_a_live_run_in_this_worktrees_runs_refuses_model_calls_before_any_spawn"
+  ]
+ },
+ {
+  "name": "copilot stdin without the judge system prompt",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "    return f\"{system}\\n\\n{request}\"",
+  "replace": "    return request",
+  "tests": [
+   "tests/test_gateway_headless.py::test_the_copilot_system_prompt_route_is_explicit_and_inside_the_invocation_hash",
+   "tests/test_gateway_headless.py::test_a_copilot_call_sends_the_request_on_stdin_to_an_empty_home_and_reads_the_answer_from_the_record"
+  ]
+ },
+ {
+  "name": "copilot invocation hash without the stdin template",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "        shape |= {\"argv\": copilot_argv(\"<exe>\", model), \"stdin\": copilot_request(system, \"<request>\")}",
+  "replace": "        shape |= {\"argv\": copilot_argv(\"<exe>\", model)}",
+  "tests": [
+   "tests/test_gateway_headless.py::test_the_copilot_system_prompt_route_is_explicit_and_inside_the_invocation_hash"
+  ]
+ },
+ {
+  "name": "Headless sends copilot the bare request (no system route)",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "copilot_argv(exe, launch.model), copilot_request(launch.system, request)",
+  "replace": "copilot_argv(exe, launch.model), request",
+  "tests": [
+   "tests/test_gateway_headless.py::test_a_copilot_call_sends_the_request_on_stdin_to_an_empty_home_and_reads_the_answer_from_the_record"
+  ]
+ },
+ {
+  "name": "Headless requires a credential copy for copilot too",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "            if name is not None:  # Copilot names none",
+  "replace": "            if True:  # Copilot names none",
+  "tests": [
+   "tests/test_gateway_headless.py::test_a_copilot_call_sends_the_request_on_stdin_to_an_empty_home_and_reads_the_answer_from_the_record"
+  ]
+ },
+ {
+  "name": "copilot answer read from stdout, not the record",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "    if reply.harness == \"copilot\":\n        return copilot_answer(reply.record)\n",
+  "replace": "",
+  "tests": [
+   "tests/test_gateway_headless.py::test_a_copilot_call_sends_the_request_on_stdin_to_an_empty_home_and_reads_the_answer_from_the_record"
+  ]
+ },
+ {
+  "name": "copilot answer is the first assistant.message, not the last",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "            text = content if isinstance(content, str) and content.strip() else text",
+  "replace": "            text = text if text is not None else content",
+  "tests": [
+   "tests/test_gateway_headless.py::test_a_copilot_answer_is_the_last_assistant_message"
+  ]
+ },
+ {
+  "name": "HEADLESS_HARNESSES without copilot",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "HEADLESS_HARNESSES = (\"claude-code\", \"copilot\")",
+  "replace": "HEADLESS_HARNESSES = (\"claude-code\",)",
+  "tests": [
+   "tests/test_gateway_headless.py::test_a_copilot_call_sends_the_request_on_stdin_to_an_empty_home_and_reads_the_answer_from_the_record",
+   "tests/test_grade_judge.py::test_a_qualified_copilot_entry_is_launchable_once_the_copilot_branch_is_built"
+  ]
+ },
+ {
+  "name": "copilot tools_advertised not checked",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "    if reply.harness == \"copilot\" and ex.tools_advertised != []:",
+  "replace": "    if False:",
+  "tests": [
+   "tests/test_gateway_headless.py::test_a_copilot_record_that_breaks_the_qualified_shape_fails_the_call"
   ]
  }
 ]

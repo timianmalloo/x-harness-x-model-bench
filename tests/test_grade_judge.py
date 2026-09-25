@@ -394,14 +394,20 @@ def test_t_gw_19_a_live_run_in_this_worktrees_runs_refuses_model_calls_before_an
     assert spawns(tmp_path) == 1 and not (run_dir / "grading" / gid / "a" / "judge" / "error.log").exists()
 
 
-@pytest.mark.parametrize("liveness", ["alive", "stalled", "not running"])
-def test_t_gw_19b_a_run_in_another_worktrees_runs_is_scanned(tmp_path, base, monkeypatch, liveness):
-    """A real sibling worktree (`git worktree add` in a temp repository, not a stub); R-65 c3: all three values."""
-    root = judged_root(tmp_path)
+def sibling_worktree(root: Path, tmp_path: Path) -> Path:
+    """`root` becomes a git repository with a real second worktree, `tmp_path/sibling` (not a stub)."""
     gitsafe.git(["init", "-q"], cwd=root, timeout=60)
     gitsafe.git(["commit", "-q", "--allow-empty", "-m", "placeholder"], cwd=root, timeout=60, identity=True)
     sibling = tmp_path / "sibling"
     gitsafe.git(["worktree", "add", "-q", "--detach", str(sibling)], cwd=root, timeout=60)
+    return sibling
+
+
+@pytest.mark.parametrize("liveness", ["alive", "stalled", "not running"])
+def test_t_gw_19b_a_run_in_another_worktrees_runs_is_scanned(tmp_path, base, monkeypatch, liveness):
+    """A real sibling worktree (`git worktree add` in a temp repository, not a stub); R-65 c3: all three values."""
+    root = judged_root(tmp_path)
+    sibling = sibling_worktree(root, tmp_path)
     run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
     held: list = []
     live = hold(sibling / "runs", "live", run_dir, liveness, held)
@@ -420,6 +426,20 @@ def test_t_gw_19b_a_run_in_another_worktrees_runs_is_scanned(tmp_path, base, mon
                                       "heartbeat ") + r"(\d+) s old\)\n", log)
         assert stalled is not None and 3600 <= int(stalled.group(1)) < 3700
         assert (live / ".lock").is_file()
+
+
+def test_a_verdict_stored_by_a_run_in_another_worktree_is_a_hit_here(tmp_path, base):
+    """The pass's known roots are the scan's roots (section 6): a storing row under a sibling worktree's runs/
+    vouches for its entry (design section 9.3), so a cache-only pass here reads it instead of missing."""
+    root = judged_root(tmp_path)
+    there = make_run(root, sibling_worktree(root, tmp_path), {"a": GOOD}, combos={"a": "combo-placeholder"})
+    first = runner.run_pass(there, root, judge.calling(fake_calls(tmp_path, base / "cells", judge.Calls))).grading_id
+    assert spawns(tmp_path) == 1 and ("a", "adr_quality#1", CLAUDE, "stored", None) in uses(there, first)
+    here = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    second = runner.run_pass(here, root).grading_id
+    assert spawns(tmp_path) == 1
+    assert uses(here, second) == sorted([("a", i, CLAUDE, "hit", None) for i in ITEMS] +
+                                        [("a", i, CODEX, "failed", "HB-GW-007") for i in ITEMS])
 
 
 def test_t_gw_19c_a_folder_under_runs_with_no_plan_json_is_skipped_not_an_error(tmp_path, base, monkeypatch):
