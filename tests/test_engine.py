@@ -114,9 +114,10 @@ def _engine_run(p, config, limit=RUN_LIMIT):
 
 
 def _run(base, p, launcher, limit=RUN_LIMIT, **cfg):
+    launcher.shutdown_grace = cfg.pop("shutdown_grace", launcher.shutdown_grace)
     config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
                                  launchers={"fake": launcher}, build_workspace=cfg.pop("build_workspace", _build_workspace),
-                                 grade=cfg.pop("grade", None), end_grace=cfg.pop("end_grace", 5), **cfg)
+                                 grade=cfg.pop("grade", None), **cfg)
     summary = _engine_run(p, config, limit)
     events = _events(config.run_dir)
     lifecycle.replay(events, parallelism=p["parameters"]["parallelism"])  # conformance (US-44 AC3)
@@ -269,7 +270,7 @@ def test_budget_kill_is_timed_out_and_recorded_only_after_the_tree_is_gone(base)
 
 def test_a_budget_expiring_after_the_turn_ended_is_not_a_timeout(base):  # T1-1: ended before the graceful end
     p = _plan(n_cells=1, budget=2)
-    _, events, _ = _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"linger": 8}}), end_grace=6)
+    _, events, _ = _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"linger": 8}}), shutdown_grace=6)
     out = _outcomes(events)[p["cells"][0]["cell_id"]]
     assert (out["outcome"], out["stop_reason"], out["cause"]) == ("completed", "end_turn", None)
 
@@ -294,18 +295,49 @@ def test_the_adapter_is_given_time_to_flush_its_record_before_the_kill(base):  #
     assert "flushed-on-exit" in record.read_text(encoding="utf-8")
 
 
-def test_engine_kill_deadline_uses_one_injected_clock(base):  # R21-5, PE-8
+@pytest.mark.parametrize("reason", ["timeout", "host_suspended", "stop"])
+def test_engine_kill_deadline_uses_one_injected_clock(base, reason):  # R21-5, PE-8
+    from types import SimpleNamespace
+
     now = [100.0]
+    calls = []
     config = engine.EngineConfig(run_dir=base / "r", cells_root=base / "c", launchers={"fake": FakeLauncher({})},
                                  build_workspace=_build_workspace, grade=None, clock=lambda: now[0])
     eng = engine.Engine(_plan(n_cells=1), config)
     a = engine._Active(eng.plan["cells"][0], threading.current_thread())
+    a.proc = SimpleNamespace(job=SimpleNamespace(active=lambda: 0 if calls else 1,
+                                                  terminate=lambda: calls.append(now[0])))
     eng.active[a.cell["cell_id"]] = a
-    eng._kill(a, "timeout")
+    eng._kill(a, reason)
     assert a.kill_deadline == 101.0 and a.cancel.is_set()
     now[0] = 100.9
     eng._check_kills(now[0])
-    assert not a.terminated
+    assert not a.terminated and calls == []
+    now[0] = 101.0
+    eng._check_kills(now[0])
+    assert a.terminated and calls == [101.0]
+    eng._check_kills(now[0])
+    assert calls == [101.0]
+
+
+def test_hard_kill_retries_until_the_job_is_empty(base):  # R21-5, an unsuccessful first termination
+    from types import SimpleNamespace
+
+    now = [100.0]
+    attempts = []
+    config = engine.EngineConfig(run_dir=base / "r", cells_root=base / "c", launchers={"fake": FakeLauncher({})},
+                                 build_workspace=_build_workspace, grade=None, clock=lambda: now[0])
+    eng = engine.Engine(_plan(n_cells=1), config)
+    a = engine._Active(eng.plan["cells"][0], threading.current_thread())
+    a.proc = SimpleNamespace(job=SimpleNamespace(active=lambda: 0 if len(attempts) >= 2 else 1,
+                                                  terminate=lambda: attempts.append(now[0])))
+    eng.active[a.cell["cell_id"]] = a
+    eng._kill(a, "timeout")
+    now[0] = 101.0
+    eng._check_kills(now[0])
+    now[0] = 101.2
+    eng._check_kills(now[0])
+    assert a.terminated and attempts == [101.0, 101.2]
 
 
 def test_a_budget_kill_lets_the_agent_write_its_shutdown_record(base):  # R21-1
@@ -324,6 +356,33 @@ def test_a_cancelled_turn_is_classified_by_its_kill_reason(base):  # R21-4, budg
     ended = next(e for e in events if e["kind"] == "attempt.process_ended")
     assert (out["outcome"], out["cause"], out["stop_reason"]) == ("timed_out", "timed_out", "cancelled")
     assert ended["ended_by"] == "grace"
+
+
+def test_a_cancelled_turn_requested_by_stop_stays_stopped(base):  # R21-4, stop branch before slice-4 controls
+    p = _plan(n_cells=1, budget=60)
+    label = p["cells"][0]["label"]
+    launcher = FakeLauncher({label: {"mode": "on_cancel"}})
+    config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
+                                 launchers={"fake": launcher}, build_workspace=_build_workspace, grade=None)
+    eng = engine.Engine(p, config)
+    real_tick = eng.on_tick
+
+    def stop_tick():
+        real_tick()
+        for a in eng.active.values():
+            if a.prompt_mono is not None and a.kill_reason is None:
+                eng._kill(a, "stop")
+
+    eng.on_tick = stop_tick
+    box = {}
+    run = threading.Thread(target=lambda: box.setdefault("summary", eng.run()), daemon=True)
+    run.start()
+    run.join(20)
+    assert not run.is_alive()
+    events = _events(config.run_dir)
+    out = _outcomes(events)[p["cells"][0]["cell_id"]]
+    assert (out["outcome"], out["cause"], out["stop_reason"]) == ("stopped", None, "cancelled")
+    assert next(e for e in events if e["kind"] == "attempt.process_ended")["ended_by"] == "grace"
 
 
 def test_ended_by_records_who_ended_the_job(base):  # R21-6
@@ -352,7 +411,7 @@ def test_an_unconfirmed_kill_is_logged_once_and_retried_with_capped_backoff(base
     monkeypatch.setattr(procs.CellProcess, "terminate_and_confirm", spy)
     p = _plan(n_cells=1)
     p["parameters"]["kill_escalation"] = 1
-    _, events, _ = _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"linger": 60}}), end_grace=1)
+    _, events, _ = _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"linger": 60}}), shutdown_grace=1)
     assert next(e for e in events if e["kind"] == "attempt.process_ended")["confirmed"] == 1
     assert [r for r in caplog.records if getattr(r, "error_code", None) == "HB-RUN-002"].__len__() == 1
     assert timeouts[:3] == [1, 1, 2]  # kill_escalation, then a backoff from 1 s
@@ -373,7 +432,7 @@ def test_a_failing_job_query_is_an_unconfirmed_kill_not_a_crash(base, monkeypatc
     monkeypatch.setattr(procs.CellProcess, "terminate_and_confirm", failing)
     p = _plan(n_cells=1)
     p["parameters"]["kill_escalation"] = 1
-    _, events, _ = _run(base, p, FakeLauncher({}), end_grace=1)
+    _, events, _ = _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"linger": 60}}), shutdown_grace=1)
     assert _outcomes(events)[p["cells"][0]["cell_id"]]["outcome"] == "completed"
     assert next(e for e in events if e["kind"] == "attempt.process_ended")["confirmed"] == 1
     assert len([r for r in caplog.records if getattr(r, "error_code", None) == "HB-RUN-002"]) == 1
@@ -392,7 +451,7 @@ def test_job_queries_failing_through_the_procs_seam_hold_the_slot_until_confirme
     monkeypatch.setattr(procs, "_query", failing)
     p = _plan(n_cells=1)
     p["parameters"]["kill_escalation"] = 1
-    _, events, _ = _run(base, p, FakeLauncher({}), end_grace=1)
+    _, events, _ = _run(base, p, FakeLauncher({}), shutdown_grace=1)
     assert _outcomes(events)[p["cells"][0]["cell_id"]]["outcome"] == "completed"
     assert next(e for e in events if e["kind"] == "attempt.process_ended")["confirmed"] == 1
     assert len([r for r in caplog.records if getattr(r, "error_code", None) == "HB-RUN-002"]) == 1
@@ -606,7 +665,7 @@ def test_a_ledger_failure_after_spawn_still_cleans_the_credentials(base, monkeyp
 
     monkeypatch.setattr(ledger.SegmentWriter, "append", failing)
     config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
-                                 launchers={"fake": FakeLauncher({})}, build_workspace=_build_workspace, grade=None, end_grace=3)
+                                 launchers={"fake": FakeLauncher({})}, build_workspace=_build_workspace, grade=None)
     assert _engine_run(p, config).exit_code == 3
     started = next(e for e in ledger.read_segment(next((config.run_dir / "events").glob("*.jsonl")))
                    if e["kind"] == "attempt.process_started")
@@ -677,7 +736,7 @@ def test_an_append_failure_means_the_prompt_is_never_sent(base, monkeypatch):  #
 
     monkeypatch.setattr(ledger.SegmentWriter, "append", failing)
     config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
-                                 launchers={"fake": FakeLauncher({})}, build_workspace=_build_workspace, grade=None, end_grace=3)
+                                 launchers={"fake": FakeLauncher({})}, build_workspace=_build_workspace, grade=None)
     summary = _engine_run(p, config)
     assert summary.exit_code == 3
     assert not list((base / "cells").rglob(".fake-prompt.txt")) and not list((config.run_dir / "archive").rglob(".fake-prompt.txt"))
@@ -696,7 +755,7 @@ def test_after_the_ledger_breaks_no_worker_blocks_forever(base, monkeypatch):  #
     monkeypatch.setattr(ledger.SegmentWriter, "append", failing)
     config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
                                  launchers={"fake": FakeLauncher({first["label"]: {"sleep": 2}, second["label"]: {"mode": "hang_prompt"}})},
-                                 build_workspace=_build_workspace, grade=None, end_grace=3)
+                                 build_workspace=_build_workspace, grade=None)
     assert _engine_run(p, config, limit=30).exit_code == 3
     alive = [t.name for t in threading.enumerate() if t.name.startswith("cell-")]
     assert alive == [], f"workers still alive after the run returned: {alive}"  # the hung turn was killed, not left running
@@ -1119,7 +1178,7 @@ def test_keep_awake_is_held_through_a_stop(base, monkeypatch):
     calls = []
     monkeypatch.setattr(host, "keep_awake", lambda flag: calls.append((flag, len(eng.active), eng.stopped)))
 
-    def stop_when_running():
+    def stop_when_running(_now):
         if eng.active and eng.stopped is None:
             eng._stop_launching("HB-RUN-006", "operator stop")
 
@@ -1139,7 +1198,7 @@ def test_keep_awake_is_released_when_the_run_raises(base, monkeypatch):
     eng = engine.Engine(p, config)
     calls = []
     monkeypatch.setattr(host, "keep_awake", calls.append)
-    monkeypatch.setattr(eng, "_check_budgets", lambda: (_ for _ in ()).throw(RuntimeError("budget check failed")))
+    monkeypatch.setattr(eng, "_check_budgets", lambda _now: (_ for _ in ()).throw(RuntimeError("budget check failed")))
     with pytest.raises(RuntimeError, match="budget check failed"):
         eng.run()
     assert calls == [True, False]
@@ -1293,7 +1352,7 @@ def test_a_worker_still_running_when_the_run_fails_is_refused_at_once_not_left_w
     p = _plan(n_cells=1)
     config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
                                  launchers={"fake": FakeLauncher({p["cells"][0]["label"]: {"sleep": 2}})},
-                                 build_workspace=_build_workspace, grade=None, end_grace=3)
+                                 build_workspace=_build_workspace, grade=None)
     with pytest.raises(RuntimeError):
         engine.Engine(p, config).run()
     worker = next(t for t in threading.enumerate() if t.name == f"cell-{p['cells'][0]['cell_id']}")
@@ -1451,7 +1510,7 @@ class _UnconfirmedKill:
         import io
         from types import SimpleNamespace
         self.proc = SimpleNamespace(stdin=io.BytesIO())
-        self.job = SimpleNamespace(active=lambda: 0, pids=list)
+        self.job = SimpleNamespace(active=lambda: 0 if len(self.timeouts) >= self.confirmed_on else 1, pids=list)
         self.confirmed_on = confirmed_on
         self.timeouts: list[float] = []
 
@@ -1467,8 +1526,9 @@ def test_an_unconfirmed_kill_backs_off_from_1_s_doubling_to_the_designs_30_s_cap
     """design/phase1-walking-skeleton.md:189: "Retries use capped exponential backoff (1 s doubling to 30 s)".
     Red at 70531dc, while KILL_RETRY_CAP was 60.0 (3d14c73, T1-8): the waits after 16 s were 32 and 60."""
     config = engine.EngineConfig(run_dir=base / "r", cells_root=base / "c", launchers={}, build_workspace=_build_workspace,
-                                 grade=None, end_grace=0)
+                                 grade=None)
     eng = engine.Engine(_plan(n_cells=1), config)
     cp = _UnconfirmedKill(confirmed_on=9)
-    assert eng._end_process(cp) == (0, True)
+    a = engine._Active(eng.plan["cells"][0], threading.current_thread())
+    assert eng._end_process(a, cp, 0) == (0, True, "terminate")
     assert cp.timeouts == [eng.params["kill_escalation"], 1, 2, 4, 8, 16, 30, 30, 30]
