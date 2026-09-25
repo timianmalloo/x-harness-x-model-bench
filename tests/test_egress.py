@@ -149,6 +149,64 @@ def test_a_planted_canary_is_withheld(encode):
     assert (verdict.reason, verdict.payload_sha256) == ("withheld: sensitive content", _sha(text))
 
 
+def _fullwidth(text: str) -> str:
+    """The NFKC-equivalent fullwidth form of printable ASCII."""
+    return "".join(chr(ord(c) + 0xFEE0) if "!" <= c <= "~" else c for c in text)
+
+
+def _b64(text: str) -> str:
+    return base64.b64encode(text.encode("utf-8")).decode("ascii")
+
+
+def _q(text: str) -> str:
+    return urllib.parse.quote(text, safe="")
+
+
+# Codex F1 and its bypass table (M3), plus D&P's encoded identifiers and POSIX home forms. Each builder takes the
+# synthetic values `s` and returns (planted text, expected class).
+TRANSFORMED = {
+    "json-escaped-credential": lambda s: (s.cred.replace("/", "\\/"), "credential"),
+    "double-url-credential": lambda s: (_q(_q(s.cred)), "credential"),
+    "base64-credential-inside-a-longer-blob": lambda s: (_b64(f"auth={s.cred};x"), "credential"),
+    "url-encoded-email": lambda s: (_q(s.email), "email"),
+    "base64-email": lambda s: (_b64(s.email), "email"),
+    "json-unicode-escaped-email": lambda s: (s.email.replace("@", "\\u0040"), "email"),
+    "html-entity-email": lambda s: (s.email.replace("@", "&#64;"), "email"),
+    "base64-username": lambda s: (_b64(s.username), "username"),
+    "url-encoded-home": lambda s: (_q(s.home), "home_path"),
+    "posix-drive-home": lambda s: ("/c/" + s.home[3:].replace("\\", "/"), "home_path"),
+    "wsl-home": lambda s: ("/mnt/c/" + s.home[3:].replace("\\", "/") + "/repo", "home_path"),
+    "upper-case-token-shape": lambda s: (("sk-ant-" + token_hex(16)).upper(), "token_shape"),
+    "base64-token-shape": lambda s: (_b64("ghp_" + token_hex(18)), "token_shape"),
+    "line-split-canary": lambda s: (s.canary[:9] + "\n" + s.canary[9:], "canary"),
+    "fullwidth-canary": lambda s: (_fullwidth(s.canary), "canary"),
+    "url-encoded-canary": lambda s: (_q(s.url_canary), "canary"),
+    "nested-past-the-decoding-bound": lambda s: (_q(_q(_q(_q(_q(_q(_q(_q(s.cred)))))))), "unscannable"),
+}
+
+
+class _Synthetic:
+    def __init__(self):
+        self.cred = _credential()
+        self.email = f"op-{token_hex(6)}@example.invalid"
+        self.username = f"u{token_hex(5)}"
+        self.home = f"C:\\Users\\h{token_hex(5)}"
+        self.canary = f"CANARY-{token_hex(8)}"
+        self.url_canary = f"CANARY/{token_hex(6)}+{token_hex(6)}"  # has characters URL encoding changes (M3)
+
+
+@pytest.mark.parametrize("case", sorted(TRANSFORMED))
+def test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend(case):
+    s = _Synthetic()
+    planted, expected = TRANSFORMED[case](s)
+    text = _plant(planted)
+    backend = FakeBackend()
+    verdict = egress.check(text, destination=DEST, operator=_operator(email=s.email, username=s.username, home=s.home),
+                           secrets=[s.cred], canaries=[s.canary, s.url_canary])
+    assert expected in verdict.classes
+    assert verdict.release(backend) is None and backend.received == []
+
+
 def test_the_injection_fixture_is_inert_data_that_the_gate_passes_unchanged():
     # US-46 c2 / R-60 c2: the pair differs by exactly the instruction-shaped sentence. It is not sensitive, so the
     # gate passes it; resisting it is the judge's job (slice 2), not the scanner's.
