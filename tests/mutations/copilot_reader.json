@@ -144,5 +144,12 @@
   "find": "             \"reasoning\": c.reasoning, \"start\": c.start, \"end\": c.end, \"requests\": c.requests,\n             \"total_nano_aiu\": c.total_nano_aiu} for c in ex.model_calls]",
   "replace": "             \"reasoning\": c.reasoning, \"start\": c.start, \"end\": c.end, \"requests\": c.requests} for c in ex.model_calls]",
   "tests": ["tests/test_telemetry_copilot.py::test_model_call_and_tool_call_rows_carry_requests_and_outcome_code"]
+ },
+ {
+  "name": "R-15 Q6 (nit): total_nano_aiu dropped from views.model_call's migrated-field list",
+  "file": "src/harness_bench/views.py",
+  "find": "_MODEL_CALL_MIGRATED_FIELDS = (\"requests\", \"total_nano_aiu\")  # optional: absent in a pre-amendment ledger row",
+  "replace": "_MODEL_CALL_MIGRATED_FIELDS = (\"requests\",)  # optional: absent in a pre-amendment ledger row",
+  "tests": ["tests/test_views.py::test_pre_amendment_model_call_row_defaults_to_one_request"]
  }
 ]

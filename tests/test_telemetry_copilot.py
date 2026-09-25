@@ -157,6 +157,18 @@ def test_golden_sample_cross_check_against_the_acp_usage_oracle(arm, path):  # R
     assert call.uncached_input + call.cache_read + call.cache_write + call.output == total_tokens
 
 
+@pytest.mark.parametrize("path", [OFF, ON, ON_REV92], ids=["off", "on", "on-rev92"])
+def test_total_nano_aiu_sums_to_the_session_shutdown_total(path):  # DM11: sum-of-parts equals the whole (R-15 Q6 loop-back)
+    """Σ per-model `total_nano_aiu` must equal the record's own `session.shutdown.data.totalNanoAiu`
+    (the session total the same shutdown line states) on every committed fixture -- an integrity
+    cross-check read from the record itself, never a hardcoded number, so nothing is derived or
+    invented from `total_nano_aiu` (R-15 c2)."""
+    shutdown_rows = [r for r in _load_events(path) if r["type"] == "session.shutdown"]
+    session_total = shutdown_rows[-1]["data"]["totalNanoAiu"]
+    calls = copilot.read(path).model_calls
+    assert sum(c.total_nano_aiu for c in calls) == session_total
+
+
 def test_claude_code_and_codex_still_default_requests_to_one():  # design section 3: no change to other readers
     from harness_bench.telemetry import claude_code, codex
 
@@ -176,6 +188,9 @@ def test_claude_code_and_codex_leave_total_nano_aiu_null():  # R-15 Q6: neither 
 
 
 # R-15 Q6: `total_nano_aiu` is stored verbatim, null (never 0) when the native record does not carry it -------
+# Its own absence never enters `ex.missing` (R-15 Q6 loop-back, D&P condition 1): `ex.missing` gates
+# `cost_usd` (grade/runner.py), and no reader consumes total_nano_aiu yet -- a column with no consumer
+# must not null a scored metric. The null on the row is the "not recorded" evidence by itself.
 
 def test_total_nano_aiu_is_null_never_zero_when_the_key_is_absent(tmp_path):
     metrics = _model_metrics()
@@ -184,7 +199,7 @@ def test_total_nano_aiu_is_null_never_zero_when_the_key_is_absent(tmp_path):
     ex = copilot.read(path)
     call = ex.model_calls[0]
     assert call.total_nano_aiu is None  # never 0
-    assert ("HB-TEL-001", "totalNanoAiu") in {(m.code, m.field) for m in ex.missing}
+    assert ex.missing == []  # not flagged: no consumer yet, and ex.missing would null cost_usd
 
 
 def test_total_nano_aiu_is_null_for_a_non_int_value(tmp_path):
@@ -194,7 +209,7 @@ def test_total_nano_aiu_is_null_for_a_non_int_value(tmp_path):
     ex = copilot.read(path)
     call = ex.model_calls[0]
     assert call.total_nano_aiu is None
-    assert ("HB-TEL-001", "totalNanoAiu") in {(m.code, m.field) for m in ex.missing}
+    assert ex.missing == []
 
 
 def test_total_nano_aiu_zero_is_recorded_not_treated_as_absent(tmp_path):  # 0 is a valid measured value, distinct from null
@@ -204,7 +219,7 @@ def test_total_nano_aiu_zero_is_recorded_not_treated_as_absent(tmp_path):  # 0 i
     ex = copilot.read(path)
     call = ex.model_calls[0]
     assert call.total_nano_aiu == 0
-    assert ("HB-TEL-001", "totalNanoAiu") not in {(m.code, m.field) for m in ex.missing}
+    assert ex.missing == []
 
 
 def test_off_hooks_are_zero_not_none_and_on_rev92_is_eight_and_eight():  # section 4.5 / 13 reader test
