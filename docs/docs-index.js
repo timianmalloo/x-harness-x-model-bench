@@ -1442,6 +1442,51 @@ window.DOCS_INDEX = {
       "sourceSha256": "3dbc40e3d87e76548cf8bda92266fefc77892f87086a180ae5a9572d91b287b7"
     },
     {
+      "id": "design-phase3-cost",
+      "path": "docs/design/phase3-cost.md",
+      "title": "Design: the cell-grain cost and efficiency metrics (phase 3, row 16, W3-COST phase 2)",
+      "type": "design",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 3 · grading and judges (wave 3: row 16, W3-COST)",
+      "reviewBy": "2027-03-25",
+      "reviewSuggested": [],
+      "summary": "Seam C-1: `grade/runner.py`'s inline `_cost` (cost_usd only) moves verbatim into `grade/cost.py`'s `grade_cell(inp)`, registered in `runner.GRADERS[\"cost\"]`. Six cell-grain metrics are decided: cost_usd (unchanged) plus five new ones -- tokens_per_minute, output_tokens_per_turn, cache_hit_ratio, cache_write_amplification, context_growth (peak) and compactions -- each defined only from `normalize.totals` and the existing view measures `views.busy_ms`, `views.calls_per_cell` and `views.model_call` (DM7: one definition per quantity). `compactions` has no recorded signal on any harness today, so it is unconditionally NA, never 0 (US-27).",
+      "tags": [
+        "benchmark",
+        "grading",
+        "metrics",
+        "cost",
+        "tokens",
+        "cache",
+        "determinism"
+      ],
+      "links": [
+        {
+          "to": "design-phase3-graders",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0008-telemetry",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "e3758a322c4c304094423a3dcbb878e9e27b6da53cfc143d58e6c917801e3674"
+    },
+    {
       "id": "design-phase3-gateway-judges",
       "path": "docs/design/phase3-gateway-judges.md",
       "title": "Design: the model gateway and the two judges (phase 3, row 17)",
@@ -2724,5 +2769,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "f6d949807faf3b879569a8d71d9385104ff36bbf1eb47d544fe6c5c28f2c16a5"
+  "graphSha256": "71e40203b0e80f163b00ed32cd7192131e7a2eaec2489443ad9c7328c2b30c94"
 };
