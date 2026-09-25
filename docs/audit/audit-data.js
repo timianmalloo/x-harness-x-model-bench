@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T13:26:39Z",
+  "generated": "2026-09-25T13:36:21Z",
   "audit": [
     {
       "actor": null,
@@ -25260,6 +25260,290 @@ window.AUDIT_DATA = {
             "sha256": "c49108d270c78fcb7dd12e34b42aa17d7d482ad31aa3daaca61e4f96b3460379",
             "status": "resolved",
             "token": "src/harness_bench/config.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3CCFZSVB6E8Y0KJGSZ1NT6S",
+      "shortname": "Goal: W3-MUT-SWEEP: every named mutant in tests/mutations/*.json is live…",
+      "datetime": "2026-09-25T13:36:20Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W3-MUT-SWEEP: every named mutant in tests/mutations/*.json is live again: each file's find text occurs in its target file, and uv run python tools/mutate_check.py <file> ends \"every mutation killed\" for every file (reported by W3-GW-I s3: about 16 mutants across several files have stale find text, e.g. validity.json's R-15 sweep and views_copilot.json's two mapper mutants).\nDone when: A table in your final message lists every tests/mutations/*.json file with its result before and after (killed / total, and each SKIP or survivor by name).; Each stale find is re-pointed at the current code that carries the same guard, keeping the mutant's name, replacement semantics and named tests; no mutant is deleted, and none is weakened (the replacement still breaks the same behaviour). Where the guarded behaviour itself no longer exists in the code, the mutant is not deleted: list it by name with the commit that removed the behaviour, for the Leader to rule on.; A survivor (a live mutant no named test kills) gets a killing test, observed red under the mutant and committed first, then green; or it is listed for the Leader with the reason when the fix is outside tests/.; A control is added so this cannot silently recur: a fast test in tests/test_mutate_check.py (or a new test file) that fails when any find text in tests/mutations/*.json occurs zero times or more than once in its target file (count only; it runs no mutation), observed red on the stale state first.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each commit SHA, the before/after table, and every mutant left for the Leader.\nNot in scope: tests/mutations/correctness.json, drift.json and judge.json and their targets (live or just-joined tracks: report their counts only, do not edit them); any src/ change (list it for the Leader instead); bench run, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 300k tokens\nMain-line budget: at most 2 h of wall clock; run one mutation file at a time with its output redirected to a log; the engine and stop files are slow (several minutes each). Commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: tools/mutate_check.py; tests/test_mutate_check.py; tests/mutations/*.json; git log -p on each stale target file to find where the guarded text moved. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3CCG0NYC078JHP5MRXMS886",
+      "shortname": "compile-Goal: W3-MUT-SWEEP: every named mutant in tests/mutations/*.json is live…",
+      "datetime": "2026-09-25T13:36:21Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-MUT-SWEEP: every named mutant in tests/mutations/*.json is live again: each file's find text occurs in its target file, and uv run python tools/mutate_check.py <file> ends \"every mutation killed\" for every file (reported by W3-GW-I s3: about 16 mutants across several files have stale find text, e.g. validity.json's R-15 sweep and views_copilot.json's two mapper mutants).\nDone when: A table in your final message lists every tests/mutations/*.json file with its result before and after (killed / total, and each SKIP or survivor by name).; Each stale find is re-pointed at the current code that carries the same guard, keeping the mutant's name, replacement semantics and named tests; no mutant is deleted, and none is weakened (the replacement still breaks the same behaviour). Where the guarded behaviour itself no longer exists in the code, the mutant is not deleted: list it by name with the commit that removed the behaviour, for the Leader to rule on.; A survivor (a live mutant no named test kills) gets a killing test, observed red under the mutant and committed first, then green; or it is listed for the Leader with the reason when the fix is outside tests/.; A control is added so this cannot silently recur: a fast test in tests/test_mutate_check.py (or a new test file) that fails when any find text in tests/mutations/*.json occurs zero times or more than once in its target file (count only; it runs no mutation), observed red on the stale state first.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each commit SHA, the before/after table, and every mutant left for the Leader.\nNot in scope: tests/mutations/correctness.json, drift.json and judge.json and their targets (live or just-joined tracks: report their counts only, do not edit them); any src/ change (list it for the Leader instead); bench run, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 300k tokens\nMain-line budget: at most 2 h of wall clock; run one mutation file at a time with its output redirected to a log; the engine and stop files are slow (several minutes each). Commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: tools/mutate_check.py; tests/test_mutate_check.py; tests/mutations/*.json; git log -p on each stale target file to find where the guarded text moved. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: A table in your final message lists every tests/mutations/*.json file with its result before and after (killed / total, and each SKIP or survivor by name). | phrase: A table in your final message lists every tests/mutations/*.json file with its result before and after (killed / total, and each SKIP or survivor by name). |\n| done_when: Each stale find is re-pointed at the current code that carries the same guard, keeping the mutant's name, replacement semantics and named tests | phrase: Each stale find is re-pointed at the current code that carries the same guard, keeping the mutant's name, replacement semantics and named tests |\n| done_when: no mutant is deleted, and none is weakened (the replacement still breaks the same behaviour). Where the guarded behaviour itself no longer exists in the code, the mutant is not deleted: list it by name with the commit that removed the behaviour, for the Leader to rule on. | phrase: no mutant is deleted, and none is weakened (the replacement still breaks the same behaviour). Where the guarded behaviour itself no longer exists in the code, the mutant is not deleted: list it by name with the commit that removed the behaviour, for the Leader to rule on. |\n| done_when: A survivor (a live mutant no named test kills) gets a killing test, observed red under the mutant and committed first, then green | phrase: A survivor (a live mutant no named test kills) gets a killing test, observed red under the mutant and committed first, then green |\n| done_when: or it is listed for the Leader with the reason when the fix is outside tests/. | phrase: or it is listed for the Leader with the reason when the fix is outside tests/. |\n| done_when: A control is added so this cannot silently recur: a fast test in tests/test_mutate_check.py (or a new test file) that fails when any find text in tests/mutations/*.json occurs zero times or more than once in its target file (count only | phrase: A control is added so this cannot silently recur: a fast test in tests/test_mutate_check.py (or a new test file) that fails when any find text in tests/mutations/*.json occurs zero times or more than once in its target file (count only |\n| done_when: it runs no mutation), observed red on the stale state first. | phrase: it runs no mutation), observed red on the stale state first. |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean. | phrase: uv run ruff check src tests tools is clean. |\n| done_when: Your final message lists each commit SHA, the before/after table, and every mutant left for the Leader. | phrase: Your final message lists each commit SHA, the before/after table, and every mutant left for the Leader. |\n| not_in_scope: tests/mutations/correctness.json, drift.json and judge.json and their targets (live or just-joined tracks: report their counts only, do not edit them) | phrase: tests/mutations/correctness.json, drift.json and judge.json and their targets (live or just-joined tracks: report their counts only, do not edit them) |\n| not_in_scope: any src/ change (list it for the Leader instead) | phrase: any src/ change (list it for the Leader instead) |\n| not_in_scope: bench run, pytest -m \"\" | phrase: bench run, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- tests/mutations/*.json: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 8be5ff1e7e337e0198336c6d9546fa448b924bab0e090c2e8685c962b52ba13d\n- /: unresolved (outside repo)\n- tests/: unresolved (not found)\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 6d22bb879e13077261e0ce89d82e8df43daef49a56120af4d003e93713373227\n- before/after: unresolved (not found)\n- tests/mutations/correctness.json: tests/mutations/correctness.json sha256 19b907ba5e3d6ab5e06cf32b0f8ac9630bf9ad341547337c094b2fcc6a0192f6\n- drift.json: unresolved (not found)\n- judge.json: tests/mutations/judge.json sha256 15f221e52ca7493a496b11a356da7c21ee9bc5775eb6ef0ec19af9813447fc98\n- src/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3CCFZSVB6E8Y0KJGSZ1NT6S\nraw sha256: 3bb61044937b4c67f25c038ffcd73db8e36fdbd3696a6db14dd56e125ca368c0\ncompiler model: claude-opus-5-5\nengine seconds: 0.004\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3CCFZSVB6E8Y0KJGSZ1NT6S for claude-code v1: 14 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A table in your final message lists every tests/mutations/*.json file with its result before and after (killed / total, and each SKIP or survivor by name).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A table in your final message lists every tests/mutations/*.json file with its result before and after (killed / total, and each SKIP or survivor by name)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each stale find is re-pointed at the current code that carries the same guard, keeping the mutant's name, replacement semantics and named tests",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Each stale find is re-pointed at the current code that carries the same guard, keeping the mutant's name, replacement semantics and named tests"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "no mutant is deleted, and none is weakened (the replacement still breaks the same behaviour). Where the guarded behaviour itself no longer exists in the code, the mutant is not deleted: list it by name with the commit that removed the behaviour, for the Leader to rule on.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "no mutant is deleted, and none is weakened (the replacement still breaks the same behaviour). Where the guarded behaviour itself no longer exists in the code, the mutant is not deleted: list it by name with the commit that removed the behaviour, for the Leader to rule on."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A survivor (a live mutant no named test kills) gets a killing test, observed red under the mutant and committed first, then green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A survivor (a live mutant no named test kills) gets a killing test, observed red under the mutant and committed first, then green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "or it is listed for the Leader with the reason when the fix is outside tests/.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "or it is listed for the Leader with the reason when the fix is outside tests/."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A control is added so this cannot silently recur: a fast test in tests/test_mutate_check.py (or a new test file) that fails when any find text in tests/mutations/*.json occurs zero times or more than once in its target file (count only",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A control is added so this cannot silently recur: a fast test in tests/test_mutate_check.py (or a new test file) that fails when any find text in tests/mutations/*.json occurs zero times or more than once in its target file (count only"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "it runs no mutation), observed red on the stale state first.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "it runs no mutation), observed red on the stale state first."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each commit SHA, the before/after table, and every mutant left for the Leader.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each commit SHA, the before/after table, and every mutant left for the Leader."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "tests/mutations/correctness.json, drift.json and judge.json and their targets (live or just-joined tracks: report their counts only, do not edit them)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/correctness.json, drift.json and judge.json and their targets (live or just-joined tracks: report their counts only, do not edit them)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any src/ change (list it for the Leader instead)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any src/ change (list it for the Leader instead)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run, pytest -m \"\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run, pytest -m \"\""
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "300k tokens",
+          "done_when": [
+            "A table in your final message lists every tests/mutations/*.json file with its result before and after (killed / total, and each SKIP or survivor by name).",
+            "Each stale find is re-pointed at the current code that carries the same guard, keeping the mutant's name, replacement semantics and named tests",
+            "no mutant is deleted, and none is weakened (the replacement still breaks the same behaviour). Where the guarded behaviour itself no longer exists in the code, the mutant is not deleted: list it by name with the commit that removed the behaviour, for the Leader to rule on.",
+            "A survivor (a live mutant no named test kills) gets a killing test, observed red under the mutant and committed first, then green",
+            "or it is listed for the Leader with the reason when the fix is outside tests/.",
+            "A control is added so this cannot silently recur: a fast test in tests/test_mutate_check.py (or a new test file) that fails when any find text in tests/mutations/*.json occurs zero times or more than once in its target file (count only",
+            "it runs no mutation), observed red on the stale state first.",
+            "uv run pytest -q -p no:cacheprovider passes",
+            "uv run ruff check src tests tools is clean.",
+            "Your final message lists each commit SHA, the before/after table, and every mutant left for the Leader."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W3-MUT-SWEEP: every named mutant in tests/mutations/*.json is live again: each file's find text occurs in its target file, and uv run python tools/mutate_check.py <file> ends \"every mutation killed\" for every file (reported by W3-GW-I s3: about 16 mutants across several files have stale find text, e.g. validity.json's R-15 sweep and views_copilot.json's two mapper mutants).",
+          "main_line_budget": "at most 2 h of wall clock; run one mutation file at a time with its output redirected to a log; the engine and stop files are slow (several minutes each). Commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: tools/mutate_check.py; tests/test_mutate_check.py; tests/mutations/*.json; git log -p on each stale target file to find where the guarded text moved. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "tests/mutations/correctness.json, drift.json and judge.json and their targets (live or just-joined tracks: report their counts only, do not edit them)",
+            "any src/ change (list it for the Leader instead)",
+            "bench run, pytest -m \"\"",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.004,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3CCFZSVB6E8Y0KJGSZ1NT6S",
+        "raw_sha256": "3bb61044937b4c67f25c038ffcd73db8e36fdbd3696a6db14dd56e125ca368c0",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/*.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "8be5ff1e7e337e0198336c6d9546fa448b924bab0e090c2e8685c962b52ba13d",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "6d22bb879e13077261e0ce89d82e8df43daef49a56120af4d003e93713373227",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "before/after"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/correctness.json",
+            "reason": null,
+            "sha256": "19b907ba5e3d6ab5e06cf32b0f8ac9630bf9ad341547337c094b2fcc6a0192f6",
+            "status": "resolved",
+            "token": "tests/mutations/correctness.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "drift.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/judge.json",
+            "reason": null,
+            "sha256": "15f221e52ca7493a496b11a356da7c21ee9bc5775eb6ef0ec19af9813447fc98",
+            "status": "resolved",
+            "token": "judge.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
           }
         ],
         "schema": "compiled-prompt/1",
