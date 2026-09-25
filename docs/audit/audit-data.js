@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T07:24:38Z",
+  "generated": "2026-09-25T07:44:58Z",
   "audit": [
     {
       "actor": null,
@@ -15467,6 +15467,40 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3BRCKP0JSSQTTW8BS8SCVEZ",
+      "shortname": "w2-user-w-scripted-user-wiring",
+      "datetime": "2026-09-25T07:44:58Z",
+      "session": "worker-codex-userw",
+      "prompt": "Goal: W2-USER-W: wire the scripted user (the library at src/harness_bench/scripted_user/, joined) into a real cell, per docs/design/phase2-scripted-user.md section 9 (the seams, file:line) and rulings R-37, R-51, R-52, R-53 in docs/notes/rulings.md - stdio on every harness; Claude Code and Codex through ACP session/new mcpServers; Copilot through its own --additional-mcp-config with mcpServers [] - red-first.\nDone when: driver.run_turn gains mcp_servers: list[dict] | None = None and sends `mcp_servers or []` in session/new; a driver test asserts both forms (T-37-3), red first.; engine._attempt passes the server entry (scripted_user.server.entry(clarifications_path, log_path), the log in the cell's own folder) only when the plan's task record has scripted_user true, and every other cell keeps mcpServers [] (R-37 c3) - an engine test with the fake ACP agent asserts both, red first.; For a Copilot scripted_user cell the entry goes into a per-cell MCP config file passed as --additional-mcp-config @<cell file>, with mcpServers [] in session/new (R-51); and because R-45's --available-tools list filters MCP tools (measured: run record, R-51 condition 2: \"Disabled tools: ... scripted_user-ask_user\"), that cell's argv also appends scripted_user-ask_user to the --available-tools list and --allow-tool scripted_user - only for scripted_user cells; a profile or engine test pins the exact argv for a scripted_user Copilot cell and for a normal one, red first.; bench/profiles/claude-code.yaml's allow list gains mcp__scripted_user__ask_user as the declared class \"scripted user\" (R-37 c2, R-34 rule) and tests/test_allowlist_classes.py names that class; Codex needs no id.; After the turn, the engine closes the log (scripted_user.log.close_log with header_row, design section 8) before the cell is archived, so the log is in the archive; a test asserts the end row (\"no question asked\" for a turn with zero calls).; The plan's task record freezes scripted_user, the clarification-set hash and matcher_version (design section 9 row 4) and bench validate loads each scenario-1 task's clarifications with scripted_user.clarifications.load so a malformed set fails validation.; A scripted_user cell whose server never listed the tool is recorded as \"tool not reached\" and its clarification metrics NOT_RECORDED (design section 8); only the log fact is in scope here, not the metric.; tests/mutations/scripted_user_wiring.json holds named mutants (server passed to a non-scripted cell; Copilot available-tools id missing; log not closed before archive; mcpServers sent for Copilot), each killed.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result, plus the exact argv of a scripted_user cell per harness.\nNot in scope: the matcher internals (joined); the stop and decision work (another Codex slice is changing engine.py's breaker area and tests/test_engine.py - keep your engine edits to _attempt and _run_cell's post-outcome step, and add your engine tests in a new file tests/test_scripted_user_wiring.py); live turns (the Leader runs one A1 cell per harness after the join); bench run, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase2-scripted-user.md; docs/notes/rulings.md R-34, R-37, R-45, R-51, R-52, R-53; docs/coordination/coordination-finish-harness-bench-run.md (R-51 condition 2 measurement); src/harness_bench/{driver,engine,plan,profiles,config}.py; src/harness_bench/scripted_user/; bench/profiles/*.yaml; tests/test_driver.py, tests/fake_acp_agent.py, tests/test_allowlist_classes.py. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-userw before committing.",
+      "summary": "Red b89ef29 then green 400830d wired per-cell stdio MCP, Copilot launch config and tool allowlist, log closure, plan freeze and validation. Red 2e36c7f then green dbe94f4 added run preflight input check. 1067 pytest passed, 8 deselected; Ruff and bench validate clean; four named wiring mutants killed. No live turns or push.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled_from": "al-01M3BQ7APNKA7XSC3JBWG0HA98",
+      "goal": "W2-USER-W: wire the scripted user into a real cell across Claude Code, Codex and Copilot.",
+      "done_when": "Driver, engine, Copilot argv, Claude allowlist, log closure and frozen inputs verified red-first; four mutations killed; full pytest and Ruff pass; hand back commit evidence.",
+      "tier": "T2",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-25T07:25:00Z",
+      "duration_seconds": 1198.0,
+      "git": {
+        "sha": "dbe94f4d03f1dc833fc5b91a235f618717d9a068",
+        "short": "dbe94f4d0",
+        "branch": "w2-user-w",
+        "pushed": null
+      }
     }
   ],
   "changes": [
