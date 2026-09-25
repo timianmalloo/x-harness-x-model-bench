@@ -1,9 +1,9 @@
 [
  {
   "name": "a native record missing a usage field is costed as 0 (HB-TEL-001, seam T3 -> T2)",
-  "file": "src/harness_bench/grade/runner.py",
-  "find": "        elif source == \"native_record\" and ex.missing:",
-  "replace": "        elif False:",
+  "file": "src/harness_bench/grade/cost.py",
+  "find": "    if source == \"native_record\" and ex.missing:  # a usage field the record lacks is NOT_RECORDED, never 0 (US-27)",
+  "replace": "    if False:  # a usage field the record lacks is NOT_RECORDED, never 0 (US-27)",
   "tests": ["tests/test_grade.py::test_cost_is_na_naming_hb_tel_001_when_the_native_record_misses_a_usage_field"]
  },
  {
@@ -79,16 +79,16 @@
  },
  {
   "name": "a changed price list used",
-  "file": "src/harness_bench/grade/runner.py",
-  "find": "        if inp.prices is None:\n",
-  "replace": "        if False:\n",
+  "file": "src/harness_bench/grade/cost.py",
+  "find": "    if inp.prices is None:\n",
+  "replace": "    if False:\n",
   "tests": ["tests/test_grade.py::test_cost_is_na_when_the_price_list_changed_after_the_plan"]
  },
  {
   "name": "acp_turn harness priced from the native record",
-  "file": "src/harness_bench/grade/runner.py",
-  "find": "        source = inp.plan[\"profiles\"][inp.cell[\"harness\"]][\"usage_source\"]\n",
-  "replace": "        source = \"native_record\"\n",
+  "file": "src/harness_bench/grade/cost.py",
+  "find": "    source = inp.plan[\"profiles\"][inp.cell[\"harness\"]][\"usage_source\"]\n",
+  "replace": "    source = \"native_record\"\n",
   "tests": ["tests/test_grade.py::test_cost_reads_turn_usage_for_an_acp_turn_harness"]
  },
  {
