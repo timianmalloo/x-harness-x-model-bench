@@ -101,13 +101,14 @@ def copilot_argv(exe: str, model: str) -> list[str]:
     judge is not until the Leader's one turn from these builders records its invocation_sha256 (R-70 3(b)).
 
     The request goes on stdin (`copilot_request`), never in argv (R-70 item 2: an in-bound request can exceed the
-    Windows command line). `-p` comes last so no option is read as its value, and it ends the variadic
-    `--available-tools` list.
-    assume: `-p` with no value reads the prompt from stdin on 1.0.89-1. Confirm: the Leader's qualification turn
-    (R-70 3(b), `prompt_delivery: stdin`) or `copilot --help` on the pinned exe. Breaks: the turn fails on delivery,
-    so the shape changes, which is a new invocation_sha256 and its own probe (design section 8.4)."""
-    return [exe, "--model", model, "--disable-builtin-mcps", "--no-custom-instructions", "--available-tools", "none",
-            "-p"]
+    Windows command line). Measured 2026-09-25 (the Leader's first R-70 3(b) turn): a bare `-p` is refused
+    ("a value is required for '--prompt <text>'"), before any model call. The pinned `--help` names piped stdin
+    as its own input mode ("combine with -i, -p, or piped stdin"), so there is no `-p`; nothing follows the
+    variadic `--available-tools none`.
+    assume: piped stdin with no `-p` runs one non-interactive turn and exits. Confirm: the Leader's next R-70 3(b)
+    turn records one model call. Breaks: the CLI waits for input or starts an interactive session (the probe's
+    budget ends it; no model call), and the shape changes again with its own probe (design section 8.4)."""
+    return [exe, "--model", model, "--disable-builtin-mcps", "--no-custom-instructions", "--available-tools", "none"]
 
 
 def copilot_request(system: str, request: str) -> str:
