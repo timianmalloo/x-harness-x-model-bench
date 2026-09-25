@@ -1,0 +1,9 @@
+{
+  "tool_calls": [
+    {"native_ordinal": 1, "name": "Edit", "tool_class": "edit", "ok": 1, "start": "2026-01-01T00:01:00Z"}
+  ],
+  "model_calls": [
+    {"native_ordinal": 1, "requests": 4, "start": null},
+    {"native_ordinal": 2, "requests": 6, "start": null}
+  ]
+}
