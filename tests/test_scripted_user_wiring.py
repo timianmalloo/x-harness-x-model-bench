@@ -7,6 +7,7 @@ import pytest
 from test_engine import FakeLauncher, _build_workspace, _engine_run, _plan, _run
 
 from harness_bench import config, engine, plan, profiles, tools
+from harness_bench.errors import BenchError
 from harness_bench.scripted_user import clarifications, matcher, server
 
 pytestmark = pytest.mark.native
@@ -101,6 +102,14 @@ def test_plan_freezes_scripted_user_hash_and_matcher_version():
     assert task["clarifications_sha256"] == clarifications.load(CLARIFICATIONS).sha256
     assert task["matcher_version"] == matcher.MATCHER_VERSION
     assert Path(task["clarifications_path"]) == CLARIFICATIONS
+    plan.require_scripted_user_inputs(ROOT, p)
+    task["clarifications_sha256"] = "0" * 64
+    with pytest.raises(BenchError, match="clarification-set hash"):
+        plan.require_scripted_user_inputs(ROOT, p)
+    task["clarifications_sha256"] = clarifications.load(CLARIFICATIONS).sha256
+    task["matcher_version"] = "wrong"
+    with pytest.raises(BenchError, match="matcher_version"):
+        plan.require_scripted_user_inputs(ROOT, p)
 
 
 def test_validate_rejects_malformed_scenario_one_clarifications(tmp_path):
