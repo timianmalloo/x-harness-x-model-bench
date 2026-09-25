@@ -355,6 +355,15 @@ summary: >-
 
 ---
 
+### TRUTH-A: a ground-truth quantity whose human source is unavailable, re-sourced from a model under the human name
+- **Signature:** a measure defined against human labels (calibration agreement, a labelled question set) loses its human source. The labels are then produced by a model, and the report keeps the human name. It is a sibling of the plausible-wrong-number class: the value looks measured, but it measures model-model agreement.
+- **Instances:** `2026-09-25`, DR-CAL-1. The operator declined to label the 30 calibration items (R-58 had made them HUMAN). R-72 rejected model-authored labels and ruled the human half NOT_RECORDED `no human labels (operator declined 2026-09-25)`. Caught before any label was written.
+- **Sweep:** the scripted-user matcher's labelled question set (spec `:457`) is the one other human-labelled set; its provenance is checked at the next GR-CLAR change. A model-labelled set is disclosed under its own name or NOT_RECORDED.
+- **Control:** R-72 condition 3's test (`intended_score` is never read as a label) lands with W3-CAL and GW-I s5. The header rule: a row's name states its source.
+- **Status:** `open` until those tests land.
+
+---
+
 ### SEED-A: a tool's behaviour asserted from its documentation or a belief, not measured
 - **Signature:** a design seed or a launch shape states what a CLI or build tool will do (a flag's effect, an exit code) from its `--help` text or from expectation. The first live measurement shows it does something else. The belief already sat in a design or a builder as if verified.
 - **Instances:**
