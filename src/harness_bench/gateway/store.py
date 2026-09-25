@@ -37,3 +37,7 @@ def verify_entries(root: Path, references: list[dict]) -> list[str]:
 
 def sweep_tmp(root: Path, now: float) -> list[str]:
     return []
+
+
+def move_orphan(root: Path, cache_key: str, utc: str) -> Path:
+    return root
