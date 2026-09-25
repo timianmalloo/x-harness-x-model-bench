@@ -27,7 +27,16 @@ from harness_bench.grade import cost, runner
 from harness_bench.telemetry import normalize
 
 SONNET = "claude-sonnet-5"
+OPUS = "claude-opus-5-5"
 COPILOT_OFF = next((Path(__file__).parent / "fixtures/native/copilot/off").rglob("events.jsonl"))
+
+# real cc-opus turn_usage rows, run e2e-wave1-1790299304 cell 17efb75ce2d5fc6d (pin claude-opus-5-5) (R-32)
+CC_OPUS_TURN_USAGE = [
+    {"kind": "turn_usage", "run_id": "r1", "cell_id": "a", "attempt": 1, "model": "claude-haiku-4-5-20251001",
+     "uncached_input": 929, "cache_read": 0, "cache_write": 0, "output": 14, "reasoning": 0},
+    {"kind": "turn_usage", "run_id": "r1", "cell_id": "a", "attempt": 1, "model": "claude-opus-5-5[1m]",
+     "uncached_input": 10, "cache_read": 179401, "cache_write": 27730, "output": 1385, "reasoning": 0},
+]
 
 
 @pytest.fixture
@@ -218,6 +227,25 @@ def test_a_served_model_other_than_the_pin_is_a_mismatch(root, tmp_path):
     runner.run_pass(run_dir, root)
     view = views.load(run_dir)
     assert (_cell(view, "a").validity, _cell(view, "a").validity_code) == ("invalid (model mismatch)", "HB-VAL-002")
+
+
+# R-32: a context-window tag on the served model id is not a mismatch (R-32, HB-VAL-002 false positive) -----
+
+
+def test_a_context_window_tag_is_not_a_model_mismatch(root, tmp_path):  # red before base_model_id, green after
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, harness="claude-code", model=OPUS, turn_usage=CC_OPUS_TURN_USAGE,
+                        context_window_tag={"a": "1m"})
+    cell = _cell(views.load(run_dir), "a")
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+    assert cell.context_window_tag == "1m"
+
+
+def test_a_genuinely_different_served_model_is_still_a_mismatch(root, tmp_path):  # R-32 negative control
+    turn_usage = [{**CC_OPUS_TURN_USAGE[1], "model": "claude-sonnet-5[1m]"}]  # a different model, also tagged
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, harness="claude-code", model=OPUS, turn_usage=turn_usage,
+                        context_window_tag={"a": "1m"})
+    cell = _cell(views.load(run_dir), "a")
+    assert (cell.validity, cell.validity_code) == ("invalid (model mismatch)", "HB-VAL-002")
 
 
 def test_copilot_modelmetrics_key_alone_determines_the_served_model(root, tmp_path):

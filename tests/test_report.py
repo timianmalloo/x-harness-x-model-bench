@@ -168,6 +168,38 @@ def test_the_header_names_the_pinned_pack_revision_and_commit(root, tmp_path):
     assert f"<dt>Pack commit</dt><dd>{'a' * 40}</dd>" in doc
 
 
+# --- R-32: the context-window tag is disclosed, in the header and per cell -----------------------------
+
+
+def _cc_and_codex_view(tag):
+    cc = _cell("a", "cc-opus", "claude-code", "claude-opus-5-5", context_window_tag=tag)
+    codex_cell = _cell("b", "codex-sol", "codex", "gpt-6-sol")
+    plan = {"cells": [{"harness": "claude-code"}, {"harness": "codex"}]}
+    return views.RunView("r1", plan, True, "grade-1", None, [cc, codex_cell])
+
+
+def test_the_header_discloses_the_context_window_when_a_cell_carries_the_tag():
+    doc = html.render(_cc_and_codex_view("1m"), archive_present=True)
+    header = re.search(r'<section id="header".*?</section>', doc, re.DOTALL).group(0)
+    assert "<dt>Context window</dt><dd>Claude Code cells ran with the 1M context window; not recorded</dd>" in header
+
+
+def test_the_header_reads_not_recorded_when_no_cell_carries_a_tag():
+    doc = html.render(_cc_and_codex_view(None), archive_present=True)
+    header = re.search(r'<section id="header".*?</section>', doc, re.DOTALL).group(0)
+    assert "<dt>Context window</dt><dd>not recorded</dd>" in header
+
+
+def test_the_cell_drill_down_carries_the_disclosure_per_row():
+    doc = html.render(_cc_and_codex_view("1m"), archive_present=True)
+    runs = re.search(r'<section id="runs".*?</section>', doc, re.DOTALL).group(0)
+    rows = re.findall(r"<tr>.*?</tr>", runs, re.DOTALL)
+    cc_row = next(r for r in rows if "cc-opus" in r)
+    codex_row = next(r for r in rows if "codex-sol" in r)
+    assert "<td>Claude Code cells ran with the 1M context window</td>" in cc_row
+    assert "<td>not recorded</td>" in codex_row
+
+
 def test_the_page_makes_no_network_request_and_has_no_script(page):
     assert not re.search(r"https?://|<script|@import|url\(|<link", page)
 
@@ -259,11 +291,12 @@ def test_a_clean_report_still_writes_when_credential_values_are_supplied(root, t
 N5_FLAG = "user-config exposed (N5)"
 
 
-def _cell(cid, combo, harness, model):
+def _cell(cid, combo, harness, model, context_window_tag=None):
     na = views.Measure(None, "not graded")
     return views.CellView(cell_id=cid, label=f"X1.{combo}.pack-off.r1", combo=combo, pack="off", harness=harness, model=model,
                           outcome="completed", cause=None, code=None, validity="valid", validity_code=None,
-                          wall_ms=na, model_ms=na, tool_ms=na, idle_ms=na, tokens=None, tokens_reason="not graded")
+                          wall_ms=na, model_ms=na, tool_ms=na, idle_ms=na, tokens=None, tokens_reason="not graded",
+                          context_window_tag=context_window_tag)
 
 
 def _mixed_view():

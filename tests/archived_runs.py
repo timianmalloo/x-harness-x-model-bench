@@ -56,11 +56,13 @@ def set_prices(root: Path, entries: list[dict]) -> str:
 
 def make_run(root: Path, tmp_path: Path, cells: dict[str, str | None], harness: str = "codex", archived: set[str] | None = None,
              timeout: int = 900, turn_usage: list[dict] | None = None, outcomes: dict[str, dict] | None = None,
-             model: str = CODEX_MODEL, combos: dict[str, str] | None = None, unstarted: tuple[str, ...] = ()) -> Path:
+             model: str = CODEX_MODEL, combos: dict[str, str] | None = None, unstarted: tuple[str, ...] = (),
+             context_window_tag: dict[str, str] | None = None) -> Path:
     """An archived run: one cell per entry of `cells` (cell_id -> slug.py source, or None for no working copy).
 
     `outcomes` overrides a cell's `cell.outcome` fields (default: completed); `combos` names each cell's combo;
-    `unstarted` adds plan cells that never started (no events).
+    `unstarted` adds plan cells that never started (no events); `context_window_tag` sets a cell's
+    `attempt.process_ended.context_window_tag` (R-32; default None, as engine.py records for an untagged cell).
     """
     run_dir = tmp_path / "runs" / "r1"
     run_dir.mkdir(parents=True)
@@ -85,7 +87,8 @@ def make_run(root: Path, tmp_path: Path, cells: dict[str, str | None], harness: 
             ev.append({"kind": "attempt.process_started", "cell_id": cid, "mono_ns": 1_000_000_000})
             ev.append({"kind": "attempt.session_opened", "cell_id": cid, "session_id": f"sess-{cid}"})
             ev.append({"kind": "cell.prompt_sent", "cell_id": cid})
-            ev.append({"kind": "attempt.process_ended", "cell_id": cid, "mono_ns": 31_000_000_000})
+            ev.append({"kind": "attempt.process_ended", "cell_id": cid, "mono_ns": 31_000_000_000,
+                       "context_window_tag": (context_window_tag or {}).get(cid)})
             ev.append({"kind": "cell.outcome", "cell_id": cid, "outcome": "completed", "cause": None, "code": None,
                        "session_id": f"sess-{cid}", **(outcomes or {}).get(cid, {})})
             if cid not in archived:

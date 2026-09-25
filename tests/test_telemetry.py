@@ -9,7 +9,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from harness_bench.errors import Cause
-from harness_bench.telemetry import claude_code, codex, copilot, normalize
+from harness_bench.telemetry import Extraction, claude_code, codex, copilot, normalize
 
 FIX = Path(__file__).parent / "fixtures"
 PROMPT = 'Run this shell command: python -c "print(6*7)" and write its exact output to answer.txt in the current directory. Then reply DONE.'
@@ -120,6 +120,35 @@ def test_served_models_and_the_one_call_rule():  # US-11
     served = normalize.served_models("acp_turn", claude_code.read(FIX / "native/claude-code/ok.jsonl"), normalize.turn_usage(claude_resp))
     assert served == {"claude-sonnet-5", "claude-haiku-4-5-20251001"}
     assert normalize.served_models("native_record", codex.read(FIX / "native/codex/model-error.jsonl"), []) == set()
+
+
+# base_model_id / context_window_tag (R-32): a trailing bracketed context-window tag is not identity ------
+
+@pytest.mark.parametrize("model, base, tag", [
+    ("claude-opus-5-5[1m]", "claude-opus-5-5", "1m"),  # the measured defect (run e2e-wave1-1790299304)
+    ("claude-opus-5-5", "claude-opus-5-5", None),  # no trailing bracket: unchanged, no tag
+    ("claude-haiku-4-5-20251001", "claude-haiku-4-5-20251001", None),  # the auxiliary model, untouched
+    ("claude-sonnet-5[1m]", "claude-sonnet-5", "1m"),  # a genuinely different served model, still tagged
+])
+def test_base_model_id_strips_only_a_trailing_bracket_tag(model, base, tag):
+    assert normalize.base_model_id(model) == base
+    assert normalize.context_window_tag(model) == tag
+
+
+# real cc-opus turn_usage rows, run e2e-wave1-1790299304 cell 17efb75ce2d5fc6d (pin claude-opus-5-5)
+CC_OPUS_USAGE = [normalize.TurnUsage("claude-haiku-4-5-20251001", 929, 0, 0, 14, 0),
+                 normalize.TurnUsage("claude-opus-5-5[1m]", 10, 179401, 27730, 1385, 0)]
+
+
+def test_served_models_reads_the_base_id_not_the_tagged_served_id():  # R-32
+    assert normalize.served_models("acp_turn", Extraction(), CC_OPUS_USAGE) == {"claude-haiku-4-5-20251001", "claude-opus-5-5"}
+
+
+def test_totals_groups_a_tagged_and_an_untagged_served_id_under_one_base_model():  # R-32
+    usage = [*CC_OPUS_USAGE, normalize.TurnUsage("claude-opus-5-5", 2, 100, 0, 50, 0)]
+    totals = normalize.totals("acp_turn", Extraction(), usage)
+    assert set(totals) == {"claude-haiku-4-5-20251001", "claude-opus-5-5"}
+    assert totals["claude-opus-5-5"]["output"] == 1385 + 50  # the tagged and untagged rows summed as one model
 
 
 # bounded readers never crash (D2) ------------------------------------------------------------------
