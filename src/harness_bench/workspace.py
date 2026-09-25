@@ -16,6 +16,7 @@ import json
 import os
 import shutil
 import sys
+import time
 import uuid
 from pathlib import Path
 
@@ -61,17 +62,31 @@ def _discard(tmp: Path) -> None:
             pass
 
 
+RENAME_BACKOFF = (0.05, 0.1, 0.2, 0.4, 0.8, None)  # seconds between WIN-A retries; None = the last attempt
+
+
 def _land(tmp: Path, dest: Path, valid) -> Path:
     """Publish tmp as dest. A build is content-addressed and written once: when two callers race to
     build the same dest, `os.replace` fails for whichever lands second (HB-CELL-113, Windows cannot
     rename onto a non-empty dest). If dest is by then a valid build, the other writer won; discard
     tmp (the caller's `finally` does that) and hand back dest. Any other failure is real and propagates.
     """
-    try:
-        os.replace(tmp, dest)
-    except OSError:
-        if not valid(dest):
-            raise
+    # WIN-A: Windows refuses a folder rename while another process briefly holds a handle inside it (antivirus, the
+    # git process that just exited). A refusal that clears is retried with a short backoff; one that persists raises.
+    for delay in RENAME_BACKOFF:
+        try:
+            os.replace(tmp, dest)
+            return dest
+        except PermissionError:
+            if valid(dest):
+                return dest
+            if delay is None:
+                raise
+            time.sleep(delay)
+        except OSError:
+            if not valid(dest):
+                raise
+            return dest
     return dest
 
 

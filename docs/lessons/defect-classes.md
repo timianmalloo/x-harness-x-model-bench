@@ -281,6 +281,18 @@ summary: >-
   - **Per cell (W2-VIEWS-FU):** an executed class-`other` call, or an out-of-class advertised Copilot tool, makes the cell `invalid (out-of-profile tool called)` (HB-VAL-008). A refused call is the HB-VAL-009 warning. `tests/test_telemetry_copilot.py` holds the reader's class table to the profile's `--available-tools` list.
 - **Status:** `controlled` for Copilot, Codex and Claude Code on the pinned builds. A pin bump re-runs the class tests; a new id or tool fails them.
 
+### WIN-A: a transient Windows refusal of a folder rename fails a build
+- **Signature:** `os.replace(tmp, dest)` at `workspace._land` raises `PermissionError: [WinError 5] Access is denied` while another process briefly holds a handle inside the freshly built folder (antivirus, or the git process that just exited). The build fails, although the same rename succeeds moments later.
+- **Why it survives:** it is timing-dependent, and every re-run passes. So each occurrence was written off as a flake.
+- **Instances (2026-09-25):**
+  - The W2-TASKS-a author's first full suite.
+  - The W2-TASKS-b slice-1 author's first full suite.
+  - The Leader's suite after the W3-GRADE-CORE join (`test_pack_markers_have_a_real_builder_positive_control`, at `.../tools/pack/.ca032f007b33.*.tmp`).
+  - The same path runs in production for every task source and pack checkout, so a real run could fail a cell for it.
+- **Sweep:** the other `os.replace` sites that rename a folder (not a file) in `src/`: `_land` is the only one; the ledger's `os.replace` calls rename files.
+- **Control:** `_land` retries a `PermissionError` with a bounded backoff (`RENAME_BACKOFF`, about 1.55 s in total), then raises. `tests/test_workspace.py::test_a_transient_windows_rename_refusal_is_retried` was observed red (the refusal was not retried) and is now green; `test_a_rename_refusal_that_never_clears_still_raises` guards the bound. `tests/mutations/workspace.json` holds both mutants, and the two race mutants were re-pointed at the new branch.
+- **Status:** `controlled`
+
 ### CLN-C: a worktree force-removed in the same command as the check that should have stopped it
 - **Signature:** the Leader prints a tree's dirty-file and unmerged-commit counts, then runs `git worktree remove --force` and `git branch -D` in the same command, so the counts are never read before the removal.
 - **Why it survives:** the Leader expected an empty tree (0 turns reported), and the check looked like a guard even though nothing gated on it. `--force` and `-D` override exactly the refusals that would have caught it.

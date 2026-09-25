@@ -1,7 +1,68 @@
 [
- {"name": "race: accept a colliding dest that is not a valid build", "file": "src/harness_bench/workspace.py", "find": "        if not valid(dest):\n            raise", "replace": "        pass", "tests": ["tests/test_workspace.py::test_task_source_reraises_when_a_colliding_dest_is_not_a_valid_build", "tests/test_workspace.py::test_pack_checkout_reraises_when_a_colliding_dest_is_not_a_valid_build"]},
- {"name": "race: never reuse the winner's valid dest", "file": "src/harness_bench/workspace.py", "find": "        if not valid(dest):", "replace": "        if True:", "tests": ["tests/test_workspace.py::test_task_source_built_concurrently_gives_every_caller_the_same_dest", "tests/test_workspace.py::test_pack_checkout_built_concurrently_gives_every_caller_the_same_dest"]},
- {"name": "HB-PRE-002: omit GEMINI.md", "file": "src/harness_bench/workspace.py", "find": "\"GEMINI.md\", ", "replace": "", "tests": ["tests/test_workspace.py::test_cells_root_below_a_copilot_instruction_file_is_refused[GEMINI.md]"]},
- {"name": "HB-PRE-002: omit copilot-instructions.md", "file": "src/harness_bench/workspace.py", "find": "\".github/copilot-instructions.md\"", "replace": "\"unused.md\"", "tests": ["tests/test_workspace.py::test_cells_root_below_a_copilot_instruction_file_is_refused[.github/copilot-instructions.md]"]},
- {"name": "HB-PRE-002: omit nested instructions", "file": "src/harness_bench/workspace.py", "find": ".rglob(\"*.instructions.md\")", "replace": ".glob(\"*.instructions.md\")", "tests": ["tests/test_workspace.py::test_cells_root_below_nested_copilot_instructions_is_refused[cells-root]", "tests/test_workspace.py::test_cells_root_below_nested_copilot_instructions_is_refused[ancestor]"]}
+ {
+  "name": "race: accept a colliding dest that is not a valid build",
+  "file": "src/harness_bench/workspace.py",
+  "find": "            if delay is None:\n                raise\n",
+  "replace": "            if delay is None:\n                return dest\n",
+  "tests": [
+   "tests/test_workspace.py::test_task_source_reraises_when_a_colliding_dest_is_not_a_valid_build",
+   "tests/test_workspace.py::test_pack_checkout_reraises_when_a_colliding_dest_is_not_a_valid_build"
+  ]
+ },
+ {
+  "name": "race: never reuse the winner's valid dest",
+  "file": "src/harness_bench/workspace.py",
+  "find": "        except PermissionError:\n            if valid(dest):\n                return dest\n",
+  "replace": "        except PermissionError:\n            if False:\n                return dest\n",
+  "tests": [
+   "tests/test_workspace.py::test_task_source_built_concurrently_gives_every_caller_the_same_dest",
+   "tests/test_workspace.py::test_pack_checkout_built_concurrently_gives_every_caller_the_same_dest"
+  ]
+ },
+ {
+  "name": "HB-PRE-002: omit GEMINI.md",
+  "file": "src/harness_bench/workspace.py",
+  "find": "\"GEMINI.md\", ",
+  "replace": "",
+  "tests": [
+   "tests/test_workspace.py::test_cells_root_below_a_copilot_instruction_file_is_refused[GEMINI.md]"
+  ]
+ },
+ {
+  "name": "HB-PRE-002: omit copilot-instructions.md",
+  "file": "src/harness_bench/workspace.py",
+  "find": "\".github/copilot-instructions.md\"",
+  "replace": "\"unused.md\"",
+  "tests": [
+   "tests/test_workspace.py::test_cells_root_below_a_copilot_instruction_file_is_refused[.github/copilot-instructions.md]"
+  ]
+ },
+ {
+  "name": "HB-PRE-002: omit nested instructions",
+  "file": "src/harness_bench/workspace.py",
+  "find": ".rglob(\"*.instructions.md\")",
+  "replace": ".glob(\"*.instructions.md\")",
+  "tests": [
+   "tests/test_workspace.py::test_cells_root_below_nested_copilot_instructions_is_refused[cells-root]",
+   "tests/test_workspace.py::test_cells_root_below_nested_copilot_instructions_is_refused[ancestor]"
+  ]
+ },
+ {
+  "name": "WIN-A: a transient rename refusal is not retried",
+  "file": "src/harness_bench/workspace.py",
+  "find": "RENAME_BACKOFF = (0.05, 0.1, 0.2, 0.4, 0.8, None)",
+  "replace": "RENAME_BACKOFF = (None,)",
+  "tests": [
+   "tests/test_workspace.py::test_a_transient_windows_rename_refusal_is_retried"
+  ]
+ },
+ {
+  "name": "WIN-A: a refusal that never clears is swallowed",
+  "file": "src/harness_bench/workspace.py",
+  "find": "            if delay is None:\n                raise\n",
+  "replace": "            if delay is None:\n                return dest\n",
+  "tests": [
+   "tests/test_workspace.py::test_a_rename_refusal_that_never_clears_still_raises"
+  ]
+ }
 ]
