@@ -65,6 +65,39 @@ def test_only_driver_speaks_acp():
             ("initialize" in _string_constants(p) and "session/new" in _string_constants(p))] == ["driver.py"]
 
 
+def test_only_the_gateway_reaches_a_judge_backend_and_only_beside_egress():
+    """US-47 / ADR-0005 / R-60: `egress.check` is the only path to a judge backend.
+
+    The spawner is `harness_bench.gateway.backend` (assume: W3-GW-I names its CLI spawner module so; confirm
+    at its join; if it is named otherwise, SPAWNER changes in the same commit, since a lint on a name nothing
+    uses passes vacuously). A module outside `gateway/` never imports it, and a gateway module that imports it
+    also imports `harness_bench.egress`. Relative imports are resolved. Today no gateway package exists, so
+    the scan finds no importer; the self-check below proves the rule fires on the shapes it must catch.
+    """
+    spawner, gateway = "harness_bench.gateway.backend", ("harness_bench", "gateway")
+
+    def offends(rel: str, source: str) -> bool:
+        package = tuple(Path(rel).with_suffix("").parts[1:-1])  # rel is "src/harness_bench/.../x.py"
+        names = set()
+        for node in ast.walk(ast.parse(source)):
+            if isinstance(node, ast.Import):
+                names |= {a.name for a in node.names}
+            elif isinstance(node, ast.ImportFrom):
+                base = list(package[:len(package) - node.level + 1]) if node.level else []
+                module = ".".join(base + ([node.module] if node.module else []))
+                names |= {module} | {f"{module}.{a.name}" for a in node.names}
+        if not any(n == spawner or n.startswith(spawner + ".") for n in names):
+            return False
+        return package[:2] != gateway or "harness_bench.egress" not in names
+
+    assert offends("src/harness_bench/grade/judge.py", "from harness_bench.gateway.backend import spawn")
+    assert offends("src/harness_bench/gateway/judge.py", "from .backend import spawn")
+    assert not offends("src/harness_bench/gateway/judge.py", "from . import backend\nfrom harness_bench import egress")
+    assert not offends("src/harness_bench/grade/judge.py", "from harness_bench.gateway import judge")
+    assert [p.relative_to(ROOT).as_posix() for p in MODULES
+            if offends(p.relative_to(ROOT).as_posix(), p.read_text(encoding="utf-8"))] == []
+
+
 D0_PATHS = [ROOT / "README.md", ROOT / "bench", SRC,
             *(ROOT / folder / "skills" / skill for folder in ("", ".claude", ".agents") for skill in ("start-benchmark", "new-bench-task"))]
 
