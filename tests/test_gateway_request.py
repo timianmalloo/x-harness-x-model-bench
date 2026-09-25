@@ -44,3 +44,10 @@ def test_t_gw_02_data_cannot_close_its_fence():
     assert rendered.text.count("<<<END DATA") == 1  # only the real closing fence
     assert rendered.text.count(f"<<<END DATA {nonce}>>>") == 1
     assert request.render("P.", "1. One.\n", 1, ARTIFACTS, ()).escaped == ()
+
+
+def test_t_gw_06_each_file_is_utf8_and_at_most_65536_bytes():
+    assert request.BOUND == 65_536
+    assert request.bound_problem((("a.md", b"a" * 65_536), ("b.py", b""))) is None
+    assert request.bound_problem((("a.md", b"a" * 65_537),)) == "a.md: over 65536 bytes"
+    assert request.bound_problem((("a.md", b"ok"), ("b.py", b"\xff\xfe bad"))) == "b.py: not UTF-8"
