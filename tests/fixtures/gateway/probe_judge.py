@@ -11,8 +11,16 @@ The turn is the gateway's intended launch shape, not a cell's:
                -c project_doc_max_bytes=0 -c include_apply_patch_tool=false --disable <each tool feature>
                --ignore-user-config --ignore-rules --skip-git-repo-check -s read-only -C <work> --json
                -o <last message file>   [--output-schema verdict.schema.json]   <prompt>
+  copilot      <pinned copilot.exe> -p <prompt> --model <pin> --disable-builtin-mcps --available-tools
+               (R-63 c1: no schema-mode native flag is spiked; the empty `--available-tools` allowlist denies
+               every built-in and MCP tool, not just the task's own; `-p` (print mode) is `assume:`, R-45's own
+               `copilot --help` reading confirms the other two flags -- design `:834-835` names "print mode" as
+               the shape, unspiked. Confirm: the Leader's live turn records a model call. Breaks: no such mode
+               exists and `run` exits 2 with the CLI's own usage error in stderr, never a guess.)
 Never passed: --fallback-model (a silent judge switch, ADR-0009:60), --ephemeral / --no-session-persistence (the
 native record is the measurement), any --dangerously-* flag, any API key (subscriptions only, ADR-0003).
+Copilot only: --credential-source names the file the Leader copies into a throwaway COPILOT_HOME, deleted after
+the turn (never the operator's real ~/.copilot; that path is never read or written by this probe).
 
 The folder of one run, <out-root>/<label>/ (label = <harness>-<model>-<schema mode>-<UTC stamp>):
   home/        CLAUDE_CONFIG_DIR or CODEX_HOME: the credential copy only; the copy is deleted after the turn
@@ -35,6 +43,7 @@ a backend is qualified (R-60 c2).
 Usage (from the repository root; every model is stipulated, R-33, never defaulted):
   uv run python tests/fixtures/gateway/probe_judge.py run --harness H --model M [--schema-mode text|native]
       [--real-profile] [--tools-dir D] [--cells-root D] [--out-root D] [--budget S] [--dry-run]
+      [--credential-source F]
   uv run python tests/fixtures/gateway/probe_judge.py analyse --summary SUMMARY.json
   uv run python tests/fixtures/gateway/probe_judge.py collect --out tests/fixtures/gateway/gw-headless-results.json SUMMARY.json...
 Exit status of `run`: 0 qualified; 1 a model call was recorded but a criterion failed (the reasons are listed);
@@ -62,7 +71,8 @@ sys.path.insert(0, str(ROOT / "src"))
 SCHEMA_FILE = HERE / "verdict.schema.json"
 FORMAT = "gw-headless-probe/1"
 # R-58 DR-1: the ordered Anthropic stipulation, then the OpenAI judge. For the warning only; --model decides.
-STIPULATED = {"claude-code": ("claude-fable-5-1", "claude-opus-5-5"), "codex": ("gpt-6-sol",)}
+STIPULATED = {"claude-code": ("claude-fable-5-1", "claude-opus-5-5"), "codex": ("gpt-6-sol",),
+              "copilot": ("gpt-6-sol",)}
 # assume: each name below is a Codex 0.156.0 feature whose tool reaches the model when on. Confirm: `codex.exe
 # features list` on the pinned build (read 2026-09-25) lists every one as stable; the measured tool events and
 # stdout item types are 0. Breaks: a tool stays advertised; the model can then call it, and the probe counts it.
@@ -131,6 +141,21 @@ def codex_argv(exe: str, model: str, prompt: str, work: Path, last: Path, schema
     if schema_mode == "native":
         argv += ["--output-schema", str(SCHEMA_FILE)]
     return [*argv, prompt]
+
+
+def copilot_argv(exe: str, model: str, prompt: str) -> list[str]:
+    """R-63 c1's launch shape: the pin, every built-in and MCP tool off (`--disable-builtin-mcps`), and an empty
+    `--available-tools` allowlist -- zero tool ids, so nothing is available to the model, not even the task's own
+    (US-46 c1, R-58 c4). `--available-tools` is the last token: nothing follows it to be swallowed as a tool id.
+
+    assume: copilot.exe 1.0.89-1 has a `-p` print (non-interactive, one turn, prints the final answer and exits)
+    mode, mirroring Claude Code's `-p`. R-45's own `copilot --help` reading is Verified for
+    `--disable-builtin-mcps` and `--available-tools` (rulings.md R-45); print mode itself is named but unspiked
+    (design phase3-gateway-judges.md:834-835, R-63). No native schema flag is spiked for Copilot: `run` refuses
+    `--schema-mode native` before building this argv. Confirm: the Leader's live turn records exactly one model
+    call. Breaks: no such flag exists and the CLI's own usage error appears in stderr with no model call recorded
+    (`run` exits 2 -- the CLI's own report decides it, never a guess)."""
+    return [exe, "-p", prompt, "--model", model, "--disable-builtin-mcps", "--available-tools"]
 
 
 def canaries(nonce: str) -> dict[str, str]:
@@ -268,7 +293,9 @@ def validate_verdict(obj) -> list[str]:
 
 
 def _final(harness: str, stdout: str, last: str | None) -> tuple[object, str]:
-    """(the final answer, where it came from). Claude: stdout's structured_output, else its result text."""
+    """(the final answer, where it came from). Claude: stdout's structured_output, else its result text. Codex:
+    the `-o` last-message file. Copilot: `assume:` print mode writes its final answer straight to stdout with no
+    envelope (R-63, unspiked; the CLI's own text, fenced or not, is read the same way as Codex's)."""
     if harness == "claude-code":
         try:
             out = json.loads(stdout)
@@ -277,8 +304,10 @@ def _final(harness: str, stdout: str, last: str | None) -> tuple[object, str]:
         if isinstance(out, dict) and out.get("structured_output") is not None:
             return out["structured_output"], "structured_output"
         text = out.get("result") if isinstance(out, dict) else None
-    else:
+    elif harness == "codex":
         text = last
+    else:
+        text = stdout
     if not isinstance(text, str):
         return None, "no final text"
     body = text.strip()
@@ -347,7 +376,10 @@ def _advertised(harness: str, record: Path) -> list[str] | None:
 
 def _context_kinds(harness: str, record: Path) -> list[str]:
     """What the CLI put into the model's context besides the prompt: Claude attachment types; Codex leading tags of
-    user and developer message texts (e.g. environment_context) and the AGENTS.md block's first words."""
+    user and developer message texts (e.g. environment_context) and the AGENTS.md block's first words; Copilot the
+    presence of a `system.message` row (R-66 c1) -- its own text is scrub-digested by design (phase2-copilot-
+    profile.md section 12), so decoding its self-identification content is the gateway's own report-time detector
+    (`views.cli_context_classes`, not in this track's scope), never this probe's guess."""
     from harness_bench.telemetry import Extraction, rows
 
     kinds: set[str] = set()
@@ -356,6 +388,10 @@ def _context_kinds(harness: str, record: Path) -> list[str]:
             att = row.get("attachment")
             if isinstance(att, dict) and isinstance(att.get("type"), str):
                 kinds.add(f"attachment:{att['type']}")
+            continue
+        if harness == "copilot":
+            if row.get("type") == "system.message":
+                kinds.add("system.message")
             continue
         payload = row.get("payload") if isinstance(row.get("payload"), dict) else {}
         if row.get("type") == "session_meta" and isinstance(payload.get("base_instructions"), (str, dict)):
@@ -464,6 +500,9 @@ def run(args: argparse.Namespace) -> int:
     if args.model not in STIPULATED[args.harness]:
         print(f"note: {args.harness} judges are stipulated as {STIPULATED[args.harness]} (R-58, R-33); running {args.model} as asked",
               file=sys.stderr)
+    if args.harness == "copilot" and args.schema_mode == "native":
+        print("copilot: no native schema flag is spiked (R-63); use --schema-mode text", file=sys.stderr)
+        return 2
     profile = profiles.load(ROOT, args.harness)
     build = tools.resolve(Path(args.tools_dir))[args.harness]
     cells_root = Path(args.cells_root)
@@ -478,8 +517,10 @@ def run(args: argparse.Namespace) -> int:
     last = folder / "last-message.txt"
     if args.harness == "claude-code":
         argv = claude_argv(str(build.exe), args.model, prompt, system, session_id, args.schema_mode)
-    else:
+    elif args.harness == "codex":
         argv = codex_argv(str(build.exe), args.model, prompt, work, last, args.schema_mode)
+    else:
+        argv = copilot_argv(str(build.exe), args.model, prompt)
     if args.dry_run:
         print(json.dumps({"label": label, "folder": str(folder), "argv": argv, "build": build.record()}, indent=1))
         return 0
@@ -489,31 +530,39 @@ def run(args: argparse.Namespace) -> int:
     real_home = Path(os.environ.get("USERPROFILE") or Path.home())
     planted = canaries(nonce)
     decoy = seed(folder, planted)
-    if profile.credential_source is None or not profile.credential_source.is_file():
-        print(f"no credential at {profile.credential_source}", file=sys.stderr)
+    # Copilot's cell profile copies nothing (its normal login is the Windows credential store, `credential: null`
+    # in copilot.yaml); this probe's throwaway COPILOT_HOME instead holds a copy the Leader supplies at run time
+    # (never the operator's real ~/.copilot -- this probe never reads or writes it). Claude Code and Codex keep the
+    # profile's own default source unless overridden the same way.
+    credential_source = Path(args.credential_source) if args.credential_source else profile.credential_source
+    credential_name = Path(args.credential_source).name if args.credential_source else profile.credential_name
+    if credential_source is None or not credential_source.is_file():
+        print(f"no credential at {credential_source}", file=sys.stderr)
         return 2
-    shutil.copyfile(profile.credential_source, home / profile.credential_name)
+    shutil.copyfile(credential_source, home / credential_name)
     env = profile.cell_env(dict(os.environ), home, build, args.model, "")  # drops API keys and harness overrides
     if not args.real_profile:
         env.update({"USERPROFILE": str(decoy), "HOME": str(decoy)})
     try:
         done = procs.run(argv, cwd=str(work), env=env, timeout=args.budget)
     finally:
-        profile.clean_home(home)  # the credential copy never outlives the turn
+        (home / credential_name).unlink(missing_ok=True)  # the credential copy never outlives the turn
     (folder / "stdout.txt").write_text(done.stdout, encoding="utf-8")
     (folder / "stderr.txt").write_text(done.stderr, encoding="utf-8")
     if args.harness == "claude-code":
         records = profiles.find_records(home, profile.record_glob, session_id)
-    else:
+    elif args.harness == "codex":
         records = sorted(home.glob("sessions/**/rollout-*.jsonl"))  # the home is fresh: every rollout is this turn's
+    else:
+        records = sorted(home.glob("session-state/**/events.jsonl"))  # same reasoning; the ACP record shape (O6)
     summary = {"format": FORMAT, "label": label, "harness": args.harness, "model": args.model,
                "schema_mode": args.schema_mode, "decoy_profile": not args.real_profile, "build": build.record(),
                "captured_utc": datetime.now(UTC).isoformat(timespec="seconds"), "nonce": nonce,
                "session_id": session_id if args.harness == "claude-code" else None, "canaries": planted,
                "exit": {"returncode": done.returncode, "timed_out": done.timed_out, "truncated": done.truncated,
                         "seconds": round(done.seconds, 1)},
-               "home_written": _home_written(home, profile.credential_name or ""),
-               "credential_copy_deleted": not (home / (profile.credential_name or "-")).exists(),
+               "home_written": _home_written(home, credential_name or ""),
+               "credential_copy_deleted": not (home / (credential_name or "-")).exists(),
                "files": {"folder": str(folder), "native_records": [str(p) for p in records]}}
     summary["facts"] = _facts_for(summary, records, real_home)
     return _emit(folder / "summary.json", summary)
@@ -570,6 +619,10 @@ def main(argv: list[str]) -> int:
     r.add_argument("--out-root", default=None, help="default <cells-root>/gw-probe")
     r.add_argument("--budget", type=float, default=300.0, help="seconds before the turn is ended (default 300)")
     r.add_argument("--dry-run", action="store_true", help="print the argv; create and spawn nothing")
+    r.add_argument("--credential-source", default=None,
+                   help="the file to copy into the throwaway home as the credential, deleted after the turn "
+                        "(default: the profile's own source; Copilot has none, so this is required for it -- "
+                        "the Leader's to supply at run time, never the operator's real ~/.copilot)")
     a = sub.add_parser("analyse", help="re-derive a summary's facts from its files")
     a.add_argument("--summary", required=True)
     c = sub.add_parser("collect", help="write the committed, path-free results file")
