@@ -62,6 +62,16 @@ def _word(payload: str, value: str | None) -> bool:
     return re.search(rf"(?<![^\W_]){re.escape(value)}(?![^\W_])", payload, re.IGNORECASE) is not None
 
 
+def _path_form(text: str) -> str:
+    """Casefolded, with every run of slashes or backslashes as one "/" (so JSON-escaped paths match too)."""
+    return re.sub(r"[\\/]+", "/", text.casefold())
+
+
+def _path(payload: str, value: str | None) -> bool:
+    """A non-empty path anywhere in the payload, in any separator form or case."""
+    return bool(value and value.strip()) and _path_form(value) in _path_form(payload)
+
+
 def check(payload: str, *, destination: str, secrets: Sequence[str] = (), email: str | None = None,
           username: str | None = None, home: str | None = None, canaries: Sequence[str] = ()) -> Verdict:
     """Scan `payload` bound for `destination`.
@@ -77,5 +87,6 @@ def check(payload: str, *, destination: str, secrets: Sequence[str] = (), email:
         ("token_shape", report_html.scan(payload) > 0),  # the report's shape scan (HB-SEC-001), shapes only
         ("email", _anycase(payload, email)),
         ("username", _word(payload, username)),
+        ("home_path", _path(payload, home)),
     ) if hit)
     return Verdict(destination, digest, classes, None if classes else payload)
