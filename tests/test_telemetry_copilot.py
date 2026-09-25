@@ -1,7 +1,8 @@
 """Copilot telemetry reader (design docs/design/phase2-copilot-profile.md section 4.4; the section 13
-promise-to-test table rows owned by W1-COP-R). Golden fixtures: capture window 1, `tests/fixtures/native/
-copilot/{off,on}` (`9c6c615`, rescrubbed `f952f87`; `on/` is the revision-92 pack-on sample, R-27 c3 --
-kept as the negative control until a revision-95 capture replaces it for every other check)."""
+promise-to-test table rows owned by W1-COP-R). Golden fixtures: `tests/fixtures/native/copilot/{off,on}`
+(`9c6c615`, rescrubbed `f952f87`); `on/` is now the revision-95 pack-on recapture (R-27 c3, W1-CAP2 phase B)
+-- the revision-92 sample moved to `on-rev92/` and is kept as the negative control (8 denied tool calls,
+8/8 hook failures, us14_valid False)."""
 
 from __future__ import annotations
 
@@ -19,7 +20,8 @@ from harness_bench.telemetry import copilot, normalize
 FIX = Path(__file__).parent / "fixtures"
 COPILOT_FIX = FIX / "native" / "copilot"
 OFF = next((COPILOT_FIX / "off").rglob("events.jsonl"))
-ON = next((COPILOT_FIX / "on").rglob("events.jsonl"))  # revision-92 pack-on (negative control)
+ON = next((COPILOT_FIX / "on").rglob("events.jsonl"))  # revision-95 pack-on recapture (R-27 c3)
+ON_REV92 = next((COPILOT_FIX / "on-rev92").rglob("events.jsonl"))  # revision-92 pack-on (negative control)
 PROVENANCE = json.loads((COPILOT_FIX / "provenance.json").read_text(encoding="utf-8"))
 
 # provenance.json: capture.prompt_sha256 (the same prompt both arms; tasks/X1/prompt.md's own hash)
@@ -100,8 +102,17 @@ def test_off_yields_one_row_per_model_in_the_last_shutdown_with_requests():
     assert ex.missing == []
 
 
-def test_on_yields_one_row_per_model_in_the_last_shutdown_with_requests():
+def test_on_yields_one_row_per_model_in_the_last_shutdown_with_requests():  # rev-95 (R-27 c3)
     ex = copilot.read(ON)
+    assert len(ex.model_calls) == 1
+    call = ex.model_calls[0]
+    assert call.model == "gpt-6-sol" and call.requests == 9 and (call.start, call.end) == (None, None)
+    assert (call.uncached_input, call.cache_read, call.cache_write, call.output, call.reasoning) == (27, 787795, 102909, 1778, 545)
+    assert ex.missing == []
+
+
+def test_on_rev92_yields_one_row_per_model_in_the_last_shutdown_with_requests():  # negative control
+    ex = copilot.read(ON_REV92)
     assert len(ex.model_calls) == 1
     call = ex.model_calls[0]
     assert call.model == "gpt-6-sol" and call.requests == 6 and (call.start, call.end) == (None, None)
@@ -131,7 +142,11 @@ def test_claude_code_and_codex_still_default_requests_to_one():  # design sectio
 
 def test_off_hooks_are_zero_not_none_and_on_rev92_is_eight_and_eight():  # section 4.5 / 13 reader test
     assert (copilot.read(OFF).hook_starts, copilot.read(OFF).hook_failures) == (0, 0)
-    assert (copilot.read(ON).hook_starts, copilot.read(ON).hook_failures) == (8, 8)
+    assert (copilot.read(ON_REV92).hook_starts, copilot.read(ON_REV92).hook_failures) == (8, 8)
+
+
+def test_on_rev95_hooks_all_succeeded():  # R-27 c3: 27 hook.end, all success
+    assert (copilot.read(ON).hook_starts, copilot.read(ON).hook_failures) == (27, 0)
 
 
 def test_claude_code_and_codex_extractions_never_set_hook_fields():
@@ -144,14 +159,24 @@ def test_claude_code_and_codex_extractions_never_set_hook_fields():
 def test_off_tool_calls_succeed_and_on_rev92_are_all_denied():
     off = copilot.read(OFF).tool_calls
     assert len(off) == 6 and all((t.ok, t.outcome_code) == (True, None) for t in off)
+    on92 = copilot.read(ON_REV92).tool_calls
+    assert len(on92) == 8 and all((t.ok, t.outcome_code) == (False, "denied") for t in on92)
+    assert {t.name for t in on92} == {"skill", "glob", "powershell", "view", "rg"}
+    assert next(t.tool_class for t in on92 if t.name == "skill") == "other"  # C: skill is other (design 4.4)
+
+
+def test_on_rev95_tool_calls_are_16_success_and_1_ordinary_failure_not_denied():  # R-27 c3
     on = copilot.read(ON).tool_calls
-    assert len(on) == 8 and all((t.ok, t.outcome_code) == (False, "denied") for t in on)
-    assert {t.name for t in on} == {"skill", "glob", "powershell", "view", "rg"}
-    assert next(t.tool_class for t in on if t.name == "skill") == "other"  # C: skill is other (design 4.4)
+    assert len(on) == 17
+    assert sum((t.ok, t.outcome_code) == (True, None) for t in on) == 16
+    failed = [t for t in on if not t.ok]
+    assert len(failed) == 1 and failed[0].outcome_code == "failure" and failed[0].outcome_code != "denied"
+    assert sum(t.outcome_code == "denied" for t in on) == 0
+    assert any(t.name == "apply_patch" for t in on)
 
 
 def test_r14c1_skill_tool_calls_requested_on_rev92_none_off():  # R-14 c1: skill calls, derived from tool_calls
-    assert sum(t.name == "skill" for t in copilot.read(ON).tool_calls) == 2
+    assert sum(t.name == "skill" for t in copilot.read(ON_REV92).tool_calls) == 2
     assert not any(t.name == "skill" for t in copilot.read(OFF).tool_calls)
 
 
@@ -334,9 +359,9 @@ def test_model_call_and_tool_call_rows_carry_requests_and_outcome_code():  # TA9
     model_rows = normalize.model_call_rows("r1", "c1", off_ex.session_id, off_ex, "x")
     assert model_rows[0]["requests"] == 5  # a pre-amendment reader's `.get("requests", 1)` would under-count 5x
 
-    on_ex = copilot.read(ON)
-    tool_rows = normalize.tool_call_rows("r1", "c1", on_ex.session_id, on_ex, "x")
-    assert sum(r["outcome_code"] == "denied" for r in tool_rows) == 8
+    on92_ex = copilot.read(ON_REV92)  # the revision-92 negative control: 8/8 denied
+    on92_rows = normalize.tool_call_rows("r1", "c1", on92_ex.session_id, on92_ex, "x")
+    assert sum(r["outcome_code"] == "denied" for r in on92_rows) == 8
 
 
 # The toolCallId correlation, and outcome_code null on success (Codex cross-vendor review F1/F2) --------
@@ -378,9 +403,15 @@ def test_us14_zero_hook_denials_and_a_successful_tool_call():
     off_rows = normalize.tool_call_rows("r1", "c1", off_ex.session_id, off_ex, "x")
     assert copilot.us14_valid(off_rows) is True
 
-    on_ex = copilot.read(ON)  # the revision-92 negative control: 8/8 denied
+    on92_ex = copilot.read(ON_REV92)  # the revision-92 negative control: 8/8 denied
+    on92_rows = normalize.tool_call_rows("r1", "c1", on92_ex.session_id, on92_ex, "x")
+    assert copilot.us14_valid(on92_rows) is False
+
+
+def test_us14_valid_on_rev95_pack_on_zero_denials_and_a_successful_tool_call():  # R-27 c3
+    on_ex = copilot.read(ON)
     on_rows = normalize.tool_call_rows("r1", "c1", on_ex.session_id, on_ex, "x")
-    assert copilot.us14_valid(on_rows) is False
+    assert copilot.us14_valid(on_rows) is True
 
 
 def test_us14_no_tool_calls_at_all_is_not_valid_by_default():  # R-27 c1: the positive control

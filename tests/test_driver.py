@@ -193,18 +193,28 @@ def _derive(recording: Path, tmp_path: Path, edit) -> Path:
     return path
 
 
-def _replay(tmp_path, recording: Path, mode: str | None = None):
-    """The driver against a verbatim replay of a recording, both pipes tapped: (TurnResult, read, written)."""
+def _replay(tmp_path, recording: Path, mode: str | None = None, model: str | None = None):
+    """The driver against a verbatim replay of a recording, both pipes tapped: (TurnResult, read, written).
+    `model`: pass the recording's own model when its capture sent `session/set_model` (Copilot, ADR-0003),
+    so the driver issues the same requests the replay agent's segments were cut against -- else the replay's
+    fixed request-count segmentation misaligns and a later reply is read as the answer to the wrong request."""
     env = dict(os.environ, REPLAY_ACP=json.dumps({"recording": str(recording)}))
     cell = procs.spawn([sys.executable, str(REPLAY)], cwd=str(tmp_path), env=env)
     cell.proc.stdout, cell.proc.stdin = _Tap(cell.proc.stdout), _Tap(cell.proc.stdin)
     try:
         result = driver.run_turn(cell, cwd=tmp_path, prompt=X1_PROMPT, mode=mode, handshake_timeout=10,
-                                 before_send=lambda sid: None)
+                                 before_send=lambda sid: None, model=model)
     finally:
         cell.terminate_and_confirm(timeout=10)
         cell.close()
     return result, bytes(cell.proc.stdout.data), bytes(cell.proc.stdin.data)
+
+
+def _sets_model(records: list[dict]) -> bool:
+    """Whether this capture's client sent `session/set_model` (the recording itself decides; never a
+    per-harness guess -- a profile change is reflected the moment it is recaptured)."""
+    return any(r["kind"] == "line" and r["dir"] == "to_agent" and json.loads(r["text"]).get("method") == "session/set_model"
+              for r in records)
 
 
 def _meta(recording: Path) -> dict:
@@ -218,7 +228,8 @@ def _prompt_reply(records: list[dict]) -> dict:
 def _assert_replays(tmp_path, recording: Path) -> None:
     """D5: the driver reads every recorded agent byte, writes what it wrote live, and returns the live TurnResult."""
     meta, records = _meta(recording), _records(recording)
-    result, read, written = _replay(tmp_path, recording, meta["mode"])
+    model = meta["model"] if _sets_model(records) else None
+    result, read, written = _replay(tmp_path, recording, meta["mode"], model)
     assert read == _stream(records, "to_client")  # every agent line, verbatim, nothing synthesised
     cwd = json.dumps(str(tmp_path))[1:-1].encode()
     assert written == _stream(records, "to_agent").replace(b"<CWD>", cwd)  # the driver still sends the live bytes
@@ -397,7 +408,13 @@ def test_every_recording_states_its_provenance_from_its_capture():  # W1-ACP (e)
     for recording in RECORDINGS:
         record, build = provenance["fixtures"].get(f"recordings/{recording.name}"), _meta(recording)["build"]
         assert record and all(isinstance(record.get(k), str) and record[k].strip() for k in PROVENANCE_KEYS), recording.name
-        assert record["adapter_version"] == build["adapter_version"] and build["version"] in record["harness_version"]
+        # an adapterless harness (Copilot: native ACP, no wrapped adapter process) reports no adapter_version;
+        # the provenance's own "none" sentinel is the only string that may stand in for that null (W1-CAP2 phase B)
+        if build["adapter_version"] is None:
+            assert record["adapter_version"] == "none", recording.name
+        else:
+            assert record["adapter_version"] == build["adapter_version"], recording.name
+        assert build["version"] in record["harness_version"]
         assert record["captured"] == _meta(recording)["captured_utc"][:10]
         header = _records(recording)[0]
         assert header["kind"] == "header" and header["scrub"]["placeholders"] and "acp_record.py scrub" in record["scrub"]
@@ -410,6 +427,7 @@ PAIRING = {
     "initialize.result": "recorded: recordings/claude-code-x1.jsonl, recordings/codex-x1.jsonl",
     "session/new.result": "recorded: recordings/claude-code-x1.jsonl, recordings/codex-x1.jsonl",
     "session/set_mode.result": "recorded: recordings/codex-x1.jsonl (agent-full-access returned {})",
+    "session/set_model.result": "recorded: recordings/copilot-x1.jsonl (gpt-6-sol returned {}; W1-ACP open item 6)",
     "session/update.agent_message_chunk": "recorded: recordings/claude-code-x1.jsonl, recordings/codex-x1.jsonl",
     "session/prompt.result": "recorded: recordings/claude-code-x1.jsonl, recordings/codex-x1.jsonl (replayed verbatim, D5)",
     "session/request_permission": "ACP schema (agentclientprotocol.com, RequestPermissionRequest); no real exemplar: every "
@@ -464,14 +482,15 @@ def _message_types(agent: bytes, client: bytes) -> set[str]:
     return types
 
 
-def _tapped_turn(tmp_path, argv, env, acp_mode=None) -> set[str]:
+def _tapped_turn(tmp_path, argv, env, acp_mode=None, model=None) -> set[str]:
     import threading
     cell = procs.spawn(argv, cwd=str(tmp_path), env=env)
     cell.proc.stdout, cell.proc.stdin = _Tap(cell.proc.stdout), _Tap(cell.proc.stdin)
     stop = threading.Timer(4, lambda: cell.terminate_and_confirm(timeout=10))  # ends the hang modes
     stop.start()
     try:
-        driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=acp_mode, handshake_timeout=3, before_send=lambda sid: None)
+        driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=acp_mode, handshake_timeout=3, before_send=lambda sid: None,
+                        model=model)
     finally:
         stop.cancel()
         cell.terminate_and_confirm(timeout=10)
@@ -511,7 +530,9 @@ def test_every_message_type_the_fake_emits_is_paired_and_every_pairing_is_emitte
     for m in modes:
         (tmp_path / m).mkdir()
     with ThreadPoolExecutor(max_workers=len(modes)) as pool:
-        runs = [pool.submit(_tapped_turn, tmp_path / m, [sys.executable, str(FAKE)], env[m], "agent-full-access") for m in modes]
+        # "ok" also pins a model (Copilot's set_model, D7 W1-ACP open item 6); the other modes are unchanged
+        runs = [pool.submit(_tapped_turn, tmp_path / m, [sys.executable, str(FAKE)], env[m], "agent-full-access",
+                            "gpt-6-sol" if m == "ok" else None) for m in modes]
         emitted = set().union(*(r.result() for r in runs))
     _assert_paired(emitted)
     stale = set(PAIRING) - emitted
