@@ -1140,7 +1140,7 @@ One screen, eleven sections. Focal point: the **leaderboard** (U6).
 | R7 | Upstream benchmark availability and licences for A1–A3, B3, C1, C2 | Check each repo for released data and licence | S-03 |
 | R8 | Formal toolchains inside worker workspaces under each harness | Spike S-12 (Java 21 present; `elan` absent) | S-12 |
 | R9 | Readers may misread intervals | Show the smoke report to two P3 readers; ask them to name the leader and whether the pack helped | S-10 |
-| R10 | Matcher threshold (US-31) is unset | Label question→clarification pairs for the smoke A1 task; measure | S-04 |
+| R10 | Matcher threshold (US-31) is unset | **Closed 2026-09-25 (R-39 c1, R-52):** set from the held-out measurement in `docs/notes/spike-s04-scripted-user.md` and `docs/design/phase2-scripted-user.md` section 10. The floor is precision 1.0, 0 default matches and exact + normalised recall 1.0. Confidence T = 0.80 on paraphrase + compound recall; the wave-2 matcher scores 0/11, so A1 cells carry `low-confidence matcher`. Pinned by `tests/test_heldout_matcher.py` (T-39-1) | S-04 |
 | R11 | Host isolation from credentials and the network on native Windows (US-48, C9) | **Closed 2026-09-23:** isolation beyond a working copy is not required (ADR-0013); spikes R11, N1 and N2 recorded | S-02 |
 | R12 | Harbor is not installed; E1 needs it | Install Harbor; run one TB2 task under Docker Desktop | S-03 / S-06 |
 | R13 | `mutmut` may not run on native Windows (it forks) | Run `mutmut run` on the workstation; else run it under WSL or choose another tool | S-08b |
