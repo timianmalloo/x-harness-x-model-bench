@@ -180,7 +180,8 @@ def main(argv: list[str]) -> int:
             path.write_bytes(text.replace(m["find"], m["replace"], 1).encode("utf-8"))
             try:
                 result = subprocess.run([sys.executable, "-m", "pytest", "-q", "-rf", "-p", "no:cacheprovider", *m["tests"]],
-                                        cwd=ROOT, capture_output=True, text=True, check=False, timeout=m.get("timeout", 180),
+                                        cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                                        check=False, timeout=m.get("timeout", 180),
                                         env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"})
                 outcome = verdict(result.returncode, result.stdout + result.stderr, m["tests"])
             except subprocess.TimeoutExpired:
