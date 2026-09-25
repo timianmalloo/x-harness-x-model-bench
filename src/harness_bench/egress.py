@@ -49,6 +49,11 @@ def _exact(payload: str, values: Sequence[str]) -> bool:
     return any(v in payload for v in encodings({v for v in values if v.strip()}))
 
 
+def _anycase(payload: str, value: str | None) -> bool:
+    """A non-empty value anywhere in the payload, ignoring case (an email's domain is case-insensitive)."""
+    return bool(value and value.strip()) and value.casefold() in payload.casefold()
+
+
 def check(payload: str, *, destination: str, secrets: Sequence[str] = (), email: str | None = None,
           username: str | None = None, home: str | None = None, canaries: Sequence[str] = ()) -> Verdict:
     """Scan `payload` bound for `destination`.
@@ -62,5 +67,6 @@ def check(payload: str, *, destination: str, secrets: Sequence[str] = (), email:
     classes = tuple(name for name, hit in (
         ("credential", _exact(payload, secrets)),
         ("token_shape", report_html.scan(payload) > 0),  # the report's shape scan (HB-SEC-001), shapes only
+        ("email", _anycase(payload, email)),
     ) if hit)
     return Verdict(destination, digest, classes, None if classes else payload)
