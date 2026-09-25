@@ -1,0 +1,201 @@
+# A1 held-out question set for the scripted-user matcher (R-39 condition 2; plan row 8, `:146`).
+# Authored by W2-TASKS-a, not by the matcher's author (W2-USER-M). USER-D measures the matcher's precision and
+# recall on it and sets the S-04 threshold from that measurement (R-39 condition 1). Do not tune the matcher on it:
+# a set the matcher was fitted to is no longer held out.
+#
+# Labelling rule. `expected` is the id of the clarification in clarifications.yaml whose `reply` answers what the
+# question asks: the same core ambiguity, in ClarifyCodeBench's judge wording (clarifycodebench/prompts.py
+# JUDGE_PROMPT: "address the same core ambiguity, even if they use different wording"). Anything else is
+# `default`, and its correct reply is exactly `default_reply`.
+#
+# kind:
+#   exact       the annotated question, verbatim
+#   normalised  the annotated question after one surface transform (`transform`); a normalising matcher should hit it
+#   paraphrase  a different wording of the same ambiguity; a deterministic matcher may miss it (a recall measurement)
+#   compound    asks the annotated ambiguity plus something else in one question
+#   near-miss   labelled default, but shares the key question's or the task's vocabulary; built to catch a
+#               matcher that over-matches on words. Its correct reply is exactly `Decide and state your assumption.`
+#   off-topic   labelled default; not about the requirement's content
+schema: bench-heldout-questions/1
+task: A1
+clarifications: clarifications.yaml
+default_reply: "Decide and state your assumption."
+questions:
+  # --- expected: goal-maximum ---------------------------------------------------------------------------------------
+  - id: h01
+    kind: exact
+    expected: goal-maximum
+    question: "Does “find the sum” mean we should find the maximum possible total value or any valid total value?"
+  - id: h02
+    kind: normalised
+    transform: quotes (curly to straight)
+    expected: goal-maximum
+    question: 'Does "find the sum" mean we should find the maximum possible total value or any valid total value?'
+  - id: h03
+    kind: normalised
+    transform: case (lower)
+    expected: goal-maximum
+    question: "does “find the sum” mean we should find the maximum possible total value or any valid total value?"
+  - id: h04
+    kind: normalised
+    transform: whitespace (leading, trailing, doubled)
+    expected: goal-maximum
+    question: "  Does “find the sum”  mean we should find the maximum possible total value or any valid total value?  "
+  - id: h05
+    kind: normalised
+    transform: punctuation (final question mark dropped)
+    expected: goal-maximum
+    question: "Does “find the sum” mean we should find the maximum possible total value or any valid total value"
+  - id: h06
+    kind: normalised
+    transform: quotes + case + punctuation
+    expected: goal-maximum
+    question: 'does "find the sum" mean we should find the maximum possible total value or any valid total value'
+  - id: h07
+    kind: paraphrase
+    expected: goal-maximum
+    question: "Should the answer be the maximum possible sum of the chosen balls' values?"
+  - id: h08
+    kind: paraphrase
+    expected: goal-maximum
+    question: "Are we maximizing the total value, or is the sum of any valid selection acceptable?"
+  - id: h09
+    kind: paraphrase
+    expected: goal-maximum
+    question: "What should the program optimize: the largest total, the smallest total, or something else?"
+  - id: h10
+    kind: paraphrase
+    expected: goal-maximum
+    question: "Is the goal to maximize the sum?"
+  - id: h11
+    kind: paraphrase
+    expected: goal-maximum
+    question: "Many choices satisfy the condition and they have different sums. Which sum should be printed?"
+  - id: h12
+    kind: paraphrase
+    expected: goal-maximum
+    question: "Do you want the maximum, the minimum, or any achievable sum?"
+  - id: h13
+    kind: paraphrase
+    expected: goal-maximum
+    note: "a wrong guess at the goal; the annotated reply resolves it, so it is the same ambiguity"
+    question: "Do you want the minimum possible sum of the chosen values?"
+  - id: h14
+    kind: paraphrase
+    expected: goal-maximum
+    question: "Should I maximise the total value of the selected balls?"
+  - id: h15
+    kind: paraphrase
+    expected: goal-maximum
+    question: "When you say find the sum, do you mean the best (largest) sum that can be achieved?"
+  - id: h16
+    kind: paraphrase
+    expected: goal-maximum
+    question: "The statement says to find the sum, but over which choice? Is it the optimal one, and optimal in which direction?"
+  - id: h17
+    kind: compound
+    expected: goal-maximum
+    note: "the goal part matches; the second part (choosing no balls) is already answered by the prompt"
+    question: "Should we find the maximum total, and is it fine to choose no balls at all?"
+  # --- expected: default, near-miss ---------------------------------------------------------------------------------
+  - id: n01
+    kind: near-miss
+    expected: default
+    note: "the key question's opening words; asks which balls count toward the sum (the prompt says the chosen balls)"
+    question: "Does “find the sum” include the values of the white balls, or only the black balls?"
+  - id: n02
+    kind: near-miss
+    expected: default
+    note: "'maximum possible'; answered by the constraints"
+    question: "What is the maximum possible value of N and M?"
+  - id: n03
+    kind: near-miss
+    expected: default
+    note: "'maximum possible value'; answered by the constraints"
+    question: "What is the maximum possible value of B_i and W_j?"
+  - id: n04
+    kind: near-miss
+    expected: default
+    note: "answered by the prompt ('zero or more balls')"
+    question: "Is it allowed to choose zero balls?"
+  - id: n05
+    kind: near-miss
+    expected: default
+    note: "answered by the prompt ('at least')"
+    question: "Must the number of black balls chosen be strictly greater than the number of white balls chosen, or is equal allowed?"
+  - id: n06
+    kind: near-miss
+    expected: default
+    note: "'total value'; an implementation limit, not annotated"
+    question: "Does the total value need to fit in a 64-bit integer?"
+  - id: n07
+    kind: near-miss
+    expected: default
+    note: "'value'; answered by the constraints"
+    question: "Can a ball's value be negative?"
+  - id: n08
+    kind: near-miss
+    expected: default
+    note: "'chosen', 'value'; asks the output format, not the objective"
+    question: "Should the output list which balls were chosen, or only the value?"
+  - id: n09
+    kind: near-miss
+    expected: default
+    note: "'find the sum'; asks about a modulus, not the objective"
+    question: "Should we find the sum modulo 998244353?"
+  - id: n10
+    kind: near-miss
+    expected: default
+    note: "'values'; asks about input order, not annotated"
+    question: "Are the values B_i and W_j given in sorted order?"
+  - id: n11
+    kind: near-miss
+    expected: default
+    note: "'chosen'; each ball is one ball, not annotated"
+    question: "Can the same ball be chosen more than once?"
+  - id: n12
+    kind: near-miss
+    expected: default
+    note: "answered by the input format"
+    question: "Is the input given on three lines, with N and M on the first line?"
+  - id: n13
+    kind: near-miss
+    expected: default
+    note: "nearly the whole annotated reply as a presupposition; the question asks about a modulus, which the reply does not answer"
+    question: "Should we find the maximum possible total value of the chosen balls modulo 10^9+7?"
+  - id: n14
+    kind: near-miss
+    expected: default
+    note: "the prompt requires black >= white, so this case is not a valid choice"
+    question: "What should happen when more white balls than black balls are chosen?"
+  - id: n15
+    kind: near-miss
+    expected: default
+    note: "'value'; answered by the prompt and the input format"
+    question: "Does a ball's value mean its index, or a separate number given in the input?"
+  # --- expected: default, off-topic ---------------------------------------------------------------------------------
+  - id: o01
+    kind: off-topic
+    expected: default
+    question: "Which Python version will this run on?"
+  - id: o02
+    kind: off-topic
+    expected: default
+    question: "Can I use numpy?"
+  - id: o03
+    kind: off-topic
+    expected: default
+    question: "Should I also write unit tests?"
+  - id: o04
+    kind: off-topic
+    expected: default
+    question: "What is the time limit?"
+  - id: o05
+    kind: off-topic
+    expected: default
+    question: "Should the program read the input from a file instead of standard input?"
+  - id: o06
+    kind: off-topic
+    expected: default
+    note: "an example output would reveal the deleted goal; the scripted user answers only annotated clarifications"
+    question: "Can you give me an example input and its expected output?"

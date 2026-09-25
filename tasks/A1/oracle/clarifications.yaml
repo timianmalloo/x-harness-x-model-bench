@@ -1,0 +1,20 @@
+# Annotated key clarifications for A1: the scripted user's only answerable questions (tasks/README.md, spec US-10).
+# A question that matches a clarification gets its `reply` verbatim; every other question gets `default_reply`.
+# Question and reply are ClarifyCodeBench's annotation, verbatim (task_199, qa_pairs[0]; MIT, see ../NOTICE.md).
+schema: bench-clarifications/1
+task: A1
+upstream:
+  benchmark: ClarifyCodeBench
+  repo: "https://github.com/fangz-cs/ClarifyCodeBench"
+  commit: "5e2d5b5ce6259daa034cebb69f65e5e4c6dec3e9"
+  file: "data/ClarifyCodeBench.jsonl"
+  task_id: task_199
+  question_id: abc396_c
+  keywords: [Behavior]
+default_reply: "Decide and state your assumption."
+clarifications:
+  - id: goal-maximum
+    type: Behavior            # upstream taxonomy (clarifycodebench/taxonomy.py): the objective is underspecified
+    deleted_information: "the objective: maximum (original: 'find the maximum possible sum of the values of the chosen balls')"
+    question: "Does “find the sum” mean we should find the maximum possible total value or any valid total value?"
+    reply: "It means to find the maximum possible total value of the chosen balls."

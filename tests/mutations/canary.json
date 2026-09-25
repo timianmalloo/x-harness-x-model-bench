@@ -1,0 +1,29 @@
+[
+ {
+  "name": "count not deduplicated",
+  "file": "src/harness_bench/telemetry/claude_code.py",
+  "find": "len({name for name in advertised if _ACCOUNT_CONNECTOR.fullmatch(name)})",
+  "replace": "len([name for name in advertised if _ACCOUNT_CONNECTOR.fullmatch(name)])",
+  "tests": [
+   "tests/test_telemetry.py::test_claude_account_connector_tools_counts_two_distinct_advertised_names"
+  ]
+ },
+ {
+  "name": "0 instead of None when not read",
+  "file": "src/harness_bench/telemetry/__init__.py",
+  "find": "    account_connector_tools: int | None = None",
+  "replace": "    account_connector_tools: int | None = 0",
+  "tests": [
+   "tests/test_telemetry.py::test_account_connector_tools_is_none_when_the_claude_reader_did_not_read_the_record"
+  ]
+ },
+ {
+  "name": "the regex prefix dropped",
+  "file": "src/harness_bench/telemetry/claude_code.py",
+  "find": "mcp__claude_ai_[A-Za-z0-9_]+",
+  "replace": "[A-Za-z0-9_]+",
+  "tests": [
+   "tests/test_telemetry.py::test_claude_account_connector_tools_counts_two_distinct_advertised_names"
+  ]
+ }
+]

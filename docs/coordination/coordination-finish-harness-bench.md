@@ -210,6 +210,11 @@ Also: one Copilot turn is recorded through the W1-ACP recorder and added to D5/D
 - The Codex hook is not qualified, so with four Codex tracks (STOP-I, USER-W, TASKS-b, TASKS-c; R-44) the Leader checks `git diff --stat` against each slice's owned paths at every join.
 - `tests/conftest.py` stays unclaimed; any change to it is announced at the join.
 
+**Version 4 dispatch notes (Leader, 2026-09-25).**
+- **Seam grant S1–S3 to W2-VIEWS.** W2-STOP-I has not started, so W2-VIEWS makes the minimal lines itself: HB-VAL codes in `errors.py`, `VALIDITY` in `status.py`, and the `model_map` freeze in `plan.py`, with their test lines. This is the wave-1 precedent (the `ProfileLauncher` grant to W1-ACP). STOP-I builds on these lines once they are on `main`.
+- **B1 and F1 are held (R-42 condition 1).** No `LICENSE` exists at cfd-bench `496a0a8`, in its working tree, or in either solution clone (checked on this host). R-42's reasoning line saying "cfd-bench has an MIT LICENSE" does not match the repository. By R-42 condition 1, the B1 and F1 base trees are not committed, and a decision request goes to the operator (the repository's owner). W2-TASKS-d runs C1 only; W2-TASKS-c (F1) waits.
+- **ai-de (D1):** `LICENSE` at `88e0c33f` reads "MIT License, Copyright (c) 2026 timianmalloo" (Leader-read, R-42 condition 1). The pack material is Apache 2.0 and is excluded by R-42 condition 2.
+
 **Waves 3–5: planned to the row.** Tracks are drawn at the previous join.
 
 | wave | rows | intended harness | gate |

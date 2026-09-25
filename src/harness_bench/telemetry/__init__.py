@@ -85,6 +85,8 @@ class Extraction:
     # harness's format supports hook telemetry and this many were counted (design section 4.5).
     hook_starts: int | None = None
     hook_failures: int | None = None
+    # R-36, R-43: distinct mcp__claude_ai_* tools advertised; None means not read (unreadable record, or not Claude Code), never 0.
+    account_connector_tools: int | None = None
 
     def count(self, n: int, usage: dict, key: str) -> int:
         """The usage field `key` of the call at line `n`; absent or not a count is HB-TEL-001 (and 0 in the bucket)."""
