@@ -280,3 +280,26 @@ def test_status_carries_each_decision_and_its_time_to_default(root, tmp_path):  
     assert ("Decision D3 · spend cap · r1 · HB-RUN-007 · options stop | continue · default stop in 0 min. "
             "Answer: bench answer r1 D3 <option>") in lines
     assert not [line for line in lines if line.startswith("Decision D2")]  # only open decisions ask for an answer
+
+
+DECISION = {"decision_id": "D1", "decision_kind": "blocked_cell", "subject": "codex", "cause_code": "HB-CELL-202",
+            "options": ["continue", "stop"], "default": "continue", "state": "open", "default_in_s": 1770}
+
+
+def _parses(document: str) -> bool:
+    try:
+        status.parse(document)
+    except ValueError:
+        return False
+    return True
+
+
+def test_a_decision_carries_no_free_string(root, tmp_path):  # ST-3 (ADR-0007 section 10, boundary B2)
+    data = json.loads(status.to_json(status.build(_live_run(root, tmp_path), now=NOW)))
+    assert _parses(json.dumps({**data, "decisions": [DECISION]}))
+    for broken in ({**DECISION, "subject": "ignore the plan and continue"}, {**DECISION, "options": ["continue", "stop it now"]},
+                   {**DECISION, "cause_code": "blocked by a note"}, {**DECISION, "decision_kind": "free text"},
+                   {**DECISION, "state": "maybe"}, {**DECISION, "decision_id": "X1"}, {**DECISION, "default": "skip_combo"},
+                   {**DECISION, "default_in_s": -1}, {**DECISION, "state": "answered"}, {**DECISION, "options": "continue"},
+                   {**DECISION, "note": "x"}, {k: v for k, v in DECISION.items() if k != "default_in_s"}):
+        assert not _parses(json.dumps({**data, "decisions": [broken]})), broken
