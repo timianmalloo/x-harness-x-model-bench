@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T05:15:18Z",
+  "generated": "2026-09-25T05:22:59Z",
   "audit": [
     {
       "actor": null,
@@ -13341,6 +13341,776 @@ window.AUDIT_DATA = {
         "branch": "w2-validate",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M3BG3CMEWV7JMJ3VTFP47XAZ",
+      "shortname": "Goal: W2-CANARY slice 3 (plan rows 12/13; rulings R-5, R-6, R-16 c2, R-4…",
+      "datetime": "2026-09-25T05:20:07Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W2-CANARY slice 3 (plan rows 12/13; rulings R-5, R-6, R-16 c2, R-45): the Copilot branch of the US-13 canary gains two skill-root classes, and a unit test pins the canary class keys, without running any live cell.\nDone when: tests/e2e/test_us13_canary.py's Copilot fake-profile control (_seed_copilot_control and _copilot_shown) seeds and checks two more canaries, each with its own class name: a skill under the fake profile's .agents/skills (class \"skill (~/.agents/skills, via USERPROFILE)\", the same class name the Claude/Codex branch already uses at line 125) and a skill under the fake profile's .claude/skills (class \"skill (~/.claude/skills, via USERPROFILE)\"); the fake profile stays a temp folder, never the operator's real profile (keep the existing guard at line 66).; A new offline test in tests/test_canary_classes.py (no credentials mark, no live turn) imports the canary module's seeding helper, seeds a temp fake profile, and asserts the exact set of (canary string, class) pairs it creates - including the two new ones - so a dropped class fails a test that runs in the default suite. Canary strings stay unique per class (R-16 c2: a colliding string reports both classes).; tests/mutations/canary.json gains a named mutant (the .claude/skills canary not seeded) killed by the new offline test: uv run python tools/mutate_check.py tests/mutations/canary.json.; Only targeted tests run: uv run pytest -q --tb=short tests/test_canary_classes.py tests/test_telemetry.py; uv run ruff check on the files you touch is clean.; Your final message lists each SHA, the pytest line, and the mutate_check result.\nNot in scope: running tests/e2e or any credentials test, pytest -m \"\", full-suite runs; src/**; bench/**; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 11 minutes (ruling R-11 slice rules); commit at every green; no verbose output and no printing of large files; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/notes/rulings.md R-5, R-6, R-16, R-36, R-43, R-45; tests/e2e/test_us13_canary.py (read it whole before editing); tests/mutations/canary.json. Use python, not python3 (Windows). Set AGENT_SESSION=worker-grok-can3 before committing.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3BG3D12ERX1MR4BH1JXDY2C",
+      "shortname": "compile-Goal: W2-CANARY slice 3 (plan rows 12/13; rulings R-5, R-6, R-16 c2, R-4…",
+      "datetime": "2026-09-25T05:20:08Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-CANARY slice 3 (plan rows 12/13; rulings R-5, R-6, R-16 c2, R-45): the Copilot branch of the US-13 canary gains two skill-root classes, and a unit test pins the canary class keys, without running any live cell.\nDone when: tests/e2e/test_us13_canary.py's Copilot fake-profile control (_seed_copilot_control and _copilot_shown) seeds and checks two more canaries, each with its own class name: a skill under the fake profile's .agents/skills (class \"skill (~/.agents/skills, via USERPROFILE)\", the same class name the Claude/Codex branch already uses at line 125) and a skill under the fake profile's .claude/skills (class \"skill (~/.claude/skills, via USERPROFILE)\"); the fake profile stays a temp folder, never the operator's real profile (keep the existing guard at line 66).; A new offline test in tests/test_canary_classes.py (no credentials mark, no live turn) imports the canary module's seeding helper, seeds a temp fake profile, and asserts the exact set of (canary string, class) pairs it creates - including the two new ones - so a dropped class fails a test that runs in the default suite. Canary strings stay unique per class (R-16 c2: a colliding string reports both classes).; tests/mutations/canary.json gains a named mutant (the .claude/skills canary not seeded) killed by the new offline test: uv run python tools/mutate_check.py tests/mutations/canary.json.; Only targeted tests run: uv run pytest -q --tb=short tests/test_canary_classes.py tests/test_telemetry.py; uv run ruff check on the files you touch is clean.; Your final message lists each SHA, the pytest line, and the mutate_check result.\nNot in scope: running tests/e2e or any credentials test, pytest -m \"\", full-suite runs; src/**; bench/**; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 11 minutes (ruling R-11 slice rules); commit at every green; no verbose output and no printing of large files; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-5, R-6, R-16, R-36, R-43, R-45; tests/e2e/test_us13_canary.py (read it whole before editing); tests/mutations/canary.json. Use python, not python3 (Windows). Set AGENT_SESSION=worker-grok-can3 before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: tests/e2e/test_us13_canary.py's Copilot fake-profile control (_seed_copilot_control and _copilot_shown) seeds and checks two more canaries, each with its own class name: a skill under the fake profile's .agents/skills (class \"skill (~/.agents/skills, via USERPROFILE)\", the same class name the Claude/Codex branch already uses at line 125) and a skill under the fake profile's .claude/skills (class \"skill (~/.claude/skills, via USERPROFILE)\") | phrase: tests/e2e/test_us13_canary.py's Copilot fake-profile control (_seed_copilot_control and _copilot_shown) seeds and checks two more canaries, each with its own class name: a skill under the fake profile's .agents/skills (class \"skill (~/.agents/skills, via USERPROFILE)\", the same class name the Claude/Codex branch already uses at line 125) and a skill under the fake profile's .claude/skills (class \"skill (~/.claude/skills, via USERPROFILE)\") |\n| done_when: the fake profile stays a temp folder, never the operator's real profile (keep the existing guard at line 66). | phrase: the fake profile stays a temp folder, never the operator's real profile (keep the existing guard at line 66). |\n| done_when: A new offline test in tests/test_canary_classes.py (no credentials mark, no live turn) imports the canary module's seeding helper, seeds a temp fake profile, and asserts the exact set of (canary string, class) pairs it creates - including the two new ones - so a dropped class fails a test that runs in the default suite. Canary strings stay unique per class (R-16 c2: a colliding string reports both classes). | phrase: A new offline test in tests/test_canary_classes.py (no credentials mark, no live turn) imports the canary module's seeding helper, seeds a temp fake profile, and asserts the exact set of (canary string, class) pairs it creates - including the two new ones - so a dropped class fails a test that runs in the default suite. Canary strings stay unique per class (R-16 c2: a colliding string reports both classes). |\n| done_when: tests/mutations/canary.json gains a named mutant (the .claude/skills canary not seeded) killed by the new offline test: uv run python tools/mutate_check.py tests/mutations/canary.json. | phrase: tests/mutations/canary.json gains a named mutant (the .claude/skills canary not seeded) killed by the new offline test: uv run python tools/mutate_check.py tests/mutations/canary.json. |\n| done_when: Only targeted tests run: uv run pytest -q --tb=short tests/test_canary_classes.py tests/test_telemetry.py | phrase: Only targeted tests run: uv run pytest -q --tb=short tests/test_canary_classes.py tests/test_telemetry.py |\n| done_when: uv run ruff check on the files you touch is clean. | phrase: uv run ruff check on the files you touch is clean. |\n| done_when: Your final message lists each SHA, the pytest line, and the mutate_check result. | phrase: Your final message lists each SHA, the pytest line, and the mutate_check result. |\n| not_in_scope: running tests/e2e or any credentials test, pytest -m \"\", full-suite runs | phrase: running tests/e2e or any credentials test, pytest -m \"\", full-suite runs |\n| not_in_scope: src/** | phrase: src/** |\n| not_in_scope: bench/** | phrase: bench/** |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- 12/13: unresolved (not found)\n- tests/e2e/test_us13_canary.py's: unresolved (not found; nearest: tests/e2e/test_us13_canary.py)\n- .agents/skills: unresolved (not found)\n- ~/.agents/skills: unresolved (not found)\n- Claude/Codex: unresolved (not found)\n- .claude/skills: unresolved (not found)\n- ~/.claude/skills: unresolved (not found)\n- tests/test_canary_classes.py: unresolved (not found)\n- tests/mutations/canary.json: tests/mutations/canary.json sha256 5fe9147aadb4eb6fcb69a1a963f106be6316d411be3529bf3059c1e981380980\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- tests/test_telemetry.py: tests/test_telemetry.py sha256 2326e27f1e934e0c3a61cd48944bb64960b6c09b39e241e7013da9814a1132c5\n- tests/e2e: unresolved (not found)\n- src/**: unresolved (not found)\n- bench/**: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- tests/e2e/test_us13_canary.py: tests/e2e/test_us13_canary.py sha256 8504abcc8d8555b8af2eb6bf91d9b0fd37b0437a236c9c4ad717dfe25355ff87\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BG3CMEWV7JMJ3VTFP47XAZ\nraw sha256: 03cf174311d67943164bceb45aaf87f01ec9feb412ba9cdfa2094e89fc99510b\ncompiler model: claude-opus-5-5\nengine seconds: 0.003\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3BG3CMEWV7JMJ3VTFP47XAZ for claude-code v1: 11 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "tests/e2e/test_us13_canary.py's Copilot fake-profile control (_seed_copilot_control and _copilot_shown) seeds and checks two more canaries, each with its own class name: a skill under the fake profile's .agents/skills (class \"skill (~/.agents/skills, via USERPROFILE)\", the same class name the Claude/Codex branch already uses at line 125) and a skill under the fake profile's .claude/skills (class \"skill (~/.claude/skills, via USERPROFILE)\")",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/e2e/test_us13_canary.py's Copilot fake-profile control (_seed_copilot_control and _copilot_shown) seeds and checks two more canaries, each with its own class name: a skill under the fake profile's .agents/skills (class \"skill (~/.agents/skills, via USERPROFILE)\", the same class name the Claude/Codex branch already uses at line 125) and a skill under the fake profile's .claude/skills (class \"skill (~/.claude/skills, via USERPROFILE)\")"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the fake profile stays a temp folder, never the operator's real profile (keep the existing guard at line 66).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the fake profile stays a temp folder, never the operator's real profile (keep the existing guard at line 66)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A new offline test in tests/test_canary_classes.py (no credentials mark, no live turn) imports the canary module's seeding helper, seeds a temp fake profile, and asserts the exact set of (canary string, class) pairs it creates - including the two new ones - so a dropped class fails a test that runs in the default suite. Canary strings stay unique per class (R-16 c2: a colliding string reports both classes).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A new offline test in tests/test_canary_classes.py (no credentials mark, no live turn) imports the canary module's seeding helper, seeds a temp fake profile, and asserts the exact set of (canary string, class) pairs it creates - including the two new ones - so a dropped class fails a test that runs in the default suite. Canary strings stay unique per class (R-16 c2: a colliding string reports both classes)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/canary.json gains a named mutant (the .claude/skills canary not seeded) killed by the new offline test: uv run python tools/mutate_check.py tests/mutations/canary.json.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/canary.json gains a named mutant (the .claude/skills canary not seeded) killed by the new offline test: uv run python tools/mutate_check.py tests/mutations/canary.json."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Only targeted tests run: uv run pytest -q --tb=short tests/test_canary_classes.py tests/test_telemetry.py",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Only targeted tests run: uv run pytest -q --tb=short tests/test_canary_classes.py tests/test_telemetry.py"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check on the files you touch is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check on the files you touch is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each SHA, the pytest line, and the mutate_check result.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each SHA, the pytest line, and the mutate_check result."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "running tests/e2e or any credentials test, pytest -m \"\", full-suite runs",
+            "trace": {
+              "kind": "phrase",
+              "ref": "running tests/e2e or any credentials test, pytest -m \"\", full-suite runs"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "src/**",
+            "trace": {
+              "kind": "phrase",
+              "ref": "src/**"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench/**",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/**"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "tests/e2e/test_us13_canary.py's Copilot fake-profile control (_seed_copilot_control and _copilot_shown) seeds and checks two more canaries, each with its own class name: a skill under the fake profile's .agents/skills (class \"skill (~/.agents/skills, via USERPROFILE)\", the same class name the Claude/Codex branch already uses at line 125) and a skill under the fake profile's .claude/skills (class \"skill (~/.claude/skills, via USERPROFILE)\")",
+            "the fake profile stays a temp folder, never the operator's real profile (keep the existing guard at line 66).",
+            "A new offline test in tests/test_canary_classes.py (no credentials mark, no live turn) imports the canary module's seeding helper, seeds a temp fake profile, and asserts the exact set of (canary string, class) pairs it creates - including the two new ones - so a dropped class fails a test that runs in the default suite. Canary strings stay unique per class (R-16 c2: a colliding string reports both classes).",
+            "tests/mutations/canary.json gains a named mutant (the .claude/skills canary not seeded) killed by the new offline test: uv run python tools/mutate_check.py tests/mutations/canary.json.",
+            "Only targeted tests run: uv run pytest -q --tb=short tests/test_canary_classes.py tests/test_telemetry.py",
+            "uv run ruff check on the files you touch is clean.",
+            "Your final message lists each SHA, the pytest line, and the mutate_check result."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W2-CANARY slice 3 (plan rows 12/13; rulings R-5, R-6, R-16 c2, R-45): the Copilot branch of the US-13 canary gains two skill-root classes, and a unit test pins the canary class keys, without running any live cell.",
+          "main_line_budget": "one slice of at most 11 minutes (ruling R-11 slice rules); commit at every green; no verbose output and no printing of large files; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-5, R-6, R-16, R-36, R-43, R-45; tests/e2e/test_us13_canary.py (read it whole before editing); tests/mutations/canary.json. Use python, not python3 (Windows). Set AGENT_SESSION=worker-grok-can3 before committing.",
+          "not_in_scope": [
+            "running tests/e2e or any credentials test, pytest -m \"\", full-suite runs",
+            "src/**",
+            "bench/**",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.003,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3BG3CMEWV7JMJ3VTFP47XAZ",
+        "raw_sha256": "03cf174311d67943164bceb45aaf87f01ec9feb412ba9cdfa2094e89fc99510b",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "12/13"
+          },
+          {
+            "nearest": "tests/e2e/test_us13_canary.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e/test_us13_canary.py's"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".agents/skills"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "~/.agents/skills"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Claude/Codex"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".claude/skills"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "~/.claude/skills"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_canary_classes.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/canary.json",
+            "reason": null,
+            "sha256": "5fe9147aadb4eb6fcb69a1a963f106be6316d411be3529bf3059c1e981380980",
+            "status": "resolved",
+            "token": "tests/mutations/canary.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_telemetry.py",
+            "reason": null,
+            "sha256": "2326e27f1e934e0c3a61cd48944bb64960b6c09b39e241e7013da9814a1132c5",
+            "status": "resolved",
+            "token": "tests/test_telemetry.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/**"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/**"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "tests/e2e/test_us13_canary.py",
+            "reason": null,
+            "sha256": "8504abcc8d8555b8af2eb6bf91d9b0fd37b0437a236c9c4ad717dfe25355ff87",
+            "status": "resolved",
+            "token": "tests/e2e/test_us13_canary.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3BG8K8C2G46WQ98S0DV9YPX",
+      "shortname": "Goal: close the Codex account-apps gap measured in qualification run qua…",
+      "datetime": "2026-09-25T05:22:58Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: close the Codex account-apps gap measured in qualification run qual-r45-1 (ADR-0004: MCP servers other than the task's own are denied; R-46 precedent): Codex cells run with the apps feature off, a nested MCP tool call leaves a tool row, and the Copilot reader classes `skill` as file read (R-45 item 1).\nDone when: bench/profiles/codex.yaml's seeded per-cell config.toml gains `[features]` with `apps = false` (codex-cli 0.156.0 lists `apps  stable  true` in `codex features list`); prove the key loads on the pinned binary with `codex -c features.apps=false doctor` (or `features list` under that config) and that a bogus value fails, and record both command lines and outputs in the commit message; a profile test in tests/test_profiles.py is red on the current template first.; src/harness_bench/telemetry/codex.py records each MCP tool call item in a rollout (the item type the pinned 0.156.0 writes for an MCP call made inside the code-mode `exec` tool - find it in a real record: the qualification cell's rollout is under C:/Projects/x-harness-x-model-bench/runs/qual-r45-1/archive/*/attempt-1/home/sessions/**/rollout-*.jsonl, it contains one such call to a codex_apps tool) as a tool_calls row with its server-qualified name and class `other`, red-first on a scrubbed minimal fixture you cut from that record (keep only the item lines needed; scrub paths, ids that identify the account, any URL and any content; no vendor system prompt).; src/harness_bench/telemetry/copilot.py classes `skill` as `read` (R-45 item 1: skill is the file-read class for Copilot), red-first on the committed pack-on Copilot fixture.; docs/adr/0004-static-permissions-offline-dependencies.md's amendment note gains one line: Codex per-cell config sets `features.apps = false` (the account's app connectors are MCP servers that are not the task's own), citing run qual-r45-1.; tests/mutations/profile_classes.json gains named mutants (apps line dropped; the MCP item ignored; skill back to other), each killed: uv run python tools/mutate_check.py tests/mutations/profile_classes.json.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, the doctor evidence, and the mutate_check result.\nNot in scope: views.py and the per-cell out-of-profile validity finding; the Claude Code profile; any live turn or bench run; pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/notes/rulings.md R-36, R-45, R-46; docs/adr/0004-static-permissions-offline-dependencies.md; bench/profiles/codex.yaml; src/harness_bench/telemetry/{codex,copilot}.py; tests/test_profiles.py, tests/test_telemetry.py, tests/test_telemetry_copilot.py; tests/mutations/profile_classes.json. The pinned codex binary: C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-apps before committing.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3BG8KWB54M0CYAAWNYSN8NE",
+      "shortname": "compile-Goal: close the Codex account-apps gap measured in qualification run qua…",
+      "datetime": "2026-09-25T05:22:59Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: close the Codex account-apps gap measured in qualification run qual-r45-1 (ADR-0004: MCP servers other than the task's own are denied; R-46 precedent): Codex cells run with the apps feature off, a nested MCP tool call leaves a tool row, and the Copilot reader classes `skill` as file read (R-45 item 1).\nDone when: bench/profiles/codex.yaml's seeded per-cell config.toml gains `[features]` with `apps = false` (codex-cli 0.156.0 lists `apps  stable  true` in `codex features list`); prove the key loads on the pinned binary with `codex -c features.apps=false doctor` (or `features list` under that config) and that a bogus value fails, and record both command lines and outputs in the commit message; a profile test in tests/test_profiles.py is red on the current template first.; src/harness_bench/telemetry/codex.py records each MCP tool call item in a rollout (the item type the pinned 0.156.0 writes for an MCP call made inside the code-mode `exec` tool - find it in a real record: the qualification cell's rollout is under C:/Projects/x-harness-x-model-bench/runs/qual-r45-1/archive/*/attempt-1/home/sessions/**/rollout-*.jsonl, it contains one such call to a codex_apps tool) as a tool_calls row with its server-qualified name and class `other`, red-first on a scrubbed minimal fixture you cut from that record (keep only the item lines needed; scrub paths, ids that identify the account, any URL and any content; no vendor system prompt).; src/harness_bench/telemetry/copilot.py classes `skill` as `read` (R-45 item 1: skill is the file-read class for Copilot), red-first on the committed pack-on Copilot fixture.; docs/adr/0004-static-permissions-offline-dependencies.md's amendment note gains one line: Codex per-cell config sets `features.apps = false` (the account's app connectors are MCP servers that are not the task's own), citing run qual-r45-1.; tests/mutations/profile_classes.json gains named mutants (apps line dropped; the MCP item ignored; skill back to other), each killed: uv run python tools/mutate_check.py tests/mutations/profile_classes.json.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, the doctor evidence, and the mutate_check result.\nNot in scope: views.py and the per-cell out-of-profile validity finding; the Claude Code profile; any live turn or bench run; pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-36, R-45, R-46; docs/adr/0004-static-permissions-offline-dependencies.md; bench/profiles/codex.yaml; src/harness_bench/telemetry/{codex,copilot}.py; tests/test_profiles.py, tests/test_telemetry.py, tests/test_telemetry_copilot.py; tests/mutations/profile_classes.json. The pinned codex binary: C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-apps before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: bench/profiles/codex.yaml's seeded per-cell config.toml gains `[features]` with `apps = false` (codex-cli 0.156.0 lists `apps  stable  true` in `codex features list`) | phrase: bench/profiles/codex.yaml's seeded per-cell config.toml gains `[features]` with `apps = false` (codex-cli 0.156.0 lists `apps  stable  true` in `codex features list`) |\n| done_when: prove the key loads on the pinned binary with `codex -c features.apps=false doctor` (or `features list` under that config) and that a bogus value fails, and record both command lines and outputs in the commit message | phrase: prove the key loads on the pinned binary with `codex -c features.apps=false doctor` (or `features list` under that config) and that a bogus value fails, and record both command lines and outputs in the commit message |\n| done_when: a profile test in tests/test_profiles.py is red on the current template first. | phrase: a profile test in tests/test_profiles.py is red on the current template first. |\n| done_when: src/harness_bench/telemetry/codex.py records each MCP tool call item in a rollout (the item type the pinned 0.156.0 writes for an MCP call made inside the code-mode `exec` tool - find it in a real record: the qualification cell's rollout is under C:/Projects/x-harness-x-model-bench/runs/qual-r45-1/archive/*/attempt-1/home/sessions/**/rollout-*.jsonl, it contains one such call to a codex_apps tool) as a tool_calls row with its server-qualified name and class `other`, red-first on a scrubbed minimal fixture you cut from that record (keep only the item lines needed | phrase: src/harness_bench/telemetry/codex.py records each MCP tool call item in a rollout (the item type the pinned 0.156.0 writes for an MCP call made inside the code-mode `exec` tool - find it in a real record: the qualification cell's rollout is under C:/Projects/x-harness-x-model-bench/runs/qual-r45-1/archive/*/attempt-1/home/sessions/**/rollout-*.jsonl, it contains one such call to a codex_apps tool) as a tool_calls row with its server-qualified name and class `other`, red-first on a scrubbed minimal fixture you cut from that record (keep only the item lines needed |\n| done_when: scrub paths, ids that identify the account, any URL and any content | phrase: scrub paths, ids that identify the account, any URL and any content |\n| done_when: no vendor system prompt). | phrase: no vendor system prompt). |\n| done_when: src/harness_bench/telemetry/copilot.py classes `skill` as `read` (R-45 item 1: skill is the file-read class for Copilot), red-first on the committed pack-on Copilot fixture. | phrase: src/harness_bench/telemetry/copilot.py classes `skill` as `read` (R-45 item 1: skill is the file-read class for Copilot), red-first on the committed pack-on Copilot fixture. |\n| done_when: docs/adr/0004-static-permissions-offline-dependencies.md's amendment note gains one line: Codex per-cell config sets `features.apps = false` (the account's app connectors are MCP servers that are not the task's own), citing run qual-r45-1. | phrase: docs/adr/0004-static-permissions-offline-dependencies.md's amendment note gains one line: Codex per-cell config sets `features.apps = false` (the account's app connectors are MCP servers that are not the task's own), citing run qual-r45-1. |\n| done_when: tests/mutations/profile_classes.json gains named mutants (apps line dropped | phrase: tests/mutations/profile_classes.json gains named mutants (apps line dropped |\n| done_when: the MCP item ignored | phrase: the MCP item ignored |\n| done_when: skill back to other), each killed: uv run python tools/mutate_check.py tests/mutations/profile_classes.json. | phrase: skill back to other), each killed: uv run python tools/mutate_check.py tests/mutations/profile_classes.json. |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean. | phrase: uv run ruff check src tests tools is clean. |\n| done_when: Your final message lists each red SHA with its failing assertion, each green SHA, the doctor evidence, and the mutate_check result. | phrase: Your final message lists each red SHA with its failing assertion, each green SHA, the doctor evidence, and the mutate_check result. |\n| not_in_scope: views.py and the per-cell out-of-profile validity finding | phrase: views.py and the per-cell out-of-profile validity finding |\n| not_in_scope: the Claude Code profile | phrase: the Claude Code profile |\n| not_in_scope: any live turn or bench run | phrase: any live turn or bench run |\n| not_in_scope: pytest -m \"\" | phrase: pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- skill: unresolved (not found)\n- features: unresolved (not found)\n- apps = false: unresolved (not found)\n- apps  stable  true: unresolved (not found)\n- codex features list: unresolved (not found)\n- codex -c features.apps=false doctor: unresolved (not found)\n- features list: unresolved (not found)\n- exec: unresolved (not found)\n- other: unresolved (not found)\n- read: unresolved (not found)\n- features.apps = false: unresolved (not found)\n- bench/profiles/codex.yaml's: unresolved (not found; nearest: bench/profiles/codex.yaml)\n- tests/test_profiles.py: tests/test_profiles.py sha256 945f855d1cf225f3f2666191fe6b1dfb3f11a6a776b22f5ac0e28c14b447b3b7\n- src/harness_bench/telemetry/codex.py: src/harness_bench/telemetry/codex.py sha256 308a269a2887814751f617e12d88f3101f60f741d0353e336d7a562d2f9495cd\n- C:/Projects/x-harness-x-model-bench/runs/qual-r45-1/archive/*/attempt-1/home/sessions/**/rollout-*.jsonl: unresolved (outside repo)\n- src/harness_bench/telemetry/copilot.py: src/harness_bench/telemetry/copilot.py sha256 ea82021cda19a4f6a5a55bad6d9fa6016c5bd80b14675c1fca6909e976ea1f50\n- docs/adr/0004-static-permissions-offline-dependencies.md's: unresolved (not found; nearest: docs/adr/0004-static-permissions-offline-dependencies.md)\n- tests/mutations/profile_classes.json: tests/mutations/profile_classes.json sha256 72cecb9ae6fb37300d6f783df2659c4057ce8a8891c32649e17ea766422c637c\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- views.py: src/harness_bench/views.py sha256 03a5077a5bdc5baaa33cb6586112bcbd3ca59ed11194a950a35cbdc89c368e48\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- docs/adr/0004-static-permissions-offline-dependencies.md: docs/adr/0004-static-permissions-offline-dependencies.md sha256 847adce10871a3cc2341f0660ca72379cce0c07c9e8184482b118a990cd9984d\n- bench/profiles/codex.yaml: bench/profiles/codex.yaml sha256 d09bc1fc7c7f7f29477e863947a050b97f0e482537484d891e78219438fe3462\n- src/harness_bench/telemetry/{codex,copilot}.py: unresolved (not found)\n- tests/test_telemetry.py: tests/test_telemetry.py sha256 2326e27f1e934e0c3a61cd48944bb64960b6c09b39e241e7013da9814a1132c5\n- tests/test_telemetry_copilot.py: tests/test_telemetry_copilot.py sha256 c934f19528d2a855a5e379fa557b79b29b1bc3c0405085c11f020cd5de98344a\n- C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BG8K8C2G46WQ98S0DV9YPX\nraw sha256: bc746b69580028d7de45666b5c433547fbc0795230339c586f83f6a0d1d7ff7b\ncompiler model: claude-opus-5-5\nengine seconds: 0.003\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3BG8K8C2G46WQ98S0DV9YPX for codex v1: 19 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "bench/profiles/codex.yaml's seeded per-cell config.toml gains `[features]` with `apps = false` (codex-cli 0.156.0 lists `apps  stable  true` in `codex features list`)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/profiles/codex.yaml's seeded per-cell config.toml gains `[features]` with `apps = false` (codex-cli 0.156.0 lists `apps  stable  true` in `codex features list`)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "prove the key loads on the pinned binary with `codex -c features.apps=false doctor` (or `features list` under that config) and that a bogus value fails, and record both command lines and outputs in the commit message",
+            "trace": {
+              "kind": "phrase",
+              "ref": "prove the key loads on the pinned binary with `codex -c features.apps=false doctor` (or `features list` under that config) and that a bogus value fails, and record both command lines and outputs in the commit message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a profile test in tests/test_profiles.py is red on the current template first.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a profile test in tests/test_profiles.py is red on the current template first."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "src/harness_bench/telemetry/codex.py records each MCP tool call item in a rollout (the item type the pinned 0.156.0 writes for an MCP call made inside the code-mode `exec` tool - find it in a real record: the qualification cell's rollout is under C:/Projects/x-harness-x-model-bench/runs/qual-r45-1/archive/*/attempt-1/home/sessions/**/rollout-*.jsonl, it contains one such call to a codex_apps tool) as a tool_calls row with its server-qualified name and class `other`, red-first on a scrubbed minimal fixture you cut from that record (keep only the item lines needed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "src/harness_bench/telemetry/codex.py records each MCP tool call item in a rollout (the item type the pinned 0.156.0 writes for an MCP call made inside the code-mode `exec` tool - find it in a real record: the qualification cell's rollout is under C:/Projects/x-harness-x-model-bench/runs/qual-r45-1/archive/*/attempt-1/home/sessions/**/rollout-*.jsonl, it contains one such call to a codex_apps tool) as a tool_calls row with its server-qualified name and class `other`, red-first on a scrubbed minimal fixture you cut from that record (keep only the item lines needed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "scrub paths, ids that identify the account, any URL and any content",
+            "trace": {
+              "kind": "phrase",
+              "ref": "scrub paths, ids that identify the account, any URL and any content"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "no vendor system prompt).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "no vendor system prompt)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "src/harness_bench/telemetry/copilot.py classes `skill` as `read` (R-45 item 1: skill is the file-read class for Copilot), red-first on the committed pack-on Copilot fixture.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "src/harness_bench/telemetry/copilot.py classes `skill` as `read` (R-45 item 1: skill is the file-read class for Copilot), red-first on the committed pack-on Copilot fixture."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "docs/adr/0004-static-permissions-offline-dependencies.md's amendment note gains one line: Codex per-cell config sets `features.apps = false` (the account's app connectors are MCP servers that are not the task's own), citing run qual-r45-1.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "docs/adr/0004-static-permissions-offline-dependencies.md's amendment note gains one line: Codex per-cell config sets `features.apps = false` (the account's app connectors are MCP servers that are not the task's own), citing run qual-r45-1."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/profile_classes.json gains named mutants (apps line dropped",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/profile_classes.json gains named mutants (apps line dropped"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the MCP item ignored",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the MCP item ignored"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "skill back to other), each killed: uv run python tools/mutate_check.py tests/mutations/profile_classes.json.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "skill back to other), each killed: uv run python tools/mutate_check.py tests/mutations/profile_classes.json."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA with its failing assertion, each green SHA, the doctor evidence, and the mutate_check result.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA with its failing assertion, each green SHA, the doctor evidence, and the mutate_check result."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "views.py and the per-cell out-of-profile validity finding",
+            "trace": {
+              "kind": "phrase",
+              "ref": "views.py and the per-cell out-of-profile validity finding"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the Claude Code profile",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the Claude Code profile"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any live turn or bench run",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any live turn or bench run"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "pytest -m \"\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "pytest -m \"\""
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "bench/profiles/codex.yaml's seeded per-cell config.toml gains `[features]` with `apps = false` (codex-cli 0.156.0 lists `apps  stable  true` in `codex features list`)",
+            "prove the key loads on the pinned binary with `codex -c features.apps=false doctor` (or `features list` under that config) and that a bogus value fails, and record both command lines and outputs in the commit message",
+            "a profile test in tests/test_profiles.py is red on the current template first.",
+            "src/harness_bench/telemetry/codex.py records each MCP tool call item in a rollout (the item type the pinned 0.156.0 writes for an MCP call made inside the code-mode `exec` tool - find it in a real record: the qualification cell's rollout is under C:/Projects/x-harness-x-model-bench/runs/qual-r45-1/archive/*/attempt-1/home/sessions/**/rollout-*.jsonl, it contains one such call to a codex_apps tool) as a tool_calls row with its server-qualified name and class `other`, red-first on a scrubbed minimal fixture you cut from that record (keep only the item lines needed",
+            "scrub paths, ids that identify the account, any URL and any content",
+            "no vendor system prompt).",
+            "src/harness_bench/telemetry/copilot.py classes `skill` as `read` (R-45 item 1: skill is the file-read class for Copilot), red-first on the committed pack-on Copilot fixture.",
+            "docs/adr/0004-static-permissions-offline-dependencies.md's amendment note gains one line: Codex per-cell config sets `features.apps = false` (the account's app connectors are MCP servers that are not the task's own), citing run qual-r45-1.",
+            "tests/mutations/profile_classes.json gains named mutants (apps line dropped",
+            "the MCP item ignored",
+            "skill back to other), each killed: uv run python tools/mutate_check.py tests/mutations/profile_classes.json.",
+            "uv run pytest -q -p no:cacheprovider passes",
+            "uv run ruff check src tests tools is clean.",
+            "Your final message lists each red SHA with its failing assertion, each green SHA, the doctor evidence, and the mutate_check result."
+          ],
+          "fan_out_cap": 0,
+          "goal": "close the Codex account-apps gap measured in qualification run qual-r45-1 (ADR-0004: MCP servers other than the task's own are denied; R-46 precedent): Codex cells run with the apps feature off, a nested MCP tool call leaves a tool row, and the Copilot reader classes `skill` as file read (R-45 item 1).",
+          "main_line_budget": "one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-36, R-45, R-46; docs/adr/0004-static-permissions-offline-dependencies.md; bench/profiles/codex.yaml; src/harness_bench/telemetry/{codex,copilot}.py; tests/test_profiles.py, tests/test_telemetry.py, tests/test_telemetry_copilot.py; tests/mutations/profile_classes.json. The pinned codex binary: C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-apps before committing.",
+          "not_in_scope": [
+            "views.py and the per-cell out-of-profile validity finding",
+            "the Claude Code profile",
+            "any live turn or bench run",
+            "pytest -m \"\"",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.003,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3BG8K8C2G46WQ98S0DV9YPX",
+        "raw_sha256": "bc746b69580028d7de45666b5c433547fbc0795230339c586f83f6a0d1d7ff7b",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "skill"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "features"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "apps = false"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "apps  stable  true"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "codex features list"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "codex -c features.apps=false doctor"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "features list"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "exec"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "other"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "read"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "features.apps = false"
+          },
+          {
+            "nearest": "bench/profiles/codex.yaml",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/profiles/codex.yaml's"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_profiles.py",
+            "reason": null,
+            "sha256": "945f855d1cf225f3f2666191fe6b1dfb3f11a6a776b22f5ac0e28c14b447b3b7",
+            "status": "resolved",
+            "token": "tests/test_profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/codex.py",
+            "reason": null,
+            "sha256": "308a269a2887814751f617e12d88f3101f60f741d0353e336d7a562d2f9495cd",
+            "status": "resolved",
+            "token": "src/harness_bench/telemetry/codex.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/x-harness-x-model-bench/runs/qual-r45-1/archive/*/attempt-1/home/sessions/**/rollout-*.jsonl"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/copilot.py",
+            "reason": null,
+            "sha256": "ea82021cda19a4f6a5a55bad6d9fa6016c5bd80b14675c1fca6909e976ea1f50",
+            "status": "resolved",
+            "token": "src/harness_bench/telemetry/copilot.py"
+          },
+          {
+            "nearest": "docs/adr/0004-static-permissions-offline-dependencies.md",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/adr/0004-static-permissions-offline-dependencies.md's"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/profile_classes.json",
+            "reason": null,
+            "sha256": "72cecb9ae6fb37300d6f783df2659c4057ce8a8891c32649e17ea766422c637c",
+            "status": "resolved",
+            "token": "tests/mutations/profile_classes.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/views.py",
+            "reason": null,
+            "sha256": "03a5077a5bdc5baaa33cb6586112bcbd3ca59ed11194a950a35cbdc89c368e48",
+            "status": "resolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/adr/0004-static-permissions-offline-dependencies.md",
+            "reason": null,
+            "sha256": "847adce10871a3cc2341f0660ca72379cce0c07c9e8184482b118a990cd9984d",
+            "status": "resolved",
+            "token": "docs/adr/0004-static-permissions-offline-dependencies.md"
+          },
+          {
+            "nearest": null,
+            "path": "bench/profiles/codex.yaml",
+            "reason": null,
+            "sha256": "d09bc1fc7c7f7f29477e863947a050b97f0e482537484d891e78219438fe3462",
+            "status": "resolved",
+            "token": "bench/profiles/codex.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/telemetry/{codex,copilot}.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_telemetry.py",
+            "reason": null,
+            "sha256": "2326e27f1e934e0c3a61cd48944bb64960b6c09b39e241e7013da9814a1132c5",
+            "status": "resolved",
+            "token": "tests/test_telemetry.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_telemetry_copilot.py",
+            "reason": null,
+            "sha256": "c934f19528d2a855a5e379fa557b79b29b1bc3c0405085c11f020cd5de98344a",
+            "status": "resolved",
+            "token": "tests/test_telemetry_copilot.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
     }
   ],
   "changes": [

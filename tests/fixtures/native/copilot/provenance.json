@@ -6,7 +6,7 @@
   "forbidden_values": 8,
   "script_sha256": {
    "capture_sample.py": "58a3cdbf49bbb66eef1961cc8d95a20746d502631fec035e936d5d1296f44225",
-   "scrub_sample.py": "3ab34e6e7cc5d2bee823ba16a3888baa3c60d2a5603bb106193d64ca2ffa86a5"
+   "scrub_sample.py": "26be86fee5447626c4dcaed39f52918c06c18e17b456f7e0d9bf0c9576fea9df"
   },
   "rescrubbed_from": "scrub-rule/2",
   "rescrub_replacements": 0
@@ -1504,25 +1504,47 @@
     "lines_kept": 124,
     "lines_dropped": 0
    }
+  },
+  "fixed": {
+   "readings": {
+    "tool_outcomes": {
+     "success=True:code=None": 11
+    }
+   },
+   "source": "qualification run qual-r45-1 (Q1 fixture, pack on, R-45 profile), cell 2c79aea9dd9cf5a2",
+   "profile_sha256": "57e4cf716fd702e82b39a2f01340e7dfc11869c47f56648aeeac7b37adb493bd",
+   "copilot_build": "1.0.89-1",
+   "ruling": "R-45 condition 1"
   }
  },
  "outputs": {
   "off/session-state/adc0e5ec-1ff9-42b0-a601-a1c3b8825c8e/events.jsonl": "7dee53f7c71d13f3090cdb1b2c1293317783febf706e5162fee07d6cf7d22234",
-  "instruction-list-off.json": "550c34a3365f5e11ff9519f54f894ffbb6a578f01e5d33a453d04f3b87843d02",
+  "instruction-list-off.json": "81f442722cfe2fc43e2b1813322d24652fb6adafaeff8598755560550b4471bf",
   "on-rev92/session-state/c0d75ae3-d30c-4cfd-8b30-c0f04ecc07a6/events.jsonl": "426d6aa69838dee62b190b24e03114003d91878e0a9f245cd7aeb7ab68f728ba",
-  "instruction-list-on-rev92.json": "128c270b0c9eb62a42baa9f8a57f10414eca6aa8893b2e412d2bbee658e5e092",
+  "instruction-list-on-rev92.json": "79fae16f940b41997468b21ea7854c922c81b2a5dbd48fcacd168664ffc8d354",
   "on/session-state/67b924b1-ade0-4b53-9cb4-f2d017944968/events.jsonl": "9d2beff505472b82a1920da070de689df7658014b4aa5a5615fcc5e77d6d4050",
-  "instruction-list-on.json": "128c270b0c9eb62a42baa9f8a57f10414eca6aa8893b2e412d2bbee658e5e092"
+  "instruction-list-on.json": "79fae16f940b41997468b21ea7854c922c81b2a5dbd48fcacd168664ffc8d354",
+  "fixed/session-state/e6967b1c-3feb-4376-935c-58b66b87200f/events.jsonl": "f82d1a43a8ae8f637efa716ad21145ee98e9581bc081c5c2b860ab0286bea2ad"
  },
  "recapture": {
   "note": "R-27 condition 3: the pack-on arm was recaptured at pack revision 95 and replaces the revision-92 sample as `on/`; `off/` is unchanged (its own pack-off instruction list stays empty, independent of pack revision). The revision-92 sample is kept, renamed `on-rev92/`, as the negative-control fixture the tests still pin to (8 denied tool calls, 8/8 hook failures, us14_valid False).",
   "pack_revision": 95,
   "source": "Leader coord-opus-cq: tools/acp_record.py-style native capture, scrubbed to C:/Projects/bench-capture/scrubbed95 (off/, on/, instruction-list-{off,on}.json, provenance.json); the on-arm facts above are copied verbatim from that provenance.json's facts.on",
   "measured": {
-   "tool_completions": 17, "tool_success": 16, "tool_ordinary_failure": 1, "tool_denied": 0,
-   "hook_end": 27, "hook_end_success": 27,
+   "tool_completions": 17,
+   "tool_success": 16,
+   "tool_ordinary_failure": 1,
+   "tool_denied": 0,
+   "hook_end": 27,
+   "hook_end_success": 27,
    "apply_patch_changed": "slug.py",
-   "acp_usage": {"inputTokens": 890731, "outputTokens": 1778, "cachedReadTokens": 787795, "cachedWriteTokens": 102909, "totalTokens": 892509}
+   "acp_usage": {
+    "inputTokens": 890731,
+    "outputTokens": 1778,
+    "cachedReadTokens": 787795,
+    "cachedWriteTokens": 102909,
+    "totalTokens": 892509
+   }
   }
  }
 }

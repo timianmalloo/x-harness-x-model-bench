@@ -102,8 +102,7 @@ def test_old_copilot_fixture_records_out_of_profile_ids():
     assert any(i.startswith("github-mcp-server-") for i in ids)
 
 
-@pytest.mark.skip(reason="R-45 condition 1: Leader must recut a fixed-profile qualification fixture with profile hash")
-def test_fixed_copilot_profile_advertises_no_out_of_profile_ids():
+def test_fixed_copilot_profile_advertises_no_out_of_profile_ids():  # R-45 c1: fixture recut from run qual-r45-1
     record = next((FIX / "native" / "copilot" / "fixed").rglob("events.jsonl"))
     ids = copilot_advertised(record)
     in_class = set().union(*COPILOT_CLASSES.values())
