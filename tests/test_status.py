@@ -164,6 +164,35 @@ def test_last_update_is_reported_for_timed_out_and_stopped_cells(root, tmp_path)
     assert f"{stopped}: last update not recorded" in status.text(s)
 
 
+def _operator_stop(ev) -> None:
+    ev.append({"kind": "control.applied", "uuid": "0" * 32, "control": "stop", "decision_id": None, "effect": "applied"})
+    ev.append({"kind": "run.launch_stopped", "code": "HB-RUN-006", "reason": "bench stop"})
+    ev.append({"kind": "run.stopped", "code": "HB-RUN-006", "decision_id": None})
+
+
+def test_status_shows_stopped_with_counts(root, tmp_path):  # R10-3 (UXA-10; design 4.6)
+    run_dir = make_run(root, tmp_path, {"a": GOOD, "b": GOOD}, outcomes={"b": {"outcome": "stopped"}}, unstarted=("c",))
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
+        _operator_stop(ev)
+        ev.append({"kind": "run.completed", "run_id": "r1"})
+    s = status.build(run_dir, now=NOW)
+    assert (s.phase, s.stop_code) == ("stopped", "HB-RUN-006")
+    assert (s.outcomes["stopped"], s.outcomes["not started"], s.outcomes["completed"]) == (1, 1, 1)
+    assert status.parse(status.to_json(s)) == s
+    assert status.text(s).splitlines()[0] == "Run r1: stopped (HB-RUN-006). 1 stopped, 1 never started, 1 ended before the stop."
+
+
+def test_status_shows_stopping_while_a_launched_cell_has_no_outcome(root, tmp_path):  # R10-3 (design 4.6)
+    run_dir = _live_run(root, tmp_path)
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-3") as ev:
+        _operator_stop(ev)
+    with oslock.RunLock.acquire(run_dir / ".lock", "HB-RUN-003"):
+        s = status.build(run_dir, now=NOW)
+    assert s.phase == "stopping"
+    assert status.parse(status.to_json(s)) == s
+    assert status.text(s).splitlines()[0] == "Run r1: stopping. 1 cells still ending."
+
+
 def test_stopped_and_decision_skip_are_closed_outcomes():  # ST-1
     assert "stopped" in status.OUTCOMES
     assert "skipped (decision)" in status.OUTCOMES

@@ -133,6 +133,27 @@ def test_every_guard_of_the_table_has_a_seeded_case():
     assert {r for r in lifecycle.RULES if not any(s in r for s in seeded)} == set()
 
 
+STOPPED = GOOD[:6] + [  # golden (design 16.3 D6): an operator stop of a running cell, then a control after grading
+    {"kind": "control.applied", "uuid": "a" * 32, "control": "stop", "decision_id": None, "effect": "applied"},
+    {"kind": "run.launch_stopped", "code": "HB-RUN-006", "reason": "bench stop"},
+    {"kind": "run.stopped", "code": "HB-RUN-006", "decision_id": None},
+    {"kind": "control.applied", "uuid": "b" * 32, "control": "stop", "decision_id": None, "effect": "no-op (already stopped)"},
+    {"kind": "attempt.process_ended", "cell_id": "a", "ended_by": "terminate"},
+    {"kind": "cell.outcome", "cell_id": "a", "outcome": "stopped", "cause": None},
+    {"kind": "cell.archived", "cell_id": "a"},
+    {"kind": "cell.workspace_deleted", "cell_id": "a"},
+    {"kind": "control.applied", "uuid": "c" * 32, "control": "stop", "decision_id": None, "effect": "no-op (run ending)"},
+    {"kind": "run.completed"},
+]
+
+
+def test_a_stopped_run_replays_and_a_second_read_gives_the_same_verdict():  # LC (design 8.3): stop and control rows
+    lifecycle.replay(STOPPED, parallelism=1)
+    lifecycle.replay(list(STOPPED), parallelism=1)  # the replay keeps no state between reads: a resumed read agrees
+    with pytest.raises(lifecycle.ConformanceError, match="NoLaunchAfterStop"):
+        lifecycle.replay(STOPPED[:-1] + [{"kind": "cell.launch_intent", "cell_id": "b"}], parallelism=1)
+
+
 def test_parallelism_bound_is_enforced_by_the_replay():
     events = [{"kind": "cell.launch_intent", "cell_id": c} for c in ("a", "b")]
     events += [{"kind": "cell.workspace_built", "cell_id": c} for c in ("a", "b")]
