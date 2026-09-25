@@ -12,6 +12,8 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import TypeVar
 
+from harness_bench.report.credentials import encodings
+
 WITHHELD = "withheld: sensitive content"
 
 T = TypeVar("T")
@@ -36,10 +38,24 @@ class Verdict:
 
     def release(self, backend: Callable[[str], T]) -> T | None:
         """Hand the payload to `backend` when it is clean; a withheld payload never reaches it."""
+        if self.withheld or self.payload is None:
+            return None
         return backend(self.payload)
 
 
+def _exact(payload: str, values: Sequence[str]) -> bool:
+    """Any non-empty value, or its base64 or URL-encoded form (report.credentials.encodings), in the payload."""
+    return any(v in payload for v in encodings({v for v in values if v.strip()}))
+
+
 def check(payload: str, *, destination: str, secrets: Sequence[str] = ()) -> Verdict:
-    """Scan `payload` bound for `destination`."""
+    """Scan `payload` bound for `destination`.
+
+    `secrets` are the credential values the caller holds at run time; they are never stored or returned.
+    A hit returns a withheld verdict: no payload, only its sha256, the destination and the class names.
+    """
     digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
-    return Verdict(destination, digest, (), payload)
+    classes = tuple(name for name, hit in (
+        ("credential", _exact(payload, secrets)),
+    ) if hit)
+    return Verdict(destination, digest, classes, None if classes else payload)
