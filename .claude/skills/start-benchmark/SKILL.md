@@ -58,11 +58,13 @@ Pause only for the plan confirmation (stage 2) and for decision requests. `bench
 
 ## Reading `bench-status/1`
 
-Fields: `liveness` (`alive` · `stalled` · `not running`), `completion` (`complete` · `in progress` · `incomplete`), `phase` (`starting` · `running`), `stop_code`, `cells_total`, `cells_ended`, `running[]` (`cell_id`, `label`, `elapsed_s`, `budget_s`, `killing`), `outcomes`, `validity`, `causes` (cause codes), `graded`, `lock_age_s`.
+Fields: `schema` (`bench-status/1`), `run_id`, `checked_at`, `liveness` (`alive` · `stalled` · `not running`), `completion` (`complete` · `in progress` · `incomplete`), `phase` (`starting` · `running`), `stop_code`, `cells_total`, `cells_ended`, `running[]` (`cell_id`, `label`, `elapsed_s`, `budget_s`, `killing`), `outcomes` (`completed` · `timed_out` · `stopped` · `skipped (decision)` · `failed` · `no outcome` · `not started`), `last_update_ms`, `validity`, `causes` (cause codes), `decisions`, `graded`, `lock_age_s`.
 
 - `alive`: report progress (`cells_ended`/`cells_total`, running cells against their budgets) and keep watching.
 - `phase: starting`: the run has begun but no cell has reached its process yet (workspace build, spawn, handshake); `elapsed_s` on any listed cell is 0 until its prompt is sent. `phase: running`: at least one cell's process has started; it never reverts to `starting`.
 - `stop_code`: null unless the engine recorded `run.launch_stopped` (a run-level stop, e.g. a preflight or disk-floor code); report it as the reason launching new cells stopped.
+- `last_update_ms`: a map from ended `timed_out` or `stopped` cell ids to the last ACP update's elapsed milliseconds from the turn start. Null means no update was recorded. It does not describe live running cells.
+- `decisions`: empty until the decision workflow is implemented.
 - `stalled`: the engine holds the lock but has not progressed for `lock_age_s` seconds. Report it to the user; do not start another run.
 - `killing: true`: the cell passed its budget (measured from when its prompt was sent, not when its process started) and the engine is confirming its kill. Report it; it resolves itself.
 - `not running` + `complete`: go to stage 5. `not running` + `incomplete`: report the counts and causes; the next step is a new plan under a new run id.

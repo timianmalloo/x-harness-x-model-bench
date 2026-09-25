@@ -1,0 +1,72 @@
+[
+  {
+    "name": "operator stop code omitted",
+    "file": "src/harness_bench/errors.py",
+    "find": "    \"HB-RUN-006\": \"run stopped by the operator (bench stop, or a decision answered stop): running cells stopped, no new launch\",\n",
+    "replace": "",
+    "tests": ["tests/test_errors.py::test_stop_and_spend_cap_have_the_designs_run_codes"]
+  },
+  {
+    "name": "spend cap stop code omitted",
+    "file": "src/harness_bench/errors.py",
+    "find": "    \"HB-RUN-007\": \"spend cap reached: the run stopped (the spend_cap default or answer)\",\n",
+    "replace": "",
+    "tests": ["tests/test_errors.py::test_stop_and_spend_cap_have_the_designs_run_codes"]
+  },
+  {
+    "name": "decision skip omitted from skill",
+    "file": ".claude/skills/start-benchmark/SKILL.md",
+    "find": " · `skipped (decision)`",
+    "replace": "",
+    "tests": ["tests/test_status.py::test_the_skill_names_every_status_field"]
+  },
+  {
+    "name": "decision timeout default changed",
+    "file": "src/harness_bench/plan.py",
+    "find": "    \"decision_timeout\": 1800,\n",
+    "replace": "    \"decision_timeout\": 900,\n",
+    "tests": ["tests/test_plan.py::test_stop_parameters_are_frozen_with_the_ruling_units"]
+  },
+  {
+    "name": "spend cap shown in dollars instead of total tokens",
+    "file": "src/harness_bench/cli.py",
+    "find": " tokens, checked when each cell ends; cells whose usage is not recorded are not counted",
+    "replace": " USD, checked when each cell ends; cells whose usage is not recorded are not counted",
+    "tests": ["tests/test_cli.py::test_plan_flags_and_confirmation_name_the_timeout_and_token_cap"]
+  },
+  {
+    "name": "row15 parallelism cap reverted to two",
+    "file": "src/harness_bench/plan.py",
+    "find": "PHASE1_MAX_PARALLELISM = 4",
+    "replace": "PHASE1_MAX_PARALLELISM = 2",
+    "tests": ["tests/test_plan.py::test_row15_supports_parallelism_four_and_refuses_five"]
+  },
+  {
+    "name": "old plan reaches engine without parameter check",
+    "file": "src/harness_bench/cli.py",
+    "find": "    plan.require_run_parameters(p)\n",
+    "replace": "    pass\n",
+    "tests": ["tests/test_cli.py::test_bench_run_refuses_a_confirmed_old_plan_before_starting"]
+  },
+  {
+    "name": "last update value discarded from status",
+    "file": "src/harness_bench/status.py",
+    "find": "            last_update_ms[event[\"cell_id\"]] = value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else None\n",
+    "replace": "            last_update_ms[event[\"cell_id\"]] = None\n",
+    "tests": ["tests/test_status.py::test_last_update_is_reported_for_timed_out_and_stopped_cells"]
+  },
+  {
+    "name": "package label guessed as ACP agent version",
+    "file": "src/harness_bench/tools.py",
+    "find": "\"adapter_sha256\": self.adapter_sha256, \"agent_version\": None,",
+    "replace": "\"adapter_sha256\": self.adapter_sha256, \"agent_version\": self.version,",
+    "tests": ["tests/test_tools.py::test_resolve_names_version_executable_adapter_and_hash"]
+  },
+  {
+    "name": "decision skip absent from status enum",
+    "file": "src/harness_bench/status.py",
+    "find": "\"stopped\", \"skipped (decision)\", \"failed\"",
+    "replace": "\"stopped\", \"failed\"",
+    "tests": ["tests/test_status.py::test_stopped_and_decision_skip_are_closed_outcomes"]
+  }
+]

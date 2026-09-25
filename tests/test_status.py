@@ -173,6 +173,7 @@ def test_the_skill_names_every_status_field():  # SK-1, R-3 condition 3
     expected = {field.name for field in dataclasses.fields(status.Status)}
     expected |= {field.name for field in dataclasses.fields(status.RunningCell)}
     expected |= set(status.PHASE) | set(status.OUTCOMES)
+    assert {"stopped", "skipped (decision)", "last_update_ms"} <= expected
     for skill in (".claude/skills/start-benchmark/SKILL.md", ".agents/skills/start-benchmark/SKILL.md"):
         text = (Path(__file__).resolve().parents[1] / skill).read_text(encoding="utf-8")
         missing = {name for name in expected if name not in text}

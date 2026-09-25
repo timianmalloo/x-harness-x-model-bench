@@ -102,7 +102,8 @@ def cmd_plan(args) -> int:
     builds = {h: b.record() for h, b in tools.resolve(Path(args.tools_dir)).items()}
     pack = _pack(Path(args.pack_source), Path(args.tools_dir).parent / "pack")
     run_id = args.run_id or f"{matrix.get('run_id', 'run')}-{datetime.now(UTC):%Y%m%dT%H%M%S}"
-    p = plan.build_plan(root, matrix, bom, run_id, builds, pack, parallelism=args.parallelism,
+    parameters = {"decision_timeout": args.decision_timeout_minutes * 60, "spend_cap_tokens": args.spend_cap_tokens}
+    p = plan.build_plan(root, matrix, bom, run_id, builds, pack, parallelism=args.parallelism, parameters=parameters,
                         tools_dir=Path(args.tools_dir), cells_root=Path(args.cells_root))
     console = Console(no_color=_plain(), highlight=False)
     table = Table(title=f"plan {run_id}: {matrix_path.name}")
@@ -116,6 +117,10 @@ def cmd_plan(args) -> int:
     print(f"pack revision {pack['revision']} ({pack['commit'][:12]}); {len(p['cells'])} cells; parallelism {p['parameters']['parallelism']}; "
           f"envelope {p['envelope_seconds']} s; price list {p['price_list_hash'][:12] or 'absent'}")
     print("parameters: " + ", ".join(f"{k}={v}" for k, v in sorted(p["parameters"].items())))
+    print(f"decision timeout: {p['parameters']['decision_timeout'] // 60} min; "
+          f"spend cap: {p['parameters']['spend_cap_tokens'] if p['parameters']['spend_cap_tokens'] is not None else 'none'}"
+          + (" tokens, checked when each cell ends; cells whose usage is not recorded are not counted"
+             if p['parameters']['spend_cap_tokens'] is not None else ""))
     if args.confirm:
         path = plan.confirm(Path(args.runs) / run_id, p)
         print(f"confirmed: {path}")
@@ -141,6 +146,7 @@ def _workspace_builder(root: Path, p: dict, sources_root: Path, pack_root: Path)
 def cmd_run(args) -> int:
     root, run_dir = Path(args.root), _run_dir(args)
     p = plan.load_confirmed(run_dir)
+    plan.require_run_parameters(p)
     if (run_dir / "events").exists():
         raise BenchError("HB-USR-002", f"run {args.run_id} has already started; phase 1 re-runs under a new run id")
     for task_id, t in p["tasks"].items():
@@ -231,6 +237,16 @@ def cmd_tools(args) -> int:
     return OK
 
 
+def _positive_int(value: str) -> int:
+    try:
+        number = int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError("must be a positive integer") from None
+    if number <= 0:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return number
+
+
 def build_parser() -> argparse.ArgumentParser:
     root = config.repo_root()
     p = argparse.ArgumentParser(prog="bench", description=__doc__.splitlines()[0])
@@ -245,6 +261,8 @@ def build_parser() -> argparse.ArgumentParser:
     pl.add_argument("--matrix", help="matrix.yaml (default: bench/matrix.example.yaml)")
     pl.add_argument("--run-id", help="default: <matrix run_id>-<UTC time>")
     pl.add_argument("--parallelism", type=int, default=plan.DEFAULT_PARAMETERS["parallelism"])
+    pl.add_argument("--decision-timeout-minutes", type=_positive_int, default=plan.DEFAULT_PARAMETERS["decision_timeout"] // 60)
+    pl.add_argument("--spend-cap-tokens", type=_positive_int, default=None)
     pl.add_argument("--pack-source", default=str(root.parent / "ai-forward"), help="the ai-forward clone; its HEAD is pinned")
     pl.add_argument("--confirm", action="store_true", help="write runs/<run_id>/plan.json (frozen)")
     pl.add_argument("--json", action="store_true", help="print the cell list as JSON")
