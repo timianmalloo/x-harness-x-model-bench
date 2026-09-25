@@ -2202,3 +2202,22 @@ def test_one_blocked_harness_opens_one_decision(base):  # US15-6 (PE-4): one exp
     assert [(e["decision_id"], e["subject"]) for e in _kind(events, "decision.opened")] == [("D1", "fake")]
     assert _resolutions(events) == [("D1", "default applied (timeout)", "continue")]
     assert sorted(str(o["cause"]) for o in _outcomes(events).values()) == ["None"] + ["blocked_auth"] * 3
+
+
+def test_an_answer_of_stop_is_an_operator_stop(base):  # US15-7 (design 6.1)
+    p, launcher = _decision_plan([("fake", "A", AUTH), ("other", "B", {"mode": "on_cancel"}), ("fake", "A", {})],
+                                 parallelism=2)
+    blocked, running, waiting = (c["cell_id"] for c in p["cells"])
+    sent = []
+
+    def script(eng, offset, run_dir):
+        if blocked in eng.outcomes and not sent:
+            sent.append(_answer_file(run_dir, "D1", "stop"))
+
+    _, events, summary = _decision_run(base, (p, launcher), script)
+    assert [(e["control"], e["decision_id"], e["effect"]) for e in _kind(events, "control.applied")] == [
+        ("answer", "D1", "applied")]
+    assert _resolutions(events) == [("D1", "answered", "stop")]
+    assert [(e["code"], e["decision_id"]) for e in _kind(events, "run.stopped")] == [("HB-RUN-006", "D1")]
+    outs = _outcomes(events)
+    assert outs[running]["outcome"] == "stopped" and waiting not in outs and summary.exit_code == 3
