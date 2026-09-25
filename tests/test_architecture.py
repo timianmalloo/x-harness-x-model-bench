@@ -270,6 +270,18 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
                                                            "class Pool:\n    def __init__(self, backend):\n"
                                                            "        self.backend = backend\n\n    def judge(self, p):\n"
                                                            "        return self.backend.judge(p)\n"}),
+        # Review w3-gwi-1 F2 (Fable): a local alias of an injected backend is still the backend; the exact probe P4.
+        "a-local-alias-of-an-injected-backend": (True, {gw + "cli.py": cli, gw + "__init__.py": released, gw + "leak.py":
+                                                        "def _leak(backend: Backend, text: str):\n    b = backend\n"
+                                                        "    return b.judge(text)\n"}),
+        "an-alias-chain-or-a-bound-method": (True, {gw + "cli.py": cli, gw + "__init__.py": released, gw + "leak.py":
+                                                    "def _leak(backend, text: str):\n    a = backend\n"
+                                                    "    send = a.judge\n    return send(text)\n"}),
+        "a-local-from-a-module-call-is-data": (False, {gw + "cli.py": cli, gw + "__init__.py": released, gw + "hash.py":
+                                                       "import hashlib\nfrom harness_bench.gateway import request\n\n"
+                                                       "def digest(inputs, entries: tuple):\n"
+                                                       "    rendered = request.render(inputs.rubric, entries)\n"
+                                                       "    return hashlib.sha256(rendered.text.encode()).hexdigest()\n"}),
         "self-attribute-from-a-spawner": (True, {gw + "cli.py": cli, gw + "__init__.py": released, gw + "pool.py":
                                                  "from .cli import HeadlessCli\n\nclass Pool:\n    def __init__(self):\n"
                                                  "        self.backend = HeadlessCli()\n\n    def judge(self, p):\n"
