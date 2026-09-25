@@ -54,6 +54,11 @@ def test_each_reader_delegate_set_is_exactly_the_operators_list():
                                            "interrupt_agent", "list_agents")} == {"other"}
 
 
+def test_codex_classes_the_measured_spawn_and_wait_calls_as_delegate():  # R-74 item 5: qual-r74-codex-1 issued these two
+    ex = codex.read(ROOT / "tests" / "fixtures" / "native" / "codex" / "delegate-parent.jsonl")
+    assert [(t.name, t.tool_class) for t in ex.tool_calls] == [("spawn_agent", "delegate"), ("wait_agent", "delegate")]
+
+
 def test_copilot_classes_the_four_ids_as_delegate_from_synthetic_rows(tmp_path):
     rows = [{"type": "session.start", "data": {"sessionId": "syn", "version": 1}, "timestamp": "2026-01-01T00:00:00.000Z"}]
     for n, name in enumerate(COPILOT_DELEGATE):
