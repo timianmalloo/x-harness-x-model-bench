@@ -608,21 +608,42 @@ def test_the_cross_check_skips_a_harness_whose_acp_usage_is_not_the_turn_total(r
 # --- US-11: a model the task's model_map routes to is allowed, like the pin (F1; seam S3 freezes it in the plan) -------
 
 
-def _mapped_run(root, tmp_path, model_map):
-    run_dir = make_run(root, tmp_path, {"a": GOOD}, model="gpt-other")  # the record serves gpt-6-sol
-    _edit_plan(run_dir, lambda p: {**p, "tasks": {"X1": {"model_map": model_map}}})
+def _mapped_run(root, tmp_path, model_map, model="gpt-other", served=CODEX_MODEL):
+    """A Codex cell pinned to `model` whose record serves `served` (the captured record, its model id replaced)."""
+    record = tmp_path / "record.jsonl"
+    record.write_text((Path(__file__).parent / "fixtures/native/codex/ok.jsonl").read_text(encoding="utf-8")
+                      .replace(CODEX_MODEL, served), encoding="utf-8")
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, model=model, native_record=record)
+    _edit_plan(run_dir, lambda p: {**p, "tasks": {"X1": {"scenario": 6, "model_map": model_map}}})
     runner.run_pass(run_dir, root)
     return _cell(views.load(run_dir), "a")
 
 
-def test_a_model_the_task_model_map_names_is_valid(root, tmp_path):  # US-11: "or a model allowed by the task's model_map"
-    cell = _mapped_run(root, tmp_path, {"implement": CODEX_MODEL, "review": SONNET})
+# R-73 items 3 and 4: the F1 map per vendor (the OpenAI workhorse id is a placeholder of the right shape)
+F1_MAP = {"domain-model@anthropic": OPUS, "derived-quantities@anthropic": SONNET, "tests@anthropic": SONNET,
+          "domain-model@openai": CODEX_MODEL, "derived-quantities@openai": "gpt-6-astra", "tests@openai": "gpt-6-astra"}
+
+
+def test_a_model_the_task_model_map_names_for_the_cells_vendor_is_valid(root, tmp_path):  # US-11 per vendor (R-73 c2)
+    cell = _mapped_run(root, tmp_path, F1_MAP, model=CODEX_MODEL, served="gpt-6-astra")
     assert (cell.validity, cell.validity_code) == ("valid", None)
 
 
-def test_a_model_the_model_map_does_not_name_is_still_a_mismatch(root, tmp_path):  # the negative control
-    cell = _mapped_run(root, tmp_path, {"review": SONNET})
+def test_a_codex_cell_serving_the_anthropic_column_is_a_model_mismatch(root, tmp_path):  # R-73 item 2: red on main
+    cell = _mapped_run(root, tmp_path, F1_MAP, model=CODEX_MODEL, served=SONNET)
     assert (cell.validity, cell.validity_code) == ("invalid (model mismatch)", "HB-VAL-002")
+
+
+def test_a_model_the_model_map_does_not_name_is_still_a_mismatch(root, tmp_path):  # the negative control
+    cell = _mapped_run(root, tmp_path, {"review@openai": SONNET})
+    assert (cell.validity, cell.validity_code) == ("invalid (model mismatch)", "HB-VAL-002")
+
+
+def test_mapped_is_exactly_the_cells_own_vendor_column(root):  # R-73 c2, with the F1 map frozen in a plan
+    frozen = {"tasks": {"F1": {"scenario": 6, "model_map": F1_MAP}},
+              "profiles": {h: plan_mod.profile_record(root, h) for h in ("claude-code", "codex")}}
+    assert views._mapped(frozen, {"task": "F1", "harness": "codex"}) == frozenset({CODEX_MODEL, "gpt-6-astra"})
+    assert views._mapped(frozen, {"task": "F1", "harness": "claude-code"}) == frozenset({OPUS, SONNET})
 
 
 # --- R-47 (R-28 c2 re-pointed): agent_version against the pinned build's recorded self-report -> HB-VAL-007 ----------
