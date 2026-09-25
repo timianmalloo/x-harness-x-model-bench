@@ -301,7 +301,8 @@ summary: >-
 - **Instances:** `2026-09-25`, after the Codex usage limit. `w2-stopi-4` showed `3` dirty files and `2` commits ahead, and was removed anyway. The two commits were recovered from the object store (`git branch w2-stopi-4 0f24e77`). The three uncommitted files, the slice's in-progress tail, were lost.
 - **Sweep:** every removal this session went through `cleanup_merged.sh` or `coord worktree cleanup` (both HOLD a dirty or unmerged tree), except the HARBOR tree (untracked, inspected first) and this one.
 - **Control:** the Leader never runs `git worktree remove --force` or `git branch -D` directly. A failed or partial slice's tree is kept until its commits are on a named branch and its dirty files are inspected, and removal goes through the holding scripts. For now this is a Leader procedure. The upgrade trigger is a second instance: a wrapper that refuses `--force` on an unmerged branch.
-- **Status:** `observed` (Leader procedure)
+- **Second instance, 2026-09-25 (the R21-3 capture):** the Leader removed a throwaway detached tree (`pre-s3`, made to run a test on an old commit) with `git worktree remove --force`, the control's own forbidden command. Nothing was lost: it held one copied test file and no commits, and the test's output lived outside it. The rule stays as written: a throwaway tree is removed plainly, or through `cleanup_merged.sh`, after its untracked files are named. **Hook upgrade trigger:** a third instance.
+- **Status:** `observed` (Leader procedure; second instance)
 
 ### VEND-A: a vendored file the host repository's ignore rules drop
 - **Signature:** a task base is vendored byte for byte into `tasks/<ID>/workspace/`, but a path in it matches this repository's `.gitignore` (`dist/`, `build/`). The file exists on the author's disk, so every check there passes; a clean checkout lacks it.

@@ -28,7 +28,7 @@ from pathlib import Path
 
 import pytest
 
-from harness_bench import archive, cli, plan, profiles, views
+from harness_bench import archive, cli, config, plan, profiles, views
 from harness_bench.report import cell_tokens
 from harness_bench.telemetry import copilot
 
@@ -106,7 +106,8 @@ def test_copilot_budget_kill_records_session_shutdown(kept, capsys):
 
     assert cli.main([*common, "run", rid]) == 0, capsys.readouterr()
     run_dir = runs / rid
-    view = views.load(run_dir)
+    # the catalog's own version: a .dev pass is never current (V-1), so a bare load reads "not graded"
+    view = views.load(run_dir, str(config.load_yaml(ROOT / "bench" / "metrics.yaml")["version"]))
     events = views.rows(run_dir, "events")
     (cell,) = view.cells
     (outcome,) = [e for e in events if e["kind"] == "cell.outcome"]
