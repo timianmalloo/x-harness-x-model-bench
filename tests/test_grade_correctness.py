@@ -146,3 +146,9 @@ def test_d1_base_plus_a_file_with_a_syntax_error_scores_0_not_na(tmp_path, d1_do
     got = grade_d1(tmp_path, *d1_cell(tmp_path, BROKEN))
     assert {m: got.get(m) for m in BUILT_CORRECTNESS} == \
         {"pass_at_1": (0, None), "partial_credit": ("0.0000", None), "build_and_suite_clean": (0, None)}
+
+
+def test_d1_reference_with_a_member_deleted_that_unchanged_files_use_scores_0(tmp_path, d1_dotnet):  # TA 9: by cause
+    got = grade_d1(tmp_path, *d1_cell(tmp_path, {**REFERENCE, "src/AiDe.Core/PathComparison.cs": without_member}))
+    assert {m: got.get(m) for m in BUILT_CORRECTNESS} == \
+        {"pass_at_1": (0, None), "partial_credit": ("0.0000", None), "build_and_suite_clean": (0, None)}
