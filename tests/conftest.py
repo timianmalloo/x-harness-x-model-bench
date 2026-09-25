@@ -1,3 +1,4 @@
+import functools
 import os
 import shutil
 import sys
@@ -7,7 +8,7 @@ from pathlib import Path
 import pytest
 from slow_ring import dotnet_gate
 
-from harness_bench import archive
+from harness_bench import archive, procs
 
 # A folder with no agent instruction file in any ancestor (HB-PRE-002). The operator's profile, where
 # pytest's tmp_path lives, holds ~/.claude/CLAUDE.md, so cells cannot be built there.
@@ -51,3 +52,29 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if "native" in item.keywords:
                 item.add_marker(skip)
+
+
+def pytest_runtest_setup(item):
+    if item.get_closest_marker("slow") is not None:
+        dotnet_gate(os.environ)
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_protocol(item, nextitem):
+    if item.get_closest_marker("slow") is None:
+        real_run = procs.run
+
+        @functools.wraps(real_run)  # keeps procs.run's signature for tests that inspect it
+        def guarded_run(argv, *args, **kwargs):
+            executable = Path(argv[0]).name.lower() if argv else ""
+            if executable in ("dotnet", "dotnet.exe"):
+                pytest.fail(f"unmarked test {item.nodeid} started real dotnet process: {argv[0]}")
+            return real_run(argv, *args, **kwargs)
+
+        procs.run = guarded_run
+        try:
+            yield
+        finally:
+            procs.run = real_run
+    else:
+        yield

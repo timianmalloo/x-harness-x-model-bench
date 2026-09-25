@@ -159,6 +159,7 @@ def grade_d1(tmp_path: Path, folder: Path, cell: dict) -> dict[str, tuple]:
 BUILT_CORRECTNESS = ("pass_at_1", "partial_credit", "build_and_suite_clean")
 
 
+@pytest.mark.slow
 def test_d1_base_plus_a_file_with_a_syntax_error_scores_0_not_na(tmp_path, d1_dotnet):  # DR-G4, R-67 c1
     got = grade_d1(tmp_path, *d1_cell(tmp_path, BROKEN))
     assert {m: got.get(m) for m in BUILT_CORRECTNESS} == \
@@ -166,6 +167,7 @@ def test_d1_base_plus_a_file_with_a_syntax_error_scores_0_not_na(tmp_path, d1_do
     assert got.get("regression_count") == (None, "workspace does not build")  # c2, on real dotnet
 
 
+@pytest.mark.slow
 def test_d1_reference_with_a_member_deleted_that_unchanged_files_use_scores_0(tmp_path, d1_dotnet):  # TA 9: by cause
     got = grade_d1(tmp_path, *d1_cell(tmp_path, {**REFERENCE, "src/AiDe.Core/PathComparison.cs": without_member}))
     assert {m: got.get(m) for m in BUILT_CORRECTNESS} == \
@@ -185,6 +187,7 @@ def inverted(text: str) -> str:
     return head + method + body.replace("Assert.Equal(payload, result);", "Assert.NotEqual(payload, result);") + "[Fact]" + rest
 
 
+@pytest.mark.slow
 def test_d1_base_with_one_public_assertion_inverted_has_exactly_1_regression(tmp_path, d1_dotnet):  # GR-CODE c2
     got = grade_d1(tmp_path, *d1_cell(tmp_path, {IPC_TESTS: inverted}))
     assert got.get("regression_count") == (1, None)
@@ -192,12 +195,14 @@ def test_d1_base_with_one_public_assertion_inverted_has_exactly_1_regression(tmp
     assert log.read_text(encoding="utf-8").splitlines()[-1:] == [f"regressed {IPC_KEY}"]
 
 
+@pytest.mark.slow
 def test_an_empty_nuget_cache_is_na_restore_never_0(tmp_path, d1_dotnet, monkeypatch):  # F13: a failure before the build
     (tmp_path / "empty-nuget").mkdir()
     monkeypatch.setenv("NUGET_PACKAGES", str(tmp_path / "empty-nuget"))
     got = grade_d1(tmp_path, *d1_cell(tmp_path, REFERENCE))
     assert {m: got.get(m) for m in (*BUILT_CORRECTNESS, "regression_count")} == \
         dict.fromkeys((*BUILT_CORRECTNESS, "regression_count"), (None, "infrastructure failure before build: restore"))
+
 
 
 # --- the shared change reader: the pre-turn commit and the change set (git only; no dotnet) -------------------------
