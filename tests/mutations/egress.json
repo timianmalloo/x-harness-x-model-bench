@@ -2,50 +2,289 @@
  {
   "name": "credential class not scanned",
   "file": "src/harness_bench/egress.py",
-  "find": "(\"credential\", _exact(payload, secrets)),",
-  "replace": "(\"credential\", False),",
-  "tests": ["tests/test_egress.py::test_a_credential_value_is_withheld_in_each_encoding"]
+  "find": "(lambda: _exact(views, secrets))",
+  "replace": "(lambda: False)",
+  "tests": [
+   "tests/test_egress.py::test_a_credential_value_is_withheld_in_each_encoding"
+  ]
  },
  {
   "name": "token_shape class not scanned",
   "file": "src/harness_bench/egress.py",
-  "find": "(\"token_shape\", report_html.scan(payload) > 0),",
-  "replace": "(\"token_shape\", False),",
-  "tests": ["tests/test_egress.py::test_a_token_shaped_string_is_withheld"]
+  "find": "\"token_shape\": lambda: any(p.search(v) for v in views for p in SHAPES),",
+  "replace": "\"token_shape\": lambda: False,",
+  "tests": [
+   "tests/test_egress.py::test_a_token_shaped_string_is_withheld"
+  ]
+ },
+ {
+  "name": "token_prefix class not scanned",
+  "file": "src/harness_bench/egress.py",
+  "find": "re.search(re.escape(p) + TOKEN_BODY, v, re.IGNORECASE)",
+  "replace": "False",
+  "tests": [
+   "tests/test_egress.py::test_a_token_with_one_of_the_operators_prefixes_is_withheld"
+  ]
  },
  {
   "name": "email class not scanned",
   "file": "src/harness_bench/egress.py",
-  "find": "(\"email\", _anycase(payload, email)),",
-  "replace": "(\"email\", False),",
-  "tests": ["tests/test_egress.py::test_the_operators_email_is_withheld_in_any_case"]
+  "find": "lambda: _anycase(views, operator.email)",
+  "replace": "lambda: False",
+  "tests": [
+   "tests/test_egress.py::test_the_operators_email_is_withheld_in_any_case"
+  ]
  },
  {
   "name": "username class not scanned",
   "file": "src/harness_bench/egress.py",
-  "find": "(\"username\", _word(payload, username)),",
-  "replace": "(\"username\", False),",
-  "tests": ["tests/test_egress.py::test_the_operators_username_is_withheld_as_a_whole_word"]
+  "find": "lambda: _word(views, operator.username)",
+  "replace": "lambda: False",
+  "tests": [
+   "tests/test_egress.py::test_the_operators_username_is_withheld_as_a_whole_word"
+  ]
  },
  {
   "name": "home_path class not scanned",
   "file": "src/harness_bench/egress.py",
-  "find": "(\"home_path\", _path(payload, home)),",
-  "replace": "(\"home_path\", False),",
-  "tests": ["tests/test_egress.py::test_the_operators_home_path_is_withheld_in_any_separator_form"]
+  "find": "lambda: _path(views, operator.home)",
+  "replace": "lambda: False",
+  "tests": [
+   "tests/test_egress.py::test_the_operators_home_path_is_withheld_in_any_separator_form"
+  ]
  },
  {
   "name": "canary class not scanned",
   "file": "src/harness_bench/egress.py",
-  "find": "(\"canary\", _exact(payload, canaries)),",
-  "replace": "(\"canary\", False),",
-  "tests": ["tests/test_egress.py::test_a_planted_canary_is_withheld"]
+  "find": "(lambda: _exact(views, canaries))",
+  "replace": "(lambda: False)",
+  "tests": [
+   "tests/test_egress.py::test_a_planted_canary_is_withheld"
+  ]
  },
  {
   "name": "release sends a withheld payload",
   "file": "src/harness_bench/egress.py",
   "find": "        if self.withheld or self.payload is None:\n            return None\n",
   "replace": "",
-  "tests": ["tests/test_egress.py::test_a_withheld_payload_never_reaches_the_backend"]
+  "tests": [
+   "tests/test_egress.py::test_a_withheld_payload_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "operator accepts an empty identifier",
+  "file": "src/harness_bench/egress.py",
+  "find": "if not all(v.strip() for v in (self.email, self.username, self.home)):",
+  "replace": "if False:",
+  "tests": [
+   "tests/test_egress.py::test_the_operator_refuses_an_empty_identifier"
+  ]
+ },
+ {
+  "name": "scanned not reported",
+  "file": "src/harness_bench/egress.py",
+  "find": "return found + (() if complete else (\"unscannable\",)), scanned",
+  "replace": "return found + (() if complete else (\"unscannable\",)), ()",
+  "tests": [
+   "tests/test_egress.py::test_the_verdict_names_what_was_scanned_so_clean_differs_from_not_scanned"
+  ]
+ },
+ {
+  "name": "destination shape not checked",
+  "file": "src/harness_bench/egress.py",
+  "find": "if not DESTINATION.fullmatch(destination) or hits(destination)[0]:",
+  "replace": "if hits(destination)[0]:",
+  "tests": [
+   "tests/test_egress.py::test_an_unsafe_destination_is_refused_without_echoing_it"
+  ]
+ },
+ {
+  "name": "destination content not scanned",
+  "file": "src/harness_bench/egress.py",
+  "find": "if not DESTINATION.fullmatch(destination) or hits(destination)[0]:",
+  "replace": "if not DESTINATION.fullmatch(destination):",
+  "tests": [
+   "tests/test_egress.py::test_an_unsafe_destination_is_refused_without_echoing_it"
+  ]
+ },
+ {
+  "name": "clean payload in the repr",
+  "file": "src/harness_bench/egress.py",
+  "find": "    payload: str | None = field(repr=False)",
+  "replace": "    payload: str | None = field(repr=True)",
+  "tests": [
+   "tests/test_egress.py::test_the_verdict_record_and_repr_carry_no_content"
+  ]
+ },
+ {
+  "name": "payload in the ledger record",
+  "file": "src/harness_bench/egress.py",
+  "find": "\"scanned\": self.scanned}",
+  "replace": "\"scanned\": self.scanned, \"payload\": self.payload}",
+  "tests": [
+   "tests/test_egress.py::test_the_verdict_record_and_repr_carry_no_content"
+  ]
+ },
+ {
+  "name": "extra shapes dropped",
+  "file": "src/harness_bench/egress.py",
+  "find": "(*report_html.SECRET_SHAPES, *EXTRA_SHAPES)",
+  "replace": "(*report_html.SECRET_SHAPES,)",
+  "tests": [
+   "tests/test_egress.py::test_a_token_shaped_string_is_withheld"
+  ]
+ },
+ {
+  "name": "shapes case-sensitive",
+  "file": "src/harness_bench/egress.py",
+  "find": "re.compile(p.pattern, re.IGNORECASE)",
+  "replace": "re.compile(p.pattern)",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "no NFKC layer",
+  "file": "src/harness_bench/egress.py",
+  "find": "unicodedata.normalize(\"NFKC\", text)",
+  "replace": "text",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "no HTML entity layer",
+  "file": "src/harness_bench/egress.py",
+  "find": "_json_unescape(html.unescape(",
+  "replace": "_json_unescape((",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "no JSON escape layer",
+  "file": "src/harness_bench/egress.py",
+  "find": "urllib.parse.unquote(_json_unescape(",
+  "replace": "urllib.parse.unquote((",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "no URL layer",
+  "file": "src/harness_bench/egress.py",
+  "find": "return urllib.parse.unquote(_json_unescape(",
+  "replace": "return (_json_unescape(",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "no base64 views",
+  "file": "src/harness_bench/egress.py",
+  "find": "for derived in (_decode_layer(text), _base64_text(text)):",
+  "replace": "for derived in (_decode_layer(text),):",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "no whitespace-split match",
+  "file": "src/harness_bench/egress.py",
+  "find": "return any(f in v or _ws(f) in _ws(v) for v in views for f in forms)",
+  "replace": "return any(f in v for v in views for f in forms)",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "no encoded identifiers",
+  "file": "src/harness_bench/egress.py",
+  "find": "return any(f in v for v in views for f in encodings({value}) - {value})",
+  "replace": "return False",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "no POSIX home form",
+  "file": "src/harness_bench/egress.py",
+  "find": "        forms.add(f\"/{drive.group(1)}{drive.group(2)}\")",
+  "replace": "        pass",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "no line-split home",
+  "file": "src/harness_bench/egress.py",
+  "find": "f in _path_form(v) or _ws(f) in _ws(_path_form(v))",
+  "replace": "f in _path_form(v)",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "unscannable not withheld",
+  "file": "src/harness_bench/egress.py",
+  "find": "(() if complete else (\"unscannable\",))",
+  "replace": "()",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "no decoding bound",
+  "file": "src/harness_bench/egress.py",
+  "find": "if depth > MAX_LAYERS or len(views) >= MAX_VIEWS:",
+  "replace": "if len(views) >= 10_000:",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "lint: an injected backend call is not a sink",
+  "file": "tests/test_architecture.py",
+  "find": " or\n                          isinstance(n.func, ast.Name) and n.func.id in params)]",
+  "replace": ")]",
+  "tests": [
+   "tests/test_architecture.py::test_a_judge_backend_is_reached_only_through_egress_check_and_release"
+  ]
+ },
+ {
+  "name": "lint: any .release counts",
+  "file": "tests/test_architecture.py",
+  "find": "and (is_check(n.func.value) or isinstance(n.func.value, ast.Name) and n.func.value.id in checked)",
+  "replace": "and True",
+  "tests": [
+   "tests/test_architecture.py::test_a_judge_backend_is_reached_only_through_egress_check_and_release"
+  ]
+ },
+ {
+  "name": "lint: an unreleased spawner is allowed",
+  "file": "tests/test_architecture.py",
+  "find": "for s in spawners - used]",
+  "replace": "for s in ()]",
+  "tests": [
+   "tests/test_architecture.py::test_a_judge_backend_is_reached_only_through_egress_check_and_release"
+  ]
+ },
+ {
+  "name": "lint: a gateway with no released backend passes",
+  "file": "tests/test_architecture.py",
+  "find": "if inside and not (bound or used):",
+  "replace": "if False:",
+  "tests": [
+   "tests/test_architecture.py::test_a_judge_backend_is_reached_only_through_egress_check_and_release"
+  ]
+ },
+ {
+  "name": "lint: a spawner may be imported outside gateway",
+  "file": "tests/test_architecture.py",
+  "find": "target.rsplit(\".\", 1)[1] in spawners]",
+  "replace": "False]",
+  "tests": [
+   "tests/test_architecture.py::test_a_judge_backend_is_reached_only_through_egress_check_and_release"
+  ]
  }
 ]

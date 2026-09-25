@@ -170,10 +170,13 @@ TRANSFORMED = {
     "base64-credential-inside-a-longer-blob": lambda s: (_b64(f"auth={s.cred};x"), "credential"),
     "url-encoded-email": lambda s: (_q(s.email), "email"),
     "base64-email": lambda s: (_b64(s.email), "email"),
+    # Glued to other base64 characters, the run decodes misaligned; only the encoded form of the value matches.
+    "base64-email-glued-to-other-base64": lambda s: ("Zm9vY" + _b64(s.email), "email"),
     "json-unicode-escaped-email": lambda s: (s.email.replace("@", "\\u0040"), "email"),
     "html-entity-email": lambda s: (s.email.replace("@", "&#64;"), "email"),
     "base64-username": lambda s: (_b64(s.username), "username"),
     "url-encoded-home": lambda s: (_q(s.home), "home_path"),
+    "line-split-home": lambda s: (s.home[:6] + "\n  " + s.home[6:], "home_path"),
     "posix-drive-home": lambda s: ("/c/" + s.home[3:].replace("\\", "/"), "home_path"),
     "wsl-home": lambda s: ("/mnt/c/" + s.home[3:].replace("\\", "/") + "/repo", "home_path"),
     "upper-case-token-shape": lambda s: (("sk-ant-" + token_hex(16)).upper(), "token_shape"),
