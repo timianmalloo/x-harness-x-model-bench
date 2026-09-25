@@ -7,14 +7,16 @@
 
 from __future__ import annotations
 
+import shutil
 from decimal import Decimal
 from pathlib import Path
 
 import pytest
 from archived_runs import ROOT
-from test_grade_correctness import BROKEN, d1_cell, done, tree_digest
+from test_grade_correctness import BROKEN, d1_cell, done, git, tree_digest
 
 from harness_bench import config, plan
+from harness_bench.archive import make_writable
 from harness_bench.grade import CellInput, Score, rigor
 from harness_bench.grade.runner import applicable
 
@@ -129,3 +131,48 @@ def test_rigor_na_by_design_metrics_give_the_designs_reasons_verbatim(tmp_path, 
     folder, cell = d1_cell(tmp_path, {})
     got = grade_d1(tmp_path, folder, cell)
     assert got.get(metric) == (None, reason)
+
+
+# --- shared NA reasons ---------------------------------------------------------------------------------------------
+
+
+def test_static_analysis_delta_no_working_copy_is_na(tmp_path):
+    folder, cell = d1_cell(tmp_path, {})
+    shutil.rmtree(folder / "ws", onexc=make_writable)
+    got = grade_d1(tmp_path, folder, cell)
+    assert got.get(METRIC) == (None, "no working copy in the archive")
+
+
+def test_static_analysis_delta_no_builder_commit_is_na(tmp_path):
+    folder, cell = d1_cell(tmp_path, {})
+    git(folder / "ws", "commit", "-q", "--amend", "-m", f"D1 base ({D1_VERSION[:11]})")
+    got = grade_d1(tmp_path, folder, cell)
+    assert got.get(METRIC) == (None, "pre-turn commit not found in the working copy")
+
+
+def test_static_analysis_delta_timeout_is_na(tmp_path, monkeypatch):
+    from harness_bench import procs
+
+    folder, cell = d1_cell(tmp_path, {})
+    monkeypatch.setattr(procs, "run", lambda argv, **kwargs: done(None, timed_out=True))
+    got = grade_d1(tmp_path, folder, cell, timeout=60)
+    assert got.get(METRIC) == (None, "HB-GRD-002 grading step timeout after 60 s")
+
+
+def test_static_analysis_delta_restore_failure_is_na(tmp_path, monkeypatch):
+    from harness_bench import procs
+
+    folder, cell = d1_cell(tmp_path, {})
+    queue = [done(0, "10.0.303"), done(1, r"C:\p\a.csproj : error NU1101: Unable to find package [x]")]
+    monkeypatch.setattr(procs, "run", lambda argv, **kwargs: queue.pop(0))
+    got = grade_d1(tmp_path, folder, cell)
+    assert got.get(METRIC) == (None, "infrastructure failure before build: restore")
+
+
+def test_static_analysis_delta_sdk_failure_is_na(tmp_path, monkeypatch):
+    from harness_bench import procs
+
+    folder, cell = d1_cell(tmp_path, {})
+    monkeypatch.setattr(procs, "run", lambda argv, **kwargs: done(1, "bad sdk"))
+    got = grade_d1(tmp_path, folder, cell)
+    assert got.get(METRIC) == (None, "infrastructure failure before build: sdk")
