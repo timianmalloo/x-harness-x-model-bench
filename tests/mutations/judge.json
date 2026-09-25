@@ -247,8 +247,8 @@
  {
   "name": "cmd_grade skips the up-front live-run refusal",
   "file": "src/harness_bench/cli.py",
-  "find": "        gateway.refuse_if_live(gateway.run_roots(root, Path(args.runs)))\n",
-  "replace": "",
+  "find": "live_scan = (roots, gateway.refuse_if_live(roots))",
+  "replace": "live_scan = (roots, ())",
   "tests": ["tests/test_grade_judge.py::test_t_gw_19_bench_grade_allow_model_calls_refuses_a_live_run_before_the_pass_starts"]
  },
  {
@@ -282,8 +282,8 @@
  {
   "name": "grading.started records no scanned roots and no run liveness",
   "file": "src/harness_bench/grade/runner.py",
-  "find": "\"scanned_roots\": [str(p) for p in roots],  # R-65 c1\n                                   \"run_liveness\": [{\"run\": str(run), \"liveness\": liveness} for run, liveness in scanned]",
-  "replace": "\"scanned_roots\": [], \"run_liveness\": []",
+  "find": "\"scanned_roots\": [str(p) for p in self.live_scan[0]],",
+  "replace": "\"scanned_roots\": [],",
   "tests": ["tests/test_grade_judge.py::test_grading_started_records_the_scanned_roots_and_each_runs_liveness"]
  },
  {
