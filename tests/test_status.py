@@ -243,3 +243,40 @@ _statuses = st.builds(
 @given(_statuses)
 def test_every_valid_status_round_trips(s):  # design T2: bench-status/1 round trip
     assert status.parse(status.to_json(s)) == s
+
+
+BLOCKED = {"kind": "decision.opened", "decision_id": "D1", "decision_kind": "blocked_cell", "subject": "codex",
+           "cause_code": "HB-CELL-202", "options": ["continue", "stop"], "default": "continue"}
+
+
+def _decisions_run(root, tmp_path):
+    """_live_run plus three decisions: D1 open for 30 s, D2 resolved by its default, D3 open past its timeout."""
+    run_dir = _live_run(root, tmp_path)
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-3") as ev:
+        ev.append({**BLOCKED, "recorded_at": "2026-09-23T11:59:30.000Z"})
+        ev.append({"kind": "decision.opened", "decision_id": "D2", "decision_kind": "qualification_gap", "subject": "c",
+                   "cause_code": "HB-CELL-116", "options": ["skip_combo", "stop"], "default": "skip_combo",
+                   "recorded_at": "2026-09-23T11:00:00.000Z"})
+        ev.append({"kind": "decision.resolved", "decision_id": "D2", "state": "default applied (timeout)", "option": "skip_combo"})
+        ev.append({"kind": "decision.opened", "decision_id": "D3", "decision_kind": "spend_cap", "subject": "r1",
+                   "cause_code": "HB-RUN-007", "options": ["stop", "continue"], "default": "stop", "spend_tokens": 45,
+                   "cells_unmeasured": 1, "recorded_at": "2026-09-23T11:00:00.000Z"})
+    return run_dir
+
+
+def test_status_carries_each_decision_and_its_time_to_default(root, tmp_path):  # ST-2 (design 4.6, UXA-7)
+    s = status.build(_decisions_run(root, tmp_path), now=NOW)
+    assert json.loads(status.to_json(s))["decisions"] == [
+        {"decision_id": "D1", "decision_kind": "blocked_cell", "subject": "codex", "cause_code": "HB-CELL-202",
+         "options": ["continue", "stop"], "default": "continue", "state": "open", "default_in_s": 1770},  # 1800 - 30
+        {"decision_id": "D2", "decision_kind": "qualification_gap", "subject": "c", "cause_code": "HB-CELL-116",
+         "options": ["skip_combo", "stop"], "default": "skip_combo", "state": "default applied (timeout)", "default_in_s": None},
+        {"decision_id": "D3", "decision_kind": "spend_cap", "subject": "r1", "cause_code": "HB-RUN-007",
+         "options": ["stop", "continue"], "default": "stop", "state": "open", "default_in_s": 0}]  # display only: never negative
+    assert status.parse(status.to_json(s)) == s
+    lines = status.text(s).splitlines()
+    assert ("Decision D1 · blocked cell · codex · HB-CELL-202 · options continue | stop · default continue in 29 min. "
+            "Answer: bench answer r1 D1 <option>") in lines
+    assert ("Decision D3 · spend cap · r1 · HB-RUN-007 · options stop | continue · default stop in 0 min. "
+            "Answer: bench answer r1 D3 <option>") in lines
+    assert not [line for line in lines if line.startswith("Decision D2")]  # only open decisions ask for an answer
