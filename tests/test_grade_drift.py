@@ -6,6 +6,7 @@
 """
 
 import dataclasses
+import os
 import shutil
 from decimal import Decimal
 from pathlib import Path
@@ -14,7 +15,7 @@ import pytest
 from archived_runs import ROOT
 from test_grade_correctness import d1_cell, tree_digest
 
-from harness_bench import config, procs
+from harness_bench import config, plan, procs, views
 from harness_bench.archive import make_writable
 from harness_bench.grade import CellInput, drift, runner
 from harness_bench.grade.runner import applicable
@@ -180,3 +181,59 @@ def test_drift_is_registered_and_returns_only_the_applicable_metrics_with_its_lo
     assert {m: (s.value, s.reason, s.evidence) for m, s in out.items()} == {"scope_creep": (0, None, "grading/g/c1/drift/drift.log")}
     assert (tmp_path / "run" / "grading" / "g" / "c1" / "drift" / "drift.log").read_text(encoding="utf-8") == \
         "added\tsrc/AiDe.Core/Projections/Block.cs\tinside\t+10 -0\tR1 file-scoped namespace:4\n"
+
+
+# --- files the pre-turn tree's own ignore rules exclude (the pack hook's marker in the gate's pack-on cells) ----------
+
+MARKER = "docs/audit/.run-starts.json"  # the pack's session-start marker, ignored by the pack's .gitignore
+
+
+def pack_cell_with_ignore(tmp_path: Path, overlay: dict) -> tuple[Path, dict]:
+    """A pack-on cell whose pack commit also carries `.gitignore` naming the marker, then `overlay`, uncommitted."""
+    from test_grade_correctness import git
+
+    folder, cell = d1_cell(tmp_path, {}, pack=True)
+    ws = folder / "ws"
+    (ws / ".gitignore").write_text(f"{MARKER}\nLICENSE\n", encoding="utf-8", newline="")  # LICENSE is tracked
+    git(ws, "add", ".gitignore")
+    git(ws, "commit", "-q", "--amend", "-m", "ai-forward pack revision 95")
+    for rel, text in overlay.items():
+        (ws / rel).parent.mkdir(parents=True, exist_ok=True)
+        (ws / rel).write_text(text, encoding="utf-8", newline="")
+    return folder, cell
+
+
+def test_an_untracked_file_the_pre_turn_ignore_rules_name_is_not_scope_creep(tmp_path):  # the gate's 35af and 4a62
+    got = grade_d1(tmp_path, *pack_cell_with_ignore(tmp_path, {MARKER: '{\n  "s": "2026-09-25T06:27:25Z"\n}\n'}))
+    assert {m: got[m] for m in MEASURED} == \
+        {"scope_creep": (0, None), "scope_creep_files": (0, None), "convention_drift": (None, "no lines changed")}
+
+
+# --- the gate run row15-d1-1, read-only (HB_GATE_RUNS) ---------------------------------------------------------------
+
+GATE_RUNS = Path(os.environ.get("HB_GATE_RUNS") or ROOT / "runs")
+D1_GATE = {  # cp = copilot-sol, cx = codex-sol, cc = cc-opus; on/off = the pack (design: Drift, Fixtures)
+    "4a6250261f80ded4": ("0.00", None),  # cp on
+    "3ff04431d3b5ac27": ("0.00", None),  # cx on: committed its two files after the pack commit
+    "35af195cfe821dca": (None, "no lines changed"),  # cc on: nothing in ws/ changed
+    "caa8ca38b1a929a8": ("0.00", None),  # cp off
+    "2535962f830d7718": ("0.00", None),  # cx off
+    "c3d40fa1377ba0dc": ("0.00", None),  # cc off
+}
+
+
+def test_the_d1_gate_cells_have_no_scope_creep_and_the_archive_is_unchanged(tmp_path):
+    run = GATE_RUNS / "row15-d1-1"
+    if not (run / "plan.json").is_file():
+        pytest.skip("gate run row15-d1-1 is not on this host (set HB_GATE_RUNS to the runs folder)")
+    attempts = {e["cell_id"]: e["archive_attempt"] for e in views.rows(run, "events") if e["kind"] == "cell.archived"}
+    cells = {c["cell_id"]: c for c in plan.load_confirmed(run)["cells"]}
+    got = {}
+    for cid, attempt in sorted(attempts.items()):
+        folder = run / "archive" / cid / f"attempt-{attempt}"
+        before = tree_digest(folder)
+        out = drift.grade_cell(drift_input(tmp_path, folder, cells[cid], tmp_path / "grading" / cid / "drift"))
+        got[cid] = {m: encode(out[m]) for m in MEASURED}
+        assert tree_digest(folder) == before, f"grading wrote under the archive of {cid}"
+    assert got == {cid: {"scope_creep": (0, None), "scope_creep_files": (0, None), "convention_drift": cd}
+                   for cid, cd in D1_GATE.items()}
