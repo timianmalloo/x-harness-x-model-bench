@@ -2151,3 +2151,12 @@ def test_spend_cap_default_stops_the_run(base):  # US15-3
     assert [(e["code"], e["decision_id"]) for e in _kind(events, "run.stopped")] == [("HB-RUN-007", "D1")]
     outs = _outcomes(events)
     assert outs[running]["outcome"] == "stopped" and waiting not in outs and summary.exit_code == 3
+
+
+def test_a_cell_with_no_usage_is_unmeasured_never_zero(base):  # US15-3b (design 6.3)
+    p, launcher = _decision_plan([("fake", "A", {"usage": None}), ("fake", "A", {}), ("fake", "A", {})], parallelism=1,
+                                 spend_cap_tokens=CELL_TOKENS - 5, decision_timeout=0)
+    _, events, summary = _decision_run(base, (p, launcher))
+    assert [(e["spend_tokens"], e["cells_unmeasured"]) for e in _kind(events, "decision.opened")] == [(45, 1)]
+    assert _resolutions(events) == [("D1", "default applied (timeout)", "stop")]
+    assert len(_kind(events, "cell.launch_intent")) == 2 and summary.exit_code == 3
