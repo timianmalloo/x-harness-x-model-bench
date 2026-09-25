@@ -11,8 +11,10 @@ and the operator's identifiers are random synthetic strings (R-42). The stipulat
 import ast
 import dataclasses
 import json
+import os
 import shutil
 import sys
+import time
 from decimal import Decimal
 from pathlib import Path
 from secrets import token_hex
@@ -21,7 +23,7 @@ import pytest
 import yaml
 from archived_runs import GOOD, ROOT, make_root, make_run, pass_rows
 
-from harness_bench import config, egress, ledger, profiles, tools, views
+from harness_bench import config, egress, ledger, oslock, profiles, tools, views
 from harness_bench.errors import BenchError
 from harness_bench.gateway import backend as gw_backend
 from harness_bench.gateway import pipeline
@@ -313,6 +315,61 @@ def test_no_view_counts_verdict_uses_rows_as_calls():
     assert found == []
     assert "verdict_uses" in views.FACTS and "verdict_uses" in runner.PASS_FACTS
     assert views.KEYS["verdict_uses"] == ("run_id", "grading_id", "cell_id", "item_id", "judge_or_matcher")
+
+
+def allow_calls(tmp_path, base, monkeypatch) -> None:
+    """The pass may call: the fake judge CLI replays one 7-item answer (`fake_calls`)."""
+    calls = fake_calls(tmp_path, base / "cells", judge.Calls)
+    monkeypatch.setitem(runner.GRADERS, "judge",
+                        lambda inp: judge.grade(dataclasses.replace(inp, allow_model_calls=True), calls))
+
+
+def hold(runs: Path, name: str, plan_from: Path, liveness: str, held: list) -> Path:
+    """A known run `runs/<name>` (a copy of a confirmed plan.json) whose lock is held with a fresh heartbeat (`alive`),
+    held with a heartbeat an hour old (`stalled`), or free (`not running`); status.py reads the lock (R-65)."""
+    folder = runs / name
+    folder.mkdir(parents=True)
+    shutil.copy(plan_from / "plan.json", folder / "plan.json")
+    if liveness != "not running":
+        held.append(oslock.RunLock.acquire(folder / ".lock", "HB-RUN-005"))
+    if liveness == "stalled":
+        old = time.time() - 3600
+        os.utime(folder / ".lock", (old, old))
+    return folder
+
+
+def graded(run_dir: Path, root: Path, held: list) -> str:
+    """One pass while `held` locks are held; every lock is released afterwards."""
+    try:
+        return runner.run_pass(run_dir, root).grading_id
+    finally:
+        for lock in held:
+            lock.release()
+
+
+def refusal(run_dir: Path, gid: str) -> str:
+    log = run_dir / "grading" / gid / "a" / "judge" / "error.log"
+    assert log.is_file(), "the judge grader was not refused"
+    return log.read_text(encoding="utf-8")
+
+
+REFUSED = "HB-GRD-005: model calls refused while a run is live; scanned "
+
+
+# --------------------------------------------------------------------------------------------------- T-GW-19
+def test_t_gw_19_a_live_run_in_this_worktrees_runs_refuses_model_calls_before_any_spawn(tmp_path, base, monkeypatch):
+    root = judged_root(tmp_path)  # a bench root outside git: its runs/ is --runs only
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    held: list = []
+    live = hold(run_dir.parent, "live", run_dir, "alive", held)
+    allow_calls(tmp_path, base, monkeypatch)
+    gid = graded(run_dir, root, held)
+    assert spawns(tmp_path) == 0 and uses(run_dir, gid) == []  # the refusal comes before the first spawn
+    assert f"{REFUSED}{run_dir.parent.resolve()}; {live.resolve()} alive\n" in refusal(run_dir, gid)
+    rows = {r["metric_id"]: (r["value"], r["reason"]) for r in pass_rows(run_dir, "scores", gid)}
+    assert rows["adr_quality"] == (None, "HB-GRD-003 grader judge failed: BenchError")  # the pass itself completes
+    gid = graded(run_dir, root, [])  # the lock released: the same pass shape calls the judge
+    assert spawns(tmp_path) == 1 and not (run_dir / "grading" / gid / "a" / "judge" / "error.log").exists()
 
 
 def test_a_pass_that_may_call_refuses_a_cells_root_below_an_instruction_file_before_any_spawn(tmp_path, base,
