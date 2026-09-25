@@ -20,22 +20,25 @@ from harness_bench import procs
 from harness_bench.errors import BenchError, Cause
 
 STAMP = ".lock-sha256"
+
+
+@dataclass(frozen=True)
+class ToolLayout:
+    version_file: str
+    version_key: str
+    exe: str
+    adapter: str | None
+
+
 LAYOUT = {
-    "claude-code": {
-        "version_file": "@anthropic-ai/claude-agent-sdk/package.json", "version_key": "claudeCodeVersion",
-        "exe": "@anthropic-ai/claude-agent-sdk-win32-x64/claude.exe",
-        "adapter": "@agentclientprotocol/claude-agent-acp",
-    },
-    "codex": {
-        "version_file": "@openai/codex/package.json", "version_key": "version",
-        "exe": "@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe",
-        "adapter": "@agentclientprotocol/codex-acp",
-    },
-    "copilot": {
-        "version_file": "@github/copilot-win32-x64/package.json", "version_key": "version",
-        "exe": "@github/copilot-win32-x64/copilot.exe",
-        "adapter": None,
-    },
+    "claude-code": ToolLayout("@anthropic-ai/claude-agent-sdk/package.json", "claudeCodeVersion",
+                              "@anthropic-ai/claude-agent-sdk-win32-x64/claude.exe",
+                              "@agentclientprotocol/claude-agent-acp"),
+    "codex": ToolLayout("@openai/codex/package.json", "version",
+                        "@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe",
+                        "@agentclientprotocol/codex-acp"),
+    "copilot": ToolLayout("@github/copilot-win32-x64/package.json", "version",
+                          "@github/copilot-win32-x64/copilot.exe", None),
 }
 
 
@@ -83,14 +86,14 @@ def resolve(tools_dir: Path) -> dict[str, Build]:
     nm = tools_dir / "node_modules"
     builds = {}
     for harness, spec in LAYOUT.items():
-        version_file, exe = nm / spec["version_file"], nm / spec["exe"]
-        adapter_dir = nm / spec["adapter"] if spec["adapter"] is not None else None
+        version_file, exe = nm / spec.version_file, nm / spec.exe
+        adapter_dir = nm / spec.adapter if spec.adapter is not None else None
         adapter = adapter_dir / "dist" / "index.js" if adapter_dir is not None else None
         required = (version_file, exe, adapter) if adapter is not None else (version_file, exe)
         missing = [p for p in required if not p.is_file()]
         if missing:
             raise BenchError("HB-PRE-007", f"{harness}: missing {missing[0]}; run `bench tools install`")
-        version = json.loads(version_file.read_text(encoding="utf-8"))[spec["version_key"]]
+        version = json.loads(version_file.read_text(encoding="utf-8"))[spec.version_key]
         adapter_version = (json.loads((adapter_dir / "package.json").read_text(encoding="utf-8"))["version"]
                            if adapter_dir is not None else None)
         adapter_sha256 = _sha_tree(adapter_dir / "dist") if adapter_dir is not None else None

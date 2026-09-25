@@ -84,6 +84,34 @@
     "tests": ["tests/test_profiles.py::test_copilot_launcher_fills_each_cells_model_and_finds_its_record"]
   },
   {
+    "name": "adapter entry script optional for adapter harness",
+    "file": "src/harness_bench/tools.py",
+    "find": "required = (version_file, exe, adapter) if adapter is not None else (version_file, exe)",
+    "replace": "required = (version_file, exe)",
+    "tests": ["tests/test_tools.py::test_resolve_requires_an_adapter_entry_script"]
+  },
+  {
+    "name": "adapterless build requires an adapter",
+    "file": "src/harness_bench/tools.py",
+    "find": "required = (version_file, exe, adapter) if adapter is not None else (version_file, exe)",
+    "replace": "required = (version_file, exe, adapter)",
+    "tests": ["tests/test_tools.py::test_copilot_resolves_platform_build_without_adapter"]
+  },
+  {
+    "name": "adapterless version is not None",
+    "file": "src/harness_bench/tools.py",
+    "find": "if adapter_dir is not None else None)\n        adapter_sha256",
+    "replace": "if adapter_dir is not None else \"missing\")\n        adapter_sha256",
+    "tests": ["tests/test_tools.py::test_copilot_resolves_platform_build_without_adapter"]
+  },
+  {
+    "name": "adapterless hash is not None",
+    "file": "src/harness_bench/tools.py",
+    "find": "adapter_sha256 = _sha_tree(adapter_dir / \"dist\") if adapter_dir is not None else None",
+    "replace": "adapter_sha256 = _sha_tree(adapter_dir / \"dist\") if adapter_dir is not None else \"missing\"",
+    "tests": ["tests/test_tools.py::test_copilot_resolves_platform_build_without_adapter"]
+  },
+  {
     "name": "github host credential must be dropped",
     "file": "src/harness_bench/profiles.py",
     "find": "\"GH_TOKEN\", \"GITHUB_TOKEN\", \"GH_HOST\"}",

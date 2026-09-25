@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from harness_bench import config, gitsafe, plan, tools, workspace
+from harness_bench import cli, config, gitsafe, plan, tools, workspace
 from harness_bench.errors import BenchError
 from harness_bench.ledger import canonical
 
@@ -224,6 +224,42 @@ def test_instruction_list_refuses_a_non_list_result_from_the_fake_exe(monkeypatc
     assert e.value.code == "HB-PRE-008"
 
 
+def test_instruction_list_reports_nonzero_exit(monkeypatch, tmp_path):
+    monkeypatch.setattr(plan, "procs", SimpleNamespace(run=lambda *a, **k: SimpleNamespace(
+        returncode=7, timed_out=False, stdout="", stderr="instruction error")), raising=False)
+    with pytest.raises(BenchError) as error:
+        plan.instruction_list(tmp_path / "copilot.exe", tmp_path, {})
+    assert error.value.code == "HB-PRE-008"
+    assert "instruction error" in str(error.value)
+
+
+def test_instruction_list_reports_invalid_json(monkeypatch, tmp_path):
+    monkeypatch.setattr(plan, "procs", SimpleNamespace(run=lambda *a, **k: SimpleNamespace(
+        returncode=0, timed_out=False, stdout="not json", stderr="")), raising=False)
+    with pytest.raises(BenchError) as error:
+        plan.instruction_list(tmp_path / "copilot.exe", tmp_path, {})
+    assert error.value.code == "HB-PRE-008"
+    assert "did not return JSON" in str(error.value)
+
+
+def test_instruction_list_reports_timeout(monkeypatch, tmp_path):
+    result = SimpleNamespace(returncode=1, timed_out=True, stdout="", stderr="")
+    monkeypatch.setattr(plan, "procs", SimpleNamespace(run=lambda *a, **k: result), raising=False)
+    with pytest.raises(BenchError) as error:
+        plan.instruction_list(tmp_path / "copilot.exe", tmp_path, {})
+    assert error.value.code == "HB-PRE-008"
+    assert "timed out after 120 s" in str(error.value)
+
+
+def test_instruction_list_reports_truncated_stdout(monkeypatch, tmp_path):
+    result = SimpleNamespace(returncode=0, timed_out=False, stdout='[{"label":', stderr="")
+    monkeypatch.setattr(plan, "procs", SimpleNamespace(run=lambda *a, **k: result), raising=False)
+    with pytest.raises(BenchError) as error:
+        plan.instruction_list(tmp_path / "copilot.exe", tmp_path, {})
+    assert error.value.code == "HB-PRE-008"
+    assert "truncated" in str(error.value)
+
+
 def _fake_copilot_plan(monkeypatch, tmp_path, listing):
     from harness_bench import workspace
 
@@ -232,7 +268,13 @@ def _fake_copilot_plan(monkeypatch, tmp_path, listing):
     m["repetitions"] = 2
     bom = config.load_yaml(ROOT / "bench" / "bom.yaml")
     build = SimpleNamespace(exe=tmp_path / "fake-copilot.exe")
-    monkeypatch.setattr(plan, "tools", SimpleNamespace(resolve=lambda *_: {"copilot": build}, check_build=lambda *_: None), raising=False)
+    resolved_dirs = []
+
+    def resolve(tools_dir):
+        resolved_dirs.append(tools_dir)
+        return {"copilot": build}
+
+    monkeypatch.setattr(plan, "tools", SimpleNamespace(resolve=resolve, check_build=lambda *_: None), raising=False)
     monkeypatch.setattr(plan, "profile_record", lambda *_: {"profile_hash": "fake"})
     monkeypatch.setattr(plan.profiles, "load", lambda *_: SimpleNamespace(cell_env=lambda base, home, build, model, traceparent: {
         "COPILOT_HOME": str(home)}))
@@ -245,7 +287,11 @@ def _fake_copilot_plan(monkeypatch, tmp_path, listing):
 
     monkeypatch.setattr(workspace, "cell_working_copy", copy)
     monkeypatch.setattr(workspace, "pack_checkout", lambda *_: tmp_path / "pack")
-    monkeypatch.setattr(workspace, "install_pack", lambda *_ , **__: [])
+    def install_pack(_pack_dir, ws, **_kwargs):
+        (ws / "AGENTS.md").write_text("installed", encoding="utf-8")
+        return []
+
+    monkeypatch.setattr(workspace, "install_pack", install_pack)
     calls = []
 
     def fake_list(exe, ws, env):
@@ -256,14 +302,19 @@ def _fake_copilot_plan(monkeypatch, tmp_path, listing):
     args = {"root": ROOT, "matrix": m, "bom": bom, "run_id": "copilot-plan", "builds": {"copilot": {
         "version": "1.0.89-1", "sha256": "a" * 64}}, "pack": {"source": str(tmp_path / "pack-source"),
         "commit": "c" * 40, "revision": 95}}
-    return args, calls
+    args["tools_dir"] = tmp_path / "custom-tools"
+    args["cells_root"] = tmp_path / "cells-root"
+    return args, calls, resolved_dirs
 
 
 def test_copilot_plan_lists_once_per_task_pack_build_and_freezes_counts(monkeypatch, tmp_path):
-    args, calls = _fake_copilot_plan(monkeypatch, tmp_path, lambda ws: [] if "off" in ws.parts else [
-        {"label": "AGENTS.md"}, {"label": "CLAUDE.md"}])
+    args, calls, resolved_dirs = _fake_copilot_plan(monkeypatch, tmp_path, lambda ws: [
+        {"label": "AGENTS.md"}, {"label": "CLAUDE.md"}] if (ws / "AGENTS.md").is_file() else [])
     p = plan.build_plan(**args)
     assert len(calls) == 2
+    assert resolved_dirs == [args["tools_dir"]]
+    assert all(ws.is_relative_to(args["cells_root"]) for _, ws, _ in calls)
+    assert not list(args["cells_root"].glob("bench-plan-*"))
     assert {(c["pack"], c["instruction_count"]) for c in p["cells"]} == {("off", 0), ("on", 2)}
     assert len(p["instruction_lists"]) == 2
     assert all(c["build_sha256"] == "a" * 64 for c in p["instruction_lists"])
@@ -274,22 +325,76 @@ def test_copilot_plan_lists_once_per_task_pack_build_and_freezes_counts(monkeypa
 def test_copilot_plan_projects_instructions_to_string_identity_fields_and_keeps_canonical(monkeypatch, tmp_path):
     """A boolean field in the exe's instruction rows (defaultDisabled) must not break the ledger's
     canonical encoder (no bools) once the plan is frozen (defect: slice-5 worker)."""
-    raw = [{"id": "a", "label": "AGENTS.md", "location": "repository", "type": "agents",
+    raw = [{"id": 3, "label": "AGENTS.md", "location": "repository", "type": True,
             "sourcePath": "AGENTS.md", "defaultDisabled": False}]
-    args, _ = _fake_copilot_plan(monkeypatch, tmp_path, lambda ws: [] if "off" in ws.parts else raw)
+    args, _, _ = _fake_copilot_plan(monkeypatch, tmp_path, lambda ws: raw if (ws / "AGENTS.md").is_file() else [])
     p = plan.build_plan(**args)
     on_list = next(c for c in p["instruction_lists"] if c["pack"] == "on")
     assert on_list["count"] == 1
-    assert on_list["instructions"] == [{"id": "a", "label": "AGENTS.md", "location": "repository",
-                                         "type": "agents", "sourcePath": "AGENTS.md"}]
+    assert on_list["instructions"] == [{"label": "AGENTS.md", "location": "repository", "sourcePath": "AGENTS.md"}]
     canonical(p)  # ledger canonical forbids bool; build_plan already calls plan_hash internally
 
 
 def test_copilot_plan_refuses_a_nonempty_pack_off_instruction_list(monkeypatch, tmp_path):
-    args, _ = _fake_copilot_plan(monkeypatch, tmp_path, lambda ws: [{"label": "leaked"}])
+    args, _, _ = _fake_copilot_plan(monkeypatch, tmp_path, lambda ws: [{"label": "leaked"}])
     with pytest.raises(BenchError) as e:
         plan.build_plan(**args)
     assert e.value.code == "HB-PRE-008"
+
+
+def test_copilot_plan_installs_pack_before_listing_instructions(monkeypatch, tmp_path):
+    args, _, _ = _fake_copilot_plan(monkeypatch, tmp_path, lambda ws: [
+        {"label": "AGENTS.md"}] if (ws / "AGENTS.md").is_file() else [])
+    p = plan.build_plan(**args)
+    assert next(item for item in p["instruction_lists"] if item["pack"] == "on")["count"] == 1
+
+
+def test_copilot_plan_removes_probe_after_instruction_error(monkeypatch, tmp_path):
+    args, _, _ = _fake_copilot_plan(monkeypatch, tmp_path, lambda ws: [{"label": "leaked"}])
+    with pytest.raises(BenchError, match="HB-PRE-008"):
+        plan.build_plan(**args)
+    assert not list(args["cells_root"].glob("bench-plan-*"))
+
+
+def test_copilot_plan_logs_failed_cleanup_without_masking_instruction_error(monkeypatch, tmp_path, caplog):
+    args, _, _ = _fake_copilot_plan(monkeypatch, tmp_path, lambda ws: [{"label": "leaked"}])
+    original_rmtree = plan.shutil.rmtree
+
+    def fail_probe_cleanup(path, **kwargs):
+        if path.name.startswith("bench-plan-"):
+            raise OSError("locked probe")
+        return original_rmtree(path, **kwargs)
+
+    monkeypatch.setattr(plan.shutil, "rmtree", fail_probe_cleanup)
+    with pytest.raises(BenchError, match="HB-PRE-008"):
+        plan.build_plan(**args)
+    leftover = next(args["cells_root"].glob("bench-plan-*"))
+    assert str(leftover) in caplog.text
+    monkeypatch.setattr(plan.shutil, "rmtree", original_rmtree)
+    original_rmtree(leftover)
+
+
+def test_cmd_plan_passes_configured_tools_and_cells_roots_to_probe(monkeypatch, tmp_path):
+    matrix = config.load_yaml(ROOT / "bench" / "matrix.phase1.yaml")
+    bom = config.load_yaml(ROOT / "bench" / "bom.yaml")
+    monkeypatch.setattr(cli.config, "load_yaml", lambda path: bom if Path(path).name == "bom.yaml" else matrix)
+    monkeypatch.setattr(cli.config, "validate_matrix", lambda *args: None)
+    monkeypatch.setattr(cli.tools, "resolve", lambda path: {})
+    monkeypatch.setattr(cli, "_pack", lambda *args: {"source": "pack", "commit": "c" * 40, "revision": 1})
+    received = {}
+
+    def fake_build_plan(*args, **kwargs):
+        received.update(kwargs)
+        return {"cells": [], "builds": {}, "pack": {"revision": 1, "commit": "c" * 40},
+                "parameters": {"parallelism": 2}, "envelope_seconds": 0, "price_list_hash": ""}
+
+    monkeypatch.setattr(cli.plan, "build_plan", fake_build_plan)
+    args = SimpleNamespace(root=str(ROOT), matrix=str(ROOT / "bench" / "matrix.phase1.yaml"),
+                           tools_dir=str(tmp_path / "custom-tools"), cells_root=str(tmp_path / "cells-root"),
+                           pack_source=str(tmp_path / "pack"), run_id="p", parallelism=2, json=False, confirm=False)
+    assert cli.cmd_plan(args) == 0
+    assert received["tools_dir"] == Path(args.tools_dir)
+    assert received["cells_root"] == Path(args.cells_root)
 
 
 @pytest.mark.native

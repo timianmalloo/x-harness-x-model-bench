@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import math
 import os
 import secrets
@@ -30,6 +31,7 @@ from harness_bench.errors import BenchError
 from harness_bench.ledger import canonical
 
 SCHEMA = "bench-plan/1"
+logger = logging.getLogger(__name__)
 # Instruction rows come from `copilot instruction list --json` verbatim, and Copilot may add
 # non-string fields (e.g. `defaultDisabled`: bool) the ledger's canonical form forbids (ADR-0006).
 # Only these identity fields are frozen into the plan, and only when they are strings.
@@ -149,11 +151,15 @@ def profile_record(root: Path, harness: str) -> dict:
 def instruction_list(exe: Path, ws: Path, env: dict[str, str]) -> list[dict]:
     """Read the pinned Copilot build's effective repository instructions in one working copy."""
     result = procs.run([str(exe), "instruction", "list", "--json"], cwd=str(ws), env=env, timeout=120)
-    if result.timed_out or result.returncode != 0:
+    if result.timed_out:
+        raise BenchError("HB-PRE-008", "Copilot instruction list timed out after 120 s")
+    if result.returncode != 0:
         raise BenchError("HB-PRE-008", f"Copilot instruction list failed ({result.returncode}): {result.stderr.strip()[-300:]}")
     try:
         rows = json.loads(result.stdout)
     except ValueError as exc:
+        if result.stdout.lstrip().startswith("[") and not result.stdout.rstrip().endswith("]"):
+            raise BenchError("HB-PRE-008", "Copilot instruction list stdout was truncated") from exc
         raise BenchError("HB-PRE-008", "Copilot instruction list did not return JSON") from exc
     if not isinstance(rows, list) or not all(isinstance(row, dict) for row in rows):
         raise BenchError("HB-PRE-008", "Copilot instruction list did not return an array of objects")
@@ -167,7 +173,8 @@ def _instruction_identity(row: dict) -> dict:
 
 
 def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, pack: dict,
-               parallelism: int = DEFAULT_PARAMETERS["parallelism"], parameters: dict | None = None) -> dict:
+               parallelism: int = DEFAULT_PARAMETERS["parallelism"], parameters: dict | None = None,
+               tools_dir: Path | None = None, cells_root: Path | None = None) -> dict:
     if not 1 <= parallelism <= PHASE1_MAX_PARALLELISM:
         raise BenchError("HB-USR-002", f"parallelism must be 1-{PHASE1_MAX_PARALLELISM} in phase 1, got {parallelism}")
     tasks = select_tasks(bom, matrix["bom"]["subset"])
@@ -180,13 +187,15 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, p
     instruction_counts: dict[tuple[str, str], int] = {}
     instruction_lists: list[dict] = []
     if "copilot" in harnesses:
-        build = tools.resolve(root / ".tools" / "harness")["copilot"]
+        build = tools.resolve(tools_dir or root / ".tools" / "harness")["copilot"]
         tools.check_build(build, builds["copilot"])
         copilot_profile = profiles.load(root, "copilot")
         # A plan probe uses the same source, clone and pack installation as a cell, in a fresh home.
-        probe = Path(tempfile.mkdtemp(prefix="bench-plan-", dir=root.parent))
+        cells_root = cells_root or root.parent / "bench-cells"
+        workspace.check_cells_root(cells_root)
+        cells_root.mkdir(parents=True, exist_ok=True)
+        probe = Path(tempfile.mkdtemp(prefix="bench-plan-", dir=cells_root))
         try:
-            workspace.check_cells_root(probe)
             for task_id, arm in sorted({(c.task, c.pack) for c in cells if c.harness == "copilot"}):
                 source = workspace.task_source(root / "tasks" / task_id, versions[task_id], probe / "sources")
                 ws = workspace.cell_working_copy(source, probe / "cells" / task_id / arm / "ws")
@@ -204,7 +213,10 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, p
                                           "build_sha256": builds["copilot"]["sha256"], "count": len(rows),
                                           "instructions": [_instruction_identity(row) for row in rows]})
         finally:
-            shutil.rmtree(probe, onexc=archive.make_writable)
+            try:
+                shutil.rmtree(probe, onexc=archive.make_writable)
+            except OSError as exc:
+                logger.warning("Could not remove plan probe %s: %s", probe, exc)
     params = {**DEFAULT_PARAMETERS, **(parameters or {}), "parallelism": parallelism}
     body = {
         "schema": SCHEMA,
