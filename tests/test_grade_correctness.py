@@ -401,3 +401,101 @@ def test_a_compile_error_with_no_builder_commit_is_na_not_found(tmp_path, monkey
     monkeypatch.setattr(correctness, "build_and_suite_clean", lambda *a: Score(0, None))
     out = correctness.grade_cell(inp)
     assert encode(out["pass_at_1"]) == (None, "pre-turn commit not found in the working copy")
+
+
+# --- GR-CODE c2: regression_count and the behavioural_equivalence NA, with a fake public suite ----------------------
+
+NS = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010"
+PUBLIC = "tests/AiDe.Core.Tests/AiDe.Core.Tests.csproj"  # D1's one public test project (Microsoft.NET.Test.Sdk)
+C2 = ("regression_count", "behavioural_equivalence")
+
+
+def trx(results: dict, marker: str = "") -> str:
+    """A TRX in the measured shape (docs/notes/spike-gr-code-trx.md): one UnitTest per case, a theory's cases sharing
+    className.name. `marker` fills every host-identifying attribute and every time; empty leaves them out."""
+    host = lambda **kw: "".join(f' {k}="{v}"' for k, v in kw.items()) if marker else ""
+    units, rows, n = [], [], 0
+    for key, outcomes in results.items():
+        cls, _, name = key.rpartition(".")
+        for outcome in [outcomes] if isinstance(outcomes, str) else outcomes:
+            n += 1
+            units.append(f'<UnitTest name="{key}" id="t{n}"{host(storage=marker)}><TestMethod className="{cls}" '
+                         f'name="{name}" adapterTypeName="executor://xunit/VsTestRunner3/netcore/"{host(codeBase=marker)} /></UnitTest>')
+            rows.append(f'<UnitTestResult executionId="e{n}" testId="t{n}" testName="{key}" outcome="{outcome}"'
+                        f'{host(computerName=marker, startTime=marker, endTime=marker, duration=marker)} />')
+    return (f'<?xml version="1.0" encoding="utf-8"?><TestRun id="r" name="n"{host(runUser=marker)} xmlns="{NS}">'
+            f'{f"<Times creation={marker!r} />" if marker else ""}<Results>{"".join(rows)}</Results>'
+            f'<TestDefinitions>{"".join(units)}</TestDefinitions><ResultSummary outcome="Failed"><Counters total="{n}" '
+            f'passed="0" /></ResultSummary></TestRun>')
+
+
+def fake_public(monkeypatch, cell=None, pre=None, marker: str = "") -> list:
+    """`dotnet test` answered per tree (the grading copy's folder name: `cell` or `pre-turn`): a dict writes a TRX
+    and exits 0 or 1, a Completed is returned as is. Every other command (git) runs for real. Returns (tree, argv)."""
+    real, seen = correctness.procs.run, []
+
+    def run(argv, cwd, **kwargs):
+        if argv[:2] != ["dotnet", "test"]:
+            return real(argv, cwd=cwd, **kwargs)
+        tree = Path(cwd).name
+        seen.append((tree, argv))
+        answer = {"cell": cell, "pre-turn": pre}[tree]
+        if not isinstance(answer, dict):
+            return answer
+        path = Path(cwd) / "TestResults" / argv[argv.index("--logger") + 1].partition("LogFileName=")[2]
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(trx(answer, marker), encoding="utf-8")
+        return done(int(any(o != "Passed" for v in answer.values() for o in ([v] if isinstance(v, str) else v))),
+                    f"Results File: {marker or 'X'}/TestResults/x.trx")
+
+    monkeypatch.setattr(correctness.procs, "run", run)
+    return seen
+
+
+def graded_elsewhere(monkeypatch) -> None:
+    """The hidden-test step and the build are c1's, faked here so only c2's metrics run."""
+    monkeypatch.setattr(correctness, "grade", lambda *a: correctness.Result(1, Decimal(1), None, "x"))
+    monkeypatch.setattr(correctness, "build_and_suite_clean", lambda *a: Score(1, None))
+
+
+def c2_of(out: dict) -> dict:
+    return {m: (out[m].value, out[m].reason) if m in out else None for m in C2}
+
+
+@pytest.mark.parametrize("task", ["A1", "C1", "E6"])
+def test_a_task_with_no_public_tests_is_na_and_not_a_d_task(tmp_path, monkeypatch, task):  # N4, a recorded deviation
+    graded_elsewhere(monkeypatch)
+    seen = fake_public(monkeypatch)
+    folder = tmp_path / "run" / "archive" / "c1" / "attempt-1"
+    shutil.copytree(ROOT / "tasks" / task / "workspace", folder / "ws")
+    inp = cell_input(tmp_path / "run", folder, {"cell_id": "c1", "task": task, "pack": "off"},
+                     tmp_path / "run" / "grading" / "g" / "c1" / "correctness")
+    assert c2_of(correctness.grade_cell(inp)) == \
+        {"regression_count": (None, "task has no public tests"), "behavioural_equivalence": (None, "not a D-task")}
+    assert seen == []  # no public suite ran
+
+
+def public_cell(tmp_path: Path, base_message: str = f"T9 base ({T9_VERSION[:12]})", project: bool = True) -> CellInput:
+    """A D1 cell (D1's task.yaml, so D1's public project) whose working copy is a two-file stand-in: the base commit
+    holds the public project's file and a.cs; the cell's uncommitted change edits a.cs, or deletes the project."""
+    folder = tmp_path / "run" / "archive" / "c1" / "attempt-1"
+    ws = folder / "ws"
+    (ws / PUBLIC).parent.mkdir(parents=True)
+    (ws / PUBLIC).write_text("<Project />", encoding="utf-8")
+    (ws / "a.cs").write_text("class A {}\n", encoding="utf-8")
+    git(ws, "init", "-q", "-b", "main")
+    git(ws, "add", "-A")
+    git(ws, "commit", "-q", "-m", base_message)
+    (ws / "a.cs").write_text("class A { }\n", encoding="utf-8")
+    if not project:
+        (ws / PUBLIC).unlink()
+    cell = {"cell_id": "c1", "task": "D1", "task_version": D1_VERSION, "pack": "off"}
+    inp = cell_input(tmp_path / "run", folder, cell, tmp_path / "run" / "grading" / "g" / "c1" / "correctness", timeout=60)
+    return dataclasses.replace(inp, cell={**cell, "task": "T9", "task_version": T9_VERSION})
+
+
+def test_d1_behavioural_equivalence_is_na_no_differential_oracle(tmp_path, monkeypatch):  # R-68 1: keep, re-source later
+    graded_elsewhere(monkeypatch)
+    fake_public(monkeypatch, cell={"N.A.a": "Passed"}, pre={"N.A.a": "Passed"})
+    assert c2_of(correctness.grade_cell(public_cell(tmp_path))) == \
+        {"regression_count": (0, None), "behavioural_equivalence": (None, "no differential oracle in this task version")}
