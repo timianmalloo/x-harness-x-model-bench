@@ -106,3 +106,43 @@ def test_mutation_score_computed_from_stryker_report_fixture(tmp_path, monkeypat
     assert score.value == Decimal("0.8571")
     assert score.reason is None
     assert score.evidence == "grading/g/c1/mutation/mutation.log"
+
+
+# --- Red 2: mutation-specific NA reasons ----------------------------------------------------------------------------
+
+
+def test_no_tests_written_when_only_source_changed_is_na(tmp_path):
+    got = grade_d1(tmp_path, *d1_cell(tmp_path, {PROJECTION: REFERENCE}))
+    assert got.get(METRIC) == (None, "no tests written")
+
+
+def test_no_tests_written_when_nothing_changed_is_na(tmp_path):
+    got = grade_d1(tmp_path, *d1_cell(tmp_path, {}))
+    assert got.get(METRIC) == (None, "no tests written")
+
+
+def test_no_non_test_source_changed_is_na(tmp_path):
+    got = grade_d1(tmp_path, *d1_cell(tmp_path, {TEST_FILE: TEST_CODE}))
+    assert got.get(METRIC) == (None, "no non-test source changed")
+
+
+def test_no_mutants_generated_is_na(tmp_path, monkeypatch):
+    folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
+    empty_report = '{"schemaVersion": "2", "thresholds": {}, "files": {}}'
+    fake_stryker(monkeypatch, returncode=0, report_content=empty_report)
+    got = grade_d1(tmp_path, folder, cell)
+    assert got.get(METRIC) == (None, "no mutants generated")
+
+
+def test_mutation_tool_not_available_is_na(tmp_path, monkeypatch):
+    folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
+    monkeypatch.setattr(mutation, "find_stryker_dll", lambda: None)
+    got = grade_d1(tmp_path, folder, cell)
+    assert got.get(METRIC) == (None, "mutation tool not available")
+
+
+def test_mutation_run_failed_is_na(tmp_path, monkeypatch):
+    folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
+    fake_stryker(monkeypatch, returncode=1, stderr="Stryker failed to analyze project")
+    got = grade_d1(tmp_path, folder, cell)
+    assert got.get(METRIC) == (None, "mutation run failed: 1")

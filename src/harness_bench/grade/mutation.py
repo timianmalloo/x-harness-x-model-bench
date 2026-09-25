@@ -12,13 +12,18 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from decimal import Decimal
+from pathlib import Path
 
 from harness_bench.grade import CellInput, Score
 
 METRIC = "mutation_score"
 SCALE = Decimal("0.0001")
 
-__all__ = ["METRIC", "SCALE", "grade_cell"]
+__all__ = ["METRIC", "SCALE", "find_stryker_dll", "grade_cell"]
+
+
+def find_stryker_dll() -> Path | None:
+    return None
 
 
 def grade_cell(inp: CellInput) -> Mapping[str, Score]:
