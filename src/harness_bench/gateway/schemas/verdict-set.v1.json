@@ -1,0 +1,22 @@
+{
+  "$id": "verdict-set/1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["items"],
+  "properties": {
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["item", "score", "rationale"],
+        "properties": {
+          "item": {"type": "integer", "minimum": 1},
+          "score": {"type": "integer", "enum": [0, 1, 2]},
+          "rationale": {"type": "string", "maxLength": 2000}
+        }
+      }
+    }
+  }
+}
