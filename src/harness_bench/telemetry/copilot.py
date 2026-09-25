@@ -123,14 +123,15 @@ def read(path: Path) -> Extraction:
             ex.errors.append(ProviderError(n, None, as_str(data.get("errorType")) or "unknown",
                                            (as_str(data.get("message")) or "")[:300]))
         elif kind == "session.usage_checkpoint":
-            advertised = []
+            advertised, listed = [], False  # listed: some model carries a tools list, even an empty one (R-63 c1)
             for state in as_list(data.get("promptCacheBreakState")):
                 for model in as_dict(as_dict(state).get("models")).values():
+                    listed = listed or isinstance(as_dict(model).get("tools"), list)
                     for tool in as_list(as_dict(model).get("tools")):
                         name = as_str(as_dict(tool).get("name"))
                         if name is not None:
                             advertised.append(name)
-            ex.tools_advertised = list(dict.fromkeys(advertised)) or None
+            ex.tools_advertised = list(dict.fromkeys(advertised)) if listed else None
         elif kind == "session.shutdown":
             last_shutdown = (n, stamp, data)
 

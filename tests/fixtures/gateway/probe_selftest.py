@@ -9,7 +9,10 @@ It proves the probe's instruments can see a positive before a live zero is trust
    and without it the same turn qualifies;
 3. the verdict validator on valid and invalid answers;
 4. the launch shapes: pinned model, every tool off, no fallback model, no ephemeral session, no bypass flag;
-5. the seeding: every canary class is planted, and each planted file carries its canary.
+5. the seeding: every canary class is planted, and each planted file carries its canary;
+6. Copilot (R-63 c1, W3-GW-CP): five placeholder records under tests/fixtures/gateway/copilot/, every identifier a
+   fixed placeholder -- a qualifying record exits 0-shaped, and a tool event, a null tools list, a served model
+   other than the pin, and a canary hit each fail on exactly the named criterion.
 Exit 0 when every check holds; each failure is printed.
 """
 
@@ -25,6 +28,8 @@ sys.path.insert(0, str(HERE))
 import probe_judge as pj
 
 NATIVE = pj.ROOT / "tests" / "fixtures" / "native"
+GATEWAY_COPILOT = HERE / "copilot"
+COPILOT_PIN = "gpt-6-sol"
 FAILURES: list[str] = []
 
 
@@ -118,7 +123,12 @@ def launch_shapes(tmp: Path) -> None:
     check("codex argv: shell tools off", all(f in c for f in ("shell_tool", "unified_exec")), c)
     check("codex argv: prompt last", c[-1] == "P", c[-3:])
     check("codex argv: text mode has no schema flag", "--output-schema" not in c, c)
-    for argv in (a, c):
+    p = pj.copilot_argv("copilot.exe", COPILOT_PIN, "P")
+    check("copilot argv: model pinned", p[p.index("--model") + 1] == COPILOT_PIN, p)
+    check("copilot argv: prompt right after -p", p[p.index("-p") + 1] == "P", p)
+    check("copilot argv: built-in and MCP servers disabled", "--disable-builtin-mcps" in p, p)
+    check("copilot argv: --available-tools is last (empty allowlist)", p[-1] == "--available-tools", p)
+    for argv in (a, c, p):
         banned = [x for x in argv if x in ("--fallback-model", "--ephemeral", "--no-session-persistence")
                   or x.startswith("--dangerously") or x == "bypassPermissions"]
         check(f"{Path(argv[0]).stem} argv: no banned flag", not banned, banned)
@@ -133,6 +143,30 @@ def seeding(tmp: Path) -> None:
     check("seed: home not created by seeding", not (tmp / "probe" / "home").exists())
 
 
+COPILOT_VERDICT = json.dumps({"items": [{"item": 1, "score": 2, "rationale": "present and complete"},
+                                        {"item": 2, "score": 2, "rationale": "present and complete"}]})
+COPILOT_CANARY = "hb-gw-canary-placeholder-fixed-0007"  # baked into copilot/canary.jsonl's user.message
+
+
+def copilot_case(name: str, expect_qualified: bool, reason_substring: str | None, **kw) -> None:
+    record = GATEWAY_COPILOT / f"{name}.jsonl"
+    planted = kw.pop("planted", {})
+    f = facts("copilot", record, pin=COPILOT_PIN, stdout=COPILOT_VERDICT, planted=planted, **kw)
+    check(f"copilot {name}: qualified is {expect_qualified}", f["qualified"] is expect_qualified, f["reasons"])
+    if reason_substring is not None:
+        check(f"copilot {name}: the named reason fires", any(reason_substring in r for r in f["reasons"]), f["reasons"])
+
+
+def copilot_cases() -> None:
+    """R-63 c1's spike criteria, red first on placeholder records (every identifier a fixed placeholder; not the
+    committed native samples, which are real cell captures with real tool use, not a judge-shaped turn)."""
+    copilot_case("qualified", True, None)
+    copilot_case("tool-event", False, "tool event(s) in the record")
+    copilot_case("null-tools", False, "tools advertised: not recorded")
+    copilot_case("wrong-model", False, "served model(s) not the pin")
+    copilot_case("canary", False, "canaries present", planted={"canary class": COPILOT_CANARY})
+
+
 def main() -> int:
     with tempfile.TemporaryDirectory() as d:
         tmp = Path(d)
@@ -141,6 +175,7 @@ def main() -> int:
         validator()
         launch_shapes(tmp)
         seeding(tmp)
+        copilot_cases()
     print(f"{len(FAILURES)} failure(s)")
     return 1 if FAILURES else 0
 

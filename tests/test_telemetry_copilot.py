@@ -130,6 +130,13 @@ def test_tools_advertised_is_not_an_empty_list_for_an_empty_checkpoint(tmp_path)
     assert copilot.read(path).tools_advertised is None
 
 
+def test_tools_advertised_is_an_empty_list_when_the_checkpoint_lists_no_tools(tmp_path):
+    # R-63 c1: an all-tools-off judge turn must read as [] (measured), never None (not recorded). Found by W3-GW-CP.
+    checkpoint = _row("session.usage_checkpoint", {"promptCacheBreakState": [{"models": {"gpt-6-sol": {"tools": []}}}]})
+    path = _write(tmp_path, [_start(), checkpoint, _shutdown(_model_metrics())])
+    assert copilot.read(path).tools_advertised == []
+
+
 def test_tools_advertised_is_not_an_empty_list_for_an_unreadable_record(tmp_path):
     path = tmp_path / "events.jsonl"
     path.write_text("not json\n", encoding="utf-8")
