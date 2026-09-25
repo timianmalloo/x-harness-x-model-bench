@@ -1,0 +1,16 @@
+# A test fixture copy of bench/gateway.yaml (design phase3-gateway-judges section 5; W3-GW-I slice 3).
+# Fixed placeholders only: the exe hashes are all-zero and all-one strings, the spike label names no turn. Each
+# invocation_sha256 is the gateway's own builders' hash of its entry (backend.invocation_sha256), because the loader
+# recomputes it and refuses any other value (R-70 item 4: a placeholder hash is refused). bench/gateway.yaml itself
+# is not committed: an entry lands only from the Leader's measured turn (R-70 item 3).
+schema: bench-gateway/1
+call_timeout_seconds: 180
+judges:
+  - { vendor: anthropic, harness: claude-code, model: claude-fable-5-1, output: text,
+      build: { version: "2.1.282", exe_sha256: "0000000000000000000000000000000000000000000000000000000000000000" },
+      invocation_sha256: "2bfa85081f82402a52c56791ce11313835533bf1a4ab6d22a3042bc2090a55f6",
+      qualified: true, spike: placeholder-spike }
+  - { vendor: openai, harness: codex, model: gpt-6-sol, output: native,
+      build: { version: "0.156.0", exe_sha256: "1111111111111111111111111111111111111111111111111111111111111111" },
+      invocation_sha256: "5a391f4b7e5e0a515912a60e28f460bf27b1c06995c2eaf758176435d14b0e6f",
+      qualified: false, spike: placeholder-spike }
