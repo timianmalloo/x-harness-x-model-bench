@@ -606,8 +606,8 @@ def export(view: RunView) -> bytes:
               "validity": c.validity, "validity_code": c.validity_code, "wall_ms": _enc(c.wall_ms), "model_ms": _enc(c.model_ms),
               "tool_ms": _enc(c.tool_ms), "idle_ms": _enc(c.idle_ms), "tokens": c.tokens, "tokens_reason": c.tokens_reason,
               "scores": _enc(c.scores), "extraction_id": c.extraction_id, "meta_calls": _enc(c.meta_calls),
-              "delegate_calls": _enc(c.delegate_calls),
               "warnings": [{"code": w.code, "level": w.level, "message": w.message} for w in c.warnings]}
+             | ({"delegate_calls": _enc(c.delegate_calls)} if c.scenario == 6 else {})  # R-74 c2; the 0.3 bytes unchanged
              for c in sorted(view.cells, key=lambda c: c.cell_id)]
     board = [{"combo": r.combo, "pack": r.pack, "n_cells": r.n_cells, "n_valid": r.n_valid, "pass_at_1": _enc(r.pass_at_1),
               "rank": r.rank, "interval": r.interval, "tokens": _enc(r.tokens), "wall_ms": _enc(r.wall_ms), "cost_usd": _enc(r.cost_usd)}

@@ -467,6 +467,14 @@ def test_an_executed_agent_call_in_a_scenario6_cell_is_valid_and_counted(root, t
     assert "delegate_calls" not in cell.scores
 
 
+@pytest.mark.parametrize(("scenario", "exported"), [(6, {"reason": None, "value": 1}), (5, None)])
+def test_delegate_calls_is_exported_only_for_a_scenario6_cell(root, tmp_path, scenario, exported):
+    # R-74 c2 counts delegate calls; the export carries them only for scenario 6, so every earlier export keeps its
+    # bytes (the 0.3 gate-run baseline moved when the field was added to every cell; the Leader's W3-S6 join fix)
+    doc = json.loads(views.export(views.load(_claude_q1_dir(root, tmp_path, 0, _as_agent(False), scenario=scenario))))
+    assert [c.get("delegate_calls") for c in doc["cells"]] == [exported]
+
+
 def test_a_refused_agent_call_in_a_scenario5_cell_is_the_refused_attempt_warning(root, tmp_path):  # R-74 c2, R-54 (b)
     cell = _claude_q1_run(root, tmp_path, permission_requests=1, change=_as_agent(True), scenario=5)
     assert (cell.validity, cell.validity_code) == ("valid", None)
@@ -949,7 +957,7 @@ def test_a_ledger_graded_before_r15_and_r24_exports_what_it_did_before(tmp_path,
     for cell in doc["cells"]:
         cell.pop("warnings")  # new in W2-VIEWS: a key the 5feece0 export did not have
         cell.pop("meta_calls")  # new in W2-VIEWS-FU (R-54 c3): the other one
-        cell.pop("delegate_calls")  # new in W3-S6 (R-74 c2): a cost axis beside meta_calls
+        assert "delegate_calls" not in cell  # R-74 c2: exported only for a scenario-6 cell, so old exports keep their bytes
     assert doc == expected["exports"][name]
 
 

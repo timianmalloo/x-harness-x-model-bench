@@ -337,5 +337,23 @@
   "tests": [
    "tests/test_views.py::test_an_unreadable_sub_agent_record_makes_the_cell_not_recorded"
   ]
+ },
+ {
+  "name": "delegate_calls exported for every cell (the 0.3 bytes move)",
+  "file": "src/harness_bench/views.py",
+  "find": "| ({\"delegate_calls\": _enc(c.delegate_calls)} if c.scenario == 6 else {})",
+  "replace": "| ({\"delegate_calls\": _enc(c.delegate_calls)} if True else {})",
+  "tests": [
+   "tests/test_views.py::test_delegate_calls_is_exported_only_for_a_scenario6_cell"
+  ]
+ },
+ {
+  "name": "delegate_calls never exported",
+  "file": "src/harness_bench/views.py",
+  "find": "| ({\"delegate_calls\": _enc(c.delegate_calls)} if c.scenario == 6 else {})",
+  "replace": "| {}",
+  "tests": [
+   "tests/test_views.py::test_delegate_calls_is_exported_only_for_a_scenario6_cell"
+  ]
  }
 ]
