@@ -107,3 +107,13 @@ def test_ready_task_with_pack_marker_in_workspace_is_rejected(tmp_path):  # R-42
     entry = {"id": "X2", "scenario": 5, "budget_minutes": 45}
     config.validate_task(d, entry, p, config.grader_modules(ROOT), config.pack_marker_bytes(ROOT))
     assert "tasks/X2: workspace/NOTES.md contains pack material (bench/pack-markers.txt)" in p.items
+
+
+def test_ready_task_with_generated_folder_in_workspace_is_rejected(tmp_path):  # R-42 condition 4
+    d = _ready_task(tmp_path, "X3", scenario=5)
+    (d / "workspace" / "obj").mkdir()
+    (d / "workspace" / "obj" / "Debug.cache").write_text("generated", encoding="utf-8")
+    p = config.Problems()
+    entry = {"id": "X3", "scenario": 5, "budget_minutes": 45}
+    config.validate_task(d, entry, p, config.grader_modules(ROOT), config.pack_marker_bytes(ROOT))
+    assert "tasks/X3: workspace/obj/ is a generated or cache folder and must not be vendored" in p.items
