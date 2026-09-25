@@ -19,7 +19,7 @@ import hashlib
 import json
 import re
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from harness_bench import egress, profiles
@@ -78,6 +78,7 @@ class Context:
     operator: egress.Operator
     secrets: tuple[str, ...] = ()
     canaries: tuple[str, ...] = ()
+    breakers: set[str] = field(default_factory=set)  # judges whose breaker opened in this pass (section 8.3 step 5)
 
 
 @dataclass(frozen=True)
@@ -121,6 +122,11 @@ def _recorded(outcome: str, cache_key: str, found: store.Found, items: int, esca
     return Result(outcome, None, cache_key, found.entry_sha256, tuple(verdicts), escaped, fenced=fenced)
 
 
+def _open_breaker(breakers: set, model: str) -> None:
+    """Section 8.3 step 5: one boolean per judge per pass (the Simplifier's shape)."""
+    breakers.add(model)
+
+
 def _sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
@@ -147,6 +153,8 @@ def run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend | Launch) -
         return Result("not_allowed", escaped=escaped)
     if found.state == "orphaned":
         store.move_orphan(ctx.store, cache_key, time.strftime("%Y%m%dT%H%M%SZ", time.gmtime()))
+    if judge.model in ctx.breakers:  # a rate or quota limit earlier in this pass: not spawned
+        return Result("failed", "HB-GW-001", escaped=escaped)
     try:
         reply = _send(rendered.text, judge, ctx, backend, cache_key[:16])
     except BackendDown:
@@ -155,6 +163,10 @@ def run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend | Launch) -
         return Result("failed", "HB-GW-009", escaped=escaped)
     ex = profiles.READERS[reply.harness](reply.record)  # the native record decides, never stdout (review A5)
     served, session = tuple(sorted({c.model for c in ex.model_calls})), ex.session_id
+    if ex.errors or not ex.model_calls or session is None:  # a provider error, or no model call recorded
+        if any(e.status == 429 or "rate_limit" in e.error_type or "quota" in e.error_type for e in ex.errors):
+            _open_breaker(ctx.breakers, judge.model)
+        return Result("failed", "HB-GW-001", escaped=escaped)
     if ex.tool_calls:  # section 8.3 step 1: a judge has no tools; a tool event fails the call (R-58 c4)
         return Result("failed", "HB-GW-006", escaped=escaped)
     # the pin must be among the served models, and every served model allowed (design 4.3; review F1)

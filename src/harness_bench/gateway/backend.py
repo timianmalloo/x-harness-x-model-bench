@@ -181,6 +181,8 @@ class Headless:
             env = launch.profile.cell_env(dict(os.environ), home, launch.build, launch.model, "")
             env.update({"USERPROFILE": str(decoy), "HOME": str(decoy)})  # the qualified decoy profile (section 8.2)
             done = procs.run(argv, cwd=str(work), env=env, timeout=launch.timeout, input=request)
+            if done.timed_out:
+                raise BackendDown(f"no answer within {launch.timeout} s")
             records = profiles.find_records(home, launch.profile.record_glob, session)
             if len(records) != 1:
                 raise BackendDown(f"{len(records)} native records for the call, expected 1")
