@@ -333,7 +333,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3834bc9469bcb9d9f630554ad916e986a68a2b4db501167cc472b21e4d1b5c43"
+      "sourceSha256": "8499733ad87142a01be36b0921e70009aa639309bee62888a486f66a8ec7b59e"
     },
     {
       "id": "adr-0005-egress-control",
@@ -1562,7 +1562,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "61cfd44cdac602696254e7d583e506632d4d03ba4085917387d46cf9fab1e519"
+      "sourceSha256": "db16eb337074ce2cecad59d7aca0bc48ee4dec4f781b8f7aa4eed8c08f74c106"
     },
     {
       "id": "design-phase3-graders",
@@ -1796,7 +1796,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ff3225116df2dcc96f97dd5760475518a7bdffed0e4c36f2a104037cd13bf293"
+      "sourceSha256": "97281a76489c8f96b97ed4c5b87e8479f5360a5fee2876d5bc2130c34af3a869"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -1868,7 +1868,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "58005e78a98383b528e807dfc0c9d8cee6b17b92736c7b62b9068ff67a6c3630"
+      "sourceSha256": "9c9efc16018f4866c4376fb2ec01357e49950a00e0dbde5402a4dbd7d897318c"
     },
     {
       "id": "note-spike-isolation-permissions",
@@ -2802,5 +2802,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "d0d915d03c7de14956be9c6ed2c7a5ca70afdcc305b21947961069e27d1b6aa7"
+  "graphSha256": "83bdfda649502b3e0adb410e986a54bd6fdca9d4e408ac0a595e9d9b802cb057"
 };
