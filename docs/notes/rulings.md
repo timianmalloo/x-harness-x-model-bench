@@ -426,3 +426,17 @@ Append only. One entry per ruling. Newest last.
   3. Ownership: `normalize.py` has no wave-1 owner; the Leader assigns this one change, with its tests, to a Claude subagent (Sonnet 5, T1) as a seam, and records it. `views.py` is not touched: the attribute is read from `events`.
   4. The re-run uses the same plan inputs (pack revision 95, Claude Code 2.1.282, `claude-agent-acp` 0.81.2); the run record cites both runs, the first as the negative fixture. Rule 1 of R-9: Claude subagents at hand-back while it runs.
   5. The report's harness-comparison view carries the disclosure on every Claude Code row; the pack-effect view needs none (both arms share the tag).
+
+
+## R-33 · 2026-09-25 · Owner (Tim Mallalieu) · every model is stipulated, never defaulted
+
+- **Ruling (operator, verbatim):** "based on the side observation we have to make sure in delegation of work AND testing that we stipulate the model based on the prompt".
+- **Trigger:** the live Copilot US-13 canary (2026-09-25) showed that, with no pin, Copilot on the operator's account served `claude-sonnet-5`. Defaults are account- and harness-specific, and they drift.
+- **What it decides:**
+  - Every delegated worker contract names its model explicitly, taken from the prompt or plan.
+    - Codex: `CODEX_CONFIG` in the runner wrapper sets `model`, because `codex-acp` merges `CODEX_CONFIG` into each thread's config (`index.js` ~28599/28704). The pin is verified from the served model at `qualify-codex-3`.
+    - Grok: `-m <id>`. Agy: `--model <id>`.
+    - Claude subagents: `model` is passed on every dispatch.
+  - Every bench cell pins its model (already true: US-11).
+- **Supersedes:** the operator decision of 2026-09-24 to run Grok and Agy on their default models. At their re-qualification they are pinned to the models they served in `qualify-6` (`grok-4.7`; `gemini-3.8-flash`), unless the prompt names others.
+- **Exception:** a measurement whose point is the absence of a pin. The US-13 settings-model canary deliberately runs unpinned to detect a leaked user settings model, and it says so.
