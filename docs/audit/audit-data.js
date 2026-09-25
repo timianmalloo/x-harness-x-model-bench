@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T06:25:15Z",
+  "generated": "2026-09-25T07:05:32Z",
   "audit": [
     {
       "actor": null,
@@ -14212,6 +14212,44 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "id": "al-01M3BP4D9JZCQKHPBVQ8T1S93W",
+      "shortname": "w2-user-m-scripted-user-library",
+      "datetime": "2026-09-25T07:05:32Z",
+      "session": "w2-user-m",
+      "prompt": "Track W2-USER-M (plan coordination-finish-harness-bench v4): the scripted user's matcher, responder, log and stdio server as a pure library per design phase2-scripted-user sections 3, 6, 7, 8, 10, 12 and rulings R-37, R-39, R-51, R-52, R-53; red-first; named mutants all killed; no wiring.",
+      "summary": "W2-USER-M: the scripted user as a pure library in src/harness_bench/scripted_user/ (matcher, clarifications, log, server), red-first in four slices (reds d01825e 7502ba6 7ce398a bc929c8; greens 1a86fe7 9a704a9 d6e1165 d9f6c99). matcher_version t0-c8b7e628d0c7 (Unicode 16.0.0, CPython 3.14.6). Held-out entry point: matcher.match(question, clarifications.load(path).clarifications) -> MatchResult(clarification, rung, invalid). tests/test_scripted_user.py 91 tests; tests/mutations/scripted_user.json 73 mutants, all killed (mutate_check under PYTHONUTF8=1: the tool decodes child output with cp1252 and crashed on the first kill - a sibling of the register's cp1252 class, raised to the Leader). Full suite 1046 passed; ruff clean. Malformed input uses HB-USR-002 (errors.py not owned; dedicated codes requested). No driver/engine wiring (W2-USER-W). The held-out set was never read.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "claude-opus-5-5 (Claude Code subagent)",
+      "artifacts": [
+        "src/harness_bench/scripted_user",
+        "tests/test_scripted_user.py",
+        "tests/mutations/scripted_user.json"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "the scripted user's matcher, responder, log and stdio MCP server as a pure library",
+      "done_when": "criteria 1-6 of the W2-USER-M contract: modules, loader, server with pipe test, held-out untouched, section-12 tests and mutants killed, pytest and ruff green",
+      "tier": "T2",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-25T06:42:30Z",
+      "duration_seconds": 1382.0,
+      "git": {
+        "sha": "0bc0dbabd393deb3e9b81b821a0e80cea31d2831",
+        "short": "0bc0dbabd",
+        "branch": "w2-user-matcher",
+        "pushed": null
+      }
     }
   ],
   "changes": [
