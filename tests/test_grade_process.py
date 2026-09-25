@@ -8,6 +8,7 @@ import json
 from decimal import Decimal
 from pathlib import Path
 
+from harness_bench import config
 from harness_bench.grade import CellInput, Score
 from harness_bench.grade.process import grade_cell
 
@@ -95,3 +96,10 @@ def test_a_different_name_breaks_the_run():
     scores = grade_fixture("different-names.json")
     assert scores["stuck_loops"] == Score(0, None)
     assert scores["tool_error_rate"] == Score(Decimal("1.0000"), None)
+
+
+def test_the_process_ratios_have_a_catalog_scale_of_4():
+    # the runner refuses a Decimal for a metric with no catalog scale (grade/runner.py); the design gives 4 places
+    catalog = config.load_yaml(Path(__file__).resolve().parents[1] / "bench" / "metrics.yaml")
+    scales = {m["id"]: m.get("scale") for a in catalog["areas"].values() for m in a.get("metrics") or []}
+    assert [scales[m] for m in ("tool_error_rate", "recovery_rate", "planning_ratio")] == [4, 4, 4]
