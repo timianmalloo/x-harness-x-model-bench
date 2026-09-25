@@ -467,6 +467,7 @@ def test_a_null_agent_version_skips_the_check_with_a_warning_never_a_pass(root, 
 
 def test_one_code_one_level_one_emitter():  # R-47 c1: a Cause code is never a view finding; a code has one level
     import re as _re
+
     from harness_bench.errors import Cause
     src = Path(views.__file__).parent
     texts = [(src / "views.py").read_text(encoding="utf-8")] + [p.read_text(encoding="utf-8") for p in (src / "grade").glob("*.py")]

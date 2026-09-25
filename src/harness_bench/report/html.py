@@ -109,6 +109,15 @@ def _claude_code_permission_fact(cells: list[views.CellView], modes: dict[str, s
     return [("Claude Code permission mode (effective)", ", ".join(seen) or None)]
 
 
+def _build_check_fact(cells: list[views.CellView]) -> str:
+    """R-47 c3: until each pinned build carries a recorded agent_version, HB-VAL-006 on every cell is the disclosed
+    state; the header says how many cells skipped the check."""
+    skipped = sum(1 for c in cells if any(w.code == "HB-VAL-006" for w in c.warnings))
+    if skipped:
+        return f"skipped for {skipped} of {len(cells)} cells (HB-VAL-006): no recorded agent_version"
+    return "checked against the recorded agent_version (HB-VAL-007 on a mismatch)"
+
+
 def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | None = None) -> str:
     plan = view.plan
     planned = ", ".join(views.build_label(h, str(b.get("version", ""))) for h, b in sorted((plan.get("builds") or {}).items()))
@@ -116,7 +125,8 @@ def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | N
              ("Plan hash", (plan.get("plan_hash") or "")[:12]), ("Catalog version", view.catalog_version),
              ("Pack revision", (plan.get("pack") or {}).get("revision")),
              ("Pack commit", (plan.get("pack") or {}).get("commit")), ("Planned builds", planned),
-             ("Executed builds", view.header.get("executed_builds")), ("Credential kind", view.header.get("credential_kind")),
+             ("Executed builds", view.header.get("executed_builds")), ("Executed-build check", _build_check_fact(view.cells)),
+             ("Credential kind", view.header.get("credential_kind")),
              ("Network mode", view.header.get("network_mode")), ("Defender real-time exclusion", None),
              ("Context window", _context_window_fact(view.cells, tags)),
              *_claude_code_permission_fact(view.cells, modes or {}),

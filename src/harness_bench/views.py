@@ -12,12 +12,14 @@ Rules, each defined once here:
   `recorded_at`, then `grading_id`). The current extraction is the one its scores name.
 - Validity, tokens, the time split, leaderboard rows and exports are derived, never stored. A value that
   was not measured is a `Measure(None, reason)`, never 0 (US-27).
-- Validity, in order: an invalidating cause; not graded; `invalid (tools denied by hook)` (HB-VAL-004, R-27);
+- Validity, in order: an invalidating cause; `invalid (build mismatch)` (HB-VAL-007, R-47); not graded;
+  `invalid (tools denied by hook)` (HB-VAL-004, R-27);
   `not recorded` for an unreadable usage record (HB-VAL-003, R-15), distinct from `invalid (no model call)`
   (HB-VAL-001, a readable record with no call); `invalid (model mismatch)` (HB-VAL-002) for a served model that is
   not the pin, a declared auxiliary model, or one the task's `model_map` names (US-11); else valid.
 - Warnings flag a cell without changing its validity: HB-VAL-005 (Σ model_calls vs the ACP turn total, R-24/R-26
-  c5), HB-CELL-115 (agent_version vs the pinned build, R-28) and HB-VAL-006 (that check skipped, R-22 c1).
+  c5) and HB-VAL-006 (the executed-build check skipped, R-22 c1, R-47). One code has one level and one emitter; a
+  `Cause` code is never a view finding (R-47).
 """
 
 from __future__ import annotations
@@ -262,20 +264,20 @@ ACP_TOTAL_KEYS = (("inputTokens", ("uncached_input", "cache_read", "cache_write"
 
 
 def _build_check(plan: dict, harness: str, opened: dict) -> Finding | None:
-    """R-28 c2 (R-22 narrowed): `attempt.session_opened.agent_version`, verbatim from ACP `initialize.agentInfo`, must equal
-    the pinned build's version, else the cell is flagged HB-CELL-115 (a warning: the ruling flags, it does not
-    invalidate). agentInfo names the adapter when there is one (claude-agent-acp, codex-acp) and Copilot itself when
-    there is none, so the pin is `adapter_version`, else `version`. A null on either side skips the check with
-    HB-VAL-006, never a pass (R-22 c1)."""
-    build = as_dict(as_dict(plan.get("builds")).get(harness))
-    pinned = build.get("adapter_version") or build.get("version")
+    """R-47 (R-28 c2 re-pointed): `attempt.session_opened.agent_version`, verbatim from ACP `initialize.agentInfo`, must
+    equal the pinned build's *recorded self-report*, `plan.builds[<harness>].agent_version` (observed at qualification
+    for the same sha256). A proven mismatch is HB-VAL-007 at level error, which `_validity` turns into
+    `invalid (build mismatch)`. `version` / `adapter_version` are package.json labels, never the comparand (Copilot
+    self-reports 1.0.89-3 against a 1.0.89-1 manifest, R-45 c2). A null on either side skips the check with the
+    HB-VAL-006 warning, never a pass (R-22 c1). HB-CELL-115 stays the engine's pre-launch cause (one code, one emitter)."""
+    recorded = as_dict(as_dict(plan.get("builds")).get(harness)).get("agent_version")
     agent = opened.get("agent_version")
     if agent is None:
         return Finding("HB-VAL-006", "warning", "executed-build check skipped: no agent_version recorded")
-    if pinned is None:
-        return Finding("HB-VAL-006", "warning", f"executed-build check skipped: no pinned version for {harness}")
-    if agent != pinned:
-        return Finding("HB-CELL-115", "warning", f"agent_version {agent} differs from the pinned build {pinned}")
+    if recorded is None:
+        return Finding("HB-VAL-006", "warning", f"executed-build check skipped: no recorded agent_version for {harness}")
+    if agent != recorded:
+        return Finding("HB-VAL-007", "error", f"agent_version {agent} differs from the pinned build's recorded {recorded}")
     return None
 
 
@@ -309,12 +311,15 @@ def _unrecorded(source: str, record_reason: str | None, ended: dict, usage: list
 
 
 def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: set[str] | None,
-              unrecorded: str | None = None, denials: int = 0, mapped: frozenset[str] = frozenset()) -> tuple[str, str | None]:
+              unrecorded: str | None = None, denials: int = 0, mapped: frozenset[str] = frozenset(),
+              build: Finding | None = None) -> tuple[str, str | None]:
     if outcome is None:
         return state, None  # not started | no outcome
     cause = Cause[outcome["cause"]] if outcome.get("cause") else None
     if cause is not None and cause.invalidates:
         return f"invalid ({cause.attribution})", cause.code
+    if build is not None and build.level == "error":  # R-47 c2: needs only attempt.session_opened, so before grading
+        return "invalid (build mismatch)", build.code
     if served is None:
         return "not graded", None
     if denials:  # R-27: measured, so it outranks a record that is otherwise unreadable
@@ -355,7 +360,8 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     ended = events.get("attempt.process_ended", {})
     record_reason = as_dict(completed.get("unreadable_records")).get(cid)  # the native record, whatever the token source
     unrecorded = _unrecorded(source, record_reason, ended, usage)
-    warnings = [_build_check(plan, cell["harness"], events["attempt.session_opened"])] if "attempt.session_opened" in events else []
+    build = _build_check(plan, cell["harness"], events["attempt.session_opened"]) if "attempt.session_opened" in events else None
+    warnings = [build] if build is not None and build.level == "warning" else []
     if cell["harness"] in ACP_TOTAL_HARNESSES and source == "native_record" and calls is not None and unrecorded is None:
         warnings.append(_token_cross_check(ended, ex.model_calls))
     totals = normalize.totals(source, ex, usage) if recorded and unrecorded is None else {}
@@ -373,7 +379,7 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
         per_cell = calls_per_cell(ex.model_calls if calls else None)
     state = outcome["outcome"] if outcome else ("no outcome" if "cell.launch_intent" in events else "not started")
     validity, validity_code = _validity(cell, prof, outcome, state, served, unrecorded, normalize.hook_denials(tools or []),
-                                        _mapped(plan, cell))
+                                        _mapped(plan, cell), build)
     cause = Cause[outcome["cause"]] if outcome and outcome.get("cause") else None
     return CellView(
         cell_id=cid, label=cell.get("label", cid), combo=cell["combo"], pack=cell["pack"], harness=cell["harness"], model=cell["model"],
