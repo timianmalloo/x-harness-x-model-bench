@@ -3,7 +3,10 @@
 Runs are built with the shared archived-run builder and graded for real, then projected.
 """
 
+import hashlib
+import json
 from decimal import Decimal
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -18,12 +21,13 @@ from archived_runs import (
     set_prices,
 )
 
-from harness_bench import ledger, views
+from harness_bench import archive, ledger, profiles, views
 from harness_bench.errors import BenchError
 from harness_bench.grade import cost, runner
 from harness_bench.telemetry import normalize
 
 SONNET = "claude-sonnet-5"
+COPILOT_OFF = next((Path(__file__).parent / "fixtures/native/copilot/off").rglob("events.jsonl"))
 
 
 @pytest.fixture
@@ -38,6 +42,33 @@ def _usage(cell_id: str, model: str, output: int = 50) -> dict:
 
 def _cell(view: views.RunView, cell_id: str) -> views.CellView:
     return next(c for c in view.cells if c.cell_id == cell_id)
+
+
+def _copilot_run(root: Path, tmp_path: Path, change=None) -> Path:
+    """Grade a real archived run using the committed Copilot native record."""
+    assert "copilot" in profiles.READERS, "Copilot must be registered before grading its native record"
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, harness="copilot", archived=set())
+    folder = run_dir / "archive/a/attempt-1"
+    workspace = folder / "ws"
+    workspace.mkdir(parents=True)
+    (workspace / "slug.py").write_text(GOOD, encoding="utf-8")
+    record = folder / "home/session-state/sess-a/events.jsonl"
+    record.parent.mkdir(parents=True)
+    events = [json.loads(line) for line in COPILOT_OFF.read_text(encoding="utf-8").splitlines() if line.strip()]
+    if change is not None:
+        events = change(events)
+    record.write_text("\n".join(json.dumps(event) for event in events) + "\n", encoding="utf-8")
+    rows = [{"path": file.relative_to(folder).as_posix(), "kind": "file", "size": file.stat().st_size,
+             "sha256": hashlib.sha256(file.read_bytes()).hexdigest(), "link_target": "", "archive_attempt": 1}
+            for file in sorted(folder.rglob("*")) if file.is_file()]
+    with ledger.SegmentWriter.create(run_dir / "archive_files", "engine-2") as files:
+        for row in rows:
+            files.append({"kind": "archive_file", "run_id": "r1", "cell_id": "a", **row})
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as events_writer:
+        events_writer.append({"kind": "cell.archived", "cell_id": "a", "archive_attempt": 1,
+                              "archive_hash": archive.archive_hash(rows)})
+    runner.run_pass(run_dir, root)
+    return run_dir
 
 
 # First in the file on purpose (T12): a `-` -> `**` mutant of `_wall` never returns on the builder's mono_ns
@@ -187,6 +218,67 @@ def test_a_served_model_other_than_the_pin_is_a_mismatch(root, tmp_path):
     runner.run_pass(run_dir, root)
     view = views.load(run_dir)
     assert (_cell(view, "a").validity, _cell(view, "a").validity_code) == ("invalid (model mismatch)", "HB-VAL-002")
+
+
+def test_copilot_modelmetrics_key_alone_determines_the_served_model(root, tmp_path):
+    def rename(events):
+        shutdown = next(e for e in events if e["type"] == "session.shutdown")
+        metrics = shutdown["data"]["modelMetrics"]
+        metrics["other-model"] = metrics.pop("gpt-6-sol")
+        return events  # currentModel, selectedModel, and assistant.message.model remain untouched
+
+    cell = _cell(views.load(_copilot_run(root, tmp_path, rename)), "a")
+    assert (cell.validity, cell.validity_code) == ("invalid (model mismatch)", "HB-VAL-002")
+
+
+def test_copilot_empty_modelmetrics_has_no_model_call(root, tmp_path):
+    def empty(events):
+        next(e for e in events if e["type"] == "session.shutdown")["data"]["modelMetrics"] = {}
+        return events
+
+    cell = _cell(views.load(_copilot_run(root, tmp_path, empty)), "a")
+    assert (cell.validity, cell.validity_code) == ("invalid (no model call)", "HB-VAL-001")
+
+
+def test_copilot_unmutated_sample_is_valid(root, tmp_path):
+    cell = _cell(views.load(_copilot_run(root, tmp_path)), "a")
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+
+
+def test_copilot_missing_shutdown_is_no_model_call_in_wave_one(root, tmp_path):
+    # R-15 and R-21 move an unreadable shutdown to a distinct wave-2 validity state.
+    run_dir = _copilot_run(root, tmp_path, lambda events: [e for e in events if e["type"] != "session.shutdown"])
+    cell = _cell(views.load(run_dir), "a")
+    assert (cell.validity, cell.validity_code) == ("invalid (no model call)", "HB-VAL-001")
+
+
+def test_copilot_single_row_with_two_requests_counts_two_calls(root, tmp_path):
+    def two_requests(events):
+        metrics = next(e for e in events if e["type"] == "session.shutdown")["data"]["modelMetrics"]
+        metrics["gpt-6-sol"]["requests"]["count"] = 2
+        return events
+
+    run_dir = _copilot_run(root, tmp_path, two_requests)
+    assert [row["requests"] for row in views.rows(run_dir, "model_calls")] == [2]
+    cell = _cell(views.load(run_dir), "a")
+    assert cell.calls_per_cell == 2
+
+
+def test_copilot_two_models_on_one_shutdown_line_have_distinct_keys(root, tmp_path):
+    def two_models(events):
+        metrics = next(e for e in events if e["type"] == "session.shutdown")["data"]["modelMetrics"]
+        metrics["other-model"] = json.loads(json.dumps(metrics["gpt-6-sol"]))
+        metrics["other-model"]["requests"]["count"] = 2
+        return events
+
+    cell = _cell(views.load(_copilot_run(root, tmp_path, two_models)), "a")
+    assert cell.calls_per_cell == 7
+
+
+def test_pre_amendment_model_call_row_defaults_to_one_request():
+    row = {"native_ordinal": 1, "model": "gpt-6-sol", "uncached_input": 2, "cache_read": 3,
+           "cache_write": 4, "output": 5, "reasoning": None, "start": None, "end": None}
+    assert views.model_call(row).requests == 1
 
 
 def test_a_declared_auxiliary_model_is_not_a_mismatch(root, tmp_path):

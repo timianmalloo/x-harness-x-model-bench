@@ -1,0 +1,30 @@
+[
+  {
+    "name": "model_calls key omits model",
+    "file": "src/harness_bench/views.py",
+    "find": "    \"model_calls\": (\"run_id\", \"extraction_id\", \"principal\", \"native_session_id\", \"native_ordinal\", \"model\"),",
+    "replace": "    \"model_calls\": (\"run_id\", \"extraction_id\", \"principal\", \"native_session_id\", \"native_ordinal\"),",
+    "tests": ["tests/test_views.py::test_copilot_two_models_on_one_shutdown_line_have_distinct_keys"]
+  },
+  {
+    "name": "mapper duplicates missing requests default as zero",
+    "file": "src/harness_bench/views.py",
+    "find": "    return ModelCall(**{f.name: row[f.name] for f in fields(ModelCall) if f.name in row})",
+    "replace": "    return ModelCall(**{**{f.name: row[f.name] for f in fields(ModelCall) if f.name in row}, \"requests\": row.get(\"requests\", 0)})",
+    "tests": ["tests/test_views.py::test_pre_amendment_model_call_row_defaults_to_one_request"]
+  },
+  {
+    "name": "calls_per_cell counts rows",
+    "file": "src/harness_bench/views.py",
+    "find": "    return None if calls is None else sum(call.requests for call in calls)",
+    "replace": "    return None if calls is None else len(calls)",
+    "tests": ["tests/test_views.py::test_copilot_single_row_with_two_requests_counts_two_calls"]
+  },
+  {
+    "name": "empty served-model set passes validity",
+    "file": "src/harness_bench/views.py",
+    "find": "    if not served:\n        return \"invalid (no model call)\", \"HB-VAL-001\"",
+    "replace": "    if False:\n        return \"invalid (no model call)\", \"HB-VAL-001\"",
+    "tests": ["tests/test_views.py::test_copilot_missing_shutdown_is_no_model_call_in_wave_one"]
+  }
+]
