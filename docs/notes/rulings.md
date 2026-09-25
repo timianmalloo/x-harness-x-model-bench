@@ -776,3 +776,86 @@ Append only. One entry per ruling. Newest last.
 - **Conditions:**
   1. The Leader commits this register entry, the version-5 table and the catalog freeze together, recording planned versus actual per track.
   2. A track whose harness fails its first slice moves per R-4 on the measured evidence; no re-ruling.
+
+## R-63 · 2026-09-25 · Owner seat (Fable) · DR-GW-1 and the wave-3 gate: Codex is not a judge on 0.156.0; Copilot `gpt-6-sol` is spiked as the second judge; one verdict is never a judged score
+
+- **Ruling:** **(c)**, spiked first; **(b) is the recorded state until the spike qualifies.** (a) and (d) are rejected for wave 3.
+  - **(a) rejected.** An advertised tool the model calls is a tool call: US-46 c1 (spec `:488`) and R-58 c4 allow none. "Nothing executed" is the CLI's own report (`spike-gw-headless.md:153-154`; design `:424-425`): an unverified negative. It also doubles the calls per verdict (`gw-headless-results.json:392`, `:534`).
+  - **(d) rejected in wave 3:** it moves the cells' pin (US-12), no candidate is known (`:837-838`), and it is blocked until the reset.
+  - **(c) granted as a spike, not a qualification.** Copilot `1.0.89-1` (R-56's pin) serving `gpt-6-sol` keeps US-35's two model vendors and spec `:666`'s "most capable model each vendor offers"; its login is GitHub, so the OpenAI limit does not block it. Two probe turns in the GW-H shape (`probe_judge.py`, decoy profile, `--model gpt-6-sol`, `--disable-builtin-mcps`, an empty `--available-tools`).
+  - **(b) while (c) is open or failed: a single verdict never counts as a judged score.** Spec `:209` defines the judged score as the pair; US-35's purpose (`:478`) is that no one judge's bias decides. Every C1 item stays NOT_RECORDED `second judge not qualified` (design `:508`). The Claude verdicts are still called, stored and disclosed as verdicts; the store key is per judge (`:439`), so a later second judge completes the pair with no second Claude call.
+- **The gate under the OpenAI limit:** it does not wait for OpenAI. The Copilot spike runs **before the `0.4` freeze**: a judge entry joins `catalog_hash` (design `:238`), so a later qualification would be `0.5` (R-59 c3). If the spike fails, `0.4` freezes with the second judge `qualified: false`; pass A calls Claude, pass B makes 0 calls (graders `:749-753`), and the gate records `judge pair: not proven (second judge not qualified)`, a named wave-4 row.
+- **Reasoning:** an honest one-judge NA beats a pair resting on an unverifiable negative. The Copilot judge shares the GitHub login with `copilot-sol` cells (R-9 rule 1) and scores its own harness; R-58 c2's split measures that.
+- **Conditions:**
+  1. Spike criteria, from the record: served model `gpt-6-sol`; `tools_advertised` read from `promptCacheBreakState[0].models.<model>.tools` (R-45 b) is `[]`, never null; 0 tool events; 0 permission lines; no canary, pack marker or host name; CLI-added classes recorded (R-66). Exit 1 on the operator-identifier criterion alone is not a failure.
+  2. `gateway.yaml` gains the Copilot entry only from the probe's `invocation_sha256`; the Codex entry stays `qualified: false` (T-GW-32).
+  3. The header says `second judge: not qualified` on such passes; no composite includes a single verdict (spec `:207`).
+  4. Judge passes run only when no Anthropic, OpenAI **or GitHub** run is live (R-65).
+  5. The spike note is committed path-free (the GW-H shape); the Leader runs the turns.
+
+## R-64 · 2026-09-25 · Owner seat (Fable) · DR-GW-2, DR-GW-3 = DR-G1: the oracle is the rubric; the US-25 sentence rides in the catalog `note:` and is prepended as the preamble
+
+- **Ruling:** **DR-GW-2 accepted:** the oracle slot is the rubric; nothing under `tasks/C1/oracle/reference/` is sent. **DR-GW-3/DR-G1 accepted in the Simplifier's form:** the existing `note:` carries the sentence, GW-I renders it before the rubric, and `bench/rubrics/adr_quality.md` stays byte-identical to `tasks/C1/oracle/rubric.md` through wave 3. No `why_judged:` field.
+- **Reasoning:** `tasks/C1/task.yaml:32` names `oracle/rubric.md` as the judge's oracle; a reference architecture would score resemblance to one answer. `bench/metrics.yaml` is already in the `catalog_hash` recipe (R-59 c1), so the preamble is versioned without touching the frozen file (R-59 c5).
+- **Conditions:**
+  1. The golden request (T-GW-33) shows preamble → rubric → artifact and the oracle slot rendered as "the rubric above"; a request with a reference file is a named mutant.
+  2. `bench validate` scans the `note:` with the scrub denylist (design `:300-301`).
+  3. The 30 calibration labels use the same inputs: rubric and artifact, no reference.
+  4. At C1's next task version the file gains the sentence and the `note:` is emptied in one change.
+
+## R-65 · 2026-09-25 · Owner seat (Fable) · DR-GW-4: "live" is lock liveness `alive` or `stalled`, over every worktree's `runs/` plus `--runs`
+
+- **Ruling:** accepted; R-58 c3 is amended. `HB-GRD-003` fires when `status.build(...).liveness` is `alive` or `stalled` for any run under every worktree's `runs/` (`git worktree list`) plus `--runs`. Phase is not consulted.
+- **Reasoning:** liveness comes from the lock (`status.py:3-5`, `:101-107`): a released lock reads `not running`, a held stale lock `stalled`, which is fail-closed. A phase-only check refuses forever after a crash (design `:848`).
+- **Conditions:**
+  1. The refusal names every scanned root and the run and liveness that fired; `grading.started` records the scanned roots and each run's liveness.
+  2. A `stalled` refusal prints the lock path and age; the gateway never deletes a lock.
+  3. The residual (a `--runs` folder outside every worktree) is a header disclosure on every judge pass; T-GW-19b covers all three liveness values and a second worktree.
+
+## R-66 · 2026-09-25 · Owner seat (Fable) · DR-GW-5: (a) with a stop rule; the account e-mail and skill root are accepted in writing; no judge profile in wave 3
+
+- **Ruling:** **(a).** US-35 c1's "captured request" is the gateway-rendered request after `egress.check(...).release`. The classes each CLI adds after release are derived per call by subtraction from the archived record (design `:331-337`) and disclosed per judge. **Accepted in writing:** the operator's account e-mail and organisation id go to Anthropic on Claude calls (`gw-headless-results.json:186-191`); the operator's user name, home path and skill names go to OpenAI on any Codex call (`:426-435`). Each already reaches the same vendor in every cell of that harness (R-36 item 1; N5, R-5). (b) rejected: it ends the jury. (c) deferred: it removes only the Codex skill root, and no Codex judge is qualified. (d) closed: none known (`:865`).
+- **Stop rule:** an accepted class is one the operator owns and that vendor already holds. Any other class in a judge record (a credential value, canary, pack marker, cell identifier, another person's data) stops the pass after that call, goes to the run record, and no judge call runs until re-ruled.
+- **Reasoning:** the gateway cannot scan after release (TLS is not intercepted, ADR-0005:56), so the control is measurement plus disclosure, the N5 precedent.
+- **Conditions:**
+  1. The Copilot spike (R-63 c1) records its CLI-added classes before any live Copilot judge call.
+  2. `views.cli_context_classes` reads `not recorded` on an unparseable record, never "none" (IO); T-GW-24.
+  3. The first live judge pass's run record carries this acceptance verbatim; the operator may withdraw it by reply, which re-opens this ruling.
+  4. "Every text-mode call carries the e-mail" stays Inferred (n = 2, `:327-328`) until measured.
+
+## R-67 · 2026-09-25 · Owner seat (Fable) · DR-G2, DR-G3, DR-G4: NA where the record has no evidence; 0 where the cell broke the build
+
+- **Ruling:**
+  - **DR-G2 accepted:** `verification_before_done`, `time_to_first_green`, `instruction_reread_rate` are NA in wave 3 with the metric table's exact reasons (`phase3-graders.md:381`, `:449`, `:571`). `ToolCall.intent` is a wave-4 row across all three readers: a new `extraction_id`, the 0.3 export unchanged.
+  - **DR-G3 accepted and disclosed:** every Codex cell's `tool_error_rate`, `stuck_loops`, `recovery_rate` are NA `per-call outcome missing on <k> of <n> calls`; `completion_without_intervention` is NA `stuck-loop count not measurable` (`:560`), never 0.
+  - **DR-G4 accepted, decided by cause, with the pre-turn build as the control.**
+- **Reasoning:** a number from a record that lacks the field is IO's plausible wrong number. "The cell caused the compile error" is known only against the pre-turn tree, which `regression_count` already builds and memoises (`:331`).
+- **Conditions:**
+  1. DR-G4: `pass_at_1` = 0 and `partial_credit` = `0.0000` only when the pre-turn tree builds under the same toolchain and the cell's tree does not; otherwise NA `pre-turn tree does not build`. Seeded fixtures for both; gate criterion 5 proves no current value moves (G16).
+  2. DR-G3: the Codex header flag (R-5 c1) names the NA process metrics; the harness-comparison view prints n per harness on every process metric, so a Codex column is visibly empty.
+  3. DR-G3's wave-4 row opens by reading the committed Codex rollout fixtures for an exit-code field; absent, the NA is permanent and the row closes with that evidence. DR-G2's row is in the plan table with its `extraction_id` bump.
+
+## R-68 · 2026-09-25 · Owner seat (Fable) · DR-G5: the nine NA-by-design metrics, ruled each, effective at `0.5`
+
+- **Ruling** (nothing changes in `0.4`):
+  1. `behavioural_equivalence` — **keep**; re-sourced by the first D-task version with a differential oracle (`:342`).
+  2. `verification_before_done` — **keep**; re-sourced by `ToolCall.intent` (R-67).
+  3. `test_quality` — **retire**: its mechanical rung is `mutation_score` (`:386`); one quantity, one definition.
+  4. `maintainability` — **keep**; re-sourced when a tool per language is pinned in `tool_versions` (R-59 c4).
+  5. `style_conformance` — **keep, task-sourced only**: the pack's `.editorconfig` is a treatment, never a source (`:399-400`).
+  6. `spec_coverage` — **retire**: hidden-test coverage is `partial_credit` (`:439`); the rubric half is `spec_quality`.
+  7. `constraint_violations` — **keep**; re-sourced by a task version's constraint checklist; C1's stdlib-only rule is the first candidate.
+  8. `instruction_reread_rate` — **retire** unless `ToolCall.intent` lands first and a comparison wants it (weight 0, `:448`).
+  9. `time_to_first_green` — **keep**; re-sourced by `ToolCall.intent`.
+- **Conditions:**
+  1. Each disposition is written beside the metric in `metrics.yaml` `0.5` (`retire` · `re-source: <row>` · `keep: <source>`); the parametrized NA test (`:598-599`) is the control until then; a retired metric's 0.4 rows keep their values (US-4).
+
+## R-69 · 2026-09-25 · Owner seat (Fable) · The smoke run may run its Claude and Copilot two-thirds now; the `codex-sol` third runs first after the reset
+
+- **Ruling:** the smoke run **may proceed without its `codex-sol` third**, as a split by combo under R-9 rule 2's own shape: run 1 = `copilot-sol`, `cc-opus` × pack {on, off} × 6 tasks (24 cells); run 2 = `codex-sol` (12 cells); each with its own report, joined as one smoke result. Buying credits is the operator's choice and changes nothing here. Waiting is not required.
+- **Reasoning:** R-38 forbids a partial run that would be repeated (`:500`); a split repeats nothing and spends the same tokens, so only speed moves. Completeness and rigor hold when the pins are equal: harness builds (US-12), pack revision, frozen tasks (R-59 c5), catalog; normalisation does not depend on other cells in the run (spec `:212`). The allowance is one per login, measured (`coordination-finish-harness-bench-run.md:115-117`).
+- **Conditions:**
+  1. Run 2 uses run 1's plan pins; `bench validate` fails on any difference; the joined report names both run ids and the gap in days.
+  2. From the reset (`2026-09-29T20:03Z`) no Codex worker slice runs before run 2 completes; Codex tracks stay on Claude under R-4 until then.
+  3. Run 1's report carries the validity banner `partial: codex-sol not run`; no Codex harness comparison is published from it.
+  4. R-57's gates hold per night: (1) on run 2's; (2)–(5) on run 1's. Judge passes on run 1's C1 cells wait for R-63's spike and R-66 c3, not run 2.
