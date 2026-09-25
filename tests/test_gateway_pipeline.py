@@ -97,12 +97,17 @@ def _path(name: str, tmp_path, monkeypatch) -> tuple[pipeline.Result, list[str]]
     elif name == "stdout not readable":
         rendered = request.render(INPUTS.preamble, INPUTS.rubric, 2, INPUTS.artifacts, ENTRIES)
         replay = gw_backend.ReplayBackend({hashlib.sha256(rendered.text.encode()).hexdigest(): "not json"})
+    elif name == "served another model":
+        rendered = request.render(INPUTS.preamble, INPUTS.rubric, 2, INPUTS.artifacts, ENTRIES)
+        replay = gw_backend.ReplayBackend({hashlib.sha256(rendered.text.encode()).hexdigest():
+                                           _stdout(GOOD, ("judge-model-q",))})
     elif name == "store write error":
         def refuse(src, dst):
             raise PermissionError("synthetic")
         monkeypatch.setattr(pipeline.store.os, "link", refuse)
     elif name == "planted entry":
-        pipeline.run(JUDGE, inputs, ctx, replay)  # stored, but no storing row is ever written for it
+        pipeline.run(JUDGE, inputs, ctx, replay)  # stored; its named ledger exists and verifies, with no row for it
+        _storing_ledger(tmp_path / "runs" / "run-placeholder-1", "0" * 64, "0" * 64)
         replay.received.clear()
     elif name == "race lost":
         rendered = request.render(INPUTS.preamble, INPUTS.rubric, 2, INPUTS.artifacts, ENTRIES)
@@ -142,10 +147,12 @@ PATHS = {
     "backend down": ("failed", "HB-GW-001"),
     "answer fails the schema": ("failed", "HB-GW-002"),
     "stdout not readable": ("failed", "HB-GW-002"),
+    "served another model": ("failed", "HB-GW-003"),
     "store write error": ("failed", "HB-GW-001"),
     "planted entry": ("failed", "HB-GW-005"),
 }
-SENT = {"stored", "race lost", "backend down", "answer fails the schema", "stdout not readable", "store write error"}
+SENT = {"stored", "race lost", "backend down", "answer fails the schema", "stdout not readable", "served another model",
+        "store write error"}
 
 
 def test_t_gw_30_every_path_maps_to_exactly_one_outcome_and_code(tmp_path, monkeypatch):
