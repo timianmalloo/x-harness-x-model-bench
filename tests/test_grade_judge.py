@@ -8,6 +8,7 @@ and the operator's identifiers are random synthetic strings (R-42). The stipulat
 `fixtures/gateway/gateway.yaml`: bench/gateway.yaml waits for the Leader's measured turn (R-70).
 """
 
+import json
 import shutil
 from decimal import Decimal
 from pathlib import Path
@@ -16,6 +17,7 @@ import pytest
 import yaml
 from archived_runs import GOOD, ROOT, make_root, make_run, pass_rows
 
+from harness_bench import ledger, views
 from harness_bench.gateway import pipeline
 from harness_bench.grade import Score, judge, runner
 
@@ -126,3 +128,18 @@ def test_t_gw_22_na_reasons_no_rubric_and_second_judge_not_qualified(tmp_path, j
     # one row per (cell, item, judge): the qualified judge's cache-only miss, and the unqualified judge never spawned
     assert uses(run_dir, gid) == sorted([("a", i, CLAUDE, "not_allowed", None) for i in ITEMS] +
                                         [("a", i, CODEX, "failed", "HB-GW-007") for i in ITEMS if 1 in judges])
+
+
+# --------------------------------------------------------------------------------------------------- T-GW-21
+def test_t_gw_21_verdict_uses_is_append_only_and_a_rewrite_fails_verify(tmp_path):
+    run_dir, gid, _ = judged_pass(judged_root(tmp_path), tmp_path)
+    [done] = [e for e in ledger.read_segment(run_dir / "events" / f"{gid}.jsonl") if e["kind"] == "grading.completed"]
+    assert "verdict_uses" in done["heads"]  # the pass seals its own segment and records its head (ADR-0006, R-2)
+    assert [f for f in views.verify(run_dir) if f.level == "error"] == []
+    path = run_dir / "verdict_uses" / f"{gid}.jsonl"
+    lines = path.read_bytes().splitlines(keepends=True)
+    row = json.loads(lines[0])
+    lines[0] = ledger.canonical(row | {"outcome": "hit"}) + b"\n"  # a rewrite of one recorded lookup
+    path.write_bytes(b"".join(lines))
+    errors = [f for f in views.verify(run_dir) if f.level == "error"]
+    assert [(f.code, f.message.split(":")[0]) for f in errors] == [("HB-LED-002", f"verdict_uses/{gid}.jsonl")]
