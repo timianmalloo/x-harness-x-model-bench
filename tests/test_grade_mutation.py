@@ -5,14 +5,16 @@ Fast tests only (fake Stryker, conftest fails any unmarked test that starts dotn
 
 from __future__ import annotations
 
+import shutil
 from decimal import Decimal
 from pathlib import Path
 
 from archived_runs import ROOT
-from test_grade_correctness import d1_cell, tree_digest
+from test_grade_correctness import d1_cell, git, tree_digest
 
 from harness_bench import config
-from harness_bench.grade import CellInput, Score, mutation
+from harness_bench.archive import make_writable
+from harness_bench.grade import CellInput, Score, mutation, runner
 from harness_bench.grade.runner import applicable
 
 CATALOG = config.load_yaml(ROOT / "bench" / "metrics.yaml")
@@ -146,3 +148,78 @@ def test_mutation_run_failed_is_na(tmp_path, monkeypatch):
     fake_stryker(monkeypatch, returncode=1, stderr="Stryker failed to analyze project")
     got = grade_d1(tmp_path, folder, cell)
     assert got.get(METRIC) == (None, "mutation run failed: 1")
+
+
+# --- Red 3: shared NA reasons ---------------------------------------------------------------------------------------
+
+
+def test_no_working_copy_is_na(tmp_path):
+    folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
+    shutil.rmtree(folder / "ws", onexc=make_writable)
+    got = grade_d1(tmp_path, folder, cell)
+    assert got.get(METRIC) == (None, "no working copy in the archive")
+
+
+def test_no_builder_commit_is_na(tmp_path):
+    folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
+    git(folder / "ws", "commit", "-q", "--amend", "-m", "broken commit message")
+    got = grade_d1(tmp_path, folder, cell)
+    assert got.get(METRIC) == (None, "pre-turn commit not found in the working copy")
+
+
+def test_mutation_timeout_is_na(tmp_path, monkeypatch):
+    folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
+    fake_stryker(monkeypatch, timed_out=True)
+    got = grade_d1(tmp_path, folder, cell, timeout=60)
+    assert got.get(METRIC) == (None, "HB-GRD-002 grading step timeout after 60 s")
+
+
+# --- Red 4: stryker config, runner registration and metric filter ---------------------------------------------------
+
+
+def test_stryker_config_json_pinned_timeout_and_command_args(tmp_path, monkeypatch):
+    folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
+    seen_calls = fake_stryker(monkeypatch, returncode=0, report_content=REPORT_FIXTURE)
+    inp = mutation_input(tmp_path / "run", folder, cell, tmp_path / "run" / "grading" / "g" / "c1" / "mutation")
+    out = mutation.grade_cell(inp)
+    assert out[METRIC].value == Decimal("0.8571")
+    assert len(seen_calls) == 1
+    call = seen_calls[0]
+    assert call[0] in ("dotnet", "dotnet.exe")
+    assert call[1] == "exec"
+    assert "Stryker.CLI.dll" in call[2]
+    assert "--skip-version-check" in call
+    assert "--break-on-initial-test-failure" in call
+    assert "--config-file" in call
+    assert "stryker-config.json" in call
+
+
+def test_mutation_is_registered_in_runner_graders():
+    assert "mutation" in runner.GRADERS and runner.GRADERS["mutation"] is mutation.grade_cell
+
+
+def test_mutation_filters_metrics_when_requested(tmp_path, monkeypatch):
+    folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
+    fake_stryker(monkeypatch, returncode=0, report_content=REPORT_FIXTURE)
+    inp = mutation_input(tmp_path / "run", folder, cell, tmp_path / "run" / "grading" / "g" / "c1" / "mutation")
+    inp_empty = CellInput(
+        run_dir=inp.run_dir,
+        root=inp.root,
+        plan=inp.plan,
+        cell=inp.cell,
+        task=inp.task,
+        task_dir=inp.task_dir,
+        archive=inp.archive,
+        out_dir=inp.out_dir,
+        events=inp.events,
+        record_reason=inp.record_reason,
+        model_calls=inp.model_calls,
+        tool_calls=inp.tool_calls,
+        turn_usage=inp.turn_usage,
+        metrics={"other_metric": {}},
+        allow_model_calls=inp.allow_model_calls,
+        extraction=inp.extraction,
+        prices=inp.prices,
+    )
+    out = mutation.grade_cell(inp_empty)
+    assert list(out.keys()) == []
