@@ -119,3 +119,35 @@ Times are Leader-measured: the runner's `duration_seconds` and the subagent's `d
   - The Leader then force-removed the `w2-stopi-4` tree without reading its counts (CLN-C). The commits were recovered; the uncommitted tail was lost.
   - Cost is not recorded per slice (subscriptions; `cost: not recorded` in every runner row). That is the IO gap that let this arrive unforecast.
 - **The Grok R-11 datum:** 3 slices measured 3.1–4.35 MB each over 7.6–12 min, far under 16 MiB.
+
+## Wave 3 (version 5, 2026-09-25): planned against actual so far
+
+Every Codex track ran on Claude under R-4: the OpenAI allowance is out until 2026-09-29. "Leader re-run" is the join rule: each red is re-run in a throwaway tree.
+
+| track | harness · model (stipulated) | joined | evidence verified by the Leader, and the Leader's join fixes |
+| --- | --- | --- | --- |
+| GR-CLAR l1 | Agy `gemini-3.8-flash-high` | `38e0a11` | red re-run; the real A1 cells match the design. Join fixes, red first: no guessed annotated id when the set is missing; ratios are Decimals at scale 4 |
+| GR-PROC p1–p3 | Grok `grok-4.7` | `7358c11`, then p2, then `f2ac1f3` | every slice hit the 720 s deadline after its red commit; the Leader verified and committed each green. Real gate runs match the design. Join fix: the three process ratios get scale 4 |
+| GR-CODE c1 | Claude Opus 5.5 | `d7cbe11` | 4 reds re-run; correctness 25/25 and grade 34/34 killed; the TRX spike note. Decision R-71 (the broken-ProjectReference seed is retired) |
+| GW-I s1 | Claude Opus 5.5 + Fable security review | `620f5fb` | 12 reds re-run. Review: PASS WITH CONDITIONS. Join fixes, red first: the pinned model must be served (F1); `.gitignore` gains `cache/` |
+| GW-CP + the R-63 spike | Claude Sonnet 5; live turns by the Leader | `620f5fb`, `ac44295` | turn 1 in R-63's shape failed: 17 tools advertised, `powershell` ran unapproved, the ancestor canaries loaded. Turn 2 (`--no-custom-instructions --available-tools none`) met every criterion. Decision R-70. Join fix: the Copilot reader keeps a measured empty tools list as `[]` |
+| COST phase 2 | Claude Sonnet 5 | `c57fd6d` | its red failed at collection, not on an assertion (disclosed). Join fix, red first: the cache percentages are Decimals at scale 4; a whole percent read 100 for every harness |
+| GW-I s2 | Claude Opus 5.5 | `c57fd6d` | 11 reds re-run; gateway 67/67 killed; the Copilot builder carries turn 2's shape |
+| STOP-I s5, s6 | Claude Opus 5.5, then Sonnet 5 | `7fb3b61`, `cff61d6` | 19 reds re-run; 165/165 mutants killed; check_models full. Test Architect (Fable): BLOCK, then PASS WITH CONDITIONS after the join fixes. R21-3 stays Flagged until a Copilot capture window |
+| CORE s2 | Claude Opus 5.5 | `5289e91` | 7 reds re-run; grade 68/68 killed. The Leader measured the six cost counts for the gate by a scratch re-grade |
+| GW-I s3 | Claude Opus 5.5 | `0d288c0` | 4 reds re-run; judge 28/28 killed; conflict in runner.py resolved as the union |
+
+**Also in wave 3:**
+- **A pack defect, fixed downstream and committed upstream.** Grok 1.0.41 sends a `workflows-reload` watcher frame inside `session/prompt`, which the transport refused (`protocol_error` 3.8 s in, 0 turns). The fix is local at `b68574b` and committed upstream at `3b7940d` on ai-forward branch `fix/grok-workflows-reload` (91 transport tests OK under WSL). The auto-mode classifier refused the upstream push twice, the second time after the operator's instruction; the push waits for the operator.
+- **A tool defect.** `mutate_check`'s FAILED pattern stopped at the first space, so a parametrized case id with spaces could never count as a kill. Fixed red first.
+- **Defect class SEED-A:** a tool's behaviour asserted from its documentation or a belief, not measured. Two instances: the dotnet seed and the Copilot empty allowlist.
+- **About 16 mutants in other mutation files have stale find text** (reported by GW-I s3). A sweep slice is next.
+
+**Operator decisions, 2026-09-25 (verbatim intent):**
+1. cfd-bench: "I have not added a license file yet AND its just MY OWN repo so far, very nacent so proceed without blocking on a license". B1 and F1 are released: B1 is authored on Grok, F1 on Claude Opus. **Correction:** R-42's reasoning line "cfd-bench has an MIT LICENSE" was wrong. No licence file exists at any cfd-bench commit (checked: `git ls-files` and the working tree).
+2. "commit and push": the upstream commit landed; the push was refused by the classifier (above).
+3. "you close this out - you dont need me to address these". The Leader closes the carried operator items:
+   - **Codex hook `/hooks` review:** closed as not blocking. 13 Codex worker slices ran with the hook in place, and Codex is unavailable until 2026-09-29. The Leader does not write the Codex hook trust store itself. If Codex refuses the hook at the reset, the refusal is recorded and the hook-less path is taken.
+   - **The ChatGPT connector activity log (R-55):** closed by the measured control. `apps = false` is in every Codex cell's config, and `requal-codex-1` measured no MCP call. The account log itself is visible only to the account owner.
+   - **The 30 calibration labels (R-58: HUMAN):** the operator will not label them, so R-58's labelling condition goes back to the Owner seat for a re-ruling before W3-CAL is dispatched.
+   - **Informational, no action:** Grok authenticates with `XAI_API_KEY` (disclosed); row 9 (Harbor) stays parked; the Anthropic allowance remains a risk.
