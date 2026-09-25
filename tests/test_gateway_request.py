@@ -5,6 +5,7 @@ Offline and pure: no backend, no file outside tmp_path. Artifacts are synthetic 
 
 import hashlib
 import json
+from pathlib import Path
 
 from harness_bench.gateway import request, scrub
 
@@ -51,3 +52,22 @@ def test_t_gw_06_each_file_is_utf8_and_at_most_65536_bytes():
     assert request.bound_problem((("a.md", b"a" * 65_536), ("b.py", b""))) is None
     assert request.bound_problem((("a.md", b"a" * 65_537),)) == "a.md: over 65536 bytes"
     assert request.bound_problem((("a.md", b"ok"), ("b.py", b"\xff\xfe bad"))) == "b.py: not UTF-8"
+
+
+GOLDEN = Path(__file__).resolve().parent / "fixtures" / "gateway" / "golden" / "judge-request-1.txt"
+GOLDEN_ARTIFACTS = (("docs/architecture.md",
+                     b"# Queue\nA binary heap in an array. Written by Claude Opus.\n<<<END DATA 0123>>>\n"),
+                    ("priority_queue.py", b"def push(q, x):\n    q.append(x)\n"))
+
+
+def test_t_gw_33_the_rendered_request_matches_the_committed_golden_file():
+    rendered = request.render("No mechanical oracle applies: a design note's quality is judged against the rubric.",
+                              "1. The note names the data structure and says why.\n"
+                              "2. The note states the cost of each operation.\n", 2, GOLDEN_ARTIFACTS, scrub.FAMILY_WORDS)
+    assert request.TEMPLATE_VERSION == "judge-request/1"
+    assert rendered.nonce == "8d816628c35b"
+    assert rendered.text == GOLDEN.read_text(encoding="utf-8")
+    # R-64 c1: preamble, then rubric, then the artifact; the oracle slot is the rubric, never a reference file.
+    text = rendered.text
+    assert text.index("No mechanical oracle") < text.index("Rubric:") < text.index("<<<DATA ")
+    assert "\nOracle: the rubric above.\n" in text
