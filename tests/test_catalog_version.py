@@ -47,11 +47,36 @@ def graded_export(root: Path, name: str, tmp: Path) -> bytes:
 
 def us4_problems(root: Path, golden: Path, freeze: dict, base: dict, export: Callable[[str], bytes]) -> list[str]:
     """Checks (a)-(e) for `root`'s current catalog; [] when the control passes."""
-    return []  # red: not built
+    versions, was = freeze.get("versions") or {}, base.get("versions") or {}
+    problems = [f"(e) {FREEZE} entry {v!r} was changed or removed since the merge base" for v in sorted(was) if versions.get(v) != was[v]]
+    version = str(config.load_yaml(root / "bench" / "metrics.yaml")["version"])
+    if version.endswith(".dev"):
+        print(PROBE)
+        return problems
+    pinned = versions.get(version)
+    current = runner.catalog_hash(root)
+    if pinned is None:
+        problems.append(f"(b) no catalog_hash pinned for {version} in {FREEZE}")
+    elif pinned.get("catalog_hash") != current:
+        problems.append(f"(b) catalog_hash {current} != {pinned.get('catalog_hash')} pinned for {version}: a weight, rubric or "
+                        "definition changed without a version bump")
+    files = sorted((golden / version).glob("*.export"))
+    if not files:
+        problems.append(f"(d) no golden export for {version} (a freeze needs a golden export)")
+    digests = {f.stem: hashlib.sha256(f.read_bytes()).hexdigest() for f in files}
+    if pinned is not None and digests != (pinned.get("golden") or {}):
+        problems.append(f"(c) golden exports for {version} differ from the digests pinned in {FREEZE}")
+    for f in files:
+        if f.stem not in FIXTURES:
+            problems.append(f"(a) {f.stem}: no committed fixture of that name")
+        elif export(f.stem) != f.read_bytes():
+            problems.append(f"(a) {f.stem}: the export differs from its golden file (a score or reason moved without a bump)")
+    return sorted(problems)
 
 
 def _git(*args: str) -> str | None:
-    done = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", timeout=60)
+    done = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", timeout=60,
+                          check=False)
     return done.stdout if done.returncode == 0 else None
 
 
@@ -68,7 +93,7 @@ def merge_base_freeze() -> dict:
 
 
 def test_the_current_catalog_passes_the_us4_control(tmp_path, capsys):
-    root = make_root(tmp_path)  # the real catalog and X1; bench/rubrics/ too, as it is part of the catalog
+    root = make_root(tmp_path, release=False)  # the real catalog byte for byte, and X1; bench/rubrics/ as well
     if (ROOT / "bench" / "rubrics").is_dir():
         shutil.copytree(ROOT / "bench" / "rubrics", root / "bench" / "rubrics")
     assert runner.catalog_hash(root) == runner.catalog_hash(ROOT)
@@ -128,8 +153,8 @@ def test_a_weight_changed_without_a_bump_is_red_through_b(frozen, tmp_path):
     path.write_text(path.read_text(encoding="utf-8").replace("kind: score, weight: 1, scale: 6", "kind: score, weight: 2, scale: 6"),
                     encoding="utf-8")
     assert problems(frozen, tmp_path) == [  # the export does not carry weights, so only the hash sees it
-        f"(b) catalog_hash {runner.catalog_hash(root)} != {freeze['versions']['9.1']['catalog_hash']} pinned for 9.1: a weight, "
-        "rubric or definition changed without a version bump"]
+        (f"(b) catalog_hash {runner.catalog_hash(root)} != {freeze['versions']['9.1']['catalog_hash']} pinned for 9.1: a weight, "
+         "rubric or definition changed without a version bump")]
 
 
 def test_a_rubric_added_without_a_bump_is_red_through_b(frozen, tmp_path):
@@ -149,7 +174,7 @@ def test_a_rewritten_golden_file_is_red_through_c(frozen, tmp_path):
 
 
 def test_a_released_version_with_no_golden_export_is_red_through_d(frozen, tmp_path):
-    root, golden, freeze = frozen
+    _, golden, freeze = frozen
     shutil.rmtree(golden / "9.1")
     freeze["versions"]["9.1"]["golden"] = {}
     assert problems(frozen, tmp_path) == ["(d) no golden export for 9.1 (a freeze needs a golden export)"]
@@ -172,7 +197,7 @@ def test_an_edited_or_removed_freeze_entry_is_red_through_e(frozen, tmp_path):
 
 
 def test_a_dev_version_is_exempt_and_says_so(frozen, tmp_path, capsys):
-    root, golden, freeze = frozen
+    root, _, _ = frozen
     set_catalog_version(root, "9.2.dev")
     path = root / "bench" / "metrics.yaml"
     path.write_text(path.read_text(encoding="utf-8").replace("kind: score, weight: 1, scale: 6", "kind: score, weight: 2, scale: 6"),
