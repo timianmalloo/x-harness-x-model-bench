@@ -1,0 +1,411 @@
+[
+ {
+  "name": "scrub skipped",
+  "file": "src/harness_bench/gateway/request.py",
+  "find": "text = scrub.scrub(raw.decode(\"utf-8\"), entries)",
+  "replace": "text = raw.decode(\"utf-8\")",
+  "tests": [
+   "tests/test_gateway_request.py::test_t_gw_01_render_is_deterministic_and_the_nonce_comes_from_the_raw_bytes",
+   "tests/test_gateway_pipeline.py::test_t_gw_30_every_path_maps_to_exactly_one_outcome_and_code"
+  ]
+ },
+ {
+  "name": "independent scan skipped",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "    if scrub.scan(rendered.text, ctx.denylist):",
+  "replace": "    if False:",
+  "tests": [
+   "tests/test_gateway_pipeline.py::test_t_gw_04_the_scan_is_independent_of_the_scrub",
+   "tests/test_gateway_pipeline.py::test_t_gw_30_every_path_maps_to_exactly_one_outcome_and_code"
+  ]
+ },
+ {
+  "name": "egress bypassed",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "    return egress.check(request_text, destination=judge.model, operator=ctx.operator, secrets=ctx.secrets,\n                        canaries=ctx.canaries).release(lambda payload: _ask(backend, payload))",
+  "replace": "    return _ask(backend, request_text)",
+  "tests": [
+   "tests/test_gateway_pipeline.py::test_t_gw_30_every_path_maps_to_exactly_one_outcome_and_code"
+  ]
+ },
+ {
+  "name": "the store overwrites",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "        os.link(tmp, target)",
+  "replace": "        os.replace(tmp, target)",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_11_the_first_writer_wins_and_the_loser_reads_its_entry"
+  ]
+ },
+ {
+  "name": "a lost race is a failure",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "        return Found(\"race_lost\", None, winner, sha)",
+  "replace": "        return Found(\"failed\", \"HB-GW-001\")",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_11_the_first_writer_wins_and_the_loser_reads_its_entry",
+   "tests/test_gateway_pipeline.py::test_t_gw_30_every_path_maps_to_exactly_one_outcome_and_code"
+  ]
+ },
+ {
+  "name": "a lost race accepts any winner",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "        if winner is None or not _recomputes(winner, cache_key, allowed_models):",
+  "replace": "        if winner is None:",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_11_a_loser_whose_winner_does_not_recompute_is_refused"
+  ]
+ },
+ {
+  "name": "every write error is a lost race",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "    except OSError:\n        return Found(\"failed\", \"HB-GW-001\")",
+  "replace": "    except OSError:\n        return Found(\"race_lost\", None, entry, \"0\" * 64)",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_11_a_write_error_other_than_a_lost_race_is_hb_gw_001"
+  ]
+ },
+ {
+  "name": "entry left writable",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "    os.chmod(target, stat.S_IREAD)\n",
+  "replace": "    os.chmod(target, stat.S_IREAD | stat.S_IWRITE)\n",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_11_the_first_writer_wins_and_the_loser_reads_its_entry"
+  ]
+ },
+ {
+  "name": "a fresh tmp is swept",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "        if now - tmp.stat().st_mtime > STALE_TMP_SECONDS:",
+  "replace": "        if True:",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_11_a_tmp_older_than_24_hours_is_swept"
+  ]
+ },
+ {
+  "name": "a hit accepted without the storing row",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "        vouched = any(_vouches(f, fact, pass_id, cache_key, sha, session) for f in folders)",
+  "replace": "        vouched = True",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_13_a_planted_entry_without_matching_provenance_is_hb_gw_005"
+  ]
+ },
+ {
+  "name": "hit check: key inputs not recomputed",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "        named = isinstance(inputs, dict) and key(inputs) == cache_key",
+  "replace": "        named = isinstance(inputs, dict)",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_13_an_entry_that_fails_the_check_is_hb_gw_005"
+  ]
+ },
+ {
+  "name": "hit check: served models not checked",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "and bool(served) and all(m in allowed_models for m in served))",
+  "replace": "and bool(served))",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_13_an_entry_that_fails_the_check_is_hb_gw_005"
+  ]
+ },
+ {
+  "name": "hit check: stored_by may leave the known roots",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "isinstance(v, str) and _SAFE_ID.fullmatch(v) and v not in (\".\", \"..\")",
+  "replace": "isinstance(v, str)",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_13_an_entry_that_fails_the_check_is_hb_gw_005"
+  ]
+ },
+ {
+  "name": "hit check: an unsealed segment vouches",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "if report.error is None and report.sealed else None",
+  "replace": "if report.error is None else None",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_13_a_planted_entry_without_matching_provenance_is_hb_gw_005"
+  ]
+ },
+ {
+  "name": "hit check: no gateway model_calls row needed",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "r.get(\"principal\") == \"gateway\" and ",
+  "replace": "",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_13_a_planted_entry_without_matching_provenance_is_hb_gw_005"
+  ]
+ },
+ {
+  "name": "hit check: no archived record needed",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": " and record.is_file()",
+  "replace": "",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_13_a_planted_entry_without_matching_provenance_is_hb_gw_005"
+  ]
+ },
+ {
+  "name": "hit check: an edited entry vouched by hash-free row",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "r.get(\"cache_key\") == cache_key and r.get(\"entry_sha256\") == sha\n                    for r in uses",
+  "replace": "r.get(\"cache_key\") == cache_key\n                    for r in uses",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_13_an_edited_entry_is_refused_and_verify_warns"
+  ]
+ },
+ {
+  "name": "orphan accepted without this run's row",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "    if own_run is not None and _own_row(own_run, cache_key, sha):",
+  "replace": "    if own_run is not None:",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_13_a_pruned_storing_ledger_orphans_the_entry_and_this_runs_own_row_accepts_it"
+  ]
+ },
+ {
+  "name": "verify misses a changed entry",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "        elif sha != ref[\"entry_sha256\"]:",
+  "replace": "        elif False:",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_13_an_edited_entry_is_refused_and_verify_warns"
+  ]
+ },
+ {
+  "name": "the orphan is not moved aside",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "        store.move_orphan(ctx.store, cache_key, time.strftime(\"%Y%m%dT%H%M%SZ\", time.gmtime()))",
+  "replace": "        pass",
+  "tests": [
+   "tests/test_gateway_pipeline.py::test_t_gw_30_an_orphan_is_moved_aside_before_a_fresh_call_stores_its_key",
+   "tests/test_gateway_pipeline.py::test_t_gw_30_every_path_maps_to_exactly_one_outcome_and_code"
+  ]
+ },
+ {
+  "name": "a miss is called without the flag",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "    if not ctx.allow_model_calls:",
+  "replace": "    if False:",
+  "tests": [
+   "tests/test_gateway_pipeline.py::test_t_gw_30_every_path_maps_to_exactly_one_outcome_and_code"
+  ]
+ },
+ {
+  "name": "a down backend is not_allowed",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "    except BackendDown:\n        return Result(\"failed\", \"HB-GW-001\", escaped=escaped)",
+  "replace": "    except BackendDown:\n        return Result(\"not_allowed\", escaped=escaped)",
+  "tests": [
+   "tests/test_gateway_pipeline.py::test_t_gw_30_every_path_maps_to_exactly_one_outcome_and_code"
+  ]
+ },
+ {
+  "name": "the answer is not validated",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "    if read is None or schema.validate(answer, inputs.items):",
+  "replace": "    if read is None:",
+  "tests": [
+   "tests/test_gateway_pipeline.py::test_t_gw_30_every_path_maps_to_exactly_one_outcome_and_code"
+  ]
+ },
+ {
+  "name": "the served model is not checked",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "    if not all(m in judge.allowed_models for m in served):",
+  "replace": "    if False:",
+  "tests": [
+   "tests/test_gateway_pipeline.py::test_t_gw_30_every_path_maps_to_exactly_one_outcome_and_code"
+  ]
+ },
+ {
+  "name": "key field dropped: request_sha256",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "{f: key_inputs[f] for f in KEY_FIELDS}",
+  "replace": "{f: key_inputs[f] for f in KEY_FIELDS if f != \"request_sha256\"}",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_12b_each_key_input_changes_the_key_and_misses[request_sha256]"
+  ]
+ },
+ {
+  "name": "key field dropped: schema_sha256",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "{f: key_inputs[f] for f in KEY_FIELDS}",
+  "replace": "{f: key_inputs[f] for f in KEY_FIELDS if f != \"schema_sha256\"}",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_12b_each_key_input_changes_the_key_and_misses[schema_sha256]"
+  ]
+ },
+ {
+  "name": "key field dropped: model",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "{f: key_inputs[f] for f in KEY_FIELDS}",
+  "replace": "{f: key_inputs[f] for f in KEY_FIELDS if f != \"model\"}",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_12b_each_key_input_changes_the_key_and_misses[model]"
+  ]
+ },
+ {
+  "name": "key field dropped: invocation_sha256",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "{f: key_inputs[f] for f in KEY_FIELDS}",
+  "replace": "{f: key_inputs[f] for f in KEY_FIELDS if f != \"invocation_sha256\"}",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_12b_each_key_input_changes_the_key_and_misses[invocation_sha256]"
+  ]
+ },
+ {
+  "name": "the key takes any inputs",
+  "file": "src/harness_bench/gateway/store.py",
+  "find": "    if set(key_inputs) != set(KEY_FIELDS):",
+  "replace": "    if False:",
+  "tests": [
+   "tests/test_gateway_store.py::test_t_gw_12b_the_key_takes_exactly_the_four_inputs"
+  ]
+ },
+ {
+  "name": "the nonce comes from the scrubbed text",
+  "file": "src/harness_bench/gateway/request.py",
+  "find": "    digest = artifact_sha256(artifacts)",
+  "replace": "    digest = artifact_sha256(tuple((p, scrub.scrub(r.decode(\"utf-8\"), entries).encode()) for p, r in artifacts))",
+  "tests": [
+   "tests/test_gateway_request.py::test_t_gw_01_render_is_deterministic_and_the_nonce_comes_from_the_raw_bytes"
+  ]
+ },
+ {
+  "name": "the closing fence is not escaped",
+  "file": "src/harness_bench/gateway/request.py",
+  "find": "            text = text.replace(END, ESCAPED_END)",
+  "replace": "            pass",
+  "tests": [
+   "tests/test_gateway_request.py::test_t_gw_02_data_cannot_close_its_fence"
+  ]
+ },
+ {
+  "name": "the escape is not flagged",
+  "file": "src/harness_bench/gateway/request.py",
+  "find": "            escaped.append(path)",
+  "replace": "            pass",
+  "tests": [
+   "tests/test_gateway_request.py::test_t_gw_02_data_cannot_close_its_fence"
+  ]
+ },
+ {
+  "name": "a reference file in the oracle slot (R-64 c1)",
+  "file": "src/harness_bench/gateway/request.py",
+  "find": "Oracle: the rubric above.",
+  "replace": "Oracle: oracle/reference/architecture.md.",
+  "tests": [
+   "tests/test_gateway_request.py::test_t_gw_33_the_rendered_request_matches_the_committed_golden_file"
+  ]
+ },
+ {
+  "name": "the bound is off by one",
+  "file": "src/harness_bench/gateway/request.py",
+  "find": "        if len(raw) > BOUND:",
+  "replace": "        if len(raw) >= BOUND:",
+  "tests": [
+   "tests/test_gateway_request.py::test_t_gw_06_each_file_is_utf8_and_at_most_65536_bytes"
+  ]
+ },
+ {
+  "name": "UTF-8 not checked",
+  "file": "src/harness_bench/gateway/request.py",
+  "find": "            return f\"{path}: not UTF-8\"",
+  "replace": "            pass",
+  "tests": [
+   "tests/test_gateway_request.py::test_t_gw_06_each_file_is_utf8_and_at_most_65536_bytes"
+  ]
+ },
+ {
+  "name": "format characters hide an entry",
+  "file": "src/harness_bench/gateway/scrub.py",
+  "find": " if unicodedata.category(c) != \"Cf\"",
+  "replace": "",
+  "tests": [
+   "tests/test_gateway_scrub.py::test_t_gw_03_hits_near_misses_and_zero_width_characters"
+  ]
+ },
+ {
+  "name": "no NFKC in the normal form",
+  "file": "src/harness_bench/gateway/scrub.py",
+  "find": "unicodedata.normalize(\"NFKC\", text)",
+  "replace": "text",
+  "tests": [
+   "tests/test_gateway_scrub.py::test_t_gw_03_hits_near_misses_and_zero_width_characters"
+  ]
+ },
+ {
+  "name": "entries match inside words",
+  "file": "src/harness_bench/gateway/scrub.py",
+  "find": "(?![^\\W_])",
+  "replace": "",
+  "tests": [
+   "tests/test_gateway_scrub.py::test_t_gw_03_hits_near_misses_and_zero_width_characters"
+  ]
+ },
+ {
+  "name": "entries are case-sensitive",
+  "file": "src/harness_bench/gateway/scrub.py",
+  "find": ", re.IGNORECASE) if bodies else None",
+  "replace": ") if bodies else None",
+  "tests": [
+   "tests/test_gateway_scrub.py::test_t_gw_03_hits_near_misses_and_zero_width_characters"
+  ]
+ },
+ {
+  "name": "a line split hides a multi-word entry",
+  "file": "src/harness_bench/gateway/scrub.py",
+  "find": "r\"\\s+\".join(re.escape(part) for part in _normal(e).split())",
+  "replace": "re.escape(_normal(e))",
+  "tests": [
+   "tests/test_gateway_scrub.py::test_t_gw_03_hits_near_misses_and_zero_width_characters"
+  ]
+ },
+ {
+  "name": "combo ids not denied",
+  "file": "src/harness_bench/gateway/scrub.py",
+  "find": "        entries.add(combo[\"id\"])\n",
+  "replace": "",
+  "tests": [
+   "tests/test_gateway_scrub.py::test_the_denylist_is_the_pack_markers_harnesses_models_combos_and_family_words"
+  ]
+ },
+ {
+  "name": "a bool is an integer",
+  "file": "src/harness_bench/gateway/schema.py",
+  "find": "if kind and (isinstance(value, bool) or not isinstance(value, _TYPES[kind])):",
+  "replace": "if kind and not isinstance(value, _TYPES[kind]):",
+  "tests": [
+   "tests/test_gateway_schema.py::test_t_gw_05_each_malformed_answer_is_named"
+  ]
+ },
+ {
+  "name": "extra keys allowed",
+  "file": "src/harness_bench/gateway/schema.py",
+  "find": "        if rule.get(\"additionalProperties\") is False:",
+  "replace": "        if False:",
+  "tests": [
+   "tests/test_gateway_schema.py::test_t_gw_05_each_malformed_answer_is_named"
+  ]
+ },
+ {
+  "name": "duplicate items allowed",
+  "file": "src/harness_bench/gateway/schema.py",
+  "find": "    out += [f\"$.items: item {i} repeated\" for i in sorted({i for i in ids if ids.count(i) > 1})]\n",
+  "replace": "",
+  "tests": [
+   "tests/test_gateway_schema.py::test_t_gw_05_each_malformed_answer_is_named"
+  ]
+ },
+ {
+  "name": "the validator ignores the schema file",
+  "file": "src/harness_bench/gateway/schema.py",
+  "find": "    _check(answer, json.loads(SCHEMA_PATH.read_text(encoding=\"utf-8\")), \"$\", out)",
+  "replace": "    _check(answer, json.loads((Path(__file__).resolve().parent / \"schemas\" / \"verdict-set.v1.json\").read_text(encoding=\"utf-8\")), \"$\", out)",
+  "tests": [
+   "tests/test_gateway_schema.py::test_t_gw_05_the_validator_reads_the_schema_file"
+  ]
+ }
+]

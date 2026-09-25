@@ -205,6 +205,7 @@ def test_t_gw_13_a_pruned_storing_ledger_orphans_the_entry_and_this_runs_own_row
     own.parent.mkdir(parents=True)
     (runs / RUN).rename(own)  # the storing run is gone from every known root; this run holds an earlier row
     assert store.lookup(root, k, (runs,), ALLOWED, None) == store.Found("orphaned")
+    assert store.lookup(root, k, (runs,), ALLOWED, tmp_path / "run-without-the-row") == store.Found("orphaned")
     assert store.lookup(root, k, (runs,), ALLOWED, own) == store.Found("hit", None, entry, sha)
     moved = store.move_orphan(root, k, "20260925T000000Z")
     assert moved == root / "orphaned" / f"{k}.20260925T000000Z.json"
