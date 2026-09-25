@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T02:52:45Z",
+  "generated": "2026-09-25T02:56:25Z",
   "audit": [
     {
       "actor": null,
@@ -8576,6 +8576,172 @@ window.AUDIT_DATA = {
       "compiled": false,
       "tier": "T1",
       "fan_out": 0
+    },
+    {
+      "id": "al-01M3B7W2TGCTK67HJJE4PJF332",
+      "shortname": "Goal: Hook qualification smoke turn: make two file edits with your apply…",
+      "datetime": "2026-09-25T02:56:19Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: Hook qualification smoke turn: make two file edits with your apply_patch tool, never with a shell command, and record what happened to each.\nDone when: docs/notes/qualify-worker.md exists and was created with apply_patch.; You attempted one apply_patch that adds the file docs/notes/qualify-held.md, and docs/notes/qualify-worker.md has one line saying whether that patch was applied or refused, with the refusal text if there was one.; One commit touching only docs/notes/qualify-worker.md is on your branch.\nNot in scope: Writing any file with a shell command; retrying a refused patch; any other file; any test run; any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: 12 tool calls, 600 s",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3B7W8NZ82J8GMWTKKV5WDGC",
+      "shortname": "compile-Goal: Hook qualification smoke turn: make two file edits with your apply…",
+      "datetime": "2026-09-25T02:56:25Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: Hook qualification smoke turn: make two file edits with your apply_patch tool, never with a shell command, and record what happened to each.\nDone when: docs/notes/qualify-worker.md exists and was created with apply_patch.; You attempted one apply_patch that adds the file docs/notes/qualify-held.md, and docs/notes/qualify-worker.md has one line saying whether that patch was applied or refused, with the refusal text if there was one.; One commit touching only docs/notes/qualify-worker.md is on your branch.\nNot in scope: Writing any file with a shell command; retrying a refused patch; any other file; any test run; any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: 12 tool calls, 600 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: docs/notes/qualify-worker.md exists and was created with apply_patch. | phrase: docs/notes/qualify-worker.md exists and was created with apply_patch. |\n| done_when: You attempted one apply_patch that adds the file docs/notes/qualify-held.md, and docs/notes/qualify-worker.md has one line saying whether that patch was applied or refused, with the refusal text if there was one. | phrase: You attempted one apply_patch that adds the file docs/notes/qualify-held.md, and docs/notes/qualify-worker.md has one line saying whether that patch was applied or refused, with the refusal text if there was one. |\n| done_when: One commit touching only docs/notes/qualify-worker.md is on your branch. | phrase: One commit touching only docs/notes/qualify-worker.md is on your branch. |\n| not_in_scope: Writing any file with a shell command | phrase: Writing any file with a shell command |\n| not_in_scope: retrying a refused patch | phrase: retrying a refused patch |\n| not_in_scope: any other file | phrase: any other file |\n| not_in_scope: any test run | phrase: any test run |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- docs/notes/qualify-worker.md: unresolved (not found)\n- docs/notes/qualify-held.md: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3B7W2TGCTK67HJJE4PJF332\nraw sha256: b7fff18ed574edfc3116495f32e883f2d24d4b87c1634fd4a3b246bd5d89576b\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3B7W2TGCTK67HJJE4PJF332 for codex v1: 8 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "docs/notes/qualify-worker.md exists and was created with apply_patch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "docs/notes/qualify-worker.md exists and was created with apply_patch."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "You attempted one apply_patch that adds the file docs/notes/qualify-held.md, and docs/notes/qualify-worker.md has one line saying whether that patch was applied or refused, with the refusal text if there was one.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "You attempted one apply_patch that adds the file docs/notes/qualify-held.md, and docs/notes/qualify-worker.md has one line saying whether that patch was applied or refused, with the refusal text if there was one."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "One commit touching only docs/notes/qualify-worker.md is on your branch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "One commit touching only docs/notes/qualify-worker.md is on your branch."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Writing any file with a shell command",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Writing any file with a shell command"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "retrying a refused patch",
+            "trace": {
+              "kind": "phrase",
+              "ref": "retrying a refused patch"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any other file",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any other file"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any test run",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any test run"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "docs/notes/qualify-worker.md exists and was created with apply_patch.",
+            "You attempted one apply_patch that adds the file docs/notes/qualify-held.md, and docs/notes/qualify-worker.md has one line saying whether that patch was applied or refused, with the refusal text if there was one.",
+            "One commit touching only docs/notes/qualify-worker.md is on your branch."
+          ],
+          "fan_out_cap": 0,
+          "goal": "Hook qualification smoke turn: make two file edits with your apply_patch tool, never with a shell command, and record what happened to each.",
+          "main_line_budget": "12 tool calls, 600 s",
+          "not_in_scope": [
+            "Writing any file with a shell command",
+            "retrying a refused patch",
+            "any other file",
+            "any test run",
+            "any push."
+          ],
+          "tier": "T0"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.002,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3B7W2TGCTK67HJJE4PJF332",
+        "raw_sha256": "b7fff18ed574edfc3116495f32e883f2d24d4b87c1634fd4a3b246bd5d89576b",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/qualify-worker.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/qualify-held.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
     }
   ],
   "changes": [
