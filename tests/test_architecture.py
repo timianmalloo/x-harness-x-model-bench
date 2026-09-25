@@ -213,6 +213,25 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
         "the-judge-stub-without-a-gateway": (False, {"src/harness_bench/grade/judge.py":
                                                      "from harness_bench.grade import not_built\n\n"
                                                      "def grade(run_dir, task_dir):\n    raise not_built('judge', 'S-09')\n"}),
+        # Fable Major 2: an injected backend called by method, or kept on self, is still a backend call.
+        "a-method-on-an-injected-backend": (True, {gw + "cli.py": cli, gw + "__init__.py": released, gw + "direct.py":
+                                                   "def judge_direct(p, backend):\n    return backend.judge(p)\n"}),
+        "self-attribute-from-an-injected-backend": (True, {gw + "cli.py": cli, gw + "__init__.py": released, gw + "pool.py":
+                                                           "class Pool:\n    def __init__(self, backend):\n"
+                                                           "        self.backend = backend\n\n    def judge(self, p):\n"
+                                                           "        return self.backend.judge(p)\n"}),
+        "self-attribute-from-a-spawner": (True, {gw + "cli.py": cli, gw + "__init__.py": released, gw + "pool.py":
+                                                 "from .cli import HeadlessCli\n\nclass Pool:\n    def __init__(self):\n"
+                                                 "        self.backend = HeadlessCli()\n\n    def judge(self, p):\n"
+                                                 "        return self.backend(p)\n"}),
+        "a-typed-data-parameter": (False, {gw + "cli.py": cli, gw + "payload.py":
+                                           "def build(item: str) -> str:\n    return item.strip()\n",
+                                           gw + "__init__.py": released.replace("from .cli", "from .payload import build\nfrom .cli")
+                                           .replace("    return egress", "    p = build(p)\n    return egress")}),
+        "a-method-on-own-plain-state": (False, {gw + "cli.py": cli, gw + "__init__.py": released, gw + "cache.py":
+                                                "class Cache:\n    def __init__(self, root: str):\n        self.root = root\n\n"
+                                                "    def key(self, p: str) -> str:\n        return self._norm(p) + self.root.lower()\n\n"
+                                                "    def _norm(self, p: str) -> str:\n        return p.lower()\n"}),
     }
     assert {name: bool(offenders(mods)) for name, (_, mods) in cases.items()} == \
         {name: fires for name, (fires, _) in cases.items()}
