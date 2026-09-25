@@ -29,6 +29,7 @@ from __future__ import annotations
 import dataclasses
 import hashlib
 import logging
+import os
 import secrets
 import sys
 import time
@@ -95,8 +96,8 @@ GRADERS["architecture"] = architecture.grade_cell  # GR-CODE c4
 GRADERS["rigor"] = rigor.grade_cell  # GR-CODE c5
 TOOL_TIMEOUT = 30  # seconds per version probe (R-59 c4)
 NOT_RECORDED = "not recorded"
-# Tools a grader runs beyond python and dotnet: key -> the command that prints its version (its last stdout line).
-# simplify: empty until GR-CODE c6 pins Stryker.NET; its spike names the command (`dotnet-stryker`). Upgrade trigger: that pin.
+# Extra pins beyond python, dotnet, and dotnet-stryker: key -> argv whose last stdout line is the version.
+# dotnet-stryker is measured in tool_versions from the cached DLL (spike c6a). `--version` is not that version.
 PINNED_TOOLS: dict[str, list[str]] = {}
 
 
@@ -112,9 +113,33 @@ def _version(argv: list[str], cwd: Path) -> str:
     return tools.measured_version(argv, cwd, TOOL_TIMEOUT) or NOT_RECORDED
 
 
+def _nuget_packages_dir() -> Path:
+    """The NuGet global-packages folder: NUGET_PACKAGES, else %USERPROFILE%\\.nuget\\packages. Never a hard-coded path."""
+    configured = os.environ.get("NUGET_PACKAGES")
+    if configured:
+        return Path(configured)
+    return Path(os.environ.get("USERPROFILE", "")) / ".nuget" / "packages"
+
+
+# Pinned Stryker.NET 4.16.0 inside that folder (spike c6a). The cache root is _nuget_packages_dir().
+_STRYKER_DLL = Path("dotnet-stryker") / "4.16.0" / "tools" / "net8.0" / "any" / "Stryker.CLI.dll"
+
+
+def _stryker_version_argv() -> list[str] | None:
+    """ProductVersion of the cached Stryker.CLI.dll, or None when that package is absent.
+    On 4.16.0 `--version` is a dashboard project version, not the tool version (spike c6a)."""
+    dll = _nuget_packages_dir() / _STRYKER_DLL
+    if not dll.is_file():
+        return None
+    quoted = str(dll).replace("'", "''")
+    return ["powershell", "-NoProfile", "-Command",
+            f"[System.Diagnostics.FileVersionInfo]::GetVersionInfo('{quoted}').ProductVersion"]
+
+
 def tool_versions(root: Path, plan: Mapping) -> dict[str, str]:
     """R-59 c4: each tool the pass's graders run, measured once at pass start (never read from a pin, never guessed).
-    dotnet is measured once per dotnet task in the plan, in its workspace, where global.json selects the SDK (D&P 9)."""
+    dotnet is measured once per dotnet task in the plan, in its workspace, where global.json selects the SDK (D&P 9).
+    dotnet-stryker is the cached assembly ProductVersion, with a 30 s timeout; an absent package is `not recorded`."""
     out = {"python": sys.version.split()[0]}
     for task in sorted({c["task"] for c in plan["cells"]}):
         spec = root / "tasks" / task / "task.yaml"
@@ -122,6 +147,10 @@ def tool_versions(root: Path, plan: Mapping) -> dict[str, str]:
             out[f"dotnet[{task}]"] = _version(["dotnet", "--version"], root / "tasks" / task / "workspace")
     for key, argv in sorted(PINNED_TOOLS.items()):
         out[key] = _version(argv, root)
+    # An explicit PINNED_TOOLS entry wins. Otherwise measure the cached DLL, or record the absence.
+    if "dotnet-stryker" not in PINNED_TOOLS:
+        probe = _stryker_version_argv()
+        out["dotnet-stryker"] = _version(probe, root) if probe is not None else NOT_RECORDED
     return out
 
 

@@ -244,16 +244,19 @@ def test_the_gate_runs_0_3_exports_equal_the_committed_baseline(name):  # P5, L-
 # --- catalog_hash and tool_versions on grading.started (R-59 c1, c4; design: Catalog-version rule 2-3) -------------
 
 
-def test_grading_started_carries_the_catalog_hash_and_the_measured_tool_versions(root, tmp_path):
+def test_grading_started_carries_the_catalog_hash_and_the_measured_tool_versions(root, tmp_path, monkeypatch):
     rubric = root / "bench" / "rubrics" / "adr_quality.md"
     rubric.parent.mkdir()
     rubric.write_bytes(b"# rubric\r\n")
     metrics = (root / "bench" / "metrics.yaml").read_bytes().replace(b"\r\n", b"\n")
     expected = hashlib.sha256(b"metrics.yaml\0" + metrics + b"\0" + b"rubrics/adr_quality.md\0# rubric\n\0").hexdigest()
+    empty = tmp_path / "empty-packages"
+    empty.mkdir()
+    monkeypatch.setenv("NUGET_PACKAGES", str(empty))  # this pass has no cached stryker
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     started = pass_rows(run_dir, "events", runner.run_pass(run_dir, root).grading_id)[0]
     assert (started["kind"], started["catalog_hash"]) == ("grading.started", expected)
-    assert started["tool_versions"] == {"python": sys.version.split()[0]}  # X1 is not a dotnet task; nothing is pinned
+    assert started["tool_versions"] == {"python": sys.version.split()[0], "dotnet-stryker": "not recorded"}  # X1 is not dotnet
 
 
 def test_the_catalog_hash_moves_with_a_weight_or_a_rubric_and_is_plan_tree_hash(root):
@@ -287,8 +290,12 @@ def test_tool_versions_measure_dotnet_once_per_dotnet_task_in_its_workspace_with
 
     monkeypatch.setattr(runner.tools.shutil, "which", lambda name: f"C:/fake/{name}.exe")
     monkeypatch.setattr(runner.tools.procs, "run", fake_run)
+    empty = tmp_path / "empty-packages"
+    empty.mkdir()
+    monkeypatch.setenv("NUGET_PACKAGES", str(empty))  # no cached stryker, so that pin is not probed
     plan_ = {"cells": [{"task": "T2"}, {"task": "T1"}, {"task": "T1"}]}
-    assert runner.tool_versions(r, plan_) == {"python": sys.version.split()[0], "dotnet[T1]": "10.0.100"}
+    assert runner.tool_versions(r, plan_) == {"python": sys.version.split()[0], "dotnet[T1]": "10.0.100",
+                                              "dotnet-stryker": "not recorded"}
     assert calls == [("dotnet", ["--version"], r / "tasks" / "T1" / "workspace", 30)]  # global.json there picks the SDK
 
 
