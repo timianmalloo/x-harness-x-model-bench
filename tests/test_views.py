@@ -393,7 +393,7 @@ def test_a_model_the_model_map_does_not_name_is_still_a_mismatch(root, tmp_path)
     assert (cell.validity, cell.validity_code) == ("invalid (model mismatch)", "HB-VAL-002")
 
 
-# --- R-28 (R-22 narrowed): agent_version against the pinned build; a mismatch is flagged HB-CELL-115 -------------------
+# --- R-47 (R-28 c2 re-pointed): agent_version against the pinned build's recorded self-report -> HB-VAL-007 ----------
 
 
 def _edit_plan(run_dir: Path, change) -> None:
@@ -404,11 +404,11 @@ def _edit_plan(run_dir: Path, change) -> None:
     path.write_text(json.dumps(p), encoding="utf-8")
 
 
-def _fake_agent_run(base: Path, pinned: str) -> views.CellView:
-    """A real engine run of the fake ACP agent (its initialize.agentInfo.version is "0"), under a plan pinning `pinned`."""
+def _fake_agent_run(base: Path, build: dict) -> views.CellView:
+    """A real engine run of the fake ACP agent (its initialize.agentInfo.version is "0") under a plan pinning `build`."""
     from test_engine import FakeLauncher, _plan, _run
     p = _plan(n_cells=1)
-    p["builds"] = {"fake": {"version": "9", "sha256": "f" * 64, "adapter_version": pinned, "adapter_sha256": "e" * 64}}
+    p["builds"] = {"fake": {"version": "0", "sha256": "f" * 64, "adapter_version": "0", "adapter_sha256": "e" * 64, **build}}
     p["profiles"] = {"fake": {"usage_source": "acp_turn", "auxiliary_models": [], "record_glob": "none/{session_id}"}}
     _, _, config = _run(base, p, FakeLauncher({}))
     p["plan_hash"] = plan_mod.plan_hash(p)
@@ -416,47 +416,90 @@ def _fake_agent_run(base: Path, pinned: str) -> views.CellView:
     return views.load(config.run_dir).cells[0]
 
 
-def test_a_fake_agent_reporting_another_version_than_the_pin_is_flagged(base):  # R-28 c2: the red test it names
-    cell = _fake_agent_run(base, pinned="9.9.9")
-    assert _warnings(cell, "HB-CELL-115") == [("HB-CELL-115", "warning", "agent_version 0 differs from the pinned build 9.9.9")]
-    assert _warnings(cell, "HB-VAL-006") == []
+def test_a_fake_agent_reporting_another_version_than_the_recorded_self_report_is_invalid(base):  # R-47 c2 (R-22 c2)
+    cell = _fake_agent_run(base, {"agent_version": "9.9.9"})  # package.json labels ("0") agree: never the comparand
+    assert (cell.validity, cell.validity_code) == ("invalid (build mismatch)", "HB-VAL-007")
+    assert cell.warnings == []
 
 
-def test_a_fake_agent_reporting_the_pinned_version_is_not_flagged(base):  # the negative control
-    cell = _fake_agent_run(base, pinned="0")
-    assert _warnings(cell, "HB-CELL-115") == [] and _warnings(cell, "HB-VAL-006") == []
+def test_a_fake_agent_reporting_the_recorded_self_report_is_not_a_mismatch(base):  # the negative control
+    cell = _fake_agent_run(base, {"agent_version": "0"})
+    assert cell.validity != "invalid (build mismatch)" and cell.warnings == []
 
 
-def _session_run(root, tmp_path, agent_version, builds, harness="codex"):
-    run_dir = make_run(root, tmp_path, {"a": GOOD}, harness=harness)
+def test_without_a_recorded_self_report_the_check_skips_and_the_cell_stays_valid(base):  # R-47 c3: never package.json
+    cell = _fake_agent_run(base, {})
+    assert cell.validity != "invalid (build mismatch)"
+    assert [(w.code, w.level, w.message) for w in cell.warnings] == [
+        ("HB-VAL-006", "warning", "executed-build check skipped: no recorded agent_version for fake")]
+
+
+def _session_run(root, tmp_path, agent_version, builds, harness="codex", **kw):
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, harness=harness, **kw)
     _edit_events(run_dir, lambda e: {**e, "agent_version": agent_version} if e["kind"] == "attempt.session_opened" else e)
     _edit_plan(run_dir, lambda p: {**p, "builds": builds})
     return _cell(views.load(run_dir), "a")
 
 
-def test_copilot_compares_its_own_version_when_there_is_no_adapter(root, tmp_path):  # F3: a newer cached binary answers
-    pin = {"copilot": {"version": "1.0.89-1", "sha256": "f" * 64, "adapter_version": None, "adapter_sha256": None}}
-    newer = _session_run(root, tmp_path / "1", "1.0.90", pin, harness="copilot")
-    assert _warnings(newer, "HB-CELL-115") == [("HB-CELL-115", "warning", "agent_version 1.0.90 differs from the pinned build 1.0.89-1")]
-    assert _warnings(_session_run(root, tmp_path / "2", "1.0.89-1", pin, harness="copilot"), "HB-CELL-115") == []
+COPILOT_PIN = {"copilot": {"version": "1.0.89-1", "sha256": "f" * 64, "adapter_version": None, "adapter_sha256": None,
+                           "agent_version": "1.0.89-3"}}  # R-45 c2: the session self-reports 1.0.89-3 against a 1.0.89-1 manifest
 
 
-def test_an_adapter_harness_compares_the_adapter_version(root, tmp_path):  # agentInfo names codex-acp 1.12.0, not codex 0.156.0
-    pin = {"codex": {"version": "0.156.0", "sha256": "f" * 64, "adapter_version": "1.12.0", "adapter_sha256": "e" * 64}}
-    cell = _session_run(root, tmp_path, "1.12.0", pin)
-    assert _warnings(cell, "HB-CELL-115") == [] and _warnings(cell, "HB-VAL-006") == []
+def test_copilot_is_checked_against_its_recorded_self_report_not_its_manifest(root, tmp_path):  # F3; R-47 c4
+    assert (_session_run(root, tmp_path / "1", "1.0.89-3", COPILOT_PIN, harness="copilot").validity_code,) == (None,)
+    newer = _session_run(root, tmp_path / "2", "1.0.90", COPILOT_PIN, harness="copilot")
+    assert (newer.validity, newer.validity_code) == ("invalid (build mismatch)", "HB-VAL-007")
+
+
+def test_a_build_mismatch_outranks_not_graded_and_yields_to_an_invalidating_cause(root, tmp_path):  # R-47 c2 slot
+    ungraded = _session_run(root, tmp_path / "1", "1.0.90", COPILOT_PIN, harness="copilot")  # the builder never grades
+    assert (ungraded.validity, ungraded.validity_code) == ("invalid (build mismatch)", "HB-VAL-007")
+    caused = _session_run(root, tmp_path / "2", "1.0.90", COPILOT_PIN, harness="copilot",
+                          outcomes={"a": {"outcome": "failed", "cause": "provider", "code": "HB-CELL-108"}})
+    assert (caused.validity, caused.validity_code) == ("invalid (infrastructure)", "HB-CELL-108")
 
 
 def test_a_null_agent_version_skips_the_check_with_a_warning_never_a_pass(root, tmp_path):  # R-22 c1, R-28 c1
-    pin = {"codex": {"version": "0.156.0", "sha256": "f" * 64, "adapter_version": "1.12.0", "adapter_sha256": "e" * 64}}
-    cell = _session_run(root, tmp_path, None, pin)
+    cell = _session_run(root, tmp_path, None, COPILOT_PIN, harness="copilot")
     assert _warnings(cell, "HB-VAL-006") == [("HB-VAL-006", "warning", "executed-build check skipped: no agent_version recorded")]
-    assert _warnings(cell, "HB-CELL-115") == []
+    assert cell.validity != "invalid (build mismatch)"
 
 
-def test_a_plan_with_no_pinned_version_skips_the_check_with_a_warning(root, tmp_path):
-    cell = _session_run(root, tmp_path, "1.12.0", {})
-    assert _warnings(cell, "HB-VAL-006") == [("HB-VAL-006", "warning", "executed-build check skipped: no pinned version for codex")]
+def test_one_code_one_level_one_emitter():  # R-47 c1: a Cause code is never a view finding; a code has one level
+    import re as _re
+    from harness_bench.errors import Cause
+    src = Path(views.__file__).parent
+    texts = [(src / "views.py").read_text(encoding="utf-8")] + [p.read_text(encoding="utf-8") for p in (src / "grade").glob("*.py")]
+    emitted = {(code, level) for text in texts for code, level in _re.findall(r'Finding\(\s*"(HB-[A-Z]+-\d{3})",\s*"(\w+)"', text)}
+    assert {"HB-VAL-005", "HB-VAL-006"} <= {c for c, _ in emitted}  # the scan sees the view's findings (not vacuous)
+    assert {c for c, _ in emitted}.isdisjoint({c.code for c in Cause})
+    two_levels = {c for c, level in emitted if any(c == o and level != lv for o, lv in emitted)}
+    # HB-LED-002's pre-R-2 "records no heads" warning predates R-47; its own code needs an errors.py row outside this
+    # track's seam grant (named in the W2-VIEWS hand-back). The exact set makes the exclusion fail once it is fixed.
+    assert two_levels == {"HB-LED-002"}
+
+
+def test_every_validity_views_can_return_is_a_bench_status_state_or_a_named_exclusion():  # D&P minor
+    import ast
+    import inspect
+
+    from harness_bench import status
+    from harness_bench.errors import Cause
+    passthrough = {"not started", "no outcome"}  # outcome states: bench status counts them under outcomes, not validity
+    returned: set[str] = set()
+    for node in ast.walk(ast.parse(inspect.getsource(views._validity))):
+        if isinstance(node, ast.Return) and isinstance(node.value, ast.Tuple):
+            first = node.value.elts[0]
+            if isinstance(first, ast.Constant):
+                returned.add(first.value)
+            elif isinstance(first, ast.JoinedStr):  # f"invalid ({cause.attribution})"
+                returned |= {f"invalid ({c.attribution})" for c in Cause if c.invalidates}
+            elif isinstance(first, ast.Name):  # `state`
+                returned |= passthrough
+            else:
+                pytest.fail(f"_validity returns a form this guard cannot read: {ast.dump(first)}")
+    assert {"valid", "not recorded", "invalid (no model call)"} <= returned  # the scan sees the literals (not vacuous)
+    assert returned - passthrough <= set(status.VALIDITY)
 
 
 def test_a_cell_that_never_opened_a_session_has_no_build_check(root, tmp_path):
