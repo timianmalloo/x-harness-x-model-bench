@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from harness_bench import cli, config, gitsafe, plan, tools, workspace
+from harness_bench import cli, config, gitsafe, plan, profiles, tools, workspace
 from harness_bench.errors import BenchError
 from harness_bench.ledger import canonical
 
@@ -414,8 +414,8 @@ def test_pinned_copilot_instruction_list_repeats_for_both_real_working_copies(ba
             workspace.install_pack(pack_dir, ws, project="X1", timeout=300)
         home = base / "homes" / arm
         home.mkdir(parents=True)
-        env = {k: v for k, v in os.environ.items() if not k.upper().startswith("COPILOT_")}
-        env.update({"COPILOT_HOME": str(home), "COPILOT_AUTO_UPDATE": "false"})
+        env = profiles.load(ROOT, "copilot").cell_env(dict(os.environ), home, tools.resolve(tools_dir)["copilot"],
+                                                       "gpt-6-sol", "")
         results[arm] = [plan.instruction_list(exe, ws, env) for _ in range(2)]
     assert results["off"] == [[], []]
     assert results["on"][0] == results["on"][1]

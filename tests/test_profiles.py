@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 from harness_bench import driver, procs, profiles, tools
+from harness_bench.errors import BenchError
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -135,7 +136,7 @@ def test_copilot_profile_declares_native_acp_and_credential_store(tmp_path):
 
 
 def test_copilot_null_credential_seeds_and_cleans_without_touching_other_files(tmp_path):
-    p = profiles.Profile("copilot", "COPILOT_HOME", None, None)
+    p = profiles.Profile("copilot", "COPILOT_HOME", None, None, ("{exe}",))
     home = tmp_path / "home"
     p.seed_home(home, model="gpt-6-sol")
     sentinel = home / "events.jsonl"
@@ -167,6 +168,26 @@ def test_copilot_argv_uses_the_pinned_exe_and_each_cells_model():
     for model in ("gpt-6-sol", "other-advertised-model"):
         assert p.argv(FakeBuild(), model) == [str(FakeBuild.exe), "--acp", "--model", model,
                                                "--allow-tool", "shell", "--allow-tool", "write"]
+
+
+def test_command_template_preserves_literal_braces(tmp_path):
+    p = profiles.Profile("copilot", "COPILOT_HOME", None, None, ("{exe}", "{model}", "{literal}"))
+    assert p.argv(FakeBuild(), "gpt-6-sol") == [str(FakeBuild.exe), "gpt-6-sol", "{literal}"]
+
+
+@pytest.mark.parametrize("command", [None, []])
+def test_profile_load_rejects_missing_or_empty_command(tmp_path, command):
+    profile_dir = tmp_path / "bench" / "profiles"
+    profile_dir.mkdir(parents=True)
+    data = {"harness": "copilot", "home_env": "COPILOT_HOME", "credential": None,
+            "record_glob": "events.jsonl"}
+    if command is not None:
+        data["command"] = command
+    import yaml
+
+    (profile_dir / "copilot.yaml").write_text(yaml.safe_dump(data), encoding="utf-8")
+    with pytest.raises(BenchError, match="HB-USR-002"):
+        profiles.load(tmp_path, "copilot")
 
 
 def test_copilot_command_requires_an_explicit_model():
@@ -205,7 +226,8 @@ def test_adapter_command_rejects_missing_node(monkeypatch, tmp_path):
 
 def test_copilot_cell_env_drops_hosted_github_credentials_and_copilot_overrides(tmp_path):
     p = profiles.load(ROOT, "copilot")
-    seeded = {name: "leak" for name in ("GH_TOKEN", "GITHUB_TOKEN", "GH_HOST", "COPILOT_CUSTOM_INSTRUCTIONS_DIRS",
+    seeded = {name: "leak" for name in ("GH_TOKEN", "GITHUB_TOKEN", "GH_HOST", "GH_ENTERPRISE_TOKEN",
+                                        "GITHUB_ENTERPRISE_TOKEN", "GH_CONFIG_DIR", "COPILOT_CUSTOM_INSTRUCTIONS_DIRS",
                                         "COPILOT_MODEL", "COPILOT_ALLOW_ALL")}
     env = p.cell_env({**seeded, "PATH": "safe"}, tmp_path / "home", FakeBuild(), "gpt-6-sol", "")
     assert all(name not in env for name in seeded)

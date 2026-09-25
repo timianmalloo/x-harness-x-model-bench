@@ -51,9 +51,30 @@
   {
     "name": "command placeholders must expand",
     "file": "src/harness_bench/profiles.py",
-    "find": "return [part.format_map(values) for part in self.command]",
-    "replace": "return list(self.command)",
+    "find": "return [part.replace(\"{exe}\", values[\"exe\"]).replace(\"{model}\", values[\"model\"] or \"\")",
+    "replace": "return [part.replace(\"{exe}\", \"{exe}\").replace(\"{model}\", values[\"model\"] or \"\")",
     "tests": ["tests/test_profiles.py::test_copilot_argv_uses_the_pinned_exe_and_each_cells_model"]
+  },
+  {
+    "name": "argv template leaves unrelated braces literal",
+    "file": "src/harness_bench/profiles.py",
+    "find": "return [part.replace(\"{exe}\", values[\"exe\"]).replace(\"{model}\", values[\"model\"] or \"\")\n                .replace(\"{node}\", values.get(\"node\", \"\")).replace(\"{adapter}\", values.get(\"adapter\", \"\"))\n                for part in self.command]",
+    "replace": "return [part.format_map(values) for part in self.command]",
+    "tests": ["tests/test_profiles.py::test_command_template_preserves_literal_braces"]
+  },
+  {
+    "name": "profile command missing raises coded input error",
+    "file": "src/harness_bench/profiles.py",
+    "find": "    command = data.get(\"command\")",
+    "replace": "    command = data[\"command\"]",
+    "tests": ["tests/test_profiles.py::test_profile_load_rejects_missing_or_empty_command[None]"]
+  },
+  {
+    "name": "profile command cannot be empty",
+    "file": "src/harness_bench/profiles.py",
+    "find": "or not command or any(not isinstance(part, str) or not part for part in command)",
+    "replace": "or any(not isinstance(part, str) or not part for part in command)",
+    "tests": ["tests/test_profiles.py::test_profile_load_rejects_missing_or_empty_command[command1]"]
   },
   {
     "name": "null credential source loads as none",
@@ -114,8 +135,29 @@
   {
     "name": "github host credential must be dropped",
     "file": "src/harness_bench/profiles.py",
-    "find": "\"GH_TOKEN\", \"GITHUB_TOKEN\", \"GH_HOST\"}",
-    "replace": "\"GH_TOKEN\", \"GITHUB_TOKEN\"}",
+    "find": "\"GH_TOKEN\", \"GITHUB_TOKEN\", \"GH_HOST\", \"GH_ENTERPRISE_TOKEN\"",
+    "replace": "\"GH_TOKEN\", \"GITHUB_TOKEN\", \"GH_ENTERPRISE_TOKEN\"",
+    "tests": ["tests/test_profiles.py::test_copilot_cell_env_drops_hosted_github_credentials_and_copilot_overrides"]
+  },
+  {
+    "name": "enterprise GitHub token must be dropped",
+    "file": "src/harness_bench/profiles.py",
+    "find": "\"GH_ENTERPRISE_TOKEN\", \"GITHUB_ENTERPRISE_TOKEN\", \"GH_CONFIG_DIR\"",
+    "replace": "\"GITHUB_ENTERPRISE_TOKEN\", \"GH_CONFIG_DIR\"",
+    "tests": ["tests/test_profiles.py::test_copilot_cell_env_drops_hosted_github_credentials_and_copilot_overrides"]
+  },
+  {
+    "name": "GITHUB_ENTERPRISE_TOKEN must be dropped",
+    "file": "src/harness_bench/profiles.py",
+    "find": "\"GH_ENTERPRISE_TOKEN\", \"GITHUB_ENTERPRISE_TOKEN\", \"GH_CONFIG_DIR\"",
+    "replace": "\"GH_ENTERPRISE_TOKEN\", \"GH_CONFIG_DIR\"",
+    "tests": ["tests/test_profiles.py::test_copilot_cell_env_drops_hosted_github_credentials_and_copilot_overrides"]
+  },
+  {
+    "name": "GH_CONFIG_DIR must be dropped",
+    "file": "src/harness_bench/profiles.py",
+    "find": "\"GH_ENTERPRISE_TOKEN\", \"GITHUB_ENTERPRISE_TOKEN\", \"GH_CONFIG_DIR\"",
+    "replace": "\"GH_ENTERPRISE_TOKEN\", \"GITHUB_ENTERPRISE_TOKEN\"",
     "tests": ["tests/test_profiles.py::test_copilot_cell_env_drops_hosted_github_credentials_and_copilot_overrides"]
   },
   {
