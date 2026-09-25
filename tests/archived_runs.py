@@ -10,6 +10,8 @@ import json
 import shutil
 from pathlib import Path
 
+import yaml
+
 from harness_bench import archive, ledger
 from harness_bench import plan as plan_mod
 from harness_bench.grade import runner
@@ -53,6 +55,15 @@ def make_root(tmp_path: Path) -> Path:
     shutil.copytree(ROOT / "bench" / "profiles", r / "bench" / "profiles")
     set_prices(r, [])
     return r
+
+
+def set_catalog_version(root: Path, version: str) -> None:
+    """Relabel the root's catalog (its `version:` line only), e.g. a release label so a pass is current (R-59 DR-4)."""
+    path = root / "bench" / "metrics.yaml"
+    text = path.read_text(encoding="utf-8")
+    old = f'version: "{yaml.safe_load(text)["version"]}"'
+    assert text.count(old) == 1, old
+    path.write_text(text.replace(old, f'version: "{version}"'), encoding="utf-8")
 
 
 def set_prices(root: Path, entries: list[dict]) -> str:

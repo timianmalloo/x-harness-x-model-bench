@@ -19,6 +19,7 @@ from archived_runs import (
     make_root,
     make_run,
     pass_rows,
+    set_catalog_version,
     set_prices,
 )
 
@@ -1037,6 +1038,31 @@ def test_touching_spans_measure_as_the_one_span_they_form():  # merged before ro
                 {"start": "2026-09-23T10:00:06.398014Z", "end": "2026-09-23T10:00:07.312163Z"}]
     whole = [{"start": "2026-09-23T10:00:03.981663Z", "end": "2026-09-23T10:00:07.312163Z"}]
     assert views.busy_ms(touching) == views.busy_ms(whole) == views.Measure(3330)
+
+
+def test_a_dev_pass_is_never_current_yet_readable_by_its_version_and_counted(root, tmp_path):  # F6; R-59 DR-4; V-1
+    set_catalog_version(root, "0.4.dev")
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    probe = runner.run_pass(run_dir, root).grading_id
+    view = views.load(run_dir)
+    assert (view.grading_id, view.catalog_version, view.header["probe_passes"]) == (None, None, 1)
+    assert _cell(view, "a").scores == {}  # never shown as a current score
+    assert (views.load(run_dir, "0.4.dev").grading_id, views.load(run_dir, "0.4.dev").catalog_version) == (probe, "0.4.dev")
+    set_catalog_version(root, "0.4")
+    current = runner.run_pass(run_dir, root).grading_id
+    set_catalog_version(root, "0.5.dev")
+    runner.run_pass(run_dir, root)  # a later probe never displaces the current pass
+    view = views.load(run_dir)
+    assert (view.grading_id, view.catalog_version, view.header["probe_passes"]) == (current, "0.4", 2)
+
+
+def test_the_current_pass_skips_a_later_dev_pass_unless_its_version_is_asked_for():
+    events = [{"kind": "grading.started", "grading_id": "grade-1", "catalog_version": "0.4"},
+              {"kind": "grading.completed", "grading_id": "grade-1", "recorded_at": "2026-09-23T10:00:00.000Z"},
+              {"kind": "grading.started", "grading_id": "grade-2", "catalog_version": "0.4.dev"},
+              {"kind": "grading.completed", "grading_id": "grade-2", "recorded_at": "2026-09-23T11:00:00.000Z"}]
+    assert (views._current_pass(events, None), views._current_pass(events, "0.4.dev")) == (("grade-1", "0.4"), ("grade-2", "0.4.dev"))
+    assert views._probe_passes(events) == 1
 
 
 def test_the_current_pass_is_chosen_within_its_catalog_version_only():
