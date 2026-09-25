@@ -7,6 +7,9 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+# A vendored task base is committed byte for byte (R-42): never let a Python-build pattern hide part of it (VEND-A).
+!/tasks/*/workspace/**/dist/
+!/tasks/*/workspace/**/build/
 
 # Benchmark run state (archived runs are published deliberately, never by accident)
 runs/

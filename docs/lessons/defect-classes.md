@@ -261,6 +261,18 @@ summary: >-
 - **Control:** `tests/test_allowlist_classes.py` compares Copilot's explicit allowlist with every id in the pinned build's own checkpoint and classifies all 21; `tests/test_profiles.py` checks both profile flags and Codex's seeded config; telemetry tests require Copilot's `tools_advertised` and a Codex `web_search_call` row. W2-VIEWS owns the per-cell validity finding. The fixed-profile Copilot fixture test is skipped until the Leader completes R-45 condition 1's recut.
 - **Status:** `partially-controlled` (static and reader controls added; the fixed-profile qualification and per-cell validity finding are pending their owning tracks).
 
+### VEND-A: a vendored file the host repository's ignore rules drop
+- **Signature:** a task base is vendored byte for byte into `tasks/<ID>/workspace/`, but a path in it matches this repository's `.gitignore` (`dist/`, `build/`). The file exists on the author's disk, so every check there passes; a clean checkout lacks it.
+- **Why it survives:** the author's tree is not a clean checkout. `git add tasks/<ID>` silently skips ignored files, and the author's own full suite reads the untracked file from disk.
+- **Instances:**
+  - `2026-09-25`, the D1 join: `tests/AiDe.Core.Tests/fixtures/first-use/standin-adapter/dist/index.js` (ignored by `.gitignore:8` `dist/`) was never committed. The Leader's full suite on `main`, which runs after the merge, found it: `test_d1_workspace_matches_pinned_git_archive_byte_for_byte` failed on the file set.
+- **Sweep:** `git ls-files -o --exclude-standard tasks/` is empty. The ignore patterns that can match a vendored tree are `dist/` and `build/`; `bin/` and `obj/` are refused by the validator (W2-VALIDATE).
+- **Control:**
+  - `.gitignore` re-includes `dist/` and `build/` under `tasks/*/workspace/**`, so the class cannot recur for task bases.
+  - The byte test compares the pinned archive against the checkout.
+  - The Leader runs the suite on the merged `main`, not only in the author's tree.
+- **Status:** `controlled`
+
 ### COORD-B: a worker's message or seam request not read by the Leader
 - **Signature:** a worker sends `coord mail` or raises a `coord request` (a seam grant, a blocker). The Leader reads only the worker's final hand-back (the runner result or the subagent report). The request expires without a ruling, and the worker takes its fallback. The work stalls, or a fix lands outside its owner.
 - **Why it survives:** the runner result says `ready_for_review` and carries the commit receipts. Nothing in it says a request was raised and left open. The fallback is correct behaviour, so every gate stays green.
