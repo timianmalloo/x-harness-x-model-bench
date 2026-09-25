@@ -5,7 +5,9 @@ from the held-out set (R-39 c2), which these tests never open.
 """
 
 import hashlib
+import io
 import json
+import os
 import subprocess
 import threading
 import unicodedata
@@ -18,7 +20,7 @@ import yaml
 from harness_bench.errors import BenchError
 from harness_bench.scripted_user import clarifications as clar
 from harness_bench.scripted_user import log as sulog
-from harness_bench.scripted_user import matcher
+from harness_bench.scripted_user import matcher, server
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tests" / "fixtures" / "scripted_user"
@@ -456,3 +458,184 @@ def test_two_stored_decisions_for_one_key_are_refused():
     with pytest.raises(BenchError) as caught:
         sulog.stored_decisions(rows)
     assert (caught.value.code, caught.value.message) == ("HB-USR-002", "call seq 2: a second decision for one match key")
+
+
+# --- the stdio MCP server (design section 6, R-37, R-51) ---
+
+def _server(tmp_path: Path, clock=None) -> tuple[server.Server, Path]:
+    path = tmp_path / "scripted-user.jsonl"
+    writer = sulog.LogWriter(path, clock=clock) if clock else sulog.LogWriter(path)
+    return server.Server(clar.load(Z0), writer), path
+
+
+def _request(rid: int, method: str, params: dict | None = None) -> dict:
+    return {"jsonrpc": "2.0", "id": rid, "method": method, **({"params": params} if params is not None else {})}
+
+
+def _ask(rid: int, arguments) -> dict:
+    return _request(rid, "tools/call", {"name": "ask_user", "arguments": arguments})
+
+
+def test_t37_0_server_lists_exactly_ask_user(tmp_path):
+    srv, path = _server(tmp_path)
+    init = srv.handle(_request(1, "initialize", {"protocolVersion": "2025-11-25", "capabilities": {},
+                                                 "clientInfo": {"name": "codex", "version": "0.156.0"}}))
+    assert init == {"jsonrpc": "2.0", "id": 1, "result": {
+        "protocolVersion": "2025-11-25", "capabilities": {"tools": {"listChanged": False}},
+        "serverInfo": {"name": "scripted_user", "version": matcher.MATCHER_VERSION}}}
+    listed = srv.handle(_request(2, "tools/list"))
+    assert [t["name"] for t in listed["result"]["tools"]] == ["ask_user"]
+    assert listed["result"]["tools"][0]["inputSchema"] == {
+        "type": "object", "properties": {"question": {"type": "string", "description": "The question for the user."}},
+        "required": ["question"]}
+    for method in ("resources/list", "prompts/list", "server/discover"):
+        assert srv.handle(_request(3, method))["error"]["code"] == -32601
+    assert srv.handle(_ask(4, {"question": "q"}) | {"params": {"name": "other", "arguments": {}}})["error"]["code"] == -32602
+    assert srv.handle(_request(5, "ping")) == {"jsonrpc": "2.0", "id": 5, "result": {}}
+    assert srv.handle({"jsonrpc": "2.0", "method": "notifications/initialized"}) is None
+    assert [r["kind"] for r in _rows(path)] == ["initialize", "tools_listed"]  # the refused tool call wrote no row
+
+
+def test_t37_r_server_replies_with_the_clarification_text_or_the_exact_default(tmp_path):
+    srv, _ = _server(tmp_path)
+    for rid, question, text in [(1, ORDER.question, "Yes, ascending."), (2, "Is the order stable?", DEFAULT)]:
+        assert srv.handle(_ask(rid, {"question": question})) == {
+            "jsonrpc": "2.0", "id": rid, "result": {"content": [{"type": "text", "text": text}], "isError": False}}
+
+
+@pytest.mark.parametrize("arguments, reason", [
+    ({"question": 42}, "not a string"),
+    ({}, "not a string"),
+    (None, "not a string"),
+    ({"question": ""}, "empty"),
+    ({"question": " ? "}, "empty after normalise"),
+    ({"question": "a\ud800b"}, "lone surrogate"),
+], ids=["number", "missing", "no-arguments", "empty", "empty-after-normalise", "lone-surrogate"])
+def test_t37_6a_invalid_question_gets_default_and_is_logged(tmp_path, arguments, reason):
+    srv, path = _server(tmp_path)
+    out = srv.handle(_ask(1, arguments))
+    assert out["result"] == {"content": [{"type": "text", "text": DEFAULT}], "isError": False}
+    (row,) = _rows(path)
+    assert (row["invalid"], row["decision"], row["reply"]) == (reason, {"clarification": None, "rung": "none"}, DEFAULT)
+
+
+@pytest.mark.parametrize("requested, answered", [
+    ("2025-11-25", "2025-11-25"),
+    ("2025-06-18", "2025-06-18"),
+    ("2024-11-05", "2025-11-25"),
+    (None, "2025-11-25"),
+])
+def test_t37_6b_protocol_version_negotiation(tmp_path, requested, answered):
+    srv, path = _server(tmp_path)
+    params = {"protocolVersion": requested} if requested else {}
+    assert srv.handle(_request(1, "initialize", params))["result"]["protocolVersion"] == answered
+    assert _rows(path)[0] == {"kind": "initialize", "client": None, "protocol_version": answered,
+                              "requested_protocol_version": requested}
+
+
+class SpyOut:
+    """An output stream that records, at each send, how many log rows are already on disk."""
+
+    def __init__(self, log: Path) -> None:
+        self.log, self.sent = log, []
+
+    def write(self, data: bytes) -> None:
+        self.sent.append((json.loads(data), len(_rows(self.log))))
+
+    def flush(self) -> None:
+        pass
+
+
+def test_t37_4a_log_row_per_call_before_reply(tmp_path):
+    srv, path = _server(tmp_path)
+    lines = [json.dumps(_ask(1, {"question": ORDER.question})), "not json", "[1]", "",
+             json.dumps(_ask(2, {"question": "Anything else?"}))]
+    out = SpyOut(path)
+    server.serve(srv, io.BytesIO(("\n".join(lines) + "\n").encode()), out)
+    assert [(msg["id"], rows_on_disk) for msg, rows_on_disk in out.sent] == [(1, 1), (2, 2)]
+    assert [(r["seq"], r["reply"]) for r in _rows(path)] == [(1, "Yes, ascending."), (2, DEFAULT)]
+
+
+def test_entry_is_the_acp_stdio_shape_without_type(tmp_path):
+    log_path = tmp_path / "scripted-user.jsonl"
+    assert server.entry(Z0, log_path, python="C:/py/python.exe") == {
+        "name": "scripted_user", "command": "C:/py/python.exe",
+        "args": ["-m", "harness_bench.scripted_user.server", str(Z0), str(log_path)],
+        "env": [{"name": "SCRIPTED_USER_LOG", "value": str(log_path)}]}
+
+
+@pytest.mark.parametrize("items, reason", [
+    ([_item(), _item(id="q2", question="IS IT ONE")],
+     "clarifications[1].question normalises to the same text as clarifications[0]: ambiguous"),
+    ([_item(question="?")], "clarifications[0].question is empty after normalise"),
+], ids=["ambiguous", "empty-after-normalise"])
+def test_t37_6c_server_refuses_ambiguous_or_empty_clarifications(tmp_path, monkeypatch, items, reason):
+    monkeypatch.delenv("SCRIPTED_USER_LOG", raising=False)
+    bad, log_path = _write(tmp_path, _doc(clarifications=items)), tmp_path / "scripted-user.jsonl"
+    out = io.BytesIO()
+    assert server.main([str(bad), str(log_path)], io.BytesIO(json.dumps(_request(1, "initialize")).encode() + b"\n"), out) == 2
+    assert out.getvalue() == b""  # never answers, so the tool is never listed: "tool not reached"
+    assert _rows(log_path) == [{"kind": "refused", "code": "HB-USR-002", "message": f"{bad}: {reason}"}]
+
+
+def test_server_refuses_a_missing_clarification_file(tmp_path, monkeypatch):
+    monkeypatch.delenv("SCRIPTED_USER_LOG", raising=False)
+    missing, log_path = tmp_path / "absent.yaml", tmp_path / "scripted-user.jsonl"
+    assert server.main([str(missing), str(log_path)], io.BytesIO(b""), io.BytesIO()) == 2
+    assert _rows(log_path) == [{"kind": "refused", "code": "HB-USR-002", "message": f"{missing}: cannot be read"}]
+
+
+def test_server_refuses_when_this_python_gives_another_matcher_version(tmp_path, monkeypatch):
+    monkeypatch.delenv("SCRIPTED_USER_LOG", raising=False)
+    monkeypatch.setattr(matcher.unicodedata, "unidata_version", "0.0.0")
+    other = matcher.compute_matcher_version()
+    log_path = tmp_path / "scripted-user.jsonl"
+    assert server.main([str(Z0), str(log_path)], io.BytesIO(b""), io.BytesIO()) == 2
+    assert _rows(log_path) == [{"kind": "refused", "code": "HB-USR-002", "message":
+                                f"matcher_version mismatch: this Python gives {other}, the committed constant is "
+                                f"{matcher.MATCHER_VERSION}"}]
+
+
+def test_server_usage_needs_exactly_two_arguments(tmp_path):
+    assert server.main([str(Z0)], io.BytesIO(b""), io.BytesIO()) == 2
+
+
+def test_the_log_argument_is_the_fallback_for_the_env(tmp_path, monkeypatch):
+    env_log, arg_log = tmp_path / "env.jsonl", tmp_path / "arg.jsonl"
+    monkeypatch.setenv("SCRIPTED_USER_LOG", str(env_log))
+    assert server.main([str(Z0), str(arg_log)], io.BytesIO(b""), io.BytesIO()) == 0
+    monkeypatch.delenv("SCRIPTED_USER_LOG")
+    assert server.main([str(Z0), str(arg_log)], io.BytesIO(b""), io.BytesIO()) == 0
+    assert [r["log_source"] for r in _rows(env_log)] == ["env"]
+    assert [r["log_source"] for r in _rows(arg_log)] == ["arg"]
+
+
+def test_stdio_server_over_pipes(tmp_path):
+    """Offline: the module the bench launches (server.entry), driven over real pipes with one exchange per line."""
+    log_path = tmp_path / "scripted-user.jsonl"
+    spec = server.entry(Z0, log_path)
+    env = {**os.environ, **{e["name"]: e["value"] for e in spec["env"]}}
+    messages = [
+        _request(1, "initialize", {"protocolVersion": "2025-06-18", "capabilities": {},
+                                   "clientInfo": {"name": "pipe-test", "version": "1"}}),
+        {"jsonrpc": "2.0", "method": "notifications/initialized"},
+        _request(2, "tools/list"),
+        _ask(3, {"question": "what is the MAXIMUM input size"}),
+    ]
+    proc = subprocess.Popen([spec["command"], *spec["args"]], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE, env=env, cwd=tmp_path)
+    stdout, stderr = proc.communicate("".join(json.dumps(m) + "\n" for m in messages).encode(), timeout=60)
+    assert (proc.returncode, stderr) == (0, b"")
+    replies = [json.loads(line) for line in stdout.decode().splitlines()]
+    assert [r["id"] for r in replies] == [1, 2, 3]
+    assert replies[0]["result"]["protocolVersion"] == "2025-06-18"
+    assert [t["name"] for t in replies[1]["result"]["tools"]] == ["ask_user"]
+    assert replies[2]["result"] == {"content": [{"type": "text", "text": "At most 100000 items."}], "isError": False}
+    rows = _rows(log_path)
+    assert [r["kind"] for r in rows] == ["header", "initialize", "tools_listed", "call"]
+    assert (rows[0]["log_source"], rows[0]["clarifications_sha256"]) == ("env", hashlib.sha256(Z0.read_bytes()).hexdigest())
+    assert rows[1]["client"] == {"name": "pipe-test", "version": "1"}
+    assert (rows[3]["question"], rows[3]["decision"], rows[3]["reply"]) == (
+        "what is the MAXIMUM input size", {"clarification": "size-bound", "rung": "normalised"}, "At most 100000 items.")
+    assert sulog.close_log(log_path, header={}) == {"kind": "end", "calls": 1, "client_initialized": True,
+                                                    "tool_listed": True}
