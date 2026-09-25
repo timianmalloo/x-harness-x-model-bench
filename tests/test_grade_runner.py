@@ -9,9 +9,9 @@ from decimal import Decimal
 
 import pytest
 import yaml
-from archived_runs import CODEX_MODEL, GOOD, make_root, make_run, pass_rows
+from archived_runs import CODEX_MODEL, GOOD, ROOT, make_root, make_run, pass_rows
 
-from harness_bench import ledger, views
+from harness_bench import config, ledger, views
 from harness_bench.errors import BenchError
 from harness_bench.grade import Score, runner
 
@@ -129,3 +129,19 @@ def test_a_missing_duplicate_or_extra_row_fails_the_pass_before_completed(root, 
     events = [e for p in (run_dir / "events").glob("grade-*.jsonl") for e in ledger.read_segment(p)]
     assert [e["kind"] for e in events] == ["grading.started"]  # never completed, so views skip the pass
     assert views.completed_passes(run_dir) == set()
+
+
+# --- duplicate grader names (D&P 2; seam V-3) ---------------------------------------------------------------------
+
+
+def test_duplicate_graders_write_one_row_each(root, tmp_path):
+    set_graders(root, ["correctness", "cost", "correctness"])
+    assert sorted(r["metric_id"] for r in graded(root, tmp_path)) == sorted(CORRECTNESS | COST)
+
+
+def test_validate_task_rejects_a_grader_listed_twice(root):
+    set_graders(root, ["correctness", "cost", "cost"])
+    entry = next(t for t in config.load_yaml(ROOT / "bench" / "bom.yaml")["tasks"] if t["id"] == "X1")
+    p = config.Problems()
+    config.validate_task(root / "tasks" / "X1", entry, p, config.grader_modules(ROOT), config.pack_marker_bytes(ROOT))
+    assert p.items == ["tasks/X1: grader 'cost' is listed more than once"]
