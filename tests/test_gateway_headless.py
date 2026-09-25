@@ -228,3 +228,36 @@ def test_t_gw_09_a_provider_error_that_is_not_a_limit_leaves_the_breaker_closed(
     results = [pipeline.run(JUDGE, i, ctx, launch) for i in (INPUTS, _second_inputs())]
     assert [(r.outcome, r.code) for r in results] == [("failed", "HB-GW-001")] * 2
     assert len(_captured(tmp_path)) == 2
+
+
+# --------------------------------------------------------------------------------------------------- T-GW-28
+def test_t_gw_28_a_call_yields_model_calls_rows_with_principal_gateway_and_the_stdout_usage(tmp_path, base):
+    result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path), _launch(tmp_path, base / "cells"))
+    [seen] = _captured(tmp_path)
+    session = seen["argv"][seen["argv"].index("--session-id") + 1]
+    usage = json.loads((RECORDS / "claude-fable-text.stdout.json").read_text(encoding="utf-8"))["usage"]
+    assert result.outcome == "stored" and len(result.model_calls) == 1
+    [row] = result.model_calls
+    assert (row["kind"], row["principal"], row["cell_id"], row["run_id"], row["native_session_id"], row["model"]) == \
+        ("model_call", "gateway", None, "run-placeholder-1", session, PIN)
+    assert (row["uncached_input"], row["cache_write"], row["cache_read"], row["output"]) == (2, 837, 0, 284)
+    assert (row["uncached_input"], row["cache_write"], row["cache_read"], row["output"]) == (  # = stdout `usage`
+        usage["input_tokens"], usage["cache_creation_input_tokens"], usage["cache_read_input_tokens"],
+        usage["output_tokens"])
+
+
+def test_t_gw_28_a_failed_call_still_yields_its_rows_and_a_warm_pass_yields_none(tmp_path, base):
+    import test_gateway_pipeline as tp
+    off_pin = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path / "a"), _launch(tmp_path, base / "cells", turn="claude-opus-text"))
+    assert (off_pin.code, [r["model"] for r in off_pin.model_calls]) == ("HB-GW-003", ["claude-opus-5-5"])
+    ctx = _ctx(tmp_path / "b")
+    stdout = (RECORDS / "claude-fable-text.stdout.json").read_text(encoding="utf-8")
+    replay = gw_backend.ReplayBackend({hashlib.sha256(_rendered().encode()).hexdigest(): gw_backend.Recorded(
+        stdout, RECORDS / "claude-fable-text.record.jsonl")}, tmp_path / "archive")
+    cold = pipeline.run(JUDGE, INPUTS, ctx, replay)
+    entry = ctx.store / f"{cold.cache_key}.json"
+    tp._storing_ledger(tmp_path / "b" / "runs" / "run-placeholder-1", cold.cache_key,
+                       hashlib.sha256(entry.read_bytes()).hexdigest())
+    warm = pipeline.run(JUDGE, INPUTS, ctx, replay)
+    assert (cold.outcome, len(cold.model_calls), warm.outcome, warm.model_calls, len(replay.received)) == \
+        ("stored", 1, "hit", (), 1)
