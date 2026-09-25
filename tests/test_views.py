@@ -373,6 +373,26 @@ def test_the_cross_check_skips_a_harness_whose_acp_usage_is_not_the_turn_total(r
     assert _warnings(_cell(views.load(run_dir), "a"), "HB-VAL-005") == []
 
 
+# --- US-11: a model the task's model_map routes to is allowed, like the pin (F1; seam S3 freezes it in the plan) -------
+
+
+def _mapped_run(root, tmp_path, model_map):
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, model="gpt-other")  # the record serves gpt-6-sol
+    _edit_plan(run_dir, lambda p: {**p, "tasks": {"X1": {"model_map": model_map}}})
+    runner.run_pass(run_dir, root)
+    return _cell(views.load(run_dir), "a")
+
+
+def test_a_model_the_task_model_map_names_is_valid(root, tmp_path):  # US-11: "or a model allowed by the task's model_map"
+    cell = _mapped_run(root, tmp_path, {"implement": CODEX_MODEL, "review": SONNET})
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+
+
+def test_a_model_the_model_map_does_not_name_is_still_a_mismatch(root, tmp_path):  # the negative control
+    cell = _mapped_run(root, tmp_path, {"review": SONNET})
+    assert (cell.validity, cell.validity_code) == ("invalid (model mismatch)", "HB-VAL-002")
+
+
 # --- R-28 (R-22 narrowed): agent_version against the pinned build; a mismatch is flagged HB-CELL-115 -------------------
 
 

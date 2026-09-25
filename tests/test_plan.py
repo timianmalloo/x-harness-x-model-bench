@@ -140,6 +140,17 @@ def test_the_plan_freezes_each_task_prompt_verbatim_with_its_hash():  # US-10: t
     assert p["tasks"]["X1"]["prompt_sha256"] == hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
+def test_the_plan_freezes_each_task_model_map(tmp_path):  # seam S3: views read the run, not today's task.yaml (US-11)
+    assert _phase1_plan()["tasks"]["X1"]["model_map"] is None  # X1 declares none
+    root = tmp_path / "root"
+    shutil.copytree(ROOT / "tasks" / "X1", root / "tasks" / "X1")
+    shutil.copytree(ROOT / "bench", root / "bench")
+    task_yaml = root / "tasks" / "X1" / "task.yaml"
+    task_yaml.write_text(task_yaml.read_text(encoding="utf-8").replace("model_map: null", "model_map:\n  implement: gpt-6-sol"),
+                         encoding="utf-8")
+    assert _phase1_plan(root=root)["tasks"]["X1"]["model_map"] == {"implement": "gpt-6-sol"}
+
+
 def test_the_plan_records_each_harness_profile_it_uses():  # grading and views read the run, not today's files (US-26)
     p = _phase1_plan()
     assert p["profiles"] == {
