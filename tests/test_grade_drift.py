@@ -51,3 +51,12 @@ def test_a_3_line_edit_outside_the_blast_radius_is_scope_creep_3_in_1_file(tmp_p
     got = grade_d1(tmp_path, *d1_cell(tmp_path, {MCP: lambda text: "// one\n// two\n// three\n" + text}))
     assert {m: got.get(m) for m in MEASURED} == \
         {"scope_creep": (3, None), "scope_creep_files": (1, None), "convention_drift": ("0.00", None)}
+
+
+PROJECTION = "src/AiDe.Core/Projections/EvidenceCensusProjection.cs"
+REFERENCE = {PROJECTION: (ROOT / "tasks" / "D1" / "oracle" / "reference" / PROJECTION).read_text(encoding="utf-8")}
+
+
+def test_a_pack_commit_stand_in_outside_the_blast_radius_is_not_scope_creep(tmp_path):  # design: Seeded, pack-on
+    got = grade_d1(tmp_path, *d1_cell(tmp_path, REFERENCE, pack=True))  # .editorconfig and docs/pack/: outside the radius
+    assert {m: got.get(m) for m in ("scope_creep", "scope_creep_files")} == {"scope_creep": (0, None), "scope_creep_files": (0, None)}
