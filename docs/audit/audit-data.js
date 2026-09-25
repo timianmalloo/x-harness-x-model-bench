@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T07:58:26Z",
+  "generated": "2026-09-25T08:33:40Z",
   "audit": [
     {
       "actor": null,
@@ -16040,6 +16040,40 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3BV5RV940WGYH1Z8BQNJC3B",
+      "shortname": "w3-cost-totalnanoaiu",
+      "datetime": "2026-09-25T08:33:40Z",
+      "session": "w3-cost",
+      "prompt": "W3-COST phase 1: totalNanoAiu stored verbatim as an additive model_calls column (rulings R-15 Q6, R-26, R-31, R-59; plan docs/coordination/coordination-finish-harness-bench.md v5 wave-3 tracks)",
+      "summary": "Key path: session.shutdown.data.modelMetrics.<model>.totalNanoAiu, checked in tests/fixtures/native/copilot/{off,on,on-rev92}/session-state/*/events.jsonl (off 4496520000, on 43266550000, on-rev92 31375570000).\nRed c86192e (8 failures: AttributeError 'ModelCall' object has no attribute 'total_nano_aiu' / KeyError 'total_nano_aiu'); green 4e43bf6 adds ModelCall.total_nano_aiu, copilot.py reader (is_count-gated, MissingField HB-TEL-001 totalNanoAiu on absence), normalize.model_call_rows column, ADR-0006 Amendment 2, and a required migration-compat fix to views.model_call (treats total_nano_aiu as an optional pre-amendment field, same pattern as requests) needed because the new dataclass field broke existing ledger-row mapping outside owned paths.\ntests/mutations/copilot_reader.json: 4 new named mutants (0-instead-of-null, doubled, wrong key, dropped from ledger row) all killed; TA10 updated for the new source line shape, still killed. mutate_check: every mutation killed.\nuv run pytest -q -p no:cacheprovider: 1084 passed, 1 pre-existing failure (tests/test_docs_html_in_sync.py::test_rendered_html_matches_markdown_source, confirmed via git stash to predate this track's first commit -- unrelated doc-render drift).\nuv run ruff check src tests tools: clean.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "Claude subagent (claude-sonnet-5)",
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Copilot's AI units (totalNanoAiu in its native record) stored verbatim as an additive column on model_calls, red-first, with no second definition of tokens; no reader consumes it yet.",
+      "done_when": "copilot.py reads session.shutdown.data.modelMetrics.<model>.totalNanoAiu per ModelCall row into ModelCall.total_nano_aiu (int | None); normalize.model_call_rows carries it to the ledger row; null (never 0) when absent or non-int; Claude Code/Codex leave it null. ADR-0006 gains Amendment 2. Red test (c86192e) committed before the green (4e43bf6); tests/mutations/copilot_reader.json gains 4 named mutants, all killed, existing mutants stay killed. uv run pytest -q -p no:cacheprovider passes (1084 passed, 1 pre-existing unrelated failure); uv run ruff check src tests tools clean.",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-25T08:21:41Z",
+      "duration_seconds": 719.0,
+      "git": {
+        "sha": "4e43bf688b24d3c5f38d0f48d9bf3c71aa0a7deb",
+        "short": "4e43bf688",
+        "branch": "w3-cost",
+        "pushed": null
+      }
     }
   ],
   "changes": [
