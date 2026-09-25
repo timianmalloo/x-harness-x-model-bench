@@ -1,2 +1,3 @@
 {"agent": "worker-codex-stopi2", "at": 1790321078.8867393, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-codex-stopi2", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w2-stopi-2"}
 {"at": 1790321920.060032, "from": "worker-codex-stopi2", "kind": "done", "mail_id": "mail-01M3BR121WBQV657J5GJP5BE5T", "ref": "docs/adr/0007-deterministic-run-engine.md@767a056", "session": "worker-codex-stopi2", "to": "coord-opus-cq", "type": "mail"}
+{"agent": "worker-codex-stopi2", "at": 1790322308.424982, "kind": "session-end", "path": "-", "seq": 3, "session": "worker-codex-stopi2", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w2-stopi-2"}
