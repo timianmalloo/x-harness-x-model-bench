@@ -2,7 +2,7 @@ schema: bench-task/1
 id: B1
 scenario: 2
 title: "P0 conventions and spine primer to full spec"
-status: stub
+status: ready
 language: csharp
 source:
   kind: authored
