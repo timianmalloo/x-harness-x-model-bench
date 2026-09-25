@@ -40,7 +40,7 @@ from pathlib import Path
 
 from harness_bench import config, ledger, oslock, profiles, views
 from harness_bench.errors import BenchError
-from harness_bench.grade import CellInput, GraderFn, Score, correctness, cost
+from harness_bench.grade import CellInput, GraderFn, Score, correctness, cost, drift
 from harness_bench.plan import file_hash, load_confirmed, task_version_hash
 from harness_bench.telemetry import Extraction, normalize
 
@@ -54,7 +54,7 @@ __all__ = ["GRADERS", "PASS_FACTS", "PassResult", "applicable", "file_hash", "gr
 
 
 # Pattern: Strategy via a registry (Pluggable Selector). One line per built grader; an unregistered one is `not built`.
-GRADERS: dict[str, GraderFn] = {"correctness": correctness.grade_cell, "cost": cost.grade_cell}
+GRADERS: dict[str, GraderFn] = {"correctness": correctness.grade_cell, "cost": cost.grade_cell, "drift": drift.grade_cell}
 
 
 @dataclass

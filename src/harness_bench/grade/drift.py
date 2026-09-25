@@ -20,7 +20,6 @@ import difflib
 import io
 import os
 import re
-from collections.abc import Mapping
 from decimal import Decimal
 from fnmatch import fnmatchcase
 from pathlib import Path
@@ -82,7 +81,7 @@ def _measure(inp: CellInput, rules: tuple | None) -> dict[str, Score]:
     commit = _changes.pre_turn_commit(ws, inp.cell, timeout)
     if commit is None:
         return dict.fromkeys((*SCOPE, "convention_drift"), Score(None, _changes.NOT_FOUND))
-    radius, suffixes = inp.task.get("blast_radius") or [], {suffix for _, suffix, _ in rules or ()}
+    radius = inp.task.get("blast_radius") or []
     creep_lines = creep_files = changed = violations = 0
     log = []
     try:
@@ -95,12 +94,12 @@ def _measure(inp: CellInput, rules: tuple | None) -> dict[str, Score]:
                 if not inside:
                     creep_lines += len(added) + deleted
                     creep_files += 1
-                broken = []
-                if Path(path).suffix in suffixes:
+                file_rules = [(name, pattern) for name, suffix, pattern in rules or () if Path(path).suffix == suffix]
+                if file_rules:  # the denominator: added or changed lines of a file type the rules cover
                     changed += len(added)
-                    broken = [f"{name}:{n}" for n, line in added for name, suffix, pattern in rules
-                              if path.endswith(suffix) and pattern.fullmatch(line.removeprefix(codecs.BOM_UTF8))]
-                    violations += len(broken)
+                broken = [f"{name}:{n}" for n, line in added for name, pattern in file_rules
+                          if pattern.fullmatch(line.removeprefix(codecs.BOM_UTF8))]
+                violations += len(broken)
                 log.append(f"{status}\t{path}\t{'inside' if inside else 'outside'}\t+{len(added)} -{deleted}\t{' '.join(broken)}\n")
     except gitsafe.GitError as exc:  # `git archive` of the pre-turn commit
         if not exc.result.timed_out:
