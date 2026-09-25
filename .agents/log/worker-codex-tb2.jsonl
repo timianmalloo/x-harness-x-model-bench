@@ -3,3 +3,4 @@
 {"action": "add", "agent": "worker-codex-tb2", "at": 1790310472.4655511, "deadline_at": 1790311372.4655511, "id": "req-01M3BD3PRJ41KK7MYY3097EJZ8", "kind": "request", "path": "-", "seq": 3, "session": "worker-codex-tb2", "to": "coord-opus-cq", "type": "request", "wi": "WI-0"}
 {"at": 1790311010.4086554, "from": "worker-codex-tb2", "kind": "done", "mail_id": "mail-01M3BDM4382TWCEFCT4SF5Q0QW", "ref": "tasks/D1/oracle/evidence.md@3d34d307d07815a1dabe76781a9ab9b244c4de4e", "session": "worker-codex-tb2", "to": "coord-opus-cq", "type": "mail"}
 {"agent": "worker-codex-tb2", "at": 1790311036.8372767, "kind": "session-end", "path": "-", "seq": 5, "session": "worker-codex-tb2", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w2-tasks-b2"}
+{"agent": "worker-codex-tb2", "at": 1790312893.615153, "kind": "session-end", "path": "-", "seq": 6, "session": "worker-codex-tb2", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w2-tasks-b2"}

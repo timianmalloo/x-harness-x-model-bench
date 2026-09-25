@@ -1,1 +1,2 @@
 {"agent": "worker-codex-tb3", "at": 1790311636.2436597, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-codex-tb3", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w2-tasks-b3"}
+{"agent": "worker-codex-tb3", "at": 1790312895.3192706, "kind": "session-end", "path": "-", "seq": 2, "session": "worker-codex-tb3", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w2-tasks-b3"}

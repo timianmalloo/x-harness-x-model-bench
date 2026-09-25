@@ -91,4 +91,8 @@ Times are Leader-measured: the runner's `duration_seconds` and the subagent's `d
 - **Copilot and Codex profiles vs ADR-0004 (R-45, R-46).** Copilot advertised `web_search`, `web_fetch` and GitHub-MCP tools as "safe", so they ran with no permission callback. Codex's promised `web_search = "disabled"` was never seeded. Whether wave-1 cells used these tools is **not recorded**. The profiles are fixed; the recut and the qualification cells are pending (run `qual-r45-1`).
 - **The docs-index merge driver** (`coord-regen`) dropped two new docs when both sides changed the index. The Leader re-derived the index by hand (`82dcfcc`). This is a pack finding for upstream.
 - **B1 and F1 wait on the operator:** cfd-bench has no LICENSE at `496a0a8` (R-42 condition 1).
+- **R-51 condition 2: measured, and it fails as the profile stands.** Probe `copilot-probe-copilot-config-profile-flags-20260925T050838Z`: Copilot 1.0.89-1 on `main`'s profile (R-45 flags) plus `--additional-mcp-config`. Copilot started the scripted-user server (`initialize`, `tools/list`), then told the model "Disabled tools: list_agents, read_agent, scripted_user-ask_user, sql, task, web_fetch, write_agent". 0 calls; the model reported the tool unavailable.
+  - This confirms R-45's `assume:`: `--available-tools` filters MCP ids too.
+  - It also shows the fixed profile disabling `web_fetch`.
+  - **Consequence for W2-USER-W:** a `scripted_user: true` Copilot cell appends `scripted_user-ask_user` to `--available-tools`. That needs one confirming turn before the live A1 cell (R-51 condition 2 stays open until then).
 - **The Grok R-11 datum:** 3 slices measured 3.1–4.35 MB each over 7.6–12 min, far under 16 MiB.

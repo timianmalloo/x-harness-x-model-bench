@@ -1,1 +1,2 @@
 {"agent": "w2-views", "at": 1790307275.6828766, "kind": "session-start", "path": "-", "seq": 1, "session": "w2-views", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w2-views"}
+{"agent": "w2-views", "at": 1790312898.7708378, "kind": "session-end", "path": "-", "seq": 2, "session": "w2-views", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w2-views"}
