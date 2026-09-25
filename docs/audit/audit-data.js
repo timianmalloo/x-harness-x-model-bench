@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T11:24:02Z",
+  "generated": "2026-09-25T12:01:56Z",
   "audit": [
     {
       "actor": null,
@@ -22129,6 +22129,36 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3C734ARK3439XKRBHEA3V0S",
+      "shortname": "w3-gwi-2-headless-backend",
+      "datetime": "2026-09-25T12:01:56Z",
+      "session": "w3-gwi-2",
+      "prompt": "Goal: W3-GW-I slice 2 per docs/design/phase3-gateway-judges.md section 16 row s2 and sections 8.1-8.4 (read the design whole first; rulings R-58, R-60, R-63, R-65, R-66 in docs/notes/rulings.md; the slice-1 review docs/notes/review-w3-gwi-1-fable.md): the headless judge backend, red first, offline in tests.\nDone when: src/harness_bench/gateway/ gains the headless backend: the launch builders (moved from tests/fixtures/gateway/probe_judge.py, one definition), the prompt on stdin through procs.run(input=), per-call folders under the cells root with check_cells_root, the credential copy and sweep, the `qualified` gate, the served-model, tool-event and schema checks read from each CLI's native record (not its stdout self-report; review A5), the breaker, the record archive, and model_calls rows with principal `gateway`; every failure maps to BackendDown or a closed HB-GW code (review F6: a ValueError from egress or any other exception never escapes pipeline.run).; SEAM GRANT (Leader): add an `input` parameter to src/harness_bench/procs.run with its own red test in the procs test file, and add the gateway backend module to the procs-caller allowlist in tests/test_architecture.py; nothing else in either file except the next item.; SEAM GRANT (Leader, review F2, a condition before this slice lands): the gateway lint in tests/test_architecture.py also taints a local name assigned from a non-data parameter (`b = backend; b.judge(text)` is a sink), red first on that exact probe.; Contract tests replay the spike's records copied into tests/fixtures/gateway/records/ with every identifier replaced by a fixed placeholder; the copy script fails if a real value remains; T-GW-07..10, 26, 28, 32 and 35 are red first, each red committed separately and failing on an assertion.; tests/mutations/gateway.json gains a named mutant per new branch, each killed: uv run python tools/mutate_check.py tests/mutations/gateway.json.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.\nNot in scope: grade/judge.py (slice 3); --allow-model-calls and cmd_grade (slice 4); calibration and the header (slice 5); bench/gateway.yaml entries (the Leader fills invocation_sha256 from a live probe); any live model call or process launch of a real CLI in a test (tests use recorded files and a fake executable); any real credential, e-mail, username, host name or path in a committed file; cli.py, plan.py, engine.py, errors.py; bench run, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase3-gateway-judges.md; docs/notes/review-w3-gwi-1-fable.md; docs/notes/spike-gw-headless.md; docs/notes/rulings.md R-58, R-60, R-63, R-65, R-66; src/harness_bench/gateway/; src/harness_bench/{procs,egress,workspace}.py; src/harness_bench/telemetry/{claude_code,codex,copilot}.py; tests/fixtures/gateway/; tests/test_architecture.py. Use python, not python3 (Windows).",
+      "summary": "Headless backend in gateway/backend.py (builders, Launch, Headless reached only inside release, judge_pass sweep); pipeline reads the native record (tool events, served model, provider errors, breaker), unwraps one fence, returns model_calls rows principal gateway, never raises; procs.run(input=); lint taints local aliases; 3 spike Claude records copied with placeholders by a copy script that fails on a real value. Full suite 1369 passed; ruff clean; mutate_check 66/66 killed.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "src/harness_bench/gateway/backend.py",
+        "src/harness_bench/gateway/pipeline.py",
+        "src/harness_bench/procs.py",
+        "tests/test_gateway_headless.py",
+        "tests/fixtures/gateway/records"
+      ],
+      "tags": [
+        "W3-GW-I",
+        "R-4"
+      ],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "W3-GW-I slice 2: the headless judge backend, red first, offline in tests (design phase3-gateway-judges s16 row s2, 8.1-8.4)",
+      "done_when": "builders moved; stdin via procs.run(input=); cells-root call folders; credential copy and sweep; qualified gate; served-model/tool-event/schema checks from the native record; breaker; record archive; model_calls principal gateway; F2 lint taint; F6 no escape; T-GW-07..10, 26, 28, 32, 35 red first; mutants killed; pytest and ruff clean",
+      "tier": "T2",
+      "started_at": "2026-09-25T11:24:47Z",
+      "duration_seconds": 2229.0
     }
   ],
   "changes": [
