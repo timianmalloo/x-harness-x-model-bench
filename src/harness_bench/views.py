@@ -9,7 +9,8 @@ chain (HB-LED-002 on a break) and admits only:
 Rules, each defined once here:
 - Duplicates are refused (HB-LED-003): a second `cell.outcome` for a cell, or a repeated key in any fact.
 - The current pass for a catalog version is the latest completed one (greatest `grading.completed`
-  `recorded_at`, then `grading_id`). The current extraction is the one its scores name.
+  `recorded_at`, then `grading_id`). The current extraction is the one its scores name. With no version asked
+  for, a probe pass (a `.dev` catalog version, R-59 DR-4) is never current; it is counted in `header["probe_passes"]`.
 - Validity, tokens, the time split, leaderboard rows and exports are derived, never stored. A value that
   was not measured is a `Measure(None, reason)`, never 0 (US-27).
 - Validity, in order: an invalidating cause; `invalid (build mismatch)` (HB-VAL-007, R-47); not graded;
@@ -136,7 +137,7 @@ class RunView:
     grading_id: str | None  # the current pass
     catalog_version: str | None
     cells: list[CellView]
-    header: dict[str, str | None] = field(default_factory=dict)  # credential kind, network mode, executed builds
+    header: dict[str, str | int | None] = field(default_factory=dict)  # credential kind, network mode, executed builds, probe passes
 
 
 @dataclass
@@ -171,11 +172,25 @@ def _refuse_duplicates(facts: dict[str, list[dict]]) -> None:
             keys.add(k)
 
 
+def _is_probe(catalog_version) -> bool:
+    """R-59 DR-4: a catalog version ending in `.dev` is a probe; its passes are never current scores."""
+    return str(catalog_version or "").endswith(".dev")
+
+
+def _probe_passes(events: list[dict]) -> int:
+    """The completed passes a default view skips as probes (reported as `probe pass: <n>`)."""
+    catalog = {e["grading_id"]: e.get("catalog_version") for e in events if e["kind"] == "grading.started"}
+    return sum(1 for e in events if e["kind"] == "grading.completed" and _is_probe(catalog.get(e["grading_id"])))
+
+
 def _current_pass(events: list[dict], catalog_version: str | None) -> tuple[str | None, str | None]:
+    """The latest completed pass of `catalog_version`; with None, the latest that is not a probe (V-1)."""
     catalog = {e["grading_id"]: e.get("catalog_version") for e in events if e["kind"] == "grading.started"}
     done = [(e["recorded_at"], e["grading_id"]) for e in events if e["kind"] == "grading.completed"]
     if catalog_version is not None:
         done = [d for d in done if catalog.get(d[1]) == catalog_version]
+    else:
+        done = [d for d in done if not _is_probe(catalog.get(d[1]))]
     if not done:
         return None, catalog_version
     gid = max(done)[1]
@@ -482,8 +497,9 @@ def build_label(harness: str, version: str) -> str:
     return f"{label} (prerelease)" if harness == "copilot" and "-" in version else label
 
 
-def _header(events: list[dict]) -> dict[str, str | None]:
-    """Report-header facts as recorded at process start; None = not recorded."""
+def _header(events: list[dict]) -> dict[str, str | int | None]:
+    """Report-header facts as recorded at process start; None = not recorded. `probe_passes` counts the `.dev`
+    passes a default view skips (R-59 DR-4, V-1); it is a header key, so `export` never carries it."""
     started = [e for e in events if e["kind"] == "attempt.process_started"]
 
     def one(field_name: str) -> str | None:
@@ -492,7 +508,8 @@ def _header(events: list[dict]) -> dict[str, str | None]:
 
     builds = sorted({build_label(e["harness"], str(e["build_version"])) for e in started
                      if e.get("harness") and e.get("build_version")})
-    return {"credential_kind": one("credential_kind"), "network_mode": one("network_mode"), "executed_builds": ", ".join(builds) or None}
+    return {"credential_kind": one("credential_kind"), "network_mode": one("network_mode"), "executed_builds": ", ".join(builds) or None,
+            "probe_passes": _probe_passes(events)}
 
 
 def _mean(values: list) -> Decimal:

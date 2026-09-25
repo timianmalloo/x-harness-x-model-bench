@@ -181,7 +181,8 @@ def test_the_header_reads_only_process_starts(root, tmp_path):
                    "harness": "codex", "build_version": "0.156.0"})
         for kind in ("attempt.process_ended", "cell.prompt_sent", "agent.x"):  # kinds sorting before and after it
             ev.append({"kind": kind, "cell_id": "z", "credential_kind": "leak", "network_mode": "leak", "harness": "x", "build_version": "1"})
-    assert views.load(run_dir).header == {"credential_kind": "subscription", "network_mode": "open", "executed_builds": "codex 0.156.0"}
+    assert views.load(run_dir).header == {"credential_kind": "subscription", "network_mode": "open", "executed_builds": "codex 0.156.0",
+                                          "probe_passes": 0}  # no pass has run
 
 
 def test_a_measure_is_a_frozen_hashable_value():

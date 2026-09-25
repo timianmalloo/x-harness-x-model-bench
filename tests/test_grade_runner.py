@@ -216,7 +216,7 @@ def test_a_committed_mini_run_regrades_to_its_0_3_values_with_every_other_metric
     assert {k: v for k, v in got.items() if k[1] not in BUILT} == \
         {(c, m): (None, "not built") for c in "ab" for m in (CORRECTNESS | COST) - BUILT}
     assert views.export(views.load(run_dir, "0.3")) == export_before  # the 0.3 pass is still the 0.3 export
-    assert views.load(run_dir).catalog_version == config.load_yaml(root / "bench" / "metrics.yaml")["version"] == "0.4.dev"
+    assert views.load(run_dir).catalog_version == config.load_yaml(root / "bench" / "metrics.yaml")["version"] == "0.4"  # make_root releases 0.4.dev
 
 
 @pytest.mark.parametrize("name", sorted(config.load_yaml(ROOT / "bench" / "regrade-baseline-0.3.yaml")["runs"]))
