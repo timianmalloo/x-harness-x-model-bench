@@ -276,9 +276,19 @@ summary: >-
 - **Instances:**
   - `2026-09-25`, the R-35/R-36(a) join: `report.json`'s mutant "a missing header fact rendered empty" survived on `main`. `test_the_header_shows_recorded_facts_and_not_recorded_for_the_rest` asserted `"not recorded" in doc`, and later columns (the `calls_per_cell` Measure, 6b; the context-window fact, R-32) print that phrase too. The fix pins the assertion to `<dt>Defender real-time exclusion</dt><dd>not recorded</dd>` (`60643a3`); `report.json` is 22/22 killed.
   - The same join, a close relative: the R-36 connector-name guard read only `report/__init__.py`, so a name seeded in `cli_table.py` passed. It now reads every report module (`a8d0833`), and the seeded name fails it.
+  - `2026-09-25`, spike S-04: the probe's "tool in the native record" check matched the bare word `ask_user`. The prompt contains that word, so Codex's A1 rollout read `true` from the user message alone. It now requires the harness's qualified id (`mcp__scripted_user__ask_user` or `mcp.scripted_user.ask_user`). A prompt-only fixture in `probe_selftest.py` fails the old check (observed red) and passes the new one.
 - **Sweep:** every `"not recorded"`, `"not graded"` or `"unranked"` assertion in `tests/`. The others are scoped to a header row or a table row.
 - **Control:** the named-test mutation sets (`tools/mutate_check.py`, TOOL-B). A vacuous assertion shows up as a surviving mutant once the set is re-run. Tests that check one element assert on that element's markup, not on the whole page. The upgrade trigger is a second instance: the join gate would then re-run every mutation set of the modules a track touched.
 - **Status:** `observed` (the mutation sets catch it once they are re-run)
+
+### OUT-A: a saved measurement reported as a failure because printing it failed
+- **Signature:** a tool saves its result file and then prints the same result to stdout. The text holds a character the console cannot encode: a Windows pipe defaults to cp1252, and model text carries `−` or emoji. The print raises, and the exit status turns non-zero. The caller reads the exit code as the measurement, although the saved file says the opposite.
+- **Why it survives:** offline tests use ASCII fixtures, and an interactive terminal is often UTF-8. Only a real model's text on a redirected Windows pipe hits it. The saved file is correct, so nothing that reads the file fails.
+- **Instances:**
+  - `2026-09-25`, spike S-04 (W2-USER-D): `probe_turn.py` printed its summary with `ensure_ascii=False`. It raised `UnicodeEncodeError` in 3 of 11 Leader runs. For `claude-code a1` the exit was 1 although the turn called `ask_user`, and the Leader's exit-code summary reported "not called". The saved summary was right.
+- **Sweep:** `print(json.dumps(..., ensure_ascii=False))` or a `stdout.write` of the same across `src/`, `tools/`, `tests/`: no other instance (grep, 2026-09-25). The other S-04 scripts print with `ensure_ascii=True`.
+- **Control:** `probe_selftest.py` `test_emit_on_a_legacy_console` runs `emit` under `PYTHONIOENCODING=cp1252` with a `−` and an emoji and requires exit 0. It was observed red on the old `emit` (2 failures), then green. The rule: stdout carries JSON escapes (`ensure_ascii=True`); files are written in UTF-8.
+- **Status:** `controlled` for the probe (the self-test is run by hand before a probe run); the upgrade trigger is a second instance, in a tool whose output a gate reads.
 
 ---
 
