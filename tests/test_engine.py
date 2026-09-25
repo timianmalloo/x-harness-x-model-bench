@@ -2067,3 +2067,23 @@ def test_resolution_order_through_the_loop(base, case):  # R10-4, engine: the ti
     assert [e["effect"] for e in _kind(events, "control.applied")] == effects
     assert len(_kind(events, "cell.launch_intent")) == launched
     assert summary.exit_code == (3 if "stop" in case else 0)
+
+
+def test_a_stop_supersedes_every_open_decision(base):  # R10-2
+    p, launcher = _decision_plan([("fake", "A", AUTH), ("other", "B", UNSERVED), ("fake", "A", {}), ("other", "B", {})],
+                                 parallelism=2)
+    first = {c["cell_id"] for c in p["cells"][:2]}
+    fired = []
+
+    def script(eng, offset, run_dir):
+        if first <= set(eng.outcomes) and not fired:
+            fired.append(True)
+            _stop_file(run_dir)
+            offset[0] += JUMP  # past the timeout in the same tick: the stop is applied first, then nothing expires
+
+    _, events, summary = _decision_run(base, (p, launcher), script)
+    assert sorted((e["decision_kind"], e["subject"]) for e in _kind(events, "decision.opened")) == [
+        ("blocked_cell", "fake"), ("qualification_gap", "B")]
+    assert sorted(_resolutions(events)) == [("D1", "superseded (stop)", None), ("D2", "superseded (stop)", None)]
+    assert [(e["code"], e["decision_id"]) for e in _kind(events, "run.stopped")] == [("HB-RUN-006", None)]
+    assert len(_kind(events, "cell.launch_intent")) == 2 and summary.exit_code == 3
