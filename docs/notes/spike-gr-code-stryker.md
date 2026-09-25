@@ -1,6 +1,6 @@
 ---
 id: note-spike-gr-code-stryker
-title: "Spike GR-CODE c6a - Stryker.NET 4.16.0 is in the offline cache and is not installed as a tool"
+title: "Spike GR-CODE c6a - cached Stryker.NET 4.16.0 runs offline on D1; --version does not print the pin"
 type: decision-note
 status: accepted
 owner: "@timianmalloo"
@@ -10,9 +10,9 @@ links:
 review-by: "2026-10-09"
 summary: >-
   dotnet-stryker 4.16.0 is extracted in the offline NuGet cache and is not an installed tool.
-  `--version` does not print it (exit 1); the startup banner and the assembly ProductVersion do.
-  The first offline run on D1's reference plus hidden tests exited 1 in 2.973 s: analysis of
-  AiDe.Core for net10.0 failed and no mutants were scored.
+  `dotnet exec` of that DLL, with NUGET_PACKAGES pointed at the cache and additional-timeout
+  5000, scored D1's reference file twice: killed 12, timeout 0, survived 2, no coverage 0,
+  and the two mutation-report.json files were byte-identical. `--version` exits 1.
 ---
 
 # Spike GR-CODE c6a: does pinned Stryker.NET run offline on D1?
@@ -37,7 +37,7 @@ No `dotnet tool install` was run. No NuGet package was downloaded. The grading c
 | `Get-Content C:\Users\malla\.nuget\packages\dotnet-stryker\4.16.0\dotnet-stryker.nuspec` | 0 | `<id>dotnet-stryker</id>`, `<version>4.16.0</version>`, package type `DotnetTool`. |
 | `Get-Content C:\Users\malla\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\DotnetToolSettings.xml` | 0 | Command name `dotnet-stryker`, entry point `Stryker.CLI.dll`, runner `dotnet`. |
 
-The package is extracted. `Stryker.CLI.dll` is at `C:\Users\malla\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\Stryker.CLI.dll`. **Inferred:** a global or local `dotnet tool install` is not required to execute this build; `dotnet exec` of that DLL is the offline runner (confirmed by the help command below).
+The package is extracted. `Stryker.CLI.dll` is at `C:\Users\malla\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\Stryker.CLI.dll`. **Verified:** `dotnet exec` of that DLL runs this build with no `dotnet tool install` (the `--help` command below, and the scoring runs).
 
 ## Version string and the tool_versions probe
 
@@ -66,7 +66,7 @@ Exit 0. Last line: `4.16.0+f9109e24c615a7030a3b33e5532c665c974e4ec5`.
 
 ## D1 run
 
-The throwaway copy is `C:\Projects\_spike-stryker-c6a\d1`: `tasks/D1/workspace`, then `tasks/D1/tests` overlaid (`D1.HiddenTests/`, `NuGet.Config`), then `tasks/D1/oracle/reference/src/AiDe.Core/Projections/EvidenceCensusProjection.cs` copied onto `src/AiDe.Core/Projections/`. The copy's `Directory.Build.props` sets `RestoreSources=.` and `NuGetAudit=false`. A `NuGet.Config` at `C:\Projects\_spike-stryker-c6a` clears package sources. Process environment for the run: `DOTNET_CLI_TELEMETRY_OPTOUT=1`, `DOTNET_CLI_HOME`, `TEMP`, `TMP`, and `NUGET_HTTP_CACHE_PATH` pointed inside the throwaway, `NUGET_CERT_REVOCATION_MODE=offline`, `MSBUILDDISABLENODEREUSE=1`, `UseSharedCompilation=false`. `NUGET_PACKAGES` was left unset so restore reads the existing global-packages folder.
+The throwaway copy is `C:\Projects\_spike-stryker-c6a\d1`: `tasks/D1/workspace`, then `tasks/D1/tests` overlaid (`D1.HiddenTests/`, `NuGet.Config`), then `tasks/D1/oracle/reference/src/AiDe.Core/Projections/EvidenceCensusProjection.cs` copied onto `src/AiDe.Core/Projections/`. For the two scoring runs the copy's `Directory.Build.props` is the workspace original. A `NuGet.Config` at `C:\Projects\_spike-stryker-c6a` clears package sources (the copy also has the tests' `NuGet.Config`). Process environment: `DOTNET_CLI_TELEMETRY_OPTOUT=1`, `DOTNET_CLI_HOME`, `TEMP`, `TMP`, and `NUGET_HTTP_CACHE_PATH` inside the throwaway, `NUGET_CERT_REVOCATION_MODE=offline`, `MSBUILDDISABLENODEREUSE=1`, `UseSharedCompilation=false`, and `NUGET_PACKAGES=C:\Users\malla\.nuget\packages`.
 
 `stryker-config.json` in the copy pins the timeout and the run shape:
 
@@ -95,21 +95,53 @@ dotnet exec C:\Users\malla\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\an
 
 `--skip-version-check` is set so the CLI does not look for a newer Stryker online.
 
-**Verified, run 1.** Same command, cwd = `C:\Projects\_spike-stryker-c6a\d1`. `dotnet --version` in that directory exited 0 and printed `10.0.303`.
+`dotnet --version` with cwd = the copy exited 0 and printed `10.0.303`.
 
-| | |
-| --- | --- |
-| Exit | 1 |
-| Wall time | 2.973 s (`00:00:02.6898822` inside the log) |
-| Started | 2026-09-25T18:12:22Z |
+**Verified, first attempt (exit 1).** Same `dotnet exec` command, cwd = the copy, `DOTNET_CLI_HOME` pointed at the throwaway, `NUGET_PACKAGES` unset. Started 2026-09-25T18:12:22Z. Exit 1. Wall time 2.973 s. The banner's first version line is `Version: 4.16.0`. Analysis of `src\AiDe.Core\AiDe.Core.csproj` failed for `net10.0`, and the process printed `Failed to analyze project builds. Stryker cannot continue.` No report file.
 
-Stdout begins with the Stryker banner and the line `Version: 4.16.0`, then:
+**Verified, diagnosis.** The same command plus `--diag` (no `--break-on-initial-test-failure`) exited 1 in 2.988 s. The log records `_OutputPackagesPath=C:\Projects\_spike-stryker-c6a\dotnet-home\.nuget\packages\` and MSBuild `NU1101` (`Unable to find package`) for `Microsoft.Data.Sqlite`, `YamlDotNet`, and `Microsoft.CodeAnalysis.CSharp`. **Inferred:** `DOTNET_CLI_HOME` moved the NuGet global-packages folder off the host cache. The copy's `Directory.Build.props` had also been given `RestoreSources=.`, which this build resolved to `src\AiDe.Core`. Both edits were removed before the runs below: props restored to the workspace original, and `NUGET_PACKAGES=C:\Users\malla\.nuget\packages` set while `DOTNET_CLI_HOME` stayed inside the throwaway.
 
-- `Stryker will use a max of 4 parallel testsessions.` (the pinned concurrency)
-- `Analyzing 1 test project(s).`
-- `Analysis of project src\AiDe.Core\AiDe.Core.csproj failed for frameworks net10.0.`
-- `Could not find an assembly reference to a mutable assembly` for `D1.HiddenTests.csproj`. It then looked at the project reference.
-- `Project ...\src\AiDe.Core\AiDe.Core.csproj analysis failed hence can't be mutated.`
-- The test project "analysis succeeded" and "can be mutated", then `Stryker.NET failed to mutate your project` and `Failed to analyze project builds. Stryker cannot continue.`
+**Verified, preflight of that copy.** `dotnet test D1.HiddenTests\D1.HiddenTests.csproj -p:RestoreSources=. -p:NuGetAudit=false -v:q --nologo`, cwd = the copy, with `NUGET_PACKAGES` set as above. Exit 0. Wall time 5.217 s. `Passed! - Failed: 0, Passed: 5, Skipped: 0, Total: 5`.
 
-No report file was written. Killed, timeout, survived, and no-coverage counts were not produced. A second run is not comparable until a run completes. The log tells us to re-run with `--diag`. That diagnosis, and any completed run, is appended after this commit.
+**Verified, two scoring runs.** Same `dotnet exec` command as above, same config, same `NUGET_PACKAGES`. `--skip-version-check` kept the CLI from looking for a newer Stryker.
+
+| Run | Exit | Wall time | Report |
+| --- | ---: | ---: | --- |
+| A | 0 | 47.745 s | `StrykerOutput\2026-09-25.11-16-23\reports\mutation-report.json` (170,760 bytes) |
+| B | 0 | 44.963 s (started 2026-09-25T18:18:12Z) | `StrykerOutput\2026-09-25.11-18-13\reports\mutation-report.json` (170,760 bytes) |
+
+Both stdout logs contain `Version: 4.16.0`, `Stryker will use a max of 4 parallel testsessions.`, and these lines:
+
+- `20295 mutants created`
+- `4388 mutants got status CompileError. Reason: Mutant caused compile errors`
+- `1 mutants got status Ignored. Reason: Removed by block already covered filter`
+- `15892 mutants got status Ignored. Reason: Removed by mutate filter`
+- `14 total mutants will be tested`
+- `The final mutation score is 85.71 %`
+
+The mutate glob was applied: 15,892 mutants were ignored because of it. The 14 tested mutants are the reference file.
+
+**The report file.** `mutation-report.json` (the tool's default report name). Top-level keys: `schemaVersion` (`"2"`), `thresholds` (`{"high": 80, "low": 60}`), `projectRoot`, `files`, `testFiles`. There is no top-level killed / timeout / survived / no-coverage object. Each mutant lives at `files.<path>.mutants[]` with `status` (and, when present, `statusReason`, `id`, `mutatorName`, `replacement`, `location`, `static`, `coveredBy`, `killedBy`).
+
+**Verified, reference file** `src\AiDe.Core\Projections\EvidenceCensusProjection.cs`, both runs:
+
+| `status` | Count |
+| --- | ---: |
+| `Killed` | 12 |
+| `Timeout` | 0 |
+| `Survived` | 2 |
+| `NoCoverage` | 0 |
+| `CompileError` | 5 |
+| `Ignored` | 1 (`Removed by block already covered filter`) |
+
+`Timeout` and `NoCoverage` do not occur as `status` values in this report. They are status strings this build knows (the cleartext header names timeout and no coverage). **Inferred:** the design's score counts those four statuses and leaves `CompileError` and `Ignored` out. On this file that is `(12 + 0) / (12 + 0 + 2 + 0) = 0.8571428571428571`, which is the logged `85.71 %`.
+
+The cleartext table's wrapped header is score, killed, timeout, survived, no coverage, and a sixth `#` whose glyph in the log is `.`. The reference row reads `85.71`, `12`, `0`, `8`, `0`, `5`. The `5` equals `CompileError`. The `8` equals `Survived + CompileError + Ignored` (`2 + 5 + 1`). **Inferred:** that survived cell is not the JSON `Survived` count. The grader should count `status`.
+
+**Verified, the two runs match.** sha256 of both report files is `a7b83bb186357a988ec4c221eb2ee4cc96d06bf8946e72bd91ea61fdbe899b8d` (python `hashlib.sha256`, exit 0). Per-file status counts are equal. The reference file's `(id, mutatorName, start line, start column, status)` tuples are equal.
+
+Summing every `status` in the JSON gives `Killed` 12, `Survived` 2, `CompileError` 125, `Ignored` 142. That is not the log's project-wide 4,388 compile errors or 15,892 filtered mutants. **Verified:** the report does not list every mutant the log counted. The reference file's 20 mutants are in the report.
+
+## The call
+
+c6b can pin `dotnet-stryker` `4.16.0` and run it offline on this host without an install: `dotnet exec` of `Stryker.CLI.dll` from the global-packages cache, `NUGET_PACKAGES` left at that cache (do not point `DOTNET_CLI_HOME` at an empty folder unless `NUGET_PACKAGES` is set), `--skip-version-check`, and `additional-timeout` `5000` in `stryker-config.json`. The `tool_versions` probe that prints the pin and exits 0 is the `FileVersionInfo` `ProductVersion` command above, not `--version`. The score reads `mutation-report.json` mutant `status` values `Killed`, `Timeout`, `Survived`, and `NoCoverage`. On D1's reference plus hidden tests those counts were 12, 0, 2, and 0, and a second run wrote the same report bytes.
