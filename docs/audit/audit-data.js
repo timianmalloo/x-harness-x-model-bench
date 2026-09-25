@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T03:36:25Z",
+  "generated": "2026-09-25T03:53:36Z",
   "audit": [
     {
       "actor": null,
@@ -8772,34 +8772,23 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M3BA4JKKCJBF03191EYG23G4",
-      "shortname": "Goal: W2-TASKS-b slice 1 (ruling R-41): a dotnet correctness runner in s…",
-      "datetime": "2026-09-25T03:35:55Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W2-TASKS-b slice 1 (ruling R-41): a dotnet correctness runner in src/harness_bench/grade/correctness.py, red-first, so C# tasks (D1, E6, F1) can be graded; today grade() returns NA for any oracle runner other than unittest (correctness.py:58-59).\nDone when: A red commit adds tests in tests/test_correctness_dotnet.py that fail on the current code (the runner is refused) and state the failing assertion; the green commit makes them pass.; An oracle with runner dotnet and a command (for example [\"dotnet\", \"test\", \"--logger\", \"trx;LogFileName=results.trx\"]) runs in a grading copy (archive working copy plus tests/) and parses a TRX results file into (total, passed); pass_at_1 is 1 only when the exit code is 0 and passed equals total.; A missing or unparsable results file, or zero tests run, gives NA with a stated reason, never 0 (R-41 condition 1).; The step runs through procs.run with the grading timeout so no dotnet process outlives it, with the ADR-0013 build-server settings in its environment (read ADR-0013 for them; DOTNET_CLI_TELEMETRY_OPTOUT=1 and no shared build server at minimum, marked assume if the ADR does not list them); a test proves no dotnet process remains after a timed-out step (R-41 condition 2).; The runner records dotnet --version (10.0.303 on this host) in the oracle log (R-41 condition 3).; tests/mutations/correctness.json holds three named mutants: zero tests read as pass, a summary read from the wrong file, a timeout read as pass; each is killed by a named test (uv run python tools/mutate_check.py tests/mutations/correctness.json).; The fixture C# project used by the tests is tiny, lives under tests/fixtures/dotnet/, and builds offline on the host SDK.; uv run pytest -q -p no:cacheprovider passes and uv run ruff check src tests tools is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result.\nNot in scope: tasks/D1 or any task folder (later slices); plan.py; engine.py, cli.py, errors.py, views.py, status.py (other tracks); bench run, any model turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/notes/rulings.md R-7, R-33, R-41; docs/adr/ (ADR-0013 on native grading and build servers); src/harness_bench/grade/correctness.py, src/harness_bench/grade/runner.py, src/harness_bench/procs.py; tests/ for the existing unittest runner tests; tools/mutate_check.py and an existing tests/mutations/*.json for the mutation format. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-tb1 before committing.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
+      "datetime": "2026-09-25T03:35:55Z",
+      "id": "al-01M3BA4JKKCJBF03191EYG23G4",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: W2-TASKS-b slice 1 (ruling R-41): a dotnet correctness runner in src/harness_bench/grade/correctness.py, red-first, so C# tasks (D1, E6, F1) can be graded; today grade() returns NA for any oracle runner other than unittest (correctness.py:58-59).\nDone when: A red commit adds tests in tests/test_correctness_dotnet.py that fail on the current code (the runner is refused) and state the failing assertion; the green commit makes them pass.; An oracle with runner dotnet and a command (for example [\"dotnet\", \"test\", \"--logger\", \"trx;LogFileName=results.trx\"]) runs in a grading copy (archive working copy plus tests/) and parses a TRX results file into (total, passed); pass_at_1 is 1 only when the exit code is 0 and passed equals total.; A missing or unparsable results file, or zero tests run, gives NA with a stated reason, never 0 (R-41 condition 1).; The step runs through procs.run with the grading timeout so no dotnet process outlives it, with the ADR-0013 build-server settings in its environment (read ADR-0013 for them; DOTNET_CLI_TELEMETRY_OPTOUT=1 and no shared build server at minimum, marked assume if the ADR does not list them); a test proves no dotnet process remains after a timed-out step (R-41 condition 2).; The runner records dotnet --version (10.0.303 on this host) in the oracle log (R-41 condition 3).; tests/mutations/correctness.json holds three named mutants: zero tests read as pass, a summary read from the wrong file, a timeout read as pass; each is killed by a named test (uv run python tools/mutate_check.py tests/mutations/correctness.json).; The fixture C# project used by the tests is tiny, lives under tests/fixtures/dotnet/, and builds offline on the host SDK.; uv run pytest -q -p no:cacheprovider passes and uv run ruff check src tests tools is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result.\nNot in scope: tasks/D1 or any task folder (later slices); plan.py; engine.py, cli.py, errors.py, views.py, status.py (other tracks); bench run, any model turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/notes/rulings.md R-7, R-33, R-41; docs/adr/ (ADR-0013 on native grading and build servers); src/harness_bench/grade/correctness.py, src/harness_bench/grade/runner.py, src/harness_bench/procs.py; tests/ for the existing unittest runner tests; tools/mutate_check.py and an existing tests/mutations/*.json for the mutation format. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-tb1 before committing.",
+      "session": "prompt-compile",
+      "shortname": "Goal: W2-TASKS-b slice 1 (ruling R-41): a dotnet correctness runner in s…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M3BA4JXYD6WYDSS490M6F2F5",
-      "shortname": "compile-Goal: W2-TASKS-b slice 1 (ruling R-41): a dotnet correctness runner in s…",
-      "datetime": "2026-09-25T03:35:55Z",
-      "session": "coord-opus-cq",
-      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-TASKS-b slice 1 (ruling R-41): a dotnet correctness runner in src/harness_bench/grade/correctness.py, red-first, so C# tasks (D1, E6, F1) can be graded; today grade() returns NA for any oracle runner other than unittest (correctness.py:58-59).\nDone when: A red commit adds tests in tests/test_correctness_dotnet.py that fail on the current code (the runner is refused) and state the failing assertion; the green commit makes them pass.; An oracle with runner dotnet and a command (for example [\"dotnet\", \"test\", \"--logger\", \"trx; LogFileName=results.trx\"]) runs in a grading copy (archive working copy plus tests/) and parses a TRX results file into (total, passed); pass_at_1 is 1 only when the exit code is 0 and passed equals total.; A missing or unparsable results file, or zero tests run, gives NA with a stated reason, never 0 (R-41 condition 1).; The step runs through procs.run with the grading timeout so no dotnet process outlives it, with the ADR-0013 build-server settings in its environment (read ADR-0013 for them; DOTNET_CLI_TELEMETRY_OPTOUT=1 and no shared build server at minimum, marked assume if the ADR does not list them); a test proves no dotnet process remains after a timed-out step (R-41 condition 2).; The runner records dotnet --version (10.0.303 on this host) in the oracle log (R-41 condition 3).; tests/mutations/correctness.json holds three named mutants: zero tests read as pass, a summary read from the wrong file, a timeout read as pass; each is killed by a named test (uv run python tools/mutate_check.py tests/mutations/correctness.json).; The fixture C# project used by the tests is tiny, lives under tests/fixtures/dotnet/, and builds offline on the host SDK.; uv run pytest -q -p no:cacheprovider passes and uv run ruff check src tests tools is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result.\nNot in scope: tasks/D1 or any task folder (later slices); plan.py; engine.py, cli.py, errors.py, views.py, status.py (other tracks); bench run, any model turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-7, R-33, R-41; docs/adr/ (ADR-0013 on native grading and build servers); src/harness_bench/grade/correctness.py, src/harness_bench/grade/runner.py, src/harness_bench/procs.py; tests/ for the existing unittest runner tests; tools/mutate_check.py and an existing tests/mutations/*.json for the mutation format. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-tb1 before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit adds tests in tests/test_correctness_dotnet.py that fail on the current code (the runner is refused) and state the failing assertion | phrase: A red commit adds tests in tests/test_correctness_dotnet.py that fail on the current code (the runner is refused) and state the failing assertion |\n| done_when: the green commit makes them pass. | phrase: the green commit makes them pass. |\n| done_when: An oracle with runner dotnet and a command (for example [\"dotnet\", \"test\", \"--logger\", \"trx | phrase: An oracle with runner dotnet and a command (for example [\"dotnet\", \"test\", \"--logger\", \"trx |\n| done_when: LogFileName=results.trx\"]) runs in a grading copy (archive working copy plus tests/) and parses a TRX results file into (total, passed) | phrase: LogFileName=results.trx\"]) runs in a grading copy (archive working copy plus tests/) and parses a TRX results file into (total, passed) |\n| done_when: pass_at_1 is 1 only when the exit code is 0 and passed equals total. | phrase: pass_at_1 is 1 only when the exit code is 0 and passed equals total. |\n| done_when: A missing or unparsable results file, or zero tests run, gives NA with a stated reason, never 0 (R-41 condition 1). | phrase: A missing or unparsable results file, or zero tests run, gives NA with a stated reason, never 0 (R-41 condition 1). |\n| done_when: The step runs through procs.run with the grading timeout so no dotnet process outlives it, with the ADR-0013 build-server settings in its environment (read ADR-0013 for them | phrase: The step runs through procs.run with the grading timeout so no dotnet process outlives it, with the ADR-0013 build-server settings in its environment (read ADR-0013 for them |\n| done_when: DOTNET_CLI_TELEMETRY_OPTOUT=1 and no shared build server at minimum, marked assume if the ADR does not list them) | phrase: DOTNET_CLI_TELEMETRY_OPTOUT=1 and no shared build server at minimum, marked assume if the ADR does not list them) |\n| done_when: a test proves no dotnet process remains after a timed-out step (R-41 condition 2). | phrase: a test proves no dotnet process remains after a timed-out step (R-41 condition 2). |\n| done_when: The runner records dotnet --version (10.0.303 on this host) in the oracle log (R-41 condition 3). | phrase: The runner records dotnet --version (10.0.303 on this host) in the oracle log (R-41 condition 3). |\n| done_when: tests/mutations/correctness.json holds three named mutants: zero tests read as pass, a summary read from the wrong file, a timeout read as pass | phrase: tests/mutations/correctness.json holds three named mutants: zero tests read as pass, a summary read from the wrong file, a timeout read as pass |\n| done_when: each is killed by a named test (uv run python tools/mutate_check.py tests/mutations/correctness.json). | phrase: each is killed by a named test (uv run python tools/mutate_check.py tests/mutations/correctness.json). |\n| done_when: The fixture C# project used by the tests is tiny, lives under tests/fixtures/dotnet/, and builds offline on the host SDK. | phrase: The fixture C# project used by the tests is tiny, lives under tests/fixtures/dotnet/, and builds offline on the host SDK. |\n| done_when: uv run pytest -q -p no:cacheprovider passes and uv run ruff check src tests tools is clean. | phrase: uv run pytest -q -p no:cacheprovider passes and uv run ruff check src tests tools is clean. |\n| done_when: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result. | phrase: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result. |\n| not_in_scope: tasks/D1 or any task folder (later slices) | phrase: tasks/D1 or any task folder (later slices) |\n| not_in_scope: plan.py | phrase: plan.py |\n| not_in_scope: engine.py, cli.py, errors.py, views.py, status.py (other tracks) | phrase: engine.py, cli.py, errors.py, views.py, status.py (other tracks) |\n| not_in_scope: bench run, any model turn, pytest -m \"\" | phrase: bench run, any model turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- src/harness_bench/grade/correctness.py: src/harness_bench/grade/correctness.py sha256 dfaf98521dc8cc313f72af9b12ef201b2876d2c0590ca8504136bfac6ad3b663\n- tests/test_correctness_dotnet.py: unresolved (not found)\n- tests/: unresolved (not found)\n- tests/mutations/correctness.json: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- tests/fixtures/dotnet/: unresolved (not found)\n- tasks/D1: unresolved (not found)\n- plan.py: src/harness_bench/plan.py sha256 7e889c1252594f1fd4dbd50d8c186e6f2f3156bc700eb81b669a2f451bb2f461\n- engine.py: src/harness_bench/engine.py sha256 1045ed0fcecace9529e4e2da6ba53b4486bb06f775f4e3030256e5d2c0215f04\n- cli.py: src/harness_bench/cli.py sha256 13e5826e6a6a8c2ff1c1a5fdd67ea0311c646c750ba57046dce40ab39415d803\n- errors.py: src/harness_bench/errors.py sha256 a5e3cccc80432da69d4323eec63af41d88829def2dd1adcd8536d08e832c23e4\n- views.py: src/harness_bench/views.py sha256 1684f9a2aa88f6d9aee5f908afc46a2920425b3f0bca7c627ea82b6e5f0ff5be\n- status.py: src/harness_bench/status.py sha256 cd87aba8a45b9c032418bdb9a62940e04d2a858f51e2f8c687a1b42d4ddb06ec\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- docs/adr/: unresolved (not found)\n- src/harness_bench/grade/runner.py: src/harness_bench/grade/runner.py sha256 7bd84ee48e0b123e472d95b4985e93a31fc686033852383b20138529dc2778d1\n- src/harness_bench/procs.py: src/harness_bench/procs.py sha256 48880ea33f81b660388fb309fa0a6569f9efdd243fc42bc800d450d6f298fc2b\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BA4JKKCJBF03191EYG23G4\nraw sha256: 43fbfc7ab857beba5a4ffe475a51398d7b5301c800e31cf787c20f6892e83bf0\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
-      "summary": "compiled al-01M3BA4JKKCJBF03191EYG23G4 for codex v1: 20 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -9170,38 +9159,38 @@ window.AUDIT_DATA = {
         "template": "codex",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3BA4K4ACV9AEX4WE6WA5SZB",
-      "shortname": "Goal: W2-TASKS-d slice 1: author task C1 (\"Concept-oriented requirements…",
       "datetime": "2026-09-25T03:35:55Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W2-TASKS-d slice 1: author task C1 (\"Concept-oriented requirements to architecture\", scenario 3) in tasks/C1/ from stub toward ready, following .claude/skills/new-bench-task/SKILL.md and the contract in tasks/README.md, with the prompt and requirements from ProjDevBench and a locally authored oracle (ruling R-7 condition 3).\nDone when: tasks/C1/task.yaml pins source.repo https://github.com/zsworld6/projdevbench and source.commit to 9af6f40 (full SHA read with git ls-remote or a clone), records source.license MIT with the copyright line read from the upstream LICENSE file, and copies that LICENSE into tasks/C1/.; You chose one concept-oriented problem from the pinned ProjDevBench commit and state which one and why in tasks/C1/README.md; tasks/C1/prompt.md carries its requirements (identical for every harness).; The hidden tests under tasks/C1/tests/ are authored locally (ACMOJ is not used) as a Python unittest suite matching the oracle runner unittest (see tasks/X1/task.yaml and src/harness_bench/grade/correctness.py); they are observed to FAIL on the base workspace tasks/C1/workspace and PASS on a reference solution kept only under tasks/C1/oracle/ (never in the workspace); both runs, with commands, exit codes and failing test names, are written to tasks/C1/oracle/evidence.md.; The architecture half is structural checks only (for example required documents or sections present), since the judge grader is wave 3; the rubric text is written to tasks/C1/oracle/rubric.md for wave 3.; status is draft or ready as the skill's checklist allows, stated with the reason.; uv run pytest -q -p no:cacheprovider passes.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it).\nNot in scope: bench/bom.yaml; src/**; other task folders (B1 is held by the Leader on a licence question); bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/notes/rulings.md R-7, R-33, R-40, R-42; tasks/README.md; tasks/X1/ (a ready task); tasks/C1/task.yaml (the stub); docs/specs/harness-bench.md scenario 3. Use python, not python3 (Windows). Hidden tests never enter the workspace. Set AGENT_SESSION=worker-grok-tc1 before committing.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
+      "dispatchable": true,
+      "id": "al-01M3BA4JXYD6WYDSS490M6F2F5",
+      "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-TASKS-b slice 1 (ruling R-41): a dotnet correctness runner in src/harness_bench/grade/correctness.py, red-first, so C# tasks (D1, E6, F1) can be graded; today grade() returns NA for any oracle runner other than unittest (correctness.py:58-59).\nDone when: A red commit adds tests in tests/test_correctness_dotnet.py that fail on the current code (the runner is refused) and state the failing assertion; the green commit makes them pass.; An oracle with runner dotnet and a command (for example [\"dotnet\", \"test\", \"--logger\", \"trx; LogFileName=results.trx\"]) runs in a grading copy (archive working copy plus tests/) and parses a TRX results file into (total, passed); pass_at_1 is 1 only when the exit code is 0 and passed equals total.; A missing or unparsable results file, or zero tests run, gives NA with a stated reason, never 0 (R-41 condition 1).; The step runs through procs.run with the grading timeout so no dotnet process outlives it, with the ADR-0013 build-server settings in its environment (read ADR-0013 for them; DOTNET_CLI_TELEMETRY_OPTOUT=1 and no shared build server at minimum, marked assume if the ADR does not list them); a test proves no dotnet process remains after a timed-out step (R-41 condition 2).; The runner records dotnet --version (10.0.303 on this host) in the oracle log (R-41 condition 3).; tests/mutations/correctness.json holds three named mutants: zero tests read as pass, a summary read from the wrong file, a timeout read as pass; each is killed by a named test (uv run python tools/mutate_check.py tests/mutations/correctness.json).; The fixture C# project used by the tests is tiny, lives under tests/fixtures/dotnet/, and builds offline on the host SDK.; uv run pytest -q -p no:cacheprovider passes and uv run ruff check src tests tools is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result.\nNot in scope: tasks/D1 or any task folder (later slices); plan.py; engine.py, cli.py, errors.py, views.py, status.py (other tracks); bench run, any model turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-7, R-33, R-41; docs/adr/ (ADR-0013 on native grading and build servers); src/harness_bench/grade/correctness.py, src/harness_bench/grade/runner.py, src/harness_bench/procs.py; tests/ for the existing unittest runner tests; tools/mutate_check.py and an existing tests/mutations/*.json for the mutation format. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-tb1 before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit adds tests in tests/test_correctness_dotnet.py that fail on the current code (the runner is refused) and state the failing assertion | phrase: A red commit adds tests in tests/test_correctness_dotnet.py that fail on the current code (the runner is refused) and state the failing assertion |\n| done_when: the green commit makes them pass. | phrase: the green commit makes them pass. |\n| done_when: An oracle with runner dotnet and a command (for example [\"dotnet\", \"test\", \"--logger\", \"trx | phrase: An oracle with runner dotnet and a command (for example [\"dotnet\", \"test\", \"--logger\", \"trx |\n| done_when: LogFileName=results.trx\"]) runs in a grading copy (archive working copy plus tests/) and parses a TRX results file into (total, passed) | phrase: LogFileName=results.trx\"]) runs in a grading copy (archive working copy plus tests/) and parses a TRX results file into (total, passed) |\n| done_when: pass_at_1 is 1 only when the exit code is 0 and passed equals total. | phrase: pass_at_1 is 1 only when the exit code is 0 and passed equals total. |\n| done_when: A missing or unparsable results file, or zero tests run, gives NA with a stated reason, never 0 (R-41 condition 1). | phrase: A missing or unparsable results file, or zero tests run, gives NA with a stated reason, never 0 (R-41 condition 1). |\n| done_when: The step runs through procs.run with the grading timeout so no dotnet process outlives it, with the ADR-0013 build-server settings in its environment (read ADR-0013 for them | phrase: The step runs through procs.run with the grading timeout so no dotnet process outlives it, with the ADR-0013 build-server settings in its environment (read ADR-0013 for them |\n| done_when: DOTNET_CLI_TELEMETRY_OPTOUT=1 and no shared build server at minimum, marked assume if the ADR does not list them) | phrase: DOTNET_CLI_TELEMETRY_OPTOUT=1 and no shared build server at minimum, marked assume if the ADR does not list them) |\n| done_when: a test proves no dotnet process remains after a timed-out step (R-41 condition 2). | phrase: a test proves no dotnet process remains after a timed-out step (R-41 condition 2). |\n| done_when: The runner records dotnet --version (10.0.303 on this host) in the oracle log (R-41 condition 3). | phrase: The runner records dotnet --version (10.0.303 on this host) in the oracle log (R-41 condition 3). |\n| done_when: tests/mutations/correctness.json holds three named mutants: zero tests read as pass, a summary read from the wrong file, a timeout read as pass | phrase: tests/mutations/correctness.json holds three named mutants: zero tests read as pass, a summary read from the wrong file, a timeout read as pass |\n| done_when: each is killed by a named test (uv run python tools/mutate_check.py tests/mutations/correctness.json). | phrase: each is killed by a named test (uv run python tools/mutate_check.py tests/mutations/correctness.json). |\n| done_when: The fixture C# project used by the tests is tiny, lives under tests/fixtures/dotnet/, and builds offline on the host SDK. | phrase: The fixture C# project used by the tests is tiny, lives under tests/fixtures/dotnet/, and builds offline on the host SDK. |\n| done_when: uv run pytest -q -p no:cacheprovider passes and uv run ruff check src tests tools is clean. | phrase: uv run pytest -q -p no:cacheprovider passes and uv run ruff check src tests tools is clean. |\n| done_when: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result. | phrase: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check result. |\n| not_in_scope: tasks/D1 or any task folder (later slices) | phrase: tasks/D1 or any task folder (later slices) |\n| not_in_scope: plan.py | phrase: plan.py |\n| not_in_scope: engine.py, cli.py, errors.py, views.py, status.py (other tracks) | phrase: engine.py, cli.py, errors.py, views.py, status.py (other tracks) |\n| not_in_scope: bench run, any model turn, pytest -m \"\" | phrase: bench run, any model turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- src/harness_bench/grade/correctness.py: src/harness_bench/grade/correctness.py sha256 dfaf98521dc8cc313f72af9b12ef201b2876d2c0590ca8504136bfac6ad3b663\n- tests/test_correctness_dotnet.py: unresolved (not found)\n- tests/: unresolved (not found)\n- tests/mutations/correctness.json: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- tests/fixtures/dotnet/: unresolved (not found)\n- tasks/D1: unresolved (not found)\n- plan.py: src/harness_bench/plan.py sha256 7e889c1252594f1fd4dbd50d8c186e6f2f3156bc700eb81b669a2f451bb2f461\n- engine.py: src/harness_bench/engine.py sha256 1045ed0fcecace9529e4e2da6ba53b4486bb06f775f4e3030256e5d2c0215f04\n- cli.py: src/harness_bench/cli.py sha256 13e5826e6a6a8c2ff1c1a5fdd67ea0311c646c750ba57046dce40ab39415d803\n- errors.py: src/harness_bench/errors.py sha256 a5e3cccc80432da69d4323eec63af41d88829def2dd1adcd8536d08e832c23e4\n- views.py: src/harness_bench/views.py sha256 1684f9a2aa88f6d9aee5f908afc46a2920425b3f0bca7c627ea82b6e5f0ff5be\n- status.py: src/harness_bench/status.py sha256 cd87aba8a45b9c032418bdb9a62940e04d2a858f51e2f8c687a1b42d4ddb06ec\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- docs/adr/: unresolved (not found)\n- src/harness_bench/grade/runner.py: src/harness_bench/grade/runner.py sha256 7bd84ee48e0b123e472d95b4985e93a31fc686033852383b20138529dc2778d1\n- src/harness_bench/procs.py: src/harness_bench/procs.py sha256 48880ea33f81b660388fb309fa0a6569f9efdd243fc42bc800d450d6f298fc2b\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BA4JKKCJBF03191EYG23G4\nraw sha256: 43fbfc7ab857beba5a4ffe475a51398d7b5301c800e31cf787c20f6892e83bf0\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W2-TASKS-b slice 1 (ruling R-41): a dotnet correctness runner in s…",
       "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
+      "summary": "compiled al-01M3BA4JKKCJBF03191EYG23G4 for codex v1: 20 clauses, 0 assumptions, 0 decision requests",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M3BA4KEBT17TCAQ56KFRRYXQ",
-      "shortname": "compile-Goal: W2-TASKS-d slice 1: author task C1 (\"Concept-oriented requirements…",
-      "datetime": "2026-09-25T03:35:56Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-TASKS-d slice 1: author task C1 (\"Concept-oriented requirements to architecture\", scenario 3) in tasks/C1/ from stub toward ready, following .claude/skills/new-bench-task/SKILL.md and the contract in tasks/README.md, with the prompt and requirements from ProjDevBench and a locally authored oracle (ruling R-7 condition 3).\nDone when: tasks/C1/task.yaml pins source.repo https://github.com/zsworld6/projdevbench and source.commit to 9af6f40 (full SHA read with git ls-remote or a clone), records source.license MIT with the copyright line read from the upstream LICENSE file, and copies that LICENSE into tasks/C1/.; You chose one concept-oriented problem from the pinned ProjDevBench commit and state which one and why in tasks/C1/README.md; tasks/C1/prompt.md carries its requirements (identical for every harness).; The hidden tests under tasks/C1/tests/ are authored locally (ACMOJ is not used) as a Python unittest suite matching the oracle runner unittest (see tasks/X1/task.yaml and src/harness_bench/grade/correctness.py); they are observed to FAIL on the base workspace tasks/C1/workspace and PASS on a reference solution kept only under tasks/C1/oracle/ (never in the workspace); both runs, with commands, exit codes and failing test names, are written to tasks/C1/oracle/evidence.md.; The architecture half is structural checks only (for example required documents or sections present), since the judge grader is wave 3; the rubric text is written to tasks/C1/oracle/rubric.md for wave 3.; status is draft or ready as the skill's checklist allows, stated with the reason.; uv run pytest -q -p no:cacheprovider passes.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it).\nNot in scope: bench/bom.yaml; src/**; other task folders (B1 is held by the Leader on a licence question); bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-7, R-33, R-40, R-42; tasks/README.md; tasks/X1/ (a ready task); tasks/C1/task.yaml (the stub); docs/specs/harness-bench.md scenario 3. Use python, not python3 (Windows). Hidden tests never enter the workspace. Set AGENT_SESSION=worker-grok-tc1 before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: tasks/C1/task.yaml pins source.repo https://github.com/zsworld6/projdevbench and source.commit to 9af6f40 (full SHA read with git ls-remote or a clone), records source.license MIT with the copyright line read from the upstream LICENSE file, and copies that LICENSE into tasks/C1/. | phrase: tasks/C1/task.yaml pins source.repo https://github.com/zsworld6/projdevbench and source.commit to 9af6f40 (full SHA read with git ls-remote or a clone), records source.license MIT with the copyright line read from the upstream LICENSE file, and copies that LICENSE into tasks/C1/. |\n| done_when: You chose one concept-oriented problem from the pinned ProjDevBench commit and state which one and why in tasks/C1/README.md | phrase: You chose one concept-oriented problem from the pinned ProjDevBench commit and state which one and why in tasks/C1/README.md |\n| done_when: tasks/C1/prompt.md carries its requirements (identical for every harness). | phrase: tasks/C1/prompt.md carries its requirements (identical for every harness). |\n| done_when: The hidden tests under tasks/C1/tests/ are authored locally (ACMOJ is not used) as a Python unittest suite matching the oracle runner unittest (see tasks/X1/task.yaml and src/harness_bench/grade/correctness.py) | phrase: The hidden tests under tasks/C1/tests/ are authored locally (ACMOJ is not used) as a Python unittest suite matching the oracle runner unittest (see tasks/X1/task.yaml and src/harness_bench/grade/correctness.py) |\n| done_when: they are observed to FAIL on the base workspace tasks/C1/workspace and PASS on a reference solution kept only under tasks/C1/oracle/ (never in the workspace) | phrase: they are observed to FAIL on the base workspace tasks/C1/workspace and PASS on a reference solution kept only under tasks/C1/oracle/ (never in the workspace) |\n| done_when: both runs, with commands, exit codes and failing test names, are written to tasks/C1/oracle/evidence.md. | phrase: both runs, with commands, exit codes and failing test names, are written to tasks/C1/oracle/evidence.md. |\n| done_when: The architecture half is structural checks only (for example required documents or sections present), since the judge grader is wave 3 | phrase: The architecture half is structural checks only (for example required documents or sections present), since the judge grader is wave 3 |\n| done_when: the rubric text is written to tasks/C1/oracle/rubric.md for wave 3. | phrase: the rubric text is written to tasks/C1/oracle/rubric.md for wave 3. |\n| done_when: status is draft or ready as the skill's checklist allows, stated with the reason. | phrase: status is draft or ready as the skill's checklist allows, stated with the reason. |\n| done_when: uv run pytest -q -p no:cacheprovider passes. | phrase: uv run pytest -q -p no:cacheprovider passes. |\n| done_when: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it). | phrase: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it). |\n| not_in_scope: bench/bom.yaml | phrase: bench/bom.yaml |\n| not_in_scope: src/** | phrase: src/** |\n| not_in_scope: other task folders (B1 is held by the Leader on a licence question) | phrase: other task folders (B1 is held by the Leader on a licence question) |\n| not_in_scope: bench run, any model turn, pytest -m \"\" | phrase: bench run, any model turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- tasks/C1/: unresolved (not found)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- tasks/C1/task.yaml: tasks/C1/task.yaml sha256 dbf8a9a11c6c5111f3b45487dd5350a2ee03de3491e432b722b9037a3dd9c687\n- https://github.com/zsworld6/projdevbench: unresolved (not found)\n- tasks/C1/README.md: unresolved (not found)\n- tasks/C1/prompt.md: unresolved (not found)\n- tasks/C1/tests/: unresolved (not found)\n- tasks/X1/task.yaml: tasks/X1/task.yaml sha256 b3820497d5248263fb2a2201ff85e7ecb703120912bb850fd6840bbff84dda2f\n- src/harness_bench/grade/correctness.py: src/harness_bench/grade/correctness.py sha256 dfaf98521dc8cc313f72af9b12ef201b2876d2c0590ca8504136bfac6ad3b663\n- tasks/C1/workspace: unresolved (not found)\n- tasks/C1/oracle/: unresolved (not found)\n- tasks/C1/oracle/evidence.md: unresolved (not found)\n- tasks/C1/oracle/rubric.md: unresolved (not found)\n- bench/bom.yaml: bench/bom.yaml sha256 e9a32d8b6ea35381544b86fc68fb73a92507905e65d31a0ba1a7d8fb18549114\n- src/**: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- tasks/X1/: unresolved (not found)\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 50c64de481f7887d22ec6f6203d646db43fad10042539854e1b6ef2cc9fb24b5\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BA4K4ACV9AEX4WE6WA5SZB\nraw sha256: 8743cb9db1ee5f81ca2f857255e8d388bb6cb8142b3633bcb3eb100c7c86b950\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3BA4K4ACV9AEX4WE6WA5SZB for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-25T03:35:55Z",
+      "id": "al-01M3BA4K4ACV9AEX4WE6WA5SZB",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: W2-TASKS-d slice 1: author task C1 (\"Concept-oriented requirements to architecture\", scenario 3) in tasks/C1/ from stub toward ready, following .claude/skills/new-bench-task/SKILL.md and the contract in tasks/README.md, with the prompt and requirements from ProjDevBench and a locally authored oracle (ruling R-7 condition 3).\nDone when: tasks/C1/task.yaml pins source.repo https://github.com/zsworld6/projdevbench and source.commit to 9af6f40 (full SHA read with git ls-remote or a clone), records source.license MIT with the copyright line read from the upstream LICENSE file, and copies that LICENSE into tasks/C1/.; You chose one concept-oriented problem from the pinned ProjDevBench commit and state which one and why in tasks/C1/README.md; tasks/C1/prompt.md carries its requirements (identical for every harness).; The hidden tests under tasks/C1/tests/ are authored locally (ACMOJ is not used) as a Python unittest suite matching the oracle runner unittest (see tasks/X1/task.yaml and src/harness_bench/grade/correctness.py); they are observed to FAIL on the base workspace tasks/C1/workspace and PASS on a reference solution kept only under tasks/C1/oracle/ (never in the workspace); both runs, with commands, exit codes and failing test names, are written to tasks/C1/oracle/evidence.md.; The architecture half is structural checks only (for example required documents or sections present), since the judge grader is wave 3; the rubric text is written to tasks/C1/oracle/rubric.md for wave 3.; status is draft or ready as the skill's checklist allows, stated with the reason.; uv run pytest -q -p no:cacheprovider passes.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it).\nNot in scope: bench/bom.yaml; src/**; other task folders (B1 is held by the Leader on a licence question); bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/notes/rulings.md R-7, R-33, R-40, R-42; tasks/README.md; tasks/X1/ (a ready task); tasks/C1/task.yaml (the stub); docs/specs/harness-bench.md scenario 3. Use python, not python3 (Windows). Hidden tests never enter the workspace. Set AGENT_SESSION=worker-grok-tc1 before committing.",
+      "session": "prompt-compile",
+      "shortname": "Goal: W2-TASKS-d slice 1: author task C1 (\"Concept-oriented requirements…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -9544,38 +9533,38 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3BA5FH0WABXA6TE63BYK0FT",
-      "shortname": "Goal: W2-TASKS-d slice 1: author task C1 (\"Concept-oriented requirements…",
-      "datetime": "2026-09-25T03:36:24Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W2-TASKS-d slice 1: author task C1 (\"Concept-oriented requirements to architecture\", scenario 3) in tasks/C1/ from stub toward ready, following .claude/skills/new-bench-task/SKILL.md and the contract in tasks/README.md, with the prompt and requirements from ProjDevBench and a locally authored oracle (ruling R-7 condition 3).\nDone when: tasks/C1/task.yaml pins source.repo https://github.com/zsworld6/projdevbench and source.commit to 9af6f40 (full SHA read with git ls-remote or a clone), records source.license MIT with the copyright line read from the upstream LICENSE file, and copies that LICENSE into tasks/C1/.; You chose one concept-oriented problem from the pinned ProjDevBench commit and state which one and why in tasks/C1/README.md; tasks/C1/prompt.md carries its requirements (identical for every harness).; The hidden tests under tasks/C1/tests/ are authored locally (ACMOJ is not used) as a Python unittest suite matching the oracle runner unittest (see tasks/X1/task.yaml and src/harness_bench/grade/correctness.py); they are observed to FAIL on the base workspace tasks/C1/workspace and PASS on a reference solution kept only under tasks/C1/oracle/ (never in the workspace); both runs, with commands, exit codes and failing test names, are written to tasks/C1/oracle/evidence.md.; The architecture half is structural checks only (for example required documents or sections present), since the judge grader is wave 3; the rubric text is written to tasks/C1/oracle/rubric.md for wave 3.; status is draft or ready as the skill checklist allows, stated with the reason.; Only targeted tests run: uv run pytest -q --tb=short on the task tests you touch, never the full suite.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it).\nNot in scope: bench/bom.yaml; src/**; other task folders (B1 is held by the Leader on a licence question); bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 11 minutes (ruling R-11 slice rules); commit at every green; no verbose output and no printing of large files; if time runs short, commit what is green and name what remains - later slices continue from your commits.\n\nGrounding: docs/notes/rulings.md R-7, R-33, R-40, R-42; tasks/README.md; tasks/X1/ (a ready task); tasks/C1/task.yaml (the stub); docs/specs/harness-bench.md scenario 3. Use python, not python3 (Windows). Hidden tests never enter the workspace. Set AGENT_SESSION=worker-grok-tc1 before committing.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3BA5FTWJFET5NS4R09D5NK5",
-      "shortname": "compile-Goal: W2-TASKS-d slice 1: author task C1 (\"Concept-oriented requirements…",
-      "datetime": "2026-09-25T03:36:25Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-TASKS-d slice 1: author task C1 (\"Concept-oriented requirements to architecture\", scenario 3) in tasks/C1/ from stub toward ready, following .claude/skills/new-bench-task/SKILL.md and the contract in tasks/README.md, with the prompt and requirements from ProjDevBench and a locally authored oracle (ruling R-7 condition 3).\nDone when: tasks/C1/task.yaml pins source.repo https://github.com/zsworld6/projdevbench and source.commit to 9af6f40 (full SHA read with git ls-remote or a clone), records source.license MIT with the copyright line read from the upstream LICENSE file, and copies that LICENSE into tasks/C1/.; You chose one concept-oriented problem from the pinned ProjDevBench commit and state which one and why in tasks/C1/README.md; tasks/C1/prompt.md carries its requirements (identical for every harness).; The hidden tests under tasks/C1/tests/ are authored locally (ACMOJ is not used) as a Python unittest suite matching the oracle runner unittest (see tasks/X1/task.yaml and src/harness_bench/grade/correctness.py); they are observed to FAIL on the base workspace tasks/C1/workspace and PASS on a reference solution kept only under tasks/C1/oracle/ (never in the workspace); both runs, with commands, exit codes and failing test names, are written to tasks/C1/oracle/evidence.md.; The architecture half is structural checks only (for example required documents or sections present), since the judge grader is wave 3; the rubric text is written to tasks/C1/oracle/rubric.md for wave 3.; status is draft or ready as the skill checklist allows, stated with the reason.; Only targeted tests run: uv run pytest -q --tb=short on the task tests you touch, never the full suite.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it).\nNot in scope: bench/bom.yaml; src/**; other task folders (B1 is held by the Leader on a licence question); bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 11 minutes (ruling R-11 slice rules); commit at every green; no verbose output and no printing of large files; if time runs short, commit what is green and name what remains - later slices continue from your commits.\nGrounding: docs/notes/rulings.md R-7, R-33, R-40, R-42; tasks/README.md; tasks/X1/ (a ready task); tasks/C1/task.yaml (the stub); docs/specs/harness-bench.md scenario 3. Use python, not python3 (Windows). Hidden tests never enter the workspace. Set AGENT_SESSION=worker-grok-tc1 before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: tasks/C1/task.yaml pins source.repo https://github.com/zsworld6/projdevbench and source.commit to 9af6f40 (full SHA read with git ls-remote or a clone), records source.license MIT with the copyright line read from the upstream LICENSE file, and copies that LICENSE into tasks/C1/. | phrase: tasks/C1/task.yaml pins source.repo https://github.com/zsworld6/projdevbench and source.commit to 9af6f40 (full SHA read with git ls-remote or a clone), records source.license MIT with the copyright line read from the upstream LICENSE file, and copies that LICENSE into tasks/C1/. |\n| done_when: You chose one concept-oriented problem from the pinned ProjDevBench commit and state which one and why in tasks/C1/README.md | phrase: You chose one concept-oriented problem from the pinned ProjDevBench commit and state which one and why in tasks/C1/README.md |\n| done_when: tasks/C1/prompt.md carries its requirements (identical for every harness). | phrase: tasks/C1/prompt.md carries its requirements (identical for every harness). |\n| done_when: The hidden tests under tasks/C1/tests/ are authored locally (ACMOJ is not used) as a Python unittest suite matching the oracle runner unittest (see tasks/X1/task.yaml and src/harness_bench/grade/correctness.py) | phrase: The hidden tests under tasks/C1/tests/ are authored locally (ACMOJ is not used) as a Python unittest suite matching the oracle runner unittest (see tasks/X1/task.yaml and src/harness_bench/grade/correctness.py) |\n| done_when: they are observed to FAIL on the base workspace tasks/C1/workspace and PASS on a reference solution kept only under tasks/C1/oracle/ (never in the workspace) | phrase: they are observed to FAIL on the base workspace tasks/C1/workspace and PASS on a reference solution kept only under tasks/C1/oracle/ (never in the workspace) |\n| done_when: both runs, with commands, exit codes and failing test names, are written to tasks/C1/oracle/evidence.md. | phrase: both runs, with commands, exit codes and failing test names, are written to tasks/C1/oracle/evidence.md. |\n| done_when: The architecture half is structural checks only (for example required documents or sections present), since the judge grader is wave 3 | phrase: The architecture half is structural checks only (for example required documents or sections present), since the judge grader is wave 3 |\n| done_when: the rubric text is written to tasks/C1/oracle/rubric.md for wave 3. | phrase: the rubric text is written to tasks/C1/oracle/rubric.md for wave 3. |\n| done_when: status is draft or ready as the skill checklist allows, stated with the reason. | phrase: status is draft or ready as the skill checklist allows, stated with the reason. |\n| done_when: Only targeted tests run: uv run pytest -q --tb=short on the task tests you touch, never the full suite. | phrase: Only targeted tests run: uv run pytest -q --tb=short on the task tests you touch, never the full suite. |\n| done_when: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it). | phrase: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it). |\n| not_in_scope: bench/bom.yaml | phrase: bench/bom.yaml |\n| not_in_scope: src/** | phrase: src/** |\n| not_in_scope: other task folders (B1 is held by the Leader on a licence question) | phrase: other task folders (B1 is held by the Leader on a licence question) |\n| not_in_scope: bench run, any model turn, pytest -m \"\" | phrase: bench run, any model turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- tasks/C1/: unresolved (not found)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- tasks/C1/task.yaml: tasks/C1/task.yaml sha256 dbf8a9a11c6c5111f3b45487dd5350a2ee03de3491e432b722b9037a3dd9c687\n- https://github.com/zsworld6/projdevbench: unresolved (not found)\n- tasks/C1/README.md: unresolved (not found)\n- tasks/C1/prompt.md: unresolved (not found)\n- tasks/C1/tests/: unresolved (not found)\n- tasks/X1/task.yaml: tasks/X1/task.yaml sha256 b3820497d5248263fb2a2201ff85e7ecb703120912bb850fd6840bbff84dda2f\n- src/harness_bench/grade/correctness.py: src/harness_bench/grade/correctness.py sha256 dfaf98521dc8cc313f72af9b12ef201b2876d2c0590ca8504136bfac6ad3b663\n- tasks/C1/workspace: unresolved (not found)\n- tasks/C1/oracle/: unresolved (not found)\n- tasks/C1/oracle/evidence.md: unresolved (not found)\n- tasks/C1/oracle/rubric.md: unresolved (not found)\n- bench/bom.yaml: bench/bom.yaml sha256 e9a32d8b6ea35381544b86fc68fb73a92507905e65d31a0ba1a7d8fb18549114\n- src/**: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- tasks/X1/: unresolved (not found)\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 50c64de481f7887d22ec6f6203d646db43fad10042539854e1b6ef2cc9fb24b5\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BA5FH0WABXA6TE63BYK0FT\nraw sha256: 4a89556606d7247eb80af88416fe141e85c179e815cc1929360c1d2c4476d863\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3BA5FH0WABXA6TE63BYK0FT for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-25T03:35:56Z",
+      "dispatchable": true,
+      "id": "al-01M3BA4KEBT17TCAQ56KFRRYXQ",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-TASKS-d slice 1: author task C1 (\"Concept-oriented requirements to architecture\", scenario 3) in tasks/C1/ from stub toward ready, following .claude/skills/new-bench-task/SKILL.md and the contract in tasks/README.md, with the prompt and requirements from ProjDevBench and a locally authored oracle (ruling R-7 condition 3).\nDone when: tasks/C1/task.yaml pins source.repo https://github.com/zsworld6/projdevbench and source.commit to 9af6f40 (full SHA read with git ls-remote or a clone), records source.license MIT with the copyright line read from the upstream LICENSE file, and copies that LICENSE into tasks/C1/.; You chose one concept-oriented problem from the pinned ProjDevBench commit and state which one and why in tasks/C1/README.md; tasks/C1/prompt.md carries its requirements (identical for every harness).; The hidden tests under tasks/C1/tests/ are authored locally (ACMOJ is not used) as a Python unittest suite matching the oracle runner unittest (see tasks/X1/task.yaml and src/harness_bench/grade/correctness.py); they are observed to FAIL on the base workspace tasks/C1/workspace and PASS on a reference solution kept only under tasks/C1/oracle/ (never in the workspace); both runs, with commands, exit codes and failing test names, are written to tasks/C1/oracle/evidence.md.; The architecture half is structural checks only (for example required documents or sections present), since the judge grader is wave 3; the rubric text is written to tasks/C1/oracle/rubric.md for wave 3.; status is draft or ready as the skill's checklist allows, stated with the reason.; uv run pytest -q -p no:cacheprovider passes.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it).\nNot in scope: bench/bom.yaml; src/**; other task folders (B1 is held by the Leader on a licence question); bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-7, R-33, R-40, R-42; tasks/README.md; tasks/X1/ (a ready task); tasks/C1/task.yaml (the stub); docs/specs/harness-bench.md scenario 3. Use python, not python3 (Windows). Hidden tests never enter the workspace. Set AGENT_SESSION=worker-grok-tc1 before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: tasks/C1/task.yaml pins source.repo https://github.com/zsworld6/projdevbench and source.commit to 9af6f40 (full SHA read with git ls-remote or a clone), records source.license MIT with the copyright line read from the upstream LICENSE file, and copies that LICENSE into tasks/C1/. | phrase: tasks/C1/task.yaml pins source.repo https://github.com/zsworld6/projdevbench and source.commit to 9af6f40 (full SHA read with git ls-remote or a clone), records source.license MIT with the copyright line read from the upstream LICENSE file, and copies that LICENSE into tasks/C1/. |\n| done_when: You chose one concept-oriented problem from the pinned ProjDevBench commit and state which one and why in tasks/C1/README.md | phrase: You chose one concept-oriented problem from the pinned ProjDevBench commit and state which one and why in tasks/C1/README.md |\n| done_when: tasks/C1/prompt.md carries its requirements (identical for every harness). | phrase: tasks/C1/prompt.md carries its requirements (identical for every harness). |\n| done_when: The hidden tests under tasks/C1/tests/ are authored locally (ACMOJ is not used) as a Python unittest suite matching the oracle runner unittest (see tasks/X1/task.yaml and src/harness_bench/grade/correctness.py) | phrase: The hidden tests under tasks/C1/tests/ are authored locally (ACMOJ is not used) as a Python unittest suite matching the oracle runner unittest (see tasks/X1/task.yaml and src/harness_bench/grade/correctness.py) |\n| done_when: they are observed to FAIL on the base workspace tasks/C1/workspace and PASS on a reference solution kept only under tasks/C1/oracle/ (never in the workspace) | phrase: they are observed to FAIL on the base workspace tasks/C1/workspace and PASS on a reference solution kept only under tasks/C1/oracle/ (never in the workspace) |\n| done_when: both runs, with commands, exit codes and failing test names, are written to tasks/C1/oracle/evidence.md. | phrase: both runs, with commands, exit codes and failing test names, are written to tasks/C1/oracle/evidence.md. |\n| done_when: The architecture half is structural checks only (for example required documents or sections present), since the judge grader is wave 3 | phrase: The architecture half is structural checks only (for example required documents or sections present), since the judge grader is wave 3 |\n| done_when: the rubric text is written to tasks/C1/oracle/rubric.md for wave 3. | phrase: the rubric text is written to tasks/C1/oracle/rubric.md for wave 3. |\n| done_when: status is draft or ready as the skill's checklist allows, stated with the reason. | phrase: status is draft or ready as the skill's checklist allows, stated with the reason. |\n| done_when: uv run pytest -q -p no:cacheprovider passes. | phrase: uv run pytest -q -p no:cacheprovider passes. |\n| done_when: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it). | phrase: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it). |\n| not_in_scope: bench/bom.yaml | phrase: bench/bom.yaml |\n| not_in_scope: src/** | phrase: src/** |\n| not_in_scope: other task folders (B1 is held by the Leader on a licence question) | phrase: other task folders (B1 is held by the Leader on a licence question) |\n| not_in_scope: bench run, any model turn, pytest -m \"\" | phrase: bench run, any model turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- tasks/C1/: unresolved (not found)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- tasks/C1/task.yaml: tasks/C1/task.yaml sha256 dbf8a9a11c6c5111f3b45487dd5350a2ee03de3491e432b722b9037a3dd9c687\n- https://github.com/zsworld6/projdevbench: unresolved (not found)\n- tasks/C1/README.md: unresolved (not found)\n- tasks/C1/prompt.md: unresolved (not found)\n- tasks/C1/tests/: unresolved (not found)\n- tasks/X1/task.yaml: tasks/X1/task.yaml sha256 b3820497d5248263fb2a2201ff85e7ecb703120912bb850fd6840bbff84dda2f\n- src/harness_bench/grade/correctness.py: src/harness_bench/grade/correctness.py sha256 dfaf98521dc8cc313f72af9b12ef201b2876d2c0590ca8504136bfac6ad3b663\n- tasks/C1/workspace: unresolved (not found)\n- tasks/C1/oracle/: unresolved (not found)\n- tasks/C1/oracle/evidence.md: unresolved (not found)\n- tasks/C1/oracle/rubric.md: unresolved (not found)\n- bench/bom.yaml: bench/bom.yaml sha256 e9a32d8b6ea35381544b86fc68fb73a92507905e65d31a0ba1a7d8fb18549114\n- src/**: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- tasks/X1/: unresolved (not found)\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 50c64de481f7887d22ec6f6203d646db43fad10042539854e1b6ef2cc9fb24b5\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BA4K4ACV9AEX4WE6WA5SZB\nraw sha256: 8743cb9db1ee5f81ca2f857255e8d388bb6cb8142b3633bcb3eb100c7c86b950\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W2-TASKS-d slice 1: author task C1 (\"Concept-oriented requirements…",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3BA4K4ACV9AEX4WE6WA5SZB for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-25T03:36:24Z",
+      "id": "al-01M3BA5FH0WABXA6TE63BYK0FT",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: W2-TASKS-d slice 1: author task C1 (\"Concept-oriented requirements to architecture\", scenario 3) in tasks/C1/ from stub toward ready, following .claude/skills/new-bench-task/SKILL.md and the contract in tasks/README.md, with the prompt and requirements from ProjDevBench and a locally authored oracle (ruling R-7 condition 3).\nDone when: tasks/C1/task.yaml pins source.repo https://github.com/zsworld6/projdevbench and source.commit to 9af6f40 (full SHA read with git ls-remote or a clone), records source.license MIT with the copyright line read from the upstream LICENSE file, and copies that LICENSE into tasks/C1/.; You chose one concept-oriented problem from the pinned ProjDevBench commit and state which one and why in tasks/C1/README.md; tasks/C1/prompt.md carries its requirements (identical for every harness).; The hidden tests under tasks/C1/tests/ are authored locally (ACMOJ is not used) as a Python unittest suite matching the oracle runner unittest (see tasks/X1/task.yaml and src/harness_bench/grade/correctness.py); they are observed to FAIL on the base workspace tasks/C1/workspace and PASS on a reference solution kept only under tasks/C1/oracle/ (never in the workspace); both runs, with commands, exit codes and failing test names, are written to tasks/C1/oracle/evidence.md.; The architecture half is structural checks only (for example required documents or sections present), since the judge grader is wave 3; the rubric text is written to tasks/C1/oracle/rubric.md for wave 3.; status is draft or ready as the skill checklist allows, stated with the reason.; Only targeted tests run: uv run pytest -q --tb=short on the task tests you touch, never the full suite.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it).\nNot in scope: bench/bom.yaml; src/**; other task folders (B1 is held by the Leader on a licence question); bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 11 minutes (ruling R-11 slice rules); commit at every green; no verbose output and no printing of large files; if time runs short, commit what is green and name what remains - later slices continue from your commits.\n\nGrounding: docs/notes/rulings.md R-7, R-33, R-40, R-42; tasks/README.md; tasks/X1/ (a ready task); tasks/C1/task.yaml (the stub); docs/specs/harness-bench.md scenario 3. Use python, not python3 (Windows). Hidden tests never enter the workspace. Set AGENT_SESSION=worker-grok-tc1 before committing.",
+      "session": "prompt-compile",
+      "shortname": "Goal: W2-TASKS-d slice 1: author task C1 (\"Concept-oriented requirements…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -9912,6 +9901,385 @@ window.AUDIT_DATA = {
             "sha256": "50c64de481f7887d22ec6f6203d646db43fad10042539854e1b6ef2cc9fb24b5",
             "status": "resolved",
             "token": "docs/specs/harness-bench.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-09-25T03:36:25Z",
+      "dispatchable": true,
+      "id": "al-01M3BA5FTWJFET5NS4R09D5NK5",
+      "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-TASKS-d slice 1: author task C1 (\"Concept-oriented requirements to architecture\", scenario 3) in tasks/C1/ from stub toward ready, following .claude/skills/new-bench-task/SKILL.md and the contract in tasks/README.md, with the prompt and requirements from ProjDevBench and a locally authored oracle (ruling R-7 condition 3).\nDone when: tasks/C1/task.yaml pins source.repo https://github.com/zsworld6/projdevbench and source.commit to 9af6f40 (full SHA read with git ls-remote or a clone), records source.license MIT with the copyright line read from the upstream LICENSE file, and copies that LICENSE into tasks/C1/.; You chose one concept-oriented problem from the pinned ProjDevBench commit and state which one and why in tasks/C1/README.md; tasks/C1/prompt.md carries its requirements (identical for every harness).; The hidden tests under tasks/C1/tests/ are authored locally (ACMOJ is not used) as a Python unittest suite matching the oracle runner unittest (see tasks/X1/task.yaml and src/harness_bench/grade/correctness.py); they are observed to FAIL on the base workspace tasks/C1/workspace and PASS on a reference solution kept only under tasks/C1/oracle/ (never in the workspace); both runs, with commands, exit codes and failing test names, are written to tasks/C1/oracle/evidence.md.; The architecture half is structural checks only (for example required documents or sections present), since the judge grader is wave 3; the rubric text is written to tasks/C1/oracle/rubric.md for wave 3.; status is draft or ready as the skill checklist allows, stated with the reason.; Only targeted tests run: uv run pytest -q --tb=short on the task tests you touch, never the full suite.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it).\nNot in scope: bench/bom.yaml; src/**; other task folders (B1 is held by the Leader on a licence question); bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 11 minutes (ruling R-11 slice rules); commit at every green; no verbose output and no printing of large files; if time runs short, commit what is green and name what remains - later slices continue from your commits.\nGrounding: docs/notes/rulings.md R-7, R-33, R-40, R-42; tasks/README.md; tasks/X1/ (a ready task); tasks/C1/task.yaml (the stub); docs/specs/harness-bench.md scenario 3. Use python, not python3 (Windows). Hidden tests never enter the workspace. Set AGENT_SESSION=worker-grok-tc1 before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: tasks/C1/task.yaml pins source.repo https://github.com/zsworld6/projdevbench and source.commit to 9af6f40 (full SHA read with git ls-remote or a clone), records source.license MIT with the copyright line read from the upstream LICENSE file, and copies that LICENSE into tasks/C1/. | phrase: tasks/C1/task.yaml pins source.repo https://github.com/zsworld6/projdevbench and source.commit to 9af6f40 (full SHA read with git ls-remote or a clone), records source.license MIT with the copyright line read from the upstream LICENSE file, and copies that LICENSE into tasks/C1/. |\n| done_when: You chose one concept-oriented problem from the pinned ProjDevBench commit and state which one and why in tasks/C1/README.md | phrase: You chose one concept-oriented problem from the pinned ProjDevBench commit and state which one and why in tasks/C1/README.md |\n| done_when: tasks/C1/prompt.md carries its requirements (identical for every harness). | phrase: tasks/C1/prompt.md carries its requirements (identical for every harness). |\n| done_when: The hidden tests under tasks/C1/tests/ are authored locally (ACMOJ is not used) as a Python unittest suite matching the oracle runner unittest (see tasks/X1/task.yaml and src/harness_bench/grade/correctness.py) | phrase: The hidden tests under tasks/C1/tests/ are authored locally (ACMOJ is not used) as a Python unittest suite matching the oracle runner unittest (see tasks/X1/task.yaml and src/harness_bench/grade/correctness.py) |\n| done_when: they are observed to FAIL on the base workspace tasks/C1/workspace and PASS on a reference solution kept only under tasks/C1/oracle/ (never in the workspace) | phrase: they are observed to FAIL on the base workspace tasks/C1/workspace and PASS on a reference solution kept only under tasks/C1/oracle/ (never in the workspace) |\n| done_when: both runs, with commands, exit codes and failing test names, are written to tasks/C1/oracle/evidence.md. | phrase: both runs, with commands, exit codes and failing test names, are written to tasks/C1/oracle/evidence.md. |\n| done_when: The architecture half is structural checks only (for example required documents or sections present), since the judge grader is wave 3 | phrase: The architecture half is structural checks only (for example required documents or sections present), since the judge grader is wave 3 |\n| done_when: the rubric text is written to tasks/C1/oracle/rubric.md for wave 3. | phrase: the rubric text is written to tasks/C1/oracle/rubric.md for wave 3. |\n| done_when: status is draft or ready as the skill checklist allows, stated with the reason. | phrase: status is draft or ready as the skill checklist allows, stated with the reason. |\n| done_when: Only targeted tests run: uv run pytest -q --tb=short on the task tests you touch, never the full suite. | phrase: Only targeted tests run: uv run pytest -q --tb=short on the task tests you touch, never the full suite. |\n| done_when: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it). | phrase: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it). |\n| not_in_scope: bench/bom.yaml | phrase: bench/bom.yaml |\n| not_in_scope: src/** | phrase: src/** |\n| not_in_scope: other task folders (B1 is held by the Leader on a licence question) | phrase: other task folders (B1 is held by the Leader on a licence question) |\n| not_in_scope: bench run, any model turn, pytest -m \"\" | phrase: bench run, any model turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- tasks/C1/: unresolved (not found)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- tasks/C1/task.yaml: tasks/C1/task.yaml sha256 dbf8a9a11c6c5111f3b45487dd5350a2ee03de3491e432b722b9037a3dd9c687\n- https://github.com/zsworld6/projdevbench: unresolved (not found)\n- tasks/C1/README.md: unresolved (not found)\n- tasks/C1/prompt.md: unresolved (not found)\n- tasks/C1/tests/: unresolved (not found)\n- tasks/X1/task.yaml: tasks/X1/task.yaml sha256 b3820497d5248263fb2a2201ff85e7ecb703120912bb850fd6840bbff84dda2f\n- src/harness_bench/grade/correctness.py: src/harness_bench/grade/correctness.py sha256 dfaf98521dc8cc313f72af9b12ef201b2876d2c0590ca8504136bfac6ad3b663\n- tasks/C1/workspace: unresolved (not found)\n- tasks/C1/oracle/: unresolved (not found)\n- tasks/C1/oracle/evidence.md: unresolved (not found)\n- tasks/C1/oracle/rubric.md: unresolved (not found)\n- bench/bom.yaml: bench/bom.yaml sha256 e9a32d8b6ea35381544b86fc68fb73a92507905e65d31a0ba1a7d8fb18549114\n- src/**: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- tasks/X1/: unresolved (not found)\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 50c64de481f7887d22ec6f6203d646db43fad10042539854e1b6ef2cc9fb24b5\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BA5FH0WABXA6TE63BYK0FT\nraw sha256: 4a89556606d7247eb80af88416fe141e85c179e815cc1929360c1d2c4476d863\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W2-TASKS-d slice 1: author task C1 (\"Concept-oriented requirements…",
+      "skill": null,
+      "summary": "compiled al-01M3BA5FH0WABXA6TE63BYK0FT for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-09-25T03:45:19Z",
+      "id": "al-01M3BANSWEHE539RRMV8V006PY",
+      "kind": "command",
+      "outcome": "success",
+      "prompt": "Author task C1 (Concept-oriented requirements to architecture, scenario 3) in tasks/C1/ from stub toward ready, following .claude/skills/new-bench-task/SKILL.md and tasks/README.md. Pin source.repo https://github.com/zsworld6/projdevbench and source.commit to 9af6f40 (full SHA). Record source.license MIT with the copyright line from the upstream LICENSE file and copy that LICENSE into tasks/C1/. Choose one concept-oriented problem, state which and why in tasks/C1/README.md. prompt.md carries its requirements. Hidden tests under tasks/C1/tests/ are a local Python unittest suite (ACMOJ not used) matching runner unittest. They FAIL on tasks/C1/workspace and PASS on a reference only under tasks/C1/oracle/. Record both runs in tasks/C1/oracle/evidence.md. Architecture checks are structural only. Rubric text in tasks/C1/oracle/rubric.md. Status draft or ready as the skill checklist allows. Targeted tests only. Do not edit bench/bom.yaml. Session worker-grok-tc1.",
+      "session": "worker-grok-tc1",
+      "shortname": "new-bench-task-C1",
+      "skill": "new-bench-task",
+      "summary": "C1 ready. Commit 445be6e53c4a5a5947eb1dd219c42e3218b27d03. Problem 011 STLite Priority Queue. Pin 9af6f408e45047947d2a6d1d27b64828c3eb913d (ls-remote main). No LICENSE file and no copyright line at that commit; source.license MIT, source.copyright null. unittest on base exit 1 (2 failures, 8 errors); on oracle/reference exit 0 (10 OK). bench validate ok. bom.yaml not edited.",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "id": "al-01M3BB4YMWH7YK2SZP7E1YN880",
+      "shortname": "Goal: W2-CANARY slice 1 (rulings R-36, R-43): the Claude Code reader cou…",
+      "datetime": "2026-09-25T03:53:36Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W2-CANARY slice 1 (rulings R-36, R-43): the Claude Code reader counts the account-level connector tools a cell's native record advertises, as one new Extraction field, red-first.\nDone when: A red commit adds tests in tests/test_telemetry.py that fail on the current code, stating the failing assertion; the green commit makes them pass.; src/harness_bench/telemetry/__init__.py Extraction gains one field, account_connector_tools: int | None = None, with a one-line comment citing R-36 and R-43; None means not read (an unreadable record, or a harness other than Claude Code), never 0.; src/harness_bench/telemetry/claude_code.py read() sets it to the number of DISTINCT tool names matching the regex mcp__claude_ai_[A-Za-z0-9_]+ that the record advertises (find where the pinned Claude Code 2.1.282 native record lists its available and deferred tools; tests/fixtures/native/claude-code/ holds scrubbed records; read them, never guess the line type), and to 0 only when the record was read and advertises none.; A new scrubbed fixture under tests/fixtures/native/claude-code/ advertises exactly two such tools (made-up names like mcp__claude_ai_Example_one, never a real connector name) and the test asserts 2; an existing record with none asserts 0; a missing file asserts None.; tests/mutations/canary.json holds named mutants (count not deduplicated; 0 instead of None when unread; the regex prefix dropped), each killed (uv run python tools/mutate_check.py tests/mutations/canary.json).; Only targeted tests run: uv run pytest -q --tb=short tests/test_telemetry.py; uv run ruff check on the files you touch is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.\nNot in scope: views.py, report/*, normalize.py, other readers, tests/e2e, bench/pack-markers.txt (later slices); bench run, any model turn, pytest -m \"\", full-suite runs; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 11 minutes (ruling R-11 slice rules); commit at every green; no verbose output and no printing of large files; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/notes/rulings.md R-36, R-43; src/harness_bench/telemetry/__init__.py, src/harness_bench/telemetry/claude_code.py; tests/test_telemetry.py; tests/fixtures/native/claude-code/; tools/mutate_check.py and tests/mutations/r35_r36.json as the mutation format. Use python, not python3 (Windows); run mutate_check as uv run python tools/mutate_check.py. Set AGENT_SESSION=worker-grok-can1 before committing.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3BB4Z91MX6RPTNJSMK3P1RJ",
+      "shortname": "compile-Goal: W2-CANARY slice 1 (rulings R-36, R-43): the Claude Code reader cou…",
+      "datetime": "2026-09-25T03:53:36Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-CANARY slice 1 (rulings R-36, R-43): the Claude Code reader counts the account-level connector tools a cell's native record advertises, as one new Extraction field, red-first.\nDone when: A red commit adds tests in tests/test_telemetry.py that fail on the current code, stating the failing assertion; the green commit makes them pass.; src/harness_bench/telemetry/__init__.py Extraction gains one field, account_connector_tools: int | None = None, with a one-line comment citing R-36 and R-43; None means not read (an unreadable record, or a harness other than Claude Code), never 0.; src/harness_bench/telemetry/claude_code.py read() sets it to the number of DISTINCT tool names matching the regex mcp__claude_ai_[A-Za-z0-9_]+ that the record advertises (find where the pinned Claude Code 2.1.282 native record lists its available and deferred tools; tests/fixtures/native/claude-code/ holds scrubbed records; read them, never guess the line type), and to 0 only when the record was read and advertises none.; A new scrubbed fixture under tests/fixtures/native/claude-code/ advertises exactly two such tools (made-up names like mcp__claude_ai_Example_one, never a real connector name) and the test asserts 2; an existing record with none asserts 0; a missing file asserts None.; tests/mutations/canary.json holds named mutants (count not deduplicated; 0 instead of None when unread; the regex prefix dropped), each killed (uv run python tools/mutate_check.py tests/mutations/canary.json).; Only targeted tests run: uv run pytest -q --tb=short tests/test_telemetry.py; uv run ruff check on the files you touch is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.\nNot in scope: views.py, report/*, normalize.py, other readers, tests/e2e, bench/pack-markers.txt (later slices); bench run, any model turn, pytest -m \"\", full-suite runs; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 11 minutes (ruling R-11 slice rules); commit at every green; no verbose output and no printing of large files; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-36, R-43; src/harness_bench/telemetry/__init__.py, src/harness_bench/telemetry/claude_code.py; tests/test_telemetry.py; tests/fixtures/native/claude-code/; tools/mutate_check.py and tests/mutations/r35_r36.json as the mutation format. Use python, not python3 (Windows); run mutate_check as uv run python tools/mutate_check.py. Set AGENT_SESSION=worker-grok-can1 before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit adds tests in tests/test_telemetry.py that fail on the current code, stating the failing assertion | phrase: A red commit adds tests in tests/test_telemetry.py that fail on the current code, stating the failing assertion |\n| done_when: the green commit makes them pass. | phrase: the green commit makes them pass. |\n| done_when: src/harness_bench/telemetry/__init__.py Extraction gains one field, account_connector_tools: int | None = None, with a one-line comment citing R-36 and R-43 | phrase: src/harness_bench/telemetry/__init__.py Extraction gains one field, account_connector_tools: int | None = None, with a one-line comment citing R-36 and R-43 |\n| done_when: None means not read (an unreadable record, or a harness other than Claude Code), never 0. | phrase: None means not read (an unreadable record, or a harness other than Claude Code), never 0. |\n| done_when: src/harness_bench/telemetry/claude_code.py read() sets it to the number of DISTINCT tool names matching the regex mcp__claude_ai_[A-Za-z0-9_]+ that the record advertises (find where the pinned Claude Code 2.1.282 native record lists its available and deferred tools | phrase: src/harness_bench/telemetry/claude_code.py read() sets it to the number of DISTINCT tool names matching the regex mcp__claude_ai_[A-Za-z0-9_]+ that the record advertises (find where the pinned Claude Code 2.1.282 native record lists its available and deferred tools |\n| done_when: tests/fixtures/native/claude-code/ holds scrubbed records | phrase: tests/fixtures/native/claude-code/ holds scrubbed records |\n| done_when: read them, never guess the line type), and to 0 only when the record was read and advertises none. | phrase: read them, never guess the line type), and to 0 only when the record was read and advertises none. |\n| done_when: A new scrubbed fixture under tests/fixtures/native/claude-code/ advertises exactly two such tools (made-up names like mcp__claude_ai_Example_one, never a real connector name) and the test asserts 2 | phrase: A new scrubbed fixture under tests/fixtures/native/claude-code/ advertises exactly two such tools (made-up names like mcp__claude_ai_Example_one, never a real connector name) and the test asserts 2 |\n| done_when: an existing record with none asserts 0 | phrase: an existing record with none asserts 0 |\n| done_when: a missing file asserts None. | phrase: a missing file asserts None. |\n| done_when: tests/mutations/canary.json holds named mutants (count not deduplicated | phrase: tests/mutations/canary.json holds named mutants (count not deduplicated |\n| done_when: 0 instead of None when unread | phrase: 0 instead of None when unread |\n| done_when: the regex prefix dropped), each killed (uv run python tools/mutate_check.py tests/mutations/canary.json). | phrase: the regex prefix dropped), each killed (uv run python tools/mutate_check.py tests/mutations/canary.json). |\n| done_when: Only targeted tests run: uv run pytest -q --tb=short tests/test_telemetry.py | phrase: Only targeted tests run: uv run pytest -q --tb=short tests/test_telemetry.py |\n| done_when: uv run ruff check on the files you touch is clean. | phrase: uv run ruff check on the files you touch is clean. |\n| done_when: Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result. | phrase: Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result. |\n| not_in_scope: views.py, report/*, normalize.py, other readers, tests/e2e, bench/pack-markers.txt (later slices) | phrase: views.py, report/*, normalize.py, other readers, tests/e2e, bench/pack-markers.txt (later slices) |\n| not_in_scope: bench run, any model turn, pytest -m \"\", full-suite runs | phrase: bench run, any model turn, pytest -m \"\", full-suite runs |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- tests/test_telemetry.py: tests/test_telemetry.py sha256 6138a0d0761a1b0a686302690502327f99ba61f29b58295101a844fe7c482ea7\n- src/harness_bench/telemetry/__init__.py: src/harness_bench/telemetry/__init__.py sha256 7a0a184f17eaf4b7ace592b1a5c3f5816bd55aa6e8d9f61e8fb5cc5e0574ee09\n- src/harness_bench/telemetry/claude_code.py: src/harness_bench/telemetry/claude_code.py sha256 c7349fd5bd60d70164afdf4f624e71078790fda6ead64cf1fb256ad335c17bc9\n- tests/fixtures/native/claude-code/: unresolved (not found)\n- tests/mutations/canary.json: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- views.py: src/harness_bench/views.py sha256 1684f9a2aa88f6d9aee5f908afc46a2920425b3f0bca7c627ea82b6e5f0ff5be\n- report/*: unresolved (not found)\n- normalize.py: src/harness_bench/telemetry/normalize.py sha256 bde97d917ae563b01ce25c1040f73478be8d33329d9384ed225e429eb003376f\n- tests/e2e: unresolved (not found)\n- bench/pack-markers.txt: bench/pack-markers.txt sha256 5b91ce297a35966835f333b7b588c0fb53183516419ec4d2baa57ff707a0bbc9\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- tests/mutations/r35_r36.json: tests/mutations/r35_r36.json sha256 72e026a6a880a0320159b9ea4beece5bf9683e18e1c33ac192576bb153385e0e\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BB4YMWH7YK2SZP7E1YN880\nraw sha256: f893a90ad5bd83c505f889b452afb0be8ac95d4de56afbc7030c4f0751764fc2\ncompiler model: claude-opus-5-5\nengine seconds: 0.003\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3BB4YMWH7YK2SZP7E1YN880 for claude-code v1: 19 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit adds tests in tests/test_telemetry.py that fail on the current code, stating the failing assertion",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A red commit adds tests in tests/test_telemetry.py that fail on the current code, stating the failing assertion"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the green commit makes them pass.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the green commit makes them pass."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "src/harness_bench/telemetry/__init__.py Extraction gains one field, account_connector_tools: int | None = None, with a one-line comment citing R-36 and R-43",
+            "trace": {
+              "kind": "phrase",
+              "ref": "src/harness_bench/telemetry/__init__.py Extraction gains one field, account_connector_tools: int | None = None, with a one-line comment citing R-36 and R-43"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "None means not read (an unreadable record, or a harness other than Claude Code), never 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "None means not read (an unreadable record, or a harness other than Claude Code), never 0."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "src/harness_bench/telemetry/claude_code.py read() sets it to the number of DISTINCT tool names matching the regex mcp__claude_ai_[A-Za-z0-9_]+ that the record advertises (find where the pinned Claude Code 2.1.282 native record lists its available and deferred tools",
+            "trace": {
+              "kind": "phrase",
+              "ref": "src/harness_bench/telemetry/claude_code.py read() sets it to the number of DISTINCT tool names matching the regex mcp__claude_ai_[A-Za-z0-9_]+ that the record advertises (find where the pinned Claude Code 2.1.282 native record lists its available and deferred tools"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/fixtures/native/claude-code/ holds scrubbed records",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/fixtures/native/claude-code/ holds scrubbed records"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "read them, never guess the line type), and to 0 only when the record was read and advertises none.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "read them, never guess the line type), and to 0 only when the record was read and advertises none."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A new scrubbed fixture under tests/fixtures/native/claude-code/ advertises exactly two such tools (made-up names like mcp__claude_ai_Example_one, never a real connector name) and the test asserts 2",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A new scrubbed fixture under tests/fixtures/native/claude-code/ advertises exactly two such tools (made-up names like mcp__claude_ai_Example_one, never a real connector name) and the test asserts 2"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "an existing record with none asserts 0",
+            "trace": {
+              "kind": "phrase",
+              "ref": "an existing record with none asserts 0"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a missing file asserts None.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a missing file asserts None."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/canary.json holds named mutants (count not deduplicated",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/canary.json holds named mutants (count not deduplicated"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "0 instead of None when unread",
+            "trace": {
+              "kind": "phrase",
+              "ref": "0 instead of None when unread"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the regex prefix dropped), each killed (uv run python tools/mutate_check.py tests/mutations/canary.json).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the regex prefix dropped), each killed (uv run python tools/mutate_check.py tests/mutations/canary.json)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Only targeted tests run: uv run pytest -q --tb=short tests/test_telemetry.py",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Only targeted tests run: uv run pytest -q --tb=short tests/test_telemetry.py"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check on the files you touch is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check on the files you touch is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "views.py, report/*, normalize.py, other readers, tests/e2e, bench/pack-markers.txt (later slices)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "views.py, report/*, normalize.py, other readers, tests/e2e, bench/pack-markers.txt (later slices)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run, any model turn, pytest -m \"\", full-suite runs",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run, any model turn, pytest -m \"\", full-suite runs"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "A red commit adds tests in tests/test_telemetry.py that fail on the current code, stating the failing assertion",
+            "the green commit makes them pass.",
+            "src/harness_bench/telemetry/__init__.py Extraction gains one field, account_connector_tools: int | None = None, with a one-line comment citing R-36 and R-43",
+            "None means not read (an unreadable record, or a harness other than Claude Code), never 0.",
+            "src/harness_bench/telemetry/claude_code.py read() sets it to the number of DISTINCT tool names matching the regex mcp__claude_ai_[A-Za-z0-9_]+ that the record advertises (find where the pinned Claude Code 2.1.282 native record lists its available and deferred tools",
+            "tests/fixtures/native/claude-code/ holds scrubbed records",
+            "read them, never guess the line type), and to 0 only when the record was read and advertises none.",
+            "A new scrubbed fixture under tests/fixtures/native/claude-code/ advertises exactly two such tools (made-up names like mcp__claude_ai_Example_one, never a real connector name) and the test asserts 2",
+            "an existing record with none asserts 0",
+            "a missing file asserts None.",
+            "tests/mutations/canary.json holds named mutants (count not deduplicated",
+            "0 instead of None when unread",
+            "the regex prefix dropped), each killed (uv run python tools/mutate_check.py tests/mutations/canary.json).",
+            "Only targeted tests run: uv run pytest -q --tb=short tests/test_telemetry.py",
+            "uv run ruff check on the files you touch is clean.",
+            "Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W2-CANARY slice 1 (rulings R-36, R-43): the Claude Code reader counts the account-level connector tools a cell's native record advertises, as one new Extraction field, red-first.",
+          "main_line_budget": "one slice of at most 11 minutes (ruling R-11 slice rules); commit at every green; no verbose output and no printing of large files; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-36, R-43; src/harness_bench/telemetry/__init__.py, src/harness_bench/telemetry/claude_code.py; tests/test_telemetry.py; tests/fixtures/native/claude-code/; tools/mutate_check.py and tests/mutations/r35_r36.json as the mutation format. Use python, not python3 (Windows); run mutate_check as uv run python tools/mutate_check.py. Set AGENT_SESSION=worker-grok-can1 before committing.",
+          "not_in_scope": [
+            "views.py, report/*, normalize.py, other readers, tests/e2e, bench/pack-markers.txt (later slices)",
+            "bench run, any model turn, pytest -m \"\", full-suite runs",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.003,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3BB4YMWH7YK2SZP7E1YN880",
+        "raw_sha256": "f893a90ad5bd83c505f889b452afb0be8ac95d4de56afbc7030c4f0751764fc2",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": "tests/test_telemetry.py",
+            "reason": null,
+            "sha256": "6138a0d0761a1b0a686302690502327f99ba61f29b58295101a844fe7c482ea7",
+            "status": "resolved",
+            "token": "tests/test_telemetry.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/__init__.py",
+            "reason": null,
+            "sha256": "7a0a184f17eaf4b7ace592b1a5c3f5816bd55aa6e8d9f61e8fb5cc5e0574ee09",
+            "status": "resolved",
+            "token": "src/harness_bench/telemetry/__init__.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/claude_code.py",
+            "reason": null,
+            "sha256": "c7349fd5bd60d70164afdf4f624e71078790fda6ead64cf1fb256ad335c17bc9",
+            "status": "resolved",
+            "token": "src/harness_bench/telemetry/claude_code.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/native/claude-code/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/canary.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/views.py",
+            "reason": null,
+            "sha256": "1684f9a2aa88f6d9aee5f908afc46a2920425b3f0bca7c627ea82b6e5f0ff5be",
+            "status": "resolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/*"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/normalize.py",
+            "reason": null,
+            "sha256": "bde97d917ae563b01ce25c1040f73478be8d33329d9384ed225e429eb003376f",
+            "status": "resolved",
+            "token": "normalize.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e"
+          },
+          {
+            "nearest": null,
+            "path": "bench/pack-markers.txt",
+            "reason": null,
+            "sha256": "5b91ce297a35966835f333b7b588c0fb53183516419ec4d2baa57ff707a0bbc9",
+            "status": "resolved",
+            "token": "bench/pack-markers.txt"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/r35_r36.json",
+            "reason": null,
+            "sha256": "72e026a6a880a0320159b9ea4beece5bf9683e18e1c33ac192576bb153385e0e",
+            "status": "resolved",
+            "token": "tests/mutations/r35_r36.json"
           }
         ],
         "schema": "compiled-prompt/1",
