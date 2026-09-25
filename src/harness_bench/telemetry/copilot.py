@@ -48,6 +48,7 @@ from harness_bench.telemetry import (
     ProviderError,
     ToolCall,
     as_dict,
+    as_list,
     as_str,
     rows,
 )
@@ -113,6 +114,15 @@ def read(path: Path) -> Extraction:
         elif kind == "session.error":
             ex.errors.append(ProviderError(n, None, as_str(data.get("errorType")) or "unknown",
                                            (as_str(data.get("message")) or "")[:300]))
+        elif kind == "session.usage_checkpoint":
+            advertised = []
+            for state in as_list(data.get("promptCacheBreakState")):
+                for model in as_dict(as_dict(state).get("models")).values():
+                    for tool in as_list(as_dict(model).get("tools")):
+                        name = as_str(as_dict(tool).get("name"))
+                        if name is not None:
+                            advertised.append(name)
+            ex.tools_advertised = list(dict.fromkeys(advertised)) or None
         elif kind == "session.shutdown":
             last_shutdown = (n, stamp, data)
 

@@ -128,7 +128,7 @@ def test_copilot_profile_declares_native_acp_and_credential_store(tmp_path):
     p = profiles.load(ROOT, "copilot")
     assert (p.harness, p.home_env, p.credential_source, p.credential_name) == ("copilot", "COPILOT_HOME", None, None)
     assert p.files == {} and p.mode is None
-    assert p.command == ("{exe}", "--acp", "--model", "{model}", "--allow-tool", "shell", "--allow-tool", "write")
+    assert p.command[:8] == ("{exe}", "--acp", "--model", "{model}", "--allow-tool", "shell", "--allow-tool", "write")
     assert p.env == {"COPILOT_AUTO_UPDATE": "false"}
     assert (p.set_model, p.credential_kind) == (True, "subscription login (credential store)")
     assert (p.record_glob, p.usage_source, p.auxiliary_models) == (
@@ -166,8 +166,18 @@ def test_existing_adapter_profiles_keep_the_old_argv_call_shape(tmp_path):
 def test_copilot_argv_uses_the_pinned_exe_and_each_cells_model():
     p = profiles.load(ROOT, "copilot")
     for model in ("gpt-6-sol", "other-advertised-model"):
-        assert p.argv(FakeBuild(), model) == [str(FakeBuild.exe), "--acp", "--model", model,
-                                               "--allow-tool", "shell", "--allow-tool", "write"]
+        assert p.argv(FakeBuild(), model)[:8] == [str(FakeBuild.exe), "--acp", "--model", model,
+                                                   "--allow-tool", "shell", "--allow-tool", "write"]
+
+
+def test_copilot_profile_has_r45_static_tool_flags():
+    command = profiles.load(ROOT, "copilot").command
+    required = ("--disable-builtin-mcps", "--available-tools", "powershell", "list_powershell",
+                "read_powershell", "stop_powershell", "apply_patch", "view", "glob", "rg", "skill")
+    missing = [flag for flag in required if flag not in command]
+    assert not missing, f"Copilot profile missing R-45 flags/tools: {missing}"
+    start = command.index("--available-tools")
+    assert command[start + 1:] == required[2:]
 
 
 def test_command_template_preserves_literal_braces(tmp_path):
@@ -211,8 +221,8 @@ def test_native_copilot_command_does_not_need_node_or_an_adapter(monkeypatch):
     build = FakeBuild()
     build.adapter = None
     monkeypatch.setattr(profiles.shutil, "which", lambda _: None)
-    assert p.argv(build, "gpt-6-sol") == [str(build.exe), "--acp", "--model", "gpt-6-sol",
-                                          "--allow-tool", "shell", "--allow-tool", "write"]
+    assert p.argv(build, "gpt-6-sol")[:8] == [str(build.exe), "--acp", "--model", "gpt-6-sol",
+                                              "--allow-tool", "shell", "--allow-tool", "write"]
 
 
 def test_adapter_command_rejects_missing_node(monkeypatch, tmp_path):
@@ -277,6 +287,7 @@ def test_codex_profile_pins_the_model_and_uses_full_access(tmp_path):
     p = profiles.load(ROOT, "codex", credential_source=cred)
     p.seed_home(tmp_path / "home", model="gpt-6-sol")
     assert 'model = "gpt-6-sol"' in (tmp_path / "home" / "config.toml").read_text(encoding="utf-8")
+    assert 'web_search = "disabled"' in (tmp_path / "home" / "config.toml").read_text(encoding="utf-8")
     assert p.mode == "agent-full-access"
 
 

@@ -31,6 +31,10 @@ summary: >-
   - Profile qualification exercises each id.
   - The Claude row's declared `defaultMode = dontAsk` is not the effective mode: the ACP session falls back to `default`. Each cell records the mode its session reports (`attempt.session_opened.permission_mode_effective`), and the report header shows it for Claude Code cells.
   - The Copilot and Codex rows are unchanged.
+- **Amendment note, R-45 and R-46 (2026-09-25):**
+  - Copilot uses an explicit allowlist and disables built-in MCPs. Its pinned build advertised 21 tool ids in the committed pack-on sample, including web and GitHub MCP ids. The fixed-profile sample is pending R-45 condition 1's qualification recut.
+  - Codex seeds `web_search = "disabled"` in each cell's `config.toml` (R-46). Its reader records any `web_search_call` as an out-of-profile tool call.
+  - Claude Code's `WebFetch` and `WebSearch` are outside the allowlist. R-46 carries an `assume:` that both prompt in effective mode `default`; the qualification turn must confirm they are refused and recorded. A silent call would break that control.
 - **Date:** 2026-09-23 (revised after council round 1)
 - **Deciders:** @timianmalloo; authored by Claude Code for the architect council
 - **Context spec/architecture:** `docs/specs/harness-bench.md` US-14, US-46; spec risk R14
@@ -53,9 +57,9 @@ We will give each harness a static profile that allows exactly these tool classe
 
 | Harness | Mechanism |
 | --- | --- |
-| Claude | Per-cell `settings.json`: `permissions.allow = [Bash, PowerShell, Edit, Write, Read, Glob, Grep]` (`PowerShell` added by R-34), `defaultMode = dontAsk` (declared; effective `default`, R-34). |
-| Codex | ACP mode `agent-full-access` inside the container (approval `never`, reviewer `user`), and per-cell `config.toml` with web search off. |
-| Copilot | `--allow-tool shell --allow-tool write`, no `--allow-all*`, `--disable-builtin-mcps`. |
+| Claude | Per-cell `settings.json`: `permissions.allow = [Bash, PowerShell, Edit, Write, NotebookEdit, Read, Glob, Grep]` (`PowerShell` added by R-34, `NotebookEdit` by R-35), `defaultMode = dontAsk` (declared; effective `default`, R-34). R-46's `assume:` says `WebFetch` and `WebSearch` prompt and are refused; qualification is pending. |
+| Codex | ACP mode `agent-full-access` inside the container (approval `never`, reviewer `user`), and per-cell `config.toml` with `web_search = "disabled"` (R-46). |
+| Copilot | `--allow-tool shell --allow-tool write --disable-builtin-mcps --available-tools powershell list_powershell read_powershell stop_powershell apply_patch view glob rg skill` (R-45), no `--allow-all*`. |
 
 The permission files are mounted read-only over the writable home (ADR-0001), so an agent cannot widen its own profile. The driver refuses every permission callback, so anything outside the profile fails closed and is recorded. Task dependencies (NuGet, pip) are restored into the task image at bootstrap. Cells have no package-registry access (ADR-0005).
 
