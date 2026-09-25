@@ -156,14 +156,23 @@ def test_only_the_exact_python_placeholder_is_replaced(tmp_path, monkeypatch):  
     assert seen == [[sys.executable, "-m", "unittest", "{workspace}", "~tests"]]
 
 
-def test_not_recorded_is_one_falsy_sentinel_and_scores_and_results_are_frozen():
+def test_a_score_is_a_value_or_na_with_a_reason_never_both_and_scores_and_results_are_frozen():  # US-27, F1 (V-2)
     from dataclasses import FrozenInstanceError
 
     from harness_bench import grade
 
-    assert grade.NOT_RECORDED is grade._NotRecorded() and not grade.NOT_RECORDED and repr(grade.NOT_RECORDED) == "NOT_RECORDED"
+    def refused(*args):
+        try:
+            grade.Score(*args)
+        except (TypeError, ValueError) as exc:
+            return type(exc)
+        return None
+
+    assert [refused(None, None), refused(1, "a reason"), refused(1.0, None), refused(True, None)] == \
+        [ValueError, ValueError, TypeError, TypeError]  # NA needs a reason; a value has none; no float, no bool
+    assert (grade.Score(None, "not built"), grade.Score(Decimal("0.5"), None, "e").evidence) == (grade.Score(None, "not built", ""), "e")
     with pytest.raises(FrozenInstanceError):
-        grade.Score(1.0, "e").value = 2.0  # type: ignore[misc]
+        grade.Score(1, None).value = 2  # type: ignore[misc]
     with pytest.raises(FrozenInstanceError):
         correctness.Result(1, None, None, "").passed = 0  # type: ignore[misc]
 
