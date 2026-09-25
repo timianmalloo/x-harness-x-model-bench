@@ -333,7 +333,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5bda5fb79f8a242a34b6be8a23e55af0d8137aad880bcc4698dbb8bb2b9299e9"
+      "sourceSha256": "63ceb0fbc882a93bd80672c1b083d77af86fe58401b232155453420f95c672b9"
     },
     {
       "id": "adr-0005-egress-control",
@@ -890,7 +890,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2ded1d9d6e9579bfd70d2c78ec4156a1417706b3b6f48b0474cb8afbbebf97e1"
+      "sourceSha256": "5574be99122a6888e8c4d6dd9612b656694b134410c4d15df881419d330cbf8e"
     },
     {
       "id": "review-w1-acp-codex",
@@ -1012,7 +1012,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3d0867539e7a2ed2333605d1bf09f5df02ac40b27710fffd475caaf7198e6e70"
+      "sourceSha256": "44a62b075323cdc116075c64da88376efa2f5b9c97c28fae43f3a5612f53cc8d"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -1160,6 +1160,63 @@ window.DOCS_INDEX = {
       "sourceSha256": "b15244d34330ebd4917bbc7599bd30944f2de10767b6a719ec18a0e19c25ee7f"
     },
     {
+      "id": "design-phase2-scripted-user",
+      "path": "docs/design/phase2-scripted-user.md",
+      "title": "Design: the scripted user for scenario 1 (phase 2, row 8)",
+      "type": "design",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 2 · smoke on all harnesses (wave 2: row 8, the scripted user)",
+      "reviewBy": "2027-03-25",
+      "reviewSuggested": [],
+      "summary": "The scenario-1 scripted user per R-37 and R-39: a bench-owned stdio MCP server exposing one tool, ask_user(question) -> reply, passed in ACP session/new mcpServers, one prompt per cell; a deterministic matcher (exact, then normalised; a miss gets exactly \"Decide and state your assumption.\"); a per-call log with \"no question asked\" for zero calls; the \"scripted user\" allowlist class; the S-04 threshold from the held-out set. Draft revision 1 (phase A): every measured fact is marked \"pending S-04\" until the Leader's probe turns return.",
+      "tags": [
+        "benchmark",
+        "scenario-1",
+        "scripted-user",
+        "mcp",
+        "acp",
+        "matcher",
+        "clarification"
+      ],
+      "links": [
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0002-cell-driver",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0004-static-permissions",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0009-model-gateway",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-phase1-walking-skeleton",
+          "rel": "refines"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        },
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "8275c48424c9395f20e0d34edcad515457a02e6a0c47489e52e79face1f2384d"
+    },
+    {
       "id": "design-run-lifecycle-model",
       "path": "docs/design/run-lifecycle-model.md",
       "title": "Design: run lifecycle model (models/run_lifecycle.tla)",
@@ -1257,7 +1314,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b53b70fc4e0520f7293841d316b347b2ee47a7278b19a2b7cff7ccac6541fce8"
+      "sourceSha256": "2bc39956e8eb0367f8032607412365a27e060f75cd86771edcf800df906ccae6"
     },
     {
       "id": "coordination-phase1-finish-run",
@@ -1311,7 +1368,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "e98e36e8be6980cdca4187e2911fb508a62aea4d9269e7b95bb9a0141f423e0e"
+      "sourceSha256": "ae2ac2b5641b4f193d21d7f18d20a7eaa7b6669b5935f320a854c149ae1954d2"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -1493,7 +1550,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b2731f60584ae034fd905b371ccd5d34a754101d4319b76e7776f105ab518d02"
+      "sourceSha256": "805129b9d50d5d0aae33443f55686592cab3f7aaea9953e0191d1524e4b0ba3d"
     },
     {
       "id": "proposal-cross-harness-benchmarking",
@@ -1552,7 +1609,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "17b74cfa2175c94a17b6469bd10c90bad93c7f94c70e83590680bd99d309cc1e"
+      "sourceSha256": "f58c9d11cc5b29c0e458b167c1ea078a266f3ab5578b387e3bcf4bb45b952607"
     },
     {
       "id": "coordination-phase1-finish",
@@ -2174,5 +2231,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "2826d7a356b59560b56f6734df88b3265307e9ad3d24f5a63e4323b3ccf3145f"
+  "graphSha256": "8ac246b5c5d2a166e026c336587c8df64c943f183247f116ef8678b2b9976339"
 };
