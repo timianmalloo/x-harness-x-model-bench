@@ -191,10 +191,46 @@ def _validate_ids(cells: list[dict]) -> None:
             raise BenchError("HB-USR-002", f"label {c['label']!r} does not match the status label pattern")
 
 
+def resolved_model_map(plan: dict, cell: dict) -> dict[str, str]:
+    """R-73 item 2, the one resolver: {role: model} from the cell's task's frozen `model_map`, only the keys whose vendor is
+    the vendor frozen in the plan's profile record for the cell's harness. A bare key, another vendor's key, or a plan
+    that froze no vendor (before R-73) resolves to nothing, so no other vendor's id is ever an allowance (US-11).
+    views._mapped reads it; grade/coordination.py's role comparison is to read it (R-73 c2; not built in 0.4)."""
+    record = (plan.get("profiles") or {}).get(cell.get("harness"))
+    vendor = record.get("vendor") if isinstance(record, dict) else None
+    task = (plan.get("tasks") or {}).get(cell.get("task"))
+    model_map = task.get("model_map") if isinstance(task, dict) else None
+    if not vendor or not isinstance(model_map, dict):
+        return {}
+    out = {}
+    for key, model in model_map.items():
+        parsed = config.map_key(key)
+        if parsed is not None and parsed[1] == vendor and isinstance(model, str):
+            out[parsed[0]] = model
+    return out
+
+
+def _require_discriminating_maps(body: dict) -> None:
+    """R-73 item 5: every scenario-6 cell has at least one resolved role on a model other than its pin; a map whose every
+    role equals the pin cannot tell routing from no routing, so the plan is refused."""
+    for c in body["cells"]:
+        if c["scenario"] != 6:
+            continue
+        vendor = body["profiles"][c["harness"]]["vendor"]
+        roles = resolved_model_map(body, c)
+        if not roles:
+            raise BenchError("HB-USR-002", f"scenario 6: {c['task']}'s model_map names no role for vendor {vendor} "
+                                           f"(cell {c['label']}) (R-73 item 5)")
+        if all(model == c["model"] for model in roles.values()):
+            raise BenchError("HB-USR-002", f"scenario 6: every role of {c['task']}'s model_map for vendor {vendor} equals "
+                                           f"the pin of {c['label']} ({c['model']}), so routing cannot be told from no "
+                                           "routing (R-73 item 5)")
+
+
 def profile_record(root: Path, harness: str) -> dict:
     p = profiles.load(root, harness)
     # The plan's canonical form has no floats; the decimal string preserves a fractional profile value exactly.
-    return {"profile_hash": file_hash(root / "bench" / "profiles" / f"{harness}.yaml"), "usage_source": p.usage_source,
+    return {"profile_hash": file_hash(root / "bench" / "profiles" / f"{harness}.yaml"), "vendor": p.vendor, "usage_source": p.usage_source,
             "auxiliary_models": list(p.auxiliary_models), "record_glob": p.record_glob,
             "shutdown_grace_seconds": format(p.shutdown_grace, "g")}
 
@@ -299,6 +335,7 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, p
     if instruction_lists:
         body["instruction_lists"] = instruction_lists
     _validate_ids(body["cells"])
+    _require_discriminating_maps(body)
     body["plan_hash"] = plan_hash(body)
     return body
 

@@ -37,9 +37,9 @@ def test_every_profile_declares_its_vendor():
 def test_a_profile_without_a_vendor_is_refused_never_inferred(tmp_path):
     shutil.copytree(ROOT / "bench" / "profiles", tmp_path / "bench" / "profiles")
     path = tmp_path / "bench" / "profiles" / "codex.yaml"
-    text = path.read_text(encoding="utf-8")
-    assert text.count("vendor: openai\n") == 1
-    path.write_text(text.replace("vendor: openai\n", ""), encoding="utf-8")
+    text, n = re.subn(r"^vendor: openai\b.*\n", "", path.read_text(encoding="utf-8"), flags=re.MULTILINE)
+    assert n == 1
+    path.write_text(text, encoding="utf-8")
     with pytest.raises(BenchError) as err:
         profiles.load(tmp_path, "codex")
     assert (err.value.code, err.value.message) == ("HB-USR-002", "codex: profile vendor must be a nonempty string (R-73 item 1)")

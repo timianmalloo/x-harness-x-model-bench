@@ -1,5 +1,6 @@
 # Claude Code cell profile (ADR-0003, ADR-0004, ADR-0013). Values in {braces} are filled per cell.
 harness: claude-code
+vendor: anthropic   # R-73 item 1: a profile fact, never inferred from a model id
 home_env: CLAUDE_CONFIG_DIR
 credential: { source: "~/.claude/.credentials.json", name: ".credentials.json" }
 credential_kind: "subscription login (copied)"

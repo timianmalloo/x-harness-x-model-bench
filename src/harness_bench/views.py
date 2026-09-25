@@ -35,7 +35,7 @@ from pathlib import Path
 
 from harness_bench import archive, ledger, profiles
 from harness_bench.errors import BenchError, Cause
-from harness_bench.plan import load_confirmed
+from harness_bench.plan import load_confirmed, resolved_model_map
 from harness_bench.telemetry import (
     Extraction,
     ModelCall,
@@ -431,10 +431,9 @@ def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: 
 
 
 def _mapped(plan: dict, cell: dict) -> frozenset[str]:
-    """US-11: the models the cell's task routes roles to (`model_map`, frozen in the plan's task record), by base id
-    (R-32). A plan from before the map was frozen has none."""
-    model_map = as_dict(as_dict(as_dict(plan.get("tasks")).get(cell.get("task"))).get("model_map"))
-    return frozenset(normalize.base_model_id(m) for m in model_map.values() if isinstance(m, str))
+    """US-11: the models the cell's task routes roles to for the cell's own vendor (R-73 item 2: the one resolver,
+    `plan.resolved_model_map`), by base id (R-32). A plan from before the map, or the vendor, was frozen has none."""
+    return frozenset(normalize.base_model_id(m) for m in resolved_model_map(plan, cell).values())
 
 
 def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id: str | None) -> CellView:

@@ -54,6 +54,9 @@ class Profile:
     set_model: bool = False  # pin the model with ACP session/set_model before the prompt (ADR-0003, R-13)
     credential_kind: str = "subscription login (copied)"  # what attempt.process_started records (R-13)
     shutdown_grace: float = 10.0
+    # R-73 item 1: the model vendor (anthropic | openai), a profile fact, never inferred from a model id. load() refuses
+    # a profile without one; the default only keeps hand-built test profiles (gateway, judge) constructible.
+    vendor: str = ""
 
     def model_allowed(self, served: str, pinned: str) -> bool:
         return model_allowed(served, pinned, self.auxiliary_models)
@@ -127,6 +130,9 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
     if not isinstance(command, list) or not command or any(not isinstance(part, str) or not part for part in command):
         raise BenchError("HB-USR-002", f"{harness}: profile command must be a nonempty list of strings")
     cred = data["credential"]
+    vendor = data.get("vendor")
+    if not isinstance(vendor, str) or not vendor.strip():
+        raise BenchError("HB-USR-002", f"{harness}: profile vendor must be a nonempty string (R-73 item 1)")
     if data.get("usage_source", "native_record") not in USAGE_SOURCES:
         raise ValueError(f"{harness}: usage_source must be one of {USAGE_SOURCES}")
     grace = data.get("shutdown_grace_seconds")
@@ -134,6 +140,7 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
         raise BenchError("HB-USR-002", f"{harness}: shutdown_grace_seconds must be greater than 0 and at most 10")
     return Profile(
         harness=data["harness"],
+        vendor=vendor,
         home_env=data["home_env"],
         credential_source=(credential_source if credential_source is not None else Path(cred["source"]).expanduser())
         if cred is not None else None,
