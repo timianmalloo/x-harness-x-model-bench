@@ -1377,7 +1377,7 @@ window.DOCS_INDEX = {
       "phase": "Phase 3 · wave 3 (row 17: the gateway, the judges, calibration; built by W3-GW-I)",
       "reviewBy": "2027-03-25",
       "reviewSuggested": [],
-      "summary": "Row 17 per R-58 and R-59: one tool-less gateway calls two judges (Anthropic claude-fable-5-1, or the R-58 fallback claude-opus-5-5; OpenAI gpt-6-sol) through the pinned headless CLIs, only under bench grade --allow-model-calls and never while a run is live. Requests are scrubbed of pack markers and harness, model and combo ids, scanned, egress- gated and schema-validated; verdicts live in the create-if-absent cache and each lookup is a verdict_uses row. Calibration is one human label per (artifact, rubric item); the header shows inter-judge kappa, each judge's agreement with the operator's labels (not recorded until they exist) and the per-cell-vendor verdict split. DRAFT (phase A): every measured fact is marked pending spike; the gate runs in phase B.",
+      "summary": "Row 17 per R-58 and R-59, driven by spike GW-H and revised through a five-persona gate. The gateway calls judges through the pinned headless CLIs, from call folders under the cells root, only under bench grade --allow-model-calls and never while any run is live. The Anthropic judge is claude-fable-5-1 (served on 2.1.282, text output, 0 tool events). The OpenAI judge gpt-6-sol is not qualified and is never spawned: Codex 0.156 keeps its code-mode exec tool (DR-GW-1). Requests are scrubbed, scanned, egress-checked and sent on stdin; answers are schema-validated; verdicts live in a request-keyed memo store whose hits are checked against the storing ledger. Calibration is one human label per (artifact, rubric item), set-checked before any verdict. The gate passed in two rounds, with every veto cleared by its holder. Five Owner decisions are open.",
       "tags": [
         "benchmark",
         "gateway",
@@ -1443,7 +1443,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b203cd5f2c257db68796a353c712d9d3719f78e2855e8aa4a34a4b710dd861cc"
+      "sourceSha256": "61cfd44cdac602696254e7d583e506632d4d03ba4085917387d46cf9fab1e519"
     },
     {
       "id": "design-run-lifecycle-model",
@@ -1627,14 +1627,20 @@ window.DOCS_INDEX = {
     {
       "id": "note-spike-gw-headless",
       "path": "docs/notes/spike-gw-headless.md",
-      "title": "Spike GW-H: the headless judge CLIs with every tool denied (pending the Leader's probe turns)",
+      "title": "Spike GW-H: the headless judge CLIs with every tool denied: Claude qualifies in text mode; Codex keeps its code-mode exec tool",
       "type": "doc",
       "status": "draft",
       "owner": "@timianmalloo",
       "phase": "",
       "reviewBy": "2026-12-25",
-      "reviewSuggested": [],
-      "summary": "The probe and its offline self-test are written (tests/fixtures/gateway/probe_judge.py, probe_selftest.py); the five probe turns are the Leader's (live turns are a Leader seam). Questions: does Claude Code 2.1.282 serve claude-fable-5-1 in print mode (else the R-58 fallback claude-opus-5-5); does each CLI record 0 tool events on the US-46 \"run a command\" prompt; does anything besides the copied credential reach the model. Results: pending.",
+      "reviewSuggested": [
+        {
+          "by": "design-phase3-gateway-judges",
+          "on": "2026-09-25",
+          "reason": "row-17 gateway design gated (rev 3): Fable judge, Codex not qualified (DR-GW-1), CLI-added context (DR-GW-5)"
+        }
+      ],
+      "summary": "Five Leader-run probe turns (2026-09-25). Claude Code 2.1.282 serves claude-fable-5-1 (and the fallback claude-opus-5-5) with 0 tool events in text mode; --json-schema adds a StructuredOutput tool call, so text mode is used. Codex 0.156.0 serves gpt-6-sol but still advertises its code-mode exec tool: the model called it once per turn and it failed closed (\"code-mode host is disabled\"), so Codex does not meet R-58 c4 as launched (a decision request). The CLIs add context the gateway cannot scan: the Claude account e-mail on some calls, the operator's ~/.agents/skills root (user name, home path) in Codex, and each CLI's self-identification. The OpenAI account is at 99% of its weekly limit until 2026-09-29T20:03Z.",
       "tags": [
         "benchmark",
         "spike",
@@ -1663,7 +1669,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "201222005784f812d13dc3b878ad49a8b708a28b05684dcd72ec0f8072db8070"
+      "sourceSha256": "669dc8dd313a0a2bc66b5e34a7cfc98ed8f98c1de4dfe1908c93157c8dcd8b96"
     },
     {
       "id": "note-spike-isolation-permissions",
@@ -1992,7 +1998,13 @@ window.DOCS_INDEX = {
       "owner": "@timianmalloo",
       "phase": "Phase 1 · walking skeleton",
       "reviewBy": "2027-03-22",
-      "reviewSuggested": [],
+      "reviewSuggested": [
+        {
+          "by": "design-phase3-gateway-judges",
+          "on": "2026-09-25",
+          "reason": "row-17 gateway design gated (rev 3): Fable judge, Codex not qualified (DR-GW-1), CLI-added context (DR-GW-5)"
+        }
+      ],
       "summary": "The only personal data is the operator's own: the account email that appears in harness transcripts, and the username in home paths. Both stay in local, gitignored run archives; the report embeds no transcript text and shows archive-relative paths. No third party receives personal data beyond the model providers the operator's own subscriptions already use.",
       "tags": [
         "privacy",
@@ -2014,10 +2026,14 @@ window.DOCS_INDEX = {
         {
           "to": "design-phase2-copilot-profile",
           "rel": "documents"
+        },
+        {
+          "to": "design-phase3-gateway-judges",
+          "rel": "documents"
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f4809e11dc8d98e2ac33d92d6682d73ee7a9fb282fd3b96cd0f6b15b4d3802bc"
+      "sourceSha256": "8a234feb6e1c15bb06d9eaac3ec6142a14c4eeddb494fce360c8d231317842b3"
     },
     {
       "id": "findings-t1-engine-hardening",
@@ -2461,7 +2477,13 @@ window.DOCS_INDEX = {
       "owner": "@timianmalloo",
       "phase": "Phase 1 · walking skeleton",
       "reviewBy": "2027-03-22",
-      "reviewSuggested": [],
+      "reviewSuggested": [
+        {
+          "by": "design-phase3-gateway-judges",
+          "on": "2026-09-25",
+          "reason": "row-17 gateway design gated (rev 3): Fable judge, Codex not qualified (DR-GW-1), CLI-added context (DR-GW-5)"
+        }
+      ],
       "summary": "harness-bench is a local benchmark run by one trusted operator (ADR-0012). Each cell works natively in its own git working copy, and nothing more (ADR-0013). The controls that remain protect result validity (hidden tests never in the agent's tree) and what the operator shares (no credential in a published report). The agent's reach outside its working copy is accepted by the owner.",
       "tags": [
         "security",
@@ -2485,6 +2507,10 @@ window.DOCS_INDEX = {
           "rel": "documents"
         },
         {
+          "to": "design-phase3-gateway-judges",
+          "rel": "documents"
+        },
+        {
           "to": "adr-0012-proportionate-security",
           "rel": "depends-on"
         },
@@ -2500,7 +2526,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart LR\n  subgraph Host[\"Host (trusted: the operator)\"]\n    Engine[\"bench engine\\n(single writer)\"]\n    Runs[\"runs/&lt;id&gt;\\nledger + archives\"]\n    Creds[\"subscription logins\\n(harness homes)\"]\n    Report[\"report HTML\"]\n  end\n  subgraph Cell[\"Cell (the agent, with the operator's rights)\"]\n    Agent[\"harness + model\"]\n    WS[\"own git working copy\"]\n  end\n  Oracle[\"hidden tests / oracle\"]\n  Engine -- \"B1 spawn into Job Object, kill\" --> Cell\n  Creds -- \"B1 per-cell copy\" --> Cell\n  Cell -- \"B4 archive\" --> Runs\n  Oracle -. \"B2 never in the task clone\" .- Cell\n  Runs --> Report\n  Report -- \"B5 publish\" --> Shared[\"shared report\"]"
         }
       ],
-      "sourceSha256": "5e3283637a1cecac92b20b5b71104ef359b3f270c38c46814b1361a2247cb71f"
+      "sourceSha256": "cf96632215fe35af4ab9d8c3c91929e5925db17785e8b6bdeef34158a400c17b"
     }
   ],
   "surfaces": [
@@ -2544,5 +2570,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "2e9b155864b59225412ca271d51c50d21ae457cd4758bc8b0a6c8a99356c40a3"
+  "graphSha256": "23c74667ac27e9c2008f30b105e3dbad340ac1a6b3119d38fc4a5cdeaf14e2bf"
 };
