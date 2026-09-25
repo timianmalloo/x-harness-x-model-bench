@@ -545,8 +545,10 @@ s2's live fixture, only through a qualified judge.
   - `p_e = 1` gives NOT_RECORDED `kappa undefined: one category`.
   - Reported with n and exact agreement. No threshold (spec `:1173`).
   - T-GW-17 uses a table with asymmetric marginals and an exact expected value.
-- **Human half:** each judge vs the labels. It reads `not recorded: labels pending` until the set check passes.
-  US-35 c3 stays a named wave-4 row until then.
+- **Human half:** each judge vs the labels. With no labels file it reads `not recorded: no human labels (operator
+  declined 2026-09-25)` (R-72 condition 1: a terminal reason, never a waiting one). The set check above applies only
+  when `labels.yaml` exists, all or none (R-72 item 4); an absent file runs the inter-judge calibration with
+  `labels_sha256: null`. US-35 c3 stays a named wave-4 row until a human labeller exists.
 - **Inter-judge half:** `not recorded: second judge not qualified` while DR-GW-1 is open.
 - **Disclosure (R-62 a3):** "Calibration items were written by `claude-opus-5-5`; the Anthropic judge is a Claude
   model."

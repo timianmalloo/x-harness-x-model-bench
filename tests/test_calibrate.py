@@ -88,8 +88,14 @@ def label(item_id: str, score, utc: str = "2026-09-25T00:00:00Z") -> dict:
     return {"id": item_id, "score": score, "labelled_utc": utc}
 
 
+_CALLS: dict[Path, judge.Calls] = {}
+
+
 def calibrate(root: Path, tmp_path: Path, base: Path) -> str:
-    return calibration.run(root, tmp_path / "runs", fake_calls(tmp_path, base / "cells", judge.Calls))
+    """One calibration pass; the call environment (`fake_calls`) is built once per test."""
+    if tmp_path not in _CALLS:
+        _CALLS[tmp_path] = fake_calls(tmp_path, base / "cells", judge.Calls)
+    return calibration.run(root, tmp_path / "runs", _CALLS[tmp_path])
 
 
 def ledger_dir(tmp_path: Path) -> Path:
