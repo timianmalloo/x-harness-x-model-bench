@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T10:10:27Z",
+  "generated": "2026-09-25T10:56:23Z",
   "audit": [
     {
       "actor": null,
@@ -19580,6 +19580,42 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3C3B39A4RXC26MHRB2WZT9Z",
+      "shortname": "W3-GW-CP: Copilot gpt-6-sol probe harness (R-63)",
+      "datetime": "2026-09-25T10:56:23Z",
+      "session": "w3-gwcp",
+      "prompt": "W3-GW-CP: add Copilot 1.0.89-1 serving gpt-6-sol as a third harness of tests/fixtures/gateway/probe_judge.py in the GW-H shape, so the Leader can run R-63's two probe turns.",
+      "summary": "Added Copilot gpt-6-sol as a third probe_judge.py harness per R-63 c1: copilot_argv builds -p/--model/--disable-builtin-mcps/empty --available-tools (assume: -p print mode, marked in code; -disable-builtin-mcps and --available-tools are R-45's own Verified flags); run() gained a --credential-source override since Copilot's cell profile copies nothing (credential: null) but this probe needs a throwaway COPILOT_HOME the Leader seeds at run time, never the real ~/.copilot. Found and worked around (in probe_judge.py only, not telemetry/copilot.py which is out of scope) a reader defect: Extraction.tools_advertised collapses a genuinely measured empty tools list to None via `or None`, which would have silently passed R-63's central \"[] never null\" criterion; added _copilot_tools_advertised reading the raw record directly, plus a Copilot-only null-tools reason. Five placeholder records under tests/fixtures/gateway/copilot/ (fixed placeholders only), red on c049e66 (2 failing null-tools assertions), green on 3fe712f. probe_selftest.py: 39 -> 53 checks, exit 0. pytest: 1242 passed, 2 skipped. ruff clean. Reported to the Leader: telemetry/copilot.py's tools_advertised `or None` collapse is a real defect for any future all-tools-off consumer, not fixed here (out of this track's file scope).",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "claude",
+      "artifacts": [
+        "tests/fixtures/gateway/probe_judge.py",
+        "tests/fixtures/gateway/probe_selftest.py",
+        "tests/fixtures/gateway/copilot/"
+      ],
+      "tags": [
+        "gateway",
+        "copilot",
+        "R-63"
+      ],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "W3-GW-CP: add Copilot 1.0.89-1 serving gpt-6-sol as a third harness of tests/fixtures/gateway/probe_judge.py in the GW-H shape, so the Leader can run R-63's two probe turns.",
+      "done_when": "probe_judge.py run --harness copilot --model gpt-6-sol builds R-63's launch shape (dry-run verified); analyse reads Copilot's own native record (served model, tools_advertised distinct [] vs null via a dedicated reader, tool events, canaries/pack markers/operator identifiers as key paths, unreadable record exits 2); probe_selftest.py gains five placeholder Copilot cases, red first, all green; collect accepts the Copilot summary form unchanged; pytest and ruff clean.",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-09-25T10:48:48Z",
+      "duration_seconds": 455.0,
+      "git": {
+        "sha": "d3553e232b12e51ee6bfa24d8d54b288fdf015d9",
+        "short": "d3553e232",
+        "branch": "w3-gwcp",
+        "pushed": null
+      }
     }
   ],
   "changes": [
