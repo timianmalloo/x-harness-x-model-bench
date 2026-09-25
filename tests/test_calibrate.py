@@ -284,3 +284,41 @@ def test_r72_c4_the_blind_attestation_and_labelled_utc_are_read_and_shown(tmp_pa
     write_labels(root, [label(i, VERDICTS[i], utc) for i, _ in ITEMS], blind=blind)
     calibrate(root, tmp_path, base)
     assert line(root, tmp_path) == f"n = 3 · {SECOND} · vs human labels: {CLAUDE} κ 1.000 (n = 3, exact 3){notes}"
+
+
+# --------------------------------------------------------------------------------------------------- T-GW-17
+def pairs(table: dict[tuple[int, int], int]) -> list[tuple[int, int]]:
+    return [cell for cell, count in table.items() for _ in range(count)]
+
+
+# rater 1 marginals (0, 1, 2) = (5, 3, 2); rater 2 = (4, 4, 2): asymmetric. p_o = 6/10, p_e = 36/100, so
+# kappa = (0.6 - 0.36) / (1 - 0.36) = 0.375 exactly.
+ASYMMETRIC = {(0, 0): 3, (1, 1): 2, (2, 2): 1, (0, 1): 2, (1, 2): 1, (2, 0): 1}
+# the same marginals with 4 agreements: kappa = (0.4 - 0.36) / 0.64 = 0.0625, a tie at scale 3: half-even is 0.062
+TIE = {(0, 0): 2, (1, 1): 1, (2, 2): 1, (0, 1): 2, (0, 2): 1, (1, 0): 2, (2, 1): 1}
+
+
+def test_t_gw_17_kappa_is_unweighted_cohen_at_scale_3_half_even_with_n_and_exact_agreement():
+    assert calibration is not None, NOT_BUILT
+    kappa = calibration.kappa
+    assert kappa(pairs(ASYMMETRIC)) == calibration.Kappa(n=10, exact=6, value="0.375", reason=None)
+    assert kappa(pairs(TIE)) == calibration.Kappa(n=10, exact=4, value="0.062", reason=None)
+    # swapping the raters leaves kappa unchanged (the marginals swap)
+    assert kappa([(b, a) for a, b in pairs(ASYMMETRIC)]).value == "0.375"
+    # unweighted: a two-step disagreement costs what a one-step one does
+    assert kappa([(0, 0), (1, 1), (2, 2), (0, 2)]) == kappa([(0, 0), (1, 1), (2, 2), (0, 1)]) == \
+        calibration.Kappa(n=4, exact=3, value="0.636", reason=None)
+    # perfect agreement over two categories; total disagreement is negative
+    assert kappa([(0, 0), (2, 2)]).value == "1.000"
+    assert kappa([(0, 2), (2, 0)]).value == "-1.000"
+
+
+def test_t_gw_17_one_category_is_not_recorded_with_n_and_exact_agreement():
+    assert calibration is not None, NOT_BUILT
+    assert calibration.kappa([(1, 1)] * 5) == \
+        calibration.Kappa(n=5, exact=5, value=None, reason="kappa undefined: one category")
+    assert calibration.kappa([(0, 2)] * 5) == calibration.Kappa(n=5, exact=0, value="0.000", reason=None)  # p_e = 0
+    assert calibration.kappa([]) == calibration.Kappa(n=0, exact=0, value=None, reason="no recorded pairs")
+    assert calibration.Kappa(n=5, exact=5, value=None, reason="kappa undefined: one category").text() == \
+        "not recorded: kappa undefined: one category (n = 5, exact 5)"
+    assert calibration.Kappa(n=10, exact=6, value="0.375", reason=None).text() == "0.375 (n = 10, exact 6)"
