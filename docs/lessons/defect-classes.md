@@ -240,9 +240,13 @@ summary: >-
 - **Why it survives:** on a green suite the chain looks identical to a gated one; only a failure shows the difference.
 - **Instances:**
   - `2026-09-24`, the W1-COP-I slice-2 join: the suite hung at about 15% (not reproduced; the engine tests alone passed in 88 s, and the full re-run passed 747 in 163 s). The Leader killed it, and the chained `git push` then pushed `075d3c5` before any suite had completed on it. The later full run on the same commit was green, so no broken code reached the remote.
+  - `2026-09-25`, the STOP-I slice-1 join: a second instance of the same shape, one step earlier. `git merge` failed ("Merge with strategy ort failed": two uncommitted audit lines blocked it), and the chain went on. The regen commit that followed (`6d9d994`) was labelled "after the STOP-I join", and the suite ran on the **old** `main` and read green (955). The Leader caught it from the missing merge line before any push, then merged properly (`299c465`: 967 passed).
 - **Sweep:** every Leader join command since the plan started used the same `pytest …; tail; ruff; push` shape.
-- **Control:** at a join, the push is its own command, run only after the suite's exit code has been read as 0 in an earlier step (`pytest … > log; echo "exit=$?"`, then a separate push). Not yet a hook. The upgrade trigger is a second instance.
-- **Status:** `observed` (Leader procedure)
+- **Control:**
+  - At a join, the push is its own command, run only after the suite's exit code has been read as 0 in an earlier step (`pytest … > log; echo "exit=$?"`, then a separate push).
+  - **After the second instance:** the merge also reports its own exit (`git merge …; echo "merge=$?"`), and nothing else runs until it reads 0. The Leader commits its own pending audit and ledger lines before any merge.
+  - The upgrade trigger for a hook is a third instance.
+- **Status:** `observed` (Leader procedure, second instance)
 
 ### CLN-B: a joined tree removed while a reviewer still reads it
 - **Signature:** the Leader cleans up a merged worktree while a review of that track is still running, and the reviewer's run depends on a file in that tree, such as its `.venv` interpreter. The reviewer's tool then fails in the middle of the run.
@@ -316,6 +320,7 @@ summary: >-
 - **Sweep:** `print(json.dumps(..., ensure_ascii=False))` or a `stdout.write` of the same across `src/`, `tools/`, `tests/`: no other instance (grep, 2026-09-25). The other S-04 scripts print with `ensure_ascii=True`.
 - **Control:** `probe_selftest.py` `test_emit_on_a_legacy_console` runs `emit` under `PYTHONIOENCODING=cp1252` with a `−` and an emoji and requires exit 0. It was observed red on the old `emit` (2 failures), then green. The rule: stdout carries JSON escapes (`ensure_ascii=True`); files are written in UTF-8.
 - **Status:** `controlled` for the probe (the self-test is run by hand before a probe run); the upgrade trigger is a second instance, in a tool whose output a gate reads.
+- **Second instance, on the decode side (2026-09-25, W2-USER-M): the upgrade trigger fired.** `tools/mutate_check.py` read pytest's output with `text=True`, which uses the locale codec (cp1252). A failing test whose message held U+3041 (UTF-8 bytes include `0x81`) crashed the tool with `UnicodeDecodeError`, then `TypeError`. `mutate_check` is a gate. **Control:** `subprocess.run(..., encoding="utf-8", errors="replace")`, with `tests/test_mutate_check.py::test_non_ascii_test_output_is_decoded_as_utf8_not_the_locale` in the default suite, observed red (the exact crash), then green. The rule, extended: child output is decoded as UTF-8 explicitly, never by the locale. **Sweep:** `text=True` without `encoding=` in `src/`, `tools/` and `tests/` is a next step, done by grep at the next join.
 
 ---
 
