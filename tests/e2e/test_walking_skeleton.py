@@ -33,6 +33,8 @@ def kept(clean_parent, matrix_id):
 
 @pytest.mark.parametrize("matrix_id,matrix_path", [("phase1", MATRICES[0]), ("wave1", MATRICES[1])], ids=["phase1", "wave1"])
 def test_the_walking_skeleton_runs_end_to_end(kept, matrix_id, matrix_path, capsys):
+    if matrix_id == "wave1" and not os.environ.get("HB_PACK_SOURCE"):
+        pytest.fail("wave1 needs HB_PACK_SOURCE: the pack-on cells must run a named pack revision (>= 95), never a default")
     tools_dir = ROOT / ".tools" / "harness"  # installed by the e2e conftest
     runs, cells = kept / "runs", kept / "cells"
     rid = kept.name
@@ -82,9 +84,19 @@ def test_the_walking_skeleton_runs_end_to_end(kept, matrix_id, matrix_path, caps
     assert [o["permission_requests"] for o in outcomes] == [0] * expected_cells
 
     if matrix_id == "wave1":
+        assert p["pack"]["revision"] >= 95, p["pack"]  # revision 92's failing hook denied every Copilot tool call (R-27)
         tool_rows = views.rows(run_dir, "tool_calls")
         for cell in (c for c in view.cells if c.harness == "copilot"):
             assert copilot.us14_valid([r for r in tool_rows if r["cell_id"] == cell.cell_id]), cell.label
+        # the plan's Copilot instruction datum: pack-on loads the pack's instruction files, pack-off loads none (R-16)
+        copilot_cells = [c for c in p["cells"] if c["harness"] == "copilot"]
+        assert {c["pack"] for c in copilot_cells} == {"on", "off"}, copilot_cells
+        for c in copilot_cells:
+            assert (c["instruction_count"] > 0) if c["pack"] == "on" else (c["instruction_count"] == 0), \
+                (c["label"], c["pack"], c["instruction_count"])
+        # W1-ACP (f), the ledger half: every cell's terminal outcome records last_update_ms (null means not recorded)
+        assert all(o.get("last_update_ms") is not None for o in outcomes), \
+            [(o["cell_id"], o.get("last_update_ms")) for o in outcomes]
 
     # bench verify passes (ledger chains and seals, archive hashes and bytes: US-19)
     capsys.readouterr()
