@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T19:46:57Z",
+  "generated": "2026-09-25T20:58:44Z",
   "audit": [
     {
       "actor": null,
@@ -31044,6 +31044,342 @@ window.AUDIT_DATA = {
         "branch": "w3-grcode6b1",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M3D5T0J4FC060BT293N43WYC",
+      "shortname": "Goal: W3-GR-CODE slice c6b-3 per docs/design/phase3-graders.md, section …",
+      "datetime": "2026-09-25T20:58:43Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W3-GR-CODE slice c6b-3 per docs/design/phase3-graders.md, section \"Mutation\" (Fixtures) and docs/notes/spike-gr-code-stryker.md: the mutation grader's slow-ring tests with the real Stryker.NET 4.16.0, red first.\nDone when: A @pytest.mark.slow test seeds D1's reference plus a NEW test project whose one test never calls Compute (the design's seed: every mutant NoCoverage) and asserts mutation_score is exactly Decimal(\"0.0000\"); it is red first against a deliberately wrong expectation only if no real red exists, otherwise red first by construction as the design's seed requires, and committed failing on an assertion.; A @pytest.mark.slow gate-run test grades the six row15-d1-1 D1 cells through grade.mutation.grade_cell with HB_REQUIRE_DOTNET=1: 35af195cfe821dca gives NA \"no tests written\" exactly; the other five give characterization values, and each is graded twice and the two values are equal; the archive of each cell is byte-unchanged (tree_digest before and after, as tests/test_grade_correctness.py does).; The gate runs are READ-ONLY: every build and Stryker run happens in a grading copy under tmp_path; never run a build, restore, Stryker or git command with its cwd under C:/projects/x-harness-x-model-bench/runs/, not even to explore.; `HB_REQUIRE_DOTNET=1 HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs uv run pytest -q -p no:cacheprovider -m slow tests/test_grade_mutation.py` passes; the default ring on tests/test_grade_mutation.py passes; uv run ruff check src tests tools is clean.; Commit each red and each green immediately with git; your final message lists the five characterization values and each commit SHA.\nNot in scope: grade/mutation.py logic (joined; change it only if a slow test proves a defect, red first); bench/metrics.yaml; any file under runs/; bench run; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one slice of at most 50 minutes (the slow runs take minutes each: run the gate test once, then commit); commit each green immediately.\n\nGrounding: docs/design/phase3-graders.md (Mutation); docs/notes/spike-gr-code-stryker.md; src/harness_bench/grade/{mutation,_changes,correctness}.py; tests/test_grade_mutation.py; tests/test_grade_correctness.py (d1_cell, tree_digest); tests/archived_runs.py (gate_runs_root). Use python, not python3 (Windows). Always read each pytest exit code; \"no tests ran\" is a failure.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3D5T1JNJYX1W4C2ZAAZMJYM",
+      "shortname": "compile-Goal: W3-GR-CODE slice c6b-3 per docs/design/phase3-graders.md, section …",
+      "datetime": "2026-09-25T20:58:44Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-GR-CODE slice c6b-3 per docs/design/phase3-graders.md, section \"Mutation\" (Fixtures) and docs/notes/spike-gr-code-stryker.md: the mutation grader's slow-ring tests with the real Stryker.NET 4.16.0, red first.\nDone when: A @pytest.mark.slow test seeds D1's reference plus a NEW test project whose one test never calls Compute (the design's seed: every mutant NoCoverage) and asserts mutation_score is exactly Decimal(\"0.0000\"); it is red first against a deliberately wrong expectation only if no real red exists, otherwise red first by construction as the design's seed requires, and committed failing on an assertion.; A @pytest.mark.slow gate-run test grades the six row15-d1-1 D1 cells through grade.mutation.grade_cell with HB_REQUIRE_DOTNET=1: 35af195cfe821dca gives NA \"no tests written\" exactly; the other five give characterization values, and each is graded twice and the two values are equal; the archive of each cell is byte-unchanged (tree_digest before and after, as tests/test_grade_correctness.py does).; The gate runs are READ-ONLY: every build and Stryker run happens in a grading copy under tmp_path; never run a build, restore, Stryker or git command with its cwd under C:/projects/x-harness-x-model-bench/runs/, not even to explore.; `HB_REQUIRE_DOTNET=1 HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs uv run pytest -q -p no:cacheprovider -m slow tests/test_grade_mutation.py` passes; the default ring on tests/test_grade_mutation.py passes; uv run ruff check src tests tools is clean.; Commit each red and each green immediately with git; your final message lists the five characterization values and each commit SHA.\nNot in scope: grade/mutation.py logic (joined; change it only if a slow test proves a defect, red first); bench/metrics.yaml; any file under runs/; bench run; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one slice of at most 50 minutes (the slow runs take minutes each: run the gate test once, then commit); commit each green immediately.\nGrounding: docs/design/phase3-graders.md (Mutation); docs/notes/spike-gr-code-stryker.md; src/harness_bench/grade/{mutation,_changes,correctness}.py; tests/test_grade_mutation.py; tests/test_grade_correctness.py (d1_cell, tree_digest); tests/archived_runs.py (gate_runs_root). Use python, not python3 (Windows). Always read each pytest exit code; \"no tests ran\" is a failure.\nTrace\n| clause | trace |\n|---|---|\n| done_when: A @pytest.mark.slow test seeds D1's reference plus a NEW test project whose one test never calls Compute (the design's seed: every mutant NoCoverage) and asserts mutation_score is exactly Decimal(\"0.0000\") | phrase: A @pytest.mark.slow test seeds D1's reference plus a NEW test project whose one test never calls Compute (the design's seed: every mutant NoCoverage) and asserts mutation_score is exactly Decimal(\"0.0000\") |\n| done_when: it is red first against a deliberately wrong expectation only if no real red exists, otherwise red first by construction as the design's seed requires, and committed failing on an assertion. | phrase: it is red first against a deliberately wrong expectation only if no real red exists, otherwise red first by construction as the design's seed requires, and committed failing on an assertion. |\n| done_when: A @pytest.mark.slow gate-run test grades the six row15-d1-1 D1 cells through grade.mutation.grade_cell with HB_REQUIRE_DOTNET=1: 35af195cfe821dca gives NA \"no tests written\" exactly | phrase: A @pytest.mark.slow gate-run test grades the six row15-d1-1 D1 cells through grade.mutation.grade_cell with HB_REQUIRE_DOTNET=1: 35af195cfe821dca gives NA \"no tests written\" exactly |\n| done_when: the other five give characterization values, and each is graded twice and the two values are equal | phrase: the other five give characterization values, and each is graded twice and the two values are equal |\n| done_when: the archive of each cell is byte-unchanged (tree_digest before and after, as tests/test_grade_correctness.py does). | phrase: the archive of each cell is byte-unchanged (tree_digest before and after, as tests/test_grade_correctness.py does). |\n| done_when: The gate runs are READ-ONLY: every build and Stryker run happens in a grading copy under tmp_path | phrase: The gate runs are READ-ONLY: every build and Stryker run happens in a grading copy under tmp_path |\n| done_when: never run a build, restore, Stryker or git command with its cwd under C:/projects/x-harness-x-model-bench/runs/, not even to explore. | phrase: never run a build, restore, Stryker or git command with its cwd under C:/projects/x-harness-x-model-bench/runs/, not even to explore. |\n| done_when: `HB_REQUIRE_DOTNET=1 HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs uv run pytest -q -p no:cacheprovider -m slow tests/test_grade_mutation.py` passes | phrase: `HB_REQUIRE_DOTNET=1 HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs uv run pytest -q -p no:cacheprovider -m slow tests/test_grade_mutation.py` passes |\n| done_when: the default ring on tests/test_grade_mutation.py passes | phrase: the default ring on tests/test_grade_mutation.py passes |\n| done_when: uv run ruff check src tests tools is clean. | phrase: uv run ruff check src tests tools is clean. |\n| done_when: Commit each red and each green immediately with git | phrase: Commit each red and each green immediately with git |\n| done_when: your final message lists the five characterization values and each commit SHA. | phrase: your final message lists the five characterization values and each commit SHA. |\n| not_in_scope: grade/mutation.py logic (joined | phrase: grade/mutation.py logic (joined |\n| not_in_scope: change it only if a slow test proves a defect, red first) | phrase: change it only if a slow test proves a defect, red first) |\n| not_in_scope: bench/metrics.yaml | phrase: bench/metrics.yaml |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: bench run | phrase: bench run |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- HB_REQUIRE_DOTNET=1 HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs uv run pytest -q -p no:cacheprovider -m slow tests/test_grade_mutation.py: unresolved (not found; nearest: tests/test_grade_mutation.py)\n- docs/design/phase3-graders.md: docs/design/phase3-graders.md sha256 ea4db9cd170dcaf00bf7f28ce0119db61a05b879c263d8547648c275a31fe0f4\n- docs/notes/spike-gr-code-stryker.md: docs/notes/spike-gr-code-stryker.md sha256 81f2e456754782b2340bbb75d09250870c53b60ea4d39d34e80294eb4dc75b62\n- tests/test_grade_correctness.py: tests/test_grade_correctness.py sha256 d0f9b8c3508486bea0ca7a8d4793efe0aa3de7b9f4b5d61e53629e291ac8f2ce\n- C:/projects/x-harness-x-model-bench/runs/: unresolved (outside repo)\n- HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs: unresolved (not found)\n- tests/test_grade_mutation.py: tests/test_grade_mutation.py sha256 53de6c2049e883c03781b8fa0d43f0c8bfd72ef6cdffcf99783089fc379f7ded\n- grade/mutation.py: src/harness_bench/grade/mutation.py sha256 38737463c1f97022920640aded9e436e7c1029a79c6b56ae616543b05d41d984\n- bench/metrics.yaml: bench/metrics.yaml sha256 30de798ee2763f2570687a85388c8486622268ec0a27b56325b3128d1938e00f\n- runs/: unresolved (not found)\n- src/harness_bench/grade/{mutation,_changes,correctness}.py: unresolved (not found)\n- tests/archived_runs.py: tests/archived_runs.py sha256 a18faad1b4f2eee79b76642748408dca0ebff1fdbdb0776a5bed357e7a3cb842\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3D5T0J4FC060BT293N43WYC\nraw sha256: 4a87c1b4b8ebe91f233977ce0c1daa30964b75e48216d235954ec6bb93a21018\ncompiler model: claude-opus-5-5\nengine seconds: 0.005\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3D5T0J4FC060BT293N43WYC for claude-code v1: 18 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A @pytest.mark.slow test seeds D1's reference plus a NEW test project whose one test never calls Compute (the design's seed: every mutant NoCoverage) and asserts mutation_score is exactly Decimal(\"0.0000\")",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A @pytest.mark.slow test seeds D1's reference plus a NEW test project whose one test never calls Compute (the design's seed: every mutant NoCoverage) and asserts mutation_score is exactly Decimal(\"0.0000\")"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "it is red first against a deliberately wrong expectation only if no real red exists, otherwise red first by construction as the design's seed requires, and committed failing on an assertion.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "it is red first against a deliberately wrong expectation only if no real red exists, otherwise red first by construction as the design's seed requires, and committed failing on an assertion."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A @pytest.mark.slow gate-run test grades the six row15-d1-1 D1 cells through grade.mutation.grade_cell with HB_REQUIRE_DOTNET=1: 35af195cfe821dca gives NA \"no tests written\" exactly",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A @pytest.mark.slow gate-run test grades the six row15-d1-1 D1 cells through grade.mutation.grade_cell with HB_REQUIRE_DOTNET=1: 35af195cfe821dca gives NA \"no tests written\" exactly"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the other five give characterization values, and each is graded twice and the two values are equal",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the other five give characterization values, and each is graded twice and the two values are equal"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the archive of each cell is byte-unchanged (tree_digest before and after, as tests/test_grade_correctness.py does).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the archive of each cell is byte-unchanged (tree_digest before and after, as tests/test_grade_correctness.py does)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The gate runs are READ-ONLY: every build and Stryker run happens in a grading copy under tmp_path",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The gate runs are READ-ONLY: every build and Stryker run happens in a grading copy under tmp_path"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "never run a build, restore, Stryker or git command with its cwd under C:/projects/x-harness-x-model-bench/runs/, not even to explore.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "never run a build, restore, Stryker or git command with its cwd under C:/projects/x-harness-x-model-bench/runs/, not even to explore."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`HB_REQUIRE_DOTNET=1 HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs uv run pytest -q -p no:cacheprovider -m slow tests/test_grade_mutation.py` passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`HB_REQUIRE_DOTNET=1 HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs uv run pytest -q -p no:cacheprovider -m slow tests/test_grade_mutation.py` passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the default ring on tests/test_grade_mutation.py passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the default ring on tests/test_grade_mutation.py passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately with git",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately with git"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "your final message lists the five characterization values and each commit SHA.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "your final message lists the five characterization values and each commit SHA."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "grade/mutation.py logic (joined",
+            "trace": {
+              "kind": "phrase",
+              "ref": "grade/mutation.py logic (joined"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "change it only if a slow test proves a defect, red first)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "change it only if a slow test proves a defect, red first)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench/metrics.yaml",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/metrics.yaml"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens",
+          "done_when": [
+            "A @pytest.mark.slow test seeds D1's reference plus a NEW test project whose one test never calls Compute (the design's seed: every mutant NoCoverage) and asserts mutation_score is exactly Decimal(\"0.0000\")",
+            "it is red first against a deliberately wrong expectation only if no real red exists, otherwise red first by construction as the design's seed requires, and committed failing on an assertion.",
+            "A @pytest.mark.slow gate-run test grades the six row15-d1-1 D1 cells through grade.mutation.grade_cell with HB_REQUIRE_DOTNET=1: 35af195cfe821dca gives NA \"no tests written\" exactly",
+            "the other five give characterization values, and each is graded twice and the two values are equal",
+            "the archive of each cell is byte-unchanged (tree_digest before and after, as tests/test_grade_correctness.py does).",
+            "The gate runs are READ-ONLY: every build and Stryker run happens in a grading copy under tmp_path",
+            "never run a build, restore, Stryker or git command with its cwd under C:/projects/x-harness-x-model-bench/runs/, not even to explore.",
+            "`HB_REQUIRE_DOTNET=1 HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs uv run pytest -q -p no:cacheprovider -m slow tests/test_grade_mutation.py` passes",
+            "the default ring on tests/test_grade_mutation.py passes",
+            "uv run ruff check src tests tools is clean.",
+            "Commit each red and each green immediately with git",
+            "your final message lists the five characterization values and each commit SHA."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W3-GR-CODE slice c6b-3 per docs/design/phase3-graders.md, section \"Mutation\" (Fixtures) and docs/notes/spike-gr-code-stryker.md: the mutation grader's slow-ring tests with the real Stryker.NET 4.16.0, red first.",
+          "main_line_budget": "one slice of at most 50 minutes (the slow runs take minutes each: run the gate test once, then commit); commit each green immediately.\nGrounding: docs/design/phase3-graders.md (Mutation); docs/notes/spike-gr-code-stryker.md; src/harness_bench/grade/{mutation,_changes,correctness}.py; tests/test_grade_mutation.py; tests/test_grade_correctness.py (d1_cell, tree_digest); tests/archived_runs.py (gate_runs_root). Use python, not python3 (Windows). Always read each pytest exit code; \"no tests ran\" is a failure.",
+          "not_in_scope": [
+            "grade/mutation.py logic (joined",
+            "change it only if a slow test proves a defect, red first)",
+            "bench/metrics.yaml",
+            "any file under runs/",
+            "bench run",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.005,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3D5T0J4FC060BT293N43WYC",
+        "raw_sha256": "4a87c1b4b8ebe91f233977ce0c1daa30964b75e48216d235954ec6bb93a21018",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": "tests/test_grade_mutation.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_REQUIRE_DOTNET=1 HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs uv run pytest -q -p no:cacheprovider -m slow tests/test_grade_mutation.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase3-graders.md",
+            "reason": null,
+            "sha256": "ea4db9cd170dcaf00bf7f28ce0119db61a05b879c263d8547648c275a31fe0f4",
+            "status": "resolved",
+            "token": "docs/design/phase3-graders.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/spike-gr-code-stryker.md",
+            "reason": null,
+            "sha256": "81f2e456754782b2340bbb75d09250870c53b60ea4d39d34e80294eb4dc75b62",
+            "status": "resolved",
+            "token": "docs/notes/spike-gr-code-stryker.md"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_correctness.py",
+            "reason": null,
+            "sha256": "d0f9b8c3508486bea0ca7a8d4793efe0aa3de7b9f4b5d61e53629e291ac8f2ce",
+            "status": "resolved",
+            "token": "tests/test_grade_correctness.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/projects/x-harness-x-model-bench/runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_mutation.py",
+            "reason": null,
+            "sha256": "53de6c2049e883c03781b8fa0d43f0c8bfd72ef6cdffcf99783089fc379f7ded",
+            "status": "resolved",
+            "token": "tests/test_grade_mutation.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/mutation.py",
+            "reason": null,
+            "sha256": "38737463c1f97022920640aded9e436e7c1029a79c6b56ae616543b05d41d984",
+            "status": "resolved",
+            "token": "grade/mutation.py"
+          },
+          {
+            "nearest": null,
+            "path": "bench/metrics.yaml",
+            "reason": null,
+            "sha256": "30de798ee2763f2570687a85388c8486622268ec0a27b56325b3128d1938e00f",
+            "status": "resolved",
+            "token": "bench/metrics.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/grade/{mutation,_changes,correctness}.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/archived_runs.py",
+            "reason": null,
+            "sha256": "a18faad1b4f2eee79b76642748408dca0ebff1fdbdb0776a5bed357e7a3cb842",
+            "status": "resolved",
+            "token": "tests/archived_runs.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
     }
   ],
   "changes": [
