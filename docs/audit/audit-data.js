@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T09:13:19Z",
+  "generated": "2026-09-25T09:31:53Z",
   "audit": [
     {
       "actor": null,
@@ -17524,6 +17524,48 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "id": "al-01M3BYGC3JG4C9MRP9JE5G6AVB",
+      "shortname": "w3-egress-s1b",
+      "datetime": "2026-09-25T09:31:53Z",
+      "session": "w3-egress",
+      "prompt": "W3-EGRESS 1b: Fable re-review Majors 1-3 (procs allowlist and built-judge-without-gateway; method and self-attribute sinks; Cc/Cf and non-clean base64) red-first, the minors if cheap, the GW-I and slice-2 notes, mutants, full suite, ruff.",
+      "summary": "W3-EGRESS slice 1b (Fable re-review PASS WITH CONDITIONS, three Majors + minors). Major 1 (procs allowlist outside gateway/: engine, gitsafe, grade/correctness, plan, tools, workspace, read not recalled; a built grade/judge.py without gateway/ is a finding, chosen over a dated assume) red f2572fa green 0342612. Major 2 (calls rooted at a non-data parameter and on self attributes assigned from one are sinks) red 15a2b24 green a4a0c66 (+57080f3 style fix; 98b963e drops the redundant spawner fixpoint). Major 3 (Cc/Cf-removed view; base64 decoded with errors replaced, NULs and non-printables stripped, kept at >= 80% printable) red cc01b55 green 786da7c. Minors (backslash-newline continuation, whitespace-split email/username, hex runs >= 32, newline-wrapped base64) red 285d879 green 599ec18. Lint self-check 23/23 as expected, 0 findings over 49 real modules. tests/mutations/egress.json 48/48 killed. Full suite 1175 passed. ruff clean on owned files; tests/fixtures/gateway/probe_selftest.py (W3-GW-D, aaf986c on main) has RUF100, not owned. No socket, listener, network, subprocess or real secret in the diff.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "src/harness_bench/egress.py",
+        "tests/test_egress.py",
+        "tests/test_architecture.py",
+        "tests/mutations/egress.json"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Land the Fable re-review's three Majors (and cheap minors) before the GW-I join, offline under R-60.",
+      "done_when": "The three Fable Majors fixed red-first (each red committed separately, failing on assertions), the minors done red-first, the GW-I and slice-2 notes documented, mutants for each new branch all killed, full suite green, ruff clean on owned files, closing audit entry last.",
+      "tier": "T2",
+      "main_calls": 50,
+      "main_budget": 150,
+      "main_over_budget": false,
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-25T09:17:46Z",
+      "duration_seconds": 847.0,
+      "git": {
+        "sha": "a5e641f5b3c67ffc2dcbf4464cd51fb53c590ab3",
+        "short": "a5e641f5b",
+        "branch": "w3-egress-b",
+        "pushed": null
+      }
     }
   ],
   "changes": [
