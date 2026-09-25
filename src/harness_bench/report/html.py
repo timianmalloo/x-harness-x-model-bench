@@ -67,7 +67,16 @@ def _table(tid: str, caption: str, headers: list[tuple[str, bool]], rows: list[l
             f"<tbody>{body}</tbody></table></div>")
 
 
-def _context_window_fact(cells: list[views.CellView]) -> str | None:
+def _context_window_tags(run_dir: Path | None) -> dict[str, str]:
+    """R-32: cell_id -> context_window_tag, read straight from `attempt.process_ended` events
+    (views.py is not touched for this: the report reads the attribute itself, ruling R-32 condition 3)."""
+    if run_dir is None:
+        return {}
+    return {e["cell_id"]: e["context_window_tag"] for e in views.rows(run_dir, "events")
+            if e.get("kind") == "attempt.process_ended" and e.get("context_window_tag")}
+
+
+def _context_window_fact(cells: list[views.CellView], tags: dict[str, str]) -> str | None:
     """R-32: one disclosure line per harness present, "not recorded" for a harness with no tagged cell
     (a shared "not recorded" is not repeated per harness)."""
     harnesses = sorted({c.harness for c in cells})
@@ -75,14 +84,14 @@ def _context_window_fact(cells: list[views.CellView]) -> str | None:
         return None
     lines = []
     for h in harnesses:
-        tag = next((c.context_window_tag for c in cells if c.harness == h and c.context_window_tag), None)
+        tag = next((tags.get(c.cell_id) for c in cells if c.harness == h and tags.get(c.cell_id)), None)
         line = report.context_window(h, tag)
         if line not in lines:
             lines.append(line)
     return "; ".join(lines)
 
 
-def _header(view: views.RunView) -> str:
+def _header(view: views.RunView, tags: dict[str, str]) -> str:
     plan = view.plan
     planned = ", ".join(f"{h} {b.get('version', '')}".strip() for h, b in sorted((plan.get("builds") or {}).items()))
     facts = [("Run", view.run_id), ("State", "complete" if view.completed else "incomplete"),
@@ -91,7 +100,7 @@ def _header(view: views.RunView) -> str:
              ("Pack commit", (plan.get("pack") or {}).get("commit")), ("Planned builds", planned),
              ("Executed builds", view.header.get("executed_builds")), ("Credential kind", view.header.get("credential_kind")),
              ("Network mode", view.header.get("network_mode")), ("Defender real-time exclusion", None),
-             ("Context window", _context_window_fact(view.cells)),
+             ("Context window", _context_window_fact(view.cells, tags)),
              ("Price list hash", (plan.get("price_list_hash") or "")[:12])]
     if report.has_codex_cell(plan):
         facts.append((report.N5_FLAG, f"see {report.N5_EVIDENCE}"))
@@ -137,7 +146,7 @@ def _evidence(c: views.CellView, archive_present: bool) -> str:
     return _e(f"This copy doesn't include the run archive. Evidence path: {pointer}.")
 
 
-def _runs(view: views.RunView, archive_present: bool) -> str:
+def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str]) -> str:
     if not view.cells:
         return '<section id="runs"><h2>Cells</h2><p>No cells in this run.</p></section>'
     headers = [("Cell", False), ("Outcome", False), ("Validity", False), ("pass@1", True), ("Partial credit", True), ("Tokens", True),
@@ -149,16 +158,18 @@ def _runs(view: views.RunView, archive_present: bool) -> str:
              (_e(report.rate(c.scores.get("pass_at_1", na))), True), (_e(report.rate(c.scores.get("partial_credit", na))), True),
              (_e(report.cell_tokens(c.tokens, c.tokens_reason)), True), (_e(report.seconds(c.wall_ms)), True),
              (_e(report.millis(c.tool_ms)), True), (_e(report.millis(c.model_ms)), True), (_e(report.millis(c.idle_ms)), True),
-             (_e(report.usd(c.scores.get("cost_usd", na))), True), (_e(report.context_window(c.harness, c.context_window_tag)), False),
+             (_e(report.usd(c.scores.get("cost_usd", na))), True), (_e(report.context_window(c.harness, tags.get(c.cell_id))), False),
              (_evidence(c, archive_present), False)] for c in view.cells]
     return f'<section id="runs"><h2>Cells</h2>{_table("runs", "Every cell of the run", headers, rows)}</section>'
 
 
-def render(view: views.RunView, archive_present: bool) -> str:
+def render(view: views.RunView, archive_present: bool, run_dir: Path | None = None) -> str:
+    tags = _context_window_tags(run_dir)  # R-32: read from events, not from views.py (ruling R-32 condition 3)
     return ("<!doctype html>\n"
             f'<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
             f"<title>harness-bench run {_e(view.run_id)}</title><style>{STYLE}</style></head>"
-            f"<body><main>{_header(view)}{_validity(view)}{_leaderboard(view)}{_runs(view, archive_present)}</main></body></html>\n")
+            f"<body><main>{_header(view, tags)}{_validity(view)}{_leaderboard(view)}{_runs(view, archive_present, tags)}"
+            f"</main></body></html>\n")
 
 
 def scan(text: str, credential_values: set[str] = frozenset()) -> int:
@@ -171,7 +182,7 @@ def scan(text: str, credential_values: set[str] = frozenset()) -> int:
 
 
 def write(run_dir: Path, view: views.RunView, credential_values: set[str] = frozenset()) -> Path:
-    doc = render(view, archive_present=(run_dir / "archive").is_dir())
+    doc = render(view, archive_present=(run_dir / "archive").is_dir(), run_dir=run_dir)
     found = scan(doc, credential_values)
     if found:
         raise BenchError("HB-SEC-001", f"{found} credential-shaped string(s) in the report; nothing was written")

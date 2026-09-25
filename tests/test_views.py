@@ -236,8 +236,7 @@ def test_a_context_window_tag_is_not_a_model_mismatch(root, tmp_path):  # red be
     run_dir = make_run(root, tmp_path, {"a": GOOD}, harness="claude-code", model=OPUS, turn_usage=CC_OPUS_TURN_USAGE,
                         context_window_tag={"a": "1m"})
     cell = _cell(views.load(run_dir), "a")
-    assert (cell.validity, cell.validity_code) == ("valid", None)
-    assert cell.context_window_tag == "1m"
+    assert (cell.validity, cell.validity_code) == ("valid", None)  # views.py untouched: no CellView.context_window_tag (R-32 cond. 3)
 
 
 def test_a_genuinely_different_served_model_is_still_a_mismatch(root, tmp_path):  # R-32 negative control
