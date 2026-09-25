@@ -25,6 +25,7 @@ import yaml
 from archived_runs import GOOD, ROOT, make_root, make_run, pass_rows
 
 from harness_bench import (
+    cli,
     config,
     egress,
     gitsafe,
@@ -439,3 +440,111 @@ def test_a_pass_that_may_call_refuses_a_cells_root_below_an_instruction_file_bef
     run_dir, gid, got = judged_pass(judged_root(tmp_path), tmp_path)
     assert got["adr_quality"] == (None, "HB-GRD-003 grader judge failed: BenchError")
     assert spawns(tmp_path) == 0 and uses(run_dir, gid) == []
+
+
+# ------------------------------------------------------------- when judges run: the three passes (section 6; s4)
+def bench(capsys, root: Path, tmp_path: Path, *args: str) -> tuple[int, str, str]:
+    """`bench` through cli.main; argparse's own exit (2, an unknown flag) is returned, not raised."""
+    try:
+        code = cli.main(["--root", str(root), "--runs", str(tmp_path / "runs"), "--tools-dir", str(tmp_path / "tools"),
+                         *args])
+    except SystemExit as exc:
+        code = exc.code
+    out, err = capsys.readouterr()
+    return code, out, err
+
+
+@pytest.fixture
+def no_real_home(monkeypatch, tmp_path):
+    """No CLI test here reads the operator's real home: `~` is an empty folder under tmp_path (R-42)."""
+    fake = tmp_path / "fake-home"
+    monkeypatch.setenv("USERPROFILE", str(fake))
+    monkeypatch.setenv("HOME", str(fake))
+
+
+def test_t_gw_22_the_in_run_pass_makes_no_lookup_no_call_and_no_verdict_uses_row(capsys, tmp_path, monkeypatch,
+                                                                                  no_real_home):
+    """`bench run` grades through its hook: every judged metric is NA `judge calls not allowed in this pass`
+    (R-58 DR-2 read literally). The engine is a stand-in that runs the hook on an archived run."""
+    from harness_bench import engine, plan, preflight, status
+
+    root = judged_root(tmp_path)
+    archived = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    fresh = archived.parent / "r2"  # a confirmed run that has not started, for cmd_run's own checks
+    fresh.mkdir()
+    shutil.copy(archived / "plan.json", fresh / "plan.json")
+    # cmd_run's own plan checks see a minimal confirmed plan; the grading hook reads the archived run's real plan
+    confirmed = {"run_id": "r2", "trace_id": "a" * 32, "tasks": {}, "builds": {},
+                 "parameters": plan.DEFAULT_PARAMETERS.copy()}
+    monkeypatch.setattr(plan, "load_confirmed", lambda run_dir: confirmed)
+    monkeypatch.setattr(preflight, "check", lambda *a, **k: None)
+    passes: list[str] = []
+
+    class HookOnly:
+        def __init__(self, plan, cfg) -> None:
+            self.cfg = cfg
+
+        def run(self):
+            passes.append(self.cfg.grade(archived)["grading_id"])
+            return type("Summary", (), {"exit_code": 0})()
+
+    monkeypatch.setattr(engine, "Engine", HookOnly)
+    monkeypatch.setattr(status, "build", lambda run_dir: None)
+    monkeypatch.setattr(status, "text", lambda s: "")
+    code, _, err = bench(capsys, root, tmp_path, "--cells-root", str(tmp_path / "cells"), "run", "r2")
+    assert code == 0, err
+    [gid] = passes
+    rows = {r["metric_id"]: (r["value"], r["reason"]) for r in pass_rows(archived, "scores", gid)}
+    assert rows == {m: (None, "judge calls not allowed in this pass") for m in JUDGED}
+    assert uses(archived, gid) == []
+
+
+def test_t_gw_22_bench_grade_without_the_flag_reads_the_store_only_and_prints_its_misses(capsys, tmp_path,
+                                                                                         no_real_home):
+    root = judged_root(tmp_path)
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    code, out, err = bench(capsys, root, tmp_path, "grade", "r1")
+    assert code == 0, err
+    gid = out.splitlines()[0].rsplit(" ", 1)[1]
+    assert out.splitlines() == [f"graded 1 cell(s) in pass {gid}", "judge misses: 1 call(s)"]  # US-26 c2
+    assert uses(run_dir, gid) == sorted([("a", i, CLAUDE, "not_allowed", None) for i in ITEMS] +
+                                        [("a", i, CODEX, "failed", "HB-GW-007") for i in ITEMS])
+
+
+def test_t_gw_19_bench_grade_allow_model_calls_refuses_a_live_run_before_the_pass_starts(capsys, tmp_path,
+                                                                                         no_real_home):
+    root = judged_root(tmp_path)
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    held: list = []
+    live = hold(run_dir.parent, "live", run_dir, "alive", held)
+    try:
+        code, out, err = bench(capsys, root, tmp_path, "grade", "r1", "--allow-model-calls")
+    finally:
+        for lock in held:
+            lock.release()
+    assert (code, out, err) == (1, "", f"{REFUSED}{run_dir.parent.resolve()}; {live.resolve()} alive\n")
+    assert sorted(p.name for p in (run_dir / "events").iterdir() if p.name.startswith("grade-")) == []
+
+
+def test_bench_grade_allow_model_calls_is_the_cli_path_that_calls_a_judge(capsys, tmp_path, base, monkeypatch,
+                                                                         no_real_home):
+    calls = fake_calls(tmp_path, base / "cells", judge.Calls)
+    monkeypatch.setattr(cli, "_judge_calls", lambda args, root: calls, raising=False)
+    root = judged_root(tmp_path)
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    code, out, err = bench(capsys, root, tmp_path, "grade", "r1", "--allow-model-calls")
+    assert code == 0, err
+    gid = out.splitlines()[0].rsplit(" ", 1)[1]
+    assert out.splitlines() == [f"graded 1 cell(s) in pass {gid}"] and spawns(tmp_path) == 1
+    assert uses(run_dir, gid) == sorted([("a", i, CLAUDE, "stored", None) for i in ITEMS] +
+                                        [("a", i, CODEX, "failed", "HB-GW-007") for i in ITEMS])
+
+
+def test_bench_grade_allow_model_calls_needs_the_operators_email_for_egress(capsys, tmp_path, monkeypatch,
+                                                                           no_real_home):
+    monkeypatch.delenv("BENCH_OPERATOR_EMAIL", raising=False)
+    root = judged_root(tmp_path)
+    make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    code, out, err = bench(capsys, root, tmp_path, "grade", "r1", "--allow-model-calls")
+    assert (code, out, err) == (1, "", ("HB-USR-002: set BENCH_OPERATOR_EMAIL to the operator's e-mail: egress scans "
+                                        "every judge request for it (supplied at run time, never committed, R-42)\n"))
