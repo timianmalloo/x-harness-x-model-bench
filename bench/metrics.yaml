@@ -78,7 +78,7 @@ areas:
       - { id: asked_unmatched,           source: [D],    better: lower,  grader: clarify,      kind: score, weight: 0, note: "questions whose stored decision matched nothing (R-52 c2)" }
       - { id: assumption_disclosure,     source: [J],    better: higher, grader: judge,        kind: score, weight: 1 }
       - { id: spec_quality,              source: [J],    better: higher, grader: judge,        kind: score, weight: 1 }
-      - { id: architecture_conformance,  source: [D],    better: higher, grader: architecture, kind: score, weight: 1 }
+      - { id: architecture_conformance,  source: [D],    better: higher, grader: architecture, kind: score, weight: 1, scale: 4 }
       - { id: adr_quality,               source: [J],    better: higher, grader: judge,        kind: score, weight: 1 }
       - { id: model_conformance,         source: [D],    better: higher, grader: formal,       kind: score, weight: 1, note: "G-tasks: real-code traces accepted by the agent's model / traces" }
       - { id: model_non_vacuity,         source: [D],    better: higher, grader: formal,       kind: score, weight: 1, note: "G-tasks: bug-seeded variants rejected / variants" }
