@@ -218,7 +218,7 @@ def _prompt_error_cause(exc: _AcpError) -> Cause:
 
 def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handshake_timeout: float,
              before_send: Callable[[str | None], None], model: str | None = None,
-             result: TurnResult | None = None) -> TurnResult:
+             result: TurnResult | None = None, mcp_servers: list[dict] | None = None) -> TurnResult:
     """Handshake, ack barrier, one verbatim prompt. `before_send` exceptions propagate unsent.
 
     `model`: sent with `session/set_model` right after `session/new` (the ADR-0003 pin, for a profile that sets it);
@@ -233,7 +233,7 @@ def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handsh
         info = init.get("agentInfo")
         version = info.get("version") if isinstance(info, dict) else None
         result.agent_version = version if isinstance(version, str) else None  # verbatim; null when not reported
-        created = ch.rpc("session/new", {"cwd": str(cwd), "mcpServers": []}, deadline)
+        created = ch.rpc("session/new", {"cwd": str(cwd), "mcpServers": mcp_servers or []}, deadline)
         result.session_id = created.get("sessionId")
         modes = created.get("modes") if isinstance(created.get("modes"), dict) else {}
         current = modes.get("currentModeId")

@@ -39,6 +39,8 @@ from typing import Protocol
 from harness_bench import archive, driver, host, ledger, lifecycle, oslock, procs
 from harness_bench.errors import BenchError, Cause
 from harness_bench.gitsafe import GitError
+from harness_bench.scripted_user import log as scripted_log
+from harness_bench.scripted_user import server as scripted_server
 from harness_bench.telemetry import normalize
 from harness_bench.tools import BuildChanged
 
@@ -341,11 +343,21 @@ class Engine:
         launcher = self.cfg.launchers[cell["harness"]]
         cell_dir = self.cfg.cells_root / self.plan["run_id"] / cid
         home, ws = cell_dir / "home", cell_dir / "ws"
+        task = self.plan["tasks"][cell["task"]]
+
+        def archive_after_outcome() -> None:
+            if task.get("scripted_user"):
+                cell_dir.mkdir(parents=True, exist_ok=True)
+                scripted_log.close_log(cell_dir / "scripted-user.jsonl",
+                                       scripted_log.header_row(cell["task"], task["clarifications_sha256"],
+                                                               task["matcher_version"]))
+            self._archive(cell, cell_dir, launcher)
+
         try:
             info = self.cfg.build_workspace(cell, cell_dir)
         except (BenchError, GitError, OSError) as exc:
             self._outcome(cell, "failed", Cause.disk if _disk_full(exc) else Cause.workspace, detail=f"{type(exc).__name__}: {exc}")
-            self._archive(cell, cell_dir, launcher)
+            archive_after_outcome()
             return
         self.record("events", {"kind": "cell.workspace_built", "cell_id": cid, **{k: v for k, v in info.items() if isinstance(v, (int, str))}})
         try:
@@ -353,10 +365,18 @@ class Engine:
         except BuildChanged as exc:
             self._outcome(cell, "failed", Cause.build_changed, detail=str(exc))
             self.request_stop(Cause.build_changed.code, str(exc))
-            self._archive(cell, cell_dir, launcher)
+            archive_after_outcome()
             return
         traceparent = f"00-{self.trace_id}-{span_id(self.trace_id, cid, 'cell')}-01"
-        argv, env = launcher.argv_env(cell, home, traceparent)  # before seed: a failure here leaves no credential copy
+        argv_cell = cell
+        if task.get("scripted_user") and cell["harness"] == "copilot":
+            entry = scripted_server.entry(Path(task["clarifications_path"]), cell_dir / "scripted-user.jsonl")
+            mcp_config = cell_dir / "mcp-config.json"
+            mcp_config.write_text(json.dumps({"mcpServers": {entry["name"]: {
+                "type": "local", "command": entry["command"], "args": entry["args"], "tools": ["*"],
+                "env": {item["name"]: item["value"] for item in entry["env"]}}}}), encoding="utf-8")
+            argv_cell = {**cell, "mcp_config": mcp_config}
+        argv, env = launcher.argv_env(argv_cell, home, traceparent)  # before seed: no credential copy on failure
         try:
             launcher.seed(home, cell["model"])
             ended = self._attempt(self.active[cid], cell, launcher, build, argv, env, ws)
@@ -364,7 +384,7 @@ class Engine:
             launcher.clean(home)  # every end: a spawn failure, a kill, a ledger failure, a bug (T-CELL-credclean)
         if isinstance(ended, procs.SpawnError):
             self._outcome(cell, "failed", Cause.spawn, detail=str(ended), win32_error=ended.win32_error or 0)
-            self._archive(cell, cell_dir, launcher)
+            archive_after_outcome()
             return
         result, exit_status, tail = ended
         cause = self._classify(result, launcher, home, exit_status, tail, self.active[cid].kill_reason)
@@ -383,13 +403,16 @@ class Engine:
                 (cell_dir / "adapter-stderr-tail.log").write_bytes(tail)
             except OSError as exc:
                 log.warning("adapter stderr tail not kept", extra={"cell_id": cid, "error_code": _code(exc), "detail": str(exc)})
-        self._archive(cell, cell_dir, launcher)
+        archive_after_outcome()
 
     def _attempt(self, a: _Active, cell: dict, launcher: Launcher, build: dict, argv: list[str], env: dict,
                  ws: Path) -> procs.SpawnError | tuple[driver.TurnResult, int | None, bytes]:
         """Spawn, the turn, then always: end the process and close the job, and only then record
         `attempt.process_ended` (a record can fail; nothing live is left behind it). The caller cleans the home."""
         cid = cell["cell_id"]
+        task = self.plan["tasks"][cell["task"]]
+        mcp_servers = ([scripted_server.entry(Path(task["clarifications_path"]), ws.parent / "scripted-user.jsonl")]
+                       if task.get("scripted_user") and cell["harness"] != "copilot" else [])
         try:
             cp = procs.spawn(argv, cwd=str(ws), env=env, stderr=subprocess.PIPE)
         except procs.SpawnError as exc:
@@ -418,7 +441,8 @@ class Engine:
             started = True
             result = driver.run_turn(cp, cwd=ws, prompt=self.plan["tasks"][cell["task"]]["prompt"], mode=launcher.mode,
                                      handshake_timeout=self.params["handshake_timeout"], before_send=barrier,
-                                     model=cell["model"] if launcher.set_model else None, result=result)
+                                     model=cell["model"] if launcher.set_model else None, result=result,
+                                     mcp_servers=mcp_servers)
         finally:
             with a.lock:
                 a.ended = True

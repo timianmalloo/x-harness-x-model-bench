@@ -13,6 +13,7 @@ from pathlib import Path
 import yaml
 
 from harness_bench.errors import BenchError
+from harness_bench.scripted_user import clarifications
 
 # bench-status/1's id and label patterns (status.py): plan.py validates every cell_id and label
 # against them at plan time, so status never has to emit a document its own parser would reject.
@@ -231,6 +232,13 @@ def validate_task(task_dir: Path, bom_entry: dict | None, p: Problems, grader_mo
         p.add(where, "scenario 6 tasks need a model_map")
     if t.get("scenario") == 1 and not t.get("scripted_user"):
         p.add(where, "scenario 1 tasks need scripted_user: true")
+    if t.get("scenario") == 1:
+        clarification_path = task_dir / "oracle" / "clarifications.yaml"
+        if clarification_path.is_file():
+            try:
+                clarifications.load(clarification_path)
+            except BenchError as exc:
+                p.add(where, exc.message)
     if t.get("scenario") == 7:
         formal = t.get("formal") or {}
         if formal.get("tool") not in FORMAL_TOOLS:

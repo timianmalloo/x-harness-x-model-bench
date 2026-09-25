@@ -277,7 +277,8 @@ def test_claude_profile_seeds_settings_and_a_credential_copy(tmp_path):
     assert settings["permissions"]["defaultMode"] == "dontAsk"
     assert settings["disableClaudeAiConnectors"] is True  # R-56 c1, R-57 gate 2: no claude.ai MCP cloud connectors
     assert set(settings["permissions"]["allow"]) == {
-        "Bash", "PowerShell", "Edit", "Write", "NotebookEdit", "Read", "Glob", "Grep"}  # R-34, R-35
+        "Bash", "PowerShell", "Edit", "Write", "NotebookEdit", "Read", "Glob", "Grep",
+        "mcp__scripted_user__ask_user"}  # R-34, R-35, R-37
     assert (home / ".credentials.json").read_text(encoding="utf-8") == '{"secret": "x"}'
     p.clean_home(home)  # T-CELL-credclean (profile half)
     assert not (home / ".credentials.json").exists() and (home / "settings.json").exists()

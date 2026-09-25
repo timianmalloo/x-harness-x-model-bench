@@ -15,7 +15,7 @@ files:
   # connectors out of the cell (the pinned 2.1.282 settings schema; env ENABLE_CLAUDEAI_MCP_SERVERS also exists,
   # the settings key is used per the Leader's ruling). Closure is measured by the re-qualification cell's
   # account_connector_tools count, not this line alone.
-  settings.json: '{"permissions": {"allow": ["Bash", "PowerShell", "Edit", "Write", "NotebookEdit", "Read", "Glob", "Grep"], "defaultMode": "dontAsk"}, "disableClaudeAiConnectors": true}'
+  settings.json: '{"permissions": {"allow": ["Bash", "PowerShell", "Edit", "Write", "NotebookEdit", "Read", "Glob", "Grep", "mcp__scripted_user__ask_user"], "defaultMode": "dontAsk"}, "disableClaudeAiConnectors": true}'
 env:
   ANTHROPIC_MODEL: "{model}"
   CLAUDE_CODE_EXECUTABLE: "{exe}"

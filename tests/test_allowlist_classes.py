@@ -36,6 +36,7 @@ COPILOT_ON = next((FIX / "native" / "copilot" / "on").rglob("events.jsonl"))
 # description line (`deferred_tools_delta.addedNames`, checked directly against the fixture, not memory).
 # R-35: in-class -- it edits a file in the workspace (a `.ipynb`), the same class as Edit and Write.
 CLASSES = {
+    "scripted user": {"mcp__scripted_user__ask_user"},  # R-37 c2: task-owned MCP tool
     "shell": {"Bash", "PowerShell"},  # "Executes a bash command ..." / "Executes a given PowerShell command ..."
     "file edit": {"Edit", "Write", "NotebookEdit"},  # "Performs exact string replacement ..." / "Writes a file ..." / deferred, no description line (R-35)
     "file read": {"Read", "Glob", "Grep"},  # "Reads a file ..." / "Fast file pattern matching" / "Content search"
@@ -53,10 +54,17 @@ OUT_OF_PROFILE = {
 # R-45: Copilot's `skill` reads a workspace SKILL.md. The pinned build's checkpoint below supplies
 # the ids; the ruling supplies the class boundary. Every github-mcp-server-* id is outside it.
 COPILOT_CLASSES = {
+    "scripted user": {"scripted_user-ask_user"},
     "shell": {"powershell", "list_powershell", "read_powershell", "stop_powershell"},
     "file edit": {"apply_patch"},
     "file read": {"view", "glob", "rg", "skill"},
 }
+
+
+def test_allowlist_covers_scripted_user_class(tmp_path):  # T-37-2a, R-34 class rule
+    assert CLASSES["scripted user"] == {"mcp__scripted_user__ask_user"}
+    assert CLASSES["scripted user"] <= claude_allowlist(tmp_path)
+    assert COPILOT_CLASSES["scripted user"] == {"scripted_user-ask_user"}
 COPILOT_OUT_OF_PROFILE = {"web_search", "web_fetch", "task", "write_agent", "read_agent",
                           "list_agents", "sql"}
 

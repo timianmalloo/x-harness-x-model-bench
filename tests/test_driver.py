@@ -32,6 +32,19 @@ def _turn(tmp_path, prompt="Do the task.", before_send=None, acp_mode=None, hand
         cell.close()
 
 
+@pytest.mark.parametrize("servers", [None, [{"name": "scripted_user", "command": "python", "args": [], "env": []}]])
+def test_session_new_sends_supplied_mcp_servers_or_empty(tmp_path, servers):  # T-37-3, driver half
+    cell = _spawn(tmp_path)
+    try:
+        driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=None, handshake_timeout=10,
+                        before_send=lambda sid: None, mcp_servers=servers)
+        sent = json.loads((tmp_path / ".fake-session-new.json").read_text(encoding="utf-8"))
+        assert sent["mcpServers"] == (servers or [])
+    finally:
+        cell.terminate_and_confirm(timeout=10)
+        cell.close()
+
+
 # the line reader: bounded, never crashes (D2) ------------------------------------------------
 
 _NESTED = st.integers(min_value=1, max_value=120_000).flatmap(
