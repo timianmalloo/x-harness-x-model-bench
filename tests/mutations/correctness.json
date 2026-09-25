@@ -26,5 +26,157 @@
     "find": "        env.update({k: os.environ[k] for k in DOTNET_HOST_ENV if k in os.environ})\n",
     "replace": "        pass\n",
     "tests": ["tests/test_correctness_dotnet.py::test_grading_step_uses_host_profile_only_for_dotnet"]
+  },
+  {
+    "name": "GR-CODE c1: a restore error read as a compile error when both appear",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "    return \"restore\" if \"NU\" in codes else \"compile\" if \"CS\" in codes else None",
+    "replace": "    return \"compile\" if \"CS\" in codes else \"restore\" if \"NU\" in codes else None",
+    "tests": ["tests/test_grade_correctness.py::test_a_build_failure_is_classified_by_its_error_codes_restore_first"]
+  },
+  {
+    "name": "GR-CODE c1: a failing dotnet --version keeps the 0.3 reason, not the sdk cause",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "        return Result(None, None, SDK, evidence)\n",
+    "replace": "        return Result(None, None, \"dotnet --version failed\", evidence)\n",
+    "tests": ["tests/test_grade_correctness.py::test_the_hidden_test_step_is_na_by_cause_and_flags_a_compile_error"]
+  },
+  {
+    "name": "GR-CODE c1: a restore failure in the hidden-test step is not classified (F13)",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "    if cause == \"restore\":\n",
+    "replace": "    if False:\n",
+    "tests": ["tests/test_grade_correctness.py::test_the_hidden_test_step_is_na_by_cause_and_flags_a_compile_error",
+              "tests/test_grade_correctness.py::test_an_empty_nuget_cache_is_na_restore_never_0"]
+  },
+  {
+    "name": "GR-CODE c1: a compile error is not flagged, so it stays NA (DR-G4)",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "compile_error=cause == \"compile\")",
+    "replace": "compile_error=False)",
+    "tests": ["tests/test_grade_correctness.py::test_the_hidden_test_step_is_na_by_cause_and_flags_a_compile_error",
+              "tests/test_grade_correctness.py::test_d1_base_plus_a_file_with_a_syntax_error_scores_0_not_na"]
+  },
+  {
+    "name": "GR-CODE c1: the pre-turn control skipped, so a compile error is 0 unconditionally (R-67 c1)",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "    if c.compile_error:\n        c = _by_cause(inp, oracle, c, timeout)\n",
+    "replace": "    if c.compile_error:\n        c = Result(0, Decimal(0), None, c.evidence)\n",
+    "tests": ["tests/test_grade_correctness.py::test_a_compile_error_is_0_only_when_the_pre_turn_tree_builds",
+              "tests/test_grade_correctness.py::test_a_compile_error_with_no_builder_commit_is_na_not_found"]
+  },
+  {
+    "name": "GR-CODE c1: no builder commit read as 0 (F11)",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "        return Result(None, None, _changes.NOT_FOUND, cell.evidence)\n",
+    "replace": "        return Result(0, Decimal(0), None, cell.evidence)\n",
+    "tests": ["tests/test_grade_correctness.py::test_a_compile_error_with_no_builder_commit_is_na_not_found"]
+  },
+  {
+    "name": "GR-CODE c1: a pre-turn tree that does not compile read as the cell's fault (0)",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "    if base.reason is None:",
+    "replace": "    if base.reason is None or base.compile_error:",
+    "tests": ["tests/test_grade_correctness.py::test_a_compile_error_is_0_only_when_the_pre_turn_tree_builds"]
+  },
+  {
+    "name": "GR-CODE c1: the control's infrastructure reason replaced by 'pre-turn tree does not build'",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "    if base.reason in (RESTORE, SDK) or base.reason.startswith(\"HB-GRD-002\"):",
+    "replace": "    if False:",
+    "tests": ["tests/test_grade_correctness.py::test_a_compile_error_is_0_only_when_the_pre_turn_tree_builds"]
+  },
+  {
+    "name": "GR-CODE c1: a failing project does not stop the build, so a later success reads 1",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "                break\n",
+    "replace": "                pass\n",
+    "tests": ["tests/test_grade_correctness.py::test_build_and_suite_clean_builds_every_project_and_is_na_only_before_the_build"]
+  },
+  {
+    "name": "GR-CODE c1: a build's restore failure read as 0 (F13)",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "    if last.returncode != 0 and kind == \"dotnet\" and build_failure(last.stdout) == \"restore\":",
+    "replace": "    if False:",
+    "tests": ["tests/test_grade_correctness.py::test_build_and_suite_clean_builds_every_project_and_is_na_only_before_the_build",
+              "tests/test_grade_correctness.py::test_an_empty_nuget_cache_is_na_restore_never_0"]
+  },
+  {
+    "name": "GR-CODE c1: a build's missing SDK read as 0",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "    if last.returncode != 0 and steps[len(lines) - 1] == [\"dotnet\", \"--version\"]:",
+    "replace": "    if False:",
+    "tests": ["tests/test_grade_correctness.py::test_build_and_suite_clean_builds_every_project_and_is_na_only_before_the_build"]
+  },
+  {
+    "name": "GR-CODE c1: a build timeout read as 0",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "    if last is None or last.timed_out:",
+    "replace": "    if last is None:",
+    "tests": ["tests/test_grade_correctness.py::test_build_and_suite_clean_builds_every_project_and_is_na_only_before_the_build"]
+  },
+  {
+    "name": "GR-CODE c1: a dotnet working copy with no project reads a vacuous 1",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "last.returncode == 0 and len(steps) > 1 if kind",
+    "replace": "last.returncode == 0 if kind",
+    "tests": ["tests/test_grade_correctness.py::test_a_dotnet_working_copy_with_no_project_is_not_a_clean_build"]
+  },
+  {
+    "name": "GR-CODE c1: the build is not offline (restore sources and audit flags dropped)",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "OFFLINE = (\"-p:RestoreSources=.\", \"-p:NuGetAudit=false\", \"-v:q\", \"-nologo\")",
+    "replace": "OFFLINE = (\"-v:q\", \"-nologo\")",
+    "tests": ["tests/test_grade_correctness.py::test_build_and_suite_clean_builds_every_project_and_is_na_only_before_the_build"]
+  },
+  {
+    "name": "GR-CODE c1: a python working copy is never compiled (always clean)",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "            steps = [[sys.executable, \"-m\", \"compileall\", \"-q\", \".\"]]",
+    "replace": "            steps = [[sys.executable, \"-c\", \"pass\"]]",
+    "tests": ["tests/test_grade_correctness.py::test_build_and_suite_clean_compiles_a_python_copy"]
+  },
+  {
+    "name": "GR-CODE c1: the base commit is the pre-turn commit of a pack-on cell (F10)",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "    if cell.get(\"pack\") != \"on\":",
+    "replace": "    if True:",
+    "tests": ["tests/test_grade_correctness.py::test_the_pack_on_base_is_the_pack_commit_so_the_pack_is_not_a_change"]
+  },
+  {
+    "name": "GR-CODE c1: a pack-off cell takes a look-alike second commit as its base (tamper rule)",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "    if cell.get(\"pack\") != \"on\":",
+    "replace": "    if len(chain) < 2:",
+    "tests": ["tests/test_grade_correctness.py::test_a_pack_off_cell_takes_the_root_even_when_its_second_commit_looks_like_a_pack"]
+  },
+  {
+    "name": "GR-CODE c1: a later look-alike pack commit wins (tamper rule)",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "for line in done.stdout.splitlines()[:2]]",
+    "replace": "for line in done.stdout.splitlines()][:1] + [line.split(\"\\0\", 1) for line in done.stdout.splitlines()][-1:]",
+    "tests": ["tests/test_grade_correctness.py::test_a_later_look_alike_pack_commit_is_ignored"]
+  },
+  {
+    "name": "GR-CODE c1: the root's builder message is not checked (F11)",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "    if not chain or chain[0][1:] != [f\"{cell['task']} base ({cell['task_version'][:12]})\"]:",
+    "replace": "    if not chain:",
+    "tests": ["tests/test_grade_correctness.py::test_no_builder_commit_is_na_pre_turn_commit_not_found",
+              "tests/test_grade_correctness.py::test_a_compile_error_with_no_builder_commit_is_na_not_found"]
+  },
+  {
+    "name": "GR-CODE c1: a CRLF-only difference counted as a change",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "h.update((chunk[:-1] if carry else chunk).replace(b\"\\r\\n\", b\"\\n\"))",
+    "replace": "h.update(chunk)",
+    "tests": ["tests/test_grade_correctness.py::test_a_crlf_only_difference_and_a_deletion_are_read_by_content"]
+  },
+  {
+    "name": "GR-CODE c1: build output (bin/) counted as a change",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "BUILD_OUTPUT = frozenset({\".git\", \"bin\", \"obj\",",
+    "replace": "BUILD_OUTPUT = frozenset({\".git\", \"obj\",",
+    "tests": ["tests/test_grade_correctness.py::test_the_pack_on_base_is_the_pack_commit_so_the_pack_is_not_a_change"]
   }
 ]
