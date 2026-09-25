@@ -1,0 +1,93 @@
+[
+  {
+    "name": "probe ignores configured tools folder",
+    "file": "src/harness_bench/plan.py",
+    "find": "tools.resolve(tools_dir or root / \".tools\" / \"harness\")",
+    "replace": "tools.resolve(root / \".tools\" / \"harness\")",
+    "tests": ["tests/test_plan.py::test_copilot_plan_lists_once_per_task_pack_build_and_freezes_counts"]
+  },
+  {
+    "name": "CLI drops probe path arguments",
+    "file": "src/harness_bench/cli.py",
+    "find": "tools_dir=Path(args.tools_dir), cells_root=Path(args.cells_root)",
+    "replace": "tools_dir=None, cells_root=None",
+    "tests": ["tests/test_plan.py::test_cmd_plan_passes_configured_tools_and_cells_roots_to_probe"]
+  },
+  {
+    "name": "probe escapes configured cells root",
+    "file": "src/harness_bench/plan.py",
+    "find": "prefix=\"bench-plan-\", dir=cells_root",
+    "replace": "prefix=\"bench-plan-\", dir=root.parent",
+    "tests": ["tests/test_plan.py::test_copilot_plan_lists_once_per_task_pack_build_and_freezes_counts"]
+  },
+  {
+    "name": "pack-on installation skipped",
+    "file": "src/harness_bench/plan.py",
+    "find": "if arm == \"on\":",
+    "replace": "if False:",
+    "tests": ["tests/test_plan.py::test_copilot_plan_installs_pack_before_listing_instructions"]
+  },
+  {
+    "name": "pack-off instructions accepted",
+    "file": "src/harness_bench/plan.py",
+    "find": "if arm == \"off\" and rows:",
+    "replace": "if False:",
+    "tests": ["tests/test_plan.py::test_copilot_plan_refuses_a_nonempty_pack_off_instruction_list"]
+  },
+  {
+    "name": "non-string instruction identity retained",
+    "file": "src/harness_bench/plan.py",
+    "find": "if isinstance(row.get(k), str)",
+    "replace": "if k in row",
+    "tests": ["tests/test_plan.py::test_copilot_plan_projects_instructions_to_string_identity_fields_and_keeps_canonical"]
+  },
+  {
+    "name": "instruction timeout ignored",
+    "file": "src/harness_bench/plan.py",
+    "find": "if result.timed_out:",
+    "replace": "if False:",
+    "tests": ["tests/test_plan.py::test_instruction_list_reports_timeout"]
+  },
+  {
+    "name": "instruction nonzero exit ignored",
+    "file": "src/harness_bench/plan.py",
+    "find": "if result.returncode != 0:",
+    "replace": "if False:",
+    "tests": ["tests/test_plan.py::test_instruction_list_reports_nonzero_exit"]
+  },
+  {
+    "name": "truncated instruction output mislabeled",
+    "file": "src/harness_bench/plan.py",
+    "find": "if result.stdout.lstrip().startswith(\"[\") and not result.stdout.rstrip().endswith(\"]\"):",
+    "replace": "if False:",
+    "tests": ["tests/test_plan.py::test_instruction_list_reports_truncated_stdout"]
+  },
+  {
+    "name": "invalid instruction JSON accepted",
+    "file": "src/harness_bench/plan.py",
+    "find": "raise BenchError(\"HB-PRE-008\", \"Copilot instruction list did not return JSON\") from exc",
+    "replace": "return []",
+    "tests": ["tests/test_plan.py::test_instruction_list_reports_invalid_json"]
+  },
+  {
+    "name": "instruction list shape ignored",
+    "file": "src/harness_bench/plan.py",
+    "find": "if not isinstance(rows, list) or not all(isinstance(row, dict) for row in rows):",
+    "replace": "if False:",
+    "tests": ["tests/test_plan.py::test_instruction_list_refuses_a_non_list_result_from_the_fake_exe"]
+  },
+  {
+    "name": "probe finally cleanup removed",
+    "file": "src/harness_bench/plan.py",
+    "find": "shutil.rmtree(probe, onexc=archive.make_writable)",
+    "replace": "pass",
+    "tests": ["tests/test_plan.py::test_copilot_plan_lists_once_per_task_pack_build_and_freezes_counts", "tests/test_plan.py::test_copilot_plan_removes_probe_after_instruction_error"]
+  },
+  {
+    "name": "probe cleanup failure not logged",
+    "file": "src/harness_bench/plan.py",
+    "find": "logger.warning(\"Could not remove plan probe %s: %s\", probe, exc)",
+    "replace": "pass",
+    "tests": ["tests/test_plan.py::test_copilot_plan_logs_failed_cleanup_without_masking_instruction_error"]
+  }
+]

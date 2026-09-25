@@ -224,16 +224,40 @@ def test_instruction_list_refuses_a_non_list_result_from_the_fake_exe(monkeypatc
     assert e.value.code == "HB-PRE-008"
 
 
-@pytest.mark.parametrize("result, detail", [
-    (SimpleNamespace(returncode=1, timed_out=True, stdout="", stderr=""), "timed out after 120 s"),
-    (SimpleNamespace(returncode=0, timed_out=False, stdout='[{"label":', stderr=""), "truncated"),
-])
-def test_instruction_list_reports_timeout_or_truncated_stdout(monkeypatch, tmp_path, result, detail):
+def test_instruction_list_reports_nonzero_exit(monkeypatch, tmp_path):
+    monkeypatch.setattr(plan, "procs", SimpleNamespace(run=lambda *a, **k: SimpleNamespace(
+        returncode=7, timed_out=False, stdout="", stderr="instruction error")), raising=False)
+    with pytest.raises(BenchError) as error:
+        plan.instruction_list(tmp_path / "copilot.exe", tmp_path, {})
+    assert error.value.code == "HB-PRE-008"
+    assert "instruction error" in str(error.value)
+
+
+def test_instruction_list_reports_invalid_json(monkeypatch, tmp_path):
+    monkeypatch.setattr(plan, "procs", SimpleNamespace(run=lambda *a, **k: SimpleNamespace(
+        returncode=0, timed_out=False, stdout="not json", stderr="")), raising=False)
+    with pytest.raises(BenchError) as error:
+        plan.instruction_list(tmp_path / "copilot.exe", tmp_path, {})
+    assert error.value.code == "HB-PRE-008"
+    assert "did not return JSON" in str(error.value)
+
+
+def test_instruction_list_reports_timeout(monkeypatch, tmp_path):
+    result = SimpleNamespace(returncode=1, timed_out=True, stdout="", stderr="")
     monkeypatch.setattr(plan, "procs", SimpleNamespace(run=lambda *a, **k: result), raising=False)
     with pytest.raises(BenchError) as error:
         plan.instruction_list(tmp_path / "copilot.exe", tmp_path, {})
     assert error.value.code == "HB-PRE-008"
-    assert detail in str(error.value)
+    assert "timed out after 120 s" in str(error.value)
+
+
+def test_instruction_list_reports_truncated_stdout(monkeypatch, tmp_path):
+    result = SimpleNamespace(returncode=0, timed_out=False, stdout='[{"label":', stderr="")
+    monkeypatch.setattr(plan, "procs", SimpleNamespace(run=lambda *a, **k: result), raising=False)
+    with pytest.raises(BenchError) as error:
+        plan.instruction_list(tmp_path / "copilot.exe", tmp_path, {})
+    assert error.value.code == "HB-PRE-008"
+    assert "truncated" in str(error.value)
 
 
 def _fake_copilot_plan(monkeypatch, tmp_path, listing):
@@ -289,6 +313,7 @@ def test_copilot_plan_lists_once_per_task_pack_build_and_freezes_counts(monkeypa
     p = plan.build_plan(**args)
     assert len(calls) == 2
     assert resolved_dirs == [args["tools_dir"]]
+    assert all(ws.is_relative_to(args["cells_root"]) for _, ws, _ in calls)
     assert not list(args["cells_root"].glob("bench-plan-*"))
     assert {(c["pack"], c["instruction_count"]) for c in p["cells"]} == {("off", 0), ("on", 2)}
     assert len(p["instruction_lists"]) == 2
