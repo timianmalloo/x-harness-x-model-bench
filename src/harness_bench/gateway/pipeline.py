@@ -141,7 +141,8 @@ def run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend) -> Result:
     if read is None or schema.validate(answer, inputs.items):
         return Result("failed", "HB-GW-002", escaped=escaped)
     _, served, session = read
-    if not all(m in judge.allowed_models for m in served):
+    # the pin must be among the served models, and every served model allowed (design 4.3; review F1)
+    if judge.model not in served or not all(m in judge.allowed_models for m in served):
         return Result("failed", "HB-GW-003", escaped=escaped)
     entry = {"format": store.FORMAT, "key_inputs": key_inputs,
              "components": {"artifact_sha256": rendered.artifact_sha256,

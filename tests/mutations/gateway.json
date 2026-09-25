@@ -407,5 +407,23 @@
   "tests": [
    "tests/test_gateway_schema.py::test_t_gw_05_the_validator_reads_the_schema_file"
   ]
+ },
+ {
+  "name": "F1: the pin need not be served",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "    if judge.model not in served or not all(",
+  "replace": "    if False or not all(",
+  "tests": [
+   "tests/test_gateway_pipeline.py::test_an_answer_the_pin_never_served_is_not_stored"
+  ]
+ },
+ {
+  "name": "F1: any served model allowed suffices",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "or not all(m in judge.allowed_models for m in served):",
+  "replace": "or not any(m in judge.allowed_models for m in served):",
+  "tests": [
+   "tests/test_gateway_pipeline.py::test_the_pin_with_a_model_outside_the_allowed_set_is_not_stored"
+  ]
  }
 ]

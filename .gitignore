@@ -44,3 +44,5 @@ docs/audit/.run-starts.json.tmp
 
 # Pinned tool downloads (tools/check_models.py fetches tla2tools.jar here)
 .tools/
+# the gateway's verdict store (generated; review A3, R-42)
+cache/
