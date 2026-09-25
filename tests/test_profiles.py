@@ -274,7 +274,7 @@ def test_claude_profile_seeds_settings_and_a_credential_copy(tmp_path):
     home = tmp_path / "home"
     p.seed_home(home, model="claude-sonnet-5")
     settings = json.loads((home / "settings.json").read_text(encoding="utf-8"))
-    assert settings["permissions"]["defaultMode"] == "dontAsk"
+    assert settings["permissions"]["defaultMode"] == "default"  # PR-2
     assert settings["disableClaudeAiConnectors"] is True  # R-56 c1, R-57 gate 2: no claude.ai MCP cloud connectors
     assert set(settings["permissions"]["allow"]) == {
         "Bash", "PowerShell", "Edit", "Write", "NotebookEdit", "Read", "Glob", "Grep",
@@ -282,6 +282,42 @@ def test_claude_profile_seeds_settings_and_a_credential_copy(tmp_path):
     assert (home / ".credentials.json").read_text(encoding="utf-8") == '{"secret": "x"}'
     p.clean_home(home)  # T-CELL-credclean (profile half)
     assert not (home / ".credentials.json").exists() and (home / "settings.json").exists()
+
+
+def test_shutdown_grace_is_a_bounded_profile_datum_and_reaches_launcher(tmp_path):  # PR-1
+    from harness_bench import config
+
+    for harness in ("claude-code", "codex", "copilot"):
+        p = profiles.load(ROOT, harness)
+        assert p.shutdown_grace == 10
+        assert profiles.ProfileLauncher(p, ROOT / ".tools" / "harness", {}).shutdown_grace == 10
+    target = tmp_path / "bench" / "profiles"
+    target.mkdir(parents=True)
+    source = config.load_yaml(ROOT / "bench" / "profiles" / "codex.yaml")
+    source["shutdown_grace_seconds"] = 0.5
+    import yaml
+
+    (target / "codex.yaml").write_text(yaml.safe_dump(source), encoding="utf-8")
+    assert profiles.load(tmp_path, "codex").shutdown_grace == 0.5
+    from harness_bench import plan
+
+    assert plan.profile_record(tmp_path, "codex")["shutdown_grace_seconds"] == "0.5"
+    source["shutdown_grace_seconds"] = 11
+    (target / "codex.yaml").write_text(yaml.safe_dump(source), encoding="utf-8")
+    with pytest.raises(BenchError) as error:
+        profiles.load(tmp_path, "codex")
+    assert error.value.code == "HB-USR-002"
+
+
+def test_claude_declared_mode_matches_the_recorded_effective_mode():  # PR-3, R-34 c4
+    profile = profiles.load(ROOT, "claude-code")
+    declared = json.loads(profile.files["settings.json"])["permissions"]["defaultMode"]
+    recording = ROOT / "tests" / "fixtures" / "acp" / "recordings" / "claude-code-x1.jsonl"
+    messages = (json.loads(row["text"]) for line in recording.read_text(encoding="utf-8").splitlines()
+                if (row := json.loads(line)).get("dir") == "to_client")
+    effective = next(msg["result"]["modes"]["currentModeId"] for msg in messages
+                     if msg.get("id") == 2 and "result" in msg)
+    assert declared == effective == "default"
 
 
 def test_codex_profile_pins_the_model_and_uses_full_access(tmp_path):

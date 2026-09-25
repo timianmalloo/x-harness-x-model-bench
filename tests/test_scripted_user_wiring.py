@@ -57,7 +57,7 @@ def test_copilot_scripted_cell_uses_launch_config_and_never_session_mcp_servers(
     launcher = FakeLauncher({})
     cfg = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
                               launchers={"copilot": launcher}, build_workspace=_build_workspace,
-                              grade=None, end_grace=5)
+                              grade=None)
     summary = _engine_run(p, cfg)
     assert summary.outcomes[cell["cell_id"]]["outcome"] == "completed"
     archived = _archived(base, p, cell)

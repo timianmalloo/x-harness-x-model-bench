@@ -1,9 +1,11 @@
 """The ACP cell driver (ADR-0002; design: driver.py): bounded reader, strict parse, deny-all permissions,
 verbatim prompt, ack barrier, handshake deadline."""
 
+import io
 import json
 import os
 import sys
+import threading
 from pathlib import Path
 
 import pytest
@@ -168,6 +170,87 @@ def test_a_killed_turn_returns_promptly_with_eof(tmp_path):
     timer.join()
     cell.close()
     assert result.prompt_sent and result.stop_reason is None and result.eof
+
+
+@pytestmark_native
+def test_cancel_sends_session_cancel_during_the_prompt(tmp_path):  # D-1
+    cancel = threading.Event()
+    cell = _spawn(tmp_path, fake="on_cancel")
+    timer = threading.Timer(0.4, cancel.set)
+    try:
+        timer.start()
+        result = driver.run_turn(cell, tmp_path, "p", None, 10, lambda sid: None, cancel=cancel)
+        assert result.stop_reason == "cancelled"
+        sent = json.loads((tmp_path / ".fake-cancel.json").read_text(encoding="utf-8"))
+        assert sent == {"jsonrpc": "2.0", "method": "session/cancel", "params": {"sessionId": result.session_id}}
+    finally:
+        timer.join()
+        cell.terminate_and_confirm(timeout=10)
+        cell.close()
+
+
+@pytestmark_native
+def test_cancel_closes_stdin_during_the_handshake(tmp_path):  # D-1
+    cancel = threading.Event()
+    cell = _spawn(tmp_path, fake="ok", handshake_delay=2)
+    timer = threading.Timer(0.2, cancel.set)
+    try:
+        timer.start()
+        driver.run_turn(cell, tmp_path, "p", None, 5, lambda sid: None, cancel=cancel)
+        assert cell.proc.stdin.closed
+        assert not (tmp_path / ".fake-prompt.txt").exists()
+        assert not (tmp_path / ".fake-cancel.json").exists()
+    finally:
+        timer.join()
+        cell.terminate_and_confirm(timeout=10)
+        cell.close()
+
+
+@pytestmark_native
+def test_writes_after_a_cancel_are_dropped(tmp_path):  # D-2
+    cancel = threading.Event()
+    cell = _spawn(tmp_path, fake="on_cancel", late_permission=True, usage=[{"model": "fake-model"}])
+    timer = threading.Timer(0.4, cancel.set)
+    try:
+        timer.start()
+        result = driver.run_turn(cell, tmp_path, "p", None, 10, lambda sid: None, cancel=cancel)
+        assert result.stop_reason == "cancelled"
+        assert result.permission_requests == 1
+        assert result.usage is not None
+        assert result.cause is None
+    finally:
+        timer.join()
+        cell.terminate_and_confirm(timeout=10)
+        cell.close()
+
+
+@pytestmark_native
+def test_no_prompt_after_a_cancel_request(tmp_path):  # R10-6
+    cancel = threading.Event()
+    cell = _spawn(tmp_path)
+    try:
+        def before_send(_sid):
+            cancel.set()
+
+        result = driver.run_turn(cell, tmp_path, "p", None, 10, before_send, cancel=cancel)
+        assert not result.prompt_sent
+        assert not (tmp_path / ".fake-prompt.txt").exists()
+    finally:
+        cell.terminate_and_confirm(timeout=10)
+        cell.close()
+
+
+def test_the_channel_drops_a_prompt_if_cancel_races_the_send():  # R10-6, send boundary
+    from types import SimpleNamespace
+
+    cancel = threading.Event()
+    incoming = io.BytesIO()
+    outgoing = io.BytesIO()
+    cell = SimpleNamespace(proc=SimpleNamespace(stdin=outgoing, stdout=incoming))
+    ch = driver._Channel(cell, driver.TurnResult(), cancel)
+    cancel.set()
+    assert not ch.send({"jsonrpc": "2.0", "method": "session/prompt", "params": {"sessionId": "s"}})
+    assert outgoing.getvalue() == b""
 
 
 # D5: recorded adapter output replayed through the driver ------------------------------------------

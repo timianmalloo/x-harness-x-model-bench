@@ -1,7 +1,7 @@
 --------------------------- MODULE run_lifecycle ---------------------------
 (***************************************************************************)
 (* The lifecycle of one harness-bench run (spec US-44; ADR-0006, ADR-0007). *)
-(* Version 3 (native cells, ADR-0013).                                     *)
+(* Version 4 (native cells and R-21 cancel grace, ADR-0013).               *)
 (*                                                                         *)
 (* One run engine process that can crash and be resumed; cells (each a    *)
 (* native process tree in its own Job Object, `proc`) that can fail on    *)
@@ -47,8 +47,9 @@ VARIABLES
     launchEpoch,    \* [cell -> Nat]      incarnation that created the proc
     epoch,          \* engine incarnation
     proc,      \* [cell -> {"none","running","exited"}]  physical
-    killRequested,  \* [cell -> BOOLEAN]  kill issued (TerminateJobObject), not yet confirmed
+    killRequested,  \* [cell -> BOOLEAN]  cancel requested, not yet confirmed
     killReason,     \* [cell -> Reasons]  why the engine killed it (process memory)
+    grace,          \* [cell -> BOOLEAN]  cancel sent; TerminateJobObject not yet issued
     queued,         \* [cell -> BOOLEAN]  worker queued prompt_sent, not yet persisted (volatile)
     promptSent,     \* [cell -> BOOLEAN]  ledger: cell.prompt_sent (fsynced, then acked to the worker)
     pendingSend,    \* [cell -> BOOLEAN]  worker holds the ack and will send once (volatile)
@@ -71,7 +72,7 @@ VARIABLES
     flags           \* history of forbidden events
 
 vars == <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch, proc,
-          killRequested, killReason, queued, promptSent, pendingSend, prompts, outcome,
+          killRequested, killReason, grace, queued, promptSent, pendingSend, prompts, outcome,
           wasStopped, archived, deleted, controlFile, controlApplied, applyCount, stopApplied,
           decision, resolutions, lock, passState, passOwner, graded, gradeCount, flags>>
 
@@ -95,6 +96,7 @@ Init ==
     /\ proc = [c \in Cells |-> "none"]
     /\ killRequested = [c \in Cells |-> FALSE]
     /\ killReason = [c \in Cells |-> "none"]
+    /\ grace = [c \in Cells |-> FALSE]
     /\ queued = [c \in Cells |-> FALSE]
     /\ promptSent = [c \in Cells |-> FALSE]
     /\ pendingSend = [c \in Cells |-> FALSE]
@@ -132,7 +134,7 @@ WriteIntent(c) ==
                    killRequested, killReason, queued, promptSent, pendingSend, prompts, outcome,
                    wasStopped, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
-                   gradeCount>>
+                   gradeCount, grace>>
 
 StartCell(c) ==
     /\ EngineReady
@@ -150,7 +152,7 @@ StartCell(c) ==
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, epoch, killRequested,
                    killReason, queued, promptSent, pendingSend, prompts, outcome, wasStopped,
                    archived, deleted, controlFile, controlApplied, applyCount, stopApplied,
-                   decision, resolutions, lock, passState, passOwner, graded, gradeCount>>
+                   decision, resolutions, lock, passState, passOwner, graded, gradeCount, grace>>
 
 \* The proc could not be created (image or create failure): recorded, never prompted.
 StartFails(c) ==
@@ -161,7 +163,7 @@ StartFails(c) ==
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
-                   gradeCount, flags>>
+                   gradeCount, flags, grace>>
 
 \* The worker queues prompt_sent for the engine thread (volatile until persisted).
 QueuePromptSent(c) ==
@@ -176,7 +178,7 @@ QueuePromptSent(c) ==
                    proc, killRequested, killReason, promptSent, prompts, outcome,
                    wasStopped, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
-                   gradeCount, flags>>
+                   gradeCount, flags, grace>>
 
 \* The engine thread appends and fsyncs prompt_sent, then acks the worker.
 PersistPromptSent(c) ==
@@ -189,7 +191,7 @@ PersistPromptSent(c) ==
                    proc, killRequested, killReason, prompts, outcome, wasStopped,
                    archived, deleted, controlFile, controlApplied, applyCount, stopApplied,
                    decision, resolutions, lock, passState, passOwner, graded, gradeCount,
-                   flags>>
+                   flags, grace>>
 
 \* The worker sends the prompt once, only after the ack.
 SendPrompt(c) ==
@@ -203,7 +205,7 @@ SendPrompt(c) ==
                    proc, killRequested, killReason, queued, promptSent, outcome,
                    wasStopped, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
-                   gradeCount>>
+                   gradeCount, grace>>
 
 \* Environment: the proc exits on its own (agent finished, or it failed before a prompt).
 CellExits(c) ==
@@ -213,18 +215,41 @@ CellExits(c) ==
                    killRequested, killReason, queued, promptSent, pendingSend, prompts,
                    outcome, wasStopped, archived, deleted, controlFile, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
-                   graded, gradeCount, flags>>
+                   graded, gradeCount, flags, grace>>
 
 \* Environment: a requested kill takes effect (the engine retries until inspect confirms).
 CellDies(c) ==
-    /\ proc[c] = "running" /\ killRequested[c]
+    /\ proc[c] = "running" /\ killRequested[c] /\ ~grace[c]
     /\ proc' = [proc EXCEPT ![c] = "exited"]
     /\ killRequested' = [killRequested EXCEPT ![c] = FALSE]
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    killReason, queued, promptSent, pendingSend, prompts, outcome, wasStopped,
                    archived, deleted, controlFile, controlApplied, applyCount, stopApplied,
                    decision, resolutions, lock, passState, passOwner, graded, gradeCount,
-                   flags>>
+                   flags, grace>>
+
+\* The adapter may honour cancel and exit before the hard deadline.
+GracefulExit(c) ==
+    /\ proc[c] = "running" /\ killRequested[c] /\ grace[c]
+    /\ proc' = [proc EXCEPT ![c] = "exited"]
+    /\ killRequested' = [killRequested EXCEPT ![c] = FALSE]
+    /\ grace' = [grace EXCEPT ![c] = FALSE]
+    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+                   killReason, queued, promptSent, pendingSend, prompts, outcome, wasStopped,
+                   archived, deleted, controlFile, controlApplied, applyCount, stopApplied,
+                   decision, resolutions, lock, passState, passOwner, graded, gradeCount, flags>>
+
+\* The engine's deadline issues the hard kill. Its timing is checked in code, not TLC.
+EndGrace(c) ==
+    /\ BUG # "no_escalate"
+    /\ engine = "up"
+    /\ proc[c] = "running" /\ killRequested[c] /\ grace[c]
+    /\ grace' = [grace EXCEPT ![c] = FALSE]
+    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+                   proc, killRequested, killReason, queued, promptSent, pendingSend, prompts,
+                   outcome, wasStopped, archived, deleted, controlFile, controlApplied,
+                   applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
+                   graded, gradeCount, flags>>
 
 \* The engine records how an exited proc's cell ended (never while it runs).
 RecordExit(c) ==
@@ -240,7 +265,7 @@ RecordExit(c) ==
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
-                   gradeCount, flags>>
+                   gradeCount, flags, grace>>
 
 \* Budget or handshake deadline: kill first; the outcome is recorded after the proc is gone.
 EngineKill(c) ==
@@ -249,6 +274,7 @@ EngineKill(c) ==
     /\ Active(c) /\ proc[c] = "running" /\ ~killRequested[c]
     /\ killRequested' = [killRequested EXCEPT ![c] = TRUE]
     /\ killReason' = [killReason EXCEPT ![c] = "timeout"]
+    /\ grace' = [grace EXCEPT ![c] = TRUE]
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, queued, promptSent, pendingSend, prompts, outcome, wasStopped,
                    archived, deleted, controlFile, controlApplied, applyCount, stopApplied,
@@ -262,6 +288,8 @@ StopCell(c) ==
     /\ EngineReady /\ stopApplied
     /\ Active(c)
     /\ ~(proc[c] = "running" /\ killReason[c] = "stop")
+    /\ grace' = IF proc[c] = "running" /\ BUG # "record_without_kill"
+                 THEN [grace EXCEPT ![c] = TRUE] ELSE grace
     /\ IF proc[c] = "running" /\ BUG = "record_without_kill"
          THEN /\ Record(c, "stopped")                        \* seeded: records, never kills
               /\ UNCHANGED <<killRequested, killReason>>
@@ -292,7 +320,7 @@ Archive(c) ==
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, deleted, controlFile, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
-                   graded, gradeCount>>
+                   graded, gradeCount, grace>>
 
 DeleteWorkspace(c) ==
     /\ engine = "up"
@@ -303,7 +331,7 @@ DeleteWorkspace(c) ==
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, controlFile, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
-                   graded, gradeCount, flags>>
+                   graded, gradeCount, flags, grace>>
 
 -----------------------------------------------------------------------------
 (* Control mailbox: control.applied is recorded before the file is removed *)
@@ -315,7 +343,7 @@ WriteControl(k) ==
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
-                   graded, gradeCount, flags>>
+                   graded, gradeCount, flags, grace>>
 
 ApplyStop ==
     /\ BUG # "stop_ignored"
@@ -330,7 +358,7 @@ ApplyStop ==
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile, lock,
-                   passState, passOwner, graded, gradeCount, flags>>
+                   passState, passOwner, graded, gradeCount, flags, grace>>
 
 ApplyAnswer ==
     /\ engine = "up"
@@ -344,7 +372,7 @@ ApplyAnswer ==
     /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile, stopApplied,
-                   lock, passState, passOwner, graded, gradeCount, flags>>
+                   lock, passState, passOwner, graded, gradeCount, flags, grace>>
 
 RemoveControl(k) ==
     /\ engine = "up"
@@ -354,7 +382,7 @@ RemoveControl(k) ==
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
-                   graded, gradeCount, flags>>
+                   graded, gradeCount, flags, grace>>
 
 -----------------------------------------------------------------------------
 (* One decision request with a timeout default *)
@@ -366,7 +394,7 @@ RaiseDecision ==
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile,
                    controlApplied, applyCount, stopApplied, resolutions, lock, passState,
-                   passOwner, graded, gradeCount, flags>>
+                   passOwner, graded, gradeCount, flags, grace>>
 
 TimeoutDefault ==
     /\ BUG # "no_timeout"
@@ -376,7 +404,7 @@ TimeoutDefault ==
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile,
                    controlApplied, applyCount, stopApplied, lock, passState, passOwner,
-                   graded, gradeCount, flags>>
+                   graded, gradeCount, flags, grace>>
 
 -----------------------------------------------------------------------------
 (* Crash and resume: process memory (queue, acks, kill reasons) and the engine's lock are lost *)
@@ -387,6 +415,7 @@ Crash ==
     /\ queued' = [c \in Cells |-> FALSE]
     /\ pendingSend' = [c \in Cells |-> FALSE]
     /\ killReason' = [c \in Cells |-> "none"]
+    /\ grace' = [c \in Cells |-> FALSE]
     /\ lock' = IF lock = "engine" THEN "free" ELSE lock
     /\ passState' = [p \in Passes |->
                        IF passOwner[p] = "engine" /\ passState[p] = "active"
@@ -403,7 +432,7 @@ Resume ==
     /\ UNCHANGED <<crashes, intent, launchEpoch, proc, killRequested, killReason, queued,
                    promptSent, pendingSend, prompts, outcome, wasStopped, archived, deleted,
                    controlFile, controlApplied, applyCount, stopApplied, decision,
-                   resolutions, lock, passState, passOwner, graded, gradeCount, flags>>
+                   resolutions, lock, passState, passOwner, graded, gradeCount, flags, grace>>
 
 \* Reconciliation step 1: kill every running proc carrying the run's label, whatever its outcome.
 ReconcileKill(c) ==
@@ -414,7 +443,7 @@ ReconcileKill(c) ==
                    proc, killReason, queued, promptSent, pendingSend, prompts, outcome,
                    wasStopped, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
-                   gradeCount, flags>>
+                   gradeCount, flags, grace>>
 
 \* Reconciliation step 2 (proc gone): prompted cells fail, never relaunched; unprompted
 \* cells have their proc removed and may launch once.
@@ -433,7 +462,7 @@ ReconcileRecord(c) ==
     /\ UNCHANGED <<engine, crashes, reconciling, intent, launchEpoch, epoch, killRequested,
                    killReason, queued, pendingSend, prompts, archived, deleted, controlFile,
                    controlApplied, applyCount, stopApplied, decision, resolutions, lock,
-                   passState, passOwner, graded, gradeCount, flags>>
+                   passState, passOwner, graded, gradeCount, flags, grace>>
 
 \* Seeded bug "relaunch_stopped": reconciliation re-opens stopped cells.
 ReopenStopped(c) ==
@@ -446,7 +475,7 @@ ReopenStopped(c) ==
                    killRequested, killReason, queued, promptSent, pendingSend, prompts,
                    wasStopped, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
-                   gradeCount, flags>>
+                   gradeCount, flags, grace>>
 
 ReconcileDone ==
     /\ engine = "up" /\ reconciling
@@ -457,7 +486,7 @@ ReconcileDone ==
                    killRequested, killReason, queued, promptSent, pendingSend, prompts,
                    outcome, wasStopped, archived, deleted, controlFile, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
-                   graded, gradeCount, flags>>
+                   graded, gradeCount, flags, grace>>
 
 -----------------------------------------------------------------------------
 (* Grading passes: each process mints its own pass; grade.lock gives mutual exclusion.         *)
@@ -479,7 +508,7 @@ GradeStart(p, g) ==
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile,
                    controlApplied, applyCount, stopApplied, decision, resolutions, graded,
-                   gradeCount, flags>>
+                   gradeCount, flags, grace>>
 
 GradeCell(p, c) ==
     /\ passState[p] = "active"
@@ -494,7 +523,7 @@ GradeCell(p, c) ==
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile,
                    controlApplied, applyCount, stopApplied, decision, resolutions, lock,
-                   passState, passOwner>>
+                   passState, passOwner, grace>>
 
 GradeEnd(p) ==
     /\ passState[p] = "active"
@@ -508,14 +537,14 @@ GradeEnd(p) ==
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile,
                    controlApplied, applyCount, stopApplied, decision, resolutions, passOwner,
-                   graded, gradeCount, flags>>
+                   graded, gradeCount, flags, grace>>
 
 -----------------------------------------------------------------------------
 Next ==
     \/ \E c \in Cells : WriteIntent(c)
     \/ \E c \in Cells :
           \/ StartCell(c) \/ StartFails(c) \/ QueuePromptSent(c) \/ PersistPromptSent(c)
-          \/ SendPrompt(c) \/ CellExits(c) \/ CellDies(c) \/ RecordExit(c)
+          \/ SendPrompt(c) \/ CellExits(c) \/ CellDies(c) \/ GracefulExit(c) \/ EndGrace(c) \/ RecordExit(c)
           \/ EngineKill(c) \/ StopCell(c) \/ Archive(c) \/ DeleteWorkspace(c)
           \/ ReconcileKill(c) \/ ReconcileRecord(c) \/ ReopenStopped(c)
     \/ \E k \in Controls : WriteControl(k) \/ RemoveControl(k)
@@ -532,7 +561,7 @@ Fairness ==
     /\ WF_vars(Resume) /\ WF_vars(ReconcileDone) /\ WF_vars(TimeoutDefault)
     /\ WF_vars(ApplyStop) /\ WF_vars(ApplyAnswer)
     /\ \A c \in Cells :
-          /\ WF_vars(StopCell(c)) /\ WF_vars(CellDies(c)) /\ WF_vars(RecordExit(c))
+          /\ WF_vars(StopCell(c)) /\ WF_vars(CellDies(c)) /\ WF_vars(EndGrace(c)) /\ WF_vars(RecordExit(c))
           /\ WF_vars(ReconcileKill(c)) /\ WF_vars(ReconcileRecord(c)) /\ WF_vars(Archive(c))
           /\ WF_vars(EngineKill(c))
     /\ \A p \in Passes :
@@ -553,6 +582,7 @@ TypeOK ==
     /\ outcome \in [Cells -> Outcomes]
     /\ proc \in [Cells -> {"none", "running", "exited"}]
     /\ killReason \in [Cells -> Reasons]
+    /\ grace \in [Cells -> BOOLEAN]
     /\ decision \in {"none", "open", "resolved"}
     /\ lock \in {"free", "engine", "bench"}
 
@@ -575,6 +605,7 @@ NoOutcomeWhileRunning      == \A c \in Cells : outcome[c] # "none" => proc[c] # 
 \* Reachability witness (must be VIOLATED by the real design): every cell can end graded and
 \* deleted, so safety does not pass merely because the run stalls early.
 NotAllCellsFinished        == ~(\A c \in Cells : deleted[c] /\ \E p \in Passes : c \in graded[p])
+NoGraceState               == \A c \in Cells : ~grace[c]
 
 (* Liveness *)
 DecisionEventuallyResolved == (decision = "open") ~> (decision = "resolved")
