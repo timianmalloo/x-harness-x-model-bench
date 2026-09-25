@@ -70,11 +70,11 @@ def test_the_pass_writes_one_row_per_applicable_metric_of_the_tasks_graders(root
 
 
 def test_an_unbuilt_grader_is_na_not_built_for_each_of_its_metrics_never_0(root, tmp_path):
-    set_graders(root, ["correctness", "cost", "process", "mutation"])  # mutation is not registered (GR-CODE c6)
+    set_graders(root, ["correctness", "cost", "process", "formal"])  # formal is not registered
     got = {r["metric_id"]: (r["value"], r["reason"]) for r in graded(root, tmp_path)}
-    assert "mutation" not in runner.GRADERS and got["mutation_score"] == (None, "not built")  # an unregistered grader
+    assert "formal" not in runner.GRADERS and got["formal_checks_clean"] == (None, "not built")  # an unregistered grader
     assert {m: v for m, v in got.items() if m not in BUILT | PROCESS} == \
-        {m: (None, "not built") for m in ((CORRECTNESS | COST) - BUILT) | {"mutation_score"}}
+        {m: (None, "not built") for m in ((CORRECTNESS | COST) - BUILT) | {"formal_checks_clean", "bugs_confirmed", "bug_claim_precision", "statement_integrity", "model_conformance", "model_non_vacuity"}}
     missing = (None, "per-call outcome missing on 2 of 2 calls")  # the captured Codex record: every ok is null (DR-G3)
     assert {m: got[m] for m in PROCESS} == {  # process is registered (GR-PROC p1-p3), so measured, never `not built`
         "tool_error_rate": missing, "stuck_loops": missing, "recovery_rate": missing,

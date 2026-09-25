@@ -52,6 +52,7 @@ from harness_bench.grade import (
     cost,
     drift,
     judge,
+    mutation,
     process,
     rigor,
 )
@@ -94,6 +95,7 @@ GRADERS["clarify"] = clarify.grade_cell  # GR-CLAR l1
 GRADERS["drift"] = drift.grade_cell  # GR-CODE c3
 GRADERS["architecture"] = architecture.grade_cell  # GR-CODE c4
 GRADERS["rigor"] = rigor.grade_cell  # GR-CODE c5
+GRADERS["mutation"] = mutation.grade_cell  # GR-CODE c6
 TOOL_TIMEOUT = 30  # seconds per version probe (R-59 c4)
 NOT_RECORDED = "not recorded"
 # Extra pins beyond python, dotnet, and dotnet-stryker: key -> argv whose last stdout line is the version.

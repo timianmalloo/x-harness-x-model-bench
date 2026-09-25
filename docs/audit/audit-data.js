@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T19:26:11Z",
+  "generated": "2026-09-25T19:46:57Z",
   "audit": [
     {
       "actor": null,
@@ -31011,6 +31011,39 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3D1PKDS88BSA88ZAW73TRFJ",
+      "shortname": "mutation-grader-core",
+      "datetime": "2026-09-25T19:46:57Z",
+      "session": "worker-agy-c6b1",
+      "prompt": "W3-GR-CODE slice c6b-1 per docs/design/phase3-graders.md, section Mutation, and docs/notes/spike-gr-code-stryker.md",
+      "summary": "W3-GR-CODE slice c6b-1: mutation grader core, red-first TDD, 14 fast tests, 14 killed mutants in mutation_grader.json, registered in runner.GRADERS",
+      "kind": "manual",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "goal": "W3-GR-CODE slice c6b-1 per docs/design/phase3-graders.md (Mutation) and docs/notes/spike-gr-code-stryker.md",
+      "done_when": "grade/mutation.py computes mutation_score as Decimal scale 4; runs Stryker as measured; verbatim NA reasons; registered in runner.GRADERS; fast tests only; mutation_grader.json 14 mutants killed; ruff clean",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-25T19:26:34Z",
+      "duration_seconds": 1223.0,
+      "git": {
+        "sha": "b934b981c68067cd1cdea9a51567bb92acdee341",
+        "short": "b934b981c",
+        "branch": "w3-grcode6b1",
+        "pushed": null
+      }
     }
   ],
   "changes": [
