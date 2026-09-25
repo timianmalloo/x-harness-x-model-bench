@@ -1,0 +1,4 @@
+{"kind":"header","schema":"bench-scripted-user-log/1","task":"A1","clarifications_sha256":"86fee6273e75d4fad474a89e25edde6f71a676a1112169149f733e8288963e0d","matcher_version":"t0-c8b7e628d0c7"}
+{"kind":"initialize","client":{"name":"copilot","version":"1.0.0"},"protocol_version":"2025-11-25"}
+{"kind":"tools_listed"}
+{"kind":"end","calls":0,"client_initialized":true,"tool_listed":true,"note":"no question asked"}

@@ -1,0 +1,74 @@
+[
+  {
+    "name": "constant 0",
+    "file": "src/harness_bench/grade/clarify.py",
+    "find": "    recall = _ratio(distinct_matched, annotated_count)",
+    "replace": "    recall = 0",
+    "tests": [
+      "tests/test_grade_clarify.py::test_seeded_a_single_matching_call"
+    ]
+  },
+  {
+    "name": "count call rows, not distinct ids",
+    "file": "src/harness_bench/grade/clarify.py",
+    "find": "    distinct_matched = len(matched_annotated_ids)",
+    "replace": "    distinct_matched = matched_call_count",
+    "tests": [
+      "tests/test_grade_clarify.py::test_seeded_b_two_matching_calls"
+    ]
+  },
+  {
+    "name": "drop the cap",
+    "file": "src/harness_bench/grade/clarify.py",
+    "find": "    capped_calls = min(len(call_rows), annotated_count)",
+    "replace": "    capped_calls = len(call_rows)",
+    "tests": [
+      "tests/test_grade_clarify.py::test_seeded_b_two_matching_calls"
+    ]
+  },
+  {
+    "name": "no question asked -> NA",
+    "file": "src/harness_bench/grade/clarify.py",
+    "find": "            \"ask_vs_assume\": Score(Decimal(0), None, evidence),",
+    "replace": "            \"ask_vs_assume\": Score(None, \"no question asked\", evidence),",
+    "tests": [
+      "tests/test_grade_clarify.py::test_no_question_asked_scores_ask_vs_assume_zero"
+    ]
+  },
+  {
+    "name": "re-match instead of reading the stored decision",
+    "file": "src/harness_bench/grade/clarify.py",
+    "find": "        decision = row.get(\"decision\") or {}",
+    "replace": "        decision = {}  # re-match instead of reading the stored decision",
+    "tests": [
+      "tests/test_grade_clarify.py::test_reads_stored_decision_never_rematches"
+    ]
+  },
+  {
+    "name": "guess an annotated id when the set is missing",
+    "file": "src/harness_bench/grade/clarify.py",
+    "find": "        return _na_all(\"clarification set changed since the plan\", evidence)\n    annotated_count",
+    "replace": "        annotated_ids = {\"goal-maximum\"}\n    annotated_count",
+    "tests": [
+      "tests/test_grade_clarify.py::test_a_missing_clarification_set_is_na_never_a_guessed_id"
+    ]
+  },
+  {
+    "name": "floor a ratio instead of a Decimal",
+    "file": "src/harness_bench/grade/clarify.py",
+    "find": "    return Decimal(num) / Decimal(denom)\n",
+    "replace": "    return num // denom\n",
+    "tests": [
+      "tests/test_grade_clarify.py::test_a_non_integer_ratio_is_a_decimal_at_the_catalog_scale"
+    ]
+  },
+  {
+    "name": "no question asked writes an int, not a scaled Decimal",
+    "file": "src/harness_bench/grade/clarify.py",
+    "find": "            \"key_question_recall\": Score(Decimal(0), None, evidence),",
+    "replace": "            \"key_question_recall\": Score(0, None, evidence),",
+    "tests": [
+      "tests/test_grade_clarify.py::test_no_question_asked_writes_scaled_ratios_as_decimals"
+    ]
+  }
+]
