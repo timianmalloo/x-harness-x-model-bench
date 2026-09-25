@@ -69,3 +69,26 @@ Wave 1, 2026-09-24/25. The times are committer times of the joins on `main` (loc
     - Both pins equal the operator default, so the same limit applies as for Codex. The R-11 Agy hold and the R-29 Grok hold lift for new runner tracks.
   - **R-35/R-36(a)** (Claude Sonnet 5, 69 tool calls, 647 s): joined at `6e7ae50`. The Leader tightened two tests at the join (TEST-A).
 - **Also done:** the A9 host-sleep probe (`docs/notes/spike-a9-host-sleep.md`); A3 partial (host credentials unchanged across two runs); the R-36 connector comparison (the same 8 account tools pack-on and pack-off).
+
+## Wave 2 (version 4, 2026-09-25): planned against actual so far
+
+Times are Leader-measured: the runner's `duration_seconds` and the subagent's `duration_ms`. "Leader re-run" is the join rule: every red is re-run in a throwaway tree.
+
+| track | harness · model (stipulated) | runs | joined | evidence verified by the Leader |
+| --- | --- | --- | --- | --- |
+| W2-TASKS-d (C1) | Grok `grok-4.7` | 1 slice, 562 s, 4.35 MB output | `3c9c906` | base exit 1 (10 tests: 2 failures, 8 errors), reference exit 0; `bench validate` ok. ProjDevBench `9af6f408` has no LICENSE file, only a README "MIT License" line (disclosed in `task.yaml`) |
+| W2-TASKS-a (A1) | Claude Opus 5.5 | 69 calls, 1,107 s | `c9960ed` | base 43/43 fail, reference 43 OK; held-out matcher set of 38 (15 near-misses). The LiveCodeBench dataset card says only "cc" (disclosed in `NOTICE.md`) |
+| W2-TASKS-b slice 1 (dotnet runner, R-41) | Codex `gpt-6-sol` | 1,505 s, 2.96 MB | `2f7726f` | reds: 3 and 11 failed; `correctness.json` 3/3. **Deviation:** no cross-vendor reviewer added its own 3 mutants at this join |
+| W2-CANARY slices 1–2 (R-36/R-43 count) | Grok `grok-4.7` | 720 s (deadline hit, red committed), then 458 s | `da46176` | red: 3 failed. Leader join fix: a broad `OSError` catch removed (it returned partial rows unflagged); `canary.json` 3/3 |
+| W2-STOP-D (row-10 design) | Claude Opus 5.5 | 110 calls, 2,720 s | `7c2be61` | Test Architect and Simplifier: BLOCK, then PASS WITH CONDITIONS; TLA refinement spiked (22/22 variants rejected). Decisions R-48..R-50 |
+| W2-VIEWS | Claude Opus 5.5 | 211 + 105 calls, 2,373 + 1,195 s | pending join | 7 reds re-run (9/4/8/5/2/7/1). Data & Persistence Architect: CONDITIONS. Codex review: CONDITION F1 (its 3 mutants killed). Loop-back closed all 7 conditions. Decision R-47 |
+| R-45/R-46 profile seam | Codex `gpt-6-sol` | 703 s, 6.26 MB | `1308e0f` | red: 7 failed; `profile_classes.json` 4/4; suite 846 passed, 1 skipped (awaiting the recut) |
+| W2-TASKS-b slice 2 (D1) | Codex `gpt-6-sol` | 1,538 s, 2.83 MB | `6a45bf1` | through `correctness.grade`: base 0/5, reference 5/5, offline restore. **Defect found after the join:** `run.cmd` hard-codes the operator's profile path. TASKS-b slice 3 fixes it at the grader, and W2-VALIDATE adds a path scan. The username is in the pushed history, which is not rewritten |
+| W2-USER-D (design + S-04/S-04b) | Claude Opus 5.5 + AI Systems Engineer | 3 phases, about 2,120 s | `55151ea` | 17 probe turns run by the Leader; the Copilot stdio rejection was read from Copilot's own log. Decisions R-51..R-53 |
+| W2-TASKS-e (E6) | Agy `gemini-3.8-flash-high` | 1,194 s, 0.41 MB, 0 denials | joins through TASKS-b slice 3 | MultiPL-E `3025a53`: "BSD 3-Clause with Machine Learning Restriction" (no training use; evaluation allowed; notice copied) |
+
+**Also measured in this wave:**
+- **Copilot and Codex profiles vs ADR-0004 (R-45, R-46).** Copilot advertised `web_search`, `web_fetch` and GitHub-MCP tools as "safe", so they ran with no permission callback. Codex's promised `web_search = "disabled"` was never seeded. Whether wave-1 cells used these tools is **not recorded**. The profiles are fixed; the recut and the qualification cells are pending (run `qual-r45-1`).
+- **The docs-index merge driver** (`coord-regen`) dropped two new docs when both sides changed the index. The Leader re-derived the index by hand (`82dcfcc`). This is a pack finding for upstream.
+- **B1 and F1 wait on the operator:** cfd-bench has no LICENSE at `496a0a8` (R-42 condition 1).
+- **The Grok R-11 datum:** 3 slices measured 3.1–4.35 MB each over 7.6–12 min, far under 16 MiB.
