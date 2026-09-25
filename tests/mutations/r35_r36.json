@@ -1,0 +1,25 @@
+[
+ {
+  "name": "NotebookEdit dropped from the Claude Code allowlist",
+  "file": "bench/profiles/claude-code.yaml",
+  "find": "\"allow\": [\"Bash\", \"PowerShell\", \"Edit\", \"Write\", \"NotebookEdit\", \"Read\", \"Glob\", \"Grep\"]",
+  "replace": "\"allow\": [\"Bash\", \"PowerShell\", \"Edit\", \"Write\", \"Read\", \"Glob\", \"Grep\"]",
+  "tests": ["tests/test_profiles.py::test_claude_profile_seeds_settings_and_a_credential_copy",
+            "tests/test_allowlist_classes.py::test_the_claude_code_allowlist_covers_every_class_id_the_pinned_build_advertises"]
+ },
+ {
+  "name": "has_claude_code_cell never sees a Claude Code cell (header and CLI flag disappear)",
+  "file": "src/harness_bench/report/__init__.py",
+  "find": "    return any(c.get(\"harness\") == \"claude-code\" for c in plan.get(\"cells\", []))\n",
+  "replace": "    return False\n",
+  "tests": ["tests/test_report.py::test_the_header_flags_a_run_with_a_claude_code_cell_and_names_the_evidence",
+            "tests/test_report.py::test_the_cli_table_prints_the_account_context_flag_when_a_claude_code_cell_is_present"]
+ },
+ {
+  "name": "flag_if_claude_code never flags a Claude Code row",
+  "file": "src/harness_bench/report/__init__.py",
+  "find": "    return f\"{text} ({R36_FLAG})\" if harness == \"claude-code\" else text\n",
+  "replace": "    return text\n",
+  "tests": ["tests/test_report.py::test_the_leaderboard_and_cells_table_flag_only_the_claude_code_rows"]
+ }
+]

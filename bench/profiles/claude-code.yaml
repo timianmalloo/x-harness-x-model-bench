@@ -6,11 +6,12 @@ credential_kind: "subscription login (copied)"
 command: ["{node}", "{adapter}"]
 # allow: every id of the ADR-0004 classes (shell; file read and edit) that the pinned build exposes on this
 # platform, read from the build (R-34; tests/test_allowlist_classes.py). PowerShell is 2.1.282's Windows shell.
+# NotebookEdit is the deferred (ToolSearch-gated) file-edit id for .ipynb, in-class per R-35.
 # defaultMode is the declared mode; the ACP session reports "dontAsk is not available; falling back to default",
 # so the effective mode is recorded per cell (attempt.session_opened.permission_mode_effective) and shown in the
 # report header. The allowlist plus the driver's refusal of every permission request is what enforces US-14.
 files:
-  settings.json: '{"permissions": {"allow": ["Bash", "PowerShell", "Edit", "Write", "Read", "Glob", "Grep"], "defaultMode": "dontAsk"}}'
+  settings.json: '{"permissions": {"allow": ["Bash", "PowerShell", "Edit", "Write", "NotebookEdit", "Read", "Glob", "Grep"], "defaultMode": "dontAsk"}}'
 env:
   ANTHROPIC_MODEL: "{model}"
   CLAUDE_CODE_EXECUTABLE: "{exe}"

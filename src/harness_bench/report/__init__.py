@@ -25,6 +25,23 @@ def flag_if_codex(text: str, harness: str) -> str:
     return f"{text} ({N5_FLAG})" if harness == "codex" else text
 
 
+# R-36(a) (ruling R-36, spike R1.4: "account-level context survives every isolation ... the login, not
+# a file"). An account-level connector's tool descriptions reach every Claude Code cell's context, pack on
+# or off; the allowlist already denies calling them (fail closed, verified per cell). Every surface that
+# names a Claude Code combo or cell flags it with this text; no connector name is named here, only the
+# flag and where the evidence is (R-6 condition 4, by reference).
+R36_FLAG = "account context (R1.4)"
+R36_EVIDENCE = "docs/notes/spike-isolation-permissions.md, the US-13 canary"
+
+
+def has_claude_code_cell(plan: dict) -> bool:
+    return any(c.get("harness") == "claude-code" for c in plan.get("cells", []))
+
+
+def flag_if_claude_code(text: str, harness: str) -> str:
+    return f"{text} ({R36_FLAG})" if harness == "claude-code" else text
+
+
 def na(m: Measure) -> str:
     return f"NA ({m.reason})"
 
