@@ -11,4 +11,4 @@ from harness_bench.grade import CellInput, Score
 
 
 def grade_cell(inp: CellInput) -> Mapping[str, Score]:  # not registered in runner.GRADERS: NA "not built"
-    raise NotImplementedError("grade.architecture is not built yet; spec S-08d in docs/specs/README.md")
+    return {m: Score(None, "not built") for m in inp.metrics}  # GR-CODE c4 red: what the runner writes today
