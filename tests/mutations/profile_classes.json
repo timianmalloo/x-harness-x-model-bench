@@ -14,6 +14,13 @@
     "tests": ["tests/test_telemetry.py::test_codex_mcp_item_inside_exec_is_an_out_of_profile_tool_row"]
   },
   {
+    "name": "R-45 Copilot skill class back to other",
+    "file": "src/harness_bench/telemetry/copilot.py",
+    "find": "\"skill\": \"read\"",
+    "replace": "\"skill\": \"other\"",
+    "tests": ["tests/test_telemetry_copilot.py::test_pack_on_skill_call_is_a_file_read"]
+  },
+  {
     "name": "R-45 Copilot builtin MCP disable flag dropped",
     "file": "bench/profiles/copilot.yaml",
     "find": "\"--disable-builtin-mcps\", ",
