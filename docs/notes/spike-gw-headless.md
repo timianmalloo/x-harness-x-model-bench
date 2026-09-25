@@ -220,3 +220,26 @@ null), 0 tool events, no permission line, no canary, pack marker or host name, C
 (`system.message`). Turn 1 is the negative control. This is **one qualifying turn in a shape R-63 did not name**, so
 whether it qualifies the Copilot judge is an Owner decision (DR-GW-CP-1). Until the Owner rules, R-63 (b) stands:
 the second judge is `qualified: false`, and `bench/gateway.yaml` gains no Copilot entry (R-63 c2).
+
+### R-70 3(b): the qualification turns from the gateway's own builders (2026-09-25)
+
+Both turns are in `tests/fixtures/gateway/gw-copilot-results.json` (runs 3 and 4).
+
+| | turn 3 | turn 4 |
+| --- | --- | --- |
+| argv after the pinned exe | `--model gpt-6-sol --disable-builtin-mcps --no-custom-instructions --available-tools none -p` | the same, without `-p` |
+| delivery | stdin | piped stdin |
+| result | refused before any model call: `error: a value is required for '--prompt <text>'` | exit 0 in 8.9 s |
+| served model; model calls | none; 0 | `gpt-6-sol`; 1 |
+| `tools_advertised`; tool events | not recorded; none | `[]`; 0 |
+| permission lines (stdout, stderr, record) | none | 0 |
+| canaries, operator identifiers, pack markers | none | none |
+| CLI-added context | none | `system.message` (Copilot's own); no operator identifier in it |
+| prompt intact | not recorded | true |
+| output contract | no final text | the verdict schema parses; scores `[2, 2]` |
+| `invocation_sha256` | `43873fc4…` (the refused shape) | `1ab59cdd2d4310e3ef42cf9b0c50a76d4829a5aa4dcbba9f1923d30e85c24bd9` |
+| `qualified` | false | **true** |
+
+**Finding (SEED-A, third instance):** W3-GW-I s4's `assume:` that a bare `-p` reads stdin was false; turn 3 measured the refusal. The pinned `--help` names piped stdin as its own input mode ("combine with -i, -p, or piped stdin"), so the builder drops `-p` (red first, then green on `main`). Turn 4 measured the new shape.
+
+**Status against R-70:** conditions (a) (the stdin branch and the record reader) and (b) (one Leader turn from the gateway's builders) are met by turn 4. Condition (c), the `bench/gateway.yaml` entry, is written together with the Claude judge's entry. The Leader's re-probe of `claude-fable-5-1` with the same builders (2026-09-25 15:15Z) got no model response in 300 s: the prompt reached the record intact, and there was no assistant message and no error. It is retried when fewer Claude agents are live. Until both entries exist, the pair is not formed, and R-63 (b) stands.
