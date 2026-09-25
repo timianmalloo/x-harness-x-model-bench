@@ -4,6 +4,7 @@ The JSON form is `bench-status/1`: a strict type (unknown or missing fields reje
 from cells. The text form uses the exact strings of the design's CLI state table.
 """
 
+import dataclasses
 import json
 from datetime import UTC, datetime
 
@@ -14,6 +15,7 @@ from hypothesis import strategies as st
 
 from harness_bench import ledger, oslock, status
 from harness_bench.errors import BenchError
+from harness_bench.grade import runner
 
 NOW = datetime(2026, 9, 23, 12, 0, 0, tzinfo=UTC)
 
@@ -53,6 +55,21 @@ def test_a_finished_run_is_not_running_and_complete(root, tmp_path):
     s = status.build(run_dir, now=NOW)
     assert (s.liveness, s.completion, s.cells_ended, s.cells_total) == ("not running", "complete", 1, 1)
     assert status.text(s) == "Run r1: not running (complete). 1/1 cells ended.\nOutcomes: completed 1.\nValidity: not graded 1.\n"
+
+
+def test_a_cell_whose_native_record_is_unreadable_is_counted_as_not_recorded(root, tmp_path):  # R-15, seam S2
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    next((run_dir / "archive/a/attempt-1/home").rglob("*.jsonl")).unlink()
+    runner.run_pass(run_dir, root)
+    s = status.build(run_dir, now=NOW)
+    assert s.validity == {"not recorded": 1}
+    assert status.parse(status.to_json(s)) == s  # bench-status/1 accepts the state
+
+
+@pytest.mark.parametrize("state", ["invalid (tools denied by hook)", "invalid (build mismatch)"])  # R-27, R-47; seam S2
+def test_bench_status_accepts_the_wave_two_invalid_states(root, tmp_path, state):
+    s = dataclasses.replace(status.build(make_run(root, tmp_path, {"a": GOOD}), now=NOW), validity={state: 1})
+    assert status.parse(status.to_json(s)) == s
 
 
 def test_a_dead_engine_leaves_the_run_incomplete(root, tmp_path):

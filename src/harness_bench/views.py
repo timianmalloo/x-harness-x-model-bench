@@ -12,6 +12,14 @@ Rules, each defined once here:
   `recorded_at`, then `grading_id`). The current extraction is the one its scores name.
 - Validity, tokens, the time split, leaderboard rows and exports are derived, never stored. A value that
   was not measured is a `Measure(None, reason)`, never 0 (US-27).
+- Validity, in order: an invalidating cause; `invalid (build mismatch)` (HB-VAL-007, R-47); not graded;
+  `invalid (tools denied by hook)` (HB-VAL-004, R-27); `invalid (model mismatch)` (HB-VAL-002) for a served model
+  that is not the pin, a declared auxiliary model, or one the task's `model_map` names (US-11), even in a partial
+  record; `not recorded` for an unreadable usage record (HB-VAL-003, R-15), distinct from `invalid (no model call)`
+  (HB-VAL-001, a readable record with no call); else valid.
+- Warnings flag a cell without changing its validity: HB-VAL-005 (Σ model_calls vs the ACP turn total, R-24/R-26
+  c5) and HB-VAL-006 (the executed-build check skipped, R-22 c1, R-47). One code has one level and one emitter; a
+  `Cause` code is never a view finding (R-47).
 """
 
 from __future__ import annotations
@@ -24,7 +32,7 @@ from pathlib import Path
 from harness_bench import archive, ledger, profiles
 from harness_bench.errors import BenchError, Cause
 from harness_bench.plan import load_confirmed
-from harness_bench.telemetry import Extraction, ModelCall, normalize
+from harness_bench.telemetry import Extraction, ModelCall, as_dict, is_count, normalize
 
 ENGINE_PREFIX = "engine-"
 GRADE_PREFIX = "grade-"
@@ -94,7 +102,7 @@ class CellView:
     outcome: str  # completed | timed_out | failed | not started | no outcome (launched; the run is incomplete)
     cause: str | None  # the cause's report label
     code: str | None
-    validity: str  # valid | invalid (<attribution>) | invalid (no model call) | invalid (model mismatch) | not graded | not started | no outcome
+    validity: str  # valid | invalid (<attribution>) | invalid (no model call) | invalid (model mismatch) | not recorded | not graded | not started | no outcome
     validity_code: str | None
     wall_ms: Measure
     model_ms: Measure
@@ -106,6 +114,7 @@ class CellView:
     scores: dict[str, Measure] = field(default_factory=dict)
     evidence: dict[str, str] = field(default_factory=dict)
     extraction_id: str | None = None
+    warnings: list[Finding] = field(default_factory=list)  # view checks that flag a cell without changing its validity
 
 
 @dataclass
@@ -241,19 +250,96 @@ def _idle(wall: Measure, model: Measure, tool: Measure) -> Measure:
     return Measure(idle) if idle >= 0 else Measure(None, "model and tool time exceed wall time")
 
 
-def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: set[str] | None) -> tuple[str, str | None]:
+NO_ACP_USAGE = "the adapter reported no usage"
+
+# R-24, R-26 c5: the ACP turn total cross-checks Σ of the current extraction's model_calls buckets.
+# simplify: a harness list in code. Ceiling: harnesses whose adapter `usage` is the turn total over every model.
+# Upgrade trigger: any change to this list -> a profile datum instead (D&P). Verified: Copilot's ACP usage equals Σ modelMetrics in all
+# three captured samples (tests/fixtures/native/copilot/provenance.json). Codex's adapter reports the last call only and
+# Claude Code's the main model only (normalize docstring; tests/fixtures/acp/*-prompt-response.json), so a check there
+# would fire on every cell.
+ACP_TOTAL_HARNESSES = ("copilot",)
+ACP_TOTAL_KEYS = (("inputTokens", ("uncached_input", "cache_read", "cache_write")), ("outputTokens", ("output",)),
+                  ("cachedReadTokens", ("cache_read",)), ("cachedWriteTokens", ("cache_write",)))
+
+
+def _build_check(plan: dict, harness: str, opened: dict) -> Finding | None:
+    """R-47 (R-28 c2 re-pointed): `attempt.session_opened.agent_version`, verbatim from ACP `initialize.agentInfo`, must
+    equal the pinned build's *recorded self-report*, `plan.builds[<harness>].agent_version` (observed at qualification
+    for the same sha256). A proven mismatch is HB-VAL-007 at level error, which `_validity` turns into
+    `invalid (build mismatch)`. `version` / `adapter_version` are package.json labels, never the comparand (Copilot
+    self-reports 1.0.89-3 against a 1.0.89-1 manifest, R-45 c2). A null on either side skips the check with the
+    HB-VAL-006 warning, never a pass (R-22 c1). HB-CELL-115 stays the engine's pre-launch cause (one code, one emitter)."""
+    recorded = as_dict(as_dict(plan.get("builds")).get(harness)).get("agent_version")
+    agent = opened.get("agent_version")
+    if agent is None:
+        return Finding("HB-VAL-006", "warning", "executed-build check skipped: no agent_version recorded")
+    if recorded is None:
+        return Finding("HB-VAL-006", "warning", f"executed-build check skipped: no recorded agent_version for {harness}")
+    if agent != recorded:
+        return Finding("HB-VAL-007", "error", f"agent_version {agent} differs from the pinned build's recorded {recorded}")
+    return None
+
+
+def _token_cross_check(ended: dict, calls: list[ModelCall]) -> Finding | None:
+    """HB-VAL-005, a warning, never a validity change: the ACP turn total and Σ model_calls disagree, or no ACP usage
+    was recorded (the check did not run, which is never read as a pass). Copilot's `inputTokens` includes cache read
+    and write (R-20 c2)."""
+    usage = as_dict(ended.get("acp_usage")).get("usage")
+    if not isinstance(usage, dict):
+        return Finding("HB-VAL-005", "warning", "token cross-check not run: no ACP usage recorded")
+    diffs = []
+    for key, buckets in ACP_TOTAL_KEYS:
+        total = sum(getattr(c, b) for c in calls for b in buckets)
+        if not (is_count(usage.get(key)) and usage[key] == total):
+            diffs.append(f"{key} ACP {usage.get(key)}, model_calls {total}")
+    if not diffs:
+        return None
+    return Finding("HB-VAL-005", "warning", "model_calls tokens differ from the ACP turn total: " + "; ".join(diffs))
+
+
+def _unrecorded(source: str, record_reason: str | None, ended: dict, usage: list) -> str | None:
+    """Why the cell's authoritative usage record is not recorded (R-15, R-21 c2), or None when it was read.
+
+    - `native_record`: `record_reason`, the current pass's `grading.completed.unreadable_records` entry (no record,
+      more than one, or unreadable as a whole). A pass from before R-15 names none, so its cells read as before.
+    - `acp_turn`: `attempt.process_ended.acp_usage` is recorded as null (R-24 c2: the adapter reported nothing) and
+      there is no `turn_usage` row. A ledger from before R-24 has no `acp_usage` key and reads as before."""
+    if source == "acp_turn":
+        return NO_ACP_USAGE if not usage and "acp_usage" in ended and ended["acp_usage"] is None else None
+    return record_reason
+
+
+def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: set[str] | None,
+              unrecorded: str | None = None, denials: int = 0, mapped: frozenset[str] = frozenset(),
+              build: Finding | None = None) -> tuple[str, str | None]:
     if outcome is None:
         return state, None  # not started | no outcome
     cause = Cause[outcome["cause"]] if outcome.get("cause") else None
     if cause is not None and cause.invalidates:
         return f"invalid ({cause.attribution})", cause.code
+    if build is not None and build.level == "error":  # R-47 c2: needs only attempt.session_opened, so before grading
+        return "invalid (build mismatch)", build.code
     if served is None:
         return "not graded", None
+    if denials:  # R-27: measured, so it outranks a record that is otherwise unreadable
+        return "invalid (tools denied by hook)", "HB-VAL-004"
+    # A served model that is neither the pin, a declared auxiliary model, nor one the task's model_map names. Seen in a
+    # partial record it is still measured, so it outranks "not recorded" (D&P); an empty served set cannot mismatch.
+    if any(not profiles.model_allowed(m, cell["model"], prof["auxiliary_models"]) and m not in mapped for m in served):
+        return "invalid (model mismatch)", "HB-VAL-002"
+    if unrecorded is not None:  # R-15 c1: distinct from a readable record with no call (HB-VAL-001)
+        return "not recorded", "HB-VAL-003"
     if not served:
         return "invalid (no model call)", "HB-VAL-001"
-    if any(not profiles.model_allowed(m, cell["model"], prof["auxiliary_models"]) for m in served):
-        return "invalid (model mismatch)", "HB-VAL-002"
     return "valid", None
+
+
+def _mapped(plan: dict, cell: dict) -> frozenset[str]:
+    """US-11: the models the cell's task routes roles to (`model_map`, frozen in the plan's task record), by base id
+    (R-32). A plan from before the map was frozen has none."""
+    model_map = as_dict(as_dict(as_dict(plan.get("tasks")).get(cell.get("task"))).get("model_map"))
+    return frozenset(normalize.base_model_id(m) for m in model_map.values() if isinstance(m, str))
 
 
 def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id: str | None) -> CellView:
@@ -272,22 +358,40 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     ex = Extraction(model_calls=[model_call(r) for r in calls or []])
     recorded = source == "acp_turn" or calls is not None
     served = normalize.served_models(source, ex, usage) if recorded else None
-    totals = normalize.totals(source, ex, usage) if recorded else {}
-    tokens_reason = None if totals else ("not graded" if not recorded else "no usage recorded")
-    wall = _wall(events)
-    model = _model_time(source, calls)
-    tool = Measure(None, "not graded") if tools is None else busy_ms(tools)
+    completed = next((e for e in facts["events"] if e["kind"] == "grading.completed" and e["grading_id"] == grading_id), {})
+    ended = events.get("attempt.process_ended", {})
+    record_reason = as_dict(completed.get("unreadable_records")).get(cid)  # the native record, whatever the token source
+    unrecorded = _unrecorded(source, record_reason, ended, usage)
+    build = _build_check(plan, cell["harness"], events["attempt.session_opened"]) if "attempt.session_opened" in events else None
+    warnings = [build] if build is not None and build.level == "warning" else []
+    if cell["harness"] in ACP_TOTAL_HARNESSES and source == "native_record" and calls is not None and unrecorded is None:
+        warnings.append(_token_cross_check(ended, ex.model_calls))
+    totals = normalize.totals(source, ex, usage) if recorded and unrecorded is None else {}
+    if unrecorded is not None:
+        tokens_reason = f"not recorded ({unrecorded})"  # R-21 c2: never a partial sum or a zero
+    else:
+        tokens_reason = None if totals else ("not graded" if not recorded else "no usage recorded")
+    wall = _wall(events)  # lifecycle-derived: never gated on the native record
+    if record_reason is not None:  # Codex F1: every native-record measure is NA with the reason, never a partial one
+        model = tool = idle = per_cell = Measure(None, record_reason)
+    else:
+        model = _model_time(source, calls)
+        tool = Measure(None, "not graded") if tools is None else busy_ms(tools)
+        idle = _idle(wall, model, tool)
+        per_cell = calls_per_cell(ex.model_calls if calls else None)
     state = outcome["outcome"] if outcome else ("no outcome" if "cell.launch_intent" in events else "not started")
-    validity, validity_code = _validity(cell, prof, outcome, state, served)
+    validity, validity_code = _validity(cell, prof, outcome, state, served, unrecorded, normalize.hook_denials(tools or []),
+                                        _mapped(plan, cell), build)
     cause = Cause[outcome["cause"]] if outcome and outcome.get("cause") else None
     return CellView(
         cell_id=cid, label=cell.get("label", cid), combo=cell["combo"], pack=cell["pack"], harness=cell["harness"], model=cell["model"],
         outcome=state, cause=cause.label if cause else None,
         code=cause.code if cause else None, validity=validity, validity_code=validity_code,
-        wall_ms=wall, model_ms=model, tool_ms=tool, idle_ms=_idle(wall, model, tool),
-        tokens=totals or None, tokens_reason=tokens_reason, calls_per_cell=calls_per_cell(ex.model_calls if calls else None),
+        wall_ms=wall, model_ms=model, tool_ms=tool, idle_ms=idle,
+        tokens=totals or None, tokens_reason=tokens_reason, calls_per_cell=per_cell,
         scores={m: Measure(s["value"], s["reason"]) for m, s in now.items()},
-        evidence={m: s["evidence"] for m, s in now.items() if s.get("evidence")}, extraction_id=extraction)
+        evidence={m: s["evidence"] for m, s in now.items() if s.get("evidence")}, extraction_id=extraction,
+        warnings=[w for w in warnings if w is not None])
 
 
 def load(run_dir: Path, catalog_version: str | None = None) -> RunView:
@@ -376,7 +480,9 @@ def export(view: RunView) -> bytes:
     cells = [{"cell_id": c.cell_id, "label": c.label, "outcome": c.outcome, "cause": c.cause, "code": c.code,
               "validity": c.validity, "validity_code": c.validity_code, "wall_ms": _enc(c.wall_ms), "model_ms": _enc(c.model_ms),
               "tool_ms": _enc(c.tool_ms), "idle_ms": _enc(c.idle_ms), "tokens": c.tokens, "tokens_reason": c.tokens_reason,
-              "scores": _enc(c.scores), "extraction_id": c.extraction_id} for c in sorted(view.cells, key=lambda c: c.cell_id)]
+              "scores": _enc(c.scores), "extraction_id": c.extraction_id,
+              "warnings": [{"code": w.code, "level": w.level, "message": w.message} for w in c.warnings]}
+             for c in sorted(view.cells, key=lambda c: c.cell_id)]
     board = [{"combo": r.combo, "pack": r.pack, "n_cells": r.n_cells, "n_valid": r.n_valid, "pass_at_1": _enc(r.pass_at_1),
               "rank": r.rank, "interval": r.interval, "tokens": _enc(r.tokens), "wall_ms": _enc(r.wall_ms), "cost_usd": _enc(r.cost_usd)}
              for r in leaderboard(view)]

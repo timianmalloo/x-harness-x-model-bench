@@ -1,0 +1,266 @@
+{
+ "exports": {
+  "c44dd2b-no-heads": {
+   "catalog_version": "0.3",
+   "cells": [
+    {
+     "cause": null,
+     "cell_id": "a",
+     "code": null,
+     "extraction_id": "962881d98330443c18bd85d99aac7ffb4a1c41b83c40787ccb4e4d23a3d4d62a",
+     "idle_ms": {
+      "reason": "needs model time",
+      "value": null
+     },
+     "label": "X1.c.pack-off.r1",
+     "model_ms": {
+      "reason": "the native record gives no model-call start time",
+      "value": null
+     },
+     "outcome": "completed",
+     "scores": {
+      "cost_usd": {
+       "reason": "no price list entry for gpt-6-sol",
+       "value": null
+      },
+      "partial_credit": {
+       "reason": null,
+       "value": "1.0000"
+      },
+      "pass_at_1": {
+       "reason": null,
+       "value": 1
+      }
+     },
+     "tokens": {
+      "gpt-6-sol": {
+       "cache_read": 41856,
+       "cache_write": 0,
+       "output": 566,
+       "uncached_input": 4032
+      }
+     },
+     "tokens_reason": null,
+     "tool_ms": {
+      "reason": null,
+      "value": 592
+     },
+     "validity": "valid",
+     "validity_code": null,
+     "wall_ms": {
+      "reason": null,
+      "value": 30000
+     }
+    },
+    {
+     "cause": null,
+     "cell_id": "b",
+     "code": null,
+     "extraction_id": "962881d98330443c18bd85d99aac7ffb4a1c41b83c40787ccb4e4d23a3d4d62a",
+     "idle_ms": {
+      "reason": "needs model time",
+      "value": null
+     },
+     "label": "X1.c.pack-off.r1",
+     "model_ms": {
+      "reason": "the native record gives no model-call start time",
+      "value": null
+     },
+     "outcome": "completed",
+     "scores": {
+      "cost_usd": {
+       "reason": "no price list entry for gpt-6-sol",
+       "value": null
+      },
+      "partial_credit": {
+       "reason": null,
+       "value": "0.0000"
+      },
+      "pass_at_1": {
+       "reason": null,
+       "value": 0
+      }
+     },
+     "tokens": {
+      "gpt-6-sol": {
+       "cache_read": 41856,
+       "cache_write": 0,
+       "output": 566,
+       "uncached_input": 4032
+      }
+     },
+     "tokens_reason": null,
+     "tool_ms": {
+      "reason": null,
+      "value": 592
+     },
+     "validity": "valid",
+     "validity_code": null,
+     "wall_ms": {
+      "reason": null,
+      "value": 30000
+     }
+    }
+   ],
+   "leaderboard": [
+    {
+     "combo": "c",
+     "cost_usd": {
+      "reason": "2 of 2 valid cells have no cost: no price list entry for gpt-6-sol",
+      "value": null
+     },
+     "interval": "interval not computed (statistics are phase 4)",
+     "n_cells": 2,
+     "n_valid": 2,
+     "pack": "off",
+     "pass_at_1": {
+      "reason": null,
+      "value": "0.5"
+     },
+     "rank": "1",
+     "tokens": {
+      "reason": null,
+      "value": "46454"
+     },
+     "wall_ms": {
+      "reason": null,
+      "value": "30000"
+     }
+    }
+   ],
+   "run_id": "r1"
+  },
+  "heads": {
+   "catalog_version": "0.3",
+   "cells": [
+    {
+     "cause": null,
+     "cell_id": "a",
+     "code": null,
+     "extraction_id": "962881d98330443c18bd85d99aac7ffb4a1c41b83c40787ccb4e4d23a3d4d62a",
+     "idle_ms": {
+      "reason": "needs model time",
+      "value": null
+     },
+     "label": "X1.c.pack-off.r1",
+     "model_ms": {
+      "reason": "the native record gives no model-call start time",
+      "value": null
+     },
+     "outcome": "completed",
+     "scores": {
+      "cost_usd": {
+       "reason": "no price list entry for gpt-6-sol",
+       "value": null
+      },
+      "partial_credit": {
+       "reason": null,
+       "value": "1.0000"
+      },
+      "pass_at_1": {
+       "reason": null,
+       "value": 1
+      }
+     },
+     "tokens": {
+      "gpt-6-sol": {
+       "cache_read": 41856,
+       "cache_write": 0,
+       "output": 566,
+       "uncached_input": 4032
+      }
+     },
+     "tokens_reason": null,
+     "tool_ms": {
+      "reason": null,
+      "value": 592
+     },
+     "validity": "valid",
+     "validity_code": null,
+     "wall_ms": {
+      "reason": null,
+      "value": 30000
+     }
+    },
+    {
+     "cause": null,
+     "cell_id": "b",
+     "code": null,
+     "extraction_id": "962881d98330443c18bd85d99aac7ffb4a1c41b83c40787ccb4e4d23a3d4d62a",
+     "idle_ms": {
+      "reason": "needs model time",
+      "value": null
+     },
+     "label": "X1.c.pack-off.r1",
+     "model_ms": {
+      "reason": "the native record gives no model-call start time",
+      "value": null
+     },
+     "outcome": "completed",
+     "scores": {
+      "cost_usd": {
+       "reason": "no price list entry for gpt-6-sol",
+       "value": null
+      },
+      "partial_credit": {
+       "reason": null,
+       "value": "0.0000"
+      },
+      "pass_at_1": {
+       "reason": null,
+       "value": 0
+      }
+     },
+     "tokens": {
+      "gpt-6-sol": {
+       "cache_read": 41856,
+       "cache_write": 0,
+       "output": 566,
+       "uncached_input": 4032
+      }
+     },
+     "tokens_reason": null,
+     "tool_ms": {
+      "reason": null,
+      "value": 592
+     },
+     "validity": "valid",
+     "validity_code": null,
+     "wall_ms": {
+      "reason": null,
+      "value": 30000
+     }
+    }
+   ],
+   "leaderboard": [
+    {
+     "combo": "c",
+     "cost_usd": {
+      "reason": "2 of 2 valid cells have no cost: no price list entry for gpt-6-sol",
+      "value": null
+     },
+     "interval": "interval not computed (statistics are phase 4)",
+     "n_cells": 2,
+     "n_valid": 2,
+     "pack": "off",
+     "pass_at_1": {
+      "reason": null,
+      "value": "0.5"
+     },
+     "rank": "1",
+     "tokens": {
+      "reason": null,
+      "value": "46454"
+     },
+     "wall_ms": {
+      "reason": null,
+      "value": "30000"
+     }
+    }
+   ],
+   "run_id": "r1"
+  }
+ },
+ "note": "views.export of each committed golden ledger (tests/fixtures/ledger/<name>/run) at 5feece0, before W2-VIEWS: both ledgers predate R-15 (no unreadable_records) and R-24 (no acp_usage)",
+ "produced_at": "5feece0"
+}

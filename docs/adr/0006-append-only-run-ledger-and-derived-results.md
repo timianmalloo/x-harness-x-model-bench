@@ -88,6 +88,7 @@ A grading pass is an entity in `events` (`grading.started` / `grading.completed`
   - Rejected: a packed ordinal (`line × 1000 + index`), which is a synthetic key hidden in a native field; and a new sub-ordinal column, which adds a field for what `model` already identifies.
 - **`tool_calls.outcome_code`.** The native error code of a failed tool call (Copilot `tool.execution_complete.error.code`, for example `denied` when a hook refuses the call). Null on success, or when the harness records no code. It is the signal that sees a native permission denial below ACP (US-14; R-27).
 - **Migration.** The ledgers are append-only. `requests` is absent from phase-1 rows and reads as 1; `outcome_code` is absent and reads as null. A phase-1 ledger has one model per line, so it satisfies the new key. No rewrite and no backfill.
+  `grading.completed.unreadable_records` (cell_id → reason, R-15; W2-VIEWS) is absent from a pass written before R-15: a missing key means "not checked", and that pass's cells read as before (a golden-ledger regression test pins it). The latest completed pass decides, so a later pass with a new extraction supersedes an earlier reading.
 - **Writers and readers.**
   - The grading pass (normaliser) stays the only writer.
   - `ModelCall.requests` and its docstring stating this grain live in `telemetry/__init__.py` (W1-COP-R).

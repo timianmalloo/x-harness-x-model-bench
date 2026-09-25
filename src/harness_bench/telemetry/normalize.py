@@ -90,6 +90,26 @@ def served_models(source: str, ex: Extraction, usage: list[TurnUsage]) -> set[st
     return {base_model_id(c.model) for c in ex.model_calls if c.output or c.uncached_input or c.cache_read}
 
 
+HOOK_DENIED = "denied"  # a tool call's native outcome_code when a hook denied it (Copilot, R-27; design section 13)
+
+
+def hook_denials(tool_rows: list[dict]) -> int:
+    """Tool calls a native hook denied, from `tool_calls` ledger rows (R-27 c2: 0 in a valid cell). An ordinary tool
+    failure carries another code, or none. `copilot.us14_valid` states the same rule for the exit E2E."""
+    return sum(1 for r in tool_rows if r.get("outcome_code") == HOOK_DENIED)
+
+
+def record_unreadable(ex: Extraction) -> str | None:
+    """Why a native record that was found cannot be read as a whole (R-15), or None. A missing field at
+    `native_ordinal` 0 is the record's own, not a call's (line numbers start at 1): Copilot's `session.shutdown`
+    or `events.version`. A truncated record lost its tail. A call-level missing field (HB-TEL-001) is not this:
+    the record was read, and that call's measure is NOT_RECORDED on its own."""
+    fields = sorted({m.field for m in ex.missing if m.native_ordinal == 0})
+    if fields:
+        return f"native record fields missing: {', '.join(fields)}"
+    return "native record truncated at the size bound" if ex.truncated else None
+
+
 def classify(errors: list[ProviderError]) -> Cause | None:
     """One classifier for the native record and the driver's prompt errors (R-23). A status is evidence and decides
     first: 408, 429 or 5xx is provider, any other status is model_unavailable; only without a status does the error

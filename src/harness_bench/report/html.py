@@ -109,6 +109,15 @@ def _claude_code_permission_fact(cells: list[views.CellView], modes: dict[str, s
     return [("Claude Code permission mode (effective)", ", ".join(seen) or None)]
 
 
+def _build_check_fact(cells: list[views.CellView]) -> str:
+    """R-47 c3: until each pinned build carries a recorded agent_version, HB-VAL-006 on every cell is the disclosed
+    state; the header says how many cells skipped the check."""
+    skipped = sum(1 for c in cells if any(w.code == "HB-VAL-006" for w in c.warnings))
+    if skipped:
+        return f"skipped for {skipped} of {len(cells)} cells (HB-VAL-006): no recorded agent_version"
+    return "checked against the recorded agent_version (HB-VAL-007 on a mismatch)"
+
+
 def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | None = None) -> str:
     plan = view.plan
     planned = ", ".join(views.build_label(h, str(b.get("version", ""))) for h, b in sorted((plan.get("builds") or {}).items()))
@@ -116,7 +125,8 @@ def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | N
              ("Plan hash", (plan.get("plan_hash") or "")[:12]), ("Catalog version", view.catalog_version),
              ("Pack revision", (plan.get("pack") or {}).get("revision")),
              ("Pack commit", (plan.get("pack") or {}).get("commit")), ("Planned builds", planned),
-             ("Executed builds", view.header.get("executed_builds")), ("Credential kind", view.header.get("credential_kind")),
+             ("Executed builds", view.header.get("executed_builds")), ("Executed-build check", _build_check_fact(view.cells)),
+             ("Credential kind", view.header.get("credential_kind")),
              ("Network mode", view.header.get("network_mode")), ("Defender real-time exclusion", None),
              ("Context window", _context_window_fact(view.cells, tags)),
              *_claude_code_permission_fact(view.cells, modes or {}),
@@ -142,6 +152,9 @@ def _validity(view: views.RunView) -> str:
                          for c in view.cells if c.validity != "valid")
         state = "" if view.completed else f"<p>The run is incomplete. {sum(1 for c in view.cells if c.outcome == 'not started')} cells never started.</p>"
         body = f"{state}<ul>{items}</ul><p>Cells that are not valid:</p><ul>{listed}</ul>"
+    warned = "".join(f"<li>{_e(c.label)}: {_e(w.code)} {_e(w.message)}</li>" for c in view.cells for w in c.warnings)
+    if warned:  # R-24/R-26 c5, R-28: flags that do not change validity
+        body += f'<p>Warnings:</p><ul id="validity-warnings">{warned}</ul>'
     return f'<section id="validity"><h2>Validity</h2>{body}</section>'
 
 
@@ -173,7 +186,7 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str]) -> s
         return '<section id="runs"><h2>Cells</h2><p>No cells in this run.</p></section>'
     headers = [("Cell", False), ("Outcome", False), ("Validity", False), ("pass@1", True), ("Partial credit", True), ("Tokens", True),
                ("Wall", True), ("Tool time", True), ("Model time", True), ("Idle", True), ("Cost", True), ("Context window", False),
-               ("Evidence", False)]
+               ("Warnings", False), ("Evidence", False)]
     na = views.Measure(None, "not graded")
     rows = [[(_e(report.flag_if_claude_code(report.flag_if_codex(c.label, c.harness), c.harness)), False),
              (_e(c.outcome + (f" ({c.cause}, {c.code})" if c.code else "")), False),
@@ -182,6 +195,7 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str]) -> s
              (_e(report.cell_tokens(c.tokens, c.tokens_reason)), True), (_e(report.seconds(c.wall_ms)), True),
              (_e(report.millis(c.tool_ms)), True), (_e(report.millis(c.model_ms)), True), (_e(report.millis(c.idle_ms)), True),
              (_e(report.usd(c.scores.get("cost_usd", na))), True), (_e(report.context_window(c.harness, tags.get(c.cell_id))), False),
+             (_e(", ".join(w.code for w in c.warnings) or "none"), False),
              (_evidence(c, archive_present), False)] for c in view.cells]
     return f'<section id="runs"><h2>Cells</h2>{_table("runs", "Every cell of the run", headers, rows)}</section>'
 
