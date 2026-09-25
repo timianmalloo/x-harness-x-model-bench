@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T02:00:59Z",
+  "generated": "2026-09-25T02:33:15Z",
   "audit": [
     {
       "actor": null,
@@ -8520,6 +8520,44 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3B6HTKGKB9TWE5Q80TRQSEM",
+      "shortname": "R-34 Claude Code shell allowlist",
+      "datetime": "2026-09-25T02:33:15Z",
+      "session": "w1-r34",
+      "prompt": "Implement Owner ruling R-34 (rulings.md 444-457): PowerShell joins the Claude Code allowlist red-first, a build-sourced class-coverage test, the negative fixture from e2e-wave1-1790302505, permission_mode_effective recorded and shown, ADR-0004 amendment note, defect class, mutations r34.json.",
+      "summary": "Red 39a16d8 (8 failed), green 6bc7a83. Tool ids read from the tool list Claude Code 2.1.282 wrote to its native record in cell 17efb75ce2d5fc6d. Effective mode from session/new modes.currentModeId. r34.json 5/5 killed; 817 passed; ruff clean. Findings: NotebookEdit awaits a class ruling; claude.ai Claude Docs MCP tools appear (deferred) in the cell.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "Claude Opus 5.5 (subagent of coord-opus-cq)",
+      "artifacts": [
+        "bench/profiles/claude-code.yaml",
+        "tests/test_allowlist_classes.py",
+        "tests/mutations/r34.json"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Implement R-34 conditions 1-4 in the w1-r34 tree",
+      "done_when": "profile allows PowerShell; class-coverage test red then green; negative fixture test; permission_mode_effective on session_opened and in the report header; ADR-0004 note; PERM-A register entry; suite and ruff green; r34.json all killed",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-25T02:20:22Z",
+      "duration_seconds": 773.0,
+      "git": {
+        "sha": "6bc7a83d098d6ef48936ea5ecc3601baa8ab132f",
+        "short": "6bc7a83d0",
+        "branch": "w1-r34-claude-shell",
+        "pushed": null
+      }
     }
   ],
   "changes": [

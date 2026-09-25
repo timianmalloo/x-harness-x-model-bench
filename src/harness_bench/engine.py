@@ -400,7 +400,8 @@ class Engine:
 
         def barrier(session_id: str | None) -> None:
             self.record("events", {"kind": "attempt.session_opened", "cell_id": cid, "session_id": session_id or "",
-                                   "agent_version": result.agent_version})
+                                   "agent_version": result.agent_version,
+                                   "permission_mode_effective": result.permission_mode_effective})  # R-34
             self.record("events", {"kind": "cell.prompt_sent", "cell_id": cid})
 
         exit_status: int | None = None

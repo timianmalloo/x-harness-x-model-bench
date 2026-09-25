@@ -1,0 +1,39 @@
+[
+ {
+  "name": "PowerShell dropped from the Claude Code allowlist",
+  "file": "bench/profiles/claude-code.yaml",
+  "find": "\"allow\": [\"Bash\", \"PowerShell\", \"Edit\",",
+  "replace": "\"allow\": [\"Bash\", \"Edit\",",
+  "tests": ["tests/test_allowlist_classes.py::test_the_claude_code_allowlist_covers_every_class_id_the_pinned_build_advertises",
+            "tests/test_allowlist_classes.py::test_the_current_allowlist_admits_every_tool_the_negative_fixture_called"]
+ },
+ {
+  "name": "the effective permission mode is not recorded on attempt.session_opened",
+  "file": "src/harness_bench/engine.py",
+  "find": "                                   \"permission_mode_effective\": result.permission_mode_effective})  # R-34\n",
+  "replace": "                                   \"permission_mode_effective\": None})  # BUG: not recorded\n",
+  "tests": ["tests/test_driver.py::test_the_session_opened_event_carries_the_effective_permission_mode"]
+ },
+ {
+  "name": "the driver never reads session/new modes.currentModeId",
+  "file": "src/harness_bench/driver.py",
+  "find": "        result.permission_mode_effective = current if isinstance(current, str) else None\n",
+  "replace": "        result.permission_mode_effective = None\n",
+  "tests": ["tests/test_driver.py::test_the_effective_permission_mode_is_the_one_the_session_reports"]
+ },
+ {
+  "name": "an accepted set_mode does not replace the reported mode",
+  "file": "src/harness_bench/driver.py",
+  "find": "            result.permission_mode_effective = mode  # accepted: a refusal raised _AcpError above\n",
+  "replace": "",
+  "tests": ["tests/test_driver.py::test_the_effective_permission_mode_is_the_one_the_session_reports"]
+ },
+ {
+  "name": "the report header drops the Claude Code effective permission mode",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    return [(\"Claude Code permission mode (effective)\", \", \".join(seen) or None)]\n",
+  "replace": "    return []\n",
+  "tests": ["tests/test_report.py::test_the_header_shows_the_effective_permission_mode_of_claude_code_cells",
+            "tests/test_report.py::test_the_header_reads_not_recorded_for_a_claude_code_cell_without_the_mode"]
+ }
+]

@@ -1,0 +1,106 @@
+{
+ "source": {
+  "run_id": "e2e-wave1-1790302505",
+  "cell_id": "17efb75ce2d5fc6d",
+  "combo": "cc-opus",
+  "pack": "on",
+  "ledger": "events + tool_calls rows of this cell; hash-chain fields (hash, prev_hash, seq, mono_ns, recorded_at, extraction_id) dropped; events limited to process_started, session_opened, outcome",
+  "settings_json": "archive/17efb75ce2d5fc6d/attempt-1/home/settings.json, verbatim",
+  "adapter_stderr": "archive/17efb75ce2d5fc6d/attempt-1/adapter-stderr-tail.log, the defaultMode line only"
+ },
+ "settings_json": {
+  "permissions": {
+   "allow": [
+    "Bash",
+    "Edit",
+    "Write",
+    "Read",
+    "Glob",
+    "Grep"
+   ],
+   "defaultMode": "dontAsk"
+  }
+ },
+ "adapter_stderr": [
+  "permissions.defaultMode \"dontAsk\" is not available in this session; falling back to \"default\"."
+ ],
+ "events": [
+  {
+   "attempt": 1,
+   "build_sha256": "fc0e3af017705624b9e1bce913f72761864ff994804514da1f5e41380fca4484",
+   "build_version": "2.1.282",
+   "cell_id": "17efb75ce2d5fc6d",
+   "created_at": 134347761985595370,
+   "credential_kind": "subscription login (copied)",
+   "harness": "claude-code",
+   "kind": "attempt.process_started",
+   "network_mode": "unrestricted",
+   "pid": 26864
+  },
+  {
+   "agent_version": "0.81.2",
+   "cell_id": "17efb75ce2d5fc6d",
+   "kind": "attempt.session_opened",
+   "session_id": "39aa7cb0-0192-4fa2-a5cb-bc283370831f"
+  },
+  {
+   "cause": null,
+   "cell_id": "17efb75ce2d5fc6d",
+   "code": null,
+   "detail": "",
+   "exit_status": 0,
+   "handshake_ms": 1327,
+   "host_mem_available": 109790404608,
+   "kind": "cell.outcome",
+   "last_update_ms": 19575,
+   "outcome": "completed",
+   "permission_requests": 1,
+   "session_id": "39aa7cb0-0192-4fa2-a5cb-bc283370831f",
+   "stop_reason": "end_turn",
+   "turn_ms": 19575,
+   "updates": 124
+  }
+ ],
+ "tool_calls": [
+  {
+   "cell_id": "17efb75ce2d5fc6d",
+   "kind": "tool_call",
+   "name": "Glob",
+   "ok": 1,
+   "native_ordinal": 22,
+   "native_session_id": "39aa7cb0-0192-4fa2-a5cb-bc283370831f"
+  },
+  {
+   "cell_id": "17efb75ce2d5fc6d",
+   "kind": "tool_call",
+   "name": "Read",
+   "ok": 1,
+   "native_ordinal": 32,
+   "native_session_id": "39aa7cb0-0192-4fa2-a5cb-bc283370831f"
+  },
+  {
+   "cell_id": "17efb75ce2d5fc6d",
+   "kind": "tool_call",
+   "name": "Edit",
+   "ok": 1,
+   "native_ordinal": 36,
+   "native_session_id": "39aa7cb0-0192-4fa2-a5cb-bc283370831f"
+  },
+  {
+   "cell_id": "17efb75ce2d5fc6d",
+   "kind": "tool_call",
+   "name": "Edit",
+   "ok": 1,
+   "native_ordinal": 38,
+   "native_session_id": "39aa7cb0-0192-4fa2-a5cb-bc283370831f"
+  },
+  {
+   "cell_id": "17efb75ce2d5fc6d",
+   "kind": "tool_call",
+   "name": "PowerShell",
+   "ok": 0,
+   "native_ordinal": 42,
+   "native_session_id": "39aa7cb0-0192-4fa2-a5cb-bc283370831f"
+  }
+ ]
+}

@@ -100,6 +100,9 @@ class TurnResult:
     # Null (not recorded, never 0) when the turn read no session/update; handshake-time updates do not set it.
     last_update_seconds: float | None = None
     agent_version: str | None = None  # initialize.agentInfo.version, verbatim (R-28); null when not reported
+    # R-34: the mode the session reports (session/new modes.currentModeId, after the adapter's own fallback), or the
+    # mode a session/set_mode it accepted; null when not reported, never the profile's declared mode
+    permission_mode_effective: str | None = None
 
 
 class _Eof(Exception):
@@ -232,6 +235,9 @@ def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handsh
         result.agent_version = version if isinstance(version, str) else None  # verbatim; null when not reported
         created = ch.rpc("session/new", {"cwd": str(cwd), "mcpServers": []}, deadline)
         result.session_id = created.get("sessionId")
+        modes = created.get("modes") if isinstance(created.get("modes"), dict) else {}
+        current = modes.get("currentModeId")
+        result.permission_mode_effective = current if isinstance(current, str) else None
         if model:
             try:
                 ch.rpc("session/set_model", {"sessionId": result.session_id, "modelId": model}, deadline)
@@ -239,6 +245,7 @@ def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handsh
                 return _fail(result, Cause.model_unavailable, f"set_model refused: {exc}", started)
         if mode:
             ch.rpc("session/set_mode", {"sessionId": result.session_id, "modeId": mode}, deadline)
+            result.permission_mode_effective = mode  # accepted: a refusal raised _AcpError above
     except _Timeout as exc:
         return _fail(result, Cause.handshake_timeout, f"no answer to {exc} within {handshake_timeout} s", started)
     except _Eof:

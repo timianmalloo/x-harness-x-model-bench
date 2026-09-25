@@ -91,7 +91,25 @@ def _context_window_fact(cells: list[views.CellView], tags: dict[str, str]) -> s
     return "; ".join(lines)
 
 
-def _header(view: views.RunView, tags: dict[str, str]) -> str:
+def _permission_modes(run_dir: Path | None) -> dict[str, str]:
+    """R-34: cell_id -> permission_mode_effective, read straight from `attempt.session_opened` events."""
+    if run_dir is None:
+        return {}
+    return {e["cell_id"]: e["permission_mode_effective"] for e in views.rows(run_dir, "events")
+            if e.get("kind") == "attempt.session_opened" and e.get("permission_mode_effective")}
+
+
+def _claude_code_permission_fact(cells: list[views.CellView], modes: dict[str, str]) -> list[tuple[str, str | None]]:
+    """R-34: the mode the Claude Code sessions reported (the declared dontAsk falls back to default); no row
+    without a Claude Code cell, None ("not recorded") when no Claude Code cell recorded one."""
+    claude = [c for c in cells if c.harness == "claude-code"]
+    if not claude:
+        return []
+    seen = sorted({modes[c.cell_id] for c in claude if c.cell_id in modes})
+    return [("Claude Code permission mode (effective)", ", ".join(seen) or None)]
+
+
+def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | None = None) -> str:
     plan = view.plan
     planned = ", ".join(views.build_label(h, str(b.get("version", ""))) for h, b in sorted((plan.get("builds") or {}).items()))
     facts = [("Run", view.run_id), ("State", "complete" if view.completed else "incomplete"),
@@ -101,6 +119,7 @@ def _header(view: views.RunView, tags: dict[str, str]) -> str:
              ("Executed builds", view.header.get("executed_builds")), ("Credential kind", view.header.get("credential_kind")),
              ("Network mode", view.header.get("network_mode")), ("Defender real-time exclusion", None),
              ("Context window", _context_window_fact(view.cells, tags)),
+             *_claude_code_permission_fact(view.cells, modes or {}),
              ("Price list hash", (plan.get("price_list_hash") or "")[:12])]
     if report.has_codex_cell(plan):
         facts.append((report.N5_FLAG, f"see {report.N5_EVIDENCE}"))
@@ -168,7 +187,7 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
     return ("<!doctype html>\n"
             f'<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
             f"<title>harness-bench run {_e(view.run_id)}</title><style>{STYLE}</style></head>"
-            f"<body><main>{_header(view, tags)}{_validity(view)}{_leaderboard(view)}{_runs(view, archive_present, tags)}"
+            f"<body><main>{_header(view, tags, _permission_modes(run_dir))}{_validity(view)}{_leaderboard(view)}{_runs(view, archive_present, tags)}"
             f"</main></body></html>\n")
 
 
