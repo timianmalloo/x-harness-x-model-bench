@@ -40,12 +40,12 @@ from pathlib import Path
 
 from harness_bench import config, ledger, oslock, profiles, views
 from harness_bench.errors import BenchError
-from harness_bench.grade import CellInput, GraderFn, Score, correctness, cost
+from harness_bench.grade import CellInput, GraderFn, Score, correctness, cost, judge
 from harness_bench.plan import file_hash, load_confirmed, task_version_hash
 from harness_bench.telemetry import Extraction, normalize
 
 logger = logging.getLogger("harness_bench.grade")
-PASS_FACTS = ("events", "model_calls", "tool_calls", "scores")
+PASS_FACTS = ("events", "model_calls", "tool_calls", "scores", "verdict_uses")  # verdict_uses: ADR-0006 Amendment 3
 NOT_BUILT = "not built"
 TASK_CHANGED = "task changed since the plan (version hash mismatch)"
 TASK_FREE = frozenset({"cost", "process"})  # graders that never read the task, so they grade a cell whose task changed
@@ -54,7 +54,7 @@ __all__ = ["GRADERS", "PASS_FACTS", "PassResult", "applicable", "file_hash", "gr
 
 
 # Pattern: Strategy via a registry (Pluggable Selector). One line per built grader; an unregistered one is `not built`.
-GRADERS: dict[str, GraderFn] = {"correctness": correctness.grade_cell, "cost": cost.grade_cell}
+GRADERS: dict[str, GraderFn] = {"correctness": correctness.grade_cell, "cost": cost.grade_cell, "judge": judge.grade_cell}
 
 
 @dataclass
@@ -199,7 +199,7 @@ class _Pass:
                          archive=folder, out_dir=out_dir, events=events, record_reason=unreadable, model_calls=tuple(model_rows),
                          tool_calls=tuple(tool_rows), turn_usage=tuple(usage.get(cid, [])), metrics={},
                          allow_model_calls=False,  # R-58 DR-2; the flag arrives with GW-I's `cmd_grade` seam
-                         extraction=ex, prices=self.prices if self.prices_ok else None)
+                         extraction=ex, prices=self.prices if self.prices_ok else None, emit=self.append)
         for grader, metrics in applicable(self.catalog, names).items():
             scores = self._run_grader(grader, dataclasses.replace(base, out_dir=out_dir / grader, metrics=metrics), current)
             self.wanted.update((cid, m) for m in metrics)

@@ -8,6 +8,7 @@ and the operator's identifiers are random synthetic strings (R-42). The stipulat
 `fixtures/gateway/gateway.yaml`: bench/gateway.yaml waits for the Leader's measured turn (R-70).
 """
 
+import ast
 import dataclasses
 import json
 import shutil
@@ -210,7 +211,7 @@ def test_t_gw_12_a_warm_regrade_spawns_no_judge_and_reads_the_same_entries(tmp_p
     assert {(r["cache_key"], r["entry_sha256"]) for r in pass_rows(run_dir, "verdict_uses", second)
             if r["outcome"] == "hit"} == {key}
     assert [r for r in pass_rows(run_dir, "model_calls", second) if r["principal"] == "gateway"] == []
-    export = [[(r["metric_id"], r["value"], r["reason"]) for r in sorted(pass_rows(run_dir, "scores", gid),
+    export = [[[r["metric_id"], r["value"], r["reason"]] for r in sorted(pass_rows(run_dir, "scores", gid),
                                                                         key=lambda r: r["metric_id"])]
               for gid in (first, second)]
     assert ledger.canonical({"scores": export[0]}) == ledger.canonical({"scores": export[1]})
@@ -276,3 +277,38 @@ def test_load_gateway_is_none_when_absent_and_refuses_an_invalid_file(tmp_path):
         config.load_gateway(tmp_path)
     assert (refused.value.code, refused.value.message) == (
         "HB-USR-002", "bench/gateway.yaml judge 1: qualified must be true or false")
+
+
+# ------------------------------------------------------------------------------- views.judge_calls and its guard
+def use_rows(cell: str, metric: str, items: int, model: str, outcome: str, code: str | None = None) -> list[dict]:
+    return [{"grading_id": "grade-placeholder-1", "cell_id": cell, "item_id": f"{metric}#{n}", "judge_or_matcher": model,
+             "outcome": outcome, "code": code} for n in range(1, items + 1)]
+
+
+def test_judge_calls_counts_one_call_per_cell_metric_and_judge_never_one_per_row():
+    rows = (use_rows("a", "adr_quality", 7, CLAUDE, "stored") + use_rows("b", "adr_quality", 7, CLAUDE, "stored")
+            + use_rows("a", "spec_quality", 3, CLAUDE, "stored") + use_rows("a", "adr_quality", 7, CODEX, "failed",
+                                                                           "HB-GW-007")
+            + use_rows("c", "adr_quality", 7, CLAUDE, "not_allowed"))
+    assert views.judge_calls(rows) == {("failed", "HB-GW-007"): 1, ("not_allowed", None): 1, ("stored", None): 3}
+    assert views.judge_calls([]) == {}
+
+
+def test_no_view_counts_verdict_uses_rows_as_calls():
+    """Amendment 3's guard ("a row count is not a call count"): outside its writer (grade/judge.py) and the store's
+    provenance check (gateway/store.py), the fact is named only in the code lists (views.FACTS and KEYS,
+    runner.PASS_FACTS), so every other reader goes through the generic fact loops or `views.judge_calls`. A new
+    function naming the fact fails here until it is reviewed and listed."""
+    src = ROOT / "src" / "harness_bench"
+    writers = {"grade/judge.py", "gateway/store.py"}
+    found = []
+    for path in sorted(src.rglob("*.py")):
+        rel = path.relative_to(src).as_posix()
+        if rel in writers:
+            continue
+        for top in ast.parse(path.read_text(encoding="utf-8")).body:
+            if isinstance(top, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
+                found += [f"{rel}:{n.lineno} {top.name}" for n in ast.walk(top)
+                          if isinstance(n, ast.Constant) and n.value == "verdict_uses"]
+    assert found == []
+    assert "verdict_uses" in views.FACTS and "verdict_uses" in runner.PASS_FACTS

@@ -64,6 +64,9 @@ class CellInput:
     allow_model_calls: bool  # R-58 DR-2: False in the in-run pass
     extraction: Extraction | None  # the native record as read, or None when there was none to read
     prices: Mapping | None  # the plan's price list; None when bench/prices.yaml changed since the plan
+    # The pass's append, for the facts a grader records beside its scores: the judge grader's `verdict_uses` rows and
+    # its calls' `model_calls` rows, principal gateway (ADR-0006 Amendment 3). None outside a grading pass.
+    emit: Callable[[str, dict], None] | None = None
 
 
 GraderFn = Callable[[CellInput], Mapping[str, Score]]
