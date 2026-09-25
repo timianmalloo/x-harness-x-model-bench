@@ -144,6 +144,28 @@ def test_the_injection_fixture_is_inert_data_that_the_gate_passes_unchanged():
     assert backend.received == [injected]
 
 
+@pytest.mark.parametrize("name", ["email", "username", "home"])
+@pytest.mark.parametrize("blank", ["", "   "], ids=["empty", "blank"])
+def test_the_operator_refuses_an_empty_identifier(name, blank):
+    # D&P (R-60 c4): an empty identifier would be "not scanned" while the verdict reads "clean".
+    with pytest.raises(ValueError):
+        _operator(**{name: blank})
+
+
+def test_the_operator_is_required():
+    with pytest.raises(TypeError):
+        egress.check(PAYLOAD, destination=DEST)  # type: ignore[call-arg]
+
+
+def test_the_verdict_names_what_was_scanned_so_clean_differs_from_not_scanned():
+    bare = egress.check(PAYLOAD, destination=DEST, operator=_operator())
+    assert bare.scanned == ("token_shape", "email", "username", "home_path")
+    full = egress.check(PAYLOAD, destination=DEST, operator=_operator(), secrets=[_credential()],
+                        canaries=[f"CANARY-{token_hex(8)}"])
+    assert full.scanned == ("credential", "token_shape", "email", "username", "home_path", "canary")
+    assert set(full.scanned) <= set(egress.CLASSES) and full.classes == ()
+
+
 def test_a_withheld_payload_never_reaches_the_backend():
     value = _credential()
     backend = FakeBackend()

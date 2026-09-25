@@ -17,6 +17,7 @@ from harness_bench.report import html as report_html
 from harness_bench.report.credentials import encodings
 
 WITHHELD = "withheld: sensitive content"
+CLASSES = ("credential", "token_shape", "email", "username", "home_path", "canary")
 
 T = TypeVar("T")
 
@@ -29,6 +30,7 @@ class Verdict:
     payload_sha256: str
     classes: tuple[str, ...]
     payload: str | None
+    scanned: tuple[str, ...] = ()
 
     @property
     def withheld(self) -> bool:
