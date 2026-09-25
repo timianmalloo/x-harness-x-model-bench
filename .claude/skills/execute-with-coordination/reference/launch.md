@@ -216,7 +216,13 @@ real worker still needs its own qualification, including actual decision/mail si
 Bounds: 1–8 workers; width 1–4; 1–8 prompts each; 1–3600 seconds for a whole session;
 1024–16777216 combined output bytes; 1–32 evidence items; aggregate admitted contract/brief
 data at most 512 KiB. A stopped stdin reader, output flood or unterminated JSON line cannot
-wait or allocate indefinitely. POSIX process groups contain cooperative descendants; this
+wait or allocate indefinitely. The output bound marks an attempt and never ends one (RUN-B):
+every byte is counted, output past the bound is parsed for protocol control but retained
+nowhere, and the result records `output_truncated` and `output_bytes_over_limit`. Extension
+notification bytes (`extension_notification_bytes`) are not charged to it. The deadline, the
+turn cap or a real error ends an attempt. Memory is bounded by the unparsed stdout buffer
+(16 MiB): a reader pauses while complete frames wait, and only a single unterminated frame
+over it fails, as `buffer_limit_exceeded`. POSIX process groups contain cooperative descendants; this
 is not a sandbox against a malicious executable escaping its group. Owned processes are
 terminated after completion, cancellation or failure; edits are not rolled back.
 
@@ -239,14 +245,24 @@ and retained fallback; denial stops subsequent prompts. A different policy needs
 Owner selection and a new qualified attempt, never an automatic retry.
 
 ACP extension notifications (underscore-prefixed methods without a request id) are consumed
-under the same byte and time bounds; unknown requests still receive method-not-found.
+under the same time and buffer bounds and counted apart from the output bound; unknown
+requests still receive method-not-found.
 Native Agy `denied_actions` and the observed native permission-error step block the attempt,
-even inside a `SUCCESS` envelope. Other native error steps fail. No later prompt is sent.
+even inside a `SUCCESS` envelope. No later prompt is sent. Any other native error step is
+counted in `native_tool_errors` (one `native_tool_error` event each) and the prompt continues,
+because the agent may recover (RUN-B: one failed `view_file` of `.git/hooks` in a linked
+worktree ended a working attempt). Five error steps with no `DONE` step or completed turn
+between them end the attempt as `native_tool_error_limit`; `native_tool_error_streak_max`
+records the longest run. That firing is a defect signal, not a termination argument.
 The result records `extension_notifications` and `native_denials` separately from ACP
 `permission_requests`; these counts describe observed traffic, not enforcement qualification.
-An Agy pre-tool hook refusal can instead appear as `native_tool_error`; correlate the
-native error with the ownership decision record and unchanged held bytes. That failed
-attempt is never a completed handback.
+An Agy pre-tool hook refusal appears as a counted native tool error: the write did not
+happen, and the attempt may still complete. Correlate `native_tool_errors` with the
+ownership decision record and unchanged held bytes before accepting the handback.
+On `protocol_error` the result records `protocol_error_phase` (the request in flight, or
+`agy`) and `protocol_error_message`: the rejected frame as structure. Protocol fields keep
+their values, every other string becomes `<string N>`, and the whole is at most 4096 bytes
+(x-harness-x-model-bench run w1-host-s4). A compatibility path is widened only from such a recording.
 
 Grok can emit session updates before its `session/new` reply. The transport retains one
 candidate identity and a bounded count; the reply must confirm it before prompts or

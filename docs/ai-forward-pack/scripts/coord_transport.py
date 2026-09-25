@@ -31,6 +31,24 @@ from platform_process import (  # noqa: E402
 
 
 MAX_INPUT_BYTES = 16 * 1024 * 1024
+# RUN-B: the output bound (output_limit) marks an attempt, it never ends one: run w1-s1 lost a committed
+# slice to it (grok 1.0.41, 16 MiB at 906 s). Memory is bounded here instead, by the unparsed stdout
+# buffer: a reader pauses while the buffer holds complete frames, and only one unterminated frame larger
+# than this ends the attempt (buffer_limit_exceeded). Time is bounded by the attempt deadline.
+MAX_BUFFER_BYTES = 16 * 1024 * 1024
+READ_BYTES = 65536
+# RUN-B: a native Agy tool error that is not a permission check is counted and the prompt continues
+# (run w1-s1 lost an attempt to one failed view_file). This many ERROR steps with no DONE step between
+# them end the attempt as native_tool_error_limit: a loop breaker whose firing is a defect signal.
+# assume: an agent that can recover reaches a DONE step within 5 errors in a row. confirm: the
+# native_tool_error_streak_max of qualification and wave results. breaks: a working attempt ends on
+# native_tool_error_limit (raise the cap), or a runaway loop spends the deadline under it (lower it).
+NATIVE_ERROR_STREAK_CAP = 5
+# x-harness-x-model-bench run w1-host-s4: a protocol_error records the frame it rejected, as structure and never as content. Protocol fields
+# keep their identifier values; every other string becomes its length. The whole is at most this many bytes.
+MAX_DETAIL_BYTES = 4096
+_PROTOCOL_KEYS = frozenset(("jsonrpc", "id", "method", "sessionId", "sessionUpdate", "stopReason", "event",
+                            "conversation_id", "state", "step_type", "type", "status", "protocolVersion"))
 POLL_SECONDS = 0.1
 CLEANUP_SECONDS = 4.0
 
@@ -74,6 +92,37 @@ def _identifier(value):
     return isinstance(value, str) and re.fullmatch(r"[A-Za-z0-9._:/+-]{1,256}", value) is not None
 
 
+def _structure(value, key=None, depth=0):
+    if value is None or isinstance(value, (bool, int, float)):
+        return value
+    if isinstance(value, str):
+        return value if key in _PROTOCOL_KEYS and _identifier(value) else "<string {}>".format(len(value))
+    if not isinstance(value, (dict, list)):
+        return "<{}>".format(type(value).__name__)
+    if depth >= 6:
+        return "<{} {}>".format(type(value).__name__, len(value))
+    if isinstance(value, dict):
+        return {(name if _identifier(name) and len(name) <= 64 else "<key {}>".format(len(name))):
+                _structure(item, name, depth + 1) for name, item in list(value.items())[:32]}
+    items = [_structure(item, None, depth + 1) for item in value[:16]]
+    return items + (["<{} more>".format(len(value) - 16)] if len(value) > 16 else [])
+
+
+def rejected_detail(frame):
+    """The frame a protocol_error rejected, as bounded structure (x-harness-x-model-bench run w1-host-s4); None when no frame arrived."""
+    if frame is None:
+        return None
+    try:
+        value = json.loads(frame.decode("utf-8"))
+    except (ValueError, UnicodeError, RecursionError):
+        return {"unparseable_frame_bytes": len(frame)}
+    detail = _structure(value)
+    if len(json.dumps(detail)) > MAX_DETAIL_BYTES:
+        keys = list(detail)[:32] if isinstance(detail, dict) else []
+        detail = {"oversized_frame_bytes": len(frame), "top_level_keys": keys}
+    return detail
+
+
 GROK_RELOAD_FLOOR = (1, 0, 34)  # the first grok release measured to inject the skills-reload response
 
 
@@ -103,19 +152,28 @@ def _signal_group(process, sig):
     return "group_signal_failed"
 
 
+def _buffer_state(buffer):
+    """read; pause (complete frames wait for the parser); or overflow (one unterminated frame is too large)."""
+    if len(buffer) <= MAX_BUFFER_BYTES:
+        return "read"
+    return "pause" if buffer.find(b"\n") >= 0 else "overflow"
+
+
 class _Wire:
     """One bounded input frame and output buffer; no transcript or message queue."""
 
-    def __init__(self, deadline, output_limit, cancelled, result):
+    def __init__(self, deadline, cancelled, result):
         self.process = None
         self.deadline = deadline
-        self.output_limit = output_limit
         self.cancelled = cancelled
         self.result = result
         self.selector = selectors.DefaultSelector()
         self.incoming = bytearray()
         self.outgoing = bytearray()
         self.stdout_eof = False
+        self.stdout_listening = False
+        self.last_frame_bytes = 0
+        self.last_frame = None
         self.safe_shutdown_output = False
 
     def attach(self, process):
@@ -123,7 +181,18 @@ class _Wire:
         for stream, label in ((process.stdout, "stdout"), (process.stderr, "stderr")):
             os.set_blocking(stream.fileno(), False)
             self.selector.register(stream, selectors.EVENT_READ, label)
+        self.stdout_listening = True
         os.set_blocking(process.stdin.fileno(), False)
+
+    def _listen_stdout(self, listen):
+        # Backpressure: complete frames the parser has not taken stay in the pipe, not in memory.
+        if self.stdout_eof or listen == self.stdout_listening:
+            return
+        if listen:
+            self.selector.register(self.process.stdout, selectors.EVENT_READ, "stdout")
+        else:
+            self.selector.unregister(self.process.stdout)
+        self.stdout_listening = listen
 
     def check(self):
         if time.monotonic() >= self.deadline:
@@ -145,6 +214,10 @@ class _Wire:
         self.outgoing.extend(payload)
 
     def pump(self, timeout):
+        state = _buffer_state(self.incoming)
+        if state == "overflow":
+            raise _Failure("buffer_limit_exceeded")
+        self._listen_stdout(state == "read")
         for key, _ in self.selector.select(timeout):
             if key.data == "stdin":
                 try:
@@ -157,23 +230,22 @@ class _Wire:
                 if not self.outgoing:
                     self.selector.unregister(key.fileobj)
                 continue
-            remaining = self.output_limit - self.result["stdout_bytes"] - self.result["stderr_bytes"]
-            if remaining < 0:
-                raise _Failure("output_limit_exceeded")
             try:
-                data = os.read(key.fd, min(65536, max(1, remaining + 1)))
+                data = os.read(key.fd, READ_BYTES)
             except BlockingIOError:
                 continue
             if not data:
                 self.selector.unregister(key.fileobj)
                 if key.data == "stdout":
                     self.stdout_eof = True
+                    self.stdout_listening = False
                 continue
+            # Every byte is counted; stderr is never retained. The output bound is applied once, at the end.
             self.result[key.data + "_bytes"] += len(data)
-            if len(data) > remaining:
-                raise _Failure("output_limit_exceeded")
             if key.data == "stdout":
                 self.incoming.extend(data)
+                if _buffer_state(self.incoming) == "overflow":
+                    raise _Failure("buffer_limit_exceeded")
 
     def receive(self):
         while True:
@@ -182,6 +254,8 @@ class _Wire:
             if newline >= 0:
                 line = bytes(self.incoming[:newline])
                 del self.incoming[:newline + 1]
+                self.last_frame_bytes = newline + 1
+                self.last_frame = line
                 try:
                     value = json.loads(line.decode("utf-8"))
                 except (ValueError, UnicodeError, RecursionError):
@@ -190,6 +264,8 @@ class _Wire:
                     raise _Failure("protocol_error")
                 return value
             if self.stdout_eof:
+                if self.incoming:
+                    self.last_frame = bytes(self.incoming)
                 raise _Failure("protocol_error" if self.incoming else "early_eof")
             self.pump(min(POLL_SECONDS, max(0, self.deadline - time.monotonic())))
 
@@ -231,15 +307,16 @@ class _Wire:
 
 
 class _ThreadedWire:
-    def __init__(self, deadline, output_limit, cancelled, result):
+    def __init__(self, deadline, cancelled, result):
         self.process = None
         self.deadline = deadline
-        self.output_limit = output_limit
         self.cancelled = cancelled
         self.result = result
         self.incoming = bytearray()
         self.outgoing = bytearray()
         self.stdout_eof = False
+        self.last_frame_bytes = 0
+        self.last_frame = None
         self.safe_shutdown_output = False
         self._closed = False
         self._writer_broken = False
@@ -257,28 +334,29 @@ class _ThreadedWire:
         for thread in self._threads:
             thread.start()
 
-    def _consume_budget(self, label, data):
+    def _accept(self, label, data):
+        # Every byte is counted; stderr is never retained. The output bound is applied once, at the end.
         with self._condition:
-            remaining = self.output_limit - self.result["stdout_bytes"] - self.result["stderr_bytes"]
             self.result[label + "_bytes"] += len(data)
-            if len(data) > remaining:
-                self._output_error = "output_limit_exceeded"
-                self._condition.notify_all()
-                return False
             if label == "stdout":
                 self.incoming.extend(data)
+                if _buffer_state(self.incoming) == "overflow":
+                    self._output_error = "buffer_limit_exceeded"
+                    self._condition.notify_all()
+                    return False
             self._condition.notify_all()
             return True
 
     def _read_stdout(self):
         while True:
             with self._condition:
+                # Backpressure: complete frames the parser has not taken stay in the pipe, not in memory.
+                while not self._closed and _buffer_state(self.incoming) == "pause":
+                    self._condition.wait()
                 if self._closed:
                     return
-                remaining = self.output_limit - self.result["stdout_bytes"] - self.result["stderr_bytes"]
-                size = min(65536, max(1, remaining + 1))
             try:
-                data = self.process.stdout.read(size)
+                data = self.process.stdout.read(READ_BYTES)
             except OSError:
                 data = b""
             if not data:
@@ -286,7 +364,7 @@ class _ThreadedWire:
                     self.stdout_eof = True
                     self._condition.notify_all()
                 return
-            if not self._consume_budget("stdout", data):
+            if not self._accept("stdout", data):
                 return
 
     def _read_stderr(self):
@@ -294,18 +372,15 @@ class _ThreadedWire:
             with self._condition:
                 if self._closed:
                     return
-                remaining = self.output_limit - self.result["stdout_bytes"] - self.result["stderr_bytes"]
-                size = min(65536, max(1, remaining + 1))
             try:
-                data = self.process.stderr.read(size)
+                data = self.process.stderr.read(READ_BYTES)
             except OSError:
                 return
             if not data:
                 with self._condition:
                     self._condition.notify_all()
                 return
-            if not self._consume_budget("stderr", data):
-                return
+            self._accept("stderr", data)
 
     def _write_stdin(self):
         while True:
@@ -366,7 +441,12 @@ class _ThreadedWire:
                 if newline >= 0:
                     line = bytes(self.incoming[:newline])
                     del self.incoming[:newline + 1]
+                    self.last_frame_bytes = newline + 1
+                    self.last_frame = line
+                    self._condition.notify_all()  # a paused stdout reader may continue
                 elif self.stdout_eof:
+                    if self.incoming:
+                        self.last_frame = bytes(self.incoming)
                     raise _Failure("protocol_error" if self.incoming else "early_eof")
                 else:
                     line = None
@@ -444,6 +524,8 @@ class _Session:
         self.next_prompt = next_prompt
         self.permission_handler = permission_handler
         self.max_turns = max_turns
+        self.error_streak = 0
+        self.phase = None  # the request in flight, or "agy": where a protocol_error happened (x-harness-x-model-bench run w1-host-s4)
 
     def event(self, event, **fields):
         try:
@@ -572,6 +654,7 @@ class _Session:
     def rpc(self, method, params):
         self.sequence += 1
         request_id = self.sequence
+        self.phase = method
         self.wire.queue({"jsonrpc": "2.0", "id": request_id, "method": method, "params": params})
         while True:
             message = self.wire.receive()
@@ -612,9 +695,11 @@ class _Session:
                         raise _Failure("protocol_error")
                 elif message["method"].startswith("_"):
                     # ACP v1 extension notifications are optional, one-way data.
-                    # Count without retaining names/payloads or emitting per-item events;
-                    # the same wire deadline and byte limit still bound every receive.
+                    # Count without retaining names/payloads or emitting per-item events.
+                    # They are the progress stream, so their bytes are counted apart from the
+                    # output bound (RUN-B); the wire deadline and buffer bound still apply.
                     self.result["extension_notifications"] += 1
+                    self.result["extension_notification_bytes"] += self.wire.last_frame_bytes
                 else:
                     raise _Failure("protocol_error")
                 continue
@@ -740,8 +825,17 @@ class _Session:
                    action_id="native-denial-" + str(self.result["native_denials"]))
         raise _Failure("permission_denied", "blocked")
 
+    def native_tool_error(self):
+        self.result["native_tool_errors"] += 1
+        self.error_streak += 1
+        self.result["native_tool_error_streak_max"] = max(self.result["native_tool_error_streak_max"], self.error_streak)
+        self.event("native_tool_error", native_tool_errors=self.result["native_tool_errors"], streak=self.error_streak)
+        if self.error_streak >= NATIVE_ERROR_STREAK_CAP:
+            raise _Failure("native_tool_error_limit")
+
     def agy(self, prompts):
         # Observed Agy 1.2.7 wire: init.conversation_id; result.result.status.
+        self.phase = "agy"
         for prompt in self.prompts(prompts):
             if self.turn:
                 # Native results have no observed per-turn id. Reject output
@@ -777,11 +871,14 @@ class _Session:
                         error = info.get("error", {})
                         detail = error.get("message", "")
                         # This narrow signature is from Agy 1.2.7's native TOOL_ERROR,
-                        # not assistant prose. Other error steps also stop dispatch.
+                        # not assistant prose; it blocks. Any other error step is counted,
+                        # and the agent may recover from it (RUN-B).
                         if (step.get("step_type") == "tool" and error.get("type") == "TOOL_ERROR"
                                 and isinstance(detail, str) and detail.startswith("permission check failed for ")):
                             self.native_denial(1)
-                        raise _Failure("native_tool_error")
+                        self.native_tool_error()
+                    elif step.get("state") == "DONE":
+                        self.error_streak = 0
                 elif message.get("event") == "result":
                     response = message.get("result")
                     if (not isinstance(response, dict) or not self.result["session_id"]
@@ -795,6 +892,7 @@ class _Session:
                         self.native_denial(len(denied))
                     if response.get("status") != "SUCCESS":
                         raise _Failure("incomplete")
+                    self.error_streak = 0
                     self.result["turns_completed"] += 1
                     self.event("turn_completed", turn=self.turn)
                     break
@@ -824,10 +922,13 @@ def run_session(transport, argv, cwd, env, prompts, deadline_seconds, output_lim
               "duration_seconds": 0.0, "permission_requests": 0,
               "cleanup_error": None, "reported_version": None, "progress_updates": 0,
               "reported_version_source": None, "compatibility_responses": 0}
-    result.update(extension_notifications=0, native_denials=0, prompts_started=0,
+    result.update(extension_notifications=0, extension_notification_bytes=0, output_truncated=False,
+                  output_bytes_over_limit=0, native_denials=0, native_tool_errors=0,
+                  native_tool_error_streak_max=0, prompts_started=0,
                   permission_allowed=0, permission_denials=0, loaded_cwd_verified=False,
-                  selected_model=None, selected_model_set=False)
-    wire = None
+                  selected_model=None, selected_model_set=False,
+                  protocol_error_phase=None, protocol_error_message=None)
+    wire = session = None
     try:
         if os.name not in ("posix", "nt"):
             raise _Failure("unsupported_platform", "blocked")
@@ -863,7 +964,7 @@ def run_session(transport, argv, cwd, env, prompts, deadline_seconds, output_lim
         except (OSError, ValueError):
             raise _Failure("invalid_file_roots", "blocked") from None
         deadline = started + deadline_seconds
-        wire = (_ThreadedWire if os.name == "nt" else _Wire)(deadline, output_limit, cancelled, result)
+        wire = (_ThreadedWire if os.name == "nt" else _Wire)(deadline, cancelled, result)
         wire.check()
         try:
             if os.name == "nt":
@@ -902,6 +1003,10 @@ def run_session(transport, argv, cwd, env, prompts, deadline_seconds, output_lim
         result.update(outcome="complete", code="complete")
     except _Failure as failure:
         result.update(outcome=failure.outcome, code=failure.code)
+        if failure.code == "protocol_error" and wire is not None:
+            # x-harness-x-model-bench run w1-host-s4: never a failure with nothing to read. Structure only; see rejected_detail.
+            result.update(protocol_error_phase=session.phase if session is not None else None,
+                          protocol_error_message=rejected_detail(wire.last_frame))
     except (OSError, ValueError, UnicodeError, RecursionError):
         result.update(outcome="failed", code="io_error")
     finally:
@@ -915,5 +1020,11 @@ def run_session(transport, argv, cwd, env, prompts, deadline_seconds, output_lim
             result.update(outcome="blocked", code="permission_denied")
         if result["cleanup_error"] and result["outcome"] == "complete":
             result.update(outcome="failed", code="cleanup_failed")
+        if type(output_limit) is int and 0 < output_limit <= MAX_INPUT_BYTES:
+            # RUN-B: output past the bound is marked, never fatal. Nothing past it is retained (no wire
+            # body ever is); it is still parsed, so the turn's own response can complete the attempt.
+            charged = result["stdout_bytes"] + result["stderr_bytes"] - result["extension_notification_bytes"]
+            result["output_bytes_over_limit"] = max(0, charged - output_limit)
+            result["output_truncated"] = result["output_bytes_over_limit"] > 0
         result["duration_seconds"] = round(time.monotonic() - started, 6)
     return result

@@ -14,9 +14,10 @@ WHAT THIS IS NOT. Not a store and not an allocator (class ID-A):
     request store.
   - the two mails (`decision-request`, `ruling`) go through P4's single writer, `append_mail`
     in coord-mail.py, imported by path (the coord-board.py idiom).
-  - the ruling number is read from the register's own headings: `### Ruling NN — <title>` in
-    docs/notes/rulings.md, the only file this script writes and the only definition site
-    (verify-ruling-citations.py is the gate).
+  - the ruling number is read from the register's own headings: `### Ruling NN — <title>` or
+    `## R-n · ...` in docs/notes/rulings.md, the only file this script writes and the only
+    definition site (verify-ruling-citations.py is the gate, and reads the same grammar). A
+    register whose headings none parse is NOT CHECKED: nothing is allocated from it (PACK-P).
 
 VERBS
   request  --to <owner-session> --options T --evidence T --recommendation T --reversibility T
@@ -62,7 +63,11 @@ FIELDS: Tuple[Tuple[str, str, str], ...] = (
     ("recommendation", "--recommendation", "recommendation"),
     ("reversibility", "--reversibility", "reversibility"),
     ("blast_radius", "--blast-radius", "blast radius"))
-HEADING = re.compile(r"^#{2,3}[ \t]+Ruling[ \t]+(\d{1,3})\b[ \t]*(?:[—-][ \t]*(.*?))?[ \t]*$", re.M)
+# The definition grammar of verify-ruling-citations.py (the gate): `## Ruling n` or `## R-n`, where R-n ends
+# the id (not R-2.3, R-3-4, R-12a). test_coord_decide pins the two to the same numbers (PACK-P, ID-A).
+SHORT = r"R-(\d{1,3})(?!\w|[.-]\d)"
+HEADING = re.compile(r"^#{2,3}[ \t]+(?:Ruling[ \t]+(\d{1,3})\b|" + SHORT + r")(.*)$", re.M)
+ANY_HEADING = re.compile(r"^#{2,3}[ \t]+\S", re.M)
 PROVENANCE = re.compile(r"^- request: (\S+)", re.M)
 EXIT_OK, EXIT_REFUSED, EXIT_TERMINAL, EXIT_NOT_CHECKED = 0, 2, 3, 4
 REGISTER_FRONTMATTER = """---
@@ -131,9 +136,18 @@ def parse_register(path: Path) -> List[Dict[str, Any]]:
         end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
         block = text[match.end():end]
         prov = PROVENANCE.search(block)
-        rulings.append({"number": int(match.group(1)), "title": (match.group(2) or "").strip(),
+        rulings.append({"number": int(match.group(1) or match.group(2)), "title": match.group(3).strip(" \t—·:-"),
                         "request": prov.group(1) if prov else None})
     return rulings
+
+
+def unread_headings(path: Path) -> int:
+    """Level-2/3 headings in a register where NONE parses as a ruling (PACK-P): an unread register is not
+    an empty one, and allocating 1 in it would collide with its own numbering."""
+    if not path.is_file():
+        return 0
+    text = path.read_text(encoding="utf-8")
+    return 0 if HEADING.search(text) else len(ANY_HEADING.findall(text))
 
 
 def next_number(rulings: List[Dict[str, Any]]) -> int:
@@ -278,6 +292,12 @@ def cmd_rule(args: argparse.Namespace, core: Any, mail: Any, core_path: Path, ro
     if not title or not text:
         return refuse("COORD-RULING-INCOMPLETE", "a ruling needs --title and --text",
                       "a heading with no text is a number with a reputation", "rule <n> --title T --text T --request <id>")
+    unread = unread_headings(register)
+    if unread:
+        return refuse("COORD-RULING-NOT-CHECKED", "{} has {} heading(s) and none is a ruling (`## Ruling n` or `## R-n`)"
+                      .format(register, unread),
+                      "an unread register is not an empty one; allocating from it would collide (class PACK-P)",
+                      "write the register's headings as `## R-n` or `### Ruling n — <title>`", exit_code=EXIT_NOT_CHECKED)
     rulings = parse_register(register)
     expected = next_number(rulings)
     if args.number == "next":

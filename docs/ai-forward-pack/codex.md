@@ -60,6 +60,9 @@ path and summarize its instructions before using it as runtime confirmation.
 The optional native ownership guard is emitted by `coord-core.py hook --config --host codex`.
 Merge it into project `.codex/hooks.json` only for coordination sessions, preserving other
 entries. Native `/hooks` must review its exact definition; the emitter never changes trust.
+The command is one quote-free `git -c alias.aif-hook=!sh aif-hook ...run-hook.sh --caller-cwd ...`
+invocation, so it runs under `pwsh -Command` (how Codex runs commands on Windows), `cmd.exe` and
+`sh` alike (PLAT-C, revision 94); it needs Git's `sh` and the installed `hooks/run-hook.sh`.
 Qualify the actual native edit and environment identity before claiming enforcement. See
 the `execute-with-coordination` launch reference for inventory and binding requirements.
 

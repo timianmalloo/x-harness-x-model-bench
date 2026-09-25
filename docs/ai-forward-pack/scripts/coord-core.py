@@ -4541,7 +4541,8 @@ def cmd_plugin_emit(out_dir, host=None):
         scripts = {}
         for event, entries in source["hooks"].items():
             for entry in entries:
-                match = re.search(r"hooks/([A-Za-z_-]+\.py)(.*)$", entry["bash"])
+                # the launcher form (PLAT-A): ".../hooks/run-hook.sh <hook>.py <args>"
+                match = re.search(r"(?:hooks/|run-hook\.sh )([A-Za-z_-]+\.py)(.*)$", entry["bash"])
                 if not match:
                     raise ValueError("Unsupported source-managed Copilot hook command")
                 name, arguments = match.groups()
@@ -4623,17 +4624,40 @@ def native_hook_config(host):
     it; runtime paths stay in quoted expansions, never eval or interpolated source code.
     """
     if host == "copilot":
+        # PLAT-A: Copilot on Windows runs hook commands through PowerShell (measured 2026-09-24, Copilot CLI
+        # 1.0.89-1). Both arms are the quote-free launcher, which pwsh, cmd.exe and sh parse alike and which
+        # resolves the interpreter; --caller-cwd keeps the caller's directory, as the old relative form needed.
+        command = ("git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh "
+                   "--caller-cwd ../scripts/coord-core.py hook --host copilot")
         return {"version": 1, "hooks": {"preToolUse": [{
             "type": "command",
-            "bash": "python3 docs/ai-forward-pack/scripts/coord-core.py hook --host copilot",
-            "powershell": "python docs/ai-forward-pack/scripts/coord-core.py hook --host copilot",
+            "bash": command,
+            "powershell": command,
             "timeoutSec": 10,
             "matcher": "^(edit|create|write|apply_patch|str_replace|search_replace|multiedit|notebookedit|edit_file|write_file|write_to_file|replace_file_content|multi_replace_file_content)$",
         }]}}
-    command = ("py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); "
-               "[ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); "
-               "root=$(git rev-parse --show-toplevel) || exit 2; "
-               "exec \"$py\" \"$root/docs/ai-forward-pack/scripts/coord-core.py\" hook --host " + host)
+    if host == "claude":
+        # PLAT-A: this entry is merged into .claude/settings.json, which Copilot CLI 1.0.89-1 also reads and runs
+        # through PowerShell on Windows (Inferred from its runtime.node). --caller-cwd keeps the caller's directory.
+        command = ("git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh "
+                   "--caller-cwd ../scripts/coord-core.py hook --host claude")
+    elif host == "codex":
+        # PLAT-C: Codex on Windows runs hook commands through `pwsh -Command` (measured 2026-09-24,
+        # codex 0.156), which cannot parse the sh form below. One quote-free git invocation parses
+        # alike under pwsh, cmd.exe and sh; run-hook.sh resolves the interpreter and, with
+        # --caller-cwd, keeps the caller's directory, against which Codex patch paths resolve.
+        command = ("git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh "
+                   "--caller-cwd ../scripts/coord-core.py hook --host codex")
+    elif host == "agy":
+        # PLAT-A: Agy on Windows runs hook commands through cmd.exe from <repo>/.agents (measured 2026-09-24,
+        # agy 1.2.10), as its six bundle commands already do. Its TargetFile is absolute, so the launcher
+        # runs the hook from the top of the tree with no --caller-cwd.
+        command = "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh ../scripts/coord-core.py hook --host agy"
+    else:
+        command = ("py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); "
+                   "[ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); "
+                   "root=$(git rev-parse --show-toplevel) || exit 2; "
+                   "exec \"$py\" \"$root/docs/ai-forward-pack/scripts/coord-core.py\" hook --host " + host)
     matcher = {"codex": "apply_patch", "claude": "Write|Edit|MultiEdit|NotebookEdit",
                "grok": "Write|Edit|MultiEdit|NotebookEdit|write_file|edit_file|search_replace",
                "agy": "write_to_file|replace_file_content|multi_replace_file_content"}[host]
