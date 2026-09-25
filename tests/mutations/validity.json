@@ -258,8 +258,8 @@
  {
   "name": "S2: bench-status/1 rejects not recorded",
   "file": "src/harness_bench/status.py",
-  "find": "\"invalid (build mismatch)\", \"not recorded\", \"not graded\")",
-  "replace": "\"invalid (build mismatch)\", \"not graded\")",
+  "find": "\"invalid (out-of-profile tool called)\", \"not recorded\",\n",
+  "replace": "\"invalid (out-of-profile tool called)\",\n",
   "tests": [
    "tests/test_status.py::test_a_cell_whose_native_record_is_unreadable_is_counted_as_not_recorded"
   ]
@@ -401,6 +401,184 @@
   "replace": "    record_reason = as_dict(completed.get(\"unreadable_records\")).get(cid) if source == \"native_record\" else None\n",
   "tests": [
    "tests/test_views.py::test_a_harness_whose_record_is_missing_has_no_measured_zero_tool_time"
+  ]
+ },
+ {
+  "name": "R-54 (b): an executed class-other call does not invalidate",
+  "file": "src/harness_bench/views.py",
+  "find": "    if out_of_profile is not None:\n        return \"invalid (out-of-profile tool called)\", out_of_profile.code\n",
+  "replace": "    if False:\n        return \"invalid (out-of-profile tool called)\", out_of_profile.code\n",
+  "tests": [
+   "tests/test_views.py::test_the_codex_q1_mcp_call_executed_so_the_cell_is_invalid",
+   "tests/test_views.py::test_a_failed_other_call_with_no_counted_request_executed"
+  ]
+ },
+ {
+  "name": "precedence slot: an executed other call outranks a hook denial (R-27 keeps HB-VAL-004)",
+  "file": "src/harness_bench/views.py",
+  "find": "    if denials:  # R-27: measured, so it outranks a record that is otherwise unreadable\n",
+  "replace": "    if out_of_profile is not None:\n        return \"invalid (out-of-profile tool called)\", out_of_profile.code\n    if denials:\n",
+  "tests": [
+   "tests/test_views.py::test_a_hook_denial_and_an_invalidating_cause_outrank_an_executed_other_call"
+  ]
+ },
+ {
+  "name": "precedence slot: not recorded outranks an executed other call",
+  "file": "src/harness_bench/views.py",
+  "find": "    if out_of_profile is not None:\n        return \"invalid (out-of-profile tool called)\", out_of_profile.code\n",
+  "replace": "    if out_of_profile is not None and unrecorded is None:\n        return \"invalid (out-of-profile tool called)\", out_of_profile.code\n",
+  "tests": [
+   "tests/test_views.py::test_an_executed_other_call_outranks_not_recorded"
+  ]
+ },
+ {
+  "name": "precedence slot: a model mismatch outranks an executed other call",
+  "file": "src/harness_bench/views.py",
+  "find": "    if out_of_profile is not None:\n        return \"invalid (out-of-profile tool called)\", out_of_profile.code\n",
+  "replace": "    if out_of_profile is not None and served <= {cell[\"model\"]}:\n        return \"invalid (out-of-profile tool called)\", out_of_profile.code\n",
+  "tests": [
+   "tests/test_views.py::test_an_executed_other_call_outranks_a_model_mismatch"
+  ]
+ },
+ {
+  "name": "R-54 (b): a failed other call the driver refused is read as executed",
+  "file": "src/harness_bench/views.py",
+  "find": "        elif r.get(\"ok\") == 0 and requests > 0:\n",
+  "replace": "        elif False:\n",
+  "tests": [
+   "tests/test_views.py::test_the_claude_q1_refused_webfetch_is_a_valid_cell_with_the_refused_attempt_warning"
+  ]
+ },
+ {
+  "name": "R-54 (b): any failed other call is refused, with no counted request",
+  "file": "src/harness_bench/views.py",
+  "find": "        elif r.get(\"ok\") == 0 and requests > 0:\n",
+  "replace": "        elif r.get(\"ok\") == 0:\n",
+  "tests": [
+   "tests/test_views.py::test_a_failed_other_call_with_no_counted_request_executed",
+   "tests/test_views.py::test_one_counted_request_refuses_one_failed_other_call_not_two"
+  ]
+ },
+ {
+  "name": "R-54 (b): one counted request refuses every failed other call",
+  "file": "src/harness_bench/views.py",
+  "find": "            requests -= 1\n",
+  "replace": "            pass\n",
+  "tests": [
+   "tests/test_views.py::test_one_counted_request_refuses_one_failed_other_call_not_two"
+  ]
+ },
+ {
+  "name": "R-54 (b): ok null reads as refused",
+  "file": "src/harness_bench/views.py",
+  "find": "        elif r.get(\"ok\") == 0 and requests > 0:\n",
+  "replace": "        elif not r.get(\"ok\") and requests > 0:\n",
+  "tests": [
+   "tests/test_views.py::test_an_other_call_with_no_result_is_not_refused"
+  ]
+ },
+ {
+  "name": "R-54 (b): a counted request excuses an other call that succeeded",
+  "file": "src/harness_bench/views.py",
+  "find": "        elif r.get(\"ok\") == 0 and requests > 0:\n",
+  "replace": "        elif requests > 0:\n",
+  "tests": [
+   "tests/test_views.py::test_a_counted_request_never_excuses_an_other_call_that_succeeded"
+  ]
+ },
+ {
+  "name": "R-54 (b): a hook-denied other call is not a refusal",
+  "file": "src/harness_bench/views.py",
+  "find": "        if r.get(\"outcome_code\") == normalize.HOOK_DENIED:\n",
+  "replace": "        if False:\n",
+  "tests": [
+   "tests/test_views.py::test_a_copilot_hook_denial_of_an_other_call_is_a_refused_attempt_not_hb_val_004"
+  ]
+ },
+ {
+  "name": "R-54 (b): a hook-denied other call counts as an R-27 denial",
+  "file": "src/harness_bench/views.py",
+  "find": "    denials = normalize.hook_denials([r for r in tools or [] if r.get(\"tool_class\") != OTHER])\n",
+  "replace": "    denials = normalize.hook_denials(tools or [])\n",
+  "tests": [
+   "tests/test_views.py::test_a_copilot_hook_denial_of_an_other_call_is_a_refused_attempt_not_hb_val_004"
+  ]
+ },
+ {
+  "name": "R-54 (b): the refused-attempt warning is dropped",
+  "file": "src/harness_bench/views.py",
+  "find": "    warnings.append(refused)\n",
+  "replace": "    pass\n",
+  "tests": [
+   "tests/test_views.py::test_the_claude_q1_refused_webfetch_is_a_valid_cell_with_the_refused_attempt_warning",
+   "tests/test_views.py::test_the_export_carries_the_refused_warning_and_the_meta_count"
+  ]
+ },
+ {
+  "name": "R-54 (a): a meta call is treated as out of profile",
+  "file": "src/harness_bench/views.py",
+  "find": "        if r.get(\"tool_class\") != OTHER:\n",
+  "replace": "        if r.get(\"tool_class\") not in (OTHER, META):\n",
+  "tests": [
+   "tests/test_views.py::test_the_claude_q1_refused_webfetch_is_a_valid_cell_with_the_refused_attempt_warning"
+  ]
+ },
+ {
+  "name": "R-54 (a): ToolSearch is class other again in the reader",
+  "file": "src/harness_bench/telemetry/claude_code.py",
+  "find": "                \"ToolSearch\": \"meta\"}",
+  "replace": "                \"ToolSearch\": \"other\"}",
+  "tests": [
+   "tests/test_telemetry.py::test_claude_tool_search_is_class_meta",
+   "tests/test_allowlist_classes.py::test_the_meta_class_is_exactly_tool_search_in_the_reader_and_here",
+   "tests/test_views.py::test_tool_search_is_counted_per_cell_and_never_invalidates"
+  ]
+ },
+ {
+  "name": "R-54 c3: meta_calls counts every tool call",
+  "file": "src/harness_bench/views.py",
+  "find": "Measure(sum(1 for r in tools if r.get(\"tool_class\") == META))",
+  "replace": "Measure(len(tools))",
+  "tests": [
+   "tests/test_views.py::test_a_codex_cell_counts_no_meta_call",
+   "tests/test_views.py::test_tool_search_is_counted_per_cell_and_never_invalidates"
+  ]
+ },
+ {
+  "name": "R-54 c3: an ungraded cell has a measured zero meta count",
+  "file": "src/harness_bench/views.py",
+  "find": "        meta = Measure(None, \"not graded\") if tools is None else",
+  "replace": "        meta = Measure(0) if tools is None else",
+  "tests": [
+   "tests/test_views.py::test_tool_search_is_counted_per_cell_and_never_invalidates"
+  ]
+ },
+ {
+  "name": "R-54 c3: the export omits the meta count",
+  "file": "src/harness_bench/views.py",
+  "find": " \"meta_calls\": _enc(c.meta_calls),",
+  "replace": "",
+  "tests": [
+   "tests/test_views.py::test_the_export_carries_the_refused_warning_and_the_meta_count"
+  ]
+ },
+ {
+  "name": "R-3: bench-status/1 rejects the out-of-profile state",
+  "file": "src/harness_bench/status.py",
+  "find": " \"invalid (out-of-profile tool called)\",",
+  "replace": "",
+  "tests": [
+   "tests/test_status.py::test_bench_status_accepts_the_wave_two_invalid_states",
+   "tests/test_views.py::test_every_validity_views_can_return_is_a_bench_status_state_or_a_named_exclusion"
+  ]
+ },
+ {
+  "name": "R-47 c1: the refused warning shares HB-VAL-008 (one code, two levels)",
+  "file": "src/harness_bench/views.py",
+  "find": "Finding(\"HB-VAL-009\", \"warning\", \"out-of-profile attempt refused: \"",
+  "replace": "Finding(\"HB-VAL-008\", \"warning\", \"out-of-profile attempt refused: \"",
+  "tests": [
+   "tests/test_views.py::test_one_code_one_level_one_emitter"
   ]
  }
 ]
