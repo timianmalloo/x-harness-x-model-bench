@@ -257,9 +257,16 @@ summary: >-
 ### PERM-B: a tool that runs without a permission callback is invisible to a permission-count control
 - **Signature:** a harness advertises an out-of-profile tool as safe. Calling it never requests permission, so a zero-denial or zero-permission count appears valid while the agent has a wider capability set.
 - **Why it survives:** the driver can refuse only callbacks it receives. Copilot's committed pack-on checkpoint advertised 21 ids as safe, including web and GitHub MCP tools; R-45 found that the old profile named broad tool kinds rather than the allowed ids. R-46 found that Codex's profile omitted its promised web-search setting and its reader ignored `web_search_call`.
-- **Sweep:** Copilot and Codex profiles and readers are fixed in the R-45/R-46 seam slice. Claude Code's `WebFetch` and `WebSearch` are outside its allowlist; R-46's `assume:` about their effective-mode callbacks remains for a qualification turn to measure.
-- **Control:** `tests/test_allowlist_classes.py` compares Copilot's explicit allowlist with every id in the pinned build's own checkpoint and classifies all 21; `tests/test_profiles.py` checks both profile flags and Codex's seeded config; telemetry tests require Copilot's `tools_advertised` and a Codex `web_search_call` row. W2-VIEWS owns the per-cell validity finding. The fixed-profile Copilot fixture test is skipped until the Leader completes R-45 condition 1's recut.
-- **Status:** `partially-controlled` (static and reader controls added; the fixed-profile qualification and per-cell validity finding are pending their owning tracks).
+- **Instances (2026-09-25, run `qual-r45-1`; R-55, R-56):**
+  - **Codex:** the account's app connectors (`apps` feature, on by default) reached a cell as the `codex_apps` MCP server. The model called `higgsfield.create_website`, which has write semantics; the call failed at the connector. In code mode the call sits inside `exec`, so it left no tool row.
+  - **Claude Code:** 8 `mcp__claude_ai_*` account connector tools were advertised to the cell through the copied login. `ToolSearch` ran with no callback.
+- **Sweep:** Copilot and Codex profiles and readers are fixed in the R-45/R-46 seam slice and the apps slice (`features.apps = false`, a nested MCP item recorded as class `other`). Claude Code seeds `disableClaudeAiConnectors: true`. Re-qualification: `requal-codex-1` made no MCP call, and `requal-claude-1` advertised 0 connectors. `WebFetch` was refused by callback (Verified, R-56); `WebSearch` remains Inferred.
+- **Control:**
+  - `tests/test_allowlist_classes.py` compares Copilot's explicit allowlist with every id in the pinned build's own checkpoint, and runs the fixed-profile test on the fixture recut from `qual-r45-1`.
+  - `tests/test_profiles.py` checks Copilot's flags, Codex's `web_search` and `apps` settings, and Claude's `disableClaudeAiConnectors`.
+  - The telemetry tests require Copilot's `tools_advertised`, a Codex `web_search_call` row and a nested MCP row.
+  - **Per cell (W2-VIEWS-FU):** an executed class-`other` call, or an out-of-class advertised Copilot tool, makes the cell `invalid (out-of-profile tool called)` (HB-VAL-008). A refused call is the HB-VAL-009 warning. `tests/test_telemetry_copilot.py` holds the reader's class table to the profile's `--available-tools` list.
+- **Status:** `controlled` for Copilot, Codex and Claude Code on the pinned builds. A pin bump re-runs the class tests; a new id or tool fails them.
 
 ### VEND-A: a vendored file the host repository's ignore rules drop
 - **Signature:** a task base is vendored byte for byte into `tasks/<ID>/workspace/`, but a path in it matches this repository's `.gitignore` (`dist/`, `build/`). The file exists on the author's disk, so every check there passes; a clean checkout lacks it.
