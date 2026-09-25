@@ -48,6 +48,7 @@ from harness_bench.grade import (
     clarify,
     correctness,
     cost,
+    drift,
     judge,
     process,
 )
@@ -87,6 +88,7 @@ def grader_build() -> str:
 
 GRADERS["process"] = process.grade_cell  # GR-PROC p1-p3
 GRADERS["clarify"] = clarify.grade_cell  # GR-CLAR l1
+GRADERS["drift"] = drift.grade_cell  # GR-CODE c3
 TOOL_TIMEOUT = 30  # seconds per version probe (R-59 c4)
 NOT_RECORDED = "not recorded"
 # Tools a grader runs beyond python and dotnet: key -> the command that prints its version (its last stdout line).
