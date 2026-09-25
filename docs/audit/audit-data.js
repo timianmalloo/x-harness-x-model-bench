@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T07:46:58Z",
+  "generated": "2026-09-25T07:58:26Z",
   "audit": [
     {
       "actor": null,
@@ -15536,6 +15536,510 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "id": "al-01M3BS577KFRY1JYJY4DG51D55",
+      "shortname": "Goal: W2-STOP-I slice 3 per docs/design/phase2-stop-decisions.md section…",
+      "datetime": "2026-09-25T07:58:25Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W2-STOP-I slice 3 per docs/design/phase2-stop-decisions.md section 17 row 3 and sections 4.4, 4.5, 4.7, 5, 8 and 18 (read them first; rulings R-21, R-34, R-49, R-50 in docs/notes/rulings.md): the R-21 grace - a cancel that lets a harness exit cleanly before the kill - in the driver, the profile, the engine clock and the TLA model, red-first.\nDone when: driver.py gains the cancel threading.Event of section 4.5: on cancel it sends ACP session/cancel and closes stdin on the worker thread, drops writes after a cancel, and never sends a prompt after a cancel; tests D-1 and D-2 red first (the fake ACP agent gains the modes `stubborn` and `on_cancel` the design names).; shutdown_grace_seconds (at most 10 s) is a profile datum carried to the launcher and the plan record (section 4.4), with a test.; The engine has one clock and on_tick, kill_deadline, _check_kills, a.terminated and ended_by (section 5); end_grace is removed; tests R10-6, R21-1 and R21-4..6 red first.; bench/profiles/claude-code.yaml declares defaultMode \"default\" (R-34 condition 4, section 4.7), with PR-1..3.; models/run_lifecycle.tla gains the grace refinement of section 8.1 (the `grace` variable, GracefulExit and EndGrace, the no_escalate variant, the NoGraceState witness) and docs/design/run-lifecycle-model.md gains the rows (section 8.3).; Seam S5 is granted (plan version-4 dispatch notes): tools/check_models.py gains the no_escalate variant and the two-witness main(), with the reverse test in tests/test_check_models.py.; A FULL `uv run python tools/check_models.py` run shows 22 of 22 variants rejected by their own target, 2 witnesses, and the US-44 bounds; paste its summary lines into the final commit message (not a partial run; TLC needs Java, which is on this host - check `java -version` first).; tests/mutations/stop.json gains named mutants for each new branch (a prompt sent after cancel; writes not dropped; grace above 10 s accepted; kill before the grace ends), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, the check_models summary, and the mutate_check result.\nNot in scope: the control channel, bench stop and run.stopped (slice 4); decisions and bench answer (slice 5); views.py; the scripted-user wiring (joined: keep the driver's mcp_servers parameter and its tests intact); bench run, any live turn (the Leader runs the live Copilot grace test in a capture window: section 17's S6); pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains (a later slice continues).\n\nGrounding: docs/design/phase2-stop-decisions.md; docs/design/run-lifecycle-model.md; models/**; tools/check_models.py; src/harness_bench/{driver,engine,profiles,plan,lifecycle}.py; bench/profiles/*.yaml; tests/test_driver.py, tests/test_engine.py, tests/fake_acp_agent.py, tests/test_check_models.py, tests/test_lifecycle_conformance.py. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-stopi3 before committing.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3BS58AZVZP588XMMDD8HMY7",
+      "shortname": "compile-Goal: W2-STOP-I slice 3 per docs/design/phase2-stop-decisions.md section…",
+      "datetime": "2026-09-25T07:58:26Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-STOP-I slice 3 per docs/design/phase2-stop-decisions.md section 17 row 3 and sections 4.4, 4.5, 4.7, 5, 8 and 18 (read them first; rulings R-21, R-34, R-49, R-50 in docs/notes/rulings.md): the R-21 grace - a cancel that lets a harness exit cleanly before the kill - in the driver, the profile, the engine clock and the TLA model, red-first.\nDone when: driver.py gains the cancel threading.Event of section 4.5: on cancel it sends ACP session/cancel and closes stdin on the worker thread, drops writes after a cancel, and never sends a prompt after a cancel; tests D-1 and D-2 red first (the fake ACP agent gains the modes `stubborn` and `on_cancel` the design names).; shutdown_grace_seconds (at most 10 s) is a profile datum carried to the launcher and the plan record (section 4.4), with a test.; The engine has one clock and on_tick, kill_deadline, _check_kills, a.terminated and ended_by (section 5); end_grace is removed; tests R10-6, R21-1 and R21-4..6 red first.; bench/profiles/claude-code.yaml declares defaultMode \"default\" (R-34 condition 4, section 4.7), with PR-1..3.; models/run_lifecycle.tla gains the grace refinement of section 8.1 (the `grace` variable, GracefulExit and EndGrace, the no_escalate variant, the NoGraceState witness) and docs/design/run-lifecycle-model.md gains the rows (section 8.3).; Seam S5 is granted (plan version-4 dispatch notes): tools/check_models.py gains the no_escalate variant and the two-witness main(), with the reverse test in tests/test_check_models.py.; A FULL `uv run python tools/check_models.py` run shows 22 of 22 variants rejected by their own target, 2 witnesses, and the US-44 bounds; paste its summary lines into the final commit message (not a partial run; TLC needs Java, which is on this host - check `java -version` first).; tests/mutations/stop.json gains named mutants for each new branch (a prompt sent after cancel; writes not dropped; grace above 10 s accepted; kill before the grace ends), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, the check_models summary, and the mutate_check result.\nNot in scope: the control channel, bench stop and run.stopped (slice 4); decisions and bench answer (slice 5); views.py; the scripted-user wiring (joined: keep the driver's mcp_servers parameter and its tests intact); bench run, any live turn (the Leader runs the live Copilot grace test in a capture window: section 17's S6); pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains (a later slice continues).\nGrounding: docs/design/phase2-stop-decisions.md; docs/design/run-lifecycle-model.md; models/**; tools/check_models.py; src/harness_bench/{driver,engine,profiles,plan,lifecycle}.py; bench/profiles/*.yaml; tests/test_driver.py, tests/test_engine.py, tests/fake_acp_agent.py, tests/test_check_models.py, tests/test_lifecycle_conformance.py. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-stopi3 before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: driver.py gains the cancel threading.Event of section 4.5: on cancel it sends ACP session/cancel and closes stdin on the worker thread, drops writes after a cancel, and never sends a prompt after a cancel | phrase: driver.py gains the cancel threading.Event of section 4.5: on cancel it sends ACP session/cancel and closes stdin on the worker thread, drops writes after a cancel, and never sends a prompt after a cancel |\n| done_when: tests D-1 and D-2 red first (the fake ACP agent gains the modes `stubborn` and `on_cancel` the design names). | phrase: tests D-1 and D-2 red first (the fake ACP agent gains the modes `stubborn` and `on_cancel` the design names). |\n| done_when: shutdown_grace_seconds (at most 10 s) is a profile datum carried to the launcher and the plan record (section 4.4), with a test. | phrase: shutdown_grace_seconds (at most 10 s) is a profile datum carried to the launcher and the plan record (section 4.4), with a test. |\n| done_when: The engine has one clock and on_tick, kill_deadline, _check_kills, a.terminated and ended_by (section 5) | phrase: The engine has one clock and on_tick, kill_deadline, _check_kills, a.terminated and ended_by (section 5) |\n| done_when: end_grace is removed | phrase: end_grace is removed |\n| done_when: tests R10-6, R21-1 and R21-4..6 red first. | phrase: tests R10-6, R21-1 and R21-4..6 red first. |\n| done_when: bench/profiles/claude-code.yaml declares defaultMode \"default\" (R-34 condition 4, section 4.7), with PR-1..3. | phrase: bench/profiles/claude-code.yaml declares defaultMode \"default\" (R-34 condition 4, section 4.7), with PR-1..3. |\n| done_when: models/run_lifecycle.tla gains the grace refinement of section 8.1 (the `grace` variable, GracefulExit and EndGrace, the no_escalate variant, the NoGraceState witness) and docs/design/run-lifecycle-model.md gains the rows (section 8.3). | phrase: models/run_lifecycle.tla gains the grace refinement of section 8.1 (the `grace` variable, GracefulExit and EndGrace, the no_escalate variant, the NoGraceState witness) and docs/design/run-lifecycle-model.md gains the rows (section 8.3). |\n| done_when: Seam S5 is granted (plan version-4 dispatch notes): tools/check_models.py gains the no_escalate variant and the two-witness main(), with the reverse test in tests/test_check_models.py. | phrase: Seam S5 is granted (plan version-4 dispatch notes): tools/check_models.py gains the no_escalate variant and the two-witness main(), with the reverse test in tests/test_check_models.py. |\n| done_when: A FULL `uv run python tools/check_models.py` run shows 22 of 22 variants rejected by their own target, 2 witnesses, and the US-44 bounds | phrase: A FULL `uv run python tools/check_models.py` run shows 22 of 22 variants rejected by their own target, 2 witnesses, and the US-44 bounds |\n| done_when: paste its summary lines into the final commit message (not a partial run | phrase: paste its summary lines into the final commit message (not a partial run |\n| done_when: TLC needs Java, which is on this host - check `java -version` first). | phrase: TLC needs Java, which is on this host - check `java -version` first). |\n| done_when: tests/mutations/stop.json gains named mutants for each new branch (a prompt sent after cancel | phrase: tests/mutations/stop.json gains named mutants for each new branch (a prompt sent after cancel |\n| done_when: writes not dropped | phrase: writes not dropped |\n| done_when: grace above 10 s accepted | phrase: grace above 10 s accepted |\n| done_when: kill before the grace ends), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json. | phrase: kill before the grace ends), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json. |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean. | phrase: uv run ruff check src tests tools is clean. |\n| done_when: Your final message lists each red SHA with its failing assertion, each green SHA, the check_models summary, and the mutate_check result. | phrase: Your final message lists each red SHA with its failing assertion, each green SHA, the check_models summary, and the mutate_check result. |\n| not_in_scope: the control channel, bench stop and run.stopped (slice 4) | phrase: the control channel, bench stop and run.stopped (slice 4) |\n| not_in_scope: decisions and bench answer (slice 5) | phrase: decisions and bench answer (slice 5) |\n| not_in_scope: views.py | phrase: views.py |\n| not_in_scope: the scripted-user wiring (joined: keep the driver's mcp_servers parameter and its tests intact) | phrase: the scripted-user wiring (joined: keep the driver's mcp_servers parameter and its tests intact) |\n| not_in_scope: bench run, any live turn (the Leader runs the live Copilot grace test in a capture window: section 17's S6) | phrase: bench run, any live turn (the Leader runs the live Copilot grace test in a capture window: section 17's S6) |\n| not_in_scope: pytest -m \"\" | phrase: pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- stubborn: unresolved (not found)\n- on_cancel: unresolved (not found)\n- grace: unresolved (not found)\n- uv run python tools/check_models.py: unresolved (not found; nearest: tools/check_models.py)\n- java -version: unresolved (not found)\n- docs/design/phase2-stop-decisions.md: docs/design/phase2-stop-decisions.md sha256 3dbc40e3d87e76548cf8bda92266fefc77892f87086a180ae5a9572d91b287b7\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- driver.py: src/harness_bench/driver.py sha256 5f70c62033c2ec6a502d34af7fd7dccdda80a38f30dafa0fcb58a3e7e0da9ad2\n- session/cancel: unresolved (not found)\n- bench/profiles/claude-code.yaml: bench/profiles/claude-code.yaml sha256 461dfc3468aab2edf15c231a184dd45d6198d6ba850408ff6d19e0b4ecae7b91\n- models/run_lifecycle.tla: models/run_lifecycle.tla sha256 e9b9ba2ec73176af49853b214f332ddf487179915631a66c1c6a3bf68ce3d629\n- docs/design/run-lifecycle-model.md: docs/design/run-lifecycle-model.md sha256 77323517b6789bd05c44b00838b099b2754907afa8fcc7fa7dea4933accb4196\n- tools/check_models.py: tools/check_models.py sha256 10d5d47c54f2116734bc72fa2d3df4d43da287fabe2f06f6310e702d704f7453\n- tests/test_check_models.py: tests/test_check_models.py sha256 9e301631426f18e50bf11b77ce73b4f4875b755a4e1429d0eb581bdb7ca33d2f\n- tests/mutations/stop.json: tests/mutations/stop.json sha256 cd0caf2e8a64afa5daefbf33fd1eb309c4b71a7f66f4742c71292bb38871683f\n- tools/mutate_check.py: tools/mutate_check.py sha256 4d1b3c10120a52082b1a43aa9407a8109459d7ba20fb83801eb85c2f511ba513\n- views.py: src/harness_bench/views.py sha256 6e53249eae24b9f23c6836d0b5fd15d741eb84a7cd808d88d7f92afbd994ffb7\n- models/**: unresolved (not found)\n- src/harness_bench/{driver,engine,profiles,plan,lifecycle}.py: unresolved (not found)\n- bench/profiles/*.yaml: unresolved (not found)\n- tests/test_driver.py: tests/test_driver.py sha256 895be6b29f4a24276660899a017a7325d8146c10e57a856fe1e86cdc7a209504\n- tests/test_engine.py: tests/test_engine.py sha256 04c2bfeec38b10154f0654e1487f34efbe2b8400b18ff607dbad0aedf9f6a52b\n- tests/fake_acp_agent.py: tests/fake_acp_agent.py sha256 279435ec81cf6b44557679c4134c837e59a16c62ca87797773429d77e568e0ad\n- tests/test_lifecycle_conformance.py: tests/test_lifecycle_conformance.py sha256 55af0b606cbf188d685faf8c60ea1f17fb2521226de820a0acb81a099405fb8c\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BS577KFRY1JYJY4DG51D55\nraw sha256: d47d45b0fa6c635be996b3199748b5ee2cbfb9d4b1cc64e5c9b6bd0be570b096\ncompiler model: claude-opus-5-5\nengine seconds: 0.003\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3BS577KFRY1JYJY4DG51D55 for codex v1: 26 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "driver.py gains the cancel threading.Event of section 4.5: on cancel it sends ACP session/cancel and closes stdin on the worker thread, drops writes after a cancel, and never sends a prompt after a cancel",
+            "trace": {
+              "kind": "phrase",
+              "ref": "driver.py gains the cancel threading.Event of section 4.5: on cancel it sends ACP session/cancel and closes stdin on the worker thread, drops writes after a cancel, and never sends a prompt after a cancel"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests D-1 and D-2 red first (the fake ACP agent gains the modes `stubborn` and `on_cancel` the design names).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests D-1 and D-2 red first (the fake ACP agent gains the modes `stubborn` and `on_cancel` the design names)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "shutdown_grace_seconds (at most 10 s) is a profile datum carried to the launcher and the plan record (section 4.4), with a test.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "shutdown_grace_seconds (at most 10 s) is a profile datum carried to the launcher and the plan record (section 4.4), with a test."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The engine has one clock and on_tick, kill_deadline, _check_kills, a.terminated and ended_by (section 5)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The engine has one clock and on_tick, kill_deadline, _check_kills, a.terminated and ended_by (section 5)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "end_grace is removed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "end_grace is removed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests R10-6, R21-1 and R21-4..6 red first.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests R10-6, R21-1 and R21-4..6 red first."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "bench/profiles/claude-code.yaml declares defaultMode \"default\" (R-34 condition 4, section 4.7), with PR-1..3.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/profiles/claude-code.yaml declares defaultMode \"default\" (R-34 condition 4, section 4.7), with PR-1..3."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "models/run_lifecycle.tla gains the grace refinement of section 8.1 (the `grace` variable, GracefulExit and EndGrace, the no_escalate variant, the NoGraceState witness) and docs/design/run-lifecycle-model.md gains the rows (section 8.3).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "models/run_lifecycle.tla gains the grace refinement of section 8.1 (the `grace` variable, GracefulExit and EndGrace, the no_escalate variant, the NoGraceState witness) and docs/design/run-lifecycle-model.md gains the rows (section 8.3)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Seam S5 is granted (plan version-4 dispatch notes): tools/check_models.py gains the no_escalate variant and the two-witness main(), with the reverse test in tests/test_check_models.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Seam S5 is granted (plan version-4 dispatch notes): tools/check_models.py gains the no_escalate variant and the two-witness main(), with the reverse test in tests/test_check_models.py."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A FULL `uv run python tools/check_models.py` run shows 22 of 22 variants rejected by their own target, 2 witnesses, and the US-44 bounds",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A FULL `uv run python tools/check_models.py` run shows 22 of 22 variants rejected by their own target, 2 witnesses, and the US-44 bounds"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "paste its summary lines into the final commit message (not a partial run",
+            "trace": {
+              "kind": "phrase",
+              "ref": "paste its summary lines into the final commit message (not a partial run"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "TLC needs Java, which is on this host - check `java -version` first).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "TLC needs Java, which is on this host - check `java -version` first)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/stop.json gains named mutants for each new branch (a prompt sent after cancel",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/stop.json gains named mutants for each new branch (a prompt sent after cancel"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "writes not dropped",
+            "trace": {
+              "kind": "phrase",
+              "ref": "writes not dropped"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "grace above 10 s accepted",
+            "trace": {
+              "kind": "phrase",
+              "ref": "grace above 10 s accepted"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "kill before the grace ends), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "kill before the grace ends), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA with its failing assertion, each green SHA, the check_models summary, and the mutate_check result.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA with its failing assertion, each green SHA, the check_models summary, and the mutate_check result."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the control channel, bench stop and run.stopped (slice 4)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the control channel, bench stop and run.stopped (slice 4)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "decisions and bench answer (slice 5)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "decisions and bench answer (slice 5)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "views.py",
+            "trace": {
+              "kind": "phrase",
+              "ref": "views.py"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the scripted-user wiring (joined: keep the driver's mcp_servers parameter and its tests intact)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the scripted-user wiring (joined: keep the driver's mcp_servers parameter and its tests intact)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run, any live turn (the Leader runs the live Copilot grace test in a capture window: section 17's S6)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run, any live turn (the Leader runs the live Copilot grace test in a capture window: section 17's S6)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "pytest -m \"\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "pytest -m \"\""
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "driver.py gains the cancel threading.Event of section 4.5: on cancel it sends ACP session/cancel and closes stdin on the worker thread, drops writes after a cancel, and never sends a prompt after a cancel",
+            "tests D-1 and D-2 red first (the fake ACP agent gains the modes `stubborn` and `on_cancel` the design names).",
+            "shutdown_grace_seconds (at most 10 s) is a profile datum carried to the launcher and the plan record (section 4.4), with a test.",
+            "The engine has one clock and on_tick, kill_deadline, _check_kills, a.terminated and ended_by (section 5)",
+            "end_grace is removed",
+            "tests R10-6, R21-1 and R21-4..6 red first.",
+            "bench/profiles/claude-code.yaml declares defaultMode \"default\" (R-34 condition 4, section 4.7), with PR-1..3.",
+            "models/run_lifecycle.tla gains the grace refinement of section 8.1 (the `grace` variable, GracefulExit and EndGrace, the no_escalate variant, the NoGraceState witness) and docs/design/run-lifecycle-model.md gains the rows (section 8.3).",
+            "Seam S5 is granted (plan version-4 dispatch notes): tools/check_models.py gains the no_escalate variant and the two-witness main(), with the reverse test in tests/test_check_models.py.",
+            "A FULL `uv run python tools/check_models.py` run shows 22 of 22 variants rejected by their own target, 2 witnesses, and the US-44 bounds",
+            "paste its summary lines into the final commit message (not a partial run",
+            "TLC needs Java, which is on this host - check `java -version` first).",
+            "tests/mutations/stop.json gains named mutants for each new branch (a prompt sent after cancel",
+            "writes not dropped",
+            "grace above 10 s accepted",
+            "kill before the grace ends), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json.",
+            "uv run pytest -q -p no:cacheprovider passes",
+            "uv run ruff check src tests tools is clean.",
+            "Your final message lists each red SHA with its failing assertion, each green SHA, the check_models summary, and the mutate_check result."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W2-STOP-I slice 3 per docs/design/phase2-stop-decisions.md section 17 row 3 and sections 4.4, 4.5, 4.7, 5, 8 and 18 (read them first; rulings R-21, R-34, R-49, R-50 in docs/notes/rulings.md): the R-21 grace - a cancel that lets a harness exit cleanly before the kill - in the driver, the profile, the engine clock and the TLA model, red-first.",
+          "main_line_budget": "one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains (a later slice continues).\nGrounding: docs/design/phase2-stop-decisions.md; docs/design/run-lifecycle-model.md; models/**; tools/check_models.py; src/harness_bench/{driver,engine,profiles,plan,lifecycle}.py; bench/profiles/*.yaml; tests/test_driver.py, tests/test_engine.py, tests/fake_acp_agent.py, tests/test_check_models.py, tests/test_lifecycle_conformance.py. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-stopi3 before committing.",
+          "not_in_scope": [
+            "the control channel, bench stop and run.stopped (slice 4)",
+            "decisions and bench answer (slice 5)",
+            "views.py",
+            "the scripted-user wiring (joined: keep the driver's mcp_servers parameter and its tests intact)",
+            "bench run, any live turn (the Leader runs the live Copilot grace test in a capture window: section 17's S6)",
+            "pytest -m \"\"",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.003,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3BS577KFRY1JYJY4DG51D55",
+        "raw_sha256": "d47d45b0fa6c635be996b3199748b5ee2cbfb9d4b1cc64e5c9b6bd0be570b096",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stubborn"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "on_cancel"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grace"
+          },
+          {
+            "nearest": "tools/check_models.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run python tools/check_models.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "java -version"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase2-stop-decisions.md",
+            "reason": null,
+            "sha256": "3dbc40e3d87e76548cf8bda92266fefc77892f87086a180ae5a9572d91b287b7",
+            "status": "resolved",
+            "token": "docs/design/phase2-stop-decisions.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/driver.py",
+            "reason": null,
+            "sha256": "5f70c62033c2ec6a502d34af7fd7dccdda80a38f30dafa0fcb58a3e7e0da9ad2",
+            "status": "resolved",
+            "token": "driver.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "session/cancel"
+          },
+          {
+            "nearest": null,
+            "path": "bench/profiles/claude-code.yaml",
+            "reason": null,
+            "sha256": "461dfc3468aab2edf15c231a184dd45d6198d6ba850408ff6d19e0b4ecae7b91",
+            "status": "resolved",
+            "token": "bench/profiles/claude-code.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "models/run_lifecycle.tla",
+            "reason": null,
+            "sha256": "e9b9ba2ec73176af49853b214f332ddf487179915631a66c1c6a3bf68ce3d629",
+            "status": "resolved",
+            "token": "models/run_lifecycle.tla"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/run-lifecycle-model.md",
+            "reason": null,
+            "sha256": "77323517b6789bd05c44b00838b099b2754907afa8fcc7fa7dea4933accb4196",
+            "status": "resolved",
+            "token": "docs/design/run-lifecycle-model.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/check_models.py",
+            "reason": null,
+            "sha256": "10d5d47c54f2116734bc72fa2d3df4d43da287fabe2f06f6310e702d704f7453",
+            "status": "resolved",
+            "token": "tools/check_models.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_check_models.py",
+            "reason": null,
+            "sha256": "9e301631426f18e50bf11b77ce73b4f4875b755a4e1429d0eb581bdb7ca33d2f",
+            "status": "resolved",
+            "token": "tests/test_check_models.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/stop.json",
+            "reason": null,
+            "sha256": "cd0caf2e8a64afa5daefbf33fd1eb309c4b71a7f66f4742c71292bb38871683f",
+            "status": "resolved",
+            "token": "tests/mutations/stop.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "4d1b3c10120a52082b1a43aa9407a8109459d7ba20fb83801eb85c2f511ba513",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/views.py",
+            "reason": null,
+            "sha256": "6e53249eae24b9f23c6836d0b5fd15d741eb84a7cd808d88d7f92afbd994ffb7",
+            "status": "resolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "models/**"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/{driver,engine,profiles,plan,lifecycle}.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/profiles/*.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_driver.py",
+            "reason": null,
+            "sha256": "895be6b29f4a24276660899a017a7325d8146c10e57a856fe1e86cdc7a209504",
+            "status": "resolved",
+            "token": "tests/test_driver.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_engine.py",
+            "reason": null,
+            "sha256": "04c2bfeec38b10154f0654e1487f34efbe2b8400b18ff607dbad0aedf9f6a52b",
+            "status": "resolved",
+            "token": "tests/test_engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/fake_acp_agent.py",
+            "reason": null,
+            "sha256": "279435ec81cf6b44557679c4134c837e59a16c62ca87797773429d77e568e0ad",
+            "status": "resolved",
+            "token": "tests/fake_acp_agent.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_lifecycle_conformance.py",
+            "reason": null,
+            "sha256": "55af0b606cbf188d685faf8c60ea1f17fb2521226de820a0acb81a099405fb8c",
+            "status": "resolved",
+            "token": "tests/test_lifecycle_conformance.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
     }
   ],
   "changes": [
