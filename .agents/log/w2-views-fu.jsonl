@@ -1,1 +1,3 @@
 {"agent": "w2-views-fu", "at": 1790314637.2481785, "kind": "session-start", "path": "-", "seq": 1, "session": "w2-views-fu", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w2-views-fu"}
+{"action": "add", "agent": "w2-views-fu", "at": 1790314780.558627, "deadline_at": 1790317180.558627, "id": "req-01M3BH75WE84KK5H9BPKC1HGBG", "kind": "request", "path": "-", "seq": 2, "session": "w2-views-fu", "to": "coord-opus-cq", "type": "request", "wi": "WI-0"}
+{"action": "add", "agent": "w2-views-fu", "at": 1790314883.3603501, "deadline_at": 1790317283.3603501, "id": "req-01M3BHAA90PTS0ZBQZ7NZYWJN6", "kind": "request", "path": "-", "seq": 3, "session": "w2-views-fu", "to": "coord-opus-cq", "type": "request", "wi": "WI-0"}
