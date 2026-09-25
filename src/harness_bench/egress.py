@@ -88,5 +88,6 @@ def check(payload: str, *, destination: str, secrets: Sequence[str] = (), email:
         ("email", _anycase(payload, email)),
         ("username", _word(payload, username)),
         ("home_path", _path(payload, home)),
+        ("canary", _exact(payload, canaries)),
     ) if hit)
     return Verdict(destination, digest, classes, None if classes else payload)
