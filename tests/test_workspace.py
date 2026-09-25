@@ -2,6 +2,7 @@
 
 import subprocess
 import threading
+import time
 from pathlib import Path
 
 import pytest
@@ -280,3 +281,36 @@ def test_pack_markers_have_a_real_builder_positive_control(source, tmp_path):  #
     seeded.parent.mkdir(exist_ok=True)
     seeded.write_text("".join(f"# {marker}\n" for marker in markers), encoding="utf-8")
     assert all(marker in instruction_text(off) for marker in markers)
+
+
+def test_a_transient_windows_rename_refusal_is_retried(tmp_path, monkeypatch):  # WIN-A: WinError 5 at _land, 3 instances
+    """os.replace of a freshly built folder is refused while another process briefly holds a handle in it
+    (antivirus, the git process that just exited). A refusal that clears is retried, never a failed build."""
+    tmp, dest = tmp_path / "tmp", tmp_path / "dest"
+    tmp.mkdir()
+    (tmp / "f").write_text("x", encoding="utf-8")
+    real, calls = workspace.os.replace, []
+
+    def flaky(src, dst):
+        calls.append(1)
+        if len(calls) <= 2:
+            raise PermissionError(13, "Access is denied")
+        return real(src, dst)
+
+    monkeypatch.setattr(workspace.os, "replace", flaky)
+    monkeypatch.setattr(time, "sleep", lambda s: None)
+    assert workspace._land(tmp, dest, lambda d: False) == dest
+    assert (dest / "f").read_text(encoding="utf-8") == "x" and len(calls) == 3
+
+
+def test_a_rename_refusal_that_never_clears_still_raises(tmp_path, monkeypatch):  # WIN-A: bounded, never a hang
+    tmp, dest = tmp_path / "tmp", tmp_path / "dest"
+    tmp.mkdir()
+
+    def refused(src, dst):
+        raise PermissionError(13, "Access is denied")
+
+    monkeypatch.setattr(workspace.os, "replace", refused)
+    monkeypatch.setattr(time, "sleep", lambda s: None)
+    with pytest.raises(PermissionError):
+        workspace._land(tmp, dest, lambda d: False)
