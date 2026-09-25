@@ -2,24 +2,33 @@ schema: bench-task/1
 id: A1
 scenario: 1
 title: "Missing-goal ambiguity"
-status: stub
+status: ready
 language: python
 source:
   kind: public
-  upstream: "ClarifyCodeBench (missing-goal)"
-  repo: "tbd"
-  commit: "tbd"
+  upstream: "ClarifyCodeBench task_199 (LiveCodeBench abc396_c, Buy Balls), type Behavior: the objective was deleted"
+  repo: "https://github.com/fangz-cs/ClarifyCodeBench"
+  commit: "5e2d5b5ce6259daa034cebb69f65e5e4c6dec3e9"   # main at authoring, git ls-remote 2026-09-25
+  tests:                                               # the hidden tests' upstream (ClarifyCodeBench does not ship them)
+    dataset: "livecodebench/code_generation_lite"
+    revision: "0fe84c3912ea0c4d4a78037083943e8f0c4dd505"
+    file: "test6.jsonl"
+    file_sha256: "bb4c364f71921c4495a6ad15abe1a927350b720009f4933e2e71f8af0f6fd1f5"
+  licence: "NOTICE.md"
 budget:
   minutes: 15
   usd_cap: null
 blast_radius:
-  - "**"
+  - "solution.py"
 model_map: null
 scripted_user: true
+formal: null
 graders:
   - clarify
   - correctness
   - cost
   - process
 oracle:
-  summary: "Annotated key clarifications + upstream tests."
+  summary: "One annotated clarification (the deleted goal: maximum) in oracle/clarifications.yaml; 43 LiveCodeBench stdin/stdout cases for abc396_c in tests/, one unittest test each; a labelled held-out question set for the matcher in oracle/heldout_questions.yaml."
+  runner: unittest          # the summary format correctness.py parses
+  command: ["{python}", "-m", "unittest", "-v", "test_a1_hidden"]   # run in a grading copy: archive ws + tests/
