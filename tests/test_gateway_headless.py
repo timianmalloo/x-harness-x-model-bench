@@ -79,6 +79,15 @@ def test_the_builders_put_the_request_on_stdin_never_in_argv(tmp_path):
     assert c[-1] == "-" and "model=gpt-6-sol" in c and "include_apply_patch_tool=false" not in c
 
 
+def test_the_copilot_builder_is_the_measured_shape():
+    # Spike ac44295 (docs/notes/spike-gw-headless.md, last section): a bare trailing --available-tools filtered
+    # nothing (17 tools advertised, powershell ran unapproved) and ancestor AGENTS.md/CLAUDE.md were loaded; the
+    # shape below gave tools_advertised [] and 0 tool events. DR-GW-CP-1 is open: no Copilot judge is qualified.
+    assert gw_backend.copilot_argv("copilot.exe", "gpt-6-sol", "P") == [
+        "copilot.exe", "-p", "P", "--model", "gpt-6-sol", "--disable-builtin-mcps", "--no-custom-instructions",
+        "--available-tools", "none"]
+
+
 def test_invocation_sha256_changes_with_each_part_of_the_invocation():
     base = ("claude-code", PIN, gw_backend.JUDGE_SYSTEM, "text", "2.1.282", "a" * 64)
     first = gw_backend.invocation_sha256(*base)
