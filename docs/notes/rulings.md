@@ -638,3 +638,46 @@ Append only. One entry per ruling. Newest last.
   1. Shape chosen by STOP-I under ADR-0011 C4: ids, enums, counts and times only; `parse` rejects anything else; SK-1 names the field.
   2. Red first on a seeded ledger with `last_update_ms` null and one with a value.
   3. The running-cell form is a named next step in the phase-5 row, not a wave-2 addition.
+
+## R-51 · 2026-09-25 · Owner seat (Fable) · DR-S04-1: stdio on every harness; Copilot starts the same server from its launch config; no bench-run network endpoint
+
+- **Ruling:** **(c).** The scripted-user server is a stdio process on all three harnesses. Claude Code and Codex receive it in `session/new` `mcpServers` (R-37 unchanged). Copilot receives the same module, args and env through `--additional-mcp-config @<cell_dir>/mcp-config.json`, with `mcpServers: []` in `session/new`. (a) and (b) are rejected: no bench-run HTTP endpoint in wave 2. R-37's "passed in `session/new`" is amended for Copilot only.
+- **Reasoning:**
+  - The treatment is what the agent sees, not how the harness reaches the server. US-14 (`harness-bench.md:381`) requires identical tool *classes*; US-10 (`:354`) identical prompt and reply text. Both hold: one server module, one tool, identical replies; the id is per build already (R-34, design §5). Transport asymmetry is of the same kind as the disclosed adapter asymmetry.
+  - (c) is the only option with a stdio server on every harness: one code path, the harness holds the pipe. (a) and (b) add five unmeasured properties (design `:354-358`: injection, concurrency, readiness and teardown, proxy, timeouts) and a Security hand-off for an endpoint (c) never creates. Rigor ranks first: the fewest unmeasured properties wins. (a) would also discard the only live A1 evidence, which is stdio (`s04-results.json`, `claude-code-a1-…`, `codex-a1-…`).
+  - *Verified*, S-04b: the launch config was listed and called, the reply delivered, 0 permission requests, no `Rejecting` line, no `github-mcp-server`, under `--disable-builtin-mcps` (`spike-s04-scripted-user.md:190-191`, `:195`). ADR-0004:51 is met: the config names one server, the task's own.
+  - Lifetime, *Inferred*: Copilot spawns the server inside the cell's Job Object, breakaway never allowed (`procs.py:8-9`), so it ends with the cell. Condition 3 measures it.
+  - **Gap found.** No S-04b Copilot run carried R-45's `--available-tools` list (`s04-results.json` `extra_argv`; the worktree's `copilot.yaml:7` predates R-45). Whether it filters `scripted_user-ask_user` is unmeasured on every route; R-45's `assume:` says it filters MCP ids. Condition 2.
+  - Allowlist ids: Claude Code `mcp__scripted_user__ask_user` in `permissions.allow`; Codex none; Copilot `--allow-tool scripted_user`, plus `scripted_user-ask_user` in `--available-tools` if condition 2 shows filtering.
+- **Conditions:**
+  1. USER-W: the driver sends Copilot `mcpServers: []` always (T-37-3 gains a Copilot form). The engine writes `<cell_dir>/mcp-config.json` (the `copilot mcp add --json` shape, one server) only when `scripted_user: true`; `profiles.py` gains a per-cell placeholder so the flag is present only then. A test asserts both argv forms.
+  2. One Copilot qualification turn, R-45 profile verbatim plus the scripted-user additions, probe prompt, `gpt-6-sol` (R-33), records `tools_advertised`. If `scripted_user-ask_user` is absent, the id joins `--available-tools` and the R-45 static test classifies it as class "scripted user". Red-first on the scrubbed S-04b launch-config run; before the live A1 cell.
+  3. The live A1 cell per harness (plan `:162`) records `tool_listed: true`; for Copilot, the job's active-process count reaches 0 at teardown. "Tool not reached" on any harness is a finding, never a silent NOT_RECORDED.
+  4. R-37 gains an amendment note citing this ruling. T-37-2c replays the S-04b launch-config run; T-37-2b is required.
+  5. The Security hand-off narrows to log tampering (design §8), common to every route. HTTP is a named next step only if a pinned Copilot build drops the flag. Copilot's lazy listing is a harness property, read after the turn (design `:347`) and disclosed.
+
+## R-52 · 2026-09-25 · Owner seat (Fable) · DR-S04-2: accept and disclose; the reply is a fact, the match label is regradeable under a new matcher version as a new catalog version
+
+- **Ruling:** **(a) with (d).** (b) rejected: A1 correctness is recorded. (c) rejected. (e) deferred to wave 3 under condition 5.
+- **Reasoning:**
+  - The reply the model received is part of the treatment and can never be regraded. The cell's correctness (hidden tests; discrimination proof, `tasks/A1/oracle/README.md`) is a valid measurement of "solve A1 under this responder". With paraphrase recall 0/11 held-out and 0/1 live, the responder is in practice "always the default reply" for every model: symmetric in effect. Wave-2 A1 measures ask-then-assume. NOT_RECORDED means "could not be measured" (spec `:207`); this was measured.
+  - The match label is a grader output. US-4 (`:276-278`): a grader change bumps the catalog version and old scores keep their values. So a wave-3 matcher version regrades the stored verbatim questions as a new catalog version; R-39 c3 holds within a catalog version, and the cache invariant holds because the key carries the matcher version (R-53). That is (d) with no overwrite.
+  - Phrasing bias is a residual: a model quoting the annotated wording would be answered. Unmeasured beyond n = 1; disclosed and visible per cell (condition 2).
+  - (e): aliases are annotated questions matched exactly or normalised, so R-39 allows them in principle. But they change `clarifications.yaml`, hence the task version (spec `:237`), and an alias written after reading a live question is tuning on the test distribution. Neither a new task version nor a fresh held-out set fits before the smoke run.
+  - (c): more turns spend subscription model time (R-9) on a rate wave 3 supersedes; each question read contaminates (e).
+- **Conditions:**
+  1. The report header for every A1 cell shows `low-confidence matcher` with the numbers (held-out paraphrase + compound recall 0/11, precision 1.0, live 0/1) and the sentence "a right question in the model's own words received the default reply".
+  2. Per-cell clarification rows show asked, matched (id or none) and the reply sent; a derived `asked-unmatched` count sits beside recall and precision.
+  3. Every call row carries the verbatim question and the three key parts (T-39-3c), the regrade's input.
+  4. Wave-3 regrade: a new `matcher_version` is a new metric catalog version with new decisions under its own key. Wave-2 rows, the reply sent and correctness are never rewritten.
+  5. (e), if taken in wave 3: aliases authored by TASKS-a from the upstream annotation only, before any cell question is read; a new task version; a fresh held-out set authored afterwards by someone who has not seen the aliases; the same T = 0.80 (design `:289`, *Inferred*, standing until a live rate is measured).
+
+## R-53 · 2026-09-25 · Owner seat (Fable) · DR-S04-3: the clarification-match key is (question hash, clarification-set hash, matcher version)
+
+- **Ruling:** granted. Spec `:210` and `:245` are amended to the three-part key; R-39 c3 is read with it.
+- **Reasoning:** the decision is a pure function of three inputs: the question, the clarification set and the rule table (design §7). A key that omits one makes "the same key yields the same stored match" (`:245`) false whenever two tasks share a question or `clarifications.yaml` is edited (design `:85`). The set's hash, not the task version: a prompt edit changes the task version, not the decision; the key is the function's inputs and nothing more. The set is inside the task version's content hash (`:237`), so the key is consistent with that aggregate.
+- **Conditions:**
+  1. The spec's owner edits `:210` to "Cached by question hash, clarification-set hash and matcher version" and `:245` to match; a T-39-1b sibling asserts the wording (USER-W).
+  2. `bench validate` rejects a plan whose frozen clarification-set hash differs from the file's.
+
+**A1 in the smoke matrix (R-38):** stays, 6 of 36 cells; Copilot is reachable under R-51. Gates before the smoke run: R-51 c2 and c3; R-38 c5 unchanged. Every A1 cell carries `low-confidence matcher`.
