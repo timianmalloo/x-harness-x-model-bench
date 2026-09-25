@@ -123,6 +123,8 @@ def rejected_detail(frame):
     return detail
 
 
+# The watcher acknowledgements measured inside session/prompt: skills (1.0.34+), workflows (1.0.41, 2026-09-25).
+GROK_WATCHER_IDS = ("skills-reload", "workflows-reload")
 GROK_RELOAD_FLOOR = (1, 0, 34)  # the first grok release measured to inject the skills-reload response
 
 
@@ -707,7 +709,8 @@ class _Session:
             # (measured on 1.0.34, and on 1.0.41 on Windows, 2026-09-24).
             # This exact, measured exception never completes our pending request.
             if (self.grok_reload_compat and method == "session/prompt" and self.result["session_id"]
-                    and message == {"jsonrpc": "2.0", "id": "skills-reload", "result": {"result": {"reloaded": 1}}}
+                    and message.get("id") in GROK_WATCHER_IDS
+                    and message == {"jsonrpc": "2.0", "id": message["id"], "result": {"result": {"reloaded": 1}}}
                     and type(message["result"]["result"]["reloaded"]) is int):
                 self.result["compatibility_responses"] += 1
                 continue
