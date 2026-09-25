@@ -150,6 +150,66 @@ Also: one Copilot turn is recorded through the W1-ACP recorder and added to D5/D
 | 12, 13 canaries and the N5 probe | W2-CANARY · Grok | a red test with a colliding string ("graphify" in both `CLAUDE.md` and a skill name) reports both classes; the N5 probe's pack-on and pack-off leaked sets are both written to `docs/proof/phase2.md`, and the Owner rules R-5 on their equality |
 | the smoke run | Leader, R-9 night window | at 07:00, `bench status` explains every non-completed cell; the phase-2 Proof Pack carries a Claim table per join (evidence, red observed, mutation result, residuals) |
 
+**Version 4: wave 2 tracks (2026-09-25; R-37..R-44).** The Leader re-derived the tracks from the merged code at `3467003`, with each load-bearing citation re-read. The Owner ruled the decision requests (R-37..R-43) and accepted the table with four amendments (R-44), all applied below. The exit conditions of the table above apply verbatim (`:145`–`:151` there refers to that table). The smoke matrix is the wave-1 three combos × pack × 1 × 6 tasks = 36 cells (R-38). E6 replaces E1 in the smoke BOM (BOM 0.3, R-40).
+
+| track | owns (authored) | depends on | tier | fan-out cap | budget | exit evidence | harness |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **W2-STOP-D** design (row 10) | `docs/design/phase2-stop-decisions.md` | — | T2 | 1 | 150 calls · 2 h | `/design-slice` gated by Patterns Expert, Simplifier and Test Architect. It fixes: the `bench stop` control channel; decision events and lifecycle rows; `decision_timeout` and the spend cap; the circuit-breaker criterion (already built at `engine.py:51,196-201`, so the design states its acceptance and a seeded-revert red); the R-21 grace as a TLA refinement; R-34 c4 `defaultMode`; a promise→test row per clause of plan `:145`; "driver.py changed (what)" | Claude · `claude-opus-5-5` |
+| **W2-STOP-I** (row 10, R-21 c1/c3, R-34 c4) | `src/harness_bench/{engine,cli,errors,driver,lifecycle,status,plan,profiles}.py`, `bench/profiles/*.yaml`, `models/**`, `docs/design/run-lifecycle-model.md`, `{.claude,.agents}/skills/start-benchmark/SKILL.md`, `tests/{test_engine,test_cli,test_errors,test_driver,test_status,test_lifecycle_conformance,test_plan,test_profiles}.py`, `tests/fake_acp_agent.py`, `tests/mutations/{engine,driver,status,cli,plan,stop}.json` | STOP-D | T2 | 0 | ≤ 6 slices × 55 min (Inferred) | plan `:145` verbatim. Plus: a Copilot timeout test; `keep_awake` held through stop and exception; `stopped` and `decisions` in `bench-status/1` with the skill changed in the same commit (R-3); the stale `assume:`/`getattr` removed (`engine.py:369-371`); seams S1–S3 delivered by slice 2 | Codex · `gpt-6-sol`, effort high |
+| **W2-VIEWS** (R-15 Q5, R-21 c2, R-24, R-27, R-28, F1 `model_map`) | `src/harness_bench/{views.py,grade/runner.py,telemetry/normalize.py,report/__init__.py,report/html.py,report/cli_table.py}`, `tests/{test_views,test_grade,test_report}.py`, `tests/fixtures/validity/**`, `tests/mutations/{views,views_copilot,report,grade,validity}.json` | joins after S1–S3 are on `main` | T2 | 0 | 220 calls · 3 h | Red-first: (a) an unreadable record gets the R-15 state, distinct from HB-VAL-001; (b) `invalid (tools denied by hook)`, red on the rev-92 fixture; (c) a Σ `model_calls` ≠ `acp_usage` warning (R-26 c5); (d) an `agent_version` that differs from the pin is flagged, or the field is retired per R-28 c3; (e) a `model_map` model is `valid` (US-11). The Data & Persistence Architect gates the join | Claude · `claude-opus-5-5` |
+| **W2-USER-D** design + spike S-04 (row 8) | `docs/design/phase2-scripted-user.md`, `docs/notes/spike-s04-scripted-user.md`, `tests/fixtures/acp/scripted-user/**` | TASKS-a (A1 labels); Leader capture turns | T2 | 1 | 150 calls · 2 h | Measured per harness: whether `session/new` `mcpServers` reaches the agent and whether it calls `ask_user`. It names the mechanism, the matcher tiers, the S-04 threshold and the seams for USER-W | Claude · `claude-opus-5-5`, with the AI Systems Engineer |
+| **W2-USER-M** matcher and responder (row 8) | `src/harness_bench/scripted_user/**`, `tests/test_scripted_user.py`, `tests/mutations/scripted_user.json` | USER-D, TASKS-a | T2 | 0 | 200 calls · 3 h | plan `:146` verbatim. The held-out set comes from TASKS-a. A re-grade reuses the cached match (US-31) | Claude · `claude-opus-5-5` |
+| **W2-USER-W** wiring | `driver.py`, the `engine.py` call site, `profiles.py`, `bench/profiles/*.yaml`, their tests | ordered after the STOP-I join; USER-M | T1 | 0 | ≤ 2 slices (Inferred) | A red-first driver test; one live A1 cell per harness whose log records question, decision and reply | Codex · `gpt-6-sol` |
+| **W2-TASKS-a** A1 | `tasks/A1/**` | — | T2 | 0 | 200 calls · 3 h | plan `:148` for A1 incl. R-7 c6; `oracle/clarifications.yaml`; a labelled held-out question set with near-misses; `bench validate` ok | Claude · `claude-opus-5-5` |
+| **W2-TASKS-b** dotnet runner, D1, row 15 | `grade/correctness.py`, `tests/test_correctness_dotnet.py`, `tests/mutations/correctness.json`, `tasks/D1/**`, `docs/notes/row15-headroom.md`. Last slice, after the STOP-I join: `plan.py:39` and its test | — | T2 | 0 | ≤ 5 slices (Inferred) | Slice 1: a red-first `dotnet` runner (no summary gives NA, never 0). Then plan `:148` for D1 and `:149` | Codex · `gpt-6-sol` |
+| **W2-TASKS-c** F1 | `tasks/F1/**` | TASKS-b slice 1 | T2 | 0 | ≤ 4 slices (Inferred) | plan `:148` for F1; the `model_map` filled; model routing stated in `prompt.md` | Codex · `gpt-6-sol` |
+| **W2-TASKS-d** B1, C1 | `tasks/B1/**`, `tasks/C1/**` | — | T1 | 0 | ≤ 4 slices (Inferred) | plan `:148` each, structural unittest checks (the judge half is wave 3); R-7 c3 for C1 | Grok · `grok-4.7`, effort high |
+| **W2-TASKS-e** E6 | `tasks/E6/**` | TASKS-b slice 1 | T1 | 0 | ≤ 2 slices (Inferred) | plan `:148` for E6 | Agy · `gemini-3.8-flash-high` |
+| **W2-CANARY** (rows 12, 13; R-5/R-6; R-36; R-16 c2) | `tests/e2e/test_us13_canary.py`, `telemetry/claude_code.py`, `telemetry/__init__.py` (one `Extraction` field), `tests/test_telemetry.py`, `tests/mutations/canary.json`, `bench/pack-markers.txt`, `docs/notes/spike-r36-strict-mcp.md` | Leader live turns | T1 | 0 | ≤ 3 slices (Inferred) | plan `:150`. Plus: the account-connector class printed by name; the per-cell count from the Claude reader, red on a fixture; the Copilot `~/.agents/skills` and `~/.claude/skills` classes; the `--strict-mcp-config` confirm or break; markers re-verified on rev 95 | Grok · `grok-4.7` |
+| **W2-HARBOR** (row 9) | `docs/notes/spike-a6-harbor.md`, `bench/harbor/**`, `tests/test_harbor_image.py` | — | T2 | 0 | 200 calls · 3 h | plan `:147`. Measured on the host: Docker Desktop 29.8.0 is running with a Linux engine; `docker.exe` is at `C:/Program Files/Docker/Docker/resources/bin/` and not on PATH | Claude · `claude-opus-5-5`; a spike only, dispatched last, may slip to wave 3 (R-40 c2) |
+| **Leader** | `bench/bom.yaml`, `docs/proof/phase2.md`, the run record | per item | — | — | 400 calls · 12 h (Inferred) | Capture windows in day hours (R-9 rule 1). Night 1: the row-15 D1 run at parallelism 2, then R-19 cosmic-ray. Smoke run: plan `:151`, plus R-12 c3, the R-14/R-25 pack-on counts and the A3 long-run check | Claude · `claude-opus-5-5` |
+
+**Where the rulings land:**
+- R-5, R-6, R-16 c2 and R-36 → CANARY (R-36 c1 already Verified).
+- R-7 → the TASKS tracks and the Leader.
+- R-9 and R-19 → the Leader.
+- R-15 Q5, R-24, R-27 and R-28 → VIEWS.
+- R-21: c1 and c3 → STOP-I; c2 → VIEWS.
+- R-34 c4 → STOP-D, then STOP-I.
+- Not wave 2: R-15 Q6 (wave 3), R-8 (wave 5), R-17 c2 (row 24).
+
+**Dispatch and live count.**
+
+**Critical path:** STOP-D (2 h) → STOP-I (~7 h with joins) → USER-W (~2.5 h) → the smoke run. That is about 11.5 h, so night 2 at the earliest (Inferred).
+
+- **t0 (5 live):** STOP-D, TASKS-b, TASKS-a, VIEWS, TASKS-d.
+- **STOP-D joins:** STOP-I.
+- **TASKS-a joins:** USER-D.
+- **VIEWS joins:** TASKS-c.
+- **TASKS-b's D1 is done:** TASKS-e.
+- **TASKS-d joins:** CANARY.
+- **USER-D joins:** USER-M.
+- **Float:** HARBOR.
+- **STOP-I joins:** USER-W, then TASKS-b's cap slice.
+- **During a bench run:** only Grok and Agy slices may be live (R-9 rule 1).
+
+**Seams.**
+
+| from → to | request | resolved by |
+| --- | --- | --- |
+| S1 VIEWS → STOP-I | new HB-VAL codes in `errors.py` `RUN_CODES` | STOP-I slice 1–2 |
+| S2 VIEWS → STOP-I | the `VALIDITY` tuple (`status.py:33-34`) | STOP-I slice 1–2 |
+| S3 VIEWS → STOP-I | freeze `model_map` in the plan's task record | STOP-I slice 1–2 |
+| USER-D → USER-W | the driver, engine and profile wiring | serial, after the STOP-I join |
+| TASKS-b → STOP-I | the cap at `plan.py:39` | serial: TASKS-b's last slice |
+| CANARY → owner of `bench/profiles/claude-code.yaml` | a confirmed `--strict-mcp-config` launch datum | STOP-I while live, then USER-W |
+| TASKS-*, HARBOR → Leader | `bom.yaml` edits | Leader |
+| USER-D, CANARY → Leader | live turns | Leader capture windows |
+
+**Controls:**
+- The Codex hook is not qualified, so with four Codex tracks (STOP-I, USER-W, TASKS-b, TASKS-c; R-44) the Leader checks `git diff --stat` against each slice's owned paths at every join.
+- `tests/conftest.py` stays unclaimed; any change to it is announced at the join.
+
 **Waves 3–5: planned to the row.** Tracks are drawn at the previous join.
 
 | wave | rows | intended harness | gate |

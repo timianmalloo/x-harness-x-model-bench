@@ -4,7 +4,7 @@
 # Scenario 7 joins the smoke BOM after the formal-toolchain spike (spec S-12).
 # Status lives in each task's task.yaml, not here.
 schema: bench-bom/1
-version: "0.2"   # 0.2: scenario 7 (formalize and find bugs), G1-G2
+version: "0.3"   # 0.2: scenario 7 (formalize and find bugs), G1-G2. 0.3: E6 replaces E1 in the smoke BOM (R-40)
 scenarios:
   1: Specify from an ambiguous prompt
   2: Specify from a primer spec
@@ -35,12 +35,13 @@ tasks:
   # assume: the proposal gives E1-E5 budgets as "per task" (upstream). 60 is the BOM-wide
   # sub-hour ceiling, not a measured upstream value; replace with the upstream budget when the
   # concrete TB2 / SWE-bench instances are picked (spec S-03).
-  - { id: E1, scenario: 5, smoke: true,  budget_minutes: 60, source: Terminal-Bench-2.0, title: "TB2 software-engineering task, easy band" }
+  # E1 deferred: no container path in wave 2 (R-40). E6 is the scenario-5 smoke task; E1 returns in a later BOM version.
+  - { id: E1, scenario: 5, smoke: false, budget_minutes: 60, source: Terminal-Bench-2.0, title: "TB2 software-engineering task, easy band" }
   - { id: E2, scenario: 5, smoke: false, budget_minutes: 60, source: Terminal-Bench-2.0, title: "TB2 software-engineering task, medium band" }
   - { id: E3, scenario: 5, smoke: false, budget_minutes: 60, source: Terminal-Bench-2.0, title: "TB2 software-engineering task, hard band" }
   - { id: E4, scenario: 5, smoke: false, budget_minutes: 60, source: SWE-bench-Verified, title: "SWE-bench Verified task, 15-60 min band" }
   - { id: E5, scenario: 5, smoke: false, budget_minutes: 60, source: SWE-bench-Verified, title: "SWE-bench Verified task, 15-60 min band" }
-  - { id: E6, scenario: 5, smoke: false, budget_minutes: 20, source: MultiPL-E,          title: "HumanEval-C# batch of 10" }
+  - { id: E6, scenario: 5, smoke: true,  budget_minutes: 20, source: MultiPL-E,          title: "HumanEval-C# batch of 10" }
   - { id: E7, scenario: 5, smoke: false, budget_minutes: 45, source: cfd-bench,          title: "P1 estimator slice" }
   # Scenario 6: multi-agent
   - { id: F1, scenario: 6, smoke: true,  budget_minutes: 60, source: cfd-bench, title: "P0 wing spine as three coordinated tracks" }

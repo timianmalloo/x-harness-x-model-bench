@@ -482,3 +482,87 @@ Append only. One entry per ruling. Newest last.
   1. **Pack invariance is measured, not asserted.** R1.4's "applies equally to pack on and off" is re-labelled **Inferred** until the Leader compares the deferred tool lists of the pack-on and pack-off cc-opus records from `e2e-wave1-1790303859` (both exist); equal lists make it Verified for that build, and the result is written in `docs/proof/phase2.md` beside N4 (R-6 condition 1).
   2. Reopen triggers, by reference to R-5 condition 3: a connector tool is ever **called** in a cell (a permission request or a `tool_calls` row naming `mcp__claude_ai_*`); the pack-on and pack-off lists differ; the pinned Claude Code build changes.
   3. The flag names where the evidence is (this ruling, spike R1.4, the canary); the run's proof record names the observed tools. No connector name goes in report source (R-6 condition 4).
+
+## R-37 · 2026-09-25 · Owner seat (Fable) · DR-1: the scripted user is a bench-owned MCP `ask_user` tool, one prompt per cell
+
+- **Ruling:** default taken. A scenario-1 cell gets one `session/prompt`; the scripted user is a bench-owned stdio MCP server passed in `session/new` `mcpServers` (today `[]`, `driver.py:236`), exposing one tool, `ask_user(question) → reply`. The reply is a matched clarification's text or exactly `Decide and state your assumption.` (spec US-10, `harness-bench.md:354`). Multi-turn is rejected for wave 2.
+- **Reasoning:** `lifecycle.py:21` states `AT_MOST_ONCE` ("AtMostOnePrompt") and the TLA model checks it; a second prompt puts `lifecycle.py` and `models/**` on the critical path. A tool call is answered inside the one prompt, so the invariant, the end-of-turn kill (`phase1-walking-skeleton.md:500`) and R-21's grace are untouched; the matcher is synchronous (R-39), so no decision request opens. ADR-0004:51 bars "MCP servers other than the task's own"; this server is the task's own, identical for every harness and pack (US-14). Whether each adapter forwards `mcpServers` and whether the model calls the tool is unmeasured; USER-D's spike S-04 measures it.
+- **Conditions:**
+  1. USER-D records per harness, on the pinned builds: the `mcpServers` shape the adapter accepts, whether the tool appears in the native record, and whether one A1 turn calls it. A harness the tool never reaches returns as a decision request; nobody switches to multi-turn alone.
+  2. The tool id joins each allowlist as a declared class, "scripted user", under R-34's class rule (ADR-0004 amendment note; the coverage test lists the id). Copilot's `--disable-builtin-mcps` (ADR-0004:58) is shown not to drop a session-supplied server.
+  3. The server is present only when the task has `scripted_user: true`; every other cell keeps `mcpServers: []` (a driver test asserts both).
+  4. The log records question, decision and reply per call; a turn with zero calls records "no question asked", never an empty file.
+  5. `prompt.md` may name the tool; the text is identical across combos (US-10).
+
+## R-38 · 2026-09-25 · Owner seat (Fable) · DR-2, DR-9, DR-10: the smoke run waits for USER-W; 36 cells; D1 on night 1
+
+- **Ruling:** (DR-2) yes; no partial smoke run without A1. (DR-9) the matrix is the wave-1 combos `copilot-sol`, `codex-sol`, `cc-opus` (plan `:103`) × pack {on, off} × 1 rep × 6 tasks = 36 cells. (DR-10) yes, the row-15 D1 run is night 1.
+- **Reasoning:** A1 unanswered voids US-31, and the smoke BOM is one task per scenario (spec `:184`); a 30-cell run is not the run R-9 rule 2 defines and spends a night's allowance on a result to be repeated (tokens rank above speed). Three combos cover all three harnesses, which is what phase 2 is named for (`architecture.md:257`); `cc-sonnet` adds 12 cells for no harness coverage and breaks comparability with the wave-1 baseline. Sizing by the spec's bound (`:293`, ⌈Σ÷p⌉ + max): 6 sets × 190 min = 1,140 min; at p=2, 630 min (10.5 h, Inferred; the draft's 9.5 h uses another formula) misses the 9-h window; at p=3, 440 min fits. So the cap raise is the gate, and R-9 rule 2 makes row 15 the trigger. D1 needs no STOP-I: `timed_out` exists (`status.py:31`), and plan `:175` binds only the smoke run to W2-STOP.
+- **Conditions:**
+  1. Night 1: D1 × three combos × pack {on, off} at parallelism 2 (6 cells), on a `ready` D1 with the dotnet runner joined (R-41); the headroom rule is written first (plan `:149`). R-9 rule 1 holds: Claude, Codex and Copilot workers at hand-back.
+  2. The cap is raised to what the headroom rule supports (target 4, R-9 c1) by TASKS-b's last slice; `test_plan.py` asserts it. If only 2 is supported, the run splits 2 + 1 combos over two nights (24 then 12 cells), each with its own report (R-9 rule 2).
+  3. R-19 c1 is read, not amended: cosmic-ray starts on night 1 only after the D1 run's last cell has an outcome and its samples are recorded.
+  4. `cc-sonnet` (`claude-sonnet-5`, R-33) is a named next step: a matrix change for a later night, never a mid-run addition.
+  5. If USER-W is not joined by night 2, the Leader reports the slip; nothing moves into the window.
+
+## R-39 · 2026-09-25 · Owner seat (Fable) · DR-3: the wave-2 matcher is deterministic only
+
+- **Ruling:** yes. Exact and normalised match are the only rungs; a miss sends the default reply and is recorded. No model rung before the ADR-0009 gateway (wave 3).
+- **Reasoning:** ADR-0009 decides it ("In phase 2 that is the only rung"); `architecture.md:69` agrees. A model rung now needs the gateway's cache, blinding and egress gate, or a second copy of them. `low-confidence matcher` (US-31) is the spec's label below the S-04 threshold: a measurement, not a failure.
+- **Conditions:**
+  1. USER-D sets the S-04 threshold from the held-out measurement and records the numbers in the spike note; spec R10 closes by citation.
+  2. The held-out and near-miss sets are authored by TASKS-a, not the matcher's author (plan `:146`).
+  3. `matcher_version` is recorded on every match; the cache key is (question hash, matcher version) (spec `:210`, `:245`); a re-grade makes no new match (`:458`).
+  4. Normalisation is one function with a test per rule; nothing fuzzy.
+
+## R-40 · 2026-09-25 · Owner seat (Fable) · DR-4: E6 takes smoke slot 5 now; E1 is deferred; HARBOR is a spike
+
+- **Ruling:** yes. E6 (native on the host's .NET, R-7) is the scenario-5 smoke task; E1 is deferred, not substituted. R-7 c5's trigger is applied now because the engine has no container path and building one is not a wave-2 row.
+- **Reasoning:** R-7 c5 and plan `:147` name the swap; only the timing is new. W2-HARBOR stays, bounded to spike A6.
+- **Conditions:**
+  1. `bench/bom.yaml` becomes 0.3: E6 `smoke: true`, E1 `smoke: false`, note "E1 deferred: no container path in wave 2 (R-40)"; the report names the swap. E1's return is a further BOM version.
+  2. HARBOR touches only its three owned paths; an engine change is a decision request. It is dispatched last and may slip to wave 3.
+  3. The `assume:` on E1's budget stays open.
+
+## R-41 · 2026-09-25 · Owner seat (Fable) · DR-5: the dotnet correctness runner is built in wave 2
+
+- **Ruling:** yes, TASKS-b slice 1, red-first, before D1, F1 or E6 can be `ready`.
+- **Reasoning:** `correctness.py:58-59` returns NA for every runner but `unittest`; D1, E6 and F1 are `language: csharp` (`task.yaml`), so three of six smoke tasks would grade NA.
+- **Conditions:**
+  1. A missing or unparsable summary is NA with a reason, never 0.
+  2. The step runs in its own Job Object with the deadline and ADR-0013's build-server settings; a test proves no `dotnet` process outlives it.
+  3. The runner records `dotnet --version` in the grading output (10.0.303 here, R-7).
+  4. Mutants: zero tests read as pass, a summary from the wrong file, a timeout read as pass; each killed.
+
+## R-42 · 2026-09-25 · Owner seat (Fable) · DR-6: vendor the base trees, conditionally
+
+- **Ruling:** yes: D1 (ai-de), F1 and B1 (cfd-bench) base trees go under `tasks/<ID>/workspace/`; `source.commit` is provenance. Committing is confirmed only as far as the conditions verify, before the commit.
+- **Reasoning:** `workspace.py:86` builds the task source from `tasks/<ID>/workspace`, so a vendored tree is what the engine expects; a pinned-clone mode is unbuilt and unowned. Licences as this host records them: `C:\projects\cfd-bench` has an MIT `LICENSE` (Copyright 2026 timianmalloo); `C:\projects\ai-de` `README.md:34-36`: application code MIT, installed pack material Apache 2.0. Neither `task.yaml` nor `bom.yaml` records a licence. Both repositories are the operator's (R-7); the bench repository is public (`origin` on GitHub), so vendored trees become public, the operator's existing choice for `tasks/**`, noted, not ruled.
+- **Conditions:**
+  1. The Leader reads the `LICENSE` at each pinned commit, records its SPDX id and copyright line in `task.yaml` (`source.license`) and copies the file into the workspace root (MIT's notice condition). No licence file at that commit: not committed; a decision request returns.
+  2. The tree contains no pack: the US-9 marker scan (`bench/pack-markers.txt`) runs over the base tree in `bench validate` and must match nothing; ai-de's installed pack files are excluded on this rule.
+  3. `source.commit` exists in the named repository (R-7 c1); the task folder lists the vendored paths; a test rebuilds the tree from `git archive <commit> -- <paths>` and asserts equality.
+  4. `bin/`, `obj/`, caches and secrets are excluded; hidden tests never enter the tree (US-8). Reference solutions (`CFD-Bench-ClaudeCode`, `CFD-Bench-GHCP`, no licence file recorded) go only under `tests/` or `oracle/`.
+  5. Plan `:148` holds: hidden tests fail on the base, pass on the reference.
+
+## R-43 · 2026-09-25 · Owner seat (Fable) · DR-7, DR-8: CANARY on Grok; the R-36 count is an Extraction field and a proof figure, not a catalog metric
+
+- **Ruling:** (DR-7) Grok, `grok-4.7`, effort high. R-36 item 4 ("on Claude Sonnet per R-29") is amended by reference: `qualify-7` re-qualified Grok 1.0.41 with the stipulated model, no `protocol_error`, and the R-29 hold lifted (run record, wave-1 close). (DR-8) the per-cell connector count is one `Extraction` field written by the Claude reader and reported in `docs/proof/phase2.md` beside the header flag; not a catalog measure in wave 2, no version bump.
+- **Reasoning:** the R-4 fallback fired on failures revision 95 fixed and `qualify-7` re-measured; Sonnet spends the Anthropic allowance a run needs under R-9 rule 1, which Grok never touches. The count is a confound-size disclosure like N5's leaked set (R-5, R-6); a catalog column needs the wave-3 row (R-15 Q6) for a figure no comparison reads.
+- **Conditions:**
+  1. R-11 slice rules stay for Grok until a wave-2 slice records `total_output_bytes` under revision 95; the R-4 trigger stands.
+  2. The field is null for an unreadable record, never 0; the red fixture holds two `mcp__claude_ai_*` tools.
+  3. A wave-3 comparison that wants the count adds it to the catalog with Q6; until then no view reads it.
+
+
+## R-44 · 2026-09-25 · Owner seat (Fable) · The wave-2 track table is plan version 4, with four amendments
+
+- **Ruling:** accepted, subject to R-37..R-43 and:
+  1. **W2-CANARY**: Grok `grok-4.7` (R-43); R-36's Sonnet line is superseded.
+  2. **W2-HARBOR**: spike only, dispatched last, may slip (R-40 c2).
+  3. **The Codex control**: the draft says three Codex tracks; the table has four (STOP-I, USER-W, TASKS-b, TASKS-c). The `git diff --stat` check applies to all four at every join until the operator's `/hooks` review qualifies the hook.
+  4. **W2-TASKS-e** on Agy `gemini-3.8-flash-high`: accepted as the id `agy models` lists (`qualify-7`); the run record discloses generations on `gemini-3.8-flash`.
+- **Reasoning:** every row stipulates a model (R-33), t0 is 5 live (the cap), the critical path is STOP-D → STOP-I → USER-W → smoke, and the windows follow R-9. Slice budgets stay Inferred; the run record replaces them.
+- **Conditions:**
+  1. The Leader commits this register entry, the version-4 table and BOM 0.3 together, recording planned versus actual per track.
+  2. A track whose harness fails its first slice moves per R-4 on the measured evidence; no re-ruling.
