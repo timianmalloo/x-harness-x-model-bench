@@ -114,8 +114,8 @@
  {
   "name": "R-15: grading.completed records no unreadable cell",
   "file": "src/harness_bench/grade/runner.py",
-  "find": "                                   \"unreadable_records\": dict(sorted(self.unreadable.items()))})  # R-15\n",
-  "replace": "                                   \"unreadable_records\": {}})\n",
+  "find": "\"unreadable_records\": dict(sorted(self.unreadable.items())),  # R-15\n",
+  "replace": "\"unreadable_records\": {},\n",
   "tests": [
    "tests/test_grade.py::test_grading_completed_names_each_cell_whose_native_record_could_not_be_read"
   ]
