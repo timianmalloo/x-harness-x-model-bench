@@ -481,5 +481,75 @@
   "find": "    if which(\"dotnet\") is None:\n        pytest.fail(",
   "replace": "    if which(\"dotnet\") is None:\n        pytest.skip(",
   "tests": ["tests/test_catalog_version.py::test_hb_require_dotnet_fails_a_missing_dotnet_and_its_absence_skips"]
+ },
+ {
+  "name": "dotnet-stryker ignores NUGET_PACKAGES",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "    if configured:\n        return Path(configured)\n",
+  "replace": "    if False:\n        return Path(configured)\n",
+  "tests": ["tests/test_grade_runner.py::test_tool_versions_records_dotnet_stryker_from_the_nuget_cache_product_version"]
+ },
+ {
+  "name": "dotnet-stryker cache path ignores %USERPROFILE%",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "    return Path(os.environ.get(\"USERPROFILE\", \"\")) / \".nuget\" / \"packages\"\n",
+  "replace": "    return Path(configured or \"\")\n",
+  "tests": ["tests/test_grade_runner.py::test_tool_versions_records_dotnet_stryker_from_the_nuget_cache_product_version"]
+ },
+ {
+  "name": "an absent stryker package is probed",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "    if not dll.is_file():\n        return None\n",
+  "replace": "    if False:\n        return None\n",
+  "tests": ["tests/test_grade_runner.py::test_tool_versions_records_dotnet_stryker_from_the_nuget_cache_product_version"]
+ },
+ {
+  "name": "a cached stryker package reads not recorded",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "    if not dll.is_file():\n        return None\n",
+  "replace": "    if True:\n        return None\n",
+  "tests": ["tests/test_grade_runner.py::test_tool_versions_records_dotnet_stryker_from_the_nuget_cache_product_version"]
+ },
+ {
+  "name": "an explicit pinned dotnet-stryker command is replaced by the cache probe",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "    if \"dotnet-stryker\" not in PINNED_TOOLS:\n        probe = _stryker_version_argv()\n        out[\"dotnet-stryker\"] = _version(probe, root) if probe is not None else NOT_RECORDED\n",
+  "replace": "    probe = _stryker_version_argv()\n    out[\"dotnet-stryker\"] = _version(probe, root) if probe is not None else NOT_RECORDED\n",
+  "tests": ["tests/test_grade_runner.py::test_a_pinned_tool_is_measured_by_its_pinned_command"]
+ },
+ {
+  "name": "the cache probe for dotnet-stryker is never run",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "    if \"dotnet-stryker\" not in PINNED_TOOLS:\n        probe = _stryker_version_argv()\n        out[\"dotnet-stryker\"] = _version(probe, root) if probe is not None else NOT_RECORDED\n",
+  "replace": "",
+  "tests": ["tests/test_grade_runner.py::test_tool_versions_records_dotnet_stryker_from_the_nuget_cache_product_version"]
+ },
+ {
+  "name": "dotnet-stryker is measured with --version",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "f\"[System.Diagnostics.FileVersionInfo]::GetVersionInfo('{quoted}').ProductVersion\"",
+  "replace": "\"--version\"",
+  "tests": ["tests/test_grade_runner.py::test_tool_versions_records_dotnet_stryker_from_the_nuget_cache_product_version"]
+ },
+ {
+  "name": "an absent stryker package is recorded as empty",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "out[\"dotnet-stryker\"] = _version(probe, root) if probe is not None else NOT_RECORDED",
+  "replace": "out[\"dotnet-stryker\"] = _version(probe, root) if probe is not None else \"\"",
+  "tests": ["tests/test_grade_runner.py::test_tool_versions_records_dotnet_stryker_from_the_nuget_cache_product_version"]
+ },
+ {
+  "name": "an absent stryker package is recorded as a guessed version",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "out[\"dotnet-stryker\"] = _version(probe, root) if probe is not None else NOT_RECORDED",
+  "replace": "out[\"dotnet-stryker\"] = _version(probe, root) if probe is not None else \"4.16.0\"",
+  "tests": ["tests/test_grade_runner.py::test_tool_versions_records_dotnet_stryker_from_the_nuget_cache_product_version"]
+ },
+ {
+  "name": "a measured stryker version is discarded",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "out[\"dotnet-stryker\"] = _version(probe, root) if probe is not None else NOT_RECORDED",
+  "replace": "out[\"dotnet-stryker\"] = NOT_RECORDED",
+  "tests": ["tests/test_grade_runner.py::test_tool_versions_records_dotnet_stryker_from_the_nuget_cache_product_version"]
  }
 ]
