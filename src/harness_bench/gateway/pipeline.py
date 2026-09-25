@@ -184,6 +184,10 @@ def _answered(judge: Judge, inputs: Inputs, ctx: Context, reply: Reply, ex: Extr
         return Result("failed", "HB-GW-001", escaped=escaped)
     if ex.tool_calls:  # section 8.3 step 1: a judge has no tools; a tool event fails the call (R-58 c4)
         return Result("failed", "HB-GW-006", escaped=escaped)
+    # Copilot's record lists the tools it offered the model (R-63 c1, R-70 3(a)): anything but [] (a tool, or the list
+    # not recorded) is the qualified shape broken, failed as a tool event would be, fail-closed
+    if reply.harness == "copilot" and ex.tools_advertised != []:
+        return Result("failed", "HB-GW-006", escaped=escaped)
     # the pin must be among the served models, and every served model allowed (design 4.3; review F1)
     if judge.model not in served or not all(m in judge.allowed_models for m in served):
         return Result("failed", "HB-GW-003", escaped=escaped)

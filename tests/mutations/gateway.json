@@ -2,10 +2,10 @@
  {
   "name": "copilot argv back to the bare --available-tools that filtered nothing",
   "file": "src/harness_bench/gateway/backend.py",
-  "find": "\"--disable-builtin-mcps\", \"--no-custom-instructions\",\n            \"--available-tools\", \"none\"]",
-  "replace": "\"--disable-builtin-mcps\",\n            \"--available-tools\"]",
+  "find": "\"--disable-builtin-mcps\", \"--no-custom-instructions\", \"--available-tools\", \"none\",\n            \"-p\"]",
+  "replace": "\"--disable-builtin-mcps\", \"--available-tools\",\n            \"-p\"]",
   "tests": [
-   "tests/test_gateway_headless.py::test_the_copilot_builder_is_the_measured_shape"
+   "tests/test_gateway_headless.py::test_the_copilot_builder_is_the_measured_shape_with_the_request_on_stdin"
   ]
  },
  {

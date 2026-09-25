@@ -6,9 +6,9 @@ record says (directive D7). A backend that cannot answer raises `BackendDown` (H
 
 - `ReplayBackend` (tests, directive D7): replays recorded files keyed by the request's sha256; it copies the record
   into the archive, as a real call does. It opens no process, socket or listener.
-- `Headless`: one judge call through the pinned CLI. The argv builders below are the one definition; the probe
-  (`tests/fixtures/gateway/probe_judge.py`) imports them, so a re-qualification tests this exact invocation.
-  The request goes on stdin, never in argv (section 8.1). The call runs in its own folder under the cells root,
+- `Headless`: one judge call through the pinned CLI (Claude Code or Copilot). The argv builders below are the one
+  definition; the probe (`tests/fixtures/gateway/probe_judge.py`) imports them, so a re-qualification tests this exact
+  invocation. The request goes on stdin, never in argv (section 8.1; R-70 item 2). The call runs in its own folder under the cells root,
   `<cells root>/gateway/<grading_id>/<call_id>/{home,work,profile}` (section 8.2), through `procs.run` in its own
   Job Object. `Headless` is reached only inside `egress.check(...).release(...)` (tests/test_architecture.py).
 """
@@ -91,32 +91,46 @@ def codex_argv(exe: str, model: str, work: Path, last: Path, output_schema: Path
     return argv + (["--output-schema", str(output_schema)] if output_schema is not None else []) + ["-"]
 
 
-def copilot_argv(exe: str, model: str, prompt: str) -> list[str]:
-    """Copilot 1.0.89-1 in print mode, the shape measured in spike ac44295 (docs/notes/spike-gw-headless.md, last
+def copilot_argv(exe: str, model: str) -> list[str]:
+    """Copilot 1.0.89-1 in print mode, with the flags measured in spike ac44295 (docs/notes/spike-gw-headless.md, last
     section): built-in MCP servers off, custom instructions off (without it Copilot loaded AGENTS.md and CLAUDE.md
     from ancestor folders), and an allowlist naming no real tool (`none`). A bare trailing `--available-tools`
-    filtered nothing: 17 tools advertised and `powershell` ran unapproved. This shape gave tools_advertised [] and
-    0 tool events. The answer is the record's last `assistant.message`, not stdout (CLI banners); the home is an
-    empty COPILOT_HOME (login in the Windows credential store). DR-GW-CP-1 is open: no Copilot judge is qualified.
+    filtered nothing: 17 tools advertised and `powershell` ran unapproved. Those flags gave tools_advertised [] and
+    0 tool events. The answer is the record's last `assistant.message`, not stdout (CLI banners; `copilot_answer`);
+    the home is an empty COPILOT_HOME (login in the Windows credential store). R-70: the shape is qualified, the
+    judge is not until the Leader's one turn from these builders records its invocation_sha256 (R-70 3(b)).
 
-    assume: the prompt still travels in argv for Copilot: stdin delivery with `-p` is unspiked. Confirm: a Leader
-    re-probe with stdin. Breaks: nothing today, because `Headless` launches Claude only; a Copilot judge entry must
-    bring a stdin shape before the gateway spawns it."""
-    return [exe, "-p", prompt, "--model", model, "--disable-builtin-mcps", "--no-custom-instructions",
-            "--available-tools", "none"]
+    The request goes on stdin (`copilot_request`), never in argv (R-70 item 2: an in-bound request can exceed the
+    Windows command line). `-p` comes last so no option is read as its value, and it ends the variadic
+    `--available-tools` list.
+    assume: `-p` with no value reads the prompt from stdin on 1.0.89-1. Confirm: the Leader's qualification turn
+    (R-70 3(b), `prompt_delivery: stdin`) or `copilot --help` on the pinned exe. Breaks: the turn fails on delivery,
+    so the shape changes, which is a new invocation_sha256 and its own probe (design section 8.4)."""
+    return [exe, "--model", model, "--disable-builtin-mcps", "--no-custom-instructions", "--available-tools", "none",
+            "-p"]
+
+
+def copilot_request(system: str, request: str) -> str:
+    """What the gateway writes to Copilot's stdin: the judge system prompt, a blank line, then the request (R-70 3(a):
+    the route is explicit and inside `invocation_sha256`).
+    assume: no system-prompt flag exists on 1.0.89-1 (R-70 3(a)). Confirm: `copilot --help` on the pinned exe.
+    Breaks: nothing: the prepend route stands either way."""
+    return f"{system}\n\n{request}"
 
 
 def invocation_sha256(harness: str, model: str, system: str, output: str, build_version: str, exe_sha256: str) -> str:
     """Section 9.1: the argv template with its volatile slots as placeholders, the system prompt, the output mode,
-    the harness and the build. The probe records it; the Leader copies it into `bench/gateway.yaml`."""
+    the harness and the build; for Copilot also the stdin template, which carries the system prompt (R-70 3(a)).
+    The probe records it; the Leader copies it into `bench/gateway.yaml`."""
+    shape: dict = {"system": system, "output": output, "harness": harness, "build_version": build_version,
+                   "exe_sha256": exe_sha256}
     if harness == "claude-code":
-        template = claude_argv("<exe>", model, system, "<session-id>")
+        shape["argv"] = claude_argv("<exe>", model, system, "<session-id>")
     elif harness == "codex":
-        template = codex_argv("<exe>", model, Path("<work>"), Path("<last message>"))
+        shape["argv"] = codex_argv("<exe>", model, Path("<work>"), Path("<last message>"))
     else:
-        template = copilot_argv("<exe>", model, "<request>")
-    return hashlib.sha256(ledger.canonical({"argv": template, "system": system, "output": output, "harness": harness,
-                                            "build_version": build_version, "exe_sha256": exe_sha256})).hexdigest()
+        shape |= {"argv": copilot_argv("<exe>", model), "stdin": copilot_request(system, "<request>")}
+    return hashlib.sha256(ledger.canonical(shape)).hexdigest()
 
 
 # ---------------------------------------------------------------------------------------------- the replay backend
@@ -177,14 +191,16 @@ def call_folder(launch: Launch, call_id: str) -> Path:
 
 # The harnesses `Headless` launches. `bench/gateway.yaml` may mark a judge `qualified: true` only on one of these
 # (R-70 item 4: a qualified entry the gateway cannot launch closes every call as HB-GW-001, read as an outage).
-HEADLESS_HARNESSES = ("claude-code",)
+HEADLESS_HARNESSES = ("claude-code", "copilot")
 
 
 class Headless:
-    """One judge call through the pinned headless CLI (Claude Code, the one qualified judge harness).
+    """One judge call through the pinned headless CLI: Claude Code, or Copilot (R-70 3(a)). Codex is never spawned
+    (`qualified: false`, DR-GW-1).
 
-    simplify: Claude Code only. Upgrade trigger: a Copilot judge entry in `bench/gateway.yaml` with a probed stdin
-    shape (R-63); Codex is never spawned (`qualified: false`)."""
+    Copilot differs in three ways: nothing is copied into its empty COPILOT_HOME (`credential: null`: the login is the
+    Windows credential store); stdin carries the system prompt before the request (`copilot_request`); and the
+    session id is not known before the call, so the record is the only one in the fresh home."""
 
     def __init__(self, launch: Launch) -> None:
         self.launch = launch
@@ -199,14 +215,19 @@ class Headless:
             for d in (home, work, decoy):
                 d.mkdir(parents=True, exist_ok=True)
             source, name = launch.profile.credential_source, launch.profile.credential_name
-            if source is None or name is None or not source.is_file():
-                raise BackendDown("no credential to copy for the judge call")
-            shutil.copyfile(source, home / name)  # inside the try whose finally deletes it (section 8.2)
-            session = str(uuid.uuid4())
-            argv = [*launch.prefix, *claude_argv(str(launch.build.exe), launch.model, launch.system, session)]
+            if name is not None:  # Copilot names none: its login is the Windows credential store
+                if source is None or not source.is_file():
+                    raise BackendDown("no credential to copy for the judge call")
+                shutil.copyfile(source, home / name)  # inside the try whose finally deletes it (section 8.2)
+            exe = str(launch.build.exe)
+            if launch.profile.harness == "copilot":
+                session, argv, stdin = "*", copilot_argv(exe, launch.model), copilot_request(launch.system, request)
+            else:
+                session = str(uuid.uuid4())
+                argv, stdin = claude_argv(exe, launch.model, launch.system, session), request
             env = launch.profile.cell_env(dict(os.environ), home, launch.build, launch.model, "")
             env.update({"USERPROFILE": str(decoy), "HOME": str(decoy)})  # the qualified decoy profile (section 8.2)
-            done = procs.run(argv, cwd=str(work), env=env, timeout=launch.timeout, input=request)
+            done = procs.run([*launch.prefix, *argv], cwd=str(work), env=env, timeout=launch.timeout, input=stdin)
             if done.timed_out:
                 raise BackendDown(f"no answer within {launch.timeout} s")
             records = profiles.find_records(home, launch.profile.record_glob, session)
@@ -293,10 +314,27 @@ def judge_pass(cells_root: Path, grading_id: str, credential_names: tuple[str, .
         sweep_credentials(cells_root, credential_names, own=grading_id)
 
 
+def copilot_answer(record: Path) -> str | None:
+    """The content of the record's last non-empty `assistant.message` row: Copilot's print-mode stdout puts CLI
+    banners before the answer (spike finding 4), so the record, not stdout, is the answer. None when there is none."""
+    text = None
+    for line in record.read_text(encoding="utf-8", errors="replace").splitlines():
+        try:
+            row = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(row, dict) and row.get("type") == "assistant.message":
+            content = (row.get("data") or {}).get("content")
+            text = content if isinstance(content, str) and content.strip() else text
+    return text
+
+
 def final_text(reply: Reply) -> str | None:
-    """The answer's text (section 8.3 step 3): Claude's stdout JSON `result`. Only the text: the served models, tool
-    events and session id come from the record. Another harness reads None (HB-GW-002, fail-closed): see `Headless`'s
-    simplify: note for when Codex's `-o` file or Copilot's stdout is read here."""
+    """The answer's text (section 8.3 step 3): Claude's stdout JSON `result`; Copilot's record (`copilot_answer`).
+    Only the text: the served models, tool events and session id come from the record. Another harness reads None
+    (HB-GW-002, fail-closed)."""
+    if reply.harness == "copilot":
+        return copilot_answer(reply.record)
     try:
         out = json.loads(reply.stdout) if reply.harness == "claude-code" else None
     except ValueError:

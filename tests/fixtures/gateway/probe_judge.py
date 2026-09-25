@@ -69,13 +69,15 @@ ROOT = HERE.parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 # The launch builders and the judge system prompt are the gateway's own (design section 8.1, one definition): the
-# probe measures the exact production invocation, the request on stdin (Claude, Codex) and records its
-# invocation_sha256 for bench/gateway.yaml (section 8.4).
+# probe measures the exact production invocation, the request on stdin (Claude, Codex, Copilot: R-70 3(b)) and
+# records its invocation_sha256 for bench/gateway.yaml (section 8.4). Copilot's answer is read by the gateway's reader.
 from harness_bench.gateway.backend import (
     JUDGE_SYSTEM,
     claude_argv,
     codex_argv,
+    copilot_answer,
     copilot_argv,
+    copilot_request,
     invocation_sha256,
 )
 
@@ -246,21 +248,6 @@ def validate_verdict(obj) -> list[str]:
     return errors
 
 
-def _copilot_final(record: Path) -> str | None:
-    """The content of the record's last `assistant.message` row: Copilot's print-mode stdout prefixes the answer
-    with CLI banners ("Disabled tools: ...", measured 2026-09-25 turn 2), so the record, not stdout, is the answer."""
-    text = None
-    for line in record.read_text(encoding="utf-8", errors="replace").splitlines():
-        try:
-            row = json.loads(line)
-        except ValueError:
-            continue
-        if isinstance(row, dict) and row.get("type") == "assistant.message":
-            content = (row.get("data") or {}).get("content")
-            text = content if isinstance(content, str) and content.strip() else text
-    return text
-
-
 def _final(harness: str, stdout: str, last: str | None) -> tuple[object, str]:
     """(the final answer, where it came from). Claude: stdout's structured_output, else its result text. Codex:
     the `-o` last-message file. Copilot: `assume:` print mode writes its final answer straight to stdout with no
@@ -419,7 +406,7 @@ def analyse(harness: str, pin: str, records: list[Path], stdout: str, last: str 
     off_pin = [m for m in served if not profile.model_allowed(m, pin)]
     record_strings = strings_of_record(records[0]) if len(records) == 1 else []
     if harness == "copilot":
-        last = _copilot_final(records[0]) if len(records) == 1 else None
+        last = copilot_answer(records[0]) if len(records) == 1 else None
     out_strings = strings_of_stdout(stdout) + ([("last-message", last)] if last else [])
     every = record_strings + out_strings
     reads = {
@@ -526,8 +513,9 @@ def run(args: argparse.Namespace) -> int:
     elif args.harness == "codex":
         argv = codex_argv(str(build.exe), args.model, work, last, SCHEMA_FILE if native else None)
     else:
-        argv = copilot_argv(str(build.exe), args.model, prompt)
-    stdin = None if args.harness == "copilot" else prompt  # the production shape: the request on stdin (section 8.1)
+        argv = copilot_argv(str(build.exe), args.model)
+    # the production shape: the request on stdin (section 8.1); Copilot's carries the system prompt first (R-70 3(a))
+    stdin = copilot_request(system, prompt) if args.harness == "copilot" else prompt
     invocation = invocation_sha256(args.harness, args.model, system, args.schema_mode, build.version, build.sha256)
     if args.dry_run:
         print(json.dumps({"label": label, "folder": str(folder), "argv": argv, "build": build.record(),
