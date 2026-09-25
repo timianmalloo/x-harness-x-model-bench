@@ -12,6 +12,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import TypeVar
 
+from harness_bench.report import html as report_html
 from harness_bench.report.credentials import encodings
 
 WITHHELD = "withheld: sensitive content"
@@ -57,5 +58,6 @@ def check(payload: str, *, destination: str, secrets: Sequence[str] = ()) -> Ver
     digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
     classes = tuple(name for name, hit in (
         ("credential", _exact(payload, secrets)),
+        ("token_shape", report_html.scan(payload) > 0),  # the report's shape scan (HB-SEC-001), shapes only
     ) if hit)
     return Verdict(destination, digest, classes, None if classes else payload)
