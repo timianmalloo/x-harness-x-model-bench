@@ -28,8 +28,8 @@ areas:
       - { id: tokens_per_minute,       source: [D],    better: higher, grader: cost,        kind: score, weight: 0 }
       - { id: output_tokens_per_turn,  source: [D],    better: lower,  grader: cost,        kind: score, weight: 0 }
       - { id: turns_and_tool_calls,    source: [H],    better: lower,  grader: cost,        kind: derived, weight: 0 }
-      - { id: cache_hit_ratio,         source: [H, D], better: higher, grader: cost,        kind: score, weight: 1 }
-      - { id: cache_write_amplification, source: [D],  better: lower,  grader: cost,        kind: score, weight: 1 }
+      - { id: cache_hit_ratio,         source: [H, D], better: higher, grader: cost,        kind: score, weight: 1, scale: 4 }
+      - { id: cache_write_amplification, source: [D],  better: lower,  grader: cost,        kind: score, weight: 1, scale: 4 }
       - { id: context_growth,          source: [H, D], better: lower,  grader: cost,        kind: score, weight: 1, note: "peak, slope, turns to 50% window" }
       - { id: compactions,             source: [H],    better: lower,  grader: cost,        kind: score, weight: 0 }
       - { id: coordinator_overhead,    source: [D],    better: lower,  grader: cost,        kind: derived, weight: 0, note: "reported, never charged to a cell" }

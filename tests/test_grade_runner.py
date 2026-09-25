@@ -25,7 +25,7 @@ COST = {"cost_usd", "tokens_per_minute", "output_tokens_per_turn", "cache_hit_ra
 PROCESS = {"completion_without_intervention", "stuck_loops", "recovery_rate", "tool_error_rate", "planning_ratio",
            "time_to_first_green"}
 SCORED_0_3 = {"pass_at_1", "partial_credit", "cost_usd"}  # the metrics the registered graders returned in slice 1
-BUILT = SCORED_0_3 | {"build_and_suite_clean"}  # GR-CODE c1 adds build_and_suite_clean
+BUILT = SCORED_0_3 | {"build_and_suite_clean"} | COST  # GR-CODE c1 adds build_and_suite_clean; COST phase 2 adds COST
 
 
 @pytest.fixture

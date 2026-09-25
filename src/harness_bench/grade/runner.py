@@ -53,29 +53,8 @@ TASK_FREE = frozenset({"cost", "process"})  # graders that never read the task, 
 __all__ = ["GRADERS", "PASS_FACTS", "PassResult", "applicable", "file_hash", "grader_build", "run_pass"]
 
 
-def _cost(inp: CellInput) -> dict[str, Score]:
-    """cost_usd (US-23), unchanged from phase 1. COST phase 2 moves it into `cost.grade_cell` (C-1)."""
-
-    def cost_usd() -> tuple[Decimal | None, str | None, str]:
-        ex, unreadable = inp.extraction, inp.record_reason
-        source = inp.plan["profiles"][inp.cell["harness"]]["usage_source"]
-        if inp.prices is None:
-            return None, "price list changed since the plan (hash mismatch)", ""
-        elif source == "native_record" and ex is None:
-            return None, unreadable, ""
-        elif source == "native_record" and ex.missing:  # a usage field the record lacks is NOT_RECORDED, never 0 (US-27)
-            fields = ", ".join(sorted({m.field for m in ex.missing}))
-            return None, f"HB-TEL-001 native-record fields missing: {fields}", ""
-        elif source == "native_record" and unreadable is not None:  # e.g. truncated: never a price on a partial sum (R-15)
-            return None, unreadable, ""
-        totals = normalize.totals(source, ex or Extraction(), list(inp.turn_usage))
-        return cost.cost_usd(totals, inp.prices, inp.plan["created_at"][:10])
-
-    return {"cost_usd": Score(*cost_usd())}
-
-
 # Pattern: Strategy via a registry (Pluggable Selector). One line per built grader; an unregistered one is `not built`.
-GRADERS: dict[str, GraderFn] = {"correctness": correctness.grade_cell, "cost": _cost}
+GRADERS: dict[str, GraderFn] = {"correctness": correctness.grade_cell, "cost": cost.grade_cell}
 
 
 @dataclass
