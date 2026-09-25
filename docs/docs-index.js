@@ -393,7 +393,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2dd7fc470bb7405cc0beef47fc5422391e2a0013274d4ff75d2654722796b2b2"
+      "sourceSha256": "5579371da7d906094f8304af6de731b17fedbd4380e480704572ac5dcdc54398"
     },
     {
       "id": "adr-0007-run-engine",
@@ -1025,6 +1025,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "0eb44e13d5b0174835d76d56681a8e5d32f9296d8a827a0cb6fe762379b43fcc"
     },
     {
+      "id": "review-w2-views-codex",
+      "path": "docs/notes/review-w2-views-codex.md",
+      "title": "W2-VIEWS cross-vendor join review",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-09",
+      "reviewSuggested": [],
+      "summary": "Codex review of W2-VIEWS at 64d3392: the ruled validity and warning paths pass focused checks; a truncated native record can still expose partial time and call-count measures.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "af59aae25e087249e9466b861ed062971fbae0fa7b544ef73951141d3df19293"
+    },
+    {
       "id": "row15-headroom",
       "path": "docs/notes/row15-headroom.md",
       "title": "Row 15: the headroom rule for raising the parallelism cap",
@@ -1444,7 +1465,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2bc39956e8eb0367f8032607412365a27e060f75cd86771edcf800df906ccae6"
+      "sourceSha256": "00215739231ad55cdfa299104dd1d6ad508a2dc7e14c4ef743905c59d7474ff3"
     },
     {
       "id": "coordination-phase1-finish-run",
@@ -1498,7 +1519,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "1757792fee1560ff534b7f16e21e3b708454b0724b16cf136981194302644140"
+      "sourceSha256": "048c9be9892ed543b7651099e83798161f8cfbd04f388672ee42340c275ecd33"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -2404,5 +2425,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "00a24991f4f08baa48cdf3540d36a08a5b109d67ee02e1ad34325d625f5b4815"
+  "graphSha256": "d5ab415523f83bef806a7843ded17934db360ae958e75980f20988a4719cfa17"
 };
