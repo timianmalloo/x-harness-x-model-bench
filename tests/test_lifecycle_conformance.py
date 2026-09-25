@@ -161,3 +161,57 @@ def test_parallelism_bound_is_enforced_by_the_replay():
     lifecycle.replay(events, parallelism=2)
     with pytest.raises(lifecycle.ConformanceError, match="ParallelismBound"):
         lifecycle.replay(events, parallelism=1)
+
+
+OPENED = {"kind": "decision.opened", "decision_id": "D1", "decision_kind": "blocked_cell", "subject": "codex",
+          "cause_code": "HB-CELL-202", "options": ["continue", "stop"], "default": "continue"}
+RESOLVED = {"kind": "decision.resolved", "decision_id": "D1", "state": "answered", "option": "continue"}
+DECISION_SEEDED = {  # design 8.3: the replay rules for decision requests
+    "a decision opened after the run stopped (NoDecisionAfterStop)":
+        ([GOOD[0], {"kind": "run.stopped", "code": "HB-RUN-006", "decision_id": None}, OPENED], [], "NoDecisionAfterStop"),
+    "a decision resolved twice (DecisionResolvedOnce)": ([GOOD[0], OPENED, RESOLVED, RESOLVED], [], "DecisionResolvedOnce"),
+    "a resolution before its decision opened": ([GOOD[0], RESOLVED, OPENED], [], "follows its decision.opened"),
+    "a launch while a decision is open (NoLaunchWhileDecisionOpen)":
+        ([GOOD[0], OPENED, GOOD[1]], [], "NoLaunchWhileDecisionOpen"),
+}
+SEEDED.update(DECISION_SEEDED)  # test_every_guard_of_the_table_has_a_seeded_case reads SEEDED when it runs
+
+
+def _verdict(events: list[dict]) -> str | None:
+    """The replay's violation for this ledger, or None when it conforms."""
+    try:
+        lifecycle.replay(events, parallelism=1)
+    except lifecycle.ConformanceError as exc:
+        return str(exc)
+    return None
+
+
+@pytest.mark.parametrize("name", sorted(DECISION_SEEDED))
+def test_each_seeded_decision_ledger_is_rejected_under_its_rule(name):  # LC (design 8.3): decisions
+    events, scores, rule = DECISION_SEEDED[name]
+    with pytest.raises(lifecycle.ConformanceError, match=re.escape(rule)):
+        lifecycle.replay(events, parallelism=1, scores=scores)
+
+
+DECIDED = [  # golden (design 16.3 D6): a blocked cell's decision answered, then a spend cap's default stops the run
+    GOOD[0],
+    {"kind": "cell.launch_intent", "cell_id": "a"},
+    {"kind": "cell.outcome", "cell_id": "a", "outcome": "failed", "cause": "blocked_auth"},
+    OPENED,
+    {"kind": "control.applied", "uuid": "d" * 32, "control": "answer", "decision_id": "D1", "effect": "applied"},
+    RESOLVED,
+    {"kind": "cell.launch_intent", "cell_id": "b"},
+    {"kind": "decision.opened", "decision_id": "D2", "decision_kind": "spend_cap", "subject": "r1", "cause_code": "HB-RUN-007",
+     "options": ["stop", "continue"], "default": "stop", "spend_tokens": 45, "cells_unmeasured": 0},
+    {"kind": "decision.resolved", "decision_id": "D2", "state": "default applied (timeout)", "option": "stop"},
+    {"kind": "run.launch_stopped", "code": "HB-RUN-007", "reason": "spend cap"},
+    {"kind": "run.stopped", "code": "HB-RUN-007", "decision_id": "D2"},
+    {"kind": "cell.outcome", "cell_id": "b", "outcome": "stopped", "cause": None},
+    {"kind": "control.applied", "uuid": "e" * 32, "control": "answer", "decision_id": "D2", "effect": "rejected (already resolved)"},
+    {"kind": "run.completed"},
+]
+
+
+def test_a_run_with_decisions_replays():  # LC (design 8.3): every decision row is a mapped engine transition
+    assert _verdict(DECIDED) is None
+    assert {"decision.opened", "decision.resolved"} <= lifecycle.ENGINE_TRANSITIONS
