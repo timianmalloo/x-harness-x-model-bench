@@ -2174,3 +2174,23 @@ def test_no_decision_after_a_launch_stop(base):  # US15-4 (S-4, PE-13, TA M8)
     assert [e["code"] for e in _kind(events, "run.launch_stopped")] == ["HB-CELL-108"]  # the breaker, first
     assert _outcomes(events)[p["cells"][0]["cell_id"]]["cause"] == "model_unavailable"  # then the gap, combo A pending
     assert _kind(events, "decision.opened") == []
+
+
+def test_the_run_waits_for_an_open_decision(base):  # US15-5 (UXA-9; the model's DecisionEventuallyResolved)
+    p, launcher = _decision_plan([("fake", "A", {}), ("fake", "A", {"sleep": 2})], parallelism=2,
+                                 spend_cap_tokens=CELL_TOKENS - 5)
+    cells = {c["cell_id"] for c in p["cells"]}
+    idle = []
+
+    def script(eng, offset, run_dir):
+        if cells <= set(eng.outcomes) and not eng.active:
+            idle.append(True)
+            if len(idle) == 3:  # three ticks with nothing pending or running: only the open decision holds the loop
+                _answer_file(run_dir, "D1", "continue")
+
+    _, events, summary = _decision_run(base, (p, launcher), script)
+    assert len(idle) >= 3
+    assert _resolutions(events) == [("D1", "answered", "continue")]
+    last_outcome = max(events.index(e) for e in _kind(events, "cell.outcome"))
+    assert last_outcome < events.index(_kind(events, "decision.resolved")[0]) < events.index(_kind(events, "run.completed")[0])
+    assert summary.exit_code == 0
