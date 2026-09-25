@@ -501,17 +501,19 @@ def test_the_pack_on_copilot_sample_advertising_web_search_is_invalid(root, tmp_
     assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
 
 
-# Red until copilot.TOOL_CLASS names read_powershell, stop_powershell and list_powershell (R-45 (a): shell): the fixed
-# sample advertises them and the reader's map, the one class definition, gives "other" (seam req-01M3BHAA90PTS0ZBQZ7NZYWJN6).
-@pytest.mark.xfail(strict=True, reason="copilot.TOOL_CLASS lacks read_powershell, stop_powershell, list_powershell")
 def test_the_fixed_profile_copilot_sample_is_valid(root, tmp_path, monkeypatch):  # R-45 c1: qual-r45-1, fixed profile
     cell = _advertised_run(monkeypatch, _advertised("fixed"), lambda: _copilot_run(root, tmp_path, arm="fixed", checkpoint=True))
     assert (cell.validity, cell.validity_code) == ("valid", None)
 
 
-def test_the_fixed_profile_advertises_only_the_three_ids_the_reader_cannot_class():  # the xfail above, measured
-    assert [i for i in _advertised("fixed") if copilot.TOOL_CLASS.get(i, "other") == "other"] == [
-        "read_powershell", "stop_powershell", "list_powershell"]
+def test_the_fixed_profile_advertises_no_id_the_reader_cannot_class():  # was three ids; seam req-01M3BHAA90PTS0ZBQZ7NZYWJN6
+    assert [i for i in _advertised("fixed") if copilot.TOOL_CLASS.get(i, "other") == "other"] == []
+
+
+def test_a_real_grading_pass_carries_the_advertised_list_to_the_view(root, tmp_path):  # seam req-01M3BH75WE84KK5H9BPKC1HGBG
+    """No monkeypatch: the pass itself writes grading.completed.tools_advertised, so R-45 item 2 fires on a real run."""
+    cell = _cell(views.load(_copilot_run(root, tmp_path, arm="on", checkpoint=True)), "a")
+    assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
 
 
 def test_an_advertised_list_of_in_class_ids_is_no_finding(root, tmp_path, monkeypatch):  # the negative control
