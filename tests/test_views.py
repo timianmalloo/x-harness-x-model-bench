@@ -21,7 +21,7 @@ from archived_runs import (
     set_prices,
 )
 
-from harness_bench import archive, ledger, views
+from harness_bench import archive, ledger, profiles, views
 from harness_bench.errors import BenchError
 from harness_bench.grade import cost, runner
 from harness_bench.telemetry import normalize
@@ -46,6 +46,7 @@ def _cell(view: views.RunView, cell_id: str) -> views.CellView:
 
 def _copilot_run(root: Path, tmp_path: Path, change=None) -> Path:
     """Grade a real archived run using the committed Copilot native record."""
+    assert "copilot" in profiles.READERS, "Copilot must be registered before grading its native record"
     run_dir = make_run(root, tmp_path, {"a": GOOD}, harness="copilot", archived=set())
     folder = run_dir / "archive/a/attempt-1"
     workspace = folder / "ws"
@@ -257,7 +258,9 @@ def test_copilot_single_row_with_two_requests_counts_two_calls(root, tmp_path):
         metrics["gpt-6-sol"]["requests"]["count"] = 2
         return events
 
-    cell = _cell(views.load(_copilot_run(root, tmp_path, two_requests)), "a")
+    run_dir = _copilot_run(root, tmp_path, two_requests)
+    assert [row["requests"] for row in views.rows(run_dir, "model_calls")] == [2]
+    cell = _cell(views.load(run_dir), "a")
     assert cell.calls_per_cell == 2
 
 
