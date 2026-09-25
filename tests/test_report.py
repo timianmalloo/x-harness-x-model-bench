@@ -160,6 +160,14 @@ def test_the_header_shows_recorded_facts_and_not_recorded_for_the_rest(root, tmp
     assert "Defender real-time exclusion" in doc and "not recorded" in doc
 
 
+def test_the_header_names_the_pinned_pack_revision_and_commit(root, tmp_path):
+    view = views.load(make_run(root, tmp_path, {"a": GOOD}))
+    view.plan["pack"] = {"revision": 95, "commit": "a" * 40}
+    doc = html.render(view, archive_present=True)
+    assert "<dt>Pack revision</dt><dd>95</dd>" in doc
+    assert f"<dt>Pack commit</dt><dd>{'a' * 40}</dd>" in doc
+
+
 def test_the_page_makes_no_network_request_and_has_no_script(page):
     assert not re.search(r"https?://|<script|@import|url\(|<link", page)
 

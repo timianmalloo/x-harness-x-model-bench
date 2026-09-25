@@ -1,5 +1,6 @@
 """Harness profiles (ADR-0003, ADR-0004, ADR-0013): per-cell home, credential copy, static permissions, env."""
 
+import importlib.util
 import json
 import time
 from pathlib import Path
@@ -9,6 +10,49 @@ import pytest
 from harness_bench import driver, procs, profiles, tools
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+@pytest.fixture
+def copilot_canary_module():
+    spec = importlib.util.spec_from_file_location("us13_canary_setup", ROOT / "tests" / "e2e" / "test_us13_canary.py")
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+@pytest.mark.parametrize("removed", ["instruction", "skill", "hook", "settings model"])
+def test_each_missing_copilot_control_class_is_void(copilot_canary_module, tmp_path, removed):
+    home = tmp_path / "home"
+    home.mkdir()
+    copilot_canary_module._seed_copilot_control(home)
+    assert (home / "copilot-instructions.md").is_file()
+    assert (home / "skills" / copilot_canary_module.COPILOT_SKILL / "SKILL.md").is_file()
+    assert json.loads((home / "hooks" / "us13-canary.json").read_text(encoding="utf-8"))["hooks"]["sessionStart"]
+    assert json.loads((home / "settings.json").read_text(encoding="utf-8"))["model"] == copilot_canary_module.MODELS["copilot"]
+
+    marker = home / copilot_canary_module.COPILOT_HOOK_FILE
+    marker.write_text(copilot_canary_module.COPILOT_HOOK, encoding="utf-8")
+    record = f"{copilot_canary_module.COPILOT_INSTRUCTION}\n{copilot_canary_module.COPILOT_SKILL}"
+    models = {copilot_canary_module.MODELS["copilot"]}
+    assert all(copilot_canary_module._copilot_shown(record, models, home).values())
+
+    if removed == "instruction":
+        record = record.replace(copilot_canary_module.COPILOT_INSTRUCTION, "")
+    elif removed == "skill":
+        record = record.replace(copilot_canary_module.COPILOT_SKILL, "")
+    elif removed == "hook":
+        marker.unlink()
+    else:
+        models.clear()
+    shown = copilot_canary_module._copilot_shown(record, models, home)
+    assert [name for name, present in shown.items() if not present] == [removed]
+
+
+def test_copilot_canary_model_oracle_reads_native_assistant_messages(copilot_canary_module):
+    records = list((ROOT / "tests" / "fixtures" / "native" / "copilot" / "off").rglob("events.jsonl"))
+    assert len(records) == 1
+    assert copilot_canary_module._copilot_models(records) == {"gpt-6-sol"}
 
 
 class FakeBuild:
