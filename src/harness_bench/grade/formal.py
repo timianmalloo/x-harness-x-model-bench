@@ -11,10 +11,10 @@ Method: SysMoBench's staged grading (syntax, runtime, conformance, invariants) a
 separate code / spec / proof scores. Spec: S-08g (docs/specs/README.md).
 """
 
-from pathlib import Path
+from collections.abc import Mapping
 
-from harness_bench.grade import Result, not_built
+from harness_bench.grade import CellInput, Score
 
 
-def grade(run_dir: Path, task_dir: Path) -> Result:
-    raise not_built("formal", "S-08g")
+def grade_cell(inp: CellInput) -> Mapping[str, Score]:  # not registered in runner.GRADERS: NA "not built"
+    raise NotImplementedError("grade.formal is not built yet; spec S-08g in docs/specs/README.md")

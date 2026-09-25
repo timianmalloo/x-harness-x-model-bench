@@ -1,4 +1,4 @@
-"""A grading pass (ADR-0006, ADR-0007; design: Data model, Grading).
+"""A grading pass (ADR-0006, ADR-0007; design: Data model, Grading; design phase3-graders: the dispatch).
 
 - A pass holds `grade.lock` (HB-GRD-001 when held) and writes only its own segments, one per fact, named
   by its `grading_id` (`grade-<utc>-<rand>`). It seals them all; `grading.completed` is written after the
@@ -13,27 +13,76 @@
 - Extractions are written once: a cell's `model_calls` and `tool_calls` are written only when no
   completed pass already holds the cell's `extraction_id` (the normaliser build hash).
 - Only archived cells are graded, each exactly once per pass, from the archive alone.
+- The dispatch: each cell is graded by its task's de-duplicated `graders` list, in catalog order, through `GRADERS`.
+  The applicable set is every `kind: score` catalog metric of those graders, and each gets exactly one row: the
+  grader's Score; NA `not built` (an unregistered grader, or a metric it did not return); NA HB-GRD-003 (it raised,
+  or returned a malformed output; the traceback is the evidence); or NA `task changed since the plan` (a grader that
+  reads the task, when the task is not the plan's version). A metric of a grader the task does not name has no row.
+- GradedOncePerPass is enforced here: before `grading.completed`, every applicable (cell, metric) row must have been
+  written exactly once and no grader may have returned a key outside its applicable set, else HB-GRD-004 and the pass
+  is never completed.
 - Non-integer values are decimal strings at the catalog's scale (no floats in the ledger).
 """
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
+import logging
 import secrets
 import time
+import traceback
+from collections import Counter
+from collections.abc import Mapping
 from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
 
 from harness_bench import config, ledger, oslock, profiles, views
-from harness_bench.grade import correctness, cost
+from harness_bench.errors import BenchError
+from harness_bench.grade import CellInput, GraderFn, Score, correctness, cost
 from harness_bench.plan import file_hash, load_confirmed, task_version_hash
 from harness_bench.telemetry import Extraction, normalize
 
+logger = logging.getLogger("harness_bench.grade")
 PASS_FACTS = ("events", "model_calls", "tool_calls", "scores")
-METRICS = ("pass_at_1", "partial_credit", "cost_usd")  # the phase-1 graders' metrics
+NOT_BUILT = "not built"
+TASK_CHANGED = "task changed since the plan (version hash mismatch)"
+TASK_FREE = frozenset({"cost", "process"})  # graders that never read the task, so they grade a cell whose task changed
 
-__all__ = ["METRICS", "PASS_FACTS", "PassResult", "file_hash", "grader_build", "run_pass"]
+__all__ = ["GRADERS", "PASS_FACTS", "PassResult", "applicable", "file_hash", "grader_build", "run_pass"]
+
+
+def _correctness(inp: CellInput) -> dict[str, Score]:
+    """pass@1 and partial credit from the hidden tests (US-28). GR-CODE moves it into `correctness.grade_cell` (C-2)."""
+    c = correctness.grade(inp.archive / "ws", inp.task_dir, inp.task.get("oracle") or {}, inp.out_dir, inp.run_dir,
+                          inp.plan["parameters"]["grading_step_timeout"])
+    return {"pass_at_1": Score(c.passed, c.reason, c.evidence), "partial_credit": Score(c.partial_credit, c.reason, c.evidence)}
+
+
+def _cost(inp: CellInput) -> dict[str, Score]:
+    """cost_usd (US-23), unchanged from phase 1. COST phase 2 moves it into `cost.grade_cell` (C-1)."""
+
+    def cost_usd() -> tuple[Decimal | None, str | None, str]:
+        ex, unreadable = inp.extraction, inp.record_reason
+        source = inp.plan["profiles"][inp.cell["harness"]]["usage_source"]
+        if inp.prices is None:
+            return None, "price list changed since the plan (hash mismatch)", ""
+        elif source == "native_record" and ex is None:
+            return None, unreadable, ""
+        elif source == "native_record" and ex.missing:  # a usage field the record lacks is NOT_RECORDED, never 0 (US-27)
+            fields = ", ".join(sorted({m.field for m in ex.missing}))
+            return None, f"HB-TEL-001 native-record fields missing: {fields}", ""
+        elif source == "native_record" and unreadable is not None:  # e.g. truncated: never a price on a partial sum (R-15)
+            return None, unreadable, ""
+        totals = normalize.totals(source, ex or Extraction(), list(inp.turn_usage))
+        return cost.cost_usd(totals, inp.prices, inp.plan["created_at"][:10])
+
+    return {"cost_usd": Score(*cost_usd())}
+
+
+# Pattern: Strategy via a registry (Pluggable Selector). One line per built grader; an unregistered one is `not built`.
+GRADERS: dict[str, GraderFn] = {"correctness": _correctness, "cost": _cost}
 
 
 @dataclass
@@ -52,6 +101,16 @@ def grader_build() -> str:
     for f in sorted(Path(__file__).parent.glob("*.py")):
         h.update(f.name.encode() + b"\0" + f.read_bytes().replace(b"\r\n", b"\n") + b"\0")
     return h.hexdigest()
+
+
+def applicable(catalog: dict, graders: list[str]) -> dict[str, dict[str, dict]]:
+    """grader -> {metric id: catalog entry}: the `kind: score` metrics of `graders`, each grader once, in catalog order."""
+    out: dict[str, dict[str, dict]] = {}
+    for area in catalog["areas"].values():
+        for m in area.get("metrics") or []:
+            if m["grader"] in graders and m["kind"] == "score":
+                out.setdefault(m["grader"], {})[m["id"]] = m
+    return out
 
 
 def _scales(catalog: dict) -> dict[str, int]:
@@ -87,6 +146,9 @@ class _Pass:
         self.writers: dict[str, ledger.SegmentWriter] = {}
         self.unreadable: dict[str, str] = {}  # cell_id -> why its native record could not be read (R-15)
         self.advertised: dict[str, list[str]] = {}  # cell_id -> the tool ids its record advertised, when read (R-45 item 2)
+        self.wanted: set[tuple[str, str]] = set()  # the applicable (cell, metric) keys of this pass
+        self.written: Counter[tuple[str, str]] = Counter()  # score rows written per (cell, metric)
+        self.outside: set[tuple[str, str, str]] = set()  # (cell, grader, key) a grader returned outside its applicable set
 
     def append(self, fact: str, record: dict) -> None:
         self.writers[fact].append(ledger.stamp(record))
@@ -113,8 +175,10 @@ class _Pass:
             graded = 0
             for cell in sorted(self.plan["cells"], key=lambda c: c["cell_id"]):
                 if cell["cell_id"] in archived:
-                    self._grade_cell(cell, archived[cell["cell_id"]], sessions.get(cell["cell_id"], ""), held, usage)
+                    cell_events = tuple(e for e in events if e.get("cell_id") == cell["cell_id"])
+                    self._grade_cell(cell, archived[cell["cell_id"]], sessions.get(cell["cell_id"], ""), held, usage, cell_events)
                     graded += 1
+            self._check_complete()
             heads = {fact: self.writers[fact].seal() for fact in PASS_FACTS if fact != "events"}
             self.append("events", {"kind": "grading.completed", "grading_id": self.grading_id, "cells_graded": graded,
                                    "heads": dict(heads),  # ruling R-2: bench verify checks each against its seal
@@ -126,56 +190,88 @@ class _Pass:
                 w.close()
         return PassResult(self.grading_id, heads, graded, [f"{fact}/{r.segment_id}" for fact, r in abandoned])
 
-    def _extract(self, cell: dict, folder: Path, session_id: str, held: set) -> tuple[Extraction | None, str | None]:
+    def _extract(self, cell: dict, folder: Path, session_id: str, held: set) -> tuple[Extraction | None, str | None, list, list]:
+        """(the record as read, why there is none, its model-call rows, its tool-call rows); rows unstamped."""
         records = profiles.find_records(folder / "home", self.plan["profiles"][cell["harness"]]["record_glob"], session_id)
         if len(records) != 1:
-            return None, "no native record for the session" if not records else "more than one native record for the session"
+            return None, "no native record for the session" if not records else "more than one native record for the session", [], []
         ex = profiles.READERS[cell["harness"]](records[0])
         cid = cell["cell_id"]
+        model_rows = normalize.model_call_rows(self.plan["run_id"], cid, session_id, ex, self.extraction)
+        tool_rows = normalize.tool_call_rows(self.plan["run_id"], cid, session_id, ex, self.extraction)
         if (cid, self.extraction) not in held:
-            for row in normalize.model_call_rows(self.plan["run_id"], cid, session_id, ex, self.extraction):
+            for row in model_rows:
                 self.append("model_calls", row)
-            for row in normalize.tool_call_rows(self.plan["run_id"], cid, session_id, ex, self.extraction):
+            for row in tool_rows:
                 self.append("tool_calls", row)
-        return ex, None
+        return ex, None, model_rows, tool_rows
 
-    def _grade_cell(self, cell: dict, attempt: int, session_id: str, held: set, usage: dict) -> None:
+    def _grade_cell(self, cell: dict, attempt: int, session_id: str, held: set, usage: dict, events: tuple) -> None:
         cid = cell["cell_id"]
         folder = self.run_dir / "archive" / cid / f"attempt-{attempt}"
         out_dir = self.run_dir / "grading" / self.grading_id / cid
         out_dir.mkdir(parents=True)
-        ex, missing = self._extract(cell, folder, session_id, held)
+        ex, missing, model_rows, tool_rows = self._extract(cell, folder, session_id, held)
         unreadable = missing if ex is None else normalize.record_unreadable(ex)
         if unreadable is not None:
             self.unreadable[cid] = unreadable
         if ex is not None and ex.tools_advertised is not None:
             self.advertised[cid] = ex.tools_advertised
         task_dir = self.root / "tasks" / cell["task"]
-        if task_version_hash(task_dir) != cell["task_version"]:  # the hidden tests must be the ones the plan named
-            c = correctness.Result(None, None, "task changed since the plan (version hash mismatch)", "")
-        else:
-            oracle = config.load_yaml(task_dir / "task.yaml").get("oracle") or {}
-            c = correctness.grade(folder / "ws", task_dir, oracle, out_dir, self.run_dir, self.plan["parameters"]["grading_step_timeout"])
-        self._score(cell, attempt, "pass_at_1", c.passed, c.reason, c.evidence)
-        self._score(cell, attempt, "partial_credit", c.partial_credit, c.reason, c.evidence)
-        source = self.plan["profiles"][cell["harness"]]["usage_source"]
-        if not self.prices_ok:
-            value, reason, evidence = None, "price list changed since the plan (hash mismatch)", ""
-        elif source == "native_record" and ex is None:
-            value, reason, evidence = None, missing, ""
-        elif source == "native_record" and ex.missing:  # a usage field the record lacks is NOT_RECORDED, never 0 (US-27)
-            fields = ", ".join(sorted({m.field for m in ex.missing}))
-            value, reason, evidence = None, f"HB-TEL-001 native-record fields missing: {fields}", ""
-        elif source == "native_record" and unreadable is not None:  # e.g. truncated: never a price on a partial sum (R-15)
-            value, reason, evidence = None, unreadable, ""
-        else:
-            totals = normalize.totals(source, ex or Extraction(), usage.get(cid, []))
-            value, reason, evidence = cost.cost_usd(totals, self.prices, self.plan["created_at"][:10])
-        self._score(cell, attempt, "cost_usd", value, reason, evidence)
+        current = task_version_hash(task_dir) == cell["task_version"]  # the hidden tests must be the ones the plan named
+        task = config.load_yaml(task_dir / "task.yaml") if current else {}
+        # The plan freezes no `graders` yet (seam S-1), so a changed task.yaml cannot be trusted: every catalog grader
+        # applies, and each one that reads the task is NA `task changed` (design: Data model, the fallback).
+        names = (task.get("graders") or []) if current else [m["grader"] for a in self.catalog["areas"].values() for m in a["metrics"]]
+        base = CellInput(run_dir=self.run_dir, root=self.root, plan=self.plan, cell=cell, task=task, task_dir=task_dir,
+                         archive=folder, out_dir=out_dir, events=events, record_reason=unreadable, model_calls=tuple(model_rows),
+                         tool_calls=tuple(tool_rows), turn_usage=tuple(usage.get(cid, [])), metrics={},
+                         allow_model_calls=False,  # R-58 DR-2; the flag arrives with GW-I's `cmd_grade` seam
+                         extraction=ex, prices=self.prices if self.prices_ok else None)
+        for grader, metrics in applicable(self.catalog, names).items():
+            scores = self._run_grader(grader, dataclasses.replace(base, out_dir=out_dir / grader, metrics=metrics), current)
+            self.wanted.update((cid, m) for m in metrics)
+            for metric in sorted(metrics):
+                self._score(cell, attempt, metric, scores[metric])
 
-    def _score(self, cell: dict, attempt: int, metric: str, value: int | Decimal | None, reason: str | None, evidence: str) -> None:
+    def _run_grader(self, grader: str, inp: CellInput, current: bool) -> dict[str, Score]:
+        """One Score for each applicable metric of `grader` (design: the dispatch, step 3)."""
+        if grader not in TASK_FREE and not current:
+            return dict.fromkeys(inp.metrics, Score(None, TASK_CHANGED))
+        fn = GRADERS.get(grader)
+        if fn is None:
+            return dict.fromkeys(inp.metrics, Score(None, NOT_BUILT))
+        inp.out_dir.mkdir()
+        try:
+            out = fn(inp)
+            if not isinstance(out, Mapping):
+                raise TypeError(f"grader output is a {type(out).__name__}, not a mapping")
+            for metric in inp.metrics.keys() & out.keys():
+                if not isinstance(out[metric], Score):
+                    raise TypeError(f"{metric}: {type(out[metric]).__name__} is not a Score")
+                if isinstance(out[metric].value, Decimal) and metric not in self.scales:
+                    raise ValueError(f"{metric}: a Decimal for a metric with no catalog scale")
+        except Exception as exc:  # any grader failure is NA for its metrics; the pass continues (F3)
+            logger.exception("grade.grader_failed %s", {"grading_id": self.grading_id, "cell_id": inp.cell["cell_id"], "grader": grader})
+            log = inp.out_dir / "error.log"
+            log.write_text(traceback.format_exc(), encoding="utf-8")
+            evidence = log.relative_to(self.run_dir).as_posix()
+            return dict.fromkeys(inp.metrics, Score(None, f"HB-GRD-003 grader {grader} failed: {type(exc).__name__}", evidence))
+        self.outside.update((inp.cell["cell_id"], grader, k) for k in out.keys() - inp.metrics.keys())
+        return {m: out[m] if m in out else Score(None, NOT_BUILT) for m in inp.metrics}
+
+    def _check_complete(self) -> None:
+        """GradedOncePerPass (design, D&P 2 and N2): every applicable (cell, metric) row written exactly once, none extra."""
+        wrong = sorted(k for k in self.wanted | self.written.keys() if self.written[k] != 1 or k not in self.wanted)
+        if wrong or self.outside:
+            raise BenchError("HB-GRD-004", f"pass {self.grading_id} not completed: (cell, metric) rows not written exactly once "
+                                           f"{wrong}; keys outside the applicable set {sorted(self.outside)}")
+
+    def _score(self, cell: dict, attempt: int, metric: str, score: Score) -> None:
+        value = score.value
         if isinstance(value, Decimal):
             value = f"{value:.{self.scales[metric]}f}"
         self.append("scores", {"kind": "score", "run_id": self.plan["run_id"], "grading_id": self.grading_id, "cell_id": cell["cell_id"],
-                               "metric_id": metric, "value": value, "reason": reason, "evidence": evidence,
+                               "metric_id": metric, "value": value, "reason": score.reason, "evidence": score.evidence,
                                "archive_attempt": attempt, "extraction_id": self.extraction})
+        self.written[(cell["cell_id"], metric)] += 1

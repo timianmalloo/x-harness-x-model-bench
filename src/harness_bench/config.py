@@ -225,9 +225,12 @@ def validate_task(task_dir: Path, bom_entry: dict | None, p: Problems, grader_mo
             p.add(where, "scenario disagrees with bench/bom.yaml")
         if (t.get("budget") or {}).get("minutes") != bom_entry.get("budget_minutes"):
             p.add(where, "budget.minutes disagrees with bench/bom.yaml")
-    for g in t.get("graders") or []:
+    graders = t.get("graders") or []
+    for g in graders:
         if g not in grader_modules:
             p.add(where, f"grader {g!r} has no module in harness_bench.grade")
+    for g in sorted({g for g in graders if graders.count(g) > 1}):  # the pass grades each once (D&P 2)
+        p.add(where, f"grader {g!r} is listed more than once")
     if t.get("scenario") == 6 and not t.get("model_map"):
         p.add(where, "scenario 6 tasks need a model_map")
     if t.get("scenario") == 1 and not t.get("scripted_user"):
@@ -284,4 +287,22 @@ def validate_repo(root: Path) -> list[str]:
         p.add(f"tasks/{tid}", "listed in bench/bom.yaml but has no folder")
     for name in sorted(folders):
         validate_task(tasks_dir / name, entries.get(name), p, graders, markers)
+    validate_task_freeze(root, p)
     return p.items
+
+
+def validate_task_freeze(root: Path, p: Problems) -> None:
+    """R-59 c5: no byte under a frozen task folder changes while `bench/task-freeze.yaml` names it (wave 3 only)."""
+    # plan imports config, so the one recipe is imported where it is used
+    from harness_bench.plan import task_version_hash
+
+    path = root / "bench" / "task-freeze.yaml"
+    if not path.is_file():
+        return
+    freeze = load_yaml(path)
+    if freeze.get("schema") != "bench-task-freeze/1":
+        p.add("bench/task-freeze.yaml", "schema must be bench-task-freeze/1")
+    for tid, frozen in sorted((freeze.get("tasks") or {}).items()):
+        actual = task_version_hash(root / "tasks" / tid)
+        if actual != frozen:
+            p.add(f"tasks/{tid} changed while frozen (R-59 c5)", f"{actual} != {frozen}")
