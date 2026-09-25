@@ -407,7 +407,8 @@ def test_an_other_call_with_no_result_is_not_refused(root, tmp_path):  # R-54: o
 
 def test_one_counted_request_refuses_one_failed_other_call_not_two(root, tmp_path):
     def twice(rows):
-        webfetch = [r for r in rows if r and "WebFetch" in json.dumps(r)]
+        webfetch = [r for r in rows if r and "toolu_01XtEMHFci9qYGLksa4gFf2w" in json.dumps(r)]  # its use and its result
+        assert len(webfetch) == 2
         return rows + [json.loads(json.dumps(r).replace("toolu_01XtEMHFci9qYGLksa4gFf2w", "toolu_second")) for r in webfetch]
     one = _claude_q1_run(root, tmp_path / "1", permission_requests=1, change=twice)
     assert (one.validity, one.validity_code) == OUT_OF_PROFILE
@@ -476,7 +477,8 @@ def test_an_ungraded_cell_is_not_graded_before_any_tool_check(root, tmp_path):
 def test_the_export_carries_the_refused_warning_and_the_meta_count(root, tmp_path):
     doc = json.loads(views.export(views.load(_claude_q1_dir(root, tmp_path, permission_requests=1))))["cells"][0]
     assert (doc["validity"], doc["validity_code"], doc["meta_calls"]) == ("valid", None, {"value": 1, "reason": None})
-    assert doc["warnings"] == [{"code": "HB-VAL-009", "level": "warning", "message": "out-of-profile attempt refused: WebFetch"}]
+    assert [w for w in doc["warnings"] if w["code"] == "HB-VAL-009"] == [
+        {"code": "HB-VAL-009", "level": "warning", "message": "out-of-profile attempt refused: WebFetch"}]
 
 
 def test_the_export_carries_the_out_of_profile_state(root, tmp_path):

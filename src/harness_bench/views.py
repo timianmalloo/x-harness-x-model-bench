@@ -13,13 +13,16 @@ Rules, each defined once here:
 - Validity, tokens, the time split, leaderboard rows and exports are derived, never stored. A value that
   was not measured is a `Measure(None, reason)`, never 0 (US-27).
 - Validity, in order: an invalidating cause; `invalid (build mismatch)` (HB-VAL-007, R-47); not graded;
-  `invalid (tools denied by hook)` (HB-VAL-004, R-27); `invalid (model mismatch)` (HB-VAL-002) for a served model
+  `invalid (tools denied by hook)` (HB-VAL-004, R-27); `invalid (out-of-profile tool called)` (HB-VAL-008, R-45 item
+  2, R-54) for a class-`other` tool call that executed; `invalid (model mismatch)` (HB-VAL-002) for a served model
   that is not the pin, a declared auxiliary model, or one the task's `model_map` names (US-11), even in a partial
   record; `not recorded` for an unreadable usage record (HB-VAL-003, R-15), distinct from `invalid (no model call)`
   (HB-VAL-001, a readable record with no call); else valid.
 - Warnings flag a cell without changing its validity: HB-VAL-005 (Σ model_calls vs the ACP turn total, R-24/R-26
-  c5) and HB-VAL-006 (the executed-build check skipped, R-22 c1, R-47). One code has one level and one emitter; a
-  `Cause` code is never a view finding (R-47).
+  c5), HB-VAL-006 (the executed-build check skipped, R-22 c1, R-47) and HB-VAL-009 (an out-of-profile attempt the
+  driver or a native hook refused, R-54). One code has one level and one emitter; a `Cause` code is never a view
+  finding (R-47).
+- `meta_calls` counts class-`meta` tool calls per cell (Claude Code's `ToolSearch`): a cost axis, never scored (R-54 c3).
 """
 
 from __future__ import annotations
@@ -102,7 +105,7 @@ class CellView:
     outcome: str  # completed | timed_out | failed | not started | no outcome (launched; the run is incomplete)
     cause: str | None  # the cause's report label
     code: str | None
-    validity: str  # valid | invalid (<attribution>) | invalid (no model call) | invalid (model mismatch) | not recorded | not graded | not started | no outcome
+    validity: str  # valid | invalid (<attribution>) | invalid (...) as status.VALIDITY names them | not recorded | not graded | not started | no outcome
     validity_code: str | None
     wall_ms: Measure
     model_ms: Measure
@@ -115,6 +118,7 @@ class CellView:
     evidence: dict[str, str] = field(default_factory=dict)
     extraction_id: str | None = None
     warnings: list[Finding] = field(default_factory=list)  # view checks that flag a cell without changing its validity
+    meta_calls: Measure = field(default_factory=lambda: Measure(None, "not graded"))  # R-54 c3: a cost axis, never scored
 
 
 @dataclass
@@ -298,6 +302,40 @@ def _token_cross_check(ended: dict, calls: list[ModelCall]) -> Finding | None:
     return Finding("HB-VAL-005", "warning", "model_calls tokens differ from the ACP turn total: " + "; ".join(diffs))
 
 
+OTHER = "other"  # the readers' class for a tool outside ADR-0004's profile (claude_code, codex, copilot TOOL_CLASS)
+META = "meta"  # R-54 (a): loads a deferred tool's schema and invokes nothing (Claude Code's ToolSearch)
+
+
+def _out_of_profile(tools: list[dict], permission_requests) -> tuple[Finding | None, Finding | None]:
+    """R-45 item 2 as refined by R-54 (b): (HB-VAL-008 error for the class-`other` calls that executed, HB-VAL-009 warning
+    for the ones that were refused), each None when there is none.
+
+    Refused: a native hook denied it (Copilot's denial envelope, `outcome_code` "denied"), or it failed (`ok` 0) and the
+    driver counted a permission request for it (Claude Code: the driver cancels every request, `driver.py`). One counted
+    request refuses one failed row. The refusal signal is the driver's count or the native envelope, never the model's
+    prose. Anything else executed: `ok` 1; `ok` null, which is never refused (every Codex `exec` row); or a failure no
+    counted request accounts for (the Codex Q1 `McpToolCall` failed at the connector, so it left the cell, R-55).
+    assume: a counted request belongs to a failed class-`other` row before any other row. Confirm: allowlisted in-class ids
+    never prompt (R-34's static test keeps each in the allowlist). Breaks: a request for an in-class id would refuse one
+    executed `other` row; that row is still named in the HB-VAL-009 warning, never hidden."""
+    requests = permission_requests if is_count(permission_requests) else 0
+    executed: list[str] = []
+    refused: list[str] = []
+    for r in tools:
+        if r.get("tool_class") != OTHER:
+            continue
+        if r.get("outcome_code") == normalize.HOOK_DENIED:
+            refused.append(r["name"])
+        elif r.get("ok") == 0 and requests > 0:
+            requests -= 1
+            refused.append(r["name"])
+        else:
+            executed.append(r["name"])
+    error = Finding("HB-VAL-008", "error", "out-of-profile tool called: " + ", ".join(executed)) if executed else None
+    warning = Finding("HB-VAL-009", "warning", "out-of-profile attempt refused: " + ", ".join(refused)) if refused else None
+    return error, warning
+
+
 def _unrecorded(source: str, record_reason: str | None, ended: dict, usage: list) -> str | None:
     """Why the cell's authoritative usage record is not recorded (R-15, R-21 c2), or None when it was read.
 
@@ -312,7 +350,7 @@ def _unrecorded(source: str, record_reason: str | None, ended: dict, usage: list
 
 def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: set[str] | None,
               unrecorded: str | None = None, denials: int = 0, mapped: frozenset[str] = frozenset(),
-              build: Finding | None = None) -> tuple[str, str | None]:
+              build: Finding | None = None, out_of_profile: Finding | None = None) -> tuple[str, str | None]:
     if outcome is None:
         return state, None  # not started | no outcome
     cause = Cause[outcome["cause"]] if outcome.get("cause") else None
@@ -324,6 +362,11 @@ def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: 
         return "not graded", None
     if denials:  # R-27: measured, so it outranks a record that is otherwise unreadable
         return "invalid (tools denied by hook)", "HB-VAL-004"
+    # R-45 item 2, R-54: the slot is this track's choice (the rulings leave it open). After HB-VAL-004: both are the tool
+    # treatment (US-14), and a hook denial is the narrower, pack-specific finding, so R-27's negative control keeps its
+    # code. Before the model mismatch and "not recorded": an executed call is measured even in a partial record (D&P).
+    if out_of_profile is not None:
+        return "invalid (out-of-profile tool called)", out_of_profile.code
     # A served model that is neither the pin, a declared auxiliary model, nor one the task's model_map names. Seen in a
     # partial record it is still measured, so it outranks "not recorded" (D&P); an empty served set cannot mismatch.
     if any(not profiles.model_allowed(m, cell["model"], prof["auxiliary_models"]) and m not in mapped for m in served):
@@ -364,6 +407,8 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     unrecorded = _unrecorded(source, record_reason, ended, usage)
     build = _build_check(plan, cell["harness"], events["attempt.session_opened"]) if "attempt.session_opened" in events else None
     warnings = [build] if build is not None and build.level == "warning" else []
+    executed, refused = _out_of_profile(tools or [], (outcome or {}).get("permission_requests"))
+    warnings.append(refused)
     if cell["harness"] in ACP_TOTAL_HARNESSES and source == "native_record" and calls is not None and unrecorded is None:
         warnings.append(_token_cross_check(ended, ex.model_calls))
     totals = normalize.totals(source, ex, usage) if recorded and unrecorded is None else {}
@@ -373,15 +418,18 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
         tokens_reason = None if totals else ("not graded" if not recorded else "no usage recorded")
     wall = _wall(events)  # lifecycle-derived: never gated on the native record
     if record_reason is not None:  # Codex F1: every native-record measure is NA with the reason, never a partial one
-        model = tool = idle = per_cell = Measure(None, record_reason)
+        model = tool = idle = per_cell = meta = Measure(None, record_reason)
     else:
         model = _model_time(source, calls)
         tool = Measure(None, "not graded") if tools is None else busy_ms(tools)
         idle = _idle(wall, model, tool)
         per_cell = calls_per_cell(ex.model_calls if calls else None)
+        meta = Measure(None, "not graded") if tools is None else Measure(sum(1 for r in tools if r.get("tool_class") == META))
     state = outcome["outcome"] if outcome else ("no outcome" if "cell.launch_intent" in events else "not started")
-    validity, validity_code = _validity(cell, prof, outcome, state, served, unrecorded, normalize.hook_denials(tools or []),
-                                        _mapped(plan, cell), build)
+    # R-54 (b): a class-`other` row a hook denied is a refused attempt (HB-VAL-009), not an R-27 treatment denial.
+    denials = normalize.hook_denials([r for r in tools or [] if r.get("tool_class") != OTHER])
+    validity, validity_code = _validity(cell, prof, outcome, state, served, unrecorded, denials, _mapped(plan, cell), build,
+                                        executed)
     cause = Cause[outcome["cause"]] if outcome and outcome.get("cause") else None
     return CellView(
         cell_id=cid, label=cell.get("label", cid), combo=cell["combo"], pack=cell["pack"], harness=cell["harness"], model=cell["model"],
@@ -391,7 +439,7 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
         tokens=totals or None, tokens_reason=tokens_reason, calls_per_cell=per_cell,
         scores={m: Measure(s["value"], s["reason"]) for m, s in now.items()},
         evidence={m: s["evidence"] for m, s in now.items() if s.get("evidence")}, extraction_id=extraction,
-        warnings=[w for w in warnings if w is not None])
+        warnings=[w for w in warnings if w is not None], meta_calls=meta)
 
 
 def load(run_dir: Path, catalog_version: str | None = None) -> RunView:
@@ -480,7 +528,7 @@ def export(view: RunView) -> bytes:
     cells = [{"cell_id": c.cell_id, "label": c.label, "outcome": c.outcome, "cause": c.cause, "code": c.code,
               "validity": c.validity, "validity_code": c.validity_code, "wall_ms": _enc(c.wall_ms), "model_ms": _enc(c.model_ms),
               "tool_ms": _enc(c.tool_ms), "idle_ms": _enc(c.idle_ms), "tokens": c.tokens, "tokens_reason": c.tokens_reason,
-              "scores": _enc(c.scores), "extraction_id": c.extraction_id,
+              "scores": _enc(c.scores), "extraction_id": c.extraction_id, "meta_calls": _enc(c.meta_calls),
               "warnings": [{"code": w.code, "level": w.level, "message": w.message} for w in c.warnings]}
              for c in sorted(view.cells, key=lambda c: c.cell_id)]
     board = [{"combo": r.combo, "pack": r.pack, "n_cells": r.n_cells, "n_valid": r.n_valid, "pass_at_1": _enc(r.pass_at_1),
