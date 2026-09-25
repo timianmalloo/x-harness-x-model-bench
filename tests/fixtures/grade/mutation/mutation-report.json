@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "2",
+  "thresholds": {
+    "high": 80,
+    "low": 60,
+    "break": 0
+  },
+  "projectRoot": "C:\\Projects\\d1",
+  "files": {
+    "src/AiDe.Core/Projections/EvidenceCensusProjection.cs": {
+      "language": "cs",
+      "source": "// evidence census projection",
+      "mutants": [
+        {"id": "1", "mutatorName": "Equality", "status": "Killed"},
+        {"id": "2", "mutatorName": "Equality", "status": "Killed"},
+        {"id": "3", "mutatorName": "Equality", "status": "Killed"},
+        {"id": "4", "mutatorName": "Equality", "status": "Killed"},
+        {"id": "5", "mutatorName": "Equality", "status": "Killed"},
+        {"id": "6", "mutatorName": "Equality", "status": "Killed"},
+        {"id": "7", "mutatorName": "Equality", "status": "Killed"},
+        {"id": "8", "mutatorName": "Equality", "status": "Killed"},
+        {"id": "9", "mutatorName": "Equality", "status": "Killed"},
+        {"id": "10", "mutatorName": "Equality", "status": "Killed"},
+        {"id": "11", "mutatorName": "Equality", "status": "Killed"},
+        {"id": "12", "mutatorName": "Equality", "status": "Killed"},
+        {"id": "13", "mutatorName": "Equality", "status": "Survived"},
+        {"id": "14", "mutatorName": "Equality", "status": "Survived"},
+        {"id": "15", "mutatorName": "Equality", "status": "CompileError"},
+        {"id": "16", "mutatorName": "Equality", "status": "Ignored"}
+      ]
+    }
+  }
+}
