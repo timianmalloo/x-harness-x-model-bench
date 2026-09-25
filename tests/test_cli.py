@@ -410,3 +410,16 @@ def test_answer_refuses_what_the_engine_could_not_apply(capsys, root, tmp_path):
         assert _bench_exit(capsys, root, later, "answer", "r1", "D1", "stop") == (
             1, "", "HB-USR-002: decision D1 is not open (default applied (timeout)); nothing to answer\n")
     assert not (run_dir / "control").exists()
+
+
+def test_answer_writes_an_atomic_control_file(capsys, root, tmp_path):  # CLI-4 (design 4.1, 4.2)
+    run_dir = _decision_run(root, tmp_path)
+    with oslock.RunLock.acquire(run_dir / ".lock", "HB-RUN-003"):
+        code, out, err = _bench_exit(capsys, root, tmp_path, "answer", "r1", "D1", "stop")
+    assert (code, err) == (0, "")
+    files = list((run_dir / "control").glob("*.json"))
+    assert len(files) == 1 and not list((run_dir / "control").glob("*.tmp"))
+    data = json.loads(files[0].read_text(encoding="utf-8"))
+    assert data == {"schema": "bench-control/1", "uuid": files[0].stem, "control": "answer", "decision_id": "D1",
+                    "option": "stop", "requested_at": data["requested_at"]}
+    assert out == f"answer requested ({files[0].stem}): D1 stop. bench status r1 shows the decision's state.\n"
