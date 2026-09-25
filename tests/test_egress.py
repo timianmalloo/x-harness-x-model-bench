@@ -206,6 +206,13 @@ TRANSFORMED = {
 }
 
 
+def test_a_decoding_that_is_mostly_invalid_bytes_is_noise_not_a_view():
+    # Replacement characters count against a decoded run, so decoding ordinary words adds no views (a probe on the
+    # spec and design docs measured 3 views, 6 when they counted as printable).
+    assert egress._printable(bytes([0xFF] * 4) + b"ab") == ""
+    assert egress._printable(b"\x07" + b"a" * 9) == "a" * 9
+
+
 def _wrapped(text: str, width: int = 12) -> str:
     """MIME-style: the text in lines of `width` characters."""
     return "\n".join(text[i:i + width] for i in range(0, len(text), width))

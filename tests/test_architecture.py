@@ -127,10 +127,11 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
             expr = expr.func if isinstance(expr, ast.Call) else expr.value
         return (expr.id if isinstance(expr, ast.Name) else None), attrs[::-1]
 
-    def sink_calls(top: ast.stmt, al: dict[str, str], rel_released: set[int], spawners: set[str]) -> list[ast.Call]:
+    def sink_calls(top: ast.stmt, al: dict[str, str], rel_released: set[int]) -> list[ast.Call]:
         """Unreleased backend calls in one top-level statement: a call into procs; a call rooted at a parameter that
         is not plain data (an injected backend, `backend(p)` or `backend.judge(p)`); or a call on `self.<attr>` where
-        the attribute is assigned from such a parameter or from a spawner (Fable Major 2)."""
+        the attribute is assigned from such a parameter (Fable Major 2). `self.<attr>` assigned from a spawner needs
+        no rule here: that assignment is itself an unreleased reference to the spawner, which offenders reports."""
         receivers = {f.args.args[0].arg for c in ast.walk(top) if isinstance(c, ast.ClassDef) for f in c.body
                      if isinstance(f, (ast.FunctionDef, ast.AsyncFunctionDef)) and f.args.args}
         params = {a.arg for f in ast.walk(top) if isinstance(f, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda))
@@ -138,8 +139,7 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
                   if a.arg not in receivers and not data_typed(a.annotation)}
         tainted = {t.attr for n in ast.walk(top) if isinstance(n, ast.Assign) for t in n.targets
                    if isinstance(t, ast.Attribute) and isinstance(t.value, ast.Name) and t.value.id in receivers
-                   and any(isinstance(v, ast.Name) and v.id in params | spawners or
-                           isinstance(v, ast.Attribute) and v.attr in spawners for v in ast.walk(n.value))}
+                   and any(isinstance(v, ast.Name) and v.id in params for v in ast.walk(n.value))}
 
         def is_sink(call: ast.Call) -> bool:
             base, attrs = root(call.func)
@@ -163,18 +163,13 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
                              if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) and n.func.attr == "release"
                              and (is_check(n.func.value) or isinstance(n.func.value, ast.Name) and n.func.value.id in checked)
                              for arg in [*n.args, *(k.value for k in n.keywords)] for sub in ast.walk(arg)}
-        while True:  # a fixpoint: a self attribute assigned from a spawner makes its class a spawner (Fable Major 2)
-            before, top_level = set(spawners), []
-            for rel in inside:
-                for top in trees[rel].body:
-                    sinks = sink_calls(top, names[rel], released[rel], spawners)
-                    if sinks and isinstance(top, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                        spawners.add(top.name)
-                    elif sinks:
-                        top_level.append(f"{rel}:{sinks[0].lineno}: a backend call outside any release")
-            if spawners == before:
-                break
-        found += top_level
+        for rel in inside:
+            for top in trees[rel].body:
+                sinks = sink_calls(top, names[rel], released[rel])
+                if sinks and isinstance(top, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                    spawners.add(top.name)
+                elif sinks:
+                    found.append(f"{rel}:{sinks[0].lineno}: a backend call outside any release")
         bound, used = False, set()
         for rel in inside:
             for n in ast.walk(trees[rel]):
