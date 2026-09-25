@@ -478,7 +478,9 @@ def test_copilot_plan_logs_failed_cleanup_without_masking_instruction_error(monk
 def test_cmd_plan_passes_configured_tools_and_cells_roots_to_probe(monkeypatch, tmp_path):
     matrix = config.load_yaml(ROOT / "bench" / "matrix.phase1.yaml")
     bom = config.load_yaml(ROOT / "bench" / "bom.yaml")
-    monkeypatch.setattr(cli.config, "load_yaml", lambda path: bom if Path(path).name == "bom.yaml" else matrix)
+    real = config.load_yaml  # bench/task-freeze.yaml is read for real (seam S-3)
+    monkeypatch.setattr(cli.config, "load_yaml", lambda path: {"bom.yaml": bom, "matrix.phase1.yaml": matrix}.get(Path(path).name)
+                        or real(path))
     monkeypatch.setattr(cli.config, "validate_matrix", lambda *args: None)
     monkeypatch.setattr(cli.tools, "resolve", lambda path: {})
     monkeypatch.setattr(cli, "_pack", lambda *args: {"source": "pack", "commit": "c" * 40, "revision": 1})
