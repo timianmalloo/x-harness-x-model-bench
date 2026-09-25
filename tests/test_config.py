@@ -117,3 +117,11 @@ def test_ready_task_with_generated_folder_in_workspace_is_rejected(tmp_path):  #
     entry = {"id": "X3", "scenario": 5, "budget_minutes": 45}
     config.validate_task(d, entry, p, config.grader_modules(ROOT), config.pack_marker_bytes(ROOT))
     assert "tasks/X3: workspace/obj/ is a generated or cache folder and must not be vendored" in p.items
+
+
+def test_ready_scenario1_task_without_clarifications_is_rejected(tmp_path):  # US-2
+    d = _ready_task(tmp_path, "X1", scenario=1, scripted_user=True)
+    p = config.Problems()
+    entry = {"id": "X1", "scenario": 1, "budget_minutes": 45}
+    config.validate_task(d, entry, p, config.grader_modules(ROOT), config.pack_marker_bytes(ROOT))
+    assert "tasks/X1: status ready requires oracle/clarifications.yaml for scenario 1" in p.items
