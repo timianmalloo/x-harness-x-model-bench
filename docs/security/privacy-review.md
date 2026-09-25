@@ -11,8 +11,10 @@ links:
   - { to: design-phase1-walking-skeleton, rel: documents }
   - { to: design-run-lifecycle-model, rel: documents }
   - { to: design-phase2-copilot-profile, rel: documents }
+  - { to: design-phase3-gateway-judges, rel: documents }
 review-by: "2027-03-22"
-review-suggested: []
+review-suggested:
+  - { by: design-phase3-gateway-judges, on: 2026-09-25, reason: "row-17 gateway design gated (rev 3): Fable judge, Codex not qualified (DR-GW-1), CLI-added context (DR-GW-5)" }
 summary: >-
   The only personal data is the operator's own: the account email that appears in harness transcripts,
   and the username in home paths. Both stay in local, gitignored run archives; the report embeds no
@@ -46,8 +48,13 @@ python3 docs/ai-forward-pack/scripts/docs-graph.py rollup --heading "Privacy ana
 | [design-phase2-copilot-profile](../design/phase2-copilot-profile.md) | The same, in the capture that becomes committed samples | Disclosure, linkability | mitigate | scrub-rule/3 (paths rewritten, identifiers replaced, opaque keys blanked, every `system.message` field except its identity digested); fail-closed leak check | Git history (scrubbed only) |
 | [design-phase2-copilot-profile](../design/phase2-copilot-profile.md) | Vendor system prompt and request bodies | Disclosure | mitigate | Digest plus marker list, as a class (section 12), with a scrub-time control. Rule 2 missed `system.message.contentBlocks`; it was re-scrubbed in `f952f87`, and the branch is squash-merged so the blob never reaches main (R-30 condition 3) | Not committed |
 | [design-phase2-copilot-profile](../design/phase2-copilot-profile.md) | What a committed sample holds | Unawareness | mitigate | `provenance.json` states the rule, the counts and the hashes | With the sample |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | Artifact text → vendor | D: an agent wrote the operator's e-mail, user name or home path into an artifact | mitigate | `egress.check`; `HB-GW-009` | nothing sent; archive per `runs/` retention (P1 deletes) |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | CLI context → vendor | D/I: Claude adds the account e-mail and org UUID (both measured text-mode turns; Inferred: every call); Codex adds `C:/Users/<user>/.agents/skills` and 6 skill descriptions | detect; disposition DR-GW-5 | report-time detector and header disclosure. The same context reaches each vendor in every cell of that harness today | vendor retention per the operator's plan |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | Judge records → local archive | I: records hold the e-mail, user name and home path | mitigate | local `runs/`, never published (spec `:572`); T-GW-34 | P1 deletes `runs/` |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | Judge calls → vendor account | L: calls linked to the operator's subscription | accept | ADR-0009 accepted it (subscriptions only) | vendor retention |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | Calibration labels | I: the operator's judgements, committed | accept | scores only | git history; the operator can remove the file |
 
-<!-- rolled up from 2 artifact(s) by docs-graph.py rollup on 2026-09-24 -->
+<!-- rolled up from 3 artifact(s) by docs-graph.py rollup on 2026-09-25 -->
 
 `design-run-lifecycle-model` touches no personal data (its section says so and is not a findings table).
 
@@ -68,6 +75,8 @@ The model providers (Anthropic, OpenAI, GitHub) receive prompts through the oper
 | Finding | Accepted by | Rationale | Residual risk | Revisit when |
 | --- | --- | --- | --- | --- |
 | Archives keep full transcripts with the operator's email | @timianmalloo (ADR-0012) | The operator's own data, on their own machine | A shared archive would carry it | Archives are shared or published |
+| Judge CLIs add the account e-mail (Claude) and the operator's skill root with user name and home path (Codex) to judge calls (design-phase3-gateway-judges, DR-GW-5) | **pending the Owner's DR-GW-5 ruling**; no live judge pass before it | The same context reaches each vendor in every cell of that harness; detected and disclosed per call | Those identifiers at the vendor that already holds the account | DR-GW-5 ruling |
+| Judge calls are linked to the operator's subscription | @timianmalloo (ADR-0009, subscriptions only) | No API keys by owner decision | Vendor-side linkage of judge traffic to the account | An API-key backend is adopted |
 
 ## 7. Gaps and flagged unknowns
 

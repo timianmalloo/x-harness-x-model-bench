@@ -11,10 +11,12 @@ links:
   - { to: design-phase1-walking-skeleton, rel: documents }
   - { to: design-run-lifecycle-model, rel: documents }
   - { to: design-phase2-copilot-profile, rel: documents }
+  - { to: design-phase3-gateway-judges, rel: documents }
   - { to: adr-0012-proportionate-security, rel: depends-on }
   - { to: adr-0013-native-cells, rel: depends-on }
 review-by: "2027-03-22"
-review-suggested: []
+review-suggested:
+  - { by: design-phase3-gateway-judges, on: 2026-09-25, reason: "row-17 gateway design gated (rev 3): Fable judge, Codex not qualified (DR-GW-1), CLI-added context (DR-GW-5)" }
 summary: >-
   harness-bench is a local benchmark run by one trusted operator (ADR-0012). Each cell works natively
   in its own git working copy, and nothing more (ADR-0013). The controls that remain protect result
@@ -77,8 +79,6 @@ flowchart LR
 | [design-phase1-walking-skeleton](../design/phase1-walking-skeleton.md) | Cell output ↔ host git | E: run an agent-written hook | mitigate | `gitsafe.py` flags | T-B6-fsmonitor |
 | [design-phase1-walking-skeleton](../design/phase1-walking-skeleton.md) | Credential ↔ published report | I: a token in a shared report | mitigate | Exact-value check before `bench report --publish`. The value set is built at publish time from the host's current credential files and every credential file in the archived cell homes (tokens rotated during a cell), each also in base64 and URL-encoded forms | T-SEC-report (positive controls: a planted host token, and a rotated token present only in an archived home, are both found, and publishing refuses) |
 | [design-phase1-walking-skeleton](../design/phase1-walking-skeleton.md) | Everything else in the former analysis | — | accept (owner) | ADR-0012 | — |
-| [design-run-lifecycle-model](../design/run-lifecycle-model.md) | The tla2tools.jar download | T: a substituted jar changes check results or runs code in CI | mitigate | Pinned release URL + sha256; delete on mismatch | `test_corrupted_tla_jar_is_deleted_and_refused` |
-| [design-run-lifecycle-model](../design/run-lifecycle-model.md) | CI runner executing the jar | E: third-party code in CI | accept (ADR-0012) | Upstream TLA+ tools, pinned by hash; CI job permissions `contents: read` | — |
 | [design-phase2-copilot-profile](../design/phase2-copilot-profile.md) | matrix → argv | T-1 Tampering: a model id beginning with `-` becomes a flag | accept (ADR-0012) | The matrix is operator-authored and the operator is the trust root; argv is a list, never a shell string | — |
 | [design-phase2-copilot-profile](../design/phase2-copilot-profile.md) | operator env → cell | S-1 Spoofing: a `gh` token with repository scopes becomes the cell's identity (O3) | mitigate | Drop `GH_TOKEN`, `GITHUB_TOKEN`, `GH_HOST` and `COPILOT_*` | each seeded name is absent from `cell_env` |
 | [design-phase2-copilot-profile](../design/phase2-copilot-profile.md) | cell → package cache | T-2 / E-1: a newer, unpinned binary answers (O4) | mitigate | `COPILOT_AUTO_UPDATE=false`; the exe re-hashed at every start; `agent_version` recorded (R-28) | one changed exe byte → `BuildChanged` |
@@ -87,8 +87,32 @@ flowchart LR
 | [design-phase2-copilot-profile](../design/phase2-copilot-profile.md) | cell home → archive | I-1 Information disclosure: `events.jsonl` holds the prompt, replies, tool output and paths | accept (local only) | the archive stays local; HB-SEC-001 unchanged; committed samples scrubbed (section 12) | the scrub's fail-closed leak check |
 | [design-phase2-copilot-profile](../design/phase2-copilot-profile.md) | record → report | R-1 Repudiation: a served-model claim without evidence | mitigate | served ids from the native `modelMetrics` | a renamed `modelMetrics` key → HB-VAL-002 |
 | [design-phase2-copilot-profile](../design/phase2-copilot-profile.md) | agent → shell | E-2: Copilot's `shell` runs unsandboxed | accept (ADR-0013, N1.1) | the same as the other harnesses natively | — |
+| [design-phase2-stop-decisions](../design/phase2-stop-decisions.md) | `runs/<run>/control/`, which any process of the operator's account can write, **including a cell's agent** (native cells run as the same user, ADR-0013) | S/T: a cell's agent writes a stop or an answer | accept (ADR-0012 scope: authored tasks, a trusted operator; `runs/` is outside the cell's working copy) | Every control is recorded (`control.applied{uuid, effect}` with its time) and shown in the run record. The effect set is closed: stop, or a listed option. The residual is a spurious stop or answer by an agent, visible in the ledger | R10-9, R10-8 |
+| [design-phase2-stop-decisions](../design/phase2-stop-decisions.md) | control file content | T/E: an oversized or crafted file (a path, nested JSON, a big string) | mitigate | ≤ 4 KiB; exact keys; enum values; the uuid and decision-id grammars; the stem equals the uuid; the name is never used as a path beyond `control/` | R10-9 |
+| [design-phase2-stop-decisions](../design/phase2-stop-decisions.md) | control file content | D: a flood of files | mitigate | Each tick reads one directory listing, and malformed files are moved aside once. `simplify:` no rate limit; upgrade trigger: a tick over 1 s in `engine.log` | — |
+| [design-phase2-stop-decisions](../design/phase2-stop-decisions.md) | `bench-status/1` → the coordinator session (B2) | I: cell text reaches the LLM session | mitigate | decisions carry only enums, ids and codes; `parse` rejects any free string | ST-3 |
+| [design-phase2-stop-decisions](../design/phase2-stop-decisions.md) | engine → adapter stdin | D: a stuck adapter blocks the engine thread | mitigate | only the worker writes stdin; the engine only sets an Event | R10-1 (the fake ignores stdin) |
+| [design-phase2-stop-decisions](../design/phase2-stop-decisions.md) | engine log | R: who stopped the run | accept | the ledger records the control's uuid and time, not its writer; the OS gives no writer identity for a file on this host | — |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | Cell artifact → judge request | T/E: prompt injection steers the verdict or a tool | mitigate | no tools (qualified judges only; per-call check); spotlighting fences; schema; ±1 jury check; injection flag | T-GW-02, T-GW-08, T-GW-32; EGRESS s2 live fixture |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | Cell artifact → judge request | I: a secret or the operator's identifiers in the artifact | mitigate | `egress.check` before `release` | T-GW-18 (canary → `HB-GW-009`; the fake backend receives nothing) |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | Cell artifact → judge request | I: harness/model/pack identity leaks (bias) | mitigate | scrub + independent scan | T-GW-03, T-GW-04 |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | Cell artifact → CLI argv | T/E: argv injection by quotes or flags | mitigate | the request on stdin | T-GW-37 |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | Filesystem around the call | E/I: repo instruction files, skills or hooks load into the judge | mitigate | cells-root call folders; `check_cells_root` before the first spawn | T-GW-26b |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | Gateway → CLI process | I: credential exposure | mitigate | per-call copy inside `try`, deleted in `finally`, swept at pass start and end, `verify` error; env scrubbed; never an API key; secret values never logged | T-GW-10 |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | Gateway → CLI process | S: a different binary | mitigate | exe re-hash against the judge entry's build | T-GW-15 |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | Gateway → unqualified judge | E: a tool-bearing CLI receives hostile text | mitigate | `qualified: false` is never spawned | T-GW-32 |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | CLI → vendor | I: account e-mail (Claude), skill root with user name and home path (Codex), self-identity (both) | detect; disposition DR-GW-5; no live pass before the ruling | report-time detector; header disclosure | T-GW-24 |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | Vendor → verdict | T: malformed or oversized answer | mitigate | schema validator | T-GW-05 |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | Store | T: an entry planted or edited by a cell agent | mitigate | hit accepted only with a matching hash-chained storing row | T-GW-13b |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | Store | R: which call produced a verdict | mitigate | `stored_by`, `native_session_id`, the archived record | T-GW-31 |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | `bench grade --allow-model-calls`, `calibrate.py` | E/D: model calls during a live run (R-9 confound) | mitigate | the refusal inside the gateway, across worktrees | T-GW-19, 19b |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | Report | I/T: a rationale carries script | mitigate | `html._e` | T-GW-36 |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | Archive | I: judge records hold identifiers | mitigate | `runs/` never published; no export embeds a record | T-GW-34 |
+| [design-phase3-gateway-judges](../design/phase3-gateway-judges.md) | Calibration | T: labels shaped by verdicts | mitigate | set check before any spawn | T-GW-16 |
+| [design-run-lifecycle-model](../design/run-lifecycle-model.md) | The tla2tools.jar download | T: a substituted jar changes check results or runs code in CI | mitigate | Pinned release URL + sha256; delete on mismatch | `test_corrupted_tla_jar_is_deleted_and_refused` |
+| [design-run-lifecycle-model](../design/run-lifecycle-model.md) | CI runner executing the jar | E: third-party code in CI | accept (ADR-0012) | Upstream TLA+ tools, pinned by hash; CI job permissions `contents: read` | — |
 
-<!-- rolled up from 3 artifact(s) by docs-graph.py rollup on 2026-09-24 -->
+<!-- rolled up from 5 artifact(s) by docs-graph.py rollup on 2026-09-25 -->
 
 ## 3. Accepted-risk register
 
@@ -99,6 +123,9 @@ flowchart LR
 | Supply-chain provenance (SBOM, image and package allowlists) | @timianmalloo (ADR-0012) | Pinned versions and digests suffice for a local tool | A compromised pinned upstream | The tool is distributed to other users |
 | CI executing the pinned TLA+ jar | @timianmalloo (ADR-0012) | Upstream tool, hash-pinned; read-only job token | A compromised upstream release matching the pin is not credible | The pin changes |
 | Git as an entry point | @timianmalloo (ruling, 2026-09-23) | Git is a mechanism here, not an entry point | — | The tool accepts runs or tasks from a remote |
+| Judge CLI rotates the copied refresh token (design-phase3-gateway-judges §18) | **proposed, pending the Owner** (W3-GW-D) | The copy never returns to the source; the cells already copy the same credential | The operator may need to log in again (availability) | A judge pass ends in auth errors |
+| A run starts during a judge pass (§18) | **proposed, pending the Owner** (W3-GW-D) | The live-run refusal is checked before the first spawn (R-58 c3) | Account shared with a run for up to one pass (a TOCTOU gap) | Judge passes grow past minutes |
+| CLI-added context reaches the judge vendors (§7.4, DR-GW-5) | **pending the Owner's DR-GW-5 ruling**; no live judge pass before it | Measured and disclosed per call; the same context already reaches each vendor in every cell | Account e-mail (Claude), user name, home path and skill list (Codex) at the vendors | DR-GW-5 ruling |
 
 ## 4. Cross-cutting controls
 

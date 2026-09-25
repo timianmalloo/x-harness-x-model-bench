@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["items"],
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["item", "score", "rationale"],
+        "properties": {
+          "item": {"type": "integer", "enum": [1, 2]},
+          "score": {"type": "integer", "enum": [0, 1, 2]},
+          "rationale": {"type": "string"}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,619 @@
+{
+ "format": "gw-headless-probe/1",
+ "runs": [
+  {
+   "format": "gw-headless-probe/1",
+   "label": "claude-code-claude-fable-5-1-native-20260925T084512Z",
+   "harness": "claude-code",
+   "model": "claude-fable-5-1",
+   "schema_mode": "native",
+   "decoy_profile": true,
+   "build": {
+    "version": "2.1.282",
+    "sha256": "fc0e3af017705624b9e1bce913f72761864ff994804514da1f5e41380fca4484",
+    "adapter_version": "0.81.2",
+    "adapter_sha256": "7768f09223a942be762bd1d8bde72c936c69f79486f7ef5f131bd601e6bbb068",
+    "agent_version": null,
+    "agent_version_reason": "ACP initialize.agentInfo.version requires a live handshake; not recorded at plan time"
+   },
+   "captured_utc": "2026-09-25T08:45:18+00:00",
+   "nonce": "375acafb",
+   "session_id": "fc8c5a5f-1bfc-41fc-b186-c5d27f13f898",
+   "canaries": {
+    "instruction file above the working folder (CLAUDE.md)": "hb-gw-canary-0-375acafb",
+    "instruction file above the working folder (AGENTS.md)": "hb-gw-canary-1-375acafb",
+    "user memory (~/.claude/CLAUDE.md, via USERPROFILE)": "hb-gw-canary-2-375acafb",
+    "user memory (~/.codex/AGENTS.md, via USERPROFILE)": "hb-gw-canary-3-375acafb",
+    "skill (~/.claude/skills, via USERPROFILE)": "hb-gw-canary-4-375acafb",
+    "skill (~/.agents/skills, via USERPROFILE)": "hb-gw-canary-5-375acafb"
+   },
+   "exit": {
+    "returncode": 0,
+    "timed_out": false,
+    "truncated": false,
+    "seconds": 5.7
+   },
+   "home_written": {
+    ".claude.json": 1,
+    ".last-cleanup": 1,
+    "backups": 1,
+    "projects": 1
+   },
+   "credential_copy_deleted": true,
+   "facts": {
+    "record_found": true,
+    "served_models": [
+     "claude-fable-5-1"
+    ],
+    "served_equals_pin": true,
+    "model_calls": 1,
+    "usage_record": {
+     "uncached_input": 2,
+     "cache_read": 0,
+     "cache_write": 1258,
+     "output": 353
+    },
+    "missing_usage_fields": [],
+    "provider_errors": [],
+    "tool_events": 1,
+    "tool_names": [
+     "StructuredOutput"
+    ],
+    "tools_advertised": [
+     "StructuredOutput"
+    ],
+    "account_connector_tools": 0,
+    "context_kinds": [
+     "attachment:date",
+     "attachment:environment",
+     "attachment:model",
+     "attachment:prompt_snapshot",
+     "attachment:session_context",
+     "attachment:structured_output",
+     "attachment:total_tokens_reminder"
+    ],
+    "system_prompt_in_record": true,
+    "prompt_intact": true,
+    "reads": {
+     "canaries": {},
+     "operator skills": {},
+     "operator identifiers": {},
+     "pack markers": {}
+    },
+    "stdout": {
+     "parsed": true,
+     "subtype": "success",
+     "is_error": false,
+     "num_turns": 2,
+     "permission_denials": 0,
+     "models": [
+      "claude-fable-5-1"
+     ],
+     "usage": {
+      "input_tokens": 2,
+      "cache_creation_input_tokens": 1258,
+      "cache_read_input_tokens": 0,
+      "output_tokens": 353
+     }
+    },
+    "final": {
+     "source": "structured_output",
+     "schema_errors": [],
+     "scores": [
+      2,
+      2
+     ],
+     "host_name_in_final": false
+    },
+    "qualified": false,
+    "reasons": [
+     "1 tool event(s) in the record: ['StructuredOutput']",
+     "tools advertised: ['StructuredOutput']"
+    ]
+   }
+  },
+  {
+   "format": "gw-headless-probe/1",
+   "label": "claude-code-claude-fable-5-1-text-20260925T084506Z",
+   "harness": "claude-code",
+   "model": "claude-fable-5-1",
+   "schema_mode": "text",
+   "decoy_profile": true,
+   "build": {
+    "version": "2.1.282",
+    "sha256": "fc0e3af017705624b9e1bce913f72761864ff994804514da1f5e41380fca4484",
+    "adapter_version": "0.81.2",
+    "adapter_sha256": "7768f09223a942be762bd1d8bde72c936c69f79486f7ef5f131bd601e6bbb068",
+    "agent_version": null,
+    "agent_version_reason": "ACP initialize.agentInfo.version requires a live handshake; not recorded at plan time"
+   },
+   "captured_utc": "2026-09-25T08:45:11+00:00",
+   "nonce": "22d8a6a3",
+   "session_id": "850a87eb-7f16-42ca-b9da-9caafbf138ba",
+   "canaries": {
+    "instruction file above the working folder (CLAUDE.md)": "hb-gw-canary-0-22d8a6a3",
+    "instruction file above the working folder (AGENTS.md)": "hb-gw-canary-1-22d8a6a3",
+    "user memory (~/.claude/CLAUDE.md, via USERPROFILE)": "hb-gw-canary-2-22d8a6a3",
+    "user memory (~/.codex/AGENTS.md, via USERPROFILE)": "hb-gw-canary-3-22d8a6a3",
+    "skill (~/.claude/skills, via USERPROFILE)": "hb-gw-canary-4-22d8a6a3",
+    "skill (~/.agents/skills, via USERPROFILE)": "hb-gw-canary-5-22d8a6a3"
+   },
+   "exit": {
+    "returncode": 0,
+    "timed_out": false,
+    "truncated": false,
+    "seconds": 5.3
+   },
+   "home_written": {
+    ".claude.json": 1,
+    "backups": 1,
+    "projects": 1
+   },
+   "credential_copy_deleted": true,
+   "facts": {
+    "record_found": true,
+    "served_models": [
+     "claude-fable-5-1"
+    ],
+    "served_equals_pin": true,
+    "model_calls": 1,
+    "usage_record": {
+     "uncached_input": 2,
+     "cache_read": 0,
+     "cache_write": 837,
+     "output": 284
+    },
+    "missing_usage_fields": [],
+    "provider_errors": [],
+    "tool_events": 0,
+    "tool_names": [],
+    "tools_advertised": [],
+    "account_connector_tools": 0,
+    "context_kinds": [
+     "attachment:credential_org",
+     "attachment:date",
+     "attachment:environment",
+     "attachment:model",
+     "attachment:prompt_snapshot",
+     "attachment:session_context",
+     "attachment:total_tokens_reminder"
+    ],
+    "system_prompt_in_record": true,
+    "prompt_intact": true,
+    "reads": {
+     "canaries": {},
+     "operator skills": {},
+     "operator identifiers": {
+      "git e-mail": [
+       "attachment/session_context:attachment.context.userEmail",
+       "attachment/session_context:rendered[].content"
+      ]
+     },
+     "pack markers": {}
+    },
+    "stdout": {
+     "parsed": true,
+     "subtype": "success",
+     "is_error": false,
+     "num_turns": 1,
+     "permission_denials": 0,
+     "models": [
+      "claude-fable-5-1"
+     ],
+     "usage": {
+      "input_tokens": 2,
+      "cache_creation_input_tokens": 837,
+      "cache_read_input_tokens": 0,
+      "output_tokens": 284
+     }
+    },
+    "final": {
+     "source": "text",
+     "schema_errors": [],
+     "scores": [
+      2,
+      2
+     ],
+     "host_name_in_final": false
+    },
+    "qualified": false,
+    "reasons": [
+     "operator identifiers present: ['git e-mail']"
+    ]
+   }
+  },
+  {
+   "format": "gw-headless-probe/1",
+   "label": "claude-code-claude-opus-5-5-text-20260925T084518Z",
+   "harness": "claude-code",
+   "model": "claude-opus-5-5",
+   "schema_mode": "text",
+   "decoy_profile": true,
+   "build": {
+    "version": "2.1.282",
+    "sha256": "fc0e3af017705624b9e1bce913f72761864ff994804514da1f5e41380fca4484",
+    "adapter_version": "0.81.2",
+    "adapter_sha256": "7768f09223a942be762bd1d8bde72c936c69f79486f7ef5f131bd601e6bbb068",
+    "agent_version": null,
+    "agent_version_reason": "ACP initialize.agentInfo.version requires a live handshake; not recorded at plan time"
+   },
+   "captured_utc": "2026-09-25T08:45:25+00:00",
+   "nonce": "5969a206",
+   "session_id": "157c523f-7dc3-459f-b210-a6604c6ccbbf",
+   "canaries": {
+    "instruction file above the working folder (CLAUDE.md)": "hb-gw-canary-0-5969a206",
+    "instruction file above the working folder (AGENTS.md)": "hb-gw-canary-1-5969a206",
+    "user memory (~/.claude/CLAUDE.md, via USERPROFILE)": "hb-gw-canary-2-5969a206",
+    "user memory (~/.codex/AGENTS.md, via USERPROFILE)": "hb-gw-canary-3-5969a206",
+    "skill (~/.claude/skills, via USERPROFILE)": "hb-gw-canary-4-5969a206",
+    "skill (~/.agents/skills, via USERPROFILE)": "hb-gw-canary-5-5969a206"
+   },
+   "exit": {
+    "returncode": 0,
+    "timed_out": false,
+    "truncated": false,
+    "seconds": 6.2
+   },
+   "home_written": {
+    ".claude.json": 1,
+    ".last-cleanup": 1,
+    "backups": 1,
+    "projects": 1
+   },
+   "credential_copy_deleted": true,
+   "facts": {
+    "record_found": true,
+    "served_models": [
+     "claude-opus-5-5"
+    ],
+    "served_equals_pin": true,
+    "model_calls": 1,
+    "usage_record": {
+     "uncached_input": 2,
+     "cache_read": 0,
+     "cache_write": 828,
+     "output": 358
+    },
+    "missing_usage_fields": [],
+    "provider_errors": [],
+    "tool_events": 0,
+    "tool_names": [],
+    "tools_advertised": [],
+    "account_connector_tools": 0,
+    "context_kinds": [
+     "attachment:credential_org",
+     "attachment:date",
+     "attachment:environment",
+     "attachment:model",
+     "attachment:prompt_snapshot",
+     "attachment:session_context",
+     "attachment:total_tokens_reminder"
+    ],
+    "system_prompt_in_record": true,
+    "prompt_intact": true,
+    "reads": {
+     "canaries": {},
+     "operator skills": {},
+     "operator identifiers": {
+      "git e-mail": [
+       "attachment/session_context:attachment.context.userEmail",
+       "attachment/session_context:rendered[].content"
+      ]
+     },
+     "pack markers": {}
+    },
+    "stdout": {
+     "parsed": true,
+     "subtype": "success",
+     "is_error": false,
+     "num_turns": 1,
+     "permission_denials": 0,
+     "models": [
+      "claude-opus-5-5"
+     ],
+     "usage": {
+      "input_tokens": 2,
+      "cache_creation_input_tokens": 828,
+      "cache_read_input_tokens": 0,
+      "output_tokens": 358
+     }
+    },
+    "final": {
+     "source": "text",
+     "schema_errors": [],
+     "scores": [
+      2,
+      2
+     ],
+     "host_name_in_final": false
+    },
+    "qualified": false,
+    "reasons": [
+     "operator identifiers present: ['git e-mail']"
+    ]
+   }
+  },
+  {
+   "format": "gw-headless-probe/1",
+   "label": "codex-gpt-6-sol-native-20260925T084539Z",
+   "harness": "codex",
+   "model": "gpt-6-sol",
+   "schema_mode": "native",
+   "decoy_profile": true,
+   "build": {
+    "version": "0.156.0",
+    "sha256": "eabc698ea3b1c430623af0cae510c3459165ed453d2a5d2dac14513cf1b25269",
+    "adapter_version": "1.12.0",
+    "adapter_sha256": "69a628c68e3e10323b075fee3071c4ef991b973f0a825c8191ea6aba2fc870ff",
+    "agent_version": null,
+    "agent_version_reason": "ACP initialize.agentInfo.version requires a live handshake; not recorded at plan time"
+   },
+   "captured_utc": "2026-09-25T08:45:51+00:00",
+   "nonce": "1e736006",
+   "session_id": null,
+   "canaries": {
+    "instruction file above the working folder (CLAUDE.md)": "hb-gw-canary-0-1e736006",
+    "instruction file above the working folder (AGENTS.md)": "hb-gw-canary-1-1e736006",
+    "user memory (~/.claude/CLAUDE.md, via USERPROFILE)": "hb-gw-canary-2-1e736006",
+    "user memory (~/.codex/AGENTS.md, via USERPROFILE)": "hb-gw-canary-3-1e736006",
+    "skill (~/.claude/skills, via USERPROFILE)": "hb-gw-canary-4-1e736006",
+    "skill (~/.agents/skills, via USERPROFILE)": "hb-gw-canary-5-1e736006"
+   },
+   "exit": {
+    "returncode": 0,
+    "timed_out": false,
+    "truncated": false,
+    "seconds": 11.8
+   },
+   "home_written": {
+    "goals_1.sqlite": 1,
+    "installation_id": 1,
+    "logs_2.sqlite": 1,
+    "memories_1.sqlite": 1,
+    "models_cache.json": 1,
+    "queue_1.sqlite": 1,
+    "sessions": 1,
+    "skills": 60,
+    "state_5.sqlite": 1,
+    "state_5.sqlite-shm": 1,
+    "state_5.sqlite-wal": 1,
+    "thread-writer-locks": 1,
+    "thread_history_1.sqlite": 1,
+    "thread_history_1.sqlite-shm": 1,
+    "thread_history_1.sqlite-wal": 1
+   },
+   "credential_copy_deleted": true,
+   "facts": {
+    "record_found": true,
+    "served_models": [
+     "gpt-6-sol"
+    ],
+    "served_equals_pin": true,
+    "model_calls": 2,
+    "usage_record": {
+     "uncached_input": 9605,
+     "cache_read": 9216,
+     "cache_write": 0,
+     "output": 217
+    },
+    "missing_usage_fields": [],
+    "provider_errors": [],
+    "tool_events": 1,
+    "tool_names": [
+     "exec"
+    ],
+    "tools_advertised": null,
+    "account_connector_tools": null,
+    "context_kinds": [
+     "developer:<collaboration_mode>",
+     "developer:<multi_agent_mode>",
+     "developer:<multi_agent_role>",
+     "developer:<permissions>",
+     "developer:<skills_instructions>",
+     "session_meta:base_instructions",
+     "user:<environment_context>"
+    ],
+    "system_prompt_in_record": null,
+    "prompt_intact": true,
+    "reads": {
+     "canaries": {},
+     "operator skills": {
+      "microsoft-foundry": [
+       "response_item/message:payload.content[].text",
+       "world_state:payload.state.host_skills.body"
+      ]
+     },
+     "operator identifiers": {
+      "home path (forward slashes)": [
+       "response_item/message:payload.content[].text",
+       "world_state:payload.state.host_skills.body"
+      ],
+      "username": [
+       "response_item/message:payload.content[].text",
+       "world_state:payload.state.host_skills.body"
+      ]
+     },
+     "pack markers": {}
+    },
+    "stdout": {
+     "parsed": true,
+     "event_types": {
+      "item.completed": 4,
+      "thread.started": 1,
+      "turn.completed": 1,
+      "turn.started": 1
+     },
+     "item_types": {
+      "agent_message": 1,
+      "error": 3
+     },
+     "usage": {
+      "input_tokens": 18821,
+      "cached_input_tokens": 9216,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 217,
+      "reasoning_output_tokens": 97
+     }
+    },
+    "final": {
+     "source": "text",
+     "schema_errors": [],
+     "scores": [
+      2,
+      2
+     ],
+     "host_name_in_final": false
+    },
+    "qualified": false,
+    "reasons": [
+     "1 tool event(s) in the record: ['exec']",
+     "stdout items other than messages: {'error': 3}",
+     "operator skills present: ['microsoft-foundry']",
+     "operator identifiers present: ['home path (forward slashes)', 'username']"
+    ]
+   }
+  },
+  {
+   "format": "gw-headless-probe/1",
+   "label": "codex-gpt-6-sol-text-20260925T084525Z",
+   "harness": "codex",
+   "model": "gpt-6-sol",
+   "schema_mode": "text",
+   "decoy_profile": true,
+   "build": {
+    "version": "0.156.0",
+    "sha256": "eabc698ea3b1c430623af0cae510c3459165ed453d2a5d2dac14513cf1b25269",
+    "adapter_version": "1.12.0",
+    "adapter_sha256": "69a628c68e3e10323b075fee3071c4ef991b973f0a825c8191ea6aba2fc870ff",
+    "agent_version": null,
+    "agent_version_reason": "ACP initialize.agentInfo.version requires a live handshake; not recorded at plan time"
+   },
+   "captured_utc": "2026-09-25T08:45:39+00:00",
+   "nonce": "632e2d38",
+   "session_id": null,
+   "canaries": {
+    "instruction file above the working folder (CLAUDE.md)": "hb-gw-canary-0-632e2d38",
+    "instruction file above the working folder (AGENTS.md)": "hb-gw-canary-1-632e2d38",
+    "user memory (~/.claude/CLAUDE.md, via USERPROFILE)": "hb-gw-canary-2-632e2d38",
+    "user memory (~/.codex/AGENTS.md, via USERPROFILE)": "hb-gw-canary-3-632e2d38",
+    "skill (~/.claude/skills, via USERPROFILE)": "hb-gw-canary-4-632e2d38",
+    "skill (~/.agents/skills, via USERPROFILE)": "hb-gw-canary-5-632e2d38"
+   },
+   "exit": {
+    "returncode": 0,
+    "timed_out": false,
+    "truncated": false,
+    "seconds": 13.3
+   },
+   "home_written": {
+    "goals_1.sqlite": 1,
+    "installation_id": 1,
+    "logs_2.sqlite": 1,
+    "memories_1.sqlite": 1,
+    "models_cache.json": 1,
+    "queue_1.sqlite": 1,
+    "queue_1.sqlite-shm": 1,
+    "queue_1.sqlite-wal": 1,
+    "sessions": 1,
+    "skills": 60,
+    "state_5.sqlite": 1,
+    "state_5.sqlite-shm": 1,
+    "state_5.sqlite-wal": 1,
+    "thread-writer-locks": 1,
+    "thread_history_1.sqlite": 1,
+    "thread_history_1.sqlite-shm": 1,
+    "thread_history_1.sqlite-wal": 1
+   },
+   "credential_copy_deleted": true,
+   "facts": {
+    "record_found": true,
+    "served_models": [
+     "gpt-6-sol"
+    ],
+    "served_equals_pin": true,
+    "model_calls": 2,
+    "usage_record": {
+     "uncached_input": 9632,
+     "cache_read": 9088,
+     "cache_write": 0,
+     "output": 251
+    },
+    "missing_usage_fields": [],
+    "provider_errors": [],
+    "tool_events": 1,
+    "tool_names": [
+     "exec"
+    ],
+    "tools_advertised": null,
+    "account_connector_tools": null,
+    "context_kinds": [
+     "developer:<collaboration_mode>",
+     "developer:<multi_agent_mode>",
+     "developer:<multi_agent_role>",
+     "developer:<permissions>",
+     "developer:<skills_instructions>",
+     "session_meta:base_instructions",
+     "user:<environment_context>"
+    ],
+    "system_prompt_in_record": null,
+    "prompt_intact": true,
+    "reads": {
+     "canaries": {},
+     "operator skills": {
+      "microsoft-foundry": [
+       "response_item/message:payload.content[].text",
+       "world_state:payload.state.host_skills.body"
+      ]
+     },
+     "operator identifiers": {
+      "home path (forward slashes)": [
+       "response_item/message:payload.content[].text",
+       "world_state:payload.state.host_skills.body"
+      ],
+      "username": [
+       "response_item/message:payload.content[].text",
+       "world_state:payload.state.host_skills.body"
+      ]
+     },
+     "pack markers": {}
+    },
+    "stdout": {
+     "parsed": true,
+     "event_types": {
+      "item.completed": 4,
+      "thread.started": 1,
+      "turn.completed": 1,
+      "turn.started": 1
+     },
+     "item_types": {
+      "agent_message": 1,
+      "error": 3
+     },
+     "usage": {
+      "input_tokens": 18720,
+      "cached_input_tokens": 9088,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 251,
+      "reasoning_output_tokens": 131
+     }
+    },
+    "final": {
+     "source": "text",
+     "schema_errors": [],
+     "scores": [
+      2,
+      2
+     ],
+     "host_name_in_final": false
+    },
+    "qualified": false,
+    "reasons": [
+     "1 tool event(s) in the record: ['exec']",
+     "stdout items other than messages: {'error': 3}",
+     "operator skills present: ['microsoft-foundry']",
+     "operator identifiers present: ['home path (forward slashes)', 'username']"
+    ]
+   }
+  }
+ ]
+}
