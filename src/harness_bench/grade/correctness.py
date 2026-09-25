@@ -27,6 +27,8 @@ RAN = re.compile(r"^Ran (\d+) tests? in ", re.MULTILINE)
 RESULT = re.compile(r"^(?:OK|FAILED)(?: \(([^)]*)\))?\s*$", re.MULTILINE)
 NOT_PASSED = ("failures", "errors", "skipped", "expected failures", "unexpected successes")
 HOST_ENV = ("PATH", "SYSTEMROOT", "SYSTEMDRIVE", "WINDIR", "TEMP", "TMP")
+DOTNET_HOST_ENV = ("USERPROFILE", "APPDATA", "LOCALAPPDATA", "HOMEDRIVE", "HOMEPATH", "ProgramData", "ProgramFiles",
+                   "NUGET_PACKAGES")
 
 
 @dataclass(frozen=True)
@@ -116,6 +118,9 @@ def grade(ws: Path, task_dir: Path, oracle: dict, out_dir: Path, run_dir: Path, 
     shutil.copytree(task_dir / "tests", work, dirs_exist_ok=True)
     argv = [sys.executable if a == "{python}" else a for a in oracle["command"]]
     env = _env()
+    if kind == "dotnet":
+        # ADR-0013: grading runs natively on the host, so dotnet uses the host profile and NuGet cache.
+        env.update({k: os.environ[k] for k in DOTNET_HOST_ENV if k in os.environ})
     version = ""
     version_done = None
     spec = _trx_spec(oracle["command"]) if kind == "dotnet" else None
