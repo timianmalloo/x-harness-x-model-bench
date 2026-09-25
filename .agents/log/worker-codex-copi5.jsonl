@@ -1,0 +1,13 @@
+{"agent": "worker-codex-copi5", "at": 1790296666.333628, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-codex-copi5", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w1-copi-s5"}
+{"action": "add", "agent": "worker-codex-copi5", "at": 1790297801.207868, "deadline_at": 1790298401.207868, "id": "req-01M3B110FQ1RQS4W2HRVTKN17B", "kind": "request", "path": "-", "seq": 2, "session": "worker-codex-copi5", "to": "coord-opus-cq", "type": "request", "wi": "WI-0"}
+{"agent": "worker-codex-copi5", "at": 1790297810.4183326, "kind": "session-start", "path": "-", "seq": 3, "session": "worker-codex-copi5", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w1-copi-s5"}
+{"agent": "worker-codex-copi5", "at": 1790297947.9215145, "kind": "claim", "path": "bench/matrix.wave1.yaml", "seq": 4, "session": "worker-codex-copi5", "ttl": 300.0, "wi": "W1-COP-I"}
+{"agent": "worker-codex-copi5", "at": 1790297948.2705202, "kind": "claim", "path": "tests/e2e/test_walking_skeleton.py", "seq": 5, "session": "worker-codex-copi5", "ttl": 300.0, "wi": "W1-COP-I"}
+{"agent": "worker-codex-copi5", "at": 1790297948.6241531, "kind": "claim", "path": "tests/e2e/test_us13_canary.py", "seq": 6, "session": "worker-codex-copi5", "ttl": 300.0, "wi": "W1-COP-I"}
+{"agent": "worker-codex-copi5", "at": 1790297948.9789557, "kind": "claim", "path": "tests/test_plan.py", "seq": 7, "session": "worker-codex-copi5", "ttl": 300.0, "wi": "W1-COP-I"}
+{"agent": "worker-codex-copi5", "at": 1790297949.3351862, "kind": "claim", "path": "tests/test_profiles.py", "seq": 8, "session": "worker-codex-copi5", "ttl": 300.0, "wi": "W1-COP-I"}
+{"agent": "worker-codex-copi5", "at": 1790297949.7033365, "kind": "claim", "path": "tests/test_report.py", "seq": 9, "session": "worker-codex-copi5", "ttl": 300.0, "wi": "W1-COP-I"}
+{"agent": "worker-codex-copi5", "at": 1790297950.0704033, "kind": "claim", "path": "src/harness_bench/report/html.py", "seq": 10, "session": "worker-codex-copi5", "ttl": 300.0, "wi": "W1-COP-I"}
+{"action": "expire", "agent": "worker-codex-copi5", "at": 1790298428.1463993, "deadline_at": 1790298401.207868, "id": "req-01M3B110FQ1RQS4W2HRVTKN17B", "kind": "request", "outcome": "fallback", "path": "-", "seq": 11, "session": "worker-codex-copi5", "type": "request", "wi": "WI-0"}
+{"at": 1790298502.8847501, "from": "worker-codex-copi5", "kind": "blocked", "mail_id": "mail-01M3B1PDQ4Q51W7AGPMM603NR3", "ref": "a9cf076e0bdbba3920c0ce502065ec6ba8f7ee5a", "session": "worker-codex-copi5", "to": "coord-opus-cq", "type": "mail"}
+{"agent": "worker-codex-copi5", "at": 1790298509.7358751, "kind": "session-end", "path": "-", "seq": 13, "session": "worker-codex-copi5", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w1-copi-s5"}
