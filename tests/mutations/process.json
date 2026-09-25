@@ -54,5 +54,26 @@
     "find": "row.get(\"start\") is None",
     "replace": "False",
     "tests": ["tests/test_grade_process.py::test_summary_model_call_rows_are_na"]
+  },
+  {
+    "name": "budget end scored 1",
+    "file": "src/harness_bench/grade/process.py",
+    "find": "return Score(0, None)",
+    "replace": "return Score(1, None)",
+    "tests": ["tests/test_grade_process.py::test_a_budget_end_gives_0"]
+  },
+  {
+    "name": "na stuck count scored 1",
+    "file": "src/harness_bench/grade/process.py",
+    "find": "return Score(None, STUCK_NOT_MEASURABLE)",
+    "replace": "return Score(1, None)",
+    "tests": ["tests/test_grade_process.py::test_completed_with_a_null_ok_is_stuck_loop_count_not_measurable"]
+  },
+  {
+    "name": "infrastructure end scored 0",
+    "file": "src/harness_bench/grade/process.py",
+    "find": "return Score(None, f\"cell ended by infrastructure: {cause.name}\")",
+    "replace": "return Score(0, None)",
+    "tests": ["tests/test_grade_process.py::test_an_infrastructure_cause_is_the_infrastructure_na"]
   }
 ]
