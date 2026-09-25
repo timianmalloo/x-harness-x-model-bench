@@ -123,3 +123,32 @@ def test_validate_rejects_malformed_scenario_one_clarifications(tmp_path):
     config.validate_task(task_dir, {"id": "A1", "scenario": 1, "budget_minutes": 15}, problems,
                          config.grader_modules(ROOT), [])
     assert any("clarifications.yaml" in item and "schema" in item for item in problems.items)
+
+
+# --- The "scripted user" class in the readers (R-37 c2; found by the Leader's A1 capture run a1-capture-1, where the
+# scripted user's own tool read as class `other` and made the Claude Code and Copilot cells invalid under R-54) ------
+
+def test_claude_reader_classes_the_scripted_user_tool(tmp_path):
+    from harness_bench.telemetry import claude_code
+    rec = tmp_path / "r.jsonl"
+    rows = [{"type": "assistant", "sessionId": "s", "timestamp": "t0",
+             "message": {"id": "m1", "model": "claude-opus-5-5", "usage": {},
+                         "content": [{"type": "tool_use", "id": "u1", "name": "mcp__scripted_user__ask_user"}]}},
+            {"type": "user", "timestamp": "t1", "message": {"content": [{"type": "tool_result", "tool_use_id": "u1"}]}}]
+    rec.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+    assert [(c.name, c.tool_class) for c in claude_code.read(rec).tool_calls] == [("mcp__scripted_user__ask_user", "scripted user")]
+
+
+def test_copilot_reader_classes_the_scripted_user_tool():
+    from harness_bench.telemetry import copilot
+    assert copilot.TOOL_CLASS.get("scripted_user-ask_user") == "scripted user"
+
+
+def test_codex_reader_classes_a_scripted_user_mcp_call(tmp_path):
+    from harness_bench.telemetry import codex
+    rec = tmp_path / "rollout.jsonl"
+    item = {"timestamp": "2026-09-25T00:00:00.000Z", "type": "event_msg",
+            "payload": {"type": "item_completed", "item": {"type": "McpToolCall", "server": "scripted_user", "tool": "ask_user",
+                                                           "status": "completed"}}}
+    rec.write_text(json.dumps(item) + "\n", encoding="utf-8")
+    assert [(c.name, c.tool_class) for c in codex.read(rec).tool_calls] == [("scripted_user.ask_user", "scripted user")]
