@@ -41,6 +41,7 @@ from pathlib import Path
 
 from harness_bench import config, ledger, oslock, profiles, tools, views
 from harness_bench.errors import BenchError
+from harness_bench.gateway.backend import run_roots, scan_runs
 from harness_bench.grade import (
     CellInput,
     GraderFn,
@@ -194,10 +195,14 @@ class _Pass:
             for fact, report in abandoned:
                 self.append("events", {"kind": "segment.abandoned", "code": "HB-LED-004", "fact": fact, "segment_id": report.segment_id,
                                        "line_count": report.lines, "head_hash": report.head_hash, "error": report.error})
+            roots = run_roots(self.root, self.run_dir.parent)  # the roots the live-run check scans (R-65 c1)
+            scanned, _live = scan_runs(roots)  # the same status check refuse_if_live uses
             self.append("events", {"kind": "grading.started", "grading_id": self.grading_id, "catalog_version": str(self.catalog["version"]),
                                    "grader_build": grader_build(), "extraction_id": self.extraction,
                                    "catalog_hash": catalog_hash(self.root),  # R-59 c1
-                                   "tool_versions": tool_versions(self.root, self.plan)})  # R-59 c4
+                                   "tool_versions": tool_versions(self.root, self.plan),  # R-59 c4
+                                   "scanned_roots": [str(p) for p in roots],  # R-65 c1
+                                   "run_liveness": [{"run": str(run), "liveness": liveness} for run, liveness in scanned]})
             graded = 0
             for cell in sorted(self.plan["cells"], key=lambda c: c["cell_id"]):
                 if cell["cell_id"] in archived:
