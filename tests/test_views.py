@@ -585,6 +585,22 @@ def test_a_two_rollout_codex_home_records_model_calls_on_both_served_models(root
     assert ("sess-luna", "exec", "shell") in tools
 
 
+def test_an_unreadable_codex_sub_agent_rollout_makes_the_cell_not_recorded(root, tmp_path, monkeypatch):
+    """R-74 item 5, the Claude path: a sub-agent rollout that cannot be read makes the cell not recorded (R-21 c2)."""
+    real = normalize.record_unreadable
+    monkeypatch.setattr(normalize, "record_unreadable", lambda ex: "native record truncated at the size bound"
+                        if ex.session_id == "sess-luna" else real(ex))
+    run_dir = _native_run(root, tmp_path, "codex", PARENT_ROLLOUT,
+                          (CODEX_DELEGATE / "delegate-parent.jsonl").read_text(encoding="utf-8"),
+                          extra_records={CHILD_ROLLOUT: (CODEX_DELEGATE / "delegate-child.jsonl").read_text(encoding="utf-8")},
+                          scenario=6)
+    _edit_plan(run_dir, lambda p: {**p, "tasks": {"X1": {"scenario": 6, "model_map": {"writer@openai": "gpt-6-luna"}}}})
+    cell = _cell(views.load(run_dir), "a")
+    completed = next(e for e in views.rows(run_dir, "events") if e["kind"] == "grading.completed")
+    assert completed["unreadable_records"] == {"a": "sub-agent record sess-luna: native record truncated at the size bound"}
+    assert (cell.validity, cell.validity_code) == ("not recorded", "HB-VAL-003")
+
+
 def test_a_sub_agents_served_model_and_calls_reach_the_ledger(root, tmp_path):  # item 4: adherence is measurable later
     run_dir = _claude_q1_dir(root, tmp_path, permission_requests=1, change=_as_agent(False), scenario=6,
                              extra_records={SUBAGENT_RECORD: _subagent_rows("Write")})
