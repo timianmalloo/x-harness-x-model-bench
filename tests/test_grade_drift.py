@@ -60,3 +60,14 @@ REFERENCE = {PROJECTION: (ROOT / "tasks" / "D1" / "oracle" / "reference" / PROJE
 def test_a_pack_commit_stand_in_outside_the_blast_radius_is_not_scope_creep(tmp_path):  # design: Seeded, pack-on
     got = grade_d1(tmp_path, *d1_cell(tmp_path, REFERENCE, pack=True))  # .editorconfig and docs/pack/: outside the radius
     assert {m: got.get(m) for m in ("scope_creep", "scope_creep_files")} == {"scope_creep": (0, None), "scope_creep_files": (0, None)}
+
+
+BLOCK = {"src/AiDe.Core/Projections/Block.cs":  # 10 lines; line 4 breaks R1 (a file-scoped namespace)
+         "// seeded: a block-scoped namespace\nusing System;\n\nnamespace AiDe.Core.Projections\n{\n"
+         "    public static class Block\n    {\n        public static int X() => 1;\n    }\n}\n"}
+
+
+def test_a_block_scoped_namespace_in_a_10_line_file_is_convention_drift_10(tmp_path):  # design: Seeded, 1 per 10 lines
+    got = grade_d1(tmp_path, *d1_cell(tmp_path, BLOCK))
+    assert {m: got.get(m) for m in MEASURED} == \
+        {"scope_creep": (0, None), "scope_creep_files": (0, None), "convention_drift": ("10.00", None)}
