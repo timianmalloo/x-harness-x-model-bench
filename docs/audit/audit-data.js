@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T13:36:21Z",
+  "generated": "2026-09-25T13:52:07Z",
   "audit": [
     {
       "actor": null,
@@ -24430,34 +24430,23 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M3CBY5HN2092Y52JJ7NNV003",
-      "shortname": "Goal: W2-TASKS-d, task B1 (\"P0 conventions and spine primer to full spec…",
-      "datetime": "2026-09-25T13:26:36Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W2-TASKS-d, task B1 (\"P0 conventions and spine primer to full spec\", scenario 2): author tasks/B1/ from stub toward ready, following .claude/skills/new-bench-task/SKILL.md and the contract in tasks/README.md, with the base tree vendored from the operator's own repository C:\\projects\\cfd-bench (the operator ruled 2026-09-25: it is their own nascent repository with no licence file yet; proceed without one and record that).\nDone when: tasks/B1/task.yaml pins source.repo https://github.com/timianmalloo/cfd-bench and source.commit to the full SHA of C:\\projects\\cfd-bench's HEAD (read with git rev-parse), and records the licence as \"none (the operator's own repository; operator decision 2026-09-25)\".; tasks/B1/workspace/ holds the vendored primer material the task needs (the P0 conventions and spine primer from cfd-bench's docs), with no secrets, no user-profile path, e-mail or username, no bin/ or obj/, and no reference answer; tasks/B1/prompt.md asks for the full spec (identical for every harness).; The oracle is a rubric at tasks/B1/oracle/rubric.md (the /specify definition of done named in task.yaml's oracle summary) plus a reference spec under tasks/B1/oracle/ only (never in the workspace); since scenario 2 is judged, the hidden tests under tasks/B1/tests/ are structural checks only (a Python unittest suite for the oracle runner unittest, as tasks/X1 and tasks/C1 do: the spec file exists and carries the required sections).; The structural tests are observed to FAIL on the base workspace and PASS on the reference spec; both runs, with commands, exit codes and failing test names, are written to tasks/B1/oracle/evidence.md.; status is draft or ready as the skill checklist allows, stated with the reason; uv run bench validate prints ok.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it).\nNot in scope: bench/bom.yaml; bench/task-freeze.yaml (the Leader freezes the task); src/**; other task folders (F1 is another track); any edit to C:\\projects\\cfd-bench (read it only); bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 11 minutes (ruling R-11 slice rules); commit at every green (commit the first file you finish, then each next one); no verbose output and no printing of large files; if time runs short, commit what is green and name what remains - later slices continue from your commits.\n\nGrounding: tasks/README.md; .claude/skills/new-bench-task/SKILL.md; tasks/X1/ and tasks/C1/ (ready tasks); tasks/B1/task.yaml (the stub); docs/specs/harness-bench.md scenario 2; docs/notes/rulings.md R-7, R-40, R-42. Use python, not python3 (Windows). Hidden tests and reference answers never enter the workspace.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
+      "datetime": "2026-09-25T13:26:36Z",
+      "id": "al-01M3CBY5HN2092Y52JJ7NNV003",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: W2-TASKS-d, task B1 (\"P0 conventions and spine primer to full spec\", scenario 2): author tasks/B1/ from stub toward ready, following .claude/skills/new-bench-task/SKILL.md and the contract in tasks/README.md, with the base tree vendored from the operator's own repository C:\\projects\\cfd-bench (the operator ruled 2026-09-25: it is their own nascent repository with no licence file yet; proceed without one and record that).\nDone when: tasks/B1/task.yaml pins source.repo https://github.com/timianmalloo/cfd-bench and source.commit to the full SHA of C:\\projects\\cfd-bench's HEAD (read with git rev-parse), and records the licence as \"none (the operator's own repository; operator decision 2026-09-25)\".; tasks/B1/workspace/ holds the vendored primer material the task needs (the P0 conventions and spine primer from cfd-bench's docs), with no secrets, no user-profile path, e-mail or username, no bin/ or obj/, and no reference answer; tasks/B1/prompt.md asks for the full spec (identical for every harness).; The oracle is a rubric at tasks/B1/oracle/rubric.md (the /specify definition of done named in task.yaml's oracle summary) plus a reference spec under tasks/B1/oracle/ only (never in the workspace); since scenario 2 is judged, the hidden tests under tasks/B1/tests/ are structural checks only (a Python unittest suite for the oracle runner unittest, as tasks/X1 and tasks/C1 do: the spec file exists and carries the required sections).; The structural tests are observed to FAIL on the base workspace and PASS on the reference spec; both runs, with commands, exit codes and failing test names, are written to tasks/B1/oracle/evidence.md.; status is draft or ready as the skill checklist allows, stated with the reason; uv run bench validate prints ok.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it).\nNot in scope: bench/bom.yaml; bench/task-freeze.yaml (the Leader freezes the task); src/**; other task folders (F1 is another track); any edit to C:\\projects\\cfd-bench (read it only); bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 11 minutes (ruling R-11 slice rules); commit at every green (commit the first file you finish, then each next one); no verbose output and no printing of large files; if time runs short, commit what is green and name what remains - later slices continue from your commits.\n\nGrounding: tasks/README.md; .claude/skills/new-bench-task/SKILL.md; tasks/X1/ and tasks/C1/ (ready tasks); tasks/B1/task.yaml (the stub); docs/specs/harness-bench.md scenario 2; docs/notes/rulings.md R-7, R-40, R-42. Use python, not python3 (Windows). Hidden tests and reference answers never enter the workspace.",
+      "session": "prompt-compile",
+      "shortname": "Goal: W2-TASKS-d, task B1 (\"P0 conventions and spine primer to full spec…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M3CBY6MTSZP7AS6F5EXCA36E",
-      "shortname": "compile-Goal: W2-TASKS-d, task B1 (\"P0 conventions and spine primer to full spec…",
-      "datetime": "2026-09-25T13:26:37Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-TASKS-d, task B1 (\"P0 conventions and spine primer to full spec\", scenario 2): author tasks/B1/ from stub toward ready, following .claude/skills/new-bench-task/SKILL.md and the contract in tasks/README.md, with the base tree vendored from the operator's own repository C:\\projects\\cfd-bench (the operator ruled 2026-09-25: it is their own nascent repository with no licence file yet; proceed without one and record that).\nDone when: tasks/B1/task.yaml pins source.repo https://github.com/timianmalloo/cfd-bench and source.commit to the full SHA of C:\\projects\\cfd-bench's HEAD (read with git rev-parse), and records the licence as \"none (the operator's own repository; operator decision 2026-09-25)\".; tasks/B1/workspace/ holds the vendored primer material the task needs (the P0 conventions and spine primer from cfd-bench's docs), with no secrets, no user-profile path, e-mail or username, no bin/ or obj/, and no reference answer; tasks/B1/prompt.md asks for the full spec (identical for every harness).; The oracle is a rubric at tasks/B1/oracle/rubric.md (the /specify definition of done named in task.yaml's oracle summary) plus a reference spec under tasks/B1/oracle/ only (never in the workspace); since scenario 2 is judged, the hidden tests under tasks/B1/tests/ are structural checks only (a Python unittest suite for the oracle runner unittest, as tasks/X1 and tasks/C1 do: the spec file exists and carries the required sections).; The structural tests are observed to FAIL on the base workspace and PASS on the reference spec; both runs, with commands, exit codes and failing test names, are written to tasks/B1/oracle/evidence.md.; status is draft or ready as the skill checklist allows, stated with the reason; uv run bench validate prints ok.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it).\nNot in scope: bench/bom.yaml; bench/task-freeze.yaml (the Leader freezes the task); src/**; other task folders (F1 is another track); any edit to C:\\projects\\cfd-bench (read it only); bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 11 minutes (ruling R-11 slice rules); commit at every green (commit the first file you finish, then each next one); no verbose output and no printing of large files; if time runs short, commit what is green and name what remains - later slices continue from your commits.\nGrounding: tasks/README.md; .claude/skills/new-bench-task/SKILL.md; tasks/X1/ and tasks/C1/ (ready tasks); tasks/B1/task.yaml (the stub); docs/specs/harness-bench.md scenario 2; docs/notes/rulings.md R-7, R-40, R-42. Use python, not python3 (Windows). Hidden tests and reference answers never enter the workspace.\nTrace\n| clause | trace |\n|---|---|\n| done_when: tasks/B1/task.yaml pins source.repo https://github.com/timianmalloo/cfd-bench and source.commit to the full SHA of C:\\projects\\cfd-bench's HEAD (read with git rev-parse), and records the licence as \"none (the operator's own repository | phrase: tasks/B1/task.yaml pins source.repo https://github.com/timianmalloo/cfd-bench and source.commit to the full SHA of C:\\projects\\cfd-bench's HEAD (read with git rev-parse), and records the licence as \"none (the operator's own repository |\n| done_when: operator decision 2026-09-25)\". | phrase: operator decision 2026-09-25)\". |\n| done_when: tasks/B1/workspace/ holds the vendored primer material the task needs (the P0 conventions and spine primer from cfd-bench's docs), with no secrets, no user-profile path, e-mail or username, no bin/ or obj/, and no reference answer | phrase: tasks/B1/workspace/ holds the vendored primer material the task needs (the P0 conventions and spine primer from cfd-bench's docs), with no secrets, no user-profile path, e-mail or username, no bin/ or obj/, and no reference answer |\n| done_when: tasks/B1/prompt.md asks for the full spec (identical for every harness). | phrase: tasks/B1/prompt.md asks for the full spec (identical for every harness). |\n| done_when: The oracle is a rubric at tasks/B1/oracle/rubric.md (the /specify definition of done named in task.yaml's oracle summary) plus a reference spec under tasks/B1/oracle/ only (never in the workspace) | phrase: The oracle is a rubric at tasks/B1/oracle/rubric.md (the /specify definition of done named in task.yaml's oracle summary) plus a reference spec under tasks/B1/oracle/ only (never in the workspace) |\n| done_when: since scenario 2 is judged, the hidden tests under tasks/B1/tests/ are structural checks only (a Python unittest suite for the oracle runner unittest, as tasks/X1 and tasks/C1 do: the spec file exists and carries the required sections). | phrase: since scenario 2 is judged, the hidden tests under tasks/B1/tests/ are structural checks only (a Python unittest suite for the oracle runner unittest, as tasks/X1 and tasks/C1 do: the spec file exists and carries the required sections). |\n| done_when: The structural tests are observed to FAIL on the base workspace and PASS on the reference spec | phrase: The structural tests are observed to FAIL on the base workspace and PASS on the reference spec |\n| done_when: both runs, with commands, exit codes and failing test names, are written to tasks/B1/oracle/evidence.md. | phrase: both runs, with commands, exit codes and failing test names, are written to tasks/B1/oracle/evidence.md. |\n| done_when: status is draft or ready as the skill checklist allows, stated with the reason | phrase: status is draft or ready as the skill checklist allows, stated with the reason |\n| done_when: uv run bench validate prints ok. | phrase: uv run bench validate prints ok. |\n| done_when: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it). | phrase: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it). |\n| not_in_scope: bench/bom.yaml | phrase: bench/bom.yaml |\n| not_in_scope: bench/task-freeze.yaml (the Leader freezes the task) | phrase: bench/task-freeze.yaml (the Leader freezes the task) |\n| not_in_scope: src/** | phrase: src/** |\n| not_in_scope: other task folders (F1 is another track) | phrase: other task folders (F1 is another track) |\n| not_in_scope: any edit to C:\\projects\\cfd-bench (read it only) | phrase: any edit to C:\\projects\\cfd-bench (read it only) |\n| not_in_scope: bench run, any model turn, pytest -m \"\" | phrase: bench run, any model turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- tasks/B1/: unresolved (not found)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- tasks/B1/task.yaml: tasks/B1/task.yaml sha256 05f05a22e5b4531eae60879b208a03986424f9bc8a7dd9969a138e5c88d776f1\n- https://github.com/timianmalloo/cfd-bench: unresolved (not found)\n- tasks/B1/workspace/: unresolved (not found)\n- bin/: unresolved (not found)\n- obj/: unresolved (not found)\n- tasks/B1/prompt.md: unresolved (not found)\n- tasks/B1/oracle/rubric.md: unresolved (not found; nearest: tasks/C1/oracle/rubric.md)\n- /specify: unresolved (outside repo)\n- tasks/B1/oracle/: unresolved (not found)\n- tasks/B1/tests/: unresolved (not found)\n- tasks/X1: unresolved (not found)\n- tasks/C1: unresolved (not found)\n- tasks/B1/oracle/evidence.md: unresolved (not found)\n- bench/bom.yaml: bench/bom.yaml sha256 0750cab5eae11826bdf4e1ccd2ebc9f2e10fc3d3b1325340de1b2af582b24307\n- bench/task-freeze.yaml: bench/task-freeze.yaml sha256 06953c2c0646e1595a69bb956d970d903d21b411d4bda8fd1836120a2278aaac\n- src/**: unresolved (not found)\n- tasks/X1/: unresolved (not found)\n- tasks/C1/: unresolved (not found)\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3CBY5HN2092Y52JJ7NNV003\nraw sha256: ebcc3e0bf3921adbcc3bcf23e400f38888d17d39bbd78c44cb956fa70b7b9c4c\ncompiler model: claude-opus-5-5\nengine seconds: 0.004\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3CBY5HN2092Y52JJ7NNV003 for claude-code v1: 18 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -24850,38 +24839,38 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3CBY6VPJ4Y7GVEXY8Z41DJ4",
-      "shortname": "Goal: W2-TASKS-c, task F1 (\"P0 wing spine as three coordinated tracks\", …",
-      "datetime": "2026-09-25T13:26:38Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W2-TASKS-c, task F1 (\"P0 wing spine as three coordinated tracks\", scenario 6): author tasks/F1/ from stub toward ready, following .claude/skills/new-bench-task/SKILL.md and tasks/README.md, with the base tree vendored from the operator's own repository C:\\projects\\cfd-bench (the operator ruled 2026-09-25: it is their own nascent repository with no licence file yet; proceed without one and record that), and hidden tests run by the dotnet oracle runner exactly as tasks/D1 does (R-41).\nDone when: tasks/F1/task.yaml pins source.repo https://github.com/timianmalloo/cfd-bench and source.commit to the full SHA of C:\\projects\\cfd-bench's HEAD, and records the licence as \"none (the operator's own repository; operator decision 2026-09-25)\".; tasks/F1/workspace/ is the vendored base the three tracks start from (no secrets, no user-profile path, e-mail or username, no bin/, obj/ or caches, no reference solution); tasks/F1/prompt.md states the three coordinated tracks and their model routing, and task.yaml's model_map is filled for the three roles as the design and rulings for model_map require (read R-45/R-46's S3 model_map notes and the scenario-6 spec text; mark any role whose model is not decided with an assume: and a decision request to the Leader rather than a guess).; Hidden tests under tasks/F1/tests/ run through the dotnet runner offline (the D1 pattern: run.cmd, a named TRX, the offline NuGet cache, no hard-coded user-profile path), and are observed to FAIL on the base workspace and PASS on a reference solution kept only under tasks/F1/oracle/ (the operator's reference clones C:\\Projects\\CFD-Bench-ClaudeCode and C:\\Projects\\CFD-Bench-GHCP may be read as sources); both runs, with commands, exit codes and failing test names, are in tasks/F1/oracle/evidence.md.; The coordination and judged halves have their oracle notes (intent-log completeness, model-map adherence, MAST coding) written under tasks/F1/oracle/ for the later graders; status is draft or ready as the skill checklist allows, with the reason; uv run bench validate prints ok, including VALIDATE's path scan.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, the model_map decisions (and any decision request), and any bench/bom.yaml change you need (do not edit it).\nNot in scope: bench/bom.yaml; bench/task-freeze.yaml (the Leader freezes the task); src/**; other task folders (B1 is another track); any edit to C:\\projects\\cfd-bench or the reference clones (read only); bench run, any model turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: tasks/README.md; .claude/skills/new-bench-task/SKILL.md; tasks/D1/ (the dotnet runner pattern, run.cmd, evidence); tasks/F1/task.yaml (the stub); docs/specs/harness-bench.md scenario 6; docs/notes/rulings.md R-7, R-41, R-42, R-45, R-46; src/harness_bench/grade/correctness.py; src/harness_bench/config.py (validate_task and the path scan). Use python, not python3 (Windows).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3CBY7V0G1Y08J2DPAAVH84W",
-      "shortname": "compile-Goal: W2-TASKS-c, task F1 (\"P0 wing spine as three coordinated tracks\", …",
-      "datetime": "2026-09-25T13:26:39Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-TASKS-c, task F1 (\"P0 wing spine as three coordinated tracks\", scenario 6): author tasks/F1/ from stub toward ready, following .claude/skills/new-bench-task/SKILL.md and tasks/README.md, with the base tree vendored from the operator's own repository C:\\projects\\cfd-bench (the operator ruled 2026-09-25: it is their own nascent repository with no licence file yet; proceed without one and record that), and hidden tests run by the dotnet oracle runner exactly as tasks/D1 does (R-41).\nDone when: tasks/F1/task.yaml pins source.repo https://github.com/timianmalloo/cfd-bench and source.commit to the full SHA of C:\\projects\\cfd-bench's HEAD, and records the licence as \"none (the operator's own repository; operator decision 2026-09-25)\".; tasks/F1/workspace/ is the vendored base the three tracks start from (no secrets, no user-profile path, e-mail or username, no bin/, obj/ or caches, no reference solution); tasks/F1/prompt.md states the three coordinated tracks and their model routing, and task.yaml's model_map is filled for the three roles as the design and rulings for model_map require (read R-45/R-46's S3 model_map notes and the scenario-6 spec text; mark any role whose model is not decided with an assume: and a decision request to the Leader rather than a guess).; Hidden tests under tasks/F1/tests/ run through the dotnet runner offline (the D1 pattern: run.cmd, a named TRX, the offline NuGet cache, no hard-coded user-profile path), and are observed to FAIL on the base workspace and PASS on a reference solution kept only under tasks/F1/oracle/ (the operator's reference clones C:\\Projects\\CFD-Bench-ClaudeCode and C:\\Projects\\CFD-Bench-GHCP may be read as sources); both runs, with commands, exit codes and failing test names, are in tasks/F1/oracle/evidence.md.; The coordination and judged halves have their oracle notes (intent-log completeness, model-map adherence, MAST coding) written under tasks/F1/oracle/ for the later graders; status is draft or ready as the skill checklist allows, with the reason; uv run bench validate prints ok, including VALIDATE's path scan.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, the model_map decisions (and any decision request), and any bench/bom.yaml change you need (do not edit it).\nNot in scope: bench/bom.yaml; bench/task-freeze.yaml (the Leader freezes the task); src/**; other task folders (B1 is another track); any edit to C:\\projects\\cfd-bench or the reference clones (read only); bench run, any model turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: tasks/README.md; .claude/skills/new-bench-task/SKILL.md; tasks/D1/ (the dotnet runner pattern, run.cmd, evidence); tasks/F1/task.yaml (the stub); docs/specs/harness-bench.md scenario 6; docs/notes/rulings.md R-7, R-41, R-42, R-45, R-46; src/harness_bench/grade/correctness.py; src/harness_bench/config.py (validate_task and the path scan). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: tasks/F1/task.yaml pins source.repo https://github.com/timianmalloo/cfd-bench and source.commit to the full SHA of C:\\projects\\cfd-bench's HEAD, and records the licence as \"none (the operator's own repository | phrase: tasks/F1/task.yaml pins source.repo https://github.com/timianmalloo/cfd-bench and source.commit to the full SHA of C:\\projects\\cfd-bench's HEAD, and records the licence as \"none (the operator's own repository |\n| done_when: operator decision 2026-09-25)\". | phrase: operator decision 2026-09-25)\". |\n| done_when: tasks/F1/workspace/ is the vendored base the three tracks start from (no secrets, no user-profile path, e-mail or username, no bin/, obj/ or caches, no reference solution) | phrase: tasks/F1/workspace/ is the vendored base the three tracks start from (no secrets, no user-profile path, e-mail or username, no bin/, obj/ or caches, no reference solution) |\n| done_when: tasks/F1/prompt.md states the three coordinated tracks and their model routing, and task.yaml's model_map is filled for the three roles as the design and rulings for model_map require (read R-45/R-46's S3 model_map notes and the scenario-6 spec text | phrase: tasks/F1/prompt.md states the three coordinated tracks and their model routing, and task.yaml's model_map is filled for the three roles as the design and rulings for model_map require (read R-45/R-46's S3 model_map notes and the scenario-6 spec text |\n| done_when: mark any role whose model is not decided with an assume: and a decision request to the Leader rather than a guess). | phrase: mark any role whose model is not decided with an assume: and a decision request to the Leader rather than a guess). |\n| done_when: Hidden tests under tasks/F1/tests/ run through the dotnet runner offline (the D1 pattern: run.cmd, a named TRX, the offline NuGet cache, no hard-coded user-profile path), and are observed to FAIL on the base workspace and PASS on a reference solution kept only under tasks/F1/oracle/ (the operator's reference clones C:\\Projects\\CFD-Bench-ClaudeCode and C:\\Projects\\CFD-Bench-GHCP may be read as sources) | phrase: Hidden tests under tasks/F1/tests/ run through the dotnet runner offline (the D1 pattern: run.cmd, a named TRX, the offline NuGet cache, no hard-coded user-profile path), and are observed to FAIL on the base workspace and PASS on a reference solution kept only under tasks/F1/oracle/ (the operator's reference clones C:\\Projects\\CFD-Bench-ClaudeCode and C:\\Projects\\CFD-Bench-GHCP may be read as sources) |\n| done_when: both runs, with commands, exit codes and failing test names, are in tasks/F1/oracle/evidence.md. | phrase: both runs, with commands, exit codes and failing test names, are in tasks/F1/oracle/evidence.md. |\n| done_when: The coordination and judged halves have their oracle notes (intent-log completeness, model-map adherence, MAST coding) written under tasks/F1/oracle/ for the later graders | phrase: The coordination and judged halves have their oracle notes (intent-log completeness, model-map adherence, MAST coding) written under tasks/F1/oracle/ for the later graders |\n| done_when: status is draft or ready as the skill checklist allows, with the reason | phrase: status is draft or ready as the skill checklist allows, with the reason |\n| done_when: uv run bench validate prints ok, including VALIDATE's path scan. | phrase: uv run bench validate prints ok, including VALIDATE's path scan. |\n| done_when: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, the model_map decisions (and any decision request), and any bench/bom.yaml change you need (do not edit it). | phrase: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, the model_map decisions (and any decision request), and any bench/bom.yaml change you need (do not edit it). |\n| not_in_scope: bench/bom.yaml | phrase: bench/bom.yaml |\n| not_in_scope: bench/task-freeze.yaml (the Leader freezes the task) | phrase: bench/task-freeze.yaml (the Leader freezes the task) |\n| not_in_scope: src/** | phrase: src/** |\n| not_in_scope: other task folders (B1 is another track) | phrase: other task folders (B1 is another track) |\n| not_in_scope: any edit to C:\\projects\\cfd-bench or the reference clones (read only) | phrase: any edit to C:\\projects\\cfd-bench or the reference clones (read only) |\n| not_in_scope: bench run, any model turn, pytest -m \"\" | phrase: bench run, any model turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- tasks/F1/: unresolved (not found)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- tasks/D1: unresolved (not found)\n- tasks/F1/task.yaml: tasks/F1/task.yaml sha256 284ab34f3a0663861b7df5219025ba0aabca769de1f790b7892469e6f3b0f601\n- https://github.com/timianmalloo/cfd-bench: unresolved (not found)\n- tasks/F1/workspace/: unresolved (not found)\n- bin/: unresolved (not found)\n- obj/: unresolved (not found)\n- tasks/F1/prompt.md: unresolved (not found)\n- R-45/R-46's: unresolved (not found)\n- tasks/F1/tests/: unresolved (not found)\n- tasks/F1/oracle/: unresolved (not found)\n- tasks/F1/oracle/evidence.md: unresolved (not found)\n- bench/bom.yaml: bench/bom.yaml sha256 0750cab5eae11826bdf4e1ccd2ebc9f2e10fc3d3b1325340de1b2af582b24307\n- bench/task-freeze.yaml: bench/task-freeze.yaml sha256 06953c2c0646e1595a69bb956d970d903d21b411d4bda8fd1836120a2278aaac\n- src/**: unresolved (not found)\n- tasks/D1/: unresolved (not found)\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- src/harness_bench/grade/correctness.py: src/harness_bench/grade/correctness.py sha256 7293085b6599c6440d8cae5e012e78827b67b37eac5490b73f31fccfd2ace520\n- src/harness_bench/config.py: src/harness_bench/config.py sha256 c49108d270c78fcb7dd12e34b42aa17d7d482ad31aa3daaca61e4f96b3460379\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3CBY6VPJ4Y7GVEXY8Z41DJ4\nraw sha256: a6a916133fb62fc955c7a828988845cef2d8aaaf4d4fadd3e4f8c742ee353583\ncompiler model: claude-opus-5-5\nengine seconds: 0.004\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3CBY6VPJ4Y7GVEXY8Z41DJ4 for claude-code v1: 18 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-25T13:26:37Z",
+      "dispatchable": true,
+      "id": "al-01M3CBY6MTSZP7AS6F5EXCA36E",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-TASKS-d, task B1 (\"P0 conventions and spine primer to full spec\", scenario 2): author tasks/B1/ from stub toward ready, following .claude/skills/new-bench-task/SKILL.md and the contract in tasks/README.md, with the base tree vendored from the operator's own repository C:\\projects\\cfd-bench (the operator ruled 2026-09-25: it is their own nascent repository with no licence file yet; proceed without one and record that).\nDone when: tasks/B1/task.yaml pins source.repo https://github.com/timianmalloo/cfd-bench and source.commit to the full SHA of C:\\projects\\cfd-bench's HEAD (read with git rev-parse), and records the licence as \"none (the operator's own repository; operator decision 2026-09-25)\".; tasks/B1/workspace/ holds the vendored primer material the task needs (the P0 conventions and spine primer from cfd-bench's docs), with no secrets, no user-profile path, e-mail or username, no bin/ or obj/, and no reference answer; tasks/B1/prompt.md asks for the full spec (identical for every harness).; The oracle is a rubric at tasks/B1/oracle/rubric.md (the /specify definition of done named in task.yaml's oracle summary) plus a reference spec under tasks/B1/oracle/ only (never in the workspace); since scenario 2 is judged, the hidden tests under tasks/B1/tests/ are structural checks only (a Python unittest suite for the oracle runner unittest, as tasks/X1 and tasks/C1 do: the spec file exists and carries the required sections).; The structural tests are observed to FAIL on the base workspace and PASS on the reference spec; both runs, with commands, exit codes and failing test names, are written to tasks/B1/oracle/evidence.md.; status is draft or ready as the skill checklist allows, stated with the reason; uv run bench validate prints ok.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it).\nNot in scope: bench/bom.yaml; bench/task-freeze.yaml (the Leader freezes the task); src/**; other task folders (F1 is another track); any edit to C:\\projects\\cfd-bench (read it only); bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 11 minutes (ruling R-11 slice rules); commit at every green (commit the first file you finish, then each next one); no verbose output and no printing of large files; if time runs short, commit what is green and name what remains - later slices continue from your commits.\nGrounding: tasks/README.md; .claude/skills/new-bench-task/SKILL.md; tasks/X1/ and tasks/C1/ (ready tasks); tasks/B1/task.yaml (the stub); docs/specs/harness-bench.md scenario 2; docs/notes/rulings.md R-7, R-40, R-42. Use python, not python3 (Windows). Hidden tests and reference answers never enter the workspace.\nTrace\n| clause | trace |\n|---|---|\n| done_when: tasks/B1/task.yaml pins source.repo https://github.com/timianmalloo/cfd-bench and source.commit to the full SHA of C:\\projects\\cfd-bench's HEAD (read with git rev-parse), and records the licence as \"none (the operator's own repository | phrase: tasks/B1/task.yaml pins source.repo https://github.com/timianmalloo/cfd-bench and source.commit to the full SHA of C:\\projects\\cfd-bench's HEAD (read with git rev-parse), and records the licence as \"none (the operator's own repository |\n| done_when: operator decision 2026-09-25)\". | phrase: operator decision 2026-09-25)\". |\n| done_when: tasks/B1/workspace/ holds the vendored primer material the task needs (the P0 conventions and spine primer from cfd-bench's docs), with no secrets, no user-profile path, e-mail or username, no bin/ or obj/, and no reference answer | phrase: tasks/B1/workspace/ holds the vendored primer material the task needs (the P0 conventions and spine primer from cfd-bench's docs), with no secrets, no user-profile path, e-mail or username, no bin/ or obj/, and no reference answer |\n| done_when: tasks/B1/prompt.md asks for the full spec (identical for every harness). | phrase: tasks/B1/prompt.md asks for the full spec (identical for every harness). |\n| done_when: The oracle is a rubric at tasks/B1/oracle/rubric.md (the /specify definition of done named in task.yaml's oracle summary) plus a reference spec under tasks/B1/oracle/ only (never in the workspace) | phrase: The oracle is a rubric at tasks/B1/oracle/rubric.md (the /specify definition of done named in task.yaml's oracle summary) plus a reference spec under tasks/B1/oracle/ only (never in the workspace) |\n| done_when: since scenario 2 is judged, the hidden tests under tasks/B1/tests/ are structural checks only (a Python unittest suite for the oracle runner unittest, as tasks/X1 and tasks/C1 do: the spec file exists and carries the required sections). | phrase: since scenario 2 is judged, the hidden tests under tasks/B1/tests/ are structural checks only (a Python unittest suite for the oracle runner unittest, as tasks/X1 and tasks/C1 do: the spec file exists and carries the required sections). |\n| done_when: The structural tests are observed to FAIL on the base workspace and PASS on the reference spec | phrase: The structural tests are observed to FAIL on the base workspace and PASS on the reference spec |\n| done_when: both runs, with commands, exit codes and failing test names, are written to tasks/B1/oracle/evidence.md. | phrase: both runs, with commands, exit codes and failing test names, are written to tasks/B1/oracle/evidence.md. |\n| done_when: status is draft or ready as the skill checklist allows, stated with the reason | phrase: status is draft or ready as the skill checklist allows, stated with the reason |\n| done_when: uv run bench validate prints ok. | phrase: uv run bench validate prints ok. |\n| done_when: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it). | phrase: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any change to bench/bom.yaml you need (do not edit it). |\n| not_in_scope: bench/bom.yaml | phrase: bench/bom.yaml |\n| not_in_scope: bench/task-freeze.yaml (the Leader freezes the task) | phrase: bench/task-freeze.yaml (the Leader freezes the task) |\n| not_in_scope: src/** | phrase: src/** |\n| not_in_scope: other task folders (F1 is another track) | phrase: other task folders (F1 is another track) |\n| not_in_scope: any edit to C:\\projects\\cfd-bench (read it only) | phrase: any edit to C:\\projects\\cfd-bench (read it only) |\n| not_in_scope: bench run, any model turn, pytest -m \"\" | phrase: bench run, any model turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- tasks/B1/: unresolved (not found)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- tasks/B1/task.yaml: tasks/B1/task.yaml sha256 05f05a22e5b4531eae60879b208a03986424f9bc8a7dd9969a138e5c88d776f1\n- https://github.com/timianmalloo/cfd-bench: unresolved (not found)\n- tasks/B1/workspace/: unresolved (not found)\n- bin/: unresolved (not found)\n- obj/: unresolved (not found)\n- tasks/B1/prompt.md: unresolved (not found)\n- tasks/B1/oracle/rubric.md: unresolved (not found; nearest: tasks/C1/oracle/rubric.md)\n- /specify: unresolved (outside repo)\n- tasks/B1/oracle/: unresolved (not found)\n- tasks/B1/tests/: unresolved (not found)\n- tasks/X1: unresolved (not found)\n- tasks/C1: unresolved (not found)\n- tasks/B1/oracle/evidence.md: unresolved (not found)\n- bench/bom.yaml: bench/bom.yaml sha256 0750cab5eae11826bdf4e1ccd2ebc9f2e10fc3d3b1325340de1b2af582b24307\n- bench/task-freeze.yaml: bench/task-freeze.yaml sha256 06953c2c0646e1595a69bb956d970d903d21b411d4bda8fd1836120a2278aaac\n- src/**: unresolved (not found)\n- tasks/X1/: unresolved (not found)\n- tasks/C1/: unresolved (not found)\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3CBY5HN2092Y52JJ7NNV003\nraw sha256: ebcc3e0bf3921adbcc3bcf23e400f38888d17d39bbd78c44cb956fa70b7b9c4c\ncompiler model: claude-opus-5-5\nengine seconds: 0.004\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W2-TASKS-d, task B1 (\"P0 conventions and spine primer to full spec…",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3CBY5HN2092Y52JJ7NNV003 for claude-code v1: 18 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-25T13:26:38Z",
+      "id": "al-01M3CBY6VPJ4Y7GVEXY8Z41DJ4",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: W2-TASKS-c, task F1 (\"P0 wing spine as three coordinated tracks\", scenario 6): author tasks/F1/ from stub toward ready, following .claude/skills/new-bench-task/SKILL.md and tasks/README.md, with the base tree vendored from the operator's own repository C:\\projects\\cfd-bench (the operator ruled 2026-09-25: it is their own nascent repository with no licence file yet; proceed without one and record that), and hidden tests run by the dotnet oracle runner exactly as tasks/D1 does (R-41).\nDone when: tasks/F1/task.yaml pins source.repo https://github.com/timianmalloo/cfd-bench and source.commit to the full SHA of C:\\projects\\cfd-bench's HEAD, and records the licence as \"none (the operator's own repository; operator decision 2026-09-25)\".; tasks/F1/workspace/ is the vendored base the three tracks start from (no secrets, no user-profile path, e-mail or username, no bin/, obj/ or caches, no reference solution); tasks/F1/prompt.md states the three coordinated tracks and their model routing, and task.yaml's model_map is filled for the three roles as the design and rulings for model_map require (read R-45/R-46's S3 model_map notes and the scenario-6 spec text; mark any role whose model is not decided with an assume: and a decision request to the Leader rather than a guess).; Hidden tests under tasks/F1/tests/ run through the dotnet runner offline (the D1 pattern: run.cmd, a named TRX, the offline NuGet cache, no hard-coded user-profile path), and are observed to FAIL on the base workspace and PASS on a reference solution kept only under tasks/F1/oracle/ (the operator's reference clones C:\\Projects\\CFD-Bench-ClaudeCode and C:\\Projects\\CFD-Bench-GHCP may be read as sources); both runs, with commands, exit codes and failing test names, are in tasks/F1/oracle/evidence.md.; The coordination and judged halves have their oracle notes (intent-log completeness, model-map adherence, MAST coding) written under tasks/F1/oracle/ for the later graders; status is draft or ready as the skill checklist allows, with the reason; uv run bench validate prints ok, including VALIDATE's path scan.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, the model_map decisions (and any decision request), and any bench/bom.yaml change you need (do not edit it).\nNot in scope: bench/bom.yaml; bench/task-freeze.yaml (the Leader freezes the task); src/**; other task folders (B1 is another track); any edit to C:\\projects\\cfd-bench or the reference clones (read only); bench run, any model turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: tasks/README.md; .claude/skills/new-bench-task/SKILL.md; tasks/D1/ (the dotnet runner pattern, run.cmd, evidence); tasks/F1/task.yaml (the stub); docs/specs/harness-bench.md scenario 6; docs/notes/rulings.md R-7, R-41, R-42, R-45, R-46; src/harness_bench/grade/correctness.py; src/harness_bench/config.py (validate_task and the path scan). Use python, not python3 (Windows).",
+      "session": "prompt-compile",
+      "shortname": "Goal: W2-TASKS-c, task F1 (\"P0 wing spine as three coordinated tracks\", …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -25266,38 +25255,38 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3CCFZSVB6E8Y0KJGSZ1NT6S",
-      "shortname": "Goal: W3-MUT-SWEEP: every named mutant in tests/mutations/*.json is live…",
-      "datetime": "2026-09-25T13:36:20Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W3-MUT-SWEEP: every named mutant in tests/mutations/*.json is live again: each file's find text occurs in its target file, and uv run python tools/mutate_check.py <file> ends \"every mutation killed\" for every file (reported by W3-GW-I s3: about 16 mutants across several files have stale find text, e.g. validity.json's R-15 sweep and views_copilot.json's two mapper mutants).\nDone when: A table in your final message lists every tests/mutations/*.json file with its result before and after (killed / total, and each SKIP or survivor by name).; Each stale find is re-pointed at the current code that carries the same guard, keeping the mutant's name, replacement semantics and named tests; no mutant is deleted, and none is weakened (the replacement still breaks the same behaviour). Where the guarded behaviour itself no longer exists in the code, the mutant is not deleted: list it by name with the commit that removed the behaviour, for the Leader to rule on.; A survivor (a live mutant no named test kills) gets a killing test, observed red under the mutant and committed first, then green; or it is listed for the Leader with the reason when the fix is outside tests/.; A control is added so this cannot silently recur: a fast test in tests/test_mutate_check.py (or a new test file) that fails when any find text in tests/mutations/*.json occurs zero times or more than once in its target file (count only; it runs no mutation), observed red on the stale state first.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each commit SHA, the before/after table, and every mutant left for the Leader.\nNot in scope: tests/mutations/correctness.json, drift.json and judge.json and their targets (live or just-joined tracks: report their counts only, do not edit them); any src/ change (list it for the Leader instead); bench run, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 300k tokens\nMain-line budget: at most 2 h of wall clock; run one mutation file at a time with its output redirected to a log; the engine and stop files are slow (several minutes each). Commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: tools/mutate_check.py; tests/test_mutate_check.py; tests/mutations/*.json; git log -p on each stale target file to find where the guarded text moved. Use python, not python3 (Windows).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3CCG0NYC078JHP5MRXMS886",
-      "shortname": "compile-Goal: W3-MUT-SWEEP: every named mutant in tests/mutations/*.json is live…",
-      "datetime": "2026-09-25T13:36:21Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-MUT-SWEEP: every named mutant in tests/mutations/*.json is live again: each file's find text occurs in its target file, and uv run python tools/mutate_check.py <file> ends \"every mutation killed\" for every file (reported by W3-GW-I s3: about 16 mutants across several files have stale find text, e.g. validity.json's R-15 sweep and views_copilot.json's two mapper mutants).\nDone when: A table in your final message lists every tests/mutations/*.json file with its result before and after (killed / total, and each SKIP or survivor by name).; Each stale find is re-pointed at the current code that carries the same guard, keeping the mutant's name, replacement semantics and named tests; no mutant is deleted, and none is weakened (the replacement still breaks the same behaviour). Where the guarded behaviour itself no longer exists in the code, the mutant is not deleted: list it by name with the commit that removed the behaviour, for the Leader to rule on.; A survivor (a live mutant no named test kills) gets a killing test, observed red under the mutant and committed first, then green; or it is listed for the Leader with the reason when the fix is outside tests/.; A control is added so this cannot silently recur: a fast test in tests/test_mutate_check.py (or a new test file) that fails when any find text in tests/mutations/*.json occurs zero times or more than once in its target file (count only; it runs no mutation), observed red on the stale state first.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each commit SHA, the before/after table, and every mutant left for the Leader.\nNot in scope: tests/mutations/correctness.json, drift.json and judge.json and their targets (live or just-joined tracks: report their counts only, do not edit them); any src/ change (list it for the Leader instead); bench run, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 300k tokens\nMain-line budget: at most 2 h of wall clock; run one mutation file at a time with its output redirected to a log; the engine and stop files are slow (several minutes each). Commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: tools/mutate_check.py; tests/test_mutate_check.py; tests/mutations/*.json; git log -p on each stale target file to find where the guarded text moved. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: A table in your final message lists every tests/mutations/*.json file with its result before and after (killed / total, and each SKIP or survivor by name). | phrase: A table in your final message lists every tests/mutations/*.json file with its result before and after (killed / total, and each SKIP or survivor by name). |\n| done_when: Each stale find is re-pointed at the current code that carries the same guard, keeping the mutant's name, replacement semantics and named tests | phrase: Each stale find is re-pointed at the current code that carries the same guard, keeping the mutant's name, replacement semantics and named tests |\n| done_when: no mutant is deleted, and none is weakened (the replacement still breaks the same behaviour). Where the guarded behaviour itself no longer exists in the code, the mutant is not deleted: list it by name with the commit that removed the behaviour, for the Leader to rule on. | phrase: no mutant is deleted, and none is weakened (the replacement still breaks the same behaviour). Where the guarded behaviour itself no longer exists in the code, the mutant is not deleted: list it by name with the commit that removed the behaviour, for the Leader to rule on. |\n| done_when: A survivor (a live mutant no named test kills) gets a killing test, observed red under the mutant and committed first, then green | phrase: A survivor (a live mutant no named test kills) gets a killing test, observed red under the mutant and committed first, then green |\n| done_when: or it is listed for the Leader with the reason when the fix is outside tests/. | phrase: or it is listed for the Leader with the reason when the fix is outside tests/. |\n| done_when: A control is added so this cannot silently recur: a fast test in tests/test_mutate_check.py (or a new test file) that fails when any find text in tests/mutations/*.json occurs zero times or more than once in its target file (count only | phrase: A control is added so this cannot silently recur: a fast test in tests/test_mutate_check.py (or a new test file) that fails when any find text in tests/mutations/*.json occurs zero times or more than once in its target file (count only |\n| done_when: it runs no mutation), observed red on the stale state first. | phrase: it runs no mutation), observed red on the stale state first. |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean. | phrase: uv run ruff check src tests tools is clean. |\n| done_when: Your final message lists each commit SHA, the before/after table, and every mutant left for the Leader. | phrase: Your final message lists each commit SHA, the before/after table, and every mutant left for the Leader. |\n| not_in_scope: tests/mutations/correctness.json, drift.json and judge.json and their targets (live or just-joined tracks: report their counts only, do not edit them) | phrase: tests/mutations/correctness.json, drift.json and judge.json and their targets (live or just-joined tracks: report their counts only, do not edit them) |\n| not_in_scope: any src/ change (list it for the Leader instead) | phrase: any src/ change (list it for the Leader instead) |\n| not_in_scope: bench run, pytest -m \"\" | phrase: bench run, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- tests/mutations/*.json: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 8be5ff1e7e337e0198336c6d9546fa448b924bab0e090c2e8685c962b52ba13d\n- /: unresolved (outside repo)\n- tests/: unresolved (not found)\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 6d22bb879e13077261e0ce89d82e8df43daef49a56120af4d003e93713373227\n- before/after: unresolved (not found)\n- tests/mutations/correctness.json: tests/mutations/correctness.json sha256 19b907ba5e3d6ab5e06cf32b0f8ac9630bf9ad341547337c094b2fcc6a0192f6\n- drift.json: unresolved (not found)\n- judge.json: tests/mutations/judge.json sha256 15f221e52ca7493a496b11a356da7c21ee9bc5775eb6ef0ec19af9813447fc98\n- src/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3CCFZSVB6E8Y0KJGSZ1NT6S\nraw sha256: 3bb61044937b4c67f25c038ffcd73db8e36fdbd3696a6db14dd56e125ca368c0\ncompiler model: claude-opus-5-5\nengine seconds: 0.004\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3CCFZSVB6E8Y0KJGSZ1NT6S for claude-code v1: 14 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-25T13:26:39Z",
+      "dispatchable": true,
+      "id": "al-01M3CBY7V0G1Y08J2DPAAVH84W",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-TASKS-c, task F1 (\"P0 wing spine as three coordinated tracks\", scenario 6): author tasks/F1/ from stub toward ready, following .claude/skills/new-bench-task/SKILL.md and tasks/README.md, with the base tree vendored from the operator's own repository C:\\projects\\cfd-bench (the operator ruled 2026-09-25: it is their own nascent repository with no licence file yet; proceed without one and record that), and hidden tests run by the dotnet oracle runner exactly as tasks/D1 does (R-41).\nDone when: tasks/F1/task.yaml pins source.repo https://github.com/timianmalloo/cfd-bench and source.commit to the full SHA of C:\\projects\\cfd-bench's HEAD, and records the licence as \"none (the operator's own repository; operator decision 2026-09-25)\".; tasks/F1/workspace/ is the vendored base the three tracks start from (no secrets, no user-profile path, e-mail or username, no bin/, obj/ or caches, no reference solution); tasks/F1/prompt.md states the three coordinated tracks and their model routing, and task.yaml's model_map is filled for the three roles as the design and rulings for model_map require (read R-45/R-46's S3 model_map notes and the scenario-6 spec text; mark any role whose model is not decided with an assume: and a decision request to the Leader rather than a guess).; Hidden tests under tasks/F1/tests/ run through the dotnet runner offline (the D1 pattern: run.cmd, a named TRX, the offline NuGet cache, no hard-coded user-profile path), and are observed to FAIL on the base workspace and PASS on a reference solution kept only under tasks/F1/oracle/ (the operator's reference clones C:\\Projects\\CFD-Bench-ClaudeCode and C:\\Projects\\CFD-Bench-GHCP may be read as sources); both runs, with commands, exit codes and failing test names, are in tasks/F1/oracle/evidence.md.; The coordination and judged halves have their oracle notes (intent-log completeness, model-map adherence, MAST coding) written under tasks/F1/oracle/ for the later graders; status is draft or ready as the skill checklist allows, with the reason; uv run bench validate prints ok, including VALIDATE's path scan.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, the model_map decisions (and any decision request), and any bench/bom.yaml change you need (do not edit it).\nNot in scope: bench/bom.yaml; bench/task-freeze.yaml (the Leader freezes the task); src/**; other task folders (B1 is another track); any edit to C:\\projects\\cfd-bench or the reference clones (read only); bench run, any model turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: tasks/README.md; .claude/skills/new-bench-task/SKILL.md; tasks/D1/ (the dotnet runner pattern, run.cmd, evidence); tasks/F1/task.yaml (the stub); docs/specs/harness-bench.md scenario 6; docs/notes/rulings.md R-7, R-41, R-42, R-45, R-46; src/harness_bench/grade/correctness.py; src/harness_bench/config.py (validate_task and the path scan). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: tasks/F1/task.yaml pins source.repo https://github.com/timianmalloo/cfd-bench and source.commit to the full SHA of C:\\projects\\cfd-bench's HEAD, and records the licence as \"none (the operator's own repository | phrase: tasks/F1/task.yaml pins source.repo https://github.com/timianmalloo/cfd-bench and source.commit to the full SHA of C:\\projects\\cfd-bench's HEAD, and records the licence as \"none (the operator's own repository |\n| done_when: operator decision 2026-09-25)\". | phrase: operator decision 2026-09-25)\". |\n| done_when: tasks/F1/workspace/ is the vendored base the three tracks start from (no secrets, no user-profile path, e-mail or username, no bin/, obj/ or caches, no reference solution) | phrase: tasks/F1/workspace/ is the vendored base the three tracks start from (no secrets, no user-profile path, e-mail or username, no bin/, obj/ or caches, no reference solution) |\n| done_when: tasks/F1/prompt.md states the three coordinated tracks and their model routing, and task.yaml's model_map is filled for the three roles as the design and rulings for model_map require (read R-45/R-46's S3 model_map notes and the scenario-6 spec text | phrase: tasks/F1/prompt.md states the three coordinated tracks and their model routing, and task.yaml's model_map is filled for the three roles as the design and rulings for model_map require (read R-45/R-46's S3 model_map notes and the scenario-6 spec text |\n| done_when: mark any role whose model is not decided with an assume: and a decision request to the Leader rather than a guess). | phrase: mark any role whose model is not decided with an assume: and a decision request to the Leader rather than a guess). |\n| done_when: Hidden tests under tasks/F1/tests/ run through the dotnet runner offline (the D1 pattern: run.cmd, a named TRX, the offline NuGet cache, no hard-coded user-profile path), and are observed to FAIL on the base workspace and PASS on a reference solution kept only under tasks/F1/oracle/ (the operator's reference clones C:\\Projects\\CFD-Bench-ClaudeCode and C:\\Projects\\CFD-Bench-GHCP may be read as sources) | phrase: Hidden tests under tasks/F1/tests/ run through the dotnet runner offline (the D1 pattern: run.cmd, a named TRX, the offline NuGet cache, no hard-coded user-profile path), and are observed to FAIL on the base workspace and PASS on a reference solution kept only under tasks/F1/oracle/ (the operator's reference clones C:\\Projects\\CFD-Bench-ClaudeCode and C:\\Projects\\CFD-Bench-GHCP may be read as sources) |\n| done_when: both runs, with commands, exit codes and failing test names, are in tasks/F1/oracle/evidence.md. | phrase: both runs, with commands, exit codes and failing test names, are in tasks/F1/oracle/evidence.md. |\n| done_when: The coordination and judged halves have their oracle notes (intent-log completeness, model-map adherence, MAST coding) written under tasks/F1/oracle/ for the later graders | phrase: The coordination and judged halves have their oracle notes (intent-log completeness, model-map adherence, MAST coding) written under tasks/F1/oracle/ for the later graders |\n| done_when: status is draft or ready as the skill checklist allows, with the reason | phrase: status is draft or ready as the skill checklist allows, with the reason |\n| done_when: uv run bench validate prints ok, including VALIDATE's path scan. | phrase: uv run bench validate prints ok, including VALIDATE's path scan. |\n| done_when: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, the model_map decisions (and any decision request), and any bench/bom.yaml change you need (do not edit it). | phrase: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, the model_map decisions (and any decision request), and any bench/bom.yaml change you need (do not edit it). |\n| not_in_scope: bench/bom.yaml | phrase: bench/bom.yaml |\n| not_in_scope: bench/task-freeze.yaml (the Leader freezes the task) | phrase: bench/task-freeze.yaml (the Leader freezes the task) |\n| not_in_scope: src/** | phrase: src/** |\n| not_in_scope: other task folders (B1 is another track) | phrase: other task folders (B1 is another track) |\n| not_in_scope: any edit to C:\\projects\\cfd-bench or the reference clones (read only) | phrase: any edit to C:\\projects\\cfd-bench or the reference clones (read only) |\n| not_in_scope: bench run, any model turn, pytest -m \"\" | phrase: bench run, any model turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- tasks/F1/: unresolved (not found)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- tasks/D1: unresolved (not found)\n- tasks/F1/task.yaml: tasks/F1/task.yaml sha256 284ab34f3a0663861b7df5219025ba0aabca769de1f790b7892469e6f3b0f601\n- https://github.com/timianmalloo/cfd-bench: unresolved (not found)\n- tasks/F1/workspace/: unresolved (not found)\n- bin/: unresolved (not found)\n- obj/: unresolved (not found)\n- tasks/F1/prompt.md: unresolved (not found)\n- R-45/R-46's: unresolved (not found)\n- tasks/F1/tests/: unresolved (not found)\n- tasks/F1/oracle/: unresolved (not found)\n- tasks/F1/oracle/evidence.md: unresolved (not found)\n- bench/bom.yaml: bench/bom.yaml sha256 0750cab5eae11826bdf4e1ccd2ebc9f2e10fc3d3b1325340de1b2af582b24307\n- bench/task-freeze.yaml: bench/task-freeze.yaml sha256 06953c2c0646e1595a69bb956d970d903d21b411d4bda8fd1836120a2278aaac\n- src/**: unresolved (not found)\n- tasks/D1/: unresolved (not found)\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- src/harness_bench/grade/correctness.py: src/harness_bench/grade/correctness.py sha256 7293085b6599c6440d8cae5e012e78827b67b37eac5490b73f31fccfd2ace520\n- src/harness_bench/config.py: src/harness_bench/config.py sha256 c49108d270c78fcb7dd12e34b42aa17d7d482ad31aa3daaca61e4f96b3460379\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3CBY6VPJ4Y7GVEXY8Z41DJ4\nraw sha256: a6a916133fb62fc955c7a828988845cef2d8aaaf4d4fadd3e4f8c742ee353583\ncompiler model: claude-opus-5-5\nengine seconds: 0.004\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W2-TASKS-c, task F1 (\"P0 wing spine as three coordinated tracks\", …",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3CBY6VPJ4Y7GVEXY8Z41DJ4 for claude-code v1: 18 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-25T13:36:20Z",
+      "id": "al-01M3CCFZSVB6E8Y0KJGSZ1NT6S",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: W3-MUT-SWEEP: every named mutant in tests/mutations/*.json is live again: each file's find text occurs in its target file, and uv run python tools/mutate_check.py <file> ends \"every mutation killed\" for every file (reported by W3-GW-I s3: about 16 mutants across several files have stale find text, e.g. validity.json's R-15 sweep and views_copilot.json's two mapper mutants).\nDone when: A table in your final message lists every tests/mutations/*.json file with its result before and after (killed / total, and each SKIP or survivor by name).; Each stale find is re-pointed at the current code that carries the same guard, keeping the mutant's name, replacement semantics and named tests; no mutant is deleted, and none is weakened (the replacement still breaks the same behaviour). Where the guarded behaviour itself no longer exists in the code, the mutant is not deleted: list it by name with the commit that removed the behaviour, for the Leader to rule on.; A survivor (a live mutant no named test kills) gets a killing test, observed red under the mutant and committed first, then green; or it is listed for the Leader with the reason when the fix is outside tests/.; A control is added so this cannot silently recur: a fast test in tests/test_mutate_check.py (or a new test file) that fails when any find text in tests/mutations/*.json occurs zero times or more than once in its target file (count only; it runs no mutation), observed red on the stale state first.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each commit SHA, the before/after table, and every mutant left for the Leader.\nNot in scope: tests/mutations/correctness.json, drift.json and judge.json and their targets (live or just-joined tracks: report their counts only, do not edit them); any src/ change (list it for the Leader instead); bench run, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 300k tokens\nMain-line budget: at most 2 h of wall clock; run one mutation file at a time with its output redirected to a log; the engine and stop files are slow (several minutes each). Commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: tools/mutate_check.py; tests/test_mutate_check.py; tests/mutations/*.json; git log -p on each stale target file to find where the guarded text moved. Use python, not python3 (Windows).",
+      "session": "prompt-compile",
+      "shortname": "Goal: W3-MUT-SWEEP: every named mutant in tests/mutations/*.json is live…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -25544,6 +25533,1415 @@ window.AUDIT_DATA = {
             "sha256": null,
             "status": "unresolved",
             "token": "src/"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-09-25T13:36:21Z",
+      "dispatchable": true,
+      "id": "al-01M3CCG0NYC078JHP5MRXMS886",
+      "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-MUT-SWEEP: every named mutant in tests/mutations/*.json is live again: each file's find text occurs in its target file, and uv run python tools/mutate_check.py <file> ends \"every mutation killed\" for every file (reported by W3-GW-I s3: about 16 mutants across several files have stale find text, e.g. validity.json's R-15 sweep and views_copilot.json's two mapper mutants).\nDone when: A table in your final message lists every tests/mutations/*.json file with its result before and after (killed / total, and each SKIP or survivor by name).; Each stale find is re-pointed at the current code that carries the same guard, keeping the mutant's name, replacement semantics and named tests; no mutant is deleted, and none is weakened (the replacement still breaks the same behaviour). Where the guarded behaviour itself no longer exists in the code, the mutant is not deleted: list it by name with the commit that removed the behaviour, for the Leader to rule on.; A survivor (a live mutant no named test kills) gets a killing test, observed red under the mutant and committed first, then green; or it is listed for the Leader with the reason when the fix is outside tests/.; A control is added so this cannot silently recur: a fast test in tests/test_mutate_check.py (or a new test file) that fails when any find text in tests/mutations/*.json occurs zero times or more than once in its target file (count only; it runs no mutation), observed red on the stale state first.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each commit SHA, the before/after table, and every mutant left for the Leader.\nNot in scope: tests/mutations/correctness.json, drift.json and judge.json and their targets (live or just-joined tracks: report their counts only, do not edit them); any src/ change (list it for the Leader instead); bench run, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 300k tokens\nMain-line budget: at most 2 h of wall clock; run one mutation file at a time with its output redirected to a log; the engine and stop files are slow (several minutes each). Commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: tools/mutate_check.py; tests/test_mutate_check.py; tests/mutations/*.json; git log -p on each stale target file to find where the guarded text moved. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: A table in your final message lists every tests/mutations/*.json file with its result before and after (killed / total, and each SKIP or survivor by name). | phrase: A table in your final message lists every tests/mutations/*.json file with its result before and after (killed / total, and each SKIP or survivor by name). |\n| done_when: Each stale find is re-pointed at the current code that carries the same guard, keeping the mutant's name, replacement semantics and named tests | phrase: Each stale find is re-pointed at the current code that carries the same guard, keeping the mutant's name, replacement semantics and named tests |\n| done_when: no mutant is deleted, and none is weakened (the replacement still breaks the same behaviour). Where the guarded behaviour itself no longer exists in the code, the mutant is not deleted: list it by name with the commit that removed the behaviour, for the Leader to rule on. | phrase: no mutant is deleted, and none is weakened (the replacement still breaks the same behaviour). Where the guarded behaviour itself no longer exists in the code, the mutant is not deleted: list it by name with the commit that removed the behaviour, for the Leader to rule on. |\n| done_when: A survivor (a live mutant no named test kills) gets a killing test, observed red under the mutant and committed first, then green | phrase: A survivor (a live mutant no named test kills) gets a killing test, observed red under the mutant and committed first, then green |\n| done_when: or it is listed for the Leader with the reason when the fix is outside tests/. | phrase: or it is listed for the Leader with the reason when the fix is outside tests/. |\n| done_when: A control is added so this cannot silently recur: a fast test in tests/test_mutate_check.py (or a new test file) that fails when any find text in tests/mutations/*.json occurs zero times or more than once in its target file (count only | phrase: A control is added so this cannot silently recur: a fast test in tests/test_mutate_check.py (or a new test file) that fails when any find text in tests/mutations/*.json occurs zero times or more than once in its target file (count only |\n| done_when: it runs no mutation), observed red on the stale state first. | phrase: it runs no mutation), observed red on the stale state first. |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean. | phrase: uv run ruff check src tests tools is clean. |\n| done_when: Your final message lists each commit SHA, the before/after table, and every mutant left for the Leader. | phrase: Your final message lists each commit SHA, the before/after table, and every mutant left for the Leader. |\n| not_in_scope: tests/mutations/correctness.json, drift.json and judge.json and their targets (live or just-joined tracks: report their counts only, do not edit them) | phrase: tests/mutations/correctness.json, drift.json and judge.json and their targets (live or just-joined tracks: report their counts only, do not edit them) |\n| not_in_scope: any src/ change (list it for the Leader instead) | phrase: any src/ change (list it for the Leader instead) |\n| not_in_scope: bench run, pytest -m \"\" | phrase: bench run, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- tests/mutations/*.json: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 8be5ff1e7e337e0198336c6d9546fa448b924bab0e090c2e8685c962b52ba13d\n- /: unresolved (outside repo)\n- tests/: unresolved (not found)\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 6d22bb879e13077261e0ce89d82e8df43daef49a56120af4d003e93713373227\n- before/after: unresolved (not found)\n- tests/mutations/correctness.json: tests/mutations/correctness.json sha256 19b907ba5e3d6ab5e06cf32b0f8ac9630bf9ad341547337c094b2fcc6a0192f6\n- drift.json: unresolved (not found)\n- judge.json: tests/mutations/judge.json sha256 15f221e52ca7493a496b11a356da7c21ee9bc5775eb6ef0ec19af9813447fc98\n- src/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3CCFZSVB6E8Y0KJGSZ1NT6S\nraw sha256: 3bb61044937b4c67f25c038ffcd73db8e36fdbd3696a6db14dd56e125ca368c0\ncompiler model: claude-opus-5-5\nengine seconds: 0.004\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W3-MUT-SWEEP: every named mutant in tests/mutations/*.json is live…",
+      "skill": null,
+      "summary": "compiled al-01M3CCFZSVB6E8Y0KJGSZ1NT6S for claude-code v1: 14 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "src/harness_bench/grade/drift.py",
+        "src/harness_bench/grade/runner.py",
+        "tests/test_grade_drift.py",
+        "tests/mutations/drift.json"
+      ],
+      "compiled": false,
+      "datetime": "2026-09-25T13:25:30Z",
+      "done_when": "the three design seeds red then green; the 6 D1 cells of row15-d1-1 give scope_creep 0 and _files 0, 35af convention_drift NA 'no lines changed', archive byte-unchanged; drift.json all killed, grade.json and correctness.json all killed; pytest with HB_GATE_RUNS 0 gate skips; ruff clean; bench validate ok",
+      "duration_seconds": 3168.0,
+      "goal": "W3-GR-CODE c3: the drift grader (scope_creep, scope_creep_files, convention_drift; the design's NA reasons), red first, registered in runner.GRADERS",
+      "id": "al-01M3CBW49P59MADHQKTD6PP5NC",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "W3-GR-CODE slice c3 (the drift grader) per brief-grcode3.md: docs/design/phase3-graders.md section Drift and slice row GR-CODE c3; rulings R-59, R-67, R-68, R-71; on c1's grade/_changes.py.",
+      "session": "w3-grcode-3",
+      "shortname": "w3-grcode-3-drift",
+      "skill": "implement",
+      "started_at": "2026-09-25T12:32:42Z",
+      "summary": "grade/drift.py: scope_creep and scope_creep_files (difflib, CRLF-normalised, files outside blast_radius, cell tree vs _changes' pre-turn tree, build output excluded); convention_drift (D1 rule table, R1 file-scoped namespace, per 100 added or changed .cs lines); by-design NA reasons verbatim; shared NA (no working copy, pre-turn commit not found, HB-GRD-002 on a git timeout); drift.log evidence. Finding: the pack-on cells 35af and 4a62 carry the pack hook's docs/audit/.run-starts.json (3 lines), which a pure content diff counts as scope creep; resolved by excluding added files the pre-turn tree's own .gitignore names (git check-ignore --no-index, marked assume:). Registered in runner.GRADERS (import line + GRADERS line). Proposal for the Leader: bench/metrics.yaml convention_drift needs scale: 2, else the runner raises 'a Decimal for a metric with no catalog scale' and the whole drift grader is HB-GRD-003 in a real pass.",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "id": "al-01M3CD1B5KWDEBSTY8Q8QK7SR3",
+      "shortname": "Goal: W3-GW-I slice 4 per docs/design/phase3-gateway-judges.md section 1…",
+      "datetime": "2026-09-25T13:45:49Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W3-GW-I slice 4 per docs/design/phase3-gateway-judges.md section 16 row s4 and section 6, plus R-70 condition (a) (read the design's sections 6, 8.1-8.4, 17 and 22 and rulings R-58, R-65, R-70, R-72 in docs/notes/rulings.md first): when judges run, the live-run refusal across worktrees, and the Copilot judge's stdin branch, red first, offline.\nDone when: The in-run pass (cli.py's grading after bench run) does no store lookup, makes no call and writes no verdict_uses rows; every judged metric is NOT_RECORDED \"judge calls not allowed in this pass\" (the slice-3 simplify: comment is removed).; `bench grade` without the flag reads the store only (a miss is not_allowed) and prints `judge misses: <n calls>`; `bench grade --allow-model-calls` is the only CLI path that may spawn a judge (cmd_grade gains the flag; STOP-I is joined, so cli.py is free).; Before its first spawn the gateway refuses when any run is live: every run folder under the runs/ of every worktree of this repository (git worktree list) plus --runs, filtered by status.require_known, with live = status liveness in {alive, stalled}. The refusal uses a NEW error code (review A1: HB-GRD-003 already means a grader failure): add it to errors.RUN_CODES with its test, and use it in place of the design's HB-GRD-003 text; judge_pass's known_roots widen to the same set.; R-70 (a): the gateway's Copilot branch - copilot_argv delivers the request on stdin (with -p and the measured flags --disable-builtin-mcps --no-custom-instructions --available-tools none), the answer is read from the native record's last assistant.message (not stdout), and the system-prompt route is explicit (Copilot 1.0.89-1 passes none; the invocation hash covers exactly what is sent). backend.HEADLESS_HARNESSES gains \"copilot\" only behind a test that the Copilot builder, reader and home are complete; any Copilot judge entry stays absent from bench/gateway.yaml (the Leader's live turn records its invocation_sha256).; T-GW-19, 19b and 19c are red first (a held lock in this worktree's runs/, in another worktree's runs/, and the require_known filter), each red committed separately and failing on an assertion; the Copilot branch has its own red tests on a placeholder Copilot record (tests/fixtures/gateway/copilot/).; tests/mutations/gateway.json and judge.json gain a named mutant per new branch, each killed.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, the new error code, and the mutate_check results.\nNot in scope: calibration, kappa, the report header and the rubric in the catalog (slice 5; R-72 governs labels); any live model call or real CLI launch in a test (the fake executable and placeholder records only); bench/gateway.yaml itself; engine.py; bench run, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase3-gateway-judges.md; docs/notes/rulings.md R-58, R-65, R-70, R-72; docs/notes/spike-gw-headless.md (the last section: the measured Copilot shape); src/harness_bench/gateway/; src/harness_bench/grade/{judge,runner}.py; src/harness_bench/{cli,status,errors}.py; tests/test_gateway*.py; tests/test_grade_judge.py; tests/fixtures/gateway/. Use python, not python3 (Windows). Write any log under your own worktree's parent with a name unique to you; never in the Leader's scratchpad.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3CD1CQH87PV5G9SVVGQ4172",
+      "shortname": "compile-Goal: W3-GW-I slice 4 per docs/design/phase3-gateway-judges.md section 1…",
+      "datetime": "2026-09-25T13:45:51Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-GW-I slice 4 per docs/design/phase3-gateway-judges.md section 16 row s4 and section 6, plus R-70 condition (a) (read the design's sections 6, 8.1-8.4, 17 and 22 and rulings R-58, R-65, R-70, R-72 in docs/notes/rulings.md first): when judges run, the live-run refusal across worktrees, and the Copilot judge's stdin branch, red first, offline.\nDone when: The in-run pass (cli.py's grading after bench run) does no store lookup, makes no call and writes no verdict_uses rows; every judged metric is NOT_RECORDED \"judge calls not allowed in this pass\" (the slice-3 simplify: comment is removed).; `bench grade` without the flag reads the store only (a miss is not_allowed) and prints `judge misses: <n calls>`; `bench grade --allow-model-calls` is the only CLI path that may spawn a judge (cmd_grade gains the flag; STOP-I is joined, so cli.py is free).; Before its first spawn the gateway refuses when any run is live: every run folder under the runs/ of every worktree of this repository (git worktree list) plus --runs, filtered by status.require_known, with live = status liveness in {alive, stalled}. The refusal uses a NEW error code (review A1: HB-GRD-003 already means a grader failure): add it to errors.RUN_CODES with its test, and use it in place of the design's HB-GRD-003 text; judge_pass's known_roots widen to the same set.; R-70 (a): the gateway's Copilot branch - copilot_argv delivers the request on stdin (with -p and the measured flags --disable-builtin-mcps --no-custom-instructions --available-tools none), the answer is read from the native record's last assistant.message (not stdout), and the system-prompt route is explicit (Copilot 1.0.89-1 passes none; the invocation hash covers exactly what is sent). backend.HEADLESS_HARNESSES gains \"copilot\" only behind a test that the Copilot builder, reader and home are complete; any Copilot judge entry stays absent from bench/gateway.yaml (the Leader's live turn records its invocation_sha256).; T-GW-19, 19b and 19c are red first (a held lock in this worktree's runs/, in another worktree's runs/, and the require_known filter), each red committed separately and failing on an assertion; the Copilot branch has its own red tests on a placeholder Copilot record (tests/fixtures/gateway/copilot/).; tests/mutations/gateway.json and judge.json gain a named mutant per new branch, each killed.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, the new error code, and the mutate_check results.\nNot in scope: calibration, kappa, the report header and the rubric in the catalog (slice 5; R-72 governs labels); any live model call or real CLI launch in a test (the fake executable and placeholder records only); bench/gateway.yaml itself; engine.py; bench run, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-gateway-judges.md; docs/notes/rulings.md R-58, R-65, R-70, R-72; docs/notes/spike-gw-headless.md (the last section: the measured Copilot shape); src/harness_bench/gateway/; src/harness_bench/grade/{judge,runner}.py; src/harness_bench/{cli,status,errors}.py; tests/test_gateway*.py; tests/test_grade_judge.py; tests/fixtures/gateway/. Use python, not python3 (Windows). Write any log under your own worktree's parent with a name unique to you; never in the Leader's scratchpad.\nTrace\n| clause | trace |\n|---|---|\n| done_when: The in-run pass (cli.py's grading after bench run) does no store lookup, makes no call and writes no verdict_uses rows | phrase: The in-run pass (cli.py's grading after bench run) does no store lookup, makes no call and writes no verdict_uses rows |\n| done_when: every judged metric is NOT_RECORDED \"judge calls not allowed in this pass\" (the slice-3 simplify: comment is removed). | phrase: every judged metric is NOT_RECORDED \"judge calls not allowed in this pass\" (the slice-3 simplify: comment is removed). |\n| done_when: `bench grade` without the flag reads the store only (a miss is not_allowed) and prints `judge misses: <n calls>` | phrase: `bench grade` without the flag reads the store only (a miss is not_allowed) and prints `judge misses: <n calls>` |\n| done_when: `bench grade --allow-model-calls` is the only CLI path that may spawn a judge (cmd_grade gains the flag | phrase: `bench grade --allow-model-calls` is the only CLI path that may spawn a judge (cmd_grade gains the flag |\n| done_when: STOP-I is joined, so cli.py is free). | phrase: STOP-I is joined, so cli.py is free). |\n| done_when: Before its first spawn the gateway refuses when any run is live: every run folder under the runs/ of every worktree of this repository (git worktree list) plus --runs, filtered by status.require_known, with live = status liveness in {alive, stalled}. The refusal uses a NEW error code (review A1: HB-GRD-003 already means a grader failure): add it to errors.RUN_CODES with its test, and use it in place of the design's HB-GRD-003 text | phrase: Before its first spawn the gateway refuses when any run is live: every run folder under the runs/ of every worktree of this repository (git worktree list) plus --runs, filtered by status.require_known, with live = status liveness in {alive, stalled}. The refusal uses a NEW error code (review A1: HB-GRD-003 already means a grader failure): add it to errors.RUN_CODES with its test, and use it in place of the design's HB-GRD-003 text |\n| done_when: judge_pass's known_roots widen to the same set. | phrase: judge_pass's known_roots widen to the same set. |\n| done_when: R-70 (a): the gateway's Copilot branch - copilot_argv delivers the request on stdin (with -p and the measured flags --disable-builtin-mcps --no-custom-instructions --available-tools none), the answer is read from the native record's last assistant.message (not stdout), and the system-prompt route is explicit (Copilot 1.0.89-1 passes none | phrase: R-70 (a): the gateway's Copilot branch - copilot_argv delivers the request on stdin (with -p and the measured flags --disable-builtin-mcps --no-custom-instructions --available-tools none), the answer is read from the native record's last assistant.message (not stdout), and the system-prompt route is explicit (Copilot 1.0.89-1 passes none |\n| done_when: the invocation hash covers exactly what is sent). backend.HEADLESS_HARNESSES gains \"copilot\" only behind a test that the Copilot builder, reader and home are complete | phrase: the invocation hash covers exactly what is sent). backend.HEADLESS_HARNESSES gains \"copilot\" only behind a test that the Copilot builder, reader and home are complete |\n| done_when: any Copilot judge entry stays absent from bench/gateway.yaml (the Leader's live turn records its invocation_sha256). | phrase: any Copilot judge entry stays absent from bench/gateway.yaml (the Leader's live turn records its invocation_sha256). |\n| done_when: T-GW-19, 19b and 19c are red first (a held lock in this worktree's runs/, in another worktree's runs/, and the require_known filter), each red committed separately and failing on an assertion | phrase: T-GW-19, 19b and 19c are red first (a held lock in this worktree's runs/, in another worktree's runs/, and the require_known filter), each red committed separately and failing on an assertion |\n| done_when: the Copilot branch has its own red tests on a placeholder Copilot record (tests/fixtures/gateway/copilot/). | phrase: the Copilot branch has its own red tests on a placeholder Copilot record (tests/fixtures/gateway/copilot/). |\n| done_when: tests/mutations/gateway.json and judge.json gain a named mutant per new branch, each killed. | phrase: tests/mutations/gateway.json and judge.json gain a named mutant per new branch, each killed. |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean. | phrase: uv run ruff check src tests tools is clean. |\n| done_when: Your final message lists each red SHA with its failing assertion, each green SHA, the new error code, and the mutate_check results. | phrase: Your final message lists each red SHA with its failing assertion, each green SHA, the new error code, and the mutate_check results. |\n| not_in_scope: calibration, kappa, the report header and the rubric in the catalog (slice 5 | phrase: calibration, kappa, the report header and the rubric in the catalog (slice 5 |\n| not_in_scope: R-72 governs labels) | phrase: R-72 governs labels) |\n| not_in_scope: any live model call or real CLI launch in a test (the fake executable and placeholder records only) | phrase: any live model call or real CLI launch in a test (the fake executable and placeholder records only) |\n| not_in_scope: bench/gateway.yaml itself | phrase: bench/gateway.yaml itself |\n| not_in_scope: engine.py | phrase: engine.py |\n| not_in_scope: bench run, pytest -m \"\" | phrase: bench run, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- bench grade: unresolved (not found)\n- judge misses: <n calls: unresolved (not found)\n- bench grade --allow-model-calls: unresolved (not found)\n- docs/design/phase3-gateway-judges.md: docs/design/phase3-gateway-judges.md sha256 61cfd44cdac602696254e7d583e506632d4d03ba4085917387d46cf9fab1e519\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- cli.py: src/harness_bench/cli.py sha256 e989d26a85818593787da2b9852c3ba2b90d8d16e868cd763128cfeda6fce5ae\n- runs/: unresolved (not found)\n- bench/gateway.yaml: unresolved (not found; nearest: tests/fixtures/gateway/gateway.yaml)\n- tests/fixtures/gateway/copilot/: unresolved (not found)\n- tests/mutations/gateway.json: tests/mutations/gateway.json sha256 9d2bb0319109e5c36b66879f6013e20e8fc44a0f385ede728a9c180d03252107\n- judge.json: tests/mutations/judge.json sha256 15f221e52ca7493a496b11a356da7c21ee9bc5775eb6ef0ec19af9813447fc98\n- engine.py: src/harness_bench/engine.py sha256 7ff0e19cacf63617a78fde871a941d245b7b0ef4e40932d8fd7175c189504a30\n- docs/notes/spike-gw-headless.md: docs/notes/spike-gw-headless.md sha256 58005e78a98383b528e807dfc0c9d8cee6b17b92736c7b62b9068ff67a6c3630\n- src/harness_bench/gateway/: unresolved (not found)\n- src/harness_bench/grade/{judge,runner}.py: unresolved (not found)\n- src/harness_bench/{cli,status,errors}.py: unresolved (not found)\n- tests/test_gateway*.py: unresolved (not found)\n- tests/test_grade_judge.py: tests/test_grade_judge.py sha256 615fc3dc4b13fdf6b5d4a6cdd6b3a8b8beb74fe61f76afafbb0f6cbbb1bd9af3\n- tests/fixtures/gateway/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3CD1B5KWDEBSTY8Q8QK7SR3\nraw sha256: a24e7f30df20a98b46df9f067db3db1bc5bf7f8e3f4ba99de5dbeb46b82304fc\ncompiler model: claude-opus-5-5\nengine seconds: 0.004\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3CD1B5KWDEBSTY8Q8QK7SR3 for claude-code v1: 23 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "The in-run pass (cli.py's grading after bench run) does no store lookup, makes no call and writes no verdict_uses rows",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The in-run pass (cli.py's grading after bench run) does no store lookup, makes no call and writes no verdict_uses rows"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "every judged metric is NOT_RECORDED \"judge calls not allowed in this pass\" (the slice-3 simplify: comment is removed).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "every judged metric is NOT_RECORDED \"judge calls not allowed in this pass\" (the slice-3 simplify: comment is removed)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`bench grade` without the flag reads the store only (a miss is not_allowed) and prints `judge misses: <n calls>`",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`bench grade` without the flag reads the store only (a miss is not_allowed) and prints `judge misses: <n calls>`"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`bench grade --allow-model-calls` is the only CLI path that may spawn a judge (cmd_grade gains the flag",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`bench grade --allow-model-calls` is the only CLI path that may spawn a judge (cmd_grade gains the flag"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "STOP-I is joined, so cli.py is free).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "STOP-I is joined, so cli.py is free)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Before its first spawn the gateway refuses when any run is live: every run folder under the runs/ of every worktree of this repository (git worktree list) plus --runs, filtered by status.require_known, with live = status liveness in {alive, stalled}. The refusal uses a NEW error code (review A1: HB-GRD-003 already means a grader failure): add it to errors.RUN_CODES with its test, and use it in place of the design's HB-GRD-003 text",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Before its first spawn the gateway refuses when any run is live: every run folder under the runs/ of every worktree of this repository (git worktree list) plus --runs, filtered by status.require_known, with live = status liveness in {alive, stalled}. The refusal uses a NEW error code (review A1: HB-GRD-003 already means a grader failure): add it to errors.RUN_CODES with its test, and use it in place of the design's HB-GRD-003 text"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "judge_pass's known_roots widen to the same set.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "judge_pass's known_roots widen to the same set."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "R-70 (a): the gateway's Copilot branch - copilot_argv delivers the request on stdin (with -p and the measured flags --disable-builtin-mcps --no-custom-instructions --available-tools none), the answer is read from the native record's last assistant.message (not stdout), and the system-prompt route is explicit (Copilot 1.0.89-1 passes none",
+            "trace": {
+              "kind": "phrase",
+              "ref": "R-70 (a): the gateway's Copilot branch - copilot_argv delivers the request on stdin (with -p and the measured flags --disable-builtin-mcps --no-custom-instructions --available-tools none), the answer is read from the native record's last assistant.message (not stdout), and the system-prompt route is explicit (Copilot 1.0.89-1 passes none"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the invocation hash covers exactly what is sent). backend.HEADLESS_HARNESSES gains \"copilot\" only behind a test that the Copilot builder, reader and home are complete",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the invocation hash covers exactly what is sent). backend.HEADLESS_HARNESSES gains \"copilot\" only behind a test that the Copilot builder, reader and home are complete"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "any Copilot judge entry stays absent from bench/gateway.yaml (the Leader's live turn records its invocation_sha256).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any Copilot judge entry stays absent from bench/gateway.yaml (the Leader's live turn records its invocation_sha256)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "T-GW-19, 19b and 19c are red first (a held lock in this worktree's runs/, in another worktree's runs/, and the require_known filter), each red committed separately and failing on an assertion",
+            "trace": {
+              "kind": "phrase",
+              "ref": "T-GW-19, 19b and 19c are red first (a held lock in this worktree's runs/, in another worktree's runs/, and the require_known filter), each red committed separately and failing on an assertion"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the Copilot branch has its own red tests on a placeholder Copilot record (tests/fixtures/gateway/copilot/).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the Copilot branch has its own red tests on a placeholder Copilot record (tests/fixtures/gateway/copilot/)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/gateway.json and judge.json gain a named mutant per new branch, each killed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/gateway.json and judge.json gain a named mutant per new branch, each killed."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA with its failing assertion, each green SHA, the new error code, and the mutate_check results.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA with its failing assertion, each green SHA, the new error code, and the mutate_check results."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "calibration, kappa, the report header and the rubric in the catalog (slice 5",
+            "trace": {
+              "kind": "phrase",
+              "ref": "calibration, kappa, the report header and the rubric in the catalog (slice 5"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "R-72 governs labels)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "R-72 governs labels)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any live model call or real CLI launch in a test (the fake executable and placeholder records only)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any live model call or real CLI launch in a test (the fake executable and placeholder records only)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench/gateway.yaml itself",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/gateway.yaml itself"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "engine.py",
+            "trace": {
+              "kind": "phrase",
+              "ref": "engine.py"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run, pytest -m \"\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run, pytest -m \"\""
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "The in-run pass (cli.py's grading after bench run) does no store lookup, makes no call and writes no verdict_uses rows",
+            "every judged metric is NOT_RECORDED \"judge calls not allowed in this pass\" (the slice-3 simplify: comment is removed).",
+            "`bench grade` without the flag reads the store only (a miss is not_allowed) and prints `judge misses: <n calls>`",
+            "`bench grade --allow-model-calls` is the only CLI path that may spawn a judge (cmd_grade gains the flag",
+            "STOP-I is joined, so cli.py is free).",
+            "Before its first spawn the gateway refuses when any run is live: every run folder under the runs/ of every worktree of this repository (git worktree list) plus --runs, filtered by status.require_known, with live = status liveness in {alive, stalled}. The refusal uses a NEW error code (review A1: HB-GRD-003 already means a grader failure): add it to errors.RUN_CODES with its test, and use it in place of the design's HB-GRD-003 text",
+            "judge_pass's known_roots widen to the same set.",
+            "R-70 (a): the gateway's Copilot branch - copilot_argv delivers the request on stdin (with -p and the measured flags --disable-builtin-mcps --no-custom-instructions --available-tools none), the answer is read from the native record's last assistant.message (not stdout), and the system-prompt route is explicit (Copilot 1.0.89-1 passes none",
+            "the invocation hash covers exactly what is sent). backend.HEADLESS_HARNESSES gains \"copilot\" only behind a test that the Copilot builder, reader and home are complete",
+            "any Copilot judge entry stays absent from bench/gateway.yaml (the Leader's live turn records its invocation_sha256).",
+            "T-GW-19, 19b and 19c are red first (a held lock in this worktree's runs/, in another worktree's runs/, and the require_known filter), each red committed separately and failing on an assertion",
+            "the Copilot branch has its own red tests on a placeholder Copilot record (tests/fixtures/gateway/copilot/).",
+            "tests/mutations/gateway.json and judge.json gain a named mutant per new branch, each killed.",
+            "uv run pytest -q -p no:cacheprovider passes",
+            "uv run ruff check src tests tools is clean.",
+            "Your final message lists each red SHA with its failing assertion, each green SHA, the new error code, and the mutate_check results."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W3-GW-I slice 4 per docs/design/phase3-gateway-judges.md section 16 row s4 and section 6, plus R-70 condition (a) (read the design's sections 6, 8.1-8.4, 17 and 22 and rulings R-58, R-65, R-70, R-72 in docs/notes/rulings.md first): when judges run, the live-run refusal across worktrees, and the Copilot judge's stdin branch, red first, offline.",
+          "main_line_budget": "one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-gateway-judges.md; docs/notes/rulings.md R-58, R-65, R-70, R-72; docs/notes/spike-gw-headless.md (the last section: the measured Copilot shape); src/harness_bench/gateway/; src/harness_bench/grade/{judge,runner}.py; src/harness_bench/{cli,status,errors}.py; tests/test_gateway*.py; tests/test_grade_judge.py; tests/fixtures/gateway/. Use python, not python3 (Windows). Write any log under your own worktree's parent with a name unique to you; never in the Leader's scratchpad.",
+          "not_in_scope": [
+            "calibration, kappa, the report header and the rubric in the catalog (slice 5",
+            "R-72 governs labels)",
+            "any live model call or real CLI launch in a test (the fake executable and placeholder records only)",
+            "bench/gateway.yaml itself",
+            "engine.py",
+            "bench run, pytest -m \"\"",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.004,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3CD1B5KWDEBSTY8Q8QK7SR3",
+        "raw_sha256": "a24e7f30df20a98b46df9f067db3db1bc5bf7f8e3f4ba99de5dbeb46b82304fc",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench grade"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "judge misses: <n calls"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench grade --allow-model-calls"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase3-gateway-judges.md",
+            "reason": null,
+            "sha256": "61cfd44cdac602696254e7d583e506632d4d03ba4085917387d46cf9fab1e519",
+            "status": "resolved",
+            "token": "docs/design/phase3-gateway-judges.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "e989d26a85818593787da2b9852c3ba2b90d8d16e868cd763128cfeda6fce5ae",
+            "status": "resolved",
+            "token": "cli.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": "tests/fixtures/gateway/gateway.yaml",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/gateway.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/gateway/copilot/"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/gateway.json",
+            "reason": null,
+            "sha256": "9d2bb0319109e5c36b66879f6013e20e8fc44a0f385ede728a9c180d03252107",
+            "status": "resolved",
+            "token": "tests/mutations/gateway.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/judge.json",
+            "reason": null,
+            "sha256": "15f221e52ca7493a496b11a356da7c21ee9bc5775eb6ef0ec19af9813447fc98",
+            "status": "resolved",
+            "token": "judge.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/engine.py",
+            "reason": null,
+            "sha256": "7ff0e19cacf63617a78fde871a941d245b7b0ef4e40932d8fd7175c189504a30",
+            "status": "resolved",
+            "token": "engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/spike-gw-headless.md",
+            "reason": null,
+            "sha256": "58005e78a98383b528e807dfc0c9d8cee6b17b92736c7b62b9068ff67a6c3630",
+            "status": "resolved",
+            "token": "docs/notes/spike-gw-headless.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/gateway/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/grade/{judge,runner}.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/{cli,status,errors}.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_gateway*.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_judge.py",
+            "reason": null,
+            "sha256": "615fc3dc4b13fdf6b5d4a6cdd6b3a8b8beb74fe61f76afafbb0f6cbbb1bd9af3",
+            "status": "resolved",
+            "token": "tests/test_grade_judge.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/gateway/"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3CD1CYHD61Z9TBQVM3BD1QT",
+      "shortname": "Goal: W3-CAL per the plan row (docs/coordination/coordination-finish-har…",
+      "datetime": "2026-09-25T13:45:51Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W3-CAL per the plan row (docs/coordination/coordination-finish-harness-bench.md, W3-CAL), docs/design/phase3-gateway-judges.md sections 4.4 and 11, and rulings R-58, R-62 (a3) and R-72 (read them first): the 30 C1 calibration items in GW-D's unit, with provenance, items only (no labels in 0.4).\nDone when: bench/calibration/C1/ holds 30 items in the design's unit (section 4.4: each item an artifact of the kind C1's rubric judges, never a real cell's output and never a verdict), covering all 7 rubric items of tasks/C1/oracle/rubric.md with at least 4 items each, and every score in {0, 1, 2} represented per rubric item.; A manifest (the design's file and shape) gives each item's provenance: author (Claude Opus 5.5, this track), creation date, the rubric item(s) it targets, and `intended_score` as provenance only (R-72 condition 3: never a label and never a kappa input).; No labels.yaml is written (R-72). The manifest's disclosure states the items are Claude-authored and will be judged by a Claude judge (R-62 a3).; A test asserts the range check (every rubric item has at least 4 items; each of 0, 1, 2 appears per rubric item) reading intended_score from the manifest, and a second test asserts that no code under src/ reads intended_score (R-72 condition 3's guard); both red first on an empty or incomplete set, then green.; No item carries a user-profile path, e-mail, username, host name, a pack marker, or a harness, model or combo id (the gateway's scrub would flag it; check with gateway.scrub.scan over each item against the denylist the gateway builds).; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean; uv run bench validate prints ok.; Your final message lists each commit SHA, the per-rubric-item count and score spread, and the scrub-scan result.\nNot in scope: labels of any kind (R-72); tools/calibrate.py, kappa, the report header (W3-GW-I slice 5); reading any judge verdict or any run's cell output; src/**; bench/metrics.yaml; bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 300k tokens\nMain-line budget: at most 90 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase3-gateway-judges.md (sections 4.4, 7.3, 11); docs/notes/rulings.md R-58, R-62, R-72; tasks/C1/ (task.yaml, prompt.md, oracle/rubric.md); src/harness_bench/gateway/scrub.py. Use python, not python3 (Windows). Write any log under your own worktree's parent with a name unique to you; never in the Leader's scratchpad.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3CD1DV6GMZZB126FMS065D3",
+      "shortname": "compile-Goal: W3-CAL per the plan row (docs/coordination/coordination-finish-har…",
+      "datetime": "2026-09-25T13:45:52Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-CAL per the plan row (docs/coordination/coordination-finish-harness-bench.md, W3-CAL), docs/design/phase3-gateway-judges.md sections 4.4 and 11, and rulings R-58, R-62 (a3) and R-72 (read them first): the 30 C1 calibration items in GW-D's unit, with provenance, items only (no labels in 0.4).\nDone when: bench/calibration/C1/ holds 30 items in the design's unit (section 4.4: each item an artifact of the kind C1's rubric judges, never a real cell's output and never a verdict), covering all 7 rubric items of tasks/C1/oracle/rubric.md with at least 4 items each, and every score in {0, 1, 2} represented per rubric item.; A manifest (the design's file and shape) gives each item's provenance: author (Claude Opus 5.5, this track), creation date, the rubric item(s) it targets, and `intended_score` as provenance only (R-72 condition 3: never a label and never a kappa input).; No labels.yaml is written (R-72). The manifest's disclosure states the items are Claude-authored and will be judged by a Claude judge (R-62 a3).; A test asserts the range check (every rubric item has at least 4 items; each of 0, 1, 2 appears per rubric item) reading intended_score from the manifest, and a second test asserts that no code under src/ reads intended_score (R-72 condition 3's guard); both red first on an empty or incomplete set, then green.; No item carries a user-profile path, e-mail, username, host name, a pack marker, or a harness, model or combo id (the gateway's scrub would flag it; check with gateway.scrub.scan over each item against the denylist the gateway builds).; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean; uv run bench validate prints ok.; Your final message lists each commit SHA, the per-rubric-item count and score spread, and the scrub-scan result.\nNot in scope: labels of any kind (R-72); tools/calibrate.py, kappa, the report header (W3-GW-I slice 5); reading any judge verdict or any run's cell output; src/**; bench/metrics.yaml; bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 300k tokens\nMain-line budget: at most 90 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-gateway-judges.md (sections 4.4, 7.3, 11); docs/notes/rulings.md R-58, R-62, R-72; tasks/C1/ (task.yaml, prompt.md, oracle/rubric.md); src/harness_bench/gateway/scrub.py. Use python, not python3 (Windows). Write any log under your own worktree's parent with a name unique to you; never in the Leader's scratchpad.\nTrace\n| clause | trace |\n|---|---|\n| done_when: bench/calibration/C1/ holds 30 items in the design's unit (section 4.4: each item an artifact of the kind C1's rubric judges, never a real cell's output and never a verdict), covering all 7 rubric items of tasks/C1/oracle/rubric.md with at least 4 items each, and every score in {0, 1, 2} represented per rubric item. | phrase: bench/calibration/C1/ holds 30 items in the design's unit (section 4.4: each item an artifact of the kind C1's rubric judges, never a real cell's output and never a verdict), covering all 7 rubric items of tasks/C1/oracle/rubric.md with at least 4 items each, and every score in {0, 1, 2} represented per rubric item. |\n| done_when: A manifest (the design's file and shape) gives each item's provenance: author (Claude Opus 5.5, this track), creation date, the rubric item(s) it targets, and `intended_score` as provenance only (R-72 condition 3: never a label and never a kappa input). | phrase: A manifest (the design's file and shape) gives each item's provenance: author (Claude Opus 5.5, this track), creation date, the rubric item(s) it targets, and `intended_score` as provenance only (R-72 condition 3: never a label and never a kappa input). |\n| done_when: No labels.yaml is written (R-72). The manifest's disclosure states the items are Claude-authored and will be judged by a Claude judge (R-62 a3). | phrase: No labels.yaml is written (R-72). The manifest's disclosure states the items are Claude-authored and will be judged by a Claude judge (R-62 a3). |\n| done_when: A test asserts the range check (every rubric item has at least 4 items | phrase: A test asserts the range check (every rubric item has at least 4 items |\n| done_when: each of 0, 1, 2 appears per rubric item) reading intended_score from the manifest, and a second test asserts that no code under src/ reads intended_score (R-72 condition 3's guard) | phrase: each of 0, 1, 2 appears per rubric item) reading intended_score from the manifest, and a second test asserts that no code under src/ reads intended_score (R-72 condition 3's guard) |\n| done_when: both red first on an empty or incomplete set, then green. | phrase: both red first on an empty or incomplete set, then green. |\n| done_when: No item carries a user-profile path, e-mail, username, host name, a pack marker, or a harness, model or combo id (the gateway's scrub would flag it | phrase: No item carries a user-profile path, e-mail, username, host name, a pack marker, or a harness, model or combo id (the gateway's scrub would flag it |\n| done_when: check with gateway.scrub.scan over each item against the denylist the gateway builds). | phrase: check with gateway.scrub.scan over each item against the denylist the gateway builds). |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: uv run bench validate prints ok. | phrase: uv run bench validate prints ok. |\n| done_when: Your final message lists each commit SHA, the per-rubric-item count and score spread, and the scrub-scan result. | phrase: Your final message lists each commit SHA, the per-rubric-item count and score spread, and the scrub-scan result. |\n| not_in_scope: labels of any kind (R-72) | phrase: labels of any kind (R-72) |\n| not_in_scope: tools/calibrate.py, kappa, the report header (W3-GW-I slice 5) | phrase: tools/calibrate.py, kappa, the report header (W3-GW-I slice 5) |\n| not_in_scope: reading any judge verdict or any run's cell output | phrase: reading any judge verdict or any run's cell output |\n| not_in_scope: src/** | phrase: src/** |\n| not_in_scope: bench/metrics.yaml | phrase: bench/metrics.yaml |\n| not_in_scope: bench run, any model turn, pytest -m \"\" | phrase: bench run, any model turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- intended_score: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 a65f5281ebb860ff8e60ef204880b97f5869747d3ff91460400da058b05982a1\n- docs/design/phase3-gateway-judges.md: docs/design/phase3-gateway-judges.md sha256 61cfd44cdac602696254e7d583e506632d4d03ba4085917387d46cf9fab1e519\n- bench/calibration/C1/: unresolved (not found)\n- tasks/C1/oracle/rubric.md: tasks/C1/oracle/rubric.md sha256 3e587e93c93c0d5b7a05ad352b558d4462a87a3fedc85ee55b76dadd5dcb7a59\n- labels.yaml: unresolved (not found)\n- src/: unresolved (not found)\n- tools/calibrate.py: unresolved (not found)\n- src/**: unresolved (not found)\n- bench/metrics.yaml: bench/metrics.yaml sha256 70f33674524ad023f283f7d2dfd5612952b63d56fbf0bf8d73deada2ff28a624\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- tasks/C1/: unresolved (not found)\n- task.yaml: unresolved (ambiguous: 27 matches)\n- prompt.md: unresolved (ambiguous: 8 matches)\n- oracle/rubric.md: unresolved (ambiguous: 2 matches)\n- src/harness_bench/gateway/scrub.py: src/harness_bench/gateway/scrub.py sha256 1744ce7677c25a38ce341c25e4d8e7ff83597e77a0f892891012939ee2477fd4\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3CD1CYHD61Z9TBQVM3BD1QT\nraw sha256: 335155785da761b1788cee35701d5e776e131b8031e29db015a6af160cd21d3d\ncompiler model: claude-opus-5-5\nengine seconds: 0.004\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3CD1CYHD61Z9TBQVM3BD1QT for claude-code v1: 19 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "bench/calibration/C1/ holds 30 items in the design's unit (section 4.4: each item an artifact of the kind C1's rubric judges, never a real cell's output and never a verdict), covering all 7 rubric items of tasks/C1/oracle/rubric.md with at least 4 items each, and every score in {0, 1, 2} represented per rubric item.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/calibration/C1/ holds 30 items in the design's unit (section 4.4: each item an artifact of the kind C1's rubric judges, never a real cell's output and never a verdict), covering all 7 rubric items of tasks/C1/oracle/rubric.md with at least 4 items each, and every score in {0, 1, 2} represented per rubric item."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A manifest (the design's file and shape) gives each item's provenance: author (Claude Opus 5.5, this track), creation date, the rubric item(s) it targets, and `intended_score` as provenance only (R-72 condition 3: never a label and never a kappa input).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A manifest (the design's file and shape) gives each item's provenance: author (Claude Opus 5.5, this track), creation date, the rubric item(s) it targets, and `intended_score` as provenance only (R-72 condition 3: never a label and never a kappa input)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "No labels.yaml is written (R-72). The manifest's disclosure states the items are Claude-authored and will be judged by a Claude judge (R-62 a3).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "No labels.yaml is written (R-72). The manifest's disclosure states the items are Claude-authored and will be judged by a Claude judge (R-62 a3)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A test asserts the range check (every rubric item has at least 4 items",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A test asserts the range check (every rubric item has at least 4 items"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "each of 0, 1, 2 appears per rubric item) reading intended_score from the manifest, and a second test asserts that no code under src/ reads intended_score (R-72 condition 3's guard)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "each of 0, 1, 2 appears per rubric item) reading intended_score from the manifest, and a second test asserts that no code under src/ reads intended_score (R-72 condition 3's guard)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "both red first on an empty or incomplete set, then green.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "both red first on an empty or incomplete set, then green."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "No item carries a user-profile path, e-mail, username, host name, a pack marker, or a harness, model or combo id (the gateway's scrub would flag it",
+            "trace": {
+              "kind": "phrase",
+              "ref": "No item carries a user-profile path, e-mail, username, host name, a pack marker, or a harness, model or combo id (the gateway's scrub would flag it"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "check with gateway.scrub.scan over each item against the denylist the gateway builds).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "check with gateway.scrub.scan over each item against the denylist the gateway builds)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run bench validate prints ok.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run bench validate prints ok."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each commit SHA, the per-rubric-item count and score spread, and the scrub-scan result.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each commit SHA, the per-rubric-item count and score spread, and the scrub-scan result."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "labels of any kind (R-72)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "labels of any kind (R-72)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "tools/calibrate.py, kappa, the report header (W3-GW-I slice 5)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tools/calibrate.py, kappa, the report header (W3-GW-I slice 5)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "reading any judge verdict or any run's cell output",
+            "trace": {
+              "kind": "phrase",
+              "ref": "reading any judge verdict or any run's cell output"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "src/**",
+            "trace": {
+              "kind": "phrase",
+              "ref": "src/**"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench/metrics.yaml",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/metrics.yaml"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run, any model turn, pytest -m \"\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run, any model turn, pytest -m \"\""
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "300k tokens",
+          "done_when": [
+            "bench/calibration/C1/ holds 30 items in the design's unit (section 4.4: each item an artifact of the kind C1's rubric judges, never a real cell's output and never a verdict), covering all 7 rubric items of tasks/C1/oracle/rubric.md with at least 4 items each, and every score in {0, 1, 2} represented per rubric item.",
+            "A manifest (the design's file and shape) gives each item's provenance: author (Claude Opus 5.5, this track), creation date, the rubric item(s) it targets, and `intended_score` as provenance only (R-72 condition 3: never a label and never a kappa input).",
+            "No labels.yaml is written (R-72). The manifest's disclosure states the items are Claude-authored and will be judged by a Claude judge (R-62 a3).",
+            "A test asserts the range check (every rubric item has at least 4 items",
+            "each of 0, 1, 2 appears per rubric item) reading intended_score from the manifest, and a second test asserts that no code under src/ reads intended_score (R-72 condition 3's guard)",
+            "both red first on an empty or incomplete set, then green.",
+            "No item carries a user-profile path, e-mail, username, host name, a pack marker, or a harness, model or combo id (the gateway's scrub would flag it",
+            "check with gateway.scrub.scan over each item against the denylist the gateway builds).",
+            "uv run pytest -q -p no:cacheprovider passes",
+            "uv run ruff check src tests tools is clean",
+            "uv run bench validate prints ok.",
+            "Your final message lists each commit SHA, the per-rubric-item count and score spread, and the scrub-scan result."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W3-CAL per the plan row (docs/coordination/coordination-finish-harness-bench.md, W3-CAL), docs/design/phase3-gateway-judges.md sections 4.4 and 11, and rulings R-58, R-62 (a3) and R-72 (read them first): the 30 C1 calibration items in GW-D's unit, with provenance, items only (no labels in 0.4).",
+          "main_line_budget": "at most 90 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-gateway-judges.md (sections 4.4, 7.3, 11); docs/notes/rulings.md R-58, R-62, R-72; tasks/C1/ (task.yaml, prompt.md, oracle/rubric.md); src/harness_bench/gateway/scrub.py. Use python, not python3 (Windows). Write any log under your own worktree's parent with a name unique to you; never in the Leader's scratchpad.",
+          "not_in_scope": [
+            "labels of any kind (R-72)",
+            "tools/calibrate.py, kappa, the report header (W3-GW-I slice 5)",
+            "reading any judge verdict or any run's cell output",
+            "src/**",
+            "bench/metrics.yaml",
+            "bench run, any model turn, pytest -m \"\"",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.004,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3CD1CYHD61Z9TBQVM3BD1QT",
+        "raw_sha256": "335155785da761b1788cee35701d5e776e131b8031e29db015a6af160cd21d3d",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "intended_score"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench.md",
+            "reason": null,
+            "sha256": "a65f5281ebb860ff8e60ef204880b97f5869747d3ff91460400da058b05982a1",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-finish-harness-bench.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase3-gateway-judges.md",
+            "reason": null,
+            "sha256": "61cfd44cdac602696254e7d583e506632d4d03ba4085917387d46cf9fab1e519",
+            "status": "resolved",
+            "token": "docs/design/phase3-gateway-judges.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/calibration/C1/"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/C1/oracle/rubric.md",
+            "reason": null,
+            "sha256": "3e587e93c93c0d5b7a05ad352b558d4462a87a3fedc85ee55b76dadd5dcb7a59",
+            "status": "resolved",
+            "token": "tasks/C1/oracle/rubric.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "labels.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/calibrate.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/**"
+          },
+          {
+            "nearest": null,
+            "path": "bench/metrics.yaml",
+            "reason": null,
+            "sha256": "70f33674524ad023f283f7d2dfd5612952b63d56fbf0bf8d73deada2ff28a624",
+            "status": "resolved",
+            "token": "bench/metrics.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/C1/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 27 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 8 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "prompt.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/rubric.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/gateway/scrub.py",
+            "reason": null,
+            "sha256": "1744ce7677c25a38ce341c25e4d8e7ff83597e77a0f892891012939ee2477fd4",
+            "status": "resolved",
+            "token": "src/harness_bench/gateway/scrub.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3CDCSRV046N5ZX6MANGPKKY",
+      "shortname": "Goal: W3-S6: build the offline half of rulings R-73 (a per-vendor model_…",
+      "datetime": "2026-09-25T13:52:04Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W3-S6: build the offline half of rulings R-73 (a per-vendor model_map) and R-74 (a scenario-6 `delegate` tool allowance), the two operator decisions of 2026-09-25 (read R-73 and R-74 in docs/notes/rulings.md whole first, with every file:line they cite), red first. The live qualification turns stay the Leader's.\nDone when: R-73: a `vendor:` field in every bench/profiles/*.yaml and the profile loader (never inferred from a model-id prefix); model_map keys `<role>@<vendor>` accepted and validated by config (every role for every vendor the profiles declare); ONE resolver used by views._mapped and by the coordination grader that selects only the cell's own vendor's column, so a Codex cell serving a Claude model is HB-VAL-002 (red first on exactly that case, which today's value-only resolver admits); `bench plan` refuses a scenario-6 cell whose every role equals its pin, red first; the conditions R-73 names for the header (the resolved map per combo, served models per cell, `non-discriminating` on pin-equal roles, the `coordination: not built in 0.4` banner), each tested.; R-74: a new tool class `delegate` in the Claude Code reader (`Agent`) and the Copilot reader (`task`, `write_agent`, `read_agent`, `list_agents`), static in each reader; the scenario rule lives only in views._out_of_profile: an executed `delegate` call is in profile iff the frozen task scenario is 6 (counted as delegate_calls, never scored), else HB-VAL-008 (or HB-VAL-009 when refused) as today; `ListAgents`, `SendMessage`, `TaskStop` and `Workflow` stay out of profile.; R-74: the allowance is carried per cell (seed_home/argv take the cell, R-51 c1's placeholder shape), never per harness file: the scenario-parameterised claude_allowlist and copilot_allowlist tests are red first (red today because Agent is in OUT_OF_PROFILE), and a non-scenario-6 task still refuses the delegate tools (tested for each harness).; R-74's load-bearing record condition: a Claude Code cell's sub-agent records are read (today's record_glob matches the main session only), with a reader test on a placeholder sub-agent record; if you cannot build it from the recorded shape, the allowance stays withheld on that harness and you say so. Codex gets no allowance in this slice (it needs a measured qualification turn first).; A defect class and an ADR-0004 amendment note, as R-74's conditions state; tests/mutations gain a named mutant per new branch, each killed.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean; uv run bench validate prints ok.; Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check results, and what the Leader's qualification turns must record for each harness.\nNot in scope: tasks/F1/** (the Leader finalizes its map after this lands); the coordination grader's metrics (grade/coordination.py stays not built in 0.4 per R-73); Codex's allowance; any live model turn; the gateway (W3-GW-I s4 is live on gateway/, grade/judge.py and cli.py's cmd_grade); tests/mutations sweep work (W3-MUT-SWEEP is live on the mutation files except gateway, judge, correctness and drift: add NEW mutants in a new file, e.g. tests/mutations/scenario6.json, to avoid conflicts); bench run, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: at most 2.5 h; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/notes/rulings.md R-45, R-46, R-51, R-54, R-73, R-74; docs/specs/harness-bench.md scenario 6, US-11, US-21; src/harness_bench/{profiles,views,plan,config}.py; src/harness_bench/telemetry/{claude_code,copilot,codex}.py; bench/profiles/*.yaml; docs/adr/0004*; tests/test_profiles*.py, tests/test_views.py, tests/test_plan.py, tests/test_telemetry_*.py. Use python, not python3 (Windows). Write any log under your own worktree's parent with a name unique to you; never in the Leader's scratchpad.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3CDCW5FZ3VX348ZYQA74B5F",
+      "shortname": "compile-Goal: W3-S6: build the offline half of rulings R-73 (a per-vendor model_…",
+      "datetime": "2026-09-25T13:52:07Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-S6: build the offline half of rulings R-73 (a per-vendor model_map) and R-74 (a scenario-6 `delegate` tool allowance), the two operator decisions of 2026-09-25 (read R-73 and R-74 in docs/notes/rulings.md whole first, with every file:line they cite), red first. The live qualification turns stay the Leader's.\nDone when: R-73: a `vendor:` field in every bench/profiles/*.yaml and the profile loader (never inferred from a model-id prefix); model_map keys `<role>@<vendor>` accepted and validated by config (every role for every vendor the profiles declare); ONE resolver used by views._mapped and by the coordination grader that selects only the cell's own vendor's column, so a Codex cell serving a Claude model is HB-VAL-002 (red first on exactly that case, which today's value-only resolver admits); `bench plan` refuses a scenario-6 cell whose every role equals its pin, red first; the conditions R-73 names for the header (the resolved map per combo, served models per cell, `non-discriminating` on pin-equal roles, the `coordination: not built in 0.4` banner), each tested.; R-74: a new tool class `delegate` in the Claude Code reader (`Agent`) and the Copilot reader (`task`, `write_agent`, `read_agent`, `list_agents`), static in each reader; the scenario rule lives only in views._out_of_profile: an executed `delegate` call is in profile iff the frozen task scenario is 6 (counted as delegate_calls, never scored), else HB-VAL-008 (or HB-VAL-009 when refused) as today; `ListAgents`, `SendMessage`, `TaskStop` and `Workflow` stay out of profile.; R-74: the allowance is carried per cell (seed_home/argv take the cell, R-51 c1's placeholder shape), never per harness file: the scenario-parameterised claude_allowlist and copilot_allowlist tests are red first (red today because Agent is in OUT_OF_PROFILE), and a non-scenario-6 task still refuses the delegate tools (tested for each harness).; R-74's load-bearing record condition: a Claude Code cell's sub-agent records are read (today's record_glob matches the main session only), with a reader test on a placeholder sub-agent record; if you cannot build it from the recorded shape, the allowance stays withheld on that harness and you say so. Codex gets no allowance in this slice (it needs a measured qualification turn first).; A defect class and an ADR-0004 amendment note, as R-74's conditions state; tests/mutations gain a named mutant per new branch, each killed.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean; uv run bench validate prints ok.; Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check results, and what the Leader's qualification turns must record for each harness.\nNot in scope: tasks/F1/** (the Leader finalizes its map after this lands); the coordination grader's metrics (grade/coordination.py stays not built in 0.4 per R-73); Codex's allowance; any live model turn; the gateway (W3-GW-I s4 is live on gateway/, grade/judge.py and cli.py's cmd_grade); tests/mutations sweep work (W3-MUT-SWEEP is live on the mutation files except gateway, judge, correctness and drift: add NEW mutants in a new file, e.g. tests/mutations/scenario6.json, to avoid conflicts); bench run, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: at most 2.5 h; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-45, R-46, R-51, R-54, R-73, R-74; docs/specs/harness-bench.md scenario 6, US-11, US-21; src/harness_bench/{profiles,views,plan,config}.py; src/harness_bench/telemetry/{claude_code,copilot,codex}.py; bench/profiles/*.yaml; docs/adr/0004*; tests/test_profiles*.py, tests/test_views.py, tests/test_plan.py, tests/test_telemetry_*.py. Use python, not python3 (Windows). Write any log under your own worktree's parent with a name unique to you; never in the Leader's scratchpad.\nTrace\n| clause | trace |\n|---|---|\n| done_when: R-73: a `vendor:` field in every bench/profiles/*.yaml and the profile loader (never inferred from a model-id prefix) | phrase: R-73: a `vendor:` field in every bench/profiles/*.yaml and the profile loader (never inferred from a model-id prefix) |\n| done_when: model_map keys `<role>@<vendor>` accepted and validated by config (every role for every vendor the profiles declare) | phrase: model_map keys `<role>@<vendor>` accepted and validated by config (every role for every vendor the profiles declare) |\n| done_when: ONE resolver used by views._mapped and by the coordination grader that selects only the cell's own vendor's column, so a Codex cell serving a Claude model is HB-VAL-002 (red first on exactly that case, which today's value-only resolver admits) | phrase: ONE resolver used by views._mapped and by the coordination grader that selects only the cell's own vendor's column, so a Codex cell serving a Claude model is HB-VAL-002 (red first on exactly that case, which today's value-only resolver admits) |\n| done_when: `bench plan` refuses a scenario-6 cell whose every role equals its pin, red first | phrase: `bench plan` refuses a scenario-6 cell whose every role equals its pin, red first |\n| done_when: the conditions R-73 names for the header (the resolved map per combo, served models per cell, `non-discriminating` on pin-equal roles, the `coordination: not built in 0.4` banner), each tested. | phrase: the conditions R-73 names for the header (the resolved map per combo, served models per cell, `non-discriminating` on pin-equal roles, the `coordination: not built in 0.4` banner), each tested. |\n| done_when: R-74: a new tool class `delegate` in the Claude Code reader (`Agent`) and the Copilot reader (`task`, `write_agent`, `read_agent`, `list_agents`), static in each reader | phrase: R-74: a new tool class `delegate` in the Claude Code reader (`Agent`) and the Copilot reader (`task`, `write_agent`, `read_agent`, `list_agents`), static in each reader |\n| done_when: the scenario rule lives only in views._out_of_profile: an executed `delegate` call is in profile iff the frozen task scenario is 6 (counted as delegate_calls, never scored), else HB-VAL-008 (or HB-VAL-009 when refused) as today | phrase: the scenario rule lives only in views._out_of_profile: an executed `delegate` call is in profile iff the frozen task scenario is 6 (counted as delegate_calls, never scored), else HB-VAL-008 (or HB-VAL-009 when refused) as today |\n| done_when: `ListAgents`, `SendMessage`, `TaskStop` and `Workflow` stay out of profile. | phrase: `ListAgents`, `SendMessage`, `TaskStop` and `Workflow` stay out of profile. |\n| done_when: R-74: the allowance is carried per cell (seed_home/argv take the cell, R-51 c1's placeholder shape), never per harness file: the scenario-parameterised claude_allowlist and copilot_allowlist tests are red first (red today because Agent is in OUT_OF_PROFILE), and a non-scenario-6 task still refuses the delegate tools (tested for each harness). | phrase: R-74: the allowance is carried per cell (seed_home/argv take the cell, R-51 c1's placeholder shape), never per harness file: the scenario-parameterised claude_allowlist and copilot_allowlist tests are red first (red today because Agent is in OUT_OF_PROFILE), and a non-scenario-6 task still refuses the delegate tools (tested for each harness). |\n| done_when: R-74's load-bearing record condition: a Claude Code cell's sub-agent records are read (today's record_glob matches the main session only), with a reader test on a placeholder sub-agent record | phrase: R-74's load-bearing record condition: a Claude Code cell's sub-agent records are read (today's record_glob matches the main session only), with a reader test on a placeholder sub-agent record |\n| done_when: if you cannot build it from the recorded shape, the allowance stays withheld on that harness and you say so. Codex gets no allowance in this slice (it needs a measured qualification turn first). | phrase: if you cannot build it from the recorded shape, the allowance stays withheld on that harness and you say so. Codex gets no allowance in this slice (it needs a measured qualification turn first). |\n| done_when: A defect class and an ADR-0004 amendment note, as R-74's conditions state | phrase: A defect class and an ADR-0004 amendment note, as R-74's conditions state |\n| done_when: tests/mutations gain a named mutant per new branch, each killed. | phrase: tests/mutations gain a named mutant per new branch, each killed. |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: uv run bench validate prints ok. | phrase: uv run bench validate prints ok. |\n| done_when: Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check results, and what the Leader's qualification turns must record for each harness. | phrase: Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check results, and what the Leader's qualification turns must record for each harness. |\n| not_in_scope: tasks/F1/** (the Leader finalizes its map after this lands) | phrase: tasks/F1/** (the Leader finalizes its map after this lands) |\n| not_in_scope: the coordination grader's metrics (grade/coordination.py stays not built in 0.4 per R-73) | phrase: the coordination grader's metrics (grade/coordination.py stays not built in 0.4 per R-73) |\n| not_in_scope: Codex's allowance | phrase: Codex's allowance |\n| not_in_scope: any live model turn | phrase: any live model turn |\n| not_in_scope: the gateway (W3-GW-I s4 is live on gateway/, grade/judge.py and cli.py's cmd_grade) | phrase: the gateway (W3-GW-I s4 is live on gateway/, grade/judge.py and cli.py's cmd_grade) |\n| not_in_scope: tests/mutations sweep work (W3-MUT-SWEEP is live on the mutation files except gateway, judge, correctness and drift: add NEW mutants in a new file, e.g. tests/mutations/scenario6.json, to avoid conflicts) | phrase: tests/mutations sweep work (W3-MUT-SWEEP is live on the mutation files except gateway, judge, correctness and drift: add NEW mutants in a new file, e.g. tests/mutations/scenario6.json, to avoid conflicts) |\n| not_in_scope: bench run, pytest -m \"\" | phrase: bench run, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- delegate: unresolved (not found)\n- vendor: unresolved (not found)\n- role>@<vendor: unresolved (not found)\n- bench plan: unresolved (not found)\n- non-discriminating: unresolved (not found)\n- coordination: not built in 0.4: unresolved (not found)\n- Agent: unresolved (not found)\n- task: unresolved (not found)\n- write_agent: unresolved (not found)\n- read_agent: unresolved (not found)\n- list_agents: unresolved (not found)\n- ListAgents: unresolved (not found)\n- SendMessage: unresolved (not found)\n- TaskStop: unresolved (not found)\n- Workflow: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- bench/profiles/*.yaml: unresolved (not found)\n- seed_home/argv: unresolved (not found)\n- tests/mutations: unresolved (not found)\n- tasks/F1/**: unresolved (not found)\n- grade/coordination.py: src/harness_bench/grade/coordination.py sha256 130a11c77adbbbbbca0f652eafd40fa94af1b8ad3ccc6e5606de92878d04a20b\n- gateway/: unresolved (not found)\n- grade/judge.py: src/harness_bench/grade/judge.py sha256 4997772508d5df96439faea7a92bca800b881f140268f48382b6d8ff51f672bd\n- tests/mutations/scenario6.json: unresolved (not found)\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094\n- src/harness_bench/{profiles,views,plan,config}.py: unresolved (not found)\n- src/harness_bench/telemetry/{claude_code,copilot,codex}.py: unresolved (not found)\n- docs/adr/0004*: unresolved (not found)\n- tests/test_profiles*.py: unresolved (not found; nearest: tests/test_profiles.py)\n- tests/test_views.py: tests/test_views.py sha256 b444cc2e8382f6dcce7721f438034899b0262fd65acdf82577dd08f890bfd529\n- tests/test_plan.py: tests/test_plan.py sha256 6553f8b47bd3d5a6315e4185f3a4a3c67778dfabc3062430c2ee275b9dcf71fe\n- tests/test_telemetry_*.py: unresolved (not found; nearest: tests/test_telemetry.py)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3CDCSRV046N5ZX6MANGPKKY\nraw sha256: 15f3a6901b05c9e79b04cc565b2536b4b6f93ec4a77c712e835bbc83677744ec\ncompiler model: claude-opus-5-5\nengine seconds: 0.005\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3CDCSRV046N5ZX6MANGPKKY for claude-code v1: 25 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "R-73: a `vendor:` field in every bench/profiles/*.yaml and the profile loader (never inferred from a model-id prefix)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "R-73: a `vendor:` field in every bench/profiles/*.yaml and the profile loader (never inferred from a model-id prefix)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "model_map keys `<role>@<vendor>` accepted and validated by config (every role for every vendor the profiles declare)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "model_map keys `<role>@<vendor>` accepted and validated by config (every role for every vendor the profiles declare)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "ONE resolver used by views._mapped and by the coordination grader that selects only the cell's own vendor's column, so a Codex cell serving a Claude model is HB-VAL-002 (red first on exactly that case, which today's value-only resolver admits)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "ONE resolver used by views._mapped and by the coordination grader that selects only the cell's own vendor's column, so a Codex cell serving a Claude model is HB-VAL-002 (red first on exactly that case, which today's value-only resolver admits)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`bench plan` refuses a scenario-6 cell whose every role equals its pin, red first",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`bench plan` refuses a scenario-6 cell whose every role equals its pin, red first"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the conditions R-73 names for the header (the resolved map per combo, served models per cell, `non-discriminating` on pin-equal roles, the `coordination: not built in 0.4` banner), each tested.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the conditions R-73 names for the header (the resolved map per combo, served models per cell, `non-discriminating` on pin-equal roles, the `coordination: not built in 0.4` banner), each tested."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "R-74: a new tool class `delegate` in the Claude Code reader (`Agent`) and the Copilot reader (`task`, `write_agent`, `read_agent`, `list_agents`), static in each reader",
+            "trace": {
+              "kind": "phrase",
+              "ref": "R-74: a new tool class `delegate` in the Claude Code reader (`Agent`) and the Copilot reader (`task`, `write_agent`, `read_agent`, `list_agents`), static in each reader"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the scenario rule lives only in views._out_of_profile: an executed `delegate` call is in profile iff the frozen task scenario is 6 (counted as delegate_calls, never scored), else HB-VAL-008 (or HB-VAL-009 when refused) as today",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the scenario rule lives only in views._out_of_profile: an executed `delegate` call is in profile iff the frozen task scenario is 6 (counted as delegate_calls, never scored), else HB-VAL-008 (or HB-VAL-009 when refused) as today"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`ListAgents`, `SendMessage`, `TaskStop` and `Workflow` stay out of profile.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`ListAgents`, `SendMessage`, `TaskStop` and `Workflow` stay out of profile."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "R-74: the allowance is carried per cell (seed_home/argv take the cell, R-51 c1's placeholder shape), never per harness file: the scenario-parameterised claude_allowlist and copilot_allowlist tests are red first (red today because Agent is in OUT_OF_PROFILE), and a non-scenario-6 task still refuses the delegate tools (tested for each harness).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "R-74: the allowance is carried per cell (seed_home/argv take the cell, R-51 c1's placeholder shape), never per harness file: the scenario-parameterised claude_allowlist and copilot_allowlist tests are red first (red today because Agent is in OUT_OF_PROFILE), and a non-scenario-6 task still refuses the delegate tools (tested for each harness)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "R-74's load-bearing record condition: a Claude Code cell's sub-agent records are read (today's record_glob matches the main session only), with a reader test on a placeholder sub-agent record",
+            "trace": {
+              "kind": "phrase",
+              "ref": "R-74's load-bearing record condition: a Claude Code cell's sub-agent records are read (today's record_glob matches the main session only), with a reader test on a placeholder sub-agent record"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "if you cannot build it from the recorded shape, the allowance stays withheld on that harness and you say so. Codex gets no allowance in this slice (it needs a measured qualification turn first).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "if you cannot build it from the recorded shape, the allowance stays withheld on that harness and you say so. Codex gets no allowance in this slice (it needs a measured qualification turn first)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A defect class and an ADR-0004 amendment note, as R-74's conditions state",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A defect class and an ADR-0004 amendment note, as R-74's conditions state"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations gain a named mutant per new branch, each killed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations gain a named mutant per new branch, each killed."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run bench validate prints ok.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run bench validate prints ok."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check results, and what the Leader's qualification turns must record for each harness.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check results, and what the Leader's qualification turns must record for each harness."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "tasks/F1/** (the Leader finalizes its map after this lands)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tasks/F1/** (the Leader finalizes its map after this lands)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the coordination grader's metrics (grade/coordination.py stays not built in 0.4 per R-73)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the coordination grader's metrics (grade/coordination.py stays not built in 0.4 per R-73)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Codex's allowance",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Codex's allowance"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any live model turn",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any live model turn"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the gateway (W3-GW-I s4 is live on gateway/, grade/judge.py and cli.py's cmd_grade)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the gateway (W3-GW-I s4 is live on gateway/, grade/judge.py and cli.py's cmd_grade)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "tests/mutations sweep work (W3-MUT-SWEEP is live on the mutation files except gateway, judge, correctness and drift: add NEW mutants in a new file, e.g. tests/mutations/scenario6.json, to avoid conflicts)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations sweep work (W3-MUT-SWEEP is live on the mutation files except gateway, judge, correctness and drift: add NEW mutants in a new file, e.g. tests/mutations/scenario6.json, to avoid conflicts)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run, pytest -m \"\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run, pytest -m \"\""
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "R-73: a `vendor:` field in every bench/profiles/*.yaml and the profile loader (never inferred from a model-id prefix)",
+            "model_map keys `<role>@<vendor>` accepted and validated by config (every role for every vendor the profiles declare)",
+            "ONE resolver used by views._mapped and by the coordination grader that selects only the cell's own vendor's column, so a Codex cell serving a Claude model is HB-VAL-002 (red first on exactly that case, which today's value-only resolver admits)",
+            "`bench plan` refuses a scenario-6 cell whose every role equals its pin, red first",
+            "the conditions R-73 names for the header (the resolved map per combo, served models per cell, `non-discriminating` on pin-equal roles, the `coordination: not built in 0.4` banner), each tested.",
+            "R-74: a new tool class `delegate` in the Claude Code reader (`Agent`) and the Copilot reader (`task`, `write_agent`, `read_agent`, `list_agents`), static in each reader",
+            "the scenario rule lives only in views._out_of_profile: an executed `delegate` call is in profile iff the frozen task scenario is 6 (counted as delegate_calls, never scored), else HB-VAL-008 (or HB-VAL-009 when refused) as today",
+            "`ListAgents`, `SendMessage`, `TaskStop` and `Workflow` stay out of profile.",
+            "R-74: the allowance is carried per cell (seed_home/argv take the cell, R-51 c1's placeholder shape), never per harness file: the scenario-parameterised claude_allowlist and copilot_allowlist tests are red first (red today because Agent is in OUT_OF_PROFILE), and a non-scenario-6 task still refuses the delegate tools (tested for each harness).",
+            "R-74's load-bearing record condition: a Claude Code cell's sub-agent records are read (today's record_glob matches the main session only), with a reader test on a placeholder sub-agent record",
+            "if you cannot build it from the recorded shape, the allowance stays withheld on that harness and you say so. Codex gets no allowance in this slice (it needs a measured qualification turn first).",
+            "A defect class and an ADR-0004 amendment note, as R-74's conditions state",
+            "tests/mutations gain a named mutant per new branch, each killed.",
+            "uv run pytest -q -p no:cacheprovider passes",
+            "uv run ruff check src tests tools is clean",
+            "uv run bench validate prints ok.",
+            "Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check results, and what the Leader's qualification turns must record for each harness."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W3-S6: build the offline half of rulings R-73 (a per-vendor model_map) and R-74 (a scenario-6 `delegate` tool allowance), the two operator decisions of 2026-09-25 (read R-73 and R-74 in docs/notes/rulings.md whole first, with every file:line they cite), red first. The live qualification turns stay the Leader's.",
+          "main_line_budget": "at most 2.5 h; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-45, R-46, R-51, R-54, R-73, R-74; docs/specs/harness-bench.md scenario 6, US-11, US-21; src/harness_bench/{profiles,views,plan,config}.py; src/harness_bench/telemetry/{claude_code,copilot,codex}.py; bench/profiles/*.yaml; docs/adr/0004*; tests/test_profiles*.py, tests/test_views.py, tests/test_plan.py, tests/test_telemetry_*.py. Use python, not python3 (Windows). Write any log under your own worktree's parent with a name unique to you; never in the Leader's scratchpad.",
+          "not_in_scope": [
+            "tasks/F1/** (the Leader finalizes its map after this lands)",
+            "the coordination grader's metrics (grade/coordination.py stays not built in 0.4 per R-73)",
+            "Codex's allowance",
+            "any live model turn",
+            "the gateway (W3-GW-I s4 is live on gateway/, grade/judge.py and cli.py's cmd_grade)",
+            "tests/mutations sweep work (W3-MUT-SWEEP is live on the mutation files except gateway, judge, correctness and drift: add NEW mutants in a new file, e.g. tests/mutations/scenario6.json, to avoid conflicts)",
+            "bench run, pytest -m \"\"",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.005,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3CDCSRV046N5ZX6MANGPKKY",
+        "raw_sha256": "15f3a6901b05c9e79b04cc565b2536b4b6f93ec4a77c712e835bbc83677744ec",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "delegate"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "vendor"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "role>@<vendor"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench plan"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "non-discriminating"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coordination: not built in 0.4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Agent"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "task"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "write_agent"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "read_agent"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "list_agents"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ListAgents"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "SendMessage"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "TaskStop"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Workflow"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/profiles/*.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "seed_home/argv"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/F1/**"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/coordination.py",
+            "reason": null,
+            "sha256": "130a11c77adbbbbbca0f652eafd40fa94af1b8ad3ccc6e5606de92878d04a20b",
+            "status": "resolved",
+            "token": "grade/coordination.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gateway/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/judge.py",
+            "reason": null,
+            "sha256": "4997772508d5df96439faea7a92bca800b881f140268f48382b6d8ff51f672bd",
+            "status": "resolved",
+            "token": "grade/judge.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/scenario6.json"
+          },
+          {
+            "nearest": null,
+            "path": "docs/specs/harness-bench.md",
+            "reason": null,
+            "sha256": "7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094",
+            "status": "resolved",
+            "token": "docs/specs/harness-bench.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/{profiles,views,plan,config}.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/telemetry/{claude_code,copilot,codex}.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/adr/0004*"
+          },
+          {
+            "nearest": "tests/test_profiles.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_profiles*.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_views.py",
+            "reason": null,
+            "sha256": "b444cc2e8382f6dcce7721f438034899b0262fd65acdf82577dd08f890bfd529",
+            "status": "resolved",
+            "token": "tests/test_views.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_plan.py",
+            "reason": null,
+            "sha256": "6553f8b47bd3d5a6315e4185f3a4a3c67778dfabc3062430c2ee275b9dcf71fe",
+            "status": "resolved",
+            "token": "tests/test_plan.py"
+          },
+          {
+            "nearest": "tests/test_telemetry.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_telemetry_*.py"
           }
         ],
         "schema": "compiled-prompt/1",
