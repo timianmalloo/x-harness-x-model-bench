@@ -580,5 +580,41 @@
   "tests": [
    "tests/test_views.py::test_one_code_one_level_one_emitter"
   ]
+ },
+ {
+  "name": "R-45 item 2: the advertised list is ignored",
+  "file": "src/harness_bench/views.py",
+  "find": "    advertised = _advertised_out_of_class(cell[\"harness\"], as_dict(completed.get(\"tools_advertised\")).get(cid))\n",
+  "replace": "    advertised = []\n",
+  "tests": [
+   "tests/test_views.py::test_the_pack_on_copilot_sample_advertising_web_search_is_invalid"
+  ]
+ },
+ {
+  "name": "R-45 item 2: every advertised id is out of class",
+  "file": "src/harness_bench/views.py",
+  "find": "copilot.TOOL_CLASS.get(name, OTHER) == OTHER]",
+  "replace": "True]",
+  "tests": [
+   "tests/test_views.py::test_an_advertised_list_of_in_class_ids_is_no_finding"
+  ]
+ },
+ {
+  "name": "R-45 item 2: another harness's list is classed by Copilot's map",
+  "file": "src/harness_bench/views.py",
+  "find": "    if harness != \"copilot\" or not isinstance(advertised, list):\n",
+  "replace": "    if not isinstance(advertised, list):\n",
+  "tests": [
+   "tests/test_views.py::test_the_advertised_list_is_read_only_for_copilot"
+  ]
+ },
+ {
+  "name": "R-45 item 2: an unrecorded (null) advertised list is read as a list",
+  "file": "src/harness_bench/views.py",
+  "find": "    if harness != \"copilot\" or not isinstance(advertised, list):\n",
+  "replace": "    if harness != \"copilot\":\n",
+  "tests": [
+   "tests/test_views.py::test_an_unrecorded_advertised_list_is_no_finding"
+  ]
  }
 ]

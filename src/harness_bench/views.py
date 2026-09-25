@@ -35,7 +35,14 @@ from pathlib import Path
 from harness_bench import archive, ledger, profiles
 from harness_bench.errors import BenchError, Cause
 from harness_bench.plan import load_confirmed
-from harness_bench.telemetry import Extraction, ModelCall, as_dict, is_count, normalize
+from harness_bench.telemetry import (
+    Extraction,
+    ModelCall,
+    as_dict,
+    copilot,
+    is_count,
+    normalize,
+)
 
 ENGINE_PREFIX = "engine-"
 GRADE_PREFIX = "grade-"
@@ -306,7 +313,16 @@ OTHER = "other"  # the readers' class for a tool outside ADR-0004's profile (cla
 META = "meta"  # R-54 (a): loads a deferred tool's schema and invokes nothing (Claude Code's ToolSearch)
 
 
-def _out_of_profile(tools: list[dict], permission_requests) -> tuple[Finding | None, Finding | None]:
+def _advertised_out_of_class(harness: str, advertised) -> list[str]:
+    """R-45 item 2: for Copilot, the ids the pass recorded as advertised (`grading.completed.tools_advertised[cell]`,
+    the reader's list) that the reader's own class map puts outside the profile. A list that was not read (null or
+    absent) gives no finding: not recorded, never a pass and never an empty list."""
+    if harness != "copilot" or not isinstance(advertised, list):
+        return []
+    return [name for name in advertised if isinstance(name, str) and copilot.TOOL_CLASS.get(name, OTHER) == OTHER]
+
+
+def _out_of_profile(tools: list[dict], permission_requests, advertised: list[str] = ()) -> tuple[Finding | None, Finding | None]:
     """R-45 item 2 as refined by R-54 (b): (HB-VAL-008 error for the class-`other` calls that executed, HB-VAL-009 warning
     for the ones that were refused), each None when there is none.
 
@@ -331,7 +347,9 @@ def _out_of_profile(tools: list[dict], permission_requests) -> tuple[Finding | N
             refused.append(r["name"])
         else:
             executed.append(r["name"])
-    error = Finding("HB-VAL-008", "error", "out-of-profile tool called: " + ", ".join(executed)) if executed else None
+    parts = ([f"out-of-profile tool called: {', '.join(executed)}"] if executed else []) + (
+        [f"out-of-profile tool advertised: {', '.join(advertised)}"] if advertised else [])
+    error = Finding("HB-VAL-008", "error", "; ".join(parts)) if parts else None
     warning = Finding("HB-VAL-009", "warning", "out-of-profile attempt refused: " + ", ".join(refused)) if refused else None
     return error, warning
 
@@ -407,7 +425,8 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     unrecorded = _unrecorded(source, record_reason, ended, usage)
     build = _build_check(plan, cell["harness"], events["attempt.session_opened"]) if "attempt.session_opened" in events else None
     warnings = [build] if build is not None and build.level == "warning" else []
-    executed, refused = _out_of_profile(tools or [], (outcome or {}).get("permission_requests"))
+    advertised = _advertised_out_of_class(cell["harness"], as_dict(completed.get("tools_advertised")).get(cid))
+    executed, refused = _out_of_profile(tools or [], (outcome or {}).get("permission_requests"), advertised)
     warnings.append(refused)
     if cell["harness"] in ACP_TOTAL_HARNESSES and source == "native_record" and calls is not None and unrecorded is None:
         warnings.append(_token_cross_check(ended, ex.model_calls))

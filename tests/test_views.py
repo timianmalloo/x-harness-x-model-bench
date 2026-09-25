@@ -65,11 +65,17 @@ def _edit_events(run_dir: Path, change) -> None:
             ev.append(row)
 
 
-def _copilot_run(root: Path, tmp_path: Path, change=None, arm: str = "off", **kw) -> Path:
-    """Grade a real archived run using a committed Copilot native record (`arm`: off, on (rev 95), on-rev92, fixed)."""
+def _copilot_run(root: Path, tmp_path: Path, change=None, arm: str = "off", checkpoint: bool = False, **kw) -> Path:
+    """Grade a real archived run using a committed Copilot native record (`arm`: off, on (rev 95), on-rev92, fixed).
+
+    The record's `session.usage_checkpoint` (the advertised tool list, R-45) is kept only with `checkpoint`: off, on and
+    on-rev92 predate the fixed profile and advertise web and GitHub-MCP ids, so a test of another subject (tokens, hook
+    denials) reads them without it and its advertised list is not recorded, never a finding."""
     assert "copilot" in profiles.READERS, "Copilot must be registered before grading its native record"
     source = next((COPILOT_FIX / arm).rglob("events.jsonl"))
     events = [json.loads(line) for line in source.read_text(encoding="utf-8").splitlines() if line.strip()]
+    if not checkpoint:
+        events = [e for e in events if e["type"] != "session.usage_checkpoint"]
     if change is not None:
         events = change(events)
     text = "\n".join(json.dumps(event) for event in events) + "\n"
@@ -491,12 +497,27 @@ def _advertised_run(monkeypatch, advertised: list[str] | None, run) -> views.Cel
 
 
 def test_the_pack_on_copilot_sample_advertising_web_search_is_invalid(root, tmp_path, monkeypatch):  # R-45 item 2
-    cell = _advertised_run(monkeypatch, _advertised("on"), lambda: _copilot_run(root, tmp_path, arm="on"))
+    cell = _advertised_run(monkeypatch, _advertised("on"), lambda: _copilot_run(root, tmp_path, arm="on", checkpoint=True))
     assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
 
 
+# Red until copilot.TOOL_CLASS names read_powershell, stop_powershell and list_powershell (R-45 (a): shell): the fixed
+# sample advertises them and the reader's map, the one class definition, gives "other" (seam req-01M3BHAA90PTS0ZBQZ7NZYWJN6).
+@pytest.mark.xfail(strict=True, reason="copilot.TOOL_CLASS lacks read_powershell, stop_powershell, list_powershell")
 def test_the_fixed_profile_copilot_sample_is_valid(root, tmp_path, monkeypatch):  # R-45 c1: qual-r45-1, fixed profile
-    cell = _advertised_run(monkeypatch, _advertised("fixed"), lambda: _copilot_run(root, tmp_path, arm="fixed"))
+    cell = _advertised_run(monkeypatch, _advertised("fixed"), lambda: _copilot_run(root, tmp_path, arm="fixed", checkpoint=True))
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+
+
+def test_the_fixed_profile_advertises_only_the_three_ids_the_reader_cannot_class():  # the xfail above, measured
+    assert [i for i in _advertised("fixed") if copilot.TOOL_CLASS.get(i, "other") == "other"] == [
+        "read_powershell", "stop_powershell", "list_powershell"]
+
+
+def test_an_advertised_list_of_in_class_ids_is_no_finding(root, tmp_path, monkeypatch):  # the negative control
+    in_class = [i for i in _advertised("fixed") if copilot.TOOL_CLASS.get(i) is not None]
+    assert {"powershell", "apply_patch", "view", "skill"} <= set(in_class)
+    cell = _advertised_run(monkeypatch, in_class, lambda: _copilot_run(root, tmp_path, arm="fixed", checkpoint=True))
     assert (cell.validity, cell.validity_code) == ("valid", None)
 
 
