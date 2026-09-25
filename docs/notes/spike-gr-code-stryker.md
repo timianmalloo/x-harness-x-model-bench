@@ -31,13 +31,13 @@ No `dotnet tool install` was run. No NuGet package was downloaded. The grading c
 | `dotnet tool list --local` | 0 | Header only. No local tool manifest entries. |
 | `Get-Command dotnet-stryker -ErrorAction SilentlyContinue` | 0 | No application. The script printed `NOT_ON_PATH`. `SilentlyContinue` is why the exit is 0. |
 | `where.exe dotnet-stryker` | 1 | `INFO: Could not find files for the given pattern(s).` |
-| `dotnet nuget locals global-packages -l` | 0 | `global-packages: C:\Users\malla\.nuget\packages\` |
-| `dotnet nuget locals all -l` | 0 | `http-cache: C:\Users\malla\AppData\Local\NuGet\v3-cache`; `global-packages: C:\Users\malla\.nuget\packages\`; `temp: C:\Users\malla\AppData\Local\Temp\NuGetScratch`; `plugins-cache: C:\Users\malla\AppData\Local\NuGet\plugins-cache`. |
-| `Get-ChildItem -Path C:\Users\malla\.nuget\packages -Directory -Filter *stryker*` | 0 | One directory: `C:\Users\malla\.nuget\packages\dotnet-stryker`. Its only child version directory is `4.16.0` (same listing, depth 2). |
-| `Get-Content C:\Users\malla\.nuget\packages\dotnet-stryker\4.16.0\dotnet-stryker.nuspec` | 0 | `<id>dotnet-stryker</id>`, `<version>4.16.0</version>`, package type `DotnetTool`. |
-| `Get-Content C:\Users\malla\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\DotnetToolSettings.xml` | 0 | Command name `dotnet-stryker`, entry point `Stryker.CLI.dll`, runner `dotnet`. |
+| `dotnet nuget locals global-packages -l` | 0 | `global-packages: %USERPROFILE%\.nuget\packages\` |
+| `dotnet nuget locals all -l` | 0 | `http-cache: %USERPROFILE%\AppData\Local\NuGet\v3-cache`; `global-packages: %USERPROFILE%\.nuget\packages\`; `temp: %USERPROFILE%\AppData\Local\Temp\NuGetScratch`; `plugins-cache: %USERPROFILE%\AppData\Local\NuGet\plugins-cache`. |
+| `Get-ChildItem -Path %USERPROFILE%\.nuget\packages -Directory -Filter *stryker*` | 0 | One directory: `%USERPROFILE%\.nuget\packages\dotnet-stryker`. Its only child version directory is `4.16.0` (same listing, depth 2). |
+| `Get-Content %USERPROFILE%\.nuget\packages\dotnet-stryker\4.16.0\dotnet-stryker.nuspec` | 0 | `<id>dotnet-stryker</id>`, `<version>4.16.0</version>`, package type `DotnetTool`. |
+| `Get-Content %USERPROFILE%\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\DotnetToolSettings.xml` | 0 | Command name `dotnet-stryker`, entry point `Stryker.CLI.dll`, runner `dotnet`. |
 
-The package is extracted. `Stryker.CLI.dll` is at `C:\Users\malla\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\Stryker.CLI.dll`. **Verified:** `dotnet exec` of that DLL runs this build with no `dotnet tool install` (the `--help` command below, and the scoring runs).
+The package is extracted. `Stryker.CLI.dll` is at `%USERPROFILE%\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\Stryker.CLI.dll`. **Verified:** `dotnet exec` of that DLL runs this build with no `dotnet tool install` (the `--help` command below, and the scoring runs).
 
 ## Version string and the tool_versions probe
 
@@ -47,17 +47,17 @@ Catalog-version rule 3 says `dotnet-stryker` is the pinned tool's `--version`, m
 
 | Command | Exit | Observed |
 | --- | ---: | --- |
-| `dotnet exec C:\Users\malla\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\Stryker.CLI.dll --version` | 1 | `Missing value for option 'version'`. No version string. |
-| `dotnet exec C:\Users\malla\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\Stryker.CLI.dll --help` | 0 | `-v\|--version` is documented as "Project version used in dashboard reporter and baseline feature", default empty. The banner does not contain `4.16.0`. |
-| `[System.Diagnostics.FileVersionInfo]::GetVersionInfo('C:\Users\malla\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\Stryker.CLI.dll').ProductVersion` | 0 | `4.16.0+f9109e24c615a7030a3b33e5532c665c974e4ec5` |
-| `[System.Diagnostics.FileVersionInfo]::GetVersionInfo('C:\Users\malla\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\Stryker.CLI.dll').FileVersion` | 0 | `4.16.0.0` |
+| `dotnet exec %USERPROFILE%\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\Stryker.CLI.dll --version` | 1 | `Missing value for option 'version'`. No version string. |
+| `dotnet exec %USERPROFILE%\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\Stryker.CLI.dll --help` | 0 | `-v\|--version` is documented as "Project version used in dashboard reporter and baseline feature", default empty. The banner does not contain `4.16.0`. |
+| `[System.Diagnostics.FileVersionInfo]::GetVersionInfo('%USERPROFILE%\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\Stryker.CLI.dll').ProductVersion` | 0 | `4.16.0+f9109e24c615a7030a3b33e5532c665c974e4ec5` |
+| `[System.Diagnostics.FileVersionInfo]::GetVersionInfo('%USERPROFILE%\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\Stryker.CLI.dll').FileVersion` | 0 | `4.16.0.0` |
 
 **Pinned version string:** `4.16.0` (package folder and nuspec). The assembly ProductVersion adds the build commit `f9109e24c615a7030a3b33e5532c665c974e4ec5`, the same commit the nuspec records.
 
 **The command that prints it** (what a `tool_versions` probe can run; `measured_version` keeps the last stdout line only when the exit is 0):
 
 ```powershell
-powershell -NoProfile -Command "[System.Diagnostics.FileVersionInfo]::GetVersionInfo('C:\Users\malla\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\Stryker.CLI.dll').ProductVersion"
+powershell -NoProfile -Command "[System.Diagnostics.FileVersionInfo]::GetVersionInfo('%USERPROFILE%\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\Stryker.CLI.dll').ProductVersion"
 ```
 
 Exit 0. Last line: `4.16.0+f9109e24c615a7030a3b33e5532c665c974e4ec5`.
@@ -66,7 +66,7 @@ Exit 0. Last line: `4.16.0+f9109e24c615a7030a3b33e5532c665c974e4ec5`.
 
 ## D1 run
 
-The throwaway copy is `C:\Projects\_spike-stryker-c6a\d1`: `tasks/D1/workspace`, then `tasks/D1/tests` overlaid (`D1.HiddenTests/`, `NuGet.Config`), then `tasks/D1/oracle/reference/src/AiDe.Core/Projections/EvidenceCensusProjection.cs` copied onto `src/AiDe.Core/Projections/`. For the two scoring runs the copy's `Directory.Build.props` is the workspace original. A `NuGet.Config` at `C:\Projects\_spike-stryker-c6a` clears package sources (the copy also has the tests' `NuGet.Config`). Process environment: `DOTNET_CLI_TELEMETRY_OPTOUT=1`, `DOTNET_CLI_HOME`, `TEMP`, `TMP`, and `NUGET_HTTP_CACHE_PATH` inside the throwaway, `NUGET_CERT_REVOCATION_MODE=offline`, `MSBUILDDISABLENODEREUSE=1`, `UseSharedCompilation=false`, and `NUGET_PACKAGES=C:\Users\malla\.nuget\packages`.
+The throwaway copy is `C:\Projects\_spike-stryker-c6a\d1`: `tasks/D1/workspace`, then `tasks/D1/tests` overlaid (`D1.HiddenTests/`, `NuGet.Config`), then `tasks/D1/oracle/reference/src/AiDe.Core/Projections/EvidenceCensusProjection.cs` copied onto `src/AiDe.Core/Projections/`. For the two scoring runs the copy's `Directory.Build.props` is the workspace original. A `NuGet.Config` at `C:\Projects\_spike-stryker-c6a` clears package sources (the copy also has the tests' `NuGet.Config`). Process environment: `DOTNET_CLI_TELEMETRY_OPTOUT=1`, `DOTNET_CLI_HOME`, `TEMP`, `TMP`, and `NUGET_HTTP_CACHE_PATH` inside the throwaway, `NUGET_CERT_REVOCATION_MODE=offline`, `MSBUILDDISABLENODEREUSE=1`, `UseSharedCompilation=false`, and `NUGET_PACKAGES=%USERPROFILE%\.nuget\packages`.
 
 `stryker-config.json` in the copy pins the timeout and the run shape:
 
@@ -85,12 +85,12 @@ The throwaway copy is `C:\Projects\_spike-stryker-c6a\d1`: `tasks/D1/workspace`,
 }
 ```
 
-**Verified.** `ilspycmd -t Stryker.Configuration.Options.Inputs.AdditionalTimeoutInput C:\Users\malla\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\Stryker.Configuration.dll` exited 0. `AdditionalTimeoutInput.Default` is `5000`. The decompiler also printed its own update notice (`ilspycmd` 11.0.0.9375 vs 11.1.0.9782). That notice is not a Stryker install. `additional-timeout` is the only timeout setting this build exposes; 5000 ms is added to the time of the initial test run. The mutate glob is the reference file only: the design mutates the non-test `.cs` the cell added, and the reference solution adds this one file. The hidden tests call `Compute` by reflection.
+**Verified.** `ilspycmd -t Stryker.Configuration.Options.Inputs.AdditionalTimeoutInput %USERPROFILE%\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\Stryker.Configuration.dll` exited 0. `AdditionalTimeoutInput.Default` is `5000`. The decompiler also printed its own update notice (`ilspycmd` 11.0.0.9375 vs 11.1.0.9782). That notice is not a Stryker install. `additional-timeout` is the only timeout setting this build exposes; 5000 ms is added to the time of the initial test run. The mutate glob is the reference file only: the design mutates the non-test `.cs` the cell added, and the reference solution adds this one file. The hidden tests call `Compute` by reflection.
 
 The run command, cwd = the copy, is:
 
 ```text
-dotnet exec C:\Users\malla\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\Stryker.CLI.dll --skip-version-check --break-on-initial-test-failure --config-file stryker-config.json
+dotnet exec %USERPROFILE%\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\Stryker.CLI.dll --skip-version-check --break-on-initial-test-failure --config-file stryker-config.json
 ```
 
 `--skip-version-check` is set so the CLI does not look for a newer Stryker online.
@@ -99,7 +99,7 @@ dotnet exec C:\Users\malla\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\an
 
 **Verified, first attempt (exit 1).** Same `dotnet exec` command, cwd = the copy, `DOTNET_CLI_HOME` pointed at the throwaway, `NUGET_PACKAGES` unset. Started 2026-09-25T18:12:22Z. Exit 1. Wall time 2.973 s. The banner's first version line is `Version: 4.16.0`. Analysis of `src\AiDe.Core\AiDe.Core.csproj` failed for `net10.0`, and the process printed `Failed to analyze project builds. Stryker cannot continue.` No report file.
 
-**Verified, diagnosis.** The same command plus `--diag` (no `--break-on-initial-test-failure`) exited 1 in 2.988 s. The log records `_OutputPackagesPath=C:\Projects\_spike-stryker-c6a\dotnet-home\.nuget\packages\` and MSBuild `NU1101` (`Unable to find package`) for `Microsoft.Data.Sqlite`, `YamlDotNet`, and `Microsoft.CodeAnalysis.CSharp`. **Inferred:** `DOTNET_CLI_HOME` moved the NuGet global-packages folder off the host cache. The copy's `Directory.Build.props` had also been given `RestoreSources=.`, which this build resolved to `src\AiDe.Core`. Both edits were removed before the runs below: props restored to the workspace original, and `NUGET_PACKAGES=C:\Users\malla\.nuget\packages` set while `DOTNET_CLI_HOME` stayed inside the throwaway.
+**Verified, diagnosis.** The same command plus `--diag` (no `--break-on-initial-test-failure`) exited 1 in 2.988 s. The log records `_OutputPackagesPath=C:\Projects\_spike-stryker-c6a\dotnet-home\.nuget\packages\` and MSBuild `NU1101` (`Unable to find package`) for `Microsoft.Data.Sqlite`, `YamlDotNet`, and `Microsoft.CodeAnalysis.CSharp`. **Inferred:** `DOTNET_CLI_HOME` moved the NuGet global-packages folder off the host cache. The copy's `Directory.Build.props` had also been given `RestoreSources=.`, which this build resolved to `src\AiDe.Core`. Both edits were removed before the runs below: props restored to the workspace original, and `NUGET_PACKAGES=%USERPROFILE%\.nuget\packages` set while `DOTNET_CLI_HOME` stayed inside the throwaway.
 
 **Verified, preflight of that copy.** `dotnet test D1.HiddenTests\D1.HiddenTests.csproj -p:RestoreSources=. -p:NuGetAudit=false -v:q --nologo`, cwd = the copy, with `NUGET_PACKAGES` set as above. Exit 0. Wall time 5.217 s. `Passed! - Failed: 0, Passed: 5, Skipped: 0, Total: 5`.
 
