@@ -271,9 +271,14 @@ class _Pass:
         # id, so the out-of-profile control and the served models see inside sub-agents. A plan from before the field
         # names none. The main record stays the cell's extraction (the graders' input).
         sub_reason = None
+        main = records[0]
         for path in profiles.find_records(folder / "home", record.get("subagent_glob") or "", session_id):
+            if path == main:  # R-74 item 5: a Codex sub-agent glob also matches the parent rollout; read it once
+                continue
             sub = profiles.READERS[cell["harness"]](path)
             sid = profiles.subagent_session_id(path)
+            if cell["harness"] == "codex" and sub.session_id:  # R-74 item 5: the rollout's own session, not an agent- filename
+                sid = sub.session_id
             model_rows += normalize.model_call_rows(self.plan["run_id"], cid, sid, sub, self.extraction)
             tool_rows += normalize.tool_call_rows(self.plan["run_id"], cid, sid, sub, self.extraction)
             reason = normalize.record_unreadable(sub)

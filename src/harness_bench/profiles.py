@@ -74,8 +74,12 @@ class Profile:
         cell (a JSON-list continuation, the Claude Code allowlist) and nothing in any other cell (R-74 item 3)."""
         home.mkdir(parents=True, exist_ok=True)
         delegate = "".join(f', "{name}"' for name in self.delegate_ids(scenario))
+        # R-74 item 5: Codex 0.156.0 feature multi_agent (stable, default true) is what offers the collaboration tools.
+        # True only in a scenario-6 cell; false in every other cell, including a seed that names no scenario.
+        multi_agent = "true" if scenario == 6 else "false"
         for name, template in self.files.items():
-            (home / name).write_text(template.replace("{model}", model).replace("{delegate}", delegate) + "\n", encoding="utf-8")
+            (home / name).write_text(template.replace("{model}", model).replace("{delegate}", delegate)
+                                     .replace("{multi_agent}", multi_agent) + "\n", encoding="utf-8")
         if self.credential_source is not None and self.credential_name is not None and self.credential_source.is_file():
             shutil.copyfile(self.credential_source, home / self.credential_name)
 
@@ -188,10 +192,11 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
 
 
 READERS = {"claude-code": claude_code.read, "codex": codex.read, "copilot": copilot.read}
-# R-74 item 1: class `delegate` is static in each reader; the profile only reads it. Codex has none until its measured
-# qualification turn (item 5), so a Codex scenario-6 cell is seeded as today and a spawn there stays `other`.
+# R-74 item 1: class `delegate` is static in each reader; the profile only reads it. Codex's ids are the ones its
+# 0.156.0 record names and qual-r74-codex-1 measured (item 5).
 DELEGATE_IDS = {"claude-code": tuple(n for n, c in claude_code.TOOL_CLASSES.items() if c == "delegate"),
-                "copilot": tuple(n for n, c in copilot.TOOL_CLASS.items() if c == "delegate")}
+                "copilot": tuple(n for n, c in copilot.TOOL_CLASS.items() if c == "delegate"),
+                "codex": codex.DELEGATE_NAMES}
 
 
 class ProfileLauncher:

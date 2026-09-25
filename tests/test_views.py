@@ -556,6 +556,51 @@ def test_an_unreadable_sub_agent_record_makes_the_cell_not_recorded(root, tmp_pa
     assert completed["unreadable_records"] == {"a": "sub-agent record a1b2c3: native record truncated at the size bound"}
 
 
+# R-74 item 5: a spawned Codex agent writes a second rollout in the cell's fresh home. The parent file is the one
+# record_glob names (sess-a); the child is another sessions/**/rollout-*.jsonl and is not that session.
+CODEX_DELEGATE = Path(__file__).parent / "fixtures" / "native" / "codex"
+PARENT_ROLLOUT = "sessions/2026/09/rollout-2026-09-23-sess-a.jsonl"
+CHILD_ROLLOUT = "sessions/2026/09/25/rollout-2026-09-25T21-00-01-sess-luna.jsonl"
+
+
+def test_a_scenario5_codex_cell_that_calls_spawn_agent_is_still_hb_val_008(root, tmp_path):
+    """R-74 item 2: class delegate is out of profile outside scenario 6. The calls are delegate, and the cell is HB-VAL-008."""
+    run_dir = _native_run(root, tmp_path, "codex", PARENT_ROLLOUT,
+                          (CODEX_DELEGATE / "delegate-parent.jsonl").read_text(encoding="utf-8"), scenario=5)
+    cell = _cell(views.load(run_dir), "a")
+    tools = [(r["name"], r["tool_class"]) for r in views.rows(run_dir, "tool_calls")]
+    assert ("spawn_agent", "delegate") in tools and ("wait_agent", "delegate") in tools
+    assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
+
+
+def test_a_two_rollout_codex_home_records_model_calls_on_both_served_models(root, tmp_path):
+    run_dir = _native_run(root, tmp_path, "codex", PARENT_ROLLOUT,
+                          (CODEX_DELEGATE / "delegate-parent.jsonl").read_text(encoding="utf-8"),
+                          extra_records={CHILD_ROLLOUT: (CODEX_DELEGATE / "delegate-child.jsonl").read_text(encoding="utf-8")},
+                          scenario=6)
+    calls = [(r["native_session_id"], r["model"]) for r in views.rows(run_dir, "model_calls")]
+    assert calls.count(("sess-a", "gpt-6-sol")) == 1
+    assert calls.count(("sess-luna", "gpt-6-luna")) == 4
+    tools = [(r["native_session_id"], r["name"], r["tool_class"]) for r in views.rows(run_dir, "tool_calls")]
+    assert ("sess-luna", "exec", "shell") in tools
+
+
+def test_an_unreadable_codex_sub_agent_rollout_makes_the_cell_not_recorded(root, tmp_path, monkeypatch):
+    """R-74 item 5, the Claude path: a sub-agent rollout that cannot be read makes the cell not recorded (R-21 c2)."""
+    real = normalize.record_unreadable
+    monkeypatch.setattr(normalize, "record_unreadable", lambda ex: "native record truncated at the size bound"
+                        if ex.session_id == "sess-luna" else real(ex))
+    run_dir = _native_run(root, tmp_path, "codex", PARENT_ROLLOUT,
+                          (CODEX_DELEGATE / "delegate-parent.jsonl").read_text(encoding="utf-8"),
+                          extra_records={CHILD_ROLLOUT: (CODEX_DELEGATE / "delegate-child.jsonl").read_text(encoding="utf-8")},
+                          scenario=6)
+    _edit_plan(run_dir, lambda p: {**p, "tasks": {"X1": {"scenario": 6, "model_map": {"writer@openai": "gpt-6-luna"}}}})
+    cell = _cell(views.load(run_dir), "a")
+    completed = next(e for e in views.rows(run_dir, "events") if e["kind"] == "grading.completed")
+    assert completed["unreadable_records"] == {"a": "sub-agent record sess-luna: native record truncated at the size bound"}
+    assert (cell.validity, cell.validity_code) == ("not recorded", "HB-VAL-003")
+
+
 def test_a_sub_agents_served_model_and_calls_reach_the_ledger(root, tmp_path):  # item 4: adherence is measurable later
     run_dir = _claude_q1_dir(root, tmp_path, permission_requests=1, change=_as_agent(False), scenario=6,
                              extra_records={SUBAGENT_RECORD: _subagent_rows("Write")})

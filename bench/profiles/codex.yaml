@@ -7,14 +7,20 @@ credential_kind: "subscription login (copied)"
 command: ["{node}", "{adapter}"]
 shutdown_grace_seconds: 10
 files:
+  # R-74 item 5: `multi_agent` is the pinned 0.156.0 feature (stable, default true) that offers spawn_agent and the
+  # other collaboration tools. seed_home writes true only for a scenario-6 cell and false for every other cell.
   config.toml: |-
     model = "{model}"
     web_search = "disabled"
     [features]
     apps = false
+    multi_agent = {multi_agent}
 env:
   CODEX_PATH: "{exe}"
 mode: agent-full-access
 record_glob: "sessions/**/rollout-*-{session_id}.jsonl"
+# R-74 item 5: a spawned agent writes its own rollout beside the parent's in the fresh home. The runner skips the
+# parent file (record_glob) so that rollout is read once; each other rollout is the sub-agent's own session.
+subagent_glob: "sessions/**/rollout-*.jsonl"
 usage_source: native_record   # complete per call; the adapter reports only the last call
 auxiliary_models: []

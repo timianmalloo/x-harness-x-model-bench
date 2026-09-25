@@ -355,5 +355,70 @@
   "tests": [
    "tests/test_views.py::test_delegate_calls_is_exported_only_for_a_scenario6_cell"
   ]
+ },
+ {
+  "name": "R-74 Codex: collaboration tools are class other",
+  "file": "src/harness_bench/telemetry/codex.py",
+  "find": "    if name in DELEGATE_NAMES:\n        return \"delegate\"\n",
+  "replace": "    if name in DELEGATE_NAMES:\n        return \"other\"\n",
+  "tests": [
+   "tests/test_delegate.py::test_codex_classes_the_measured_spawn_and_wait_calls_as_delegate"
+  ]
+ },
+ {
+  "name": "R-74 Codex: the parent rollout is read again as a sub-agent",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "            if path == main:  # R-74 item 5: a Codex sub-agent glob also matches the parent rollout; read it once\n                continue\n",
+  "replace": "            if False:  # R-74 item 5: a Codex sub-agent glob also matches the parent rollout; read it once\n                continue\n",
+  "tests": [
+   "tests/test_views.py::test_a_two_rollout_codex_home_records_model_calls_on_both_served_models"
+  ]
+ },
+ {
+  "name": "R-74 Codex: a sub-agent rollout is keyed by its filename",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "            if cell[\"harness\"] == \"codex\" and sub.session_id:  # R-74 item 5: the rollout's own session, not an agent- filename\n                sid = sub.session_id\n",
+  "replace": "            if False:  # R-74 item 5: the rollout's own session, not an agent- filename\n                sid = sub.session_id\n",
+  "tests": [
+   "tests/test_views.py::test_a_two_rollout_codex_home_records_model_calls_on_both_served_models",
+   "tests/test_views.py::test_an_unreadable_codex_sub_agent_rollout_makes_the_cell_not_recorded"
+  ]
+ },
+ {
+  "name": "R-74 Codex: multi_agent stays off in a scenario-6 cell",
+  "file": "src/harness_bench/profiles.py",
+  "find": "        multi_agent = \"true\" if scenario == 6 else \"false\"\n",
+  "replace": "        multi_agent = \"false\"\n",
+  "tests": [
+   "tests/test_delegate.py::test_a_codex_scenario6_cell_enables_multi_agent_and_every_other_cell_disables_it"
+  ]
+ },
+ {
+  "name": "R-74 Codex: multi_agent is on outside scenario 6",
+  "file": "src/harness_bench/profiles.py",
+  "find": "        multi_agent = \"true\" if scenario == 6 else \"false\"\n",
+  "replace": "        multi_agent = \"true\"\n",
+  "tests": [
+   "tests/test_delegate.py::test_a_codex_scenario6_cell_enables_multi_agent_and_every_other_cell_disables_it",
+   "tests/test_delegate.py::test_the_launcher_seeds_codex_multi_agent_from_the_cell"
+  ]
+ },
+ {
+  "name": "R-74 Codex: the multi_agent placeholder is left false",
+  "file": "src/harness_bench/profiles.py",
+  "find": ".replace(\"{multi_agent}\", multi_agent)",
+  "replace": ".replace(\"{multi_agent}\", \"false\")",
+  "tests": [
+   "tests/test_delegate.py::test_the_launcher_seeds_codex_multi_agent_from_the_cell"
+  ]
+ },
+ {
+  "name": "R-74 Codex: the profile names no Codex delegate ids",
+  "file": "src/harness_bench/profiles.py",
+  "find": "\"codex\": codex.DELEGATE_NAMES}",
+  "replace": "\"codex\": ()}",
+  "tests": [
+   "tests/test_report_scenario6.py::test_the_header_names_the_scenario6_allowance_per_harness"
+  ]
  }
 ]

@@ -1,0 +1,7 @@
+{"timestamp": "2026-09-25T21:00:00.000Z", "type": "session_meta", "payload": {"id": "sess-a", "session_id": "sess-a"}}
+{"timestamp": "2026-09-25T21:00:00.100Z", "type": "turn_context", "payload": {"model": "gpt-6-sol"}}
+{"timestamp": "2026-09-25T21:00:01.000Z", "type": "response_item", "payload": {"type": "function_call", "name": "spawn_agent", "call_id": "call-spawn"}}
+{"timestamp": "2026-09-25T21:00:02.000Z", "type": "response_item", "payload": {"type": "function_call_output", "call_id": "call-spawn", "output": "started"}}
+{"timestamp": "2026-09-25T21:00:03.000Z", "type": "response_item", "payload": {"type": "function_call", "name": "wait_agent", "call_id": "call-wait"}}
+{"timestamp": "2026-09-25T21:00:04.000Z", "type": "response_item", "payload": {"type": "function_call_output", "call_id": "call-wait", "output": "done"}}
+{"timestamp": "2026-09-25T21:00:05.000Z", "type": "event_msg", "payload": {"type": "token_count", "info": {"total_token_usage": {"input_tokens": 10, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 2, "reasoning_output_tokens": 0, "total_tokens": 12}, "last_token_usage": {"input_tokens": 10, "cached_input_tokens": 0, "cache_write_input_tokens": 0, "output_tokens": 2, "reasoning_output_tokens": 0, "total_tokens": 12}}}}
