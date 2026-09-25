@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T07:58:26Z",
+  "generated": "2026-09-25T08:49:06Z",
   "audit": [
     {
       "actor": null,
@@ -16040,6 +16040,26 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3BW21DFZ94VZH1T5GA7XSTS",
+      "shortname": "design-slice-phase3-graders",
+      "datetime": "2026-09-25T08:49:06Z",
+      "session": "w3-grade-d",
+      "prompt": "W3-GRADE-D: the row-16 design (full graders) as docs/design/phase3-graders.md via /design-slice, gated by the Test Architect, the Simplifier and the Data & Persistence Architect (plan v5, R-58..R-62)",
+      "summary": "Row-16 design, rev 3: metric table (definition, rung, NA reasons, additivity, exact fixtures) for A1/C1/D1/E6; CellInput + registry dispatch + completeness check (HB-GRD-004); catalog 0.4.dev, catalog_hash, tool_versions, US-4 control with catalog-freeze.yaml; tasks freeze; byte-identity gate with non-vacuity; slice plan and seams. TA and D&P vetoes cleared on re-review; Simplifier approved with conditions. DR-G1..G5 open.",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/phase3-graders.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "started_at": "2026-09-25T08:17:29Z",
+      "duration_seconds": 1897.0
     }
   ],
   "changes": [
@@ -16358,6 +16378,28 @@ window.AUDIT_DATA = {
       "summary": "Stdio ask_user MCP server in session/new reaches Claude Code 2.1.282 and Codex 0.156.0 (called; reply reached); Copilot 1.0.89-1 rejects client stdio servers (log: Rejecting non-http/sse MCP server) with or without --disable-builtin-mcps -> DR-S04-1 with HTTP and launch-config variants written. A1: Claude asked 1 (paraphrase, no match), Codex 0. Rule table on held-out: precision 1.0, 0/21 default matches, paraphrase recall 0/11; threshold: regression floor met, T=0.80 on paraphrase recall not met. Cache key amended to (question, clarification-set, matcher version) -> DR-S04-3. AI Systems Engineer CLEAR WITH CONDITIONS, applied.",
       "tags": [],
       "title": "Scripted user design rev 2 + spike S-04"
+    },
+    {
+      "id": "cl-01M3BW21KZ3MXGB8DEHTMZZNF7",
+      "datetime": "2026-09-25T08:49:06Z",
+      "session": null,
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "Row-16 graders: per-cell CellInput and dispatch by task graders; catalog 0.4.dev probe with catalog_hash; byte-identity gate on views.export",
+      "prompt": "W3-GRADE-D row-16 design (plan v5)",
+      "summary": "Design for full graders and catalog 0.4 versioning; gated by TA, Simplifier, D&P",
+      "rationale": "R-59 requires content-addressed catalog versions and a US-4 control; the fixed METRICS tuple and grade(run_dir, task_dir) stubs cannot dispatch per task; ledger bytes cannot match across passes (grading_id timestamp), so the export is the reproducibility surface",
+      "artifacts": [
+        "docs/design/phase3-graders.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "87606c6",
+        "after": "87606c66e27e50467732d7b470fe7cf4ea7c6369",
+        "branch": "w3-grade-design",
+        "pushed": null,
+        "commits": []
+      }
     }
   ],
   "messages": [
