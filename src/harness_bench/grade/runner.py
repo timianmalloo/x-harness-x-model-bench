@@ -41,7 +41,6 @@ from pathlib import Path
 
 from harness_bench import config, ledger, oslock, profiles, tools, views
 from harness_bench.errors import BenchError
-from harness_bench.gateway.backend import run_roots, scan_runs
 from harness_bench.grade import (
     CellInput,
     GraderFn,
@@ -148,18 +147,22 @@ def _abandoned(run_dir: Path, done: set[str], named: set[tuple[str, str]]) -> li
     return out
 
 
-def run_pass(run_dir: Path, root: Path, judging: Mapping[str, GraderFn] | None = None) -> PassResult:
+def run_pass(run_dir: Path, root: Path, judging: Mapping[str, GraderFn] | None = None,
+             live_scan: tuple | None = None) -> PassResult:
     """One grading pass. `judging` replaces registered graders for this pass only (design phase3-gateway-judges
     section 6): the in-run pass passes `judge.IN_RUN`, `bench grade --allow-model-calls` passes `judge.calling(...)`,
-    and a plain `bench grade` passes nothing (the judge reads the verdict store only)."""
+    and a plain `bench grade` passes nothing (the judge reads the verdict store only). `live_scan` is the
+    (roots, runs with liveness) the live-run refusal scanned before a calling pass; grading.started records it
+    (R-65 c1). A pass that cannot call scans nothing."""
     plan = load_confirmed(run_dir)
     with oslock.RunLock.acquire(run_dir / "grade.lock", "HB-GRD-001"):
-        return _Pass(run_dir, root, plan, judging or {}).run()
+        return _Pass(run_dir, root, plan, judging or {}, live_scan).run()
 
 
 class _Pass:
-    def __init__(self, run_dir: Path, root: Path, plan: dict, judging: Mapping[str, GraderFn]) -> None:
-        self.run_dir, self.root, self.plan = run_dir, root, plan
+    def __init__(self, run_dir: Path, root: Path, plan: dict, judging: Mapping[str, GraderFn],
+                 live_scan: tuple | None = None) -> None:
+        self.run_dir, self.root, self.plan, self.live_scan = run_dir, root, plan, live_scan
         self.graders = {**GRADERS, **judging}
         self.grading_id = f"{views.GRADE_PREFIX}{time.strftime('%Y%m%dT%H%M%S', time.gmtime())}-{secrets.token_hex(3)}"
         self.catalog = config.load_yaml(root / "bench" / "metrics.yaml")
@@ -195,14 +198,13 @@ class _Pass:
             for fact, report in abandoned:
                 self.append("events", {"kind": "segment.abandoned", "code": "HB-LED-004", "fact": fact, "segment_id": report.segment_id,
                                        "line_count": report.lines, "head_hash": report.head_hash, "error": report.error})
-            roots = run_roots(self.root, self.run_dir.parent)  # the roots the live-run check scans (R-65 c1)
-            scanned, _live = scan_runs(roots)  # the same status check refuse_if_live uses
             self.append("events", {"kind": "grading.started", "grading_id": self.grading_id, "catalog_version": str(self.catalog["version"]),
                                    "grader_build": grader_build(), "extraction_id": self.extraction,
                                    "catalog_hash": catalog_hash(self.root),  # R-59 c1
-                                   "tool_versions": tool_versions(self.root, self.plan),  # R-59 c4
-                                   "scanned_roots": [str(p) for p in roots],  # R-65 c1
-                                   "run_liveness": [{"run": str(run), "liveness": liveness} for run, liveness in scanned]})
+                                   "tool_versions": tool_versions(self.root, self.plan)}  # R-59 c4
+                        | ({"scanned_roots": [str(p) for p in self.live_scan[0]],  # R-65 c1: a calling pass only
+                            "run_liveness": [{"run": str(run), "liveness": live} for run, live in self.live_scan[1]]}
+                           if self.live_scan is not None else {}))
             graded = 0
             for cell in sorted(self.plan["cells"], key=lambda c: c["cell_id"]):
                 if cell["cell_id"] in archived:

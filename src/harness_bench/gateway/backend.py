@@ -299,14 +299,15 @@ def scan_runs(roots: tuple[Path, ...]) -> tuple[tuple[tuple[Path, str], ...], tu
     return tuple(found), tuple(live)
 
 
-def refuse_if_live(roots: tuple[Path, ...]) -> None:
+def refuse_if_live(roots: tuple[Path, ...]) -> tuple[tuple[Path, str], ...]:
     """Section 6 and R-65: HB-GRD-005 when `scan_runs` finds a run whose liveness is `alive` or `stalled`.
     The refusal names every scanned root and each live run; a stalled one with its lock path and heartbeat
     age (R-65 c1, c2)."""
-    _found, live = scan_runs(roots)
+    found, live = scan_runs(roots)
     if live:
         raise BenchError("HB-GRD-005", f"model calls refused while a run is live; scanned "
                                        f"{', '.join(map(str, roots))}; {'; '.join(live)}")
+    return found  # the scan, for grading.started (R-65 c1)
 
 
 @contextmanager
