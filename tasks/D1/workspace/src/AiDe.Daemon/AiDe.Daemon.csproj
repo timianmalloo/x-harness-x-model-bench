@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    One daemon process per workspace (ADR-0009). Windows-targeted because the whole of its job is
+    Windows-specific: a named pipe with a Windows ACL, a Windows SID for the peer, and a kernel mutex
+    for the workspace lock. AiDe.Core stays net10.0 and marks those pieces [SupportedOSPlatform];
+    this is where that requirement becomes concrete.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>AiDe.Daemon</AssemblyName>
+    <RootNamespace>AiDe.Daemon</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AiDe.Core\AiDe.Core.csproj" />
+  </ItemGroup>
+
+</Project>

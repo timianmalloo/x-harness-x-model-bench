@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T03:53:36Z",
+  "generated": "2026-09-25T04:34:33Z",
   "audit": [
     {
       "actor": null,
@@ -9937,34 +9937,23 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M3BB4YMWH7YK2SZP7E1YN880",
-      "shortname": "Goal: W2-CANARY slice 1 (rulings R-36, R-43): the Claude Code reader cou…",
-      "datetime": "2026-09-25T03:53:36Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W2-CANARY slice 1 (rulings R-36, R-43): the Claude Code reader counts the account-level connector tools a cell's native record advertises, as one new Extraction field, red-first.\nDone when: A red commit adds tests in tests/test_telemetry.py that fail on the current code, stating the failing assertion; the green commit makes them pass.; src/harness_bench/telemetry/__init__.py Extraction gains one field, account_connector_tools: int | None = None, with a one-line comment citing R-36 and R-43; None means not read (an unreadable record, or a harness other than Claude Code), never 0.; src/harness_bench/telemetry/claude_code.py read() sets it to the number of DISTINCT tool names matching the regex mcp__claude_ai_[A-Za-z0-9_]+ that the record advertises (find where the pinned Claude Code 2.1.282 native record lists its available and deferred tools; tests/fixtures/native/claude-code/ holds scrubbed records; read them, never guess the line type), and to 0 only when the record was read and advertises none.; A new scrubbed fixture under tests/fixtures/native/claude-code/ advertises exactly two such tools (made-up names like mcp__claude_ai_Example_one, never a real connector name) and the test asserts 2; an existing record with none asserts 0; a missing file asserts None.; tests/mutations/canary.json holds named mutants (count not deduplicated; 0 instead of None when unread; the regex prefix dropped), each killed (uv run python tools/mutate_check.py tests/mutations/canary.json).; Only targeted tests run: uv run pytest -q --tb=short tests/test_telemetry.py; uv run ruff check on the files you touch is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.\nNot in scope: views.py, report/*, normalize.py, other readers, tests/e2e, bench/pack-markers.txt (later slices); bench run, any model turn, pytest -m \"\", full-suite runs; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 11 minutes (ruling R-11 slice rules); commit at every green; no verbose output and no printing of large files; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/notes/rulings.md R-36, R-43; src/harness_bench/telemetry/__init__.py, src/harness_bench/telemetry/claude_code.py; tests/test_telemetry.py; tests/fixtures/native/claude-code/; tools/mutate_check.py and tests/mutations/r35_r36.json as the mutation format. Use python, not python3 (Windows); run mutate_check as uv run python tools/mutate_check.py. Set AGENT_SESSION=worker-grok-can1 before committing.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
+      "datetime": "2026-09-25T03:53:36Z",
+      "id": "al-01M3BB4YMWH7YK2SZP7E1YN880",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: W2-CANARY slice 1 (rulings R-36, R-43): the Claude Code reader counts the account-level connector tools a cell's native record advertises, as one new Extraction field, red-first.\nDone when: A red commit adds tests in tests/test_telemetry.py that fail on the current code, stating the failing assertion; the green commit makes them pass.; src/harness_bench/telemetry/__init__.py Extraction gains one field, account_connector_tools: int | None = None, with a one-line comment citing R-36 and R-43; None means not read (an unreadable record, or a harness other than Claude Code), never 0.; src/harness_bench/telemetry/claude_code.py read() sets it to the number of DISTINCT tool names matching the regex mcp__claude_ai_[A-Za-z0-9_]+ that the record advertises (find where the pinned Claude Code 2.1.282 native record lists its available and deferred tools; tests/fixtures/native/claude-code/ holds scrubbed records; read them, never guess the line type), and to 0 only when the record was read and advertises none.; A new scrubbed fixture under tests/fixtures/native/claude-code/ advertises exactly two such tools (made-up names like mcp__claude_ai_Example_one, never a real connector name) and the test asserts 2; an existing record with none asserts 0; a missing file asserts None.; tests/mutations/canary.json holds named mutants (count not deduplicated; 0 instead of None when unread; the regex prefix dropped), each killed (uv run python tools/mutate_check.py tests/mutations/canary.json).; Only targeted tests run: uv run pytest -q --tb=short tests/test_telemetry.py; uv run ruff check on the files you touch is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.\nNot in scope: views.py, report/*, normalize.py, other readers, tests/e2e, bench/pack-markers.txt (later slices); bench run, any model turn, pytest -m \"\", full-suite runs; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 11 minutes (ruling R-11 slice rules); commit at every green; no verbose output and no printing of large files; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/notes/rulings.md R-36, R-43; src/harness_bench/telemetry/__init__.py, src/harness_bench/telemetry/claude_code.py; tests/test_telemetry.py; tests/fixtures/native/claude-code/; tools/mutate_check.py and tests/mutations/r35_r36.json as the mutation format. Use python, not python3 (Windows); run mutate_check as uv run python tools/mutate_check.py. Set AGENT_SESSION=worker-grok-can1 before committing.",
+      "session": "prompt-compile",
+      "shortname": "Goal: W2-CANARY slice 1 (rulings R-36, R-43): the Claude Code reader cou…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M3BB4Z91MX6RPTNJSMK3P1RJ",
-      "shortname": "compile-Goal: W2-CANARY slice 1 (rulings R-36, R-43): the Claude Code reader cou…",
-      "datetime": "2026-09-25T03:53:36Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-CANARY slice 1 (rulings R-36, R-43): the Claude Code reader counts the account-level connector tools a cell's native record advertises, as one new Extraction field, red-first.\nDone when: A red commit adds tests in tests/test_telemetry.py that fail on the current code, stating the failing assertion; the green commit makes them pass.; src/harness_bench/telemetry/__init__.py Extraction gains one field, account_connector_tools: int | None = None, with a one-line comment citing R-36 and R-43; None means not read (an unreadable record, or a harness other than Claude Code), never 0.; src/harness_bench/telemetry/claude_code.py read() sets it to the number of DISTINCT tool names matching the regex mcp__claude_ai_[A-Za-z0-9_]+ that the record advertises (find where the pinned Claude Code 2.1.282 native record lists its available and deferred tools; tests/fixtures/native/claude-code/ holds scrubbed records; read them, never guess the line type), and to 0 only when the record was read and advertises none.; A new scrubbed fixture under tests/fixtures/native/claude-code/ advertises exactly two such tools (made-up names like mcp__claude_ai_Example_one, never a real connector name) and the test asserts 2; an existing record with none asserts 0; a missing file asserts None.; tests/mutations/canary.json holds named mutants (count not deduplicated; 0 instead of None when unread; the regex prefix dropped), each killed (uv run python tools/mutate_check.py tests/mutations/canary.json).; Only targeted tests run: uv run pytest -q --tb=short tests/test_telemetry.py; uv run ruff check on the files you touch is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.\nNot in scope: views.py, report/*, normalize.py, other readers, tests/e2e, bench/pack-markers.txt (later slices); bench run, any model turn, pytest -m \"\", full-suite runs; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 11 minutes (ruling R-11 slice rules); commit at every green; no verbose output and no printing of large files; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-36, R-43; src/harness_bench/telemetry/__init__.py, src/harness_bench/telemetry/claude_code.py; tests/test_telemetry.py; tests/fixtures/native/claude-code/; tools/mutate_check.py and tests/mutations/r35_r36.json as the mutation format. Use python, not python3 (Windows); run mutate_check as uv run python tools/mutate_check.py. Set AGENT_SESSION=worker-grok-can1 before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit adds tests in tests/test_telemetry.py that fail on the current code, stating the failing assertion | phrase: A red commit adds tests in tests/test_telemetry.py that fail on the current code, stating the failing assertion |\n| done_when: the green commit makes them pass. | phrase: the green commit makes them pass. |\n| done_when: src/harness_bench/telemetry/__init__.py Extraction gains one field, account_connector_tools: int | None = None, with a one-line comment citing R-36 and R-43 | phrase: src/harness_bench/telemetry/__init__.py Extraction gains one field, account_connector_tools: int | None = None, with a one-line comment citing R-36 and R-43 |\n| done_when: None means not read (an unreadable record, or a harness other than Claude Code), never 0. | phrase: None means not read (an unreadable record, or a harness other than Claude Code), never 0. |\n| done_when: src/harness_bench/telemetry/claude_code.py read() sets it to the number of DISTINCT tool names matching the regex mcp__claude_ai_[A-Za-z0-9_]+ that the record advertises (find where the pinned Claude Code 2.1.282 native record lists its available and deferred tools | phrase: src/harness_bench/telemetry/claude_code.py read() sets it to the number of DISTINCT tool names matching the regex mcp__claude_ai_[A-Za-z0-9_]+ that the record advertises (find where the pinned Claude Code 2.1.282 native record lists its available and deferred tools |\n| done_when: tests/fixtures/native/claude-code/ holds scrubbed records | phrase: tests/fixtures/native/claude-code/ holds scrubbed records |\n| done_when: read them, never guess the line type), and to 0 only when the record was read and advertises none. | phrase: read them, never guess the line type), and to 0 only when the record was read and advertises none. |\n| done_when: A new scrubbed fixture under tests/fixtures/native/claude-code/ advertises exactly two such tools (made-up names like mcp__claude_ai_Example_one, never a real connector name) and the test asserts 2 | phrase: A new scrubbed fixture under tests/fixtures/native/claude-code/ advertises exactly two such tools (made-up names like mcp__claude_ai_Example_one, never a real connector name) and the test asserts 2 |\n| done_when: an existing record with none asserts 0 | phrase: an existing record with none asserts 0 |\n| done_when: a missing file asserts None. | phrase: a missing file asserts None. |\n| done_when: tests/mutations/canary.json holds named mutants (count not deduplicated | phrase: tests/mutations/canary.json holds named mutants (count not deduplicated |\n| done_when: 0 instead of None when unread | phrase: 0 instead of None when unread |\n| done_when: the regex prefix dropped), each killed (uv run python tools/mutate_check.py tests/mutations/canary.json). | phrase: the regex prefix dropped), each killed (uv run python tools/mutate_check.py tests/mutations/canary.json). |\n| done_when: Only targeted tests run: uv run pytest -q --tb=short tests/test_telemetry.py | phrase: Only targeted tests run: uv run pytest -q --tb=short tests/test_telemetry.py |\n| done_when: uv run ruff check on the files you touch is clean. | phrase: uv run ruff check on the files you touch is clean. |\n| done_when: Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result. | phrase: Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result. |\n| not_in_scope: views.py, report/*, normalize.py, other readers, tests/e2e, bench/pack-markers.txt (later slices) | phrase: views.py, report/*, normalize.py, other readers, tests/e2e, bench/pack-markers.txt (later slices) |\n| not_in_scope: bench run, any model turn, pytest -m \"\", full-suite runs | phrase: bench run, any model turn, pytest -m \"\", full-suite runs |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- tests/test_telemetry.py: tests/test_telemetry.py sha256 6138a0d0761a1b0a686302690502327f99ba61f29b58295101a844fe7c482ea7\n- src/harness_bench/telemetry/__init__.py: src/harness_bench/telemetry/__init__.py sha256 7a0a184f17eaf4b7ace592b1a5c3f5816bd55aa6e8d9f61e8fb5cc5e0574ee09\n- src/harness_bench/telemetry/claude_code.py: src/harness_bench/telemetry/claude_code.py sha256 c7349fd5bd60d70164afdf4f624e71078790fda6ead64cf1fb256ad335c17bc9\n- tests/fixtures/native/claude-code/: unresolved (not found)\n- tests/mutations/canary.json: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- views.py: src/harness_bench/views.py sha256 1684f9a2aa88f6d9aee5f908afc46a2920425b3f0bca7c627ea82b6e5f0ff5be\n- report/*: unresolved (not found)\n- normalize.py: src/harness_bench/telemetry/normalize.py sha256 bde97d917ae563b01ce25c1040f73478be8d33329d9384ed225e429eb003376f\n- tests/e2e: unresolved (not found)\n- bench/pack-markers.txt: bench/pack-markers.txt sha256 5b91ce297a35966835f333b7b588c0fb53183516419ec4d2baa57ff707a0bbc9\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- tests/mutations/r35_r36.json: tests/mutations/r35_r36.json sha256 72e026a6a880a0320159b9ea4beece5bf9683e18e1c33ac192576bb153385e0e\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BB4YMWH7YK2SZP7E1YN880\nraw sha256: f893a90ad5bd83c505f889b452afb0be8ac95d4de56afbc7030c4f0751764fc2\ncompiler model: claude-opus-5-5\nengine seconds: 0.003\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3BB4YMWH7YK2SZP7E1YN880 for claude-code v1: 19 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -10286,8 +10275,124 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
+      "datetime": "2026-09-25T03:53:36Z",
+      "dispatchable": true,
+      "id": "al-01M3BB4Z91MX6RPTNJSMK3P1RJ",
+      "kind": "compilation",
       "mode": "pass-through",
-      "dispatchable": true
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-CANARY slice 1 (rulings R-36, R-43): the Claude Code reader counts the account-level connector tools a cell's native record advertises, as one new Extraction field, red-first.\nDone when: A red commit adds tests in tests/test_telemetry.py that fail on the current code, stating the failing assertion; the green commit makes them pass.; src/harness_bench/telemetry/__init__.py Extraction gains one field, account_connector_tools: int | None = None, with a one-line comment citing R-36 and R-43; None means not read (an unreadable record, or a harness other than Claude Code), never 0.; src/harness_bench/telemetry/claude_code.py read() sets it to the number of DISTINCT tool names matching the regex mcp__claude_ai_[A-Za-z0-9_]+ that the record advertises (find where the pinned Claude Code 2.1.282 native record lists its available and deferred tools; tests/fixtures/native/claude-code/ holds scrubbed records; read them, never guess the line type), and to 0 only when the record was read and advertises none.; A new scrubbed fixture under tests/fixtures/native/claude-code/ advertises exactly two such tools (made-up names like mcp__claude_ai_Example_one, never a real connector name) and the test asserts 2; an existing record with none asserts 0; a missing file asserts None.; tests/mutations/canary.json holds named mutants (count not deduplicated; 0 instead of None when unread; the regex prefix dropped), each killed (uv run python tools/mutate_check.py tests/mutations/canary.json).; Only targeted tests run: uv run pytest -q --tb=short tests/test_telemetry.py; uv run ruff check on the files you touch is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.\nNot in scope: views.py, report/*, normalize.py, other readers, tests/e2e, bench/pack-markers.txt (later slices); bench run, any model turn, pytest -m \"\", full-suite runs; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 11 minutes (ruling R-11 slice rules); commit at every green; no verbose output and no printing of large files; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-36, R-43; src/harness_bench/telemetry/__init__.py, src/harness_bench/telemetry/claude_code.py; tests/test_telemetry.py; tests/fixtures/native/claude-code/; tools/mutate_check.py and tests/mutations/r35_r36.json as the mutation format. Use python, not python3 (Windows); run mutate_check as uv run python tools/mutate_check.py. Set AGENT_SESSION=worker-grok-can1 before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit adds tests in tests/test_telemetry.py that fail on the current code, stating the failing assertion | phrase: A red commit adds tests in tests/test_telemetry.py that fail on the current code, stating the failing assertion |\n| done_when: the green commit makes them pass. | phrase: the green commit makes them pass. |\n| done_when: src/harness_bench/telemetry/__init__.py Extraction gains one field, account_connector_tools: int | None = None, with a one-line comment citing R-36 and R-43 | phrase: src/harness_bench/telemetry/__init__.py Extraction gains one field, account_connector_tools: int | None = None, with a one-line comment citing R-36 and R-43 |\n| done_when: None means not read (an unreadable record, or a harness other than Claude Code), never 0. | phrase: None means not read (an unreadable record, or a harness other than Claude Code), never 0. |\n| done_when: src/harness_bench/telemetry/claude_code.py read() sets it to the number of DISTINCT tool names matching the regex mcp__claude_ai_[A-Za-z0-9_]+ that the record advertises (find where the pinned Claude Code 2.1.282 native record lists its available and deferred tools | phrase: src/harness_bench/telemetry/claude_code.py read() sets it to the number of DISTINCT tool names matching the regex mcp__claude_ai_[A-Za-z0-9_]+ that the record advertises (find where the pinned Claude Code 2.1.282 native record lists its available and deferred tools |\n| done_when: tests/fixtures/native/claude-code/ holds scrubbed records | phrase: tests/fixtures/native/claude-code/ holds scrubbed records |\n| done_when: read them, never guess the line type), and to 0 only when the record was read and advertises none. | phrase: read them, never guess the line type), and to 0 only when the record was read and advertises none. |\n| done_when: A new scrubbed fixture under tests/fixtures/native/claude-code/ advertises exactly two such tools (made-up names like mcp__claude_ai_Example_one, never a real connector name) and the test asserts 2 | phrase: A new scrubbed fixture under tests/fixtures/native/claude-code/ advertises exactly two such tools (made-up names like mcp__claude_ai_Example_one, never a real connector name) and the test asserts 2 |\n| done_when: an existing record with none asserts 0 | phrase: an existing record with none asserts 0 |\n| done_when: a missing file asserts None. | phrase: a missing file asserts None. |\n| done_when: tests/mutations/canary.json holds named mutants (count not deduplicated | phrase: tests/mutations/canary.json holds named mutants (count not deduplicated |\n| done_when: 0 instead of None when unread | phrase: 0 instead of None when unread |\n| done_when: the regex prefix dropped), each killed (uv run python tools/mutate_check.py tests/mutations/canary.json). | phrase: the regex prefix dropped), each killed (uv run python tools/mutate_check.py tests/mutations/canary.json). |\n| done_when: Only targeted tests run: uv run pytest -q --tb=short tests/test_telemetry.py | phrase: Only targeted tests run: uv run pytest -q --tb=short tests/test_telemetry.py |\n| done_when: uv run ruff check on the files you touch is clean. | phrase: uv run ruff check on the files you touch is clean. |\n| done_when: Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result. | phrase: Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result. |\n| not_in_scope: views.py, report/*, normalize.py, other readers, tests/e2e, bench/pack-markers.txt (later slices) | phrase: views.py, report/*, normalize.py, other readers, tests/e2e, bench/pack-markers.txt (later slices) |\n| not_in_scope: bench run, any model turn, pytest -m \"\", full-suite runs | phrase: bench run, any model turn, pytest -m \"\", full-suite runs |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- tests/test_telemetry.py: tests/test_telemetry.py sha256 6138a0d0761a1b0a686302690502327f99ba61f29b58295101a844fe7c482ea7\n- src/harness_bench/telemetry/__init__.py: src/harness_bench/telemetry/__init__.py sha256 7a0a184f17eaf4b7ace592b1a5c3f5816bd55aa6e8d9f61e8fb5cc5e0574ee09\n- src/harness_bench/telemetry/claude_code.py: src/harness_bench/telemetry/claude_code.py sha256 c7349fd5bd60d70164afdf4f624e71078790fda6ead64cf1fb256ad335c17bc9\n- tests/fixtures/native/claude-code/: unresolved (not found)\n- tests/mutations/canary.json: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- views.py: src/harness_bench/views.py sha256 1684f9a2aa88f6d9aee5f908afc46a2920425b3f0bca7c627ea82b6e5f0ff5be\n- report/*: unresolved (not found)\n- normalize.py: src/harness_bench/telemetry/normalize.py sha256 bde97d917ae563b01ce25c1040f73478be8d33329d9384ed225e429eb003376f\n- tests/e2e: unresolved (not found)\n- bench/pack-markers.txt: bench/pack-markers.txt sha256 5b91ce297a35966835f333b7b588c0fb53183516419ec4d2baa57ff707a0bbc9\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- tests/mutations/r35_r36.json: tests/mutations/r35_r36.json sha256 72e026a6a880a0320159b9ea4beece5bf9683e18e1c33ac192576bb153385e0e\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BB4YMWH7YK2SZP7E1YN880\nraw sha256: f893a90ad5bd83c505f889b452afb0be8ac95d4de56afbc7030c4f0751764fc2\ncompiler model: claude-opus-5-5\nengine seconds: 0.003\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W2-CANARY slice 1 (rulings R-36, R-43): the Claude Code reader cou…",
+      "skill": null,
+      "summary": "compiled al-01M3BB4YMWH7YK2SZP7E1YN880 for claude-code v1: 19 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "tasks/A1"
+      ],
+      "compiled": false,
+      "datetime": "2026-09-25T03:53:12Z",
+      "done_when": "bench validate ok; hidden tests fail on base and pass on reference, recorded; held-out set under tasks/A1/oracle; pytest and ruff green; committed",
+      "duration_seconds": 1061.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w2-tasks-a1",
+        "pushed": null,
+        "sha": "4eea36cc95d3ba8ae582b829b90c57e92fe2e4dd",
+        "short": "4eea36cc9"
+      },
+      "goal": "A1 from stub to ready with a discriminating oracle and a held-out matcher set",
+      "id": "al-01M3BB479XP8PM3J19T0H6V3KB",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "W2-TASKS-a (plan version 4): author task A1 (\"Missing-goal ambiguity\", scenario 1, ClarifyCodeBench) from stub to ready with /new-bench-task against tasks/README.md and tasks/_template/: task.yaml (status ready, scripted_user true, source.commit pinned to ClarifyCodeBench 5e2d5b5 or later, checked with git ls-remote), prompt.md, workspace base, hidden tests, oracle/clarifications.yaml, licence note; R-7 c6 native LiveCodeBench tests observed to FAIL on base and PASS on a reference, both runs recorded in the audit entry; R-39 c2 labelled held-out question set with near-misses under tasks/A1/oracle/; R-37 prompt may name ask_user; bench validate ok, pytest passes, ruff clean, committed on branch w2-tasks-a1.",
+      "session": "w2-tasks-a",
+      "shortname": "new-bench-task-A1",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "new-bench-task",
+      "started_at": "2026-09-25T03:35:31Z",
+      "summary": "A1 stub -> ready (commit 4eea36c). Source: ClarifyCodeBench task_199 (LiveCodeBench abc396_c, Buy Balls; type Behavior, the objective 'maximum' deleted; K=1).\nReachability measured at authoring (R-7 c7): `git ls-remote https://github.com/fangz-cs/ClarifyCodeBench` -> 5e2d5b5ce6259daa034cebb69f65e5e4c6dec3e9 HEAD = refs/heads/main; cloned at that commit. LiveCodeBench tests: HF livecodebench/code_generation_lite rev 0fe84c3912ea0c4d4a78037083943e8f0c4dd505, test6.jsonl sha256 bb4c364f71921c4495a6ad15abe1a927350b720009f4933e2e71f8af0f6fd1f5 (= LFS oid); private tests decoded with a restricted unpickler (no globals). LiveCodeBench code repo HEAD 28fef95ea8c9f7a547c8329f2cd3d32b92c1fa24 (MIT).\nNative run on this host (R-7 c6): LCB's own runner needs signal.alarm (absent on Windows); its stdio rule is ported in tests/test_a1_hidden.py, 43 cases (3 public + 40 private), one unittest test each, 6 s per case. Graded through harness_bench.grade.correctness.grade (Windows 11, CPython 3.14.6 via uv), command `{python} -m unittest -v test_a1_hidden` in the grading copy (ws + tests/):\n- FAIL on base (workspace as shipped): exit 1; 'Ran 43 tests'; 'FAILED (failures=43)'; pass@1 0; failing: test_public_01..03, test_private_01..40 (all 43).\n- PASS on reference (oracle/reference/solution.py): exit 0; 'Ran 43 tests'; 'OK'; pass@1 1; failing: none.\n- Control, goal decided wrongly (oracle/reference/assumes_any_total.py): exit 1; 'FAILED (failures=38)'; passes only test_public_03, test_private_03, _08, _10, _40.\nHeld-out matcher set (R-39 c2): oracle/heldout_questions.yaml, 38 questions: 17 expected goal-maximum (1 exact, 5 normalised, 10 paraphrase, 1 compound), 21 default (15 near-miss, 6 off-topic).\nGates: `uv run bench validate` ok; `uv run pytest -q -p no:cacheprovider` 823 passed, 8 deselected (first full run had 1 transient WinError 5 in tests/test_workspace.py::test_one_cells_git_state_is_invisible_to_another, X1-only; that file re-ran 24 passed and the full re-run passed); `uv run ruff check src tests tools` clean; `ruff check tasks/A1` clean.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "src/harness_bench/grade/correctness.py",
+        "tests/test_correctness_dotnet.py",
+        "tests/mutations/correctness.json",
+        "tests/fixtures/dotnet/OracleFixture.csproj"
+      ],
+      "compiled_from": "al-01M3BA4JKKCJBF03191EYG23G4",
+      "datetime": "2026-09-25T04:01:10Z",
+      "done_when": "Red and green commits; TRX NA guards; timeout process cleanup; version log; three named mutants killed; offline C# fixture; full pytest and ruff pass.",
+      "duration_seconds": 1452.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w2-tasks-b1",
+        "pushed": null,
+        "sha": "766534c94cd3c9dfc40a8b9b3d8de4ea99f7a399",
+        "short": "766534c94"
+      },
+      "goal": "Grade C# task oracles through a bounded dotnet runner.",
+      "id": "al-01M3BBJT3P61Q061VK3X61DBJW",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "W2-TASKS-b slice 1 (ruling R-41): red-first dotnet correctness runner; compiled prompt al-01M3BA4JKKCJBF03191EYG23G4",
+      "session": "worker-codex-tb1",
+      "shortname": "w2-tasks-b-dotnet-runner",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true
+      },
+      "skill": "coordination-worker",
+      "started_at": "2026-09-25T03:36:58Z",
+      "summary": "R-41 dotnet runner shipped. Red 3652398 and 75a0a95, green 766534c. Mutants 3/3 killed; pytest 834 passed, 8 deselected; ruff clean. Initial full pytest had an unrelated transient workspace pack-checkout WinError 5; isolated rerun and final full suite passed.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M3BDFY324410E92X8KM1DR08",
+      "shortname": "new-bench-task-D1",
+      "datetime": "2026-09-25T04:34:33Z",
+      "session": "worker-codex-tb2",
+      "prompt": "W2-TASKS-b slice 2: author D1 toward ready from pinned ai-de 88e0c33f; vendor only archive-selected code; prove hidden dotnet tests red on base and green on reference; run validate, pytest and Ruff.",
+      "summary": "D1 ready: 531 files, 5272935 bytes; shared correctness.grade base 0/5 and reference 5/5; vendoring byte comparison and pack scan pass; validate, 836 pytest, Ruff pass; validator gap req-01M3BD3PRJ41KK7MYY3097EJZ8.",
+      "kind": "skill",
+      "skill": "new-bench-task",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "tasks/D1/oracle/evidence.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "D1 ready with pinned archive, hidden xUnit oracle and reference evidence",
+      "done_when": "Pinned clean vendor tree; base fails and reference passes through correctness.grade; requested gates pass",
+      "tier": "T2",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "git": {
+        "sha": "2f7726f4bd0e12f5bbcf7672445d844bd5dac6d0",
+        "short": "2f7726f4b",
+        "branch": "w2-tasks-b2",
+        "pushed": null
+      }
     }
   ],
   "changes": [
@@ -10586,6 +10691,15 @@ window.AUDIT_DATA = {
       "kind": "blocked",
       "ref": "a9cf076e0bdbba3920c0ce502065ec6ba8f7ee5a",
       "session": "worker-codex-copi5"
+    },
+    {
+      "id": "mail-01M3BBKJ4HV47D598C1K26QEXX",
+      "ts": "2026-09-25T04:01:34Z",
+      "from": "worker-codex-tb1",
+      "to": "coord-opus-cq",
+      "kind": "done",
+      "ref": "src/harness_bench/grade/correctness.py@766534c",
+      "session": "worker-codex-tb1"
     }
   ]
 };

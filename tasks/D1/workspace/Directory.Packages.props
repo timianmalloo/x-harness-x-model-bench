@@ -1,0 +1,49 @@
+<Project>
+  <!--
+    Central Package Management (adopt-central-package-mgmt). One authoritative version per NuGet
+    package for the whole repository: projects reference packages by name only, versions live here.
+    This removes per-project version drift and makes an upgrade a one-line change. See
+    https://learn.microsoft.com/nuget/consume-packages/central-package-management.
+  -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    <!-- AvalonEdit is intentionally floated at 6.* (its 6.x line is API-stable); allow it under CPM. -->
+    <CentralPackageFloatingVersionsEnabled>true</CentralPackageFloatingVersionsEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Editor / docking / UI -->
+    <PackageVersion Include="AvalonEdit" Version="6.*" />
+    <PackageVersion Include="Dirkster.AvalonDock" Version="5.0.0" />
+    <PackageVersion Include="Dirkster.AvalonDock.Themes.VS2013" Version="5.0.0" />
+    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3485.44" />
+
+    <!-- Roslyn / MSBuild (extraction) -->
+    <PackageVersion Include="Microsoft.Build.Locator" Version="1.9.1" />
+    <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="17.14.8" />
+    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.14.8" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.14.0" />
+
+    <!--
+      Template frontmatter (template-schema/1). Taken rather than hand-rolled: Addendum B3.1's
+      frontmatter uses multi-line plain scalars and flow mappings, which is the exact upgrade
+      trigger both subset readers record (KnowledgeFrontmatter.cs:30-32, BoundedContextMap.cs:61-63),
+      and a third copy of a format parser is a third thing to drift.
+    -->
+    <PackageVersion Include="YamlDotNet" Version="18.1.0" />
+
+    <!-- Data / MCP -->
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.11" />
+    <PackageVersion Include="ModelContextProtocol" Version="2.2.0" />
+    <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
+
+    <!-- Test stack -->
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+</Project>
