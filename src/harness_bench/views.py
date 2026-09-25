@@ -259,7 +259,7 @@ def _unrecorded(source: str, completed: dict, cid: str, ended: dict, usage: list
 
 
 def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: set[str] | None,
-              unrecorded: str | None = None) -> tuple[str, str | None]:
+              unrecorded: str | None = None, denials: int = 0) -> tuple[str, str | None]:
     if outcome is None:
         return state, None  # not started | no outcome
     cause = Cause[outcome["cause"]] if outcome.get("cause") else None
@@ -267,6 +267,8 @@ def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: 
         return f"invalid ({cause.attribution})", cause.code
     if served is None:
         return "not graded", None
+    if denials:  # R-27: measured, so it outranks a record that is otherwise unreadable
+        return "invalid (tools denied by hook)", "HB-VAL-004"
     if unrecorded is not None:  # R-15 c1: distinct from a readable record with no call (HB-VAL-001)
         return "not recorded", "HB-VAL-003"
     if not served:
@@ -303,7 +305,7 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     model = _model_time(source, calls)
     tool = Measure(None, "not graded") if tools is None else busy_ms(tools)
     state = outcome["outcome"] if outcome else ("no outcome" if "cell.launch_intent" in events else "not started")
-    validity, validity_code = _validity(cell, prof, outcome, state, served, unrecorded)
+    validity, validity_code = _validity(cell, prof, outcome, state, served, unrecorded, normalize.hook_denials(tools or []))
     cause = Cause[outcome["cause"]] if outcome and outcome.get("cause") else None
     return CellView(
         cell_id=cid, label=cell.get("label", cid), combo=cell["combo"], pack=cell["pack"], harness=cell["harness"], model=cell["model"],

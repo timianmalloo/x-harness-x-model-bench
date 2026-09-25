@@ -311,6 +311,13 @@ def test_one_denied_tool_call_is_enough_to_invalidate(root, tmp_path):  # R-27 c
     assert (cell.validity, cell.validity_code) == ("invalid (tools denied by hook)", "HB-VAL-004")
 
 
+def test_a_hook_denial_outranks_an_unreadable_record(root, tmp_path):  # a killed rev-92 cell: the denial is measured
+    run_dir = _copilot_run(root, tmp_path, lambda events: [e for e in events if e["type"] != "session.shutdown"], arm="on-rev92")
+    cell = _cell(views.load(run_dir), "a")
+    assert (cell.validity, cell.validity_code) == ("invalid (tools denied by hook)", "HB-VAL-004")
+    assert cell.tokens_reason == "not recorded (native record fields missing: session.shutdown)"
+
+
 def test_an_ordinary_tool_failure_is_not_a_hook_denial(root, tmp_path):  # the rev-95 capture holds one (code not "denied")
     run_dir = _copilot_run(root, tmp_path, arm="on")
     assert any(r["ok"] == 0 for r in views.rows(run_dir, "tool_calls"))
