@@ -2087,3 +2087,26 @@ def test_a_stop_supersedes_every_open_decision(base):  # R10-2
     assert sorted(_resolutions(events)) == [("D1", "superseded (stop)", None), ("D2", "superseded (stop)", None)]
     assert [(e["code"], e["decision_id"]) for e in _kind(events, "run.stopped")] == [("HB-RUN-006", None)]
     assert len(_kind(events, "cell.launch_intent")) == 2 and summary.exit_code == 3
+
+
+def test_blocked_cell_default_continues_after_the_timeout(base):  # US15-1 (US-15, UXA-9)
+    p, launcher = _decision_plan([("fake", "A", AUTH), ("other", "B", {"sleep": 2}), ("fake", "A", {})], parallelism=2)
+    blocked, running, waiting = (c["cell_id"] for c in p["cells"])
+
+    def script(eng, offset, run_dir):
+        if {blocked, running} <= set(eng.outcomes) and not offset[0]:
+            offset[0] += JUMP
+
+    _, events, summary = _decision_run(base, (p, launcher), script)
+    opened = _kind(events, "decision.opened")
+    assert [{k: e[k] for k in ("decision_id", "decision_kind", "subject", "cause_code", "options", "default")} for e in opened] == [
+        {"decision_id": "D1", "decision_kind": "blocked_cell", "subject": "fake", "cause_code": "HB-CELL-202",
+         "options": ["continue", "stop"], "default": "continue"}]
+    assert _resolutions(events) == [("D1", "default applied (timeout)", "continue")]
+    start, end = events.index(opened[0]), events.index(_kind(events, "decision.resolved")[0])
+    assert [e for e in events[start:end] if e["kind"] == "cell.launch_intent"] == []  # launching pauses while it is open
+    assert running in [e["cell_id"] for e in events[start:end] if e["kind"] == "cell.outcome"]  # running cells continue
+    assert [e["cell_id"] for e in events[end:] if e["kind"] == "cell.launch_intent"] == [waiting]  # launching resumes
+    outs = _outcomes(events)
+    assert (outs[blocked]["outcome"], outs[blocked]["cause"]) == ("failed", "blocked_auth")  # its outcome is unchanged
+    assert outs[waiting]["outcome"] == "completed" and summary.exit_code == 0
