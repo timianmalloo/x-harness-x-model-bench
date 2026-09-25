@@ -19,11 +19,13 @@ import hashlib
 import os
 import shutil
 import subprocess
+import tomllib
 import uuid
 from collections.abc import Callable
 from decimal import Decimal
 from pathlib import Path
 
+import conftest
 import pytest
 import yaml
 from archived_runs import ROOT, make_root, set_catalog_version
@@ -204,3 +206,31 @@ def test_a_dev_version_is_exempt_and_says_so(frozen, tmp_path, capsys):
                     encoding="utf-8")  # no pin, no golden, a moved weight: all exempt for a probe
     assert problems(frozen, tmp_path) == []
     assert capsys.readouterr().out == f"{PROBE}\n"
+
+
+# --- the slow ring: dotnet fixtures run only on the grading host (design: Catalog-version rule 4; seam V-4) ---------
+
+
+def test_both_selectors_exclude_the_slow_ring():  # TA re-review 1: a command-line -m replaces addopts, so both change
+    ini = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["tool"]["pytest"]["ini_options"]
+    assert ini["addopts"] == "-m 'not credentials and not slow'"
+    assert any(m.startswith("slow:") for m in ini["markers"])
+    ci = [line.strip() for line in (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8").splitlines()]
+    assert [line for line in ci if "pytest" in line] == ['- run: uv run pytest -q -m "not credentials and not slow"']
+
+
+@pytest.mark.parametrize(("env", "which", "outcome"), [
+    ({}, None, "skip: dotnet not required"),
+    ({}, "C:/dotnet/dotnet.exe", "skip: dotnet not required"),
+    ({"HB_REQUIRE_DOTNET": "1"}, None, "fail: HB_REQUIRE_DOTNET=1 but dotnet is not on PATH"),
+    ({"HB_REQUIRE_DOTNET": "1"}, "C:/dotnet/dotnet.exe", "run"),
+])
+def test_hb_require_dotnet_fails_a_missing_dotnet_and_its_absence_skips(env, which, outcome):
+    try:
+        conftest.dotnet_gate(env, lambda name: which)
+        got = "run"
+    except pytest.skip.Exception as exc:
+        got = f"skip: {exc.msg}"
+    except pytest.fail.Exception as exc:
+        got = f"fail: {exc.msg}"
+    assert got == outcome
