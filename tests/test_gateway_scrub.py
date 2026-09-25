@@ -22,12 +22,12 @@ def test_t_gw_03_the_scan_of_scrub_x_finds_nothing(text):
 
 
 def test_t_gw_03_hits_near_misses_and_zero_width_characters():
-    assert scrub.scan("written by Claude and gpt-6-sol", ENTRIES) == ("Claude", "gpt-6-sol")
+    assert scrub.scan("written by Claude and gpt-6-sol", ENTRIES) == ("Claude", "GPT", "gpt-6-sol")  # GPT is a word in it
     assert scrub.scrub("written by Claude and gpt-6-sol", ENTRIES) == "written by [redacted] and [redacted]"
     assert scrub.scrub("the claude-code harness, CLAUDE_CODE", ENTRIES) == "the [redacted] harness, [redacted]_CODE"
     # whole words only: a near-miss is neither redacted nor reported
-    assert scrub.scrub("Claudette's GPTs and gpt-6-solver", ENTRIES) == "Claudette's GPTs and gpt-6-solver"
-    assert scrub.scan("Claudette's GPTs and gpt-6-solver", ENTRIES) == ()
+    assert scrub.scrub("Claudette's GPTs, sonnets and opuses", ENTRIES) == "Claudette's GPTs, sonnets and opuses"
+    assert scrub.scan("Claudette's GPTs, sonnets and opuses", ENTRIES) == ()
     # zero-width and format characters, and full-width letters, do not hide an entry
     assert scrub.scan("Cl\u200baude and O\u00adpus", ENTRIES) == ("Claude", "Opus")
     assert scrub.scrub("Cl\u200baude, \uff23\uff4c\uff41\uff55\uff44\uff45", ENTRIES) == "[redacted], [redacted]"
