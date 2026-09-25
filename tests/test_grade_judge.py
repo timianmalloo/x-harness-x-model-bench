@@ -12,6 +12,7 @@ import ast
 import dataclasses
 import json
 import os
+import re
 import shutil
 import sys
 import time
@@ -23,7 +24,16 @@ import pytest
 import yaml
 from archived_runs import GOOD, ROOT, make_root, make_run, pass_rows
 
-from harness_bench import config, egress, ledger, oslock, profiles, tools, views
+from harness_bench import (
+    config,
+    egress,
+    gitsafe,
+    ledger,
+    oslock,
+    profiles,
+    tools,
+    views,
+)
 from harness_bench.errors import BenchError
 from harness_bench.gateway import backend as gw_backend
 from harness_bench.gateway import pipeline
@@ -370,6 +380,34 @@ def test_t_gw_19_a_live_run_in_this_worktrees_runs_refuses_model_calls_before_an
     assert rows["adr_quality"] == (None, "HB-GRD-003 grader judge failed: BenchError")  # the pass itself completes
     gid = graded(run_dir, root, [])  # the lock released: the same pass shape calls the judge
     assert spawns(tmp_path) == 1 and not (run_dir / "grading" / gid / "a" / "judge" / "error.log").exists()
+
+
+@pytest.mark.parametrize("liveness", ["alive", "stalled", "not running"])
+def test_t_gw_19b_a_run_in_another_worktrees_runs_is_scanned(tmp_path, base, monkeypatch, liveness):
+    """A real sibling worktree (`git worktree add` in a temp repository, not a stub); R-65 c3: all three values."""
+    root = judged_root(tmp_path)
+    gitsafe.git(["init", "-q"], cwd=root, timeout=60)
+    gitsafe.git(["commit", "-q", "--allow-empty", "-m", "placeholder"], cwd=root, timeout=60, identity=True)
+    sibling = tmp_path / "sibling"
+    gitsafe.git(["worktree", "add", "-q", "--detach", str(sibling)], cwd=root, timeout=60)
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    held: list = []
+    live = hold(sibling / "runs", "live", run_dir, liveness, held)
+    allow_calls(tmp_path, base, monkeypatch)
+    gid = graded(run_dir, root, held)
+    if liveness == "not running":  # a released lock is not live: the pass calls
+        assert spawns(tmp_path) == 1 and ("a", "adr_quality#1", CLAUDE, "stored", None) in uses(run_dir, gid)
+        return
+    assert spawns(tmp_path) == 0 and uses(run_dir, gid) == []
+    scanned = ", ".join(str(p) for p in (root.resolve() / "runs", sibling.resolve() / "runs", run_dir.parent.resolve()))
+    log = refusal(run_dir, gid)
+    if liveness == "alive":
+        assert f"{REFUSED}{scanned}; {live.resolve()} alive\n" in log
+    else:  # R-65 c2: a stalled refusal prints the lock path and its age, and never deletes the lock
+        stalled = re.search(re.escape(f"{REFUSED}{scanned}; {live.resolve()} stalled (lock {live.resolve() / '.lock'}, "
+                                      "heartbeat ") + r"(\d+) s old\)\n", log)
+        assert stalled is not None and 3600 <= int(stalled.group(1)) < 3700
+        assert (live / ".lock").is_file()
 
 
 def test_a_pass_that_may_call_refuses_a_cells_root_below_an_instruction_file_before_any_spawn(tmp_path, base,
