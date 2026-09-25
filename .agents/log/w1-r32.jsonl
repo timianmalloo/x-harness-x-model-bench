@@ -1,1 +1,2 @@
 {"agent": "w1-r32", "at": 1790299654.4459202, "kind": "session-start", "path": "-", "seq": 1, "session": "w1-r32", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w1-r32-context-tag"}
+{"agent": "w1-r32", "at": 1790305877.807733, "kind": "session-end", "path": "-", "seq": 2, "session": "w1-r32", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w1-r32-context-tag"}

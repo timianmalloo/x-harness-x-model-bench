@@ -1,1 +1,2 @@
 {"agent": "worker-codex-rcopr", "at": 1790291167.2707658, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-codex-rcopr", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-review-w1-copr-codex"}
+{"agent": "worker-codex-rcopr", "at": 1790305875.3718784, "kind": "session-end", "path": "-", "seq": 2, "session": "worker-codex-rcopr", "wi": "WI-0", "worktree": "x-harness-x-model-bench-review-w1-copr-codex"}

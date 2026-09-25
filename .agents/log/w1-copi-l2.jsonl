@@ -1,1 +1,2 @@
 {"agent": "w1-copi-l2", "at": 1790300277.2416658, "kind": "session-start", "path": "-", "seq": 1, "session": "w1-copi-l2", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w1-copi-e2e-l2"}
+{"agent": "w1-copi-l2", "at": 1790305875.8206606, "kind": "session-end", "path": "-", "seq": 2, "session": "w1-copi-l2", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w1-copi-e2e-l2"}

@@ -167,6 +167,12 @@ summary: >-
   - `tests/conftest.py`'s `base` now uses a full uuid, so names no longer collide, and removes with `archive.make_writable`. `test_workspace.py`'s `clean_base` is now an alias of `base`: one definition.
   - Measured: a full `pytest -m "not credentials"` run (592 passed) left **0** folders under `C:/Projects/bench-test`, where it had left about 100. Read-only git objects were the whole cause; no file was held open once the tests had run.
   - `tools/clean_bench_test.py` (dry run by default, `--delete`) removed the 428 earlier leftovers, 428 of 428, and none was locked.
+- **Wave-1 close (2026-09-25):**
+  - `C:/Projects/bench-test` held 8 leftovers besides the two kept negative E2E runs:
+    - two `base` uuid folders (14:29 and 17:11, the times of killed pytest runs: SUITE-A and the GATE-B hang);
+    - two `hs-*` handshake homes from the SUITE-A real-cell run (`tests/test_profiles.py:386`);
+    - four Leader probe files and folders.
+  - A killed process runs no teardown, so the fixture fix cannot reach these. The Leader removed all of them at the wave close, and the folder is empty.
 - **Upgrade trigger:** a residue check that fails the session (no test enforces "0 left" yet).
 - **Status:** `partially-controlled` (the product is controlled; the fixtures are fixed and measured, not enforced)
 

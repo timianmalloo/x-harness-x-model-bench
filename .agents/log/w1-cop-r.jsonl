@@ -1,1 +1,2 @@
 {"agent": "w1-cop-r", "at": 1790289703.3933613, "kind": "session-start", "path": "-", "seq": 1, "session": "w1-cop-r", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w1-copilot-reader"}
+{"agent": "w1-cop-r", "at": 1790305877.5896955, "kind": "session-end", "path": "-", "seq": 2, "session": "w1-cop-r", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w1-copilot-reader"}

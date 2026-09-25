@@ -1,3 +1,4 @@
 {"agent": "worker-codex-copi2", "at": 1790292853.2499766, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-codex-copi2", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w1-copi-s2"}
 {"agent": "worker-codex-copi2", "at": 1790292909.4071221, "kind": "session-start", "path": "-", "seq": 2, "session": "worker-codex-copi2", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w1-copi-s2"}
 {"at": 1790293729.100703, "from": "worker-codex-copi2", "kind": "done", "mail_id": "mail-01M3AX4QTCD55WCTWRZ7675HK2", "ref": "src/harness_bench/profiles.py@112de80", "session": "worker-codex-copi2", "to": "coord-opus-cq", "type": "mail"}
+{"agent": "worker-codex-copi2", "at": 1790305876.4864664, "kind": "session-end", "path": "-", "seq": 4, "session": "worker-codex-copi2", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w1-copi-s2"}
