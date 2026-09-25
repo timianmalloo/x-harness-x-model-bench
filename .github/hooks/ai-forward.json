@@ -4,87 +4,87 @@
     "sessionStart": [
       {
         "type": "command",
-        "bash": "python3 docs/ai-forward-pack/hooks/session-start.py --host copilot",
-        "powershell": "python docs/ai-forward-pack/hooks/session-start.py --host copilot",
+        "bash": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh session-start.py --host copilot",
+        "powershell": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh session-start.py --host copilot",
         "timeoutSec": 10
       }
     ],
     "subagentStart": [
       {
         "type": "command",
-        "bash": "python3 docs/ai-forward-pack/hooks/session-start.py --host copilot",
-        "powershell": "python docs/ai-forward-pack/hooks/session-start.py --host copilot",
+        "bash": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh session-start.py --host copilot",
+        "powershell": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh session-start.py --host copilot",
         "timeoutSec": 10
       }
     ],
     "preToolUse": [
       {
         "type": "command",
-        "bash": "python3 docs/ai-forward-pack/hooks/reread-guard.py --host copilot",
-        "powershell": "python docs/ai-forward-pack/hooks/reread-guard.py --host copilot",
+        "bash": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh reread-guard.py --host copilot",
+        "powershell": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh reread-guard.py --host copilot",
         "timeoutSec": 10,
         "matcher": "^view$"
       },
       {
         "type": "command",
-        "bash": "python3 docs/ai-forward-pack/hooks/mail-doorbell.py --host copilot --event preToolUse",
-        "powershell": "python docs/ai-forward-pack/hooks/mail-doorbell.py --host copilot --event preToolUse",
+        "bash": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh mail-doorbell.py --host copilot --event preToolUse",
+        "powershell": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh mail-doorbell.py --host copilot --event preToolUse",
         "timeoutSec": 10
       }
     ],
     "postToolUse": [
       {
         "type": "command",
-        "bash": "python3 docs/ai-forward-pack/hooks/heartbeat.py --host copilot --event postToolUse",
-        "powershell": "python docs/ai-forward-pack/hooks/heartbeat.py --host copilot --event postToolUse",
+        "bash": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh heartbeat.py --host copilot --event postToolUse",
+        "powershell": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh heartbeat.py --host copilot --event postToolUse",
         "timeoutSec": 10
       }
     ],
     "userPromptSubmitted": [
       {
         "type": "command",
-        "bash": "python3 docs/ai-forward-pack/hooks/reread-guard.py --host copilot",
-        "powershell": "python docs/ai-forward-pack/hooks/reread-guard.py --host copilot",
+        "bash": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh reread-guard.py --host copilot",
+        "powershell": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh reread-guard.py --host copilot",
         "timeoutSec": 10
       }
     ],
     "agentStop": [
       {
         "type": "command",
-        "bash": "python3 docs/ai-forward-pack/hooks/mail-doorbell.py --host copilot --event agentStop",
-        "powershell": "python docs/ai-forward-pack/hooks/mail-doorbell.py --host copilot --event agentStop",
+        "bash": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh mail-doorbell.py --host copilot --event agentStop",
+        "powershell": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh mail-doorbell.py --host copilot --event agentStop",
         "timeoutSec": 10
       },
       {
         "type": "command",
-        "bash": "python3 docs/ai-forward-pack/hooks/heartbeat.py --host copilot --event agentStop",
-        "powershell": "python docs/ai-forward-pack/hooks/heartbeat.py --host copilot --event agentStop",
+        "bash": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh heartbeat.py --host copilot --event agentStop",
+        "powershell": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh heartbeat.py --host copilot --event agentStop",
         "timeoutSec": 10
       },
       {
         "type": "command",
-        "bash": "python3 docs/ai-forward-pack/hooks/owner-review-gate.py --host copilot --event agentStop",
-        "powershell": "python docs/ai-forward-pack/hooks/owner-review-gate.py --host copilot --event agentStop",
+        "bash": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh owner-review-gate.py --host copilot --event agentStop",
+        "powershell": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh owner-review-gate.py --host copilot --event agentStop",
         "timeoutSec": 10
       }
     ],
     "subagentStop": [
       {
         "type": "command",
-        "bash": "python3 docs/ai-forward-pack/hooks/mail-doorbell.py --host copilot --event subagentStop",
-        "powershell": "python docs/ai-forward-pack/hooks/mail-doorbell.py --host copilot --event subagentStop",
+        "bash": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh mail-doorbell.py --host copilot --event subagentStop",
+        "powershell": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh mail-doorbell.py --host copilot --event subagentStop",
         "timeoutSec": 10
       },
       {
         "type": "command",
-        "bash": "python3 docs/ai-forward-pack/hooks/heartbeat.py --host copilot --event subagentStop",
-        "powershell": "python docs/ai-forward-pack/hooks/heartbeat.py --host copilot --event subagentStop",
+        "bash": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh heartbeat.py --host copilot --event subagentStop",
+        "powershell": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh heartbeat.py --host copilot --event subagentStop",
         "timeoutSec": 10
       },
       {
         "type": "command",
-        "bash": "python3 docs/ai-forward-pack/hooks/owner-review-gate.py --host copilot --event subagentStop",
-        "powershell": "python docs/ai-forward-pack/hooks/owner-review-gate.py --host copilot --event subagentStop",
+        "bash": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh owner-review-gate.py --host copilot --event subagentStop",
+        "powershell": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh owner-review-gate.py --host copilot --event subagentStop",
         "timeoutSec": 10
       }
     ]

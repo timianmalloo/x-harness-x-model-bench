@@ -20,9 +20,18 @@ dreams quote other repositories' prose verbatim, and a quote is not a citation (
 note-20260919-owner-review-register-and-scan-scope). docs/ai-forward-pack/ is skipped as the
 generated copy of pack/.
 
+THE SHORT FORM. A register may number its rulings `## R-n · date · seat · title` (measured in
+x-harness-x-model-bench, 2026-09-24): there the gate read no heading and no citation, and passed
+while checking nothing. So `## R-n` / `### R-n` also define number n, and `R-n` in prose (e.g.
+"R-7", "ruling R-4") also cites it: `R-n` and `Ruling n` name one number. The short form is
+strict because short ids are common: `R-` must not follow a letter, digit or hyphen (DR-1, PR-12,
+AR-R-7) and the number must not continue as `.d`, `-d` or a letter (spike R-2.3, R-3-4, R-12a).
+
 THE TWO DEFECTS. (1) A number cited with no heading. (2) A number defined by two headings. There is
 no frozen list: nothing predates this control, so the list that "may only shrink" starts empty and
-therefore does not exist.
+therefore does not exist. And one refusal to report clean (class PACK-P): a register with level-2/3
+headings of which none parses as a ruling is NOT CHECKED - the R-n register passed as "0 defined"
+because an unread register and an empty one printed the same.
 
 USAGE
   python3 verify-ruling-citations.py                 scan the repository at the cwd
@@ -52,11 +61,25 @@ REGISTER = Path("docs") / "notes" / "rulings.md"
 ROOTS = ("docs", "pack", os.path.join(".agents", "log"), ".github", ".claude")
 SKIP_PARTS = {"ai-forward-pack", "node_modules", ".git", "_site"}
 PROSE_SUFFIXES = {".md", ".html", ".txt"}
-CITATION = re.compile(r"\bRulings?\s+(\d{1,3})\b")
-DEFINITION = re.compile(r"^#{2,3}[ \t]+Ruling[ \t]+(\d{1,3})\b", re.M)
+SHORT = r"R-(\d{1,3})(?!\w|[.-]\d)"   # R-n: the number ends the id (not R-2.3, R-3-4, R-12a)
+CITATION = re.compile(r"\bRulings?\s+(\d{1,3})\b|(?<![\w-])" + SHORT)
+DEFINITION = re.compile(r"^#{2,3}[ \t]+(?:Ruling[ \t]+(\d{1,3})\b|" + SHORT + ")", re.M)
+HEADING = re.compile(r"^#{2,3}[ \t]+\S", re.M)
 
 
-def definitions(root: Path) -> Dict[int, List[int]]:
+def _number(match: "re.Match[str]") -> Tuple[int, str]:
+    """The number a match names, and its spelling as written (`Ruling n` or `R-n`)."""
+    if match.group(1) is not None:
+        return int(match.group(1)), "Ruling {}".format(int(match.group(1)))
+    return int(match.group(2)), "R-{}".format(int(match.group(2)))
+
+
+def _name(number: int, spellings: Dict[int, Set[str]]) -> str:
+    """How a defect names a number: the spelling(s) the repository used for it."""
+    return " / ".join(sorted(spellings.get(number) or {"Ruling {}".format(number)}, reverse=True))
+
+
+def definitions(root: Path, spellings: Dict[int, Set[str]] = None) -> Dict[int, List[int]]:
     """number -> the register line numbers that define it (two lines = the collision)."""
     path = root / REGISTER
     found: Dict[int, List[int]] = {}
@@ -65,11 +88,14 @@ def definitions(root: Path) -> Dict[int, List[int]]:
     text = path.read_text(encoding="utf-8", errors="replace")
     for match in DEFINITION.finditer(text):
         line = text.count("\n", 0, match.start()) + 1
-        found.setdefault(int(match.group(1)), []).append(line)
+        number, spelled = _number(match)
+        found.setdefault(number, []).append(line)
+        if spellings is not None:
+            spellings.setdefault(number, set()).add(spelled)
     return found
 
 
-def citations(root: Path) -> Dict[int, Set[str]]:
+def citations(root: Path, spellings: Dict[int, Set[str]] = None) -> Dict[int, Set[str]]:
     """number -> the prose files (repo-relative, posix) that cite it. The register is scanned
     too: prose in it that names a number is a citation (a heading is the only definition)."""
     found: Dict[int, Set[str]] = {}
@@ -84,27 +110,49 @@ def citations(root: Path) -> Dict[int, Set[str]]:
                 continue
             text = path.read_text(encoding="utf-8", errors="replace")
             for match in CITATION.finditer(text):
-                found.setdefault(int(match.group(1)), set()).add(path.relative_to(root).as_posix())
+                number, spelled = _number(match)
+                found.setdefault(number, set()).add(path.relative_to(root).as_posix())
+                if spellings is not None:
+                    spellings.setdefault(number, set()).add(spelled)
     return found
 
 
+def unread_headings(root: Path) -> int:
+    """How many level-2/3 register headings exist when NONE of them parsed as a definition (PACK-P):
+    a register of headings in an unknown numbering is not an empty register, and must not read as one."""
+    path = root / REGISTER
+    if not path.is_file():
+        return 0
+    text = path.read_text(encoding="utf-8", errors="replace")
+    if DEFINITION.search(text):
+        return 0
+    return len(HEADING.findall(text))
+
+
 def check(root: Path) -> Tuple[List[str], Dict[int, List[int]], Dict[int, Set[str]]]:
-    defined = definitions(root)
-    cited = citations(root)
+    defined_as: Dict[int, Set[str]] = {}
+    cited_as: Dict[int, Set[str]] = {}
+    defined = definitions(root, defined_as)
+    cited = citations(root, cited_as)
     defects: List[str] = []
+    unread = unread_headings(root)
+    if unread:
+        defects.append("NOT CHECKED: {} has {} heading(s) and none is a ruling in a form this gate reads"
+                       " (`## Ruling n` or `## R-n`). A register the gate cannot read is not an empty register"
+                       " (class PACK-P).".format(REGISTER.as_posix(), unread))
     for number in sorted(defined):
         lines = defined[number]
         if len(lines) > 1:
-            defects.append("Ruling {} is defined twice in {} (lines {}). One number, one decision (class ID-A):"
+            defects.append("{} is defined twice in {} (lines {}). One number, one decision (class ID-A):"
                            " the register is the allocator, so the second heading is a collision."
-                           .format(number, REGISTER.as_posix(), ", ".join(str(n) for n in lines)))
+                           .format(_name(number, defined_as), REGISTER.as_posix(), ", ".join(str(n) for n in lines)))
     for number in sorted(cited):
         if number in defined:
             continue
         where = sorted(cited[number])
-        defects.append("Ruling {} is cited as authority in {} file(s) and no heading in {} defines it. Cited by: {}."
+        defects.append("{} is cited as authority in {} file(s) and no heading in {} defines it. Cited by: {}."
                        " Anyone can assert what it said and nobody can check."
-                       .format(number, len(where), REGISTER.as_posix(), ", ".join(where)))
+                       .format(_name(number, cited_as), len(where), REGISTER.as_posix(), ", ".join(where)))
     return defects, defined, cited
 
 
@@ -128,6 +176,15 @@ def self_test() -> int:
          {"docs/notes/other.md": "### Ruling 91 — elsewhere" + nl}, "no heading"),
         ("a record is a quote, not a citation",
          {"docs/audit/audit-log.jsonl": '{"prompt": "ai-de cited Ruling 91"}' + nl}, None),
+        ("a short-form R-n cited with no heading defining it",
+         {"docs/plans/p.md": "As ruling R-99 says." + nl,
+          REGISTER.as_posix(): head + "## R-1 · 2026-09-24 · Owner · seats" + nl}, "R-99 is cited"),
+        ("a short-form R-n cited and defined by a short-form heading",
+         {"docs/plans/p.md": "Per R-7." + nl, REGISTER.as_posix(): head + "## R-7 · 2026-09-24 · Owner · x" + nl}, None),
+        ("a register whose headings are all in an unread numbering",
+         {REGISTER.as_posix(): head + "## RUL-1 · 2026-09-24 · Owner · x" + nl}, "NOT CHECKED"),
+        ("look-alike ids are not citations",
+         {"docs/plans/p.md": "Spike R-2.3, US-13, HB-PRE-002, DR-1, R-12a." + nl}, None),
     ]
     failures = []
     for name, files, expected in cases:

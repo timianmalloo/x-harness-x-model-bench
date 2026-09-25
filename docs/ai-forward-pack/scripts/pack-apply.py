@@ -592,8 +592,19 @@ class Applier(object):
             return
         merged = json.loads(json.dumps(current))
         hooks = merged.setdefault("hooks", {})
+        shipped = {h.get("command") for entries in (snippet.get("hooks") or {}).values()
+                   for entry in entries for h in entry.get("hooks", [])}
+
+        def stale(entry):
+            # A pack-managed entry (every command runs a pack hook) whose command the pack no longer ships:
+            # its form changed (PLAT-A, revision 95), so it is replaced, never kept beside its successor.
+            commands = [h.get("command") for h in entry.get("hooks", [])] if isinstance(entry, dict) else []
+            return bool(commands) and all(isinstance(c, str) and "docs/ai-forward-pack/hooks/" in c
+                                          and c not in shipped for c in commands)
+
         for event, entries in (snippet.get("hooks") or {}).items():
             have = hooks.setdefault(event, [])
+            have[:] = [e for e in have if not stale(e)]
             for entry in entries:
                 wanted = {h.get("command") for h in entry.get("hooks", [])}
                 if not any(wanted & {h.get("command") for h in e.get("hooks", [])} for e in have):
