@@ -4,6 +4,10 @@
 Metrics: honest_completion_claims, error_handling, goal_drift_slope, unrequested_behaviour, assumption_disclosure,
 spec_quality, adr_quality, handoff_fidelity, mast_failure_codes.
 
+- When judges run (section 6, R-58 DR-2): the in-run pass (`IN_RUN`) makes no lookup, no call and no row, and
+  every judged metric is NA `judge calls not allowed in this pass`; `bench grade` reads the verdict store only (a miss
+  is `not_allowed`, counted by `misses`); only `bench grade --allow-model-calls` (`calling`) may spawn a judge, inside
+  the gateway's `judge_pass`, which refuses while any run is live (HB-GRD-005).
 - The jury is `bench/gateway.yaml` (`config.load_gateway`), in order: the second entry is the second judge. With no
   stipulation every judged metric is NA `no qualified judge`.
 - A metric whose catalog entry has no `rubrics` entry for the cell's task is NA `no rubric for this task` (R-59 c2,
@@ -27,16 +31,17 @@ from __future__ import annotations
 import re
 from collections.abc import Mapping
 from contextlib import nullcontext
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from decimal import Decimal
 from pathlib import Path
 
-from harness_bench import config, egress, profiles, tools
+from harness_bench import config, egress, profiles, tools, views
 from harness_bench.gateway import pipeline, scrub
-from harness_bench.gateway.backend import Launch, ReplayBackend, judge_pass
-from harness_bench.grade import CellInput, Score
+from harness_bench.gateway.backend import Launch, ReplayBackend, judge_pass, run_roots
+from harness_bench.grade import CellInput, GraderFn, Score
 
 NO_JUDGE = "no qualified judge"
+NOT_ALLOWED = "judge calls not allowed in this pass"
 NO_RUBRIC = "no rubric for this task"
 SECOND_NOT_QUALIFIED = "second judge not qualified"
 DISAGREE = "judges disagree by 2 steps"
@@ -60,13 +65,28 @@ class Calls:
 
 
 def grade_cell(inp: CellInput) -> Mapping[str, Score]:
-    """The registered grader (runner.GRADERS): a pass with no call environment reads the verdict store only.
-
-    simplify: the in-run pass and `bench grade` without the flag both reach here with `allow_model_calls` False, so
-    the in-run pass reads the store too (it never calls). Section 6 wants the in-run pass to make no lookup and write
-    no row; that distinction arrives with slice 4's `cmd_grade` seam (`--allow-model-calls`, in-run NA). Upgrade
-    trigger: slice 4."""
+    """The registered grader (runner.GRADERS), `bench grade` without the flag: it reads the verdict store only."""
     return grade(inp, None)
+
+
+def in_run(inp: CellInput) -> dict[str, Score]:
+    """The in-run pass (`bench run`'s grading, section 6): no lookup, no call, no `verdict_uses` row."""
+    return dict.fromkeys(inp.metrics, Score(None, NOT_ALLOWED))
+
+
+IN_RUN: Mapping[str, GraderFn] = {"judge": in_run}  # runner.run_pass's `judging` for the in-run pass
+
+
+def calling(calls: Calls) -> dict[str, GraderFn]:
+    """runner.run_pass's `judging` for `bench grade --allow-model-calls`: the only pass that may spawn a judge."""
+    return {"judge": lambda inp: grade(replace(inp, allow_model_calls=True), calls)}
+
+
+def misses(run_dir: Path, grading_id: str) -> int:
+    """The pass's judge calls that a cache-only pass could not make (`not_allowed`), counted as calls, never as rows
+    (`views.judge_calls`; US-26 c2)."""
+    rows = [r for r in views.rows(run_dir, "verdict_uses") if r["grading_id"] == grading_id]
+    return views.judge_calls(rows).get(("not_allowed", None), 0)
 
 
 def grade(inp: CellInput, calls: Calls | None) -> dict[str, Score]:
@@ -83,10 +103,9 @@ def grade(inp: CellInput, calls: Calls | None) -> dict[str, Score]:
         return out
     grading_id = inp.out_dir.parents[1].name  # out_dir is run_dir/grading/<grading_id>/<cell_id>/<grader>
     archive = inp.run_dir / "grading" / grading_id / "gateway"  # the call records (section 8.2; store._vouches)
+    roots = run_roots(inp.root, inp.run_dir.parent)  # every worktree's runs/ plus --runs (section 6, R-65)
     ctx = pipeline.Context(
-        store=inp.root / "cache" / "verdicts",
-        # simplify: this worktree's runs/ only. Upgrade trigger: slice 4's scan of every worktree's runs/ (section 6).
-        known_roots=(inp.run_dir.parent,), own_run=inp.run_dir,
+        store=inp.root / "cache" / "verdicts", known_roots=roots, own_run=inp.run_dir,
         stored_by={"ledger": "run", "ledger_id": inp.plan["run_id"], "grading_or_calibration_id": grading_id},
         denylist=scrub.denylist(inp.root, inp.plan), allow_model_calls=inp.allow_model_calls,
         operator=calls.operator if calls else None, secrets=calls.secrets if calls else (),
@@ -95,7 +114,7 @@ def grade(inp: CellInput, calls: Calls | None) -> dict[str, Score]:
     backends = [_backend(e, j, calls, grading_id, archive, stipulation["call_timeout_seconds"]) for e, j in jury]
     names = tuple(sorted({n for e, j in jury if j.qualified and (n := calls.profiles[e["harness"]].credential_name)})
                   ) if calls else ()
-    with judge_pass(calls.cells_root, grading_id, names) if calls else nullcontext():
+    with judge_pass(calls.cells_root, grading_id, names, roots) if calls else nullcontext():
         for metric in judged:
             inputs = _inputs(inp, inp.metrics[metric], task)
             results = [(j.model, pipeline.run(j, inputs, ctx, b)) for (_, j), b in zip(jury, backends, strict=True)]

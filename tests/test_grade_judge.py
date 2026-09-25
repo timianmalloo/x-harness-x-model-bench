@@ -11,8 +11,11 @@ and the operator's identifiers are random synthetic strings (R-42). The stipulat
 import ast
 import dataclasses
 import json
+import os
+import re
 import shutil
 import sys
+import time
 from decimal import Decimal
 from pathlib import Path
 from secrets import token_hex
@@ -21,7 +24,17 @@ import pytest
 import yaml
 from archived_runs import GOOD, ROOT, make_root, make_run, pass_rows
 
-from harness_bench import config, egress, ledger, profiles, tools, views
+from harness_bench import (
+    cli,
+    config,
+    egress,
+    gitsafe,
+    ledger,
+    oslock,
+    profiles,
+    tools,
+    views,
+)
 from harness_bench.errors import BenchError
 from harness_bench.gateway import backend as gw_backend
 from harness_bench.gateway import pipeline
@@ -245,9 +258,9 @@ KEYS = ("bench/gateway.yaml judge 1: keys must be ['build', 'harness', 'invocati
 @pytest.mark.parametrize(("change", "expected"), [
     ({"invocation_sha256": "0" * 64}, NOT_THE_BUILDERS),  # a placeholder hash
     ({"model": "claude-opus-5-5"}, NOT_THE_BUILDERS),  # a hash of another invocation
-    ({"harness": "copilot", "invocation_sha256": gw_backend.invocation_sha256(
-        "copilot", CLAUDE, gw_backend.JUDGE_SYSTEM, "text", "2.1.282", "0" * 64)},
-     "bench/gateway.yaml judge 1: qualified: true on copilot, which the gateway does not launch (R-70 item 4)"),
+    ({"harness": "codex", "invocation_sha256": gw_backend.invocation_sha256(
+        "codex", CLAUDE, gw_backend.JUDGE_SYSTEM, "text", "2.1.282", "0" * 64)},
+     "bench/gateway.yaml judge 1: qualified: true on codex, which the gateway does not launch (R-70 item 4)"),
     ({"model": "Claude Fable"}, "bench/gateway.yaml judge 1: model must be a lower-case model id (an egress destination)"),
     ({"output": "json"}, "bench/gateway.yaml judge 1: output must be one of ('text', 'native')"),
     ({"qualified": "yes"}, "bench/gateway.yaml judge 1: qualified must be true or false"),
@@ -258,6 +271,17 @@ KEYS = ("bench/gateway.yaml judge 1: keys must be ['build', 'harness', 'invocati
 ])
 def test_a_stipulation_entry_is_refused_on_each_rule(change, expected):
     assert problems(stipulation(**change)) == [expected]
+
+
+def test_a_qualified_copilot_entry_is_launchable_once_the_copilot_branch_is_built():
+    # R-70 item 4 kept a qualified Copilot entry out while `Headless` could not launch it; slice 4 builds the branch
+    # (tests/test_gateway_headless.py). bench/gateway.yaml still gains the entry only from the Leader's turn (3(b)).
+    g = stipulation()
+    g["judges"][1] |= {"harness": "copilot", "output": "text", "qualified": True,
+                       "build": {"version": "1.0.89-1", "exe_sha256": "2" * 64},
+                       "invocation_sha256": gw_backend.invocation_sha256("copilot", CODEX, gw_backend.JUDGE_SYSTEM,
+                                                                         "text", "1.0.89-1", "2" * 64)}
+    assert problems(g) == []
 
 
 def test_a_stipulation_names_one_or_two_judges_a_positive_timeout_and_its_schema():
@@ -315,6 +339,127 @@ def test_no_view_counts_verdict_uses_rows_as_calls():
     assert views.KEYS["verdict_uses"] == ("run_id", "grading_id", "cell_id", "item_id", "judge_or_matcher")
 
 
+def allow_calls(tmp_path, base, monkeypatch) -> None:
+    """The pass may call: the fake judge CLI replays one 7-item answer (`fake_calls`)."""
+    calls = fake_calls(tmp_path, base / "cells", judge.Calls)
+    monkeypatch.setitem(runner.GRADERS, "judge",
+                        lambda inp: judge.grade(dataclasses.replace(inp, allow_model_calls=True), calls))
+
+
+def hold(runs: Path, name: str, plan_from: Path, liveness: str, held: list) -> Path:
+    """A known run `runs/<name>` (a copy of a confirmed plan.json) whose lock is held with a fresh heartbeat (`alive`),
+    held with a heartbeat an hour old (`stalled`), or free (`not running`); status.py reads the lock (R-65)."""
+    folder = runs / name
+    folder.mkdir(parents=True)
+    shutil.copy(plan_from / "plan.json", folder / "plan.json")
+    if liveness != "not running":
+        held.append(oslock.RunLock.acquire(folder / ".lock", "HB-RUN-005"))
+    if liveness == "stalled":
+        old = time.time() - 3600
+        os.utime(folder / ".lock", (old, old))
+    return folder
+
+
+def graded(run_dir: Path, root: Path, held: list) -> str:
+    """One pass while `held` locks are held; every lock is released afterwards."""
+    try:
+        return runner.run_pass(run_dir, root).grading_id
+    finally:
+        for lock in held:
+            lock.release()
+
+
+def refusal(run_dir: Path, gid: str) -> str:
+    log = run_dir / "grading" / gid / "a" / "judge" / "error.log"
+    assert log.is_file(), "the judge grader was not refused"
+    return log.read_text(encoding="utf-8")
+
+
+REFUSED = "HB-GRD-005: model calls refused while a run is live; scanned "
+
+
+# --------------------------------------------------------------------------------------------------- T-GW-19
+def test_t_gw_19_a_live_run_in_this_worktrees_runs_refuses_model_calls_before_any_spawn(tmp_path, base, monkeypatch):
+    root = judged_root(tmp_path)  # a bench root outside git: its runs/ is --runs only
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    held: list = []
+    live = hold(run_dir.parent, "live", run_dir, "alive", held)
+    allow_calls(tmp_path, base, monkeypatch)
+    gid = graded(run_dir, root, held)
+    assert spawns(tmp_path) == 0 and uses(run_dir, gid) == []  # the refusal comes before the first spawn
+    assert f"{REFUSED}{run_dir.parent.resolve()}; {live.resolve()} alive\n" in refusal(run_dir, gid)
+    rows = {r["metric_id"]: (r["value"], r["reason"]) for r in pass_rows(run_dir, "scores", gid)}
+    assert rows["adr_quality"] == (None, "HB-GRD-003 grader judge failed: BenchError")  # the pass itself completes
+    gid = graded(run_dir, root, [])  # the lock released: the same pass shape calls the judge
+    assert spawns(tmp_path) == 1 and not (run_dir / "grading" / gid / "a" / "judge" / "error.log").exists()
+
+
+def sibling_worktree(root: Path, tmp_path: Path) -> Path:
+    """`root` becomes a git repository with a real second worktree, `tmp_path/sibling` (not a stub)."""
+    gitsafe.git(["init", "-q"], cwd=root, timeout=60)
+    gitsafe.git(["commit", "-q", "--allow-empty", "-m", "placeholder"], cwd=root, timeout=60, identity=True)
+    sibling = tmp_path / "sibling"
+    gitsafe.git(["worktree", "add", "-q", "--detach", str(sibling)], cwd=root, timeout=60)
+    return sibling
+
+
+@pytest.mark.parametrize("liveness", ["alive", "stalled", "not running"])
+def test_t_gw_19b_a_run_in_another_worktrees_runs_is_scanned(tmp_path, base, monkeypatch, liveness):
+    """A real sibling worktree (`git worktree add` in a temp repository, not a stub); R-65 c3: all three values."""
+    root = judged_root(tmp_path)
+    sibling = sibling_worktree(root, tmp_path)
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    held: list = []
+    live = hold(sibling / "runs", "live", run_dir, liveness, held)
+    allow_calls(tmp_path, base, monkeypatch)
+    gid = graded(run_dir, root, held)
+    if liveness == "not running":  # a released lock is not live: the pass calls
+        assert spawns(tmp_path) == 1 and ("a", "adr_quality#1", CLAUDE, "stored", None) in uses(run_dir, gid)
+        return
+    assert spawns(tmp_path) == 0 and uses(run_dir, gid) == []
+    scanned = ", ".join(str(p) for p in (root.resolve() / "runs", sibling.resolve() / "runs", run_dir.parent.resolve()))
+    log = refusal(run_dir, gid)
+    if liveness == "alive":
+        assert f"{REFUSED}{scanned}; {live.resolve()} alive\n" in log
+    else:  # R-65 c2: a stalled refusal prints the lock path and its age, and never deletes the lock
+        stalled = re.search(re.escape(f"{REFUSED}{scanned}; {live.resolve()} stalled (lock {live.resolve() / '.lock'}, "
+                                      "heartbeat ") + r"(\d+) s old\)\n", log)
+        assert stalled is not None and 3600 <= int(stalled.group(1)) < 3700
+        assert (live / ".lock").is_file()
+
+
+def test_a_verdict_stored_by_a_run_in_another_worktree_is_a_hit_here(tmp_path, base):
+    """The pass's known roots are the scan's roots (section 6): a storing row under a sibling worktree's runs/
+    vouches for its entry (design section 9.3), so a cache-only pass here reads it instead of missing."""
+    root = judged_root(tmp_path)
+    there = make_run(root, sibling_worktree(root, tmp_path), {"a": GOOD}, combos={"a": "combo-placeholder"})
+    first = runner.run_pass(there, root, judge.calling(fake_calls(tmp_path, base / "cells", judge.Calls))).grading_id
+    assert spawns(tmp_path) == 1 and ("a", "adr_quality#1", CLAUDE, "stored", None) in uses(there, first)
+    here = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    second = runner.run_pass(here, root).grading_id
+    assert spawns(tmp_path) == 1
+    assert uses(here, second) == sorted([("a", i, CLAUDE, "hit", None) for i in ITEMS] +
+                                        [("a", i, CODEX, "failed", "HB-GW-007") for i in ITEMS])
+
+
+def test_t_gw_19c_a_folder_under_runs_with_no_plan_json_is_skipped_not_an_error(tmp_path, base, monkeypatch):
+    """`status.require_known` is the one filter: a calibration ledger has no plan.json, so it is not a run, even with a
+    held lock in it (design section 4.4)."""
+    root = judged_root(tmp_path)
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    calibration = run_dir.parent / "calibration-C1-placeholder"
+    calibration.mkdir()
+    allow_calls(tmp_path, base, monkeypatch)
+    held = [oslock.RunLock.acquire(calibration / ".lock", "HB-RUN-005")]
+    live = hold(run_dir.parent, "live", run_dir, "alive", held)
+    gid = graded(run_dir, root, held)  # beside a live run, the refusal names the live run only
+    assert spawns(tmp_path) == 0 and f"{REFUSED}{run_dir.parent.resolve()}; {live.resolve()} alive\n" in \
+        refusal(run_dir, gid)
+    shutil.rmtree(live)
+    gid = graded(run_dir, root, [oslock.RunLock.acquire(calibration / ".lock", "HB-RUN-005")])
+    assert spawns(tmp_path) == 1 and ("a", "adr_quality#1", CLAUDE, "stored", None) in uses(run_dir, gid)
+
+
 def test_a_pass_that_may_call_refuses_a_cells_root_below_an_instruction_file_before_any_spawn(tmp_path, base,
                                                                                             monkeypatch):
     """The calls run inside backend.judge_pass: `check_cells_root` (HB-PRE-002, design section 8.2; T-GW-26b)."""
@@ -326,3 +471,111 @@ def test_a_pass_that_may_call_refuses_a_cells_root_below_an_instruction_file_bef
     run_dir, gid, got = judged_pass(judged_root(tmp_path), tmp_path)
     assert got["adr_quality"] == (None, "HB-GRD-003 grader judge failed: BenchError")
     assert spawns(tmp_path) == 0 and uses(run_dir, gid) == []
+
+
+# ------------------------------------------------------------- when judges run: the three passes (section 6; s4)
+def bench(capsys, root: Path, tmp_path: Path, *args: str) -> tuple[int, str, str]:
+    """`bench` through cli.main; argparse's own exit (2, an unknown flag) is returned, not raised."""
+    try:
+        code = cli.main(["--root", str(root), "--runs", str(tmp_path / "runs"), "--tools-dir", str(tmp_path / "tools"),
+                         *args])
+    except SystemExit as exc:
+        code = exc.code
+    out, err = capsys.readouterr()
+    return code, out, err
+
+
+@pytest.fixture
+def no_real_home(monkeypatch, tmp_path):
+    """No CLI test here reads the operator's real home: `~` is an empty folder under tmp_path (R-42)."""
+    fake = tmp_path / "fake-home"
+    monkeypatch.setenv("USERPROFILE", str(fake))
+    monkeypatch.setenv("HOME", str(fake))
+
+
+def test_t_gw_22_the_in_run_pass_makes_no_lookup_no_call_and_no_verdict_uses_row(capsys, tmp_path, monkeypatch,
+                                                                                  no_real_home):
+    """`bench run` grades through its hook: every judged metric is NA `judge calls not allowed in this pass`
+    (R-58 DR-2 read literally). The engine is a stand-in that runs the hook on an archived run."""
+    from harness_bench import engine, plan, preflight, status
+
+    root = judged_root(tmp_path)
+    archived = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    fresh = archived.parent / "r2"  # a confirmed run that has not started, for cmd_run's own checks
+    fresh.mkdir()
+    shutil.copy(archived / "plan.json", fresh / "plan.json")
+    # cmd_run's own plan checks see a minimal confirmed plan; the grading hook reads the archived run's real plan
+    confirmed = {"run_id": "r2", "trace_id": "a" * 32, "tasks": {}, "builds": {},
+                 "parameters": plan.DEFAULT_PARAMETERS.copy()}
+    monkeypatch.setattr(plan, "load_confirmed", lambda run_dir: confirmed)
+    monkeypatch.setattr(preflight, "check", lambda *a, **k: None)
+    passes: list[str] = []
+
+    class HookOnly:
+        def __init__(self, plan, cfg) -> None:
+            self.cfg = cfg
+
+        def run(self):
+            passes.append(self.cfg.grade(archived)["grading_id"])
+            return type("Summary", (), {"exit_code": 0})()
+
+    monkeypatch.setattr(engine, "Engine", HookOnly)
+    monkeypatch.setattr(status, "build", lambda run_dir: None)
+    monkeypatch.setattr(status, "text", lambda s: "")
+    code, _, err = bench(capsys, root, tmp_path, "--cells-root", str(tmp_path / "cells"), "run", "r2")
+    assert code == 0, err
+    [gid] = passes
+    rows = {r["metric_id"]: (r["value"], r["reason"]) for r in pass_rows(archived, "scores", gid)}
+    assert rows == {m: (None, "judge calls not allowed in this pass") for m in JUDGED}
+    assert uses(archived, gid) == []
+
+
+def test_t_gw_22_bench_grade_without_the_flag_reads_the_store_only_and_prints_its_misses(capsys, tmp_path,
+                                                                                         no_real_home):
+    root = judged_root(tmp_path)
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    code, out, err = bench(capsys, root, tmp_path, "grade", "r1")
+    assert code == 0, err
+    gid = out.splitlines()[0].rsplit(" ", 1)[1]
+    assert out.splitlines() == [f"graded 1 cell(s) in pass {gid}", "judge misses: 1 call(s)"]  # US-26 c2
+    assert uses(run_dir, gid) == sorted([("a", i, CLAUDE, "not_allowed", None) for i in ITEMS] +
+                                        [("a", i, CODEX, "failed", "HB-GW-007") for i in ITEMS])
+
+
+def test_t_gw_19_bench_grade_allow_model_calls_refuses_a_live_run_before_the_pass_starts(capsys, tmp_path,
+                                                                                         no_real_home):
+    root = judged_root(tmp_path)
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    held: list = []
+    live = hold(run_dir.parent, "live", run_dir, "alive", held)
+    try:
+        code, out, err = bench(capsys, root, tmp_path, "grade", "r1", "--allow-model-calls")
+    finally:
+        for lock in held:
+            lock.release()
+    assert (code, out, err) == (1, "", f"{REFUSED}{run_dir.parent.resolve()}; {live.resolve()} alive\n")
+    assert sorted(p.name for p in (run_dir / "events").iterdir() if p.name.startswith("grade-")) == []
+
+
+def test_bench_grade_allow_model_calls_is_the_cli_path_that_calls_a_judge(capsys, tmp_path, base, monkeypatch,
+                                                                         no_real_home):
+    calls = fake_calls(tmp_path, base / "cells", judge.Calls)
+    monkeypatch.setattr(cli, "_judge_calls", lambda args, root: calls, raising=False)
+    root = judged_root(tmp_path)
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    code, out, err = bench(capsys, root, tmp_path, "grade", "r1", "--allow-model-calls")
+    assert code == 0, err
+    gid = out.splitlines()[0].rsplit(" ", 1)[1]
+    assert out.splitlines() == [f"graded 1 cell(s) in pass {gid}"] and spawns(tmp_path) == 1
+    assert uses(run_dir, gid) == sorted([("a", i, CLAUDE, "stored", None) for i in ITEMS] +
+                                        [("a", i, CODEX, "failed", "HB-GW-007") for i in ITEMS])
+
+
+def test_bench_grade_allow_model_calls_needs_the_operators_email_for_egress(capsys, tmp_path, monkeypatch,
+                                                                           no_real_home):
+    monkeypatch.delenv("BENCH_OPERATOR_EMAIL", raising=False)
+    root = judged_root(tmp_path)
+    make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    code, out, err = bench(capsys, root, tmp_path, "grade", "r1", "--allow-model-calls")
+    assert (code, out, err) == (1, "", ("HB-USR-002: set BENCH_OPERATOR_EMAIL to the operator's e-mail: egress scans "
+                                        "every judge request for it (supplied at run time, never committed, R-42)\n"))

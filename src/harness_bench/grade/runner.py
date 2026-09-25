@@ -145,15 +145,19 @@ def _abandoned(run_dir: Path, done: set[str], named: set[tuple[str, str]]) -> li
     return out
 
 
-def run_pass(run_dir: Path, root: Path) -> PassResult:
+def run_pass(run_dir: Path, root: Path, judging: Mapping[str, GraderFn] | None = None) -> PassResult:
+    """One grading pass. `judging` replaces registered graders for this pass only (design phase3-gateway-judges
+    section 6): the in-run pass passes `judge.IN_RUN`, `bench grade --allow-model-calls` passes `judge.calling(...)`,
+    and a plain `bench grade` passes nothing (the judge reads the verdict store only)."""
     plan = load_confirmed(run_dir)
     with oslock.RunLock.acquire(run_dir / "grade.lock", "HB-GRD-001"):
-        return _Pass(run_dir, root, plan).run()
+        return _Pass(run_dir, root, plan, judging or {}).run()
 
 
 class _Pass:
-    def __init__(self, run_dir: Path, root: Path, plan: dict) -> None:
+    def __init__(self, run_dir: Path, root: Path, plan: dict, judging: Mapping[str, GraderFn]) -> None:
         self.run_dir, self.root, self.plan = run_dir, root, plan
+        self.graders = {**GRADERS, **judging}
         self.grading_id = f"{views.GRADE_PREFIX}{time.strftime('%Y%m%dT%H%M%S', time.gmtime())}-{secrets.token_hex(3)}"
         self.catalog = config.load_yaml(root / "bench" / "metrics.yaml")
         self.scales = _scales(self.catalog)
@@ -246,7 +250,7 @@ class _Pass:
         base = CellInput(run_dir=self.run_dir, root=self.root, plan=self.plan, cell=cell, task=task, task_dir=task_dir,
                          archive=folder, out_dir=out_dir, events=events, record_reason=unreadable, model_calls=tuple(model_rows),
                          tool_calls=tuple(tool_rows), turn_usage=tuple(usage.get(cid, [])), metrics={},
-                         allow_model_calls=False,  # R-58 DR-2; the flag arrives with GW-I's `cmd_grade` seam
+                         allow_model_calls=False,  # R-58 DR-2: only `judge.calling` (--allow-model-calls) sets it
                          extraction=ex, prices=self.prices if self.prices_ok else None, emit=self.append)
         for grader, metrics in applicable(self.catalog, names).items():
             scores = self._run_grader(grader, dataclasses.replace(base, out_dir=out_dir / grader, metrics=metrics), current)
@@ -258,7 +262,7 @@ class _Pass:
         """One Score for each applicable metric of `grader` (design: the dispatch, step 3)."""
         if grader not in TASK_FREE and not current:
             return dict.fromkeys(inp.metrics, Score(None, TASK_CHANGED))
-        fn = GRADERS.get(grader)
+        fn = self.graders.get(grader)
         if fn is None:
             return dict.fromkeys(inp.metrics, Score(None, NOT_BUILT))
         inp.out_dir.mkdir()

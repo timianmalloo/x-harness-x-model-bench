@@ -8,6 +8,7 @@ and hands them to the engine. Errors go to stderr as `<code>: <message>`. Exit c
 from __future__ import annotations
 
 import argparse
+import getpass
 import json
 import os
 import sys
@@ -22,6 +23,7 @@ from rich.table import Table
 from harness_bench import (
     archive,
     config,
+    egress,
     engine,
     oslock,
     plan,
@@ -33,7 +35,8 @@ from harness_bench import (
     workspace,
 )
 from harness_bench.errors import BenchError
-from harness_bench.grade import runner
+from harness_bench.gateway import backend as gateway
+from harness_bench.grade import judge, runner
 from harness_bench.report import cli_table, html
 from harness_bench.report import credentials as report_credentials
 
@@ -162,7 +165,7 @@ def cmd_run(args) -> int:
     try:
         cfg = engine.EngineConfig(run_dir=run_dir, cells_root=cells_root, launchers=launchers,
                                   build_workspace=_workspace_builder(root, p, cells_root / ".sources", tools_dir.parent / "pack"),
-                                  grade=lambda d: runner.run_pass(d, root).summary())
+                                  grade=lambda d: runner.run_pass(d, root, judge.IN_RUN).summary())  # no judge call
         summary = engine.Engine(p, cfg).run()
     finally:
         engine.log.removeHandler(log_handler)
@@ -223,9 +226,33 @@ def cmd_answer(args) -> int:
     return OK
 
 
+def _judge_calls(args, root: Path) -> judge.Calls:
+    """The call environment of `bench grade --allow-model-calls`, read at run time and never committed (R-42): the
+    pinned CLIs, every harness profile, and whom egress protects: the operator (the e-mail from BENCH_OPERATOR_EMAIL,
+    the user name and home of this login) and the credential values this host holds (design section 7.4)."""
+    email = os.environ.get("BENCH_OPERATOR_EMAIL", "").strip()
+    if not email:
+        raise BenchError("HB-USR-002", "set BENCH_OPERATOR_EMAIL to the operator's e-mail: egress scans every judge "
+                                       "request for it (supplied at run time, never committed, R-42)")
+    return judge.Calls(cells_root=Path(args.cells_root), builds=tools.resolve(Path(args.tools_dir)),
+                       profiles={h: profiles.load(root, h) for h in profiles.HARNESSES},
+                       operator=egress.Operator(email=email, username=getpass.getuser(), home=str(Path.home())),
+                       secrets=tuple(sorted(report_credentials.host_values(root))))
+
+
 def cmd_grade(args) -> int:
-    result = runner.run_pass(_run_dir(args), Path(args.root))
+    """A new grading pass (design phase3-gateway-judges section 6). Without the flag the judges read the verdict store
+    only, and the pass prints its misses. With `--allow-model-calls`, the one CLI path that may spawn a judge, the
+    gateway's live-run refusal runs first, before the pass starts (HB-GRD-005), and again before the first spawn."""
+    run_dir, root = _run_dir(args), Path(args.root)
+    judging = None
+    if args.allow_model_calls:
+        gateway.refuse_if_live(gateway.run_roots(root, Path(args.runs)))
+        judging = judge.calling(_judge_calls(args, root))
+    result = runner.run_pass(run_dir, root, judging)
     print(f"graded {result.cells_graded} cell(s) in pass {result.grading_id}")
+    if judging is None:
+        print(f"judge misses: {judge.misses(run_dir, result.grading_id)} call(s)")  # US-26 c2
     for name in result.abandoned:
         print(f"HB-LED-004: named abandoned segment {name}", file=sys.stderr)
     return OK
@@ -324,6 +351,10 @@ def build_parser() -> argparse.ArgumentParser:
         sp.add_argument("run_id")
         if name == "status":
             sp.add_argument("--json", action="store_true", help="bench-status/1 on stdout")
+        if name == "grade":
+            sp.add_argument("--allow-model-calls", action="store_true",
+                            help="call the judges on a verdict-store miss; refused while any run is live (HB-GRD-005); "
+                                 "needs BENCH_OPERATOR_EMAIL")
         if name == "answer":
             sp.add_argument("decision_id", help="the decision's id in bench status, e.g. D1")
             sp.add_argument("option", help="one of the options bench status lists for it")

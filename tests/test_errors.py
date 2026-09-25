@@ -76,6 +76,11 @@ def test_the_incomplete_pass_code_is_named():  # design phase3-graders, GradedOn
                                                   "outside the applicable set; the pass is not completed")
 
 
+def test_the_live_run_refusal_has_its_own_code():  # review w3-gwi-1 A1: HB-GRD-003 keeps its one meaning (R-65)
+    assert errors.RUN_CODES.get("HB-GRD-005") == ("a run is live (lock liveness alive or stalled): judge model calls "
+                                                  "refused before any spawn")
+
+
 def test_run_level_codes_are_unique_and_named():
     assert len(errors.RUN_CODES) == len(set(errors.RUN_CODES))
     for code in ("HB-PRE-002", "HB-RUN-001", "HB-LED-002", "HB-LED-005", "HB-SEC-001", "HB-USR-001"):
