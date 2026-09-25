@@ -21,6 +21,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from harness_bench import archive, procs
+from harness_bench.grade import CellInput, Score
 from harness_bench.profiles import CELL_ENV
 
 RAN = re.compile(r"^Ran (\d+) tests? in ", re.MULTILINE)
@@ -162,3 +163,10 @@ def grade(ws: Path, task_dir: Path, oracle: dict, out_dir: Path, run_dir: Path, 
     if total == 0:
         return Result(None, None, "no hidden test ran", evidence)
     return Result(int(done.returncode == 0 and passed == total), Decimal(passed) / Decimal(total), None, evidence)
+
+
+def grade_cell(inp: CellInput) -> dict[str, Score]:
+    """pass@1 and partial credit from the hidden tests (US-28); moved verbatim from the runner (seam C-2)."""
+    c = grade(inp.archive / "ws", inp.task_dir, inp.task.get("oracle") or {}, inp.out_dir, inp.run_dir,
+              inp.plan["parameters"]["grading_step_timeout"])
+    return {"pass_at_1": Score(c.passed, c.reason, c.evidence), "partial_credit": Score(c.partial_credit, c.reason, c.evidence)}

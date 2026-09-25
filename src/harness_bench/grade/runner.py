@@ -53,13 +53,6 @@ TASK_FREE = frozenset({"cost", "process"})  # graders that never read the task, 
 __all__ = ["GRADERS", "PASS_FACTS", "PassResult", "applicable", "file_hash", "grader_build", "run_pass"]
 
 
-def _correctness(inp: CellInput) -> dict[str, Score]:
-    """pass@1 and partial credit from the hidden tests (US-28). GR-CODE moves it into `correctness.grade_cell` (C-2)."""
-    c = correctness.grade(inp.archive / "ws", inp.task_dir, inp.task.get("oracle") or {}, inp.out_dir, inp.run_dir,
-                          inp.plan["parameters"]["grading_step_timeout"])
-    return {"pass_at_1": Score(c.passed, c.reason, c.evidence), "partial_credit": Score(c.partial_credit, c.reason, c.evidence)}
-
-
 def _cost(inp: CellInput) -> dict[str, Score]:
     """cost_usd (US-23), unchanged from phase 1. COST phase 2 moves it into `cost.grade_cell` (C-1)."""
 
@@ -82,7 +75,7 @@ def _cost(inp: CellInput) -> dict[str, Score]:
 
 
 # Pattern: Strategy via a registry (Pluggable Selector). One line per built grader; an unregistered one is `not built`.
-GRADERS: dict[str, GraderFn] = {"correctness": _correctness, "cost": _cost}
+GRADERS: dict[str, GraderFn] = {"correctness": correctness.grade_cell, "cost": _cost}
 
 
 @dataclass
