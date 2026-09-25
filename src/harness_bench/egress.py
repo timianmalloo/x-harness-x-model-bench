@@ -7,7 +7,6 @@ through `Verdict.release`, which never calls the backend for a withheld payload.
 
 from __future__ import annotations
 
-import dataclasses
 import hashlib
 import re
 from collections.abc import Callable, Sequence
@@ -18,6 +17,7 @@ from harness_bench.report import html as report_html
 from harness_bench.report.credentials import encodings
 
 WITHHELD = "withheld: sensitive content"
+DESTINATION = re.compile(r"[a-z][a-z0-9._-]{0,31}(?::[a-z0-9._-]{1,31})?")
 CLASSES = ("credential", "token_shape", "email", "username", "home_path", "canary")
 
 T = TypeVar("T")
@@ -30,11 +30,13 @@ class Verdict:
     destination: str
     payload_sha256: str
     classes: tuple[str, ...]
-    payload: str | None
+    payload: str | None = field(repr=False)
     scanned: tuple[str, ...] = ()
 
     def record(self) -> dict:
-        return dataclasses.asdict(self)
+        """The ledger shape: the destination id, the digest and the class names; never the payload."""
+        return {"destination": self.destination, "payload_sha256": self.payload_sha256, "classes": self.classes,
+                "scanned": self.scanned}
 
     @property
     def withheld(self) -> bool:
@@ -101,17 +103,22 @@ def check(payload: str, *, destination: str, operator: Operator, secrets: Sequen
     US-13/US-48 markers. A hit returns a withheld verdict: no payload, only its sha256, the destination and
     the class names.
     """
-    op = operator
+    def hits(text: str) -> tuple[tuple[str, ...], tuple[str, ...]]:
+        scans = {
+            "credential": (lambda: _exact(text, secrets)) if secrets else None,
+            "token_shape": lambda: report_html.scan(text) > 0,  # the report's shape scan (HB-SEC-001), shapes only
+            "email": lambda: _anycase(text, operator.email),
+            "username": lambda: _word(text, operator.username),
+            "home_path": lambda: _path(text, operator.home),
+            "canary": (lambda: _exact(text, canaries)) if canaries else None,
+        }
+        scanned = tuple(name for name in CLASSES if scans.get(name))
+        return tuple(name for name in scanned if scans[name]()), scanned
+
+    # The destination is a fixed backend id (Codex F3): it must not be able to carry content into a record.
+    if not DESTINATION.fullmatch(destination) or hits(destination)[0]:
+        raise ValueError("destination is not a safe backend id (lower-case name[:qualifier], at most 64 characters)")
+    classes, scanned = hits(payload)
     digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
-    scans = {
-        "credential": (lambda: _exact(payload, secrets)) if secrets else None,
-        "token_shape": lambda: report_html.scan(payload) > 0,  # the report's shape scan (HB-SEC-001), shapes only
-        "email": lambda: _anycase(payload, op.email),
-        "username": lambda: _word(payload, op.username),
-        "home_path": lambda: _path(payload, op.home),
-        "canary": (lambda: _exact(payload, canaries)) if canaries else None,
-    }
-    scanned = tuple(name for name in CLASSES if scans.get(name))
-    classes = tuple(name for name in scanned if scans[name]())
     return Verdict(destination=destination, payload_sha256=digest, classes=classes,
                    payload=None if classes else payload, scanned=scanned)
