@@ -26,7 +26,7 @@ class C:
     question: str
 
 
-ORDER = C("order-ascending", "Should the output be sorted in “ascending” order?")
+ORDER = C("order-ascending", "Should the output be sorted in \u201cascending\u201d order?")
 SIZE = C("size-bound", "What is the maximum input size?")
 TWO = (ORDER, SIZE)
 
@@ -34,21 +34,21 @@ TWO = (ORDER, SIZE)
 # --- R-39 c4: one function, one test per rule (T-39-4-N1 ... N5): a pair it joins, a near pair it keeps apart ---
 
 def test_t39_4_n1_nfkc_joins_compatibility_forms():
-    assert matcher.normalise("ｆｉｎｄ the ｓｕｍ") == "find the sum"  # full-width
-    assert matcher.normalise("ﬁnd") == "find"  # the fi ligature
+    assert matcher.normalise("\uff46\uff49\uff4e\uff44 the \uff53\uff55\uff4d") == "find the sum"  # full-width
+    assert matcher.normalise("\ufb01nd") == "find"  # the fi ligature
     assert matcher.normalise("find the sum") != matcher.normalise("fund the sum")
 
 
 def test_t39_4_n2_curly_quotes_become_straight():
-    assert matcher.normalise("“find the sum”") == matcher.normalise('"find the sum"') == '"find the sum"'
-    assert matcher.normalise("“”„‟") == '""""'
-    assert matcher.normalise("‘’‚‛") == "''''"
+    assert matcher.normalise("\u201cfind the sum\u201d") == matcher.normalise('"find the sum"') == '"find the sum"'
+    assert matcher.normalise("\u201c\u201d\u201e\u201f") == '""""'
+    assert matcher.normalise("\u2018\u2019\u201a\u201b") == "''''"
     assert matcher.normalise('"find" the sum') != matcher.normalise('find "the" sum')
 
 
 def test_t39_4_n3_casefold():
     assert matcher.normalise("Does") == matcher.normalise("does") == "does"
-    assert matcher.normalise("STRASSE") == matcher.normalise("straße") == "strasse"  # casefold, not lower
+    assert matcher.normalise("STRASSE") == matcher.normalise("stra\u00dfe") == "strasse"  # casefold, not lower
     assert matcher.normalise("does") != matcher.normalise("dose")
 
 
@@ -69,19 +69,19 @@ def test_t39_4_n5_trailing_marks_dropped_inner_and_leading_kept():
 # --- T-39-3d: golden vectors. Each expected output is derived by hand from the rule table, not copied from a run ---
 
 GOLDEN_NORMALISE = [
-    ("Ｄｏｅｓ  “Find THE Sum”  mean the MAXIMUM?  ", 'does "find the sum" mean the maximum'),
-    ("Straße?!.", "strasse"),
-    ("ﬁnd ‘x’ …", "find 'x'"),  # the ellipsis is NFKC "...", then a trailing strip
-    ("　Tab\there　", "tab here"),  # the ideographic space is NFKC " "
-    ("①", "1"),
-    (" x ", "x"),
+    ("\uff24\uff4f\uff45\uff53  \u201cFind THE Sum\u201d  mean the MAXIMUM?  ", 'does "find the sum" mean the maximum'),
+    ("Stra\u00dfe?!.", "strasse"),
+    ("\ufb01nd \u2018x\u2019 \u2026", "find 'x'"),  # the ellipsis is NFKC "...", then a trailing strip
+    ("\u3000Tab\there\u3000", "tab here"),  # the ideographic space is NFKC " "
+    ("\u2460", "1"),
+    ("\u00a0x\u00a0", "x"),
     ("a?b", "a?b"),
 ]
 
 GOLDEN_DECISIONS = [
-    ("Should the output be sorted in “ascending” order?", {"clarification": "order-ascending", "rung": "exact"}),
+    ("Should the output be sorted in \u201cascending\u201d order?", {"clarification": "order-ascending", "rung": "exact"}),
     ('should the output be sorted in "ascending" order', {"clarification": "order-ascending", "rung": "normalised"}),
-    ("ＷＨＡＴ is the maximum input size ?", {"clarification": "size-bound", "rung": "normalised"}),
+    ("\uff37\uff28\uff21\uff34 is the maximum input size ?", {"clarification": "size-bound", "rung": "normalised"}),
     ("What is the minimum input size?", {"clarification": None, "rung": "none"}),
     ("Should the output be sorted in ascending order?", {"clarification": None, "rung": "none"}),
 ]
