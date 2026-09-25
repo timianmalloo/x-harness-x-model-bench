@@ -1,5 +1,5 @@
 {
- "note": "Leader capture window 1 for W1-COP-D (docs/design/phase2-copilot-profile.md, sections 11-12). Each arm folder is a minimal Copilot home: find_records(home, 'session-state/{session_id}/events.jsonl', sid) resolves in it. A per-cell ACP home holds no session-store.db.",
+ "note": "Leader capture window 1 for W1-COP-D (docs/design/phase2-copilot-profile.md, sections 11-12). Each arm folder is a minimal Copilot home: find_records(home, 'session-state/{session_id}/events.jsonl', sid) resolves in it. A per-cell ACP home holds no session-store.db. R-27 condition 3 (see `recapture` below): `on/` was swapped to a revision-95 pack-on capture; the revision-92 sample moved to `on-rev92/` and is kept as the negative control. `off/` is unchanged.",
  "scrub": {
   "rule": "scrub-rule/3",
   "replacements": 35,
@@ -1293,7 +1293,7 @@
     "lines_dropped": 0
    }
   },
-  "on": {
+  "on-rev92": {
    "readings": {
     "assistant_message_models": [
      "gpt-6-sol",
@@ -1390,12 +1390,139 @@
     "lines_kept": 56,
     "lines_dropped": 0
    }
+  },
+  "on": {
+   "readings": {
+    "assistant_message_models": [
+     "gpt-6-sol",
+     "gpt-6-sol",
+     "gpt-6-sol",
+     "gpt-6-sol",
+     "gpt-6-sol",
+     "gpt-6-sol",
+     "gpt-6-sol",
+     "gpt-6-sol",
+     "gpt-6-sol",
+     "gpt-6-sol"
+    ],
+    "tool_names": [
+     "skill",
+     "view",
+     "glob",
+     "powershell",
+     "view",
+     "view",
+     "view",
+     "glob",
+     "glob",
+     "view",
+     "view",
+     "powershell",
+     "apply_patch",
+     "powershell",
+     "powershell",
+     "powershell",
+     "powershell"
+    ],
+    "tool_outcomes": {
+     "success=True:code=None": 16,
+     "success=False:code=failure": 1
+    },
+    "hooks": {
+     "hook.start:userPromptSubmitted": 1,
+     "hook.end:userPromptSubmitted:success=True": 1,
+     "hook.start:sessionStart": 1,
+     "hook.end:sessionStart:success=True": 1,
+     "hook.start:preToolUse": 8,
+     "hook.end:preToolUse:success=True": 8,
+     "hook.start:postToolUse": 16,
+     "hook.end:postToolUse:success=True": 16,
+     "hook.start:agentStop": 1,
+     "hook.end:agentStop:success=True": 1
+    },
+    "session_errors": 0,
+    "first_user_content_sha256": "802dfde4c609549fd864c9b6cdc5c65bd5a5a2fe1f43246563d00c5e4dd9dc49",
+    "shutdown": {
+     "shutdownType": "routine",
+     "modelMetrics": {
+      "gpt-6-sol": {
+       "requests": {
+        "count": 9,
+        "cost": 1
+       },
+       "usage": {
+        "inputTokens": 890731,
+        "outputTokens": 1778,
+        "cacheReadTokens": 787795,
+        "cacheWriteTokens": 102909,
+        "reasoningTokens": 545
+       },
+       "totalNanoAiu": 43266550000,
+       "tokenDetails": {
+        "input": {
+         "tokenCount": 27
+        },
+        "cache_read": {
+         "tokenCount": 787795
+        },
+        "cache_write": {
+         "tokenCount": 102909
+        },
+        "output": {
+         "tokenCount": 1778
+        }
+       }
+      }
+     },
+     "tokenDetails": {
+      "input": {
+       "tokenCount": 27
+      },
+      "cache_read": {
+       "tokenCount": 787795
+      },
+      "cache_write": {
+       "tokenCount": 102909
+      },
+      "output": {
+       "tokenCount": 1778
+      }
+     },
+     "totalApiDurationMs": 39297,
+     "totalNanoAiu": 43266550000
+    }
+   },
+   "acp_prompt_usage": {
+    "inputTokens": 890731,
+    "outputTokens": 1778,
+    "totalTokens": 892509,
+    "thoughtTokens": 545,
+    "cachedReadTokens": 787795,
+    "cachedWriteTokens": 102909
+   },
+   "events": {
+    "lines_kept": 124,
+    "lines_dropped": 0
+   }
   }
  },
  "outputs": {
   "off/session-state/adc0e5ec-1ff9-42b0-a601-a1c3b8825c8e/events.jsonl": "7dee53f7c71d13f3090cdb1b2c1293317783febf706e5162fee07d6cf7d22234",
   "instruction-list-off.json": "550c34a3365f5e11ff9519f54f894ffbb6a578f01e5d33a453d04f3b87843d02",
-  "on/session-state/c0d75ae3-d30c-4cfd-8b30-c0f04ecc07a6/events.jsonl": "426d6aa69838dee62b190b24e03114003d91878e0a9f245cd7aeb7ab68f728ba",
+  "on-rev92/session-state/c0d75ae3-d30c-4cfd-8b30-c0f04ecc07a6/events.jsonl": "426d6aa69838dee62b190b24e03114003d91878e0a9f245cd7aeb7ab68f728ba",
+  "instruction-list-on-rev92.json": "128c270b0c9eb62a42baa9f8a57f10414eca6aa8893b2e412d2bbee658e5e092",
+  "on/session-state/67b924b1-ade0-4b53-9cb4-f2d017944968/events.jsonl": "9d2beff505472b82a1920da070de689df7658014b4aa5a5615fcc5e77d6d4050",
   "instruction-list-on.json": "128c270b0c9eb62a42baa9f8a57f10414eca6aa8893b2e412d2bbee658e5e092"
+ },
+ "recapture": {
+  "note": "R-27 condition 3: the pack-on arm was recaptured at pack revision 95 and replaces the revision-92 sample as `on/`; `off/` is unchanged (its own pack-off instruction list stays empty, independent of pack revision). The revision-92 sample is kept, renamed `on-rev92/`, as the negative-control fixture the tests still pin to (8 denied tool calls, 8/8 hook failures, us14_valid False).",
+  "pack_revision": 95,
+  "source": "Leader coord-opus-cq: tools/acp_record.py-style native capture, scrubbed to C:/Projects/bench-capture/scrubbed95 (off/, on/, instruction-list-{off,on}.json, provenance.json); the on-arm facts above are copied verbatim from that provenance.json's facts.on",
+  "measured": {
+   "tool_completions": 17, "tool_success": 16, "tool_ordinary_failure": 1, "tool_denied": 0,
+   "hook_end": 27, "hook_end_success": 27,
+   "apply_patch_changed": "slug.py",
+   "acp_usage": {"inputTokens": 890731, "outputTokens": 1778, "cachedReadTokens": 787795, "cachedWriteTokens": 102909, "totalTokens": 892509}
+  }
  }
 }

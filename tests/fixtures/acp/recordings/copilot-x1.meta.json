@@ -1,0 +1,24 @@
+{
+ "format": "acp-recording/1",
+ "harness": "copilot",
+ "model": "gpt-6-sol",
+ "task": "X1",
+ "mode": null,
+ "prompt_sha256": "802dfde4c609549fd864c9b6cdc5c65bd5a5a2fe1f43246563d00c5e4dd9dc49",
+ "build": {
+  "version": "1.0.89-1",
+  "sha256": "417d0721237ff370a415cf5c11c7523f9332f220a6ee0f5eb8e802a9662ef246",
+  "adapter_version": null,
+  "adapter_sha256": null
+ },
+ "captured_utc": "2026-09-25T00:51:37+00:00",
+ "result": {
+  "stop_reason": "end_turn",
+  "cause": null,
+  "session_id": "9dd0cf5a-4930-4f4c-817e-0a94e389563b",
+  "updates": 240,
+  "permission_requests": 0,
+  "prompt_sent": true,
+  "usage_reported": true
+ }
+}

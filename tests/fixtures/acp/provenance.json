@@ -1,5 +1,5 @@
 {
- "note": "recordings/*.jsonl are full ACP transcripts (acp-recording/1: both pipes, every line, in order, with direction and time), captured 2026-09-24 through tools/acp_record.py; replay_agent.py replays them verbatim, with no synthesised message (D5). The *-prompt-response.json files are session/prompt results only, from the 2026-09-23 spikes (read by tests/test_telemetry.py); the spikes' other probe outputs were deleted (docs/notes/spike-phase1-probes.md). 'unknown' means not recorded anywhere found (git history from b82d28b, the spike notes); it is never a guess. Kept on purpose: the Claude Code recordings' available_commands_update lists the operator's user-level command names inside a cell whose CLAUDE_CONFIG_DIR is isolated. That is US-13 evidence of known class R1.4 (account-level context survives isolation), so the scrub keeps it. Removed on purpose: the account plan and tier labels in _auth/status_update are <PLAN> (data minimisation; no test needs them).",
+ "note": "recordings/*.jsonl are full ACP transcripts (acp-recording/1: both pipes, every line, in order, with direction and time), captured 2026-09-24 (Claude Code, Codex) and 2026-09-25 (Copilot, capture window 2) through tools/acp_record.py; replay_agent.py replays them verbatim, with no synthesised message (D5). The *-prompt-response.json files are session/prompt results only, from the 2026-09-23 spikes (read by tests/test_telemetry.py); the spikes' other probe outputs were deleted (docs/notes/spike-phase1-probes.md). 'unknown' means not recorded anywhere found (git history from b82d28b, the spike notes); it is never a guess. Kept on purpose: the Claude Code recordings' available_commands_update lists the operator's user-level command names inside a cell whose CLAUDE_CONFIG_DIR is isolated. That is US-13 evidence of known class R1.4 (account-level context survives isolation), so the scrub keeps it. Removed on purpose: the account plan and tier labels in _auth/status_update are <PLAN> (data minimisation; no test needs them).",
  "fixtures": {
   "claude-code-prompt-response.json": {
    "message": "session/prompt result (the whole result object)",
@@ -36,6 +36,15 @@
    "captured": "2026-09-24",
    "scrub": "tools/acp_record.py scrub (the rule is stamped in the header's scrub field): as recordings/claude-code-x1.jsonl. The final agent message (seq 83-156) had streamed a cell path one token per chunk; the stream-joined rule put its scrubbed text in the first chunk and left the other 73 chunks empty. Read once in full before commit.",
    "source": "Leader coord-opus-cq, capture window 1: tools/acp_record.py turn --harness codex --model gpt-6-sol --task X1 (CODEX_PATH = the pinned codex.exe); build hashes and the live TurnResult in recordings/codex-x1.meta.json"
+  },
+  "recordings/copilot-x1.jsonl": {
+   "message": "full ACP transcript: one X1 turn, model gpt-6-sol, pack off; end_turn, 240 session/update, 0 permission requests. client methods initialize -> session/new -> session/set_model -> session/prompt (Copilot's profile pins set_model: true, ADR-0003)",
+   "adapter": "none (native ACP; copilot.exe is the agent itself, not a wrapped adapter -- bench/profiles/copilot.yaml's command has no {adapter} placeholder)",
+   "adapter_version": "none",
+   "harness_version": "GitHub Copilot CLI 1.0.89-1",
+   "captured": "2026-09-25",
+   "scrub": "tools/acp_record.py scrub (the rule is stamped in the header's scrub field): as recordings/claude-code-x1.jsonl, plus --forbid gho_ --forbid ghu_ (GitHub token prefixes). Grepped for identity/token strings after scrubbing: 0 hits. Read once in full before commit.",
+   "source": "Leader coord-opus-cq, capture window 2: tools/acp_record.py turn --harness copilot --model gpt-6-sol --task X1; build hashes and the live TurnResult in recordings/copilot-x1.meta.json"
   },
   "recordings/claude-code-x1-model-unsupported.jsonl": {
    "message": "full ACP transcript of the error path: Claude Code 2.1.274 refuses claude-opus-5-5 at session/prompt (API Error 400, '2.1.280 or newer is required'); prompt sent, 4 session/update, no stopReason",

@@ -17,8 +17,9 @@ Behaviour comes from the FAKE_ACP environment variable (JSON):
 
 Messages it emits (each paired with a recorded real transcript or the ACP schema in
 tests/test_driver.py::test_fake_agent_message_types_are_paired): the initialize result, the session/new
-result, the set_mode result, session/update notifications (agent_message_chunk),
-session/request_permission, and the session/prompt result with a stopReason.
+result, the set_mode result, the set_model result (a driver call passing `model=`, D7 W1-ACP open item 6),
+session/update notifications (agent_message_chunk), session/request_permission, and the session/prompt
+result with a stopReason.
 """
 
 import json
@@ -119,6 +120,9 @@ def main() -> int:
                                                            "modes": {"currentModeId": "agent", "availableModes": [{"id": "agent"}, {"id": "agent-full-access"}]}}})
         elif method == "session/set_mode":
             Path(os.getcwd(), ".fake-set_mode").write_text(json.dumps(msg["params"]), encoding="utf-8")
+            send({"jsonrpc": "2.0", "id": mid, "result": {}})
+        elif method == "session/set_model":
+            Path(os.getcwd(), ".fake-set_model").write_text(json.dumps(msg["params"]), encoding="utf-8")
             send({"jsonrpc": "2.0", "id": mid, "result": {}})
         elif method == "session/prompt":
             text = msg["params"]["prompt"][0]["text"]

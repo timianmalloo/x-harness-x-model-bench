@@ -1,0 +1,228 @@
+{
+ "returncode": 0,
+ "json": [
+  {
+   "id": "model-agents-md",
+   "label": "AGENTS.md",
+   "location": "repository",
+   "type": "model",
+   "sourcePath": "AGENTS.md",
+   "defaultDisabled": false
+  },
+  {
+   "id": "model-claude-md",
+   "label": "CLAUDE.md",
+   "location": "repository",
+   "type": "model",
+   "sourcePath": "CLAUDE.md",
+   "defaultDisabled": false
+  },
+  {
+   "id": "vscode-instructions/.github\\instructions\\agent-coordination.instructions.md",
+   "label": "agent-coordination.instructions.md",
+   "location": "working-directory",
+   "type": "vscode",
+   "sourcePath": ".github\\instructions\\agent-coordination.instructions.md",
+   "defaultDisabled": false
+  },
+  {
+   "id": "vscode-instructions/.github\\instructions\\agent-rules-of-the-road.instructions.md",
+   "label": "agent-rules-of-the-road.instructions.md",
+   "location": "working-directory",
+   "type": "vscode",
+   "sourcePath": ".github\\instructions\\agent-rules-of-the-road.instructions.md",
+   "defaultDisabled": false
+  },
+  {
+   "id": "vscode-instructions/.github\\instructions\\ci-and-test-efficiency.instructions.md",
+   "label": "ci-and-test-efficiency.instructions.md",
+   "description": "",
+   "location": "working-directory",
+   "type": "vscode",
+   "sourcePath": ".github\\instructions\\ci-and-test-efficiency.instructions.md",
+   "defaultDisabled": false,
+   "applyTo": [
+    ".github/workflows/**",
+    "**/*.yml",
+    "**/*.yaml",
+    "**/Dockerfile",
+    "**/Makefile"
+   ]
+  },
+  {
+   "id": "vscode-instructions/.github\\instructions\\communication-and-task-discipline.instructions.md",
+   "label": "communication-and-task-discipline.instructions.md",
+   "location": "working-directory",
+   "type": "vscode",
+   "sourcePath": ".github\\instructions\\communication-and-task-discipline.instructions.md",
+   "defaultDisabled": false
+  },
+  {
+   "id": "vscode-instructions/.github\\instructions\\continuous-improvement.instructions.md",
+   "label": "continuous-improvement.instructions.md",
+   "location": "working-directory",
+   "type": "vscode",
+   "sourcePath": ".github\\instructions\\continuous-improvement.instructions.md",
+   "defaultDisabled": false
+  },
+  {
+   "id": "vscode-instructions/.github\\instructions\\csharp-style-guide.instructions.md",
+   "label": "csharp-style-guide.instructions.md",
+   "description": "",
+   "location": "working-directory",
+   "type": "vscode",
+   "sourcePath": ".github\\instructions\\csharp-style-guide.instructions.md",
+   "defaultDisabled": false,
+   "applyTo": [
+    "**/*.cs",
+    "**/*.csx"
+   ]
+  },
+  {
+   "id": "vscode-instructions/.github\\instructions\\domain-and-data-modelling.instructions.md",
+   "label": "domain-and-data-modelling.instructions.md",
+   "location": "working-directory",
+   "type": "vscode",
+   "sourcePath": ".github\\instructions\\domain-and-data-modelling.instructions.md",
+   "defaultDisabled": false
+  },
+  {
+   "id": "vscode-instructions/.github\\instructions\\end-to-end-integrity.instructions.md",
+   "label": "end-to-end-integrity.instructions.md",
+   "location": "working-directory",
+   "type": "vscode",
+   "sourcePath": ".github\\instructions\\end-to-end-integrity.instructions.md",
+   "defaultDisabled": false
+  },
+  {
+   "id": "vscode-instructions/.github\\instructions\\execution-graph-optimization.instructions.md",
+   "label": "execution-graph-optimization.instructions.md",
+   "location": "working-directory",
+   "type": "vscode",
+   "sourcePath": ".github\\instructions\\execution-graph-optimization.instructions.md",
+   "defaultDisabled": false
+  },
+  {
+   "id": "vscode-instructions/.github\\instructions\\instrumentation-over-inference.instructions.md",
+   "label": "instrumentation-over-inference.instructions.md",
+   "location": "working-directory",
+   "type": "vscode",
+   "sourcePath": ".github\\instructions\\instrumentation-over-inference.instructions.md",
+   "defaultDisabled": false
+  },
+  {
+   "id": "vscode-instructions/.github\\instructions\\no-guessing-protocol.instructions.md",
+   "label": "no-guessing-protocol.instructions.md",
+   "location": "working-directory",
+   "type": "vscode",
+   "sourcePath": ".github\\instructions\\no-guessing-protocol.instructions.md",
+   "defaultDisabled": false
+  },
+  {
+   "id": "vscode-instructions/.github\\instructions\\observability-and-instrumentation.instructions.md",
+   "label": "observability-and-instrumentation.instructions.md",
+   "description": "",
+   "location": "working-directory",
+   "type": "vscode",
+   "sourcePath": ".github\\instructions\\observability-and-instrumentation.instructions.md",
+   "defaultDisabled": false,
+   "applyTo": [
+    "**/*.py",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.cs",
+    "**/*.go",
+    "**/*.rs",
+    "**/*.java",
+    "**/*.js"
+   ]
+  },
+  {
+   "id": "vscode-instructions/.github\\instructions\\responsible-ai-policy.instructions.md",
+   "label": "responsible-ai-policy.instructions.md",
+   "location": "working-directory",
+   "type": "vscode",
+   "sourcePath": ".github\\instructions\\responsible-ai-policy.instructions.md",
+   "defaultDisabled": false
+  },
+  {
+   "id": "vscode-instructions/.github\\instructions\\rigor-protocol.instructions.md",
+   "label": "rigor-protocol.instructions.md",
+   "location": "working-directory",
+   "type": "vscode",
+   "sourcePath": ".github\\instructions\\rigor-protocol.instructions.md",
+   "defaultDisabled": false
+  },
+  {
+   "id": "vscode-instructions/.github\\instructions\\session-worktree-discipline.instructions.md",
+   "label": "session-worktree-discipline.instructions.md",
+   "location": "working-directory",
+   "type": "vscode",
+   "sourcePath": ".github\\instructions\\session-worktree-discipline.instructions.md",
+   "defaultDisabled": false
+  },
+  {
+   "id": "vscode-instructions/.github\\instructions\\solution-selection-ladder.instructions.md",
+   "label": "solution-selection-ladder.instructions.md",
+   "location": "working-directory",
+   "type": "vscode",
+   "sourcePath": ".github\\instructions\\solution-selection-ladder.instructions.md",
+   "defaultDisabled": false
+  },
+  {
+   "id": "vscode-instructions/.github\\instructions\\technical-ui-design.instructions.md",
+   "label": "technical-ui-design.instructions.md",
+   "description": "",
+   "location": "working-directory",
+   "type": "vscode",
+   "sourcePath": ".github\\instructions\\technical-ui-design.instructions.md",
+   "defaultDisabled": false,
+   "applyTo": [
+    "**/*.tsx",
+    "**/*.jsx",
+    "**/*.vue",
+    "**/*.svelte",
+    "**/*.css",
+    "**/*.scss",
+    "**/*.html",
+    "**/DESIGN.md"
+   ]
+  },
+  {
+   "id": "vscode-instructions/.github\\instructions\\testing-strategy.instructions.md",
+   "label": "testing-strategy.instructions.md",
+   "description": "",
+   "location": "working-directory",
+   "type": "vscode",
+   "sourcePath": ".github\\instructions\\testing-strategy.instructions.md",
+   "defaultDisabled": false,
+   "applyTo": [
+    "**/tests/**",
+    "**/test/**",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/test_*.py",
+    "**/*_test.go"
+   ]
+  },
+  {
+   "id": "vscode-instructions/.github\\instructions\\ui-interaction-design.instructions.md",
+   "label": "ui-interaction-design.instructions.md",
+   "description": "",
+   "location": "working-directory",
+   "type": "vscode",
+   "sourcePath": ".github\\instructions\\ui-interaction-design.instructions.md",
+   "defaultDisabled": false,
+   "applyTo": [
+    "**/*.tsx",
+    "**/*.jsx",
+    "**/*.vue",
+    "**/*.svelte",
+    "**/*.css",
+    "**/*.scss",
+    "**/*.html",
+    "**/DESIGN.md"
+   ]
+  }
+ ]
+}
