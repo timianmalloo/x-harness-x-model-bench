@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); [ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); \"$py\" tools/heredoc_guard.py",
+            "command": "py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); [ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); \"$py\" \"${CLAUDE_PROJECT_DIR:-.}/tools/heredoc_guard.py\"",
             "timeout": 10
           }
         ]

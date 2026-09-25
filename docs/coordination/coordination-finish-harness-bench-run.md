@@ -54,4 +54,18 @@ Wave 1, 2026-09-24/25. The times are committer times of the joins on `main` (loc
   - `e2e-wave1-1790299304`: model mismatch, fixed by R-32;
   - `e2e-wave1-1790302505`: US-14 failed on `PowerShell`, fixed by R-34.
 - **Leader misses, now registered:** SUITE-A, REG-A, GATE-B, CLN-B, COORD-B (`docs/lessons/defect-classes.md`).
+- **Wave-1 close, 2026-09-25:**
+  - **`/updatepack` 93 → 95** (`65075f2`, joined at `51ffb68`). Source: the revision-95 checkout `df3baf2`. Result: 14 UPDATE, 2 MERGE, 0 CONFLICT; pack-doctor 0 FAIL; offline suite 817 passed.
+  - **`qualify-codex-3`**, the R-33 pin (`CODEX_CONFIG` model `gpt-6-sol`, effort `high`): `ready_for_review` in 68.5 s. The rollout's `turn_context` shows `gpt-6-sol`, effort `high`, `approval_policy: never`, `danger-full-access`. The operator's `~/.codex/config.toml` sets the same model and effort, so the run confirms the served model but cannot tell the pin from the default.
+  - **Codex ownership hook: not qualified.** `qualify-codex-4` forced `apply_patch` on a path leased to the Owner, and the patch was **applied**; no ledger decision carries `hook_host: codex`. `qualify-codex-5` placed three marker hooks (`UserPromptSubmit`, `PreToolUse` `apply_patch` and `exec`), and none fired. Two measured facts:
+    - codex-cli 0.156 on `gpt-6-sol` runs in code mode: every action is one `exec` call, with `tools.apply_patch` and `tools.exec_command` nested inside it.
+    - Hook trust is stored per source path and hash (`[hooks.state]` in `~/.codex/config.toml`).
+    - The three runs put the hook only in the worker tree. The launch reference says discovery in a linked worktree comes from the primary checkout (RIG-D instance).
+    - **Next, operator-gated:** add the emitter's entry to the primary's `.codex/hooks.json`, and the operator reviews it through native `/hooks`. Then one run measures whether `PreToolUse` `apply_patch` fires for a nested `tools.apply_patch`.
+    - Until then ownership for Codex is enforced only at the git pre-commit floor: in `qualify-codex-4` the leased file was written but not committed. Capabilities stay `observed-only`.
+  - **`qualify-7`, models stipulated:**
+    - **Grok 1.0.41** (`-m grok-4.7 --reasoning-effort high`): `ready_for_review` in 79 s, 1 turn; ACP `selected_model: grok-4.7`; no `protocol_error`. `grok models` reports `XAI_API_KEY` authentication in the operator's environment (disclosed; unchanged).
+    - **Agy 1.2.10** (`--model gemini-3.8-flash-high`, the id `agy models` lists; `gemini-3.8-flash` is not an accepted id): `ready_for_review` in 68 s, 0 denials. `executor_metadata` shows `gemini-3.8-flash-high`, and `gen_metadata` shows 18 generations on `gemini-3.8-flash`.
+    - Both pins equal the operator default, so the same limit applies as for Codex. The R-11 Agy hold and the R-29 Grok hold lift for new runner tracks.
+  - **R-35/R-36(a)** (Claude Sonnet 5, 69 tool calls, 647 s): joined at `6e7ae50`. The Leader tightened two tests at the join (TEST-A).
 - **Also done:** the A9 host-sleep probe (`docs/notes/spike-a9-host-sleep.md`); A3 partial (host credentials unchanged across two runs); the R-36 connector comparison (the same 8 account tools pack-on and pack-off).

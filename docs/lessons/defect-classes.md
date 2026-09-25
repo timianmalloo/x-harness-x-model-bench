@@ -51,6 +51,7 @@ summary: >-
 - **Signature:** a design names a mechanism (`git worktree`, a Job Object flag, a CLI mode) and relies on a property it was never observed to have.
 - **Why it survives:** the mechanism is familiar, so the property feels checked. Design text is not executed.
 - **Instances:**
+  - `2026-09-25`, the Leader: `qualify-codex-3`..`5` placed the Codex hook in the worker tree's `.codex/hooks.json` only. The pack's own launch reference (`execute-with-coordination/reference/launch.md`, "Codex requires native review…") says Codex discovers project hooks in a linked worktree from the **primary** checkout, and that each definition needs native `/hooks` trust review. The reference was read only after three runs. The runs still measured real facts (0 of 3 marker hooks fired, and a leased path was written through code-mode `tools.apply_patch`), but not the question they were meant to answer.
   - `2026-09-24`, the Coordinator: the TOOL-A sweep concluded that the cosmic-ray runs were exposed to stale bytecode. It measured collection time, but did not read how cosmic-ray launches its tests, and cosmic-ray already sets `PYTHONDONTWRITEBYTECODE=1`. The cost was a 2.4 h re-run. The re-run found real overstated kills (TOOL-B), but for a reason other than the one assumed.
   - `2026-09-24`: the Codex reader assumed injected context always starts with `<`. With the pack on, Codex 0.156 prepends `# AGENTS.md instructions for <cwd>`, and the reader took that block as the prompt (US-10 failed in the second real E2E). The control is a real, scrubbed pack-on record: `tests/fixtures/native/codex/pack-on.jsonl`. Its test was observed red at `05f52fa`. The E2E also checks US-10 for every cell.
   - `2026-09-23` ADR-0013 draft: "each cell gets its own worktree of one clone". Worktrees share refs, stashes and config, so one cell's commits and remotes were visible in every other cell. Distributed Systems and the Test Architect caught it at the gate, each checking in a scratch repository.
@@ -103,6 +104,7 @@ summary: >-
 - **Why it survives:** tests pass absolute paths (`tmp_path`, `ROOT / ...`). Only an operator typing a relative path hits it.
 - **Instances:**
   - `2026-09-24`: `bench --tools-dir .tools/harness run` looked for `pack-apply.py` under the cell's working copy, which gave HB-CELL-113 (T8-2).
+  - `2026-09-25`, the repo-local `PreToolUse:Bash` hook in `.claude/settings.json` ran `tools/heredoc_guard.py` relative to the session's cwd. The Leader ran `cd .git/coord-runs/qualify-7`, the cwd stuck, and every Bash call was then refused ("can't open file …\qualify-7\tools\heredoc_guard.py"). The fix anchors the path at `${CLAUDE_PROJECT_DIR:-.}`: run from `C:\` with the variable set, it still refused a Python heredoc (exit 2) and allowed `ls`. Unset, it falls back to the old relative path. `assume:` Claude Code sets `CLAUDE_PROJECT_DIR` for hook commands. It is not set in the Bash tool's own shell. Confirm by one Bash call from a cwd outside the root after the next session start. If it is false, the hook falls back and fails the same way from outside the root.
 - **Sweep:** every CLI path argument (`--root`, `--runs`, `--cells-root`, `--tools-dir`, `--pack-source`, `--matrix`) is resolved once in `cli._resolve_paths`. `grep add_argument` lists no other path argument. Every `cwd=` site in `src` takes a path derived from those.
 - **Control:** `tests/test_cli.py::test_a_relative_tools_dir_resolves_absolute_and_the_pack_on_build_succeeds`, observed red at `62c38ba`. The `t8.json` T8-2 mutant is killed.
 - **Status:** `controlled` (2026-09-24)
@@ -254,6 +256,16 @@ summary: >-
 - **Sweep:** every worker hand-back in this plan. The other mail on record (slices 1, 2 and 5) was informational and needed no ruling. Why the pack's `mail-doorbell` hook, wired in `.claude/settings.json`, did not surface the request in the Leader's session was not diagnosed.
 - **Control:** at every hand-back, the Leader runs `coord mail read` and `coord request list` before it reviews the result, and rules on or closes each open request. For now this is a Leader procedure. The upgrade trigger is a second instance: the join gate would then refuse while a request from that worker is open.
 - **Status:** `observed` (Leader procedure)
+
+### TEST-A: a whole-output substring check that later output satisfies
+- **Signature:** a test asserts that a common phrase appears anywhere in a rendered page or CLI output (`"not recorded" in doc`), and it means one specific element. A later feature prints the same phrase elsewhere. The element can then break, and the test still passes.
+- **Why it survives:** the test was correct when it was written. The feature that makes it vacuous changes another part of the page and touches no test. Only a mutant of the original element shows the test has stopped proving anything.
+- **Instances:**
+  - `2026-09-25`, the R-35/R-36(a) join: `report.json`'s mutant "a missing header fact rendered empty" survived on `main`. `test_the_header_shows_recorded_facts_and_not_recorded_for_the_rest` asserted `"not recorded" in doc`, and later columns (the `calls_per_cell` Measure, 6b; the context-window fact, R-32) print that phrase too. The fix pins the assertion to `<dt>Defender real-time exclusion</dt><dd>not recorded</dd>` (`60643a3`); `report.json` is 22/22 killed.
+  - The same join, a close relative: the R-36 connector-name guard read only `report/__init__.py`, so a name seeded in `cli_table.py` passed. It now reads every report module (`a8d0833`), and the seeded name fails it.
+- **Sweep:** every `"not recorded"`, `"not graded"` or `"unranked"` assertion in `tests/`. The others are scoped to a header row or a table row.
+- **Control:** the named-test mutation sets (`tools/mutate_check.py`, TOOL-B). A vacuous assertion shows up as a surviving mutant once the set is re-run. Tests that check one element assert on that element's markup, not on the whole page. The upgrade trigger is a second instance: the join gate would then re-run every mutation set of the modules a track touched.
+- **Status:** `observed` (the mutation sets catch it once they are re-run)
 
 ---
 
