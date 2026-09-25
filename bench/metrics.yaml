@@ -72,9 +72,9 @@ areas:
   specification:
     title: Specification & clarification
     metrics:
-      - { id: ask_vs_assume,             source: [D],    better: higher, grader: clarify,      kind: score, weight: 1 }
-      - { id: key_question_recall,       source: [D, J], better: higher, grader: clarify,      kind: score, weight: 1 }
-      - { id: key_question_precision,    source: [D, J], better: higher, grader: clarify,      kind: score, weight: 1 }
+      - { id: ask_vs_assume,             source: [D],    better: higher, grader: clarify,      kind: score, weight: 1, scale: 4 }
+      - { id: key_question_recall,       source: [D, J], better: higher, grader: clarify,      kind: score, weight: 1, scale: 4 }
+      - { id: key_question_precision,    source: [D, J], better: higher, grader: clarify,      kind: score, weight: 1, scale: 4 }
       - { id: asked_unmatched,           source: [D],    better: lower,  grader: clarify,      kind: score, weight: 0, note: "questions whose stored decision matched nothing (R-52 c2)" }
       - { id: assumption_disclosure,     source: [J],    better: higher, grader: judge,        kind: score, weight: 1 }
       - { id: spec_quality,              source: [J],    better: higher, grader: judge,        kind: score, weight: 1 }

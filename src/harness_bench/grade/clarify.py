@@ -23,10 +23,9 @@ def _na_all(reason: str, evidence: str = "") -> dict[str, Score]:
     return {m: Score(None, reason, evidence) for m in METRICS}
 
 
-def _ratio(num: int, denom: int, scale: int | None) -> int | Decimal:
-    if scale is not None:
-        return Decimal(num) / Decimal(denom)
-    return num // denom
+def _ratio(num: int, denom: int) -> Decimal:
+    # A ratio is a Decimal; the runner writes it at the catalog scale and refuses a Decimal with no scale.
+    return Decimal(num) / Decimal(denom)
 
 
 def grade_cell(inp: CellInput) -> Mapping[str, Score]:
@@ -90,10 +89,11 @@ def grade_cell(inp: CellInput) -> Mapping[str, Score]:
     else:
         cset_doc = {}
 
-    annotated_items = cset_doc.get("clarifications") if isinstance(cset_doc, dict) else []
+    annotated_items = (cset_doc.get("clarifications") if isinstance(cset_doc, dict) else None) or []
     annotated_ids = {c["id"] for c in annotated_items if isinstance(c, dict) and "id" in c}
     if not annotated_ids:
-        annotated_ids = {"goal-maximum"}
+        # the plan froze a set that is no longer readable here; never guess an annotated id
+        return _na_all("clarification set changed since the plan", evidence)
     annotated_count = len(annotated_ids)
 
     call_rows = [r for r in rows if r["kind"] == "call"]
@@ -125,14 +125,10 @@ def grade_cell(inp: CellInput) -> Mapping[str, Score]:
             unmatched_call_count += 1
 
     distinct_matched = len(matched_annotated_ids)
-    recall_scale = inp.metrics.get("key_question_recall", {}).get("scale")
-    precision_scale = inp.metrics.get("key_question_precision", {}).get("scale")
-    ask_scale = inp.metrics.get("ask_vs_assume", {}).get("scale")
-
-    recall = _ratio(distinct_matched, annotated_count, recall_scale)
-    precision = _ratio(matched_call_count, len(call_rows), precision_scale)
+    recall = _ratio(distinct_matched, annotated_count)
+    precision = _ratio(matched_call_count, len(call_rows))
     capped_calls = min(len(call_rows), annotated_count)
-    ask_vs_assume = _ratio(capped_calls, annotated_count, ask_scale)
+    ask_vs_assume = _ratio(capped_calls, annotated_count)
     asked_unmatched = unmatched_call_count
 
     return {
