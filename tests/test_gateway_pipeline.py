@@ -109,6 +109,11 @@ def _path(name: str, tmp_path, monkeypatch) -> tuple[pipeline.Result, list[str]]
         pipeline.run(JUDGE, inputs, ctx, replay)  # stored; its named ledger exists and verifies, with no row for it
         _storing_ledger(tmp_path / "runs" / "run-placeholder-1", "0" * 64, "0" * 64)
         replay.received.clear()
+    elif name.startswith("orphan"):
+        pipeline.run(JUDGE, inputs, ctx, replay)  # stored by a pass whose ledger is under no known root
+        replay.received.clear()
+        if name == "orphan without --allow-model-calls":
+            ctx = _ctx(tmp_path, allow_model_calls=False)
     elif name == "race lost":
         rendered = request.render(INPUTS.preamble, INPUTS.rubric, 2, INPUTS.artifacts, ENTRIES)
         inputs_key = {"request_sha256": hashlib.sha256(rendered.text.encode()).hexdigest(),
@@ -150,9 +155,11 @@ PATHS = {
     "served another model": ("failed", "HB-GW-003"),
     "store write error": ("failed", "HB-GW-001"),
     "planted entry": ("failed", "HB-GW-005"),
+    "orphan without --allow-model-calls": ("not_allowed", None),
+    "orphan, with the flag": ("stored", None),
 }
 SENT = {"stored", "race lost", "backend down", "answer fails the schema", "stdout not readable", "served another model",
-        "store write error"}
+        "store write error", "orphan, with the flag"}
 
 
 def test_t_gw_30_every_path_maps_to_exactly_one_outcome_and_code(tmp_path, monkeypatch):
@@ -180,3 +187,14 @@ def test_t_gw_30_a_recorded_result_carries_the_validated_verdicts(tmp_path):
     assert entry["components"]["scrub_version"] == scrub.SCRUB_VERSION
     assert hashlib.sha256((tmp_path / "cache" / "verdicts" / f"{result.cache_key}.json").read_bytes()).hexdigest() \
         == result.entry_sha256
+
+
+def test_t_gw_30_an_orphan_is_moved_aside_before_a_fresh_call_stores_its_key(tmp_path):
+    ctx = _ctx(tmp_path)
+    first = pipeline.run(JUDGE, INPUTS, ctx, _replay(INPUTS))
+    replay = _replay(INPUTS)
+    second = pipeline.run(JUDGE, INPUTS, ctx, replay)
+    assert (first.outcome, second.outcome, len(replay.received)) == ("stored", "stored", 1)
+    orphans = list((ctx.store / "orphaned").glob(f"{first.cache_key}.*.json"))
+    assert len(orphans) == 1
+    assert hashlib.sha256(orphans[0].read_bytes()).hexdigest() == first.entry_sha256
