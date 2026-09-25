@@ -23,7 +23,7 @@ Copilot only: --credential-source names the file the Leader copies into a throwa
 the turn (never the operator's real ~/.copilot; that path is never read or written by this probe).
 
 The folder of one run, <out-root>/<label>/ (label = <harness>-<model>-<schema mode>-<UTC stamp>):
-  home/        CLAUDE_CONFIG_DIR or CODEX_HOME: the credential copy only; the copy is deleted after the turn
+  home/        CLAUDE_CONFIG_DIR, CODEX_HOME or COPILOT_HOME: the credential copy only; deleted after the turn
   profile/     a decoy USERPROFILE/HOME with canaries where each CLI discovers user instructions and skills
   CLAUDE.md, AGENTS.md   canaries above the working folder
   work/        the CLI's working folder, empty
