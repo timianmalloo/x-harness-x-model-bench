@@ -1,0 +1,16 @@
+[
+ {
+  "name": "T-39-1: an over-matching rung (any unmatched question takes the first clarification) breaks the floor",
+  "file": "src/harness_bench/scripted_user/matcher.py",
+  "find": "        return MatchResult(same[0].id, \"normalised\")\n    return MatchResult(None, \"none\")",
+  "replace": "        return MatchResult(same[0].id, \"normalised\")\n    return MatchResult(clarifications[0].id, \"normalised\")",
+  "tests": ["tests/test_heldout_matcher.py::test_matcher_meets_s04_floor_on_heldout"]
+ },
+ {
+  "name": "T-39-1: the normalised rung dropped (surface variants unmatched) breaks the floor",
+  "file": "src/harness_bench/scripted_user/matcher.py",
+  "find": "    if len(same) == 1:\n        return MatchResult(same[0].id, \"normalised\")",
+  "replace": "    if False:\n        return MatchResult(same[0].id, \"normalised\")",
+  "tests": ["tests/test_heldout_matcher.py::test_matcher_meets_s04_floor_on_heldout"]
+ }
+]
