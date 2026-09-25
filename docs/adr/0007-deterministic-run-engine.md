@@ -106,6 +106,8 @@ Each failure carries a fixed evidence set:
 
 **7. Circuit breaker.** After 3 consecutive infrastructure failures, the engine stops launching and raises a decision request (resume launches / stop the run; default: stop). One Docker outage then costs a few cells, not the run.
 
+**Wave-2 amendment (R-49, 2026-09-25).** The implemented breaker is a one-shot fuse: after three consecutive invalidating outcomes other than `model_unavailable`, it stops launching, leaves running cells to finish, and opens no decision. Unlaunched cells stay `not started`; the run records `run.launch_stopped` and ends with exit 3. The decision half above is deferred. If a future `circuit_breaker` decision offers `resume` / `stop`, its timeout default is **launches stay stopped**. A timeout never kills running cells.
+
 **8. Grading concurrency.** Every grading pass, whether from `bench grade` or from the engine (after a run or a stop, US-45), takes `runs/<run_id>/grade.lock`. It grades only cells that have `cell.archived{manifest_hash}`, and each score records that hash (ADR-0006).
 
 **9. Instrumentation.** Every phase of every cell is a span on its `events` rows: `run_id` (the trace), `cell_id`, `phase`, `span_id`, UTC start and end, monotonic start and end, `duration_ms`, `outcome`, `error_code`. The phases are workspace build, image build, container start, handshake, prompt turn, archive, hash, teardown, reader and grader.

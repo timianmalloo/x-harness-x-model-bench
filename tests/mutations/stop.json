@@ -68,5 +68,89 @@
     "find": "\"stopped\", \"skipped (decision)\", \"failed\"",
     "replace": "\"stopped\", \"failed\"",
     "tests": ["tests/test_status.py::test_stopped_and_decision_skip_are_closed_outcomes"]
+  },
+  {
+    "name": "breaker threshold raised to four",
+    "file": "src/harness_bench/engine.py",
+    "find": "CIRCUIT_BREAKER = 3",
+    "replace": "CIRCUIT_BREAKER = 4",
+    "tests": ["tests/test_engine.py::test_the_circuit_breaker_fires_at_its_threshold_not_before"]
+  },
+  {
+    "name": "breaker threshold lowered to two",
+    "file": "src/harness_bench/engine.py",
+    "find": "CIRCUIT_BREAKER = 3",
+    "replace": "CIRCUIT_BREAKER = 2",
+    "tests": ["tests/test_engine.py::test_the_circuit_breaker_fires_at_its_threshold_not_before"]
+  },
+  {
+    "name": "breaker success no longer resets streak",
+    "file": "src/harness_bench/engine.py",
+    "find": "            else:\n                self.infra_streak = 0\n",
+    "replace": "            else:\n                pass\n",
+    "tests": ["tests/test_engine.py::test_a_success_resets_the_infrastructure_streak"]
+  },
+  {
+    "name": "breaker counts harness failures",
+    "file": "src/harness_bench/engine.py",
+    "find": "if cause and cause.invalidates:",
+    "replace": "if cause is not None:",
+    "tests": ["tests/test_engine.py::test_harness_failures_do_not_trip_the_breaker"]
+  },
+  {
+    "name": "breaker neutral stopped guard removed",
+    "file": "src/harness_bench/engine.py",
+    "find": "            if row[\"outcome\"] == \"stopped\":\n                return\n",
+    "replace": "",
+    "tests": ["tests/test_engine.py::test_neutral_outcomes_neither_count_nor_reset[stopped-None]"]
+  },
+  {
+    "name": "breaker neutral decision skip guard removed",
+    "file": "src/harness_bench/engine.py",
+    "find": "            if row[\"outcome\"] == \"skipped (decision)\":\n                return\n",
+    "replace": "",
+    "tests": ["tests/test_engine.py::test_neutral_outcomes_neither_count_nor_reset"]
+  },
+  {
+    "name": "breaker neutral outcome guards removed",
+    "file": "src/harness_bench/engine.py",
+    "find": "            if row[\"outcome\"] == \"stopped\":\n                return\n            if row[\"outcome\"] == \"skipped (decision)\":\n                return\n",
+    "replace": "",
+    "tests": ["tests/test_engine.py::test_neutral_outcomes_neither_count_nor_reset"]
+  },
+  {
+    "name": "breaker counts model unavailable",
+    "file": "src/harness_bench/engine.py",
+    "find": "            if cause is Cause.model_unavailable:\n                return\n",
+    "replace": "",
+    "tests": ["tests/test_engine.py::test_neutral_outcomes_neither_count_nor_reset[failed (model unavailable)-model_unavailable]", "tests/test_engine.py::test_model_unavailable_alone_does_not_count_toward_the_breaker"]
+  },
+  {
+    "name": "breaker repeats launch stop",
+    "file": "src/harness_bench/engine.py",
+    "find": "        if self.stopped:\n            return\n        self.stopped = code\n",
+    "replace": "        self.stopped = code\n",
+    "tests": ["tests/test_engine.py::test_the_circuit_breaker_stops_launching_once"]
+  },
+  {
+    "name": "breaker kills running cells",
+    "file": "src/harness_bench/engine.py",
+    "find": "                    self._stop_launching(cause.code, f\"circuit breaker: {CIRCUIT_BREAKER} consecutive infrastructure failures\")\n",
+    "replace": "                    self._stop_launching(cause.code, f\"circuit breaker: {CIRCUIT_BREAKER} consecutive infrastructure failures\")\n                    self._kill_all(\"stop\")\n",
+    "tests": ["tests/test_engine.py::test_the_breaker_leaves_running_cells_running"]
+  },
+  {
+    "name": "power request released at launch stop",
+    "file": "src/harness_bench/engine.py",
+    "find": "        self.stopped = code\n        try:\n",
+    "replace": "        self.stopped = code\n        host.keep_awake(False)\n        try:\n",
+    "tests": ["tests/test_engine.py::test_keep_awake_is_held_through_a_stop"]
+  },
+  {
+    "name": "power release moved out of finally",
+    "file": "src/harness_bench/engine.py",
+    "find": "            host.keep_awake(False)\n            for w in self.writers.values():\n                w.close()\n            lock.release()\n",
+    "replace": "            for w in self.writers.values():\n                w.close()\n            lock.release()\n        host.keep_awake(False)\n",
+    "tests": ["tests/test_engine.py::test_keep_awake_is_released_when_the_run_raises"]
   }
 ]

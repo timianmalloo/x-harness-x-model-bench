@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T07:24:38Z",
+  "generated": "2026-09-25T07:38:11Z",
   "audit": [
     {
       "actor": null,
@@ -15467,6 +15467,41 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3BR06CM8G06B6N51BWTMGYM",
+      "shortname": "w2-stopi-2-breaker-power",
+      "datetime": "2026-09-25T07:38:11Z",
+      "session": "worker-codex-stopi2",
+      "prompt": "W2-STOP-I slice 2 breaker, power request, mutants and ADR amendment",
+      "summary": "Red d231fb3: four neutral assertions failed. Green 767a056: neutral guard, threshold/stop/power tests, 22 of 22 stop.json mutants killed, pytest 1067 passed and 8 deselected, ruff clean, ADR-0007 amended.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/adr/0007-deterministic-run-engine.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled_from": "al-01M3BQ79PXZS8JBGBK01EAJ29C",
+      "goal": "Prove the breaker acceptance criterion and hold the power request through a launch stop and Engine.run exception",
+      "done_when": "Neutral outcomes preserve the streak; seeded reverts killed by named tests; power request released in finally; ADR amended; full pytest and ruff green",
+      "tier": "T2",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-25T07:25:00Z",
+      "duration_seconds": 791.0,
+      "git": {
+        "sha": "767a056255d530baf325ab7fd967174f0b4c6b1d",
+        "short": "767a05625",
+        "branch": "w2-stopi-2",
+        "pushed": null
+      }
     }
   ],
   "changes": [
