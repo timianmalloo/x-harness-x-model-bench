@@ -26,7 +26,8 @@ COST = {"cost_usd", "tokens_per_minute", "output_tokens_per_turn", "cache_hit_ra
 PROCESS = {"completion_without_intervention", "stuck_loops", "recovery_rate", "tool_error_rate", "planning_ratio",
            "time_to_first_green"}
 SCORED_0_3 = {"pass_at_1", "partial_credit", "cost_usd"}  # the metrics the registered graders returned in slice 1
-BUILT = SCORED_0_3 | {"build_and_suite_clean"} | COST  # GR-CODE c1 adds build_and_suite_clean; COST phase 2 adds COST
+C2 = {"regression_count": (None, "task has no public tests"), "behavioural_equivalence": (None, "not a D-task")}  # X1
+BUILT = SCORED_0_3 | {"build_and_suite_clean"} | COST | set(C2)  # GR-CODE c1 build_and_suite_clean; COST phase 2 COST; c2 the two NA rows
 
 
 @pytest.fixture
@@ -75,6 +76,7 @@ def test_an_unbuilt_grader_is_na_not_built_for_each_of_its_metrics_never_0(root,
         "time_to_first_green": (None, "test runs not identifiable in the tool record (no command text extracted)")}
     assert (got.get("pass_at_1"), got.get("partial_credit"), got.get("build_and_suite_clean")) == \
         ((1, None), ("1.0000", None), (1, None))  # the built metrics are measured
+    assert {m: got.get(m) for m in C2} == C2
 
 
 # --- a failing or malformed grader is NA HB-GRD-003, and the pass continues (F3) ---------------------------------
@@ -186,9 +188,9 @@ def test_validate_passes_an_unchanged_frozen_task(tmp_path):
     assert [p for p in config.validate_repo(r) if "while frozen" in p] == []
 
 
-def test_the_committed_freeze_record_names_the_four_gate_tasks_and_they_are_unchanged():  # L-1 (1c63c42)
+def test_the_committed_freeze_record_names_the_frozen_tasks_and_they_are_unchanged():  # L-1 (1c63c42); B1 added at its join
     freeze = config.load_yaml(ROOT / "bench" / "task-freeze.yaml")
-    assert sorted(freeze["tasks"]) == ["A1", "C1", "D1", "E6"]
+    assert sorted(freeze["tasks"]) == ["A1", "B1", "C1", "D1", "E6"]
     assert {t: plan.task_version_hash(ROOT / "tasks" / t) for t in freeze["tasks"]} == freeze["tasks"]
 
 
@@ -215,6 +217,7 @@ def test_a_committed_mini_run_regrades_to_its_0_3_values_with_every_other_metric
     assert {k: v for k, v in got.items() if k[1] in SCORED_0_3} == was  # pass_at_1, partial_credit, cost_usd equal 0.3's
     assert {k: v for k, v in got.items() if k[1] == "build_and_suite_clean"} == \
         {("a", "build_and_suite_clean"): (1, None), ("b", "build_and_suite_clean"): (1, None)}  # both compile
+    assert {k: v for k, v in got.items() if k[1] in C2} == {(c, m): v for c in "ab" for m, v in C2.items()}
     assert {k: v for k, v in got.items() if k[1] not in BUILT} == \
         {(c, m): (None, "not built") for c in "ab" for m in (CORRECTNESS | COST) - BUILT}
     assert views.export(views.load(run_dir, "0.3")) == export_before  # the 0.3 pass is still the 0.3 export

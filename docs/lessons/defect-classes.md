@@ -242,12 +242,13 @@ summary: >-
 - **Instances:**
   - `2026-09-24`, the W1-COP-I slice-2 join: the suite hung at about 15% (not reproduced; the engine tests alone passed in 88 s, and the full re-run passed 747 in 163 s). The Leader killed it, and the chained `git push` then pushed `075d3c5` before any suite had completed on it. The later full run on the same commit was green, so no broken code reached the remote.
   - `2026-09-25`, the STOP-I slice-1 join: a second instance of the same shape, one step earlier. `git merge` failed ("Merge with strategy ort failed": two uncommitted audit lines blocked it), and the chain went on. The regen commit that followed (`6d9d994`) was labelled "after the STOP-I join", and the suite ran on the **old** `main` and read green (955). The Leader caught it from the missing merge line before any push, then merged properly (`299c465`: 967 passed).
+  - `2026-09-25`, the B1 freeze commit: a third instance, in a targeted check. The Leader ran `pytest tests/test_config.py tests/test_tasks.py | tail -1`. The second file does not exist, so pytest printed "no tests ran" and exited 4, and no exit status was read. The freeze entry broke `test_grade_runner.py`'s pinned task list (`00d6bde`). W3-CAL's full suite caught it before any push, and it was fixed at the GR-CODE c2 join.
 - **Sweep:** every Leader join command since the plan started used the same `pytest …; tail; ruff; push` shape.
 - **Control:**
   - At a join, the push is its own command, run only after the suite's exit code has been read as 0 in an earlier step (`pytest … > log; echo "exit=$?"`, then a separate push).
   - **After the second instance:** the merge also reports its own exit (`git merge …; echo "merge=$?"`), and nothing else runs until it reads 0. The Leader commits its own pending audit and ledger lines before any merge.
-  - The upgrade trigger for a hook is a third instance.
-- **Status:** `observed` (Leader procedure, second instance)
+  - The upgrade trigger for a hook is a third instance. **It fired (the B1 freeze, 2026-09-25).** The rule, extended: every pytest the Leader runs reads its exit code, and a "no tests ran" result (exit 4 or 5) is a failure, never a pass. The hook that refuses a bare `pytest … | tail` is the next step. `tools/heredoc_guard.py` already refuses a gate behind a pipe (E2E-E / CT27), but it did not match this shape.
+- **Status:** `observed` (Leader procedure, third instance; hook upgrade owed)
 
 ### CLN-B: a joined tree removed while a reviewer still reads it
 - **Signature:** the Leader cleans up a merged worktree while a review of that track is still running, and the reviewer's run depends on a file in that tree, such as its `.venv` interpreter. The reviewer's tool then fails in the middle of the run.
