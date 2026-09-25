@@ -1,0 +1,37 @@
+[
+  {
+    "name": "constant 0",
+    "file": "src/harness_bench/grade/clarify.py",
+    "find": "    recall = _ratio(distinct_matched, annotated_count, recall_scale)",
+    "replace": "    recall = 0",
+    "tests": ["tests/test_grade_clarify.py::test_seeded_a_single_matching_call"]
+  },
+  {
+    "name": "count call rows, not distinct ids",
+    "file": "src/harness_bench/grade/clarify.py",
+    "find": "    distinct_matched = len(matched_annotated_ids)",
+    "replace": "    distinct_matched = matched_call_count",
+    "tests": ["tests/test_grade_clarify.py::test_seeded_b_two_matching_calls"]
+  },
+  {
+    "name": "drop the cap",
+    "file": "src/harness_bench/grade/clarify.py",
+    "find": "    capped_calls = min(len(call_rows), annotated_count)",
+    "replace": "    capped_calls = len(call_rows)",
+    "tests": ["tests/test_grade_clarify.py::test_seeded_b_two_matching_calls"]
+  },
+  {
+    "name": "no question asked -> NA",
+    "file": "src/harness_bench/grade/clarify.py",
+    "find": "            \"ask_vs_assume\": Score(0, None, evidence),",
+    "replace": "            \"ask_vs_assume\": Score(None, \"no question asked\", evidence),",
+    "tests": ["tests/test_grade_clarify.py::test_no_question_asked_scores_ask_vs_assume_zero"]
+  },
+  {
+    "name": "re-match instead of reading the stored decision",
+    "file": "src/harness_bench/grade/clarify.py",
+    "find": "        decision = row.get(\"decision\") or {}",
+    "replace": "        decision = {}  # re-match instead of reading the stored decision",
+    "tests": ["tests/test_grade_clarify.py::test_reads_stored_decision_never_rematches"]
+  }
+]
