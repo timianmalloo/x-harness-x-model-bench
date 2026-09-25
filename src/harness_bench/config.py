@@ -32,6 +32,16 @@ METRIC_SOURCES = ("D", "J", "H", "P")
 MAX_BUDGET_MINUTES = 60
 # Files in tests/ or oracle/ that do not count as content.
 PLACEHOLDERS = {"README.md", ".gitkeep"}
+# R-42 condition 4: generated/cache folder names that must never be vendored into workspace/.
+GENERATED_DIR_NAMES = {"bin", "obj", ".vs", "__pycache__", "node_modules", ".pytest_cache"}
+# An absolute path under an operator's home directory. %USERPROFILE% and $HOME are fine: they
+# resolve per-machine and name no one, so this pattern never matches them.
+PROFILE_PATH = re.compile(
+    r"[A-Za-z]:[\\/]Users[\\/][^\\/\s\"'<>]+"
+    r"|(?<![\w.-])/home/[^/\s\"'<>]+"
+    r"|(?<![\w.-])/Users/[^/\s\"'<>]+",
+    re.IGNORECASE,
+)
 
 
 @dataclass
@@ -137,13 +147,69 @@ def _has_content(d: Path) -> bool:
     return d.is_dir() and any(f.name not in PLACEHOLDERS for f in d.rglob("*") if f.is_file())
 
 
-def validate_task(task_dir: Path, bom_entry: dict | None, p: Problems, grader_modules: set[str]) -> None:
+def pack_marker_bytes(root: Path) -> list[bytes]:
+    """R-42 condition 2's marker list, read once and threaded into every validate_task call
+    (validate_repo reads it a single time for the whole tasks/ sweep). tests/test_task_vendoring.py
+    and tests/test_workspace.py each parse bench/pack-markers.txt inline for their own assertions;
+    this is validate_task's one reader, not a third parse of the same file."""
+    text = (root / "bench" / "pack-markers.txt").read_text(encoding="utf-8")
+    return [line.strip().encode("utf-8") for line in text.splitlines() if line.strip()]
+
+
+def _workspace_vendoring_problems(task_dir: Path, pack_markers: list[bytes], p: Problems, where: str) -> None:
+    """R-42 conditions 2 and 4: a ready task's workspace/ carries no pack material and no
+    generated/cache folder. One report of each kind is enough to name the offender."""
+    ws = task_dir / "workspace"
+    if not ws.is_dir():
+        return
+    for d in sorted(ws.rglob("*")):
+        if d.is_dir() and d.name in GENERATED_DIR_NAMES:
+            p.add(where, f"{d.relative_to(task_dir).as_posix()}/ is a generated or cache folder and must not be vendored")
+            break
+    for f in sorted(ws.rglob("*")):
+        if f.is_file() and any(m in f.read_bytes() for m in pack_markers):
+            p.add(where, f"{f.relative_to(task_dir).as_posix()} contains pack material (bench/pack-markers.txt)")
+            break
+
+
+def _is_vendored(f: Path, ws: Path, vendored_paths: list[str]) -> bool:
+    """True when `f` is a workspace/ file pinned by R-42 condition 3's source.vendored_paths --
+    those bytes must match the upstream archive exactly (test_task_vendoring.py), so the
+    profile-path scan must not force an edit there. Scoped to files under workspace/ only:
+    vendored_paths never pins task.yaml, prompt.md, oracle/** or tests/**, so those are always
+    scanned regardless of what vendored_paths lists."""
+    if ws not in f.parents:
+        return False
+    rel_ws = f.relative_to(ws).as_posix()
+    return any(rel_ws == vp or rel_ws.startswith(vp + "/") for vp in vendored_paths)
+
+
+def _profile_path_problems(task_dir: Path, p: Problems, where: str, vendored_paths: list[str]) -> None:
+    """Any text file anywhere under the task folder that hardcodes an operator's home-directory
+    path is refused, naming the file and the first offending line. Binary files are skipped."""
+    ws = task_dir / "workspace"
+    for f in sorted(task_dir.rglob("*")):
+        if not f.is_file() or _is_vendored(f, ws, vendored_paths):
+            continue
+        data = f.read_bytes()
+        if b"\x00" in data[:8000]:
+            continue
+        for lineno, line in enumerate(data.decode("utf-8", errors="replace").splitlines(), start=1):
+            if PROFILE_PATH.search(line):
+                p.add(where, f"{f.relative_to(task_dir).as_posix()}:{lineno} hardcodes an absolute user-profile path")
+                break
+
+
+def validate_task(task_dir: Path, bom_entry: dict | None, p: Problems, grader_modules: set[str], pack_markers: list[bytes]) -> None:
     where = f"tasks/{task_dir.name}"
     ty = task_dir / "task.yaml"
     if not ty.is_file():
         p.add(where, "missing task.yaml")
+        _profile_path_problems(task_dir, p, where, [])
         return
     t = load_yaml(ty)
+    vendored_paths = [str(vp).rstrip("/") for vp in (t.get("source") or {}).get("vendored_paths") or []]
+    _profile_path_problems(task_dir, p, where, vendored_paths)
     if t.get("schema") != "bench-task/1":
         p.add(where, "schema must be bench-task/1")
     if t.get("id") != task_dir.name:
@@ -180,6 +246,9 @@ def validate_task(task_dir: Path, bom_entry: dict | None, p: Problems, grader_mo
             p.add(where, "status ready requires hidden tests or an oracle")
         if not (task_dir / "workspace").is_dir():
             p.add(where, "status ready requires workspace/")
+        if t.get("scenario") == 1 and not (task_dir / "oracle" / "clarifications.yaml").is_file():
+            p.add(where, "status ready requires oracle/clarifications.yaml for scenario 1")
+        _workspace_vendoring_problems(task_dir, pack_markers, p, where)
         if "tbd" in {str((t.get("source") or {}).get(k)) for k in ("repo", "commit")}:
             p.add(where, "status ready requires a pinned source.repo and source.commit")
         formal = t.get("formal") or {}
@@ -195,6 +264,7 @@ def grader_modules(root: Path) -> set[str]:
 def validate_repo(root: Path) -> list[str]:
     p = Problems()
     graders = grader_modules(root)
+    markers = pack_marker_bytes(root)
     bom = load_yaml(root / "bench" / "bom.yaml")
     validate_bom(bom, p)
     validate_metrics(load_yaml(root / "bench" / "metrics.yaml"), p, graders)
@@ -205,5 +275,5 @@ def validate_repo(root: Path) -> list[str]:
     for tid in sorted(set(entries) - folders):
         p.add(f"tasks/{tid}", "listed in bench/bom.yaml but has no folder")
     for name in sorted(folders):
-        validate_task(tasks_dir / name, entries.get(name), p, graders)
+        validate_task(tasks_dir / name, entries.get(name), p, graders, markers)
     return p.items

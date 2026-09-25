@@ -1,0 +1,37 @@
+[
+ {
+  "name": "ready scenario-1 task without oracle/clarifications.yaml is no longer refused",
+  "file": "src/harness_bench/config.py",
+  "find": "        if t.get(\"scenario\") == 1 and not (task_dir / \"oracle\" / \"clarifications.yaml\").is_file():\n            p.add(where, \"status ready requires oracle/clarifications.yaml for scenario 1\")\n",
+  "replace": "",
+  "tests": ["tests/test_config.py::test_ready_scenario1_task_without_clarifications_is_rejected"]
+ },
+ {
+  "name": "a pack marker anywhere in workspace/ is no longer refused",
+  "file": "src/harness_bench/config.py",
+  "find": "        if f.is_file() and any(m in f.read_bytes() for m in pack_markers):",
+  "replace": "        if False and f.is_file() and any(m in f.read_bytes() for m in pack_markers):",
+  "tests": ["tests/test_config.py::test_ready_task_with_pack_marker_in_workspace_is_rejected"]
+ },
+ {
+  "name": "a generated/cache folder anywhere in workspace/ is no longer refused",
+  "file": "src/harness_bench/config.py",
+  "find": "        if d.is_dir() and d.name in GENERATED_DIR_NAMES:",
+  "replace": "        if False and d.is_dir() and d.name in GENERATED_DIR_NAMES:",
+  "tests": ["tests/test_config.py::test_ready_task_with_generated_folder_in_workspace_is_rejected"]
+ },
+ {
+  "name": "an absolute operator profile path anywhere under a task folder is no longer refused",
+  "file": "src/harness_bench/config.py",
+  "find": "    _profile_path_problems(task_dir, p, where, vendored_paths)\n",
+  "replace": "",
+  "tests": ["tests/test_config.py::test_task_folder_with_operator_profile_path_is_rejected"]
+ },
+ {
+  "name": "the vendored-content exemption drops its workspace/ scoping, so vendored_paths also exempts oracle/** and the rest of the task folder",
+  "file": "src/harness_bench/config.py",
+  "find": "    if ws not in f.parents:\n        return False\n    rel_ws = f.relative_to(ws).as_posix()\n    return any(rel_ws == vp or rel_ws.startswith(vp + \"/\") for vp in vendored_paths)",
+  "replace": "    rel_ws = f.relative_to(ws.parent).as_posix()\n    return any(rel_ws == vp or rel_ws.startswith(vp + \"/\") for vp in vendored_paths)",
+  "tests": ["tests/test_config.py::test_vendored_workspace_content_is_exempt_from_the_profile_path_scan_but_oracle_is_not"]
+ }
+]
