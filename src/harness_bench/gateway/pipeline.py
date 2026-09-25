@@ -139,6 +139,15 @@ def _sha256(text: str) -> str:
 
 
 def run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend | Launch) -> Result:
+    """One lookup, always a closed (outcome, code): an exception from any step, such as egress's ValueError on an
+    unsafe destination or one that scans as an operator identifier, is NOT_RECORDED HB-GW-001 (review F6)."""
+    try:
+        return _run(judge, inputs, ctx, backend)
+    except Exception:  # noqa: BLE001 -- the closed-set contract (review F6): no step may abort a grading pass
+        return Result("failed", "HB-GW-001")
+
+
+def _run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend | Launch) -> Result:
     if not judge.qualified:  # never spawned, and no verdict is read for it (sections 5, 8.4, 10.1; T-GW-32)
         return Result("failed", "HB-GW-007")
     if request.bound_problem(inputs.artifacts) is not None:
