@@ -3,25 +3,25 @@
 p1 (docs/design/phase3-graders.md, Process): tool_error_rate and stuck_loops from inp.tool_calls
 sorted by native_ordinal, excluding tool_class "meta".
 p2: recovery_rate over those same calls, and planning_ratio from model-call requests.
-completion_without_intervention and time_to_first_green are NA "not built".
+p3: completion_without_intervention from the cell.outcome event and stuck_loops.
+time_to_first_green is NA: command text is not extracted.
 Not registered in runner.GRADERS (an unregistered grader is NA "not built" for every metric).
 """
 
 from collections.abc import Mapping
 from decimal import Decimal
 
+from harness_bench.errors import Cause
 from harness_bench.grade import CellInput, Score
 
-NOT_BUILT = "not built"
 RATE_SCALE = Decimal("0.0001")
 STUCK_RUN = 3  # a maximal run of this many consecutive failures, same name
 NO_FAILED = "no failed tool call"
 NO_EDIT = "no edit-class tool call (edits through the shell are not classed)"
 SUMMARY_ROWS = "model calls not itemised in time (summary rows)"
-_UNBUILT = (
-    "completion_without_intervention",
-    "time_to_first_green",
-)
+NO_CELL_OUTCOME = "no cell outcome"
+STUCK_NOT_MEASURABLE = "stuck-loop count not measurable"
+NO_COMMAND_TEXT = "test runs not identifiable in the tool record (no command text extracted)"
 
 
 def _counted(tool_calls: tuple[Mapping, ...]) -> list[Mapping]:
@@ -105,11 +105,42 @@ def _planning_ratio(calls: list[Mapping], model_calls: tuple[Mapping, ...]) -> S
     return Score((Decimal(before) / Decimal(total)).quantize(RATE_SCALE), None)
 
 
+def _cell_outcome(events: tuple[Mapping, ...]) -> Mapping | None:
+    """The cell.outcome event. A second one is refused by the ledger; the last row wins if one is repeated."""
+    rows = [event for event in events if event.get("kind") == "cell.outcome"]
+    return rows[-1] if rows else None
+
+
+def _completion_without_intervention(calls: list[Mapping], events: tuple[Mapping, ...]) -> Score:
+    """0 on an agent end (budget, timeout, or a refusal), else the stuck-loop rule on a clean end_turn.
+
+    NA: no cell outcome; cell ended by infrastructure: <cause>; stuck-loop count not measurable.
+    """
+    row = _cell_outcome(events)
+    if row is None or row.get("outcome") is None:
+        return Score(None, NO_CELL_OUTCOME)
+    cause = Cause[row["cause"]] if row.get("cause") else None
+    stop_reason = row.get("stop_reason")
+    # Checked before stuck_loops: a budget or a refusal scores 0 whatever that count is.
+    if (cause is not None and cause.attribution == "agent") or stop_reason == "refusal":
+        return Score(0, None)
+    if cause is not None and cause.attribution == "infrastructure":
+        return Score(None, f"cell ended by infrastructure: {cause.name}")
+    if row["outcome"] == "completed" and stop_reason == "end_turn":
+        stuck = _stuck_loops(calls)
+        if stuck.value is None:
+            return Score(None, STUCK_NOT_MEASURABLE)
+        return Score(1 if stuck.value == 0 else 0, None)
+    return Score(None, NO_CELL_OUTCOME)
+
+
 def grade_cell(inp: CellInput) -> Mapping[str, Score]:
     calls = _counted(inp.tool_calls)
-    scores: dict[str, Score] = {metric: Score(None, NOT_BUILT) for metric in _UNBUILT}
-    scores["tool_error_rate"] = _tool_error_rate(calls)
-    scores["stuck_loops"] = _stuck_loops(calls)
-    scores["recovery_rate"] = _recovery_rate(calls)
-    scores["planning_ratio"] = _planning_ratio(calls, inp.model_calls)
-    return scores
+    return {
+        "tool_error_rate": _tool_error_rate(calls),
+        "stuck_loops": _stuck_loops(calls),
+        "recovery_rate": _recovery_rate(calls),
+        "planning_ratio": _planning_ratio(calls, inp.model_calls),
+        "completion_without_intervention": _completion_without_intervention(calls, inp.events),
+        "time_to_first_green": Score(None, NO_COMMAND_TEXT),
+    }

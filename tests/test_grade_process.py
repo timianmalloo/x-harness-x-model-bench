@@ -1,8 +1,9 @@
-"""Process grader p2: recovery_rate and planning_ratio (docs/design/phase3-graders.md, Process).
+"""Process grader p3: completion_without_intervention and the time_to_first_green NA
+(docs/design/phase3-graders.md, Process).
 
 Seeded cells live under tests/fixtures/grade/process/. Calls are counted after tool_class "meta" is
-excluded, in native_ordinal order. p1's tool_error_rate and stuck_loops stay. The p3 metrics are
-NA "not built".
+excluded, in native_ordinal order. p1 and p2 stay. A fixture with no cell.outcome is NA
+"no cell outcome". time_to_first_green is NA on every cell.
 """
 
 import json
@@ -22,23 +23,44 @@ PROCESS = (
     "planning_ratio",
     "time_to_first_green",
 )
-NOT_BUILT = ("completion_without_intervention", "time_to_first_green")
+NO_CELL_OUTCOME = "no cell outcome"
+STUCK_NOT_MEASURABLE = "stuck-loop count not measurable"
+TIME_TO_FIRST_GREEN_NA = "test runs not identifiable in the tool record (no command text extracted)"
 
 
-def grade_fixture(name: str) -> dict[str, Score]:
-    """Grade one seeded cell. Metrics this slice does not build stay NA."""
-    body = json.loads((FIXTURES / name).read_text(encoding="utf-8"))
+def grade_body(body: dict) -> dict[str, Score]:
+    """Grade one synthetic cell. `events` carry cell.outcome when the seed has one."""
     scores = grade_cell(CellInput(
         run_dir=Path("."), root=Path("."), plan={}, cell={}, task={}, task_dir=Path("."),
-        archive=Path("."), out_dir=Path("."), events=(), record_reason=None,
+        archive=Path("."), out_dir=Path("."), events=tuple(body.get("events", ())), record_reason=None,
         model_calls=tuple(body.get("model_calls", ())),
         tool_calls=tuple(body["tool_calls"]), turn_usage=(), metrics={}, allow_model_calls=False,
         extraction=None, prices=None,
     ))
     assert set(scores) == set(PROCESS)
-    for metric in NOT_BUILT:
-        assert scores[metric] == Score(None, "not built")
     return scores
+
+
+def grade_fixture(name: str) -> dict[str, Score]:
+    """Grade one seeded cell. These fixtures carry no cell outcome."""
+    body = json.loads((FIXTURES / name).read_text(encoding="utf-8"))
+    scores = grade_body(body)
+    assert scores["time_to_first_green"] == Score(None, TIME_TO_FIRST_GREEN_NA)
+    assert scores["completion_without_intervention"] == Score(None, NO_CELL_OUTCOME)
+    return scores
+
+
+def _call(ordinal: int, name: str, ok: int | None, tool_class: str = "shell") -> dict:
+    return {"native_ordinal": ordinal, "name": name, "tool_class": tool_class, "ok": ok}
+
+
+def grade_with_outcome(tool_calls: list[dict], outcome: str, cause: str | None,
+                       stop_reason: str | None) -> dict[str, Score]:
+    """A synthetic cell.outcome plus the tool rows the stuck-loop rule reads."""
+    return grade_body({
+        "tool_calls": tool_calls,
+        "events": [{"kind": "cell.outcome", "outcome": outcome, "cause": cause, "stop_reason": stop_reason}],
+    })
 
 
 def test_a_failed_meta_row_leaves_the_rate_unchanged():
@@ -152,6 +174,44 @@ def test_summary_model_call_rows_are_na():
     # An edit is present, so this is the summary-row NA and not the no-edit NA.
     scores = grade_fixture("summary-model-calls.json")
     assert scores["planning_ratio"] == Score(None, "model calls not itemised in time (summary rows)")
+
+
+def test_a_budget_end_gives_0():
+    # The same clean tool record is 1 when the turn ends on end_turn. The budget is what scores 0.
+    scores = grade_with_outcome([_call(1, "Read", 1, "read")], "timed_out", "timed_out", "cancelled")
+    assert scores["completion_without_intervention"] == Score(0, None)
+
+
+def test_a_refusal_gives_0():
+    # A refusal is a completed turn with no cause. It is 0 even when stuck_loops is 0.
+    scores = grade_with_outcome([_call(1, "Read", 1, "read")], "completed", None, "refusal")
+    assert scores["completion_without_intervention"] == Score(0, None)
+
+
+def test_an_infrastructure_cause_is_the_infrastructure_na():
+    scores = grade_with_outcome([_call(1, "Read", 1, "read")], "failed", "provider", None)
+    assert scores["completion_without_intervention"] == Score(None, "cell ended by infrastructure: provider")
+
+
+def test_completed_with_a_three_run_of_failures_gives_0():
+    calls = [_call(i, "Bash", 0) for i in (1, 2, 3)]
+    scores = grade_with_outcome(calls, "completed", None, "end_turn")
+    assert scores["completion_without_intervention"] == Score(0, None)
+
+
+def test_completed_with_no_failures_gives_1():
+    scores = grade_with_outcome([_call(1, "Read", 1, "read"), _call(2, "Bash", 1)], "completed", None, "end_turn")
+    assert scores["completion_without_intervention"] == Score(1, None)
+
+
+def test_completed_with_a_null_ok_is_stuck_loop_count_not_measurable():
+    scores = grade_with_outcome([_call(1, "Bash", None)], "completed", None, "end_turn")
+    assert scores["completion_without_intervention"] == Score(None, STUCK_NOT_MEASURABLE)
+
+
+def test_time_to_first_green_is_na():
+    scores = grade_with_outcome([_call(1, "Read", 1, "read")], "completed", None, "end_turn")
+    assert scores["time_to_first_green"] == Score(None, TIME_TO_FIRST_GREEN_NA)
 
 
 def test_the_process_ratios_have_a_catalog_scale_of_4():
