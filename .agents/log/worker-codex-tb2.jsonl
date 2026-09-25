@@ -1,1 +1,3 @@
 {"agent": "worker-codex-tb2", "at": 1790309535.9316657, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-codex-tb2", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w2-tasks-b2"}
+{"agent": "worker-codex-tb2", "at": 1790310472.342741, "kind": "session-start", "path": "-", "seq": 2, "session": "worker-codex-tb2", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w2-tasks-b2"}
+{"action": "add", "agent": "worker-codex-tb2", "at": 1790310472.4655511, "deadline_at": 1790311372.4655511, "id": "req-01M3BD3PRJ41KK7MYY3097EJZ8", "kind": "request", "path": "-", "seq": 3, "session": "worker-codex-tb2", "to": "coord-opus-cq", "type": "request", "wi": "WI-0"}

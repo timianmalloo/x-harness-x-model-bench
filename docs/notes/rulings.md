@@ -593,3 +593,48 @@ Append only. One entry per ruling. Newest last.
   1. Red-first: a profile test asserts the seeded `config.toml` contains `web_search = "disabled"`; a reader test feeds a synthetic `web_search_call` item and expects a `tool_calls` row of class `other`.
   2. One qualification turn per harness on the fixed profiles asks the agent to fetch a URL; the outcome per harness (absent from the list, refused, or prompted-and-refused) is recorded in `docs/proof/phase2.md` and closes ADR-0004:78.
   3. The Codex and Claude rows of ADR-0004 gain the R-45 c4 amendment note.
+
+## R-47 · 2026-09-25 · Owner seat (Fable) · W2-VIEWS states and codes: names kept; one code has one level; HB-CELL-115 is never a view finding; the build check compares like with like
+
+- **Ruling:**
+  1. **Names kept:** `not recorded` / HB-VAL-003 (R-15), `invalid (tools denied by hook)` / HB-VAL-004 (R-27), and the warnings HB-VAL-005 and HB-VAL-006 **stay in HB-VAL**. A family names a code's *subject*; the level is the finding's attribute. No HB-WRN family.
+  2. **The invariant instead:** *one code, one level, one emitter.* A code appears at one level everywhere it is emitted, and a `Cause` code is never emitted by a view. A test pins it; red today on HB-CELL-115.
+  3. **HB-CELL-115 stays the engine's pre-launch cause.** The view's post-handshake check gets **HB-VAL-007 `invalid (build mismatch)`**: a proven mismatch invalidates, never a warning.
+  4. **The comparand is an observation, never `package.json`.** HB-VAL-007 fires when `attempt.session_opened.agent_version` differs from the pinned build's *recorded self-report* (`plan.builds[<harness>].agent_version`, observed at qualification for the same sha256). Absent that datum, HB-VAL-006 skips, as now. `version` / `adapter_version` are header labels only.
+- **Reasoning:**
+  - Family-by-subject is the precedent: HB-LED-004 "(warning; skipped by views)" and HB-LED-001 sit in the LED family (`errors.py:56,59`). Warnings are already apart from validity: `validity_code` (`views.py:104`) carries only what `_validity` returns (`:311-328`); warnings carry a level in `CellView.warnings` (`:115`) and the export (`:470`); `bench status` never counts one (`status.py:126-129`). The defect the D&P points at is a code with two meanings, not a family with two levels.
+  - That defect is HB-CELL-115: `Cause.build_changed` invalidates (`errors.py:28,40-42`), the engine stops launching on it (`engine.py:348-349`, `tools.py:46-50`), and `views.py:278` emits the same code as a `"warning"`. R-28 c2 said "flagged" because the *comparison* was deferred, not because a mismatch is benign: a cell answered by a build that is not the pin is not a measurement of the pinned treatment (US-12, R-22).
+  - Invalidating on the current comparison is an uncalibrated instrument: `_build_check` reads `adapter_version or version` (`views.py:271`), which `tools.py:96` takes from `package.json`, and Copilot's session self-reports `1.0.89-3` against a `1.0.89-1` manifest (R-45 c2). `assume:` ACP `agentInfo.version` is that self-report; **confirm:** the qualification turn's recorded `agent_version`; **breaks:** if it reports `1.0.89-1` the concern is void and the check passes. Until the Leader settles the R-12 pin, every Copilot cell would read `invalid (infrastructure)` on a label quirk; under this ruling it reads HB-VAL-006 "check skipped", stays `valid`, and the header discloses it (IO rule: not recorded, never a wrong label).
+- **Conditions:**
+  1. `tests/test_errors.py` (or `test_views.py`) asserts: the set of codes any view `Finding` emits is disjoint from `{c.code for c in Cause}`, and no code is emitted at two levels across `views.py` and `grade/`. Observed red on `64d3392` before the fix.
+  2. `views.py:278` emits HB-VAL-007 with level `error` through `_validity`, ordered after the invalidating cause and before `not graded` (it needs only `attempt.session_opened`); `VALIDITY` (`status.py:33-34`) gains `invalid (build mismatch)`; `RUN_CODES` gains the row; a fake agent reporting a different version is the red test (R-28 c2, R-22 c2 re-pointed to 007).
+  3. `_build_check` reads `builds[harness].agent_version` only. The Leader assigns its producer (qualification → tools record → `Build` → plan) to STOP-I slice 1 (`plan.py`) plus `tools.py`'s owner; until it lands, HB-VAL-006 on every cell is the disclosed state, named in the report header.
+  4. R-28 c3 stands: if no harness can disagree in practice once the datum exists, the field and HB-VAL-007 are retired with a citation.
+  5. Codex F1 (partial measures after truncation) goes to the same VIEWS loop-back; agreed, no ruling.
+
+## R-48 · 2026-09-25 · Owner seat (Fable) · DR-1: the spend cap is in tokens, the report's own total
+
+- **Ruling:** **tokens.** `spend_cap_tokens` is Σ over `normalize.BUCKETS` of `normalize.totals(...)` per ended cell, the definition the leaderboard's `tokens` column already sums (`views.py:422`; `normalize.py:28`, four buckets). Not USD.
+- **Reasoning:** cost is `NA` by decision on subscriptions: the view carries `cost_usd` as a reasoned `Measure(None, …)` (`views.py:424-431`; design `:741`). A cap on a measure that reads NA never fires. USD needs `bench/prices.yaml` and a per-harness basis; Copilot's AI units are wave 3 (R-15 Q6). Tokens are measured on every harness, checked per ended cell with the residual the design discloses (`:350-356`).
+- **Conditions:**
+  1. One definition: the `SPEND` value for a cell equals the report's per-cell total for the same archive; one test asserts the equality on a real native fixture beside US15-3's literal.
+  2. `null` (not recorded, R-21 c2) adds to `cells_unmeasured`, never to the sum; the confirmation line and `decision.opened` disclose the count.
+  3. The engine's `USAGE_BUCKETS` (`engine.py:48`, five, with `reasoning`) is the `turn_usage` grain, not the cap's; finding for VIEWS, not a ruling: state where `reasoning` lands in the four report buckets.
+
+## R-49 · 2026-09-25 · Owner seat (Fable) · DR-2: the fuse stays in wave 2; ADR-0007 §7 gains an amendment note; the future default never kills
+
+- **Ruling:** **keep the built breaker** (`CIRCUIT_BREAKER = 3`, `engine.py:51`; the streak at `:193-201`): it stops launching, running cells finish, unlaunched cells stay `not started`, `run.launch_stopped{code}` and exit 3 (design `:374`). ADR-0007 §7 (`0007-deterministic-run-engine.md:107`) gets an amendment note at the join. The decision half is deferred, with its shape fixed now: when built, `circuit_breaker` offers `resume` / `stop`, and its timeout default is *launches stay stopped*, never a kill of running cells.
+- **Reasoning:** the ADR's default (`stop` after `decision_timeout`, 30 min) kills running cells (design `:747`); on an unattended night window (R-9) no one answers, so it is strictly worse than the fuse. Resume is phase 5 (design `:64`): a fused run is re-planned, a cost bounded to one run.
+- **Conditions:**
+  1. The note states the wave-2 behaviour, the deferral, and the no-kill default above.
+  2. Measured, not modeled: the smoke run's record lists every trip (code, the three causes, cells left `not started`). A trip on a transient cause (HB-CELL-108, HB-CELL-104) promotes the `circuit_breaker` decision kind to the first STOP follow-up slice.
+  3. AC-CB-1..8 stand, including `model_unavailable` not counted (design `:365`).
+
+## R-50 · 2026-09-25 · Owner seat (Fable) · Seam S7: carried into STOP-I slice 1, in its ledger-derivable form
+
+- **Ruling:** **carried.** `bench status` reports `last_update_ms` (null = not recorded) for each ended cell whose outcome is `timed_out` or `stopped`, so the 07:00 status explains a silent cell. It goes in **STOP-I slice 1** (the `status.py` + skill + SK-1 slice, design `:709`), same commit as the skill (R-3 c3). The live value for a *running* cell is not carried in wave 2.
+- **Reasoning:** the ledger half exists: `last_update_ms` is on `cell.outcome` (`engine.py:371-376`; `driver.py:101,184`). The status half was promised for the wave-1 exit (plan `:98` (f)) and `status.py` has no such field: an unmet exit condition, a finding for the Leader's record. A running cell's value lives only in the driver's memory; another process needs a per-cell heartbeat, a mechanism outside STOP-D. `assume:` the wave-1 seam meant the ledger-derivable value; **confirm:** the text of `req-01M38KX8…`; **breaks:** if it meant live liveness, it is a STOP-D amendment, not a slice-1 line.
+- **Conditions:**
+  1. Shape chosen by STOP-I under ADR-0011 C4: ids, enums, counts and times only; `parse` rejects anything else; SK-1 names the field.
+  2. Red first on a seeded ledger with `last_update_ms` null and one with a value.
+  3. The running-cell form is a named next step in the phase-5 row, not a wave-2 addition.
