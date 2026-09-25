@@ -7,9 +7,13 @@ itself and sits between the client and the adapter.
 Usage:
   python tools/acp_record.py record --out REC.jsonl -- <adapter argv...>
       The stdio tee. The client talks to this process exactly as it would to the adapter.
-  python tools/acp_record.py turn --harness claude-code|codex --model M --out REC.jsonl
+  python tools/acp_record.py turn --harness claude-code|codex|copilot --model M --out REC.jsonl
                                   [--task X1] [--tools-dir D] [--cells-root D] [--budget S] [--handshake S]
       One real cell turn through `record`: the bench's own profile, pinned build, working copy and driver.
+      `--harness` accepts every harness in `harness_bench.profiles.HARNESSES`. The argv comes from the
+      profile's own `command:` template (`Profile.argv`, the same call the engine makes); when the loaded
+      profile's `set_model` is true (Copilot today), `model=<--model>` is passed to `driver.run_turn` exactly
+      as `engine.py`'s `_attempt` does, so `session/set_model` is sent right after `session/new`.
       Writes REC.meta.json (versions and the turn result, no paths) and REC.stderr.log (never committed).
   python tools/acp_record.py scrub RAW.jsonl OUT.jsonl [--replace LITERAL=<PLACEHOLDER>]... [--forbid WORD]...
       The scrub before commit (see `scrub`).
@@ -324,7 +328,7 @@ def turn(args: argparse.Namespace) -> int:
     workspace.cell_working_copy(workspace.task_source(task_dir, "capture", cell_dir / "source"), ws)
     profile = profiles.load(ROOT, args.harness)
     build = tools.resolve(Path(args.tools_dir))[args.harness]
-    argv = profile.argv(build)
+    argv = profile.argv(build, args.model)  # the same call the engine's ProfileLauncher.argv_env makes
     env = profile.cell_env(dict(os.environ), home, build, args.model, "")
     prompt = _prompt(task_dir)
     profile.seed_home(home, args.model)
@@ -336,7 +340,8 @@ def turn(args: argparse.Namespace) -> int:
             budget.start()
             try:
                 result = driver.run_turn(cell, cwd=ws, prompt=prompt["prompt"], mode=profile.mode,
-                                         handshake_timeout=args.handshake, before_send=lambda sid: None)
+                                         handshake_timeout=args.handshake, before_send=lambda sid: None,
+                                         model=args.model if profile.set_model else None)  # engine._attempt's own call
                 cell.proc.stdin.close()  # a clean end: the adapter sees EOF, so the recording ends with eof and exit
                 try:
                     cell.proc.wait(timeout=15)
@@ -366,10 +371,13 @@ def main(argv: list[str]) -> int:
             print("usage: acp_record.py record --out REC.jsonl -- <adapter argv...>", file=sys.stderr)
             return 2
         return record(Path(argv[2]), argv[4:])
+    # lazy: keep `record`'s hot path free of the harness_bench import
+    from harness_bench.profiles import HARNESSES
+
     p = argparse.ArgumentParser(prog="acp_record.py", description=__doc__.splitlines()[0])
     sub = p.add_subparsers(dest="command", required=True)
     t = sub.add_parser("turn", help="one real cell turn through the recorder")
-    t.add_argument("--harness", required=True, choices=("claude-code", "codex"))
+    t.add_argument("--harness", required=True, choices=HARNESSES)
     t.add_argument("--model", required=True)
     t.add_argument("--out", required=True)
     t.add_argument("--task", default="X1")
