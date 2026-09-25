@@ -150,8 +150,8 @@
  {
   "name": "S3: the plan does not freeze the model_map",
   "file": "src/harness_bench/plan.py",
-  "find": ", **_model_map(root / \"tasks\" / t[\"id\"])} for t in tasks},",
-  "replace": "} for t in tasks},",
+  "find": "**_model_map(root / \"tasks\" / t[\"id\"]),",
+  "replace": "",
   "tests": [
    "tests/test_plan.py::test_the_plan_freezes_each_task_model_map"
   ]
@@ -526,8 +526,8 @@
  {
   "name": "R-54 (a): ToolSearch is class other again in the reader",
   "file": "src/harness_bench/telemetry/claude_code.py",
-  "find": "                \"ToolSearch\": \"meta\"}",
-  "replace": "                \"ToolSearch\": \"other\"}",
+  "find": "\"ToolSearch\": \"meta\",",
+  "replace": "\"ToolSearch\": \"other\",",
   "tests": [
    "tests/test_telemetry.py::test_claude_tool_search_is_class_meta",
    "tests/test_allowlist_classes.py::test_the_meta_class_is_exactly_tool_search_in_the_reader_and_here",
