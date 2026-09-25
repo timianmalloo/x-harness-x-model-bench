@@ -30,7 +30,7 @@ ENGINE_PREFIX = "engine-"
 GRADE_PREFIX = "grade-"
 FACTS = ("events", "model_calls", "tool_calls", "turn_usage", "archive_files", "scores")
 KEYS = {  # ADR-0006 as amended: the key of one row of each fact
-    "model_calls": ("run_id", "extraction_id", "principal", "native_session_id", "native_ordinal"),
+    "model_calls": ("run_id", "extraction_id", "principal", "native_session_id", "native_ordinal", "model"),
     "tool_calls": ("run_id", "extraction_id", "cell_id", "native_session_id", "native_ordinal"),
     "turn_usage": ("run_id", "cell_id", "attempt", "model"),
     "archive_files": ("run_id", "cell_id", "archive_attempt", "path"),
@@ -102,6 +102,7 @@ class CellView:
     idle_ms: Measure
     tokens: dict[str, dict[str, int]] | None  # per model, disjoint buckets; None = not recorded
     tokens_reason: str | None
+    calls_per_cell: int | None = None  # requests in the current extraction; None when not graded
     scores: dict[str, Measure] = field(default_factory=dict)
     evidence: dict[str, str] = field(default_factory=dict)
     extraction_id: str | None = None
@@ -217,6 +218,16 @@ def turn_usage(row: dict) -> normalize.TurnUsage:
     return normalize.TurnUsage(**{f.name: row[f.name] for f in fields(normalize.TurnUsage)})
 
 
+def model_call(row: dict) -> ModelCall:
+    """Map one ledger row; missing requests uses only the ModelCall field default."""
+    return ModelCall(**{f.name: row[f.name] for f in fields(ModelCall) if f.name in row})
+
+
+def calls_per_cell(calls: list[ModelCall] | None) -> int | None:
+    """Requests in the current extraction, or unrecorded before grading."""
+    return None if calls is None else sum(call.requests for call in calls)
+
+
 def _idle(wall: Measure, model: Measure, tool: Measure) -> Measure:
     for name, m in (("wall", wall), ("model", model), ("tool", tool)):
         if m.value is None:
@@ -253,8 +264,7 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
         calls = [r for r in facts["model_calls"] if r["cell_id"] == cid and r["extraction_id"] == extraction]
         tools = [r for r in facts["tool_calls"] if r["cell_id"] == cid and r["extraction_id"] == extraction]
     usage = [turn_usage(r) for r in facts["turn_usage"] if r["cell_id"] == cid]
-    ex = Extraction(model_calls=[ModelCall(r["native_ordinal"], r["model"], r["uncached_input"], r["cache_read"], r["cache_write"],
-                                           r["output"], r["reasoning"], r["start"], r["end"]) for r in calls or []])
+    ex = Extraction(model_calls=[model_call(r) for r in calls or []])
     recorded = source == "acp_turn" or calls is not None
     served = normalize.served_models(source, ex, usage) if recorded else None
     totals = normalize.totals(source, ex, usage) if recorded else {}
@@ -270,7 +280,7 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
         outcome=state, cause=cause.label if cause else None,
         code=cause.code if cause else None, validity=validity, validity_code=validity_code,
         wall_ms=wall, model_ms=model, tool_ms=tool, idle_ms=_idle(wall, model, tool),
-        tokens=totals or None, tokens_reason=tokens_reason,
+        tokens=totals or None, tokens_reason=tokens_reason, calls_per_cell=calls_per_cell(ex.model_calls if calls is not None else None),
         scores={m: Measure(s["value"], s["reason"]) for m, s in now.items()},
         evidence={m: s["evidence"] for m, s in now.items() if s.get("evidence")}, extraction_id=extraction)
 
