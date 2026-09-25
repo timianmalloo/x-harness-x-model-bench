@@ -215,3 +215,18 @@ DECIDED = [  # golden (design 16.3 D6): a blocked cell's decision answered, then
 def test_a_run_with_decisions_replays():  # LC (design 8.3): every decision row is a mapped engine transition
     assert _verdict(DECIDED) is None
     assert {"decision.opened", "decision.resolved"} <= lifecycle.ENGINE_TRANSITIONS
+
+
+SKIP = {"kind": "cell.outcome", "cell_id": "a", "outcome": "skipped (decision)", "cause": None, "decision_id": "D1"}
+SKIP_SEEDED = {  # design 8.3: a skipped cell's outcome is its first and only row
+    "a skipped cell launched afterwards": ([GOOD[0], SKIP, GOOD[1]], [], "WriteIntent"),
+    "a skipped cell archived": ([GOOD[0], SKIP, {"kind": "cell.archived", "cell_id": "a"}], [], "follows cell.launch_intent"),
+}
+SEEDED.update(SKIP_SEEDED)
+
+
+def test_a_skipped_cells_outcome_is_its_first_and_only_row():  # LC (design 8.3): skip
+    skipped = [GOOD[0], OPENED, {**RESOLVED, "state": "default applied (timeout)", "option": "skip_combo"}, SKIP, GOOD[-1]]
+    assert _verdict(skipped) is None
+    for name, (events, _, rule) in SKIP_SEEDED.items():
+        assert rule in (_verdict(events) or ""), name
