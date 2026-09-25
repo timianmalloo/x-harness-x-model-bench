@@ -2131,3 +2131,23 @@ def test_qualification_gap_default_skips_the_combos_pending_cells(base):  # US15
         "outcome": "skipped (decision)", "cause": None, "code": None, "decision_id": "D1"}
     assert [e["kind"] for e in events if e.get("cell_id") == skipped] == ["cell.outcome"]  # never launched: its only row
     assert outs[other]["outcome"] == "completed" and summary.exit_code == 0
+
+
+def test_spend_cap_default_stops_the_run(base):  # US15-3
+    p, launcher = _decision_plan([("fake", "A", {}), ("fake", "A", {"mode": "on_cancel"}), ("fake", "A", {})], parallelism=2,
+                                 spend_cap_tokens=CELL_TOKENS - 5)
+    ended, running, waiting = (c["cell_id"] for c in p["cells"])
+
+    def script(eng, offset, run_dir):
+        if ended in eng.outcomes and not offset[0]:
+            offset[0] += JUMP
+
+    _, events, summary = _decision_run(base, (p, launcher), script)
+    assert [{k: e[k] for k in ("decision_kind", "subject", "cause_code", "options", "default", "spend_tokens", "cells_unmeasured")}
+            for e in _kind(events, "decision.opened")] == [
+        {"decision_kind": "spend_cap", "subject": p["run_id"], "cause_code": "HB-RUN-007", "options": ["stop", "continue"],
+         "default": "stop", "spend_tokens": 45, "cells_unmeasured": 0}]  # a literal from the fake's buckets (TA m2)
+    assert _resolutions(events) == [("D1", "default applied (timeout)", "stop")]
+    assert [(e["code"], e["decision_id"]) for e in _kind(events, "run.stopped")] == [("HB-RUN-007", "D1")]
+    outs = _outcomes(events)
+    assert outs[running]["outcome"] == "stopped" and waiting not in outs and summary.exit_code == 3
