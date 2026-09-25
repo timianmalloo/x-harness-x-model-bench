@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T20:58:44Z",
+  "generated": "2026-09-25T20:59:27Z",
   "audit": [
     {
       "actor": null,
@@ -31372,6 +31372,421 @@ window.AUDIT_DATA = {
             "sha256": "a18faad1b4f2eee79b76642748408dca0ebff1fdbdb0776a5bed357e7a3cb842",
             "status": "resolved",
             "token": "tests/archived_runs.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3D5VA428SE9RSASEGHN8BEY",
+      "shortname": "Goal: author tasks/Q6, the R-74 delegation qualification fixture (read r…",
+      "datetime": "2026-09-25T20:59:26Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: author tasks/Q6, the R-74 delegation qualification fixture (read rulings R-73 and R-74 in docs/notes/rulings.md, and copy the shape of tasks/Q1, a ready qualification fixture): one tiny scenario-6 task whose prompt makes the agent start exactly one sub-agent on its vendor's workhorse model to write one file, so the Leader's one qualification turn per harness can record whether delegation is routed and recorded.\nDone when: tasks/Q6/ mirrors tasks/Q1's layout (task.yaml, prompt.md, workspace/, tests/) with id Q6, scenario 6, status ready, language python, budget 5 minutes, source kind authored with repo \"tasks/Q6/workspace\" and commit \"content-addressed\", graders [correctness, cost, process], a blast_radius of the two files below.; model_map uses the R-73 keys for one role `writer` and both vendors: writer@anthropic: claude-sonnet-5, writer@openai: gpt-6-luna (the F1 task.yaml's cited choice).; prompt.md (identical text for every harness) asks the agent to start exactly ONE sub-agent, on the model named for its vendor in a two-column table (Anthropic claude-sonnet-5, OpenAI gpt-6-luna), whose only job is to create `delegated.txt` containing the single line `written by a sub-agent`; the main agent itself then creates `main.txt` with the model id it is running on; it must not write delegated.txt itself; if it cannot start a sub-agent it says so plainly and stops.; tests/test_q6_hidden.py (unittest, the runner the oracle uses, as Q1's does) checks both files exist with those contents; it is observed to FAIL on the empty workspace and PASS when both files are added in a throwaway copy, with the commands and exit codes in tasks/Q6/oracle/evidence.md.; bench/bom.yaml is NOT edited (the Leader adds Q6); uv run bench validate prints ok once the Leader adds it, so check config.validate_task on tasks/Q6 directly (a one-line python call) and report its problems list (it must be empty).; Commit with git.\nNot in scope: bench/bom.yaml; bench/task-freeze.yaml; src/**; any bench run or live turn (the Leader runs the qualification); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit as soon as the files validate.\n\nGrounding: tasks/Q1/ (the whole folder); tasks/F1/task.yaml (the R-73 map shape and the gpt-6-luna citation); docs/notes/rulings.md R-73, R-74; src/harness_bench/config.py (validate_task, model_map_problems). Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3D5VBETSCV86GHWSJ87RY9T",
+      "shortname": "compile-Goal: author tasks/Q6, the R-74 delegation qualification fixture (read r…",
+      "datetime": "2026-09-25T20:59:27Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: author tasks/Q6, the R-74 delegation qualification fixture (read rulings R-73 and R-74 in docs/notes/rulings.md, and copy the shape of tasks/Q1, a ready qualification fixture): one tiny scenario-6 task whose prompt makes the agent start exactly one sub-agent on its vendor's workhorse model to write one file, so the Leader's one qualification turn per harness can record whether delegation is routed and recorded.\nDone when: tasks/Q6/ mirrors tasks/Q1's layout (task.yaml, prompt.md, workspace/, tests/) with id Q6, scenario 6, status ready, language python, budget 5 minutes, source kind authored with repo \"tasks/Q6/workspace\" and commit \"content-addressed\", graders [correctness, cost, process], a blast_radius of the two files below.; model_map uses the R-73 keys for one role `writer` and both vendors: writer@anthropic: claude-sonnet-5, writer@openai: gpt-6-luna (the F1 task.yaml's cited choice).; prompt.md (identical text for every harness) asks the agent to start exactly ONE sub-agent, on the model named for its vendor in a two-column table (Anthropic claude-sonnet-5, OpenAI gpt-6-luna), whose only job is to create `delegated.txt` containing the single line `written by a sub-agent`; the main agent itself then creates `main.txt` with the model id it is running on; it must not write delegated.txt itself; if it cannot start a sub-agent it says so plainly and stops.; tests/test_q6_hidden.py (unittest, the runner the oracle uses, as Q1's does) checks both files exist with those contents; it is observed to FAIL on the empty workspace and PASS when both files are added in a throwaway copy, with the commands and exit codes in tasks/Q6/oracle/evidence.md.; bench/bom.yaml is NOT edited (the Leader adds Q6); uv run bench validate prints ok once the Leader adds it, so check config.validate_task on tasks/Q6 directly (a one-line python call) and report its problems list (it must be empty).; Commit with git.\nNot in scope: bench/bom.yaml; bench/task-freeze.yaml; src/**; any bench run or live turn (the Leader runs the qualification); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit as soon as the files validate.\nGrounding: tasks/Q1/ (the whole folder); tasks/F1/task.yaml (the R-73 map shape and the gpt-6-luna citation); docs/notes/rulings.md R-73, R-74; src/harness_bench/config.py (validate_task, model_map_problems). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: tasks/Q6/ mirrors tasks/Q1's layout (task.yaml, prompt.md, workspace/, tests/) with id Q6, scenario 6, status ready, language python, budget 5 minutes, source kind authored with repo \"tasks/Q6/workspace\" and commit \"content-addressed\", graders [correctness, cost, process], a blast_radius of the two files below. | phrase: tasks/Q6/ mirrors tasks/Q1's layout (task.yaml, prompt.md, workspace/, tests/) with id Q6, scenario 6, status ready, language python, budget 5 minutes, source kind authored with repo \"tasks/Q6/workspace\" and commit \"content-addressed\", graders [correctness, cost, process], a blast_radius of the two files below. |\n| done_when: model_map uses the R-73 keys for one role `writer` and both vendors: writer@anthropic: claude-sonnet-5, writer@openai: gpt-6-luna (the F1 task.yaml's cited choice). | phrase: model_map uses the R-73 keys for one role `writer` and both vendors: writer@anthropic: claude-sonnet-5, writer@openai: gpt-6-luna (the F1 task.yaml's cited choice). |\n| done_when: prompt.md (identical text for every harness) asks the agent to start exactly ONE sub-agent, on the model named for its vendor in a two-column table (Anthropic claude-sonnet-5, OpenAI gpt-6-luna), whose only job is to create `delegated.txt` containing the single line `written by a sub-agent` | phrase: prompt.md (identical text for every harness) asks the agent to start exactly ONE sub-agent, on the model named for its vendor in a two-column table (Anthropic claude-sonnet-5, OpenAI gpt-6-luna), whose only job is to create `delegated.txt` containing the single line `written by a sub-agent` |\n| done_when: the main agent itself then creates `main.txt` with the model id it is running on | phrase: the main agent itself then creates `main.txt` with the model id it is running on |\n| done_when: it must not write delegated.txt itself | phrase: it must not write delegated.txt itself |\n| done_when: if it cannot start a sub-agent it says so plainly and stops. | phrase: if it cannot start a sub-agent it says so plainly and stops. |\n| done_when: tests/test_q6_hidden.py (unittest, the runner the oracle uses, as Q1's does) checks both files exist with those contents | phrase: tests/test_q6_hidden.py (unittest, the runner the oracle uses, as Q1's does) checks both files exist with those contents |\n| done_when: it is observed to FAIL on the empty workspace and PASS when both files are added in a throwaway copy, with the commands and exit codes in tasks/Q6/oracle/evidence.md. | phrase: it is observed to FAIL on the empty workspace and PASS when both files are added in a throwaway copy, with the commands and exit codes in tasks/Q6/oracle/evidence.md. |\n| done_when: bench/bom.yaml is NOT edited (the Leader adds Q6) | phrase: bench/bom.yaml is NOT edited (the Leader adds Q6) |\n| done_when: uv run bench validate prints ok once the Leader adds it, so check config.validate_task on tasks/Q6 directly (a one-line python call) and report its problems list (it must be empty). | phrase: uv run bench validate prints ok once the Leader adds it, so check config.validate_task on tasks/Q6 directly (a one-line python call) and report its problems list (it must be empty). |\n| done_when: Commit with git. | phrase: Commit with git. |\n| not_in_scope: bench/bom.yaml | phrase: bench/bom.yaml |\n| not_in_scope: bench/task-freeze.yaml | phrase: bench/task-freeze.yaml |\n| not_in_scope: src/** | phrase: src/** |\n| not_in_scope: any bench run or live turn (the Leader runs the qualification) | phrase: any bench run or live turn (the Leader runs the qualification) |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- writer: unresolved (not found)\n- delegated.txt: unresolved (not found)\n- written by a sub-agent: unresolved (not found)\n- main.txt: unresolved (not found)\n- tasks/Q6: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- tasks/Q1: unresolved (not found)\n- tasks/Q6/: unresolved (not found)\n- tasks/Q1's: unresolved (not found)\n- task.yaml: unresolved (ambiguous: 27 matches)\n- prompt.md: unresolved (ambiguous: 9 matches)\n- workspace/: unresolved (not found)\n- tests/: unresolved (not found)\n- tasks/Q6/workspace: unresolved (not found)\n- tests/test_q6_hidden.py: unresolved (not found)\n- tasks/Q6/oracle/evidence.md: unresolved (not found)\n- bench/bom.yaml: bench/bom.yaml sha256 0750cab5eae11826bdf4e1ccd2ebc9f2e10fc3d3b1325340de1b2af582b24307\n- bench/task-freeze.yaml: bench/task-freeze.yaml sha256 20474981e91ae6ef1a6671ec1fe485d9d9bd1a05c07cca20ffe1570d123b2be0\n- src/**: unresolved (not found)\n- runs/: unresolved (not found)\n- tasks/Q1/: unresolved (not found)\n- tasks/F1/task.yaml: tasks/F1/task.yaml sha256 cb55350dee67ecf724acaf417f765b418eeafe6ea06c15a5eedcb3f7bc6f2476\n- src/harness_bench/config.py: src/harness_bench/config.py sha256 24f729beef17064e342ca591276a62bd43a9e19dbab742badfe503d6607ca0a9\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3D5VA428SE9RSASEGHN8BEY\nraw sha256: 233bc8aa5c66660ef5b4d1f66acf74670620a39b3b8e89c4ceec4511a2068c58\ncompiler model: claude-opus-5-5\nengine seconds: 0.005\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3D5VA428SE9RSASEGHN8BEY for claude-code v1: 17 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "tasks/Q6/ mirrors tasks/Q1's layout (task.yaml, prompt.md, workspace/, tests/) with id Q6, scenario 6, status ready, language python, budget 5 minutes, source kind authored with repo \"tasks/Q6/workspace\" and commit \"content-addressed\", graders [correctness, cost, process], a blast_radius of the two files below.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tasks/Q6/ mirrors tasks/Q1's layout (task.yaml, prompt.md, workspace/, tests/) with id Q6, scenario 6, status ready, language python, budget 5 minutes, source kind authored with repo \"tasks/Q6/workspace\" and commit \"content-addressed\", graders [correctness, cost, process], a blast_radius of the two files below."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "model_map uses the R-73 keys for one role `writer` and both vendors: writer@anthropic: claude-sonnet-5, writer@openai: gpt-6-luna (the F1 task.yaml's cited choice).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "model_map uses the R-73 keys for one role `writer` and both vendors: writer@anthropic: claude-sonnet-5, writer@openai: gpt-6-luna (the F1 task.yaml's cited choice)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "prompt.md (identical text for every harness) asks the agent to start exactly ONE sub-agent, on the model named for its vendor in a two-column table (Anthropic claude-sonnet-5, OpenAI gpt-6-luna), whose only job is to create `delegated.txt` containing the single line `written by a sub-agent`",
+            "trace": {
+              "kind": "phrase",
+              "ref": "prompt.md (identical text for every harness) asks the agent to start exactly ONE sub-agent, on the model named for its vendor in a two-column table (Anthropic claude-sonnet-5, OpenAI gpt-6-luna), whose only job is to create `delegated.txt` containing the single line `written by a sub-agent`"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the main agent itself then creates `main.txt` with the model id it is running on",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the main agent itself then creates `main.txt` with the model id it is running on"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "it must not write delegated.txt itself",
+            "trace": {
+              "kind": "phrase",
+              "ref": "it must not write delegated.txt itself"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "if it cannot start a sub-agent it says so plainly and stops.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "if it cannot start a sub-agent it says so plainly and stops."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/test_q6_hidden.py (unittest, the runner the oracle uses, as Q1's does) checks both files exist with those contents",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/test_q6_hidden.py (unittest, the runner the oracle uses, as Q1's does) checks both files exist with those contents"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "it is observed to FAIL on the empty workspace and PASS when both files are added in a throwaway copy, with the commands and exit codes in tasks/Q6/oracle/evidence.md.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "it is observed to FAIL on the empty workspace and PASS when both files are added in a throwaway copy, with the commands and exit codes in tasks/Q6/oracle/evidence.md."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "bench/bom.yaml is NOT edited (the Leader adds Q6)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/bom.yaml is NOT edited (the Leader adds Q6)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run bench validate prints ok once the Leader adds it, so check config.validate_task on tasks/Q6 directly (a one-line python call) and report its problems list (it must be empty).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run bench validate prints ok once the Leader adds it, so check config.validate_task on tasks/Q6 directly (a one-line python call) and report its problems list (it must be empty)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit with git.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit with git."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench/bom.yaml",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/bom.yaml"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench/task-freeze.yaml",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/task-freeze.yaml"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "src/**",
+            "trace": {
+              "kind": "phrase",
+              "ref": "src/**"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any bench run or live turn (the Leader runs the qualification)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any bench run or live turn (the Leader runs the qualification)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "tasks/Q6/ mirrors tasks/Q1's layout (task.yaml, prompt.md, workspace/, tests/) with id Q6, scenario 6, status ready, language python, budget 5 minutes, source kind authored with repo \"tasks/Q6/workspace\" and commit \"content-addressed\", graders [correctness, cost, process], a blast_radius of the two files below.",
+            "model_map uses the R-73 keys for one role `writer` and both vendors: writer@anthropic: claude-sonnet-5, writer@openai: gpt-6-luna (the F1 task.yaml's cited choice).",
+            "prompt.md (identical text for every harness) asks the agent to start exactly ONE sub-agent, on the model named for its vendor in a two-column table (Anthropic claude-sonnet-5, OpenAI gpt-6-luna), whose only job is to create `delegated.txt` containing the single line `written by a sub-agent`",
+            "the main agent itself then creates `main.txt` with the model id it is running on",
+            "it must not write delegated.txt itself",
+            "if it cannot start a sub-agent it says so plainly and stops.",
+            "tests/test_q6_hidden.py (unittest, the runner the oracle uses, as Q1's does) checks both files exist with those contents",
+            "it is observed to FAIL on the empty workspace and PASS when both files are added in a throwaway copy, with the commands and exit codes in tasks/Q6/oracle/evidence.md.",
+            "bench/bom.yaml is NOT edited (the Leader adds Q6)",
+            "uv run bench validate prints ok once the Leader adds it, so check config.validate_task on tasks/Q6 directly (a one-line python call) and report its problems list (it must be empty).",
+            "Commit with git."
+          ],
+          "fan_out_cap": 0,
+          "goal": "author tasks/Q6, the R-74 delegation qualification fixture (read rulings R-73 and R-74 in docs/notes/rulings.md, and copy the shape of tasks/Q1, a ready qualification fixture): one tiny scenario-6 task whose prompt makes the agent start exactly one sub-agent on its vendor's workhorse model to write one file, so the Leader's one qualification turn per harness can record whether delegation is routed and recorded.",
+          "main_line_budget": "one slice of at most 18 minutes; commit as soon as the files validate.\nGrounding: tasks/Q1/ (the whole folder); tasks/F1/task.yaml (the R-73 map shape and the gpt-6-luna citation); docs/notes/rulings.md R-73, R-74; src/harness_bench/config.py (validate_task, model_map_problems). Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "bench/bom.yaml",
+            "bench/task-freeze.yaml",
+            "src/**",
+            "any bench run or live turn (the Leader runs the qualification)",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.005,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3D5VA428SE9RSASEGHN8BEY",
+        "raw_sha256": "233bc8aa5c66660ef5b4d1f66acf74670620a39b3b8e89c4ceec4511a2068c58",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "writer"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "delegated.txt"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "written by a sub-agent"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main.txt"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/Q6"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/Q1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/Q6/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/Q1's"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 27 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 9 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "prompt.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "workspace/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/Q6/workspace"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_q6_hidden.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/Q6/oracle/evidence.md"
+          },
+          {
+            "nearest": null,
+            "path": "bench/bom.yaml",
+            "reason": null,
+            "sha256": "0750cab5eae11826bdf4e1ccd2ebc9f2e10fc3d3b1325340de1b2af582b24307",
+            "status": "resolved",
+            "token": "bench/bom.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "bench/task-freeze.yaml",
+            "reason": null,
+            "sha256": "20474981e91ae6ef1a6671ec1fe485d9d9bd1a05c07cca20ffe1570d123b2be0",
+            "status": "resolved",
+            "token": "bench/task-freeze.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/**"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/Q1/"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/F1/task.yaml",
+            "reason": null,
+            "sha256": "cb55350dee67ecf724acaf417f765b418eeafe6ea06c15a5eedcb3f7bc6f2476",
+            "status": "resolved",
+            "token": "tasks/F1/task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "24f729beef17064e342ca591276a62bd43a9e19dbab742badfe503d6607ca0a9",
+            "status": "resolved",
+            "token": "src/harness_bench/config.py"
           }
         ],
         "schema": "compiled-prompt/1",
