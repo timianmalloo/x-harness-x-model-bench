@@ -25,7 +25,7 @@ summary: >-
 3. Climb the control ladder (CI6) and record the highest rung that actually holds: *make it impossible* > *automated control* > *always-loaded instruction* > *knowledge doc* > *register entry only*.
 4. A control is not a control until it has been **observed failing** on the un-fixed code.
 
-**Status counts:** controlled 6 · partially-controlled 4 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled.
+**Status counts:** controlled 6 · partially-controlled 5 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled.
 **Recurrence since last review:**
 - 4 instances of MOD-A in one session; the control was built after the fourth.
 - 2026-09-23: EDIT-B recurred once after registration, and its hook control was then built.
@@ -236,6 +236,15 @@ summary: >-
 - **Sweep:** every cleanup the Leader runs after a join while reviewers or read-backs of that track are live.
 - **Control:** the Leader cleans up a track's tree only after every review and read-back of that track has handed back. Reviewers are briefed to use a throwaway `git worktree add --detach` tree, never the branch checkout. The tool-side half is the `mutate_check` no-summary → `error` fix.
 - **Status:** `observed` (Leader procedure; the tool-side fix is in flight)
+
+### PERM-A: a per-platform tool id missing from a class allowlist
+- **Signature:** a profile allows a capability *class* (shell; file read and edit) by listing tool *ids*, but lists only the ids known on one platform or one build. On another platform, or a newer pinned build, the harness exposes a further id in the same class. The first call to it is refused as out of profile, and one arm silently loses a capability the other arms keep.
+- **Why it survives:** the allowlist was written from the ids seen when it was written (2.1.274), and nothing compared it with the ids the pinned build actually offers. The refusal is correct behaviour for an unlisted tool, so every control upstream of US-14 stays green. It surfaces only when a model happens to pick the new id, which here needed the pack's instructions to name it.
+- **Instances:**
+  - `2026-09-25`, run `e2e-wave1-1790302505`, cell `17efb75ce2d5fc6d` (cc-opus, pack on, Claude Code 2.1.282, win32): the model called `PowerShell` once. It was not in `[Bash, Edit, Write, Read, Glob, Grep]`, so the driver refused it. Permission requests were `[0,1,0,0,0,0]` and US-14 failed (R-34).
+- **Sweep:** the Claude Code profile (fixed, R-34). Copilot allows by tool kind (`--allow-tool shell`, `--allow-tool write`), and Codex runs `agent-full-access` with no id allowlist. By mechanism, neither can miss one id [Inferred from R-34's reasoning; not re-run here]. The pinned 2.1.282 build also offers `NotebookEdit` as a deferred tool. Whether it belongs to the file-edit class is waiting on a ruling; it is listed in `AWAITING_RULING`, not dropped.
+- **Control:** `tests/test_allowlist_classes.py`. The allowlist must contain every class id in the tool list that the pinned build wrote to its own native record (`tests/fixtures/native/claude-code/tools-2.1.282-win32.jsonl`, cut from the cell above). An id the build advertises that is not classified fails the test. A native test fails when the installed pin is not the fixture's build or platform, so a pin bump forces a recut, and a new id then turns the test red. It was observed red at `39a16d8` (`{'PowerShell'}` missing). The negative fixture `tests/fixtures/ledger/r34-cc-opus-pack-on-powershell-denied.json` is kept as the negative control.
+- **Status:** `partially-controlled`. Recutting the fixture needs one real cell's native record: only an authenticated session writes the list, because an unauthenticated `claude -p` init omits `PowerShell`. The recut is therefore a manual step at a pin bump, forced by the native test.
 
 ---
 

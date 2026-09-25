@@ -24,6 +24,13 @@ summary: >-
   - the profile is unchanged in tool classes, but no longer relies on a container sandbox; Codex uses `agent-full-access` natively (spike N1.1);
   - dependencies are restored before the clock into the task clone (or the shared user caches), not an image;
   - the permission files sit in the per-cell home, and nothing stops an agent editing them (owner-accepted, ADR-0013).
+- **Amendment note, R-34 (2026-09-25), from run `e2e-wave1-1790302505`:**
+  - The declared capability classes (file read and edit in the workspace, shell) are platform-independent.
+  - The tool **ids** that make up a class are per platform and per pinned build. On Windows, Claude Code 2.1.282's shell class is `Bash` and `PowerShell`.
+  - The profile lists every id in the class for the platform it runs on. `tests/test_allowlist_classes.py` reads the ids from the tool list the pinned build writes to its native record, not from memory.
+  - Profile qualification exercises each id.
+  - The Claude row's declared `defaultMode = dontAsk` is not the effective mode: the ACP session falls back to `default`. Each cell records the mode its session reports (`attempt.session_opened.permission_mode_effective`), and the report header shows it for Claude Code cells.
+  - The Copilot and Codex rows are unchanged.
 - **Date:** 2026-09-23 (revised after council round 1)
 - **Deciders:** @timianmalloo; authored by Claude Code for the architect council
 - **Context spec/architecture:** `docs/specs/harness-bench.md` US-14, US-46; spec risk R14
@@ -46,7 +53,7 @@ We will give each harness a static profile that allows exactly these tool classe
 
 | Harness | Mechanism |
 | --- | --- |
-| Claude | Per-cell `settings.json`: `permissions.allow = [Bash, Edit, Write, Read, Glob, Grep]`, `defaultMode = dontAsk`. |
+| Claude | Per-cell `settings.json`: `permissions.allow = [Bash, PowerShell, Edit, Write, Read, Glob, Grep]` (`PowerShell` added by R-34), `defaultMode = dontAsk` (declared; effective `default`, R-34). |
 | Codex | ACP mode `agent-full-access` inside the container (approval `never`, reviewer `user`), and per-cell `config.toml` with web search off. |
 | Copilot | `--allow-tool shell --allow-tool write`, no `--allow-all*`, `--disable-builtin-mcps`. |
 

@@ -125,8 +125,8 @@ def test_the_negative_fixture_shows_the_one_denied_powershell_call():  # the neg
     assert [(c["name"], c["ok"]) for c in outside] == [("PowerShell", 0)]
     assert outcome["permission_requests"] == len(outside) == 1
     assert all(c["ok"] == 1 for c in fx["tool_calls"] if c["name"] in allowed_then)
-    assert fx["adapter_stderr"] == ['permissions.defaultMode "dontAsk" is not available in this session; '
-                                    'falling back to "default".']
+    assert fx["adapter_stderr"] == [('permissions.defaultMode "dontAsk" is not available in this session; '
+                                     'falling back to "default".')]
 
 
 def test_the_current_allowlist_admits_every_tool_the_negative_fixture_called(tmp_path):  # R-34 regression
