@@ -110,7 +110,7 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
 
     def data_typed(ann: ast.expr | None) -> bool:
         """An annotation naming only plain data (str, list[str], Path | None, ...): such a parameter is no backend."""
-        if isinstance(ann, ast.Name) or isinstance(ann, ast.Attribute):
+        if isinstance(ann, (ast.Name, ast.Attribute)):
             return (ann.id if isinstance(ann, ast.Name) else ann.attr) in data_types
         if isinstance(ann, ast.Subscript):
             return data_typed(ann.value)
