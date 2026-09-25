@@ -316,6 +316,58 @@ def test_a_pinned_tool_is_measured_by_its_pinned_command(tmp_path, monkeypatch):
     assert runner.tool_versions(r, {"cells": [{"task": "T2"}]}) == {"python": sys.version.split()[0], "dotnet-stryker": "4.5.0"}
 
 
+def stryker_cache(packages: Path) -> Path:
+    """A dotnet-stryker/4.16.0 layout. The DLL is an empty stand-in; the version comes from the fake probe."""
+    dll = packages / "dotnet-stryker" / "4.16.0" / "tools" / "net8.0" / "any" / "Stryker.CLI.dll"
+    dll.parent.mkdir(parents=True)
+    dll.write_bytes(b"")
+    return dll
+
+
+def test_tool_versions_records_dotnet_stryker_from_the_nuget_cache_product_version(tmp_path, monkeypatch):
+    """R-59 c4, spike c6a: ProductVersion of the cached Stryker.CLI.dll, once, 30 s. An absent package is not recorded.
+    `--version` is not the tool version on 4.16.0, so a probe that uses it is not accepted."""
+    r = dotnet_root(tmp_path)
+    plan_ = {"cells": [{"task": "T2"}]}  # not a dotnet task: the only probe is stryker
+    expected = "4.16.0+f9109e24c615a7030a3b33e5532c665c974e4ec5"
+    calls = []
+    accepted: list[Path] = []
+
+    def fake_run(argv, cwd, env, timeout):
+        calls.append((list(argv), timeout))
+        script = argv[-1] if argv else ""
+        hit = (accepted and ".ProductVersion" in script and "GetVersionInfo" in script
+               and str(accepted[0]) in script and "--version" not in script)
+        return procs.Completed(0, (expected if hit else "guessed") + "\n", "", False, False, 0.1)
+
+    monkeypatch.setattr(runner.tools.shutil, "which", lambda name: f"C:/fake/{name}.exe")
+    monkeypatch.setattr(runner.tools.procs, "run", fake_run)
+
+    packages = tmp_path / "packages"
+    accepted.append(stryker_cache(packages))
+    monkeypatch.setenv("NUGET_PACKAGES", str(packages))
+    assert runner.tool_versions(r, plan_) == {"python": sys.version.split()[0], "dotnet-stryker": expected}
+    exe, *args = calls[0][0]
+    assert (Path(exe).stem.lower(), args[:2], calls[0][1]) == ("powershell", ["-NoProfile", "-Command"], 30)
+    assert str(accepted[0]) in args[2] and args[2].endswith("ProductVersion")
+
+    calls.clear()
+    accepted.clear()
+    empty = tmp_path / "empty-packages"
+    empty.mkdir()
+    monkeypatch.setenv("NUGET_PACKAGES", str(empty))
+    assert runner.tool_versions(r, plan_) == {"python": sys.version.split()[0], "dotnet-stryker": "not recorded"}
+    assert calls == []  # absent: not probed, not empty, not guessed
+
+    home = tmp_path / "home"
+    calls.clear()
+    accepted.append(stryker_cache(home / ".nuget" / "packages"))
+    monkeypatch.delenv("NUGET_PACKAGES", raising=False)
+    monkeypatch.setenv("USERPROFILE", str(home))
+    assert runner.tool_versions(r, plan_)["dotnet-stryker"] == expected
+    assert str(accepted[0]) in calls[0][0][-1] and calls[0][1] == 30
+
+
 # --- process and clarify are registered (GR-PROC p1-p3, GR-CLAR l1 built on main) -------------------------------
 
 
