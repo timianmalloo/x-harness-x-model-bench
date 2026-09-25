@@ -25,5 +25,14 @@
   "tests": [
    "tests/test_telemetry.py::test_claude_account_connector_tools_counts_two_distinct_advertised_names"
   ]
+ },
+ {
+  "name": "the .claude/skills canary not seeded",
+  "file": "tests/e2e/test_us13_canary.py",
+  "find": "    _write_skill(profile / \".claude\" / \"skills\", COPILOT_CLAUDE_SKILL)\n",
+  "replace": "",
+  "tests": [
+   "tests/test_canary_classes.py::test_copilot_fake_profile_seeds_the_exact_canary_class_set"
+  ]
  }
 ]

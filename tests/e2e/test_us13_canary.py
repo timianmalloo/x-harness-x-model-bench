@@ -4,9 +4,10 @@ Per harness, two turns with the same prompt, which names no canary:
 - the probe is a real cell: the seeded per-cell home and the cell environment, exactly as the engine runs it;
 - the Claude Code and Codex controls copy the operator's user-level files and restore USERPROFILE/HOME;
 - Copilot uses a FAKE operator profile under the test folder, `<turn>/profile`, whose `.copilot` holds four
-  deterministic classes: instructions, skill, hook (writes a marker file), settings model. Every Copilot turn sees
-  that profile as USERPROFILE/HOME. The control drops COPILOT_HOME, so Copilot reads the profile's `.copilot` as its
-  user level; the probe keeps the engine's COPILOT_HOME, so a class that still arrives came through the profile.
+  deterministic classes: instructions, skill, hook (writes a marker file), settings model. The same profile plants
+  two more: a skill under `.agents/skills` and a skill under `.claude/skills`. Every Copilot turn sees that profile
+  as USERPROFILE/HOME. The control drops COPILOT_HOME, so Copilot reads the profile's `.copilot` as its user level;
+  the probe keeps the engine's COPILOT_HOME, so a class that still arrives came through the profile.
   The un-isolated variant (the probe with COPILOT_HOME dropped) is the probe's observed red.
 The native record and the hook marker show which classes reached the control. A class the control does not show is
 void and reported; none may appear in the probe. Nothing is written to the operator's profile (~/.copilot, ~/.claude,
@@ -33,23 +34,40 @@ PROMPT = ("List the name of every skill available to you, one per line. Then quo
 MODELS = {"claude-code": "claude-sonnet-5", "codex": "gpt-6-sol", "copilot": "gpt-6-sol"}
 COPILOT_INSTRUCTION = "HB-US13-COPILOT-INSTRUCTION"
 COPILOT_SKILL = "hb-us13-copilot-skill"
+COPILOT_AGENTS_SKILL = "hb-us13-agents-skill"
+COPILOT_CLAUDE_SKILL = "hb-us13-claude-skill"
 COPILOT_HOOK = "HB-US13-COPILOT-HOOK"
 COPILOT_HOOK_FILE = "us13-hook-marker.txt"
+# Same class strings the Claude/Codex branch uses for a user skills root outside the harness home (below, _user_config).
+AGENTS_SKILL_CLASS = "skill (~/.agents/skills, via USERPROFILE)"
+CLAUDE_SKILL_CLASS = "skill (~/.claude/skills, via USERPROFILE)"
 # The settings canary: advertised by Copilot 1.0.89-1 (tests/fixtures/native/copilot/provenance.json available_model_ids),
 # not the pin gpt-6-sol. assume: it is not the unpinned default of a fresh COPILOT_HOME; confirmed by the probe's served
 # models, which the test prints; if false, the probe reports a "settings model" leak (a false red, never a false green).
 COPILOT_SETTINGS_MODEL = "gpt-6-astra"
 
 
-def _seed_copilot_control(dot: Path) -> None:
-    """Four user-level canaries in `dot`, a fake profile's `.copilot`. The hook writes its marker by absolute path, so it
-    fires the same whether Copilot reached `dot` as COPILOT_HOME or through USERPROFILE/HOME."""
+def _write_skill(root: Path, name: str) -> None:
+    skill = root / name / "SKILL.md"
+    skill.parent.mkdir(parents=True, exist_ok=True)
+    skill.write_text(f"---\nname: {name}\ndescription: US-13 isolation canary\n---\n", encoding="utf-8")
+
+
+def _classes_hit_by(pairs: set[tuple[str, str]], text: str) -> set[str]:
+    """Every class whose canary string occurs in `text`. A string shared by two classes reports both."""
+    return {cls for canary, cls in pairs if canary in text}
+
+
+def _seed_copilot_control(dot: Path) -> set[tuple[str, str]]:
+    """Six user-level canaries for the fake profile whose `.copilot` is `dot`: four inside `dot` (instruction, skill,
+    hook, settings model), plus a skill under the profile's `.agents/skills` and one under its `.claude/skills` (the
+    same user-skills-root classes N5 already tracks for Claude/Codex). Returns the planted (canary string, class)
+    pairs. The hook writes its marker by absolute path, so it fires the same whether Copilot reached `dot` as
+    COPILOT_HOME or through USERPROFILE/HOME."""
     (dot / "copilot-instructions.md").write_text(f"{COPILOT_INSTRUCTION}\n", encoding="utf-8")
-    skill = dot / "skills" / COPILOT_SKILL / "SKILL.md"
-    skill.parent.mkdir(parents=True)
-    skill.write_text(f"---\nname: {COPILOT_SKILL}\ndescription: US-13 isolation canary\n---\n", encoding="utf-8")
+    _write_skill(dot / "skills", COPILOT_SKILL)
     hooks = dot / "hooks"
-    hooks.mkdir()
+    hooks.mkdir(exist_ok=True)
     marker = dot / COPILOT_HOOK_FILE
     (hooks / "us13-canary.json").write_text(json.dumps({"version": 1, "hooks": {"sessionStart": [{
         "type": "command",
@@ -58,10 +76,22 @@ def _seed_copilot_control(dot: Path) -> None:
         "timeoutSec": 10,
     }]}}, indent=2), encoding="utf-8")
     (dot / "settings.json").write_text(json.dumps({"model": COPILOT_SETTINGS_MODEL}), encoding="utf-8")
+    profile = dot.parent
+    _write_skill(profile / ".agents" / "skills", COPILOT_AGENTS_SKILL)
+    _write_skill(profile / ".claude" / "skills", COPILOT_CLAUDE_SKILL)
+    return {
+        (COPILOT_INSTRUCTION, "instruction"),
+        (COPILOT_SKILL, "skill"),
+        (COPILOT_HOOK, "hook"),
+        (COPILOT_SETTINGS_MODEL, "settings model"),
+        (COPILOT_AGENTS_SKILL, AGENTS_SKILL_CLASS),
+        (COPILOT_CLAUDE_SKILL, CLAUDE_SKILL_CLASS),
+    }
 
 
 def _fake_profile(folder: Path) -> Path:
-    """`<folder>/profile`, a fake operator profile whose `.copilot` holds the four canaries. Never the operator's own."""
+    """`<folder>/profile`, a fake operator profile whose `.copilot`, `.agents` and `.claude` hold the six canaries.
+    Never the operator's own."""
     profile = folder / "profile"
     real = {(USER / name).resolve() for name in ("", ".copilot", ".claude", ".agents")}
     if profile.resolve() in real or (profile / ".copilot").resolve() in real:
@@ -83,11 +113,19 @@ def _copilot_env(p: profiles.Profile, home: Path, build, profile: Path, isolated
 
 def _copilot_shown(record: str, models: set[str], dot: Path) -> dict[str, bool]:
     marker = dot / COPILOT_HOOK_FILE
+    hit = _classes_hit_by({
+        (COPILOT_INSTRUCTION, "instruction"),
+        (COPILOT_SKILL, "skill"),
+        (COPILOT_AGENTS_SKILL, AGENTS_SKILL_CLASS),
+        (COPILOT_CLAUDE_SKILL, CLAUDE_SKILL_CLASS),
+    }, record)
     return {
-        "instruction": COPILOT_INSTRUCTION in record,
-        "skill": COPILOT_SKILL in record,
+        "instruction": "instruction" in hit,
+        "skill": "skill" in hit,
         "hook": marker.is_file() and marker.read_text(encoding="utf-8-sig").strip() == COPILOT_HOOK,
         "settings model": COPILOT_SETTINGS_MODEL in models,
+        AGENTS_SKILL_CLASS: AGENTS_SKILL_CLASS in hit,
+        CLAUDE_SKILL_CLASS: CLAUDE_SKILL_CLASS in hit,
     }
 
 
@@ -122,7 +160,7 @@ def _user_config(harness: str) -> tuple[list[tuple[Path, str]], dict[str, str]]:
             copies.append((memory, "AGENTS.md"))
     for skill in sorted((USER / ".agents" / "skills").glob("*")):  # N5: a user skills root outside the harness home
         if skill.is_dir():
-            canaries[skill.name] = "skill (~/.agents/skills, via USERPROFILE)"
+            canaries[skill.name] = AGENTS_SKILL_CLASS
     return copies, canaries
 
 
