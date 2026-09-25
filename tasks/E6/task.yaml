@@ -2,13 +2,16 @@ schema: bench-task/1
 id: E6
 scenario: 5
 title: "HumanEval-C# batch of 10"
-status: stub
+status: ready
 language: csharp
 source:
   kind: public
   upstream: "MultiPL-E HumanEval-C#"
-  repo: "tbd"
-  commit: "tbd"
+  repo: "https://github.com/nuprl/MultiPL-E"
+  commit: "3025a531af7450e7df8b96fe0440e9804480bbad"
+  license: "BSD 3-Clause License with Machine Learning Restriction"
+  copyright: "Copyright (c) 2022, Northeastern University, Oberlin College, Roblox Inc, Stevens Institute of Technology, University of Massachusetts Amherst, and Wellesley College."
+  # MultiPL-E does not state a separate in-tree license for the HumanEval problems it translates; upstream HumanEval is MIT.
 budget:
   minutes: 20
   usd_cap: null
@@ -16,9 +19,12 @@ blast_radius:
   - "**"
 model_map: null
 scripted_user: false
+formal: null
 graders:
   - correctness
   - cost
   - process
 oracle:
-  summary: "Upstream executable tests for a batch of 10 problems."
+  summary: "Hidden xUnit test suite for the batch of 10 MultiPL-E HumanEval-C# problems, executed via dotnet test with TRX logger."
+  runner: dotnet
+  command: ["cmd", "/c", "run.cmd", "--logger", "trx;LogFileName=e6.trx"]
