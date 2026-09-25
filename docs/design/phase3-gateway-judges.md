@@ -565,18 +565,19 @@ s2's live fixture, only through a qualified judge.
 | Judge spend | tokens and calls by judge | `model_calls` principal `gateway`; `views.judge_calls` |
 | Probe versions | a `.dev` catalog is a `probe pass` (R-59 DR-4) | `grading.started` |
 
-- Cell vendor comes from the combo's model id (`claude-*` → Anthropic, `gpt-*` → OpenAI). C1 has 2 Anthropic cells and
-  4 OpenAI cells, so n is 14 and 28 items.
+- Cell vendor comes from the cell harness profile's `vendor:` field, never from a model-id prefix (R-73 item 1;
+  `report/judges.py` `cell_vendors`). C1 has 2 Anthropic cells and 4 OpenAI cells, so n is 14 and 28 items.
 - Judge rationales are untrusted text and are rendered only through `html._e` (`html.py:53`). T-GW-36 renders a
   `<script>` rationale as inert text.
 
 ## 13. C1's rubric in the catalog (R-59 DR-5, c2)
 
 - `bench/rubrics/<metric>.md` is the authoritative rubric. `<metric>` is the id W3-GRADE-D names (seam).
-- The catalog entry gains three fields:
-  - `rubric: bench/rubrics/<metric>.md`;
+- The catalog entry gains three fields (built in slice 5 in the graders design's form, where one map names both the
+  rubric file and its tasks):
+  - `rubrics: {C1: adr_quality.md}` (the rubric and the tasks it applies to);
   - `artifact: [docs/architecture.md, priority_queue.py]`;
-  - `tasks: [C1]`.
+  - `scale: 1` (the synthesized half-steps) and the R-64 `note:`.
 
   Other tasks' judged metrics are NOT_RECORDED `no rubric for this task`.
 - `bench validate` asserts that `tasks/C1/oracle/rubric.md` is byte-equal to the catalog copy (spec `:255` pattern).

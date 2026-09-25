@@ -383,3 +383,16 @@ def test_r64_c2_bench_validate_scans_a_judged_metrics_note_and_rubric_with_the_s
         (ROOT / "tasks" / "C1" / "oracle" / "rubric.md").read_bytes())
     scanned = [p for p in config.validate_repo(root) if "denylist" in p]
     assert scanned == [f"bench/metrics.yaml: {area}.adr_quality: note holds a scrub denylist entry (R-64 c2)"]
+
+
+def test_an_entry_changed_after_calibration_is_not_a_kappa_input(tmp_path, base):
+    """kappa reads a verdict only from an entry whose bytes still hash to the row's entry_sha256."""
+    assert calibration is not None, NOT_BUILT
+    root = cal_root(tmp_path)
+    write_labels(root, [label(i, VERDICTS[i]) for i, _ in ITEMS])
+    calibrate(root, tmp_path, base)
+    for entry in sorted((root / "cache" / "verdicts").glob("*.json")):
+        entry.chmod(0o644)
+        entry.write_bytes(entry.read_bytes() + b" ")
+    assert line(root, tmp_path) == \
+        f"n = 3 · {SECOND} · vs human labels: {CLAUDE} κ not recorded: no recorded pairs (n = 0, exact 0)"
