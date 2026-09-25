@@ -204,3 +204,31 @@ One repetition per combo, so no interval is computed. Cost is `NA` for every cel
 **A3 (host credential rotation), partial:** `~/.claude/.credentials.json` and `~/.codex/auth.json` were byte-identical before and after two 6-cell runs, and both host logins still authenticate. A token refresh happens only near expiry, so the long-run check rides on the overnight smoke run.
 
 **R-36 condition (account connectors in Claude Code cells):** the native records of the cc-opus pack-on and pack-off cells in `e2e-wave1-1790302505` (same inputs) list the **same 8** account-level deferred tools, all under the `mcp__claude_ai_` prefix: batch, create, delete, export, guide, query, read, update of one connector. So R1.4's "applies equally to pack on and off" is **Verified for this run**. None was called, and the allowlist denies them.
+
+## Join: W1-COP-I (rows 1–3, 5), Codex gpt-6-sol (slices), plus Claude loop-backs, 2026-09-25
+
+**Test Architect veto (round 2, at `da14061`): CLEARS, conditional on this entry being committed.** The Test Architect independently re-derived 47 of 47 mutation kills (`plan.json` 13, `copilot.json` 24, `views_copilot.json` 10). It counted a kill only on exit 1 with a FAILED line for a named test.
+
+| slice | what | red → green | red observed (Leader re-run in a throwaway worktree) |
+| --- | --- | --- | --- |
+| s1 (Codex) | Claude Code pinned to 2.1.282 (SDK 0.3.282 override), Copilot 1.0.89-1, adapterless build resolution; Codex design read: none found | `3829e6b` → `890d11a` | 4 failed, 6 passed |
+| s3 (Codex) | HB-PRE-002 covers Copilot instruction files; the `instruction_list` plan datum (HB-PRE-008); `bench/pack-markers.txt` | `12b06bc`, `b99445c`, `926e40d` → greens | 4 failed; 1 failed; 4 failed |
+| s2 (Codex) | the Copilot profile, `command:` templates, the READERS/HARNESSES registry, the token env dropped | `51fc6a4`, `b1c202c` → `0aebc9f`, `112de80` | 9 failed; 2 failed |
+| fix (Claude Sonnet) | the plan instruction datum projected to string identity fields (canonical JSON forbids bool) | `33bbf40` → `0baaa96` | 1 failed (the stated `TypeError`) |
+| s4 (Codex) | the `model_calls` key gains `model`; one row mapper; `calls_per_cell` = Σ requests; the views-level conditions (a)–(e) | `fb5833b` → `79a549a` | 3 failed; (a)–(d): 6 failed with copilot removed from READERS |
+| s5 (Codex) | the wave-1 matrix and E2E; the Copilot US-13 canary branch; the pack revision in the header | `a62081c` (no unit-level red; its proof is the live run) | — |
+| 6a (Codex) | the plan probe honours `--tools-dir` and the cells root; cleanup never masks the coded error; a content-driven pack-on fake; the typed tool layout | `d3d416a` → greens | 9 failed |
+| L2 (Claude Opus) | the Copilot canary against a fake operator profile with an observable red; the non-default settings canary; the wave-1 pack revision >= 95, instruction counts and `last_update_ms`; the US-9 seeded red | `3b59f15`, `8beee22` | live (see "Wave-1 exit" above) |
+| 6b (Codex) | `calls_per_cell` as a Measure; the strict mapper; the prerelease header (R-12 c1); one template language; coded errors; the enterprise token env | `67286a1` → `e67c8ee` | 11 failed |
+| R-32 (Claude Sonnet) | identity via `base_model_id`; `context_window_tag` | `a60ee84` → `099ac14` | 17 failed |
+| R-34 (Claude Opus) | `PowerShell` added to the Claude Code allowlist; class coverage; `permission_mode_effective` | `39a16d8` → `6bc7a83` | 8 failed |
+
+The Leader re-ran every red with its re-run script, which uses a throwaway detached worktree and runs the test files the red commit touched. The logs are in the Leader's session scratchpad and are not committed; the counts above are the observed results.
+
+**Reviewers:**
+- Claude Python developer (cross-vendor): PASS WITH CONDITIONS. Its two Majors (the `--tools-dir` divergence and `calls_per_cell` degradation) were fixed in 6a and 6b.
+- Claude Test Architect: BLOCK in round 1 (the vacuous Copilot probe plus 6 Majors); round 2 clears the veto on this entry.
+
+**Carried to wave 2:**
+- Canary classes for the `~/.agents/skills` and `~/.claude/skills` roots under Copilot (Test Architect Minor).
+- The account-connector canary class, the per-cell count and the `--strict-mcp-config` probe (R-36).
