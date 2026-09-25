@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T13:26:39Z",
+  "generated": "2026-09-25T14:30:48Z",
   "audit": [
     {
       "actor": null,
@@ -25268,6 +25268,40 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3CFKQ02PCMQ61N841EPYFD8",
+      "shortname": "w3-mutsweep",
+      "datetime": "2026-09-25T14:30:48Z",
+      "session": "w3-mutsweep",
+      "prompt": "W3-MUT-SWEEP: every named mutant in tests/mutations/*.json is live again: each file's find text occurs in its target file, and uv run python tools/mutate_check.py <file> ends \"every mutation killed\" for every file.",
+      "summary": "Swept all 35 tests/mutations/*.json (excluding correctness.json/judge.json, report-only per brief) with tools/mutate_check.py. Found 10 stale/ambiguous finds across 6 files (copilot.json x3, profile_classes.json x1, r35_r36.json x1, stop.json x2, validity.json x1, views_copilot.json x2) where the guarded code moved under a later commit; re-pointed each at the current line carrying the same guard, same replacement semantics, same named tests. Found 2 survivors while re-running the fixed/adjacent files: copilot.json \"profile command cannot be empty\" (masked by an unrelated HB-USR-002 guard in the test fixture; fixed the fixture) and egress.json \"lint: a self attribute from an injected backend is not a sink\" (a redundant is_sink disjunct never independently exercised; added a case that isolates it). Both observed red under the mutant, green under real code, before commit. Added tests/test_mutate_check.py::test_every_mutation_find_text_occurs_exactly_once_in_its_target_file, a fast count-only control that fails on the next stale/ambiguous find; observed red against the pre-sweep specs (10/10 matched), green now. Full suite: 1503 passed, 4 skipped, 8 deselected. ruff clean. All 35 files now report \"every mutation killed\" via uv run python tools/mutate_check.py. 5 commits, no push.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "W3-MUT-SWEEP: every named mutant in tests/mutations/*.json is live again: each file's find text occurs in its target file, and uv run python tools/mutate_check.py <file> ends \"every mutation killed\" for every file.",
+      "done_when": "Every tests/mutations/*.json file (except correctness.json/judge.json, report-only) reports \"every mutation killed\"; every stale find re-pointed with the same name/semantics/named tests; every survivor either got a killing test (observed red under the mutant, green under real code) or is listed for the Leader; a fast test_mutate_check.py control fails on the next stale/ambiguous find (observed red on the pre-sweep state); full pytest and ruff clean.",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-25T13:36:45Z",
+      "duration_seconds": 3243.0,
+      "git": {
+        "sha": "97100d01765c43e2cf932582362ec0c01d7c5f04",
+        "short": "97100d017",
+        "branch": "w3-mutsweep",
+        "pushed": null
+      }
     }
   ],
   "changes": [
