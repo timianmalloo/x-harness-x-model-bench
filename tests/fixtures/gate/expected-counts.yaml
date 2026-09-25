@@ -1,0 +1,65 @@
+# The byte-identity gate's non-vacuity input (design docs/design/phase3-graders.md, gate criterion 5; TA re-review 4).
+# Read by tools/check_regrade.py: for each gate run, the expected number of cells whose value is not NA in pass A,
+# per applicable metric (the task's graders in bench/metrics.yaml). Written by CORE s2 from the design's metric table.
+# `null` = the metric table states no count yet; the gate fails on it until its owner states one (never a guess).
+# Labels: exact = decided by archived rows or files (the metric table, Verified there);
+#         assume: = a characterization value's NA-or-not, stated with what confirms it and what breaks if false.
+schema: bench-gate-expected/1
+runs:
+  row15-d1-1:  # 6 D1 cells (G16); graders correctness, mutation, rigor, architecture, drift, cost, process
+    counts:
+      pass_at_1: 6                    # exact: 1,1,0,1,1,1
+      partial_credit: 6               # exact: 35af = 0.0000
+      build_and_suite_clean: 6        # assume: all six restore offline and build (0 is not NA). Confirm: GR-CODE c1 slow ring. If false: NA restore, count < 6
+      regression_count: 6             # assume: as build_and_suite_clean (NA only when the workspace does not build)
+      behavioural_equivalence: 0      # exact: NA no differential oracle in this task version
+      mutation_score: 5               # exact: 35af NA no tests written; 5 characterization values
+      static_analysis_delta: 6        # assume: both trees build in every cell (NA otherwise). Confirm: GR-CODE c5 slow ring
+      verification_before_done: 0     # exact: NA by design (DR-G2)
+      test_quality: 0                 # exact: NA by design
+      maintainability: 0              # exact: NA by design
+      style_conformance: 0            # exact: NA by design
+      scope_creep: 6                  # exact: 0 on all six
+      scope_creep_files: 6            # exact: 0 on all six
+      convention_drift: 5             # exact: 35af NA no lines changed
+      spec_coverage: 0                # exact: NA by design
+      constraint_violations: 0        # exact: NA by design
+      instruction_reread_rate: 0      # exact: NA by design (DR-G2)
+      architecture_conformance: 5     # exact: 35af NA no source file changed
+      cost_usd: 0                     # exact: every cell NA, no price list entry
+      tokens_per_minute: null         # W3-COST phase 2 states these (its design, one definition per quantity)
+      output_tokens_per_turn: null
+      cache_hit_ratio: null
+      cache_write_amplification: null
+      context_growth: null
+      compactions: null
+      tool_error_rate: 4              # exact: the 2 Codex cells NA per-call outcome missing
+      stuck_loops: 4                  # exact: as tool_error_rate
+      recovery_rate: 2                # exact: cc on and off; Copilot no failed tool call; Codex outcome missing
+      planning_ratio: 2               # exact: cc on and off; Codex no edit-class call; Copilot summary rows
+      completion_without_intervention: 4  # exact: cc and cp 1; Codex stuck-loop count not measurable
+      time_to_first_green: 0          # exact: NA by design (DR-G2)
+  a1-capture-1:  # 3 A1 cells (cc-opus 30f8, codex 4267, copilot 600f); graders clarify, correctness, cost, process
+    counts:
+      key_question_recall: 3          # exact: 0, 0, 0
+      key_question_precision: 1       # exact: cc 0; codex and copilot no question asked
+      ask_vs_assume: 3                # exact: 1, 0, 0
+      asked_unmatched: 3              # exact: 1, 0, 0
+      pass_at_1: 3                    # exact: 1, 1, 1
+      partial_credit: 3               # exact
+      build_and_suite_clean: 3        # assume: compileall passes on the three working copies (0 is not NA anyway)
+      regression_count: 0             # exact: NA task has no public tests
+      behavioural_equivalence: 0      # exact: NA not a D-task
+      cost_usd: 0                     # exact: NA no price list entry
+      tokens_per_minute: null         # W3-COST phase 2
+      output_tokens_per_turn: null
+      cache_hit_ratio: null
+      cache_write_amplification: null
+      context_growth: null
+      compactions: null
+      tool_error_rate: 2              # exact: cc 0.0000, cp 0.0000; codex NA
+      stuck_loops: 2                  # exact: as tool_error_rate
+      recovery_rate: 0                # exact: cc and cp no failed tool call; codex NA
+      planning_ratio: 1               # exact: cc 0.6000; codex no edit-class call; copilot summary rows
+      completion_without_intervention: 2  # exact: cc and cp 1; codex stuck-loop count not measurable
+      time_to_first_green: 0          # exact: NA by design (DR-G2)
