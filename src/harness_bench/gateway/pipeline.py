@@ -19,7 +19,7 @@ import hashlib
 import json
 import re
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from harness_bench import egress, profiles
@@ -32,6 +32,7 @@ from harness_bench.gateway.backend import (
     Reply,
     final_text,
 )
+from harness_bench.telemetry import Extraction, normalize
 
 OUTCOMES = ("hit", "stored", "race_lost", "not_allowed", "failed")
 _FENCE = re.compile(r"```(?:json)?\n(.*)\n```", re.DOTALL)  # one Markdown code fence around the whole answer
@@ -162,6 +163,16 @@ def run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend | Launch) -
     if reply is None:
         return Result("failed", "HB-GW-009", escaped=escaped)
     ex = profiles.READERS[reply.harness](reply.record)  # the native record decides, never stdout (review A5)
+    rows = tuple(dict(r, principal="gateway", cell_id=None) for r in normalize.model_call_rows(
+        ctx.stored_by["ledger_id"], "", ex.session_id or "", ex, normalize.extraction_id()))
+    # the call happened, so its model_calls rows go with every outcome after it (section 4.2)
+    return replace(_answered(judge, inputs, ctx, reply, ex, rendered, key_inputs, cache_key), model_calls=rows)
+
+
+def _answered(judge: Judge, inputs: Inputs, ctx: Context, reply: Reply, ex: Extraction, rendered: request.Rendered,
+              key_inputs: dict, cache_key: str) -> Result:
+    """Section 8.3 on one call's record and answer, then the write-once store (section 9.2)."""
+    escaped = rendered.escaped
     served, session = tuple(sorted({c.model for c in ex.model_calls})), ex.session_id
     if ex.errors or not ex.model_calls or session is None:  # a provider error, or no model call recorded
         if any(e.status == 429 or "rate_limit" in e.error_type or "quota" in e.error_type for e in ex.errors):
@@ -187,7 +198,8 @@ def run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend | Launch) -
                             "template_version": request.TEMPLATE_VERSION, "scrub_version": scrub.SCRUB_VERSION,
                             "schema_sha256": key_inputs["schema_sha256"]},
              "served_models": list(served), "stored_by": dict(ctx.stored_by), "native_session_id": session,
-             "created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "fenced": int(fenced),  # canonical form has no bool (ADR-0006:49)
+             "created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+             "fenced": int(fenced),  # canonical form has no bool (ADR-0006:49)
              "verdicts": answer["items"]}
     written = store.write_once(ctx.store, cache_key, entry, judge.allowed_models)
     if written.state == "failed":
