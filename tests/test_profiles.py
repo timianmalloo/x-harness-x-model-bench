@@ -264,7 +264,8 @@ def test_claude_profile_seeds_settings_and_a_credential_copy(tmp_path):
     p.seed_home(home, model="claude-sonnet-5")
     settings = json.loads((home / "settings.json").read_text(encoding="utf-8"))
     assert settings["permissions"]["defaultMode"] == "dontAsk"
-    assert set(settings["permissions"]["allow"]) == {"Bash", "PowerShell", "Edit", "Write", "Read", "Glob", "Grep"}  # R-34
+    assert set(settings["permissions"]["allow"]) == {
+        "Bash", "PowerShell", "Edit", "Write", "NotebookEdit", "Read", "Glob", "Grep"}  # R-34, R-35
     assert (home / ".credentials.json").read_text(encoding="utf-8") == '{"secret": "x"}'
     p.clean_home(home)  # T-CELL-credclean (profile half)
     assert not (home / ".credentials.json").exists() and (home / "settings.json").exists()

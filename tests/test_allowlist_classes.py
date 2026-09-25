@@ -30,9 +30,12 @@ TOOL_LIST = FIX / "native" / "claude-code" / "tools-2.1.282-win32.jsonl"
 NEGATIVE = FIX / "ledger" / "r34-cc-opus-pack-on-powershell-denied.json"
 
 # The ADR-0004 classes, by the build's own description of each id (the fixture's first description lines).
+# NotebookEdit is deferred (ToolSearch-gated) on 2.1.282, so the trimmed fixture carries its name only, no
+# description line (`deferred_tools_delta.addedNames`, checked directly against the fixture, not memory).
+# R-35: in-class -- it edits a file in the workspace (a `.ipynb`), the same class as Edit and Write.
 CLASSES = {
     "shell": {"Bash", "PowerShell"},  # "Executes a bash command ..." / "Executes a given PowerShell command ..."
-    "file edit": {"Edit", "Write"},  # "Performs exact string replacement in a file." / "Writes a file ..."
+    "file edit": {"Edit", "Write", "NotebookEdit"},  # "Performs exact string replacement ..." / "Writes a file ..." / deferred, no description line (R-35)
     "file read": {"Read", "Glob", "Grep"},  # "Reads a file ..." / "Fast file pattern matching" / "Content search"
 }
 # Outside every declared class: ADR-0004 denies them ("any other tool the harness offers", web tools, MCP servers).
@@ -41,10 +44,6 @@ OUT_OF_PROFILE = {
     "CronCreate", "CronDelete", "CronList", "DesignSync", "EnterPlanMode", "EnterWorktree", "ExitPlanMode",
     "ExitWorktree", "Monitor", "PushNotification", "RemoteTrigger", "SendMessage", "TaskStop", "WebFetch", "WebSearch",
 }
-# assume: NotebookEdit (a deferred Jupyter-cell editor on 2.1.282) is not ruled in or out of the "file edit" class;
-# R-34 adds only PowerShell. Confirm: a Leader/Owner ruling (raised at the R-34 hand-back). Breaks: if it is in the
-# class, the allowlist is still one id short and a NotebookEdit call is refused like PowerShell was.
-AWAITING_RULING = {"NotebookEdit"}
 
 
 def advertised(record: Path) -> tuple[set[str], set[str], set[str]]:
@@ -95,7 +94,7 @@ def test_the_claude_code_allowlist_names_nothing_outside_the_declared_classes(tm
 
 def test_every_tool_id_the_pinned_build_advertises_is_classified():  # a new id in a later build is red here
     ids, _, _ = advertised(TOOL_LIST)
-    known = set().union(*CLASSES.values()) | OUT_OF_PROFILE | AWAITING_RULING
+    known = set().union(*CLASSES.values()) | OUT_OF_PROFILE
     assert {i for i in ids if i not in known and not i.startswith("mcp__")} == set()
 
 
