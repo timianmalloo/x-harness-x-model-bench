@@ -44,4 +44,6 @@ def render(view: views.RunView, plain: bool) -> tuple[str, int]:
             console.print(f"  {c.label}: {c.validity} {c.validity_code}")
     if report.has_codex_cell(view.plan):
         console.print(f"{report.N5_FLAG}: see {report.N5_EVIDENCE}")
+    if report.has_claude_code_cell(view.plan):
+        console.print(f"{report.R36_FLAG}: see {report.R36_EVIDENCE}")
     return buf.getvalue(), 0

@@ -157,7 +157,7 @@ def test_the_header_shows_recorded_facts_and_not_recorded_for_the_rest(root, tmp
                    "network_mode": "unrestricted", "harness": "codex", "build_version": "0.156.0"})
     doc = html.render(views.load(run_dir), archive_present=True)
     assert "subscription login (copied)" in doc and "codex 0.156.0" in doc
-    assert "Defender real-time exclusion" in doc and "not recorded" in doc
+    assert "<dt>Defender real-time exclusion</dt><dd>not recorded</dd>" in doc
 
 
 def test_the_header_marks_the_pinned_copilot_build_as_prerelease(root, tmp_path):
@@ -399,3 +399,53 @@ def test_the_cli_table_prints_the_flag_as_ascii_after_the_table_when_a_codex_cel
 def test_the_cli_table_has_no_flag_when_no_codex_cell():
     out, code = cli_table.render(_no_codex_view(), plain=True)
     assert code == 0 and "N5" not in out
+
+
+# --- R-36(a): account context (R1.4) flag on every Claude Code cell (ruling R-36, spike R1.4) ---------
+
+R36_FLAG = "account context (R1.4)"
+
+
+def test_the_header_flags_a_run_with_a_claude_code_cell_and_names_the_evidence():
+    doc = html.render(_no_codex_view(), archive_present=True)  # claude-code only
+    assert R36_FLAG in doc
+    assert "spike-isolation-permissions.md" in doc
+
+
+def test_the_header_has_no_account_context_flag_when_the_run_has_no_claude_code_cell():
+    doc = html.render(_codex_only_view(), archive_present=True)
+    assert R36_FLAG not in doc
+
+
+def test_the_leaderboard_and_cells_table_flag_only_the_claude_code_rows():
+    doc = html.render(_mixed_view(), archive_present=True)
+    board = re.search(r'<section id="leaderboard".*?</section>', doc, re.DOTALL).group(0)
+    runs = re.search(r'<section id="runs".*?</section>', doc, re.DOTALL).group(0)
+    for section in (board, runs):
+        rows = re.findall(r"<tr>.*?</tr>", section, re.DOTALL)
+        codex_row = next(r for r in rows if "codex-sol" in r)
+        cc_row = next(r for r in rows if "cc-sonnet" in r)
+        assert R36_FLAG in cc_row
+        assert R36_FLAG not in codex_row
+
+
+def test_the_cli_table_prints_the_account_context_flag_when_a_claude_code_cell_is_present():
+    out, code = cli_table.render(_no_codex_view(), plain=True)
+    assert code == 0 and out.isascii() and R36_FLAG in out
+
+
+def test_the_cli_table_has_no_account_context_flag_when_no_claude_code_cell():
+    out, code = cli_table.render(_codex_only_view(), plain=True)
+    assert code == 0 and R36_FLAG not in out
+
+
+def test_no_connector_name_is_hard_coded_in_the_report_source():  # R-36 condition 3, R-6 condition 4
+    from pathlib import Path
+
+    import harness_bench.report as report_module
+
+    sources = sorted(Path(report_module.__file__).parent.glob("*.py"))
+    assert {p.name for p in sources} >= {"__init__.py", "html.py", "cli_table.py"}
+    for path in sources:
+        src = path.read_text(encoding="utf-8")
+        assert "mcp__claude_ai" not in src and "Claude_Docs" not in src, path.name

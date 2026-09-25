@@ -123,6 +123,8 @@ def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | N
              ("Price list hash", (plan.get("price_list_hash") or "")[:12])]
     if report.has_codex_cell(plan):
         facts.append((report.N5_FLAG, f"see {report.N5_EVIDENCE}"))
+    if report.has_claude_code_cell(plan):
+        facts.append((report.R36_FLAG, f"see {report.R36_EVIDENCE}"))
     rows = "".join(f"<dt>{_e(k)}</dt><dd>{_fact(v)}</dd>" for k, v in facts)
     return f'<section id="header"><h1>harness-bench run {_e(view.run_id)}</h1><dl>{rows}</dl></section>'
 
@@ -149,7 +151,8 @@ def _leaderboard(view: views.RunView) -> str:
                 f"Run bench status {_e(view.run_id)} to see why.</p></section>")
     headers = [("Rank", False), ("Combo", False), ("Pack", False), ("Valid cells", True), ("pass@1", True), ("Interval", False),
                ("Tokens per cell", True), ("Wall per cell", True), ("Cost per cell", True)]
-    rows = [[(_e(r.rank or "unranked"), False), (_e(report.flag_if_codex(r.combo, r.harness)), False), (_e(r.pack), False),
+    rows = [[(_e(r.rank or "unranked"), False),
+             (_e(report.flag_if_claude_code(report.flag_if_codex(r.combo, r.harness), r.harness)), False), (_e(r.pack), False),
              (f"{r.n_valid}/{r.n_cells} cells", True),
              (_e(report.rate(r.pass_at_1)), True), (_e(r.interval), False), (_e(report.tokens(r.tokens)), True),
              (_e(report.seconds(r.wall_ms)), True), (_e(report.usd(r.cost_usd)), True)] for r in views.leaderboard(view)]
@@ -172,7 +175,8 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str]) -> s
                ("Wall", True), ("Tool time", True), ("Model time", True), ("Idle", True), ("Cost", True), ("Context window", False),
                ("Evidence", False)]
     na = views.Measure(None, "not graded")
-    rows = [[(_e(report.flag_if_codex(c.label, c.harness)), False), (_e(c.outcome + (f" ({c.cause}, {c.code})" if c.code else "")), False),
+    rows = [[(_e(report.flag_if_claude_code(report.flag_if_codex(c.label, c.harness), c.harness)), False),
+             (_e(c.outcome + (f" ({c.cause}, {c.code})" if c.code else "")), False),
              (_e(c.validity + (f" {c.validity_code}" if c.validity_code else "")), False),
              (_e(report.rate(c.scores.get("pass_at_1", na))), True), (_e(report.rate(c.scores.get("partial_credit", na))), True),
              (_e(report.cell_tokens(c.tokens, c.tokens_reason)), True), (_e(report.seconds(c.wall_ms)), True),

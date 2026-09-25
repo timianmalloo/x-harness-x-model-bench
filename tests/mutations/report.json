@@ -121,15 +121,15 @@
  {
   "name": "the leaderboard combo cell never flags a codex row",
   "file": "src/harness_bench/report/html.py",
-  "find": "(_e(report.flag_if_codex(r.combo, r.harness)), False)",
-  "replace": "(_e(r.combo), False)",
+  "find": "(_e(report.flag_if_claude_code(report.flag_if_codex(r.combo, r.harness), r.harness)), False)",
+  "replace": "(_e(report.flag_if_claude_code(r.combo, r.harness)), False)",
   "tests": ["tests/test_report.py::test_the_leaderboard_and_cells_table_flag_only_the_codex_rows"]
  },
  {
   "name": "the cells table label never flags a codex cell",
   "file": "src/harness_bench/report/html.py",
-  "find": "(_e(report.flag_if_codex(c.label, c.harness)), False)",
-  "replace": "(_e(c.label), False)",
+  "find": "(_e(report.flag_if_claude_code(report.flag_if_codex(c.label, c.harness), c.harness)), False)",
+  "replace": "(_e(report.flag_if_claude_code(c.label, c.harness)), False)",
   "tests": ["tests/test_report.py::test_the_leaderboard_and_cells_table_flag_only_the_codex_rows"]
  },
  {
