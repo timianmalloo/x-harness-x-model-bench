@@ -411,7 +411,64 @@ def test_the_circuit_breaker_stops_launching_once(base):  # T1-7: CIRCUIT_BREAKE
 def test_the_circuit_breaker_fires_at_its_threshold_not_before(base):  # CIRCUIT_BREAKER = 3 (a cosmic-ray survivor)
     p = _plan(n_cells=5, parallelism=1)
     _, events, _ = _run(base, p, FakeLauncher({}, missing_exe=True))
-    assert sum(1 for e in events if e["kind"] == "cell.launch_intent") == engine.CIRCUIT_BREAKER
+    assert sum(1 for e in events if e["kind"] == "cell.launch_intent") == 3
+
+
+def test_harness_failures_do_not_trip_the_breaker(base):
+    p = _plan(n_cells=4, parallelism=1)
+    labels = {c["label"]: {"mode": "eof_mid_turn"} for c in p["cells"]}
+    _, events, _ = _run(base, p, FakeLauncher(labels))
+    assert [e["cause"] for e in events if e["kind"] == "cell.outcome"] == ["adapter_crash"] * 4
+    assert sum(e["kind"] == "cell.launch_intent" for e in events) == 4
+    assert not any(e["kind"] == "run.launch_stopped" for e in events)
+
+
+@pytest.mark.parametrize("outcome,cause", [
+    ("stopped", None),
+    ("skipped (decision)", None),
+    ("failed (model unavailable)", "model_unavailable"),
+])
+def test_neutral_outcomes_neither_count_nor_reset(base, monkeypatch, outcome, cause):
+    p = _plan(n_cells=1)
+    config = engine.EngineConfig(run_dir=base / "r", cells_root=base / "c", launchers={},
+                                 build_workspace=_build_workspace, grade=None)
+    eng = engine.Engine(p, config)
+    stops = []
+    monkeypatch.setattr(eng, "_stop_launching", lambda code, reason: stops.append((code, reason)))
+    for i in range(2):
+        eng._after_append({"kind": "cell.outcome", "cell_id": f"fail-{i}", "cause": "spawn", "outcome": "failed"})
+    assert eng.infra_streak == 2
+    eng._after_append({"kind": "cell.outcome", "cell_id": "neutral", "cause": cause, "outcome": outcome})
+    assert eng.infra_streak == 2
+    assert stops == []
+    eng._after_append({"kind": "cell.outcome", "cell_id": "third", "cause": "spawn", "outcome": "failed"})
+    assert stops == [("HB-CELL-114", "circuit breaker: 3 consecutive infrastructure failures")]
+
+
+def test_model_unavailable_alone_does_not_count_toward_the_breaker(base, monkeypatch):
+    p = _plan(n_cells=1)
+    config = engine.EngineConfig(run_dir=base / "r", cells_root=base / "c", launchers={},
+                                 build_workspace=_build_workspace, grade=None)
+    eng = engine.Engine(p, config)
+    stops = []
+    monkeypatch.setattr(eng, "_stop_launching", lambda code, reason: stops.append((code, reason)))
+    for i in range(3):
+        eng._after_append({"kind": "cell.outcome", "cell_id": f"unavailable-{i}",
+                           "cause": "model_unavailable", "outcome": "failed (model unavailable)"})
+    assert eng.infra_streak == 0
+    assert stops == []
+
+
+def test_the_breaker_leaves_running_cells_running(base):
+    p = _plan(n_cells=5, parallelism=2)
+    slow, *fast = p["cells"]
+    launcher = FakeLauncher({slow["label"]: {"sleep": 3},
+                             **{c["label"]: {"mode": "provider_error"} for c in fast}})
+    summary, events, _ = _run(base, p, launcher)
+    assert [e["code"] for e in events if e["kind"] == "run.launch_stopped"] == ["HB-CELL-108"]
+    assert _outcomes(events)[slow["cell_id"]]["outcome"] == "completed"
+    assert sum(e["kind"] == "cell.launch_intent" for e in events) == 4
+    assert summary.exit_code == 3
 
 
 def test_a_drain_with_nothing_queued_returns_at_its_deadline(base):  # the loop never stalls on an empty inbox
@@ -1003,6 +1060,41 @@ def test_the_host_is_kept_awake_for_the_run_and_released_at_its_end(base, monkey
     monkeypatch.setattr(host, "keep_awake", calls.append)
     p = _plan(n_cells=1)
     _run(base, p, FakeLauncher({}))
+    assert calls == [True, False]
+
+
+def test_keep_awake_is_held_through_a_stop(base, monkeypatch):
+    p = _plan(n_cells=2, parallelism=1)
+    config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
+                                 launchers={"fake": FakeLauncher({p["cells"][0]["label"]: {"sleep": 1}})},
+                                 build_workspace=_build_workspace, grade=None)
+    eng = engine.Engine(p, config)
+    calls = []
+    monkeypatch.setattr(host, "keep_awake", lambda flag: calls.append((flag, len(eng.active), eng.stopped)))
+
+    def stop_when_running():
+        if eng.active and eng.stopped is None:
+            eng._stop_launching("HB-RUN-006", "operator stop")
+
+    monkeypatch.setattr(eng, "_check_budgets", stop_when_running)
+    summary = eng.run()
+    events = _events(config.run_dir)
+    assert calls == [(True, 0, None), (False, 0, "HB-RUN-006")]
+    assert [e["code"] for e in events if e["kind"] == "run.launch_stopped"] == ["HB-RUN-006"]
+    assert _outcomes(events)[p["cells"][0]["cell_id"]]["outcome"] == "completed"
+    assert summary.exit_code == 3
+
+
+def test_keep_awake_is_released_when_the_run_raises(base, monkeypatch):
+    p = _plan(n_cells=1)
+    config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
+                                 launchers={"fake": FakeLauncher({})}, build_workspace=_build_workspace, grade=None)
+    eng = engine.Engine(p, config)
+    calls = []
+    monkeypatch.setattr(host, "keep_awake", calls.append)
+    monkeypatch.setattr(eng, "_check_budgets", lambda: (_ for _ in ()).throw(RuntimeError("budget check failed")))
+    with pytest.raises(RuntimeError, match="budget check failed"):
+        eng.run()
     assert calls == [True, False]
 
 
