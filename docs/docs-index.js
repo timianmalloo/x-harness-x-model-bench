@@ -1099,6 +1099,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "9e65e706ea947204a0a1d7ddcd11d657b1559207f3b242fb20377efa18cfdd63"
     },
     {
+      "id": "review-w3-gwi-1-fable",
+      "path": "docs/notes/review-w3-gwi-1-fable.md",
+      "title": "W3-GW-I slice 1 cross-model security review",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-09",
+      "reviewSuggested": [],
+      "summary": "Security Adversary review of W3-GW-I slice 1 at 371637e: CONDITION. No blocker; two Majors (the served-model check accepts an answer the pin never produced; the gateway lint is evaded by a local alias of the backend), five Minors, and the author's six findings ruled.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "c8a775b475343292c568faba0f0eb5e1513089c18bf3467c55de7bb1a54e077d"
+    },
+    {
       "id": "row15-headroom",
       "path": "docs/notes/row15-headroom.md",
       "title": "Row 15: the headroom rule for raising the parallelism cap",
@@ -2703,5 +2724,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "c7acb271a82d8107b52240fdaf513b6f9cbf9c1b2767b3ca67dd9ca54efb341d"
+  "graphSha256": "111e75d9c2a80c90847bfb8235f8940ba923157eeb6402005b08942074fbb3c7"
 };

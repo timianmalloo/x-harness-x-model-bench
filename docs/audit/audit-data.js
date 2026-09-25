@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T10:50:04Z",
+  "generated": "2026-09-25T11:13:50Z",
   "audit": [
     {
       "actor": null,
@@ -20433,6 +20433,81 @@ window.AUDIT_DATA = {
       "summary": "C-2 move 34afffb; reds 5640aa0 (syntax), 8e38181 (deleted member), dc64e75 (empty cache), fbdb135 (pack-on base); greens 2b7f323 (_changes), e1ae7f5 (DR-G4 + build_and_suite_clean), 56dc17d (branch tests), a6e8570 (mutants, spike note). correctness.json 25/25 killed, grade.json 34/34. pytest 1267 passed with HB_GATE_RUNS. Flagged: the broken-ProjectReference seed exits 0 (MSB9008 warning); decision request to the Leader.",
       "tags": [],
       "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "src/harness_bench/gateway",
+        "tests/mutations/gateway.json"
+      ],
+      "compiled": false,
+      "datetime": "2026-09-25T10:36:14Z",
+      "done_when": "T-GW-01..06, 11, 12b, 13, 30, 31, 33 red then green; gateway.json mutants all killed; full pytest and ruff clean; architecture lint green",
+      "duration_seconds": 1499.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w3-gwi-1",
+        "pushed": null,
+        "sha": "9570254ba8248da093f66785e9f166ecd73d1848",
+        "short": "9570254ba"
+      },
+      "goal": "W3-GW-I slice 1: request rendering, scrub+scan, schema validator, key, write-once store, section 9.3 hit check, Backend protocol with a replay fake; red first",
+      "id": "al-01M3C267842V0B8ABEFY6SNEST",
+      "kind": "skill",
+      "main_budget": 180,
+      "main_calls": 100,
+      "main_over_budget": false,
+      "outcome": "success",
+      "prompt": "W3-GW-I slice 1 per brief-gwi1.md (Leader coord-opus-cq, R-4): the offline half of the model gateway behind a Backend protocol, red first.",
+      "session": "w3-gwi-1",
+      "shortname": "w3-gwi-1-s1",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "implement",
+      "started_at": "2026-09-25T10:11:15Z",
+      "summary": "W3-GW-I slice 1 (Claude Opus 5.5 under R-4): src/harness_bench/gateway/ - request (judge-request/1, section 7.2 order, golden), scrub + independent scan (NFKC, Cf removed, whole words, any case), the schema-file validator (gateway/schemas/verdict-set.v1.json), the four-input key, the write-once store (os.link) and the one section 9.3 hit check, the Backend protocol with ReplayBackend only, and the pipeline reaching the backend only through egress.check(...).release. Offline: no process, socket or listener. Reds 4cd0e11 (01), d948849 (02), 20f9bd9 (06), 73d5814 (33), be84ace (03), b1c828f (05), d61eff7 (31), 838fba0 (12b), b9bfcb8 (11), 6cada3c (13), 47bd54e (04), 2b1d49d (30); greens ba57261, fc03f83, 343e188, c7aaed1, 7799ffb; mutations 9570254: 45 named, all killed. Full suite 1273 passed; ruff clean; the architecture lint green on the real repository. Seams owed: HB-GW-* codes into errors.RUN_CODES (STOP-I owns errors.py); .gitignore cache/; the ADR-0006 amendment; bench/gateway.yaml at s2. Finding: errors.RUN_CODES already defines HB-GRD-003 as the grader-failure code, while design section 17 reuses HB-GRD-003 for the live-run refusal (s4 must take a new code).",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "claude",
+      "artifacts": [
+        "tests/fixtures/gateway/probe_judge.py",
+        "tests/fixtures/gateway/probe_selftest.py",
+        "tests/fixtures/gateway/copilot/"
+      ],
+      "compiled": false,
+      "datetime": "2026-09-25T10:56:23Z",
+      "done_when": "probe_judge.py run --harness copilot --model gpt-6-sol builds R-63's launch shape (dry-run verified); analyse reads Copilot's own native record (served model, tools_advertised distinct [] vs null via a dedicated reader, tool events, canaries/pack markers/operator identifiers as key paths, unreadable record exits 2); probe_selftest.py gains five placeholder Copilot cases, red first, all green; collect accepts the Copilot summary form unchanged; pytest and ruff clean.",
+      "duration_seconds": 455.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w3-gwcp",
+        "pushed": null,
+        "sha": "d3553e232b12e51ee6bfa24d8d54b288fdf015d9",
+        "short": "d3553e232"
+      },
+      "goal": "W3-GW-CP: add Copilot 1.0.89-1 serving gpt-6-sol as a third harness of tests/fixtures/gateway/probe_judge.py in the GW-H shape, so the Leader can run R-63's two probe turns.",
+      "id": "al-01M3C3B39A4RXC26MHRB2WZT9Z",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "W3-GW-CP: add Copilot 1.0.89-1 serving gpt-6-sol as a third harness of tests/fixtures/gateway/probe_judge.py in the GW-H shape, so the Leader can run R-63's two probe turns.",
+      "session": "w3-gwcp",
+      "shortname": "W3-GW-CP: Copilot gpt-6-sol probe harness (R-63)",
+      "skill": "implement",
+      "started_at": "2026-09-25T10:48:48Z",
+      "summary": "Added Copilot gpt-6-sol as a third probe_judge.py harness per R-63 c1: copilot_argv builds -p/--model/--disable-builtin-mcps/empty --available-tools (assume: -p print mode, marked in code; -disable-builtin-mcps and --available-tools are R-45's own Verified flags); run() gained a --credential-source override since Copilot's cell profile copies nothing (credential: null) but this probe needs a throwaway COPILOT_HOME the Leader seeds at run time, never the real ~/.copilot. Found and worked around (in probe_judge.py only, not telemetry/copilot.py which is out of scope) a reader defect: Extraction.tools_advertised collapses a genuinely measured empty tools list to None via `or None`, which would have silently passed R-63's central \"[] never null\" criterion; added _copilot_tools_advertised reading the raw record directly, plus a Copilot-only null-tools reason. Five placeholder records under tests/fixtures/gateway/copilot/ (fixed placeholders only), red on c049e66 (2 failing null-tools assertions), green on 3fe712f. probe_selftest.py: 39 -> 53 checks, exit 0. pytest: 1242 passed, 2 skipped. ruff clean. Reported to the Leader: telemetry/copilot.py's tools_advertised `or None` collapse is a real defect for any future all-tools-off consumer, not fixed here (out of this track's file scope).",
+      "tags": [
+        "gateway",
+        "copilot",
+        "R-63"
+      ],
+      "tier": "T1",
       "tool": null
     }
   ],
