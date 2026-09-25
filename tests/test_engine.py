@@ -7,6 +7,7 @@ Every run's events are replayed against the model's phase-1 guards (lifecycle.re
 
 import ctypes
 import errno
+import itertools
 import json
 import logging
 import os
@@ -1936,3 +1937,39 @@ def test_an_unconfirmed_kill_backs_off_from_1_s_doubling_to_the_designs_30_s_cap
     a = engine._Active(eng.plan["cells"][0], threading.current_thread())
     assert eng._end_process(a, cp, 0) == (0, True, "terminate")
     assert cp.timeouts == [eng.params["kill_escalation"], 1, 2, 4, 8, 16, 30, 30, 30]
+
+
+# --- decision requests (US-15; design 6) -----------------------------------------------------------------------------
+
+ORDERS = [order for n in (1, 2, 3) for order in itertools.permutations(("answer", "timeout", "stop"), n)]  # 3 + 6 + 6
+FIRST_WINS = {"answer": ("answered", "continue"), "timeout": ("default applied (timeout)", "continue"),
+              "stop": ("superseded (stop)", None)}
+
+
+@pytest.mark.parametrize("order", ORDERS, ids="-".join)
+def test_decision_resolves_exactly_once_in_every_order(order):  # R10-4, pure: every order on the functional core (S-7)
+    core = getattr(engine, "_Decisions", None)
+    assert core is not None, "design 6.2: the decision state machine is the functional core engine._Decisions"
+    d = core(timeout=30)
+    assert d.open("blocked_cell", "fake", "HB-CELL-202", now=0.0) == {
+        "kind": "decision.opened", "decision_id": "D1", "decision_kind": "blocked_cell", "subject": "fake",
+        "cause_code": "HB-CELL-202", "options": ["continue", "stop"], "default": "continue"}
+    assert d.open("blocked_cell", "fake", "HB-CELL-202", now=1.0) is None  # at most once per (kind, subject, cause)
+    assert d.answer("D9", "continue") == ("rejected (invalid)", None)
+    assert d.answer("D1", "skip_combo") == ("rejected (invalid)", None)  # not an option this decision offers
+    assert d.expire(now=29.9) == []
+    rows, effects = [], []
+    for step in order:
+        if step == "answer":
+            effect, row = d.answer("D1", "continue")
+            effects.append(effect)
+            rows += [row] if row else []
+        elif step == "timeout":
+            rows += d.expire(now=30.0)
+        else:
+            rows += d.supersede_all()
+    state, option = FIRST_WINS[order[0]]
+    assert rows == [{"kind": "decision.resolved", "decision_id": "D1", "state": state, "option": option}]
+    assert effects == ([] if "answer" not in order else ["applied"] if order[0] == "answer" else ["rejected (already resolved)"])
+    assert d.expire(now=1e6) == [] and d.supersede_all() == []
+    assert d.answer("D1", "stop") == ("rejected (already resolved)", None)
