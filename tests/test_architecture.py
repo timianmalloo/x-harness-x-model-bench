@@ -69,14 +69,20 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
     """US-47 / ADR-0005 / R-60 / Codex F2: in `gateway/`, a backend is reached only as `egress.check(...).release(b)`.
 
     Bound to behaviour, not to a module name. A *sink* in a gateway module is a call into `harness_bench.procs`
-    (the only spawner, D3; GW-I "spawns through procs.run", plan row W3-GW-I) or a call of a function parameter
-    (an injected backend). A sink is *released* when it sits inside the arguments of `.release(...)` called on
-    an `egress.check(...)` result (directly, or through a name assigned from one). A top-level function or class
-    holding an unreleased sink is a *spawner*: every reference to it must be released, at least one must be, and
-    no module outside `gateway/` may import it. A gateway package that reaches no backend through a release
-    is unbound and fails too, so the rule cannot pass vacuously once `gateway/` lands. Today there is no gateway
+    (the only spawner, D3; GW-I "spawns through procs.run", plan row W3-GW-I); a call rooted at a parameter that
+    is not annotated as plain data (an injected backend: `backend(p)`, `backend.judge(p)`); or a call on
+    `self.<attr>` assigned from such a parameter or from a spawner. A sink is *released* when it sits inside the
+    arguments of `.release(...)` called on an `egress.check(...)` result (directly, or through a local name
+    assigned from one). A top-level function or class holding an unreleased sink is a *spawner*: every reference
+    to it must be released, at least one must be, and no module outside `gateway/` may import it. A gateway
+    package that reaches no backend through a release fails. Outside `gateway/`, only an allowlist of today's
+    callers may reach procs, and a built `grade/judge.py` with no `gateway/` fails. Today there is no gateway
     package: the scan finds nothing, and the self-check proves the rule fires on each shape it must catch.
-    Residual: dynamic dispatch (getattr, importlib) and a judge CLI spawned through procs outside `gateway/`.
+
+    For GW-I: annotate data parameters (`p: str`); an unannotated parameter whose method is called is treated as a
+    backend. `self.v = egress.check(...)` then `self.v.release(b)` is reported (a fail-closed false positive: only a
+    local name counts as a checked result); release from the check call or a local. Residual: dynamic dispatch
+    (getattr, importlib) and an annotation that lies about a backend's type.
     """
     gateway = ("harness_bench", "gateway")
 
@@ -100,6 +106,47 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
             return names.get(expr.id, "")
         return f"{dotted(expr.value, names)}.{expr.attr}" if isinstance(expr, ast.Attribute) else ""
 
+    data_types = {"str", "bytes", "int", "float", "bool", "dict", "list", "tuple", "set", "frozenset", "Path"}
+
+    def data_typed(ann: ast.expr | None) -> bool:
+        """An annotation naming only plain data (str, list[str], Path | None, ...): such a parameter is no backend."""
+        if isinstance(ann, ast.Name) or isinstance(ann, ast.Attribute):
+            return (ann.id if isinstance(ann, ast.Name) else ann.attr) in data_types
+        if isinstance(ann, ast.Subscript):
+            return data_typed(ann.value)
+        if isinstance(ann, ast.BinOp) and isinstance(ann.op, ast.BitOr):
+            return data_typed(ann.left) and data_typed(ann.right)
+        return isinstance(ann, ast.Constant) and ann.value is None
+
+    def root(expr: ast.expr) -> tuple[str | None, list[str]]:
+        """The name a callee chain starts from, and its attributes: `self.backend.judge` -> ("self", [backend, judge])."""
+        attrs = []
+        while isinstance(expr, (ast.Attribute, ast.Call, ast.Subscript)):
+            if isinstance(expr, ast.Attribute):
+                attrs.append(expr.attr)
+            expr = expr.func if isinstance(expr, ast.Call) else expr.value
+        return (expr.id if isinstance(expr, ast.Name) else None), attrs[::-1]
+
+    def sink_calls(top: ast.stmt, al: dict[str, str], rel_released: set[int], spawners: set[str]) -> list[ast.Call]:
+        """Unreleased backend calls in one top-level statement: a call into procs; a call rooted at a parameter that
+        is not plain data (an injected backend, `backend(p)` or `backend.judge(p)`); or a call on `self.<attr>` where
+        the attribute is assigned from such a parameter or from a spawner (Fable Major 2)."""
+        receivers = {f.args.args[0].arg for c in ast.walk(top) if isinstance(c, ast.ClassDef) for f in c.body
+                     if isinstance(f, (ast.FunctionDef, ast.AsyncFunctionDef)) and f.args.args}
+        params = {a.arg for f in ast.walk(top) if isinstance(f, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda))
+                  for a in [*f.args.posonlyargs, *f.args.args, *f.args.kwonlyargs]
+                  if a.arg not in receivers and not data_typed(a.annotation)}
+        tainted = {t.attr for n in ast.walk(top) if isinstance(n, ast.Assign) for t in n.targets
+                   if isinstance(t, ast.Attribute) and isinstance(t.value, ast.Name) and t.value.id in receivers
+                   and any(isinstance(v, ast.Name) and v.id in params | spawners or
+                           isinstance(v, ast.Attribute) and v.attr in spawners for v in ast.walk(n.value))}
+
+        def is_sink(call: ast.Call) -> bool:
+            base, attrs = root(call.func)
+            return ("procs" in dotted(call.func, al).split(".")[1:] or base in params or
+                    base in receivers and bool(attrs) and attrs[0] in tainted)
+        return [n for n in ast.walk(top) if isinstance(n, ast.Call) and id(n) not in rel_released and is_sink(n)]
+
     def offenders(modules: dict[str, str]) -> list[str]:
         trees = {rel: ast.parse(source) for rel, source in modules.items()}
         names = {rel: aliases(rel, tree) for rel, tree in trees.items()}
@@ -116,16 +163,18 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
                              if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) and n.func.attr == "release"
                              and (is_check(n.func.value) or isinstance(n.func.value, ast.Name) and n.func.value.id in checked)
                              for arg in [*n.args, *(k.value for k in n.keywords)] for sub in ast.walk(arg)}
-            for top in tree.body:
-                params = {a.arg for f in ast.walk(top) if isinstance(f, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda))
-                          for a in [*f.args.posonlyargs, *f.args.args, *f.args.kwonlyargs]}
-                sinks = [n for n in ast.walk(top) if isinstance(n, ast.Call) and id(n) not in released[rel] and
-                         (dotted(n.func, al).startswith("harness_bench.procs") or
-                          isinstance(n.func, ast.Name) and n.func.id in params)]
-                if sinks and isinstance(top, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                    spawners.add(top.name)
-                elif sinks:
-                    found.append(f"{rel}:{sinks[0].lineno}: a backend call outside any release")
+        while True:  # a fixpoint: a self attribute assigned from a spawner makes its class a spawner (Fable Major 2)
+            before, top_level = set(spawners), []
+            for rel in inside:
+                for top in trees[rel].body:
+                    sinks = sink_calls(top, names[rel], released[rel], spawners)
+                    if sinks and isinstance(top, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                        spawners.add(top.name)
+                    elif sinks:
+                        top_level.append(f"{rel}:{sinks[0].lineno}: a backend call outside any release")
+            if spawners == before:
+                break
+        found += top_level
         bound, used = False, set()
         for rel in inside:
             for n in ast.walk(trees[rel]):
