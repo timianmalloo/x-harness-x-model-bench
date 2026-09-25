@@ -35,7 +35,7 @@ TOOL_NOT_AVAILABLE = "mutation tool not available"
 HOST_ENV = ("PATH", "SYSTEMROOT", "SYSTEMDRIVE", "WINDIR", "TEMP", "TMP")
 DOTNET_HOST_ENV = (
     "USERPROFILE", "APPDATA", "LOCALAPPDATA", "HOMEDRIVE", "HOMEPATH",
-    "ProgramData", "ProgramFiles", "NUGET_PACKAGES",
+    "ProgramData", "ProgramFiles", "NUGET_PACKAGES", "PROCESSOR_ARCHITECTURE",
 )
 TEST_PROJECT_MARKER = re.compile(
     r"<PackageReference\s+Include=\"Microsoft\.NET\.Test\.Sdk\"|<IsTestProject>\s*true\s*</IsTestProject>",
