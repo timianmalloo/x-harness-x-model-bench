@@ -165,6 +165,11 @@ def call_folder(launch: Launch, call_id: str) -> Path:
     return launch.cells_root / "gateway" / launch.grading_id / call_id
 
 
+# The harnesses `Headless` launches. `bench/gateway.yaml` may mark a judge `qualified: true` only on one of these
+# (R-70 item 4: a qualified entry the gateway cannot launch closes every call as HB-GW-001, read as an outage).
+HEADLESS_HARNESSES = ("claude-code",)
+
+
 class Headless:
     """One judge call through the pinned headless CLI (Claude Code, the one qualified judge harness).
 
@@ -176,7 +181,7 @@ class Headless:
 
     def judge(self, request: str, call_id: str) -> Reply:
         launch = self.launch
-        if launch.profile.harness != "claude-code":
+        if launch.profile.harness not in HEADLESS_HARNESSES:
             raise BackendDown(f"the headless backend does not launch {launch.profile.harness}")
         folder = call_folder(launch, call_id)
         home, work, decoy = folder / "home", folder / "work", folder / "profile"

@@ -280,6 +280,8 @@ def validate_repo(root: Path) -> list[str]:
     validate_bom(bom, p)
     validate_metrics(load_yaml(root / "bench" / "metrics.yaml"), p, graders)
     validate_matrix(load_yaml(root / "bench" / "matrix.example.yaml"), bom, p, "bench/matrix.example.yaml")
+    if (root / "bench" / "gateway.yaml").is_file():  # absent until the Leader's measured turn (R-70)
+        validate_gateway(load_yaml(root / "bench" / "gateway.yaml"), p)
     entries = {t["id"]: t for t in bom.get("tasks", [])}
     tasks_dir = root / "tasks"
     folders = {d.name for d in tasks_dir.iterdir() if d.is_dir() and not d.name.startswith("_")}
@@ -306,3 +308,81 @@ def validate_task_freeze(root: Path, p: Problems) -> None:
         actual = task_version_hash(root / "tasks" / tid)
         if actual != frozen:
             p.add(f"tasks/{tid} changed while frozen (R-59 c5)", f"{actual} != {frozen}")
+
+
+GATEWAY_SCHEMA = "bench-gateway/1"
+JUDGE_VENDORS = ("anthropic", "openai")  # one judge per model vendor (R-58 DR-1; US-35)
+JUDGE_HARNESSES = ("claude-code", "codex", "copilot")  # the harnesses backend.invocation_sha256 has a builder for
+JUDGE_OUTPUTS = ("text", "native")  # design section 5: Claude text, Codex native --output-schema
+JUDGE_KEYS = frozenset({"vendor", "harness", "model", "output", "build", "invocation_sha256", "qualified"})
+_SHA256 = re.compile(r"[0-9a-f]{64}")
+
+
+def validate_gateway(g: dict, p: Problems, where: str = "bench/gateway.yaml") -> None:
+    """The judge stipulation, `bench/gateway.yaml` (design phase3-gateway-judges section 5; R-58 DR-1, R-63, R-70).
+
+    One or two judges, one per vendor, in jury order (the second is the one R-63 (b) names). Each entry has exactly
+    `vendor, harness, model, output, build {version, exe_sha256}, invocation_sha256, qualified`, and an optional
+    `spike` label. The model is a safe egress destination (review w3-gwi-1 F6). `invocation_sha256` must equal the
+    gateway's own builders' hash of the entry (`backend.invocation_sha256`, section 9.1), so a placeholder, or a hash
+    of a shape the gateway does not launch, is refused (R-70 item 4). `qualified: true` is refused on a harness the
+    headless backend does not launch (R-70 item 4)."""
+    # config is imported by the modules gateway.backend imports, so the builders are imported where they are used
+    from harness_bench import egress
+    from harness_bench.gateway import backend
+
+    if g.get("schema") != GATEWAY_SCHEMA:
+        p.add(where, f"schema must be {GATEWAY_SCHEMA}")
+    timeout = g.get("call_timeout_seconds")
+    if isinstance(timeout, bool) or not isinstance(timeout, int | float) or timeout <= 0:
+        p.add(where, "call_timeout_seconds must be a positive number")
+    judges = g.get("judges")
+    if not isinstance(judges, list) or not 1 <= len(judges) <= 2 or not all(isinstance(j, dict) for j in judges):
+        p.add(where, "judges must be a list of one or two judge entries (one per vendor, R-58 DR-1)")
+        return
+    if len({j.get("vendor") for j in judges}) != len(judges):
+        p.add(where, "judges must name distinct vendors (one per vendor, R-58 DR-1)")
+    for n, j in enumerate(judges, 1):
+        at = f"{where} judge {n}"
+        if set(j) - {"spike"} != JUDGE_KEYS:
+            p.add(at, f"keys must be {sorted(JUDGE_KEYS)} and an optional spike")
+            continue
+        build = j["build"] if isinstance(j["build"], dict) else {}
+        version, exe = build.get("version"), build.get("exe_sha256")
+        fields_ok = [
+            (j["vendor"] in JUDGE_VENDORS, f"vendor must be one of {JUDGE_VENDORS}"),
+            (j["harness"] in JUDGE_HARNESSES, f"harness must be one of {JUDGE_HARNESSES}"),
+            (isinstance(j["model"], str) and egress.DESTINATION.fullmatch(j["model"]) is not None,
+             "model must be a lower-case model id (an egress destination)"),
+            (j["output"] in JUDGE_OUTPUTS, f"output must be one of {JUDGE_OUTPUTS}"),
+            (set(build) == {"version", "exe_sha256"} and isinstance(version, str) and bool(version.strip())
+             and isinstance(exe, str) and _SHA256.fullmatch(exe) is not None,
+             "build must be {version, exe_sha256} with a 64-hex exe_sha256"),
+            (isinstance(j["qualified"], bool), "qualified must be true or false"),
+            (isinstance(j.get("spike", "-"), str) and bool(j.get("spike", "-").strip()), "spike must be a label"),
+        ]
+        for ok, msg in fields_ok:
+            if not ok:
+                p.add(at, msg)
+        if not all(ok for ok, _ in fields_ok):
+            continue
+        if j["invocation_sha256"] != backend.invocation_sha256(j["harness"], j["model"], backend.JUDGE_SYSTEM,
+                                                              j["output"], version, exe):
+            p.add(at, "invocation_sha256 is not the gateway builders' hash of this entry (R-70: a placeholder or "
+                      "another shape is refused)")
+        if j["qualified"] and j["harness"] not in backend.HEADLESS_HARNESSES:
+            p.add(at, f"qualified: true on {j['harness']}, which the gateway does not launch (R-70 item 4)")
+
+
+def load_gateway(root: Path) -> dict | None:
+    """`bench/gateway.yaml`, validated; None when it is not in the tree (every judged metric: no qualified judge).
+    An invalid stipulation raises HB-USR-002 naming every problem."""
+    path = root / "bench" / "gateway.yaml"
+    if not path.is_file():
+        return None
+    g = load_yaml(path)
+    p = Problems()
+    validate_gateway(g, p)
+    if p:
+        raise BenchError("HB-USR-002", "; ".join(p.items))
+    return g

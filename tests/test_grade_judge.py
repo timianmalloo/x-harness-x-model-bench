@@ -20,7 +20,9 @@ import pytest
 import yaml
 from archived_runs import GOOD, ROOT, make_root, make_run, pass_rows
 
-from harness_bench import egress, ledger, profiles, tools, views
+from harness_bench import config, egress, ledger, profiles, tools, views
+from harness_bench.errors import BenchError
+from harness_bench.gateway import backend as gw_backend
 from harness_bench.gateway import pipeline
 from harness_bench.grade import Score, judge, runner
 
@@ -214,3 +216,63 @@ def test_t_gw_12_a_warm_regrade_spawns_no_judge_and_reads_the_same_entries(tmp_p
     assert ledger.canonical({"scores": export[0]}) == ledger.canonical({"scores": export[1]})
     assert {m: (v, r) for m, v, r in export[1]}["adr_quality"] == \
         (None, "items 1, 2, 3, 4, 5, 6, 7: second judge not qualified")
+
+
+# ----------------------------------------------------------------------------- the stipulation, bench/gateway.yaml
+def stipulation(**judge_over) -> dict:
+    g = yaml.safe_load((FIX / "gateway.yaml").read_text(encoding="utf-8"))
+    g["judges"][0] |= judge_over
+    return g
+
+
+def problems(g: dict) -> list[str]:
+    p = config.Problems()
+    config.validate_gateway(g, p)
+    return p.items
+
+
+def test_the_fixture_stipulation_is_valid_and_its_hashes_are_the_builders_own():
+    assert problems(stipulation()) == []
+
+
+NOT_THE_BUILDERS = ("bench/gateway.yaml judge 1: invocation_sha256 is not the gateway builders' hash of this entry "
+                    "(R-70: a placeholder or another shape is refused)")
+KEYS = ("bench/gateway.yaml judge 1: keys must be ['build', 'harness', 'invocation_sha256', 'model', 'output', "
+        "'qualified', 'vendor'] and an optional spike")
+
+
+@pytest.mark.parametrize(("change", "expected"), [
+    ({"invocation_sha256": "0" * 64}, NOT_THE_BUILDERS),  # a placeholder hash
+    ({"model": "claude-opus-5-5"}, NOT_THE_BUILDERS),  # a hash of another invocation
+    ({"harness": "copilot", "invocation_sha256": gw_backend.invocation_sha256(
+        "copilot", CLAUDE, gw_backend.JUDGE_SYSTEM, "text", "2.1.282", "0" * 64)},
+     "bench/gateway.yaml judge 1: qualified: true on copilot, which the gateway does not launch (R-70 item 4)"),
+    ({"model": "Claude Fable"}, "bench/gateway.yaml judge 1: model must be a lower-case model id (an egress destination)"),
+    ({"output": "json"}, "bench/gateway.yaml judge 1: output must be one of ('text', 'native')"),
+    ({"qualified": "yes"}, "bench/gateway.yaml judge 1: qualified must be true or false"),
+    ({"build": {"version": "2.1.282", "exe_sha256": "fc0e3af0"}},
+     "bench/gateway.yaml judge 1: build must be {version, exe_sha256} with a 64-hex exe_sha256"),
+    ({"vendor": "openai"}, "bench/gateway.yaml: judges must name distinct vendors (one per vendor, R-58 DR-1)"),
+    ({"fallback_model": "claude-opus-5-5"}, KEYS),  # never passed (design section 5)
+])
+def test_a_stipulation_entry_is_refused_on_each_rule(change, expected):
+    assert problems(stipulation(**change)) == [expected]
+
+
+def test_a_stipulation_names_one_or_two_judges_a_positive_timeout_and_its_schema():
+    g = stipulation()
+    assert problems(g | {"judges": g["judges"] * 2}) == [
+        "bench/gateway.yaml: judges must be a list of one or two judge entries (one per vendor, R-58 DR-1)"]
+    assert problems(g | {"schema": "bench-gateway/2", "call_timeout_seconds": 0}) == [
+        "bench/gateway.yaml: schema must be bench-gateway/1",
+        "bench/gateway.yaml: call_timeout_seconds must be a positive number"]
+
+
+def test_load_gateway_is_none_when_absent_and_refuses_an_invalid_file(tmp_path):
+    assert config.load_gateway(tmp_path) is None
+    (tmp_path / "bench").mkdir()
+    (tmp_path / "bench" / "gateway.yaml").write_text(yaml.safe_dump(stipulation(qualified="yes")), encoding="utf-8")
+    with pytest.raises(BenchError) as refused:
+        config.load_gateway(tmp_path)
+    assert (refused.value.code, refused.value.message) == (
+        "HB-USR-002", "bench/gateway.yaml judge 1: qualified must be true or false")
