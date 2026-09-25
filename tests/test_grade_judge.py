@@ -8,16 +8,19 @@ and the operator's identifiers are random synthetic strings (R-42). The stipulat
 `fixtures/gateway/gateway.yaml`: bench/gateway.yaml waits for the Leader's measured turn (R-70).
 """
 
+import dataclasses
 import json
 import shutil
+import sys
 from decimal import Decimal
 from pathlib import Path
+from secrets import token_hex
 
 import pytest
 import yaml
 from archived_runs import GOOD, ROOT, make_root, make_run, pass_rows
 
-from harness_bench import ledger, views
+from harness_bench import egress, ledger, profiles, tools, views
 from harness_bench.gateway import pipeline
 from harness_bench.grade import Score, judge, runner
 
@@ -143,3 +146,71 @@ def test_t_gw_21_verdict_uses_is_append_only_and_a_rewrite_fails_verify(tmp_path
     path.write_bytes(b"".join(lines))
     errors = [f for f in views.verify(run_dir) if f.level == "error"]
     assert [(f.code, f.message.split(":")[0]) for f in errors] == [("HB-LED-002", f"verdict_uses/{gid}.jsonl")]
+
+
+# --------------------------------------------------------------------------------------------------- T-GW-12
+ANSWER = (2, 1, 2, 0, 1, 2, 1)  # the fake judge's scores for items 1..7
+
+
+def fake_calls(tmp_path, cells_root: Path, calls_type):
+    """The call environment of a pass that may call a judge: the fake judge CLI replaying the committed placeholder
+    record `claude-fable-text` with a 7-item answer on stdout; a synthetic credential and synthetic operator."""
+    stdout = json.loads((FIX / "records" / "claude-fable-text.stdout.json").read_text(encoding="utf-8"))
+    stdout["result"] = json.dumps({"items": [{"item": n, "score": s, "rationale": f"placeholder rationale {n}"}
+                                             for n, s in enumerate(ANSWER, 1)]})
+    (tmp_path / "answer.stdout.json").write_text(json.dumps(stdout), encoding="utf-8")
+    credential = tmp_path / "synthetic-login" / ".credentials.json"
+    credential.parent.mkdir(parents=True)
+    credential.write_text(json.dumps({"placeholder": token_hex(8)}), encoding="utf-8")
+    cfg = {"record": str(FIX / "records" / "claude-fable-text.record.jsonl"),
+           "stdout": str(tmp_path / "answer.stdout.json"), "capture": str(tmp_path / "capture")}
+    profile = profiles.Profile(harness="claude-code", home_env="CLAUDE_CONFIG_DIR", credential_source=credential,
+                               credential_name=".credentials.json", command=("{exe}",),
+                               env={"HB_FAKE_JUDGE": json.dumps(cfg)}, record_glob="projects/**/{session_id}.jsonl",
+                               auxiliary_models=("claude-haiku-4-5",))
+    build = tools.Build(harness="claude-code", version="2.1.282", exe=FIX / "fake_judge_cli.py", sha256="0" * 64,
+                        adapter=None, adapter_version=None, adapter_sha256=None)
+    operator = egress.Operator(email=f"op-{token_hex(6)}@example.invalid", username=f"u{token_hex(5)}",
+                               home=f"C:\\Users\\u{token_hex(5)}")
+    return calls_type(cells_root=cells_root, builds={"claude-code": build}, profiles={"claude-code": profile},
+                      operator=operator, prefix=(sys.executable,))
+
+
+def spawns(tmp_path) -> int:
+    return len(list((tmp_path / "capture").glob("*.json")))
+
+
+def test_t_gw_12_a_warm_regrade_spawns_no_judge_and_reads_the_same_entries(tmp_path, base, monkeypatch):
+    grade, calls_type = getattr(judge, "grade", None), getattr(judge, "Calls", None)
+    assert grade is not None and calls_type is not None, "grade.judge.grade and grade.judge.Calls are not built"
+    calls = fake_calls(tmp_path, base / "cells", calls_type)
+    # slice 4's `bench grade --allow-model-calls` sets the flag and supplies the call environment; stood in here
+    monkeypatch.setitem(runner.GRADERS, "judge",
+                        lambda inp: grade(dataclasses.replace(inp, allow_model_calls=True), calls))
+    root = judged_root(tmp_path)
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    first = runner.run_pass(run_dir, root).grading_id
+    assert spawns(tmp_path) == 1  # one call: the qualified judge's one request; the unqualified judge never spawned
+    stored = pass_rows(run_dir, "verdict_uses", first)
+    assert uses(run_dir, first) == sorted([("a", i, CLAUDE, "stored", None) for i in ITEMS] +
+                                          [("a", i, CODEX, "failed", "HB-GW-007") for i in ITEMS])
+    [key] = {(r["cache_key"], r["entry_sha256"]) for r in stored if r["outcome"] == "stored"}
+    entry = json.loads((root / "cache" / "verdicts" / f"{key[0]}.json").read_text(encoding="utf-8"))
+    assert [v["score"] for v in entry["verdicts"]] == list(ANSWER)
+    [call] = [r for r in pass_rows(run_dir, "model_calls", first) if r["principal"] == "gateway"]
+    assert (call["run_id"], call["cell_id"], call["model"], call["native_session_id"], call["output"]) == \
+        ("r1", None, CLAUDE, entry["native_session_id"], 284)
+
+    second = runner.run_pass(run_dir, root).grading_id
+    assert spawns(tmp_path) == 1  # pass 2, calls allowed, spawned nothing: every lookup was a hit (R-58 c6)
+    assert uses(run_dir, second) == sorted([("a", i, CLAUDE, "hit", None) for i in ITEMS] +
+                                           [("a", i, CODEX, "failed", "HB-GW-007") for i in ITEMS])
+    assert {(r["cache_key"], r["entry_sha256"]) for r in pass_rows(run_dir, "verdict_uses", second)
+            if r["outcome"] == "hit"} == {key}
+    assert [r for r in pass_rows(run_dir, "model_calls", second) if r["principal"] == "gateway"] == []
+    export = [[(r["metric_id"], r["value"], r["reason"]) for r in sorted(pass_rows(run_dir, "scores", gid),
+                                                                        key=lambda r: r["metric_id"])]
+              for gid in (first, second)]
+    assert ledger.canonical({"scores": export[0]}) == ledger.canonical({"scores": export[1]})
+    assert {m: (v, r) for m, v, r in export[1]}["adr_quality"] == \
+        (None, "items 1, 2, 3, 4, 5, 6, 7: second judge not qualified")
