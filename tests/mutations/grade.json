@@ -80,22 +80,22 @@
  {
   "name": "a changed price list used",
   "file": "src/harness_bench/grade/runner.py",
-  "find": "        if not self.prices_ok:\n",
+  "find": "        if inp.prices is None:\n",
   "replace": "        if False:\n",
   "tests": ["tests/test_grade.py::test_cost_is_na_when_the_price_list_changed_after_the_plan"]
  },
  {
   "name": "acp_turn harness priced from the native record",
   "file": "src/harness_bench/grade/runner.py",
-  "find": "        source = self.plan[\"profiles\"][cell[\"harness\"]][\"usage_source\"]\n",
+  "find": "        source = inp.plan[\"profiles\"][inp.cell[\"harness\"]][\"usage_source\"]\n",
   "replace": "        source = \"native_record\"\n",
   "tests": ["tests/test_grade.py::test_cost_reads_turn_usage_for_an_acp_turn_harness"]
  },
  {
   "name": "hidden tests graded after the task changed",
   "file": "src/harness_bench/grade/runner.py",
-  "find": "        if task_version_hash(task_dir) != cell[\"task_version\"]:",
-  "replace": "        if False:",
+  "find": "        current = task_version_hash(task_dir) == cell[\"task_version\"]",
+  "replace": "        current = True",
   "tests": ["tests/test_grade.py::test_hidden_tests_changed_since_the_plan_are_na_not_graded"]
  },
  {
@@ -119,5 +119,125 @@
   "find": "        if key in graded:\n",
   "replace": "        if False:\n",
   "tests": ["tests/test_grade.py::test_a_cell_graded_twice_in_one_pass_is_rejected_by_the_replay"]
+ },
+ {
+  "name": "dispatch ignores the task's graders (every catalog grader applies)",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "        names = (task.get(\"graders\") or []) if current else",
+  "replace": "        names = [m[\"grader\"] for a in self.catalog[\"areas\"].values() for m in a[\"metrics\"]] if current else",
+  "tests": ["tests/test_grade_runner.py::test_the_pass_writes_one_row_per_applicable_metric_of_the_tasks_graders"]
+ },
+ {
+  "name": "derived metrics written as score rows (kind ignored)",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": " and m[\"kind\"] == \"score\":",
+  "replace": ":",
+  "tests": ["tests/test_grade_runner.py::test_the_pass_writes_one_row_per_applicable_metric_of_the_tasks_graders"]
+ },
+ {
+  "name": "an unregistered grader scores 0, not NA not built",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "            return dict.fromkeys(inp.metrics, Score(None, NOT_BUILT))",
+  "replace": "            return dict.fromkeys(inp.metrics, Score(0, None))",
+  "tests": ["tests/test_grade_runner.py::test_an_unbuilt_grader_is_na_not_built_for_each_of_its_metrics_never_0"]
+ },
+ {
+  "name": "a metric a built grader did not return scores 0, not NA not built",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "out[m] if m in out else Score(None, NOT_BUILT)",
+  "replace": "out[m] if m in out else Score(0, None)",
+  "tests": ["tests/test_grade_runner.py::test_an_unbuilt_grader_is_na_not_built_for_each_of_its_metrics_never_0"]
+ },
+ {
+  "name": "a raising grader fails the pass instead of NA HB-GRD-003",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "        except Exception as exc:  # any grader failure",
+  "replace": "        except ArithmeticError as exc:  # any grader failure",
+  "tests": ["tests/test_grade_runner.py::test_a_raising_grader_is_na_with_its_type_and_the_pass_completes"]
+ },
+ {
+  "name": "a grader output that is not a mapping accepted",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "            if not isinstance(out, Mapping):\n",
+  "replace": "            if False:\n",
+  "tests": ["tests/test_grade_runner.py::test_a_malformed_grader_output_is_na_hb_grd_003"]
+ },
+ {
+  "name": "a grader value that is not a Score accepted",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "                if not isinstance(out[metric], Score):\n",
+  "replace": "                if False:\n",
+  "tests": ["tests/test_grade_runner.py::test_a_malformed_grader_output_is_na_hb_grd_003"]
+ },
+ {
+  "name": "a Decimal for a metric with no catalog scale accepted",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": " and metric not in self.scales:",
+  "replace": " and False:",
+  "tests": ["tests/test_grade_runner.py::test_a_malformed_grader_output_is_na_hb_grd_003"]
+ },
+ {
+  "name": "a task-free grader (cost) made NA when the task changed",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "        if grader not in TASK_FREE and not current:",
+  "replace": "        if not current:",
+  "tests": ["tests/test_grade.py::test_a_changed_price_list_or_task_is_refused_whichever_way_its_hash_sorts"]
+ },
+ {
+  "name": "the completeness check dropped (HB-GRD-004)",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "            self._check_complete()\n",
+  "replace": "",
+  "tests": ["tests/test_grade_runner.py::test_a_missing_duplicate_or_extra_row_fails_the_pass_before_completed"]
+ },
+ {
+  "name": "a duplicate (cell, metric) row passes the completeness check (set comparison)",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "self.written[k] != 1",
+  "replace": "self.written[k] < 1",
+  "tests": ["tests/test_grade_runner.py::test_a_missing_duplicate_or_extra_row_fails_the_pass_before_completed"]
+ },
+ {
+  "name": "a grader key outside the applicable set passes the completeness check",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "        if wrong or self.outside:",
+  "replace": "        if wrong:",
+  "tests": ["tests/test_grade_runner.py::test_a_missing_duplicate_or_extra_row_fails_the_pass_before_completed"]
+ },
+ {
+  "name": "Score allows a value and a reason together, or NA without one",
+  "file": "src/harness_bench/grade/__init__.py",
+  "find": "        if (self.value is None) != (self.reason is not None):\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_grade.py::test_a_score_is_a_value_or_na_with_a_reason_never_both_and_scores_and_results_are_frozen"]
+ },
+ {
+  "name": "Score allows a bool value",
+  "file": "src/harness_bench/grade/__init__.py",
+  "find": "isinstance(self.value, bool) or ",
+  "replace": "",
+  "tests": ["tests/test_grade.py::test_a_score_is_a_value_or_na_with_a_reason_never_both_and_scores_and_results_are_frozen"]
+ },
+ {
+  "name": "validate_task accepts a grader listed twice",
+  "file": "src/harness_bench/config.py",
+  "find": "graders.count(g) > 1",
+  "replace": "graders.count(g) > 2",
+  "tests": ["tests/test_grade_runner.py::test_validate_task_rejects_a_grader_listed_twice"]
+ },
+ {
+  "name": "the tasks-freeze check dropped from validate_repo",
+  "file": "src/harness_bench/config.py",
+  "find": "    validate_task_freeze(root, p)\n",
+  "replace": "",
+  "tests": ["tests/test_grade_runner.py::test_validate_fails_a_changed_frozen_task"]
+ },
+ {
+  "name": "the tasks-freeze comparison flipped",
+  "file": "src/harness_bench/config.py",
+  "find": "        if actual != frozen:",
+  "replace": "        if actual == frozen:",
+  "tests": ["tests/test_grade_runner.py::test_validate_fails_a_changed_frozen_task",
+            "tests/test_grade_runner.py::test_validate_passes_an_unchanged_frozen_task"]
  }
 ]

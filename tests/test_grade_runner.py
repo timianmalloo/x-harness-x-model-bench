@@ -5,8 +5,11 @@ grader is replaced only through `runner.GRADERS`, the one seam the design names.
 catalog's `kind: score` metrics of each grader, written out here so a catalog edit is visible in this file.
 """
 
+import hashlib
+import os
 import shutil
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
 import yaml
@@ -176,3 +179,40 @@ def test_the_committed_freeze_record_names_the_four_gate_tasks_and_they_are_unch
     freeze = config.load_yaml(ROOT / "bench" / "task-freeze.yaml")
     assert sorted(freeze["tasks"]) == ["A1", "C1", "D1", "E6"]
     assert {t: plan.task_version_hash(ROOT / "tasks" / t) for t in freeze["tasks"]} == freeze["tasks"]
+
+
+# --- the 0.3 values and exports survive the 0.4.dev dispatch (R-59 c6; design: the byte-identity gate) ------------
+
+MINI_RUNS = Path(__file__).parent / "fixtures" / "ledger"  # two committed X1 runs graded under 0.3 (D6)
+GATE_RUNS = Path(os.environ.get("HB_GATE_RUNS") or ROOT / "runs")
+
+
+@pytest.mark.parametrize("name", ["c44dd2b-no-heads", "heads"])
+def test_a_committed_mini_run_regrades_to_its_0_3_values_with_every_other_metric_not_built(tmp_path, name):
+    root = make_root(tmp_path)
+    run_dir = tmp_path / "runs" / "r1"
+    shutil.copytree(MINI_RUNS / name / "run", run_dir)
+    before = views.load(run_dir, "0.3")
+    export_before = views.export(before)
+    result = runner.run_pass(run_dir, root)
+    got = {(r["cell_id"], r["metric_id"]): (r["value"], r["reason"]) for r in pass_rows(run_dir, "scores", result.grading_id)}
+    was = {(c.cell_id, m): (s.value, s.reason) for c in before.cells for m, s in c.scores.items()}
+    assert was == {("a", "pass_at_1"): (1, None), ("a", "partial_credit"): ("1.0000", None),
+                   ("b", "pass_at_1"): (0, None), ("b", "partial_credit"): ("0.0000", None),
+                   ("a", "cost_usd"): (None, f"no price list entry for {CODEX_MODEL}"),
+                   ("b", "cost_usd"): (None, f"no price list entry for {CODEX_MODEL}")}
+    assert {k: v for k, v in got.items() if k[1] in BUILT} == was  # pass_at_1, partial_credit, cost_usd equal 0.3's
+    assert {k: v for k, v in got.items() if k[1] not in BUILT} == \
+        {(c, m): (None, "not built") for c in "ab" for m in (CORRECTNESS | COST) - BUILT}
+    assert views.export(views.load(run_dir, "0.3")) == export_before  # the 0.3 pass is still the 0.3 export
+    assert views.load(run_dir).catalog_version == config.load_yaml(root / "bench" / "metrics.yaml")["version"] == "0.4.dev"
+
+
+@pytest.mark.parametrize("name", sorted(config.load_yaml(ROOT / "bench" / "regrade-baseline-0.3.yaml")["runs"]))
+def test_the_gate_runs_0_3_exports_equal_the_committed_baseline(name):  # P5, L-1: read-only; absent runs skip (CI)
+    entry = config.load_yaml(ROOT / "bench" / "regrade-baseline-0.3.yaml")["runs"][name]
+    if not (GATE_RUNS / name / "plan.json").is_file():
+        pytest.skip(f"gate run {name} is not on this host (set HB_GATE_RUNS to the runs folder)")
+    view = views.load(GATE_RUNS / name, "0.3")
+    data = views.export(view)
+    assert (view.grading_id, len(data), hashlib.sha256(data).hexdigest()) == (entry["pass"], entry["bytes"], entry["export_sha256"])
