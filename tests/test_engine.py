@@ -2194,3 +2194,11 @@ def test_the_run_waits_for_an_open_decision(base):  # US15-5 (UXA-9; the model's
     last_outcome = max(events.index(e) for e in _kind(events, "cell.outcome"))
     assert last_outcome < events.index(_kind(events, "decision.resolved")[0]) < events.index(_kind(events, "run.completed")[0])
     assert summary.exit_code == 0
+
+
+def test_one_blocked_harness_opens_one_decision(base):  # US15-6 (PE-4): one expired login costs one wait, not N
+    p, launcher = _decision_plan([("fake", "A", AUTH)] * 3 + [("fake", "A", {})], parallelism=3, decision_timeout=0)
+    _, events, summary = _decision_run(base, (p, launcher))
+    assert [(e["decision_id"], e["subject"]) for e in _kind(events, "decision.opened")] == [("D1", "fake")]
+    assert _resolutions(events) == [("D1", "default applied (timeout)", "continue")]
+    assert sorted(str(o["cause"]) for o in _outcomes(events).values()) == ["None"] + ["blocked_auth"] * 3
