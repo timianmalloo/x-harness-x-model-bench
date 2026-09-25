@@ -219,6 +219,15 @@ summary: >-
 - **Control:** at any squash join, rebuild each register as the union of `HEAD`'s lines plus the staged new lines (the Leader's `union_register.py` step), then assert `git diff --cached --numstat -- <register>` shows 0 deletions before committing. Not yet a test or gate. The upgrade trigger is a second squash join, at which point it becomes a join-gate check.
 - **Status:** `observed` (the procedure is followed by the Leader; no automated gate yet)
 
+### GATE-B: a push not gated on the suite that precedes it
+- **Signature:** a join command chains `pytest …; …; git push` with `;`. When the suite hangs, fails or is killed, the push still runs, and an unverified commit reaches the remote.
+- **Why it survives:** on a green suite the chain looks identical to a gated one; only a failure shows the difference.
+- **Instances:**
+  - `2026-09-24`, the W1-COP-I slice-2 join: the suite hung at about 15% (not reproduced; the engine tests alone passed in 88 s, and the full re-run passed 747 in 163 s). The Leader killed it, and the chained `git push` then pushed `075d3c5` before any suite had completed on it. The later full run on the same commit was green, so no broken code reached the remote.
+- **Sweep:** every Leader join command since the plan started used the same `pytest …; tail; ruff; push` shape.
+- **Control:** at a join, the push is its own command, run only after the suite's exit code has been read as 0 in an earlier step (`pytest … > log; echo "exit=$?"`, then a separate push). Not yet a hook. The upgrade trigger is a second instance.
+- **Status:** `observed` (Leader procedure)
+
 ### CLN-B: a joined tree removed while a reviewer still reads it
 - **Signature:** the Leader cleans up a merged worktree while a review of that track is still running, and the reviewer's run depends on a file in that tree, such as its `.venv` interpreter. The reviewer's tool then fails in the middle of the run.
 - **Why it survives:** `coord worktree cleanup` checks that a tree is clean, merged and not held by a live session. A reviewer reading the tree from outside holds no session there, so the tree looks free.
