@@ -1,0 +1,32 @@
+schema: bench-task/1
+id: Q6
+scenario: 6
+title: "Fixture: delegation routing probe (R-74 qualification)"
+status: ready
+language: python
+source:
+  kind: authored
+  upstream: harness-bench fixture
+  repo: "tasks/Q6/workspace"   # the base tree is this folder; its content hash is the task version
+  commit: "content-addressed"
+budget:
+  minutes: 5
+  usd_cap: null
+blast_radius:
+  - "delegated.txt"
+  - "main.txt"
+# R-73: <role>@<vendor>; a cell reads only its own vendor's column.
+# writer@openai is gpt-6-luna, the F1 workhorse (tasks/F1/task.yaml).
+model_map:
+  writer@anthropic: claude-sonnet-5
+  writer@openai: gpt-6-luna
+scripted_user: false
+formal: null
+graders:
+  - correctness
+  - cost
+  - process
+oracle:
+  summary: "Qualification fixture (R-74 c6): the prompt asks the agent to start exactly one sub-agent on the vendor's workhorse model to write delegated.txt, then write main.txt itself. What matters is the native record - whether delegation was routed and recorded. The hidden test checks only that both files exist with the required contents."
+  runner: unittest          # the summary format correctness.py parses
+  command: ["{python}", "-m", "unittest", "-v", "test_q6_hidden"]   # run in a grading copy: archive ws + tests/
