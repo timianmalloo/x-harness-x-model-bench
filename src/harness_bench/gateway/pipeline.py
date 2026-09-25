@@ -152,6 +152,8 @@ def run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend | Launch) -
         return Result("failed", "HB-GW-009", escaped=escaped)
     ex = profiles.READERS[reply.harness](reply.record)  # the native record decides, never stdout (review A5)
     served, session = tuple(sorted({c.model for c in ex.model_calls})), ex.session_id
+    if ex.tool_calls:  # section 8.3 step 1: a judge has no tools; a tool event fails the call (R-58 c4)
+        return Result("failed", "HB-GW-006", escaped=escaped)
     # the pin must be among the served models, and every served model allowed (design 4.3; review F1)
     if judge.model not in served or not all(m in judge.allowed_models for m in served):
         return Result("failed", "HB-GW-003", escaped=escaped)
