@@ -324,7 +324,7 @@ Cell ids: D1 cells are from `runs/row15-d1-1`, A1 cells from `runs/a1-capture-1`
 - Fixtures:
   - Characterization: the 6 D1 cells.
   - Exact: the C1 reference = 1.
-  - **Seeded:** a `.py` with a syntax error → 0; a broken `ProjectReference` in a D1 test project → 0.
+  - **Seeded:** a `.py` with a syntax error → 0; a D1 `.cs` syntax error (CS1002) → 0; a deleted member (CS0117) → 0. A broken `ProjectReference` is retired as a seed (R-71): MSB9008 is a warning and `dotnet build` exits 0 on the pinned SDK (`docs/notes/spike-gr-code-trx.md`), so it scores 1 under this definition.
 
 **`regression_count`**
 - Kind and class: score · additive (count).

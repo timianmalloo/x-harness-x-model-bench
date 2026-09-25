@@ -355,6 +355,18 @@ summary: >-
 
 ---
 
+### SEED-A: a tool's behaviour asserted from its documentation or a belief, not measured
+- **Signature:** a design seed or a launch shape states what a CLI or build tool will do (a flag's effect, an exit code) from its `--help` text or from expectation. The first live measurement shows it does something else. The belief already sat in a design or a builder as if verified.
+- **Instances:**
+  - `2026-09-25`, W3-GR-CODE c1: the graders design's seed "a broken `ProjectReference` in a D1 test project → `build_and_suite_clean` 0". Measured, it is `warning MSB9008` and `dotnet build` exits 0, so it scores 1 (R-71).
+  - `2026-09-25`, the R-63 Copilot judge spike, turn 1: "an empty `--available-tools` denies every tool". R-45 had verified that the flag exists, not what an empty variadic does. Measured, it filtered nothing: 17 tools advertised, and `powershell` ran without approval (R-70; `docs/notes/spike-gw-headless.md`).
+- **Why it survives:** "Verified" was attached to the flag's presence in `--help`, then carried over to its behaviour. A seed that is only a sentence in a design has no test until a slice builds one.
+- **Derived rule:** a seed or launch shape cites the measurement that produced its value (a spike note line or a captured record). Otherwise it is marked `assume:` with what confirms it, and the first slice that builds it measures it before depending on it.
+- **Control:** the probe self-test pins the measured Copilot argv (`the allowlist names no real tool`, `custom instructions off`), and the gateway mutant "bare --available-tools" is killed (`tests/mutations/gateway.json`). The probe's `qualified` gate fails any turn whose record advertises a tool, so a flag that stops working on a new build fails the next qualification rather than a cell. For the dotnet seed, the metric-level test row "exit 0 + MSB9008 → 1" lands with the GR-CODE c2 join (R-71 condition).
+- **Status:** `controlled` for the Copilot shape; `open` for the seed row until the GR-CODE c2 join.
+
+---
+
 ## Inherited classes (seeded from the pack)
 
 *Observed in production across independent codebases running the AI-Forward pack (`continuous-improvement.md` §6). Each is **uncontrolled here until this repo builds the control** — that is the work, not the copying.*
