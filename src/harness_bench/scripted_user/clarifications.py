@@ -88,4 +88,8 @@ def parse(data: bytes, where: str) -> ClarificationSet:
 
 def load(path: Path) -> ClarificationSet:
     """Read, hash and validate one clarification set. Raises BenchError HB-USR-002 on any defect."""
-    return parse(Path(path).read_bytes(), str(path))
+    try:
+        data = Path(path).read_bytes()
+    except OSError:
+        raise BenchError("HB-USR-002", f"{path}: cannot be read") from None
+    return parse(data, str(path))
