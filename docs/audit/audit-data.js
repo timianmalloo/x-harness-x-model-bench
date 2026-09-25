@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T07:13:55Z",
+  "generated": "2026-09-25T07:19:07Z",
   "audit": [
     {
       "actor": null,
@@ -14737,6 +14737,44 @@ window.AUDIT_DATA = {
       "skill": "coordination-worker",
       "started_at": "2026-09-25T06:42:07Z",
       "summary": "S1-S3 verified on main; ERR-1, P-1..3, ST-1, SK-1 and R-50 red first then green. Red commits dd4aaa0 and e848f19; green commit 13aa924. Full pytest 967 passed, 8 deselected; Ruff clean; stop.json 10 of 10 named mutants killed. R-47 agent_version is null with a live ACP handshake reason.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "claude-opus-5-5 (Claude Code subagent)",
+      "artifacts": [
+        "src/harness_bench/scripted_user",
+        "tests/test_scripted_user.py",
+        "tests/mutations/scripted_user.json"
+      ],
+      "compiled": false,
+      "datetime": "2026-09-25T07:05:32Z",
+      "done_when": "criteria 1-6 of the W2-USER-M contract: modules, loader, server with pipe test, held-out untouched, section-12 tests and mutants killed, pytest and ruff green",
+      "duration_seconds": 1382.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w2-user-matcher",
+        "pushed": null,
+        "sha": "0bc0dbabd393deb3e9b81b821a0e80cea31d2831",
+        "short": "0bc0dbabd"
+      },
+      "goal": "the scripted user's matcher, responder, log and stdio MCP server as a pure library",
+      "id": "al-01M3BP4D9JZCQKHPBVQ8T1S93W",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Track W2-USER-M (plan coordination-finish-harness-bench v4): the scripted user's matcher, responder, log and stdio server as a pure library per design phase2-scripted-user sections 3, 6, 7, 8, 10, 12 and rulings R-37, R-39, R-51, R-52, R-53; red-first; named mutants all killed; no wiring.",
+      "session": "w2-user-m",
+      "shortname": "w2-user-m-scripted-user-library",
+      "signals": {
+        "acceptance_met": true,
+        "regression": false,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "implement",
+      "started_at": "2026-09-25T06:42:30Z",
+      "summary": "W2-USER-M: the scripted user as a pure library in src/harness_bench/scripted_user/ (matcher, clarifications, log, server), red-first in four slices (reds d01825e 7502ba6 7ce398a bc929c8; greens 1a86fe7 9a704a9 d6e1165 d9f6c99). matcher_version t0-c8b7e628d0c7 (Unicode 16.0.0, CPython 3.14.6). Held-out entry point: matcher.match(question, clarifications.load(path).clarifications) -> MatchResult(clarification, rung, invalid). tests/test_scripted_user.py 91 tests; tests/mutations/scripted_user.json 73 mutants, all killed (mutate_check under PYTHONUTF8=1: the tool decodes child output with cp1252 and crashed on the first kill - a sibling of the register's cp1252 class, raised to the Leader). Full suite 1046 passed; ruff clean. Malformed input uses HB-USR-002 (errors.py not owned; dedicated codes requested). No driver/engine wiring (W2-USER-W). The held-out set was never read.",
       "tags": [],
       "tier": "T2",
       "tool": null
