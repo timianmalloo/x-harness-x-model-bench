@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    A test HELPER, not a test. It exists because ConPTY child attachment requires the host process
+    to own a real console, and a `dotnet test` host never does — its stdio is redirected. The
+    conformance suite launches this with CREATE_NEW_CONSOLE so the round trip happens somewhere it
+    can actually work, and asserts on the exit code.
+
+    It drives the real ConPtyTerminalSession from AiDe.Core. A helper that re-implemented the interop
+    would prove the helper works and say nothing about the runtime.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>false</IsTestProject>
+    <AssemblyName>AiDe.Core.TerminalHost</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AiDe.Core\AiDe.Core.csproj" />
+  </ItemGroup>
+
+</Project>

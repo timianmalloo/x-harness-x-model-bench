@@ -2,13 +2,31 @@ schema: bench-task/1
 id: D1
 scenario: 4
 title: "New projection in AiDe.Core Projections/"
-status: stub
+status: ready
 language: csharp
 source:
   kind: authored
   upstream: "ai-de AiDe.Core Projections/"
   repo: "https://github.com/timianmalloo/ai-de"
-  commit: "tbd"
+  commit: "88e0c33f0b7c419b1e64d87686987374285292d8"
+  license: MIT
+  copyright: "Copyright (c) 2026 timianmalloo"
+  vendored_paths:
+    - Directory.Build.props
+    - Directory.Packages.props
+    - global.json
+    - LICENSE
+    - src/AiDe.Core/
+    - src/AiDe.Mcp/
+    - src/AiDe.Daemon/
+    - tests/AiDe.Core.Tests/
+    - tests/AiDe.Core.TerminalHost/
+    - tests/AiDe.Core.AcpProbe/
+    - tests/Shared/
+    - tests/fixtures/
+  excluded_paths:
+    - src/AiDe.Core/Watcher/DreamCorpusReader.cs
+    - tests/AiDe.Core.Tests/Watcher/DreamCorpusReaderTests.cs
 budget:
   minutes: 45
   usd_cap: null
@@ -26,4 +44,14 @@ graders:
   - cost
   - process
 oracle:
-  summary: "Hidden xUnit tests, Stryker.NET mutation suite, layering check."
+  summary: "Hidden xUnit tests for an evidence census projection; later waves add mutation and architecture checks."
+  runner: dotnet
+  command:
+    - cmd.exe
+    - /c
+    - 'D1.HiddenTests\run.cmd'
+    - --logger
+    - "trx;LogFileName=d1-hidden.trx"
+    - --results-directory
+    - TestResults
+    - "-v:q"

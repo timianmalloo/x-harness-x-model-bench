@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The MCP server an agent's harness launches over stdio. A CLIENT of the coordination contract,
+    not a privileged insider: it writes the same JSONL lines an agent writes by hand and reads the
+    workspace store read-only, so it holds no authority an agent lacks
+    (design-mcp-enlightened-path).
+
+    net10.0, NOT net10.0-windows: nothing here is Windows-specific, and the pieces it uses from
+    AiDe.Core (the contract writer, the store reader) are the platform-neutral half. The daemon is
+    windowed because a named pipe ACL and a kernel mutex are; this is a file writer and a SQLite
+    reader.
+
+    No PackageReference. JSON-RPC over stdio is a hundred lines against System.Text.Json, and the
+    Solution-Selection Ladder puts a new dependency past rung 5 — so it is justified only if the
+    hand-rolled version proves worse, which it has not.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>AiDe.Mcp</AssemblyName>
+    <RootNamespace>AiDe.Mcp</RootNamespace>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AiDe.Core\AiDe.Core.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!--
+      Required by [LibraryImport], which the ConPTY runtime uses. The interop SOURCE GENERATOR emits
+      unsafe marshalling code; this is the cost of source-generated interop rather than a licence to
+      hand-write unsafe code. Nothing outside Terminal/ needs interop at all, and the runtime
+      contains no `unsafe` block of its own.
+
+      The library stays `net10.0` rather than retargeting to Windows: the ConPTY types are annotated
+      [SupportedOSPlatform("windows")], which expresses the requirement without dragging every
+      consumer of the fact store onto a Windows TFM to reach four kernel functions.
+    -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+
+    <!--
+      SCOPED TO THE TEMPLATE LOADER (Sessions/TemplateFrontmatterReader.cs) and nowhere else. It
+      reads the frontmatter of a `template-schema/1` file through YamlDotNet's DOM, so the document
+      never chooses a CLR type: the loader picks every type from the schema. Migrating the two
+      existing subset readers onto it is a recorded next step, not this slice.
+    -->
+    <PackageReference Include="YamlDotNet" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      The twelve built-in templates ship as REAL template files inside the assembly, so the built-in
+      source loads through exactly the parser and validator every other source uses. A C# table
+      would be a second construction path, and the one that never proves the loader works.
+    -->
+    <EmbeddedResource Include="Sessions\BuiltIn\*.template.md" />
+
+    <!--
+      CV-2's seam request (ADR-0033's "embedded resources" reserved this path): landed so a future
+      compile-prompt/1 profile (the host header, the template, a second family's profile) has
+      somewhere to drop as a real file the moment it needs one, with no csproj edit at that point.
+      Matches nothing today — CompileContract.cs's HostHeader + Template are ~15 lines together,
+      under the file's own `simplify:` ceiling (a template over ~200 lines, or a second family's
+      profile) — so the move itself is not made this slice; see CompileContract.cs's remarks.
+    -->
+    <EmbeddedResource Include="Compilation\Resources\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="AiDe.Core.Tests" />
+      <!--
+      The semantic engine ONLY. Microsoft.CodeAnalysis.Workspaces.MSBuild is deliberately NOT taken:
+      that is the layer that loads projects by evaluating MSBuild, which spike D3 measured executing
+      repository-supplied code. cl-0021 adopted reading the project file as data instead.
+    -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+</ItemGroup>
+
+</Project>
