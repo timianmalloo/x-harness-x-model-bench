@@ -103,6 +103,7 @@ def test_an_ungraded_run_has_no_scores_and_says_so(root, tmp_path):
     a = _cell(view, "a")
     assert a.scores == {} and a.validity == "not graded" and a.tokens is None  # never {} or 0
     assert a.tokens_reason == "not graded"
+    assert a.calls_per_cell == views.Measure(None, "not recorded")
     runner.run_pass(run_dir, root)
     a = _cell(views.load(run_dir), "a")
     assert a.tokens and a.tokens_reason is None
@@ -265,6 +266,7 @@ def test_copilot_empty_modelmetrics_has_no_model_call(root, tmp_path):
 
     cell = _cell(views.load(_copilot_run(root, tmp_path, empty)), "a")
     assert (cell.validity, cell.validity_code) == ("invalid (no model call)", "HB-VAL-001")
+    assert cell.calls_per_cell == views.Measure(None, "not recorded")
 
 
 def test_copilot_unmutated_sample_is_valid(root, tmp_path):
@@ -288,7 +290,7 @@ def test_copilot_single_row_with_two_requests_counts_two_calls(root, tmp_path):
     run_dir = _copilot_run(root, tmp_path, two_requests)
     assert [row["requests"] for row in views.rows(run_dir, "model_calls")] == [2]
     cell = _cell(views.load(run_dir), "a")
-    assert cell.calls_per_cell == 2
+    assert cell.calls_per_cell == views.Measure(2)
 
 
 def test_copilot_two_models_on_one_shutdown_line_have_distinct_keys(root, tmp_path):
@@ -299,13 +301,31 @@ def test_copilot_two_models_on_one_shutdown_line_have_distinct_keys(root, tmp_pa
         return events
 
     cell = _cell(views.load(_copilot_run(root, tmp_path, two_models)), "a")
-    assert cell.calls_per_cell == 7
+    assert cell.calls_per_cell == views.Measure(7)
+
+
+def test_copilot_missing_requests_is_not_zero(root, tmp_path):
+    def no_requests(events):
+        metrics = next(e for e in events if e["type"] == "session.shutdown")["data"]["modelMetrics"]
+        del metrics["gpt-6-sol"]["requests"]
+        return events
+
+    cell = _cell(views.load(_copilot_run(root, tmp_path, no_requests)), "a")
+    assert cell.scores["cost_usd"].reason == "HB-TEL-001 native-record fields missing: count"
+    assert cell.calls_per_cell == views.Measure(None, "not recorded")
 
 
 def test_pre_amendment_model_call_row_defaults_to_one_request():
     row = {"native_ordinal": 1, "model": "gpt-6-sol", "uncached_input": 2, "cache_read": 3,
            "cache_write": 4, "output": 5, "reasoning": None, "start": None, "end": None}
     assert views.model_call(row).requests == 1
+
+
+def test_model_call_row_missing_start_still_raises():
+    row = {"native_ordinal": 1, "model": "gpt-6-sol", "uncached_input": 2, "cache_read": 3,
+           "cache_write": 4, "output": 5, "reasoning": None, "end": None}
+    with pytest.raises(KeyError, match="start"):
+        views.model_call(row)
 
 
 def test_a_declared_auxiliary_model_is_not_a_mismatch(root, tmp_path):

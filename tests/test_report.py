@@ -160,6 +160,18 @@ def test_the_header_shows_recorded_facts_and_not_recorded_for_the_rest(root, tmp
     assert "Defender real-time exclusion" in doc and "not recorded" in doc
 
 
+def test_the_header_marks_the_pinned_copilot_build_as_prerelease(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
+        ev.append({"kind": "attempt.process_started", "cell_id": "a", "harness": "copilot",
+                   "build_version": "1.0.89-1"})
+    view = views.load(run_dir)
+    view.plan["builds"] = {"copilot": {"version": "1.0.89-1"}}
+    doc = html.render(view, archive_present=True)
+    assert "<dt>Planned builds</dt><dd>copilot 1.0.89-1 (prerelease)</dd>" in doc
+    assert "<dt>Executed builds</dt><dd>copilot 1.0.89-1 (prerelease)</dd>" in doc
+
+
 def test_the_header_names_the_pinned_pack_revision_and_commit(root, tmp_path):
     view = views.load(make_run(root, tmp_path, {"a": GOOD}))
     view.plan["pack"] = {"revision": 95, "commit": "a" * 40}
