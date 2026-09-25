@@ -47,13 +47,14 @@ from harness_bench.telemetry import (
 
 ENGINE_PREFIX = "engine-"
 GRADE_PREFIX = "grade-"
-FACTS = ("events", "model_calls", "tool_calls", "turn_usage", "archive_files", "scores")
+FACTS = ("events", "model_calls", "tool_calls", "turn_usage", "archive_files", "scores", "verdict_uses")
 KEYS = {  # ADR-0006 as amended: the key of one row of each fact
     "model_calls": ("run_id", "extraction_id", "principal", "native_session_id", "native_ordinal", "model"),
     "tool_calls": ("run_id", "extraction_id", "cell_id", "native_session_id", "native_ordinal"),
     "turn_usage": ("run_id", "cell_id", "attempt", "model"),
     "archive_files": ("run_id", "cell_id", "archive_attempt", "path"),
     "scores": ("run_id", "grading_id", "cell_id", "metric_id"),
+    "verdict_uses": ("run_id", "grading_id", "cell_id", "item_id", "judge_or_matcher"),  # Amendment 3
 }
 
 
@@ -272,6 +273,18 @@ def calls_per_cell(calls: list[ModelCall] | None) -> Measure:
     if calls is None or any(call.requests == 0 for call in calls):
         return Measure(None, "not recorded")
     return Measure(sum(call.requests for call in calls))
+
+
+def judge_calls(uses: list[dict]) -> dict[tuple[str, str | None], int]:
+    """Judge calls per (outcome, code), over `verdict_uses` rows (ADR-0006 Amendment 3). A row is one rubric item,
+    not one call: one call yields a row per item. So a call is one distinct (grading_id, cell_id, metric_id,
+    judge_or_matcher), with `metric_id` read from `item_id` (`<metric_id>#<n>`). The one compute reader that counts
+    calls; no view counts rows as calls (tests/test_grade_judge.py guards it)."""
+    calls: dict[tuple[str, str | None], set[tuple]] = {}
+    for r in uses:
+        call = (r["grading_id"], r["cell_id"], r["item_id"].rsplit("#", 1)[0], r["judge_or_matcher"])
+        calls.setdefault((r["outcome"], r["code"]), set()).add(call)
+    return {k: len(v) for k, v in sorted(calls.items(), key=lambda kv: (kv[0][0], kv[0][1] or ""))}
 
 
 def _idle(wall: Measure, model: Measure, tool: Measure) -> Measure:

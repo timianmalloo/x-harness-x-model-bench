@@ -8,7 +8,7 @@ import hashlib
 import json
 from secrets import token_hex
 
-from harness_bench import egress
+from harness_bench import egress, errors
 from harness_bench.gateway import backend as gw_backend
 from harness_bench.gateway import pipeline, request, scrub
 
@@ -207,6 +207,8 @@ def test_t_gw_30_every_path_maps_to_exactly_one_outcome_and_code(tmp_path, monke
         assert (result.cache_key is not None, result.entry_sha256 is not None) == (recorded, recorded), name
     assert seen == PATHS
     assert {code for _, code in PATHS.values() if code} <= set(pipeline.CODES)
+    # one registry (review w3-gwi-1 A2): the pipeline's codes are exactly errors.RUN_CODES's HB-GW subset
+    assert pipeline.CODES == {c: t for c, t in errors.RUN_CODES.items() if c.startswith("HB-GW-")}
     assert set(pipeline.CODES) == {f"HB-GW-{n:03d}" for n in range(1, 12)}
 
 

@@ -78,6 +78,18 @@ RUN_CODES: dict[str, str] = {
     "HB-USR-001": "unknown run id",
     "HB-USR-002": "invalid input",
     "HB-TEL-001": "native-record field missing: NOT_RECORDED",
+    # The model gateway's judge lookups (design phase3-gateway-judges section 17; review w3-gwi-1 A2: one registry).
+    "HB-GW-001": "judge unavailable: CLI error, timeout, provider error, breaker open, or a store write error other than a lost race",
+    "HB-GW-002": "invalid output",
+    "HB-GW-003": "served model not the pin",
+    "HB-GW-004": "blinding scan hit",
+    "HB-GW-005": "store entry invalid, or not matched by its storing row",
+    "HB-GW-006": "tool event in a judge call",
+    "HB-GW-007": "judge not qualified",
+    "HB-GW-008": "artifact over the bound or not UTF-8",
+    "HB-GW-009": "withheld: sensitive content",
+    "HB-GW-010": "leftover credential copy (a verify error)",
+    "HB-GW-011": "judge build changed",
 }
 
 _ALL_CODES = set(RUN_CODES) | {c.code for c in Cause}

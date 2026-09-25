@@ -373,7 +373,8 @@ def test_grading_completed_records_the_sealed_heads_of_its_other_facts(root, tmp
     result = runner.run_pass(run_dir, root)
     completed = pass_rows(run_dir, "events", result.grading_id)[-1]
     assert completed["kind"] == "grading.completed"
-    assert completed["heads"] == {fact: result.heads[fact] for fact in ("model_calls", "tool_calls", "scores")}  # never events
+    assert completed["heads"] == {fact: result.heads[fact] for fact in ("model_calls", "tool_calls", "scores",
+                                                                     "verdict_uses")}  # never events; Amendment 3
     assert completed["unreadable_records"] == {}  # R-15: every cell's record was read
 
 

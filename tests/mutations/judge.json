@@ -1,0 +1,198 @@
+[
+ {
+  "name": "no stipulation reads as no rubric instead of no qualified judge",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "        return dict.fromkeys(inp.metrics, Score(None, NO_JUDGE))",
+  "replace": "        return dict.fromkeys(inp.metrics, Score(None, NO_RUBRIC))",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_22_with_no_stipulation_every_judged_metric_is_no_qualified_judge_and_no_lookup_is_made"]
+ },
+ {
+  "name": "the rubric check dropped: every judged metric is looked up",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "if task not in (entry.get(\"rubrics\") or {})}",
+  "replace": "if False}",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_22_na_reasons_no_rubric_and_second_judge_not_qualified"]
+ },
+ {
+  "name": "an unqualified second judge no longer blocks the item (R-63 b)",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "    if second is None or second[1].code == \"HB-GW-007\":",
+  "replace": "    if second is None:",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_20_an_item_needs_both_judges_recorded_and_names_the_one_that_is_not"]
+ },
+ {
+  "name": "a one-judge stipulation pairs the judge with itself",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "            second = results[1] if len(results) > 1 else None",
+  "replace": "            second = results[1] if len(results) > 1 else results[0]",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_22_na_reasons_no_rubric_and_second_judge_not_qualified"]
+ },
+ {
+  "name": "a not_allowed lookup counts as recorded",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "        if result.outcome not in RECORDED:",
+  "replace": "        if result.outcome == \"failed\":",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_20_an_item_needs_both_judges_recorded_and_names_the_one_that_is_not"]
+ },
+ {
+  "name": "the item reason drops the judge's code",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "f\"judge {model}: {result.outcome}\" + (f\" {result.code}\" if result.code else \"\")",
+  "replace": "f\"judge {model}: {result.outcome}\"",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_20_an_item_needs_both_judges_recorded_and_names_the_one_that_is_not"]
+ },
+ {
+  "name": "synthesis accepts only equal verdicts (off by one on the step rule)",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "    if abs(a - b) <= 1:",
+  "replace": "    if abs(a - b) < 1:",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_20_the_synthesis_table_is_the_mean_within_one_step_and_not_recorded_at_two"]
+ },
+ {
+  "name": "synthesis takes the higher verdict, not the mean",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "Score((Decimal(a + b) / 2).quantize(_SCALE), None)",
+  "replace": "Score(Decimal(max(a, b)).quantize(_SCALE), None)",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_20_the_synthesis_table_is_the_mean_within_one_step_and_not_recorded_at_two"]
+ },
+ {
+  "name": "synthesis loses the scale-1 decimal",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "Score((Decimal(a + b) / 2).quantize(_SCALE), None)",
+  "replace": "Score(Decimal(a + b) / 2, None)",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_20_the_synthesis_table_is_the_mean_within_one_step_and_not_recorded_at_two"]
+ },
+ {
+  "name": "the metric sums when any item is synthesized",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "    if all(s.value is not None for s in items.values()):",
+  "replace": "    if any(s.value is not None for s in items.values()):",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_20_the_metric_is_the_sum_of_all_seven_items_or_not_recorded_naming_them"]
+ },
+ {
+  "name": "one verdict_uses row short per lookup",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "    for n in range(1, items + 1):\n        inp.emit(",
+  "replace": "    for n in range(1, items):\n        inp.emit(",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_22_na_reasons_no_rubric_and_second_judge_not_qualified"]
+ },
+ {
+  "name": "a call's model_calls rows are not written",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "    for row in result.model_calls:\n        inp.emit(\"model_calls\", row)",
+  "replace": "    for row in ():\n        inp.emit(\"model_calls\", row)",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_12_a_warm_regrade_spawns_no_judge_and_reads_the_same_entries"]
+ },
+ {
+  "name": "a cache-only pass is allowed to call",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "allow_model_calls=inp.allow_model_calls,",
+  "replace": "allow_model_calls=True,",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_22_na_reasons_no_rubric_and_second_judge_not_qualified"]
+ },
+ {
+  "name": "calls run outside judge_pass (no cells-root check, no pass lock, no sweep)",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "    with judge_pass(calls.cells_root, grading_id, names) if calls else nullcontext():",
+  "replace": "    with nullcontext():",
+  "tests": ["tests/test_grade_judge.py::test_a_pass_that_may_call_refuses_a_cells_root_below_an_instruction_file_before_any_spawn"]
+ },
+ {
+  "name": "an unqualified judge is given a Launch",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "    if calls is None or not j.qualified:",
+  "replace": "    if calls is None:",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_12_a_warm_regrade_spawns_no_judge_and_reads_the_same_entries"]
+ },
+ {
+  "name": "the grading id is read from the wrong folder level (stored_by and the archive move)",
+  "file": "src/harness_bench/grade/judge.py",
+  "find": "    grading_id = inp.out_dir.parents[1].name",
+  "replace": "    grading_id = inp.out_dir.parents[0].name",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_12_a_warm_regrade_spawns_no_judge_and_reads_the_same_entries"]
+ },
+ {
+  "name": "the pass has no verdict_uses segment",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "PASS_FACTS = (\"events\", \"model_calls\", \"tool_calls\", \"scores\", \"verdict_uses\")",
+  "replace": "PASS_FACTS = (\"events\", \"model_calls\", \"tool_calls\", \"scores\")",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_21_verdict_uses_is_append_only_and_a_rewrite_fails_verify"]
+ },
+ {
+  "name": "verify and views do not read verdict_uses",
+  "file": "src/harness_bench/views.py",
+  "find": "FACTS = (\"events\", \"model_calls\", \"tool_calls\", \"turn_usage\", \"archive_files\", \"scores\", \"verdict_uses\")",
+  "replace": "FACTS = (\"events\", \"model_calls\", \"tool_calls\", \"turn_usage\", \"archive_files\", \"scores\")",
+  "tests": ["tests/test_grade_judge.py::test_t_gw_21_verdict_uses_is_append_only_and_a_rewrite_fails_verify"]
+ },
+ {
+  "name": "verdict_uses has no key, so a duplicate lookup is not refused",
+  "file": "src/harness_bench/views.py",
+  "find": "    \"verdict_uses\": (\"run_id\", \"grading_id\", \"cell_id\", \"item_id\", \"judge_or_matcher\"),  # Amendment 3\n",
+  "replace": "",
+  "tests": ["tests/test_grade_judge.py::test_no_view_counts_verdict_uses_rows_as_calls"]
+ },
+ {
+  "name": "judge_calls counts rows as calls",
+  "file": "src/harness_bench/views.py",
+  "find": "        calls.setdefault((r[\"outcome\"], r[\"code\"]), set()).add(call)",
+  "replace": "        calls.setdefault((r[\"outcome\"], r[\"code\"]), []).append(call)",
+  "tests": ["tests/test_grade_judge.py::test_judge_calls_counts_one_call_per_cell_metric_and_judge_never_one_per_row"]
+ },
+ {
+  "name": "judge_calls keys a call by item, not by metric",
+  "file": "src/harness_bench/views.py",
+  "find": "r[\"item_id\"].rsplit(\"#\", 1)[0]",
+  "replace": "r[\"item_id\"]",
+  "tests": ["tests/test_grade_judge.py::test_judge_calls_counts_one_call_per_cell_metric_and_judge_never_one_per_row"]
+ },
+ {
+  "name": "a placeholder invocation_sha256 is accepted (R-70 item 4)",
+  "file": "src/harness_bench/config.py",
+  "find": "        if j[\"invocation_sha256\"] != backend.invocation_sha256(",
+  "replace": "        if False and j[\"invocation_sha256\"] != backend.invocation_sha256(",
+  "tests": ["tests/test_grade_judge.py::test_a_stipulation_entry_is_refused_on_each_rule"]
+ },
+ {
+  "name": "qualified: true accepted on a harness the gateway does not launch (R-70 item 4)",
+  "file": "src/harness_bench/config.py",
+  "find": "        if j[\"qualified\"] and j[\"harness\"] not in backend.HEADLESS_HARNESSES:",
+  "replace": "        if False:",
+  "tests": ["tests/test_grade_judge.py::test_a_stipulation_entry_is_refused_on_each_rule"]
+ },
+ {
+  "name": "two judges of one vendor accepted",
+  "file": "src/harness_bench/config.py",
+  "find": "    if len({j.get(\"vendor\") for j in judges}) != len(judges):",
+  "replace": "    if False:",
+  "tests": ["tests/test_grade_judge.py::test_a_stipulation_entry_is_refused_on_each_rule"]
+ },
+ {
+  "name": "a judge model that is no egress destination accepted (review F6)",
+  "file": "src/harness_bench/config.py",
+  "find": "            (isinstance(j[\"model\"], str) and egress.DESTINATION.fullmatch(j[\"model\"]) is not None,",
+  "replace": "            (True,",
+  "tests": ["tests/test_grade_judge.py::test_a_stipulation_entry_is_refused_on_each_rule"]
+ },
+ {
+  "name": "three judges accepted",
+  "file": "src/harness_bench/config.py",
+  "find": "not 1 <= len(judges) <= 2 or",
+  "replace": "not 1 <= len(judges) or",
+  "tests": ["tests/test_grade_judge.py::test_a_stipulation_names_one_or_two_judges_a_positive_timeout_and_its_schema"]
+ },
+ {
+  "name": "an absent stipulation is read instead of meaning no judge",
+  "file": "src/harness_bench/config.py",
+  "find": "    if not path.is_file():\n        return None\n    g = load_yaml(path)",
+  "replace": "    g = load_yaml(path)",
+  "tests": ["tests/test_grade_judge.py::test_load_gateway_is_none_when_absent_and_refuses_an_invalid_file"]
+ },
+ {
+  "name": "pipeline.CODES is not the HB-GW subset of errors.RUN_CODES (review A2)",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "if code.startswith(\"HB-GW-\")}",
+  "replace": "if code.startswith(\"HB-\")}",
+  "tests": ["tests/test_gateway_pipeline.py::test_t_gw_30_every_path_maps_to_exactly_one_outcome_and_code"]
+ }
+]

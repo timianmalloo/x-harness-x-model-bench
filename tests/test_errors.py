@@ -84,6 +84,22 @@ def test_run_level_codes_are_unique_and_named():
         assert name in errors.RUN_CODES["HB-PRE-002"]
 
 
+def test_the_gateway_codes_are_run_codes():  # design phase3-gateway-judges section 17; review w3-gwi-1 A2
+    assert {c: t for c, t in errors.RUN_CODES.items() if c.startswith("HB-GW-")} == {
+        "HB-GW-001": "judge unavailable: CLI error, timeout, provider error, breaker open, or a store write error "
+                     "other than a lost race",
+        "HB-GW-002": "invalid output",
+        "HB-GW-003": "served model not the pin",
+        "HB-GW-004": "blinding scan hit",
+        "HB-GW-005": "store entry invalid, or not matched by its storing row",
+        "HB-GW-006": "tool event in a judge call",
+        "HB-GW-007": "judge not qualified",
+        "HB-GW-008": "artifact over the bound or not UTF-8",
+        "HB-GW-009": "withheld: sensitive content",
+        "HB-GW-010": "leftover credential copy (a verify error)",
+        "HB-GW-011": "judge build changed"}
+
+
 def test_a_held_run_lock_and_a_refused_teardown_have_their_own_codes():  # T1-13
     assert "lock held" in errors.RUN_CODES["HB-RUN-005"]
     assert errors.RUN_CODES["HB-RUN-003"].startswith("teardown refused")
