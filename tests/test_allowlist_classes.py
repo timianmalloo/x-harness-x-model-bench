@@ -28,6 +28,7 @@ ROOT = Path(__file__).resolve().parents[1]
 FIX = Path(__file__).parent / "fixtures"
 TOOL_LIST = FIX / "native" / "claude-code" / "tools-2.1.282-win32.jsonl"
 NEGATIVE = FIX / "ledger" / "r34-cc-opus-pack-on-powershell-denied.json"
+COPILOT_ON = next((FIX / "native" / "copilot" / "on").rglob("events.jsonl"))
 
 # The ADR-0004 classes, by the build's own description of each id (the fixture's first description lines).
 # NotebookEdit is deferred (ToolSearch-gated) on 2.1.282, so the trimmed fixture carries its name only, no
@@ -44,6 +45,70 @@ OUT_OF_PROFILE = {
     "CronCreate", "CronDelete", "CronList", "DesignSync", "EnterPlanMode", "EnterWorktree", "ExitPlanMode",
     "ExitWorktree", "Monitor", "PushNotification", "RemoteTrigger", "SendMessage", "TaskStop", "WebFetch", "WebSearch",
 }
+
+# R-45: Copilot's `skill` reads a workspace SKILL.md. The pinned build's checkpoint below supplies
+# the ids; the ruling supplies the class boundary. Every github-mcp-server-* id is outside it.
+COPILOT_CLASSES = {
+    "shell": {"powershell", "list_powershell", "read_powershell", "stop_powershell"},
+    "file edit": {"apply_patch"},
+    "file read": {"view", "glob", "rg", "skill"},
+}
+COPILOT_OUT_OF_PROFILE = {"web_search", "web_fetch", "task", "write_agent", "read_agent",
+                          "list_agents", "sql"}
+
+
+def copilot_advertised(record: Path) -> set[str]:
+    """Tool ids from the pinned Copilot build's session.usage_checkpoint, independent of the reader."""
+    ids: set[str] = set()
+    for line in record.read_text(encoding="utf-8").splitlines():
+        row = json.loads(line)
+        if row.get("type") != "session.usage_checkpoint":
+            continue
+        for state in row["data"]["promptCacheBreakState"]:
+            for model in state["models"].values():
+                ids.update(tool["name"] for tool in model["tools"])
+    return ids
+
+
+def copilot_allowlist() -> set[str]:
+    command = profiles.load(ROOT, "copilot").command
+    if "--available-tools" not in command:
+        return set()
+    start = command.index("--available-tools")
+    return set(command[start + 1:])
+
+
+def test_copilot_pinned_build_tool_ids_are_all_classified():
+    ids = copilot_advertised(COPILOT_ON)
+    assert len(ids) == 21  # the committed pack-on sample; a recut has its own check below
+    known = set().union(*COPILOT_CLASSES.values()) | COPILOT_OUT_OF_PROFILE
+    assert {i for i in ids if i not in known and not i.startswith("github-mcp-server-")} == set()
+    assert {i for i in ids if i.startswith("github-mcp-server-")}  # exercise the prefix class
+
+
+def test_copilot_allowlist_covers_every_in_class_id_and_nothing_outside_it():
+    ids = copilot_advertised(COPILOT_ON)
+    in_class = ids & set().union(*COPILOT_CLASSES.values())
+    allowed = copilot_allowlist()
+    assert in_class - allowed == set()
+    assert allowed - in_class == set()
+    assert allowed & COPILOT_OUT_OF_PROFILE == set()
+    assert not any(i.startswith("github-mcp-server-") for i in allowed)
+
+
+def test_old_copilot_fixture_records_out_of_profile_ids():
+    ids = copilot_advertised(COPILOT_ON)
+    assert COPILOT_OUT_OF_PROFILE <= ids
+    assert any(i.startswith("github-mcp-server-") for i in ids)
+
+
+@pytest.mark.skip(reason="R-45 condition 1: Leader must recut a fixed-profile qualification fixture with profile hash")
+def test_fixed_copilot_profile_advertises_no_out_of_profile_ids():
+    record = next((FIX / "native" / "copilot" / "fixed").rglob("events.jsonl"))
+    ids = copilot_advertised(record)
+    in_class = set().union(*COPILOT_CLASSES.values())
+    assert ids <= in_class
+    assert not any(i.startswith("github-mcp-server-") for i in ids)
 
 
 def advertised(record: Path) -> tuple[set[str], set[str], set[str]]:

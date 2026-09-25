@@ -90,6 +90,15 @@ def test_codex_tool_calls_are_found():
     assert all(t.end for t in ex.tool_calls)
 
 
+def test_codex_web_search_call_is_an_out_of_profile_tool_row(tmp_path):
+    record = tmp_path / "rollout.jsonl"
+    record.write_text(json.dumps({"type": "response_item", "timestamp": "2026-01-01T00:00:00Z",
+                                  "payload": {"type": "web_search_call", "id": "ws-1", "status": "completed",
+                                              "action": {"type": "search", "query": "example"}}}) + "\n", encoding="utf-8")
+    calls = codex.read(record).tool_calls
+    assert [(call.name, call.tool_class, call.native_ordinal) for call in calls] == [("web_search", "other", 1)]
+
+
 def test_codex_task_complete_error_is_a_provider_error_row():  # probe W3
     ex = codex.read(FIX / "native/codex/model-error.jsonl")
     assert [(e.status, e.error_type) for e in ex.errors] == [(400, "invalid_request_error")]

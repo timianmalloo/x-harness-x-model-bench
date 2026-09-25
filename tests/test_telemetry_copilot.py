@@ -111,6 +111,23 @@ def test_on_yields_one_row_per_model_in_the_last_shutdown_with_requests():  # re
     assert ex.missing == []
 
 
+def test_tools_advertised_reads_the_pinned_builds_checkpoint():
+    advertised = copilot.read(ON).tools_advertised
+    assert advertised is not None and len(advertised) == 21
+    assert "web_search" in advertised and "skill" in advertised
+
+
+def test_tools_advertised_is_not_recorded_without_a_checkpoint(tmp_path):
+    path = _write(tmp_path, [_start(), _user("prompt"), _shutdown(_model_metrics())])
+    assert copilot.read(path).tools_advertised is None
+
+
+def test_tools_advertised_is_not_an_empty_list_for_an_unreadable_record(tmp_path):
+    path = tmp_path / "events.jsonl"
+    path.write_text("not json\n", encoding="utf-8")
+    assert copilot.read(path).tools_advertised is None
+
+
 def test_on_rev92_yields_one_row_per_model_in_the_last_shutdown_with_requests():  # negative control
     ex = copilot.read(ON_REV92)
     assert len(ex.model_calls) == 1
