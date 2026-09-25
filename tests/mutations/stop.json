@@ -65,8 +65,8 @@
   {
     "name": "decision skip absent from status enum",
     "file": "src/harness_bench/status.py",
-    "find": "\"stopped\", \"skipped (decision)\", \"failed\"",
-    "replace": "\"stopped\", \"failed\"",
+    "find": "OUTCOMES = (\"completed\", \"timed_out\", \"stopped\", \"skipped (decision)\", \"failed\", \"no outcome\", \"not started\")",
+    "replace": "OUTCOMES = (\"completed\", \"timed_out\", \"stopped\", \"failed\", \"no outcome\", \"not started\")",
     "tests": ["tests/test_status.py::test_stopped_and_decision_skip_are_closed_outcomes"]
   },
   {
@@ -347,8 +347,8 @@
   {
     "name": "replay accepts a run stopped twice",
     "file": "src/harness_bench/lifecycle.py",
-    "find": "            if run_stopped:\n",
-    "replace": "            if False:\n",
+    "find": "        if kind == \"run.stopped\":\n            if run_stopped:\n                raise ConformanceError(RUN_STOPPED_ONCE)\n",
+    "replace": "        if kind == \"run.stopped\":\n            if False:\n                raise ConformanceError(RUN_STOPPED_ONCE)\n",
     "tests": ["tests/test_lifecycle_conformance.py::test_each_seeded_out_of_order_ledger_is_rejected_under_its_rule"]
   },
   {

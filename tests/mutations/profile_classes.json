@@ -37,8 +37,8 @@
   {
     "name": "R-45 absent Copilot advertised tools reported as empty",
     "file": "src/harness_bench/telemetry/copilot.py",
-    "find": "ex.tools_advertised = list(dict.fromkeys(advertised)) or None",
-    "replace": "ex.tools_advertised = list(dict.fromkeys(advertised)) or []",
+    "find": "ex.tools_advertised = list(dict.fromkeys(advertised)) if listed else None",
+    "replace": "ex.tools_advertised = list(dict.fromkeys(advertised)) if listed else []",
     "tests": ["tests/test_telemetry_copilot.py::test_tools_advertised_is_not_an_empty_list_for_an_empty_checkpoint"]
   },
   {
