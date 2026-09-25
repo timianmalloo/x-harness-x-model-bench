@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T10:10:27Z",
+  "generated": "2026-09-25T10:54:53Z",
   "audit": [
     {
       "actor": null,
@@ -19580,6 +19580,39 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3C38BMKZ4RS5T41GKJDAQZY",
+      "shortname": "W2-STOP-I s5: decision requests (US-15)",
+      "datetime": "2026-09-25T10:54:53Z",
+      "session": "w2-stopi-5",
+      "prompt": "Goal: W2-STOP-I slice 5 per docs/design/phase2-stop-decisions.md section 17 row 5 and sections 4.2, 4.6, 6.1-6.3, 8.3 and 16 (read them first; rulings R-3, R-49, R-50 in docs/notes/rulings.md): decision requests (US-15), red-first, on top of slice 4's stop (joined).\nDone when: `_Decisions` in engine.py (a functional core: open, answer, expire(now), supersede_all return rows and do no I/O) opens blocked_cell, qualification_gap and spend_cap decisions under the section 6.1 triggers and guards, with the section 6.2 tick order, and resolves each exactly once through one `_resolve` guard (answer, timeout and supersede).; The worker sends SPEND{cell_id, tokens | null} computed with normalize.totals as section 6.3 says (null adds to cells_unmeasured, never to the sum); `continue` on spend_cap disables the cap; `stop` on any decision records run.stopped{HB-RUN-006 or HB-RUN-007, decision_id}.; `bench answer <run_id> <decision_id> <option>` checks at write time and refuses with HB-USR-002 naming the valid options, then writes an answer control file as section 4.1 says; a losing answer is control.applied{effect: rejected (already resolved)}.; bench-status/1 carries `decisions` (section 4.6) and both skill copies name it in the same commit (R-3; SK-1 stays green); status.py's phase-1 check that decisions is empty is replaced by the section 4.6 shape.; R10-2, R10-4, US15-1..7, CLI-3..4, ST-2..3 and the LC rows for decisions and skip (section 8.3) are red first, each red committed separately and failing on an assertion.; tests/mutations/stop.json gains a named mutant per new branch (a decision resolved twice; the guard after a launch stop removed; the cap not disabled on continue; the supersede loop skipped; SPEND null counted as 0), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.\nNot in scope: the slice-6 proof pass (the full mutation pass over every STOP-I mutation file, the full check_models run, the Proof Pack); seams S-1..S-3 for W3-GRADE-CORE; cmd_grade flags; views.py beyond what the decision outcomes already read; the TLA model (change it only if a conformance row requires it, and then run the full check_models); bench run, any live turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase2-stop-decisions.md; docs/notes/rulings.md R-3, R-49, R-50; src/harness_bench/{engine,cli,status,lifecycle,driver,errors,plan}.py; src/harness_bench/telemetry/normalize.py; tests/test_engine.py, tests/test_cli.py, tests/test_status.py, tests/test_lifecycle_conformance.py, tests/fake_acp_agent.py; tests/mutations/stop.json; both start-benchmark skill copies. Use python, not python3 (Windows).",
+      "summary": "W2-STOP-I slice 5 (decision requests, US-15) on Claude Opus 5.5 under R-4. 19 red commits (b60ec4b..ea42498), each observed failing on an assertion; greens 57f56bc (engine _Decisions, triggers/guards, tick order, SPEND, effects; lifecycle rules), 0671e4f (bench-status/1 decisions, bench answer, skill x3), 2bf8d2b (23 new named mutants, 2 stale finds re-pointed). mutate_check tests/mutations/stop.json: 74/74 killed. Full default suite: 1267 passed, 2 skipped, 1 failed (tests/test_correctness_dotnet.py::test_dotnet_oracle_timeout_is_na_and_leaves_no_process, passes alone; not a STOP-I path). ruff clean. Open: the spend-cap answer code (assume: HB-RUN-007 for default and answer, design 4.9 vs 6.1); mutate_check's FAILED regex stops at a space in a node id (a TOOL-class finding).",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "Claude Opus 5.5",
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "W2-STOP-I slice 5: decision requests (US-15), red first, on top of slice 4",
+      "done_when": "_Decisions, SPEND, bench answer, bench-status/1 decisions with the skill; reds R10-2, R10-4, US15-1..7, CLI-3..4, ST-2..3, LC committed separately; stop.json mutants killed; pytest and ruff clean",
+      "tier": "T2",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-25T10:11:13Z",
+      "duration_seconds": 2620.0,
+      "git": {
+        "sha": "2bf8d2bde9fd6d3644c56575cdb17e39838cffc8",
+        "short": "2bf8d2bde",
+        "branch": "w2-stopi-5",
+        "pushed": null
+      }
     }
   ],
   "changes": [
