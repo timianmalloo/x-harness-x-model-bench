@@ -226,6 +226,13 @@ def cmd_answer(args) -> int:
     return OK
 
 
+def _report_operator() -> egress.Operator | None:
+    """The operator's identifiers for the report's CLI-added-context row (design section 7.4), read at run time and
+    never committed (R-42); None, shown as `not recorded`, when BENCH_OPERATOR_EMAIL is not set."""
+    email = os.environ.get("BENCH_OPERATOR_EMAIL", "").strip()
+    return egress.Operator(email=email, username=getpass.getuser(), home=str(Path.home())) if email else None
+
+
 def _judge_calls(args, root: Path) -> judge.Calls:
     """The call environment of `bench grade --allow-model-calls`, read at run time and never committed (R-42): the
     pinned CLIs, every harness profile, and whom egress protects: the operator (the e-mail from BENCH_OPERATOR_EMAIL,
@@ -274,7 +281,7 @@ def cmd_report(args) -> int:
     text, code = cli_table.render(view, plain=_plain())
     if code == OK:
         # html.write's credential scan must run before a label reaches the terminal (residual 5).
-        report_path = html.write(run_dir, view, _credential_values(root, run_dir))
+        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator())
         print(text, end="")
         print(f"report: {report_path}")
     else:

@@ -11,6 +11,7 @@ import hashlib
 import importlib
 import json
 from decimal import Decimal
+from html import unescape
 from pathlib import Path
 
 from archived_runs import GOOD, make_run
@@ -125,9 +126,10 @@ def judged_run(tmp_path: Path, base: Path) -> tuple[Path, Path, str]:
     return root, run_dir, gid
 
 
-def _dd(page: str, term: str) -> str:
+def _dd(page: str, term: str, raw: bool = False) -> str:
     start = page.index(f"<dt>{term}</dt><dd>") + len(f"<dt>{term}</dt><dd>")
-    return page[start:page.index("</dd>", start)]
+    value = page[start:page.index("</dd>", start)]
+    return value if raw else unescape(value)
 
 
 def test_t_gw_29_the_header_names_both_judges_their_served_ids_and_the_unqualified_one(tmp_path, base):
@@ -195,4 +197,4 @@ def test_t_gw_36_a_script_rationale_renders_as_inert_text(tmp_path, base, monkey
     monkeypatch.setattr(judges, "facts", lambda *a, **k: [("Disagreements", line)])
     page = html.render(views.load(run_dir), False, run_dir, root=root)
     assert "<script>" not in page
-    assert "&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;" in _dd(page, "Disagreements")
+    assert "&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;" in _dd(page, "Disagreements", raw=True)
