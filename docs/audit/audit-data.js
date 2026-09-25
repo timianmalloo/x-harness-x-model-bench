@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T00:49:56Z",
+  "generated": "2026-09-25T01:11:01Z",
   "audit": [
     {
       "actor": null,
@@ -7413,6 +7413,40 @@ window.AUDIT_DATA = {
       "git": {
         "sha": "1878dcd5cea04e646ceb292f96a3c482f38a9312",
         "short": "1878dcd5c",
+        "branch": "w1-capture-window-2",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M3B1V88AAV5R2BW50WDFNMVZ",
+      "shortname": "w1-cap2-phase-b",
+      "datetime": "2026-09-25T01:11:01Z",
+      "session": "w1-cap2",
+      "prompt": "W1-CAP2 phase B (1) D5/D7: add copilot-x1 to D5 verbatim replay and provenance (adapterless-harness handling), D7 PAIRING session/set_model cites it. (2) R-27 c3: swap tests/fixtures/native/copilot/on/ (rev-92) to on-rev92/, add the Leader's rev-95 recapture as the new on/, update test_telemetry_copilot.py so rev-92 negative-control assertions read on-rev92/ and rev-95 gets new assertions (us14_valid True, zero denied, hooks all succeeded, oracle 892509, one row per model). (3) Gates: pytest, ruff, mutate_check copilot_reader.json + driver.json.",
+      "summary": "Red commit 3d1d5a2 (fixtures only): 7 failures in test_telemetry_copilot.py (rev-92 numbers vs rev-95 data) and 2 in test_driver.py (copilot-x1 D5 replay byte-mismatch since model= was never passed to the replay driver; provenance adapter_version None != 'none'). Green commit 06f8e7c: test_driver.py _replay/_assert_replays now pass model= when the recording itself shows session/set_model (_sets_model helper); provenance test handles adapter_version None via a 'none' sentinel; D7 PAIRING gains session/set_model.result cited against copilot-x1.jsonl; fake_acp_agent.py now answers session/set_model so the D7 fake-emission test stays green. test_telemetry_copilot.py: ON is now rev-95, ON_REV92 added for the rev-92 negative control; every rev-92-pinned assertion (8 denied, 8/8 hook failures, us14_valid False, 6-request shape) moved to ON_REV92; new rev-95 coverage added (one model_calls row/9 requests, 17 tool completions=16 success+1 ordinary failure/0 denied, 27 hook.end all success, us14_valid True; oracle cross-check already generic via provenance facts). test_views.py's Copilot tests checked: only read fixtures/native/copilot/off/, none needed a change. uv run pytest -q -p no:cacheprovider: 762 passed, 5 deselected (both before and after the green commit, working-tree state). uv run ruff check src tests tools: clean. tools/mutate_check.py tests/mutations/copilot_reader.json and driver.json: every mutation killed.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": "tests/",
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Wire the Leader's scrubbed Copilot X1 capture and rev-95 pack-on recapture into D5/D7 and the Copilot telemetry test suite, red-first",
+      "done_when": "copilot-x1 replays verbatim (D5) and its provenance/D7 set_model pairing are covered; on/ is the rev-95 pack-on sample, on-rev92/ the rev-92 negative control, every rev-92-pinned assertion reads on-rev92/, new rev-95 assertions pass; pytest, ruff and both mutation suites clean",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-25T00:52:12Z",
+      "duration_seconds": 1129.0,
+      "git": {
+        "sha": "06f8e7c168cad0eb036734719183afafc01b69ef",
+        "short": "06f8e7c16",
         "branch": "w1-capture-window-2",
         "pushed": null
       }
