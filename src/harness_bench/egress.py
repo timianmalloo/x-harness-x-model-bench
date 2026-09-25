@@ -82,8 +82,13 @@ class Operator:
     username: str = field(repr=False)
     home: str = field(repr=False)
 
+    def __post_init__(self) -> None:
+        # An empty identifier would be "not scanned" while the verdict reads "clean" (D&P, R-60 c4).
+        if not all(v.strip() for v in (self.email, self.username, self.home)):
+            raise ValueError("Operator: email, username and home are all required and non-empty")
 
-def check(payload: str, *, destination: str, operator: Operator | None = None, secrets: Sequence[str] = (),
+
+def check(payload: str, *, destination: str, operator: Operator, secrets: Sequence[str] = (),
           canaries: Sequence[str] = ()) -> Verdict:
     """Scan `payload` bound for `destination`.
 
@@ -92,14 +97,17 @@ def check(payload: str, *, destination: str, operator: Operator | None = None, s
     US-13/US-48 markers. A hit returns a withheld verdict: no payload, only its sha256, the destination and
     the class names.
     """
-    op = operator or Operator("", "", "")
+    op = operator
     digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
-    classes = tuple(name for name, hit in (
-        ("credential", _exact(payload, secrets)),
-        ("token_shape", report_html.scan(payload) > 0),  # the report's shape scan (HB-SEC-001), shapes only
-        ("email", _anycase(payload, op.email)),
-        ("username", _word(payload, op.username)),
-        ("home_path", _path(payload, op.home)),
-        ("canary", _exact(payload, canaries)),
-    ) if hit)
-    return Verdict(destination, digest, classes, None if classes else payload)
+    scans = {
+        "credential": (lambda: _exact(payload, secrets)) if secrets else None,
+        "token_shape": lambda: report_html.scan(payload) > 0,  # the report's shape scan (HB-SEC-001), shapes only
+        "email": lambda: _anycase(payload, op.email),
+        "username": lambda: _word(payload, op.username),
+        "home_path": lambda: _path(payload, op.home),
+        "canary": (lambda: _exact(payload, canaries)) if canaries else None,
+    }
+    scanned = tuple(name for name in CLASSES if scans.get(name))
+    classes = tuple(name for name in scanned if scans[name]())
+    return Verdict(destination=destination, payload_sha256=digest, classes=classes,
+                   payload=None if classes else payload, scanned=scanned)
