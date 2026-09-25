@@ -12,11 +12,17 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
+import yaml
 
+from harness_bench.errors import BenchError
+from harness_bench.scripted_user import clarifications as clar
 from harness_bench.scripted_user import matcher
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tests" / "fixtures" / "scripted_user"
+Z0 = FIXTURES / "clarifications.yaml"
+A1 = ROOT / "tasks" / "A1" / "oracle" / "clarifications.yaml"
+DEFAULT = "Decide and state your assumption."
 
 
 @dataclass(frozen=True)
@@ -178,3 +184,113 @@ def test_t39_2_no_commit_touches_matcher_and_heldout():
     matcher_commits = _commits("src/harness_bench/scripted_user")
     assert matcher_commits  # the path has history, so an empty intersection is evidence
     assert matcher_commits & _commits(":(glob)tasks/*/oracle/heldout_questions.yaml") == set()
+
+
+# --- the clarification set (bench-clarifications/1, tasks/A1/oracle/README.md) and the responder ---
+
+def test_loads_the_clarification_set_and_hashes_its_bytes():
+    cset = clar.load(Z0)
+    assert cset.sha256 == hashlib.sha256(Z0.read_bytes()).hexdigest()
+    assert (cset.task, cset.default_reply) == ("Z0", DEFAULT)
+    assert [c.id for c in cset.clarifications] == ["order-ascending", "size-bound"]
+    assert cset.clarifications[0] == clar.Clarification("order-ascending", "Behavior", "the sort order: ascending",
+                                                        ORDER.question, "Yes, ascending.")
+
+
+def test_t37_r_reply_is_clarification_text_or_exact_default():
+    cset = clar.load(Z0)
+    assert clar.DEFAULT_REPLY == DEFAULT
+    for question, reply in [(ORDER.question, "Yes, ascending."),                       # exact
+                            ("what is the maximum input size", "At most 100000 items."),  # normalised
+                            ("What is the minimum input size?", DEFAULT),              # none
+                            ("", DEFAULT)]:                                            # invalid
+        assert cset.reply_for(matcher.match(question, cset.clarifications)) == reply
+
+
+A1_QUESTION = "Does “find the sum” mean we should find the maximum possible total value or any valid total value?"
+A1_REPLY = "It means to find the maximum possible total value of the chosen balls."
+
+
+def test_a1_annotated_question_gets_its_reply():
+    cset = clar.load(A1)
+    assert cset.task == "A1"
+    result = matcher.match(A1_QUESTION, cset.clarifications)
+    assert result == matcher.MatchResult("goal-maximum", "exact")
+    assert cset.reply_for(result) == A1_REPLY
+    normalised = 'does "find the sum" mean we should find the maximum possible total value or any valid total value'
+    assert cset.reply_for(matcher.match(normalised, cset.clarifications)) == A1_REPLY
+
+
+# Written by this track from the annotation and the rule table only; never from the held-out set (R-39 c2).
+A1_NEAR_MISSES = [
+    "Does “find the sum” mean we should find the minimum possible total value or any valid total value?",
+    "Does “find the sum” mean we should find the maximum possible total value?",
+    "Does find the sum mean we should find the maximum possible total value or any valid total value?",
+    "Does “find the sums” mean we should find the maximum possible total value or any valid total value?",
+    "Should we find the maximum possible total value?",
+]
+
+
+@pytest.mark.parametrize("question", A1_NEAR_MISSES)
+def test_t39_4b_near_misses_get_default_reply(question):
+    cset = clar.load(A1)
+    result = matcher.match(question, cset.clarifications)
+    assert result == matcher.MatchResult(None, "none")
+    assert cset.reply_for(result) == DEFAULT
+
+
+VALID_ITEM = {"id": "q1", "type": "Behavior", "deleted_information": "d", "question": "Is it one?", "reply": "Yes."}
+
+
+def _doc(**top) -> dict:
+    doc = {"schema": "bench-clarifications/1", "task": "Z1", "default_reply": DEFAULT, "clarifications": [dict(VALID_ITEM)]}
+    doc.update(top)
+    return doc
+
+
+def _item(**fields) -> dict:
+    return {**VALID_ITEM, **fields}
+
+
+MALFORMED = [
+    ("yaml", b"schema: [", "not UTF-8 YAML"),
+    ("utf8", b"\xff\xfe", "not UTF-8 YAML"),
+    ("top", yaml.safe_dump(["a"]).encode(), "expected a mapping at the top level"),
+    ("schema", _doc(schema="bench-clarifications/2"), "schema must be 'bench-clarifications/1'"),
+    ("default", _doc(default_reply="Decide."), "default_reply must be exactly 'Decide and state your assumption.' (R-37)"),
+    ("task", _doc(task=5), "task must be a string"),
+    ("missing", {k: v for k, v in _doc().items() if k != "clarifications"}, "clarifications must be a non-empty list"),
+    ("empty", _doc(clarifications=[]), "clarifications must be a non-empty list"),
+    ("item", _doc(clarifications=["q"]), "clarifications[0] must be a mapping"),
+    ("field", _doc(clarifications=[{k: v for k, v in VALID_ITEM.items() if k != "reply"}]),
+     "clarifications[0].reply must be a non-empty string"),
+    ("blank", _doc(clarifications=[_item(question="")]), "clarifications[0].question must be a non-empty string"),
+    ("typed", _doc(clarifications=[_item(id=7)]), "clarifications[0].id must be a non-empty string"),
+    ("dup", _doc(clarifications=[_item(), _item(question="Is it two?")]), "clarifications[1].id 'q1' repeats an earlier id"),
+]
+
+
+def _write(tmp_path: Path, content) -> Path:
+    path = tmp_path / "clarifications.yaml"
+    path.write_bytes(content if isinstance(content, bytes) else yaml.safe_dump(content, allow_unicode=True).encode("utf-8"))
+    return path
+
+
+@pytest.mark.parametrize("case, content, reason", MALFORMED, ids=[m[0] for m in MALFORMED])
+def test_malformed_clarification_file_is_refused_with_a_code(tmp_path, case, content, reason):
+    path = _write(tmp_path, content)
+    with pytest.raises(BenchError) as caught:
+        clar.load(path)
+    assert (caught.value.code, caught.value.message) == ("HB-USR-002", f"{path}: {reason}")
+
+
+@pytest.mark.parametrize("items, reason", [
+    ([_item(), _item(id="q2", question="is it ONE")],
+     "clarifications[1].question normalises to the same text as clarifications[0]: ambiguous"),
+    ([_item(question=" ?!. ")], "clarifications[0].question is empty after normalise"),
+], ids=["ambiguous", "empty-after-normalise"])
+def test_t39_4c_ambiguous_clarifications_rejected(tmp_path, items, reason):
+    path = _write(tmp_path, _doc(clarifications=items))
+    with pytest.raises(BenchError) as caught:
+        clar.load(path)
+    assert (caught.value.code, caught.value.message) == ("HB-USR-002", f"{path}: {reason}")
