@@ -112,4 +112,10 @@ Times are Leader-measured: the runner's `duration_seconds` and the subagent's `d
   - The spike's canary design is a question for the operator: US-48 is withdrawn for authored tasks (ADR-0013) and applies only to Harbor containers.
   - The unreviewed report's other claims (Harbor 0.23.0 installs without a key; Harbor's own agents need provider keys, so Harbor would be a task format only) are recorded as **Inferred**, not Verified.
 - **R-19 cosmic-ray window deferred.** It would hold the host for hours with no runner slice allowed, and STOP-I (Codex) is the smoke run's critical path. R-19 condition 1's "next night not used by a benchmark run" applies.
+- **The OpenAI allowance ran out (2026-09-25, about 01:47 PDT).** Two Codex slices, W2-STOP-I slice 4 (568 s, which had committed a red and a green) and W3-GRADE-CORE slice 1 (42 s, 0 turns), ended `remote_error`. Codex's own rollout says: "You've hit your usage limit … try again at Sep 29th, 2026 1:03 PM."
+  - This **measures R-9's `assume:`**: one rolling allowance per login is shared by workers and cells. The wave-2/3 Codex worker slices, 13 of them over about 12 h of this session, consumed it.
+  - **Consequences until Sep 29 or new credits:** every `codex-sol` bench cell (a third of the smoke matrix), the `gpt-6-sol` judge (R-58) and every Codex worker track are blocked.
+  - Under R-4 and R-44 condition 2, the two slices moved to Claude Opus: `w2-stopi-4c`, continuing from the recovered commits `b3baf80`/`0f24e77`, and `w3-core-1c`.
+  - The Leader then force-removed the `w2-stopi-4` tree without reading its counts (CLN-C). The commits were recovered; the uncommitted tail was lost.
+  - Cost is not recorded per slice (subscriptions; `cost: not recorded` in every runner row). That is the IO gap that let this arrive unforecast.
 - **The Grok R-11 datum:** 3 slices measured 3.1–4.35 MB each over 7.6–12 min, far under 16 MiB.
