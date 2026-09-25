@@ -231,8 +231,9 @@ summary: >-
 - **Signature:** a join merges a branch that changed a derived file (`docs/docs-index.js`, `docs/audit/audit-data.js`). The `coord-regen` driver resolves the file to "ours" by design and records a regeneration as owed, but nobody runs `coord regen`. The derived view silently misses the branch's entries.
 - **Why it survives:** the merge reports success, and the owed regeneration is written to a list nobody reads. `docs-graph validate` catches index drift, but nothing catches a stale audit view.
 - **Instances:** `2026-09-24/25`, every wave-2 join. The index missed two USER-D docs (found by validate, `82dcfcc`). The audit view was stale until the Leader ran `coord regen` at 23:35.
-- **Sweep:** all merges since the wave-2 dispatch. `coord regen` regenerated both files; nothing else was owed.
-- **Control:** every join runs `coord regen` after the merge, then `docs-graph validate`, before the suite. For now this is a Leader procedure. The upgrade trigger is a second instance: the join gate would then refuse while `regen_owed` is non-empty.
+  - `2026-09-25`, a direct Leader commit with no merge (`ed9f247`, the spec's R10 row). `docs/specs/harness-bench.html` is derived from the markdown, but `coord-regen` fires only on a merge. The Leader pushed the docs-only commit without the suite, and `tests/test_docs_html_in_sync.py` went red on `main`. The W3-EGRESS author found it in their tree's full suite. Fixed by re-rendering (`python tools/render-doc-html.py`).
+- **Sweep:** all merges since the wave-2 dispatch. `coord regen` regenerated both files; nothing else was owed. Direct commits: only `ed9f247` changed a rendered source.
+- **Control:** every join runs `coord regen` after the merge, then `docs-graph validate`, before the suite. **After the second instance:** every Leader push, a docs-only one included, follows a full-suite run on that exact commit, and the push is refused if `regen_owed` is non-empty. For now this is a Leader procedure. The upgrade trigger is a third instance: a pre-push hook.
 - **Status:** `observed` (Leader procedure)
 
 ### GATE-B: a push not gated on the suite that precedes it
