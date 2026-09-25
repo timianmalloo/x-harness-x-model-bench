@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T04:35:17Z",
+  "generated": "2026-09-25T04:36:36Z",
   "audit": [
     {
       "actor": null,
@@ -11695,6 +11695,29 @@ window.AUDIT_DATA = {
       "git": {
         "sha": "984ff3753fc257c556307236d0043b6de6e0aeba",
         "short": "984ff3753",
+        "branch": "w2-r45-profiles",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M3BDKP7D7AZSTDYMTQZ5VWGQ",
+      "shortname": "r45-r46-red-wording-correction",
+      "datetime": "2026-09-25T04:36:36Z",
+      "session": "worker-codex-r45",
+      "prompt": "Correct the R-45/R-46 red-run evidence wording in al-01M3BDH958CHNQ5S4AEPA0BEAX.",
+      "summary": "Correction to al-01M3BDH958CHNQ5S4AEPA0BEAX: af45dbf produced seven failing tests, four AssertionError failures (Copilot flags, Codex config, Copilot class coverage, Codex web_search_call) and three AttributeError failures (tools_advertised missing on committed, no-checkpoint, and unreadable records). No test result changed.",
+      "kind": "manual",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/audit/audit-log.jsonl"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "git": {
+        "sha": "52e045a8105c19402f281f2f7ccb6f65e6be0a18",
+        "short": "52e045a81",
         "branch": "w2-r45-profiles",
         "pushed": null
       }
