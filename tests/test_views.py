@@ -324,6 +324,54 @@ def test_an_ordinary_tool_failure_is_not_a_hook_denial(root, tmp_path):  # the r
     assert _cell(views.load(run_dir), "a").validity == "valid"
 
 
+# --- R-24, R-26 c5: Σ model_calls buckets == the ACP turn total, else an HB-VAL-005 warning (not a validity change) ---
+
+COPILOT_OFF_ACP_USAGE = json.loads((COPILOT_FIX / "provenance.json").read_text(encoding="utf-8"))["facts"]["off"]["acp_prompt_usage"]
+
+
+def _with_acp_usage(usage):
+    def change(e):
+        return {**e, "acp_usage": usage} if e["kind"] == "attempt.process_ended" else e
+    return change
+
+
+def _acp_run(root, tmp_path, usage, **kw):
+    run_dir = _copilot_run(root, tmp_path, **kw)
+    _edit_events(run_dir, _with_acp_usage(usage))
+    return _cell(views.load(run_dir), "a")
+
+
+def _warnings(cell, code):
+    return [(w.code, w.level, w.message) for w in cell.warnings if w.code == code]
+
+
+def test_the_copilot_sample_agrees_with_its_acp_turn_total(root, tmp_path):  # the captured pair, off/ and its provenance
+    cell = _acp_run(root, tmp_path, {"usage": COPILOT_OFF_ACP_USAGE, "meta": None})
+    assert (cell.validity, _warnings(cell, "HB-VAL-005")) == ("valid", [])
+
+
+@pytest.mark.parametrize(("key", "sums"), [("inputTokens", "58986"), ("outputTokens", "515"), ("cachedReadTokens", "46801"),
+                                           ("cachedWriteTokens", "12170")])
+def test_a_bucket_that_disagrees_with_the_acp_turn_total_is_a_warning_not_a_validity_change(root, tmp_path, key, sums):
+    usage = {**COPILOT_OFF_ACP_USAGE, key: COPILOT_OFF_ACP_USAGE[key] + 1}
+    cell = _acp_run(root, tmp_path, {"usage": usage, "meta": None})
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+    assert _warnings(cell, "HB-VAL-005") == [("HB-VAL-005", "warning", f"model_calls tokens differ from the ACP turn total: "
+                                              f"{key} ACP {usage[key]}, model_calls {sums}")]
+
+
+def test_a_copilot_cell_with_no_acp_usage_says_the_cross_check_did_not_run(root, tmp_path):  # never a silent pass
+    cell = _acp_run(root, tmp_path, None)
+    assert _warnings(cell, "HB-VAL-005") == [("HB-VAL-005", "warning", "token cross-check not run: no ACP usage recorded")]
+
+
+def test_the_cross_check_skips_a_harness_whose_acp_usage_is_not_the_turn_total(root, tmp_path):  # Codex: the last call only
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    _edit_events(run_dir, _with_acp_usage({"usage": {"inputTokens": 1, "outputTokens": 1}, "meta": None}))
+    runner.run_pass(run_dir, root)
+    assert _warnings(_cell(views.load(run_dir), "a"), "HB-VAL-005") == []
+
+
 # --- R-15 (Q5), R-21 c2: an unreadable native record is "not recorded" (HB-VAL-003), never HB-VAL-001 -------------
 
 
