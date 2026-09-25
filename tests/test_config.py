@@ -86,3 +86,24 @@ def test_unpinned_model_is_rejected():
     p = config.Problems()
     config.validate_matrix(m, bom, p, "matrix")
     assert any("pinned" in i for i in p.items)
+
+
+def _ready_task(tmp_path: Path, tid: str, **overrides) -> Path:
+    """A ready task with the minimum content for the ready checks unrelated to R-42/US-2 to pass,
+    so a test's own assertion is the only thing that can fail it."""
+    d = _write_task(tmp_path, tid, status="ready", **overrides)
+    (d / "prompt.md").write_text("do it", encoding="utf-8")
+    (d / "tests").mkdir()
+    (d / "tests" / "test_x.py").write_text("def test_x(): assert True", encoding="utf-8")
+    (d / "workspace").mkdir()
+    (d / "workspace" / "README.md").write_text("base", encoding="utf-8")
+    return d
+
+
+def test_ready_task_with_pack_marker_in_workspace_is_rejected(tmp_path):  # R-42 condition 2
+    d = _ready_task(tmp_path, "X2", scenario=5)
+    (d / "workspace" / "NOTES.md").write_text("See the AI-Forward Pack for guidance.", encoding="utf-8")
+    p = config.Problems()
+    entry = {"id": "X2", "scenario": 5, "budget_minutes": 45}
+    config.validate_task(d, entry, p, config.grader_modules(ROOT), config.pack_marker_bytes(ROOT))
+    assert "tasks/X2: workspace/NOTES.md contains pack material (bench/pack-markers.txt)" in p.items
