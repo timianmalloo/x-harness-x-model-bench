@@ -58,6 +58,7 @@ RUN_CODES: dict[str, str] = {
     "HB-LED-003": "duplicate key or second outcome",
     "HB-LED-004": "abandoned grading segment (warning; skipped by views)",
     "HB-LED-005": "archive_hash does not match the attempt's archive_files rows",
+    "HB-LED-006": "warning: grading.completed records no heads (written before ruling R-2); only its seals are checked",
     "HB-GRD-001": "grade lock held",
     "HB-GRD-002": "grading step timeout",
     "HB-VAL-001": "validity: no model call",

@@ -532,7 +532,7 @@ def _sealed_record(run_dir: Path) -> list[Finding]:
         if "heads" in row:
             out += _heads(run_dir, gid, row["heads"], owner)
         else:
-            out.append(Finding("HB-LED-002", "warning", f"events/{gid}: grading.completed records no heads "
+            out.append(Finding("HB-LED-006", "warning", f"events/{gid}: grading.completed records no heads "
                                                         "(written before ruling R-2); only its seals are checked"))
     for path in segment_paths(run_dir, "events"):
         if not path.stem.startswith(ENGINE_PREFIX):
