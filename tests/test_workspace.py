@@ -275,3 +275,8 @@ def test_pack_markers_have_a_real_builder_positive_control(source, tmp_path):  #
     on_text = instruction_text(on) + (X1 / "prompt.md").read_text(encoding="utf-8")
     assert all(marker not in off_text for marker in markers)
     assert all(marker in on_text for marker in markers)
+    # the scan's own red (TA, W1-COP-I join): markers seeded into the pack-off copy's Copilot instructions are found
+    seeded = off / ".github" / "copilot-instructions.md"
+    seeded.parent.mkdir(exist_ok=True)
+    seeded.write_text("".join(f"# {marker}\n" for marker in markers), encoding="utf-8")
+    assert all(marker in instruction_text(off) for marker in markers)
