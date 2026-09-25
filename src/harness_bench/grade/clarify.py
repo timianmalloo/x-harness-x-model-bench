@@ -105,9 +105,9 @@ def grade_cell(inp: CellInput) -> Mapping[str, Score]:
 
     if not call_rows:
         return {
-            "key_question_recall": Score(0, None, evidence),
+            "key_question_recall": Score(Decimal(0), None, evidence),
             "key_question_precision": Score(None, "no question asked", evidence),
-            "ask_vs_assume": Score(0, None, evidence),
+            "ask_vs_assume": Score(Decimal(0), None, evidence),
             "asked_unmatched": Score(0, None, evidence),
         }
 

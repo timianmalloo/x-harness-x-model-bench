@@ -29,7 +29,7 @@
   {
     "name": "no question asked -> NA",
     "file": "src/harness_bench/grade/clarify.py",
-    "find": "            \"ask_vs_assume\": Score(0, None, evidence),",
+    "find": "            \"ask_vs_assume\": Score(Decimal(0), None, evidence),",
     "replace": "            \"ask_vs_assume\": Score(None, \"no question asked\", evidence),",
     "tests": [
       "tests/test_grade_clarify.py::test_no_question_asked_scores_ask_vs_assume_zero"
@@ -60,6 +60,15 @@
     "replace": "    return num // denom\n",
     "tests": [
       "tests/test_grade_clarify.py::test_a_non_integer_ratio_is_a_decimal_at_the_catalog_scale"
+    ]
+  },
+  {
+    "name": "no question asked writes an int, not a scaled Decimal",
+    "file": "src/harness_bench/grade/clarify.py",
+    "find": "            \"key_question_recall\": Score(Decimal(0), None, evidence),",
+    "replace": "            \"key_question_recall\": Score(0, None, evidence),",
+    "tests": [
+      "tests/test_grade_clarify.py::test_no_question_asked_writes_scaled_ratios_as_decimals"
     ]
   }
 ]
