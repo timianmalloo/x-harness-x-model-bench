@@ -157,7 +157,7 @@ def test_the_header_shows_recorded_facts_and_not_recorded_for_the_rest(root, tmp
                    "network_mode": "unrestricted", "harness": "codex", "build_version": "0.156.0"})
     doc = html.render(views.load(run_dir), archive_present=True)
     assert "subscription login (copied)" in doc and "codex 0.156.0" in doc
-    assert "Defender real-time exclusion" in doc and "not recorded" in doc
+    assert "<dt>Defender real-time exclusion</dt><dd>not recorded</dd>" in doc
 
 
 def test_the_header_marks_the_pinned_copilot_build_as_prerelease(root, tmp_path):
