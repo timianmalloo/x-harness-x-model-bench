@@ -1,0 +1,17 @@
+# The model gateway's judges (design docs/design/phase3-gateway-judges.md section 5; R-58, R-63, R-70). Leader-owned.
+# Each entry lands only from a Leader turn measured with the gateway's own builders (R-70 item 3); the loader
+# recomputes invocation_sha256 from backend.invocation_sha256 and refuses any other value (R-70 item 4).
+#   claude-code: 2026-09-25T16:58:18Z, qualified on every R-58 c4 criterion (docs/notes/spike-gw-headless.md).
+#   copilot:     2026-09-25T15:14:39Z, R-70 3(b), piped stdin with no -p (tests/fixtures/gateway/gw-copilot-results.json).
+# A judge entry joins the catalog_hash (design :238), so this file is part of what the 0.4 freeze pins.
+schema: bench-gateway/1
+call_timeout_seconds: 180
+judges:
+  - { vendor: anthropic, harness: claude-code, model: claude-fable-5-1, output: text,
+      build: { version: "2.1.282", exe_sha256: "fc0e3af017705624b9e1bce913f72761864ff994804514da1f5e41380fca4484" },
+      invocation_sha256: "6712a42b513861cf022060923c12ad5ebca003ebc54ff19eebd7948c7d7299f4",
+      qualified: true, spike: claude-code-claude-fable-5-1-text-20260925T165818Z }
+  - { vendor: openai, harness: copilot, model: gpt-6-sol, output: text,
+      build: { version: "1.0.89-1", exe_sha256: "417d0721237ff370a415cf5c11c7523f9332f220a6ee0f5eb8e802a9662ef246" },
+      invocation_sha256: "1ab59cdd2d4310e3ef42cf9b0c50a76d4829a5aa4dcbba9f1923d30e85c24bd9",
+      qualified: true, spike: copilot-gpt-6-sol-text-20260925T151439Z }
