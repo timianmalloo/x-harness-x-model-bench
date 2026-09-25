@@ -10,6 +10,7 @@ import shutil
 from decimal import Decimal
 from pathlib import Path
 
+import pytest
 from archived_runs import ROOT
 from test_grade_correctness import d1_cell, git, tree_digest
 
@@ -262,3 +263,58 @@ def test_mutation_score_has_its_catalog_scale_of_4():
     catalog = config.load_yaml(ROOT / "bench" / "metrics.yaml")
     scales = {m["id"]: m.get("scale") for a in catalog["areas"].values() for m in a.get("metrics") or []}
     assert scales["mutation_score"] == 4
+
+
+# --- Slow ring (real dotnet and real Stryker.NET 4.16.0, W3-GR-CODE c6b-3) -------------------------------------------
+
+NEW_TEST_PROJ = "tests/D1.SeedTests/D1.SeedTests.csproj"
+NEW_TEST_CODE = "tests/D1.SeedTests/SeedTest.cs"
+NEW_TEST_PROJ_CONTENT = (
+    '<Project Sdk="Microsoft.NET.Sdk">\n'
+    "  <PropertyGroup>\n"
+    "    <TargetFramework>net10.0</TargetFramework>\n"
+    "    <Nullable>enable</Nullable>\n"
+    "    <ImplicitUsings>enable</ImplicitUsings>\n"
+    "    <IsPackable>false</IsPackable>\n"
+    "  </PropertyGroup>\n"
+    "  <ItemGroup>\n"
+    '    <PackageReference Include="Microsoft.NET.Test.Sdk" />\n'
+    '    <PackageReference Include="xunit" />\n'
+    '    <PackageReference Include="xunit.runner.visualstudio" />\n'
+    '    <ProjectReference Include="../../src/AiDe.Core/AiDe.Core.csproj" />\n'
+    "  </ItemGroup>\n"
+    "  <ItemGroup>\n"
+    '    <Using Include="Xunit" />\n'
+    "  </ItemGroup>\n"
+    "</Project>\n"
+)
+NEW_TEST_CODE_CONTENT = (
+    "namespace D1.SeedTests;\n\n"
+    "public class SeedTest\n"
+    "{\n"
+    "    [Fact]\n"
+    "    public void DoesNotCallCompute()\n"
+    "    {\n"
+    "        Assert.True(true);\n"
+    "    }\n"
+    "}\n"
+)
+
+
+@pytest.mark.slow
+def test_d1_reference_plus_new_test_project_with_no_compute_scores_zero(tmp_path):
+    folder, cell = d1_cell(
+        tmp_path,
+        {
+            PROJECTION: REFERENCE,
+            NEW_TEST_PROJ: NEW_TEST_PROJ_CONTENT,
+            NEW_TEST_CODE: NEW_TEST_CODE_CONTENT,
+        },
+    )
+    before = tree_digest(folder)
+    inp = mutation_input(tmp_path, folder, cell, tmp_path / "grading" / "c1" / "mutation")
+    out = mutation.grade_cell(inp)
+    assert tree_digest(folder) == before, "grading wrote under the archive"
+    assert out[METRIC].value == Decimal("0.0000")
+    assert out[METRIC].reason is None
+
