@@ -255,6 +255,24 @@ ACP_TOTAL_KEYS = (("inputTokens", ("uncached_input", "cache_read", "cache_write"
                   ("cachedReadTokens", ("cache_read",)), ("cachedWriteTokens", ("cache_write",)))
 
 
+def _build_check(plan: dict, harness: str, opened: dict) -> Finding | None:
+    """R-28 c2 (R-22 narrowed): `attempt.session_opened.agent_version`, verbatim from ACP `initialize.agentInfo`, must equal
+    the pinned build's version, else the cell is flagged HB-CELL-115 (a warning: the ruling flags, it does not
+    invalidate). agentInfo names the adapter when there is one (claude-agent-acp, codex-acp) and Copilot itself when
+    there is none, so the pin is `adapter_version`, else `version`. A null on either side skips the check with
+    HB-VAL-006, never a pass (R-22 c1)."""
+    build = as_dict(as_dict(plan.get("builds")).get(harness))
+    pinned = build.get("adapter_version") or build.get("version")
+    agent = opened.get("agent_version")
+    if agent is None:
+        return Finding("HB-VAL-006", "warning", "executed-build check skipped: no agent_version recorded")
+    if pinned is None:
+        return Finding("HB-VAL-006", "warning", f"executed-build check skipped: no pinned version for {harness}")
+    if agent != pinned:
+        return Finding("HB-CELL-115", "warning", f"agent_version {agent} differs from the pinned build {pinned}")
+    return None
+
+
 def _token_cross_check(ended: dict, calls: list[ModelCall]) -> Finding | None:
     """HB-VAL-005, a warning, never a validity change: the ACP turn total and Σ model_calls disagree, or no ACP usage
     was recorded (the check did not run, which is never read as a pass). Copilot's `inputTokens` includes cache read
@@ -325,7 +343,7 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     completed = next((e for e in facts["events"] if e["kind"] == "grading.completed" and e["grading_id"] == grading_id), {})
     ended = events.get("attempt.process_ended", {})
     unrecorded = _unrecorded(source, completed, cid, ended, usage, extraction)
-    warnings = []
+    warnings = [_build_check(plan, cell["harness"], events["attempt.session_opened"])] if "attempt.session_opened" in events else []
     if cell["harness"] in ACP_TOTAL_HARNESSES and source == "native_record" and calls is not None and unrecorded is None:
         warnings.append(_token_cross_check(ended, ex.model_calls))
     totals = normalize.totals(source, ex, usage) if recorded and unrecorded is None else {}

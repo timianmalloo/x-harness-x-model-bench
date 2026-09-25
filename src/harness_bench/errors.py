@@ -65,6 +65,7 @@ RUN_CODES: dict[str, str] = {
     "HB-VAL-003": "validity: not recorded (the usage record is missing or unreadable)",
     "HB-VAL-004": "validity: tools denied by hook",
     "HB-VAL-005": "warning: model_calls tokens differ from the ACP turn total, or the check did not run",
+    "HB-VAL-006": "warning: executed-build check skipped (no agent_version, or no pinned version)",
     "HB-SEC-001": "credential value found in a report to be published",
     "HB-USR-001": "unknown run id",
     "HB-USR-002": "invalid input",
