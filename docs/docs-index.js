@@ -1169,7 +1169,7 @@ window.DOCS_INDEX = {
       "phase": "Phase 2 · smoke on all harnesses (wave 2: row 8, the scripted user)",
       "reviewBy": "2027-03-25",
       "reviewSuggested": [],
-      "summary": "The scenario-1 scripted user per R-37 and R-39: a bench-owned stdio MCP server exposing one tool, ask_user(question) -> reply, passed in ACP session/new mcpServers, one prompt per cell; a deterministic matcher (exact, then normalised; a miss gets exactly \"Decide and state your assumption.\"); a per-call log with \"no question asked\" for zero calls; the \"scripted user\" allowlist class; the S-04 threshold from the held-out set. Draft revision 1 (phase A): every measured fact is marked \"pending S-04\" until the Leader's probe turns return.",
+      "summary": "The scenario-1 scripted user per R-37 and R-39: a bench-owned MCP server exposing one tool, ask_user(question) -> reply, passed in ACP session/new mcpServers, one prompt per cell; a deterministic matcher (exact, then five normalisation rules; a miss gets exactly \"Decide and state your assumption.\"); a per-call log with \"no question asked\" for zero calls; the \"scripted user\" allowlist class; the seams for W2-USER-W. Revision 2 after spike S-04: stdio works on Claude Code and Codex (Verified); Copilot 1.0.89-1 rejects client stdio servers (a decision request, with HTTP and launch-config variants written); the rule table scores precision 1.0 and recall 6/17 on the held-out set (0/11 on paraphrases); the S-04 threshold is set (regression floor met; confidence T = 0.80 on paraphrase recall not met). AI Systems Engineer: CLEAR WITH CONDITIONS, conditions applied.",
       "tags": [
         "benchmark",
         "scenario-1",
@@ -1205,6 +1205,10 @@ window.DOCS_INDEX = {
           "rel": "refines"
         },
         {
+          "to": "note-spike-s04-scripted-user",
+          "rel": "depends-on"
+        },
+        {
           "to": "rulings-register",
           "rel": "depends-on"
         },
@@ -1214,7 +1218,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8275c48424c9395f20e0d34edcad515457a02e6a0c47489e52e79face1f2384d"
+      "sourceSha256": "50656269dd216a00f40ee50941a630775fff4a23c66d062137486d19bd35c710"
     },
     {
       "id": "design-run-lifecycle-model",
@@ -1368,7 +1372,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ae2ac2b5641b4f193d21d7f18d20a7eaa7b6669b5935f320a854c149ae1954d2"
+      "sourceSha256": "2a78d818c221b18216c24e16cbd820c04e8db350fca6dd6607a3d486e4db6600"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -1521,6 +1525,49 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "6be48da395ad06a2e18cf0e664f395e84f62f915bd6629db4ca86712b119edda"
+    },
+    {
+      "id": "note-spike-s04-scripted-user",
+      "path": "docs/notes/spike-s04-scripted-user.md",
+      "title": "Spike S-04: the scripted user's ask_user tool reaches Claude Code and Codex over stdio; Copilot rejects stdio from the client",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-12-25",
+      "reviewSuggested": [],
+      "summary": "Eleven probe turns on the pinned builds (Leader-run, 2026-09-25). Claude Code 2.1.282 and Codex 0.156.0 start a stdio MCP server given in ACP session/new mcpServers, list ask_user, and call it on request; the reply reaches the model. Copilot 1.0.89-1 accepts session/new but rejects the stdio entry (\"Rejecting non-http/sse MCP server\"), with or without --disable-builtin-mcps, so the tool never reaches it: a decision request (R-37 c1), with an HTTP and a launch-config variant written for the Leader. On A1, Claude asked once (the key ambiguity, paraphrased; no match), Codex asked nothing. The rule table's held-out measurement: precision 1.0, 0/21 default-labelled matches, paraphrase recall 0/11 (overall 6/17); S-04 threshold set (regression floor met; T = 0.80 on paraphrase recall not met, so A1 clarification metrics carry \"low-confidence matcher\" in wave 2).",
+      "tags": [
+        "benchmark",
+        "spike",
+        "phase-2",
+        "scenario-1",
+        "scripted-user",
+        "mcp",
+        "acp",
+        "matcher",
+        "S-04"
+      ],
+      "links": [
+        {
+          "to": "design-phase2-scripted-user",
+          "rel": "relates-to"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "relates-to"
+        },
+        {
+          "to": "adr-0004-static-permissions",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "78bd19f9213ad14cefd44f3555904c19eca8c2641d4b9c917e779100197e5437"
     },
     {
       "id": "proof-phase2",
@@ -2231,5 +2278,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "8ac246b5c5d2a166e026c336587c8df64c943f183247f116ef8678b2b9976339"
+  "graphSha256": "66768fae0fe7e79bea194b930b9affd2842f5e9a919ee7313358076e2c280592"
 };

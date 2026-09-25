@@ -13,6 +13,13 @@ copy, the `record` tee and `driver.run_turn`), with three differences, all state
      `--prompt a1` sends `tasks/A1/prompt.md` verbatim (R-37 c1: "whether one A1 turn calls it").
 Copilot only: `--copilot-disable-builtin-mcps` appends the ADR-0004:58 flag, which the profile does not carry today.
 
+`--transport` (added after the first S-04 runs, which showed Copilot rejecting a stdio server from the client):
+  session-stdio   (default) a stdio entry in `session/new`; the harness starts the server.
+  session-http    the probe starts the server on 127.0.0.1 (Streamable HTTP, JSON responses) and puts an
+                  `{type: "http", name, url, headers: []}` entry in `session/new`.
+  copilot-config  Copilot only: `session/new` keeps `[]`; the stdio server is given at launch with
+                  `--additional-mcp-config @<label>.mcp-config.json` (Copilot's own config shape).
+
 `--handshake-only` stops at the ack barrier: `initialize`, `session/new` (+ `set_model`), then it waits up to
 `--server-wait` seconds for the server to be listed, and never sends a prompt, so no model turn is spent. A server
 listed in that window is proof the adapter started it; a server not listed is not proof of the contrary (a harness
@@ -48,6 +55,7 @@ import contextlib
 import dataclasses
 import json
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -72,6 +80,7 @@ PROBE_PROMPT = (
     "Then reply with the tool's answer, verbatim, and stop. Do not edit any file and do not run any command.\n"
 )
 CLAUDE_TOOL_ID = f"mcp__{SERVER_NAME}__{TOOL}"
+TOOL_ID = re.compile(rf"mcp(?:__|\.){SERVER_NAME}(?:__|\.){TOOL}|{SERVER_NAME}[-/]{TOOL}")
 # assume: Claude Code names an MCP tool mcp__<server>__<tool>. Confirm: the account connectors in this repo's own
 # native records are named mcp__claude_ai_<Name>__<tool> (R-36), and the probe's native record lists this id.
 # Breaks: the id differs, the allowlist misses it, and the model's call becomes a permission request, which the
@@ -93,6 +102,20 @@ def mcp_servers(python: str, server_log: Path, reply: str) -> list[dict]:
     return [{"name": SERVER_NAME, "command": python,
              "args": [str(SERVER), "--log", str(server_log), "--reply", reply],
              "env": [{"name": LOG_ENV, "value": str(server_log)}]}]
+
+
+def http_servers(url: str) -> list[dict]:
+    """The ACP `McpServerHttp` shape: {type: "http", name, url, headers}. Copilot 1.0.89-1 accepts only http/sse
+    from an ACP client; it logs `Rejecting non-http/sse MCP server "scripted_user" from client` for stdio (S-04)."""
+    return [{"type": "http", "name": SERVER_NAME, "url": url, "headers": []}]
+
+
+def copilot_mcp_config(python: str, server_log: Path, reply: str) -> dict:
+    """Copilot's own MCP config (`--additional-mcp-config @file`), a stdio server. The shape is what
+    `copilot mcp add --json` 1.0.89-1 writes: {type: "local", command, args, tools: ["*"], env: {..}}."""
+    return {"mcpServers": {SERVER_NAME: {"type": "local", "command": python,
+                                         "args": [str(SERVER), "--log", str(server_log), "--reply", reply],
+                                         "tools": ["*"], "env": {LOG_ENV: str(server_log)}}}}
 
 
 @contextlib.contextmanager
@@ -225,24 +248,29 @@ def analyse(recording_path: Path, server_log_path: Path, native_paths: list[Path
     facts["model_called_tool"] = bool(calls)
     facts["calls"] = calls
     facts["log_record"] = ({"calls": calls} if calls else {"calls": [], "note": "no question asked"})
-    # the native record: every line that names the tool (R-37 c1: "whether the tool appears in the native record")
-    hits, snippets = 0, []
+    # the native record (R-37 c1: "whether the tool appears in the native record"). The bare word `ask_user` is also
+    # in the prompt, so a line naming it proves nothing; the harness's own qualified id (mcp__scripted_user__ask_user,
+    # mcp.scripted_user.ask_user, scripted_user-ask_user) is the evidence. Found in the first S-04 runs: Codex's A1
+    # rollout named `ask_user` only in the user message.
+    hits, snippets, ids = 0, [], set()
     for path in native_paths:
         for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+            ids.update(TOOL_ID.findall(line))
             if TOOL in line:
                 hits += 1
                 if len(snippets) < 3:
                     at = line.find(TOOL)
                     snippets.append(line[max(0, at - 200):at + 200])
     facts["native_records"] = [p.name for p in native_paths]
-    facts["tool_in_native_record"] = hits > 0 if native_paths else None  # null: no native record found, not "no"
-    facts["native_record_lines_naming_tool"] = hits
+    facts["native_record_tool_ids"] = sorted(ids)
+    facts["tool_in_native_record"] = bool(ids) if native_paths else None  # null: no native record found, not "no"
+    facts["native_record_lines_naming_tool"] = hits  # includes the prompt's own mention
     facts["native_record_snippets"] = snippets
     return facts
 
 
 def _variant(args: argparse.Namespace) -> str:
-    parts = [args.prompt]
+    parts = [args.prompt] + ([] if args.transport == "session-stdio" else [args.transport])
     if args.handshake_only:
         parts.append("handshake")
     if args.harness == "copilot":
@@ -281,7 +309,18 @@ def run(args: argparse.Namespace) -> int:
     argv = [*profile.argv(build, args.model), *extra]
     token, reply = (PROBE_TOKEN, PROBE_REPLY) if args.prompt == "probe" else (None, A1_REPLY)
     prompt = PROBE_PROMPT if args.prompt == "probe" else _prompt(task_dir)["prompt"]
-    servers = mcp_servers(sys.executable, server_log, reply)
+    http_server = None
+    if args.transport == "copilot-config":
+        if args.harness != "copilot":
+            raise SystemExit("--transport copilot-config is Copilot's own launch flag; use it with --harness copilot")
+        servers = []  # session/new keeps the driver's own []
+        config = (out_dir / f"{label}.mcp-config.json").resolve()
+        argv += ["--additional-mcp-config", f"@{config}"]
+        extra += ["--additional-mcp-config", f"@{config}"]
+    elif args.transport == "session-http":
+        servers = http_servers("http://127.0.0.1:<port>/mcp")
+    else:
+        servers = mcp_servers(sys.executable, server_log, reply)
     if args.dry_run:
         print(json.dumps({"label": label, "argv": argv, "mcpServers": servers, "set_model": profile.set_model,
                           "mode": profile.mode, "settings": profile.files.get("settings.json"),
@@ -289,6 +328,8 @@ def run(args: argparse.Namespace) -> int:
         return 0
     workspace.check_cells_root(cells_root)  # HB-PRE-002: no instruction file above the cell
     out_dir.mkdir(parents=True, exist_ok=True)
+    if args.transport == "copilot-config":
+        config.write_text(json.dumps(copilot_mcp_config(sys.executable, server_log, reply), indent=1) + "\n", encoding="utf-8")
     cell_dir = cells_root / f"s04-probe-{label}"
     home, ws = cell_dir / "home", cell_dir / "ws"
     workspace.cell_working_copy(workspace.task_source(task_dir, "capture", cell_dir / "source"), ws)
@@ -303,6 +344,11 @@ def run(args: argparse.Namespace) -> int:
             raise HandshakeOnly(session_id)
 
     try:
+        if args.transport == "session-http":  # the bench, not the harness, runs an HTTP server: it is started here
+            http_server = subprocess.Popen([sys.executable, str(SERVER), "--http", "0", "--log", str(server_log), "--reply", reply],
+                                           stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                           env={**os.environ, LOG_ENV: str(server_log)})
+            servers[:] = http_servers(f"http://127.0.0.1:{json.loads(http_server.stdout.readline())['port']}/mcp")
         with rec.with_suffix(".stderr.log").open("wb") as err:
             cell = procs.spawn([sys.executable, str(RECORDER), "record", "--out", str(rec), "--", *argv],
                                cwd=str(ws), env=env, stderr=err)
@@ -327,8 +373,12 @@ def run(args: argparse.Namespace) -> int:
                 cell.close()
     finally:
         profile.clean_home(home)  # the credential copy never outlives the turn
+        if http_server is not None:
+            http_server.terminate()
+            http_server.wait(timeout=15)
     native = profile.native_records(home, result.session_id) if result.session_id else []
     summary = {"format": "s04-probe/1", "label": label, "harness": args.harness, "model": args.model,
+               "transport": args.transport, "mcp_servers": servers,
                "prompt_kind": args.prompt, "handshake_only": args.handshake_only, "stopped_at_barrier": stopped_at_barrier,
                "copilot_disable_builtin_mcps": bool(args.copilot_disable_builtin_mcps), "allow_probe_tool": not args.no_allow,
                "extra_argv": extra, "build": build.record(), "captured_utc": datetime.now(UTC).isoformat(timespec="seconds"),
@@ -342,7 +392,7 @@ def run(args: argparse.Namespace) -> int:
                "facts": analyse(rec, server_log, native, token)}
     path = out_dir / f"{label}.summary.json"
     path.write_text(json.dumps(summary, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(json.dumps(summary, indent=1, ensure_ascii=False))
+    emit(summary)
     facts = summary["facts"]
     return 0 if (facts["tool_listed"] if args.handshake_only else facts["model_called_tool"]) else 1
 
@@ -352,8 +402,15 @@ def reanalyse(summary_path: Path) -> int:
     files = summary["files"]
     summary["facts"] = analyse(Path(files["recording"]), Path(files["server_log"]),
                                [Path(p) for p in files["native_records"]], summary.get("token"))
-    print(json.dumps(summary, indent=1, ensure_ascii=False))
+    emit(summary)
     return 0
+
+
+def emit(summary: dict) -> None:
+    """The summary on stdout; the file copy is written first, in UTF-8. ASCII with JSON escapes, because a Windows
+    pipe defaults to cp1252 and a model's text (a minus sign, an emoji) once turned a saved measurement into exit 1
+    (OUT-A, docs/lessons/defect-classes.md)."""
+    print(json.dumps(summary, indent=1, ensure_ascii=True))
 
 
 def main(argv: list[str]) -> int:
@@ -366,6 +423,8 @@ def main(argv: list[str]) -> int:
     r.add_argument("--handshake-only", action="store_true")
     r.add_argument("--server-wait", type=float, default=30.0, help="seconds to wait for tools/list (handshake-only)")
     r.add_argument("--copilot-disable-builtin-mcps", action="store_true")
+    r.add_argument("--transport", choices=("session-stdio", "session-http", "copilot-config"), default="session-stdio",
+                   help="how the server reaches the harness (default: stdio in session/new)")
     r.add_argument("--no-allow", action="store_true", help="do not add the probe tool to the allowlist")
     r.add_argument("--tools-dir", default=str(ROOT / ".tools" / "harness"))
     r.add_argument("--cells-root", default=str(ROOT.parent / "bench-cells"))

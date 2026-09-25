@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T04:07:41Z",
+  "generated": "2026-09-25T04:33:24Z",
   "audit": [
     {
       "actor": null,
@@ -10360,6 +10360,50 @@ window.AUDIT_DATA = {
         "branch": "w2-user-design",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M3BDDV5NMA2DS8R3VSY2QCJP",
+      "shortname": "w2-user-d-phase-b",
+      "datetime": "2026-09-25T04:33:24Z",
+      "session": "w2-user-d",
+      "prompt": "W2-USER-D phase B: read the Leader's 11 S-04 probe summaries, find why Copilot never lists the tool, record the A1 ask-vs-assume measurement, finish design + spike note, AI Systems Engineer review, validate, commit.",
+      "summary": "Copilot root cause Verified from its process log (rejects non-http/sse client MCP servers). Probe fixes red-first: OUT-A (cp1252 print), TEST-A instance (prompt mention counted as native tool). New transports session-http / copilot-config for S-04b. Held-out: precision 1.0, paraphrase recall 0/11. Review CLEAR WITH CONDITIONS; 7 Majors + 3 Minors closed in rev 2. DRs: S04-1 Copilot transport, S04-2 responder ceiling, S04-3 spec key.",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": "Claude Opus 5.5",
+      "artifacts": [
+        "docs/design/phase2-scripted-user.md",
+        "docs/notes/spike-s04-scripted-user.md",
+        "docs/lessons/defect-classes.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Spike note and design rev 2 committed with the reviewer's verdict; every R-37/R-39 condition maps to a named test",
+      "done_when": "docs-graph validate exit 0; probe_selftest 0 failures; ruff clean; committed on w2-user-design",
+      "tier": "T2",
+      "fan_out": 1,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-25T04:14:59Z",
+      "duration_seconds": 1105.0,
+      "persona_yield": [
+        {
+          "persona": "ai-systems-engineer",
+          "raised": 10,
+          "accepted": 10
+        }
+      ],
+      "git": {
+        "sha": "dda9f6224be6b00dc931ee532c44a9785e54be95",
+        "short": "dda9f6224",
+        "branch": "w2-user-design",
+        "pushed": null
+      }
     }
   ],
   "changes": [
@@ -10628,6 +10672,30 @@ window.AUDIT_DATA = {
           "b6d1535 test(W1-HOST): the base fixture removes only this test's folder",
           "6ae3bcd docs(coord): plan version 3 amendments after capture window 1 and R-12..R-28"
         ]
+      }
+    },
+    {
+      "id": "cl-01M3BDDV21A51XJWGMTPC482VF",
+      "datetime": "2026-09-25T04:33:24Z",
+      "session": "w2-user-d",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "Scripted user design rev 2 + spike S-04",
+      "prompt": "W2-USER-D phase B: fill the S-04 measurements, finish the scripted-user design, AI Systems Engineer review, validate, commit.",
+      "summary": "Stdio ask_user MCP server in session/new reaches Claude Code 2.1.282 and Codex 0.156.0 (called; reply reached); Copilot 1.0.89-1 rejects client stdio servers (log: Rejecting non-http/sse MCP server) with or without --disable-builtin-mcps -> DR-S04-1 with HTTP and launch-config variants written. A1: Claude asked 1 (paraphrase, no match), Codex 0. Rule table on held-out: precision 1.0, 0/21 default matches, paraphrase recall 0/11; threshold: regression floor met, T=0.80 on paraphrase recall not met. Cache key amended to (question, clarification-set, matcher version) -> DR-S04-3. AI Systems Engineer CLEAR WITH CONDITIONS, applied.",
+      "rationale": "R-37 c1/c2, R-39 c1-c4; review findings 1-10",
+      "artifacts": [
+        "docs/design/phase2-scripted-user.md",
+        "docs/notes/spike-s04-scripted-user.md",
+        "tests/fixtures/acp/scripted-user/s04-results.json"
+      ],
+      "tags": [],
+      "git": {
+        "before": "dda9f62",
+        "after": "dda9f6224be6b00dc931ee532c44a9785e54be95",
+        "branch": "w2-user-design",
+        "pushed": null,
+        "commits": []
       }
     }
   ],
