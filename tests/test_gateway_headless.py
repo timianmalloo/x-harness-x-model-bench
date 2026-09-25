@@ -159,3 +159,32 @@ def test_t_gw_08_a_tool_event_fails_before_the_served_model_check(tmp_path):
                                        gw_backend.Recorded(stdout, record)}, tmp_path / "archive")
     result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path), replay)
     assert (result.outcome, result.code) == ("failed", "HB-GW-006")
+
+
+# --------------------------------------------------------------------------------------------------- T-GW-35
+def _fenced_stdout(tmp_path, times: int) -> Path:
+    out = json.loads((RECORDS / "claude-fable-text.stdout.json").read_text(encoding="utf-8"))
+    for _ in range(times):
+        out["result"] = f"```json\n{out['result']}\n```"
+    path = tmp_path / f"fenced-{times}.stdout.json"
+    path.write_text(json.dumps(out), encoding="utf-8")
+    return path
+
+
+def test_t_gw_35_a_fenced_answer_is_unwrapped_once_and_recorded_as_fenced(tmp_path, base):
+    result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path), _launch(tmp_path, base / "cells", stdout=_fenced_stdout(tmp_path, 1)))
+    assert (result.outcome, result.code, result.fenced) == ("stored", None, True)
+    assert [v["score"] for v in result.verdicts] == [2, 2]
+    entry = json.loads((tmp_path / "cache" / "verdicts" / f"{result.cache_key}.json").read_text(encoding="utf-8"))
+    assert entry.get("fenced") is True
+
+
+def test_t_gw_35_a_twice_fenced_answer_is_not_unwrapped_again(tmp_path, base):
+    result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path), _launch(tmp_path, base / "cells", stdout=_fenced_stdout(tmp_path, 2)))
+    assert (result.outcome, result.code, result.fenced) == ("failed", "HB-GW-002", False)
+
+
+def test_t_gw_35_an_unfenced_answer_is_recorded_as_not_fenced(tmp_path, base):
+    result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path), _launch(tmp_path, base / "cells"))
+    entry = json.loads((tmp_path / "cache" / "verdicts" / f"{result.cache_key}.json").read_text(encoding="utf-8"))
+    assert (result.outcome, result.fenced, entry.get("fenced")) == ("stored", False, False)
