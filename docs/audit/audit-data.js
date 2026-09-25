@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T05:15:18Z",
+  "generated": "2026-09-25T05:32:16Z",
   "audit": [
     {
       "actor": null,
@@ -13339,6 +13339,39 @@ window.AUDIT_DATA = {
         "sha": "1fc645bde3222965c678d9999d24eb656ef1e4e8",
         "short": "1fc645bde",
         "branch": "w2-validate",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M3BGSMG53JEB4TH3K1V48K3Z",
+      "shortname": "codex-account-apps-r45",
+      "datetime": "2026-09-25T05:32:16Z",
+      "session": "worker-codex-apps",
+      "prompt": "Close the Codex account-apps gap measured in qual-r45-1: disable apps per cell, record nested MCP tool items, classify Copilot skill as read, prove red and green commits, pinned binary config, mutants, pytest, and ruff; stay within assigned paths and do not push.",
+      "summary": "Red b6d4609, a58fe62, c4fbf72; green b397acf, ab25054, 21db891. Pinned Codex 0.156.0 apps false loaded and invalid boolean failed; 7/7 mutants killed; pytest 920 passed, 1 skipped, 8 deselected; ruff clean.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Close qual-r45-1 Codex account-apps and telemetry gaps.",
+      "done_when": "Per-cell apps disabled; nested MCP and Copilot skill rows classified; red-green commits, pinned binary evidence, all mutants killed, full pytest and ruff clean.",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-25T05:23:20Z",
+      "duration_seconds": 536.0,
+      "git": {
+        "sha": "21db891364f6aeb0fca85aced3ea75984e210a69",
+        "short": "21db89136",
+        "branch": "w2-codex-apps",
         "pushed": null
       }
     }
