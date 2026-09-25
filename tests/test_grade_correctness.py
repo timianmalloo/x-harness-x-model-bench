@@ -155,6 +155,25 @@ def test_d1_reference_with_a_member_deleted_that_unchanged_files_use_scores_0(tm
         {"pass_at_1": (0, None), "partial_credit": ("0.0000", None), "build_and_suite_clean": (0, None)}
 
 
+IPC_TESTS = "tests/AiDe.Core.Tests/IpcFramingTests.cs"
+IPC_KEY = "AiDe.Core.Tests.IpcFramingTests.Utf8Content_SurvivesIntact"
+
+
+def inverted(text: str) -> str:
+    """IpcFramingTests.cs with the one assertion of `Utf8Content_SurvivesIntact` inverted (it passes on the base)."""
+    head, method, tail = text.partition("public async Task Utf8Content_SurvivesIntact()")
+    body, rest = tail.split("[Fact]", 1)
+    assert body.count("Assert.Equal(payload, result);") == 1
+    return head + method + body.replace("Assert.Equal(payload, result);", "Assert.NotEqual(payload, result);") + "[Fact]" + rest
+
+
+def test_d1_base_with_one_public_assertion_inverted_has_exactly_1_regression(tmp_path, d1_dotnet):  # GR-CODE c2
+    got = grade_d1(tmp_path, *d1_cell(tmp_path, {IPC_TESTS: inverted}))
+    assert got.get("regression_count") == (1, None)
+    log = tmp_path / "run" / "grading" / "g" / "c1" / "correctness" / "regressions" / "regressions.log"
+    assert log.read_text(encoding="utf-8").splitlines()[-1:] == [f"regressed {IPC_KEY}"]
+
+
 def test_an_empty_nuget_cache_is_na_restore_never_0(tmp_path, d1_dotnet, monkeypatch):  # F13: a failure before the build
     (tmp_path / "empty-nuget").mkdir()
     monkeypatch.setenv("NUGET_PACKAGES", str(tmp_path / "empty-nuget"))
