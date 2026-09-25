@@ -99,6 +99,16 @@ def test_codex_web_search_call_is_an_out_of_profile_tool_row(tmp_path):
     assert [(call.name, call.tool_class, call.native_ordinal) for call in calls] == [("web_search", "other", 1)]
 
 
+def test_codex_mcp_item_inside_exec_is_an_out_of_profile_tool_row():
+    # qual-r45-1, rollout item_completed/McpToolCall; fixture keeps only its structural fields.
+    ex = codex.read(FIX / "native/codex/mcp-inside-exec.jsonl")
+    assert [(call.name, call.tool_class, call.native_ordinal, call.ok) for call in ex.tool_calls] == [
+        ("codex_apps.higgsfield.create_website", "other", 1, False)]
+    rows = normalize.tool_call_rows("r", "c", ex.session_id, ex, "x")
+    assert [(row["name"], row["tool_class"]) for row in rows] == [
+        ("codex_apps.higgsfield.create_website", "other")]
+
+
 def test_codex_task_complete_error_is_a_provider_error_row():  # probe W3
     ex = codex.read(FIX / "native/codex/model-error.jsonl")
     assert [(e.status, e.error_type) for e in ex.errors] == [(400, "invalid_request_error")]
