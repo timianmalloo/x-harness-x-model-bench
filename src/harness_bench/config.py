@@ -32,6 +32,8 @@ METRIC_SOURCES = ("D", "J", "H", "P")
 MAX_BUDGET_MINUTES = 60
 # Files in tests/ or oracle/ that do not count as content.
 PLACEHOLDERS = {"README.md", ".gitkeep"}
+# R-42 condition 4: generated/cache folder names that must never be vendored into workspace/.
+GENERATED_DIR_NAMES = {"bin", "obj", ".vs", "__pycache__", "node_modules", ".pytest_cache"}
 
 
 @dataclass
@@ -152,6 +154,10 @@ def _workspace_vendoring_problems(task_dir: Path, pack_markers: list[bytes], p: 
     ws = task_dir / "workspace"
     if not ws.is_dir():
         return
+    for d in sorted(ws.rglob("*")):
+        if d.is_dir() and d.name in GENERATED_DIR_NAMES:
+            p.add(where, f"{d.relative_to(task_dir).as_posix()}/ is a generated or cache folder and must not be vendored")
+            break
     for f in sorted(ws.rglob("*")):
         if f.is_file() and any(m in f.read_bytes() for m in pack_markers):
             p.add(where, f"{f.relative_to(task_dir).as_posix()} contains pack material (bench/pack-markers.txt)")
