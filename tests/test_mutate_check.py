@@ -69,6 +69,20 @@ def test_a_same_size_mutation_leaves_no_stale_bytecode(tmp_path, monkeypatch):
     assert loaded.stdout.strip() == "30.0"
 
 
+def test_non_ascii_test_output_is_decoded_as_utf8_not_the_locale(tmp_path, monkeypatch):
+    """W2-USER-M finding: pytest's output was decoded with the locale codec (cp1252 here), so a failing test whose
+    message holds U+3041 (UTF-8 E3 81 81; 0x81 is undefined in cp1252) crashed the tool instead of counting a kill."""
+    (tmp_path / "m.py").write_bytes(b"X = 1\n")
+    (tmp_path / "test_m.py").write_text('import m\n\n\ndef test_x():\n    assert m.X == 1, "ぁ"\n', encoding="utf-8")
+    spec = tmp_path / "spec.json"
+    spec.write_text(json.dumps([{"name": "one", "file": "m.py", "find": "X = 1", "replace": "X = 2",
+                                 "tests": ["test_m.py::test_x"]}]), encoding="utf-8")
+    monkeypatch.setattr(mutate_check, "ROOT", tmp_path)
+    monkeypatch.delenv("PYTHONUTF8", raising=False)
+    monkeypatch.setenv("PYTHONIOENCODING", "utf-8")  # the child writes UTF-8 bytes, as pytest did in the finding
+    assert mutate_check.main([str(spec)]) == 0  # killed, and no UnicodeDecodeError
+
+
 # --- TOOL-B: a cosmic-ray "killed" is re-derived from a named test failing --------------------
 #
 # cosmic-ray 8.7.0's WorkResult (cosmic_ray/work_item.py) has no exit code: `testing.run_tests`
