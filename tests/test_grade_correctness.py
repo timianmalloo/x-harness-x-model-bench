@@ -53,7 +53,9 @@ def cell_input(run_dir: Path, archive: Path, cell: dict, out_dir: Path, timeout:
 GATE = sorted(config.load_yaml(ROOT / "bench" / "regrade-baseline-0.3.yaml")["runs"])
 
 
-@pytest.mark.parametrize("name", GATE)
+# the D1 gate run builds with the real dotnet, so its case is in the slow ring (the conftest control)
+@pytest.mark.parametrize("name", [pytest.param(n, marks=pytest.mark.slow) if n.startswith("row15-d1") else n
+                                  for n in GATE])
 def test_the_moved_grader_gives_the_gate_runs_0_3_correctness_and_leaves_the_archive_unchanged(tmp_path, name):
     run = GATE_RUNS / name
     if not (run / "plan.json").is_file():
