@@ -152,6 +152,7 @@ def cmd_run(args) -> int:
     for task_id, t in p["tasks"].items():
         if plan.task_version_hash(root / "tasks" / task_id) != t["version_hash"]:
             raise BenchError("HB-USR-002", f"task {task_id} changed since the plan; plan a new run")
+    plan.require_scripted_user_inputs(root, p)
     cells_root, tools_dir = Path(args.cells_root), Path(args.tools_dir)
     preflight.check(p, cells_root, tools_dir)
     launchers = {h: profiles.ProfileLauncher(profiles.load(root, h), tools_dir, planned) for h, planned in p["builds"].items()}

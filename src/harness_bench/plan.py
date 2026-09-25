@@ -154,6 +154,20 @@ def _scripted_user(task_dir: Path) -> dict:
             "clarifications_sha256": cset.sha256, "matcher_version": MATCHER_VERSION}
 
 
+def require_scripted_user_inputs(root: Path, frozen: dict) -> None:
+    """Refuse a run if its responder inputs disagree with the confirmed plan (R-53 c2)."""
+    for task_id, record in frozen["tasks"].items():
+        if not record.get("scripted_user"):
+            continue
+        path = (root / "tasks" / task_id / "oracle" / "clarifications.yaml").resolve()
+        if record.get("clarifications_path") != str(path):
+            raise BenchError("HB-USR-002", f"task {task_id}: clarification path differs from the plan")
+        if record.get("clarifications_sha256") != clarifications.load(path).sha256:
+            raise BenchError("HB-USR-002", f"task {task_id}: clarification-set hash differs from the plan")
+        if record.get("matcher_version") != MATCHER_VERSION:
+            raise BenchError("HB-USR-002", f"task {task_id}: matcher_version differs from the plan")
+
+
 def _validate_ids(cells: list[dict]) -> None:
     """Every frozen cell_id and label must match bench-status/1's id and label patterns (config.py),
     so status never has to emit a document its own strict parser would reject."""
