@@ -1,3 +1,4 @@
+import functools
 import os
 import shutil
 import sys
@@ -63,6 +64,7 @@ def pytest_runtest_protocol(item, nextitem):
     if item.get_closest_marker("slow") is None:
         real_run = procs.run
 
+        @functools.wraps(real_run)  # keeps procs.run's signature for tests that inspect it
         def guarded_run(argv, *args, **kwargs):
             executable = Path(argv[0]).name.lower() if argv else ""
             if executable in ("dotnet", "dotnet.exe"):
