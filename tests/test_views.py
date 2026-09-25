@@ -5,6 +5,7 @@ Runs are built with the shared archived-run builder and graded for real, then pr
 
 import hashlib
 import json
+import shutil
 from decimal import Decimal
 from pathlib import Path
 from types import SimpleNamespace
@@ -546,6 +547,65 @@ def test_a_record_unreadable_as_a_whole_gives_no_partial_token_sum(root, tmp_pat
     cell = _cell(views.load(run_dir), "a")
     assert (cell.validity, cell.tokens, cell.tokens_reason) == ("not recorded", None,
                                                                 "not recorded (native record truncated at the size bound)")
+
+
+def test_a_mismatch_seen_in_a_partial_record_outranks_not_recorded(root, tmp_path, monkeypatch):  # D&P minor (precedence)
+    # A served model that is not the pin is measured even when the record's tail is lost: HB-VAL-002, not HB-VAL-003.
+    monkeypatch.setattr(normalize, "record_unreadable", lambda ex: "native record truncated at the size bound")
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, model="gpt-other")  # the record serves gpt-6-sol
+    runner.run_pass(run_dir, root)
+    cell = _cell(views.load(run_dir), "a")
+    assert (cell.validity, cell.validity_code) == ("invalid (model mismatch)", "HB-VAL-002")
+    assert cell.tokens_reason == "not recorded (native record truncated at the size bound)"  # still no partial sum
+
+
+# --- ledgers written before R-15 / R-24 read as before; a later pass supersedes (D&P, Codex F6) --------------------
+
+GOLDEN = Path(__file__).parent / "fixtures" / "ledger"
+
+
+@pytest.mark.parametrize("name", ["c44dd2b-no-heads", "heads"])
+def test_a_ledger_graded_before_r15_and_r24_exports_what_it_did_before(tmp_path, name):
+    expected = json.loads((Path(__file__).parent / "fixtures/validity/golden-exports-5feece0.json").read_text(encoding="utf-8"))
+    run_dir = tmp_path / "runs" / "r1"
+    shutil.copytree(GOLDEN / name / "run", run_dir)
+    events = [e for p in sorted((run_dir / "events").glob("*.jsonl")) for e in ledger.read_segment(p)]
+    assert not any("unreadable_records" in e or "acp_usage" in e for e in events)  # a pre-R-15, pre-R-24 ledger
+    doc = json.loads(views.export(views.load(run_dir)))
+    for cell in doc["cells"]:
+        cell.pop("warnings")  # new in W2-VIEWS: the only key the 5feece0 export did not have
+    assert doc == expected["exports"][name]
+
+
+def test_a_pass_before_r15_names_no_unreadable_record_so_its_cells_read_as_before(root, tmp_path, monkeypatch):
+    append = runner._Pass.append
+
+    def pre_r15(self, fact, record):  # the grading.completed row as written before R-15: no unreadable_records key
+        return append(self, fact, {k: v for k, v in record.items() if k != "unreadable_records"})
+
+    monkeypatch.setattr(runner._Pass, "append", pre_r15)
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    next((run_dir / "archive/a/attempt-1/home").rglob("*.jsonl")).unlink()
+    runner.run_pass(run_dir, root)
+    assert "unreadable_records" not in next(e for e in views.rows(run_dir, "events") if e["kind"] == "grading.completed")
+    cell = _cell(views.load(run_dir), "a")
+    assert (cell.validity, cell.validity_code) == ("invalid (no model call)", "HB-VAL-001")  # the pre-R-15 label
+
+
+@pytest.mark.parametrize("first_unreadable", [True, False])
+def test_a_later_pass_with_a_new_extraction_supersedes_the_earlier_reading(root, tmp_path, monkeypatch, first_unreadable):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    real = normalize.record_unreadable
+    cut = lambda ex: "native record truncated at the size bound"  # noqa: E731
+    monkeypatch.setattr(normalize, "record_unreadable", cut if first_unreadable else real)
+    runner.run_pass(run_dir, root)
+    monkeypatch.setattr(normalize, "record_unreadable", real if first_unreadable else cut)
+    monkeypatch.setattr(normalize, "extraction_id", lambda: "e" * 64)  # a normaliser fix: a new extraction
+    second = runner.run_pass(run_dir, root)
+    view = views.load(run_dir)
+    cell = _cell(view, "a")
+    assert (view.grading_id, cell.extraction_id) == (second.grading_id, "e" * 64)
+    assert cell.validity == ("valid" if first_unreadable else "not recorded")
 
 
 TRUNCATED = "native record truncated at the size bound"
