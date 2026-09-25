@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T11:46:48Z",
+  "generated": "2026-09-25T12:44:08Z",
   "audit": [
     {
       "actor": null,
@@ -22162,6 +22162,44 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "id": "al-01M3C9GDB1SHNNJNPKN12KZ9M6",
+      "shortname": "W2-STOP-I slice 6: the proof pass",
+      "datetime": "2026-09-25T12:44:08Z",
+      "session": "w2-stopi-6",
+      "prompt": "W2-STOP-I slice 6 (the proof pass): run the full mutation pass over tests/mutations/{engine,driver,status,cli,plan,stop}.json one file at a time; run tools/check_models.py (full); write the Proof Pack figures to docs/proof/phase2-stop.md; diagnose the test_correctness_dotnet.py timeout test's slice-5 flake; confirm pytest and ruff. Ruling R-4.",
+      "summary": "W2-STOP-I slice 6 (the proof pass), Claude Sonnet 5, ruling R-4. Ran the full mutation pass over\ntests/mutations/{engine,driver,status,cli,plan,stop}.json one file at a time: 172/172 named mutants killed.\nTwo files had drift: cli.json's \"a started run re-run\" survived for an unrelated reason (the test's plan fixture\nwas missing DEFAULT_PARAMETERS keys, so require_run_parameters fired before the guard under test) -- fixed by\ncompleting the plan's parameters and spying on preflight.check (commit 4497a9a). engine.json had 5 stale `find`\ntexts (signatures/guard shapes moved across slices 1-5, each SKIP: text not found) and a 6th (\"a failed\nstderr-tail write costs the cell\") that matched the wrong except-block (the control-file reader, not the\nstderr-tail writer) -- all six re-pointed to the current code, never deleted, each verified red first by hand\n(mutant applied, named test observed failing) then restored (commit ae9944d; a first repoint attempt on T1-1\ntargeted the wrong method, survived, and was corrected before commit).\n\ncheck_models.py (full): 22/22 seeded variants rejected by their own target, 2/2 witnesses violated, US-44-bounds\nsafety passed (85,060,752 states, 422s). tests/test_check_models.py green. R10-1 (the hard-floor mutant): killed;\na clean, uncontended re-run measured 10.03s to last cell.outcome{stopped} and 10.33s for bench status to show\nstopped, both inside the 30s floor.\n\ntest_correctness_dotnet.py::test_dotnet_oracle_timeout_is_na_and_leaves_no_process (the slice-5 \"DID NOT RAISE\nOSError\" flake): diagnosed as Inferred, not Verified. 13 trials under two levels of synthetic concurrent-process\nload (8x cmd/c ver, then 24x python -c pass) did not reproduce it; the Windows Job Object hard-kill path\n(TerminateJobObject + ActiveProcesses confirmation) is architecturally sound and measured flat/fast in every\ntrial. Most likely mechanism (assume:, not confirmed): PID reuse under heavier real full-suite + concurrent-track\nload than this probe could safely generate. No speculative fix applied (no-guessing protocol); named as a single\nunreproduced data point with a confirm/breaks note in the proof pack.\n\nWrote docs/proof/phase2-stop.md (V2 frontmatter; commit a60141c), regenerated docs/docs-index.js. Full suite (uv\nrun pytest -q -p no:cacheprovider): 1393 passed, 4 skipped, 8 deselected, 0 failed, 425.53s. ruff check src tests\ntools: clean. Join-ready per design section 21's Test Architect conditions. Commits: 4497a9a, ae9944d, a60141c.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": "Claude Code",
+      "actor": "Claude Sonnet 5",
+      "artifacts": [
+        "docs/proof/phase2-stop.md",
+        "tests/mutations/engine.json",
+        "tests/mutations/cli.json",
+        "tests/test_cli.py"
+      ],
+      "tags": [
+        "stop-i",
+        "proof-pack",
+        "mutation",
+        "tla"
+      ],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Make STOP-I join-ready: run the full mutation pass over tests/mutations/{engine,driver,status,cli,plan,stop}.json, the full check_models.py, write the Proof Pack figures to docs/proof/phase2-stop.md, diagnose the dotnet timeout test's slice-5 flake, and confirm the default suite and ruff.",
+      "done_when": "Every mutation file ends 'every mutation killed'; check_models.py full run cited verbatim (22/22 variants, 2/2 witnesses, US-44 bounds); R10-1 red on the hard-floor mutant with a measured stop time; the plan :145 Stop/Race/US-15 clauses mapped to tests; the timeout test's cause measured or named Inferred; pytest and ruff both pass.",
+      "tier": "T2",
+      "fan_out": 0,
+      "started_at": "2026-09-25T11:58:21Z",
+      "duration_seconds": 2747.0,
+      "git": {
+        "sha": "a60141c170775520d52335f0802646af478a5965",
+        "short": "a60141c17",
+        "branch": "w2-stopi-6",
+        "pushed": null
+      }
     }
   ],
   "changes": [
