@@ -28,7 +28,7 @@ from harness_bench.telemetry import normalize
 
 SONNET = "claude-sonnet-5"
 OPUS = "claude-opus-5-5"
-COPILOT_OFF = next((Path(__file__).parent / "fixtures/native/copilot/off").rglob("events.jsonl"))
+COPILOT_FIX = Path(__file__).parent / "fixtures/native/copilot"
 
 # real cc-opus turn_usage rows, run e2e-wave1-1790299304 cell 17efb75ce2d5fc6d (pin claude-opus-5-5) (R-32)
 CC_OPUS_TURN_USAGE = [
@@ -53,17 +53,28 @@ def _cell(view: views.RunView, cell_id: str) -> views.CellView:
     return next(c for c in view.cells if c.cell_id == cell_id)
 
 
-def _copilot_run(root: Path, tmp_path: Path, change=None) -> Path:
-    """Grade a real archived run using the committed Copilot native record."""
+def _edit_events(run_dir: Path, change) -> None:
+    """Rewrite the engine's events segment through the real ledger, `change` mapping each row (chain fields dropped)."""
+    path = run_dir / "events" / "engine-1.jsonl"
+    rows = [change({k: v for k, v in r.items() if k not in ledger.CHAIN_FIELDS}) for r in ledger.read_segment(path)]
+    path.unlink()
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-1") as ev:
+        for row in rows:
+            ev.append(row)
+
+
+def _copilot_run(root: Path, tmp_path: Path, change=None, arm: str = "off", **kw) -> Path:
+    """Grade a real archived run using a committed Copilot native record (`arm`: off, on (rev 95), on-rev92)."""
     assert "copilot" in profiles.READERS, "Copilot must be registered before grading its native record"
-    run_dir = make_run(root, tmp_path, {"a": GOOD}, harness="copilot", archived=set())
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, harness="copilot", archived=set(), **kw)
     folder = run_dir / "archive/a/attempt-1"
     workspace = folder / "ws"
     workspace.mkdir(parents=True)
     (workspace / "slug.py").write_text(GOOD, encoding="utf-8")
     record = folder / "home/session-state/sess-a/events.jsonl"
     record.parent.mkdir(parents=True)
-    events = [json.loads(line) for line in COPILOT_OFF.read_text(encoding="utf-8").splitlines() if line.strip()]
+    source = next((COPILOT_FIX / arm).rglob("events.jsonl"))
+    events = [json.loads(line) for line in source.read_text(encoding="utf-8").splitlines() if line.strip()]
     if change is not None:
         events = change(events)
     record.write_text("\n".join(json.dumps(event) for event in events) + "\n", encoding="utf-8")
@@ -274,9 +285,46 @@ def test_copilot_unmutated_sample_is_valid(root, tmp_path):
     assert (cell.validity, cell.validity_code) == ("valid", None)
 
 
-def test_copilot_missing_shutdown_is_no_model_call_in_wave_one(root, tmp_path):
-    # R-15 and R-21 move an unreadable shutdown to a distinct wave-2 validity state.
-    run_dir = _copilot_run(root, tmp_path, lambda events: [e for e in events if e["type"] != "session.shutdown"])
+# --- R-15 (Q5), R-21 c2: an unreadable native record is "not recorded" (HB-VAL-003), never HB-VAL-001 -------------
+
+
+def test_a_killed_copilot_cell_with_no_shutdown_is_not_recorded(root, tmp_path):  # R-21 c2: tokens not recorded
+    killed = {"a": {"outcome": "timed_out", "cause": "timed_out", "code": "HB-CELL-301"}}
+    run_dir = _copilot_run(root, tmp_path, lambda events: [e for e in events if e["type"] != "session.shutdown"], outcomes=killed)
+    cell = _cell(views.load(run_dir), "a")
+    assert (cell.outcome, cell.validity, cell.validity_code) == ("timed_out", "not recorded", "HB-VAL-003")
+    assert (cell.tokens, cell.tokens_reason) == (None, "not recorded (native record fields missing: session.shutdown)")
+
+
+def test_a_copilot_record_of_an_unsupported_format_version_is_not_recorded(root, tmp_path):  # the F6 version gate
+    def version_two(events):
+        next(e for e in events if e["type"] == "session.start")["data"]["version"] = 2
+        return events
+
+    cell = _cell(views.load(_copilot_run(root, tmp_path, version_two)), "a")
+    assert (cell.validity, cell.validity_code) == ("not recorded", "HB-VAL-003")
+    assert cell.tokens_reason == "not recorded (native record fields missing: events.version)"
+
+
+def test_a_cell_with_no_native_record_is_not_recorded(root, tmp_path):  # R-15: every native_record harness (Codex here)
+    run_dir = make_run(root, tmp_path, {"a": GOOD, "b": GOOD})
+    next((run_dir / "archive/b/attempt-1/home").rglob("*.jsonl")).unlink()
+    runner.run_pass(run_dir, root)
+    view = views.load(run_dir)
+    assert [(c.cell_id, c.validity, c.validity_code) for c in view.cells] == [("a", "valid", None), ("b", "not recorded", "HB-VAL-003")]
+    assert _cell(view, "b").tokens_reason == "not recorded (no native record for the session)"
+
+
+def test_an_acp_turn_cell_whose_adapter_reported_no_usage_is_not_recorded(root, tmp_path):  # R-15 for acp_turn (R-24 c2)
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, harness="claude-code", model=SONNET, turn_usage=[])
+    _edit_events(run_dir, lambda e: {**e, "acp_usage": None} if e["kind"] == "attempt.process_ended" else e)
+    cell = _cell(views.load(run_dir), "a")
+    assert (cell.validity, cell.validity_code, cell.tokens_reason) == ("not recorded", "HB-VAL-003", "not recorded (the adapter reported no usage)")
+
+
+def test_an_acp_turn_cell_whose_adapter_reported_usage_with_no_model_is_still_no_model_call(root, tmp_path):  # R-15 c1
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, harness="claude-code", model=SONNET, turn_usage=[])
+    _edit_events(run_dir, lambda e: {**e, "acp_usage": {"usage": {}, "meta": None}} if e["kind"] == "attempt.process_ended" else e)
     cell = _cell(views.load(run_dir), "a")
     assert (cell.validity, cell.validity_code) == ("invalid (no model call)", "HB-VAL-001")
 

@@ -46,6 +46,10 @@ def test_copilot_set_model_refusal_uses_the_existing_model_unavailable_cause():
     )
 
 
+def test_the_wave_two_validity_codes_are_named():  # seam S1 (R-15)
+    assert errors.RUN_CODES["HB-VAL-003"] == "validity: not recorded (the usage record is missing or unreadable)"
+
+
 def test_run_level_codes_are_unique_and_named():
     assert len(errors.RUN_CODES) == len(set(errors.RUN_CODES))
     for code in ("HB-PRE-002", "HB-RUN-001", "HB-LED-002", "HB-LED-005", "HB-SEC-001", "HB-USR-001"):

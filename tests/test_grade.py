@@ -338,6 +338,27 @@ def test_grading_completed_records_the_sealed_heads_of_its_other_facts(root, tmp
     completed = pass_rows(run_dir, "events", result.grading_id)[-1]
     assert completed["kind"] == "grading.completed"
     assert completed["heads"] == {fact: result.heads[fact] for fact in ("model_calls", "tool_calls", "scores")}  # never events
+    assert completed["unreadable_records"] == {}  # R-15: every cell's record was read
+
+
+def test_grading_completed_names_each_cell_whose_native_record_could_not_be_read(root, tmp_path):  # R-15 (Q5)
+    run_dir = make_run(root, tmp_path, {"a": GOOD, "b": GOOD, "c": GOOD})
+    next((run_dir / "archive/b/attempt-1/home").rglob("*.jsonl")).unlink()
+    extra = run_dir / "archive/c/attempt-1/home/sessions/2026/09/rollout-2026-09-24-sess-c.jsonl"
+    shutil.copy(FIX / "native" / "codex" / "ok.jsonl", extra)  # a second record for the one session is ambiguous
+    result = runner.run_pass(run_dir, root)
+    completed = pass_rows(run_dir, "events", result.grading_id)[-1]
+    assert completed["unreadable_records"] == {"b": "no native record for the session",
+                                               "c": "more than one native record for the session"}
+
+
+def test_a_record_level_missing_field_or_a_truncated_record_is_unreadable():  # R-15: a call-level field is not
+    from harness_bench.telemetry import Extraction, MissingField
+    assert normalize.record_unreadable(Extraction(missing=[MissingField(0, "session.shutdown"), MissingField(0, "events.version")])) \
+        == "native record fields missing: events.version, session.shutdown"
+    assert normalize.record_unreadable(Extraction(truncated=True)) == "native record truncated at the size bound"
+    assert normalize.record_unreadable(Extraction(missing=[MissingField(3, "input_tokens")])) is None
+    assert normalize.record_unreadable(Extraction()) is None
 
 
 def test_a_pass_counts_the_cells_it_graded(root, tmp_path):
