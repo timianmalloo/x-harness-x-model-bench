@@ -275,6 +275,7 @@ def test_claude_profile_seeds_settings_and_a_credential_copy(tmp_path):
     p.seed_home(home, model="claude-sonnet-5")
     settings = json.loads((home / "settings.json").read_text(encoding="utf-8"))
     assert settings["permissions"]["defaultMode"] == "dontAsk"
+    assert settings["disableClaudeAiConnectors"] is True  # R-56 c1, R-57 gate 2: no claude.ai MCP cloud connectors
     assert set(settings["permissions"]["allow"]) == {
         "Bash", "PowerShell", "Edit", "Write", "NotebookEdit", "Read", "Glob", "Grep"}  # R-34, R-35
     assert (home / ".credentials.json").read_text(encoding="utf-8") == '{"secret": "x"}'

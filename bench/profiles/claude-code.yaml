@@ -11,7 +11,11 @@ command: ["{node}", "{adapter}"]
 # so the effective mode is recorded per cell (attempt.session_opened.permission_mode_effective) and shown in the
 # report header. The allowlist plus the driver's refusal of every permission request is what enforces US-14.
 files:
-  settings.json: '{"permissions": {"allow": ["Bash", "PowerShell", "Edit", "Write", "NotebookEdit", "Read", "Glob", "Grep"], "defaultMode": "dontAsk"}}'
+  # disableClaudeAiConnectors (R-56 c1, R-57 gate 2): true in any settings source keeps claude.ai MCP cloud
+  # connectors out of the cell (the pinned 2.1.282 settings schema; env ENABLE_CLAUDEAI_MCP_SERVERS also exists,
+  # the settings key is used per the Leader's ruling). Closure is measured by the re-qualification cell's
+  # account_connector_tools count, not this line alone.
+  settings.json: '{"permissions": {"allow": ["Bash", "PowerShell", "Edit", "Write", "NotebookEdit", "Read", "Glob", "Grep"], "defaultMode": "dontAsk"}, "disableClaudeAiConnectors": true}'
 env:
   ANTHROPIC_MODEL: "{model}"
   CLAUDE_CODE_EXECUTABLE: "{exe}"
