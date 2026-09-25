@@ -12,6 +12,12 @@ Rules, each defined once here:
   `recorded_at`, then `grading_id`). The current extraction is the one its scores name.
 - Validity, tokens, the time split, leaderboard rows and exports are derived, never stored. A value that
   was not measured is a `Measure(None, reason)`, never 0 (US-27).
+- Validity, in order: an invalidating cause; not graded; `invalid (tools denied by hook)` (HB-VAL-004, R-27);
+  `not recorded` for an unreadable usage record (HB-VAL-003, R-15), distinct from `invalid (no model call)`
+  (HB-VAL-001, a readable record with no call); `invalid (model mismatch)` (HB-VAL-002) for a served model that is
+  not the pin, a declared auxiliary model, or one the task's `model_map` names (US-11); else valid.
+- Warnings flag a cell without changing its validity: HB-VAL-005 (Σ model_calls vs the ACP turn total, R-24/R-26
+  c5), HB-CELL-115 (agent_version vs the pinned build, R-28) and HB-VAL-006 (that check skipped, R-22 c1).
 """
 
 from __future__ import annotations
@@ -462,7 +468,9 @@ def export(view: RunView) -> bytes:
     cells = [{"cell_id": c.cell_id, "label": c.label, "outcome": c.outcome, "cause": c.cause, "code": c.code,
               "validity": c.validity, "validity_code": c.validity_code, "wall_ms": _enc(c.wall_ms), "model_ms": _enc(c.model_ms),
               "tool_ms": _enc(c.tool_ms), "idle_ms": _enc(c.idle_ms), "tokens": c.tokens, "tokens_reason": c.tokens_reason,
-              "scores": _enc(c.scores), "extraction_id": c.extraction_id} for c in sorted(view.cells, key=lambda c: c.cell_id)]
+              "scores": _enc(c.scores), "extraction_id": c.extraction_id,
+              "warnings": [{"code": w.code, "level": w.level, "message": w.message} for w in c.warnings]}
+             for c in sorted(view.cells, key=lambda c: c.cell_id)]
     board = [{"combo": r.combo, "pack": r.pack, "n_cells": r.n_cells, "n_valid": r.n_valid, "pass_at_1": _enc(r.pass_at_1),
               "rank": r.rank, "interval": r.interval, "tokens": _enc(r.tokens), "wall_ms": _enc(r.wall_ms), "cost_usd": _enc(r.cost_usd)}
              for r in leaderboard(view)]

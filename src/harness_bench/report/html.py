@@ -142,6 +142,9 @@ def _validity(view: views.RunView) -> str:
                          for c in view.cells if c.validity != "valid")
         state = "" if view.completed else f"<p>The run is incomplete. {sum(1 for c in view.cells if c.outcome == 'not started')} cells never started.</p>"
         body = f"{state}<ul>{items}</ul><p>Cells that are not valid:</p><ul>{listed}</ul>"
+    warned = "".join(f"<li>{_e(c.label)}: {_e(w.code)} {_e(w.message)}</li>" for c in view.cells for w in c.warnings)
+    if warned:  # R-24/R-26 c5, R-28: flags that do not change validity
+        body += f'<p>Warnings:</p><ul id="validity-warnings">{warned}</ul>'
     return f'<section id="validity"><h2>Validity</h2>{body}</section>'
 
 
@@ -173,7 +176,7 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str]) -> s
         return '<section id="runs"><h2>Cells</h2><p>No cells in this run.</p></section>'
     headers = [("Cell", False), ("Outcome", False), ("Validity", False), ("pass@1", True), ("Partial credit", True), ("Tokens", True),
                ("Wall", True), ("Tool time", True), ("Model time", True), ("Idle", True), ("Cost", True), ("Context window", False),
-               ("Evidence", False)]
+               ("Warnings", False), ("Evidence", False)]
     na = views.Measure(None, "not graded")
     rows = [[(_e(report.flag_if_claude_code(report.flag_if_codex(c.label, c.harness), c.harness)), False),
              (_e(c.outcome + (f" ({c.cause}, {c.code})" if c.code else "")), False),
@@ -182,6 +185,7 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str]) -> s
              (_e(report.cell_tokens(c.tokens, c.tokens_reason)), True), (_e(report.seconds(c.wall_ms)), True),
              (_e(report.millis(c.tool_ms)), True), (_e(report.millis(c.model_ms)), True), (_e(report.millis(c.idle_ms)), True),
              (_e(report.usd(c.scores.get("cost_usd", na))), True), (_e(report.context_window(c.harness, tags.get(c.cell_id))), False),
+             (_e(", ".join(w.code for w in c.warnings) or "none"), False),
              (_evidence(c, archive_present), False)] for c in view.cells]
     return f'<section id="runs"><h2>Cells</h2>{_table("runs", "Every cell of the run", headers, rows)}</section>'
 

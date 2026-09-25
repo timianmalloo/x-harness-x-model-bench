@@ -4,7 +4,8 @@ One row per combo x pack from `views.leaderboard`. `plain` (NO_COLOR or redirect
 with no colour; NA and invalid marks are text. States, in order:
 - not graded: `Run <id> is not graded yet. Run bench grade <id>.` (exit 4);
 - no completed cell: `No cell completed in run <id>. Run bench status <id> to see why.`;
-- otherwise the table, then the invalid cells with their validity and code.
+- otherwise the table, then the invalid and the "not recorded" cells with their validity and code (R-15, R-27),
+  then each view warning with its code (R-24/R-26 c5, R-28), each list only when it has a line.
 The seven area composites, cost of pass and per-scenario rows are later phases (Spec S-10).
 """
 
@@ -37,11 +38,16 @@ def render(view: views.RunView, plain: bool) -> tuple[str, int]:
     buf = io.StringIO()
     console = Console(file=buf, width=250, color_system=None if plain else "auto", legacy_windows=False, highlight=False)
     console.print(table)
-    invalid = [c for c in view.cells if c.validity.startswith("invalid")]
-    if invalid:
-        console.print("Invalid cells:")
-        for c in invalid:
-            console.print(f"  {c.label}: {c.validity} {c.validity_code}")
+    not_valid = [c for c in view.cells if c.validity.startswith("invalid") or c.validity == "not recorded"]
+    if not_valid:
+        console.print("Cells that are not valid:")
+        for c in not_valid:
+            console.print(f"  {c.label}: {c.validity} {c.validity_code}", markup=False)
+    warned = [(c, w) for c in view.cells for w in c.warnings]
+    if warned:
+        console.print("Warnings:")
+        for c, w in warned:
+            console.print(f"  {c.label}: {w.code} {w.message}", markup=False)
     if report.has_codex_cell(view.plan):
         console.print(f"{report.N5_FLAG}: see {report.N5_EVIDENCE}")
     if report.has_claude_code_cell(view.plan):

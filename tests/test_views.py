@@ -357,8 +357,8 @@ def test_a_bucket_that_disagrees_with_the_acp_turn_total_is_a_warning_not_a_vali
     usage = {**COPILOT_OFF_ACP_USAGE, key: COPILOT_OFF_ACP_USAGE[key] + 1}
     cell = _acp_run(root, tmp_path, {"usage": usage, "meta": None})
     assert (cell.validity, cell.validity_code) == ("valid", None)
-    assert _warnings(cell, "HB-VAL-005") == [("HB-VAL-005", "warning", f"model_calls tokens differ from the ACP turn total: "
-                                              f"{key} ACP {usage[key]}, model_calls {sums}")]
+    message = f"model_calls tokens differ from the ACP turn total: {key} ACP {usage[key]}, model_calls {sums}"
+    assert _warnings(cell, "HB-VAL-005") == [("HB-VAL-005", "warning", message)]
 
 
 def test_a_copilot_cell_with_no_acp_usage_says_the_cross_check_did_not_run(root, tmp_path):  # never a silent pass
