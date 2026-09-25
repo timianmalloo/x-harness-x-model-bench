@@ -116,6 +116,10 @@ def main() -> int:
             send({"jsonrpc": "2.0", "id": mid, "result": {"protocolVersion": 1, "agentCapabilities": {},
                                                            "agentInfo": {"name": "fake", "version": "0"}}})
         elif method == "session/new":
+            Path(os.getcwd(), ".fake-session-new.json").write_text(json.dumps(msg["params"]), encoding="utf-8")
+            if CFG.get("scripted_user_log"):
+                with Path(CFG["scripted_user_log"]).open("a", encoding="utf-8") as log:
+                    log.write(json.dumps({"kind": "tools_listed"}) + "\n")
             send({"jsonrpc": "2.0", "id": mid, "result": {"sessionId": session_id,
                                                            "modes": {"currentModeId": "agent", "availableModes": [{"id": "agent"}, {"id": "agent-full-access"}]}}})
         elif method == "session/set_mode":
