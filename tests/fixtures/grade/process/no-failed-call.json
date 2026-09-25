@@ -1,0 +1,6 @@
+{
+  "tool_calls": [
+    {"native_ordinal": 1, "name": "Read", "tool_class": "read", "ok": 1},
+    {"native_ordinal": 2, "name": "Bash", "tool_class": "shell", "ok": 1}
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "tool_calls": [
+    {"native_ordinal": 1, "name": "Read", "tool_class": "read", "ok": 1, "start": "2026-01-01T00:00:10Z"},
+    {"native_ordinal": 2, "name": "Edit", "tool_class": "edit", "ok": 1, "start": "2026-01-01T00:00:30Z"},
+    {"native_ordinal": 3, "name": "Bash", "tool_class": "shell", "ok": 1, "start": "2026-01-01T00:00:50Z"}
+  ],
+  "model_calls": [
+    {"native_ordinal": 1, "requests": 3, "start": "2026-01-01T00:00:01Z"},
+    {"native_ordinal": 2, "requests": 4, "start": "2026-01-01T00:00:20Z"},
+    {"native_ordinal": 3, "requests": 13, "start": "2026-01-01T00:00:40Z"}
+  ]
+}
