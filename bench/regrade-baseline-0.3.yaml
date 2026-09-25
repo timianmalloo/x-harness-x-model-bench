@@ -1,0 +1,8 @@
+# The 0.3 export baseline for the wave-3 byte-identity gate (design docs/design/phase3-graders.md, G6 and P5; L-1).
+# Leader-owned, append-only: each entry is sha256(views.export(views.load(run, "0.3"))) measured by the Leader.
+# tools/check_regrade.py (W3-GRADE-CORE slice 2) asserts the 0.3 export is unchanged against these after every wave-3 pass.
+schema: bench-regrade-baseline/1
+catalog: "0.3"
+runs:
+  row15-d1-1: {export_sha256: 8b35fdf94a231353fbce8ed17cc6b18461222a1217603b20d4202dcfdb76e1d2, bytes: 7917, pass: grade-20260925T063930-dec9eb}
+  a1-capture-1: {export_sha256: 30126414cc5461a326d7404015fb617e6a1dcb1ff18ad0de29b35772e5c02022, bytes: 3980, pass: grade-20260925T075419-1dc414}

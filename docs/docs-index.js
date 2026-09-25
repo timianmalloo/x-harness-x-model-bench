@@ -1089,7 +1089,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "c46e136f69079d7062c25c0759c377ad2e299d381f52c040232e62a6bc869570"
+      "sourceSha256": "145b7c6d529e32389ea6507864d161a0823d67517ce7ef912410b9aa370d20db"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -1368,6 +1368,86 @@ window.DOCS_INDEX = {
       "sourceSha256": "3dbc40e3d87e76548cf8bda92266fefc77892f87086a180ae5a9572d91b287b7"
     },
     {
+      "id": "design-phase3-graders",
+      "path": "docs/design/phase3-graders.md",
+      "title": "Design: full graders — per-cell grader input, dispatch by task graders, catalog 0.4 versioning, and the byte-identity gate (phase 3, row 16)",
+      "type": "design",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 3 · grading and judges (wave 3: row 16, W3-GRADE-D)",
+      "reviewBy": "2027-03-25",
+      "reviewSuggested": [],
+      "summary": "Row 16: every metric the ready tasks A1, C1, D1 and E6 name through their `graders:` lists gets a definition, an oracle rung (US-25), its NA reasons (US-27), an additivity class and a fixture with a stated expected value, cut from runs/row15-d1-1, runs/a1-capture-1 or the C1/E6 reference solutions. A frozen per-cell `CellInput` replaces `grade(run_dir, task_dir)`. A registry dispatch by the task's `graders`, with a completeness check before `grading.completed`, replaces the fixed `METRICS` tuple. Catalog `0.4.dev` is a probe version (R-59). `catalog_hash` and tool versions ride on `grading.started`. The US-4 control fails on a score change or a catalog-hash change without a version bump. The four gate tasks are frozen. The byte-identity gate compares `views.export` bytes of two asserted passes, never ledger bytes. Revision 2 clears the Test Architect's and the D&P Architect's vetoes.",
+      "tags": [
+        "benchmark",
+        "grading",
+        "metrics",
+        "catalog",
+        "versioning",
+        "na",
+        "determinism",
+        "mutation",
+        "drift",
+        "clarification"
+      ],
+      "links": [
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0008-telemetry",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0009-model-gateway",
+          "rel": "relates-to"
+        },
+        {
+          "to": "adr-0010-untrusted-cell-output",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0013-native-cells",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-phase1-walking-skeleton",
+          "rel": "refines"
+        },
+        {
+          "to": "design-phase2-scripted-user",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-spike-s04-scripted-user",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        },
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        },
+        {
+          "to": "proposal-cross-harness-benchmarking",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "6687032ef769dbca0c8223a763a86382b8ea0e93006e4bb5f9cdc007a14bc7f5"
+    },
+    {
       "id": "design-run-lifecycle-model",
       "path": "docs/design/run-lifecycle-model.md",
       "title": "Design: run lifecycle model (models/run_lifecycle.tla)",
@@ -1519,7 +1599,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "cf67186b47f4cd3785b555848b6b68addb20937693228a7340de32ef1752bbf9"
+      "sourceSha256": "ad0157fbf84e68297bedd95ca1f240064a903239bfe32917d4f90a9e0a112b61"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -1744,7 +1824,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "31aa67e06974e4c492e573208651f97490ad3e99e1851dbccee3a3e4fffff5e8"
+      "sourceSha256": "22f534f0e61cb15908757ffc2902841f4db2567d376f8d0c5ddeef32c7f0dac2"
     },
     {
       "id": "proposal-cross-harness-benchmarking",
@@ -1803,7 +1883,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2bb7516987d6e093495dc26957eee01be6880dd749cbb2d98b01aea1653b75ad"
+      "sourceSha256": "e24377dd1b0e2469f6d3b32e20c9351ff25c467277cebf4b8e02376926b8be82"
     },
     {
       "id": "coordination-phase1-finish",
@@ -2331,7 +2411,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TD\n  A([P2 runs /new-bench-task ID]) --> S[stub: task.yaml from template]\n  S --> D[draft: prompt.md, workspace base]\n  D --> O[oracle: hidden tests / rubric / clarifications / seeded bug]\n  O --> V{bench validate}\n  V -->|contract broken| E[Folder, rule, fix] --> O\n  V -->|scenario 1, no clarifications| E\n  V -->|scenario 7, no seeded bug or no toolchain pin| E\n  V -->|ok| DIS{Discrimination check: reference passes, naive or seeded fails}\n  DIS -->|does not discriminate| E2[Oracle too weak or too strict: shown with both results] --> O\n  DIS -->|discriminates| R([status: ready])"
         }
       ],
-      "sourceSha256": "50c64de481f7887d22ec6f6203d646db43fad10042539854e1b6ef2cc9fb24b5"
+      "sourceSha256": "7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094"
     },
     {
       "id": "threat-model",
@@ -2425,5 +2505,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "9af811de024293bb8c0fe7e3b816d6f6d8ee68f678c2cf7bba707f0699270ead"
+  "graphSha256": "b340b47866465e20da93ea4752fa1a419a558caba9c40b04598b1da491e3732d"
 };

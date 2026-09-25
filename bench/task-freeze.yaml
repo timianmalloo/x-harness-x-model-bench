@@ -1,0 +1,9 @@
+# The wave-3 tasks freeze (R-59 c5, R-62; design docs/design/phase3-graders.md "Tasks-freeze rule"). Leader-owned.
+# Each value is plan.task_version_hash(tasks/<id>); A1 and D1 equal their archived plans (a1-capture-1, row15-d1-1).
+# A byte change under a frozen task folder turns bench validate red (seam V-3, W3-GRADE-CORE). Deleted at the wave-3 close.
+schema: bench-task-freeze/1
+tasks:
+  A1: 0127daa0c4558171385ed5a662891022e501a3dc762c0737e1509ac6acd07627
+  C1: d9d72e41e1d86ea93c0dd22f8ea8d3b00ff350d8a8cd8506fced8d88f3b77a2b
+  D1: b2b3170e280ec0a4bd69dfbec687d4eb0012c615d68f6e9f2ad42cc9f802e519
+  E6: b3fd1ea1b35b5b9b6d8db893b70682d9433fc5eb675d8886803e145edb61352f
