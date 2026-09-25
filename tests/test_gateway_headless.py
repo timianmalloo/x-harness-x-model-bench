@@ -135,3 +135,27 @@ def test_t_gw_07_the_pin_in_the_record_is_stored_even_when_stdout_names_another_
     assert (result.outcome, result.code) == ("stored", None)
     entry = json.loads((tmp_path / "cache" / "verdicts" / f"{result.cache_key}.json").read_text(encoding="utf-8"))
     assert entry["served_models"] == [PIN]
+
+
+# --------------------------------------------------------------------------------------------------- T-GW-08
+def test_t_gw_08_a_tool_event_in_the_record_fails_the_call(tmp_path, base):
+    # The spike's native-schema turn: `--json-schema` made Claude call `StructuredOutput` (one tool event), and its
+    # stdout still carries a valid answer. The record decides: HB-GW-006, nothing stored.
+    launch = _launch(tmp_path, base / "cells", turn="claude-fable-native")
+    stdout = json.loads((RECORDS / "claude-fable-native.stdout.json").read_text(encoding="utf-8"))
+    result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path), launch)
+    assert (result.outcome, result.code, result.verdicts) == ("failed", "HB-GW-006", None)
+    assert stdout["structured_output"]["items"][0]["item"] == 1  # the answer was there; the tool event still fails it
+    assert not list((tmp_path / "cache" / "verdicts").glob("*.json"))
+
+
+def test_t_gw_08_a_tool_event_fails_before_the_served_model_check(tmp_path):
+    # Section 8.3 order: tool events (step 1) before the served model (step 2): an off-pin record with a tool event
+    # is HB-GW-006, the first failing step.
+    import test_gateway_pipeline as tp
+    record = tp.claude_record(tmp_path / "r.jsonl", ("claude-opus-5-5",), tool="Bash")
+    stdout = (RECORDS / "claude-fable-text.stdout.json").read_text(encoding="utf-8")
+    replay = gw_backend.ReplayBackend({hashlib.sha256(_rendered().encode()).hexdigest():
+                                       gw_backend.Recorded(stdout, record)}, tmp_path / "archive")
+    result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path), replay)
+    assert (result.outcome, result.code) == ("failed", "HB-GW-006")
