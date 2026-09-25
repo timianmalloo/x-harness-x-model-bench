@@ -7,6 +7,13 @@
     "tests": ["tests/test_profiles.py::test_codex_profile_disables_account_apps_in_each_seeded_home"]
   },
   {
+    "name": "qual-r45-1 Codex MCP item ignored",
+    "file": "src/harness_bench/telemetry/codex.py",
+    "find": "elif kind == \"event_msg\" and ptype == \"item_completed\" and item.get(\"type\") == \"McpToolCall\":",
+    "replace": "elif False:",
+    "tests": ["tests/test_telemetry.py::test_codex_mcp_item_inside_exec_is_an_out_of_profile_tool_row"]
+  },
+  {
     "name": "R-45 Copilot builtin MCP disable flag dropped",
     "file": "bench/profiles/copilot.yaml",
     "find": "\"--disable-builtin-mcps\", ",
