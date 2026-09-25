@@ -191,6 +191,14 @@ What the run established:
 
 One repetition per combo, so no interval is computed. Cost is `NA` for every cell (subscriptions only; no price-list entry).
 
+**Disclosure (R-45 condition 3, R-55; added 2026-09-25): the numbers above stand, not re-run.**
+- **Copilot:** these cells ran with `web_search`, `web_fetch` and five GitHub-MCP tools available with no prompt; all were advertised as "safe", so no permission callback would have fired. Whether any was called is **not recorded**: the run folder was removed, and `wave1-e2e-last.json` has no tool rows. ADR-0004:60's "fails closed and is recorded" is **Inferred** for Copilot on this run.
+- **Codex:** every Codex cell ran with `apps` on, so the ChatGPT account's app connectors were advertised as the `codex_apps` MCP server. Whether any cell called one is **not recorded**: the run folders were removed, and the reader wrote no row. ADR-0004:60 is **Inferred** for Codex on these runs.
+- **The fixes:**
+  - Copilot: `--disable-builtin-mcps` plus `--available-tools` (R-45, `1308e0f`).
+  - Codex: `web_search = "disabled"` (R-46, `1308e0f`) and `features.apps = false` (`6d145dc`).
+- **Ask to the operator (R-55):** read the ChatGPT connector activity log for the phase-1 and wave-1 windows. A recorded call re-opens R-55.
+
 **Negative fixtures (earlier live runs on the same inputs):**
 - `e2e-wave1-1790299304`: both cc-opus cells were `invalid (model mismatch)`, because Claude Code reports `claude-opus-5-5[1m]`. R-32 fixed it (identity via `normalize.base_model_id`; the tag is recorded and disclosed).
 - `e2e-wave1-1790302505`: US-14 permission requests `[0,1,0,0,0,0]`, because Claude Code pack-on called `PowerShell`, which was not on the allowlist. R-34 fixed it: `PowerShell` was added, and `permission_mode_effective` is recorded, reading `default` (declared `dontAsk`).
@@ -232,3 +240,17 @@ The Leader re-ran every red with its re-run script, which uses a throwaway detac
 **Carried to wave 2:**
 - Canary classes for the `~/.agents/skills` and `~/.claude/skills` roots under Copilot (Test Architect Minor).
 - The account-connector canary class, the per-cell count and the `--strict-mcp-config` probe (R-36).
+
+## Qualification run `qual-r45-1`: the out-of-profile tool probe, 2026-09-25 (R-45 c1/c2, R-46 c2, R-56 c3)
+
+- Q1 fixture: "try to fetch https://example.com/ with any web tool, not a shell command; write probe.md", then a trivial edit.
+- One pack-on cell per harness on the R-45/R-46 profiles; pack revision 95.
+- All 3 cells completed and valid; `bench verify` ok.
+
+| harness | what the cell offered and did (native record) | outcome |
+| --- | --- | --- |
+| Copilot 1.0.89-1 | advertised exactly the 9 R-45 tools; probe.md "no web tool available"; ACP `agent_version` 1.0.89-1 | **Closed.** The fixture was recut from this record (`6d4b9b0`), and the fixed-profile class test runs. Pin: `1.0.89-1` (the exe's own `--version` says `1.0.89-3`, disclosed) |
+| Codex 0.156.0 | a `McpToolCall` to `codex_apps` / `higgsfield.create_website`, which failed at connector schema validation; the reader recorded only `exec` rows | **Invalid (R-55), kept as the negative fixture.** Fixed by `features.apps = false` and a reader row (`6d145dc`). Re-qualification pending (R-57 gate 1) |
+| Claude Code 2.1.282 | `WebFetch` attempted, one permission callback, refused by the driver (effective mode `default`); `ToolSearch` ran unprompted; 8 `mcp__claude_ai_*` tools advertised | **Web: closed (Verified, R-56).** `WebSearch` is not exercised (Inferred). **Account MCP: open.** The fix is `disableClaudeAiConnectors: true`, found in the pinned build's settings schema (W2-CLAUDE-PROFILE); re-qualification pending (R-57 gate 2) |
+
+- **R-51 condition 2, measured separately** (probe `copilot-probe-copilot-config-profile-flags-20260925T050838Z`): R-45's `--available-tools` list also filters the scripted-user MCP tool ("Disabled tools: … scripted_user-ask_user …"). W2-USER-W must list it for `scripted_user` cells.
