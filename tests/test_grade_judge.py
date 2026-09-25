@@ -473,10 +473,22 @@ def test_grading_started_records_the_scanned_roots_and_each_runs_liveness(tmp_pa
     root = make_root(tmp_path)
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     assert not (run_dir / ".lock").exists()  # the one run is not running
-    gid = runner.run_pass(run_dir, root).grading_id
+    roots = gw_backend.run_roots(root, run_dir.parent)
+    gid = runner.run_pass(run_dir, root, live_scan=(roots, gw_backend.scan_runs(roots)[0])).grading_id
     started = next(r for r in pass_rows(run_dir, "events", gid) if r["kind"] == "grading.started")
     assert started.get("scanned_roots") == [str(run_dir.parent.resolve())]
     assert started.get("run_liveness") == [{"run": str(run_dir.resolve()), "liveness": "not running"}]
+
+
+def test_a_pass_that_cannot_call_scans_no_run(tmp_path, monkeypatch):
+    # the in-run pass and a plain bench grade make no judge call, so they scan no runs/ (the scan loads every
+    # run's view in every worktree) and record no roots (Leader join fix of W3-GW-I follow-up a)
+    root = make_root(tmp_path)
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    monkeypatch.setattr(gw_backend, "scan_runs", lambda roots: (_ for _ in ()).throw(AssertionError("scanned")))
+    gid = runner.run_pass(run_dir, root).grading_id
+    started = next(r for r in pass_rows(run_dir, "events", gid) if r["kind"] == "grading.started")
+    assert "scanned_roots" not in started and "run_liveness" not in started
 
 
 def test_a_pass_that_may_call_refuses_a_cells_root_below_an_instruction_file_before_any_spawn(tmp_path, base,
