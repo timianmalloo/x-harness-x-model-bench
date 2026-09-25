@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T10:10:27Z",
+  "generated": "2026-09-25T10:36:15Z",
   "audit": [
     {
       "actor": null,
@@ -19580,6 +19580,45 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3C267842V0B8ABEFY6SNEST",
+      "shortname": "w3-gwi-1-s1",
+      "datetime": "2026-09-25T10:36:14Z",
+      "session": "w3-gwi-1",
+      "prompt": "W3-GW-I slice 1 per brief-gwi1.md (Leader coord-opus-cq, R-4): the offline half of the model gateway behind a Backend protocol, red first.",
+      "summary": "W3-GW-I slice 1 (Claude Opus 5.5 under R-4): src/harness_bench/gateway/ - request (judge-request/1, section 7.2 order, golden), scrub + independent scan (NFKC, Cf removed, whole words, any case), the schema-file validator (gateway/schemas/verdict-set.v1.json), the four-input key, the write-once store (os.link) and the one section 9.3 hit check, the Backend protocol with ReplayBackend only, and the pipeline reaching the backend only through egress.check(...).release. Offline: no process, socket or listener. Reds 4cd0e11 (01), d948849 (02), 20f9bd9 (06), 73d5814 (33), be84ace (03), b1c828f (05), d61eff7 (31), 838fba0 (12b), b9bfcb8 (11), 6cada3c (13), 47bd54e (04), 2b1d49d (30); greens ba57261, fc03f83, 343e188, c7aaed1, 7799ffb; mutations 9570254: 45 named, all killed. Full suite 1273 passed; ruff clean; the architecture lint green on the real repository. Seams owed: HB-GW-* codes into errors.RUN_CODES (STOP-I owns errors.py); .gitignore cache/; the ADR-0006 amendment; bench/gateway.yaml at s2. Finding: errors.RUN_CODES already defines HB-GRD-003 as the grader-failure code, while design section 17 reuses HB-GRD-003 for the live-run refusal (s4 must take a new code).",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "src/harness_bench/gateway",
+        "tests/mutations/gateway.json"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "W3-GW-I slice 1: request rendering, scrub+scan, schema validator, key, write-once store, section 9.3 hit check, Backend protocol with a replay fake; red first",
+      "done_when": "T-GW-01..06, 11, 12b, 13, 30, 31, 33 red then green; gateway.json mutants all killed; full pytest and ruff clean; architecture lint green",
+      "tier": "T2",
+      "main_calls": 100,
+      "main_budget": 180,
+      "main_over_budget": false,
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-25T10:11:15Z",
+      "duration_seconds": 1499.0,
+      "git": {
+        "sha": "9570254ba8248da093f66785e9f166ecd73d1848",
+        "short": "9570254ba",
+        "branch": "w3-gwi-1",
+        "pushed": null
+      }
     }
   ],
   "changes": [
