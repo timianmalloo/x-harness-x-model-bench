@@ -34,7 +34,8 @@ from collections.abc import Iterable
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-FAILED = re.compile(r"^FAILED (\S+)", re.MULTILINE)
+# a node id, with its parametrize case id whole: a case id may hold spaces ("[answer and timeout in one tick]")
+FAILED = re.compile(r"^FAILED ([^\s\[]+(?:\[[^\]\n]*\])?)", re.MULTILINE)
 SUMMARY = re.compile(r"\b\d+ (?:passed|failed|errors?|skipped|deselected|xfailed|xpassed|warnings?)\b|\bno tests ran\b")
 
 

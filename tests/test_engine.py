@@ -7,6 +7,7 @@ Every run's events are replayed against the model's phase-1 guards (lifecycle.re
 
 import ctypes
 import errno
+import itertools
 import json
 import logging
 import os
@@ -1479,7 +1480,8 @@ def _classify(base, launcher=None, kill_reason=None, exit_status=0, tail=b"", **
     turn = driver.TurnResult(**{"session_id": "s-1", "stop_reason": "end_turn", **result})
     config = engine.EngineConfig(run_dir=base / "runs" / "r", cells_root=base / "cells", launchers={},
                                  build_workspace=_build_workspace, grade=None)
-    return engine.Engine(_plan(n_cells=1), config)._classify(turn, launcher or _NativeRecords(), base, exit_status, tail, kill_reason)
+    records = engine._read_records(launcher or _NativeRecords(), base, turn.session_id)
+    return engine.Engine(_plan(n_cells=1), config)._classify(turn, records, exit_status, tail, kill_reason)
 
 
 NO_MEMORY = 0xC0000017  # STATUS_NO_MEMORY
@@ -1936,3 +1938,303 @@ def test_an_unconfirmed_kill_backs_off_from_1_s_doubling_to_the_designs_30_s_cap
     a = engine._Active(eng.plan["cells"][0], threading.current_thread())
     assert eng._end_process(a, cp, 0) == (0, True, "terminate")
     assert cp.timeouts == [eng.params["kill_escalation"], 1, 2, 4, 8, 16, 30, 30, 30]
+
+
+# --- decision requests (US-15; design 6) -----------------------------------------------------------------------------
+
+ORDERS = [order for n in (1, 2, 3) for order in itertools.permutations(("answer", "timeout", "stop"), n)]  # 3 + 6 + 6
+FIRST_WINS = {"answer": ("answered", "continue"), "timeout": ("default applied (timeout)", "continue"),
+              "stop": ("superseded (stop)", None)}
+
+
+@pytest.mark.parametrize("order", ORDERS, ids="-".join)
+def test_decision_resolves_exactly_once_in_every_order(order):  # R10-4, pure: every order on the functional core (S-7)
+    core = getattr(engine, "_Decisions", None)
+    assert core is not None, "design 6.2: the decision state machine is the functional core engine._Decisions"
+    d = core(timeout=30)
+    assert d.open("blocked_cell", "fake", "HB-CELL-202", now=0.0) == {
+        "kind": "decision.opened", "decision_id": "D1", "decision_kind": "blocked_cell", "subject": "fake",
+        "cause_code": "HB-CELL-202", "options": ["continue", "stop"], "default": "continue"}
+    assert d.open("blocked_cell", "fake", "HB-CELL-202", now=1.0) is None  # at most once per (kind, subject, cause)
+    assert d.answer("D9", "continue") == ("rejected (invalid)", None)
+    assert d.answer("D1", "skip_combo") == ("rejected (invalid)", None)  # not an option this decision offers
+    assert d.expire(now=29.9) == []
+    rows, effects = [], []
+    for step in order:
+        if step == "answer":
+            effect, row = d.answer("D1", "continue")
+            effects.append(effect)
+            rows += [row] if row else []
+        elif step == "timeout":
+            rows += d.expire(now=30.0)
+        else:
+            rows += d.supersede_all()
+    state, option = FIRST_WINS[order[0]]
+    assert rows == [{"kind": "decision.resolved", "decision_id": "D1", "state": state, "option": option}]
+    assert effects == ([] if "answer" not in order else ["applied"] if order[0] == "answer" else ["rejected (already resolved)"])
+    assert d.expire(now=1e6) == [] and d.supersede_all() == []
+    assert d.answer("D1", "stop") == ("rejected (already resolved)", None)
+
+
+AUTH = {"prompt_error": "Authentication required: run the login again"}  # driver: blocked (auth), HB-CELL-202
+UNSERVED = {"prompt_error": "API Error: 400 the pinned model is not served"}  # normalize.classify: a 4xx, HB-CELL-116
+CELL_TOKENS = 45  # the fake's USAGE over normalize.BUCKETS: 3 + 30 + 7 + 5 (reasoning is not a bucket)
+JUMP = 31.0  # seconds added to the engine clock: past a 30 s decision_timeout, inside the 60 s cell budget
+
+
+def _decision_plan(specs, parallelism, **parameters):
+    """One cell per (harness, combo, fake behaviour), in launch order; decision_timeout is 30 s unless given."""
+    p = _plan(n_cells=len(specs), parallelism=parallelism)
+    p["parameters"].update({"decision_timeout": 30, **parameters})
+    behaviours = {}
+    for cell, (harness, combo, behaviour) in zip(p["cells"], specs, strict=True):
+        cell["harness"], cell["combo"] = harness, combo
+        behaviours[cell["label"]] = behaviour
+    return p, FakeLauncher(behaviours)
+
+
+def _answer_file(run_dir: Path, decision_id: str, option: str) -> Path:
+    """An answer control file, written as `bench answer` writes it (design 4.2)."""
+    uid = uuid.uuid4().hex
+    return _stop_file(run_dir, uid=uid, body=json.dumps(_control(uid, control="answer", decision_id=decision_id, option=option)))
+
+
+def _decision_run(base, plan_and_launcher, script=None, limit=45):
+    """The engine on its own thread, its clock `time.monotonic() + offset[0]`, and `script(eng, offset, run_dir)` called
+    in every tick after the controls and the expiry (design 6.2): each ordering is forced by the tick, never by a sleep."""
+    p, launcher = plan_and_launcher
+    offset = [0.0]
+    run_dir = base / "runs" / p["run_id"]
+    config = engine.EngineConfig(run_dir=run_dir, cells_root=base / "cells", launchers={"fake": launcher, "other": launcher},
+                                 build_workspace=_build_workspace, grade=None, clock=lambda: time.monotonic() + offset[0])
+    eng = engine.Engine(p, config)
+    real_tick = eng.on_tick
+
+    def tick():
+        if script is not None:
+            script(eng, offset, run_dir)
+        real_tick()
+
+    eng.on_tick = tick
+    box = {}
+    thread = threading.Thread(target=lambda: box.setdefault("summary", eng.run()), daemon=True, name="engine-under-test")
+    thread.start()
+    thread.join(limit)
+    assert not thread.is_alive(), f"the engine did not finish within {limit} s"
+    events = _events(run_dir)
+    lifecycle.replay(events, parallelism=p["parameters"]["parallelism"])
+    return eng, events, box["summary"]
+
+
+def _kind(events: list[dict], kind: str) -> list[dict]:
+    return [e for e in events if e["kind"] == kind]
+
+
+def _resolutions(events: list[dict]) -> list[tuple]:
+    return [(e["decision_id"], e["state"], e["option"]) for e in _kind(events, "decision.resolved")]
+
+
+LOOP_ORDERS = {  # case -> step groups, one group per tick, from the tick in which the blocked cell's outcome lands
+    "answer then timeout": (("answer",), ("timeout",)), "timeout then answer": (("timeout",), ("answer",)),
+    "answer and timeout in one tick": (("answer", "timeout"),),
+    "stop then timeout": (("stop",), ("timeout",)), "timeout then stop": (("timeout",), ("stop",))}
+LOOP_EXPECTED = {  # case -> (decision.resolved rows, control.applied effects, cells launched)
+    "answer then timeout": ([("D1", "answered", "continue")], ["applied"], 2),
+    "timeout then answer": ([("D1", "default applied (timeout)", "continue")], ["rejected (already resolved)"], 2),
+    "answer and timeout in one tick": ([("D1", "answered", "continue")], ["applied"], 2),  # controls run before the expiry
+    "stop then timeout": ([("D1", "superseded (stop)", None)], ["applied"], 1),
+    "timeout then stop": ([("D1", "default applied (timeout)", "continue")], ["applied"], 2)}
+
+
+@pytest.mark.parametrize("case", sorted(LOOP_ORDERS))
+def test_resolution_order_through_the_loop(base, case):  # R10-4, engine: the tick order of design 6.2 (TA M3)
+    p, launcher = _decision_plan([("fake", "A", AUTH), ("fake", "A", {})], parallelism=1)
+    blocked = p["cells"][0]["cell_id"]
+    steps = list(LOOP_ORDERS[case])
+
+    def script(eng, offset, run_dir):
+        if blocked in eng.outcomes and steps:
+            for step in steps.pop(0):
+                if step == "timeout":
+                    offset[0] += JUMP
+                elif step == "stop":
+                    _stop_file(run_dir)
+                else:
+                    _answer_file(run_dir, "D1", "continue")
+
+    _, events, summary = _decision_run(base, (p, launcher), script)
+    resolved, effects, launched = LOOP_EXPECTED[case]
+    assert _resolutions(events) == resolved  # exactly one terminal state per decision
+    assert [e["effect"] for e in _kind(events, "control.applied")] == effects
+    assert len(_kind(events, "cell.launch_intent")) == launched
+    assert summary.exit_code == (3 if "stop" in case else 0)
+
+
+def test_a_stop_supersedes_every_open_decision(base):  # R10-2
+    p, launcher = _decision_plan([("fake", "A", AUTH), ("other", "B", UNSERVED), ("fake", "A", {}), ("other", "B", {})],
+                                 parallelism=2)
+    first = {c["cell_id"] for c in p["cells"][:2]}
+    fired = []
+
+    def script(eng, offset, run_dir):
+        if first <= set(eng.outcomes) and not fired:
+            fired.append(True)
+            _stop_file(run_dir)
+            offset[0] += JUMP  # past the timeout in the same tick: the stop is applied first, then nothing expires
+
+    _, events, summary = _decision_run(base, (p, launcher), script)
+    assert sorted((e["decision_kind"], e["subject"]) for e in _kind(events, "decision.opened")) == [
+        ("blocked_cell", "fake"), ("qualification_gap", "B")]
+    assert sorted(_resolutions(events)) == [("D1", "superseded (stop)", None), ("D2", "superseded (stop)", None)]
+    assert [(e["code"], e["decision_id"]) for e in _kind(events, "run.stopped")] == [("HB-RUN-006", None)]
+    assert len(_kind(events, "cell.launch_intent")) == 2 and summary.exit_code == 3
+
+
+def test_blocked_cell_default_continues_after_the_timeout(base):  # US15-1 (US-15, UXA-9)
+    p, launcher = _decision_plan([("fake", "A", AUTH), ("other", "B", {"sleep": 2}), ("fake", "A", {})], parallelism=2)
+    blocked, running, waiting = (c["cell_id"] for c in p["cells"])
+
+    def script(eng, offset, run_dir):
+        if {blocked, running} <= set(eng.outcomes) and not offset[0]:
+            offset[0] += JUMP
+
+    _, events, summary = _decision_run(base, (p, launcher), script)
+    opened = _kind(events, "decision.opened")
+    assert [{k: e[k] for k in ("decision_id", "decision_kind", "subject", "cause_code", "options", "default")} for e in opened] == [
+        {"decision_id": "D1", "decision_kind": "blocked_cell", "subject": "fake", "cause_code": "HB-CELL-202",
+         "options": ["continue", "stop"], "default": "continue"}]
+    assert _resolutions(events) == [("D1", "default applied (timeout)", "continue")]
+    start, end = events.index(opened[0]), events.index(_kind(events, "decision.resolved")[0])
+    assert [e for e in events[start:end] if e["kind"] == "cell.launch_intent"] == []  # launching pauses while it is open
+    assert running in [e["cell_id"] for e in events[start:end] if e["kind"] == "cell.outcome"]  # running cells continue
+    assert [e["cell_id"] for e in events[end:] if e["kind"] == "cell.launch_intent"] == [waiting]  # launching resumes
+    outs = _outcomes(events)
+    assert (outs[blocked]["outcome"], outs[blocked]["cause"]) == ("failed", "blocked_auth")  # its outcome is unchanged
+    assert outs[waiting]["outcome"] == "completed" and summary.exit_code == 0
+
+
+def test_qualification_gap_default_skips_the_combos_pending_cells(base):  # US15-2
+    p, launcher = _decision_plan([("fake", "A", UNSERVED), ("fake", "A", UNSERVED), ("fake", "A", {}), ("fake", "B", {})],
+                                 parallelism=2)
+    first, second, skipped, other = (c["cell_id"] for c in p["cells"])
+
+    def script(eng, offset, run_dir):
+        if {first, second} <= set(eng.outcomes) and not offset[0]:
+            offset[0] += JUMP
+
+    _, events, summary = _decision_run(base, (p, launcher), script)
+    assert [(e["decision_kind"], e["subject"], e["cause_code"], e["options"], e["default"])
+            for e in _kind(events, "decision.opened")] == [
+        ("qualification_gap", "A", "HB-CELL-116", ["skip_combo", "stop"], "skip_combo")]  # the second gap opens none
+    assert _resolutions(events) == [("D1", "default applied (timeout)", "skip_combo")]
+    outs = _outcomes(events)
+    assert {k: outs[skipped][k] for k in ("outcome", "cause", "code", "decision_id")} == {
+        "outcome": "skipped (decision)", "cause": None, "code": None, "decision_id": "D1"}
+    assert [e["kind"] for e in events if e.get("cell_id") == skipped] == ["cell.outcome"]  # never launched: its only row
+    assert outs[other]["outcome"] == "completed" and summary.exit_code == 0
+
+
+def test_spend_cap_default_stops_the_run(base):  # US15-3
+    p, launcher = _decision_plan([("fake", "A", {}), ("fake", "A", {"mode": "on_cancel"}), ("fake", "A", {})], parallelism=2,
+                                 spend_cap_tokens=CELL_TOKENS - 5)
+    ended, running, waiting = (c["cell_id"] for c in p["cells"])
+
+    def script(eng, offset, run_dir):
+        if ended in eng.outcomes and not offset[0]:
+            offset[0] += JUMP
+
+    _, events, summary = _decision_run(base, (p, launcher), script)
+    assert [{k: e[k] for k in ("decision_kind", "subject", "cause_code", "options", "default", "spend_tokens", "cells_unmeasured")}
+            for e in _kind(events, "decision.opened")] == [
+        {"decision_kind": "spend_cap", "subject": p["run_id"], "cause_code": "HB-RUN-007", "options": ["stop", "continue"],
+         "default": "stop", "spend_tokens": 45, "cells_unmeasured": 0}]  # a literal from the fake's buckets (TA m2)
+    assert _resolutions(events) == [("D1", "default applied (timeout)", "stop")]
+    assert [(e["code"], e["decision_id"]) for e in _kind(events, "run.stopped")] == [("HB-RUN-007", "D1")]
+    outs = _outcomes(events)
+    assert outs[running]["outcome"] == "stopped" and waiting not in outs and summary.exit_code == 3
+
+
+def test_a_cell_with_no_usage_is_unmeasured_never_zero(base):  # US15-3b (design 6.3)
+    p, launcher = _decision_plan([("fake", "A", {"usage": None}), ("fake", "A", {}), ("fake", "A", {})], parallelism=1,
+                                 spend_cap_tokens=CELL_TOKENS - 5, decision_timeout=0)
+    _, events, summary = _decision_run(base, (p, launcher))
+    assert [(e["spend_tokens"], e["cells_unmeasured"]) for e in _kind(events, "decision.opened")] == [(45, 1)]
+    assert _resolutions(events) == [("D1", "default applied (timeout)", "stop")]
+    assert len(_kind(events, "cell.launch_intent")) == 2 and summary.exit_code == 3
+
+
+def test_no_decision_after_a_launch_stop(base):  # US15-4 (S-4, PE-13, TA M8)
+    _, events, _ = _decision_run(base, _decision_plan([("fake", "A", AUTH), ("fake", "A", {})], parallelism=1,
+                                                      decision_timeout=0))
+    assert [e["decision_kind"] for e in _kind(events, "decision.opened")] == ["blocked_cell"]  # the positive control
+    _, events, _ = _decision_run(base, _decision_plan([("fake", "A", AUTH)], parallelism=1, decision_timeout=0))
+    assert _kind(events, "decision.opened") == []  # nothing pending: nothing it could change
+    p, launcher = _decision_plan([("fake", "A", {**UNSERVED, "sleep": 8}), *[("fake", "B", {"mode": "provider_error"})] * 3,
+                                  ("fake", "A", {})], parallelism=2, decision_timeout=0)
+    _, events, _ = _decision_run(base, (p, launcher))
+    assert [e["code"] for e in _kind(events, "run.launch_stopped")] == ["HB-CELL-108"]  # the breaker, first
+    assert _outcomes(events)[p["cells"][0]["cell_id"]]["cause"] == "model_unavailable"  # then the gap, combo A pending
+    assert _kind(events, "decision.opened") == []
+
+
+def test_the_run_waits_for_an_open_decision(base):  # US15-5 (UXA-9; the model's DecisionEventuallyResolved)
+    p, launcher = _decision_plan([("fake", "A", {}), ("fake", "A", {"sleep": 2})], parallelism=2,
+                                 spend_cap_tokens=CELL_TOKENS - 5)
+    cells = {c["cell_id"] for c in p["cells"]}
+    idle = []
+
+    def script(eng, offset, run_dir):
+        if cells <= set(eng.outcomes) and not eng.active:
+            idle.append(True)
+            if len(idle) == 3:  # three ticks with nothing pending or running: only the open decision holds the loop
+                _answer_file(run_dir, "D1", "continue")
+
+    _, events, summary = _decision_run(base, (p, launcher), script)
+    assert len(idle) >= 3
+    assert _resolutions(events) == [("D1", "answered", "continue")]
+    last_outcome = max(events.index(e) for e in _kind(events, "cell.outcome"))
+    assert last_outcome < events.index(_kind(events, "decision.resolved")[0]) < events.index(_kind(events, "run.completed")[0])
+    assert summary.exit_code == 0
+
+
+def test_one_blocked_harness_opens_one_decision(base):  # US15-6 (PE-4): one expired login costs one wait, not N
+    p, launcher = _decision_plan([("fake", "A", AUTH)] * 3 + [("fake", "A", {})], parallelism=3, decision_timeout=0)
+    _, events, summary = _decision_run(base, (p, launcher))
+    assert [(e["decision_id"], e["subject"]) for e in _kind(events, "decision.opened")] == [("D1", "fake")]
+    assert _resolutions(events) == [("D1", "default applied (timeout)", "continue")] and summary.exit_code == 0
+    assert sorted(str(o["cause"]) for o in _outcomes(events).values()) == ["None"] + ["blocked_auth"] * 3
+
+
+def test_an_answer_of_stop_is_an_operator_stop(base):  # US15-7 (design 6.1)
+    p, launcher = _decision_plan([("fake", "A", AUTH), ("other", "B", {"mode": "on_cancel"}), ("fake", "A", {})],
+                                 parallelism=2)
+    blocked, running, waiting = (c["cell_id"] for c in p["cells"])
+    sent = []
+
+    def script(eng, offset, run_dir):
+        if blocked in eng.outcomes and not sent:
+            sent.append(_answer_file(run_dir, "D1", "stop"))
+
+    _, events, summary = _decision_run(base, (p, launcher), script)
+    assert [(e["control"], e["decision_id"], e["effect"]) for e in _kind(events, "control.applied")] == [
+        ("answer", "D1", "applied")]
+    assert _resolutions(events) == [("D1", "answered", "stop")]
+    assert [(e["code"], e["decision_id"]) for e in _kind(events, "run.stopped")] == [("HB-RUN-006", "D1")]
+    outs = _outcomes(events)
+    assert outs[running]["outcome"] == "stopped" and waiting not in outs and summary.exit_code == 3
+
+
+def test_continue_on_the_spend_cap_disables_the_cap(base):  # US15-7 (design 6.1)
+    p, launcher = _decision_plan([("fake", "A", {})] * 3, parallelism=1, spend_cap_tokens=CELL_TOKENS - 5)
+    first = p["cells"][0]["cell_id"]
+    sent = []
+
+    def script(eng, offset, run_dir):
+        if first in eng.outcomes and not sent:
+            sent.append(_answer_file(run_dir, "D1", "continue"))
+
+    eng, events, summary = _decision_run(base, (p, launcher), script)
+    assert _resolutions(events) == [("D1", "answered", "continue")]
+    assert [o["outcome"] for o in _outcomes(events).values()] == ["completed"] * 3
+    assert _kind(events, "run.stopped") == [] and summary.exit_code == 0
+    assert eng.spend_cap is None  # disabled for the rest of the run: 135 tokens spent against a 40-token cap

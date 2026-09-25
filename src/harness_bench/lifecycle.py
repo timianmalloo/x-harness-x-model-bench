@@ -19,6 +19,19 @@ WRITE_INTENT_ONCE = "WriteIntent: exactly once, first"
 NO_LAUNCH_AFTER_STOP = "NoLaunchAfterStop"
 CONTROL_APPLIED_ONCE = "ControlAppliedOnce"
 RUN_STOPPED_ONCE = "RunStoppedOnce"
+NO_DECISION_AFTER_STOP = "NoDecisionAfterStop"
+DECISION_RESOLVED_ONCE = "DecisionResolvedOnce"
+RESOLVED_AFTER_OPENED = "a decision.resolved follows its decision.opened"
+NO_LAUNCH_WHILE_DECISION_OPEN = "NoLaunchWhileDecisionOpen"
+SKIPPED = "skipped (decision)"  # an outcome written with no launch: the cell's first and only row (design 8.3)
+# Design 6.1: each decision kind's closed options and the default applied on timeout. The engine opens decisions from
+# this table and bench-status/1 validates against it, so the wire and the engine share one definition (design 4.6).
+DECISION_KINDS = {
+    "blocked_cell": (("continue", "stop"), "continue"),
+    "qualification_gap": (("skip_combo", "stop"), "skip_combo"),
+    "spend_cap": (("stop", "continue"), "stop"),
+}
+DECISION_STATES = ("open", "answered", "default applied (timeout)", "superseded (stop)")
 FOLLOWS_INTENT = "every transition follows cell.launch_intent"
 AT_MOST_ONCE = "each transition at most once per cell (AtMostOnePrompt, one attempt in phase 1)"
 PARALLELISM_BOUND = "ParallelismBound"
@@ -66,6 +79,8 @@ TABLE: dict[str, Transition] = {
     "run.launch_stopped": Transition("(no further WriteIntent)", "engine"),
     "control.applied": Transition("ApplyStop / ApplyAnswer (controlApplied)", "engine"),
     "run.stopped": Transition("ApplyStop", "engine"),
+    "decision.opened": Transition("RaiseDecision", "engine"),
+    "decision.resolved": Transition("ApplyAnswer / TimeoutDefault / ApplyStop (supersede)", "engine"),
     "run.completed": Transition("(run end)", "engine"),
     "grading.started": Transition("GradeStart", "grading"),
     "grading.completed": Transition("GradeEnd", "grading"),
@@ -74,6 +89,7 @@ TABLE: dict[str, Transition] = {
 }
 ENGINE_TRANSITIONS = frozenset(k for k, t in TABLE.items() if t.writer == "engine")
 RULES = (UNMAPPED, WRITE_INTENT_ONCE, NO_LAUNCH_AFTER_STOP, CONTROL_APPLIED_ONCE, RUN_STOPPED_ONCE,
+         NO_DECISION_AFTER_STOP, DECISION_RESOLVED_ONCE, RESOLVED_AFTER_OPENED, NO_LAUNCH_WHILE_DECISION_OPEN,
          FOLLOWS_INTENT, AT_MOST_ONCE, PARALLELISM_BOUND,
          NO_OUTCOME_WHILE_RUNNING, NO_ARCHIVE_WHILE_LIVE, ARCHIVED_CELLS_GET_GRADED, GRADED_ONCE_PER_PASS,
          *sorted({r for t in TABLE.values() for r in (t.after_rule, t.not_after_rule) if r}))
@@ -96,6 +112,8 @@ def replay(events: list[dict], parallelism: int, scores: list[dict] = ()) -> Non
     stopped = False
     run_stopped = False
     applied_controls: set[str] = set()
+    opened: set[str] = set()
+    resolved: set[str] = set()
     archived_at_start: dict[str, set[str]] = {}  # grading_id -> cells archived when the pass started
 
     def fail(cell: str, rule: str, kind: str) -> None:
@@ -118,18 +136,32 @@ def replay(events: list[dict], parallelism: int, scores: list[dict] = ()) -> Non
                 raise ConformanceError(RUN_STOPPED_ONCE)
             run_stopped = True
             stopped = True
+        if kind == "decision.opened":
+            if run_stopped:
+                raise ConformanceError(f"{NO_DECISION_AFTER_STOP}: {e['decision_id']}")
+            opened.add(e["decision_id"])
+        if kind == "decision.resolved":
+            did = e["decision_id"]
+            if did in resolved:
+                raise ConformanceError(f"{DECISION_RESOLVED_ONCE}: {did}")
+            if did not in opened:
+                raise ConformanceError(f"{RESOLVED_AFTER_OPENED}: {did}")
+            resolved.add(did)
         if kind == "grading.started":
             archived_at_start[e["grading_id"]] = {c for c, d in seen.items() if "cell.archived" in d}
         cell = e.get("cell_id")
         if cell is None:
             continue
         done = seen[cell]
+        skip = kind == "cell.outcome" and e.get("outcome") == SKIPPED and not done  # never launched (design 8.3)
         if kind == "cell.launch_intent":
             if done:
                 fail(cell, WRITE_INTENT_ONCE, kind)
             if stopped:
                 fail(cell, NO_LAUNCH_AFTER_STOP, kind)
-        elif not done:  # the intent is the only first transition, so a cell's record always starts with it
+            if opened - resolved:
+                fail(cell, NO_LAUNCH_WHILE_DECISION_OPEN, kind)
+        elif "cell.launch_intent" not in done and not skip:  # the intent is the only first transition but a skip
             fail(cell, FOLLOWS_INTENT, kind)
         if kind in done:  # a second intent has already failed above
             fail(cell, AT_MOST_ONCE, kind)

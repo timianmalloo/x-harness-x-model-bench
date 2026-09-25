@@ -247,6 +247,21 @@ def validate_verdict(obj) -> list[str]:
     return errors
 
 
+def _copilot_final(record: Path) -> str | None:
+    """The content of the record's last `assistant.message` row: Copilot's print-mode stdout prefixes the answer
+    with CLI banners ("Disabled tools: ...", measured 2026-09-25 turn 2), so the record, not stdout, is the answer."""
+    text = None
+    for line in record.read_text(encoding="utf-8", errors="replace").splitlines():
+        try:
+            row = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(row, dict) and row.get("type") == "assistant.message":
+            content = (row.get("data") or {}).get("content")
+            text = content if isinstance(content, str) and content.strip() else text
+    return text
+
+
 def _final(harness: str, stdout: str, last: str | None) -> tuple[object, str]:
     """(the final answer, where it came from). Claude: stdout's structured_output, else its result text. Codex:
     the `-o` last-message file. Copilot: `assume:` print mode writes its final answer straight to stdout with no
@@ -259,10 +274,8 @@ def _final(harness: str, stdout: str, last: str | None) -> tuple[object, str]:
         if isinstance(out, dict) and out.get("structured_output") is not None:
             return out["structured_output"], "structured_output"
         text = out.get("result") if isinstance(out, dict) else None
-    elif harness == "codex":
+    else:  # Codex: the -o file; Copilot: the record's last assistant.message (stdout carries CLI banners, turn 2)
         text = last
-    else:
-        text = stdout
     if not isinstance(text, str):
         return None, "no final text"
     body = text.strip()
@@ -406,6 +419,8 @@ def analyse(harness: str, pin: str, records: list[Path], stdout: str, last: str 
     served = sorted({c.model for c in ex.model_calls}) if ex else []
     off_pin = [m for m in served if not profile.model_allowed(m, pin)]
     record_strings = strings_of_record(records[0]) if len(records) == 1 else []
+    if harness == "copilot":
+        last = _copilot_final(records[0]) if len(records) == 1 else None
     out_strings = strings_of_stdout(stdout) + ([("last-message", last)] if last else [])
     every = record_strings + out_strings
     reads = {
@@ -531,17 +546,21 @@ def run(args: argparse.Namespace) -> int:
     # profile's own default source unless overridden the same way.
     credential_source = Path(args.credential_source) if args.credential_source else profile.credential_source
     credential_name = Path(args.credential_source).name if args.credential_source else profile.credential_name
-    if credential_source is None or not credential_source.is_file():
+    if credential_source is None and args.harness == "copilot":
+        credential_name = None  # the cell shape: an empty COPILOT_HOME; the login is the Windows credential store
+    elif credential_source is None or not credential_source.is_file():
         print(f"no credential at {credential_source}", file=sys.stderr)
         return 2
-    shutil.copyfile(credential_source, home / credential_name)
+    else:
+        shutil.copyfile(credential_source, home / credential_name)
     env = profile.cell_env(dict(os.environ), home, build, args.model, "")  # drops API keys and harness overrides
     if not args.real_profile:
         env.update({"USERPROFILE": str(decoy), "HOME": str(decoy)})
     try:
         done = procs.run(argv, cwd=str(work), env=env, timeout=args.budget, input=stdin)
     finally:
-        (home / credential_name).unlink(missing_ok=True)  # the credential copy never outlives the turn
+        if credential_name:
+            (home / credential_name).unlink(missing_ok=True)  # the credential copy never outlives the turn
     (folder / "stdout.txt").write_text(done.stdout, encoding="utf-8")
     (folder / "stderr.txt").write_text(done.stderr, encoding="utf-8")
     if args.harness == "claude-code":

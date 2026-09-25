@@ -43,6 +43,14 @@ def test_a_named_parametrized_test_matches_its_cases():
     assert mutate_check.verdict(1, output, ["tests/test_grade.py::test_parse_other"]) == "survived"
 
 
+def test_a_parametrized_case_whose_id_has_spaces_can_be_named():
+    # W2-STOP-I slice 5: `\S+` cut the node id at the first space, so a case id with spaces could never be a kill.
+    case = "tests/test_engine.py::test_tick_order[answer and timeout in one tick]"
+    output = f"FAILED {case} - AssertionError: x\n"
+    assert mutate_check.verdict(1, output, [case]) == "killed"
+    assert mutate_check.verdict(1, output, ["tests/test_engine.py::test_tick_order[answer only]"]) == "survived"
+
+
 def test_a_named_file_matches_any_test_in_it():
     output = "FAILED tests/test_engine.py::test_parallelism_is_never_exceeded - x\n"
     assert mutate_check.verdict(1, output, ["tests/test_engine.py"]) == "killed"

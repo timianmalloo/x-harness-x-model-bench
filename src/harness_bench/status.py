@@ -10,7 +10,8 @@
   `killing (unconfirmed, <s> s)`.
 - `bench-status/1` is a strict type: `parse` rejects unknown or missing fields, wrong types, unknown
   enum values and malformed ids. It carries enums, ids, counts and times only: no text from a cell.
-- Phase 1 has no decision requests, so `decisions` is always empty.
+- `decisions` lists every decision request (design 4.6): its enums and ids, its state derived from the ledger, and
+  `default_in_s`, the display-only time to its default (the engine's deadline is on its own clock).
 """
 
 from __future__ import annotations
@@ -24,6 +25,7 @@ from pathlib import Path
 from harness_bench import oslock, views
 from harness_bench.config import CELL_ID, LABEL
 from harness_bench.errors import BenchError
+from harness_bench.lifecycle import DECISION_KINDS, DECISION_STATES
 from harness_bench.plan import DEFAULT_PARAMETERS
 
 SCHEMA = "bench-status/1"
@@ -43,6 +45,20 @@ PHASE = ("starting", "running", "stopping", "stopped")
 CAUSE_CODE = re.compile(r"HB-CELL-[0-9]{3}")
 STOP_CODE = re.compile(r"HB-[A-Z]+-[0-9]{3}")
 TIME = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z")
+DECISION_ID = re.compile(r"D[1-9][0-9]*")
+SUBJECT = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,79}")  # a harness, a combo id or a run id: never free text (B2)
+
+
+@dataclass(frozen=True)
+class Decision:
+    decision_id: str
+    decision_kind: str  # blocked_cell | qualification_gap | spend_cap
+    subject: str
+    cause_code: str
+    options: list[str]
+    default: str
+    state: str  # open | answered | default applied (timeout) | superseded (stop)
+    default_in_s: int | None  # while open: seconds to the default on the wall clock, never negative; else null
 
 
 @dataclass(frozen=True)
@@ -69,7 +85,7 @@ class Status:
     validity: dict[str, int]
     causes: dict[str, int]
     running: list[RunningCell]
-    decisions: list
+    decisions: list[Decision]
     stop_code: str | None  # run.launch_stopped's code; null unless one was recorded (ruling R-3)
     phase: str  # starting | running | stopping | stopped (ruling R-3; design 4.6)
     graded: bool
@@ -143,8 +159,22 @@ def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = N
         phase = "stopped" if launched <= with_outcome else "stopping"
     stopped = [e for e in events if e["kind"] == "run.launch_stopped"]
     stop_code = stopped[-1]["code"] if stopped else None
+    timeout = view.plan.get("parameters", {}).get("decision_timeout", DEFAULT_PARAMETERS["decision_timeout"])
     return Status(SCHEMA, view.run_id, now.strftime("%Y-%m-%dT%H:%M:%SZ"), liveness, completion, age, len(view.cells), ended_count,
-                  outcomes, last_update_ms, validity, causes, running, [], stop_code, phase, view.grading_id is not None)
+                  outcomes, last_update_ms, validity, causes, running, _decisions(events, timeout, now), stop_code, phase,
+                  view.grading_id is not None)
+
+
+def _decisions(events: list[dict], timeout: int, now: datetime) -> list[Decision]:
+    """Each decision's state, derived from its rows (never stored, design 3); the time to its default for display."""
+    resolved = {e["decision_id"]: e["state"] for e in events if e["kind"] == "decision.resolved"}
+    out = []
+    for e in (e for e in events if e["kind"] == "decision.opened"):
+        state = resolved.get(e["decision_id"], "open")
+        left = timeout - (now - _when(e["recorded_at"])).total_seconds()
+        out.append(Decision(e["decision_id"], e["decision_kind"], e["subject"], e["cause_code"], list(e["options"]), e["default"],
+                            state, max(0, int(left)) if state == "open" else None))
+    return out
 
 
 def _counts(title: str, order: tuple[str, ...], counts: dict[str, int]) -> str | None:
@@ -165,6 +195,11 @@ def text(s: Status) -> str:
         lines = [f"Run {s.run_id}: stalled. The engine holds the lock but has not progressed for {s.lock_age_s} s."]
     else:
         lines = [f"Run {s.run_id}: not running ({s.completion}). {s.cells_ended}/{s.cells_total} cells ended."]
+    for d in s.decisions:  # UXA-7: the subject, the cause and the action
+        if d.state == "open":
+            lines.append(f"Decision {d.decision_id} · {d.decision_kind.replace('_', ' ')} · {d.subject} · {d.cause_code} · "
+                         f"options {' | '.join(d.options)} · default {d.default} in {d.default_in_s // 60} min. "
+                         f"Answer: bench answer {s.run_id} {d.decision_id} <option>")
     for r in s.running:
         if r.killing:
             lines.append(f"{r.cell_id}: killing (unconfirmed, {r.elapsed_s - r.budget_s} s)")
@@ -225,7 +260,21 @@ def parse(document: str) -> Status:
         _int(value, f"last_update_ms.{cell_id}", nullable=True)
     _count_map(data["validity"], VALIDITY, "validity")
     _count_map(data["causes"], CAUSE_CODE, "causes")
-    _require(data["decisions"] == [], "decisions must be empty in phase 1")
+    _require(isinstance(data["decisions"], list), "decisions must be a list")
+    decisions = []
+    for d in data["decisions"]:
+        _exact(d, Decision)
+        _require(isinstance(d["decision_id"], str) and bool(DECISION_ID.fullmatch(d["decision_id"])), "decision_id is malformed")
+        _require(d["decision_kind"] in DECISION_KINDS, "decision_kind is not a known value")
+        options, _ = DECISION_KINDS[d["decision_kind"]]
+        _require(isinstance(d["subject"], str) and bool(SUBJECT.fullmatch(d["subject"])), "decision subject is malformed")
+        _require(isinstance(d["cause_code"], str) and bool(STOP_CODE.fullmatch(d["cause_code"])), "cause_code is malformed")
+        _require(d["options"] == list(options), "decision options differ from its kind's")
+        _require(d["default"] in options, "decision default is not one of its options")
+        _require(d["state"] in DECISION_STATES, "decision state is not a known value")
+        _int(d["default_in_s"], "default_in_s", nullable=d["state"] != "open")
+        _require((d["default_in_s"] is None) == (d["state"] != "open"), "default_in_s is set exactly while a decision is open")
+        decisions.append(Decision(**d))
     _require(data["stop_code"] is None or (isinstance(data["stop_code"], str) and bool(STOP_CODE.fullmatch(data["stop_code"]))),
               "stop_code is malformed")
     _require(data["phase"] in PHASE, "phase is not a known value")
@@ -240,4 +289,4 @@ def parse(document: str) -> Status:
         _int(r["budget_s"], "running.budget_s")
         _require(isinstance(r["killing"], bool), "running.killing must be a boolean")
         running.append(RunningCell(**r))
-    return Status(**{**data, "running": running})
+    return Status(**{**data, "running": running, "decisions": decisions})

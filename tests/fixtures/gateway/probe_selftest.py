@@ -127,7 +127,9 @@ def launch_shapes(tmp: Path) -> None:
     check("copilot argv: model pinned", p[p.index("--model") + 1] == COPILOT_PIN, p)
     check("copilot argv: prompt right after -p", p[p.index("-p") + 1] == "P", p)
     check("copilot argv: built-in and MCP servers disabled", "--disable-builtin-mcps" in p, p)
-    check("copilot argv: --available-tools is last (empty allowlist)", p[-1] == "--available-tools", p)
+    # a bare trailing --available-tools filtered nothing on 1.0.89-1 (turn 1, 2026-09-25): the allowlist names no real tool
+    check("copilot argv: the allowlist names no real tool", p[-2:] == ["--available-tools", "none"], p)
+    check("copilot argv: custom instructions off", "--no-custom-instructions" in p, p)
     for argv in (a, c, p):
         banned = [x for x in argv if x in ("--fallback-model", "--ephemeral", "--no-session-persistence")
                   or x.startswith("--dangerously") or x == "bypassPermissions"]
