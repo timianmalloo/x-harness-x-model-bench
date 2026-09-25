@@ -312,7 +312,7 @@ def test_t_gw_10_a_pass_sweeps_a_killed_pass_copy_but_never_one_whose_lock_is_he
         copy.parent.mkdir(parents=True)
         copy.write_text("{}", encoding="utf-8")
     with oslock.RunLock.acquire(cells / "gateway" / "grade-live" / ".lock"):
-        with judge_pass(cells, "grade-placeholder-1", (".credentials.json",)):
+        with judge_pass(cells, "grade-placeholder-1", (".credentials.json",), ()):
             assert (killed.exists(), live.exists()) == (False, True)  # swept at pass start; the live pass kept
             leftover = cells / "gateway" / "grade-placeholder-1" / "0000000000000000" / "home" / ".credentials.json"
             leftover.parent.mkdir(parents=True)
@@ -338,7 +338,7 @@ def test_t_gw_26b_a_pass_refuses_a_cells_root_below_an_instruction_file(base):
     from harness_bench.errors import BenchError
     (base / "AGENTS.md").write_text("instructions a judge must never load", encoding="utf-8")
     with pytest.raises(BenchError) as refused, gw_backend.judge_pass(base / "cells", "grade-placeholder-1",
-                                                                     (".credentials.json",)):
+                                                                     (".credentials.json",), ()):
         pass
     assert refused.value.code == "HB-PRE-002" and not (base / "cells" / "gateway").exists()
 

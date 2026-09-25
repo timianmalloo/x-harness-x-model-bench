@@ -33,7 +33,7 @@ from pathlib import Path
 
 from harness_bench import config, egress, profiles, tools
 from harness_bench.gateway import pipeline, scrub
-from harness_bench.gateway.backend import Launch, ReplayBackend, judge_pass
+from harness_bench.gateway.backend import Launch, ReplayBackend, judge_pass, run_roots
 from harness_bench.grade import CellInput, Score
 
 NO_JUDGE = "no qualified judge"
@@ -83,10 +83,9 @@ def grade(inp: CellInput, calls: Calls | None) -> dict[str, Score]:
         return out
     grading_id = inp.out_dir.parents[1].name  # out_dir is run_dir/grading/<grading_id>/<cell_id>/<grader>
     archive = inp.run_dir / "grading" / grading_id / "gateway"  # the call records (section 8.2; store._vouches)
+    roots = run_roots(inp.root, inp.run_dir.parent)  # every worktree's runs/ plus --runs (section 6, R-65)
     ctx = pipeline.Context(
-        store=inp.root / "cache" / "verdicts",
-        # simplify: this worktree's runs/ only. Upgrade trigger: slice 4's scan of every worktree's runs/ (section 6).
-        known_roots=(inp.run_dir.parent,), own_run=inp.run_dir,
+        store=inp.root / "cache" / "verdicts", known_roots=roots, own_run=inp.run_dir,
         stored_by={"ledger": "run", "ledger_id": inp.plan["run_id"], "grading_or_calibration_id": grading_id},
         denylist=scrub.denylist(inp.root, inp.plan), allow_model_calls=inp.allow_model_calls,
         operator=calls.operator if calls else None, secrets=calls.secrets if calls else (),
@@ -95,7 +94,7 @@ def grade(inp: CellInput, calls: Calls | None) -> dict[str, Score]:
     backends = [_backend(e, j, calls, grading_id, archive, stipulation["call_timeout_seconds"]) for e, j in jury]
     names = tuple(sorted({n for e, j in jury if j.qualified and (n := calls.profiles[e["harness"]].credential_name)})
                   ) if calls else ()
-    with judge_pass(calls.cells_root, grading_id, names) if calls else nullcontext():
+    with judge_pass(calls.cells_root, grading_id, names, roots) if calls else nullcontext():
         for metric in judged:
             inputs = _inputs(inp, inp.metrics[metric], task)
             results = [(j.model, pipeline.run(j, inputs, ctx, b)) for (_, j), b in zip(jury, backends, strict=True)]

@@ -26,7 +26,17 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
-from harness_bench import ledger, oslock, procs, profiles, tools, workspace
+from harness_bench import (
+    gitsafe,
+    ledger,
+    oslock,
+    procs,
+    profiles,
+    status,
+    tools,
+    workspace,
+)
+from harness_bench.errors import BenchError
 
 # The judge's system prompt: part of the invocation (section 9.1), so a change is a new invocation_sha256.
 JUDGE_SYSTEM = "You are a grader. You score one artifact against a rubric and answer with one JSON object only."
@@ -228,11 +238,51 @@ def sweep_credentials(cells_root: Path, names: tuple[str, ...], own: str | None 
     return removed
 
 
+def run_roots(repo: Path, runs: Path) -> tuple[Path, ...]:
+    """Section 6 and R-65: the `runs/` of every worktree of `repo` (`git worktree list`), then `runs` (`--runs`),
+    resolved, each once. The cells root is shared across worktrees, but each worktree keeps its own `runs/`.
+
+    A bench root with no `.git` is not a checkout and has no worktrees (a test's temp root): only `runs`. In a
+    checkout, a git failure raises (GitError), so the scan never narrows silently. Residual (DR-GW-4): a run under
+    another `--runs` folder outside every worktree is not seen."""
+    roots: list[Path] = []
+    if (repo / ".git").exists():
+        listing = gitsafe.git(["worktree", "list", "--porcelain"], cwd=repo, timeout=60).stdout
+        roots = [Path(line.removeprefix("worktree ")).resolve() / "runs" for line in listing.splitlines()
+                 if line.startswith("worktree ")]
+    return tuple(dict.fromkeys([*roots, runs.resolve()]))
+
+
+def refuse_if_live(roots: tuple[Path, ...]) -> None:
+    """Section 6 and R-65: HB-GRD-005 when any known run under `roots` has lock liveness `alive` or `stalled`
+    (`status.build`; phase is not consulted). `status.require_known` is the one filter: a folder with no plan.json,
+    such as a calibration ledger, is not a run (T-GW-19c). The refusal names every scanned root and each live run; a
+    stalled one with its lock path and heartbeat age (R-65 c1, c2). A lock is never deleted here."""
+    live = []
+    for root in roots:
+        for run in sorted(p for p in root.iterdir() if p.is_dir()) if root.is_dir() else []:
+            try:
+                status.require_known(run)
+            except BenchError:
+                continue
+            s = status.build(run)
+            if s.liveness == "alive":
+                live.append(f"{run} alive")
+            elif s.liveness == "stalled":
+                live.append(f"{run} stalled (lock {run / '.lock'}, heartbeat {s.lock_age_s} s old)")
+    if live:
+        raise BenchError("HB-GRD-005", f"model calls refused while a run is live; scanned "
+                                       f"{', '.join(map(str, roots))}; {'; '.join(live)}")
+
+
 @contextmanager
-def judge_pass(cells_root: Path, grading_id: str, credential_names: tuple[str, ...]) -> Iterator[None]:
-    """One pass's hold on `<cells root>/gateway/<grading_id>/`: refuse a cells root below an instruction file
-    (HB-PRE-002, `workspace.check_cells_root`), take the pass `.lock`, and sweep leftover credential copies at the
-    start and the end of the pass (section 8.2; T-GW-10, T-GW-26b)."""
+def judge_pass(cells_root: Path, grading_id: str, credential_names: tuple[str, ...],
+               roots: tuple[Path, ...]) -> Iterator[None]:
+    """One pass's hold on `<cells root>/gateway/<grading_id>/`: refuse while any run under `roots` is live
+    (HB-GRD-005, `refuse_if_live`, before the first spawn: every caller that spawns a judge gets it), refuse a cells
+    root below an instruction file (HB-PRE-002, `workspace.check_cells_root`), take the pass `.lock`, and sweep
+    leftover credential copies at the start and the end of the pass (section 8.2; T-GW-10, T-GW-19, T-GW-26b)."""
+    refuse_if_live(roots)
     workspace.check_cells_root(cells_root)
     lock = oslock.RunLock.acquire(cells_root / "gateway" / grading_id / ".lock")
     try:

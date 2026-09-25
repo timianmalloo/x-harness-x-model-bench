@@ -93,7 +93,7 @@
  {
   "name": "calls run outside judge_pass (no cells-root check, no pass lock, no sweep)",
   "file": "src/harness_bench/grade/judge.py",
-  "find": "    with judge_pass(calls.cells_root, grading_id, names) if calls else nullcontext():",
+  "find": "    with judge_pass(calls.cells_root, grading_id, names, roots) if calls else nullcontext():",
   "replace": "    with nullcontext():",
   "tests": ["tests/test_grade_judge.py::test_a_pass_that_may_call_refuses_a_cells_root_below_an_instruction_file_before_any_spawn"]
  },

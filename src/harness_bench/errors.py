@@ -65,6 +65,8 @@ RUN_CODES: dict[str, str] = {
     "HB-GRD-002": "grading step timeout",
     "HB-GRD-003": "grader failed or returned malformed output: its metrics are NA with the exception type, and the pass continues",
     "HB-GRD-004": "grading pass incomplete: a (cell, metric) row is missing, duplicated or outside the applicable set; the pass is not completed",
+    # review w3-gwi-1 A1: the live-run refusal takes its own code; HB-GRD-003 keeps its one meaning (R-65)
+    "HB-GRD-005": "a run is live (lock liveness alive or stalled): judge model calls refused before any spawn",
     "HB-VAL-001": "validity: no model call",
     "HB-VAL-002": "validity: model mismatch",
     "HB-VAL-003": "validity: not recorded (the usage record is missing or unreadable)",
