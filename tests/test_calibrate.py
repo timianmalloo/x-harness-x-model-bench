@@ -10,13 +10,14 @@ placeholder text, and every labels file is written by the test into its temp roo
 import hashlib
 import importlib
 import json
+import shutil
 from pathlib import Path
 
 import pytest
 import yaml
 from test_grade_judge import ANSWER, CLAUDE, ROOT, fake_calls, judged_root, spawns
 
-from harness_bench import ledger
+from harness_bench import config, ledger
 from harness_bench.errors import BenchError
 from harness_bench.grade import judge
 
@@ -340,3 +341,45 @@ def test_t_gw_17b_only_the_labelled_rubric_item_of_the_seven_item_verdict_set_is
     write_labels(root, [label(i, 2) for i, _ in ITEMS])
     calibrate(root, tmp_path, base)
     assert line(root, tmp_path) == f"n = 3 · {SECOND} · vs human labels: {CLAUDE} κ 0.000 (n = 3, exact 2)"
+
+
+# ------------------------------------------------------------------ C1's rubric in the catalog (section 13, R-64)
+R64_NOTE = ("Judged: no proof, model check, trace conformance or test decides whether an architecture note's claims are "
+            "stated and consistent with the code it describes (US-25; R-64).")
+
+
+def _adr_quality(root: Path) -> dict:
+    catalog = yaml.safe_load((root / "bench" / "metrics.yaml").read_text(encoding="utf-8"))
+    [entry] = [m for area in catalog["areas"].values() for m in area["metrics"] if m["id"] == "adr_quality"]
+    return entry
+
+
+def test_c1s_rubric_is_in_the_catalog_with_its_artifact_list_note_and_scale():
+    """Design section 13 in the graders design's field form (`rubrics: {C1: adr_quality.md}` names the file and the
+    task at once), the R-64 note rendered as the preamble, and scale 1 for the synthesized half-steps."""
+    entry = _adr_quality(ROOT)
+    assert (entry.get("rubrics"), entry.get("artifact"), entry.get("scale"), entry.get("note")) == \
+        ({"C1": "adr_quality.md"}, ["docs/architecture.md", "priority_queue.py"], 1, R64_NOTE)
+    assert (ROOT / "bench" / "rubrics" / "adr_quality.md").read_bytes() == \
+        (ROOT / "tasks" / "C1" / "oracle" / "rubric.md").read_bytes()
+    catalog = yaml.safe_load((ROOT / "bench" / "metrics.yaml").read_text(encoding="utf-8"))
+    assert [m["id"] for area in catalog["areas"].values() for m in area["metrics"] if m.get("rubrics")] == \
+        ["adr_quality"]  # every other judged metric: NA `no rubric for this task` (R-59 c2)
+
+
+def test_r64_c2_bench_validate_scans_a_judged_metrics_note_and_rubric_with_the_scrub_denylist(tmp_path):
+    root = tmp_path / "root"
+    shutil.copytree(ROOT / "bench", root / "bench")
+    shutil.copytree(ROOT / "tasks" / "C1", root / "tasks" / "C1")
+    path = root / "bench" / "metrics.yaml"
+    catalog = yaml.safe_load(path.read_text(encoding="utf-8"))
+    area = next(a for a, v in catalog["areas"].items() if any(m["id"] == "adr_quality" for m in v["metrics"]))
+    for m in catalog["areas"][area]["metrics"]:
+        if m["id"] == "adr_quality":
+            m.update(rubrics={"C1": "adr_quality.md"}, note="Judged by an Opus-class reader.")
+    path.write_text(yaml.safe_dump(catalog, sort_keys=False), encoding="utf-8")
+    (root / "bench" / "rubrics").mkdir(exist_ok=True)
+    (root / "bench" / "rubrics" / "adr_quality.md").write_bytes(
+        (ROOT / "tasks" / "C1" / "oracle" / "rubric.md").read_bytes())
+    scanned = [p for p in config.validate_repo(root) if "denylist" in p]
+    assert scanned == [f"bench/metrics.yaml: {area}.adr_quality: note holds a scrub denylist entry (R-64 c2)"]
