@@ -308,6 +308,32 @@ def test_cost_is_na_naming_hb_tel_001_when_the_native_record_misses_a_usage_fiel
     assert s["a", "pass_at_1"]["value"] == 1  # only the measures built from usage are NOT_RECORDED
 
 
+def test_cost_usd_is_unaffected_when_only_the_ai_unit_measure_is_missing_copilot(root, tmp_path):  # R-15 Q6 loop-back (D&P conditions)
+    """`total_nano_aiu` has no `cost_usd` consumer yet (ADR-0006 Amendment 2), so its own absence must
+    never gate `cost_usd` through `ex.missing` -- a column no reader consumes would otherwise silently
+    null a scored metric. A Copilot record with every price-relevant bucket present but `totalNanoAiu`
+    missing must cost exactly what the same record costs with it intact."""
+    set_prices(root, [{"model": CODEX_MODEL, "effective": "2026-09-01", "source": "s", "input": "1.25", "output": 10,
+                       "cache_read": "0.125", "cache_write": 0}])
+    baseline_dir = make_run(root, tmp_path / "baseline", {"a": GOOD}, harness="copilot")
+    baseline = scores(baseline_dir, runner.run_pass(baseline_dir, root).grading_id)
+    assert baseline["a", "cost_usd"]["value"] is not None and baseline["a", "cost_usd"]["reason"] is None
+
+    record_path = next((FIX / "native" / "copilot" / "off").rglob("events.jsonl"))
+    lines = []
+    for line in record_path.read_text(encoding="utf-8").splitlines():
+        row = json.loads(line)
+        if row.get("type") == "session.shutdown":
+            row["data"]["modelMetrics"][CODEX_MODEL].pop("totalNanoAiu", None)
+        lines.append(json.dumps(row))
+    stripped = tmp_path / "stripped-events.jsonl"
+    stripped.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    run_dir = make_run(root, tmp_path / "stripped", {"a": GOOD}, harness="copilot", native_record=stripped)
+    s = scores(run_dir, runner.run_pass(run_dir, root).grading_id)
+    assert (s["a", "cost_usd"]["value"], s["a", "cost_usd"]["reason"]) == (baseline["a", "cost_usd"]["value"], None)
+
+
 def test_a_grading_id_names_its_utc_start_and_a_random_suffix(root, tmp_path):
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     assert re.fullmatch(r"grade-\d{8}T\d{6}-[0-9a-f]{6}", runner.run_pass(run_dir, root).grading_id)

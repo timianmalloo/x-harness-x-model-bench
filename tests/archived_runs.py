@@ -35,6 +35,14 @@ STUB = "def slugify(text):\n    raise NotImplementedError\n"
 HANG = "while True:\n    pass\n"
 CODEX_MODEL = "gpt-6-sol"  # the model in the captured Codex record
 
+# Where a cell's native record lands under its archive `home/`, and the default fixture copied there,
+# by harness (`record_glob` in bench/profiles/*.yaml -- a concrete path this glob must match). A harness
+# with no entry here falls back to the Codex shape (unchanged default; existing callers are unaffected).
+_RECORD_PATH = {"codex": lambda cid: Path("sessions") / "2026" / "09" / f"rollout-2026-09-23-sess-{cid}.jsonl",
+                "copilot": lambda cid: Path("session-state") / f"sess-{cid}" / "events.jsonl"}
+_DEFAULT_RECORD = {"codex": FIX / "native" / "codex" / "ok.jsonl",
+                    "copilot": next((FIX / "native" / "copilot" / "off").rglob("events.jsonl"))}
+
 
 def make_root(tmp_path: Path) -> Path:
     """A bench root with the real X1 task, catalog, profiles and an empty price list."""
@@ -57,12 +65,14 @@ def set_prices(root: Path, entries: list[dict]) -> str:
 def make_run(root: Path, tmp_path: Path, cells: dict[str, str | None], harness: str = "codex", archived: set[str] | None = None,
              timeout: int = 900, turn_usage: list[dict] | None = None, outcomes: dict[str, dict] | None = None,
              model: str = CODEX_MODEL, combos: dict[str, str] | None = None, unstarted: tuple[str, ...] = (),
-             context_window_tag: dict[str, str] | None = None) -> Path:
+             context_window_tag: dict[str, str] | None = None, native_record: Path | None = None) -> Path:
     """An archived run: one cell per entry of `cells` (cell_id -> slug.py source, or None for no working copy).
 
     `outcomes` overrides a cell's `cell.outcome` fields (default: completed); `combos` names each cell's combo;
     `unstarted` adds plan cells that never started (no events); `context_window_tag` sets a cell's
-    `attempt.process_ended.context_window_tag` (R-32; default None, as engine.py records for an untagged cell).
+    `attempt.process_ended.context_window_tag` (R-32; default None, as engine.py records for an untagged cell);
+    `native_record` overrides the default fixture copied to each archived cell's native record path
+    (`_DEFAULT_RECORD[harness]`, Codex when `harness` names none), for a test that needs a mutated record.
     """
     run_dir = tmp_path / "runs" / "r1"
     run_dir.mkdir(parents=True)
@@ -97,9 +107,9 @@ def make_run(root: Path, tmp_path: Path, cells: dict[str, str | None], harness: 
             if source is not None:
                 (folder / "ws").mkdir(parents=True)
                 (folder / "ws" / "slug.py").write_text(source, encoding="utf-8")
-            record = folder / "home" / "sessions" / "2026" / "09" / f"rollout-2026-09-23-sess-{cid}.jsonl"
+            record = folder / "home" / _RECORD_PATH.get(harness, _RECORD_PATH["codex"])(cid)
             record.parent.mkdir(parents=True)
-            shutil.copy(FIX / "native" / "codex" / "ok.jsonl", record)
+            shutil.copy(native_record or _DEFAULT_RECORD.get(harness, _DEFAULT_RECORD["codex"]), record)
             rows = [{"path": f.relative_to(folder).as_posix(), "kind": "file", "size": f.stat().st_size,
                      "sha256": hashlib.sha256(f.read_bytes()).hexdigest(), "link_target": "", "archive_attempt": 1}
                     for f in sorted(folder.rglob("*")) if f.is_file()]
