@@ -254,3 +254,42 @@ def test_cli_cosmic_ray_mode_exits_0_when_every_kill_is_named(tmp_path, capsys):
     out = capsys.readouterr().out
     assert rc == 0
     assert "0 overstated" in out
+
+
+# --- W3-MUT-SWEEP control: a mutation's `find` must occur exactly once in its `file` -----------
+#
+# W3-GW-I slice 3 found ~16 mutants across several files whose `find` text no longer occurred (or,
+# after a guard split into two near-identical branches, occurred twice) in its `file`, because the
+# guarded code moved under a later commit and the mutation spec was never re-pointed. mutate_check's
+# own SKIP path silently counts that as "not killed" and prints one line among many, so it was easy
+# to miss (validity.json's R-15 sweep and views_copilot.json's two mapper mutants, named in the
+# W3-MUT-SWEEP brief). This is a fast, mutation-free count check -- it never runs pytest, never
+# writes a source file -- so it can run on every push and catch the drift the day the guarded code
+# moves, not the next time someone happens to run the slow full mutate_check.py pass by file.
+
+MUTATIONS_DIR = mutate_check.ROOT / "tests" / "mutations"
+
+
+def _mutation_files() -> list[Path]:
+    return sorted(MUTATIONS_DIR.glob("*.json"))
+
+
+def _find_text_occurrences() -> list[tuple[str, str, str, int]]:
+    """(mutation_file_name, mutation_name, target_file, occurrence_count) for every mutation in
+    every tests/mutations/*.json, reading each target file at most once."""
+    cache: dict[str, str] = {}
+    rows: list[tuple[str, str, str, int]] = []
+    for jf in _mutation_files():
+        spec = json.loads(jf.read_text(encoding="utf-8"))
+        for m in spec:
+            if m["file"] not in cache:
+                target = mutate_check.ROOT / m["file"]
+                cache[m["file"]] = target.read_text(encoding="utf-8").replace("\r\n", "\n") if target.is_file() else ""
+            rows.append((jf.name, m["name"], m["file"], cache[m["file"]].count(m["find"])))
+    return rows
+
+
+def test_every_mutation_find_text_occurs_exactly_once_in_its_target_file():
+    stale = [(jf, name, tfile, n) for jf, name, tfile, n in _find_text_occurrences() if n != 1]
+    assert not stale, "stale or ambiguous mutation finds (file, mutant, target, occurrences):\n" + "\n".join(
+        f"  {jf}: {name!r} in {tfile} occurs {n} time(s)" for jf, name, tfile, n in stale)

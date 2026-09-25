@@ -304,6 +304,18 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
                                                            "class Pool:\n    def __init__(self, backend):\n"
                                                            "        self.backend = backend\n\n    def judge(self, p):\n"
                                                            "        return self.backend.judge(p)\n"}),
+        # W3-MUT-SWEEP: the case above is also caught by the `aliases_of_params` disjunct -- `names()` walks
+        # the whole `self.backend` assignment target, so "self" itself is added as an alias of `backend`
+        # whenever the RHS's root traces straight to a param. That made the `receivers`/`tainted` disjunct
+        # itself (is_sink's `base in receivers and bool(attrs) and attrs[0] in tainted`) a survivor: no case
+        # forced the sink through that clause alone. A wrapper call breaks the alias chain -- `_wrap(backend)`'s
+        # root is `_wrap`, not `backend`, so aliases_of_params never gains "self" -- while `tainted` still sees
+        # `backend` inside the RHS (it walks the whole expression), so only the receivers/tainted clause fires.
+        "self-attribute-tainted-through-a-wrapper": (True, {gw + "cli.py": cli, gw + "__init__.py": released, gw + "pool.py":
+                                                             "def _wrap(x):\n    return x\n\nclass Pool:\n"
+                                                             "    def __init__(self, backend):\n"
+                                                             "        self.backend = _wrap(backend)\n\n    def judge(self, p):\n"
+                                                             "        return self.backend.judge(p)\n"}),
         # Review w3-gwi-1 F2 (Fable): a local alias of an injected backend is still the backend; the exact probe P4.
         "a-local-alias-of-an-injected-backend": (True, {gw + "cli.py": cli, gw + "__init__.py": released, gw + "leak.py":
                                                         "def _leak(backend: Backend, text: str):\n    b = backend\n"

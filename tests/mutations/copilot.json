@@ -51,15 +51,15 @@
   {
     "name": "command placeholders must expand",
     "file": "src/harness_bench/profiles.py",
-    "find": "return [part.replace(\"{exe}\", values[\"exe\"]).replace(\"{model}\", values[\"model\"] or \"\")",
-    "replace": "return [part.replace(\"{exe}\", \"{exe}\").replace(\"{model}\", values[\"model\"] or \"\")",
+    "find": "argv = [part.replace(\"{exe}\", values[\"exe\"]).replace(\"{model}\", values[\"model\"] or \"\")",
+    "replace": "argv = [part.replace(\"{exe}\", \"{exe}\").replace(\"{model}\", values[\"model\"] or \"\")",
     "tests": ["tests/test_profiles.py::test_copilot_argv_uses_the_pinned_exe_and_each_cells_model"]
   },
   {
     "name": "argv template leaves unrelated braces literal",
     "file": "src/harness_bench/profiles.py",
-    "find": "return [part.replace(\"{exe}\", values[\"exe\"]).replace(\"{model}\", values[\"model\"] or \"\")\n                .replace(\"{node}\", values.get(\"node\", \"\")).replace(\"{adapter}\", values.get(\"adapter\", \"\"))\n                for part in self.command]",
-    "replace": "return [part.format_map(values) for part in self.command]",
+    "find": "argv = [part.replace(\"{exe}\", values[\"exe\"]).replace(\"{model}\", values[\"model\"] or \"\")\n                .replace(\"{node}\", values.get(\"node\", \"\")).replace(\"{adapter}\", values.get(\"adapter\", \"\"))\n                for part in self.command]",
+    "replace": "argv = [part.format_map(values) for part in self.command]",
     "tests": ["tests/test_profiles.py::test_command_template_preserves_literal_braces"]
   },
   {
@@ -100,8 +100,8 @@
   {
     "name": "cell model reaches argv template",
     "file": "src/harness_bench/profiles.py",
-    "find": "self.profile.argv(self.build, cell[\"model\"])",
-    "replace": "self.profile.argv(self.build, \"gpt-6-sol\")",
+    "find": "self.profile.argv(self.build, cell[\"model\"], mcp_config=cell.get(\"mcp_config\"))",
+    "replace": "self.profile.argv(self.build, \"gpt-6-sol\", mcp_config=cell.get(\"mcp_config\"))",
     "tests": ["tests/test_profiles.py::test_copilot_launcher_fills_each_cells_model_and_finds_its_record"]
   },
   {

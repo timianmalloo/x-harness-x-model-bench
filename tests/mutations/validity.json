@@ -122,9 +122,9 @@
  },
  {
   "name": "R-15 sweep: a truncated record is priced from its partial sum",
-  "file": "src/harness_bench/grade/runner.py",
-  "find": "        elif source == \"native_record\" and unreadable is not None:",
-  "replace": "        elif False:",
+  "file": "src/harness_bench/grade/cost.py",
+  "find": "    if source == \"native_record\" and unreadable is not None:  # e.g. truncated: never a price on a partial sum (R-15)",
+  "replace": "    if False:  # e.g. truncated: never a price on a partial sum (R-15)",
   "tests": [
    "tests/test_grade.py::test_a_truncated_record_has_no_cost_from_a_partial_sum"
   ]

@@ -188,10 +188,15 @@ def test_command_template_preserves_literal_braces(tmp_path):
 
 @pytest.mark.parametrize("command", [None, []])
 def test_profile_load_rejects_missing_or_empty_command(tmp_path, command):
+    # W3-MUT-SWEEP: shutdown_grace_seconds is set so this raises for the command guard alone -- an
+    # omitted grace also raises HB-USR-002 (line 133), which masked "profile command cannot be
+    # empty" (tests/mutations/copilot.json) for the command=[] case: that mutation removed `not
+    # command` from the line-127 check, the empty-command case fell through, and the test still
+    # passed because the later grace check raised the same coded error for an unrelated reason.
     profile_dir = tmp_path / "bench" / "profiles"
     profile_dir.mkdir(parents=True)
     data = {"harness": "copilot", "home_env": "COPILOT_HOME", "credential": None,
-            "record_glob": "events.jsonl"}
+            "record_glob": "events.jsonl", "shutdown_grace_seconds": 10}
     if command is not None:
         data["command"] = command
     import yaml
