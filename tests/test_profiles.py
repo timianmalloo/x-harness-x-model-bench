@@ -5,6 +5,7 @@ import json
 import shutil
 import subprocess
 import time
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -289,6 +290,14 @@ def test_codex_profile_pins_the_model_and_uses_full_access(tmp_path):
     assert 'model = "gpt-6-sol"' in (tmp_path / "home" / "config.toml").read_text(encoding="utf-8")
     assert 'web_search = "disabled"' in (tmp_path / "home" / "config.toml").read_text(encoding="utf-8")
     assert p.mode == "agent-full-access"
+
+
+def test_codex_profile_disables_account_apps_in_each_seeded_home(tmp_path):
+    p = profiles.load(ROOT, "codex", credential_source=tmp_path / "auth.json")
+    home = tmp_path / "home"
+    p.seed_home(home, model="gpt-6-sol")
+    config = tomllib.loads((home / "config.toml").read_text(encoding="utf-8"))
+    assert config["features"]["apps"] is False
 
 
 def test_cell_env_is_clean_pinned_and_turns_build_servers_off(tmp_path):
