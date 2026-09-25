@@ -95,7 +95,7 @@ class Operator:
 
 
 def check(payload: str, *, destination: str, operator: Operator, secrets: Sequence[str] = (),
-          canaries: Sequence[str] = ()) -> Verdict:
+          canaries: Sequence[str] = (), token_prefixes: Sequence[str] = ()) -> Verdict:
     """Scan `payload` bound for `destination`.
 
     Every value is supplied by the caller at run time and is never stored or returned: `secrets` are the

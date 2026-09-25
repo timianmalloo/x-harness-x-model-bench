@@ -78,13 +78,29 @@ def test_a_credential_value_is_withheld_in_each_encoding(encode):
     lambda: "sk-proj-" + token_hex(20),
     lambda: "ghp_" + token_hex(18),
     lambda: "eyJ" + ".".join(token_hex(8) for _ in range(3)),
-], ids=["anthropic", "openai", "github", "jwt"])
+    lambda: "github_pat_" + token_hex(11) + "_" + token_hex(20),
+    lambda: "xai-" + token_hex(20),
+    lambda: "AIza" + token_hex(18)[:35],
+], ids=["anthropic", "openai", "github", "jwt", "github-fine-grained", "xai", "google"])
 def test_a_token_shaped_string_is_withheld(make):
     # Each value is random hex in a known token's shape: it matches the pattern and authenticates nothing.
     text = _plant(make())
     verdict = egress.check(text, destination=DEST, operator=_operator())
     assert verdict.classes == ("token_shape",)
     assert (verdict.reason, verdict.payload_sha256) == ("withheld: sensitive content", _sha(text))
+
+
+def test_a_token_with_one_of_the_operators_prefixes_is_withheld():
+    # US-47 "the operator's token prefixes", supplied at run time (D&P Major 2).
+    prefix = f"tp{token_hex(3)}-"
+    text = _plant(f"key: {prefix}{token_hex(12)}")
+    verdict = egress.check(text, destination=DEST, operator=_operator(), token_prefixes=[prefix])
+    assert verdict.classes == ("token_prefix",)
+    assert "token_prefix" in verdict.scanned
+    assert (verdict.reason, verdict.payload_sha256) == ("withheld: sensitive content", _sha(text))
+    # The prefix alone, with no token body after it, is prose about the prefix, not a token.
+    assert egress.check(_plant(f"our prefix is {prefix} ok"), destination=DEST, operator=_operator(),
+                        token_prefixes=[prefix]).classes == ()
 
 
 @pytest.mark.parametrize("form", [str, str.upper], ids=["as-given", "other-case"])
