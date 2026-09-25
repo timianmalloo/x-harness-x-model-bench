@@ -7,6 +7,7 @@ from the held-out set (R-39 c2), which these tests never open.
 import hashlib
 import json
 import subprocess
+import threading
 import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,6 +17,7 @@ import yaml
 
 from harness_bench.errors import BenchError
 from harness_bench.scripted_user import clarifications as clar
+from harness_bench.scripted_user import log as sulog
 from harness_bench.scripted_user import matcher
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -207,7 +209,7 @@ def test_t37_r_reply_is_clarification_text_or_exact_default():
         assert cset.reply_for(matcher.match(question, cset.clarifications)) == reply
 
 
-A1_QUESTION = "Does “find the sum” mean we should find the maximum possible total value or any valid total value?"
+A1_QUESTION = "Does \u201cfind the sum\u201d mean we should find the maximum possible total value or any valid total value?"
 A1_REPLY = "It means to find the maximum possible total value of the chosen balls."
 
 
@@ -223,10 +225,10 @@ def test_a1_annotated_question_gets_its_reply():
 
 # Written by this track from the annotation and the rule table only; never from the held-out set (R-39 c2).
 A1_NEAR_MISSES = [
-    "Does “find the sum” mean we should find the minimum possible total value or any valid total value?",
-    "Does “find the sum” mean we should find the maximum possible total value?",
+    "Does \u201cfind the sum\u201d mean we should find the minimum possible total value or any valid total value?",
+    "Does \u201cfind the sum\u201d mean we should find the maximum possible total value?",
     "Does find the sum mean we should find the maximum possible total value or any valid total value?",
-    "Does “find the sums” mean we should find the maximum possible total value or any valid total value?",
+    "Does \u201cfind the sums\u201d mean we should find the maximum possible total value or any valid total value?",
     "Should we find the maximum possible total value?",
 ]
 
@@ -294,3 +296,163 @@ def test_t39_4c_ambiguous_clarifications_rejected(tmp_path, items, reason):
     with pytest.raises(BenchError) as caught:
         clar.load(path)
     assert (caught.value.code, caught.value.message) == ("HB-USR-002", f"{path}: {reason}")
+
+
+# --- the log (design section 8): bench-scripted-user-log/1 ---
+
+class Clock:
+    """A fake monotonic clock: each read returns the next value."""
+
+    def __init__(self, *values: float) -> None:
+        self.values = list(values)
+
+    def __call__(self) -> float:
+        return self.values.pop(0)
+
+
+def _rows(path: Path) -> list[dict]:
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+
+
+def test_log_rows_carry_question_decision_reply_and_the_key(tmp_path):
+    cset = clar.load(Z0)
+    writer = sulog.LogWriter(tmp_path / "scripted-user.jsonl", clock=Clock(100.0, 112.4))
+    writer.header(cset, "env")
+    writer.initialize({"name": "claude-code", "version": "2.1.282"}, "2025-11-25", "2025-11-25")
+    writer.tools_listed()
+    result = matcher.match("what is the maximum input size", cset.clarifications)
+    writer.call("what is the maximum input size", result, cset.reply_for(result), cset)
+    assert _rows(tmp_path / "scripted-user.jsonl") == [
+        {"kind": "header", "schema": "bench-scripted-user-log/1", "task": "Z0", "clarifications_sha256": cset.sha256,
+         "matcher_version": matcher.MATCHER_VERSION, "log_source": "env"},
+        {"kind": "initialize", "client": {"name": "claude-code", "version": "2.1.282"}, "protocol_version": "2025-11-25",
+         "requested_protocol_version": "2025-11-25"},
+        {"kind": "tools_listed"},
+        {"kind": "call", "seq": 1, "t": 12.4, "question": "what is the maximum input size",
+         "question_sha256": hashlib.sha256(b"what is the maximum input size").hexdigest(),
+         "clarifications_sha256": cset.sha256, "matcher_version": matcher.MATCHER_VERSION,
+         "decision": {"clarification": "size-bound", "rung": "normalised"}, "reply": "At most 100000 items."},
+    ]
+
+
+def test_an_invalid_question_row_names_its_reason_and_survives_a_lone_surrogate(tmp_path):
+    cset = clar.load(Z0)
+    writer = sulog.LogWriter(tmp_path / "log.jsonl", clock=Clock(0.0, 1.0))
+    result = matcher.match("a\ud800b", cset.clarifications)
+    writer.call("a\ud800b", result, cset.reply_for(result), cset)
+    (row,) = _rows(tmp_path / "log.jsonl")
+    assert (row["question"], row["invalid"], row["decision"], row["reply"]) == (
+        "a\ud800b", "lone surrogate", {"clarification": None, "rung": "none"}, DEFAULT)
+    assert row["question_sha256"] == hashlib.sha256(b"a\xed\xa0\x80b").hexdigest()
+
+
+def test_seq_is_assigned_under_one_lock(tmp_path):
+    cset = clar.load(Z0)
+    writer = sulog.LogWriter(tmp_path / "log.jsonl")
+    result = matcher.MatchResult(None, "none")
+
+    def ask() -> None:
+        for _ in range(25):
+            writer.call("q", result, DEFAULT, cset)
+
+    threads = [threading.Thread(target=ask) for _ in range(8)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert sorted(r["seq"] for r in _rows(tmp_path / "log.jsonl")) == list(range(1, 201))
+
+
+HEADER = {"kind": "header", "schema": "bench-scripted-user-log/1", "task": "Z0"}
+INIT = {"kind": "initialize", "client": None, "protocol_version": "2025-06-18", "requested_protocol_version": None}
+LISTED = {"kind": "tools_listed"}
+CALL = {"kind": "call", "seq": 1}
+
+
+@pytest.mark.parametrize("rows, end", [
+    ([HEADER, INIT, LISTED, CALL],
+     {"kind": "end", "calls": 1, "client_initialized": True, "tool_listed": True}),
+    ([HEADER, INIT, LISTED],
+     {"kind": "end", "calls": 0, "client_initialized": True, "tool_listed": True, "note": "no question asked"}),
+    ([HEADER, INIT],
+     {"kind": "end", "calls": 0, "client_initialized": True, "tool_listed": False, "note": "tool not reached"}),
+    ([HEADER],
+     {"kind": "end", "calls": 0, "client_initialized": False, "tool_listed": False, "note": "tool not reached"}),
+], ids=["asked", "no-question-asked", "initialized-not-listed", "not-reached"])
+def test_end_row_separates_asked_nothing_from_could_not_ask(rows, end):
+    assert sulog.end_row(rows, torn_tail=False) == end
+
+
+def test_end_row_records_a_torn_tail():
+    assert sulog.end_row([HEADER, INIT, LISTED], torn_tail=True)["torn_tail"] is True
+    assert "torn_tail" not in sulog.end_row([HEADER, INIT, LISTED], torn_tail=False)
+
+
+def test_a_torn_last_line_is_not_a_row():
+    assert sulog.read_rows('{"kind":"header"}\n{"kind":"ca') == ([{"kind": "header"}], True)
+    assert sulog.read_rows('{"kind":"header"}\n{"kind":"call"}') == ([{"kind": "header"}], True)  # no newline yet
+    assert sulog.read_rows('{"kind":"header"}\n') == ([{"kind": "header"}], False)
+    assert sulog.read_rows("") == ([], False)
+
+
+def test_a_corrupt_middle_line_is_refused():
+    with pytest.raises(BenchError) as caught:
+        sulog.read_rows('{"kind":"header"}\nnot json\n{"kind":"call"}\n')
+    assert (caught.value.code, caught.value.message) == ("HB-USR-002", "scripted-user log line 2 is not a JSON object")
+
+
+def test_close_log_appends_the_end_row(tmp_path):
+    path = tmp_path / "scripted-user.jsonl"
+    before = "".join(json.dumps(r) + "\n" for r in (HEADER, INIT, LISTED))
+    path.write_text(before, encoding="utf-8")
+    end = sulog.close_log(path, header={"kind": "header", "task": "from-plan"})
+    assert end["note"] == "no question asked"
+    assert path.read_text(encoding="utf-8").startswith(before)
+    assert _rows(path)[-1] == end
+
+
+def test_close_log_never_leaves_the_file_absent_or_empty(tmp_path):
+    path = tmp_path / "scripted-user.jsonl"
+    end = sulog.close_log(path, header={"kind": "header", "task": "from-plan"})
+    assert _rows(path) == [{"kind": "header", "task": "from-plan"}, end]
+    assert end == {"kind": "end", "calls": 0, "client_initialized": False, "tool_listed": False, "note": "tool not reached"}
+
+
+def test_close_log_drops_a_torn_tail_and_writes_a_missing_header_first(tmp_path):
+    path = tmp_path / "scripted-user.jsonl"
+    path.write_text(json.dumps(INIT) + "\n" + '{"kind":"ca', encoding="utf-8")
+    end = sulog.close_log(path, header={"kind": "header", "task": "from-plan"})
+    assert _rows(path) == [{"kind": "header", "task": "from-plan"}, INIT, end]
+    assert end["torn_tail"] is True
+
+
+# --- T-39-3b: a re-grade under the same matcher version reads the stored decision and never re-matches ---
+
+def _stored_call(question: str, decision: dict, cset, version: str = matcher.MATCHER_VERSION) -> dict:
+    return {"kind": "call", "seq": 1, "question": question, "question_sha256": matcher.question_sha256(question),
+            "clarifications_sha256": cset.sha256, "matcher_version": version, "decision": decision}
+
+
+def test_t39_3b_regrade_reads_stored_decisions():
+    cset = clar.load(Z0)
+    # A stored decision the current table would not make: only a read of the store can return it.
+    stored = {"clarification": "order-ascending", "rung": "exact"}
+    store = sulog.stored_decisions([HEADER, _stored_call("What is the minimum input size?", stored, cset)])
+    assert store == {matcher.cache_key("What is the minimum input size?", cset.sha256): stored}
+    assert sulog.decide("What is the minimum input size?", cset, store) == stored
+
+
+def test_t39_3b_another_matcher_version_is_a_new_decision_under_its_own_key():
+    cset = clar.load(Z0)
+    stored = {"clarification": "order-ascending", "rung": "exact"}
+    store = sulog.stored_decisions([_stored_call("What is the minimum input size?", stored, cset, "t0-older")])
+    assert sulog.decide("What is the minimum input size?", cset, store) == {"clarification": None, "rung": "none"}
+
+
+def test_two_stored_decisions_for_one_key_are_refused():
+    cset = clar.load(Z0)
+    rows = [_stored_call("q", {"clarification": None, "rung": "none"}, cset),
+            {**_stored_call("q", {"clarification": "size-bound", "rung": "exact"}, cset), "seq": 2}]
+    with pytest.raises(BenchError) as caught:
+        sulog.stored_decisions(rows)
+    assert (caught.value.code, caught.value.message) == ("HB-USR-002", "call seq 2: a second decision for one match key")
