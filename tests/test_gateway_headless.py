@@ -114,3 +114,24 @@ def test_t_gw_32_an_unqualified_judge_is_never_spawned(tmp_path, base):
     # the gate comes before the store: not even a cache-only pass reads a verdict for it (design 10.1)
     result = pipeline.run(unqualified, INPUTS, _ctx(tmp_path, allow_model_calls=False), _launch(tmp_path, base / "c2"))
     assert (result.outcome, result.code) == ("failed", "HB-GW-007")
+
+
+# --------------------------------------------------------------------------------------------------- T-GW-07
+def test_t_gw_07_the_served_model_is_read_from_the_record_not_stdout(tmp_path, base):
+    # The spike's Opus record (the R-58 fallback, served when asked for) replayed under the Fable pin, with a stdout
+    # whose self-report says Fable: the record decides (review A5), and nothing is stored.
+    launch = _launch(tmp_path, base / "cells", record=RECORDS / "claude-opus-text.record.jsonl",
+                     stdout=RECORDS / "claude-fable-text.stdout.json")
+    result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path), launch)
+    assert (result.outcome, result.code, result.verdicts) == ("failed", "HB-GW-003", None)
+    assert not list((tmp_path / "cache" / "verdicts").glob("*.json"))
+    assert len(_captured(tmp_path)) == 1
+
+
+def test_t_gw_07_the_pin_in_the_record_is_stored_even_when_stdout_names_another_model(tmp_path, base):
+    launch = _launch(tmp_path, base / "cells", record=RECORDS / "claude-fable-text.record.jsonl",
+                     stdout=RECORDS / "claude-opus-text.stdout.json")
+    result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path), launch)
+    assert (result.outcome, result.code) == ("stored", None)
+    entry = json.loads((tmp_path / "cache" / "verdicts" / f"{result.cache_key}.json").read_text(encoding="utf-8"))
+    assert entry["served_models"] == [PIN]
