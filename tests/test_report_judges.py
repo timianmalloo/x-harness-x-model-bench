@@ -112,3 +112,51 @@ def test_t_gw_27_pairs_join_the_two_judges_verdicts_per_cell_and_item():
         "items judged 4 · exact 2 · within one step 3 · disagreements 1"
 
 
+# ------------------------------------------------------------------------------------ T-GW-29 and T-GW-34
+def judged_run(tmp_path: Path, base: Path) -> tuple[Path, Path, str]:
+    """A calibrated root (three synthetic items, no labels file) and one run graded with calls allowed: the qualified
+    judge stores one verdict set; the unqualified judge is never spawned."""
+    root = cal_root(tmp_path)
+    calibrate(root, tmp_path, base)
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    (tmp_path / "pass").mkdir()
+    calls = fake_calls(tmp_path / "pass", base / "cells-pass", judge.Calls)
+    gid = runner.run_pass(run_dir, root, judge.calling(calls)).grading_id
+    return root, run_dir, gid
+
+
+def _dd(page: str, term: str) -> str:
+    start = page.index(f"<dt>{term}</dt><dd>") + len(f"<dt>{term}</dt><dd>")
+    return page[start:page.index("</dd>", start)]
+
+
+def test_t_gw_29_the_header_names_both_judges_their_served_ids_and_the_unqualified_one(tmp_path, base):
+    assert judges is not None, NOT_BUILT
+    root, run_dir, _ = judged_run(tmp_path, base)
+    page = html.render(views.load(run_dir), False, run_dir, root=root, operator=PLACEHOLDER)
+    assert _dd(page, "Judges") == (f"{CLAUDE} (anthropic, claude-code 2.1.282): qualified; served {CLAUDE} · "
+                                   "gpt-6-sol (openai, codex 0.156.0): not qualified; served not recorded")
+    assert _dd(page, "Second judge") == "not qualified"  # R-63 c3
+    assert _dd(page, "CLI-added context") == f"{CLAUDE}: email · gpt-6-sol: no call in this pass"
+    assert _dd(page, "Calibration (C1)") == ("n = 3 · inter-judge κ: not recorded: second judge not qualified · vs "
+                                             "human labels: not recorded: no human labels (operator declined 2026-09-25)")
+    assert _dd(page, "Calibration disclosure") == \
+        "Calibration items were written by claude-opus-5-5; the Anthropic judge is a Claude model."  # R-62 a3
+    assert _dd(page, "Agreement on this run") == "not recorded: second judge not qualified"
+    assert _dd(page, "Verdict split by cell vendor") == "not recorded: second judge not qualified"
+    assert _dd(page, "Judge spend") == f"{CLAUDE}: 1 call(s), 1123 tokens · gpt-6-sol: 0 call(s)"
+    assert _dd(page, "Live-run scan") == ("judge calls are refused while a run is live under any worktree's runs/ or "
+                                          "--runs; a run under a --runs folder outside every worktree is not seen "
+                                          "(R-65 c3)")
+
+
+def test_t_gw_29_without_the_operators_identifiers_the_cli_context_is_not_recorded_and_no_pass_no_block(tmp_path,
+                                                                                                        base):
+    assert judges is not None, NOT_BUILT
+    root, run_dir, _ = judged_run(tmp_path, base)
+    page = html.render(views.load(run_dir), False, run_dir, root=root)
+    assert _dd(page, "CLI-added context") == "not recorded: the operator's identifiers were not supplied"
+    other = make_run(root, tmp_path / "other", {"a": GOOD}, combos={"a": "combo-placeholder"})
+    assert "<dt>Judges</dt>" not in html.render(views.load(other), False, other, root=root)  # no judge pass
+
+
