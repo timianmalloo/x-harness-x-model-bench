@@ -5,13 +5,14 @@ grader is replaced only through `runner.GRADERS`, the one seam the design names.
 catalog's `kind: score` metrics of each grader, written out here so a catalog edit is visible in this file.
 """
 
+import shutil
 from decimal import Decimal
 
 import pytest
 import yaml
 from archived_runs import CODEX_MODEL, GOOD, ROOT, make_root, make_run, pass_rows
 
-from harness_bench import config, ledger, views
+from harness_bench import config, ledger, plan, views
 from harness_bench.errors import BenchError
 from harness_bench.grade import Score, runner
 
@@ -145,3 +146,33 @@ def test_validate_task_rejects_a_grader_listed_twice(root):
     p = config.Problems()
     config.validate_task(root / "tasks" / "X1", entry, p, config.grader_modules(ROOT), config.pack_marker_bytes(ROOT))
     assert p.items == ["tasks/X1: grader 'cost' is listed more than once"]
+
+
+# --- the tasks freeze (R-59 c5; seam V-3) -------------------------------------------------------------------------
+
+
+def frozen_root(tmp_path, frozen: str | None):
+    """A root with the real bench/ and tasks/X1, and a freeze record naming X1 (None: X1's current hash)."""
+    r = tmp_path / "frozen"
+    shutil.copytree(ROOT / "bench", r / "bench")
+    shutil.copytree(ROOT / "tasks" / "X1", r / "tasks" / "X1")
+    actual = plan.task_version_hash(r / "tasks" / "X1")
+    (r / "bench" / "task-freeze.yaml").write_text(yaml.safe_dump({"schema": "bench-task-freeze/1", "tasks": {"X1": frozen or actual}}),
+                                                  encoding="utf-8")
+    return r, actual
+
+
+def test_validate_fails_a_changed_frozen_task(tmp_path):  # F7
+    r, actual = frozen_root(tmp_path, "0" * 64)
+    assert f"tasks/X1 changed while frozen (R-59 c5): {actual} != {'0' * 64}" in config.validate_repo(r)
+
+
+def test_validate_passes_an_unchanged_frozen_task(tmp_path):
+    r, _ = frozen_root(tmp_path, None)
+    assert [p for p in config.validate_repo(r) if "while frozen" in p] == []
+
+
+def test_the_committed_freeze_record_names_the_four_gate_tasks_and_they_are_unchanged():  # L-1 (1c63c42)
+    freeze = config.load_yaml(ROOT / "bench" / "task-freeze.yaml")
+    assert sorted(freeze["tasks"]) == ["A1", "C1", "D1", "E6"]
+    assert {t: plan.task_version_hash(ROOT / "tasks" / t) for t in freeze["tasks"]} == freeze["tasks"]
