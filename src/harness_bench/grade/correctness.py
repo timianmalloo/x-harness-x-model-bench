@@ -281,6 +281,43 @@ def build_and_suite_clean(inp: CellInput, oracle: dict, timeout: float) -> Score
     return Score(int(last.returncode == 0 and len(steps) > 1 if kind == "dotnet" else last.returncode == 0), None, evidence)
 
 
+def build_tree(
+    tree: Path,
+    flags: tuple[str, ...],
+    timeout: float,
+    started: float,
+    log: list[str],
+) -> tuple[list[str], str | None]:
+    """Build all csproj projects in `tree` with dotnet, recording steps to `log`.
+
+    Returns (stdout_list, failure_reason). failure_reason is None on success.
+    """
+    projects = sorted(p.relative_to(tree).as_posix() for p in tree.rglob("*.csproj") if p.is_file())
+    if not projects:
+        return [], NOT_BUILDING
+    steps = [["dotnet", "--version"], *(["dotnet", "build", p, *flags] for p in projects)]
+    env = _env() | {k: os.environ[k] for k in DOTNET_HOST_ENV if k in os.environ}
+    outputs: list[str] = []
+    last = None
+    for argv in steps:
+        remaining = timeout - (time.monotonic() - started)
+        last = procs.run(argv, cwd=tree, env=env, timeout=remaining) if remaining > 0 else None
+        log.append(
+            f"{tree.name}: $ {' '.join(argv)}\nexit {last.returncode if last else 'not run'}\n"
+            f"--- stdout\n{last.stdout if last else ''}\n--- stderr\n{last.stderr if last else ''}\n"
+        )
+        if not last or last.timed_out:
+            return outputs, f"HB-GRD-002 grading step timeout after {timeout:g} s"
+        if last.returncode != 0:
+            if argv == ["dotnet", "--version"]:
+                return outputs, SDK
+            if build_failure(last.stdout) == "restore":
+                return outputs, RESTORE
+            return outputs, NOT_BUILDING
+        outputs.append(last.stdout)
+    return outputs, None
+
+
 def public_tests(task_dir: Path, kind: str) -> list[str]:
     """The task's public tests, relative to its workspace and sorted: for dotnet every `*.csproj` that references
     Microsoft.NET.Test.Sdk (D1: tests/AiDe.Core.Tests; its AcpProbe and TerminalHost are not test projects), for
