@@ -121,7 +121,7 @@ def test_output_tokens_per_turn_is_na_when_a_row_requests_is_zero():
 def test_cache_hit_ratio_is_reads_over_reads_plus_uncached():
     ex = Extraction(model_calls=[call(uncached_input=100, cache_read=300, output=10)])
     scores = grade_cell(ci(extraction=ex, model_calls=[row(uncached_input=100, cache_read=300, output=10)]))
-    assert scores["cache_hit_ratio"] == Score(75, None)  # 300 / (100 + 300) * 100
+    assert scores["cache_hit_ratio"] == Score(Decimal("75.0000"), None)  # 300 / (100 + 300) * 100
 
 
 def test_cache_hit_ratio_is_na_with_no_input_tokens():
@@ -136,7 +136,7 @@ def test_cache_hit_ratio_is_na_with_no_input_tokens():
 def test_cache_write_amplification_is_writes_over_reads():
     ex = Extraction(model_calls=[call(cache_read=200, cache_write=50, output=10)])
     scores = grade_cell(ci(extraction=ex, model_calls=[row(cache_read=200, cache_write=50, output=10)]))
-    assert scores["cache_write_amplification"] == Score(25, None)  # 50 / 200 * 100
+    assert scores["cache_write_amplification"] == Score(Decimal("25.0000"), None)  # 50 / 200 * 100
 
 
 def test_cache_write_amplification_is_na_with_no_cache_activity():

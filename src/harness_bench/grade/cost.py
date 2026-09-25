@@ -102,6 +102,11 @@ def _round(numerator: int, denominator: int) -> int:
     return int((Decimal(numerator) / Decimal(denominator)).to_integral_value(rounding=ROUND_HALF_UP))
 
 
+def _percent(numerator: int, denominator: int) -> Decimal:
+    """A percentage at the catalog's scale 4: an integer percent read 100 for every harness at real cache rates."""
+    return (Decimal(numerator) * 100 / Decimal(denominator)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
+
+
 def _tokens_per_minute(totals: dict[str, dict[str, int]], source: str, model_calls: tuple) -> Score:
     """Total tokens / model-busy-minutes. Busy time is `views.busy_ms` on the extraction's model-call spans, the
     same reader `views.py` uses for `model_ms` -- including its acp_turn gate (that record misses calls, G1), so
@@ -132,7 +137,7 @@ def _cache_hit_ratio(totals: dict[str, dict[str, int]]) -> Score:
     uncached, read = _sum_bucket(totals, "uncached_input"), _sum_bucket(totals, "cache_read")
     if uncached + read == 0:
         return Score(None, NO_INPUT_TOKENS)
-    return Score(_round(read * 100, uncached + read), None)
+    return Score(_percent(read, uncached + read), None)
 
 
 def _cache_write_amplification(totals: dict[str, dict[str, int]]) -> Score:
@@ -143,7 +148,7 @@ def _cache_write_amplification(totals: dict[str, dict[str, int]]) -> Score:
         return Score(None, NO_CACHE_ACTIVITY)
     if read == 0:
         return Score(None, NO_CACHE_READS)
-    return Score(_round(write * 100, read), None)
+    return Score(_percent(write, read), None)
 
 
 def _context_growth(totals: dict[str, dict[str, int]], source: str, model_calls: tuple) -> Score:
