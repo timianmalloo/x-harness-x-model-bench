@@ -214,6 +214,41 @@ def test_render_without_a_run_dir_reads_not_recorded(root, tmp_path):  # render(
     assert "<dt>Context window</dt><dd>not recorded</dd>" in header
 
 
+# --- R-34: the effective permission mode of Claude Code cells is in the header ------------------------------
+# Read from `attempt.session_opened.permission_mode_effective` (what the session reported), not the profile's
+# declared `defaultMode` (dontAsk falls back to default in the ACP session).
+
+PERMISSION_ROW = "<dt>Claude Code permission mode (effective)</dt>"
+
+
+def _with_modes(run_dir, modes: dict):
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
+        for cid, mode in modes.items():
+            ev.append({"kind": "attempt.session_opened", "cell_id": cid, "session_id": f"sess-{cid}",
+                       "permission_mode_effective": mode})
+    return run_dir
+
+
+def _header_of(run_dir):
+    doc = html.render(views.load(run_dir), archive_present=True, run_dir=run_dir)
+    return re.search(r'<section id="header".*?</section>', doc, re.DOTALL).group(0)
+
+
+def test_the_header_shows_the_effective_permission_mode_of_claude_code_cells(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, harness="claude-code", model="claude-opus-5-5", combos={"a": "cc-opus"})
+    assert f"{PERMISSION_ROW}<dd>default</dd>" in _header_of(_with_modes(run_dir, {"a": "default"}))
+
+
+def test_the_header_reads_not_recorded_for_a_claude_code_cell_without_the_mode(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, harness="claude-code", model="claude-opus-5-5")  # pre-R-34 events
+    assert f"{PERMISSION_ROW}<dd>not recorded</dd>" in _header_of(run_dir)
+
+
+def test_the_header_has_no_claude_code_permission_row_without_a_claude_code_cell(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"b": GOOD}, harness="codex", combos={"b": "codex-sol"})
+    assert PERMISSION_ROW not in _header_of(_with_modes(run_dir, {"b": "agent-full-access"}))
+
+
 def test_the_page_makes_no_network_request_and_has_no_script(page):
     assert not re.search(r"https?://|<script|@import|url\(|<link", page)
 

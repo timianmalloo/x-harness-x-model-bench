@@ -589,6 +589,13 @@ def test_the_session_opened_event_carries_the_agent_version(base):  # R-28: one 
     assert [e["agent_version"] for e in opened] == ["0"]  # the fake agent's initialize.agentInfo.version
 
 
+def test_the_session_opened_event_carries_the_effective_permission_mode(base):  # R-34 condition 4
+    from test_engine import FakeLauncher, _plan, _run
+    _, events, _ = _run(base, _plan(n_cells=1), FakeLauncher({}))
+    opened = [e for e in events if e["kind"] == "attempt.session_opened"]
+    assert [e["permission_mode_effective"] for e in opened] == ["agent"]  # the fake agent's session/new currentModeId
+
+
 def test_the_attempt_end_records_the_acp_usage_verbatim_or_null(base):  # R-24
     from test_engine import USAGE, FakeLauncher, _plan, _run
     p = _plan(n_cells=2, labels=["with-usage", "no-usage"])
@@ -681,6 +688,28 @@ def test_the_agent_version_is_null_when_initialize_has_no_agent_info(tmp_path): 
 
     result, _, _ = _replay(tmp_path, _derive(ACP_FIX / "recordings" / "claude-code-x1.jsonl", tmp_path, no_agent_info))
     assert result.cause is None and result.agent_version is None
+
+
+@pytestmark_native
+@pytest.mark.parametrize(("name", "effective"), [("claude-code-x1.jsonl", "default"), ("codex-x1.jsonl", "agent-full-access")])
+def test_the_effective_permission_mode_is_the_one_the_session_reports(tmp_path, name, effective):  # R-34 condition 4
+    # claude-agent-acp answers session/new with modes.currentModeId = the mode after its fallback (0.81.2
+    # session-mode.js:21-40: dontAsk unavailable -> "default", the stderr line is its log); a set_mode the session
+    # accepted replaces it (codex-x1: currentModeId "agent", then agent-full-access).
+    recording = ACP_FIX / "recordings" / name
+    result, _, _ = _replay(tmp_path, recording, _meta(recording)["mode"])
+    assert result.cause is None and result.permission_mode_effective == effective
+
+
+@pytestmark_native
+def test_the_effective_permission_mode_is_null_when_the_session_reports_none(tmp_path):  # not recorded, never guessed
+    def no_modes(msg):
+        if msg.get("id") == 2 and "result" in msg:
+            msg["result"].pop("modes")
+        return msg
+
+    result, _, _ = _replay(tmp_path, _derive(ACP_FIX / "recordings" / "claude-code-x1.jsonl", tmp_path, no_modes))
+    assert result.cause is None and result.permission_mode_effective is None
 
 
 @pytestmark_native

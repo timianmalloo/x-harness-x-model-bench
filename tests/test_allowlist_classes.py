@@ -1,0 +1,134 @@
+"""R-34: the Claude Code allowlist covers every tool id in its declared classes, per platform and pinned build.
+
+ADR-0004 allows *classes* (file read and edit in the workspace, shell); the ids that make up a class are per
+platform and per pinned build. The source of the ids is the build itself, never memory: the tool list the pinned
+build advertised to the model, as its own native record writes it (`attachment.type == "prompt_snapshot"`, loaded
+tools; `deferred_tools_delta`, tools behind ToolSearch). Only an authenticated session writes that list (an
+unauthenticated `claude -p` init omits `PowerShell` on 2.1.282 unless CLAUDE_CODE_USE_POWERSHELL_TOOL is set,
+observed 2026-09-25), so the fixture is cut from a real cell's record:
+`tests/fixtures/native/claude-code/tools-2.1.282-win32.jsonl` holds the four rows of the native record of cell
+17efb75ce2d5fc6d, run e2e-wave1-1790302505 (Claude Code 2.1.282, win32), trimmed to type, version, sessionId,
+the platform, tool names, and each tool description's first line.
+
+On a pin bump: the native test below goes red until the fixture is recut from a cell record of the new build
+(`advertised()` reads a full native record as well as the trimmed one). A new id in the new build then makes
+`test_every_tool_id_the_pinned_build_advertises_is_classified` red until it is classified: this is the control
+for the defect class "a per-platform tool id missing from a class allowlist" (docs/lessons/defect-classes.md).
+"""
+
+import json
+import sys
+from pathlib import Path
+
+import pytest
+
+from harness_bench import profiles, tools
+
+ROOT = Path(__file__).resolve().parents[1]
+FIX = Path(__file__).parent / "fixtures"
+TOOL_LIST = FIX / "native" / "claude-code" / "tools-2.1.282-win32.jsonl"
+NEGATIVE = FIX / "ledger" / "r34-cc-opus-pack-on-powershell-denied.json"
+
+# The ADR-0004 classes, by the build's own description of each id (the fixture's first description lines).
+CLASSES = {
+    "shell": {"Bash", "PowerShell"},  # "Executes a bash command ..." / "Executes a given PowerShell command ..."
+    "file edit": {"Edit", "Write"},  # "Performs exact string replacement in a file." / "Writes a file ..."
+    "file read": {"Read", "Glob", "Grep"},  # "Reads a file ..." / "Fast file pattern matching" / "Content search"
+}
+# Outside every declared class: ADR-0004 denies them ("any other tool the harness offers", web tools, MCP servers).
+OUT_OF_PROFILE = {
+    "Agent", "ListAgents", "ReportFindings", "ScheduleWakeup", "Skill", "ToolSearch", "Workflow",
+    "CronCreate", "CronDelete", "CronList", "DesignSync", "EnterPlanMode", "EnterWorktree", "ExitPlanMode",
+    "ExitWorktree", "Monitor", "PushNotification", "RemoteTrigger", "SendMessage", "TaskStop", "WebFetch", "WebSearch",
+}
+# assume: NotebookEdit (a deferred Jupyter-cell editor on 2.1.282) is not ruled in or out of the "file edit" class;
+# R-34 adds only PowerShell. Confirm: a Leader/Owner ruling (raised at the R-34 hand-back). Breaks: if it is in the
+# class, the allowlist is still one id short and a NotebookEdit call is refused like PowerShell was.
+AWAITING_RULING = {"NotebookEdit"}
+
+
+def advertised(record: Path) -> tuple[set[str], set[str], set[str]]:
+    """(tool ids, build versions, platforms) from a Claude Code native record, full or trimmed."""
+    ids: set[str] = set()
+    versions: set[str] = set()
+    platforms: set[str] = set()
+    for line in record.read_text(encoding="utf-8").splitlines():
+        row = json.loads(line)
+        att = row.get("attachment") if isinstance(row.get("attachment"), dict) else {}
+        kind = att.get("type")
+        if kind == "environment":
+            platforms.add(att["snapshot"]["platform"])
+        elif kind == "prompt_snapshot" and att.get("tools"):
+            ids |= {t["name"] for t in att["tools"]}
+        elif kind == "deferred_tools_delta":
+            ids = (ids | set(att.get("addedNames", []))) - set(att.get("removedNames", []))
+        else:
+            continue
+        versions.add(row["version"])
+    return ids, versions, platforms
+
+
+def claude_allowlist(tmp_path: Path) -> set[str]:
+    """The allowlist a Claude Code cell is seeded with (the real profile path, not a copy of the YAML)."""
+    cred = tmp_path / "cred.json"
+    cred.write_text("{}", encoding="utf-8")
+    home = tmp_path / "home"
+    profiles.load(ROOT, "claude-code", credential_source=cred).seed_home(home, model="claude-opus-5-5")
+    return set(json.loads((home / "settings.json").read_text(encoding="utf-8"))["permissions"]["allow"])
+
+
+def test_the_tool_list_fixture_is_one_build_on_one_platform():
+    ids, versions, platforms = advertised(TOOL_LIST)
+    assert versions == {"2.1.282"} and platforms == {"win32"}
+    assert {"Bash", "PowerShell", "Edit", "Write", "Read", "Glob", "Grep"} <= ids  # the reader found both lists
+
+
+def test_the_claude_code_allowlist_covers_every_class_id_the_pinned_build_advertises(tmp_path):  # R-34 condition 2
+    ids, _, _ = advertised(TOOL_LIST)
+    in_class = ids & set().union(*CLASSES.values())
+    assert in_class - claude_allowlist(tmp_path) == set()
+
+
+def test_the_claude_code_allowlist_names_nothing_outside_the_declared_classes(tmp_path):  # ADR-0004: no widening
+    assert claude_allowlist(tmp_path) <= set().union(*CLASSES.values())
+
+
+def test_every_tool_id_the_pinned_build_advertises_is_classified():  # a new id in a later build is red here
+    ids, _, _ = advertised(TOOL_LIST)
+    known = set().union(*CLASSES.values()) | OUT_OF_PROFILE | AWAITING_RULING
+    assert {i for i in ids if i not in known and not i.startswith("mcp__")} == set()
+
+
+@pytest.mark.native
+def test_the_tool_list_fixture_is_the_pinned_build_on_this_platform():  # a pin bump is red until the fixture is recut
+    dest = ROOT / ".tools" / "harness"
+    tools.install(ROOT / "bench" / "tools", dest, timeout=900)
+    _, versions, platforms = advertised(TOOL_LIST)
+    assert versions == {tools.resolve(dest)["claude-code"].version}
+    assert platforms == {sys.platform}
+
+
+# --- R-34 condition 1: the negative fixture, kept -------------------------------------------------------------
+# The cc-opus pack-on cell of e2e-wave1-1790302505: the model called PowerShell once, the allowlist of the day did
+# not name it, the driver refused the permission request, and US-14 failed on [0,1,0,0,0,0].
+
+
+def _negative() -> dict:
+    return json.loads(NEGATIVE.read_text(encoding="utf-8"))
+
+
+def test_the_negative_fixture_shows_the_one_denied_powershell_call():  # the negative control: stays true
+    fx = _negative()
+    allowed_then = set(fx["settings_json"]["permissions"]["allow"])
+    outside = [c for c in fx["tool_calls"] if c["name"] not in allowed_then]
+    outcome = next(e for e in fx["events"] if e["kind"] == "cell.outcome")
+    assert [(c["name"], c["ok"]) for c in outside] == [("PowerShell", 0)]
+    assert outcome["permission_requests"] == len(outside) == 1
+    assert all(c["ok"] == 1 for c in fx["tool_calls"] if c["name"] in allowed_then)
+    assert fx["adapter_stderr"] == ['permissions.defaultMode "dontAsk" is not available in this session; '
+                                    'falling back to "default".']
+
+
+def test_the_current_allowlist_admits_every_tool_the_negative_fixture_called(tmp_path):  # R-34 regression
+    called = {c["name"] for c in _negative()["tool_calls"]}
+    assert called - claude_allowlist(tmp_path) == set()
