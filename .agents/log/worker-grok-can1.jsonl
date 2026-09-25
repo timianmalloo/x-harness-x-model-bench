@@ -1,1 +1,2 @@
 {"agent": "worker-grok-can1", "at": 1790308417.7059546, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-grok-can1", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w2-canary1"}
+{"agent": "worker-grok-can1", "at": 1790309489.155377, "kind": "session-end", "path": "-", "seq": 2, "session": "worker-grok-can1", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w2-canary1"}
