@@ -158,6 +158,10 @@ def _b64(text: str) -> str:
     return base64.b64encode(text.encode("utf-8")).decode("ascii")
 
 
+def _b64b(data: bytes) -> str:
+    return base64.b64encode(data).decode("ascii")
+
+
 def _q(text: str) -> str:
     return urllib.parse.quote(text, safe="")
 
@@ -185,6 +189,14 @@ TRANSFORMED = {
     "fullwidth-canary": lambda s: (_fullwidth(s.canary), "canary"),
     "url-encoded-canary": lambda s: (_q(s.url_canary), "canary"),
     "nested-past-the-decoding-bound": lambda s: (_q(_q(_q(_q(_q(_q(_q(_q(s.cred)))))))), "unscannable"),
+    # Fable Major 3: control and format characters (Cc/Cf) inside a value, and base64 that is not clean UTF-8.
+    "nul-interleaved-credential": lambda s: ("".join(c + "\0" for c in s.cred), "credential"),  # UTF-16LE read as UTF-8
+    "bom-inside-a-canary": lambda s: (s.canary[:5] + "﻿" + s.canary[5:], "canary"),
+    "zero-width-space-inside-an-email": lambda s: (s.email[:4] + "​" + s.email[4:], "email"),
+    "soft-hyphen-inside-a-username": lambda s: (f"by {s.username[:3]}­{s.username[3:]}.", "username"),
+    "base64-of-utf16-canary": lambda s: (_b64b(s.canary.encode("utf-16-le")), "canary"),
+    "base64-with-one-non-printable-byte": lambda s: (_b64b(b"\x07" + s.cred.encode()), "credential"),
+    "base64-with-one-invalid-utf8-byte": lambda s: (_b64b(b"\xff" + s.cred.encode()), "credential"),
 }
 
 
