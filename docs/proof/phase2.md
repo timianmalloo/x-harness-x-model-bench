@@ -254,3 +254,18 @@ The Leader re-ran every red with its re-run script, which uses a throwaway detac
 | Claude Code 2.1.282 | `WebFetch` attempted, one permission callback, refused by the driver (effective mode `default`); `ToolSearch` ran unprompted; 8 `mcp__claude_ai_*` tools advertised | **Web: closed (Verified, R-56).** `WebSearch` is not exercised (Inferred). **Account MCP: open.** The fix is `disableClaudeAiConnectors: true`, found in the pinned build's settings schema (W2-CLAUDE-PROFILE); re-qualification pending (R-57 gate 2) |
 
 - **R-51 condition 2, measured separately** (probe `copilot-probe-copilot-config-profile-flags-20260925T050838Z`): R-45's `--available-tools` list also filters the scripted-user MCP tool ("Disabled tools: … scripted_user-ask_user …"). W2-USER-W must list it for `scripted_user` cells.
+
+## A1 capture `a1-capture-1`: the scripted user wired, one cell per harness, 2026-09-25 (R-37 c1, R-51 c2)
+
+- A1 × {copilot-sol, codex-sol, cc-opus} × pack off × 1, after the W2-USER-W join.
+- The scripted-user log is archived in each cell (`attempt-1/scripted-user.jsonl`).
+
+| harness | tool listed (`tools_listed` row) | questions asked | outcome |
+| --- | --- | --- | --- |
+| Copilot 1.0.89-1 | yes, through `--additional-mcp-config`, with the id appended to `--available-tools` | 0 ("no question asked") | valid, pass@1 1.00 |
+| Codex 0.156.0 | yes, through `session/new` | 0 ("no question asked") | valid, pass@1 1.00 |
+| Claude Code 2.1.282 | yes, through `session/new` | 1; no match (rung `none`), so the default reply | valid, pass@1 1.00 |
+
+- **R-51 condition 2 closed:** the tool reaches Copilot on the R-45 profile.
+- **Defect the capture found:** the three readers classed the scripted user's own tool as `other`, so under R-54 the Claude Code and Copilot cells first read `invalid (out-of-profile tool called)`. The Leader fixed it red-first (a `scripted user` class in each reader, `69320f5`, 3 mutants killed). A re-grade then read 3/3 valid, and `bench verify` stayed ok.
+- One capture, n = 1 per harness. Every A1 cell carries `low-confidence matcher` (R-52): live-like recall on the held-out set is 0/11 (T-39-1).
