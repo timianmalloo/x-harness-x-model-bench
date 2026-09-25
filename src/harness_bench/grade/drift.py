@@ -2,7 +2,8 @@
 
 - The change set is `_changes`' (GR-CODE c1): the cell's working tree against the pre-turn tree under the tamper rule,
   by content with CRLF normalised, build output excluded. A pack-on cell's base is the pack commit, so the pack is not
-  a change; a commit the agent made after it is (the Codex cell 3ff0 of row15-d1-1).
+  a change; a commit the agent made after it is (the Codex cell 3ff0 of row15-d1-1). An added file that the pre-turn
+  tree's own ignore rules name is not a change either (the pack hook's marker; see `_ignored`).
 - Lines are counted with `difflib` over the CRLF-normalised bytes, split at LF only (a line keeps its end, so a lost
   final newline is a changed line, as in `git diff`). A symlink's one line is its target's text (as `_changes`).
 - scope_creep is lines added plus deleted in files outside the task's `blast_radius`; scope_creep_files is those files.
@@ -20,11 +21,12 @@ import difflib
 import io
 import os
 import re
+import shutil
 from decimal import Decimal
 from fnmatch import fnmatchcase
 from pathlib import Path
 
-from harness_bench import gitsafe
+from harness_bench import archive, gitsafe
 from harness_bench.grade import CellInput, Score, _changes
 
 NO_WORKING_COPY = "no working copy in the archive"
@@ -74,6 +76,35 @@ def _in_radius(path: str, radius: list[str]) -> bool:
     return any(fnmatchcase(path, glob) for glob in radius)
 
 
+def _ignored(base: Path, added: list[str], scratch: Path, timeout: float) -> set[str]:
+    """The added paths the pre-turn tree's own ignore rules name: `git check-ignore --no-index` over `base`.
+
+    Git ignores no tracked file and every pre-turn path is tracked, so only an added path is asked. The rules are the
+    pre-turn tree's (and no host config, via gitsafe), never the cell's: an agent cannot hide a change by ignoring it.
+    assume: an untracked file under a pre-turn ignore rule is not an authored change; the measured case is the pack
+    hook's `docs/audit/.run-starts.json` in the gate's pack-on Claude and Copilot cells, and the design's 0 was read
+    with `git ls-files --others`. If false, a file force-added past a pre-turn rule goes uncounted.
+    """
+    if not added:
+        return set()
+    repo, out = scratch / "ignore-rules.git", set()
+    try:
+        gitsafe.git(["init", "-q", "--bare", str(repo)], cwd=scratch, timeout=timeout)
+        for i in range(0, len(added), 100):  # a bounded command line (gitsafe has no stdin, so no `--stdin -z`)
+            args = ["-c", "core.quotePath=false", "--git-dir", str(repo), "--work-tree", str(base),
+                    "check-ignore", "--no-index", "--", *added[i:i + 100]]
+            done = gitsafe.git(args, cwd=base, timeout=timeout, check=False)
+            if done.timed_out or done.returncode not in (0, 1):  # 1: none of them is ignored
+                raise gitsafe.GitError(args, done)
+            # A path git still quotes (a `"`, `\` or control character) matches no added path, so it is counted: the
+            # failure is toward counting a change, never toward hiding one.
+            out.update(done.stdout.splitlines())
+    finally:
+        if repo.exists():
+            shutil.rmtree(repo, onexc=archive.make_writable)
+    return out
+
+
 def _measure(inp: CellInput, rules: tuple | None) -> dict[str, Score]:
     ws, timeout = inp.archive / "ws", inp.plan["parameters"]["grading_step_timeout"]
     if not ws.is_dir():
@@ -87,7 +118,12 @@ def _measure(inp: CellInput, rules: tuple | None) -> dict[str, Score]:
     try:
         with (_changes.pre_turn_tree(ws, commit, inp.out_dir / "pre-turn", timeout) as base,
               _changes.grading_copy(ws, inp.out_dir / "work") as work):
-            for path, status in _changes.change_set(base, work).items():
+            changes = _changes.change_set(base, work)
+            ignored = _ignored(base, [p for p, s in changes.items() if s == "added"], inp.out_dir, timeout)
+            for path, status in changes.items():
+                if path in ignored:
+                    log.append(f"ignored\t{path}\n")
+                    continue
                 old = _lines(base / path) if status != "added" else []
                 added, deleted = _diff(old, _lines(work / path) if status != "deleted" else [])
                 inside = _in_radius(path, radius)

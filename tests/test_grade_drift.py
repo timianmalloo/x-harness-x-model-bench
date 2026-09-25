@@ -209,6 +209,16 @@ def test_an_untracked_file_the_pre_turn_ignore_rules_name_is_not_scope_creep(tmp
         {"scope_creep": (0, None), "scope_creep_files": (0, None), "convention_drift": (None, "no lines changed")}
 
 
+def test_the_cells_own_ignore_rule_hides_nothing_and_a_tracked_file_under_a_pre_turn_rule_still_counts(tmp_path):
+    folder, cell = pack_cell_with_ignore(tmp_path, {"src/AiDe.Mcp/Extra.cs": "// x\n// y\n"})
+    ws = folder / "ws"
+    (ws / ".gitignore").write_text(f"{MARKER}\nLICENSE\nsrc/AiDe.Mcp/Extra.cs\n", encoding="utf-8", newline="")
+    (ws / "LICENSE").write_bytes((ws / "LICENSE").read_bytes() + b"one more line\n")
+    got = grade_d1(tmp_path, folder, cell)
+    assert {m: got[m] for m in MEASURED} == \
+        {"scope_creep": (1 + 1 + 2, None), "scope_creep_files": (3, None), "convention_drift": ("0.00", None)}
+
+
 # --- the gate run row15-d1-1, read-only (HB_GATE_RUNS) ---------------------------------------------------------------
 
 GATE_RUNS = Path(os.environ.get("HB_GATE_RUNS") or ROOT / "runs")
