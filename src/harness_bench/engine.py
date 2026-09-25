@@ -34,6 +34,7 @@ from concurrent.futures import Future
 from concurrent.futures import TimeoutError as FutureTimeout
 from contextlib import contextmanager
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 from typing import Protocol
 
@@ -126,6 +127,8 @@ class Engine:
         self.active: dict[str, _Active] = {}
         self.outcomes: dict[str, dict] = {}
         self.stopped: str | None = None
+        self.run_stopped: str | None = None
+        self.applied_controls: set[str] = set()
         self.broken = False
         self.closed = False
         self.archive_failed: set[str] = set()  # cells whose outcome stands but whose archive failed: the run is incomplete
@@ -242,6 +245,7 @@ class Engine:
                     self._kill_all("aborted")
                     self._check_kills(self.clock())
                 else:
+                    self._read_controls()
                     self.on_tick()
                     if sleep.slept():
                         self._kill_all("host_suspended")
@@ -264,6 +268,7 @@ class Engine:
                     log.exception("grading pass failed; run bench grade", extra={"error_code": code})
                     grading = {"error_code": code}
             if ended_whole:
+                self._read_controls(ending=True)
                 heads = {fact: w.seal() for fact, w in self.writers.items() if fact != "events"}
                 self._append_now("events", {"kind": "run.completed", "run_id": self.plan["run_id"],
                                             "segment_heads": {**heads, "events": self.writers["events"].head_hash},
@@ -287,6 +292,78 @@ class Engine:
             self._append_now("events", {"kind": "run.launch_stopped", "code": code, "reason": reason})
         except BenchError:  # the ledger broke: the loop now aborts and drains
             pass
+
+    def _apply_stop(self) -> None:
+        self._stop_launching("HB-RUN-006", "bench stop")
+        self._append_now("events", {"kind": "run.stopped", "code": "HB-RUN-006", "decision_id": None})
+        self.run_stopped = "HB-RUN-006"
+        log.info("stop applied", extra={"error_code": "HB-RUN-006"})
+        self._kill_all("stop")
+
+    def _read_controls(self, *, ending: bool = False) -> None:
+        """Consume atomic control files on the single writer thread; retain I/O failures for the next tick."""
+        folder = self.cfg.run_dir / "control"
+        try:
+            paths = list(folder.glob("*.json"))
+        except OSError as exc:
+            log.warning("control retried", extra={"error_code": "HB-USR-002", "detail": type(exc).__name__})
+            return
+        parsed = []
+        for path in paths:
+            try:
+                raw = path.read_bytes()
+            except OSError as exc:
+                log.warning("control retried", extra={"error_code": "HB-USR-002", "detail": type(exc).__name__})
+                continue
+            try:
+                if len(raw) > 4096:
+                    raise ValueError("oversized")
+                data = json.loads(raw)
+                if not isinstance(data, dict) or set(data) != {"schema", "uuid", "control", "decision_id", "option", "requested_at"}:
+                    raise ValueError("fields")
+                uid = data["uuid"]
+                if (data["schema"] != "bench-control/1" or not isinstance(uid, str)
+                        or not re.fullmatch(r"[0-9a-f]{32}", uid) or path.stem != uid
+                        or data["control"] not in {"stop", "answer"}
+                        or not isinstance(data["requested_at"], str)
+                        or not re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ", data["requested_at"])):
+                    raise ValueError("schema")
+                datetime.fromisoformat(data["requested_at"])
+                if data["control"] == "stop" and (data["decision_id"] is not None or data["option"] is not None):
+                    raise ValueError("stop fields")
+                if data["control"] == "answer" and (not isinstance(data["decision_id"], str)
+                        or not re.fullmatch(r"D[1-9][0-9]*", data["decision_id"])
+                        or not isinstance(data["option"], str) or not re.fullmatch(r"[a-z_]+", data["option"])):
+                    raise ValueError("answer fields")
+            except (ValueError, TypeError, UnicodeDecodeError):
+                try:
+                    path.replace(path.with_suffix(".rejected"))
+                except OSError as exc:
+                    log.warning("control retried", extra={"error_code": "HB-USR-002", "detail": type(exc).__name__})
+                    continue
+                log.warning("control rejected", extra={"error_code": "HB-USR-002", "detail": path.name})
+                continue
+            parsed.append((path, data))
+        parsed.sort(key=lambda item: (item[1]["control"] != "stop", item[1]["requested_at"], item[1]["uuid"]))
+        for path, data in parsed:
+            uid = data["uuid"]
+            if uid in self.applied_controls:
+                try:
+                    path.unlink()
+                except OSError:
+                    pass
+                continue
+            effect = ("no-op (run ending)" if ending else "no-op (already stopped)" if self.run_stopped
+                      else "applied" if data["control"] == "stop" else "rejected (invalid)")
+            self._append_now("events", {"kind": "control.applied", "uuid": uid, "control": data["control"],
+                                         "decision_id": data["decision_id"], "effect": effect})
+            self.applied_controls.add(uid)
+            if effect == "applied":
+                self._apply_stop()
+            try:
+                path.unlink()
+            except OSError as exc:
+                log.warning("control retried", extra={"error_code": "HB-USR-002", "detail": type(exc).__name__})
 
     def _launch(self, cell: dict) -> None:
         try:
@@ -409,7 +486,10 @@ class Engine:
         finally:
             launcher.clean(home)  # every end: a spawn failure, a kill, a ledger failure, a bug (T-CELL-credclean)
         if isinstance(ended, procs.SpawnError):
-            self._outcome(cell, "failed", Cause.spawn, detail=str(ended), win32_error=ended.win32_error or 0)
+            if self.active[cid].kill_reason == "stop":
+                self._outcome(cell, "stopped", None)
+            else:
+                self._outcome(cell, "failed", Cause.spawn, detail=str(ended), win32_error=ended.win32_error or 0)
             archive_after_outcome()
             return
         result, exit_status, tail = ended
@@ -441,12 +521,18 @@ class Engine:
         task = self.plan["tasks"][cell["task"]]
         mcp_servers = ([scripted_server.entry(Path(task["clarifications_path"]), ws.parent / "scripted-user.jsonl")]
                        if task.get("scripted_user") and cell["harness"] != "copilot" else [])
+        with a.lock:
+            if a.kill_reason is not None:  # the stop won before the spawn linearization point
+                return procs.SpawnError("stopped before spawn", None)
         try:
             cp = procs.spawn(argv, cwd=str(ws), env=env, stderr=subprocess.PIPE)
         except procs.SpawnError as exc:
             return exc
         with a.lock:
             a.proc = cp
+            if a.kill_reason is not None:  # the stop raced a spawn that had already passed its check
+                a.terminated = True
+                _job_query(cp.job.terminate, None)
         tail = bytearray()
         drain = threading.Thread(target=_keep_tail, args=(cp.proc.stderr, tail, self.params["stderr_tail_bytes"]), daemon=True)
         drain.start()

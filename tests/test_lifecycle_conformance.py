@@ -96,6 +96,12 @@ SEEDED = {  # name -> (events, scores, the rule the replay must name)
     "prompt after the outcome (NoPromptAfterOutcome)":
         (GOOD[:4] + [GOOD[4], GOOD[6], GOOD[7], {"kind": "cell.prompt_sent", "cell_id": "a"}], [], "NoPromptAfterOutcome"),
     "launch after a stop (NoLaunchAfterStop)": ([GOOD[0], {"kind": "run.launch_stopped"}, GOOD[1]], [], "NoLaunchAfterStop"),
+    "launch after a run stop (NoLaunchAfterStop)":
+        ([GOOD[0], {"kind": "run.stopped", "code": "HB-RUN-006"}, GOOD[1]], [], "NoLaunchAfterStop"),
+    "a control applied twice (ControlAppliedOnce)":
+        ([GOOD[0], {"kind": "control.applied", "uuid": "f" * 32}] * 2, [], "ControlAppliedOnce"),
+    "a run stopped twice (RunStoppedOnce)":
+        ([GOOD[0], {"kind": "run.stopped", "code": "HB-RUN-006"}] * 2, [], "RunStoppedOnce"),
     "a second launch of one cell": (GOOD[:3] + [{"kind": "cell.launch_intent", "cell_id": "a"}], [], "WriteIntent"),
     "a working copy built after the process started":
         (_cell("cell.launch_intent", "attempt.process_started", "cell.workspace_built"), [], "workspace before process"),
