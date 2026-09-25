@@ -22,6 +22,7 @@ import os
 import secrets
 import shutil
 import tempfile
+from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -88,13 +89,20 @@ def select_tasks(bom: dict, subset) -> list[dict]:
     return [t for t in tasks if t["id"] in wanted]
 
 
-def task_version_hash(task_dir: Path) -> str:
-    """sha256 over every file in the task folder: relative path, NUL, bytes, in sorted path order."""
+def tree_hash(base: Path, files: Iterable[Path]) -> str:
+    """The one content-address recipe (R-59 c1, seam S-2): sha256 over each file's path relative to `base`, NUL,
+    its bytes with CRLF as LF, NUL, in sorted path order. The task version and the catalog hash are both this.
+    The order is `Path` order (case-insensitive on Windows), exactly as the frozen task versions were computed."""
     h = hashlib.sha256()
-    for f in sorted(p for p in task_dir.rglob("*") if p.is_file() and "__pycache__" not in p.parts):
-        h.update(f.relative_to(task_dir).as_posix().encode() + b"\0")
+    for f in sorted(files):
+        h.update(f.relative_to(base).as_posix().encode() + b"\0")
         h.update(f.read_bytes().replace(b"\r\n", b"\n") + b"\0")
     return h.hexdigest()
+
+
+def task_version_hash(task_dir: Path) -> str:
+    """tree_hash over every file in the task folder (bytecode caches aside)."""
+    return tree_hash(task_dir, [p for p in task_dir.rglob("*") if p.is_file() and "__pycache__" not in p.parts])
 
 
 def expand(matrix: dict, bom: dict, task_versions: dict[str, str] | None = None) -> list[Cell]:
@@ -140,6 +148,11 @@ def _model_map(task_dir: Path) -> dict:
     """The task's `model_map` ({role: model}, scenario 6; null otherwise), frozen so the served-model check reads the
     run, not today's task.yaml (US-11; W2-VIEWS seam S3)."""
     return {"model_map": config.load_yaml(task_dir / "task.yaml").get("model_map")}
+
+
+def _graders(task_dir: Path) -> dict:
+    """The task's `graders` list, verbatim, frozen so a pass grades the run's list, not today's task.yaml (seam S-1)."""
+    return {"graders": list(config.load_yaml(task_dir / "task.yaml").get("graders") or [])}
 
 
 def _scripted_user(task_dir: Path) -> dict:
@@ -271,7 +284,8 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, p
         "matrix_hash": _sha(matrix),
         "bom_version": str(bom.get("version")),
         "tasks": {t["id"]: {"version_hash": versions[t["id"]], "scenario": t["scenario"], "budget_seconds": t["budget_minutes"] * 60,
-                            **_prompt(root / "tasks" / t["id"]), **_model_map(root / "tasks" / t["id"]),
+                            **_graders(root / "tasks" / t["id"]), **_prompt(root / "tasks" / t["id"]),
+                            **_model_map(root / "tasks" / t["id"]),
                             **_scripted_user(root / "tasks" / t["id"])} for t in tasks},
         "builds": {h: builds[h] for h in sorted(harnesses)},
         "profiles": {h: profile_record(root, h) for h in sorted(harnesses)},

@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 import yaml
@@ -164,3 +165,40 @@ def test_vendored_workspace_content_is_exempt_from_the_profile_path_scan_but_ora
     assert not any("workspace/vendor/Upstream.cs" in i for i in p.items)
     assert "tasks/X6: workspace/Local.cs:1 hardcodes an absolute user-profile path" in p.items
     assert "tasks/X6: oracle/README.md:1 hardcodes an absolute user-profile path" in p.items
+
+
+# --- rubrics live in the catalog (R-59 DR-5, R-64; design: Catalog-version rule 5; seam V-3) -----------------------
+
+
+def _rubric_root(tmp_path: Path) -> Path:
+    """A root with the real bench/ and tasks/C1; problems about the other BOM task folders are not these tests' subject."""
+    root = tmp_path / "root"
+    shutil.copytree(ROOT / "bench", root / "bench")
+    shutil.copytree(ROOT / "tasks" / "C1", root / "tasks" / "C1")
+    return root
+
+
+def _rubric_problems(root: Path) -> list[str]:
+    return [p for p in config.validate_repo(root) if "rubric" in p]
+
+
+def test_the_catalog_rubric_must_equal_c1s_rubric_byte_for_byte(tmp_path):
+    root = _rubric_root(tmp_path)
+    (root / "bench" / "rubrics").mkdir(exist_ok=True)
+    copy = root / "bench" / "rubrics" / "adr_quality.md"
+    copy.write_bytes((ROOT / "tasks" / "C1" / "oracle" / "rubric.md").read_bytes())
+    assert _rubric_problems(root) == []
+    copy.write_bytes(copy.read_bytes().replace(b"\n", b"\r\n", 1))  # one line end differs: not the same bytes
+    assert _rubric_problems(root) == ["bench/rubrics/adr_quality.md: differs from tasks/C1/oracle/rubric.md (R-59 DR-5: byte for byte)"]
+
+
+def test_each_rubrics_value_must_name_an_existing_file(tmp_path):
+    root = _rubric_root(tmp_path)
+    path = root / "bench" / "metrics.yaml"
+    area = next(a for a, v in config.load_yaml(path)["areas"].items() if any(m["id"] == "adr_quality" for m in v["metrics"]))
+    text = path.read_text(encoding="utf-8")
+    old = "{ id: adr_quality,               source: [J],    better: higher, grader: judge,        kind: score, weight: 1 }"
+    assert text.count(old) == 1
+    path.write_text(text.replace(old, old[:-2] + ", rubrics: {C1: missing.md} }"), encoding="utf-8")
+    assert _rubric_problems(root) == [(f"bench/metrics.yaml: {area}.adr_quality: rubrics C1 names bench/rubrics/missing.md, "
+                                       "which does not exist")]

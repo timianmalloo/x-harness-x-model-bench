@@ -10,6 +10,8 @@ import json
 import shutil
 from pathlib import Path
 
+import yaml
+
 from harness_bench import archive, ledger
 from harness_bench import plan as plan_mod
 from harness_bench.grade import runner
@@ -44,15 +46,32 @@ _DEFAULT_RECORD = {"codex": FIX / "native" / "codex" / "ok.jsonl",
                     "copilot": next((FIX / "native" / "copilot" / "off").rglob("events.jsonl"))}
 
 
-def make_root(tmp_path: Path) -> Path:
-    """A bench root with the real X1 task, catalog, profiles and an empty price list."""
+def make_root(tmp_path: Path, release: bool = True) -> Path:
+    """A bench root with the real X1 task, catalog, profiles and an empty price list.
+
+    With `release` (the default) a `.dev` catalog is relabelled to the version it probes (`0.4.dev` -> `0.4`), so the
+    passes a test runs are current in a default view (R-59 DR-4: a probe pass never is). A test of the probe rule, or
+    of the real catalog's identity (the US-4 control), passes `release=False` and gets the catalog byte for byte.
+    """
     r = tmp_path / "root"
     shutil.copytree(ROOT / "tasks" / "X1", r / "tasks" / "X1")
     (r / "bench").mkdir()
     shutil.copy(ROOT / "bench" / "metrics.yaml", r / "bench" / "metrics.yaml")
     shutil.copytree(ROOT / "bench" / "profiles", r / "bench" / "profiles")
+    version = str(yaml.safe_load((r / "bench" / "metrics.yaml").read_text(encoding="utf-8"))["version"])
+    if release and version.endswith(".dev"):
+        set_catalog_version(r, version.removesuffix(".dev"))
     set_prices(r, [])
     return r
+
+
+def set_catalog_version(root: Path, version: str) -> None:
+    """Relabel the root's catalog (its `version:` line only), e.g. a release label so a pass is current (R-59 DR-4)."""
+    path = root / "bench" / "metrics.yaml"
+    text = path.read_text(encoding="utf-8")
+    old = f'version: "{yaml.safe_load(text)["version"]}"'
+    assert text.count(old) == 1, old
+    path.write_text(text.replace(old, f'version: "{version}"'), encoding="utf-8")
 
 
 def set_prices(root: Path, entries: list[dict]) -> str:

@@ -29,4 +29,7 @@ packages = ["src/harness_bench"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # Real model cells (the `credentials` marker) run only on an explicit opt-in: `-m ""` or `-m credentials` (SUITE-A).
-addopts = "-m 'not credentials'"
+# The `slow` ring (real dotnet graders) runs on the grading host: `HB_REQUIRE_DOTNET=1 python -m pytest -m slow` (V-4).
+# A command-line -m replaces this one, so .github/workflows/ci.yml excludes `slow` in its own -m as well.
+addopts = "-m 'not credentials and not slow'"
+markers = ["slow: the dotnet graders' fixtures; the Leader's pre-freeze ring on the grading host (HB_REQUIRE_DOTNET=1)"]

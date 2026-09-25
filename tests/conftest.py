@@ -1,9 +1,11 @@
+import os
 import shutil
 import sys
 import uuid
 from pathlib import Path
 
 import pytest
+from slow_ring import dotnet_gate
 
 from harness_bench import archive
 
@@ -29,6 +31,13 @@ def base():
         pass
     if root.parent.exists() and not any(root.parent.iterdir()):
         root.parent.rmdir()
+
+
+
+@pytest.fixture
+def require_dotnet() -> None:
+    """Use in every `@pytest.mark.slow` test that runs the real dotnet."""
+    dotnet_gate(os.environ)
 
 
 def pytest_configure(config):

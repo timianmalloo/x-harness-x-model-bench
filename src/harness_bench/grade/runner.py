@@ -30,6 +30,7 @@ import dataclasses
 import hashlib
 import logging
 import secrets
+import sys
 import time
 import traceback
 from collections import Counter
@@ -38,10 +39,18 @@ from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
 
-from harness_bench import config, ledger, oslock, profiles, views
+from harness_bench import config, ledger, oslock, profiles, tools, views
 from harness_bench.errors import BenchError
-from harness_bench.grade import CellInput, GraderFn, Score, correctness, cost
-from harness_bench.plan import file_hash, load_confirmed, task_version_hash
+from harness_bench.grade import (
+    CellInput,
+    GraderFn,
+    Score,
+    clarify,
+    correctness,
+    cost,
+    process,
+)
+from harness_bench.plan import file_hash, load_confirmed, task_version_hash, tree_hash
 from harness_bench.telemetry import Extraction, normalize
 
 logger = logging.getLogger("harness_bench.grade")
@@ -73,6 +82,40 @@ def grader_build() -> str:
     for f in sorted(Path(__file__).parent.glob("*.py")):
         h.update(f.name.encode() + b"\0" + f.read_bytes().replace(b"\r\n", b"\n") + b"\0")
     return h.hexdigest()
+
+
+GRADERS["process"] = process.grade_cell  # GR-PROC p1-p3
+GRADERS["clarify"] = clarify.grade_cell  # GR-CLAR l1
+TOOL_TIMEOUT = 30  # seconds per version probe (R-59 c4)
+NOT_RECORDED = "not recorded"
+# Tools a grader runs beyond python and dotnet: key -> the command that prints its version (its last stdout line).
+# simplify: empty until GR-CODE c6 pins Stryker.NET; its spike names the command (`dotnet-stryker`). Upgrade trigger: that pin.
+PINNED_TOOLS: dict[str, list[str]] = {}
+
+
+def catalog_hash(root: Path) -> str:
+    """R-59 c1: plan.tree_hash over bench/metrics.yaml and every file under bench/rubrics/, paths relative to bench/."""
+    bench = root / "bench"
+    rubrics = [p for p in (bench / "rubrics").rglob("*") if p.is_file()] if (bench / "rubrics").is_dir() else []
+    return tree_hash(bench, [bench / "metrics.yaml", *rubrics])
+
+
+def _version(argv: list[str], cwd: Path) -> str:
+    """The tool's version, measured now by tools.measured_version (procs' allowlisted caller); `not recorded` otherwise."""
+    return tools.measured_version(argv, cwd, TOOL_TIMEOUT) or NOT_RECORDED
+
+
+def tool_versions(root: Path, plan: Mapping) -> dict[str, str]:
+    """R-59 c4: each tool the pass's graders run, measured once at pass start (never read from a pin, never guessed).
+    dotnet is measured once per dotnet task in the plan, in its workspace, where global.json selects the SDK (D&P 9)."""
+    out = {"python": sys.version.split()[0]}
+    for task in sorted({c["task"] for c in plan["cells"]}):
+        spec = root / "tasks" / task / "task.yaml"
+        if spec.is_file() and (config.load_yaml(spec).get("oracle") or {}).get("runner") == "dotnet":
+            out[f"dotnet[{task}]"] = _version(["dotnet", "--version"], root / "tasks" / task / "workspace")
+    for key, argv in sorted(PINNED_TOOLS.items()):
+        out[key] = _version(argv, root)
+    return out
 
 
 def applicable(catalog: dict, graders: list[str]) -> dict[str, dict[str, dict]]:
@@ -143,7 +186,9 @@ class _Pass:
                 self.append("events", {"kind": "segment.abandoned", "code": "HB-LED-004", "fact": fact, "segment_id": report.segment_id,
                                        "line_count": report.lines, "head_hash": report.head_hash, "error": report.error})
             self.append("events", {"kind": "grading.started", "grading_id": self.grading_id, "catalog_version": str(self.catalog["version"]),
-                                   "grader_build": grader_build(), "extraction_id": self.extraction})
+                                   "grader_build": grader_build(), "extraction_id": self.extraction,
+                                   "catalog_hash": catalog_hash(self.root),  # R-59 c1
+                                   "tool_versions": tool_versions(self.root, self.plan)})  # R-59 c4
             graded = 0
             for cell in sorted(self.plan["cells"], key=lambda c: c["cell_id"]):
                 if cell["cell_id"] in archived:

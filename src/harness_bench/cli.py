@@ -91,6 +91,7 @@ def cmd_plan(args) -> int:
     matrix = config.load_yaml(matrix_path)
     problems = config.Problems()
     config.validate_matrix(matrix, bom, problems, str(matrix_path))
+    config.validate_task_freeze(root, problems)  # R-59 c5, seam S-3: never plan over a changed frozen task
     if problems:
         for item in problems.items:
             print(f"x {item}", file=sys.stderr)

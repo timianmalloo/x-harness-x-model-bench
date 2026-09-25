@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
@@ -108,6 +109,20 @@ def check_build(build: Build, planned: dict) -> None:
     if actual != planned:
         changed = sorted(k for k in planned if planned.get(k) != actual.get(k))
         raise BuildChanged(build.harness, f"differs from the plan in {changed}")
+
+
+def measured_version(argv: list[str], cwd: Path, timeout: float) -> str | None:
+    """The last stdout line of a tool's version command, run now (R-59 c4: grading's tool versions are measured).
+    None when it cannot be measured: not on PATH, cannot start, a non-zero exit, a timeout, or no output. Never a guess."""
+    exe = shutil.which(argv[0])
+    if exe is None:
+        return None
+    try:
+        done = procs.run([exe, *argv[1:]], cwd=str(cwd), env=dict(os.environ), timeout=timeout)
+    except OSError:
+        return None
+    lines = done.stdout.strip().splitlines()
+    return lines[-1].strip() if done.returncode == 0 and not done.timed_out and lines else None
 
 
 def _npm_ci(src: Path, dest: Path, timeout: float) -> None:

@@ -288,7 +288,25 @@ def validate_repo(root: Path) -> list[str]:
     for name in sorted(folders):
         validate_task(tasks_dir / name, entries.get(name), p, graders, markers)
     validate_task_freeze(root, p)
+    validate_rubrics(root, p)
     return p.items
+
+
+# R-59 DR-5: the catalog copy of a rubric that is still frozen in its task folder (wave 3), compared byte for byte.
+RUBRIC_COPIES = {"bench/rubrics/adr_quality.md": "tasks/C1/oracle/rubric.md"}
+
+
+def validate_rubrics(root: Path, p: Problems) -> None:
+    """R-59 DR-5 (seam V-3): each `rubrics:` value names a file under bench/rubrics/, and a catalog rubric copied
+    from a frozen task folder equals it byte for byte (checked once the catalog copy exists)."""
+    for area_id, area in (load_yaml(root / "bench" / "metrics.yaml").get("areas") or {}).items():
+        for m in area.get("metrics") or []:
+            for task, name in sorted((m.get("rubrics") or {}).items()):
+                if not (root / "bench" / "rubrics" / str(name)).is_file():
+                    p.add("bench/metrics.yaml", f"{area_id}.{m.get('id')}: rubrics {task} names bench/rubrics/{name}, which does not exist")
+    for copy, original in RUBRIC_COPIES.items():
+        if (root / copy).is_file() and (not (root / original).is_file() or (root / copy).read_bytes() != (root / original).read_bytes()):
+            p.add(copy, f"differs from {original} (R-59 DR-5: byte for byte)")
 
 
 def validate_task_freeze(root: Path, p: Problems) -> None:
