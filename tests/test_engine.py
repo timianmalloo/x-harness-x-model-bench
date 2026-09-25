@@ -2110,3 +2110,24 @@ def test_blocked_cell_default_continues_after_the_timeout(base):  # US15-1 (US-1
     outs = _outcomes(events)
     assert (outs[blocked]["outcome"], outs[blocked]["cause"]) == ("failed", "blocked_auth")  # its outcome is unchanged
     assert outs[waiting]["outcome"] == "completed" and summary.exit_code == 0
+
+
+def test_qualification_gap_default_skips_the_combos_pending_cells(base):  # US15-2
+    p, launcher = _decision_plan([("fake", "A", UNSERVED), ("fake", "A", UNSERVED), ("fake", "A", {}), ("fake", "B", {})],
+                                 parallelism=2)
+    first, second, skipped, other = (c["cell_id"] for c in p["cells"])
+
+    def script(eng, offset, run_dir):
+        if {first, second} <= set(eng.outcomes) and not offset[0]:
+            offset[0] += JUMP
+
+    _, events, summary = _decision_run(base, (p, launcher), script)
+    assert [(e["decision_kind"], e["subject"], e["cause_code"], e["options"], e["default"])
+            for e in _kind(events, "decision.opened")] == [
+        ("qualification_gap", "A", "HB-CELL-116", ["skip_combo", "stop"], "skip_combo")]  # the second gap opens none
+    assert _resolutions(events) == [("D1", "default applied (timeout)", "skip_combo")]
+    outs = _outcomes(events)
+    assert {k: outs[skipped][k] for k in ("outcome", "cause", "code", "decision_id")} == {
+        "outcome": "skipped (decision)", "cause": None, "code": None, "decision_id": "D1"}
+    assert [e["kind"] for e in events if e.get("cell_id") == skipped] == ["cell.outcome"]  # never launched: its only row
+    assert outs[other]["outcome"] == "completed" and summary.exit_code == 0
