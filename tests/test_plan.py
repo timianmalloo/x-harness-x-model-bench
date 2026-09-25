@@ -9,6 +9,7 @@ import pytest
 
 from harness_bench import config, gitsafe, plan, tools, workspace
 from harness_bench.errors import BenchError
+from harness_bench.ledger import canonical
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -240,6 +241,20 @@ def test_copilot_plan_lists_once_per_task_pack_build_and_freezes_counts(monkeypa
     assert all(c["build_sha256"] == "a" * 64 for c in p["instruction_lists"])
     assert {(c["pack"], c["count"]) for c in p["instruction_lists"]} == {("off", 0), ("on", 2)}
     assert next(c for c in p["instruction_lists"] if c["pack"] == "off")["instructions"] == []
+
+
+def test_copilot_plan_projects_instructions_to_string_identity_fields_and_keeps_canonical(monkeypatch, tmp_path):
+    """A boolean field in the exe's instruction rows (defaultDisabled) must not break the ledger's
+    canonical encoder (no bools) once the plan is frozen (defect: slice-5 worker)."""
+    raw = [{"id": "a", "label": "AGENTS.md", "location": "repository", "type": "agents",
+            "sourcePath": "AGENTS.md", "defaultDisabled": False}]
+    args, _ = _fake_copilot_plan(monkeypatch, tmp_path, lambda ws: [] if "off" in ws.parts else raw)
+    p = plan.build_plan(**args)
+    on_list = next(c for c in p["instruction_lists"] if c["pack"] == "on")
+    assert on_list["count"] == 1
+    assert on_list["instructions"] == [{"id": "a", "label": "AGENTS.md", "location": "repository",
+                                         "type": "agents", "sourcePath": "AGENTS.md"}]
+    canonical(p)  # ledger canonical forbids bool; build_plan already calls plan_hash internally
 
 
 def test_copilot_plan_refuses_a_nonempty_pack_off_instruction_list(monkeypatch, tmp_path):
