@@ -312,3 +312,17 @@ def test_no_view_counts_verdict_uses_rows_as_calls():
                           if isinstance(n, ast.Constant) and n.value == "verdict_uses"]
     assert found == []
     assert "verdict_uses" in views.FACTS and "verdict_uses" in runner.PASS_FACTS
+    assert views.KEYS["verdict_uses"] == ("run_id", "grading_id", "cell_id", "item_id", "judge_or_matcher")
+
+
+def test_a_pass_that_may_call_refuses_a_cells_root_below_an_instruction_file_before_any_spawn(tmp_path, base,
+                                                                                            monkeypatch):
+    """The calls run inside backend.judge_pass: `check_cells_root` (HB-PRE-002, design section 8.2; T-GW-26b)."""
+    (base / "above").mkdir()
+    (base / "above" / "AGENTS.md").write_text("# placeholder instruction file\n", encoding="utf-8")
+    calls = fake_calls(tmp_path, base / "above" / "cells", judge.Calls)
+    monkeypatch.setitem(runner.GRADERS, "judge",
+                        lambda inp: judge.grade(dataclasses.replace(inp, allow_model_calls=True), calls))
+    run_dir, gid, got = judged_pass(judged_root(tmp_path), tmp_path)
+    assert got["adr_quality"] == (None, "HB-GRD-003 grader judge failed: BenchError")
+    assert spawns(tmp_path) == 0 and uses(run_dir, gid) == []
