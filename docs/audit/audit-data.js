@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T11:24:02Z",
+  "generated": "2026-09-25T13:35:37Z",
   "audit": [
     {
       "actor": null,
@@ -22129,6 +22129,48 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3CCENFSQ690CEWPXTZSNDGH",
+      "shortname": "w3-grcode-2-c2",
+      "datetime": "2026-09-25T13:35:37Z",
+      "session": "w3-grcode-2",
+      "prompt": "Goal: W3-GR-CODE slice c2 per docs/design/phase3-graders.md, slice-plan row \"GR-CODE c2\" and section \"Correctness\" (regression_count, behavioural_equivalence; rulings R-59, R-62, R-67, R-68 in docs/notes/rulings.md): regression_count and the behavioural_equivalence NA, red first, on top of c1 (joined: grade/_changes.py, build_and_suite_clean, docs/notes/spike-gr-code-trx.md).\nDone when: regression_count counts the task's public tests that pass on the pre-turn tree and fail after the cell, keyed by className + \".\" + name from the per-test TRX results as the spike note records, exactly as the design defines it; A1, C1 and E6 give NA \"task has no public tests\".; behavioural_equivalence is NA on every task with the design's reasons (including the recorded deviation \"not a D-task\" on non-D tasks).; Red first on a seeded inverted D1 test (regression_count = 1) and on the non-D tasks, each red committed separately and failing on an assertion; the pre-turn test run is memoised per cell (the c1 residual) and the archive stays byte-unchanged.; No TRX attribute that identifies the host (runUser, computerName, storage, codeBase, the Results File line, any time) is read, stored or reported; a test asserts it.; tests/mutations/correctness.json gains a named mutant per new branch, each killed, and grade.json stays all killed.; With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips; uv run ruff check src tests tools is clean; uv run bench validate prints ok.; Your final message lists each red SHA with its failing assertion, each green SHA, the gate-run values of regression_count per D1 cell, and the mutate_check results.\nNot in scope: drift, architecture, rigor, mutation (c3-c6); catalog_hash, tool_versions, check_regrade (CORE s2); cost; the broken-ProjectReference seed (it waits on an Owner ruling); cli.py, plan.py, views.py, engine.py; bench run, any model turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase3-graders.md; docs/notes/spike-gr-code-trx.md; docs/notes/rulings.md R-59, R-62, R-67, R-68; src/harness_bench/grade/{__init__,runner,correctness,_changes}.py; tasks/D1/**; tests/test_grade_correctness.py; tests/mutations/correctness.json. The gate runs under C:/projects/x-harness-x-model-bench/runs/ are read-only. Use python, not python3 (Windows).",
+      "summary": "W3-GR-CODE c2 (Claude Opus 5.5, R-4). regression_count: the task's public tests (a workspace csproj referencing Microsoft.NET.Test.Sdk), keyed className.name from the per-test TRX, that pass on the pre-turn tree and fail, are skipped or are missing on the cell's tree, confirmed by a second run of the cell's tree. behavioural_equivalence: NA 'no differential oracle in this task version' on scenario 4, 'not a D-task' elsewhere (N4). The pre-turn commit and tree are found once per cell and shared with DR-G4's control. No host-identifying TRX field or Results File line is read or stored. Seeded inverted AiDe.Core.Tests assertion = 1 on real dotnet. Gate runs: row15-d1-1 all six cells 0, a1-capture-1 NA 'task has no public tests'. A measured flake (UpgradeTests.AJournalBeingRewritten_IsNeverObservedHalfWritten on caa8) motivated the confirming run; Leader decision request in the spike note. correctness.json 50/50 killed (25 c2), grade.json 34/34 killed. Full suite with HB_GATE_RUNS: 1373 passed, 0 skipped; ruff clean; bench validate ok.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "Claude Opus 5.5",
+      "artifacts": [
+        "src/harness_bench/grade/correctness.py",
+        "tests/test_grade_correctness.py",
+        "tests/mutations/correctness.json",
+        "docs/notes/spike-gr-code-trx.md"
+      ],
+      "tags": [
+        "gr-code",
+        "wave-3"
+      ],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "W3-GR-CODE slice c2: regression_count and the behavioural_equivalence NA, red first, on top of c1",
+      "done_when": "regression_count per design (className.name, pre-turn vs cell); A1/C1/E6 NA 'task has no public tests'; behavioural_equivalence NA with the design's reasons; red first (seeded D1 = 1, non-D tasks) each committed separately failing on an assertion; pre-turn memoised per cell; archive byte-unchanged; no host TRX attribute stored (tested); a named killed mutant per new branch and grade.json all killed; full suite with HB_GATE_RUNS passes with 0 gate skips; ruff clean; bench validate ok.",
+      "tier": "T2",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-25T11:24:44Z",
+      "duration_seconds": 7853.0,
+      "git": {
+        "sha": "1132c1a7bb6b6e3771d763fff86ca2b7d771efd2",
+        "short": "1132c1a7b",
+        "branch": "w3-grcode-2",
+        "pushed": null
+      }
     }
   ],
   "changes": [
