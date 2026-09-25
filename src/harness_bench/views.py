@@ -305,7 +305,7 @@ def _unrecorded(source: str, completed: dict, cid: str, ended: dict, usage: list
 
 
 def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: set[str] | None,
-              unrecorded: str | None = None, denials: int = 0) -> tuple[str, str | None]:
+              unrecorded: str | None = None, denials: int = 0, mapped: frozenset[str] = frozenset()) -> tuple[str, str | None]:
     if outcome is None:
         return state, None  # not started | no outcome
     cause = Cause[outcome["cause"]] if outcome.get("cause") else None
@@ -319,9 +319,16 @@ def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: 
         return "not recorded", "HB-VAL-003"
     if not served:
         return "invalid (no model call)", "HB-VAL-001"
-    if any(not profiles.model_allowed(m, cell["model"], prof["auxiliary_models"]) for m in served):
+    if any(not profiles.model_allowed(m, cell["model"], prof["auxiliary_models"]) and m not in mapped for m in served):
         return "invalid (model mismatch)", "HB-VAL-002"
     return "valid", None
+
+
+def _mapped(plan: dict, cell: dict) -> frozenset[str]:
+    """US-11: the models the cell's task routes roles to (`model_map`, frozen in the plan's task record), by base id
+    (R-32). A plan from before the map was frozen has none."""
+    model_map = as_dict(as_dict(as_dict(plan.get("tasks")).get(cell.get("task"))).get("model_map"))
+    return frozenset(normalize.base_model_id(m) for m in model_map.values() if isinstance(m, str))
 
 
 def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id: str | None) -> CellView:
@@ -355,7 +362,8 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     model = _model_time(source, calls)
     tool = Measure(None, "not graded") if tools is None else busy_ms(tools)
     state = outcome["outcome"] if outcome else ("no outcome" if "cell.launch_intent" in events else "not started")
-    validity, validity_code = _validity(cell, prof, outcome, state, served, unrecorded, normalize.hook_denials(tools or []))
+    validity, validity_code = _validity(cell, prof, outcome, state, served, unrecorded, normalize.hook_denials(tools or []),
+                                        _mapped(plan, cell))
     cause = Cause[outcome["cause"]] if outcome and outcome.get("cause") else None
     return CellView(
         cell_id=cid, label=cell.get("label", cid), combo=cell["combo"], pack=cell["pack"], harness=cell["harness"], model=cell["model"],
