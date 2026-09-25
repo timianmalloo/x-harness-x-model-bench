@@ -77,7 +77,15 @@ def test_the_moved_grader_gives_the_gate_runs_0_3_correctness_and_leaves_the_arc
 # GR-CODE c2 on the gate runs, (regression_count, behavioural_equivalence) per cell. D1's regression counts are
 # characterization values (design: Expected values), recorded by this slice with the seeded fixture passing in the
 # same run; the NA rows are exact.
-GATE_C2 = {}
+NO_PUBLIC = ((None, "task has no public tests"), (None, "not a D-task"))
+NO_REGRESSION = ((0, None), (None, "no differential oracle in this task version"))
+GATE_C2 = {
+    "a1-capture-1": dict.fromkeys(("30f816846fc85c80", "426749526d9c4659", "600fcbb7cd5329b6"), NO_PUBLIC),
+    # caa8's one first-run candidate (UpgradeTests.AJournalBeingRewritten_IsNeverObservedHalfWritten) was the measured
+    # flake; the confirming run removes it.
+    "row15-d1-1": dict.fromkeys(("2535962f830d7718", "35af195cfe821dca", "3ff04431d3b5ac27", "4a6250261f80ded4",
+                                 "c3d40fa1377ba0dc", "caa8ca38b1a929a8"), NO_REGRESSION),
+}
 
 
 # --- D1 fixtures: the frozen workspace in a git repo that reproduces the archive's commits (G9) --------------------
@@ -553,6 +561,13 @@ def test_a_candidate_that_passes_on_the_cells_second_run_is_a_flake_not_a_regres
 
 
 TIMEOUT = done(None, timed_out=True)
+
+
+def test_a_confirming_run_that_times_out_is_na(tmp_path, monkeypatch):
+    graded_elsewhere(monkeypatch)
+    fake_public(monkeypatch, pre={"N.A.a": "Passed"}, cell=[{"N.A.a": "Failed"}, TIMEOUT])
+    out = correctness.grade_cell(public_cell(tmp_path))
+    assert c2_of(out)["regression_count"] == (None, "HB-GRD-002 grading step timeout after 60 s")
 
 
 @pytest.mark.parametrize(("cell", "pre", "expected", "runs"), [

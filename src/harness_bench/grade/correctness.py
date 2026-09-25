@@ -13,7 +13,8 @@
 - build_and_suite_clean: 1 iff the working copy builds on its own, in a grading copy without build output: every
   `*.csproj` builds offline (`dotnet build`, sorted, the first failure decides), or `python -m compileall -q` exits 0.
 - regression_count (GR-CODE c2): the task's public tests, keyed `className.name` from the per-test TRX, that pass on the
-  pre-turn tree and fail, are skipped or are missing on the cell's tree. The cell's tree runs first; the pre-turn
+  pre-turn tree and fail, are skipped or are missing on the cell's tree, confirmed by a second run of the cell's tree
+  (a measured flake is not a regression). The cell's tree runs first; the pre-turn
   commit and tree are found once per cell and shared with DR-G4's control. The TRX's host fields and the
   `Results File:` line are never read or stored (docs/notes/spike-gr-code-trx.md).
 - behavioural_equivalence is NA on every task version (R-68 1); `not a D-task` off scenario 4 is the recorded deviation N4.
@@ -333,8 +334,7 @@ def _public_suite(tree: Path, projects: list[str], env: dict, timeout: float, lo
         parsed = public_outcomes(trx)
         if parsed is None:
             return outcomes, "named TRX result is unparsable"
-        for key, passed in parsed.items():
-            outcomes[key] = outcomes.get(key, True) and passed
+        outcomes.update(parsed)  # className carries the namespace, so two projects do not share a key
     return outcomes, None
 
 
@@ -370,6 +370,18 @@ def regression_count(inp: CellInput, oracle: dict, timeout: float, pre: PreTurn)
     if failure:
         return written(None, failure if failure == RESTORE or failure.startswith("HB-GRD-002") else PRE_TURN_BROKEN)
     regressed = sorted(k for k, passed in before.items() if passed and not after.get(k, False))
+    if regressed:
+        # A candidate must not pass on a second run of the cell's tree either: a suite test that failed 1 in 16 runs
+        # showed as a regression on a cell that did not touch it (spike note, c2). The second run costs one suite run,
+        # only when there is a candidate. assume: a flake that fails twice in a row is rare enough to be disclosed, not
+        # removed; confirm by the gate runs' values across passes; if false, the byte-identity gate fails on it.
+        with _changes.grading_copy(ws, out / "cell") as tree:
+            again, failure = _public_suite(tree, projects, env, timeout, log)
+        if failure:
+            return written(None, failure)
+        confirmed = [k for k in regressed if not again.get(k, False)]
+        log.append(f"candidates {len(regressed)}, confirmed on a second run of the cell's tree {len(confirmed)}\n")
+        regressed = confirmed
     log += [f"regressions {len(regressed)} of {sum(before.values())} passing before\n", *(f"regressed {k}\n" for k in regressed)]
     return written(len(regressed), None)
 

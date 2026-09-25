@@ -60,8 +60,8 @@
   {
     "name": "GR-CODE c1: the pre-turn control skipped, so a compile error is 0 unconditionally (R-67 c1)",
     "file": "src/harness_bench/grade/correctness.py",
-    "find": "    if c.compile_error:\n        c = _by_cause(inp, oracle, c, timeout)\n",
-    "replace": "    if c.compile_error:\n        c = Result(0, Decimal(0), None, c.evidence)\n",
+    "find": "        if c.compile_error:\n            c = _by_cause(inp, oracle, c, timeout, pre)\n",
+    "replace": "        if c.compile_error:\n            c = Result(0, Decimal(0), None, c.evidence)\n",
     "tests": ["tests/test_grade_correctness.py::test_a_compile_error_is_0_only_when_the_pre_turn_tree_builds",
               "tests/test_grade_correctness.py::test_a_compile_error_with_no_builder_commit_is_na_not_found"]
   },
@@ -178,5 +178,232 @@
     "find": "BUILD_OUTPUT = frozenset({\".git\", \"bin\", \"obj\",",
     "replace": "BUILD_OUTPUT = frozenset({\".git\", \"obj\",",
     "tests": ["tests/test_grade_correctness.py::test_the_pack_on_base_is_the_pack_commit_so_the_pack_is_not_a_change"]
+  },
+  {
+    "name": "GR-CODE c2: every csproj is a public test project (the Test.Sdk marker ignored)",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "for p in ws.rglob(\"*.csproj\") if TEST_SDK.search(p.read_text(encoding=\"utf-8\")))",
+    "replace": "for p in ws.rglob(\"*.csproj\"))",
+    "tests": [
+      "tests/test_grade_correctness.py::test_a_task_with_no_public_tests_is_na_and_not_a_d_task"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: a task with no public tests reads 0 regressions",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "        return Score(None, NO_PUBLIC_TESTS)\n",
+    "replace": "        return Score(0, None)\n",
+    "tests": [
+      "tests/test_grade_correctness.py::test_a_task_with_no_public_tests_is_na_and_not_a_d_task"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: an unbuilt oracle runner reaches the public-test reader",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "        return Score(None, f\"oracle runner {kind!r} not built (phase 1 runs unittest)\")\n    projects = public_tests",
+    "replace": "        pass\n    projects = public_tests",
+    "tests": [
+      "tests/test_grade_correctness.py::test_regression_count_is_na_for_an_unbuilt_runner_or_no_working_copy"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: a python task's public tests are not reported as not built",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "    if kind == \"unittest\":  # simplify",
+    "replace": "    if False:  # simplify",
+    "tests": [
+      "tests/test_grade_correctness.py::test_a_python_task_with_public_tests_is_na_not_built"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: no working copy read past (regression_count)",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "        return Score(None, \"public tests of runner 'unittest' not built\")\n    if not ws.is_dir():\n",
+    "replace": "        return Score(None, \"public tests of runner 'unittest' not built\")\n    if False:\n",
+    "tests": [
+      "tests/test_grade_correctness.py::test_regression_count_is_na_for_an_unbuilt_runner_or_no_working_copy"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: no builder commit reads 0 regressions (F11)",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "        return Score(None, _changes.NOT_FOUND)\n",
+    "replace": "        return Score(0, None)\n",
+    "tests": [
+      "tests/test_grade_correctness.py::test_regression_count_with_no_builder_commit_is_na_not_found"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: a test missing on the cell's tree is read as passing",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "not after.get(k, False))",
+    "replace": "not after.get(k, True))",
+    "tests": [
+      "tests/test_grade_correctness.py::test_regression_count_counts_public_tests_that_passed_before_and_do_not_pass_after",
+      "tests/test_grade_correctness.py::test_a_deleted_public_project_makes_its_passing_tests_missing_so_they_count"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: a test that did not pass on the pre-turn tree counts as a regression",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "if passed and not after.get(k, False))",
+    "replace": "if not after.get(k, False))",
+    "tests": [
+      "tests/test_grade_correctness.py::test_regression_count_counts_public_tests_that_passed_before_and_do_not_pass_after"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: a theory passes when any one case passes",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "out[key] = out.get(key, True) and result.attrib[\"outcome\"] == \"Passed\"",
+    "replace": "out[key] = out.get(key, False) or result.attrib[\"outcome\"] == \"Passed\"",
+    "tests": [
+      "tests/test_grade_correctness.py::test_regression_count_counts_public_tests_that_passed_before_and_do_not_pass_after",
+      "tests/test_grade_correctness.py::test_the_trx_reader_needs_only_names_ids_and_outcomes"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: a TRX whose root is not a VSTest TestRun is read",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "        if root.tag != TRX + \"TestRun\":\n            return None\n",
+    "replace": "",
+    "tests": [
+      "tests/test_grade_correctness.py::test_the_trx_reader_needs_only_names_ids_and_outcomes"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: a public project deleted by the cell is NA, not its tests missing",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "            log.append(f\"{tree.name}: {project} missing\\n\")\n            continue\n",
+    "replace": "            return outcomes, NOT_BUILDING\n",
+    "tests": [
+      "tests/test_grade_correctness.py::test_a_deleted_public_project_makes_its_passing_tests_missing_so_they_count"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: a public-suite timeout is not NA HB-GRD-002",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "        if done is None or done.timed_out:\n",
+    "replace": "        if False:\n",
+    "tests": [
+      "tests/test_grade_correctness.py::test_regression_count_is_na_when_a_tree_does_not_build_or_the_suite_cannot_run"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: a compile error on the cell's tree is not 'workspace does not build'",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "RESTORE if cause == \"restore\" else NOT_BUILDING if cause == \"compile\" else \"named TRX result file missing\"",
+    "replace": "RESTORE if cause == \"restore\" else \"named TRX result file missing\"",
+    "tests": [
+      "tests/test_grade_correctness.py::test_regression_count_is_na_when_a_tree_does_not_build_or_the_suite_cannot_run"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: a restore failure on a tree is read as 'workspace does not build' (F13)",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "RESTORE if cause == \"restore\" else NOT_BUILDING if cause == \"compile\"",
+    "replace": "NOT_BUILDING if cause in (\"restore\", \"compile\")",
+    "tests": [
+      "tests/test_grade_correctness.py::test_regression_count_is_na_when_a_tree_does_not_build_or_the_suite_cannot_run"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: an unreadable public TRX reads as no tests",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "        if parsed is None:\n            return outcomes, \"named TRX result is unparsable\"\n",
+    "replace": "        if parsed is None:\n            parsed = {}\n",
+    "tests": [
+      "tests/test_grade_correctness.py::test_an_unreadable_public_trx_is_na_never_0"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: the cell's tree that does not build still runs the pre-turn suite",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "    if failure:\n        return written(None, failure)\n",
+    "replace": "    if failure and False:\n        return written(None, failure)\n",
+    "tests": [
+      "tests/test_grade_correctness.py::test_regression_count_is_na_when_a_tree_does_not_build_or_the_suite_cannot_run"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: a pre-turn tree that does not build reads as a count",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "        return written(None, failure if failure == RESTORE or failure.startswith(\"HB-GRD-002\") else PRE_TURN_BROKEN)\n",
+    "replace": "        pass\n",
+    "tests": [
+      "tests/test_grade_correctness.py::test_regression_count_is_na_when_a_tree_does_not_build_or_the_suite_cannot_run"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: the pre-turn tree's infrastructure failure replaced by 'pre-turn tree does not build'",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "failure if failure == RESTORE or failure.startswith(\"HB-GRD-002\") else PRE_TURN_BROKEN)",
+    "replace": "PRE_TURN_BROKEN)",
+    "tests": [
+      "tests/test_grade_correctness.py::test_regression_count_is_na_when_a_tree_does_not_build_or_the_suite_cannot_run"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: the step's stdout (the Results File line, host paths) stored in the regressions log",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "{' '.join(argv)}\\nexit {done.returncode if done else 'not run'}\\n\")",
+    "replace": "{' '.join(argv)}\\nexit {done.returncode if done else 'not run'}\\n{done.stdout if done else ''}\")",
+    "tests": [
+      "tests/test_grade_correctness.py::test_no_host_identifying_trx_attribute_or_results_file_line_is_read_stored_or_reported"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: the pre-turn commit found again by each reader (not memoised per cell)",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "    @cached_property\n    def commit(self)",
+    "replace": "    @property\n    def commit(self)",
+    "tests": [
+      "tests/test_grade_correctness.py::test_the_pre_turn_commit_and_tree_are_found_once_per_cell_for_both_readers"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: the pre-turn tree materialised again by each reader (not memoised per cell)",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "    @cached_property\n    def tree(self)",
+    "replace": "    @property\n    def tree(self)",
+    "tests": [
+      "tests/test_grade_correctness.py::test_the_pre_turn_commit_and_tree_are_found_once_per_cell_for_both_readers"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: a D-task's behavioural_equivalence reads 'not a D-task'",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "NO_DIFFERENTIAL if task.get(\"scenario\") == 4 else NOT_D_TASK",
+    "replace": "NOT_D_TASK",
+    "tests": [
+      "tests/test_grade_correctness.py::test_d1_behavioural_equivalence_is_na_no_differential_oracle"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: a non-D task's behavioural_equivalence loses the recorded deviation (N4)",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "NO_DIFFERENTIAL if task.get(\"scenario\") == 4 else NOT_D_TASK",
+    "replace": "NO_DIFFERENTIAL",
+    "tests": [
+      "tests/test_grade_correctness.py::test_a_task_with_no_public_tests_is_na_and_not_a_d_task"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: a candidate counted without the cell's confirming second run (a flake reads as a regression)",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "        confirmed = [k for k in regressed if not again.get(k, False)]\n",
+    "replace": "        confirmed = regressed\n",
+    "tests": [
+      "tests/test_grade_correctness.py::test_a_candidate_that_passes_on_the_cells_second_run_is_a_flake_not_a_regression"
+    ]
+  },
+  {
+    "name": "GR-CODE c2: the confirming run's own failure ignored (its partial outcomes read as a count)",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "            again, failure = _public_suite(tree, projects, env, timeout, log)\n        if failure:\n            return written(None, failure)\n",
+    "replace": "            again, failure = _public_suite(tree, projects, env, timeout, log)\n",
+    "tests": [
+      "tests/test_grade_correctness.py::test_a_confirming_run_that_times_out_is_na"
+    ]
   }
 ]
