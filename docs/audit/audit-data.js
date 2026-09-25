@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T21:06:27Z",
+  "generated": "2026-09-25T21:30:44Z",
   "audit": [
     {
       "actor": null,
@@ -32102,6 +32102,415 @@ window.AUDIT_DATA = {
             "sha256": "9c2ea2541568e216b91397ba24c8a978d19c475b8cc9988d1d4e9d21fc2a253c",
             "status": "resolved",
             "token": "src/harness_bench/telemetry/copilot.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3D7MJHVFJQ570K916PVRJNP",
+      "shortname": "Goal: the Codex half of ruling R-74 (docs/notes/rulings.md R-74 item 5; …",
+      "datetime": "2026-09-25T21:30:42Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: the Codex half of ruling R-74 (docs/notes/rulings.md R-74 item 5; the Claude Code and Copilot halves are built, see W3-S6's code): the Codex `delegate` allowance from the measured qualification turn, red first.\nMeasured facts (run qual-r74-codex-1, 2026-09-25, Codex 0.156.0, Q6): the parent rollout issued function calls `spawn_agent` (1) and `wait_agent` (1); the spawned agent wrote its OWN rollout file in the same fresh CODEX_HOME (`home/sessions/<date>/rollout-*.jsonl`, a second file whose records carry `inter_agent_communication_metadata`) and served `gpt-6-luna` (4 calls) while the parent served `gpt-6-sol`; today's Codex reader reads only the parent rollout, so the ledger saw no luna call; the pinned 0.156.0 record also names send_message, followup_task, interrupt_agent and list_agents (ok.jsonl:4).\nDone when: The Codex reader (src/harness_bench/telemetry/codex.py) classes spawn_agent, wait_agent, send_message, followup_task, interrupt_agent and list_agents as `delegate` (static in the reader, as the Claude and Copilot readers do); the views scenario rule then puts them in profile only for scenario 6.; The Codex reader reads every rollout the cell's fresh home holds for the cell (the parent and each spawned agent's), so the sub-agent's model calls and tool calls land in the ledger (attributed to their own rollout/session), and an unreadable sub-agent rollout makes the cell `not recorded`, as the Claude sub-agent path does.; The Codex launcher gives the allowance per cell only for scenario 6 (whatever profile/config switch keeps Codex collaboration tools off for other scenarios, if one exists in 0.156.0's config; if collaboration cannot be turned off per cell, say so and keep today's behaviour for non-scenario-6 cells, where the tools are out of profile).; Red first, on placeholder fixtures cut from the measured shape under tests/fixtures/native/codex/ (fixed placeholders only: no path, e-mail, user name or host name): the two tools classed delegate; a two-rollout home gives model calls on both gpt-6-sol and gpt-6-luna; a scenario-5 cell with spawn_agent is still HB-VAL-008; each red committed separately and failing on an assertion.; tests/mutations/scenario6.json gains a named mutant per new branch, each killed; the exactly-once find control stays green; uv run pytest -q -p no:cacheprovider on the touched test files passes; uv run ruff check src tests tools is clean.\nNot in scope: running any live Codex turn (the Leader runs the qualification); the Claude Code or Copilot readers; any file under runs/ (read nothing there; the facts above are the measurement); bench run; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 250k tokens\nMain-line budget: one slice of at most 20 minutes; commit each red and each green immediately.\n\nGrounding: docs/notes/rulings.md R-73, R-74; src/harness_bench/telemetry/{codex,claude_code}.py (the Claude sub-agent reading W3-S6 added); src/harness_bench/{views,profiles}.py; bench/profiles/codex.yaml; tests/test_telemetry_codex*.py; tests/test_delegate.py; tests/fixtures/native/codex/. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3D7MMN8AKHG9VAEP2WBZWSX",
+      "shortname": "compile-Goal: the Codex half of ruling R-74 (docs/notes/rulings.md R-74 item 5; …",
+      "datetime": "2026-09-25T21:30:44Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: the Codex half of ruling R-74 (docs/notes/rulings.md R-74 item 5; the Claude Code and Copilot halves are built, see W3-S6's code): the Codex `delegate` allowance from the measured qualification turn, red first. Measured facts (run qual-r74-codex-1, 2026-09-25, Codex 0.156.0, Q6): the parent rollout issued function calls `spawn_agent` (1) and `wait_agent` (1); the spawned agent wrote its OWN rollout file in the same fresh CODEX_HOME (`home/sessions/<date>/rollout-*.jsonl`, a second file whose records carry `inter_agent_communication_metadata`) and served `gpt-6-luna` (4 calls) while the parent served `gpt-6-sol`; today's Codex reader reads only the parent rollout, so the ledger saw no luna call; the pinned 0.156.0 record also names send_message, followup_task, interrupt_agent and list_agents (ok.jsonl:4).\nDone when: The Codex reader (src/harness_bench/telemetry/codex.py) classes spawn_agent, wait_agent, send_message, followup_task, interrupt_agent and list_agents as `delegate` (static in the reader, as the Claude and Copilot readers do); the views scenario rule then puts them in profile only for scenario 6.; The Codex reader reads every rollout the cell's fresh home holds for the cell (the parent and each spawned agent's), so the sub-agent's model calls and tool calls land in the ledger (attributed to their own rollout/session), and an unreadable sub-agent rollout makes the cell `not recorded`, as the Claude sub-agent path does.; The Codex launcher gives the allowance per cell only for scenario 6 (whatever profile/config switch keeps Codex collaboration tools off for other scenarios, if one exists in 0.156.0's config; if collaboration cannot be turned off per cell, say so and keep today's behaviour for non-scenario-6 cells, where the tools are out of profile).; Red first, on placeholder fixtures cut from the measured shape under tests/fixtures/native/codex/ (fixed placeholders only: no path, e-mail, user name or host name): the two tools classed delegate; a two-rollout home gives model calls on both gpt-6-sol and gpt-6-luna; a scenario-5 cell with spawn_agent is still HB-VAL-008; each red committed separately and failing on an assertion.; tests/mutations/scenario6.json gains a named mutant per new branch, each killed; the exactly-once find control stays green; uv run pytest -q -p no:cacheprovider on the touched test files passes; uv run ruff check src tests tools is clean.\nNot in scope: running any live Codex turn (the Leader runs the qualification); the Claude Code or Copilot readers; any file under runs/ (read nothing there; the facts above are the measurement); bench run; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 250k tokens\nMain-line budget: one slice of at most 20 minutes; commit each red and each green immediately.\nGrounding: docs/notes/rulings.md R-73, R-74; src/harness_bench/telemetry/{codex,claude_code}.py (the Claude sub-agent reading W3-S6 added); src/harness_bench/{views,profiles}.py; bench/profiles/codex.yaml; tests/test_telemetry_codex*.py; tests/test_delegate.py; tests/fixtures/native/codex/. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: The Codex reader (src/harness_bench/telemetry/codex.py) classes spawn_agent, wait_agent, send_message, followup_task, interrupt_agent and list_agents as `delegate` (static in the reader, as the Claude and Copilot readers do) | phrase: The Codex reader (src/harness_bench/telemetry/codex.py) classes spawn_agent, wait_agent, send_message, followup_task, interrupt_agent and list_agents as `delegate` (static in the reader, as the Claude and Copilot readers do) |\n| done_when: the views scenario rule then puts them in profile only for scenario 6. | phrase: the views scenario rule then puts them in profile only for scenario 6. |\n| done_when: The Codex reader reads every rollout the cell's fresh home holds for the cell (the parent and each spawned agent's), so the sub-agent's model calls and tool calls land in the ledger (attributed to their own rollout/session), and an unreadable sub-agent rollout makes the cell `not recorded`, as the Claude sub-agent path does. | phrase: The Codex reader reads every rollout the cell's fresh home holds for the cell (the parent and each spawned agent's), so the sub-agent's model calls and tool calls land in the ledger (attributed to their own rollout/session), and an unreadable sub-agent rollout makes the cell `not recorded`, as the Claude sub-agent path does. |\n| done_when: The Codex launcher gives the allowance per cell only for scenario 6 (whatever profile/config switch keeps Codex collaboration tools off for other scenarios, if one exists in 0.156.0's config | phrase: The Codex launcher gives the allowance per cell only for scenario 6 (whatever profile/config switch keeps Codex collaboration tools off for other scenarios, if one exists in 0.156.0's config |\n| done_when: if collaboration cannot be turned off per cell, say so and keep today's behaviour for non-scenario-6 cells, where the tools are out of profile). | phrase: if collaboration cannot be turned off per cell, say so and keep today's behaviour for non-scenario-6 cells, where the tools are out of profile). |\n| done_when: Red first, on placeholder fixtures cut from the measured shape under tests/fixtures/native/codex/ (fixed placeholders only: no path, e-mail, user name or host name): the two tools classed delegate | phrase: Red first, on placeholder fixtures cut from the measured shape under tests/fixtures/native/codex/ (fixed placeholders only: no path, e-mail, user name or host name): the two tools classed delegate |\n| done_when: a two-rollout home gives model calls on both gpt-6-sol and gpt-6-luna | phrase: a two-rollout home gives model calls on both gpt-6-sol and gpt-6-luna |\n| done_when: a scenario-5 cell with spawn_agent is still HB-VAL-008 | phrase: a scenario-5 cell with spawn_agent is still HB-VAL-008 |\n| done_when: each red committed separately and failing on an assertion. | phrase: each red committed separately and failing on an assertion. |\n| done_when: tests/mutations/scenario6.json gains a named mutant per new branch, each killed | phrase: tests/mutations/scenario6.json gains a named mutant per new branch, each killed |\n| done_when: the exactly-once find control stays green | phrase: the exactly-once find control stays green |\n| done_when: uv run pytest -q -p no:cacheprovider on the touched test files passes | phrase: uv run pytest -q -p no:cacheprovider on the touched test files passes |\n| done_when: uv run ruff check src tests tools is clean. | phrase: uv run ruff check src tests tools is clean. |\n| not_in_scope: running any live Codex turn (the Leader runs the qualification) | phrase: running any live Codex turn (the Leader runs the qualification) |\n| not_in_scope: the Claude Code or Copilot readers | phrase: the Claude Code or Copilot readers |\n| not_in_scope: any file under runs/ (read nothing there | phrase: any file under runs/ (read nothing there |\n| not_in_scope: the facts above are the measurement) | phrase: the facts above are the measurement) |\n| not_in_scope: bench run | phrase: bench run |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- delegate: unresolved (not found)\n- spawn_agent: unresolved (not found)\n- wait_agent: unresolved (not found)\n- home/sessions/<date>/rollout-*.jsonl: unresolved (not found)\n- inter_agent_communication_metadata: unresolved (not found)\n- gpt-6-luna: unresolved (not found)\n- gpt-6-sol: unresolved (not found)\n- not recorded: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- src/harness_bench/telemetry/codex.py: src/harness_bench/telemetry/codex.py sha256 b6ad481f238629cbc157e3681ba059fadd3573dd0f98c1fc08b87a239d6e2700\n- rollout/session: unresolved (not found)\n- profile/config: unresolved (not found)\n- tests/fixtures/native/codex/: unresolved (not found)\n- tests/mutations/scenario6.json: tests/mutations/scenario6.json sha256 1bcd725e90333bab28cd3170561a6bbf97502f7e7dbd70fc61c725c90df16dc0\n- runs/: unresolved (not found)\n- src/harness_bench/telemetry/{codex,claude_code}.py: unresolved (not found)\n- src/harness_bench/{views,profiles}.py: unresolved (not found)\n- bench/profiles/codex.yaml: bench/profiles/codex.yaml sha256 edf72e7ae0a6e78afe9f5b20334f945f6557f319ad503f9d7ecd795b167ad601\n- tests/test_telemetry_codex*.py: unresolved (not found)\n- tests/test_delegate.py: tests/test_delegate.py sha256 755f6b5c8f0832aefbfdb98d3e6feee6d9ca4c31cac1434c096ad27c8d9ac7eb\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3D7MJHVFJQ570K916PVRJNP\nraw sha256: fcc8a4afb6762c6d7fc1feca7196488887b450fa71ed6cc69eef708dc95e9f95\ncompiler model: claude-opus-5-5\nengine seconds: 0.005\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3D7MJHVFJQ570K916PVRJNP for claude-code v1: 19 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "The Codex reader (src/harness_bench/telemetry/codex.py) classes spawn_agent, wait_agent, send_message, followup_task, interrupt_agent and list_agents as `delegate` (static in the reader, as the Claude and Copilot readers do)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The Codex reader (src/harness_bench/telemetry/codex.py) classes spawn_agent, wait_agent, send_message, followup_task, interrupt_agent and list_agents as `delegate` (static in the reader, as the Claude and Copilot readers do)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the views scenario rule then puts them in profile only for scenario 6.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the views scenario rule then puts them in profile only for scenario 6."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The Codex reader reads every rollout the cell's fresh home holds for the cell (the parent and each spawned agent's), so the sub-agent's model calls and tool calls land in the ledger (attributed to their own rollout/session), and an unreadable sub-agent rollout makes the cell `not recorded`, as the Claude sub-agent path does.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The Codex reader reads every rollout the cell's fresh home holds for the cell (the parent and each spawned agent's), so the sub-agent's model calls and tool calls land in the ledger (attributed to their own rollout/session), and an unreadable sub-agent rollout makes the cell `not recorded`, as the Claude sub-agent path does."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The Codex launcher gives the allowance per cell only for scenario 6 (whatever profile/config switch keeps Codex collaboration tools off for other scenarios, if one exists in 0.156.0's config",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The Codex launcher gives the allowance per cell only for scenario 6 (whatever profile/config switch keeps Codex collaboration tools off for other scenarios, if one exists in 0.156.0's config"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "if collaboration cannot be turned off per cell, say so and keep today's behaviour for non-scenario-6 cells, where the tools are out of profile).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "if collaboration cannot be turned off per cell, say so and keep today's behaviour for non-scenario-6 cells, where the tools are out of profile)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Red first, on placeholder fixtures cut from the measured shape under tests/fixtures/native/codex/ (fixed placeholders only: no path, e-mail, user name or host name): the two tools classed delegate",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Red first, on placeholder fixtures cut from the measured shape under tests/fixtures/native/codex/ (fixed placeholders only: no path, e-mail, user name or host name): the two tools classed delegate"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a two-rollout home gives model calls on both gpt-6-sol and gpt-6-luna",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a two-rollout home gives model calls on both gpt-6-sol and gpt-6-luna"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a scenario-5 cell with spawn_agent is still HB-VAL-008",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a scenario-5 cell with spawn_agent is still HB-VAL-008"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "each red committed separately and failing on an assertion.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "each red committed separately and failing on an assertion."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/scenario6.json gains a named mutant per new branch, each killed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/scenario6.json gains a named mutant per new branch, each killed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the exactly-once find control stays green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the exactly-once find control stays green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider on the touched test files passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider on the touched test files passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "running any live Codex turn (the Leader runs the qualification)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "running any live Codex turn (the Leader runs the qualification)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the Claude Code or Copilot readers",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the Claude Code or Copilot readers"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/ (read nothing there",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/ (read nothing there"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the facts above are the measurement)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the facts above are the measurement)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "250k tokens",
+          "done_when": [
+            "The Codex reader (src/harness_bench/telemetry/codex.py) classes spawn_agent, wait_agent, send_message, followup_task, interrupt_agent and list_agents as `delegate` (static in the reader, as the Claude and Copilot readers do)",
+            "the views scenario rule then puts them in profile only for scenario 6.",
+            "The Codex reader reads every rollout the cell's fresh home holds for the cell (the parent and each spawned agent's), so the sub-agent's model calls and tool calls land in the ledger (attributed to their own rollout/session), and an unreadable sub-agent rollout makes the cell `not recorded`, as the Claude sub-agent path does.",
+            "The Codex launcher gives the allowance per cell only for scenario 6 (whatever profile/config switch keeps Codex collaboration tools off for other scenarios, if one exists in 0.156.0's config",
+            "if collaboration cannot be turned off per cell, say so and keep today's behaviour for non-scenario-6 cells, where the tools are out of profile).",
+            "Red first, on placeholder fixtures cut from the measured shape under tests/fixtures/native/codex/ (fixed placeholders only: no path, e-mail, user name or host name): the two tools classed delegate",
+            "a two-rollout home gives model calls on both gpt-6-sol and gpt-6-luna",
+            "a scenario-5 cell with spawn_agent is still HB-VAL-008",
+            "each red committed separately and failing on an assertion.",
+            "tests/mutations/scenario6.json gains a named mutant per new branch, each killed",
+            "the exactly-once find control stays green",
+            "uv run pytest -q -p no:cacheprovider on the touched test files passes",
+            "uv run ruff check src tests tools is clean."
+          ],
+          "fan_out_cap": 0,
+          "goal": "the Codex half of ruling R-74 (docs/notes/rulings.md R-74 item 5; the Claude Code and Copilot halves are built, see W3-S6's code): the Codex `delegate` allowance from the measured qualification turn, red first. Measured facts (run qual-r74-codex-1, 2026-09-25, Codex 0.156.0, Q6): the parent rollout issued function calls `spawn_agent` (1) and `wait_agent` (1); the spawned agent wrote its OWN rollout file in the same fresh CODEX_HOME (`home/sessions/<date>/rollout-*.jsonl`, a second file whose records carry `inter_agent_communication_metadata`) and served `gpt-6-luna` (4 calls) while the parent served `gpt-6-sol`; today's Codex reader reads only the parent rollout, so the ledger saw no luna call; the pinned 0.156.0 record also names send_message, followup_task, interrupt_agent and list_agents (ok.jsonl:4).",
+          "main_line_budget": "one slice of at most 20 minutes; commit each red and each green immediately.\nGrounding: docs/notes/rulings.md R-73, R-74; src/harness_bench/telemetry/{codex,claude_code}.py (the Claude sub-agent reading W3-S6 added); src/harness_bench/{views,profiles}.py; bench/profiles/codex.yaml; tests/test_telemetry_codex*.py; tests/test_delegate.py; tests/fixtures/native/codex/. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "running any live Codex turn (the Leader runs the qualification)",
+            "the Claude Code or Copilot readers",
+            "any file under runs/ (read nothing there",
+            "the facts above are the measurement)",
+            "bench run",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.005,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3D7MJHVFJQ570K916PVRJNP",
+        "raw_sha256": "fcc8a4afb6762c6d7fc1feca7196488887b450fa71ed6cc69eef708dc95e9f95",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "delegate"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "spawn_agent"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "wait_agent"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "home/sessions/<date>/rollout-*.jsonl"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "inter_agent_communication_metadata"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gpt-6-luna"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gpt-6-sol"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "not recorded"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/codex.py",
+            "reason": null,
+            "sha256": "b6ad481f238629cbc157e3681ba059fadd3573dd0f98c1fc08b87a239d6e2700",
+            "status": "resolved",
+            "token": "src/harness_bench/telemetry/codex.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "rollout/session"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profile/config"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/native/codex/"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/scenario6.json",
+            "reason": null,
+            "sha256": "1bcd725e90333bab28cd3170561a6bbf97502f7e7dbd70fc61c725c90df16dc0",
+            "status": "resolved",
+            "token": "tests/mutations/scenario6.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/telemetry/{codex,claude_code}.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/{views,profiles}.py"
+          },
+          {
+            "nearest": null,
+            "path": "bench/profiles/codex.yaml",
+            "reason": null,
+            "sha256": "edf72e7ae0a6e78afe9f5b20334f945f6557f319ad503f9d7ecd795b167ad601",
+            "status": "resolved",
+            "token": "bench/profiles/codex.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_telemetry_codex*.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_delegate.py",
+            "reason": null,
+            "sha256": "755f6b5c8f0832aefbfdb98d3e6feee6d9ca4c31cac1434c096ad27c8d9ac7eb",
+            "status": "resolved",
+            "token": "tests/test_delegate.py"
           }
         ],
         "schema": "compiled-prompt/1",

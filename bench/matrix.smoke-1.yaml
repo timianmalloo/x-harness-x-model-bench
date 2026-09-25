@@ -1,0 +1,12 @@
+# The smoke run (R-38, R-69; the operator's go-ahead 2026-09-25): the six smoke tasks (one per scenario) x the three
+# combos x pack on/off x 1 rep = 36 cells, in one run (Codex's allowance was reset, so R-69's split is not used).
+# Pack revision 95 is pinned through --pack-source (the same pin as row15-d1-1 and the qualifications).
+schema: bench-matrix/1
+run_id: smoke-1
+bom: { file: bench/bom.yaml, subset: smoke }
+repetitions: 1
+packs: ["on", "off"]
+combos:
+  - { id: copilot-sol, harness: copilot,      model: gpt-6-sol }
+  - { id: codex-sol,   harness: codex,        model: gpt-6-sol }
+  - { id: cc-opus,     harness: claude-code,  model: claude-opus-5-5 }

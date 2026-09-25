@@ -1,0 +1,11 @@
+# R-74 item 5: measure Codex's delegation (the operator approved one short Codex qualification, 2026-09-25). With no
+# Codex allowance built yet, a spawn is out of profile, so this cell is expected invalid; what it records is the tool
+# ids Codex issues, the spawned agent's served model and where its rollout lands. The allowance is built from them,
+# and a second Q6 cell then qualifies it.
+schema: bench-matrix/1
+run_id: qual-r74-codex-1
+bom: { file: bench/bom.yaml, subset: [Q6] }
+repetitions: 1
+packs: ["on"]
+combos:
+  - { id: codex-sol, harness: codex, model: gpt-6-sol }
