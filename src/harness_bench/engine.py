@@ -193,6 +193,12 @@ class Engine:
         elif kind == "cell.outcome":
             self.outcomes[row["cell_id"]] = row
             cause = Cause[row["cause"]] if row["cause"] else None
+            if row["outcome"] == "stopped":
+                return
+            if row["outcome"] == "skipped (decision)":
+                return
+            if cause is Cause.model_unavailable:
+                return
             if cause and cause.invalidates:
                 self.infra_streak += 1
                 if self.infra_streak >= CIRCUIT_BREAKER:

@@ -410,8 +410,15 @@ def test_the_circuit_breaker_stops_launching_once(base):  # T1-7: CIRCUIT_BREAKE
 
 def test_the_circuit_breaker_fires_at_its_threshold_not_before(base):  # CIRCUIT_BREAKER = 3 (a cosmic-ray survivor)
     p = _plan(n_cells=5, parallelism=1)
-    _, events, _ = _run(base, p, FakeLauncher({}, missing_exe=True))
+    summary, events, _ = _run(base, p, FakeLauncher({}, missing_exe=True))
     assert sum(1 for e in events if e["kind"] == "cell.launch_intent") == 3
+    stop = next(i for i, e in enumerate(events) if e["kind"] == "run.launch_stopped")
+    assert (events[stop]["code"], events[stop]["reason"]) == (
+        "HB-CELL-114", "circuit breaker: 3 consecutive infrastructure failures")
+    assert not any(e["kind"] == "cell.launch_intent" for e in events[stop + 1:])
+    assert len(_outcomes(events)) == 3
+    assert events[-1]["kind"] == "run.completed"
+    assert summary.exit_code == 3
 
 
 def test_harness_failures_do_not_trip_the_breaker(base):
