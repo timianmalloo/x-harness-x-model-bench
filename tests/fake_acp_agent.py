@@ -13,7 +13,9 @@ Behaviour comes from the FAKE_ACP environment variable (JSON):
    "echo_credential": <at the prompt, echo record_dir/.credentials.json to stderr, a message chunk, echo.txt in cwd,
                        and the prompt's error reply>,
    "daemon": <at the prompt, start a detached grandchild that outlives the turn (a build server), trying breakaway
-              first; it writes its own "pid creation_time" to daemon.pid in cwd>}
+              first; it writes its own "pid creation_time" to daemon.pid in cwd>,
+   "prompt_error": "<after `sleep` seconds, the prompt's error reply carries this message (an auth failure, an
+                    `API Error: <status>`)>"}
 
 Messages it emits (each paired with a recorded real transcript or the ACP schema in
 tests/test_driver.py::test_fake_agent_message_types_are_paired): the initialize result, the session/new
@@ -163,6 +165,10 @@ def main() -> int:
                 send({"jsonrpc": "2.0", "method": "session/update", "params": {"sessionId": session_id,
                       "update": {"sessionUpdate": "agent_message_chunk", "content": {"type": "text", "text": secret}}}})
                 send({"jsonrpc": "2.0", "id": mid, "error": {"code": -32000, "message": secret}})
+                continue
+            if CFG.get("prompt_error"):  # a refused prompt, as an adapter reports it (driver._prompt_error_cause)
+                time.sleep(CFG.get("sleep", 0))
+                send({"jsonrpc": "2.0", "id": mid, "error": {"code": -32000, "message": CFG["prompt_error"]}})
                 continue
             if CFG.get("daemon"):  # T-JOB-daemon: like `dotnet build` leaving its build server behind
                 start_daemon()

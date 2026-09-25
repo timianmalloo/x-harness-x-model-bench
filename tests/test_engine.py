@@ -1973,3 +1973,97 @@ def test_decision_resolves_exactly_once_in_every_order(order):  # R10-4, pure: e
     assert effects == ([] if "answer" not in order else ["applied"] if order[0] == "answer" else ["rejected (already resolved)"])
     assert d.expire(now=1e6) == [] and d.supersede_all() == []
     assert d.answer("D1", "stop") == ("rejected (already resolved)", None)
+
+
+AUTH = {"prompt_error": "Authentication required: run the login again"}  # driver: blocked (auth), HB-CELL-202
+UNSERVED = {"prompt_error": "API Error: 400 the pinned model is not served"}  # normalize.classify: a 4xx, HB-CELL-116
+CELL_TOKENS = 45  # the fake's USAGE over normalize.BUCKETS: 3 + 30 + 7 + 5 (reasoning is not a bucket)
+JUMP = 31.0  # seconds added to the engine clock: past a 30 s decision_timeout, inside the 60 s cell budget
+
+
+def _decision_plan(specs, parallelism, **parameters):
+    """One cell per (harness, combo, fake behaviour), in launch order; decision_timeout is 30 s unless given."""
+    p = _plan(n_cells=len(specs), parallelism=parallelism)
+    p["parameters"].update({"decision_timeout": 30, **parameters})
+    behaviours = {}
+    for cell, (harness, combo, behaviour) in zip(p["cells"], specs, strict=True):
+        cell["harness"], cell["combo"] = harness, combo
+        behaviours[cell["label"]] = behaviour
+    return p, FakeLauncher(behaviours)
+
+
+def _answer_file(run_dir: Path, decision_id: str, option: str) -> Path:
+    """An answer control file, written as `bench answer` writes it (design 4.2)."""
+    uid = uuid.uuid4().hex
+    return _stop_file(run_dir, uid=uid, body=json.dumps(_control(uid, control="answer", decision_id=decision_id, option=option)))
+
+
+def _decision_run(base, plan_and_launcher, script=None, limit=45):
+    """The engine on its own thread, its clock `time.monotonic() + offset[0]`, and `script(eng, offset, run_dir)` called
+    in every tick after the controls and the expiry (design 6.2): each ordering is forced by the tick, never by a sleep."""
+    p, launcher = plan_and_launcher
+    offset = [0.0]
+    run_dir = base / "runs" / p["run_id"]
+    config = engine.EngineConfig(run_dir=run_dir, cells_root=base / "cells", launchers={"fake": launcher, "other": launcher},
+                                 build_workspace=_build_workspace, grade=None, clock=lambda: time.monotonic() + offset[0])
+    eng = engine.Engine(p, config)
+    real_tick = eng.on_tick
+
+    def tick():
+        if script is not None:
+            script(eng, offset, run_dir)
+        real_tick()
+
+    eng.on_tick = tick
+    box = {}
+    thread = threading.Thread(target=lambda: box.setdefault("summary", eng.run()), daemon=True, name="engine-under-test")
+    thread.start()
+    thread.join(limit)
+    assert not thread.is_alive(), f"the engine did not finish within {limit} s"
+    events = _events(run_dir)
+    lifecycle.replay(events, parallelism=p["parameters"]["parallelism"])
+    return eng, events, box["summary"]
+
+
+def _kind(events: list[dict], kind: str) -> list[dict]:
+    return [e for e in events if e["kind"] == kind]
+
+
+def _resolutions(events: list[dict]) -> list[tuple]:
+    return [(e["decision_id"], e["state"], e["option"]) for e in _kind(events, "decision.resolved")]
+
+
+LOOP_ORDERS = {  # case -> step groups, one group per tick, from the tick in which the blocked cell's outcome lands
+    "answer then timeout": (("answer",), ("timeout",)), "timeout then answer": (("timeout",), ("answer",)),
+    "answer and timeout in one tick": (("answer", "timeout"),),
+    "stop then timeout": (("stop",), ("timeout",)), "timeout then stop": (("timeout",), ("stop",))}
+LOOP_EXPECTED = {  # case -> (decision.resolved rows, control.applied effects, cells launched)
+    "answer then timeout": ([("D1", "answered", "continue")], ["applied"], 2),
+    "timeout then answer": ([("D1", "default applied (timeout)", "continue")], ["rejected (already resolved)"], 2),
+    "answer and timeout in one tick": ([("D1", "answered", "continue")], ["applied"], 2),  # controls run before the expiry
+    "stop then timeout": ([("D1", "superseded (stop)", None)], ["applied"], 1),
+    "timeout then stop": ([("D1", "default applied (timeout)", "continue")], ["applied"], 2)}
+
+
+@pytest.mark.parametrize("case", sorted(LOOP_ORDERS))
+def test_resolution_order_through_the_loop(base, case):  # R10-4, engine: the tick order of design 6.2 (TA M3)
+    p, launcher = _decision_plan([("fake", "A", AUTH), ("fake", "A", {})], parallelism=1)
+    blocked = p["cells"][0]["cell_id"]
+    steps = list(LOOP_ORDERS[case])
+
+    def script(eng, offset, run_dir):
+        if blocked in eng.outcomes and steps:
+            for step in steps.pop(0):
+                if step == "timeout":
+                    offset[0] += JUMP
+                elif step == "stop":
+                    _stop_file(run_dir)
+                else:
+                    _answer_file(run_dir, "D1", "continue")
+
+    _, events, summary = _decision_run(base, (p, launcher), script)
+    resolved, effects, launched = LOOP_EXPECTED[case]
+    assert _resolutions(events) == resolved  # exactly one terminal state per decision
+    assert [e["effect"] for e in _kind(events, "control.applied")] == effects
+    assert len(_kind(events, "cell.launch_intent")) == launched
+    assert summary.exit_code == (3 if "stop" in case else 0)
