@@ -202,6 +202,9 @@ def test_the_skill_names_every_status_field():  # SK-1, R-3 condition 3
     expected = {field.name for field in dataclasses.fields(status.Status)}
     expected |= {field.name for field in dataclasses.fields(status.RunningCell)}
     expected |= set(status.PHASE) | set(status.OUTCOMES)
+    expected |= {"decision_id", "decision_kind", "subject", "cause_code", "options", "default", "state", "default_in_s",
+                 "blocked_cell", "qualification_gap", "spend_cap", "open", "answered", "default applied (timeout)",
+                 "superseded (stop)", "bench answer"}  # design 4.6: each decision's fields, kinds, states and its answer
     assert {"stopped", "skipped (decision)", "last_update_ms"} <= expected
     for skill in (".claude/skills/start-benchmark/SKILL.md", ".agents/skills/start-benchmark/SKILL.md"):
         text = (Path(__file__).resolve().parents[1] / skill).read_text(encoding="utf-8")
