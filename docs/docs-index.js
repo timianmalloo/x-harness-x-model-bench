@@ -2551,6 +2551,39 @@ window.DOCS_INDEX = {
       "sourceSha256": "3c461a2234e192bdfeead82323923503ea6eb68d8dbeea1974d27227d2e43428"
     },
     {
+      "id": "proof-phase2-stop",
+      "path": "docs/proof/phase2-stop.md",
+      "title": "Proof Pack: STOP-I (row 10 - stop, decisions, spend cap, circuit breaker)",
+      "type": "proof-pack",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 2 · W2-STOP-I slice 6 (the proof pass)",
+      "reviewBy": "2026-10-09",
+      "reviewSuggested": [],
+      "summary": "W2-STOP-I's join evidence (design section 21's Test Architect conditions): every tests/mutations/{engine,driver, status,cli,plan,stop}.json mutant observed red on its named test (172/172 killed, two stale-find and one wrong-target survivor found and fixed in this slice), R10-1 red on the hard-floor mutant with a clean measured stop time (10.03 s), the full check_models.py output (22/22 seeded variants rejected, 2/2 witnesses violated, the US-44 bounds safety run passed), the plan `:145` Stop/Race/US-15 clauses mapped to their tests, and the test_correctness_dotnet.py timeout test's flake diagnosed (Inferred; not reproduced under measured load). The default suite passes and ruff is clean.",
+      "tags": [
+        "proof",
+        "phase2",
+        "stop-i",
+        "red-first",
+        "mutation",
+        "tla",
+        "join-ready"
+      ],
+      "links": [
+        {
+          "to": "proof-phase2",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-phase2-stop-decisions",
+          "rel": "implements"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "737191e61e247cc2e65ae1fadc00ef54d846b6306ae96e10b42a7e75808aa3ac"
+    },
+    {
       "id": "spec-harness-bench",
       "path": "docs/specs/harness-bench.md",
       "title": "Spec: harness-bench, a cross-harness, cross-model benchmark with the pack as a factor",
@@ -2724,5 +2757,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "111e75d9c2a80c90847bfb8235f8940ba923157eeb6402005b08942074fbb3c7"
+  "graphSha256": "b5a7cb9df37cb87fbeccb45afa6e497ef6ac2da13d3243668de5e4df981816bc"
 };
