@@ -1,0 +1,95 @@
+{
+  "run_id": "e2e-wave1-1790303859",
+  "plan_s": 4.481147100013914,
+  "run_s": 137.65740239998559,
+  "X1.copilot-sol.pack-on.r1": {
+    "outcome": "completed",
+    "wall_ms": 71421,
+    "tokens": {
+      "gpt-6-sol": {
+        "uncached_input": 21,
+        "cache_read": 584022,
+        "cache_write": 103736,
+        "output": 1647
+      }
+    },
+    "pass_at_1": 1
+  },
+  "X1.codex-sol.pack-on.r1": {
+    "outcome": "completed",
+    "wall_ms": 64695,
+    "tokens": {
+      "gpt-6-sol": {
+        "uncached_input": 27980,
+        "cache_read": 251648,
+        "cache_write": 0,
+        "output": 1995
+      }
+    },
+    "pass_at_1": 1
+  },
+  "X1.cc-opus.pack-on.r1": {
+    "outcome": "completed",
+    "wall_ms": 23813,
+    "tokens": {
+      "claude-haiku-4-5-20251001": {
+        "uncached_input": 929,
+        "cache_read": 0,
+        "cache_write": 0,
+        "output": 13
+      },
+      "claude-opus-5-5": {
+        "uncached_input": 10,
+        "cache_read": 181435,
+        "cache_write": 27874,
+        "output": 1676
+      }
+    },
+    "pass_at_1": 1
+  },
+  "X1.copilot-sol.pack-off.r1": {
+    "outcome": "completed",
+    "wall_ms": 20016,
+    "tokens": {
+      "gpt-6-sol": {
+        "uncached_input": 15,
+        "cache_read": 47378,
+        "cache_write": 12686,
+        "output": 675
+      }
+    },
+    "pass_at_1": 1
+  },
+  "X1.codex-sol.pack-off.r1": {
+    "outcome": "completed",
+    "wall_ms": 37998,
+    "tokens": {
+      "gpt-6-sol": {
+        "uncached_input": 8611,
+        "cache_read": 69376,
+        "cache_write": 0,
+        "output": 782
+      }
+    },
+    "pass_at_1": 1
+  },
+  "X1.cc-opus.pack-off.r1": {
+    "outcome": "completed",
+    "wall_ms": 14585,
+    "tokens": {
+      "claude-haiku-4-5-20251001": {
+        "uncached_input": 929,
+        "cache_read": 0,
+        "cache_write": 0,
+        "output": 13
+      },
+      "claude-opus-5-5": {
+        "uncached_input": 8,
+        "cache_read": 87279,
+        "cache_write": 10880,
+        "output": 1231
+      }
+    },
+    "pass_at_1": 1
+  }
+}
