@@ -137,7 +137,7 @@ def _measure(inp: CellInput, rules: tuple | None) -> dict[str, Score]:
                           if pattern.fullmatch(line.removeprefix(codecs.BOM_UTF8))]
                 violations += len(broken)
                 log.append(f"{status}\t{path}\t{'inside' if inside else 'outside'}\t+{len(added)} -{deleted}\t{' '.join(broken)}\n")
-    except gitsafe.GitError as exc:  # `git archive` of the pre-turn commit
+    except gitsafe.GitError as exc:  # `git archive` of the pre-turn commit, or `git check-ignore` over its tree
         if not exc.result.timed_out:
             raise
         return dict.fromkeys((*SCOPE, "convention_drift"), Score(None, f"HB-GRD-002 grading step timeout after {timeout:g} s"))

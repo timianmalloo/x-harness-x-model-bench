@@ -1,0 +1,205 @@
+[
+  {
+    "name": "GR-CODE c3: use the base commit as the base (the pack commit reads as a change)",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "commit = _changes.pre_turn_commit(ws, inp.cell, timeout)",
+    "replace": "commit = _changes.pre_turn_commit(ws, {**inp.cell, \"pack\": \"off\"}, timeout)",
+    "tests": ["tests/test_grade_drift.py::test_a_pack_commit_stand_in_outside_the_blast_radius_is_not_scope_creep"]
+  },
+  {
+    "name": "GR-CODE c3: a file inside the blast radius is scope creep",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "                if not inside:\n",
+    "replace": "                if True:\n",
+    "tests": ["tests/test_grade_drift.py::test_a_block_scoped_namespace_in_a_10_line_file_is_convention_drift_10"]
+  },
+  {
+    "name": "GR-CODE c3: the blast radius matches nothing",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "    return any(fnmatchcase(path, glob) for glob in radius)",
+    "replace": "    return False",
+    "tests": ["tests/test_grade_drift.py::test_a_block_scoped_namespace_in_a_10_line_file_is_convention_drift_10"]
+  },
+  {
+    "name": "GR-CODE c3: the blast radius matches everything",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "    return any(fnmatchcase(path, glob) for glob in radius)",
+    "replace": "    return True",
+    "tests": ["tests/test_grade_drift.py::test_a_3_line_edit_outside_the_blast_radius_is_scope_creep_3_in_1_file"]
+  },
+  {
+    "name": "GR-CODE c3: added lines are not scope creep",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "creep_lines += len(added) + deleted",
+    "replace": "creep_lines += deleted",
+    "tests": ["tests/test_grade_drift.py::test_a_3_line_edit_outside_the_blast_radius_is_scope_creep_3_in_1_file"]
+  },
+  {
+    "name": "GR-CODE c3: deleted lines are not counted",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "            deleted += i2 - i1\n",
+    "replace": "            deleted += 0\n",
+    "tests": ["tests/test_grade_drift.py::test_a_changed_line_counts_twice_a_deleted_file_counts_every_line_and_crlf_counts_nothing"]
+  },
+  {
+    "name": "GR-CODE c3: scope_creep_files counts no file",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "                    creep_files += 1\n",
+    "replace": "                    creep_files += 0\n",
+    "tests": ["tests/test_grade_drift.py::test_a_3_line_edit_outside_the_blast_radius_is_scope_creep_3_in_1_file"]
+  },
+  {
+    "name": "GR-CODE c3: the line diff does not normalise CRLF",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "    return io.BytesIO(path.read_bytes().replace(b\"\\r\\n\", b\"\\n\")).readlines()",
+    "replace": "    return io.BytesIO(path.read_bytes()).readlines()",
+    "tests": ["tests/test_grade_drift.py::test_a_changed_line_counts_twice_a_deleted_file_counts_every_line_and_crlf_counts_nothing"]
+  },
+  {
+    "name": "GR-CODE c3: lines lose their ends (a lost final newline is no changed line)",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "    return io.BytesIO(path.read_bytes().replace(b\"\\r\\n\", b\"\\n\")).readlines()",
+    "replace": "    return path.read_bytes().replace(b\"\\r\\n\", b\"\\n\").splitlines()",
+    "tests": ["tests/test_grade_drift.py::test_a_changed_line_counts_twice_a_deleted_file_counts_every_line_and_crlf_counts_nothing"]
+  },
+  {
+    "name": "GR-CODE c3: a symlink is followed",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "    if path.is_symlink():\n",
+    "replace": "    if False:\n",
+    "tests": ["tests/test_grade_drift.py::test_a_symlink_is_its_target_text_and_never_followed"]
+  },
+  {
+    "name": "GR-CODE c3: a violation is found but not counted",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "                violations += len(broken)\n",
+    "replace": "                violations += 0\n",
+    "tests": ["tests/test_grade_drift.py::test_a_block_scoped_namespace_in_a_10_line_file_is_convention_drift_10"]
+  },
+  {
+    "name": "GR-CODE c3: R1 reads a file-scoped namespace as a violation",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "BLOCK_NAMESPACE = re.compile(rb\"\\s*namespace\\s+[\\w.]+\\s*(?:\\{.*)?\\s*\")",
+    "replace": "BLOCK_NAMESPACE = re.compile(rb\"\\s*namespace\\s+[\\w.]+.*\")",
+    "tests": ["tests/test_grade_drift.py::test_an_added_line_that_opens_a_block_namespace_is_a_violation_and_a_file_scoped_one_is_not"]
+  },
+  {
+    "name": "GR-CODE c3: R1 misses a one-line `namespace X {`",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "BLOCK_NAMESPACE = re.compile(rb\"\\s*namespace\\s+[\\w.]+\\s*(?:\\{.*)?\\s*\")",
+    "replace": "BLOCK_NAMESPACE = re.compile(rb\"\\s*namespace\\s+[\\w.]+\\s*\")",
+    "tests": ["tests/test_grade_drift.py::test_an_added_line_that_opens_a_block_namespace_is_a_violation_and_a_file_scoped_one_is_not"]
+  },
+  {
+    "name": "GR-CODE c3: a UTF-8 BOM hides a first-line block namespace",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "pattern.fullmatch(line.removeprefix(codecs.BOM_UTF8))",
+    "replace": "pattern.fullmatch(line)",
+    "tests": ["tests/test_grade_drift.py::test_a_block_namespace_on_a_first_line_after_a_utf8_bom_is_a_violation"]
+  },
+  {
+    "name": "GR-CODE c3: every changed file's lines are the convention denominator",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "                if file_rules:  # the denominator",
+    "replace": "                if True:  # the denominator",
+    "tests": ["tests/test_grade_drift.py::test_only_lines_of_the_rules_file_type_are_the_convention_denominator"]
+  },
+  {
+    "name": "GR-CODE c3: no lines changed reads as 0.00, not NA",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "if changed else Score(None, NO_LINES, ev)",
+    "replace": "if changed else Score(Decimal(0), None, ev)",
+    "tests": ["tests/test_grade_drift.py::test_a_cell_that_changed_nothing_is_0_and_convention_drift_no_lines_changed"]
+  },
+  {
+    "name": "GR-CODE c3: a task with no rule table is not NA no convention rules",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "    if rules is None:  # a property of the task",
+    "replace": "    if False:  # a property of the task",
+    "tests": ["tests/test_grade_drift.py::test_a_task_with_no_rule_table_is_na_no_convention_rules"]
+  },
+  {
+    "name": "GR-CODE c3: no working copy falls through to the pre-turn reason",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "    if not ws.is_dir():\n",
+    "replace": "    if False:\n",
+    "tests": ["tests/test_grade_drift.py::test_the_shared_na_reasons_hold_for_every_measured_metric"]
+  },
+  {
+    "name": "GR-CODE c3: a missing builder commit is not NA",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "    if commit is None:\n",
+    "replace": "    if False:\n",
+    "tests": ["tests/test_grade_drift.py::test_the_shared_na_reasons_hold_for_every_measured_metric"]
+  },
+  {
+    "name": "GR-CODE c3: a git timeout escapes as a grader failure, not HB-GRD-002",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "        if not exc.result.timed_out:\n",
+    "replace": "        if True:\n",
+    "tests": ["tests/test_grade_drift.py::test_a_git_timeout_is_na_hb_grd_002"]
+  },
+  {
+    "name": "GR-CODE c3: a failed check-ignore reads as nothing ignored",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "            if done.timed_out or done.returncode not in (0, 1):",
+    "replace": "            if False:",
+    "tests": ["tests/test_grade_drift.py::test_a_git_timeout_is_na_hb_grd_002"]
+  },
+  {
+    "name": "GR-CODE c3: an added file under a pre-turn ignore rule is scope creep",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "                if path in ignored:\n",
+    "replace": "                if False:\n",
+    "tests": ["tests/test_grade_drift.py::test_an_untracked_file_the_pre_turn_ignore_rules_name_is_not_scope_creep"]
+  },
+  {
+    "name": "GR-CODE c3: the cell's own ignore rules hide its changes",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "ignored = _ignored(base, ",
+    "replace": "ignored = _ignored(work, ",
+    "tests": ["tests/test_grade_drift.py::test_the_cells_own_ignore_rule_hides_nothing_and_a_tracked_file_under_a_pre_turn_rule_still_counts"]
+  },
+  {
+    "name": "GR-CODE c3: a tracked file under a pre-turn ignore rule is ignored",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "[p for p, s in changes.items() if s == \"added\"]",
+    "replace": "list(changes)",
+    "tests": ["tests/test_grade_drift.py::test_the_cells_own_ignore_rule_hides_nothing_and_a_tracked_file_under_a_pre_turn_rule_still_counts"]
+  },
+  {
+    "name": "GR-CODE c3: only the first check-ignore batch is asked",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "        for i in range(0, len(added), 100):",
+    "replace": "        for i in range(0, min(len(added), 100), 100):",
+    "tests": ["tests/test_grade_drift.py::test_more_ignored_files_than_one_check_ignore_call_takes_are_all_asked"]
+  },
+  {
+    "name": "GR-CODE c3: the ignore-rules git dir is left in the grader's folder",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "        if repo.exists():\n",
+    "replace": "        if False:\n",
+    "tests": ["tests/test_grade_drift.py::test_drift_is_registered_and_returns_only_the_applicable_metrics_with_its_log_as_evidence"]
+  },
+  {
+    "name": "GR-CODE c3: a by-design NA reason is reworded",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "    \"constraint_violations\": \"no constraint checklist in this task version\",",
+    "replace": "    \"constraint_violations\": \"not built\",",
+    "tests": ["tests/test_grade_drift.py::test_the_unmeasured_drift_metrics_are_na_with_the_design_reasons"]
+  },
+  {
+    "name": "GR-CODE c3: metrics outside the applicable set are returned",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "    return {m: s for m, s in out.items() if m in inp.metrics}",
+    "replace": "    return out",
+    "tests": ["tests/test_grade_drift.py::test_drift_is_registered_and_returns_only_the_applicable_metrics_with_its_log_as_evidence"]
+  },
+  {
+    "name": "GR-CODE c3: drift is not registered in runner.GRADERS",
+    "file": "src/harness_bench/grade/runner.py",
+    "find": ", \"drift\": drift.grade_cell}",
+    "replace": "}",
+    "tests": ["tests/test_grade_drift.py::test_drift_is_registered_and_returns_only_the_applicable_metrics_with_its_log_as_evidence"]
+  }
+]

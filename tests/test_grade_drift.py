@@ -21,7 +21,8 @@ from harness_bench.grade import CellInput, drift, runner
 from harness_bench.grade.runner import applicable
 
 CATALOG = config.load_yaml(ROOT / "bench" / "metrics.yaml")
-MEASURED = ("scope_creep", "scope_creep_files", "convention_drift")
+SCOPE = ("scope_creep", "scope_creep_files")
+MEASURED = (*SCOPE, "convention_drift")
 
 
 def encode(score) -> tuple:
@@ -159,12 +160,13 @@ def test_the_shared_na_reasons_hold_for_every_measured_metric(tmp_path, fault, r
     assert {m: got[m] for m in MEASURED} == dict.fromkeys(MEASURED, (None, reason))
 
 
-def test_a_git_archive_timeout_is_na_hb_grd_002(tmp_path, monkeypatch):
+@pytest.mark.parametrize("step", ["archive", "check-ignore"])  # the pre-turn tree, then its ignore rules
+def test_a_git_timeout_is_na_hb_grd_002(tmp_path, monkeypatch, step):
     folder, cell = d1_cell(tmp_path, BLOCK)
     real = procs.run
 
     def run(argv, **kwargs):
-        if "archive" in argv:
+        if step in argv:
             return procs.Completed(returncode=None, stdout="", stderr="", timed_out=True, truncated=False, seconds=7.0)
         return real(argv, **kwargs)
 
@@ -181,6 +183,7 @@ def test_drift_is_registered_and_returns_only_the_applicable_metrics_with_its_lo
     assert {m: (s.value, s.reason, s.evidence) for m, s in out.items()} == {"scope_creep": (0, None, "grading/g/c1/drift/drift.log")}
     assert (tmp_path / "run" / "grading" / "g" / "c1" / "drift" / "drift.log").read_text(encoding="utf-8") == \
         "added\tsrc/AiDe.Core/Projections/Block.cs\tinside\t+10 -0\tR1 file-scoped namespace:4\n"
+    assert [p.name for p in inp.out_dir.iterdir()] == ["drift.log"]  # the trees and the ignore-rules git dir are gone
 
 
 # --- files the pre-turn tree's own ignore rules exclude (the pack hook's marker in the gate's pack-on cells) ----------
@@ -194,7 +197,7 @@ def pack_cell_with_ignore(tmp_path: Path, overlay: dict) -> tuple[Path, dict]:
 
     folder, cell = d1_cell(tmp_path, {}, pack=True)
     ws = folder / "ws"
-    (ws / ".gitignore").write_text(f"{MARKER}\nLICENSE\n", encoding="utf-8", newline="")  # LICENSE is tracked
+    (ws / ".gitignore").write_text(f"{MARKER}\nLICENSE\nscratch/\n", encoding="utf-8", newline="")  # LICENSE is tracked
     git(ws, "add", ".gitignore")
     git(ws, "commit", "-q", "--amend", "-m", "ai-forward pack revision 95")
     for rel, text in overlay.items():
@@ -209,10 +212,15 @@ def test_an_untracked_file_the_pre_turn_ignore_rules_name_is_not_scope_creep(tmp
         {"scope_creep": (0, None), "scope_creep_files": (0, None), "convention_drift": (None, "no lines changed")}
 
 
+def test_more_ignored_files_than_one_check_ignore_call_takes_are_all_asked(tmp_path):  # 100 paths per call
+    got = grade_d1(tmp_path, *pack_cell_with_ignore(tmp_path, {f"scratch/f{i:03}.txt": "x\n" for i in range(150)}))
+    assert {m: got[m] for m in SCOPE} == {"scope_creep": (0, None), "scope_creep_files": (0, None)}
+
+
 def test_the_cells_own_ignore_rule_hides_nothing_and_a_tracked_file_under_a_pre_turn_rule_still_counts(tmp_path):
     folder, cell = pack_cell_with_ignore(tmp_path, {"src/AiDe.Mcp/Extra.cs": "// x\n// y\n"})
     ws = folder / "ws"
-    (ws / ".gitignore").write_text(f"{MARKER}\nLICENSE\nsrc/AiDe.Mcp/Extra.cs\n", encoding="utf-8", newline="")
+    (ws / ".gitignore").write_text(f"{MARKER}\nLICENSE\nscratch/\nsrc/AiDe.Mcp/Extra.cs\n", encoding="utf-8", newline="")
     (ws / "LICENSE").write_bytes((ws / "LICENSE").read_bytes() + b"one more line\n")
     got = grade_d1(tmp_path, folder, cell)
     assert {m: got[m] for m in MEASURED} == \
