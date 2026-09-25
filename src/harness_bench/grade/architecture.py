@@ -46,7 +46,7 @@ def _py_breaks(work: Path, path: str) -> list[str]:
     """
     try:
         tree = ast.parse((work / path).read_bytes(), filename=path)
-    except (SyntaxError, ValueError):
+    except SyntaxError:  # null bytes and a bad encoding are SyntaxError too (Python 3.12)
         return ["<unparsed>"]
     names = []
     for node in ast.walk(tree):
@@ -63,8 +63,8 @@ def _py_breaks(work: Path, path: str) -> list[str]:
 # A using directive: at the file's start or after `;`, `{` or `}` (a namespace block), optionally `global` and
 # `static`, optionally `Alias =`, then the name (`global::` dropped) and `;`, a generic alias's `<...>` allowed. A
 # `using (...)` statement or a `using var x = ...;` declaration never matches (its name is not followed by `;`).
-USING = re.compile(r"(?:^|(?<=[;{}]))\s*(?:global\s+)?using\s+(?:static\s+)?(?:@?\w+\s*=\s*)?(?:global::)?"
-                   r"(@?[A-Za-z_][\w.]*)\s*(?:<[^;]*>)?\s*;", re.MULTILINE)
+USING = re.compile(r"(?:^|(?<=[;{}]))\s*(?:global\s+)?using\s+(?:static\s+)?(?:\w+\s*=\s*)?(?:global::)?"
+                   r"([A-Za-z_][\w.]*)\s*(?:<[^;]*>)?\s*;", re.MULTILINE)
 COMMENT = re.compile(r"//[^\n]*|/\*.*?\*/", re.DOTALL)
 D1_LAYERS = ("System", "AiDe.Core")
 
@@ -77,7 +77,7 @@ def _cs_breaks(work: Path, path: str) -> list[str]:
     this moves to a real C# tokenizer.
     """
     text = COMMENT.sub("", (work / path).read_text(encoding="utf-8-sig", errors="replace"))
-    names = [m.group(1).removeprefix("@") for m in USING.finditer(text)]
+    names = [m.group(1) for m in USING.finditer(text)]
     return sorted({n for n in names if not any(n == layer or n.startswith(layer + ".") for layer in D1_LAYERS)})
 
 
