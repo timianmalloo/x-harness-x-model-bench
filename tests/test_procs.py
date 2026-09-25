@@ -231,7 +231,7 @@ def test_run_delivers_input_on_stdin_intact_past_the_command_line_limit():
     result = procs.run([sys.executable, "-c", ECHO_STDIN], cwd=None, env=None, timeout=60, input=text)
     data = text.encode("utf-8")
     assert (result.returncode, result.stdout) == (0, f"{len(data)} {hashlib.sha256(data).hexdigest()}")
-    assert len(data) == 80_070
+    assert len(data) == 80_072  # 72 ASCII bytes + 40,000 two-byte characters
 
 
 def test_run_without_input_gives_the_child_an_empty_stdin():

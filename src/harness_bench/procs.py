@@ -261,13 +261,32 @@ def _drain(stream, limit: int, sink: list, flags: list) -> None:
             flags.append(True)
 
 
-def run(argv: list[str], cwd, env, timeout: float, max_output: int = 1 << 20) -> Completed:
-    """Run a bounded command in its own job; the whole tree is terminated when it ends or times out."""
+def _feed(stream, data: bytes) -> None:
+    """Write `data` to the child's stdin, then close it (EOF). A child that exits or closes stdin early ends it."""
+    try:
+        stream.write(data)
+    except OSError:
+        pass
+    finally:
+        try:
+            stream.close()
+        except OSError:
+            pass
+
+
+def run(argv: list[str], cwd, env, timeout: float, max_output: int = 1 << 20, input: str | None = None) -> Completed:
+    """Run a bounded command in its own job; the whole tree is terminated when it ends or times out.
+
+    `input`, when given, is written to the child's stdin as UTF-8 from a thread (so a large text cannot deadlock
+    against the output pipes), then stdin is closed; otherwise stdin is the null device."""
     started = time.monotonic()
-    cell = spawn(argv, cwd, env, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cell = spawn(argv, cwd, env, stdin=subprocess.DEVNULL if input is None else subprocess.PIPE,
+                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err, trunc = [], [], []
     readers = [threading.Thread(target=_drain, args=(cell.proc.stdout, max_output, out, trunc), daemon=True),
                threading.Thread(target=_drain, args=(cell.proc.stderr, max_output, err, trunc), daemon=True)]
+    if input is not None:
+        readers.append(threading.Thread(target=_feed, args=(cell.proc.stdin, input.encode("utf-8")), daemon=True))
     for t in readers:
         t.start()
     timed_out = False
