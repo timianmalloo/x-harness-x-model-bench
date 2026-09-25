@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T05:47:34Z",
+  "generated": "2026-09-25T06:25:15Z",
   "audit": [
     {
       "actor": null,
@@ -14146,17 +14146,29 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M3BHNMTCRCXH9H0SF5EXEW0A",
-      "shortname": "W2-CLAUDE-PROFILE: disableClaudeAiConnectors + two canary classes",
-      "datetime": "2026-09-25T05:47:34Z",
-      "session": "w2-claude-prof",
-      "prompt": "R-56 c1/R-57 gate 2 (seed disableClaudeAiConnectors=true in the Claude profile) and W2-CANARY remainder (two more US-13 canary classes: .agents/skills, .claude/skills)",
-      "summary": "bench/profiles/claude-code.yaml seeds disableClaudeAiConnectors=true (red-first in tests/test_profiles.py, ADR-0004 amendment note gains the Claude row). tests/e2e/test_us13_canary.py's fake-profile control plants and checks two more canary classes; new offline tests/test_canary_classes.py pins the exact pair set; tests/mutations/canary.json gains a named mutant, killed. mutate_check all killed; pytest 923 passed 8 deselected; ruff clean.",
-      "kind": "skill",
-      "skill": "implement",
-      "tool": null,
       "actor": "Claude Sonnet 5",
       "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-09-25T05:47:34Z",
+      "done_when": "settings.json disableClaudeAiConnectors true and ADR-0004 Claude row line; test_us13_canary.py checks 6 canary classes; tests/test_canary_classes.py asserts the exact pair set; canary.json mutant killed; mutate_check, pytest, ruff all clean",
+      "duration_seconds": 573.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w2-claude-profile",
+        "pushed": null,
+        "sha": "9d4bbc662143068b0c484f89a6816e61a61d685d",
+        "short": "9d4bbc662"
+      },
+      "goal": "Item 1: seed disableClaudeAiConnectors=true in the Claude Code profile, red-first, ADR-0004 amended. Item 2: two more US-13 canary classes (.agents/skills, .claude/skills) in the Copilot fake-profile control, a new offline pin test, a killed named mutant.",
+      "id": "al-01M3BHNMTCRCXH9H0SF5EXEW0A",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "R-56 c1/R-57 gate 2 (seed disableClaudeAiConnectors=true in the Claude profile) and W2-CANARY remainder (two more US-13 canary classes: .agents/skills, .claude/skills)",
+      "session": "w2-claude-prof",
+      "shortname": "W2-CLAUDE-PROFILE: disableClaudeAiConnectors + two canary classes",
+      "skill": "implement",
+      "started_at": "2026-09-25T05:38:01Z",
+      "summary": "bench/profiles/claude-code.yaml seeds disableClaudeAiConnectors=true (red-first in tests/test_profiles.py, ADR-0004 amendment note gains the Claude row). tests/e2e/test_us13_canary.py's fake-profile control plants and checks two more canary classes; new offline tests/test_canary_classes.py pins the exact pair set; tests/mutations/canary.json gains a named mutant, killed. mutate_check all killed; pytest 923 passed 8 deselected; ruff clean.",
       "tags": [
         "R-56",
         "R-57",
@@ -14164,20 +14176,42 @@ window.AUDIT_DATA = {
         "canary",
         "claude-profile"
       ],
-      "outcome": "success",
-      "compiled": false,
-      "goal": "Item 1: seed disableClaudeAiConnectors=true in the Claude Code profile, red-first, ADR-0004 amended. Item 2: two more US-13 canary classes (.agents/skills, .claude/skills) in the Copilot fake-profile control, a new offline pin test, a killed named mutant.",
-      "done_when": "settings.json disableClaudeAiConnectors true and ADR-0004 Claude row line; test_us13_canary.py checks 6 canary classes; tests/test_canary_classes.py asserts the exact pair set; canary.json mutant killed; mutate_check, pytest, ruff all clean",
       "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": "Claude Opus 5.5 (claude-opus-5-5)",
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-09-25T06:13:06Z",
+      "done_when": "items 1-6 of the W2-VIEWS-FU contract: red then green commits, mutation sets killed, pytest and ruff clean",
+      "duration_seconds": 2108.0,
       "fan_out": 0,
-      "started_at": "2026-09-25T05:38:01Z",
-      "duration_seconds": 573.0,
       "git": {
-        "sha": "9d4bbc662143068b0c484f89a6816e61a61d685d",
-        "short": "9d4bbc662",
-        "branch": "w2-claude-profile",
-        "pushed": null
-      }
+        "branch": "w2-views-fu",
+        "pushed": null,
+        "sha": "09b558eb9a38423b3bbbe49bd2d17f8ea120d44d",
+        "short": "09b558eb9"
+      },
+      "goal": "The per-cell out-of-profile finding (R-45 item 2 as refined by R-54), red-first, shown by bench report; ToolSearch class meta; HB-LED-002 warning split to its own code.",
+      "id": "al-01M3BK4CZN3EP3HX5B3TFRXEKJ",
+      "kind": "skill",
+      "outcome": "partial",
+      "prompt": "The per-cell out-of-profile finding (R-45 item 2 as refined by R-54), red-first, shown by bench report; ToolSearch class meta; HB-LED-002 warning split to its own code.",
+      "session": "w2-views-fu",
+      "shortname": "w2-views-fu-out-of-profile",
+      "signals": {
+        "acceptance_met": false,
+        "regression": false,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "implement",
+      "started_at": "2026-09-25T05:37:58Z",
+      "summary": "W2-VIEWS-FU (R-45 item 2 as refined by R-54; R-57 gate 3). Red/green pairs: ToolSearch class meta f74edea/a608b7f; HB-LED-006 for the pre-R-2 no-heads warning 9d11d64/252de02; executed class-other call invalid (out-of-profile tool called) HB-VAL-008, refused attempt warning HB-VAL-009, meta_calls per cell 2a81f48/021188c; Copilot out-of-class advertised id 78de649/09b558e. Precedence slot: after HB-VAL-004, before HB-VAL-002 and not recorded. Mutants: validity 67, views 35, views_copilot 10, report 22, grade 17, all killed. Full suite 950 passed, 1 strict xfail (fixed-profile Copilot sample valid, pending the copilot.TOOL_CLASS seam). Open seam requests: req-01M3BH75WE84KK5H9BPKC1HGBG (runner writes grading.completed.tools_advertised), req-01M3BHAA90PTS0ZBQZ7NZYWJN6 (copilot.TOOL_CLASS gains read_powershell, stop_powershell, list_powershell as shell).",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     }
   ],
   "changes": [

@@ -333,7 +333,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "847adce10871a3cc2341f0660ca72379cce0c07c9e8184482b118a990cd9984d"
+      "sourceSha256": "3834bc9469bcb9d9f630554ad916e986a68a2b4db501167cc472b21e4d1b5c43"
     },
     {
       "id": "adr-0005-egress-control",
@@ -1089,7 +1089,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "69aad3cdb5923bc32663f1ccef54d1223f7982c1b01d325bfeda0fdd77de9b69"
+      "sourceSha256": "c46e136f69079d7062c25c0759c377ad2e299d381f52c040232e62a6bc869570"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -1465,7 +1465,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "00215739231ad55cdfa299104dd1d6ad508a2dc7e14c4ef743905c59d7474ff3"
+      "sourceSha256": "e428afc7d7fe89aac294830caf0523c0f9e6e64dc878cd44286688b5b3419c3d"
     },
     {
       "id": "coordination-phase1-finish-run",
@@ -1519,7 +1519,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "048c9be9892ed543b7651099e83798161f8cfbd04f388672ee42340c275ecd33"
+      "sourceSha256": "f8ddbd7aec0d146a87c04ffab646e3ffe0da69268d88ab738aced09a97cba07e"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -1744,7 +1744,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "805129b9d50d5d0aae33443f55686592cab3f7aaea9953e0191d1524e4b0ba3d"
+      "sourceSha256": "31aa67e06974e4c492e573208651f97490ad3e99e1851dbccee3a3e4fffff5e8"
     },
     {
       "id": "proposal-cross-harness-benchmarking",
@@ -2425,5 +2425,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "d5ab415523f83bef806a7843ded17934db360ae958e75980f20988a4719cfa17"
+  "graphSha256": "57df0ee29fd28e12313af407d7e058da5a9aaea280f3feb931cff6ef114489d1"
 };

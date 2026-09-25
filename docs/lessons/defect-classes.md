@@ -227,6 +227,14 @@ summary: >-
 - **Control:** at any squash join, rebuild each register as the union of `HEAD`'s lines plus the staged new lines (the Leader's `union_register.py` step), then assert `git diff --cached --numstat -- <register>` shows 0 deletions before committing. Not yet a test or gate. The upgrade trigger is a second squash join, at which point it becomes a join-gate check.
 - **Status:** `observed` (the procedure is followed by the Leader; no automated gate yet)
 
+### REG-B: a derived artifact merged but never regenerated
+- **Signature:** a join merges a branch that changed a derived file (`docs/docs-index.js`, `docs/audit/audit-data.js`). The `coord-regen` driver resolves the file to "ours" by design and records a regeneration as owed, but nobody runs `coord regen`. The derived view silently misses the branch's entries.
+- **Why it survives:** the merge reports success, and the owed regeneration is written to a list nobody reads. `docs-graph validate` catches index drift, but nothing catches a stale audit view.
+- **Instances:** `2026-09-24/25`, every wave-2 join. The index missed two USER-D docs (found by validate, `82dcfcc`). The audit view was stale until the Leader ran `coord regen` at 23:35.
+- **Sweep:** all merges since the wave-2 dispatch. `coord regen` regenerated both files; nothing else was owed.
+- **Control:** every join runs `coord regen` after the merge, then `docs-graph validate`, before the suite. For now this is a Leader procedure. The upgrade trigger is a second instance: the join gate would then refuse while `regen_owed` is non-empty.
+- **Status:** `observed` (Leader procedure)
+
 ### GATE-B: a push not gated on the suite that precedes it
 - **Signature:** a join command chains `pytest …; …; git push` with `;`. When the suite hangs, fails or is killed, the push still runs, and an unverified commit reaches the remote.
 - **Why it survives:** on a green suite the chain looks identical to a gated one; only a failure shows the difference.
