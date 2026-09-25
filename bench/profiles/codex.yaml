@@ -8,6 +8,8 @@ files:
   config.toml: |-
     model = "{model}"
     web_search = "disabled"
+    [features]
+    apps = false
 env:
   CODEX_PATH: "{exe}"
 mode: agent-full-access

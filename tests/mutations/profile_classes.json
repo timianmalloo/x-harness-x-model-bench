@@ -1,5 +1,12 @@
 [
   {
+    "name": "qual-r45-1 Codex account apps disable line dropped",
+    "file": "bench/profiles/codex.yaml",
+    "find": "    apps = false",
+    "replace": "",
+    "tests": ["tests/test_profiles.py::test_codex_profile_disables_account_apps_in_each_seeded_home"]
+  },
+  {
     "name": "R-45 Copilot builtin MCP disable flag dropped",
     "file": "bench/profiles/copilot.yaml",
     "find": "\"--disable-builtin-mcps\", ",
