@@ -1,5 +1,14 @@
 [
  {
+  "name": "copilot argv back to the bare --available-tools that filtered nothing",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "\"--disable-builtin-mcps\", \"--no-custom-instructions\",\n            \"--available-tools\", \"none\"]",
+  "replace": "\"--disable-builtin-mcps\",\n            \"--available-tools\"]",
+  "tests": [
+   "tests/test_gateway_headless.py::test_the_copilot_builder_is_the_measured_shape"
+  ]
+ },
+ {
   "name": "scrub skipped",
   "file": "src/harness_bench/gateway/request.py",
   "find": "text = scrub.scrub(raw.decode(\"utf-8\"), entries)",
@@ -22,8 +31,8 @@
  {
   "name": "egress bypassed",
   "file": "src/harness_bench/gateway/pipeline.py",
-  "find": "    return egress.check(request_text, destination=judge.model, operator=ctx.operator, secrets=ctx.secrets,\n                        canaries=ctx.canaries).release(lambda payload: _ask(backend, payload))",
-  "replace": "    return _ask(backend, request_text)",
+  "find": "    return egress.check(request_text, destination=judge.model, operator=ctx.operator, secrets=ctx.secrets,\n                        canaries=ctx.canaries).release(\n        lambda payload: _ask(Headless(backend) if isinstance(backend, Launch) else backend, payload, call_id))",
+  "replace": "    return _ask(Headless(backend) if isinstance(backend, Launch) else backend, request_text, call_id)",
   "tests": [
    "tests/test_gateway_pipeline.py::test_t_gw_30_every_path_maps_to_exactly_one_outcome_and_code"
   ]
@@ -204,8 +213,8 @@
  {
   "name": "the answer is not validated",
   "file": "src/harness_bench/gateway/pipeline.py",
-  "find": "    if read is None or schema.validate(answer, inputs.items):",
-  "replace": "    if read is None:",
+  "find": "    if answer is None or schema.validate(answer, inputs.items):",
+  "replace": "    if answer is None:",
   "tests": [
    "tests/test_gateway_pipeline.py::test_t_gw_30_every_path_maps_to_exactly_one_outcome_and_code"
   ]
@@ -424,6 +433,177 @@
   "replace": "or not any(m in judge.allowed_models for m in served):",
   "tests": [
    "tests/test_gateway_pipeline.py::test_the_pin_with_a_model_outside_the_allowed_set_is_not_stored"
+  ]
+ },
+ {
+  "name": "procs input never reaches stdin",
+  "file": "src/harness_bench/procs.py",
+  "find": "stdin=subprocess.DEVNULL if input is None else subprocess.PIPE",
+  "replace": "stdin=subprocess.DEVNULL",
+  "tests": [
+   "tests/test_procs.py::test_run_delivers_input_on_stdin_intact_past_the_command_line_limit"
+  ]
+ },
+ {
+  "name": "lint: a local alias of a backend is not tainted",
+  "file": "tests/test_architecture.py",
+  "find": "base in params or base in aliases_of_params or",
+  "replace": "base in params or",
+  "tests": [
+   "tests/test_architecture.py::test_a_judge_backend_is_reached_only_through_egress_check_and_release"
+  ]
+ },
+ {
+  "name": "qualified gate removed",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "    if not judge.qualified:",
+  "replace": "    if False:",
+  "tests": [
+   "tests/test_gateway_headless.py::test_t_gw_32_an_unqualified_judge_is_never_spawned"
+  ]
+ },
+ {
+  "name": "tool events ignored",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "    if ex.tool_calls:",
+  "replace": "    if False:",
+  "tests": [
+   "tests/test_gateway_headless.py::test_t_gw_08_a_tool_event_in_the_record_fails_the_call"
+  ]
+ },
+ {
+  "name": "served-model check dropped",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "    if judge.model not in served or not all(m in judge.allowed_models for m in served):",
+  "replace": "    if False:",
+  "tests": [
+   "tests/test_gateway_headless.py::test_t_gw_07_the_served_model_is_read_from_the_record_not_stdout"
+  ]
+ },
+ {
+  "name": "provider error is not a failure",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "    if ex.errors or not ex.model_calls or session is None:",
+  "replace": "    if False:",
+  "tests": [
+   "tests/test_gateway_headless.py::test_t_gw_09_a_provider_error_that_is_not_a_limit_leaves_the_breaker_closed"
+  ]
+ },
+ {
+  "name": "breaker never opens",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "            _open_breaker(ctx.breakers, judge.model)",
+  "replace": "            pass",
+  "tests": [
+   "tests/test_gateway_headless.py::test_t_gw_09_a_429_opens_the_judges_breaker_and_the_rest_of_the_pass_is_not_spawned"
+  ]
+ },
+ {
+  "name": "breaker not checked before the spawn",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "    if judge.model in ctx.breakers:",
+  "replace": "    if False:",
+  "tests": [
+   "tests/test_gateway_headless.py::test_t_gw_09_a_429_opens_the_judges_breaker_and_the_rest_of_the_pass_is_not_spawned"
+  ]
+ },
+ {
+  "name": "timeout ignored",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "            if done.timed_out:",
+  "replace": "            if False:",
+  "tests": [
+   "tests/test_gateway_headless.py::test_t_gw_09_a_timed_out_call_is_unavailable_even_when_it_left_a_record"
+  ]
+ },
+ {
+  "name": "request sent without stdin",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "timeout=launch.timeout, input=request)",
+  "replace": "timeout=launch.timeout, input=None)",
+  "tests": [
+   "tests/test_gateway_headless.py::test_a_headless_call_sends_the_request_on_stdin_from_a_cells_root_folder_and_archives_the_record"
+  ]
+ },
+ {
+  "name": "credential not copied",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "            shutil.copyfile(source, home / name)",
+  "replace": "            pass",
+  "tests": [
+   "tests/test_gateway_headless.py::test_t_gw_10_the_credential_is_present_during_the_call_and_gone_after_it"
+  ]
+ },
+ {
+  "name": "call folder and credential left behind",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "            launch.profile.clean_home(home)  # the credential copy never outlives the call\n            shutil.rmtree(folder, ignore_errors=True)",
+  "replace": "            pass",
+  "tests": [
+   "tests/test_gateway_headless.py::test_t_gw_10_the_credential_is_present_during_the_call_and_gone_after_it"
+  ]
+ },
+ {
+  "name": "sweep ignores a held lock",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "        if pass_dir.name != own and oslock.is_held(pass_dir / \".lock\"):",
+  "replace": "        if False:",
+  "tests": [
+   "tests/test_gateway_headless.py::test_t_gw_10_a_pass_sweeps_a_killed_pass_copy_but_never_one_whose_lock_is_held"
+  ]
+ },
+ {
+  "name": "no sweep at pass start",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "        sweep_credentials(cells_root, credential_names)\n        yield",
+  "replace": "        yield",
+  "tests": [
+   "tests/test_gateway_headless.py::test_t_gw_10_a_pass_sweeps_a_killed_pass_copy_but_never_one_whose_lock_is_held"
+  ]
+ },
+ {
+  "name": "cells root not checked at pass start",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "    workspace.check_cells_root(cells_root)\n    lock = ",
+  "replace": "    lock = ",
+  "tests": [
+   "tests/test_gateway_headless.py::test_t_gw_26b_a_pass_refuses_a_cells_root_below_an_instruction_file"
+  ]
+ },
+ {
+  "name": "call folder path not egress-checked",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "    if isinstance(backend, Launch) and egress.check(str(call_folder(backend, call_id))",
+  "replace": "    if False and egress.check(str(call_folder(backend, call_id))",
+  "tests": [
+   "tests/test_gateway_headless.py::test_t_gw_26_a_cells_root_path_holding_the_operators_user_name_is_withheld_before_any_spawn"
+  ]
+ },
+ {
+  "name": "fenced answer not unwrapped",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "json.loads(fence.group(1) if fence else text)",
+  "replace": "json.loads(text)",
+  "tests": [
+   "tests/test_gateway_headless.py::test_t_gw_35_a_fenced_answer_is_unwrapped_once_and_recorded_as_fenced"
+  ]
+ },
+ {
+  "name": "model_calls rows dropped",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "    return replace(_answered(judge, inputs, ctx, reply, ex, rendered, key_inputs, cache_key), model_calls=rows)",
+  "replace": "    return _answered(judge, inputs, ctx, reply, ex, rendered, key_inputs, cache_key)",
+  "tests": [
+   "tests/test_gateway_headless.py::test_t_gw_28_a_call_yields_model_calls_rows_with_principal_gateway_and_the_stdout_usage"
+  ]
+ },
+ {
+  "name": "an exception escapes run",
+  "file": "src/harness_bench/gateway/pipeline.py",
+  "find": "        return _run(judge, inputs, ctx, backend)\n    except Exception:",
+  "replace": "        return _run(judge, inputs, ctx, backend)\n    except ZeroDivisionError:",
+  "tests": [
+   "tests/test_gateway_headless.py::test_f6_an_egress_value_error_never_escapes_the_pipeline"
   ]
  }
 ]

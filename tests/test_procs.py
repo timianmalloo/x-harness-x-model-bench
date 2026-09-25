@@ -216,6 +216,30 @@ def test_run_bounds_output():
     assert result.returncode == 0 and len(result.stdout) <= 1024 and result.truncated
 
 
+# The child reports the byte count and sha256 of everything it read on stdin, then exits.
+ECHO_STDIN = ("import hashlib,sys;d=sys.stdin.buffer.read();"
+              "sys.stdout.write(str(len(d))+' '+hashlib.sha256(d).hexdigest())")
+
+
+def test_run_delivers_input_on_stdin_intact_past_the_command_line_limit():
+    # The judge request travels on stdin, not argv (design phase3-gateway-judges 8.1; the W3-GW-I s2 seam grant):
+    # hostile quotes, a backslash, a flag-shaped line and newlines, over 64 KiB (the argv limit is 32,767 chars).
+    import hashlib
+    import inspect
+    assert "input" in inspect.signature(procs.run).parameters
+    text = 'a "quoted" word, a back\\slash, --dangerously-skip-permissions\nline two\r\n' + "é" * 40_000
+    result = procs.run([sys.executable, "-c", ECHO_STDIN], cwd=None, env=None, timeout=60, input=text)
+    data = text.encode("utf-8")
+    assert (result.returncode, result.stdout) == (0, f"{len(data)} {hashlib.sha256(data).hexdigest()}")
+    assert len(data) == 80_072  # 72 ASCII bytes + 40,000 two-byte characters
+
+
+def test_run_without_input_gives_the_child_an_empty_stdin():
+    empty = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"  # sha256 of no bytes
+    result = procs.run([sys.executable, "-c", ECHO_STDIN], cwd=None, env=None, timeout=60)
+    assert (result.returncode, result.stdout) == (0, f"0 {empty}")
+
+
 def test_unused_knobs_are_gone():  # Simplifier minors: no caller passes stdin_data= or retry_every=
     import inspect
     assert "stdin_data" not in inspect.signature(procs.run).parameters

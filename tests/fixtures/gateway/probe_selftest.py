@@ -112,16 +112,16 @@ def validator() -> None:
 
 
 def launch_shapes(tmp: Path) -> None:
-    a = pj.claude_argv("claude.exe", "claude-fable-5-1", "P", "S", "sid", "native")
+    a = pj.claude_argv("claude.exe", "claude-fable-5-1", "S", "sid", "{}")
     check("claude argv: model pinned", a[a.index("--model") + 1] == "claude-fable-5-1", a)
     i = a.index("--tools")
     check("claude argv: --tools \"\" followed by an option", a[i + 1] == "" and a[i + 2].startswith("--"), a[i:i + 3])
-    check("claude argv: prompt right after -p", a[a.index("-p") + 1] == "P", a)
+    check("claude argv: -p takes no prompt (stdin)", a[a.index("-p") + 1].startswith("--"), a)
     check("claude argv: native schema passed", "--json-schema" in a, a)
-    c = pj.codex_argv("codex.exe", "gpt-6-sol", "P", tmp, tmp / "last.txt", "text")
+    c = pj.codex_argv("codex.exe", "gpt-6-sol", tmp, tmp / "last.txt")
     check("codex argv: model pinned", "model=gpt-6-sol" in c, c)
     check("codex argv: shell tools off", all(f in c for f in ("shell_tool", "unified_exec")), c)
-    check("codex argv: prompt last", c[-1] == "P", c[-3:])
+    check("codex argv: prompt from stdin (-) last", c[-1] == "-", c[-3:])
     check("codex argv: text mode has no schema flag", "--output-schema" not in c, c)
     p = pj.copilot_argv("copilot.exe", COPILOT_PIN, "P")
     check("copilot argv: model pinned", p[p.index("--model") + 1] == COPILOT_PIN, p)

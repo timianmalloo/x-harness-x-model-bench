@@ -1,4 +1,4 @@
-"""One judge lookup for one (artifact, rubric) request: the section 8 pipeline, offline half (slice 1).
+"""One judge lookup for one (artifact, rubric) request: the section 8 pipeline (slices 1-2).
 
 The steps run in a fixed order, and the first failing step is the one recorded (design section 4.1):
 1. bound (HB-GW-008); 2. render in the section 7.2 order; 3. the independent scan of the whole request (HB-GW-004);
@@ -17,15 +17,26 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
-from harness_bench import egress
+from harness_bench import egress, profiles
 from harness_bench.gateway import request, schema, scrub, store
-from harness_bench.gateway.backend import Backend, BackendDown, Reply, read_reply
+from harness_bench.gateway.backend import (
+    Backend,
+    BackendDown,
+    Headless,
+    Launch,
+    Reply,
+    call_folder,
+    final_text,
+)
+from harness_bench.telemetry import Extraction, normalize
 
 OUTCOMES = ("hit", "stored", "race_lost", "not_allowed", "failed")
+_FENCE = re.compile(r"```(?:json)?\n(.*)\n```", re.DOTALL)  # one Markdown code fence around the whole answer
 CODES = {  # design section 17; slice 1 reaches 001, 002, 003, 004, 005, 008, 009
     "HB-GW-001": "judge unavailable: CLI error, timeout, provider error, breaker open, or a store write error "
                  "other than a lost race",
@@ -47,6 +58,7 @@ class Judge:
     model: str  # the stipulated model id; also the egress destination
     invocation_sha256: str  # section 9.1; built from the argv template in slice 2
     allowed_models: tuple[str, ...]  # the pin plus declared auxiliaries (US-11)
+    qualified: bool  # gateway.yaml `qualified`, set by the Leader from a probe of the exact invocation (section 8.4)
 
 
 @dataclass(frozen=True)
@@ -68,6 +80,7 @@ class Context:
     operator: egress.Operator
     secrets: tuple[str, ...] = ()
     canaries: tuple[str, ...] = ()
+    breakers: set[str] = field(default_factory=set)  # judges whose breaker opened in this pass (section 8.3 step 5)
 
 
 @dataclass(frozen=True)
@@ -78,6 +91,8 @@ class Result:
     entry_sha256: str | None = None
     verdicts: tuple[dict, ...] | None = None
     escaped: tuple[str, ...] = ()  # files whose closing fence was escaped (flagged, US-46)
+    model_calls: tuple[dict, ...] = ()  # the call's `model_calls` rows, principal `gateway` (section 4.2)
+    fenced: bool = False  # the answer came fenced and was unwrapped once (T-GW-35)
 
     def __post_init__(self) -> None:
         recorded = self.outcome in ("hit", "stored", "race_lost")
@@ -87,30 +102,57 @@ class Result:
             raise ValueError(f"not a result of the closed set: {self.outcome!r}, {self.code!r}")
 
 
-def _ask(backend: Backend, request_text: str) -> Reply:
+def _ask(backend: Backend, request_text: str, call_id: str) -> Reply:
     """The one call into a backend; every reference to it sits inside `egress.check(...).release(...)`."""
-    return backend.judge(request_text)
+    return backend.judge(request_text, call_id)
 
 
-def _send(request_text: str, judge: Judge, ctx: Context, backend: Backend) -> Reply | None:
-    """The reply, or None when egress withheld the request (the backend was never called)."""
+def _send(request_text: str, judge: Judge, ctx: Context, backend: Backend | Launch, call_id: str) -> Reply | None:
+    """The reply, or None when egress withheld the request (the backend was never called). A `Launch` becomes a
+    `Headless` call only here, inside the release. Both CLIs send their working-folder path to the model (spike GW-H
+    result 6), so a headless call's folder path is checked too, and a hit withholds the call (T-GW-26)."""
+    if isinstance(backend, Launch) and egress.check(str(call_folder(backend, call_id)), destination=judge.model,
+                                                    operator=ctx.operator, secrets=ctx.secrets,
+                                                    canaries=ctx.canaries).withheld:
+        return None
     return egress.check(request_text, destination=judge.model, operator=ctx.operator, secrets=ctx.secrets,
-                        canaries=ctx.canaries).release(lambda payload: _ask(backend, payload))
+                        canaries=ctx.canaries).release(
+        lambda payload: _ask(Headless(backend) if isinstance(backend, Launch) else backend, payload, call_id))
 
 
-def _recorded(outcome: str, cache_key: str, found: store.Found, items: int, escaped: tuple[str, ...]) -> Result:
+def _recorded(outcome: str, cache_key: str, found: store.Found, items: int, escaped: tuple[str, ...],
+              fenced: bool = False) -> Result:
     """A hit or a lost race carries the stored verdicts only when they still have the answer's shape."""
     verdicts = found.entry["verdicts"]
     if schema.validate({"items": verdicts}, items):
         return Result("failed", "HB-GW-005", escaped=escaped)
-    return Result(outcome, None, cache_key, found.entry_sha256, tuple(verdicts), escaped)
+    return Result(outcome, None, cache_key, found.entry_sha256, tuple(verdicts), escaped, fenced=fenced)
 
 
-def run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend) -> Result:
+def _open_breaker(breakers: set, model: str) -> None:
+    """Section 8.3 step 5: one boolean per judge per pass (the Simplifier's shape)."""
+    breakers.add(model)
+
+
+def _sha256(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend | Launch) -> Result:
+    """One lookup, always a closed (outcome, code): an exception from any step, such as egress's ValueError on an
+    unsafe destination or one that scans as an operator identifier, is NOT_RECORDED HB-GW-001 (review F6)."""
+    try:
+        return _run(judge, inputs, ctx, backend)
+    except Exception:  # noqa: BLE001 -- the closed-set contract (review F6): no step may abort a grading pass
+        return Result("failed", "HB-GW-001")
+
+
+def _run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend | Launch) -> Result:
+    if not judge.qualified:  # never spawned, and no verdict is read for it (sections 5, 8.4, 10.1; T-GW-32)
+        return Result("failed", "HB-GW-007")
     if request.bound_problem(inputs.artifacts) is not None:
         return Result("failed", "HB-GW-008")
-    rubric = inputs.rubric
-    rendered = request.render(inputs.preamble, rubric, inputs.items, inputs.artifacts, ctx.denylist)
+    rendered = request.render(inputs.preamble, inputs.rubric, inputs.items, inputs.artifacts, ctx.denylist)
     escaped = rendered.escaped
     if scrub.scan(rendered.text, ctx.denylist):
         return Result("failed", "HB-GW-004", escaped=escaped)
@@ -127,31 +169,54 @@ def run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend) -> Result:
         return Result("not_allowed", escaped=escaped)
     if found.state == "orphaned":
         store.move_orphan(ctx.store, cache_key, time.strftime("%Y%m%dT%H%M%SZ", time.gmtime()))
+    if judge.model in ctx.breakers:  # a rate or quota limit earlier in this pass: not spawned
+        return Result("failed", "HB-GW-001", escaped=escaped)
     try:
-        reply = _send(rendered.text, judge, ctx, backend)
+        reply = _send(rendered.text, judge, ctx, backend, cache_key[:16])
     except BackendDown:
         return Result("failed", "HB-GW-001", escaped=escaped)
     if reply is None:
         return Result("failed", "HB-GW-009", escaped=escaped)
-    read = read_reply(reply.stdout)
-    try:
-        answer = json.loads(read[0]) if read else None
-    except ValueError:
-        answer = None
-    if read is None or schema.validate(answer, inputs.items):
-        return Result("failed", "HB-GW-002", escaped=escaped)
-    _, served, session = read
+    ex = profiles.READERS[reply.harness](reply.record)  # the native record decides, never stdout (review A5)
+    rows = tuple(dict(r, principal="gateway", cell_id=None) for r in normalize.model_call_rows(
+        ctx.stored_by["ledger_id"], "", ex.session_id or "", ex, normalize.extraction_id()))
+    # the call happened, so its model_calls rows go with every outcome after it (section 4.2)
+    return replace(_answered(judge, inputs, ctx, reply, ex, rendered, key_inputs, cache_key), model_calls=rows)
+
+
+def _answered(judge: Judge, inputs: Inputs, ctx: Context, reply: Reply, ex: Extraction, rendered: request.Rendered,
+              key_inputs: dict, cache_key: str) -> Result:
+    """Section 8.3 on one call's record and answer, then the write-once store (section 9.2)."""
+    escaped = rendered.escaped
+    served, session = tuple(sorted({c.model for c in ex.model_calls})), ex.session_id
+    if ex.errors or not ex.model_calls or session is None:  # a provider error, or no model call recorded
+        if any(e.status == 429 or "rate_limit" in e.error_type or "quota" in e.error_type for e in ex.errors):
+            _open_breaker(ctx.breakers, judge.model)
+        return Result("failed", "HB-GW-001", escaped=escaped)
+    if ex.tool_calls:  # section 8.3 step 1: a judge has no tools; a tool event fails the call (R-58 c4)
+        return Result("failed", "HB-GW-006", escaped=escaped)
     # the pin must be among the served models, and every served model allowed (design 4.3; review F1)
     if judge.model not in served or not all(m in judge.allowed_models for m in served):
         return Result("failed", "HB-GW-003", escaped=escaped)
+    text = final_text(reply)
+    fence = _FENCE.fullmatch(text.strip()) if text is not None else None
+    fenced = fence is not None  # a fenced JSON answer is unwrapped once, and recorded as fenced (T-GW-35)
+    try:
+        answer = json.loads(fence.group(1) if fence else text) if text is not None else None
+    except ValueError:
+        answer = None
+    if answer is None or schema.validate(answer, inputs.items):
+        return Result("failed", "HB-GW-002", escaped=escaped)
     entry = {"format": store.FORMAT, "key_inputs": key_inputs,
              "components": {"artifact_sha256": rendered.artifact_sha256,
-                            "rubric_sha256": hashlib.sha256(rubric.encode("utf-8")).hexdigest(),
+                            "rubric_sha256": _sha256(inputs.rubric),
                             "template_version": request.TEMPLATE_VERSION, "scrub_version": scrub.SCRUB_VERSION,
                             "schema_sha256": key_inputs["schema_sha256"]},
              "served_models": list(served), "stored_by": dict(ctx.stored_by), "native_session_id": session,
-             "created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "verdicts": answer["items"]}
+             "created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+             "fenced": int(fenced),  # canonical form has no bool (ADR-0006:49)
+             "verdicts": answer["items"]}
     written = store.write_once(ctx.store, cache_key, entry, judge.allowed_models)
     if written.state == "failed":
         return Result("failed", written.code, escaped=escaped)
-    return _recorded(written.state, cache_key, written, inputs.items, escaped)
+    return _recorded(written.state, cache_key, written, inputs.items, escaped, fenced)
