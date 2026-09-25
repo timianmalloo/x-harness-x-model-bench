@@ -374,6 +374,33 @@ def _advertised(harness: str, record: Path) -> list[str] | None:
     return sorted(set(names)) if said else None
 
 
+def _copilot_tools_advertised(record: Path, model: str) -> list[str] | None:
+    """R-45 b / R-63 c1's own path: `promptCacheBreakState[0].models.<model>.tools`, on the **last**
+    `session.usage_checkpoint` row (this reader's own "last wins" convention, matching `session.shutdown`). `[]`
+    when the row and the model key are present with zero tools; `None` when no such row, index or key is found --
+    [] or null distinctly, never defaulted (R-63 c1).
+
+    Read directly from the raw record, not `Extraction.tools_advertised`: `telemetry/copilot.py`'s own
+    `list(dict.fromkeys(advertised)) or None` collapses a genuinely empty (measured-zero) list to `None` -- checked
+    against `tests/fixtures/gateway/copilot/qualified.jsonl` in this session. That file is grounding, not owned by
+    this track (not `tests/fixtures/gateway/**`); the collapse is reported to the Leader, not fixed here."""
+    from harness_bench.telemetry import Extraction, as_dict, as_list, as_str, rows
+
+    found: list[str] | None = None
+    for _, row in rows(record, Extraction()):
+        if row.get("type") != "session.usage_checkpoint":
+            continue
+        states = as_list(as_dict(row.get("data")).get("promptCacheBreakState"))
+        if not states:
+            continue
+        models = as_dict(as_dict(states[0]).get("models"))
+        if model not in models:
+            continue
+        tools = as_list(as_dict(models[model]).get("tools"))
+        found = [name for t in tools if (name := as_str(as_dict(t).get("name"))) is not None]
+    return found
+
+
 def _context_kinds(harness: str, record: Path) -> list[str]:
     """What the CLI put into the model's context besides the prompt: Claude attachment types; Codex leading tags of
     user and developer message texts (e.g. environment_context) and the AGENTS.md block's first words; Copilot the
@@ -449,7 +476,11 @@ def analyse(harness: str, pin: str, records: list[Path], stdout: str, last: str 
         "provider_errors": [{"status": e.status, "type": e.error_type} for e in ex.errors] if ex else [],
         "tool_events": len(ex.tool_calls) if ex else None,
         "tool_names": sorted({t.name for t in ex.tool_calls}) if ex else [],
-        "tools_advertised": _advertised(harness, records[0]) if len(records) == 1 else None,
+        # Copilot: read directly (`_copilot_tools_advertised`), not `ex.tools_advertised` -- see that function's
+        # docstring for the reader collapse this works around. Claude Code and Codex have no such field on
+        # Extraction at all, so the probe's own string walk over the raw record stands in (`_advertised`).
+        "tools_advertised": ((_copilot_tools_advertised(records[0], pin) if len(records) == 1 else None) if harness == "copilot"
+                             else (_advertised(harness, records[0]) if len(records) == 1 else None)),
         "account_connector_tools": ex.account_connector_tools if ex else None,
         "context_kinds": _context_kinds(harness, records[0]) if len(records) == 1 else [],
         "system_prompt_in_record": (any(system_marker in s for _, s in record_strings) if system_marker else None),
@@ -471,6 +502,10 @@ def analyse(harness: str, pin: str, records: list[Path], stdout: str, last: str 
         reasons.append(f"stdout items other than messages: {shell_items}")
     if facts["tools_advertised"]:
         reasons.append(f"tools advertised: {facts['tools_advertised']}")
+    elif harness == "copilot" and facts["tools_advertised"] is None:
+        # R-63 c1: [] (measured zero) qualifies; None (the checkpoint was unreadable or absent) never silently
+        # passes as zero (IO: degrade to not recorded, never a plausible wrong number).
+        reasons.append("tools advertised: not recorded")
     for cls, found in reads.items():
         if found:
             reasons.append(f"{cls} present: {sorted(found)}")
