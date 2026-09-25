@@ -83,13 +83,13 @@ def fake_stryker(monkeypatch, returncode: int = 0, report_content: str | None = 
         if executable in ("dotnet", "dotnet.exe"):
             seen.append(list(argv))
             if timed_out:
-                return procs.Completed(returncode=None, stdout="", stderr="", timed_out=True)
+                return procs.Completed(None, "", "", True, False, 0.0)
             cwd = Path(kwargs.get("cwd", ""))
             if report_content is not None and returncode == 0:
                 report_dir = cwd / "StrykerOutput" / "reports"
                 report_dir.mkdir(parents=True, exist_ok=True)
                 (report_dir / "mutation-report.json").write_text(report_content, encoding="utf-8")
-            return procs.Completed(returncode=returncode, stdout=stdout or "The final mutation score is 85.71 %\n", stderr=stderr)
+            return procs.Completed(returncode, stdout or "The final mutation score is 85.71 %\n", stderr, False, False, 0.0)
         return real_run(argv, *args, **kwargs)
 
     monkeypatch.setattr(procs, "run", run)
