@@ -233,15 +233,15 @@
   {
     "name": "run.stopped not recorded",
     "file": "src/harness_bench/engine.py",
-    "find": "        self._append_now(\"events\", {\"kind\": \"run.stopped\", \"code\": \"HB-RUN-006\", \"decision_id\": None})\n",
+    "find": "        self._append_now(\"events\", {\"kind\": \"run.stopped\", \"code\": code, \"decision_id\": decision_id})\n",
     "replace": "",
     "tests": ["tests/test_engine.py::test_a_second_stop_is_recorded_as_a_no_op"]
   },
   {
     "name": "run.stopped skipped when launching was already stopped",
     "file": "src/harness_bench/engine.py",
-    "find": "    def _apply_stop(self) -> None:\n",
-    "replace": "    def _apply_stop(self) -> None:\n        if self.stopped:\n            return\n",
+    "find": "        \"\"\"Design 5, steps 2-5: a run stop from `bench stop` (HB-RUN-006) or from a decision (its decision_id).\"\"\"\n",
+    "replace": "        \"\"\"Design 5, steps 2-5: a run stop from `bench stop` (HB-RUN-006) or from a decision (its decision_id).\"\"\"\n        if self.stopped:\n            return\n",
     "tests": ["tests/test_engine.py::test_a_stop_after_the_breaker_is_still_a_run_stop"],
     "timeout": 240
   },
@@ -350,5 +350,174 @@
     "find": "            if run_stopped:\n",
     "replace": "            if False:\n",
     "tests": ["tests/test_lifecycle_conformance.py::test_each_seeded_out_of_order_ledger_is_rejected_under_its_rule"]
+  },
+  {
+    "name": "a decision resolved twice (the _resolve guard removed)",
+    "file": "src/harness_bench/engine.py",
+    "find": "        if d.state != \"open\":  # the one guard: whichever path comes second writes nothing\n            return None\n",
+    "replace": "",
+    "tests": ["tests/test_engine.py::test_decision_resolves_exactly_once_in_every_order"]
+  },
+  {
+    "name": "the decision guard after a launch stop removed",
+    "file": "src/harness_bench/engine.py",
+    "find": "        if self.stopped or not any(c[field_name] == cell[field_name] for c in self.pending):\n",
+    "replace": "        if not any(c[field_name] == cell[field_name] for c in self.pending):\n",
+    "tests": ["tests/test_engine.py::test_no_decision_after_a_launch_stop"]
+  },
+  {
+    "name": "the decision guard with nothing pending removed",
+    "file": "src/harness_bench/engine.py",
+    "find": "        if self.stopped or not any(c[field_name] == cell[field_name] for c in self.pending):\n",
+    "replace": "        if self.stopped:\n",
+    "tests": ["tests/test_engine.py::test_no_decision_after_a_launch_stop"]
+  },
+  {
+    "name": "the cap not disabled on continue",
+    "file": "src/harness_bench/engine.py",
+    "find": "            self.spend_cap = None  # disabled for the rest of the run\n",
+    "replace": "            pass\n",
+    "tests": ["tests/test_engine.py::test_continue_on_the_spend_cap_disables_the_cap"]
+  },
+  {
+    "name": "the supersede loop skipped",
+    "file": "src/harness_bench/engine.py",
+    "find": "        for row in self.decisions.supersede_all():\n            self._append_now(\"events\", row)\n",
+    "replace": "",
+    "tests": ["tests/test_engine.py::test_a_stop_supersedes_every_open_decision"]
+  },
+  {
+    "name": "SPEND null counted as 0",
+    "file": "src/harness_bench/engine.py",
+    "find": "        if spend[\"tokens\"] is None:\n            self.cells_unmeasured += 1\n        else:\n            self.spend_tokens += spend[\"tokens\"]\n",
+    "replace": "        self.spend_tokens += spend[\"tokens\"] or 0\n",
+    "tests": ["tests/test_engine.py::test_a_cell_with_no_usage_is_unmeasured_never_zero"]
+  },
+  {
+    "name": "the expiry runs before the controls",
+    "file": "src/harness_bench/engine.py",
+    "find": "                    self._read_controls()\n                    self._expire_decisions()\n",
+    "replace": "                    self._expire_decisions()\n                    self._read_controls()\n",
+    "tests": ["tests/test_engine.py::test_resolution_order_through_the_loop"]
+  },
+  {
+    "name": "a launch while a decision is open",
+    "file": "src/harness_bench/engine.py",
+    "find": "                            and not self.decisions.any_open:  # launching pauses while a decision is open (US-15)\n",
+    "replace": "                            and True:\n",
+    "tests": ["tests/test_engine.py::test_blocked_cell_default_continues_after_the_timeout"]
+  },
+  {
+    "name": "the loop ends with a decision open",
+    "file": "src/harness_bench/engine.py",
+    "find": "                    self.decisions.any_open and not self.broken):\n",
+    "replace": "                    False):\n",
+    "tests": ["tests/test_engine.py::test_the_run_waits_for_an_open_decision"]
+  },
+  {
+    "name": "skip_combo skips nothing",
+    "file": "src/harness_bench/engine.py",
+    "find": "            for cell in [c for c in self.pending if c[\"combo\"] == d.subject]:\n",
+    "replace": "            for cell in []:\n",
+    "tests": ["tests/test_engine.py::test_qualification_gap_default_skips_the_combos_pending_cells"]
+  },
+  {
+    "name": "an answer of stop not applied",
+    "file": "src/harness_bench/engine.py",
+    "find": "        if row[\"option\"] == \"stop\":\n",
+    "replace": "        if False:\n",
+    "tests": ["tests/test_engine.py::test_an_answer_of_stop_is_an_operator_stop"],
+    "timeout": 240
+  },
+  {
+    "name": "a spend-cap stop recorded as an operator stop",
+    "file": "src/harness_bench/engine.py",
+    "find": "\"HB-RUN-007\" if d.kind == \"spend_cap\" else \"HB-RUN-006\"",
+    "replace": "\"HB-RUN-006\"",
+    "tests": ["tests/test_engine.py::test_spend_cap_default_stops_the_run"]
+  },
+  {
+    "name": "a blocked cell keyed by the cell, not its harness",
+    "file": "src/harness_bench/engine.py",
+    "find": "        self._open(kind, cell[field_name], outcome[\"code\"])\n",
+    "replace": "        self._open(kind, outcome[\"cell_id\"], outcome[\"code\"])\n",
+    "tests": ["tests/test_engine.py::test_one_blocked_harness_opens_one_decision"]
+  },
+  {
+    "name": "bench answer accepts an option the decision does not offer",
+    "file": "src/harness_bench/cli.py",
+    "find": "    if args.option not in decision.options:\n",
+    "replace": "    if False:\n",
+    "tests": ["tests/test_cli.py::test_answer_refuses_what_the_engine_could_not_apply"]
+  },
+  {
+    "name": "bench answer accepts a resolved decision",
+    "file": "src/harness_bench/cli.py",
+    "find": "    if decision.state != \"open\":\n",
+    "replace": "    if False:\n",
+    "tests": ["tests/test_cli.py::test_answer_refuses_what_the_engine_could_not_apply"]
+  },
+  {
+    "name": "bench answer writes in place",
+    "file": "src/harness_bench/cli.py",
+    "find": "    os.replace(temp, target)\n",
+    "replace": "    target.write_bytes(temp.read_bytes())\n",
+    "tests": ["tests/test_cli.py::test_answer_writes_an_atomic_control_file"]
+  },
+  {
+    "name": "status time to default goes negative",
+    "file": "src/harness_bench/status.py",
+    "find": "max(0, int(left)) if state == \"open\" else None",
+    "replace": "int(left) if state == \"open\" else None",
+    "tests": ["tests/test_status.py::test_status_carries_each_decision_and_its_time_to_default"]
+  },
+  {
+    "name": "status accepts a free-string decision subject",
+    "file": "src/harness_bench/status.py",
+    "find": "bool(SUBJECT.fullmatch(d[\"subject\"]))",
+    "replace": "True",
+    "tests": ["tests/test_status.py::test_a_decision_carries_no_free_string"]
+  },
+  {
+    "name": "status accepts options outside the decision's kind",
+    "file": "src/harness_bench/status.py",
+    "find": "        _require(d[\"options\"] == list(options), \"decision options differ from its kind's\")\n",
+    "replace": "",
+    "tests": ["tests/test_status.py::test_a_decision_carries_no_free_string"]
+  },
+  {
+    "name": "replay accepts a launch while a decision is open",
+    "file": "src/harness_bench/lifecycle.py",
+    "find": "            if opened - resolved:\n",
+    "replace": "            if False:\n",
+    "tests": ["tests/test_lifecycle_conformance.py::test_each_seeded_decision_ledger_is_rejected_under_its_rule"]
+  },
+  {
+    "name": "replay accepts a decision resolved twice",
+    "file": "src/harness_bench/lifecycle.py",
+    "find": "            if did in resolved:\n",
+    "replace": "            if False:\n",
+    "tests": ["tests/test_lifecycle_conformance.py::test_each_seeded_decision_ledger_is_rejected_under_its_rule"]
+  },
+  {
+    "name": "replay accepts a decision after the run stopped",
+    "file": "src/harness_bench/lifecycle.py",
+    "find": "                raise ConformanceError(f\"{NO_DECISION_AFTER_STOP}: {e['decision_id']}\")\n",
+    "replace": "                pass\n",
+    "tests": ["tests/test_lifecycle_conformance.py::test_each_seeded_decision_ledger_is_rejected_under_its_rule"]
+  },
+  {
+    "name": "replay refuses a skipped cell's first row",
+    "file": "src/harness_bench/lifecycle.py",
+    "find": "        skip = kind == \"cell.outcome\" and e.get(\"outcome\") == SKIPPED and not done  # never launched (design 8.3)\n",
+    "replace": "        skip = False\n",
+    "tests": ["tests/test_lifecycle_conformance.py::test_a_skipped_cells_outcome_is_its_first_and_only_row"]
+  },
+  {
+    "name": "the answer command dropped from the skill",
+    "file": ".claude/skills/start-benchmark/SKILL.md",
+    "find": "`bench answer <run_id> <decision_id> <option>`",
+    "replace": "the answer command",
+    "tests": ["tests/test_status.py::test_the_skill_names_every_status_field"]
   }
 ]

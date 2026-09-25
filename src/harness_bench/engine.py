@@ -49,6 +49,12 @@ from harness_bench.tools import BuildChanged
 FACTS = ("events", "turn_usage", "archive_files")
 USAGE_BUCKETS = ("uncached_input", "cache_read", "cache_write", "output", "reasoning")
 STOP = "stop"  # the inbox item a worker sends to ask the engine thread to stop launching (not a ledger fact)
+SPEND = "spend"  # the inbox item a worker sends with its ended cell's tokens, before its outcome (design 6.3; not a fact)
+DECISION_CAUSES = {  # design 6.1: a cell cause that can open a decision -> (decision kind, the cell field that is its subject)
+    "blocked_auth": ("blocked_cell", "harness"),  # PE-4: one expired login blocks every cell of the harness
+    "blocked_permission": ("blocked_cell", "harness"),
+    "model_unavailable": ("qualification_gap", "combo"),
+}
 NO_MEMORY_STATUSES = {0xC0000017, 0xC000012D}
 OOM_SIGNATURE = re.compile(rb"heap out of memory|out of memory|OutOfMemory", re.IGNORECASE)
 COMPLETED_STOP_REASONS = {"end_turn", "max_tokens", "max_turn_requests", "refusal"}
@@ -110,6 +116,70 @@ class _Active:
     lock: threading.Lock = field(default_factory=threading.Lock)  # guards kill_reason/ended and terminate vs close
 
 
+@dataclass
+class _Decision:
+    decision_id: str
+    kind: str
+    subject: str
+    cause_code: str
+    options: tuple[str, ...]
+    default: str
+    opened_at: float  # the engine clock
+    state: str = "open"
+
+
+class _Decisions:
+    """The decision requests of one run (design 6.2): a Functional Core. Each method returns the rows to append and
+    does no I/O; the engine loop (the Imperative Shell) appends them. Every resolution path (answer, timeout,
+    supersede) goes through `_resolve`, whose state guard makes each decision resolve exactly once (PE-15).
+
+    simplify: one class in engine.py, not a module (STOP-I owns no new file). Upgrade trigger: a second consumer."""
+
+    def __init__(self, timeout: float | None) -> None:
+        self.timeout = timeout
+        self.all: dict[str, _Decision] = {}
+        self.keys: set[tuple[str, str, str]] = set()
+
+    @property
+    def any_open(self) -> bool:
+        return any(d.state == "open" for d in self.all.values())
+
+    def open(self, kind: str, subject: str, cause_code: str, now: float, **snapshot) -> dict | None:
+        """A decision.opened row, or None: at most one per (kind, subject, cause), so a later cause still opens one."""
+        if (kind, subject, cause_code) in self.keys:
+            return None
+        self.keys.add((kind, subject, cause_code))
+        options, default = lifecycle.DECISION_KINDS[kind]
+        d = _Decision(f"D{len(self.all) + 1}", kind, subject, cause_code, options, default, now)
+        self.all[d.decision_id] = d
+        return {"kind": "decision.opened", "decision_id": d.decision_id, "decision_kind": kind, "subject": subject,
+                "cause_code": cause_code, "options": list(options), "default": default, **snapshot}
+
+    def _resolve(self, decision_id: str, state: str, option: str | None) -> dict | None:
+        d = self.all[decision_id]
+        if d.state != "open":  # the one guard: whichever path comes second writes nothing
+            return None
+        d.state = state
+        return {"kind": "decision.resolved", "decision_id": decision_id, "state": state, "option": option}
+
+    def answer(self, decision_id: str, option: str) -> tuple[str, dict | None]:
+        """The control.applied effect of an answer, and its decision.resolved row when it wins."""
+        d = self.all.get(decision_id)
+        if d is None or option not in d.options:
+            return "rejected (invalid)", None
+        row = self._resolve(decision_id, "answered", option)
+        return ("applied", row) if row else ("rejected (already resolved)", None)
+
+    def expire(self, now: float) -> list[dict]:
+        """The default of every decision whose timeout has passed on the engine clock."""
+        due = [d for d in self.all.values() if now >= d.opened_at + self.timeout]
+        return [row for d in due if (row := self._resolve(d.decision_id, "default applied (timeout)", d.default))]
+
+    def supersede_all(self) -> list[dict]:
+        """A run stop: every open decision becomes superseded (stop)."""
+        return [row for d in list(self.all.values()) if (row := self._resolve(d.decision_id, "superseded (stop)", None))]
+
+
 def span_id(trace_id: str, entity: str, phase: str) -> str:
     """Deterministic, so a log line written before its span is derived still joins it (design: Telemetry)."""
     return hashlib.sha256(f"{trace_id}|{entity}|{phase}".encode()).hexdigest()[:16]
@@ -133,6 +203,12 @@ class Engine:
         self.closed = False
         self.archive_failed: set[str] = set()  # cells whose outcome stands but whose archive failed: the run is incomplete
         self.infra_streak = 0
+        self.cells = {c["cell_id"]: c for c in plan.get("cells", [])}
+        self.pending: list[dict] = []  # the launch queue; a skip_combo decision removes cells from it (design 6.1)
+        self.decisions = _Decisions(self.params.get("decision_timeout"))
+        self.spend_cap = self.params.get("spend_cap_tokens")  # None: no cap, or disabled by a `continue` (design 6.1)
+        self.spend_tokens = 0  # the run's spend: a running sum on the engine thread, never persisted (design 3)
+        self.cells_unmeasured = 0  # ended cells whose usage was not recorded: never counted as 0 (design 6.3)
 
     # the single writer ----------------------------------------------------------------------------
 
@@ -186,6 +262,10 @@ class Engine:
                 self._stop_launching(record["code"], record["reason"])
                 future.set_result(record)
                 continue
+            if fact == SPEND:
+                self._count_spend(record)
+                future.set_result(record)
+                continue
             try:
                 row = self._append_now(fact, record)
             except (BenchError, TypeError, ValueError) as exc:  # handed to the worker; only an OSError broke the run
@@ -203,6 +283,7 @@ class Engine:
                 a.prompt_mono = self.clock()
         elif kind == "cell.outcome":
             self.outcomes[row["cell_id"]] = row
+            self._raise_for(row)
             cause = Cause[row["cause"]] if row["cause"] else None
             if row["outcome"] == "stopped":
                 return
@@ -221,6 +302,68 @@ class Engine:
         """Called by a worker: ask the engine thread to stop launching; returns once the stop is decided."""
         self.record(STOP, {"code": code, "reason": reason})
 
+    # decision requests (design 6; engine thread) ----------------------------------------------------
+
+    def _raise_for(self, outcome: dict) -> None:
+        """A blocked cell or a qualification gap opens a decision only when it can change something (design 6.1):
+        launching is not stopped, for any reason, and a pending cell shares its subject."""
+        cell = self.cells.get(outcome["cell_id"])
+        if cell is None or outcome["cause"] not in DECISION_CAUSES:
+            return
+        kind, field_name = DECISION_CAUSES[outcome["cause"]]
+        if self.stopped or not any(c[field_name] == cell[field_name] for c in self.pending):
+            return
+        self._open(kind, cell[field_name], outcome["code"])
+
+    def _count_spend(self, spend: dict) -> None:
+        """One ended cell's tokens (design 6.3). A spend_cap decision opens even after a launch stop, while a pending
+        or another running cell can still spend; never after a run stop."""
+        if spend["tokens"] is None:
+            self.cells_unmeasured += 1
+        else:
+            self.spend_tokens += spend["tokens"]
+        can_change = (self.pending and not self.stopped) or any(cid != spend["cell_id"] for cid in self.active)
+        if self.spend_cap is not None and self.spend_tokens >= self.spend_cap and not self.run_stopped and can_change:
+            self._open("spend_cap", self.plan["run_id"], "HB-RUN-007", spend_tokens=self.spend_tokens,
+                       cells_unmeasured=self.cells_unmeasured)
+
+    def _open(self, kind: str, subject: str, cause_code: str, **snapshot) -> None:
+        row = self.decisions.open(kind, subject, cause_code, self.clock(), **snapshot)
+        if row is None:
+            return
+        try:
+            self._append_now("events", row)
+        except BenchError:  # the ledger broke: the loop now aborts and drains
+            return
+        log.info("decision opened", extra={"error_code": cause_code, "detail": row["decision_id"]})
+
+    def _expire_decisions(self) -> None:
+        """Step 4 of the tick (design 6.2), after the controls: an answer in the same tick wins over the default."""
+        try:
+            for row in self.decisions.expire(self.clock()):
+                self._apply_resolution(row)
+        except BenchError:  # the ledger broke (self.broken): the loop now kills, aborts and drains
+            return
+
+    def _apply_resolution(self, row: dict) -> None:
+        """Append a decision.resolved row, then apply its option (design 6.1)."""
+        self._append_now("events", row)
+        d = self.decisions.all[row["decision_id"]]
+        log.info("decision resolved", extra={"error_code": d.cause_code, "detail": d.decision_id})
+        if row["option"] == "stop":
+            # assume: a spend-cap stop keeps HB-RUN-007 whether answered or defaulted (design 4.9 "the spend_cap default
+            # or answer"); 6.1's "an answer of stop on any decision is an operator stop" is read for the other kinds.
+            # Confirm: the Leader's reading of design 4.9 vs 6.1. Breaks: only the recorded code of an answered cap stop.
+            self._apply_stop("HB-RUN-007" if d.kind == "spend_cap" else "HB-RUN-006", d.decision_id)
+        elif row["option"] == "skip_combo":
+            for cell in [c for c in self.pending if c["combo"] == d.subject]:
+                self.pending.remove(cell)
+                self._after_append(self._append_now("events", {
+                    "kind": "cell.outcome", "cell_id": cell["cell_id"], "outcome": lifecycle.SKIPPED, "cause": None,
+                    "code": None, "decision_id": d.decision_id}))
+        elif row["option"] == "continue" and d.kind == "spend_cap":
+            self.spend_cap = None  # disabled for the rest of the run
+
     # run ------------------------------------------------------------------------------------------
 
     def run(self) -> RunSummary:
@@ -234,11 +377,13 @@ class Engine:
             self.writers[fact] = ledger.SegmentWriter.create(run_dir / fact, segment)
         host.keep_awake(True)
         sleep = host.SleepDetector(self.params["suspend_gap"])
-        pending = list(self.plan["cells"])
+        pending = self.pending = list(self.plan["cells"])
         try:
             self._append_now("events", {"kind": "run.started", "run_id": self.plan["run_id"], "plan_hash": self.plan["plan_hash"],
                                         "trace_id": self.trace_id})
-            while (pending and not self.stopped and not self.broken) or self.active:
+            # the loop also runs while a decision is open, so every open request is resolved (design 6.2; UXA-9)
+            while (pending and not self.stopped and not self.broken) or self.active or (
+                    self.decisions.any_open and not self.broken):
                 lock.heartbeat()
                 self._drain(self.cfg.loop_interval)
                 if self.broken:  # nothing more is recorded: kill every live turn, keep draining until the workers exit
@@ -246,12 +391,14 @@ class Engine:
                     self._check_kills(self.clock())
                 else:
                     self._read_controls()
+                    self._expire_decisions()
                     self.on_tick()
                     if sleep.slept():
                         self._kill_all("host_suspended")
                     if not self.stopped and min(_free_bytes(self.cfg.cells_root), _free_bytes(run_dir)) < self.params["disk_floor_bytes"]:
                         self._stop_launching("HB-RUN-004", "free space below the floor")
-                    while pending and not self.stopped and not self.broken and len(self.active) < self.params["parallelism"]:
+                    while pending and not self.stopped and not self.broken and len(self.active) < self.params["parallelism"] \
+                            and not self.decisions.any_open:  # launching pauses while a decision is open (US-15)
                         self._launch(pending.pop(0))
                 for cell_id, a in list(self.active.items()):
                     if not a.thread.is_alive():
@@ -294,11 +441,14 @@ class Engine:
         except BenchError:  # the ledger broke: the loop now aborts and drains
             pass
 
-    def _apply_stop(self) -> None:
-        self._stop_launching("HB-RUN-006", "bench stop")
-        self._append_now("events", {"kind": "run.stopped", "code": "HB-RUN-006", "decision_id": None})
-        self.run_stopped = "HB-RUN-006"
-        log.info("stop applied", extra={"error_code": "HB-RUN-006"})
+    def _apply_stop(self, code: str = "HB-RUN-006", decision_id: str | None = None) -> None:
+        """Design 5, steps 2-5: a run stop from `bench stop` (HB-RUN-006) or from a decision (its decision_id)."""
+        self._stop_launching(code, "bench stop" if decision_id is None else f"decision {decision_id}")
+        self._append_now("events", {"kind": "run.stopped", "code": code, "decision_id": decision_id})
+        self.run_stopped = code
+        for row in self.decisions.supersede_all():
+            self._append_now("events", row)
+        log.info("stop applied", extra={"error_code": code})
         self._kill_all("stop")
 
     def _read_controls(self, *, ending: bool = False) -> None:
@@ -355,12 +505,17 @@ class Engine:
                     pass
                 continue
             effect = ("no-op (run ending)" if ending else "no-op (already stopped)" if self.run_stopped
-                      else "applied" if data["control"] == "stop" else "rejected (invalid)")
+                      else "applied")
+            resolved = None
+            if data["control"] == "answer" and not ending:  # re-checked here: the CLI's check can be stale (design 4.2)
+                effect, resolved = self.decisions.answer(data["decision_id"], data["option"])
             try:
                 self._append_now("events", {"kind": "control.applied", "uuid": uid, "control": data["control"],
                                              "decision_id": data["decision_id"], "effect": effect})
                 self.applied_controls.add(uid)
-                if effect == "applied":
+                if resolved is not None:
+                    self._apply_resolution(resolved)
+                elif effect == "applied":
                     self._apply_stop()
             except BenchError:  # the ledger broke (self.broken): the loop now kills, aborts and drains; the file stays
                 return
@@ -498,10 +653,14 @@ class Engine:
             return
         result, exit_status, tail = ended
         kill_reason = self.active[cid].kill_reason
-        cause = None if kill_reason == "stop" else self._classify(result, launcher, home, exit_status, tail, kill_reason)
-        for model, buckets in _usage_per_model(normalize.turn_usage({"_meta": (result.usage or {}).get("meta")})).items():
+        extractions = _read_records(launcher, home, result.session_id)  # read once: the provider-error scan and the spend
+        cause = None if kill_reason == "stop" else self._classify(result, extractions, exit_status, tail, kill_reason)
+        usage = normalize.turn_usage({"_meta": (result.usage or {}).get("meta")})
+        for model, buckets in _usage_per_model(usage).items():
             self.record("turn_usage", {"kind": "turn_usage", "run_id": self.plan["run_id"], "cell_id": cid, "attempt": 1,
                                        "model": model, **buckets})
+        if kill_reason != "stop":  # a stopped cell sends no SPEND (design 6.3)
+            self.record(SPEND, {"cell_id": cid, "tokens": _spend(launcher.usage_source, extractions, usage)})
         outcome = "stopped" if kill_reason == "stop" else "completed" if cause is None else (
             "timed_out" if cause is Cause.timed_out else "failed")
         last_update = result.last_update_seconds
@@ -611,13 +770,10 @@ class Engine:
         except subprocess.TimeoutExpired:
             return None, confirmed, ("terminate" if terminated else "grace" if a.kill_reason else "exit")
 
-    def _classify(self, result: driver.TurnResult, launcher: Launcher, home: Path, exit_status: int | None,
+    def _classify(self, result: driver.TurnResult, extractions: list, exit_status: int | None,
                   tail: bytes, kill_reason: str | None) -> Cause | None:
         """Precedence: provider/model error in the native record > budget kill > host sleep > memory > driver cause."""
-        errors = []
-        for path in launcher.records(home, result.session_id or ""):
-            errors.extend(launcher.read(path).errors)
-        scanned = normalize.classify(errors)
+        scanned = normalize.classify([error for ex in extractions for error in ex.errors])
         if scanned:
             return scanned
         if kill_reason == "timeout":
@@ -679,6 +835,25 @@ def _job_query(query, failed):
 def _confirm(cp: procs.CellProcess, timeout: float) -> bool:
     """terminate_and_confirm; a failed job query means the kill is not confirmed (the slot stays held)."""
     return _job_query(lambda: cp.terminate_and_confirm(timeout=timeout), False)
+
+
+def _read_records(launcher: Launcher, home: Path, session_id: str | None) -> list:
+    """Every native record of the session, each read once (a session that never opened is looked up as "")."""
+    return [launcher.read(path) for path in launcher.records(home, session_id or "")]
+
+
+def _spend(source: str, extractions: list, usage: list[normalize.TurnUsage]) -> int | None:
+    """A cell's tokens (design 6.3): the sum over normalize.BUCKETS of normalize.totals, the report's own definition.
+    None means not recorded (no usage from the profile's source, or an unreadable record): it is never a 0."""
+    if source == "acp_turn":
+        if not usage:
+            return None
+        totals = [normalize.totals(source, None, usage)]
+    else:
+        if not extractions or any(normalize.record_unreadable(ex) for ex in extractions):
+            return None
+        totals = [normalize.totals(source, ex, usage) for ex in extractions]
+    return sum(n for per_model in totals for buckets in per_model.values() for n in buckets.values())
 
 
 def _usage_per_model(entries: list[normalize.TurnUsage]) -> dict[str, dict[str, int]]:
