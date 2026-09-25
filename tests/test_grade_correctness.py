@@ -1,6 +1,6 @@
 """Correctness grader: the C-2 move, build_and_suite_clean and DR-G4 decided by cause (design phase3-graders, GR-CODE c1).
 
-- The gate-run test grades the archived cells of `HB_GATE_RUNS` in place, read-only: every output goes under
+- The gate-run test grades the archived cells under `gate_runs_root()` in place, read-only: every output goes under
   `tmp_path`, and the archive's bytes are compared before and after (F9). It skips when the runs are not on this host.
 - The D1 fixtures are the frozen `tasks/D1/workspace` in a temporary git repo that reproduces the archive's commits
   (G9), with a seeded overlay. They need the pinned dotnet SDK and the offline NuGet cache; without them they skip,
@@ -15,13 +15,13 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
-from archived_runs import ROOT
+from archived_runs import ROOT, gate_runs_root
 
 from harness_bench import archive, config, plan, views
 from harness_bench.grade import CellInput, Score, correctness
 from harness_bench.grade.runner import applicable
 
-GATE_RUNS = Path(os.environ.get("HB_GATE_RUNS") or ROOT / "runs")
+GATE_RUNS = gate_runs_root()
 CATALOG = config.load_yaml(ROOT / "bench" / "metrics.yaml")
 SCALES = {m["id"]: m.get("scale") for a in CATALOG["areas"].values() for m in a.get("metrics") or []}
 
