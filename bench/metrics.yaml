@@ -41,7 +41,7 @@ areas:
       - { id: pass_hat_k,              source: [D], better: higher, grader: correctness, kind: derived, weight: 1, note: "all k reps pass" }
       - { id: partial_credit,          source: [D], better: higher, grader: correctness, kind: score, weight: 1, scale: 4 }
       - { id: build_and_suite_clean,   source: [D], better: higher, grader: correctness, kind: score, weight: 1 }
-      - { id: mutation_score,          source: [D], better: higher, grader: mutation,    kind: score, weight: 1 }
+      - { id: mutation_score,          source: [D], better: higher, grader: mutation,    kind: score, weight: 1, scale: 4 }
       - { id: regression_count,        source: [D], better: lower,  grader: correctness, kind: score, weight: 1 }
       - { id: behavioural_equivalence, source: [D], better: higher, grader: correctness, kind: score, weight: 1, note: "D-tasks only" }
       - { id: formal_checks_clean,     source: [D], better: higher, grader: formal,      kind: score, weight: 1, note: "G-tasks: lake build, #print axioms standard only, no sorry/admit/axiom; TLC completes in bounds" }
