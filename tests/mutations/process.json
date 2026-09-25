@@ -1,0 +1,30 @@
+[
+  {
+    "name": "meta not excluded",
+    "file": "src/harness_bench/grade/process.py",
+    "find": "row.get(\"tool_class\") != \"meta\"",
+    "replace": "True",
+    "tests": ["tests/test_grade_process.py::test_a_failed_meta_row_leaves_the_rate_unchanged"]
+  },
+  {
+    "name": "run threshold 2",
+    "file": "src/harness_bench/grade/process.py",
+    "find": "STUCK_RUN = 3",
+    "replace": "STUCK_RUN = 2",
+    "tests": ["tests/test_grade_process.py::test_a_two_run_is_not_a_stuck_loop"]
+  },
+  {
+    "name": "count calls not runs",
+    "file": "src/harness_bench/grade/process.py",
+    "find": "loops += 1",
+    "replace": "loops += length",
+    "tests": ["tests/test_grade_process.py::test_a_four_run_is_one_stuck_loop"]
+  },
+  {
+    "name": "null ok counted as success",
+    "file": "src/harness_bench/grade/process.py",
+    "find": "row.get(\"ok\") is None",
+    "replace": "False",
+    "tests": ["tests/test_grade_process.py::test_a_null_ok_is_na_with_the_missing_counts"]
+  }
+]
