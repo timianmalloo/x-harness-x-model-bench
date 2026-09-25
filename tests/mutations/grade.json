@@ -239,5 +239,247 @@
   "replace": "        if actual == frozen:",
   "tests": ["tests/test_grade_runner.py::test_validate_fails_a_changed_frozen_task",
             "tests/test_grade_runner.py::test_validate_passes_an_unchanged_frozen_task"]
+ },
+ {
+  "name": "process not registered (NA not built)",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "GRADERS[\"process\"] = process.grade_cell  # GR-PROC p1-p3\n",
+  "replace": "",
+  "tests": ["tests/test_grade_runner.py::test_process_and_clarify_are_registered_graders"]
+ },
+ {
+  "name": "clarify not registered (NA not built)",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "GRADERS[\"clarify\"] = clarify.grade_cell  # GR-CLAR l1\n",
+  "replace": "",
+  "tests": ["tests/test_grade_runner.py::test_process_and_clarify_are_registered_graders"]
+ },
+ {
+  "name": "catalog_hash leaves out bench/rubrics/",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "    return tree_hash(bench, [bench / \"metrics.yaml\", *rubrics])",
+  "replace": "    return tree_hash(bench, [bench / \"metrics.yaml\"])",
+  "tests": ["tests/test_grade_runner.py::test_grading_started_carries_the_catalog_hash_and_the_measured_tool_versions",
+            "tests/test_grade_runner.py::test_the_catalog_hash_moves_with_a_weight_or_a_rubric_and_is_plan_tree_hash"]
+ },
+ {
+  "name": "grading.started without catalog_hash",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "                                   \"catalog_hash\": catalog_hash(self.root),  # R-59 c1\n",
+  "replace": "",
+  "tests": ["tests/test_grade_runner.py::test_grading_started_carries_the_catalog_hash_and_the_measured_tool_versions"]
+ },
+ {
+  "name": "an absent tool is probed anyway (a guessed version)",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "    if exe is None:\n        return NOT_RECORDED\n",
+  "replace": "",
+  "tests": ["tests/test_grade_runner.py::test_a_tool_that_cannot_be_measured_is_not_recorded_never_empty_or_guessed"]
+ },
+ {
+  "name": "a failed probe's output recorded as the version",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "done.returncode == 0 and not done.timed_out and lines",
+  "replace": "not done.timed_out and lines",
+  "tests": ["tests/test_grade_runner.py::test_a_tool_that_cannot_be_measured_is_not_recorded_never_empty_or_guessed"]
+ },
+ {
+  "name": "a timed-out probe's output recorded as the version",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "done.returncode == 0 and not done.timed_out and lines",
+  "replace": "done.returncode == 0 and lines",
+  "tests": ["tests/test_grade_runner.py::test_a_tool_that_cannot_be_measured_is_not_recorded_never_empty_or_guessed"]
+ },
+ {
+  "name": "a probe that cannot start crashes the pass",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "    except OSError:\n        return NOT_RECORDED\n",
+  "replace": "    except ValueError:\n        return NOT_RECORDED\n",
+  "tests": ["tests/test_grade_runner.py::test_a_tool_that_cannot_be_measured_is_not_recorded_never_empty_or_guessed"]
+ },
+ {
+  "name": "dotnet measured for a non-dotnet task",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": ".get(\"runner\") == \"dotnet\":",
+  "replace": ".get(\"runner\") != \"dotnet\":",
+  "tests": ["tests/test_grade_runner.py::test_tool_versions_measure_dotnet_once_per_dotnet_task_in_its_workspace_with_a_30_s_timeout"]
+ },
+ {
+  "name": "dotnet measured outside the task workspace (global.json ignored)",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "_version([\"dotnet\", \"--version\"], root / \"tasks\" / task / \"workspace\")",
+  "replace": "_version([\"dotnet\", \"--version\"], root)",
+  "tests": ["tests/test_grade_runner.py::test_tool_versions_measure_dotnet_once_per_dotnet_task_in_its_workspace_with_a_30_s_timeout"]
+ },
+ {
+  "name": "the probe timeout is not 30 s",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "TOOL_TIMEOUT = 30 ",
+  "replace": "TOOL_TIMEOUT = 60 ",
+  "tests": ["tests/test_grade_runner.py::test_tool_versions_measure_dotnet_once_per_dotnet_task_in_its_workspace_with_a_30_s_timeout"]
+ },
+ {
+  "name": "a pinned tool is never measured",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "        out[key] = _version(argv, root)\n",
+  "replace": "        pass\n",
+  "tests": ["tests/test_grade_runner.py::test_a_pinned_tool_is_measured_by_its_pinned_command"]
+ },
+ {
+  "name": "a .dev pass is current (the probe skip dropped)",
+  "file": "src/harness_bench/views.py",
+  "find": "    else:\n        done = [d for d in done if not _is_probe(catalog.get(d[1]))]\n",
+  "replace": "",
+  "tests": ["tests/test_views.py::test_a_dev_pass_is_never_current_yet_readable_by_its_version_and_counted",
+            "tests/test_views.py::test_the_current_pass_skips_a_later_dev_pass_unless_its_version_is_asked_for"]
+ },
+ {
+  "name": "a probe is any version, not one ending in .dev",
+  "file": "src/harness_bench/views.py",
+  "find": ".endswith(\".dev\")",
+  "replace": ".endswith(\"\")",
+  "tests": ["tests/test_views.py::test_a_dev_pass_is_never_current_yet_readable_by_its_version_and_counted",
+            "tests/test_views.py::test_the_current_pass_skips_a_later_dev_pass_unless_its_version_is_asked_for"]
+ },
+ {
+  "name": "probe passes never counted",
+  "file": "src/harness_bench/views.py",
+  "find": "\"probe_passes\": _probe_passes(events)}",
+  "replace": "\"probe_passes\": 0}",
+  "tests": ["tests/test_views.py::test_a_dev_pass_is_never_current_yet_readable_by_its_version_and_counted"]
+ },
+ {
+  "name": "the rubric checks dropped from validate_repo",
+  "file": "src/harness_bench/config.py",
+  "find": "    validate_rubrics(root, p)\n",
+  "replace": "",
+  "tests": ["tests/test_config.py::test_the_catalog_rubric_must_equal_c1s_rubric_byte_for_byte",
+            "tests/test_config.py::test_each_rubrics_value_must_name_an_existing_file"]
+ },
+ {
+  "name": "a catalog rubric that differs from C1's accepted",
+  "file": "src/harness_bench/config.py",
+  "find": "(root / copy).read_bytes() != (root / original).read_bytes()",
+  "replace": "False",
+  "tests": ["tests/test_config.py::test_the_catalog_rubric_must_equal_c1s_rubric_byte_for_byte"]
+ },
+ {
+  "name": "a rubrics value naming a missing file accepted",
+  "file": "src/harness_bench/config.py",
+  "find": "                if not (root / \"bench\" / \"rubrics\" / str(name)).is_file():",
+  "replace": "                if False:",
+  "tests": ["tests/test_config.py::test_each_rubrics_value_must_name_an_existing_file"]
+ },
+ {
+  "name": "the plan does not freeze graders (S-1)",
+  "file": "src/harness_bench/plan.py",
+  "find": "**_graders(root / \"tasks\" / t[\"id\"]), ",
+  "replace": "",
+  "tests": ["tests/test_plan.py::test_the_plan_freezes_each_task_graders_list"]
+ },
+ {
+  "name": "tree_hash keeps CRLF (two recipes)",
+  "file": "src/harness_bench/plan.py",
+  "find": "        h.update(f.read_bytes().replace(b\"\\r\\n\", b\"\\n\") + b\"\\0\")\n    return h.hexdigest()\n\n\ndef task_version_hash",
+  "replace": "        h.update(f.read_bytes() + b\"\\0\")\n    return h.hexdigest()\n\n\ndef task_version_hash",
+  "tests": ["tests/test_plan.py::test_tree_hash_is_the_one_recipe_path_nul_lf_bytes_nul_in_sorted_path_order"]
+ },
+ {
+  "name": "tree_hash in the order given, not sorted",
+  "file": "src/harness_bench/plan.py",
+  "find": "    for f in sorted(files):\n",
+  "replace": "    for f in files:\n",
+  "tests": ["tests/test_plan.py::test_tree_hash_is_the_one_recipe_path_nul_lf_bytes_nul_in_sorted_path_order"]
+ },
+ {
+  "name": "cmd_plan skips the tasks-freeze check (S-3)",
+  "file": "src/harness_bench/cli.py",
+  "find": "    config.validate_task_freeze(root, problems)  # R-59 c5, seam S-3",
+  "replace": "    pass  # R-59 c5, seam S-3",
+  "tests": ["tests/test_plan.py::test_cmd_plan_refuses_a_changed_frozen_task_before_building_a_plan"]
+ },
+ {
+  "name": "gate: a pass that did not complete is accepted (criterion 1)",
+  "file": "tools/check_regrade.py",
+  "find": "        report.failures.append(f\"criterion 1: pass {label} did not complete ({why})\")\n",
+  "replace": "        pass\n",
+  "tests": ["tests/test_check_regrade.py::test_a_dead_pass_b_fails_the_gate"]
+ },
+ {
+  "name": "gate: pass B's export not compared with pass A's (criterion 2)",
+  "file": "tools/check_regrade.py",
+  "find": "    if _sha(va) != _sha(vb):  # 2\n",
+  "replace": "    if False:  # 2\n",
+  "tests": ["tests/test_check_regrade.py::test_a_value_moved_by_pass_b_fails_the_gate"]
+ },
+ {
+  "name": "gate: the 0.3 export not compared with the baseline (criterion 3)",
+  "file": "tools/check_regrade.py",
+  "find": "        if not e03_before == e03_after == base[\"export_sha256\"]:",
+  "replace": "        if not e03_before == e03_after:",
+  "tests": ["tests/test_check_regrade.py::test_a_moved_0_3_byte_fails_the_gate"]
+ },
+ {
+  "name": "gate: a pass's catalog_hash not compared (criterion 4)",
+  "file": "tools/check_regrade.py",
+  "find": "        if frozen_hash is None or got != frozen_hash:",
+  "replace": "        if frozen_hash is None:",
+  "tests": ["tests/test_check_regrade.py::test_a_dead_pass_b_fails_the_gate"]
+ },
+ {
+  "name": "gate: non-NA counts not compared (criterion 5)",
+  "file": "tools/check_regrade.py",
+  "find": "        elif n != counts[m]:",
+  "replace": "        elif False:",
+  "tests": ["tests/test_check_regrade.py::test_an_all_na_pass_fails_the_gate"]
+ },
+ {
+  "name": "gate: correctness values not compared with 0.3 (criterion 5)",
+  "file": "tools/check_regrade.py",
+  "find": "        if want.get(key) != got.get(key):",
+  "replace": "        if False:",
+  "tests": ["tests/test_check_regrade.py::test_an_all_na_pass_fails_the_gate"]
+ },
+ {
+  "name": "US-4 (a): an export that differs from its golden accepted",
+  "file": "tests/test_catalog_version.py",
+  "find": "        elif export(f.stem) != f.read_bytes():",
+  "replace": "        elif False:",
+  "tests": ["tests/test_catalog_version.py::test_a_grader_change_without_a_bump_is_red_through_a"]
+ },
+ {
+  "name": "US-4 (b): a moved catalog_hash accepted",
+  "file": "tests/test_catalog_version.py",
+  "find": "    elif pinned.get(\"catalog_hash\") != current:",
+  "replace": "    elif False:",
+  "tests": ["tests/test_catalog_version.py::test_a_weight_changed_without_a_bump_is_red_through_b"]
+ },
+ {
+  "name": "US-4 (c): a rewritten golden file accepted",
+  "file": "tests/test_catalog_version.py",
+  "find": "    if pinned is not None and digests != (pinned.get(\"golden\") or {}):",
+  "replace": "    if False:",
+  "tests": ["tests/test_catalog_version.py::test_a_rewritten_golden_file_is_red_through_c"]
+ },
+ {
+  "name": "US-4 (e): an edited freeze entry accepted",
+  "file": "tests/test_catalog_version.py",
+  "find": " for v in sorted(was) if versions.get(v) != was[v]]",
+  "replace": " for v in sorted(was) if False]",
+  "tests": ["tests/test_catalog_version.py::test_an_edited_or_removed_freeze_entry_is_red_through_e"]
+ },
+ {
+  "name": "US-4: a .dev version checked like a release (no exemption)",
+  "file": "tests/test_catalog_version.py",
+  "find": "    if version.endswith(\".dev\"):\n        print(PROBE)\n        return problems\n",
+  "replace": "",
+  "tests": ["tests/test_catalog_version.py::test_a_dev_version_is_exempt_and_says_so"]
+ },
+ {
+  "name": "HB_REQUIRE_DOTNET=1 with no dotnet skips instead of failing",
+  "file": "tests/conftest.py",
+  "find": "    if which(\"dotnet\") is None:\n        pytest.fail(",
+  "replace": "    if which(\"dotnet\") is None:\n        pytest.skip(",
+  "tests": ["tests/test_catalog_version.py::test_hb_require_dotnet_fails_a_missing_dotnet_and_its_absence_skips"]
  }
 ]

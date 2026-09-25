@@ -62,9 +62,11 @@ def test_the_pass_writes_one_row_per_applicable_metric_of_the_tasks_graders(root
 
 
 def test_an_unbuilt_grader_is_na_not_built_for_each_of_its_metrics_never_0(root, tmp_path):
-    set_graders(root, ["correctness", "cost", "process"])
+    set_graders(root, ["correctness", "cost", "process", "mutation"])  # mutation is not registered (GR-CODE c6)
     got = {r["metric_id"]: (r["value"], r["reason"]) for r in graded(root, tmp_path)}
-    assert {m: v for m, v in got.items() if m not in BUILT | PROCESS} == {m: (None, "not built") for m in (CORRECTNESS | COST) - BUILT}
+    assert "mutation" not in runner.GRADERS and got["mutation_score"] == (None, "not built")  # an unregistered grader
+    assert {m: v for m, v in got.items() if m not in BUILT | PROCESS} == \
+        {m: (None, "not built") for m in ((CORRECTNESS | COST) - BUILT) | {"mutation_score"}}
     missing = (None, "per-call outcome missing on 2 of 2 calls")  # the captured Codex record: every ok is null (DR-G3)
     assert {m: got[m] for m in PROCESS} == {  # process is registered (GR-PROC p1-p3), so measured, never `not built`
         "tool_error_rate": missing, "stuck_loops": missing, "recovery_rate": missing,
@@ -287,7 +289,7 @@ def test_a_tool_that_cannot_be_measured_is_not_recorded_never_empty_or_guessed(t
     def fake_run(argv, cwd, env, timeout):
         if fault == "oserror":
             raise FileNotFoundError(argv[0])
-        return procs.Completed(1 if fault == "exit 1" else None if fault == "timeout" else 0,
+        return procs.Completed(1 if fault == "exit 1" else 0,  # a timed-out tree is killed: its code proves nothing
                                "" if fault == "empty" else "10.0.100\n", "", fault == "timeout", False, 30.0)
 
     monkeypatch.setattr(runner.shutil, "which", lambda name: None if fault == "absent" else f"C:/fake/{name}.exe")
