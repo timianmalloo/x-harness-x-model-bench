@@ -410,6 +410,24 @@ def test_t_gw_19b_a_run_in_another_worktrees_runs_is_scanned(tmp_path, base, mon
         assert (live / ".lock").is_file()
 
 
+def test_t_gw_19c_a_folder_under_runs_with_no_plan_json_is_skipped_not_an_error(tmp_path, base, monkeypatch):
+    """`status.require_known` is the one filter: a calibration ledger has no plan.json, so it is not a run, even with a
+    held lock in it (design section 4.4)."""
+    root = judged_root(tmp_path)
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    calibration = run_dir.parent / "calibration-C1-placeholder"
+    calibration.mkdir()
+    allow_calls(tmp_path, base, monkeypatch)
+    held = [oslock.RunLock.acquire(calibration / ".lock", "HB-RUN-005")]
+    live = hold(run_dir.parent, "live", run_dir, "alive", held)
+    gid = graded(run_dir, root, held)  # beside a live run, the refusal names the live run only
+    assert spawns(tmp_path) == 0 and f"{REFUSED}{run_dir.parent.resolve()}; {live.resolve()} alive\n" in \
+        refusal(run_dir, gid)
+    shutil.rmtree(live)
+    gid = graded(run_dir, root, [oslock.RunLock.acquire(calibration / ".lock", "HB-RUN-005")])
+    assert spawns(tmp_path) == 1 and ("a", "adr_quality#1", CLAUDE, "stored", None) in uses(run_dir, gid)
+
+
 def test_a_pass_that_may_call_refuses_a_cells_root_below_an_instruction_file_before_any_spawn(tmp_path, base,
                                                                                             monkeypatch):
     """The calls run inside backend.judge_pass: `check_cells_root` (HB-PRE-002, design section 8.2; T-GW-26b)."""
