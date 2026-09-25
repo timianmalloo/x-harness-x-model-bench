@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T13:26:39Z",
+  "generated": "2026-09-25T13:40:02Z",
   "audit": [
     {
       "actor": null,
@@ -25268,6 +25268,25 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3CCPRR3BDFN679NN1ZHX5XX",
+      "shortname": "new-bench-task-F1",
+      "datetime": "2026-09-25T13:40:02Z",
+      "session": "w2-tasks-f1",
+      "prompt": "W2-TASKS-c (task F1) of the harness-bench coordination run on Claude Code under R-4: author tasks/F1/ from stub toward ready per the brief (brief-tasks-f1.md): pin cfd-bench, vendor the base, prompt with three tracks and model routing, model_map, dotnet hidden tests failing on base and passing on a reference under oracle/, oracle notes for coordination and judge graders, bench validate ok. Operator ruling 2026-09-25: cfd-bench proceeds without a licence file.",
+      "summary": "F1 -> draft. Source: local clone C:/projects/cfd-bench rev-parse HEAD 496a0a8ca2fae9026927167a8f3e5da0a53f2233, clean; licence none (operator decision 2026-09-25). Workspace: 29 files git-archived from 5 vendored paths, blob ids equal the source; vendoring_check.py exit 0. Oracle: uv run python tasks/F1/oracle/probe.py exit 0 - base dotnet exit 1, f1-hidden.trx 10 failed/0 passed (UnitsConvertAndRejectNonFiniteValues, RectangularWingMatchesItsClosedForms, TaperedWingMatchesItsClosedForms, CrankedWingIntegratesEverySegment, SweepAndTwistDoNotChangeThePlanformQuantities, MillimetreStationsGiveTheSameQuantities, WashoutIsRootTwistMinusTipTwist, CreateRejectsAnInvalidStationList, WingKeepsItsOwnCopyOfTheStationsInOrder, EveryDerivationRejectsANullWing), grade passed=0; reference dotnet exit 0, 10 passed, grade passed=1; dotnet 10.0.303. mutants.py: 6/6 killed. bench validate ok (draft and simulated ready). Draft because DR-F1-1 (model_map is one map, Anthropic ids proposed: opus-5-5 / sonnet-5 / sonnet-5) and DR-F1-2 (Agent/task sub-agent tools out of profile, R-45) are open.",
+      "kind": "command",
+      "skill": "new-bench-task",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "goal": "tasks/F1 authored toward ready with a discriminating dotnet oracle",
+      "done_when": "task.yaml pinned; workspace vendored; prompt and model_map; hidden tests fail on base and pass on reference with evidence; oracle notes; bench validate ok",
+      "started_at": "2026-09-25T13:27:09Z",
+      "duration_seconds": 773.0
     }
   ],
   "changes": [
