@@ -1089,7 +1089,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "c46e136f69079d7062c25c0759c377ad2e299d381f52c040232e62a6bc869570"
+      "sourceSha256": "145b7c6d529e32389ea6507864d161a0823d67517ce7ef912410b9aa370d20db"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -1368,6 +1368,84 @@ window.DOCS_INDEX = {
       "sourceSha256": "3dbc40e3d87e76548cf8bda92266fefc77892f87086a180ae5a9572d91b287b7"
     },
     {
+      "id": "design-phase3-gateway-judges",
+      "path": "docs/design/phase3-gateway-judges.md",
+      "title": "Design: the model gateway and the two judges (phase 3, row 17)",
+      "type": "design",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 3 · wave 3 (row 17: the gateway, the judges, calibration; built by W3-GW-I)",
+      "reviewBy": "2027-03-25",
+      "reviewSuggested": [],
+      "summary": "Row 17 per R-58 and R-59: one tool-less gateway calls two judges (Anthropic claude-fable-5-1, or the R-58 fallback claude-opus-5-5; OpenAI gpt-6-sol) through the pinned headless CLIs, only under bench grade --allow-model-calls and never while a run is live. Requests are scrubbed of pack markers and harness, model and combo ids, scanned, egress- gated and schema-validated; verdicts live in the create-if-absent cache and each lookup is a verdict_uses row. Calibration is one human label per (artifact, rubric item); the header shows inter-judge kappa, each judge's agreement with the operator's labels (not recorded until they exist) and the per-cell-vendor verdict split. DRAFT (phase A): every measured fact is marked pending spike; the gate runs in phase B.",
+      "tags": [
+        "benchmark",
+        "gateway",
+        "judges",
+        "calibration",
+        "kappa",
+        "blinding",
+        "US-26",
+        "US-35",
+        "US-46",
+        "US-47",
+        "R-58",
+        "R-59"
+      ],
+      "links": [
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0009-model-gateway",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0005-egress-control",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0013-native-cells",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0012-proportionate-security",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0003-harness-profile",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-phase1-walking-skeleton",
+          "rel": "refines"
+        },
+        {
+          "to": "note-spike-gw-headless",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        },
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b203cd5f2c257db68796a353c712d9d3719f78e2855e8aa4a34a4b710dd861cc"
+    },
+    {
       "id": "design-run-lifecycle-model",
       "path": "docs/design/run-lifecycle-model.md",
       "title": "Design: run lifecycle model (models/run_lifecycle.tla)",
@@ -1545,6 +1623,47 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "6e60fa814c6eae61a7b55760e8315c186138ee62e0783571b412994046748e4e"
+    },
+    {
+      "id": "note-spike-gw-headless",
+      "path": "docs/notes/spike-gw-headless.md",
+      "title": "Spike GW-H: the headless judge CLIs with every tool denied (pending the Leader's probe turns)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-12-25",
+      "reviewSuggested": [],
+      "summary": "The probe and its offline self-test are written (tests/fixtures/gateway/probe_judge.py, probe_selftest.py); the five probe turns are the Leader's (live turns are a Leader seam). Questions: does Claude Code 2.1.282 serve claude-fable-5-1 in print mode (else the R-58 fallback claude-opus-5-5); does each CLI record 0 tool events on the US-46 \"run a command\" prompt; does anything besides the copied credential reach the model. Results: pending.",
+      "tags": [
+        "benchmark",
+        "spike",
+        "phase-3",
+        "gateway",
+        "judges",
+        "US-46",
+        "R-58"
+      ],
+      "links": [
+        {
+          "to": "design-phase3-gateway-judges",
+          "rel": "relates-to"
+        },
+        {
+          "to": "adr-0009-model-gateway",
+          "rel": "relates-to"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "201222005784f812d13dc3b878ad49a8b708a28b05684dcd72ec0f8072db8070"
     },
     {
       "id": "note-spike-isolation-permissions",
@@ -1744,7 +1863,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "31aa67e06974e4c492e573208651f97490ad3e99e1851dbccee3a3e4fffff5e8"
+      "sourceSha256": "22f534f0e61cb15908757ffc2902841f4db2567d376f8d0c5ddeef32c7f0dac2"
     },
     {
       "id": "proposal-cross-harness-benchmarking",
@@ -1803,7 +1922,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2bb7516987d6e093495dc26957eee01be6880dd749cbb2d98b01aea1653b75ad"
+      "sourceSha256": "e24377dd1b0e2469f6d3b32e20c9351ff25c467277cebf4b8e02376926b8be82"
     },
     {
       "id": "coordination-phase1-finish",
@@ -2331,7 +2450,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TD\n  A([P2 runs /new-bench-task ID]) --> S[stub: task.yaml from template]\n  S --> D[draft: prompt.md, workspace base]\n  D --> O[oracle: hidden tests / rubric / clarifications / seeded bug]\n  O --> V{bench validate}\n  V -->|contract broken| E[Folder, rule, fix] --> O\n  V -->|scenario 1, no clarifications| E\n  V -->|scenario 7, no seeded bug or no toolchain pin| E\n  V -->|ok| DIS{Discrimination check: reference passes, naive or seeded fails}\n  DIS -->|does not discriminate| E2[Oracle too weak or too strict: shown with both results] --> O\n  DIS -->|discriminates| R([status: ready])"
         }
       ],
-      "sourceSha256": "50c64de481f7887d22ec6f6203d646db43fad10042539854e1b6ef2cc9fb24b5"
+      "sourceSha256": "7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094"
     },
     {
       "id": "threat-model",
@@ -2425,5 +2544,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "536b19846314809b01417abcf5583b39721f789a269fcebeff2f30e3a3fc0d70"
+  "graphSha256": "2e9b155864b59225412ca271d51c50d21ae457cd4758bc8b0a6c8a99356c40a3"
 };
