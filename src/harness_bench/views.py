@@ -296,7 +296,7 @@ def _token_cross_check(ended: dict, calls: list[ModelCall]) -> Finding | None:
     return Finding("HB-VAL-005", "warning", "model_calls tokens differ from the ACP turn total: " + "; ".join(diffs))
 
 
-def _unrecorded(source: str, completed: dict, cid: str, ended: dict, usage: list, extraction: str | None) -> str | None:
+def _unrecorded(source: str, completed: dict, cid: str, ended: dict, usage: list) -> str | None:
     """Why the cell's authoritative usage record is not recorded (R-15, R-21 c2), or None when it was read.
 
     - `native_record`: the current pass names the cell in `grading.completed.unreadable_records` (no record, more
@@ -305,8 +305,6 @@ def _unrecorded(source: str, completed: dict, cid: str, ended: dict, usage: list
       there is no `turn_usage` row. A ledger from before R-24 has no `acp_usage` key and reads as before."""
     if source == "acp_turn":
         return NO_ACP_USAGE if not usage and "acp_usage" in ended and ended["acp_usage"] is None else None
-    if extraction is None:
-        return None
     return (completed.get("unreadable_records") or {}).get(cid)
 
 
@@ -355,7 +353,7 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     served = normalize.served_models(source, ex, usage) if recorded else None
     completed = next((e for e in facts["events"] if e["kind"] == "grading.completed" and e["grading_id"] == grading_id), {})
     ended = events.get("attempt.process_ended", {})
-    unrecorded = _unrecorded(source, completed, cid, ended, usage, extraction)
+    unrecorded = _unrecorded(source, completed, cid, ended, usage)
     warnings = [_build_check(plan, cell["harness"], events["attempt.session_opened"])] if "attempt.session_opened" in events else []
     if cell["harness"] in ACP_TOTAL_HARNESSES and source == "native_record" and calls is not None and unrecorded is None:
         warnings.append(_token_cross_check(ended, ex.model_calls))
