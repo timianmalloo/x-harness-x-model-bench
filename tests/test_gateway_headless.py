@@ -188,3 +188,43 @@ def test_t_gw_35_an_unfenced_answer_is_recorded_as_not_fenced(tmp_path, base):
     result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path), _launch(tmp_path, base / "cells"))
     entry = json.loads((tmp_path / "cache" / "verdicts" / f"{result.cache_key}.json").read_text(encoding="utf-8"))
     assert (result.outcome, result.fenced, entry.get("fenced")) == ("stored", False, 0)
+
+
+# --------------------------------------------------------------------------------------------------- T-GW-09
+def _second_inputs() -> pipeline.Inputs:
+    return pipeline.Inputs(INPUTS.preamble, INPUTS.rubric, 2, (("docs/architecture.md", b"# Queue\nA sorted list.\n"),))
+
+
+def test_t_gw_09_a_timed_out_call_is_unavailable_even_when_it_left_a_record(tmp_path, base):
+    # The fake CLI writes its record and answer, then hangs past the call timeout: the timeout decides.
+    launch = _launch(tmp_path, base / "cells", timeout=2, sleep=60)
+    result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path), launch)
+    assert (result.outcome, result.code, result.verdicts) == ("failed", "HB-GW-001", None)
+    assert not list((tmp_path / "cache" / "verdicts").glob("*.json"))
+
+
+def test_t_gw_09_a_429_opens_the_judges_breaker_and_the_rest_of_the_pass_is_not_spawned(tmp_path, base):
+    import test_gateway_pipeline as tp
+    record = tp.claude_record(tmp_path / "rate-limited.jsonl", (PIN,), session="00000000-0000-4000-8000-000000000001",
+                              error=(429, "rate_limit_error"))
+    ctx = _ctx(tmp_path)
+    launch = _launch(tmp_path, base / "cells", record=record)
+    first = pipeline.run(JUDGE, INPUTS, ctx, launch)
+    second = pipeline.run(JUDGE, _second_inputs(), ctx, launch)
+    assert [(r.outcome, r.code) for r in (first, second)] == [("failed", "HB-GW-001")] * 2
+    assert len(_captured(tmp_path)) == 1  # the second call was never spawned
+    other = pipeline.Judge(model="claude-opus-5-5", invocation_sha256="e" * 64, allowed_models=("claude-opus-5-5",),
+                           qualified=True)
+    third = pipeline.run(other, _second_inputs(), ctx, _launch(tmp_path, base / "cells", turn="claude-opus-text"))
+    assert (third.outcome, third.code) == ("stored", None)  # the breaker is per judge
+
+
+def test_t_gw_09_a_provider_error_that_is_not_a_limit_leaves_the_breaker_closed(tmp_path, base):
+    import test_gateway_pipeline as tp
+    record = tp.claude_record(tmp_path / "overloaded.jsonl", (PIN,), session="00000000-0000-4000-8000-000000000001",
+                              error=(529, "overloaded_error"))
+    ctx = _ctx(tmp_path)
+    launch = _launch(tmp_path, base / "cells", record=record)
+    results = [pipeline.run(JUDGE, i, ctx, launch) for i in (INPUTS, _second_inputs())]
+    assert [(r.outcome, r.code) for r in results] == [("failed", "HB-GW-001")] * 2
+    assert len(_captured(tmp_path)) == 2
