@@ -71,6 +71,11 @@ def test_the_grader_failure_code_is_named():  # design phase3-graders, F3 (seam 
                                                   "exception type, and the pass continues")
 
 
+def test_the_incomplete_pass_code_is_named():  # design phase3-graders, GradedOncePerPass (seam S-4)
+    assert errors.RUN_CODES.get("HB-GRD-004") == ("grading pass incomplete: a (cell, metric) row is missing, duplicated or "
+                                                  "outside the applicable set; the pass is not completed")
+
+
 def test_run_level_codes_are_unique_and_named():
     assert len(errors.RUN_CODES) == len(set(errors.RUN_CODES))
     for code in ("HB-PRE-002", "HB-RUN-001", "HB-LED-002", "HB-LED-005", "HB-SEC-001", "HB-USR-001"):

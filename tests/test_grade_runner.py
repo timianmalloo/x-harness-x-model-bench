@@ -11,7 +11,8 @@ import pytest
 import yaml
 from archived_runs import CODEX_MODEL, GOOD, make_root, make_run, pass_rows
 
-from harness_bench import views
+from harness_bench import ledger, views
+from harness_bench.errors import BenchError
 from harness_bench.grade import Score, runner
 
 CORRECTNESS = {"pass_at_1", "partial_credit", "build_and_suite_clean", "regression_count", "behavioural_equivalence"}
@@ -95,3 +96,36 @@ def test_a_malformed_grader_output_is_na_hb_grd_003(root, tmp_path, monkeypatch,
     got = {r["metric_id"]: (r["value"], r["reason"]) for r in graded(root, tmp_path)}
     assert got.get("pass_at_1") == (None, f"HB-GRD-003 grader correctness failed: {exc}")
     assert got.get("partial_credit") == (None, f"HB-GRD-003 grader correctness failed: {exc}")  # every metric of the grader
+
+
+# --- GradedOncePerPass: the completeness check before grading.completed (F2, HB-GRD-004) -----------------------
+
+
+def failure_code(run_dir, root) -> str | None:
+    try:
+        runner.run_pass(run_dir, root)
+    except BenchError as exc:
+        return exc.code
+    return None
+
+
+@pytest.mark.parametrize("fault", ["missing", "duplicate", "extra"])
+def test_a_missing_duplicate_or_extra_row_fails_the_pass_before_completed(root, tmp_path, monkeypatch, fault):
+    if fault == "extra":  # a grader returns a key outside its applicable metrics
+        real = getattr(runner, "GRADERS", {}).get("correctness")
+        with_grader(monkeypatch, "correctness", lambda inp: {**real(inp), "mutation_score": Score(None, "x")})
+    else:  # the writer drops, or doubles, one (cell, metric) row
+        write = runner._Pass._score
+
+        def faulty(self, cell, attempt, metric, *rest):
+            if metric != "partial_credit" or fault == "duplicate":
+                write(self, cell, attempt, metric, *rest)
+            if metric == "partial_credit" and fault == "duplicate":
+                write(self, cell, attempt, metric, *rest)
+
+        monkeypatch.setattr(runner._Pass, "_score", faulty)
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    assert failure_code(run_dir, root) == "HB-GRD-004"
+    events = [e for p in (run_dir / "events").glob("grade-*.jsonl") for e in ledger.read_segment(p)]
+    assert [e["kind"] for e in events] == ["grading.started"]  # never completed, so views skip the pass
+    assert views.completed_passes(run_dir) == set()
