@@ -4,6 +4,7 @@ The JSON form is `bench-status/1`: a strict type (unknown or missing fields reje
 from cells. The text form uses the exact strings of the design's CLI state table.
 """
 
+import dataclasses
 import json
 from datetime import UTC, datetime
 
@@ -63,6 +64,12 @@ def test_a_cell_whose_native_record_is_unreadable_is_counted_as_not_recorded(roo
     s = status.build(run_dir, now=NOW)
     assert s.validity == {"not recorded": 1}
     assert status.parse(status.to_json(s)) == s  # bench-status/1 accepts the state
+
+
+def test_bench_status_accepts_the_tools_denied_by_hook_state(root, tmp_path):  # R-27, seam S2
+    s = dataclasses.replace(status.build(make_run(root, tmp_path, {"a": GOOD}), now=NOW),
+                            validity={"invalid (tools denied by hook)": 1})
+    assert status.parse(status.to_json(s)) == s
 
 
 def test_a_dead_engine_leaves_the_run_incomplete(root, tmp_path):

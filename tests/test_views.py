@@ -285,6 +285,38 @@ def test_copilot_unmutated_sample_is_valid(root, tmp_path):
     assert (cell.validity, cell.validity_code) == ("valid", None)
 
 
+# --- R-27: a native hook denial makes the cell `invalid (tools denied by hook)` (HB-VAL-004) ------------------------
+
+
+def test_the_revision_92_pack_on_copilot_cell_is_invalid_tools_denied_by_hook(root, tmp_path):  # R-27 c3 negative control
+    run_dir = _copilot_run(root, tmp_path, arm="on-rev92")
+    assert sum(r["outcome_code"] == "denied" for r in views.rows(run_dir, "tool_calls")) == 8  # the fixture's count
+    cell = _cell(views.load(run_dir), "a")
+    assert (cell.validity, cell.validity_code) == ("invalid (tools denied by hook)", "HB-VAL-004")
+
+
+def test_the_revision_95_pack_on_copilot_cell_is_valid(root, tmp_path):  # R-27 c3: the rev-95 capture
+    cell = _cell(views.load(_copilot_run(root, tmp_path, arm="on")), "a")
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+
+
+def test_one_denied_tool_call_is_enough_to_invalidate(root, tmp_path):  # R-27 c2: native hook denials == 0 in a valid cell
+    def deny_one(events):
+        done = next(e for e in events if e["type"] == "tool.execution_complete")
+        done["data"]["success"] = False
+        done["data"]["error"] = {"code": "denied", "message": "Denied by preToolUse hook"}
+        return events
+
+    cell = _cell(views.load(_copilot_run(root, tmp_path, deny_one)), "a")
+    assert (cell.validity, cell.validity_code) == ("invalid (tools denied by hook)", "HB-VAL-004")
+
+
+def test_an_ordinary_tool_failure_is_not_a_hook_denial(root, tmp_path):  # the rev-95 capture holds one (code not "denied")
+    run_dir = _copilot_run(root, tmp_path, arm="on")
+    assert any(r["ok"] == 0 for r in views.rows(run_dir, "tool_calls"))
+    assert _cell(views.load(run_dir), "a").validity == "valid"
+
+
 # --- R-15 (Q5), R-21 c2: an unreadable native record is "not recorded" (HB-VAL-003), never HB-VAL-001 -------------
 
 

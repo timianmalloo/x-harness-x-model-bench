@@ -46,8 +46,9 @@ def test_copilot_set_model_refusal_uses_the_existing_model_unavailable_cause():
     )
 
 
-def test_the_wave_two_validity_codes_are_named():  # seam S1 (R-15)
+def test_the_wave_two_validity_codes_are_named():  # seam S1 (R-15, R-27)
     assert errors.RUN_CODES["HB-VAL-003"] == "validity: not recorded (the usage record is missing or unreadable)"
+    assert errors.RUN_CODES["HB-VAL-004"] == "validity: tools denied by hook"
 
 
 def test_run_level_codes_are_unique_and_named():
