@@ -38,6 +38,7 @@ RUN_ID = r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}"
 # validates every cell against it at plan time, so status never emits what its own parser rejects).
 # PHASE (ruling R-3): a closed enum. "starting": launch has begun (cell.launch_intent recorded) but
 # no cell has reached attempt.process_started yet. "running": at least one has (a one-way move).
+# "stopping": run.stopped is recorded and a launched cell has no outcome; "stopped": every launched cell has one.
 PHASE = ("starting", "running", "stopping", "stopped")
 CAUSE_CODE = re.compile(r"HB-CELL-[0-9]{3}")
 STOP_CODE = re.compile(r"HB-[A-Z]+-[0-9]{3}")
@@ -70,7 +71,7 @@ class Status:
     running: list[RunningCell]
     decisions: list
     stop_code: str | None  # run.launch_stopped's code; null unless one was recorded (ruling R-3)
-    phase: str  # starting | running (ruling R-3)
+    phase: str  # starting | running | stopping | stopped (ruling R-3; design 4.6)
     graded: bool
 
 
