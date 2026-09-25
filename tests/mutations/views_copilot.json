@@ -9,16 +9,58 @@
   {
     "name": "mapper duplicates missing requests default as zero",
     "file": "src/harness_bench/views.py",
-    "find": "    return ModelCall(**{f.name: row[f.name] for f in fields(ModelCall) if f.name in row})",
-    "replace": "    return ModelCall(**{**{f.name: row[f.name] for f in fields(ModelCall) if f.name in row}, \"requests\": row.get(\"requests\", 0)})",
+    "find": "    if \"requests\" in row:\n        values[\"requests\"] = row[\"requests\"]",
+    "replace": "    if True:\n        values[\"requests\"] = row.get(\"requests\", 0)",
     "tests": ["tests/test_views.py::test_pre_amendment_model_call_row_defaults_to_one_request"]
   },
   {
     "name": "calls_per_cell counts rows",
     "file": "src/harness_bench/views.py",
-    "find": "    return None if calls is None else sum(call.requests for call in calls)",
-    "replace": "    return None if calls is None else len(calls)",
+    "find": "    return Measure(sum(call.requests for call in calls))",
+    "replace": "    return Measure(len(calls))",
     "tests": ["tests/test_views.py::test_copilot_single_row_with_two_requests_counts_two_calls"]
+  },
+  {
+    "name": "ungraded call count must keep the none guard",
+    "file": "src/harness_bench/views.py",
+    "find": "calls_per_cell(ex.model_calls if calls else None)",
+    "replace": "calls_per_cell(ex.model_calls)",
+    "tests": ["tests/test_views.py::test_an_ungraded_run_has_no_scores_and_says_so"]
+  },
+  {
+    "name": "graded extraction with no rows has no count",
+    "file": "src/harness_bench/views.py",
+    "find": "calls_per_cell(ex.model_calls if calls else None)",
+    "replace": "calls_per_cell(ex.model_calls if calls is not None else None)",
+    "tests": ["tests/test_views.py::test_copilot_empty_modelmetrics_has_no_model_call"]
+  },
+  {
+    "name": "missing requests cannot become zero calls",
+    "file": "src/harness_bench/views.py",
+    "find": "if calls is None or any(call.requests == 0 for call in calls):",
+    "replace": "if calls is None:",
+    "tests": ["tests/test_views.py::test_copilot_missing_requests_is_not_zero"]
+  },
+  {
+    "name": "ledger mapper requires start even though the model has a default",
+    "file": "src/harness_bench/views.py",
+    "find": "if f.name != \"requests\"",
+    "replace": "if f.name in row",
+    "tests": ["tests/test_views.py::test_model_call_row_missing_start_still_raises"]
+  },
+  {
+    "name": "executed Copilot prerelease mark",
+    "file": "src/harness_bench/views.py",
+    "find": "return f\"{label} (prerelease)\" if harness == \"copilot\" and \"-\" in version else label",
+    "replace": "return label",
+    "tests": ["tests/test_report.py::test_the_header_marks_the_pinned_copilot_build_as_prerelease"]
+  },
+  {
+    "name": "planned Copilot prerelease mark",
+    "file": "src/harness_bench/report/html.py",
+    "find": "views.build_label(h, str(b.get(\"version\", \"\")))",
+    "replace": "f\"{h} {b.get('version', '')}\".strip()",
+    "tests": ["tests/test_report.py::test_the_header_marks_the_pinned_copilot_build_as_prerelease"]
   },
   {
     "name": "empty served-model set passes validity",

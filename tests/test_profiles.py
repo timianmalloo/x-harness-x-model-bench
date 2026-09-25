@@ -136,7 +136,7 @@ def test_copilot_profile_declares_native_acp_and_credential_store(tmp_path):
 
 
 def test_copilot_null_credential_seeds_and_cleans_without_touching_other_files(tmp_path):
-    p = profiles.Profile("copilot", "COPILOT_HOME", None, None)
+    p = profiles.Profile("copilot", "COPILOT_HOME", None, None, ("{exe}",))
     home = tmp_path / "home"
     p.seed_home(home, model="gpt-6-sol")
     sentinel = home / "events.jsonl"

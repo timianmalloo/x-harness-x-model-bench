@@ -27,7 +27,7 @@ HARNESSES = ("claude-code", "codex", "copilot")
 USAGE_SOURCES = ("acp_turn", "native_record")
 DROP_EXACT = {"CLAUDECODE", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "COPILOT_HOME", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN",
               "OPENAI_API_KEY", "ANTHROPIC_MODEL", "CODEX_PATH", "CLAUDE_CODE_EXECUTABLE", "FAKE_ACP",
-              "GH_TOKEN", "GITHUB_TOKEN", "GH_HOST"}
+              "GH_TOKEN", "GITHUB_TOKEN", "GH_HOST", "GH_ENTERPRISE_TOKEN", "GITHUB_ENTERPRISE_TOKEN", "GH_CONFIG_DIR"}
 DROP_PREFIXES = ("CLAUDE_CODE_", "CODEX_", "COPILOT_", "GIT_CONFIG_")
 CELL_ENV = {
     "MSBUILDDISABLENODEREUSE": "1",
@@ -44,7 +44,7 @@ class Profile:
     home_env: str
     credential_source: Path | None
     credential_name: str | None
-    command: tuple[str, ...] = ()
+    command: tuple[str, ...]
     files: dict[str, str] = field(default_factory=dict)
     env: dict[str, str] = field(default_factory=dict)
     mode: str | None = None
@@ -69,7 +69,7 @@ class Profile:
         if self.credential_name is not None:
             (home / self.credential_name).unlink(missing_ok=True)
 
-    def cell_env(self, base: dict[str, str], home: Path, build, model: str, traceparent: str) -> dict[str, str]:
+    def cell_env(self, base: dict[str, str], home: Path, build: tools.Build, model: str, traceparent: str) -> dict[str, str]:
         env = {k: v for k, v in base.items() if k.upper() not in DROP_EXACT and not k.upper().startswith(DROP_PREFIXES)}
         env.update(CELL_ENV)
         env[self.home_env] = str(home)
@@ -79,7 +79,7 @@ class Profile:
             env["TRACEPARENT"] = traceparent
         return env
 
-    def argv(self, build, model: str | None = None) -> list[str]:
+    def argv(self, build: tools.Build, model: str | None = None) -> list[str]:
         if model is None and any("{model}" in part for part in self.command):
             raise ValueError(f"{self.harness}: model is required by the command template")
         values = {"exe": str(build.exe), "model": model}
@@ -92,7 +92,9 @@ class Profile:
             if build.adapter is None:
                 raise BenchError("HB-PRE-007", f"{self.harness}: command needs an ACP adapter")
             values["adapter"] = str(build.adapter)
-        return [part.format_map(values) for part in self.command]
+        return [part.replace("{exe}", values["exe"]).replace("{model}", values["model"] or "")
+                .replace("{node}", values.get("node", "")).replace("{adapter}", values.get("adapter", ""))
+                for part in self.command]
 
     def native_records(self, home: Path, session_id: str) -> list[Path]:
         return find_records(home, self.record_glob, session_id)
@@ -114,6 +116,9 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
     if harness not in HARNESSES:
         raise ValueError(f"no profile for harness {harness!r} (have {HARNESSES})")
     data = config.load_yaml(root / "bench" / "profiles" / f"{harness}.yaml")
+    command = data.get("command")
+    if not isinstance(command, list) or not command or any(not isinstance(part, str) or not part for part in command):
+        raise BenchError("HB-USR-002", f"{harness}: profile command must be a nonempty list of strings")
     cred = data["credential"]
     if data.get("usage_source", "native_record") not in USAGE_SOURCES:
         raise ValueError(f"{harness}: usage_source must be one of {USAGE_SOURCES}")
@@ -123,7 +128,7 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
         credential_source=(credential_source if credential_source is not None else Path(cred["source"]).expanduser())
         if cred is not None else None,
         credential_name=cred["name"] if cred is not None else None,
-        command=tuple(data["command"]),
+        command=tuple(command),
         files=dict(data.get("files") or {}),
         env=dict(data.get("env") or {}),
         mode=data.get("mode"),

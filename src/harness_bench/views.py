@@ -102,7 +102,7 @@ class CellView:
     idle_ms: Measure
     tokens: dict[str, dict[str, int]] | None  # per model, disjoint buckets; None = not recorded
     tokens_reason: str | None
-    calls_per_cell: int | None = None  # requests in the current extraction; None when not graded
+    calls_per_cell: Measure = field(default_factory=lambda: Measure(None, "not recorded"))
     scores: dict[str, Measure] = field(default_factory=dict)
     evidence: dict[str, str] = field(default_factory=dict)
     extraction_id: str | None = None
@@ -220,12 +220,17 @@ def turn_usage(row: dict) -> normalize.TurnUsage:
 
 def model_call(row: dict) -> ModelCall:
     """Map one ledger row; missing requests uses only the ModelCall field default."""
-    return ModelCall(**{f.name: row[f.name] for f in fields(ModelCall) if f.name in row})
+    values = {f.name: row[f.name] for f in fields(ModelCall) if f.name != "requests"}
+    if "requests" in row:
+        values["requests"] = row["requests"]
+    return ModelCall(**values)
 
 
-def calls_per_cell(calls: list[ModelCall] | None) -> int | None:
-    """Requests in the current extraction, or unrecorded before grading."""
-    return None if calls is None else sum(call.requests for call in calls)
+def calls_per_cell(calls: list[ModelCall] | None) -> Measure:
+    """Requests in a recorded extraction; the caller passes None when it has no rows."""
+    if calls is None or any(call.requests == 0 for call in calls):
+        return Measure(None, "not recorded")
+    return Measure(sum(call.requests for call in calls))
 
 
 def _idle(wall: Measure, model: Measure, tool: Measure) -> Measure:
@@ -280,7 +285,7 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
         outcome=state, cause=cause.label if cause else None,
         code=cause.code if cause else None, validity=validity, validity_code=validity_code,
         wall_ms=wall, model_ms=model, tool_ms=tool, idle_ms=_idle(wall, model, tool),
-        tokens=totals or None, tokens_reason=tokens_reason, calls_per_cell=calls_per_cell(ex.model_calls if calls is not None else None),
+        tokens=totals or None, tokens_reason=tokens_reason, calls_per_cell=calls_per_cell(ex.model_calls if calls else None),
         scores={m: Measure(s["value"], s["reason"]) for m, s in now.items()},
         evidence={m: s["evidence"] for m, s in now.items() if s.get("evidence")}, extraction_id=extraction)
 
@@ -295,6 +300,11 @@ def load(run_dir: Path, catalog_version: str | None = None) -> RunView:
     return RunView(plan["run_id"], plan, completed, grading_id, catalog, cells, _header(facts["events"]))
 
 
+def build_label(harness: str, version: str) -> str:
+    label = f"{harness} {version}".strip()
+    return f"{label} (prerelease)" if harness == "copilot" and "-" in version else label
+
+
 def _header(events: list[dict]) -> dict[str, str | None]:
     """Report-header facts as recorded at process start; None = not recorded."""
     started = [e for e in events if e["kind"] == "attempt.process_started"]
@@ -303,7 +313,8 @@ def _header(events: list[dict]) -> dict[str, str | None]:
         values = sorted({str(e[field_name]) for e in started if e.get(field_name)})
         return ", ".join(values) or None
 
-    builds = sorted({f"{e['harness']} {e['build_version']}" for e in started if e.get("harness") and e.get("build_version")})
+    builds = sorted({build_label(e["harness"], str(e["build_version"])) for e in started
+                     if e.get("harness") and e.get("build_version")})
     return {"credential_kind": one("credential_kind"), "network_mode": one("network_mode"), "executed_builds": ", ".join(builds) or None}
 
 

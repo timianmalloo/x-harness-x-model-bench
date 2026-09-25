@@ -93,7 +93,7 @@ def _context_window_fact(cells: list[views.CellView], tags: dict[str, str]) -> s
 
 def _header(view: views.RunView, tags: dict[str, str]) -> str:
     plan = view.plan
-    planned = ", ".join(f"{h} {b.get('version', '')}".strip() for h, b in sorted((plan.get("builds") or {}).items()))
+    planned = ", ".join(views.build_label(h, str(b.get("version", ""))) for h, b in sorted((plan.get("builds") or {}).items()))
     facts = [("Run", view.run_id), ("State", "complete" if view.completed else "incomplete"),
              ("Plan hash", (plan.get("plan_hash") or "")[:12]), ("Catalog version", view.catalog_version),
              ("Pack revision", (plan.get("pack") or {}).get("revision")),
