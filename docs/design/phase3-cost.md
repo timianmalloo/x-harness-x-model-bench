@@ -103,7 +103,7 @@ calls or any call's `requests` is 0), propagated verbatim.
 
 ### cache_hit_ratio (Decision; non-additive, a percentage)
 
-**Definition:** `cache_read / (uncached_input + cache_read) * 100`, rounded to the nearest integer.
+**Definition:** `cache_read / (uncached_input + cache_read) * 100`, a Decimal at catalog scale 4 (Leader join fix: an integer percent read 100 for every harness at real cache rates).
 `cache_write` is excluded from the denominator: a write is neither a hit nor a miss, so it does not belong in a
 hit-rate's population.
 
@@ -112,7 +112,7 @@ hit-rate's population.
 
 ### cache_write_amplification (Decision; non-additive, a percentage)
 
-**Definition:** `cache_write / cache_read * 100`, rounded to the nearest integer -- tokens (re)written to cache
+**Definition:** `cache_write / cache_read * 100`, a Decimal at catalog scale 4 -- tokens (re)written to cache
 per 100 tokens later read back from it. A value above 100 means the cell wrote more than it ever benefited from
 reading; a value near 0 means writes were rare relative to reads.
 
@@ -164,7 +164,7 @@ that reason; otherwise `normalize.totals(source, ex, turn_usage)`, NA `"no usage
 the one place these five metrics ask "can I trust this cell's usage at all", so cost_usd and every efficiency
 metric agree on when usage is trustworthy, even though only `cost_usd` additionally needs a price list.
 
-## Why int, not Decimal
+## Why int, not Decimal (the three token counts; the two cache percentages are Decimals at scale 4 after the Leader join fix)
 
 The catalog (`0.4.dev`) declares no `scale` for any of the five new metrics (G2). The runner raises `HB-GRD-003`
 (`ValueError`) for a `Decimal` score on a metric with no catalog scale. Adding a `scale` field is a
