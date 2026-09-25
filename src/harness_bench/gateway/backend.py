@@ -48,7 +48,6 @@ class Reply:
     stdout: str  # the judge CLI's stdout, verbatim
     record: Path  # the call's native record, archived (section 8.2)
     harness: str = "claude-code"  # which reader reads the record
-    last_message: str | None = None  # Codex's `-o` file; None for the others
 
 
 class Backend(Protocol):
@@ -109,7 +108,6 @@ class Recorded:
     stdout: str
     record: Path  # a recorded native record file (tests/fixtures/gateway/records/)
     harness: str = "claude-code"
-    last_message: str | None = None
 
 
 class ReplayBackend:
@@ -127,7 +125,7 @@ class ReplayBackend:
         if self.down or digest not in self.replies:
             raise BackendDown("no recorded reply for this request")
         rec = self.replies[digest]
-        return Reply(rec.stdout, archive_record(rec.record, self.archive, call_id), rec.harness, rec.last_message)
+        return Reply(rec.stdout, archive_record(rec.record, self.archive, call_id), rec.harness)
 
 
 def archive_record(record: Path, archive: Path, call_id: str) -> Path:
@@ -191,15 +189,13 @@ class Headless:
             shutil.rmtree(folder, ignore_errors=True)
 
 
-def read_reply(stdout: str) -> tuple[str, tuple[str, ...], str] | None:
-    """(final text, served model ids, native session id) from a Claude `--output-format json` stdout, or None."""
+def final_text(reply: Reply) -> str | None:
+    """The answer's text (section 8.3 step 3): Claude's stdout JSON `result`. Only the text: the served models, tool
+    events and session id come from the record. Another harness reads None (HB-GW-002, fail-closed): see `Headless`'s
+    simplify: note for when Codex's `-o` file or Copilot's stdout is read here."""
     try:
-        out = json.loads(stdout)
+        out = json.loads(reply.stdout) if reply.harness == "claude-code" else None
     except ValueError:
         return None
-    if not isinstance(out, dict):
-        return None
-    text, models, session = out.get("result"), out.get("modelUsage"), out.get("session_id")
-    if not isinstance(text, str) or not isinstance(models, dict) or not models or not isinstance(session, str):
-        return None
-    return text, tuple(sorted(models)), session
+    text = out.get("result") if isinstance(out, dict) else None
+    return text if isinstance(text, str) else None

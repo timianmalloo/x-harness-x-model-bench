@@ -21,7 +21,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from harness_bench import egress
+from harness_bench import egress, profiles
 from harness_bench.gateway import request, schema, scrub, store
 from harness_bench.gateway.backend import (
     Backend,
@@ -29,7 +29,7 @@ from harness_bench.gateway.backend import (
     Headless,
     Launch,
     Reply,
-    read_reply,
+    final_text,
 )
 
 OUTCOMES = ("hit", "stored", "race_lost", "not_allowed", "failed")
@@ -150,17 +150,18 @@ def run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend | Launch) -
         return Result("failed", "HB-GW-001", escaped=escaped)
     if reply is None:
         return Result("failed", "HB-GW-009", escaped=escaped)
-    read = read_reply(reply.stdout)
-    try:
-        answer = json.loads(read[0]) if read else None
-    except ValueError:
-        answer = None
-    if read is None or schema.validate(answer, inputs.items):
-        return Result("failed", "HB-GW-002", escaped=escaped)
-    _, served, session = read
+    ex = profiles.READERS[reply.harness](reply.record)  # the native record decides, never stdout (review A5)
+    served, session = tuple(sorted({c.model for c in ex.model_calls})), ex.session_id
     # the pin must be among the served models, and every served model allowed (design 4.3; review F1)
     if judge.model not in served or not all(m in judge.allowed_models for m in served):
         return Result("failed", "HB-GW-003", escaped=escaped)
+    text = final_text(reply)
+    try:
+        answer = json.loads(text) if text is not None else None
+    except ValueError:
+        answer = None
+    if answer is None or schema.validate(answer, inputs.items):
+        return Result("failed", "HB-GW-002", escaped=escaped)
     entry = {"format": store.FORMAT, "key_inputs": key_inputs,
              "components": {"artifact_sha256": rendered.artifact_sha256,
                             "rubric_sha256": _sha256(inputs.rubric),
