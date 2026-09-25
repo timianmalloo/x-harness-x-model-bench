@@ -185,3 +185,14 @@ def test_t_gw_34_no_report_or_export_embeds_judge_record_text(tmp_path, base):
     assert spawns(tmp_path / "pass") == 1
 
 
+# --------------------------------------------------------------------------------------------------- T-GW-36
+def test_t_gw_36_a_script_rationale_renders_as_inert_text(tmp_path, base, monkeypatch):
+    assert judges is not None, NOT_BUILT
+    hostile = '<script>alert("x")</script>'
+    line = judges.disagreement_text("cell a", "adr_quality#3", (0, hostile), (2, "fine"))
+    assert line == f'cell a adr_quality#3: 0 ({hostile}) vs 2 (fine)'  # raw here: escaping is the renderer's job
+    root, run_dir, _ = judged_run(tmp_path, base)
+    monkeypatch.setattr(judges, "facts", lambda *a, **k: [("Disagreements", line)])
+    page = html.render(views.load(run_dir), False, run_dir, root=root)
+    assert "<script>" not in page
+    assert "&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;" in _dd(page, "Disagreements")
