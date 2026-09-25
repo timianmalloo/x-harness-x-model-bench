@@ -7,6 +7,7 @@ T-SEC-report (a planted token is found and the report is refused).
 
 import json
 import re
+from pathlib import Path
 
 import pytest
 from archived_runs import GOOD, STUB, make_root, make_run
@@ -469,6 +470,38 @@ def test_the_html_validity_section_counts_and_lists_each_wave_two_state(validity
     banner = re.search(r'<section id="validity".*?</section>', html.render(_state_view(validity, code), archive_present=True),
                        re.DOTALL).group(0)
     assert f"<li>{validity}: 1</li>" in banner and f"<li>X1.cop-sol.pack-off.r1: {validity} {code}</li>" in banner
+
+
+def _cells_column(doc: str, header: str) -> list[str]:
+    runs = re.search(r'<section id="runs".*?</section>', doc, re.DOTALL).group(0)
+    headers = re.findall(r'<th scope="col"[^>]*>([^<]*)</th>', runs)
+    rows = re.findall(r"<tr>(.*?)</tr>", re.search(r"<tbody>(.*?)</tbody>", runs, re.DOTALL).group(1))
+    return [re.findall(r"<td[^>]*>(.*?)</td>", row)[headers.index(header)] for row in rows]
+
+
+def test_bench_report_shows_the_codex_q1_cell_as_out_of_profile_on_every_surface(root, tmp_path):  # R-57 gate 3
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    record = next((run_dir / "archive/a/attempt-1/home").rglob("*.jsonl"))
+    record.write_bytes((Path(__file__).parent / "fixtures/native/codex/mcp-inside-exec.jsonl").read_bytes())  # R-55
+    runner.run_pass(run_dir, root)
+    view = views.load(run_dir)
+    out, _ = cli_table.render(view, plain=True)
+    assert _lines_after(out, "Cells that are not valid:")[0] == "  X1.c.pack-off.r1: invalid (out-of-profile tool called) HB-VAL-008"
+    doc = html.render(view, archive_present=True)
+    banner = re.search(r'<section id="validity".*?</section>', doc, re.DOTALL).group(0)
+    assert "<li>X1.c.pack-off.r1: invalid (out-of-profile tool called) HB-VAL-008</li>" in banner
+    assert _cells_column(doc, "Validity") == ["invalid (out-of-profile tool called) HB-VAL-008"]
+
+
+def test_the_cli_table_and_the_page_list_the_refused_attempt_warning():  # R-54 (b): a valid cell, disclosed
+    refused = views.Finding("HB-VAL-009", "warning", "out-of-profile attempt refused: WebFetch")
+    view = _state_view("valid", None, [refused])
+    out, _ = cli_table.render(view, plain=True)
+    assert _lines_after(out, "Warnings:")[0] == "  X1.cop-sol.pack-off.r1: HB-VAL-009 out-of-profile attempt refused: WebFetch"
+    doc = html.render(view, archive_present=True)
+    assert re.search(r'<ul id="validity-warnings">(.*?)</ul>', doc, re.DOTALL).group(1) == (
+        "<li>X1.cop-sol.pack-off.r1: HB-VAL-009 out-of-profile attempt refused: WebFetch</li>")
+    assert _cells_column(doc, "Warnings") == ["HB-VAL-009"]
 
 
 def test_the_cli_table_lists_each_warning_with_its_code_after_the_table():

@@ -107,8 +107,8 @@
  {
   "name": "the pass identity leaks into the export",
   "file": "src/harness_bench/views.py",
-  "find": "\"extraction_id\": c.extraction_id,\n",
-  "replace": "\"extraction_id\": c.extraction_id, \"evidence\": c.evidence,\n",
+  "find": "\"extraction_id\": c.extraction_id, \"meta_calls\": _enc(c.meta_calls),\n",
+  "replace": "\"extraction_id\": c.extraction_id, \"meta_calls\": _enc(c.meta_calls), \"evidence\": c.evidence,\n",
   "tests": ["tests/test_views.py::test_a_regrade_gives_a_byte_identical_canonical_export"]
  },
  {
@@ -157,16 +157,23 @@
  {
   "name": "a pass without heads is an error (R-2 says warning)",
   "file": "src/harness_bench/views.py",
-  "find": "Finding(\"HB-LED-002\", \"warning\", f\"events/{gid}: grading.completed records no heads \"",
-  "replace": "Finding(\"HB-LED-002\", \"error\", f\"events/{gid}: grading.completed records no heads \"",
+  "find": "Finding(\"HB-LED-006\", \"warning\", f\"events/{gid}: grading.completed records no heads \"",
+  "replace": "Finding(\"HB-LED-006\", \"error\", f\"events/{gid}: grading.completed records no heads \"",
   "tests": ["tests/test_verify.py::test_the_ledger_written_before_heads_verifies_with_a_warning"]
  },
  {
   "name": "a pass without heads is not reported",
   "file": "src/harness_bench/views.py",
-  "find": "            out.append(Finding(\"HB-LED-002\", \"warning\", f\"events/{gid}: grading.completed records no heads \"\n                                                        \"(written before ruling R-2); only its seals are checked\"))\n",
+  "find": "            out.append(Finding(\"HB-LED-006\", \"warning\", f\"events/{gid}: grading.completed records no heads \"\n                                                        \"(written before ruling R-2); only its seals are checked\"))\n",
   "replace": "            pass\n",
   "tests": ["tests/test_verify.py::test_the_ledger_written_before_heads_verifies_with_a_warning"]
+ },
+ {
+  "name": "the pre-R-2 no-heads warning shares HB-LED-002 again (R-47 c1: one code, one level)",
+  "file": "src/harness_bench/views.py",
+  "find": "Finding(\"HB-LED-006\", \"warning\", f\"events/{gid}: grading.completed records no heads \"",
+  "replace": "Finding(\"HB-LED-002\", \"warning\", f\"events/{gid}: grading.completed records no heads \"",
+  "tests": ["tests/test_views.py::test_one_code_one_level_one_emitter"]
  },
  {
   "name": "run.completed's events head is not checked",

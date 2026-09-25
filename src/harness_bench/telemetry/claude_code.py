@@ -30,7 +30,8 @@ from harness_bench.telemetry import (
 __all__ = ["ProviderError", "read"]
 
 TOOL_CLASSES = {"Bash": "shell", "PowerShell": "shell", "Edit": "edit", "Write": "edit", "MultiEdit": "edit",
-                "NotebookEdit": "edit", "Read": "read", "Glob": "read", "Grep": "read"}
+                "NotebookEdit": "edit", "Read": "read", "Glob": "read", "Grep": "read",
+                "ToolSearch": "meta"}  # R-54 (a): loads a deferred tool's schema, invokes nothing; counted, never scored
 # Account connectors as the pinned 2.1.282 record advertises them: prompt_snapshot tools and deferred_tools_delta.
 _ACCOUNT_CONNECTOR = re.compile(r"mcp__claude_ai_[A-Za-z0-9_]+")
 

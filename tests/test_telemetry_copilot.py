@@ -487,3 +487,13 @@ def test_a_newline_free_copilot_record_is_read_in_bounded_memory(tmp_path, monke
         tracemalloc.stop()
     assert peak < 1 << 20, f"peak {peak} bytes for an 8 MiB line"
     assert ex.malformed_lines == 1 and ex.session_id == "sid1"
+
+
+def test_every_available_tools_id_in_the_copilot_profile_has_a_reader_class():  # R-45 (a); seam req-01M3BHAA90PTS0ZBQZ7NZYWJN6
+    """The profile's --available-tools list is the allowlist; an id the reader classes "other" would invalidate every cell
+    that calls it (R-45 item 2), so the two lists are held together here, read from the profile, never retyped."""
+    command = profiles.load(Path(__file__).resolve().parents[1], "copilot").command
+    start = command.index("--available-tools") + 1
+    ids = [a for a in command[start:] if not a.startswith("--")]
+    assert ids, "the profile names no --available-tools list"
+    assert [i for i in ids if copilot.TOOL_CLASS.get(i, "other") == "other"] == []

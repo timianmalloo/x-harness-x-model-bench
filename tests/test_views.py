@@ -26,7 +26,7 @@ from harness_bench import archive, ledger, profiles, views
 from harness_bench import plan as plan_mod
 from harness_bench.errors import BenchError
 from harness_bench.grade import cost, runner
-from harness_bench.telemetry import normalize
+from harness_bench.telemetry import copilot, normalize
 
 SONNET = "claude-sonnet-5"
 OPUS = "claude-opus-5-5"
@@ -65,21 +65,33 @@ def _edit_events(run_dir: Path, change) -> None:
             ev.append(row)
 
 
-def _copilot_run(root: Path, tmp_path: Path, change=None, arm: str = "off", **kw) -> Path:
-    """Grade a real archived run using a committed Copilot native record (`arm`: off, on (rev 95), on-rev92)."""
+def _copilot_run(root: Path, tmp_path: Path, change=None, arm: str = "off", checkpoint: bool = False, **kw) -> Path:
+    """Grade a real archived run using a committed Copilot native record (`arm`: off, on (rev 95), on-rev92, fixed).
+
+    The record's `session.usage_checkpoint` (the advertised tool list, R-45) is kept only with `checkpoint`: off, on and
+    on-rev92 predate the fixed profile and advertise web and GitHub-MCP ids, so a test of another subject (tokens, hook
+    denials) reads them without it and its advertised list is not recorded, never a finding."""
     assert "copilot" in profiles.READERS, "Copilot must be registered before grading its native record"
-    run_dir = make_run(root, tmp_path, {"a": GOOD}, harness="copilot", archived=set(), **kw)
+    source = next((COPILOT_FIX / arm).rglob("events.jsonl"))
+    events = [json.loads(line) for line in source.read_text(encoding="utf-8").splitlines() if line.strip()]
+    if not checkpoint:
+        events = [e for e in events if e["type"] != "session.usage_checkpoint"]
+    if change is not None:
+        events = change(events)
+    text = "\n".join(json.dumps(event) for event in events) + "\n"
+    return _native_run(root, tmp_path, "copilot", "session-state/sess-a/events.jsonl", text, **kw)
+
+
+def _native_run(root: Path, tmp_path: Path, harness: str, record_path: str, record_text: str, **kw) -> Path:
+    """Archive cell `a` with `record_text` as its native record at `home/<record_path>`, then grade it for real."""
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, harness=harness, archived=set(), **kw)
     folder = run_dir / "archive/a/attempt-1"
     workspace = folder / "ws"
     workspace.mkdir(parents=True)
     (workspace / "slug.py").write_text(GOOD, encoding="utf-8")
-    record = folder / "home/session-state/sess-a/events.jsonl"
+    record = folder / "home" / record_path
     record.parent.mkdir(parents=True)
-    source = next((COPILOT_FIX / arm).rglob("events.jsonl"))
-    events = [json.loads(line) for line in source.read_text(encoding="utf-8").splitlines() if line.strip()]
-    if change is not None:
-        events = change(events)
-    record.write_text("\n".join(json.dumps(event) for event in events) + "\n", encoding="utf-8")
+    record.write_text(record_text, encoding="utf-8")
     rows = [{"path": file.relative_to(folder).as_posix(), "kind": "file", "size": file.stat().st_size,
              "sha256": hashlib.sha256(file.read_bytes()).hexdigest(), "link_target": "", "archive_attempt": 1}
             for file in sorted(folder.rglob("*")) if file.is_file()]
@@ -326,6 +338,222 @@ def test_an_ordinary_tool_failure_is_not_a_hook_denial(root, tmp_path):  # the r
     assert _cell(views.load(run_dir), "a").validity == "valid"
 
 
+# --- R-45 item 2 as refined by R-54: an executed class-`other` call invalidates (HB-VAL-008); a refused one is the -----
+# --- warning HB-VAL-009 on a valid cell; `meta` calls are counted, never scored ---------------------------------------
+
+VALIDITY_FIX = Path(__file__).parent / "fixtures/validity"
+CODEX_MCP = Path(__file__).parent / "fixtures/native/codex/mcp-inside-exec.jsonl"  # qual-r45-1: a failed codex_apps call
+CC_Q1 = VALIDITY_FIX / "qual-r45-1-cc-opus-tools.jsonl"  # qual-r45-1 cc-opus: ToolSearch, then WebFetch refused (ok false)
+OUT_OF_PROFILE = ("invalid (out-of-profile tool called)", "HB-VAL-008")
+
+
+def _codex_mcp_run(root, tmp_path, **kw) -> views.CellView:
+    text = CODEX_MCP.read_text(encoding="utf-8")
+    return _cell(views.load(_native_run(root, tmp_path, "codex", "sessions/2026/09/rollout-2026-09-23-sess-a.jsonl", text, **kw)), "a")
+
+
+def _claude_q1_dir(root, tmp_path, permission_requests: int, change=None, **kw) -> Path:
+    """The cc-opus Q1 record's tool rows, graded as a Claude Code cell whose driver counted `permission_requests`."""
+    rows = [json.loads(line) if line.strip() else None for line in CC_Q1.read_text(encoding="utf-8").splitlines()]
+    if change is not None:
+        rows = change(rows)
+    text = "".join((json.dumps(r) if r is not None else "") + "\n" for r in rows)
+    kw.setdefault("turn_usage", [_usage("a", OPUS)])
+    return _native_run(root, tmp_path, "claude-code", "projects/C--cells-cell/sess-a.jsonl", text, model=OPUS,
+                       outcomes={"a": {"permission_requests": permission_requests}}, **kw)
+
+
+def _claude_q1_run(root, tmp_path, permission_requests: int, change=None, **kw) -> views.CellView:
+    return _cell(views.load(_claude_q1_dir(root, tmp_path, permission_requests, change, **kw)), "a")
+
+
+def _webfetch_result(is_error: bool | None):
+    """Set the WebFetch tool_result's is_error, or drop the result (None: a call with no result, ok null)."""
+    def change(rows):
+        use = next(r for r in rows if r and r["type"] == "assistant" and r["message"]["content"][0]["name"] == "WebFetch")
+        tid = use["message"]["content"][0]["id"]
+        out = []
+        for r in rows:
+            if r and r["type"] == "user" and r["message"]["content"][0]["tool_use_id"] == tid:
+                if is_error is None:
+                    continue
+                r["message"]["content"][0]["is_error"] = is_error
+            out.append(r)
+        return out
+    return change
+
+
+def test_the_codex_q1_mcp_call_executed_so_the_cell_is_invalid(root, tmp_path):  # R-55: the negative fixture
+    cell = _codex_mcp_run(root, tmp_path)
+    assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
+    assert _warnings(cell, "HB-VAL-009") == []
+
+
+def test_the_claude_q1_refused_webfetch_is_a_valid_cell_with_the_refused_attempt_warning(root, tmp_path):  # R-54 (b)
+    cell = _claude_q1_run(root, tmp_path, permission_requests=1)
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+    assert _warnings(cell, "HB-VAL-009") == [("HB-VAL-009", "warning", "out-of-profile attempt refused: WebFetch")]
+
+
+def test_a_failed_other_call_with_no_counted_request_executed(root, tmp_path):  # the refusal signal is the driver's count
+    cell = _claude_q1_run(root, tmp_path, permission_requests=0)
+    assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
+    assert _warnings(cell, "HB-VAL-009") == []
+
+
+def test_a_counted_request_never_excuses_an_other_call_that_succeeded(root, tmp_path):
+    cell = _claude_q1_run(root, tmp_path, permission_requests=1, change=_webfetch_result(False))
+    assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
+
+
+def test_an_other_call_with_no_result_is_not_refused(root, tmp_path):  # R-54: ok null is not refused
+    cell = _claude_q1_run(root, tmp_path, permission_requests=1, change=_webfetch_result(None))
+    assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
+
+
+def test_one_counted_request_refuses_one_failed_other_call_not_two(root, tmp_path):
+    def twice(rows):
+        webfetch = [r for r in rows if r and "toolu_01XtEMHFci9qYGLksa4gFf2w" in json.dumps(r)]  # its use and its result
+        assert len(webfetch) == 2
+        return rows + [json.loads(json.dumps(r).replace("toolu_01XtEMHFci9qYGLksa4gFf2w", "toolu_second")) for r in webfetch]
+    one = _claude_q1_run(root, tmp_path / "1", permission_requests=1, change=twice)
+    assert (one.validity, one.validity_code) == OUT_OF_PROFILE
+    two = _claude_q1_run(root, tmp_path / "2", permission_requests=2, change=twice)
+    assert (two.validity, _warnings(two, "HB-VAL-009")) == (
+        "valid", [("HB-VAL-009", "warning", "out-of-profile attempt refused: WebFetch, WebFetch")])
+
+
+def test_tool_search_is_counted_per_cell_and_never_invalidates(root, tmp_path):  # R-54 (a), c3
+    cell = _claude_q1_run(root, tmp_path, permission_requests=1)
+    assert cell.meta_calls == views.Measure(1)
+    assert views.Measure(None, "not graded") == _cell(views.load(make_run(root, tmp_path / "u", {"a": GOOD})), "a").meta_calls
+
+
+def test_a_codex_cell_counts_no_meta_call(root, tmp_path):  # measured zero: the reader read the record
+    assert _codex_mcp_run(root, tmp_path).meta_calls == views.Measure(0)
+
+
+def test_a_copilot_hook_denial_of_an_other_call_is_a_refused_attempt_not_hb_val_004(root, tmp_path):  # R-54 (b)
+    def deny_web_fetch(events):
+        start = next(e for e in events if e["type"] == "tool.execution_start")
+        done = next(e for e in events if e["type"] == "tool.execution_complete" and e["data"]["toolCallId"] == start["data"]["toolCallId"])
+        start["data"]["toolName"] = "web_fetch"
+        done["data"]["success"] = False
+        done["data"]["error"] = {"code": "denied", "message": "Denied by preToolUse hook"}
+        return events
+
+    cell = _cell(views.load(_copilot_run(root, tmp_path, deny_web_fetch, arm="fixed")), "a")
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+    assert _warnings(cell, "HB-VAL-009") == [("HB-VAL-009", "warning", "out-of-profile attempt refused: web_fetch")]
+
+
+@pytest.mark.parametrize(("requests", "expected"), [(0, OUT_OF_PROFILE), (1, ("invalid (model mismatch)", "HB-VAL-002"))])
+def test_an_executed_other_call_outranks_a_model_mismatch(root, tmp_path, requests, expected):  # the precedence slot
+    cell = _claude_q1_run(root, tmp_path, permission_requests=requests, turn_usage=[_usage("a", "gpt-other")])
+    assert (cell.validity, cell.validity_code) == expected  # requests=1: refused, so the mismatch shows (not vacuous)
+
+
+@pytest.mark.parametrize(("requests", "expected"), [(0, OUT_OF_PROFILE), (1, ("not recorded", "HB-VAL-003"))])
+def test_an_executed_other_call_outranks_not_recorded(root, tmp_path, requests, expected):  # measured in any record
+    run_dir = _claude_q1_dir(root, tmp_path, permission_requests=requests, turn_usage=[])
+    _edit_events(run_dir, _with_acp_usage(None))  # R-24 c2: the adapter reported no usage
+    cell = _cell(views.load(run_dir), "a")
+    assert (cell.validity, cell.validity_code) == expected
+
+
+def test_a_hook_denial_and_an_invalidating_cause_outrank_an_executed_other_call(root, tmp_path):  # the precedence slot
+    def deny_in_class_and_run_web_fetch(events):
+        starts = [e for e in events if e["type"] == "tool.execution_start"]
+        done = {e["data"]["toolCallId"]: e for e in events if e["type"] == "tool.execution_complete"}
+        done[starts[0]["data"]["toolCallId"]]["data"].update(success=False, error={"code": "denied", "message": "hook"})
+        starts[1]["data"]["toolName"] = "web_fetch"
+        return events
+
+    denied = _cell(views.load(_copilot_run(root, tmp_path / "1", deny_in_class_and_run_web_fetch, arm="fixed")), "a")
+    assert (denied.validity, denied.validity_code) == ("invalid (tools denied by hook)", "HB-VAL-004")
+    caused = _codex_mcp_run(root, tmp_path / "2", outcomes={"a": {"outcome": "failed", "cause": "provider", "code": "HB-CELL-108"}})
+    assert (caused.validity, caused.validity_code) == ("invalid (infrastructure)", "HB-CELL-108")
+
+
+# R-45 item 2: for Copilot, an out-of-class id the checkpoint advertised is the same invalidating finding. The pass records
+# the reader's `tools_advertised` per cell on `grading.completed` (the R-15 `unreadable_records` shape).
+
+
+def _advertised(arm: str) -> list[str] | None:
+    return copilot.read(next((COPILOT_FIX / arm).rglob("events.jsonl"))).tools_advertised
+
+
+def _advertised_run(monkeypatch, advertised: list[str] | None, run) -> views.CellView:
+    """`run()` grades cell a under a pass whose `grading.completed.tools_advertised` records `advertised` for it."""
+    append = runner._Pass.append
+
+    def with_advertised(self, fact, record):
+        if record.get("kind") == "grading.completed":
+            record = {**record, "tools_advertised": {"a": advertised}}
+        return append(self, fact, record)
+
+    monkeypatch.setattr(runner._Pass, "append", with_advertised)
+    return _cell(views.load(run()), "a")
+
+
+def test_the_pack_on_copilot_sample_advertising_web_search_is_invalid(root, tmp_path, monkeypatch):  # R-45 item 2
+    cell = _advertised_run(monkeypatch, _advertised("on"), lambda: _copilot_run(root, tmp_path, arm="on", checkpoint=True))
+    assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
+
+
+def test_the_fixed_profile_copilot_sample_is_valid(root, tmp_path, monkeypatch):  # R-45 c1: qual-r45-1, fixed profile
+    cell = _advertised_run(monkeypatch, _advertised("fixed"), lambda: _copilot_run(root, tmp_path, arm="fixed", checkpoint=True))
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+
+
+def test_the_fixed_profile_advertises_no_id_the_reader_cannot_class():  # was three ids; seam req-01M3BHAA90PTS0ZBQZ7NZYWJN6
+    assert [i for i in _advertised("fixed") if copilot.TOOL_CLASS.get(i, "other") == "other"] == []
+
+
+def test_a_real_grading_pass_carries_the_advertised_list_to_the_view(root, tmp_path):  # seam req-01M3BH75WE84KK5H9BPKC1HGBG
+    """No monkeypatch: the pass itself writes grading.completed.tools_advertised, so R-45 item 2 fires on a real run."""
+    cell = _cell(views.load(_copilot_run(root, tmp_path, arm="on", checkpoint=True)), "a")
+    assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
+
+
+def test_an_advertised_list_of_in_class_ids_is_no_finding(root, tmp_path, monkeypatch):  # the negative control
+    in_class = [i for i in _advertised("fixed") if copilot.TOOL_CLASS.get(i) is not None]
+    assert {"powershell", "apply_patch", "view", "skill"} <= set(in_class)
+    cell = _advertised_run(monkeypatch, in_class, lambda: _copilot_run(root, tmp_path, arm="fixed", checkpoint=True))
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+
+
+def test_an_unrecorded_advertised_list_is_no_finding(root, tmp_path, monkeypatch):  # null: not read, never a finding
+    cell = _advertised_run(monkeypatch, None, lambda: _copilot_run(root, tmp_path, arm="fixed"))
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+
+
+def test_the_advertised_list_is_read_only_for_copilot(root, tmp_path, monkeypatch):  # the ids are Copilot's class map
+    codex_ok = (Path(__file__).parent / "fixtures/native/codex/ok.jsonl").read_text(encoding="utf-8")
+    cell = _advertised_run(monkeypatch, ["web_search"], lambda: _native_run(
+        root, tmp_path, "codex", "sessions/2026/09/rollout-2026-09-23-sess-a.jsonl", codex_ok))
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+
+
+def test_an_ungraded_cell_is_not_graded_before_any_tool_check(root, tmp_path):
+    cell = _cell(views.load(make_run(root, tmp_path, {"a": GOOD})), "a")
+    assert (cell.validity, _warnings(cell, "HB-VAL-009")) == ("not graded", [])
+
+
+def test_the_export_carries_the_refused_warning_and_the_meta_count(root, tmp_path):
+    doc = json.loads(views.export(views.load(_claude_q1_dir(root, tmp_path, permission_requests=1))))["cells"][0]
+    assert (doc["validity"], doc["validity_code"], doc["meta_calls"]) == ("valid", None, {"value": 1, "reason": None})
+    assert [w for w in doc["warnings"] if w["code"] == "HB-VAL-009"] == [
+        {"code": "HB-VAL-009", "level": "warning", "message": "out-of-profile attempt refused: WebFetch"}]
+
+
+def test_the_export_carries_the_out_of_profile_state(root, tmp_path):
+    text = CODEX_MCP.read_text(encoding="utf-8")
+    run_dir = _native_run(root, tmp_path, "codex", "sessions/2026/09/rollout-2026-09-23-sess-a.jsonl", text)
+    doc = json.loads(views.export(views.load(run_dir)))["cells"][0]
+    assert (doc["validity"], doc["validity_code"]) == OUT_OF_PROFILE
+
+
 # --- R-24, R-26 c5: Σ model_calls buckets == the ACP turn total, else an HB-VAL-005 warning (not a validity change) ---
 
 COPILOT_OFF_ACP_USAGE = json.loads((COPILOT_FIX / "provenance.json").read_text(encoding="utf-8"))["facts"]["off"]["acp_prompt_usage"]
@@ -476,9 +704,7 @@ def test_one_code_one_level_one_emitter():  # R-47 c1: a Cause code is never a v
     assert {"HB-VAL-005", "HB-VAL-006"} <= {c for c, _ in emitted}  # the scan sees the view's findings (not vacuous)
     assert {c for c, _ in emitted}.isdisjoint({c.code for c in Cause})
     two_levels = {c for c, level in emitted if any(c == o and level != lv for o, lv in emitted)}
-    # HB-LED-002's pre-R-2 "records no heads" warning predates R-47; its own code needs an errors.py row outside this
-    # track's seam grant (named in the W2-VIEWS hand-back). The exact set makes the exclusion fail once it is fixed.
-    assert two_levels == {"HB-LED-002"}
+    assert two_levels == set()  # R-47 open item closed: the pre-R-2 "records no heads" warning has its own code
 
 
 def test_every_validity_views_can_return_is_a_bench_status_state_or_a_named_exclusion():  # D&P minor
@@ -573,7 +799,8 @@ def test_a_ledger_graded_before_r15_and_r24_exports_what_it_did_before(tmp_path,
     assert not any("unreadable_records" in e or "acp_usage" in e for e in events)  # a pre-R-15, pre-R-24 ledger
     doc = json.loads(views.export(views.load(run_dir)))
     for cell in doc["cells"]:
-        cell.pop("warnings")  # new in W2-VIEWS: the only key the 5feece0 export did not have
+        cell.pop("warnings")  # new in W2-VIEWS: a key the 5feece0 export did not have
+        cell.pop("meta_calls")  # new in W2-VIEWS-FU (R-54 c3): the other one
     assert doc == expected["exports"][name]
 
 
