@@ -440,9 +440,12 @@ def test_the_cli_table_has_no_account_context_flag_when_no_claude_code_cell():
 
 
 def test_no_connector_name_is_hard_coded_in_the_report_source():  # R-36 condition 3, R-6 condition 4
-    import inspect
+    from pathlib import Path
 
     import harness_bench.report as report_module
 
-    src = inspect.getsource(report_module)
-    assert "mcp__claude_ai" not in src and "Claude_Docs" not in src
+    sources = sorted(Path(report_module.__file__).parent.glob("*.py"))
+    assert {p.name for p in sources} >= {"__init__.py", "html.py", "cli_table.py"}
+    for path in sources:
+        src = path.read_text(encoding="utf-8")
+        assert "mcp__claude_ai" not in src and "Claude_Docs" not in src, path.name
