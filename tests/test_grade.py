@@ -352,6 +352,23 @@ def test_grading_completed_names_each_cell_whose_native_record_could_not_be_read
                                                "c": "more than one native record for the session"}
 
 
+def test_a_truncated_record_has_no_cost_from_a_partial_sum(root, tmp_path, monkeypatch):  # R-15 class sweep: never a partial sum
+    from harness_bench import profiles
+    real = profiles.READERS["codex"]
+
+    def truncated(path):
+        ex = real(path)
+        ex.truncated = True  # the calls before the size bound were read; the rest were not
+        return ex
+
+    monkeypatch.setitem(profiles.READERS, "codex", truncated)
+    set_prices(root, [{"model": CODEX_MODEL, "effective": "2026-09-01", "source": "s", "input": 1, "output": 1,
+                       "cache_read": 1, "cache_write": 1}])
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    s = scores(run_dir, runner.run_pass(run_dir, root).grading_id)
+    assert (s["a", "cost_usd"]["value"], s["a", "cost_usd"]["reason"]) == (None, "native record truncated at the size bound")
+
+
 def test_a_record_level_missing_field_or_a_truncated_record_is_unreadable():  # R-15: a call-level field is not
     from harness_bench.telemetry import Extraction, MissingField
     assert normalize.record_unreadable(Extraction(missing=[MissingField(0, "session.shutdown"), MissingField(0, "events.version")])) \

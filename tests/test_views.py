@@ -494,6 +494,16 @@ def test_a_cell_with_no_native_record_is_not_recorded(root, tmp_path):  # R-15: 
     assert _cell(view, "b").tokens_reason == "not recorded (no native record for the session)"
 
 
+def test_a_record_unreadable_as_a_whole_gives_no_partial_token_sum(root, tmp_path, monkeypatch):  # R-21 c2: never a partial sum
+    monkeypatch.setattr(normalize, "record_unreadable", lambda ex: "native record truncated at the size bound")
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    runner.run_pass(run_dir, root)
+    assert views.rows(run_dir, "model_calls")  # the calls read before the cut were written
+    cell = _cell(views.load(run_dir), "a")
+    assert (cell.validity, cell.tokens, cell.tokens_reason) == ("not recorded", None,
+                                                                "not recorded (native record truncated at the size bound)")
+
+
 def test_an_acp_turn_cell_whose_adapter_reported_no_usage_is_not_recorded(root, tmp_path):  # R-15 for acp_turn (R-24 c2)
     run_dir = make_run(root, tmp_path, {"a": GOOD}, harness="claude-code", model=SONNET, turn_usage=[])
     _edit_events(run_dir, lambda e: {**e, "acp_usage": None} if e["kind"] == "attempt.process_ended" else e)
