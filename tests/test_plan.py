@@ -133,6 +133,31 @@ def test_phase1_plan_has_four_cells_and_every_recorded_field():
     assert p["parameters"]["parallelism"] == 2
 
 
+def test_stop_parameters_are_frozen_with_the_ruling_units():  # P-1
+    p = _phase1_plan()
+    assert p["parameters"]["decision_timeout"] == 1800
+    assert p["parameters"]["spend_cap_tokens"] is None
+    assert _phase1_plan(parameters={"decision_timeout": 120, "spend_cap_tokens": 1000})["parameters"]["spend_cap_tokens"] == 1000
+
+
+def test_an_old_confirmed_plan_missing_a_parameter_is_refused(tmp_path):  # P-2
+    p = _phase1_plan()
+    p["parameters"].pop("git_timeout")
+    p["plan_hash"] = plan.plan_hash(p)
+    plan.confirm(tmp_path / "runs" / "old", p)
+    with pytest.raises(BenchError) as error:
+        plan.load_confirmed(tmp_path / "runs" / "old")
+    assert error.value.code == "HB-USR-002"
+    assert "git_timeout" in error.value.message
+
+
+def test_row15_supports_parallelism_four_and_refuses_five():  # R-38 condition 2
+    assert plan.PHASE1_MAX_PARALLELISM == 4
+    assert _phase1_plan(parallelism=4)["parameters"]["parallelism"] == 4
+    with pytest.raises(BenchError):
+        _phase1_plan(parallelism=5)
+
+
 def test_the_plan_freezes_each_task_prompt_verbatim_with_its_hash():  # US-10: the prompt the agent receives
     p = _phase1_plan()
     raw = (ROOT / "tasks" / "X1" / "prompt.md").read_bytes().decode("utf-8")
@@ -200,7 +225,7 @@ def test_load_confirmed_without_a_plan_is_unknown_run(tmp_path):
 
 def test_parallelism_above_the_phase1_cap_is_refused():
     with pytest.raises(BenchError):
-        _phase1_plan(parallelism=3)
+        _phase1_plan(parallelism=5)
 
 
 def test_a_combo_id_that_breaks_the_status_label_regex_is_refused_at_plan_time():  # T4-5

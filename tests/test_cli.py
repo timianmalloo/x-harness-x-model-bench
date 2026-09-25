@@ -49,6 +49,35 @@ def test_usage_errors_are_exit_2(capsys, root, tmp_path):
     assert e.value.code == 2
 
 
+def test_plan_flags_and_confirmation_name_the_timeout_and_token_cap(monkeypatch, capsys, root, tmp_path):  # P-3
+    import argparse
+
+    parser = cli.build_parser()
+    args = parser.parse_args(["--root", str(root), "plan", "--decision-timeout-minutes", "5", "--spend-cap-tokens", "900"])
+    assert (args.decision_timeout_minutes, args.spend_cap_tokens) == (5, 900)
+    matrix = {"bom": {"subset": ["X1"]}, "combos": []}
+    monkeypatch.setattr(cli.config, "load_yaml", lambda path: {"version": 1} if Path(path).name == "bom.yaml" else matrix)
+    monkeypatch.setattr(cli.config, "validate_matrix", lambda *a: None)
+    monkeypatch.setattr(cli.tools, "resolve", lambda path: {})
+    monkeypatch.setattr(cli, "_pack", lambda *a: {"source": "pack", "commit": "c" * 40, "revision": 1})
+    received = {}
+
+    def fake_build_plan(*a, **kw):
+        received.update(kw)
+        return {"cells": [], "builds": {}, "pack": {"revision": 1, "commit": "c" * 40},
+                "parameters": {"parallelism": 2, **kw.get("parameters", {})}, "envelope_seconds": 0, "price_list_hash": ""}
+
+    monkeypatch.setattr(cli.plan, "build_plan", fake_build_plan)
+    args = argparse.Namespace(**{**vars(args), "runs": str(tmp_path / "runs"), "cells_root": str(tmp_path / "cells"),
+                                 "tools_dir": str(tmp_path / "tools"), "pack_source": str(tmp_path / "pack"),
+                                 "run_id": "p", "json": False, "confirm": False, "matrix": None, "parallelism": 2})
+    assert cli.cmd_plan(args) == 0
+    output = capsys.readouterr().out
+    assert received["parameters"] == {"decision_timeout": 300, "spend_cap_tokens": 900}
+    assert "decision timeout: 5 min" in output
+    assert "spend cap: 900 tokens, checked when each cell ends" in output
+
+
 def test_status_json_writes_only_bench_status_to_stdout(capsys, root, tmp_path, monkeypatch):
     make_run(root, tmp_path, {"a": GOOD})
     monkeypatch.setenv("NO_COLOR", "1")

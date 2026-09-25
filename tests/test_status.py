@@ -7,6 +7,7 @@ from cells. The text form uses the exact strings of the design's CLI state table
 import dataclasses
 import json
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 from archived_runs import GOOD, make_root, make_run
@@ -148,6 +149,28 @@ def test_no_free_text_from_cells_reaches_status(root, tmp_path):  # ADR-0011 C4 
     run_dir = make_run(root, tmp_path, {"a": GOOD}, outcomes={"a": {"detail": secret, "stop_reason": secret}})
     s = status.build(run_dir, now=NOW)
     assert secret not in status.to_json(s) and secret not in status.text(s)
+
+
+def test_last_update_is_reported_for_timed_out_and_stopped_cells(root, tmp_path):  # R-50
+    run_dir = make_run(root, tmp_path, {"a": GOOD, "b": GOOD}, outcomes={
+        "a": {"outcome": "timed_out", "last_update_ms": 4200},
+        "b": {"outcome": "stopped", "last_update_ms": None},
+    })
+    s = status.build(run_dir, now=NOW)
+    assert s.last_update_ms == {"a": 4200, "b": None}
+    assert status.parse(status.to_json(s)).last_update_ms == s.last_update_ms
+    assert "a: last update 4200 ms ago" in status.text(s)
+    assert "b: last update not recorded" in status.text(s)
+
+
+def test_the_skill_names_every_status_field():  # SK-1, R-3 condition 3
+    expected = {field.name for field in dataclasses.fields(status.Status)}
+    expected |= {field.name for field in dataclasses.fields(status.RunningCell)}
+    expected |= set(status.PHASE) | set(status.OUTCOMES)
+    for skill in (".claude/skills/start-benchmark/SKILL.md", ".agents/skills/start-benchmark/SKILL.md"):
+        text = (Path(__file__).resolve().parents[1] / skill).read_text(encoding="utf-8")
+        missing = {name for name in expected if name not in text}
+        assert not missing, (skill, sorted(missing))
 
 
 def test_the_json_form_round_trips_and_is_strict(root, tmp_path):
