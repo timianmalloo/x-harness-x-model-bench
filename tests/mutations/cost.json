@@ -1,0 +1,86 @@
+[
+ {
+  "name": "no native record is trustworthy (ex None ignored)",
+  "file": "src/harness_bench/grade/cost.py",
+  "find": "    if source == \"native_record\" and ex is None:\n        return None, unreadable\n",
+  "replace": "    if False:\n        return None, unreadable\n",
+  "tests": ["tests/test_grade_cost.py::test_no_native_record_propagates_its_reason"]
+ },
+ {
+  "name": "a missing usage field is trustworthy (HB-TEL-001 ignored)",
+  "file": "src/harness_bench/grade/cost.py",
+  "find": "    if source == \"native_record\" and ex.missing:\n        fields = \", \".join(sorted({m.field for m in ex.missing}))\n        return None, f\"HB-TEL-001 native-record fields missing: {fields}\"\n",
+  "replace": "    if False:\n        fields = \", \".join(sorted({m.field for m in ex.missing}))\n        return None, f\"HB-TEL-001 native-record fields missing: {fields}\"\n",
+  "tests": ["tests/test_grade_cost.py::test_a_missing_usage_field_names_hb_tel_001"]
+ },
+ {
+  "name": "an unreadable native record is trustworthy",
+  "file": "src/harness_bench/grade/cost.py",
+  "find": "    if source == \"native_record\" and unreadable is not None:\n        return None, unreadable\n",
+  "replace": "    if False:\n        return None, unreadable\n",
+  "tests": ["tests/test_grade_cost.py::test_a_truncated_native_record_is_na_with_its_reason"]
+ },
+ {
+  "name": "empty totals priced as trustworthy (no usage recorded dropped)",
+  "file": "src/harness_bench/grade/cost.py",
+  "find": "    return (totals or None), (None if totals else NO_USAGE)\n",
+  "replace": "    return (totals or None), None\n",
+  "tests": ["tests/test_grade_cost.py::test_no_usage_at_all_is_na_for_every_new_metric"]
+ },
+ {
+  "name": "the shared na-gate dropped (a metric computes on untrustworthy totals)",
+  "file": "src/harness_bench/grade/cost.py",
+  "find": "        return Score(None, na) if na is not None else fn(*args)\n",
+  "replace": "        return fn(*args)\n",
+  "tests": ["tests/test_grade_cost.py::test_no_usage_at_all_is_na_for_every_new_metric"]
+ },
+ {
+  "name": "tokens_per_minute priced from an acp_turn record's partial calls",
+  "file": "src/harness_bench/grade/cost.py",
+  "find": "    if source == \"acp_turn\":\n        return Score(None, ACP_MISSES_CALLS)\n    busy = views.busy_ms(list(model_calls), positive=True, missing=NO_MODEL_CALL_TIME)\n",
+  "replace": "    if False:\n        return Score(None, ACP_MISSES_CALLS)\n    busy = views.busy_ms(list(model_calls), positive=True, missing=NO_MODEL_CALL_TIME)\n",
+  "tests": ["tests/test_grade_cost.py::test_tokens_per_minute_is_na_for_an_acp_turn_harness_even_with_usable_calls"]
+ },
+ {
+  "name": "tokens_per_minute divides by an unmeasured busy time",
+  "file": "src/harness_bench/grade/cost.py",
+  "find": "    if busy.value is None:\n        return Score(None, busy.reason)\n",
+  "replace": "    if False:\n        return Score(None, busy.reason)\n",
+  "tests": ["tests/test_grade_cost.py::test_tokens_per_minute_is_na_with_no_model_call_span"]
+ },
+ {
+  "name": "output_tokens_per_turn divides by an unmeasured turn count",
+  "file": "src/harness_bench/grade/cost.py",
+  "find": "    if turns.value is None:\n        return Score(None, turns.reason)\n",
+  "replace": "    if False:\n        return Score(None, turns.reason)\n",
+  "tests": ["tests/test_grade_cost.py::test_output_tokens_per_turn_is_na_when_a_row_requests_is_zero"]
+ },
+ {
+  "name": "cache_hit_ratio divides by zero input tokens",
+  "file": "src/harness_bench/grade/cost.py",
+  "find": "    if uncached + read == 0:\n        return Score(None, NO_INPUT_TOKENS)\n",
+  "replace": "    if False:\n        return Score(None, NO_INPUT_TOKENS)\n",
+  "tests": ["tests/test_grade_cost.py::test_cache_hit_ratio_is_na_with_no_input_tokens"]
+ },
+ {
+  "name": "cache_write_amplification with no cache activity at all falls through to no-reads",
+  "file": "src/harness_bench/grade/cost.py",
+  "find": "    if read == 0 and write == 0:\n        return Score(None, NO_CACHE_ACTIVITY)\n",
+  "replace": "    if False:\n        return Score(None, NO_CACHE_ACTIVITY)\n",
+  "tests": ["tests/test_grade_cost.py::test_cache_write_amplification_is_na_with_no_cache_activity"]
+ },
+ {
+  "name": "cache_write_amplification divides by zero cache reads",
+  "file": "src/harness_bench/grade/cost.py",
+  "find": "    if read == 0:\n        return Score(None, NO_CACHE_READS)\n",
+  "replace": "    if False:\n        return Score(None, NO_CACHE_READS)\n",
+  "tests": ["tests/test_grade_cost.py::test_cache_write_amplification_is_na_with_writes_but_no_reads"]
+ },
+ {
+  "name": "context_growth's peak taken from an acp_turn record's partial calls",
+  "file": "src/harness_bench/grade/cost.py",
+  "find": "    if source == \"acp_turn\":\n        return Score(None, ACP_MISSES_CALLS)\n    peak = max(c[\"uncached_input\"] + c[\"cache_read\"] + c[\"cache_write\"] for c in model_calls)\n",
+  "replace": "    if False:\n        return Score(None, ACP_MISSES_CALLS)\n    peak = max(c[\"uncached_input\"] + c[\"cache_read\"] + c[\"cache_write\"] for c in model_calls)\n",
+  "tests": ["tests/test_grade_cost.py::test_context_growth_is_na_for_an_acp_turn_harness"]
+ }
+]
