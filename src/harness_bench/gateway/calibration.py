@@ -29,7 +29,7 @@ import json
 import secrets
 import time
 from collections import Counter
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from dataclasses import dataclass
 from decimal import Decimal
 from fractions import Fraction
@@ -164,7 +164,7 @@ def _entry(root: Path, task: str) -> dict:
     raise BenchError("HB-USR-002", f"no catalog metric names a rubric for {task}")
 
 
-def _binding(rubric: str, stipulation: Mapping) -> dict:
+def _binding(rubric: str, stipulation: dict) -> dict:
     """What a calibration binds (design section 11, directive A6): a change of any value makes it stale."""
     return {"template_version": request.TEMPLATE_VERSION, "scrub_version": scrub.SCRUB_VERSION,
             "schema_sha256": schema.schema_sha256(), "rubric_sha256": hashlib.sha256(rubric.encode()).hexdigest(),
@@ -242,7 +242,7 @@ def _latest(runs: Path, task: str) -> tuple[Path, dict] | None:
     return max(done, key=lambda d: d[0])[1:] if done else None
 
 
-def _verdicts(store: Path, row: Mapping) -> dict[int, int] | None:
+def _verdicts(store: Path, row: dict) -> dict[int, int] | None:
     """A recorded row's verdict set, item -> score, from the entry it names; None when the entry is missing or its
     bytes are not the recorded entry_sha256."""
     if row.get("outcome") not in judge.RECORDED:
@@ -282,8 +282,8 @@ def header_line(root: Path, runs: Path, task: str) -> str:
         _human(root, task, started, cal_items, judges, verdict)
 
 
-def _human(root: Path, task: str, started: Mapping, cal_items: list[Item], judges: list[Mapping],
-           verdict: Mapping[tuple[str, str], int]) -> str:
+def _human(root: Path, task: str, started: dict, cal_items: list[Item], judges: list[dict],
+           verdict: dict[tuple[str, str], int]) -> str:
     try:
         labels = load_labels(root, task, {i.id for i in cal_items})
     except BenchError:
