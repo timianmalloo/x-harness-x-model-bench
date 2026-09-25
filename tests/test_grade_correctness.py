@@ -7,6 +7,7 @@
   and with `HB_REQUIRE_DOTNET=1` they fail instead (the design's slow-ring rule).
 """
 
+import dataclasses
 import hashlib
 import os
 import shutil
@@ -17,7 +18,7 @@ import pytest
 from archived_runs import ROOT
 
 from harness_bench import config, plan, views
-from harness_bench.grade import CellInput, correctness
+from harness_bench.grade import CellInput, Score, correctness
 from harness_bench.grade.runner import applicable
 
 GATE_RUNS = Path(os.environ.get("HB_GATE_RUNS") or ROOT / "runs")
@@ -228,3 +229,156 @@ def test_a_crlf_only_difference_and_a_deletion_are_read_by_content(tmp_path):
     path.write_bytes(path.read_bytes().replace(b"\n", b"\r\n"))  # CRLF-normalised: not a change
     (ws / "LICENSE").unlink()
     assert changes_of(tmp_path, folder, cell)[1] == {"LICENSE": "deleted"}
+
+
+# --- every disposition branch, fast: a fake dotnet (paired with the real D1 fixtures above, D7) ---------------------
+
+RESTORE_LINE = r"C:\w\src\A\A.csproj : error NU1101: Unable to find package xunit. No packages exist with this id [x]"
+COMPILE_LINE = r"C:\w\src\A\B.cs(5,31): error CS1002: ; expected [C:\w\src\A\A.csproj]"
+
+
+def done(returncode=0, stdout="", timed_out=False):
+    from harness_bench import procs
+
+    return procs.Completed(returncode, stdout, "", timed_out, False, 0.0)
+
+
+@pytest.mark.parametrize(("output", "cause"), [
+    (RESTORE_LINE, "restore"), (COMPILE_LINE, "compile"), (COMPILE_LINE + "\n" + RESTORE_LINE, "restore"),
+    ("warning MSB9008: The referenced project ../N/N.csproj does not exist.", None), ("", None),
+])
+def test_a_build_failure_is_classified_by_its_error_codes_restore_first(output, cause):
+    assert correctness.build_failure(output) == cause
+
+
+def fake_dotnet(monkeypatch, *results) -> list:
+    """procs.run answers `results` in order (the same object for any further call); returns the argv seen."""
+    seen, queue = [], list(results)
+
+    def run(argv, **kwargs):
+        seen.append(argv)
+        return queue.pop(0) if len(queue) > 1 else queue[0]
+
+    monkeypatch.setattr(correctness.procs, "run", run)
+    return seen
+
+
+def d1_input(tmp_path: Path, projects=("src/A/A.csproj", "tests/A.Tests/A.Tests.csproj")) -> CellInput:
+    folder = tmp_path / "run" / "archive" / "c1" / "attempt-1"
+    for rel in projects:
+        (folder / "ws" / rel).parent.mkdir(parents=True, exist_ok=True)
+        (folder / "ws" / rel).write_text("<Project />", encoding="utf-8")
+    (folder / "ws").mkdir(parents=True, exist_ok=True)
+    cell = {"cell_id": "c1", "task": "D1", "task_version": D1_VERSION, "pack": "off"}
+    return cell_input(tmp_path / "run", folder, cell, tmp_path / "run" / "grading" / "g" / "c1" / "correctness", timeout=60)
+
+
+@pytest.mark.parametrize(("version", "oracle", "reason", "compile_error"), [
+    (done(1), done(0), "infrastructure failure before build: sdk", False),
+    (done(0, "10.0.303"), done(1, RESTORE_LINE), "infrastructure failure before build: restore", False),
+    (done(0, "10.0.303"), done(1, COMPILE_LINE), "named TRX result file missing", True),
+    (done(0, "10.0.303"), done(1, "no error line"), "named TRX result file missing", False),
+])
+def test_the_hidden_test_step_is_na_by_cause_and_flags_a_compile_error(tmp_path, monkeypatch, version, oracle, reason,
+                                                                          compile_error):
+    fake_dotnet(monkeypatch, version, oracle)
+    inp = d1_input(tmp_path)
+    c = correctness.grade(inp.archive / "ws", inp.task_dir, inp.task["oracle"], inp.out_dir, inp.run_dir, 60)
+    assert (c.passed, c.partial_credit, c.reason, c.compile_error) == (None, None, reason, compile_error)
+
+
+@pytest.mark.parametrize(("results", "expected"), [
+    ((done(0, "10.0.303"), done(0)), (1, None)),
+    ((done(0, "10.0.303"), done(1, COMPILE_LINE), done(0)), (0, None)),  # the first failure decides
+    ((done(0, "10.0.303"), done(1, "warning only, exit 1")), (0, None)),
+    ((done(0, "10.0.303"), done(1, RESTORE_LINE)), (None, "infrastructure failure before build: restore")),
+    ((done(1),), (None, "infrastructure failure before build: sdk")),
+    ((done(0, "10.0.303"), done(None, timed_out=True)), (None, "HB-GRD-002 grading step timeout after 60 s")),
+])
+def test_build_and_suite_clean_builds_every_project_and_is_na_only_before_the_build(tmp_path, monkeypatch, results,
+                                                                                    expected):
+    seen = fake_dotnet(monkeypatch, *results)
+    inp = d1_input(tmp_path)
+    got = correctness.build_and_suite_clean(inp, inp.task["oracle"], 60)
+    assert (got.value, got.reason) == expected
+    assert got.evidence == "grading/g/c1/correctness/build/build.log"
+    assert seen[0] == ["dotnet", "--version"]
+    assert [a[:3] for a in seen[1:]] == [["dotnet", "build", p] for p in ("src/A/A.csproj", "tests/A.Tests/A.Tests.csproj")][:len(seen) - 1]
+    assert all(a[3:] == ["-p:RestoreSources=.", "-p:NuGetAudit=false", "-v:q", "-nologo"] for a in seen[1:])
+
+
+def test_a_dotnet_working_copy_with_no_project_is_not_a_clean_build(tmp_path, monkeypatch):
+    fake_dotnet(monkeypatch, done(0, "10.0.303"))
+    inp = d1_input(tmp_path, projects=())
+    got = correctness.build_and_suite_clean(inp, inp.task["oracle"], 60)
+    assert (got.value, got.reason) == (0, None)
+
+
+@pytest.mark.parametrize(("source", "value"), [("def slugify(text):\n    return (\n", 0), ("x = 1\n", 1)])
+def test_build_and_suite_clean_compiles_a_python_copy(tmp_path, source, value):  # the seeded .py syntax error -> 0
+    folder = tmp_path / "run" / "archive" / "c1" / "attempt-1"
+    (folder / "ws").mkdir(parents=True)
+    (folder / "ws" / "slug.py").write_text(source, encoding="utf-8")
+    inp = cell_input(tmp_path / "run", folder, {"cell_id": "c1", "task": "X1"}, tmp_path / "run" / "grading" / "g" / "c1" / "correctness")
+    before = tree_digest(folder)
+    got = correctness.build_and_suite_clean(inp, inp.task["oracle"], 60)
+    assert (got.value, got.reason) == (value, None)
+    assert tree_digest(folder) == before  # compileall wrote its .pyc into the copy, never the archive
+
+
+# --- DR-G4's pre-turn control (R-67 c1), with the oracle faked and a real two-commit repository ----------------------
+
+T9_VERSION = "ab" * 32
+
+
+def control_cell(tmp_path: Path, base_message: str = f"T9 base ({T9_VERSION[:12]})") -> CellInput:
+    folder = tmp_path / "run" / "archive" / "c1" / "attempt-1"
+    (folder / "ws").mkdir(parents=True)
+    (folder / "ws" / "a.cs").write_text("class A {}\n", encoding="utf-8")
+    git(folder / "ws", "init", "-q", "-b", "main")
+    git(folder / "ws", "add", "-A")
+    git(folder / "ws", "commit", "-q", "-m", base_message)
+    (folder / "ws" / "a.cs").write_text("class A {\n", encoding="utf-8")  # the cell's uncommitted break
+    cell = {"cell_id": "c1", "task": "D1", "task_version": D1_VERSION, "pack": "off"}
+    inp = cell_input(tmp_path / "run", folder, cell, tmp_path / "run" / "grading" / "g" / "c1" / "correctness")
+    return dataclasses.replace(inp, cell={**cell, "task": "T9", "task_version": T9_VERSION})
+
+
+CELL_BROKE = correctness.Result(None, None, "named TRX result file missing", "grading/g/c1/correctness/oracle.log", True)
+
+
+@pytest.mark.parametrize(("control", "expected"), [
+    (correctness.Result(0, Decimal(0), None, "x"), (0, "0.0000", None)),  # the pre-turn tree compiles and its tests run
+    (correctness.Result(None, None, "named TRX result file missing", "x", True), (None, None, "pre-turn tree does not build")),
+    (correctness.Result(None, None, "named TRX result file missing", "x"), (None, None, "pre-turn tree does not build")),
+    (correctness.Result(None, None, "infrastructure failure before build: restore", "x"),
+     (None, None, "infrastructure failure before build: restore")),
+    (correctness.Result(None, None, "infrastructure failure before build: sdk", "x"),
+     (None, None, "infrastructure failure before build: sdk")),
+    (correctness.Result(None, None, "HB-GRD-002 grading step timeout after 60 s", "x"),
+     (None, None, "HB-GRD-002 grading step timeout after 60 s")),
+])
+def test_a_compile_error_is_0_only_when_the_pre_turn_tree_builds(tmp_path, monkeypatch, control, expected):
+    inp = control_cell(tmp_path)
+    trees = []
+
+    def fake_grade(ws, *args):
+        trees.append(sorted(p.name for p in ws.iterdir()))
+        return CELL_BROKE if len(trees) == 1 else control
+
+    monkeypatch.setattr(correctness, "grade", fake_grade)
+    monkeypatch.setattr(correctness, "build_and_suite_clean", lambda *a: Score(0, None))
+    out = correctness.grade_cell(inp)
+    assert tuple(encode(out[m]) for m in ("pass_at_1", "partial_credit")) == \
+        ((expected[0], expected[2]), (expected[1], expected[2]))
+    assert out["pass_at_1"].evidence == "grading/g/c1/correctness/oracle.log"  # the cell's own log
+    assert trees == [[".git", "a.cs"], ["a.cs"]]  # the control ran on the pre-turn tree, not the cell's
+    assert not (inp.out_dir / "pre-turn").exists()
+
+
+def test_a_compile_error_with_no_builder_commit_is_na_not_found(tmp_path, monkeypatch):  # F11
+    inp = control_cell(tmp_path, base_message="squashed by the agent")
+    monkeypatch.setattr(correctness, "grade", lambda *a: CELL_BROKE)
+    monkeypatch.setattr(correctness, "build_and_suite_clean", lambda *a: Score(0, None))
+    out = correctness.grade_cell(inp)
+    assert encode(out["pass_at_1"]) == (None, "pre-turn commit not found in the working copy")
