@@ -24,6 +24,7 @@
   "replace": "parsed is not None and isinstance",
   "tests": [
    "tests/test_model_map.py::test_the_resolver_gives_a_codex_cell_exactly_the_openai_column",
+   "tests/test_model_map.py::test_the_resolver_gives_a_claude_code_cell_exactly_the_anthropic_column",
    "tests/test_views.py::test_a_codex_cell_serving_the_anthropic_column_is_a_model_mismatch"
   ]
  },
@@ -213,7 +214,8 @@
   "find": "r.get(\"tool_class\") == DELEGATE))",
   "replace": "r.get(\"tool_class\") == META))",
   "tests": [
-   "tests/test_views.py::test_an_executed_agent_call_in_a_scenario6_cell_is_valid_and_counted"
+   "tests/test_views.py::test_an_executed_agent_call_in_a_scenario6_cell_is_valid_and_counted",
+   "tests/test_views.py::test_a_scenario6_cell_still_invalidates_on_an_executed_other_call"
   ]
  },
  {
