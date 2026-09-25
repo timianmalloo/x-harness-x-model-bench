@@ -41,6 +41,23 @@ def test_claude_api_error_rows_are_errors_never_model_calls():  # probe W3
     assert [(e.status, e.error_type) for e in ex.errors] == [(404, "model_not_found")]
 
 
+def test_claude_account_connector_tools_counts_two_distinct_advertised_names():  # R-36, R-43
+    """Example_one is advertised twice (loaded and deferred) and Example_two once: two tools.
+    Bash, Read and NotebookEdit are not account connectors; a removed name is not advertised."""
+    ex = claude_code.read(FIX / "native/claude-code/account-connectors.jsonl")
+    assert ex.account_connector_tools == 2
+
+
+def test_claude_account_connector_tools_is_zero_when_a_read_record_advertises_none():  # R-43
+    assert claude_code.read(FIX / "native/claude-code/ok.jsonl").account_connector_tools == 0
+
+
+def test_account_connector_tools_is_none_when_the_claude_reader_did_not_read_the_record():  # R-43: not read, never 0
+    """Only the Claude Code reader reads the field; any other extraction leaves it not recorded."""
+    assert Extraction().account_connector_tools is None
+    assert codex.read(FIX / "native/codex/ok.jsonl").account_connector_tools is None
+
+
 # Codex --------------------------------------------------------------------------------------------
 
 def test_codex_token_counts_become_disjoint_buckets():

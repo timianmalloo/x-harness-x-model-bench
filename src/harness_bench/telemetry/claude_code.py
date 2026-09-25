@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from harness_bench.telemetry import (
@@ -30,6 +31,8 @@ __all__ = ["ProviderError", "read"]
 
 TOOL_CLASSES = {"Bash": "shell", "PowerShell": "shell", "Edit": "edit", "Write": "edit", "MultiEdit": "edit",
                 "NotebookEdit": "edit", "Read": "read", "Glob": "read", "Grep": "read"}
+# Account connectors as the pinned 2.1.282 record advertises them: prompt_snapshot tools and deferred_tools_delta.
+_ACCOUNT_CONNECTOR = re.compile(r"mcp__claude_ai_[A-Za-z0-9_]+")
 
 
 def _text(content) -> str | None:
@@ -41,11 +44,32 @@ def _text(content) -> str | None:
     return None
 
 
+def _note_advertised(names: list[str], row: dict) -> None:
+    """Keep the tool names still advertised after this row (loaded tools, then a deferred-tool delta)."""
+    att = as_dict(row.get("attachment"))
+    kind = att.get("type")
+    if kind == "prompt_snapshot":
+        for tool in as_list(att.get("tools")):
+            name = as_str(tool.get("name")) if isinstance(tool, dict) else None
+            if name is not None:
+                names.append(name)
+    elif kind == "deferred_tools_delta":
+        for name in as_list(att.get("addedNames")):
+            if isinstance(name, str):
+                names.append(name)
+        for name in as_list(att.get("removedNames")):
+            if isinstance(name, str):
+                while name in names:
+                    names.remove(name)
+
+
 def read(path: Path) -> Extraction:
     ex = Extraction()
     seen_messages: set[str] = set()
     open_tools: dict[str, dict] = {}
+    advertised: list[str] = []
     for n, row in rows(path, ex):
+        _note_advertised(advertised, row)
         kind = row.get("type")
         message = as_dict(row.get("message"))
         stamp = as_str(row.get("timestamp"))
@@ -86,4 +110,5 @@ def read(path: Path) -> Extraction:
     for tool in open_tools.values():  # a call with no result (killed turn)
         ex.tool_calls.append(ToolCall(tool["n"], tool["name"], TOOL_CLASSES.get(tool["name"], "other"), tool["start"], None, None))
     ex.tool_calls.sort(key=lambda t: t.native_ordinal)
+    ex.account_connector_tools = len({name for name in advertised if _ACCOUNT_CONNECTOR.fullmatch(name)})
     return ex
