@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T06:25:15Z",
+  "generated": "2026-09-25T06:41:46Z",
   "audit": [
     {
       "actor": null,
@@ -14212,6 +14212,500 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "id": "al-01M3BMRVCPP5SVSVZY727RHK59",
+      "shortname": "Goal: W2-STOP-I slice 1 per docs/design/phase2-stop-decisions.md section…",
+      "datetime": "2026-09-25T06:41:45Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W2-STOP-I slice 1 per docs/design/phase2-stop-decisions.md section 17 row 1 (read sections 2, 4.3, 4.6, 4.9, 16 and 17 first): the seams, data and skill test that the later stop and decision slices build on, red-first, plus three Leader-assigned lines that touch the same files.\nDone when: S1-S3 are already on main (W2-VIEWS landed HB-VAL-003..009, the VALIDITY states and the plan's model_map), so this slice skips them after checking they are present, as section 2 says.; errors.py gains HB-RUN-006 and HB-RUN-007 exactly as section 4.9 specifies, with the ERR-1 test red first.; status.py's OUTCOMES gains `stopped` and `skipped (decision)` (section 4.6) in ONE commit together with both skill copies (.claude/skills/start-benchmark/SKILL.md and .agents/skills/start-benchmark/SKILL.md) and the SK-1 test (tests/test_status.py::test_the_skill_names_every_status_field: both skill copies name every bench-status/1 field and every phase and outcome value), SK-1 red first (R-3 c3).; plan.py's DEFAULT_PARAMETERS gains decision_timeout (1800 s) and spend_cap_tokens (null by default; the unit is total tokens per ruling R-48, summed with normalize.totals as each cell ends), with the old-plan refusal, the plan flags and the confirmation lines in plan.py and cli.py per section 4.3; tests P-1..3 red first.; The stale `assume:` comment and `getattr` at engine.py:369-371 are removed (the driver has reported last_update_seconds since W1-ACP).; Ruling R-50: bench-status/1 reports last_update_ms for each timed_out or stopped cell from the ledger (cell.outcome already carries it, engine.py:371-376), with its test red first and the skill copies naming the field.; Ruling R-47 condition 3: `bench plan` records each harness's self-reported agent version as plan.builds[<harness>].agent_version - the version the pinned build reports about itself at plan time, measured, never read from package.json - so W2-VIEWS's HB-VAL-007 build check stops being skipped (HB-VAL-006); if the only way to read it is a live ACP handshake, record it as null with a reason and say so in your final message instead of guessing.; The row-15 headroom rule (docs/notes/row15-headroom.md, Result) supports parallelism 4: PHASE1_MAX_PARALLELISM at plan.py:39 becomes 4 and tests/test_plan.py asserts it (ruling R-38 condition 2).; tests/mutations/stop.json holds one named mutant per new branch (a code missing; an outcome missing from the skill; decision_timeout default changed; spend cap in the wrong unit; the cap back to 2), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.\nNot in scope: the stop sequence, control channel, driver cancel, decisions and the TLA refinement (slices 2-5); views.py and report/*; telemetry/*; bench run, any model turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase2-stop-decisions.md; docs/notes/rulings.md R-3, R-38, R-47, R-48, R-50; docs/notes/row15-headroom.md; src/harness_bench/{errors,status,plan,cli,engine,tools}.py; tests/test_status.py, tests/test_plan.py, tests/test_errors.py; tools/mutate_check.py. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-stopi1 before committing.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3BMRWGPX3MPHEQMG50XMGBT",
+      "shortname": "compile-Goal: W2-STOP-I slice 1 per docs/design/phase2-stop-decisions.md section…",
+      "datetime": "2026-09-25T06:41:46Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-STOP-I slice 1 per docs/design/phase2-stop-decisions.md section 17 row 1 (read sections 2, 4.3, 4.6, 4.9, 16 and 17 first): the seams, data and skill test that the later stop and decision slices build on, red-first, plus three Leader-assigned lines that touch the same files.\nDone when: S1-S3 are already on main (W2-VIEWS landed HB-VAL-003..009, the VALIDITY states and the plan's model_map), so this slice skips them after checking they are present, as section 2 says.; errors.py gains HB-RUN-006 and HB-RUN-007 exactly as section 4.9 specifies, with the ERR-1 test red first.; status.py's OUTCOMES gains `stopped` and `skipped (decision)` (section 4.6) in ONE commit together with both skill copies (.claude/skills/start-benchmark/SKILL.md and .agents/skills/start-benchmark/SKILL.md) and the SK-1 test (tests/test_status.py::test_the_skill_names_every_status_field: both skill copies name every bench-status/1 field and every phase and outcome value), SK-1 red first (R-3 c3).; plan.py's DEFAULT_PARAMETERS gains decision_timeout (1800 s) and spend_cap_tokens (null by default; the unit is total tokens per ruling R-48, summed with normalize.totals as each cell ends), with the old-plan refusal, the plan flags and the confirmation lines in plan.py and cli.py per section 4.3; tests P-1..3 red first.; The stale `assume:` comment and `getattr` at engine.py:369-371 are removed (the driver has reported last_update_seconds since W1-ACP).; Ruling R-50: bench-status/1 reports last_update_ms for each timed_out or stopped cell from the ledger (cell.outcome already carries it, engine.py:371-376), with its test red first and the skill copies naming the field.; Ruling R-47 condition 3: `bench plan` records each harness's self-reported agent version as plan.builds[<harness>].agent_version - the version the pinned build reports about itself at plan time, measured, never read from package.json - so W2-VIEWS's HB-VAL-007 build check stops being skipped (HB-VAL-006); if the only way to read it is a live ACP handshake, record it as null with a reason and say so in your final message instead of guessing.; The row-15 headroom rule (docs/notes/row15-headroom.md, Result) supports parallelism 4: PHASE1_MAX_PARALLELISM at plan.py:39 becomes 4 and tests/test_plan.py asserts it (ruling R-38 condition 2).; tests/mutations/stop.json holds one named mutant per new branch (a code missing; an outcome missing from the skill; decision_timeout default changed; spend cap in the wrong unit; the cap back to 2), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.\nNot in scope: the stop sequence, control channel, driver cancel, decisions and the TLA refinement (slices 2-5); views.py and report/*; telemetry/*; bench run, any model turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase2-stop-decisions.md; docs/notes/rulings.md R-3, R-38, R-47, R-48, R-50; docs/notes/row15-headroom.md; src/harness_bench/{errors,status,plan,cli,engine,tools}.py; tests/test_status.py, tests/test_plan.py, tests/test_errors.py; tools/mutate_check.py. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-stopi1 before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: S1-S3 are already on main (W2-VIEWS landed HB-VAL-003..009, the VALIDITY states and the plan's model_map), so this slice skips them after checking they are present, as section 2 says. | phrase: S1-S3 are already on main (W2-VIEWS landed HB-VAL-003..009, the VALIDITY states and the plan's model_map), so this slice skips them after checking they are present, as section 2 says. |\n| done_when: errors.py gains HB-RUN-006 and HB-RUN-007 exactly as section 4.9 specifies, with the ERR-1 test red first. | phrase: errors.py gains HB-RUN-006 and HB-RUN-007 exactly as section 4.9 specifies, with the ERR-1 test red first. |\n| done_when: status.py's OUTCOMES gains `stopped` and `skipped (decision)` (section 4.6) in ONE commit together with both skill copies (.claude/skills/start-benchmark/SKILL.md and .agents/skills/start-benchmark/SKILL.md) and the SK-1 test (tests/test_status.py::test_the_skill_names_every_status_field: both skill copies name every bench-status/1 field and every phase and outcome value), SK-1 red first (R-3 c3). | phrase: status.py's OUTCOMES gains `stopped` and `skipped (decision)` (section 4.6) in ONE commit together with both skill copies (.claude/skills/start-benchmark/SKILL.md and .agents/skills/start-benchmark/SKILL.md) and the SK-1 test (tests/test_status.py::test_the_skill_names_every_status_field: both skill copies name every bench-status/1 field and every phase and outcome value), SK-1 red first (R-3 c3). |\n| done_when: plan.py's DEFAULT_PARAMETERS gains decision_timeout (1800 s) and spend_cap_tokens (null by default | phrase: plan.py's DEFAULT_PARAMETERS gains decision_timeout (1800 s) and spend_cap_tokens (null by default |\n| done_when: the unit is total tokens per ruling R-48, summed with normalize.totals as each cell ends), with the old-plan refusal, the plan flags and the confirmation lines in plan.py and cli.py per section 4.3 | phrase: the unit is total tokens per ruling R-48, summed with normalize.totals as each cell ends), with the old-plan refusal, the plan flags and the confirmation lines in plan.py and cli.py per section 4.3 |\n| done_when: tests P-1..3 red first. | phrase: tests P-1..3 red first. |\n| done_when: The stale `assume:` comment and `getattr` at engine.py:369-371 are removed (the driver has reported last_update_seconds since W1-ACP). | phrase: The stale `assume:` comment and `getattr` at engine.py:369-371 are removed (the driver has reported last_update_seconds since W1-ACP). |\n| done_when: Ruling R-50: bench-status/1 reports last_update_ms for each timed_out or stopped cell from the ledger (cell.outcome already carries it, engine.py:371-376), with its test red first and the skill copies naming the field. | phrase: Ruling R-50: bench-status/1 reports last_update_ms for each timed_out or stopped cell from the ledger (cell.outcome already carries it, engine.py:371-376), with its test red first and the skill copies naming the field. |\n| done_when: Ruling R-47 condition 3: `bench plan` records each harness's self-reported agent version as plan.builds[<harness>].agent_version - the version the pinned build reports about itself at plan time, measured, never read from package.json - so W2-VIEWS's HB-VAL-007 build check stops being skipped (HB-VAL-006) | phrase: Ruling R-47 condition 3: `bench plan` records each harness's self-reported agent version as plan.builds[<harness>].agent_version - the version the pinned build reports about itself at plan time, measured, never read from package.json - so W2-VIEWS's HB-VAL-007 build check stops being skipped (HB-VAL-006) |\n| done_when: if the only way to read it is a live ACP handshake, record it as null with a reason and say so in your final message instead of guessing. | phrase: if the only way to read it is a live ACP handshake, record it as null with a reason and say so in your final message instead of guessing. |\n| done_when: The row-15 headroom rule (docs/notes/row15-headroom.md, Result) supports parallelism 4: PHASE1_MAX_PARALLELISM at plan.py:39 becomes 4 and tests/test_plan.py asserts it (ruling R-38 condition 2). | phrase: The row-15 headroom rule (docs/notes/row15-headroom.md, Result) supports parallelism 4: PHASE1_MAX_PARALLELISM at plan.py:39 becomes 4 and tests/test_plan.py asserts it (ruling R-38 condition 2). |\n| done_when: tests/mutations/stop.json holds one named mutant per new branch (a code missing | phrase: tests/mutations/stop.json holds one named mutant per new branch (a code missing |\n| done_when: an outcome missing from the skill | phrase: an outcome missing from the skill |\n| done_when: decision_timeout default changed | phrase: decision_timeout default changed |\n| done_when: spend cap in the wrong unit | phrase: spend cap in the wrong unit |\n| done_when: the cap back to 2), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json. | phrase: the cap back to 2), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json. |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean. | phrase: uv run ruff check src tests tools is clean. |\n| done_when: Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result. | phrase: Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result. |\n| not_in_scope: the stop sequence, control channel, driver cancel, decisions and the TLA refinement (slices 2-5) | phrase: the stop sequence, control channel, driver cancel, decisions and the TLA refinement (slices 2-5) |\n| not_in_scope: views.py and report/* | phrase: views.py and report/* |\n| not_in_scope: telemetry/* | phrase: telemetry/* |\n| not_in_scope: bench run, any model turn, pytest -m \"\" | phrase: bench run, any model turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- stopped: unresolved (not found)\n- skipped (decision: unresolved (not found)\n- assume: unresolved (not found)\n- getattr: unresolved (not found)\n- bench plan: unresolved (not found)\n- docs/design/phase2-stop-decisions.md: docs/design/phase2-stop-decisions.md sha256 3dbc40e3d87e76548cf8bda92266fefc77892f87086a180ae5a9572d91b287b7\n- errors.py: src/harness_bench/errors.py sha256 80af1148d0598078a708f1f2fa6f32b5d9ce66fd7243580ff5b12a26a63499d2\n- .claude/skills/start-benchmark/SKILL.md: unresolved (not found)\n- .agents/skills/start-benchmark/SKILL.md: unresolved (not found)\n- tests/test_status.py::test_the_skill_names_every_status_field: unresolved (not found)\n- bench-status/1: unresolved (not found)\n- plan.py: src/harness_bench/plan.py sha256 d14250c29e51488e8639bfb39010a9a0ac9c4385bb16fc764af130d7217e408b\n- cli.py: src/harness_bench/cli.py sha256 13e5826e6a6a8c2ff1c1a5fdd67ea0311c646c750ba57046dce40ab39415d803\n- package.json: unresolved (ambiguous: 28 matches)\n- docs/notes/row15-headroom.md: docs/notes/row15-headroom.md sha256 0ca960064d9751e162258c10ccb18edfa150f207b9659d2ccd96dc2d02cca212\n- tests/test_plan.py: tests/test_plan.py sha256 09e1abcc751b9778b643d93e21d87140ff0cd7fb45e116f5a2c5603512844cb8\n- tests/mutations/stop.json: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- views.py: src/harness_bench/views.py sha256 6e53249eae24b9f23c6836d0b5fd15d741eb84a7cd808d88d7f92afbd994ffb7\n- report/*: unresolved (not found)\n- telemetry/*: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- src/harness_bench/{errors,status,plan,cli,engine,tools}.py: unresolved (not found)\n- tests/test_status.py: tests/test_status.py sha256 b72e740a51fee80279c99887225b744cdfa309694fb7f72ac1956faf0e0438e1\n- tests/test_errors.py: tests/test_errors.py sha256 f858533545946aebd70db3bcc163247b5730766fa9ffbf6050fbb2d3e42a2b7d\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BMRVCPP5SVSVZY727RHK59\nraw sha256: 83c4f20f41a3bac2de472edd3fe0e9d3b030506d6256412b03fe9e6b1e3c5dbf\ncompiler model: claude-opus-5-5\nengine seconds: 0.003\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3BMRVCPP5SVSVZY727RHK59 for codex v1: 24 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "S1-S3 are already on main (W2-VIEWS landed HB-VAL-003..009, the VALIDITY states and the plan's model_map), so this slice skips them after checking they are present, as section 2 says.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "S1-S3 are already on main (W2-VIEWS landed HB-VAL-003..009, the VALIDITY states and the plan's model_map), so this slice skips them after checking they are present, as section 2 says."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "errors.py gains HB-RUN-006 and HB-RUN-007 exactly as section 4.9 specifies, with the ERR-1 test red first.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "errors.py gains HB-RUN-006 and HB-RUN-007 exactly as section 4.9 specifies, with the ERR-1 test red first."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "status.py's OUTCOMES gains `stopped` and `skipped (decision)` (section 4.6) in ONE commit together with both skill copies (.claude/skills/start-benchmark/SKILL.md and .agents/skills/start-benchmark/SKILL.md) and the SK-1 test (tests/test_status.py::test_the_skill_names_every_status_field: both skill copies name every bench-status/1 field and every phase and outcome value), SK-1 red first (R-3 c3).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "status.py's OUTCOMES gains `stopped` and `skipped (decision)` (section 4.6) in ONE commit together with both skill copies (.claude/skills/start-benchmark/SKILL.md and .agents/skills/start-benchmark/SKILL.md) and the SK-1 test (tests/test_status.py::test_the_skill_names_every_status_field: both skill copies name every bench-status/1 field and every phase and outcome value), SK-1 red first (R-3 c3)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "plan.py's DEFAULT_PARAMETERS gains decision_timeout (1800 s) and spend_cap_tokens (null by default",
+            "trace": {
+              "kind": "phrase",
+              "ref": "plan.py's DEFAULT_PARAMETERS gains decision_timeout (1800 s) and spend_cap_tokens (null by default"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the unit is total tokens per ruling R-48, summed with normalize.totals as each cell ends), with the old-plan refusal, the plan flags and the confirmation lines in plan.py and cli.py per section 4.3",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the unit is total tokens per ruling R-48, summed with normalize.totals as each cell ends), with the old-plan refusal, the plan flags and the confirmation lines in plan.py and cli.py per section 4.3"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests P-1..3 red first.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests P-1..3 red first."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The stale `assume:` comment and `getattr` at engine.py:369-371 are removed (the driver has reported last_update_seconds since W1-ACP).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The stale `assume:` comment and `getattr` at engine.py:369-371 are removed (the driver has reported last_update_seconds since W1-ACP)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Ruling R-50: bench-status/1 reports last_update_ms for each timed_out or stopped cell from the ledger (cell.outcome already carries it, engine.py:371-376), with its test red first and the skill copies naming the field.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Ruling R-50: bench-status/1 reports last_update_ms for each timed_out or stopped cell from the ledger (cell.outcome already carries it, engine.py:371-376), with its test red first and the skill copies naming the field."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Ruling R-47 condition 3: `bench plan` records each harness's self-reported agent version as plan.builds[<harness>].agent_version - the version the pinned build reports about itself at plan time, measured, never read from package.json - so W2-VIEWS's HB-VAL-007 build check stops being skipped (HB-VAL-006)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Ruling R-47 condition 3: `bench plan` records each harness's self-reported agent version as plan.builds[<harness>].agent_version - the version the pinned build reports about itself at plan time, measured, never read from package.json - so W2-VIEWS's HB-VAL-007 build check stops being skipped (HB-VAL-006)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "if the only way to read it is a live ACP handshake, record it as null with a reason and say so in your final message instead of guessing.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "if the only way to read it is a live ACP handshake, record it as null with a reason and say so in your final message instead of guessing."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The row-15 headroom rule (docs/notes/row15-headroom.md, Result) supports parallelism 4: PHASE1_MAX_PARALLELISM at plan.py:39 becomes 4 and tests/test_plan.py asserts it (ruling R-38 condition 2).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The row-15 headroom rule (docs/notes/row15-headroom.md, Result) supports parallelism 4: PHASE1_MAX_PARALLELISM at plan.py:39 becomes 4 and tests/test_plan.py asserts it (ruling R-38 condition 2)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/stop.json holds one named mutant per new branch (a code missing",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/stop.json holds one named mutant per new branch (a code missing"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "an outcome missing from the skill",
+            "trace": {
+              "kind": "phrase",
+              "ref": "an outcome missing from the skill"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "decision_timeout default changed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "decision_timeout default changed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "spend cap in the wrong unit",
+            "trace": {
+              "kind": "phrase",
+              "ref": "spend cap in the wrong unit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the cap back to 2), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the cap back to 2), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the stop sequence, control channel, driver cancel, decisions and the TLA refinement (slices 2-5)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the stop sequence, control channel, driver cancel, decisions and the TLA refinement (slices 2-5)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "views.py and report/*",
+            "trace": {
+              "kind": "phrase",
+              "ref": "views.py and report/*"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "telemetry/*",
+            "trace": {
+              "kind": "phrase",
+              "ref": "telemetry/*"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run, any model turn, pytest -m \"\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run, any model turn, pytest -m \"\""
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "S1-S3 are already on main (W2-VIEWS landed HB-VAL-003..009, the VALIDITY states and the plan's model_map), so this slice skips them after checking they are present, as section 2 says.",
+            "errors.py gains HB-RUN-006 and HB-RUN-007 exactly as section 4.9 specifies, with the ERR-1 test red first.",
+            "status.py's OUTCOMES gains `stopped` and `skipped (decision)` (section 4.6) in ONE commit together with both skill copies (.claude/skills/start-benchmark/SKILL.md and .agents/skills/start-benchmark/SKILL.md) and the SK-1 test (tests/test_status.py::test_the_skill_names_every_status_field: both skill copies name every bench-status/1 field and every phase and outcome value), SK-1 red first (R-3 c3).",
+            "plan.py's DEFAULT_PARAMETERS gains decision_timeout (1800 s) and spend_cap_tokens (null by default",
+            "the unit is total tokens per ruling R-48, summed with normalize.totals as each cell ends), with the old-plan refusal, the plan flags and the confirmation lines in plan.py and cli.py per section 4.3",
+            "tests P-1..3 red first.",
+            "The stale `assume:` comment and `getattr` at engine.py:369-371 are removed (the driver has reported last_update_seconds since W1-ACP).",
+            "Ruling R-50: bench-status/1 reports last_update_ms for each timed_out or stopped cell from the ledger (cell.outcome already carries it, engine.py:371-376), with its test red first and the skill copies naming the field.",
+            "Ruling R-47 condition 3: `bench plan` records each harness's self-reported agent version as plan.builds[<harness>].agent_version - the version the pinned build reports about itself at plan time, measured, never read from package.json - so W2-VIEWS's HB-VAL-007 build check stops being skipped (HB-VAL-006)",
+            "if the only way to read it is a live ACP handshake, record it as null with a reason and say so in your final message instead of guessing.",
+            "The row-15 headroom rule (docs/notes/row15-headroom.md, Result) supports parallelism 4: PHASE1_MAX_PARALLELISM at plan.py:39 becomes 4 and tests/test_plan.py asserts it (ruling R-38 condition 2).",
+            "tests/mutations/stop.json holds one named mutant per new branch (a code missing",
+            "an outcome missing from the skill",
+            "decision_timeout default changed",
+            "spend cap in the wrong unit",
+            "the cap back to 2), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json.",
+            "uv run pytest -q -p no:cacheprovider passes",
+            "uv run ruff check src tests tools is clean.",
+            "Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W2-STOP-I slice 1 per docs/design/phase2-stop-decisions.md section 17 row 1 (read sections 2, 4.3, 4.6, 4.9, 16 and 17 first): the seams, data and skill test that the later stop and decision slices build on, red-first, plus three Leader-assigned lines that touch the same files.",
+          "main_line_budget": "one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase2-stop-decisions.md; docs/notes/rulings.md R-3, R-38, R-47, R-48, R-50; docs/notes/row15-headroom.md; src/harness_bench/{errors,status,plan,cli,engine,tools}.py; tests/test_status.py, tests/test_plan.py, tests/test_errors.py; tools/mutate_check.py. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-stopi1 before committing.",
+          "not_in_scope": [
+            "the stop sequence, control channel, driver cancel, decisions and the TLA refinement (slices 2-5)",
+            "views.py and report/*",
+            "telemetry/*",
+            "bench run, any model turn, pytest -m \"\"",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.003,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3BMRVCPP5SVSVZY727RHK59",
+        "raw_sha256": "83c4f20f41a3bac2de472edd3fe0e9d3b030506d6256412b03fe9e6b1e3c5dbf",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stopped"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "skipped (decision"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "assume"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "getattr"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench plan"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase2-stop-decisions.md",
+            "reason": null,
+            "sha256": "3dbc40e3d87e76548cf8bda92266fefc77892f87086a180ae5a9572d91b287b7",
+            "status": "resolved",
+            "token": "docs/design/phase2-stop-decisions.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "80af1148d0598078a708f1f2fa6f32b5d9ce66fd7243580ff5b12a26a63499d2",
+            "status": "resolved",
+            "token": "errors.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".claude/skills/start-benchmark/SKILL.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".agents/skills/start-benchmark/SKILL.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_status.py::test_the_skill_names_every_status_field"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench-status/1"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "d14250c29e51488e8639bfb39010a9a0ac9c4385bb16fc764af130d7217e408b",
+            "status": "resolved",
+            "token": "plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "13e5826e6a6a8c2ff1c1a5fdd67ea0311c646c750ba57046dce40ab39415d803",
+            "status": "resolved",
+            "token": "cli.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 28 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "package.json"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/row15-headroom.md",
+            "reason": null,
+            "sha256": "0ca960064d9751e162258c10ccb18edfa150f207b9659d2ccd96dc2d02cca212",
+            "status": "resolved",
+            "token": "docs/notes/row15-headroom.md"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_plan.py",
+            "reason": null,
+            "sha256": "09e1abcc751b9778b643d93e21d87140ff0cd7fb45e116f5a2c5603512844cb8",
+            "status": "resolved",
+            "token": "tests/test_plan.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/stop.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/views.py",
+            "reason": null,
+            "sha256": "6e53249eae24b9f23c6836d0b5fd15d741eb84a7cd808d88d7f92afbd994ffb7",
+            "status": "resolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "telemetry/*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/{errors,status,plan,cli,engine,tools}.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_status.py",
+            "reason": null,
+            "sha256": "b72e740a51fee80279c99887225b744cdfa309694fb7f72ac1956faf0e0438e1",
+            "status": "resolved",
+            "token": "tests/test_status.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_errors.py",
+            "reason": null,
+            "sha256": "f858533545946aebd70db3bcc163247b5730766fa9ffbf6050fbb2d3e42a2b7d",
+            "status": "resolved",
+            "token": "tests/test_errors.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
     }
   ],
   "changes": [
