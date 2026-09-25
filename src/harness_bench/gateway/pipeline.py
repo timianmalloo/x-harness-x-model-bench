@@ -123,6 +123,8 @@ def _sha256(text: str) -> str:
 
 
 def run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend | Launch) -> Result:
+    if not judge.qualified:  # never spawned, and no verdict is read for it (sections 5, 8.4, 10.1; T-GW-32)
+        return Result("failed", "HB-GW-007")
     if request.bound_problem(inputs.artifacts) is not None:
         return Result("failed", "HB-GW-008")
     rendered = request.render(inputs.preamble, inputs.rubric, inputs.items, inputs.artifacts, ctx.denylist)
