@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T12:07:50Z",
+  "generated": "2026-09-25T12:32:14Z",
   "audit": [
     {
       "actor": null,
@@ -23299,6 +23299,1026 @@ window.AUDIT_DATA = {
       ],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "src/harness_bench/gateway/backend.py"
+      ],
+      "compiled": false,
+      "datetime": "2026-09-25T12:13:32Z",
+      "done_when": "ac44295 merged; backend.copilot_argv is the measured shape, red first; probe self-test 0 failures; mutant killed; pytest and ruff clean",
+      "goal": "Align s2's Copilot builder with the Leader's measured spike ac44295",
+      "id": "al-01M3C7RC2B5X05QXYAVAN46HHX",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader note: the measured Copilot judge shape (ac44295) differs from the probe s2 branched from; use it in any Copilot builder/reader; Copilot stays qualified: false (DR-GW-CP-1).",
+      "session": "w3-gwi-2",
+      "shortname": "w3-gwi-2-copilot-shape",
+      "skill": "implement",
+      "summary": "Merged ac44295 (probe conflict resolved toward the imported builders); backend.copilot_argv now -p <prompt> --model <pin> --disable-builtin-mcps --no-custom-instructions --available-tools none (red 5d9431b, green 17c211a); probe self-test 0 failures; mutate_check 67/67; full suite 1418 passed; ruff clean. Headless still launches Claude only; no Copilot entry.",
+      "tags": [
+        "W3-GW-I",
+        "R-63"
+      ],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M3C8S18WBV83C5BRKDDKE815",
+      "shortname": "Goal: W3-GW-I slice 3 per docs/design/phase3-gateway-judges.md section 1…",
+      "datetime": "2026-09-25T12:31:22Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W3-GW-I slice 3 per docs/design/phase3-gateway-judges.md section 16 row s3, sections 4.1, 4.2, 6, 10.1-10.2 and 22, and docs/design/phase3-graders.md section \"Judged\" and seam S-5 (read both first; rulings R-58, R-63, R-64, R-66, R-67, R-68 in docs/notes/rulings.md): grade/judge.py wired through the grader dispatch, the verdict_uses fact and synthesis, red first, offline.\nDone when: grade/judge.py's grade_cell(inp) builds each judge's Launch from bench/gateway.yaml's judge entries, looks up or calls through gateway.pipeline.run inside backend.judge_pass, and writes one verdict_uses row per (cell, item, judge) with the section 4.1 grain, key, closed outcome enum and code, into the pass's own sealed segment; Result.model_calls rows land in model_calls with principal gateway.; SEAM GRANTS (Leader; W3-GRADE-CORE s2 is live on runner.py and views.py): add \"verdict_uses\" to views.FACTS and views.KEYS and to runner.PASS_FACTS, register GRADERS[\"judge\"], and add views.judge_calls as the one compute reader that counts calls over distinct (cell_id, metric_id, judge_or_matcher), with the guard test that no view counts verdict_uses rows as calls; keep each edit to those lines so the merge with CORE s2 stays trivial.; SEAM GRANT (Leader; review A2): move HB-GW-001..011 into errors.RUN_CODES (and tests/test_errors.py), and make T-GW-30's code-set test compare against RUN_CODES's HB-GW subset; nothing else in errors.py.; Synthesis follows section 10.1 and 10.2 exactly: two recorded verdicts within 1 step give (a + b) / 2 at scale 1; 2 steps apart give NOT_RECORDED \"judges disagree by 2 steps\"; a missing or unqualified judge gives NOT_RECORDED with that judge's outcome and code; while the second judge is qualified: false (R-63 b), every C1 item is NOT_RECORDED \"second judge not qualified\"; the metric is the sum over the 7 items only when all are synthesized, else NOT_RECORDED naming the items; every other judged metric is NOT_RECORDED \"no rubric for this task\", as R-67 and R-68 rule.; bench/gateway.yaml does not exist yet: define its schema and loader (validated by config) and use a test fixture copy; do NOT commit bench/gateway.yaml itself (R-70: an entry lands only with an invocation_sha256 measured by the Leader's live turn from the gateway's own builders; a placeholder entry is refused). With no gateway.yaml present, the judge grader gives every judged metric NOT_RECORDED \"no qualified judge\".; The fake backend replays the committed placeholder records (tests/fixtures/gateway/records/) and never returns parsed facts (D7); T-GW-12, 20, 21 and 22 are red first, each red committed separately and failing on an assertion.; The ADR-0006 amendment text of section 4.1 lands in docs/adr/0006-append-only-run-ledger-and-derived-results.md as the next amendment (verdict_uses, and the model_calls principal gateway), with the migration note \"additive; no backfill\".; tests/mutations/gateway.json (or a new judge.json) gains a named mutant per new branch, each killed.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean; uv run bench validate prints ok.; Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check result, and every file outside the grants you touched.\nNot in scope: --allow-model-calls and cmd_grade (slice 4); the live-run refusal (slice 4); calibration, kappa and the report header (slice 5); a Copilot or Codex judge entry marked qualified (the Owner has not ruled; any such entry stays qualified: false); catalog_hash, tool_versions, check_regrade (CORE s2); any live model call, process launch of a real CLI, real credential or real identifier; bench run, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase3-gateway-judges.md; docs/design/phase3-graders.md; docs/notes/rulings.md R-58, R-63, R-64, R-66, R-67, R-68; docs/notes/review-w3-gwi-1-fable.md; docs/adr/0006*; src/harness_bench/gateway/; src/harness_bench/grade/{__init__,runner,judge}.py; src/harness_bench/{views,errors,ledger}.py; tests/fixtures/gateway/; tests/test_gateway*.py; tests/mutations/gateway.json. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3C8S54T4C4H14H6X3QDCQ37",
+      "shortname": "compile-Goal: W3-GW-I slice 3 per docs/design/phase3-gateway-judges.md section 1…",
+      "datetime": "2026-09-25T12:31:26Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-GW-I slice 3 per docs/design/phase3-gateway-judges.md section 16 row s3, sections 4.1, 4.2, 6, 10.1-10.2 and 22, and docs/design/phase3-graders.md section \"Judged\" and seam S-5 (read both first; rulings R-58, R-63, R-64, R-66, R-67, R-68 in docs/notes/rulings.md): grade/judge.py wired through the grader dispatch, the verdict_uses fact and synthesis, red first, offline.\nDone when: grade/judge.py's grade_cell(inp) builds each judge's Launch from bench/gateway.yaml's judge entries, looks up or calls through gateway.pipeline.run inside backend.judge_pass, and writes one verdict_uses row per (cell, item, judge) with the section 4.1 grain, key, closed outcome enum and code, into the pass's own sealed segment; Result.model_calls rows land in model_calls with principal gateway.; SEAM GRANTS (Leader; W3-GRADE-CORE s2 is live on runner.py and views.py): add \"verdict_uses\" to views.FACTS and views.KEYS and to runner.PASS_FACTS, register GRADERS[\"judge\"], and add views.judge_calls as the one compute reader that counts calls over distinct (cell_id, metric_id, judge_or_matcher), with the guard test that no view counts verdict_uses rows as calls; keep each edit to those lines so the merge with CORE s2 stays trivial.; SEAM GRANT (Leader; review A2): move HB-GW-001..011 into errors.RUN_CODES (and tests/test_errors.py), and make T-GW-30's code-set test compare against RUN_CODES's HB-GW subset; nothing else in errors.py.; Synthesis follows section 10.1 and 10.2 exactly: two recorded verdicts within 1 step give (a + b) / 2 at scale 1; 2 steps apart give NOT_RECORDED \"judges disagree by 2 steps\"; a missing or unqualified judge gives NOT_RECORDED with that judge's outcome and code; while the second judge is qualified: false (R-63 b), every C1 item is NOT_RECORDED \"second judge not qualified\"; the metric is the sum over the 7 items only when all are synthesized, else NOT_RECORDED naming the items; every other judged metric is NOT_RECORDED \"no rubric for this task\", as R-67 and R-68 rule.; bench/gateway.yaml does not exist yet: define its schema and loader (validated by config) and use a test fixture copy; do NOT commit bench/gateway.yaml itself (R-70: an entry lands only with an invocation_sha256 measured by the Leader's live turn from the gateway's own builders; a placeholder entry is refused). With no gateway.yaml present, the judge grader gives every judged metric NOT_RECORDED \"no qualified judge\".; The fake backend replays the committed placeholder records (tests/fixtures/gateway/records/) and never returns parsed facts (D7); T-GW-12, 20, 21 and 22 are red first, each red committed separately and failing on an assertion.; The ADR-0006 amendment text of section 4.1 lands in docs/adr/0006-append-only-run-ledger-and-derived-results.md as the next amendment (verdict_uses, and the model_calls principal gateway), with the migration note \"additive; no backfill\".; tests/mutations/gateway.json (or a new judge.json) gains a named mutant per new branch, each killed.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean; uv run bench validate prints ok.; Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check result, and every file outside the grants you touched.\nNot in scope: --allow-model-calls and cmd_grade (slice 4); the live-run refusal (slice 4); calibration, kappa and the report header (slice 5); a Copilot or Codex judge entry marked qualified (the Owner has not ruled; any such entry stays qualified: false); catalog_hash, tool_versions, check_regrade (CORE s2); any live model call, process launch of a real CLI, real credential or real identifier; bench run, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-gateway-judges.md; docs/design/phase3-graders.md; docs/notes/rulings.md R-58, R-63, R-64, R-66, R-67, R-68; docs/notes/review-w3-gwi-1-fable.md; docs/adr/0006*; src/harness_bench/gateway/; src/harness_bench/grade/{__init__,runner,judge}.py; src/harness_bench/{views,errors,ledger}.py; tests/fixtures/gateway/; tests/test_gateway*.py; tests/mutations/gateway.json. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: grade/judge.py's grade_cell(inp) builds each judge's Launch from bench/gateway.yaml's judge entries, looks up or calls through gateway.pipeline.run inside backend.judge_pass, and writes one verdict_uses row per (cell, item, judge) with the section 4.1 grain, key, closed outcome enum and code, into the pass's own sealed segment | phrase: grade/judge.py's grade_cell(inp) builds each judge's Launch from bench/gateway.yaml's judge entries, looks up or calls through gateway.pipeline.run inside backend.judge_pass, and writes one verdict_uses row per (cell, item, judge) with the section 4.1 grain, key, closed outcome enum and code, into the pass's own sealed segment |\n| done_when: Result.model_calls rows land in model_calls with principal gateway. | phrase: Result.model_calls rows land in model_calls with principal gateway. |\n| done_when: SEAM GRANTS (Leader | phrase: SEAM GRANTS (Leader |\n| done_when: W3-GRADE-CORE s2 is live on runner.py and views.py): add \"verdict_uses\" to views.FACTS and views.KEYS and to runner.PASS_FACTS, register GRADERS[\"judge\"], and add views.judge_calls as the one compute reader that counts calls over distinct (cell_id, metric_id, judge_or_matcher), with the guard test that no view counts verdict_uses rows as calls | phrase: W3-GRADE-CORE s2 is live on runner.py and views.py): add \"verdict_uses\" to views.FACTS and views.KEYS and to runner.PASS_FACTS, register GRADERS[\"judge\"], and add views.judge_calls as the one compute reader that counts calls over distinct (cell_id, metric_id, judge_or_matcher), with the guard test that no view counts verdict_uses rows as calls |\n| done_when: keep each edit to those lines so the merge with CORE s2 stays trivial. | phrase: keep each edit to those lines so the merge with CORE s2 stays trivial. |\n| done_when: SEAM GRANT (Leader | phrase: SEAM GRANT (Leader |\n| done_when: review A2): move HB-GW-001..011 into errors.RUN_CODES (and tests/test_errors.py), and make T-GW-30's code-set test compare against RUN_CODES's HB-GW subset | phrase: review A2): move HB-GW-001..011 into errors.RUN_CODES (and tests/test_errors.py), and make T-GW-30's code-set test compare against RUN_CODES's HB-GW subset |\n| done_when: nothing else in errors.py. | phrase: nothing else in errors.py. |\n| done_when: Synthesis follows section 10.1 and 10.2 exactly: two recorded verdicts within 1 step give (a + b) / 2 at scale 1 | phrase: Synthesis follows section 10.1 and 10.2 exactly: two recorded verdicts within 1 step give (a + b) / 2 at scale 1 |\n| done_when: 2 steps apart give NOT_RECORDED \"judges disagree by 2 steps\" | phrase: 2 steps apart give NOT_RECORDED \"judges disagree by 2 steps\" |\n| done_when: a missing or unqualified judge gives NOT_RECORDED with that judge's outcome and code | phrase: a missing or unqualified judge gives NOT_RECORDED with that judge's outcome and code |\n| done_when: while the second judge is qualified: false (R-63 b), every C1 item is NOT_RECORDED \"second judge not qualified\" | phrase: while the second judge is qualified: false (R-63 b), every C1 item is NOT_RECORDED \"second judge not qualified\" |\n| done_when: the metric is the sum over the 7 items only when all are synthesized, else NOT_RECORDED naming the items | phrase: the metric is the sum over the 7 items only when all are synthesized, else NOT_RECORDED naming the items |\n| done_when: every other judged metric is NOT_RECORDED \"no rubric for this task\", as R-67 and R-68 rule. | phrase: every other judged metric is NOT_RECORDED \"no rubric for this task\", as R-67 and R-68 rule. |\n| done_when: bench/gateway.yaml does not exist yet: define its schema and loader (validated by config) and use a test fixture copy | phrase: bench/gateway.yaml does not exist yet: define its schema and loader (validated by config) and use a test fixture copy |\n| done_when: do NOT commit bench/gateway.yaml itself (R-70: an entry lands only with an invocation_sha256 measured by the Leader's live turn from the gateway's own builders | phrase: do NOT commit bench/gateway.yaml itself (R-70: an entry lands only with an invocation_sha256 measured by the Leader's live turn from the gateway's own builders |\n| done_when: a placeholder entry is refused). With no gateway.yaml present, the judge grader gives every judged metric NOT_RECORDED \"no qualified judge\". | phrase: a placeholder entry is refused). With no gateway.yaml present, the judge grader gives every judged metric NOT_RECORDED \"no qualified judge\". |\n| done_when: The fake backend replays the committed placeholder records (tests/fixtures/gateway/records/) and never returns parsed facts (D7) | phrase: The fake backend replays the committed placeholder records (tests/fixtures/gateway/records/) and never returns parsed facts (D7) |\n| done_when: T-GW-12, 20, 21 and 22 are red first, each red committed separately and failing on an assertion. | phrase: T-GW-12, 20, 21 and 22 are red first, each red committed separately and failing on an assertion. |\n| done_when: The ADR-0006 amendment text of section 4.1 lands in docs/adr/0006-append-only-run-ledger-and-derived-results.md as the next amendment (verdict_uses, and the model_calls principal gateway), with the migration note \"additive | phrase: The ADR-0006 amendment text of section 4.1 lands in docs/adr/0006-append-only-run-ledger-and-derived-results.md as the next amendment (verdict_uses, and the model_calls principal gateway), with the migration note \"additive |\n| done_when: no backfill\". | phrase: no backfill\". |\n| done_when: tests/mutations/gateway.json (or a new judge.json) gains a named mutant per new branch, each killed. | phrase: tests/mutations/gateway.json (or a new judge.json) gains a named mutant per new branch, each killed. |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: uv run bench validate prints ok. | phrase: uv run bench validate prints ok. |\n| done_when: Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check result, and every file outside the grants you touched. | phrase: Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check result, and every file outside the grants you touched. |\n| not_in_scope: --allow-model-calls and cmd_grade (slice 4) | phrase: --allow-model-calls and cmd_grade (slice 4) |\n| not_in_scope: the live-run refusal (slice 4) | phrase: the live-run refusal (slice 4) |\n| not_in_scope: calibration, kappa and the report header (slice 5) | phrase: calibration, kappa and the report header (slice 5) |\n| not_in_scope: a Copilot or Codex judge entry marked qualified (the Owner has not ruled | phrase: a Copilot or Codex judge entry marked qualified (the Owner has not ruled |\n| not_in_scope: any such entry stays qualified: false) | phrase: any such entry stays qualified: false) |\n| not_in_scope: catalog_hash, tool_versions, check_regrade (CORE s2) | phrase: catalog_hash, tool_versions, check_regrade (CORE s2) |\n| not_in_scope: any live model call, process launch of a real CLI, real credential or real identifier | phrase: any live model call, process launch of a real CLI, real credential or real identifier |\n| not_in_scope: bench run, pytest -m \"\" | phrase: bench run, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- docs/design/phase3-gateway-judges.md: docs/design/phase3-gateway-judges.md sha256 61cfd44cdac602696254e7d583e506632d4d03ba4085917387d46cf9fab1e519\n- docs/design/phase3-graders.md: docs/design/phase3-graders.md sha256 ea4db9cd170dcaf00bf7f28ce0119db61a05b879c263d8547648c275a31fe0f4\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- grade/judge.py: src/harness_bench/grade/judge.py sha256 ada5733d94b2e66bc8fe23c424357cc2971038389259668826a32d4401f20f7b\n- grade/judge.py's: unresolved (not found; nearest: src/harness_bench/grade/judge.py)\n- bench/gateway.yaml's: unresolved (not found)\n- runner.py: src/harness_bench/grade/runner.py sha256 939530742a2995995273839bac60e39a210b462f98816fd949e370470e068fb8\n- views.py: src/harness_bench/views.py sha256 16fb01788f1f64120b03ba83932eaac5e57c0860418bdd541870cc94515932e1\n- tests/test_errors.py: tests/test_errors.py sha256 abf5576fd0ecfbeaec23d730ba06b1aa5f62c99647120f9e09b25177257fe367\n- errors.py: src/harness_bench/errors.py sha256 2cfc0dcaca076a239dbd1b3c7eb430e017848a946580f936de8ffb3bc26743b9\n- /: unresolved (outside repo)\n- bench/gateway.yaml: unresolved (not found)\n- gateway.yaml: unresolved (not found)\n- tests/fixtures/gateway/records/: unresolved (not found)\n- docs/adr/0006-append-only-run-ledger-and-derived-results.md: docs/adr/0006-append-only-run-ledger-and-derived-results.md sha256 9527f6472003f7649c6c2d6e1d67a0f90fc18034855d401df43d15804875cdba\n- tests/mutations/gateway.json: tests/mutations/gateway.json sha256 9d2bb0319109e5c36b66879f6013e20e8fc44a0f385ede728a9c180d03252107\n- judge.json: unresolved (not found)\n- docs/notes/review-w3-gwi-1-fable.md: docs/notes/review-w3-gwi-1-fable.md sha256 c8a775b475343292c568faba0f0eb5e1513089c18bf3467c55de7bb1a54e077d\n- docs/adr/0006*: unresolved (not found)\n- src/harness_bench/gateway/: unresolved (not found)\n- src/harness_bench/grade/{__init__,runner,judge}.py: unresolved (not found)\n- src/harness_bench/{views,errors,ledger}.py: unresolved (not found)\n- tests/fixtures/gateway/: unresolved (not found)\n- tests/test_gateway*.py: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3C8S18WBV83C5BRKDDKE815\nraw sha256: fae60101e5dc8d597e5685cd00e9e7f6e3035e7d2708edf81a4f04f9856427da\ncompiler model: claude-opus-5-5\nengine seconds: 0.005\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3C8S18WBV83C5BRKDDKE815 for claude-code v1: 35 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "grade/judge.py's grade_cell(inp) builds each judge's Launch from bench/gateway.yaml's judge entries, looks up or calls through gateway.pipeline.run inside backend.judge_pass, and writes one verdict_uses row per (cell, item, judge) with the section 4.1 grain, key, closed outcome enum and code, into the pass's own sealed segment",
+            "trace": {
+              "kind": "phrase",
+              "ref": "grade/judge.py's grade_cell(inp) builds each judge's Launch from bench/gateway.yaml's judge entries, looks up or calls through gateway.pipeline.run inside backend.judge_pass, and writes one verdict_uses row per (cell, item, judge) with the section 4.1 grain, key, closed outcome enum and code, into the pass's own sealed segment"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Result.model_calls rows land in model_calls with principal gateway.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Result.model_calls rows land in model_calls with principal gateway."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "SEAM GRANTS (Leader",
+            "trace": {
+              "kind": "phrase",
+              "ref": "SEAM GRANTS (Leader"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "W3-GRADE-CORE s2 is live on runner.py and views.py): add \"verdict_uses\" to views.FACTS and views.KEYS and to runner.PASS_FACTS, register GRADERS[\"judge\"], and add views.judge_calls as the one compute reader that counts calls over distinct (cell_id, metric_id, judge_or_matcher), with the guard test that no view counts verdict_uses rows as calls",
+            "trace": {
+              "kind": "phrase",
+              "ref": "W3-GRADE-CORE s2 is live on runner.py and views.py): add \"verdict_uses\" to views.FACTS and views.KEYS and to runner.PASS_FACTS, register GRADERS[\"judge\"], and add views.judge_calls as the one compute reader that counts calls over distinct (cell_id, metric_id, judge_or_matcher), with the guard test that no view counts verdict_uses rows as calls"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "keep each edit to those lines so the merge with CORE s2 stays trivial.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "keep each edit to those lines so the merge with CORE s2 stays trivial."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "SEAM GRANT (Leader",
+            "trace": {
+              "kind": "phrase",
+              "ref": "SEAM GRANT (Leader"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "review A2): move HB-GW-001..011 into errors.RUN_CODES (and tests/test_errors.py), and make T-GW-30's code-set test compare against RUN_CODES's HB-GW subset",
+            "trace": {
+              "kind": "phrase",
+              "ref": "review A2): move HB-GW-001..011 into errors.RUN_CODES (and tests/test_errors.py), and make T-GW-30's code-set test compare against RUN_CODES's HB-GW subset"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "nothing else in errors.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "nothing else in errors.py."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Synthesis follows section 10.1 and 10.2 exactly: two recorded verdicts within 1 step give (a + b) / 2 at scale 1",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Synthesis follows section 10.1 and 10.2 exactly: two recorded verdicts within 1 step give (a + b) / 2 at scale 1"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "2 steps apart give NOT_RECORDED \"judges disagree by 2 steps\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "2 steps apart give NOT_RECORDED \"judges disagree by 2 steps\""
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a missing or unqualified judge gives NOT_RECORDED with that judge's outcome and code",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a missing or unqualified judge gives NOT_RECORDED with that judge's outcome and code"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "while the second judge is qualified: false (R-63 b), every C1 item is NOT_RECORDED \"second judge not qualified\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "while the second judge is qualified: false (R-63 b), every C1 item is NOT_RECORDED \"second judge not qualified\""
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the metric is the sum over the 7 items only when all are synthesized, else NOT_RECORDED naming the items",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the metric is the sum over the 7 items only when all are synthesized, else NOT_RECORDED naming the items"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "every other judged metric is NOT_RECORDED \"no rubric for this task\", as R-67 and R-68 rule.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "every other judged metric is NOT_RECORDED \"no rubric for this task\", as R-67 and R-68 rule."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "bench/gateway.yaml does not exist yet: define its schema and loader (validated by config) and use a test fixture copy",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/gateway.yaml does not exist yet: define its schema and loader (validated by config) and use a test fixture copy"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "do NOT commit bench/gateway.yaml itself (R-70: an entry lands only with an invocation_sha256 measured by the Leader's live turn from the gateway's own builders",
+            "trace": {
+              "kind": "phrase",
+              "ref": "do NOT commit bench/gateway.yaml itself (R-70: an entry lands only with an invocation_sha256 measured by the Leader's live turn from the gateway's own builders"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a placeholder entry is refused). With no gateway.yaml present, the judge grader gives every judged metric NOT_RECORDED \"no qualified judge\".",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a placeholder entry is refused). With no gateway.yaml present, the judge grader gives every judged metric NOT_RECORDED \"no qualified judge\"."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The fake backend replays the committed placeholder records (tests/fixtures/gateway/records/) and never returns parsed facts (D7)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The fake backend replays the committed placeholder records (tests/fixtures/gateway/records/) and never returns parsed facts (D7)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "T-GW-12, 20, 21 and 22 are red first, each red committed separately and failing on an assertion.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "T-GW-12, 20, 21 and 22 are red first, each red committed separately and failing on an assertion."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The ADR-0006 amendment text of section 4.1 lands in docs/adr/0006-append-only-run-ledger-and-derived-results.md as the next amendment (verdict_uses, and the model_calls principal gateway), with the migration note \"additive",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The ADR-0006 amendment text of section 4.1 lands in docs/adr/0006-append-only-run-ledger-and-derived-results.md as the next amendment (verdict_uses, and the model_calls principal gateway), with the migration note \"additive"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "no backfill\".",
+            "trace": {
+              "kind": "phrase",
+              "ref": "no backfill\"."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/gateway.json (or a new judge.json) gains a named mutant per new branch, each killed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/gateway.json (or a new judge.json) gains a named mutant per new branch, each killed."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run bench validate prints ok.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run bench validate prints ok."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check result, and every file outside the grants you touched.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check result, and every file outside the grants you touched."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "--allow-model-calls and cmd_grade (slice 4)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "--allow-model-calls and cmd_grade (slice 4)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the live-run refusal (slice 4)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the live-run refusal (slice 4)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "calibration, kappa and the report header (slice 5)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "calibration, kappa and the report header (slice 5)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "a Copilot or Codex judge entry marked qualified (the Owner has not ruled",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a Copilot or Codex judge entry marked qualified (the Owner has not ruled"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any such entry stays qualified: false)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any such entry stays qualified: false)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "catalog_hash, tool_versions, check_regrade (CORE s2)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "catalog_hash, tool_versions, check_regrade (CORE s2)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any live model call, process launch of a real CLI, real credential or real identifier",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any live model call, process launch of a real CLI, real credential or real identifier"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run, pytest -m \"\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run, pytest -m \"\""
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "grade/judge.py's grade_cell(inp) builds each judge's Launch from bench/gateway.yaml's judge entries, looks up or calls through gateway.pipeline.run inside backend.judge_pass, and writes one verdict_uses row per (cell, item, judge) with the section 4.1 grain, key, closed outcome enum and code, into the pass's own sealed segment",
+            "Result.model_calls rows land in model_calls with principal gateway.",
+            "SEAM GRANTS (Leader",
+            "W3-GRADE-CORE s2 is live on runner.py and views.py): add \"verdict_uses\" to views.FACTS and views.KEYS and to runner.PASS_FACTS, register GRADERS[\"judge\"], and add views.judge_calls as the one compute reader that counts calls over distinct (cell_id, metric_id, judge_or_matcher), with the guard test that no view counts verdict_uses rows as calls",
+            "keep each edit to those lines so the merge with CORE s2 stays trivial.",
+            "SEAM GRANT (Leader",
+            "review A2): move HB-GW-001..011 into errors.RUN_CODES (and tests/test_errors.py), and make T-GW-30's code-set test compare against RUN_CODES's HB-GW subset",
+            "nothing else in errors.py.",
+            "Synthesis follows section 10.1 and 10.2 exactly: two recorded verdicts within 1 step give (a + b) / 2 at scale 1",
+            "2 steps apart give NOT_RECORDED \"judges disagree by 2 steps\"",
+            "a missing or unqualified judge gives NOT_RECORDED with that judge's outcome and code",
+            "while the second judge is qualified: false (R-63 b), every C1 item is NOT_RECORDED \"second judge not qualified\"",
+            "the metric is the sum over the 7 items only when all are synthesized, else NOT_RECORDED naming the items",
+            "every other judged metric is NOT_RECORDED \"no rubric for this task\", as R-67 and R-68 rule.",
+            "bench/gateway.yaml does not exist yet: define its schema and loader (validated by config) and use a test fixture copy",
+            "do NOT commit bench/gateway.yaml itself (R-70: an entry lands only with an invocation_sha256 measured by the Leader's live turn from the gateway's own builders",
+            "a placeholder entry is refused). With no gateway.yaml present, the judge grader gives every judged metric NOT_RECORDED \"no qualified judge\".",
+            "The fake backend replays the committed placeholder records (tests/fixtures/gateway/records/) and never returns parsed facts (D7)",
+            "T-GW-12, 20, 21 and 22 are red first, each red committed separately and failing on an assertion.",
+            "The ADR-0006 amendment text of section 4.1 lands in docs/adr/0006-append-only-run-ledger-and-derived-results.md as the next amendment (verdict_uses, and the model_calls principal gateway), with the migration note \"additive",
+            "no backfill\".",
+            "tests/mutations/gateway.json (or a new judge.json) gains a named mutant per new branch, each killed.",
+            "uv run pytest -q -p no:cacheprovider passes",
+            "uv run ruff check src tests tools is clean",
+            "uv run bench validate prints ok.",
+            "Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check result, and every file outside the grants you touched."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W3-GW-I slice 3 per docs/design/phase3-gateway-judges.md section 16 row s3, sections 4.1, 4.2, 6, 10.1-10.2 and 22, and docs/design/phase3-graders.md section \"Judged\" and seam S-5 (read both first; rulings R-58, R-63, R-64, R-66, R-67, R-68 in docs/notes/rulings.md): grade/judge.py wired through the grader dispatch, the verdict_uses fact and synthesis, red first, offline.",
+          "main_line_budget": "one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-gateway-judges.md; docs/design/phase3-graders.md; docs/notes/rulings.md R-58, R-63, R-64, R-66, R-67, R-68; docs/notes/review-w3-gwi-1-fable.md; docs/adr/0006*; src/harness_bench/gateway/; src/harness_bench/grade/{__init__,runner,judge}.py; src/harness_bench/{views,errors,ledger}.py; tests/fixtures/gateway/; tests/test_gateway*.py; tests/mutations/gateway.json. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "--allow-model-calls and cmd_grade (slice 4)",
+            "the live-run refusal (slice 4)",
+            "calibration, kappa and the report header (slice 5)",
+            "a Copilot or Codex judge entry marked qualified (the Owner has not ruled",
+            "any such entry stays qualified: false)",
+            "catalog_hash, tool_versions, check_regrade (CORE s2)",
+            "any live model call, process launch of a real CLI, real credential or real identifier",
+            "bench run, pytest -m \"\"",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.005,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3C8S18WBV83C5BRKDDKE815",
+        "raw_sha256": "fae60101e5dc8d597e5685cd00e9e7f6e3035e7d2708edf81a4f04f9856427da",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": "docs/design/phase3-gateway-judges.md",
+            "reason": null,
+            "sha256": "61cfd44cdac602696254e7d583e506632d4d03ba4085917387d46cf9fab1e519",
+            "status": "resolved",
+            "token": "docs/design/phase3-gateway-judges.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase3-graders.md",
+            "reason": null,
+            "sha256": "ea4db9cd170dcaf00bf7f28ce0119db61a05b879c263d8547648c275a31fe0f4",
+            "status": "resolved",
+            "token": "docs/design/phase3-graders.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/judge.py",
+            "reason": null,
+            "sha256": "ada5733d94b2e66bc8fe23c424357cc2971038389259668826a32d4401f20f7b",
+            "status": "resolved",
+            "token": "grade/judge.py"
+          },
+          {
+            "nearest": "src/harness_bench/grade/judge.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/judge.py's"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/gateway.yaml's"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "939530742a2995995273839bac60e39a210b462f98816fd949e370470e068fb8",
+            "status": "resolved",
+            "token": "runner.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/views.py",
+            "reason": null,
+            "sha256": "16fb01788f1f64120b03ba83932eaac5e57c0860418bdd541870cc94515932e1",
+            "status": "resolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_errors.py",
+            "reason": null,
+            "sha256": "abf5576fd0ecfbeaec23d730ba06b1aa5f62c99647120f9e09b25177257fe367",
+            "status": "resolved",
+            "token": "tests/test_errors.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "2cfc0dcaca076a239dbd1b3c7eb430e017848a946580f936de8ffb3bc26743b9",
+            "status": "resolved",
+            "token": "errors.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/gateway.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gateway.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/gateway/records/"
+          },
+          {
+            "nearest": null,
+            "path": "docs/adr/0006-append-only-run-ledger-and-derived-results.md",
+            "reason": null,
+            "sha256": "9527f6472003f7649c6c2d6e1d67a0f90fc18034855d401df43d15804875cdba",
+            "status": "resolved",
+            "token": "docs/adr/0006-append-only-run-ledger-and-derived-results.md"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/gateway.json",
+            "reason": null,
+            "sha256": "9d2bb0319109e5c36b66879f6013e20e8fc44a0f385ede728a9c180d03252107",
+            "status": "resolved",
+            "token": "tests/mutations/gateway.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "judge.json"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/review-w3-gwi-1-fable.md",
+            "reason": null,
+            "sha256": "c8a775b475343292c568faba0f0eb5e1513089c18bf3467c55de7bb1a54e077d",
+            "status": "resolved",
+            "token": "docs/notes/review-w3-gwi-1-fable.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/adr/0006*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/gateway/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/grade/{__init__,runner,judge}.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/{views,errors,ledger}.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/gateway/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_gateway*.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3C8THEC5GKBR4B77RQ81J57",
+      "shortname": "Goal: W3-GR-CODE slice c3 per docs/design/phase3-graders.md, slice-plan …",
+      "datetime": "2026-09-25T12:32:12Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W3-GR-CODE slice c3 per docs/design/phase3-graders.md, slice-plan row \"GR-CODE c3\" and section \"Drift\" (rulings R-59, R-67, R-68, R-71 in docs/notes/rulings.md): the drift grader, red first, on top of c1 (joined: grade/_changes.py, the pre-turn commit under the tamper rule).\nDone when: grade/drift.py computes scope_creep and scope_creep_files (lines added plus deleted, CRLF-normalised with difflib, in files outside the task's blast_radius, cell tree against the pre-turn tree from grade/_changes.py, build output excluded) and convention_drift (violations of the hardcoded D1 rule set, R1 file-scoped namespace only, in added or changed .cs lines per 100 changed lines, a Decimal at scale 2) exactly as the design defines them, with the design's NA reasons verbatim; spec_coverage, constraint_violations and instruction_reread_rate give their design NA reasons; drift.grade_cell is registered in runner.GRADERS.; Red first on the design's seeds: a 3-line edit in src/AiDe.Mcp gives scope_creep 3 and scope_creep_files 1; a pack-commit stand-in whose files lie outside blast_radius gives 0 (and the mutant \"use the base commit as the base\" scores more than 0 and is killed); a block-scoped namespace in a 10-line file gives convention_drift 10.00; each red committed separately and failing on an assertion.; With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, the 6 D1 cells of row15-d1-1 give scope_creep 0 and scope_creep_files 0 exactly (including the Codex cell that committed its files after the pack commit), and the cell that changed nothing gives convention_drift NA \"no lines changed\"; the archive stays byte-unchanged.; tests/mutations/drift.json has a named mutant per branch, each killed, and grade.json and correctness.json stay all killed.; With HB_GATE_RUNS set, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips; uv run ruff check src tests tools is clean; uv run bench validate prints ok.; Your final message lists each red SHA with its failing assertion, each green SHA, the gate-run drift values per D1 cell, and the mutate_check results.\nNot in scope: correctness.py (W3-GR-CODE c2 is live on it); architecture, rigor, mutation (c4-c6); bench/metrics.yaml (propose any scale or entry change in your final message; the Leader edits the catalog); catalog_hash, tool_versions (W3-GRADE-CORE s2, live on runner.py: keep your runner.py edit to the one GRADERS line); bench run, any model turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase3-graders.md; docs/notes/spike-gr-code-trx.md; docs/notes/rulings.md R-59, R-67, R-68, R-71; src/harness_bench/grade/{__init__,runner,_changes,drift}.py; tasks/D1/task.yaml (blast_radius); tests/test_grade_correctness.py (how c1 builds inputs from the gate runs); tests/mutations/correctness.json. The gate runs under C:/projects/x-harness-x-model-bench/runs/ are read-only. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3C8TKQF61J4VX1VBDRMT8SF",
+      "shortname": "compile-Goal: W3-GR-CODE slice c3 per docs/design/phase3-graders.md, slice-plan …",
+      "datetime": "2026-09-25T12:32:14Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-GR-CODE slice c3 per docs/design/phase3-graders.md, slice-plan row \"GR-CODE c3\" and section \"Drift\" (rulings R-59, R-67, R-68, R-71 in docs/notes/rulings.md): the drift grader, red first, on top of c1 (joined: grade/_changes.py, the pre-turn commit under the tamper rule).\nDone when: grade/drift.py computes scope_creep and scope_creep_files (lines added plus deleted, CRLF-normalised with difflib, in files outside the task's blast_radius, cell tree against the pre-turn tree from grade/_changes.py, build output excluded) and convention_drift (violations of the hardcoded D1 rule set, R1 file-scoped namespace only, in added or changed .cs lines per 100 changed lines, a Decimal at scale 2) exactly as the design defines them, with the design's NA reasons verbatim; spec_coverage, constraint_violations and instruction_reread_rate give their design NA reasons; drift.grade_cell is registered in runner.GRADERS.; Red first on the design's seeds: a 3-line edit in src/AiDe.Mcp gives scope_creep 3 and scope_creep_files 1; a pack-commit stand-in whose files lie outside blast_radius gives 0 (and the mutant \"use the base commit as the base\" scores more than 0 and is killed); a block-scoped namespace in a 10-line file gives convention_drift 10.00; each red committed separately and failing on an assertion.; With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, the 6 D1 cells of row15-d1-1 give scope_creep 0 and scope_creep_files 0 exactly (including the Codex cell that committed its files after the pack commit), and the cell that changed nothing gives convention_drift NA \"no lines changed\"; the archive stays byte-unchanged.; tests/mutations/drift.json has a named mutant per branch, each killed, and grade.json and correctness.json stay all killed.; With HB_GATE_RUNS set, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips; uv run ruff check src tests tools is clean; uv run bench validate prints ok.; Your final message lists each red SHA with its failing assertion, each green SHA, the gate-run drift values per D1 cell, and the mutate_check results.\nNot in scope: correctness.py (W3-GR-CODE c2 is live on it); architecture, rigor, mutation (c4-c6); bench/metrics.yaml (propose any scale or entry change in your final message; the Leader edits the catalog); catalog_hash, tool_versions (W3-GRADE-CORE s2, live on runner.py: keep your runner.py edit to the one GRADERS line); bench run, any model turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-graders.md; docs/notes/spike-gr-code-trx.md; docs/notes/rulings.md R-59, R-67, R-68, R-71; src/harness_bench/grade/{__init__,runner,_changes,drift}.py; tasks/D1/task.yaml (blast_radius); tests/test_grade_correctness.py (how c1 builds inputs from the gate runs); tests/mutations/correctness.json. The gate runs under C:/projects/x-harness-x-model-bench/runs/ are read-only. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: grade/drift.py computes scope_creep and scope_creep_files (lines added plus deleted, CRLF-normalised with difflib, in files outside the task's blast_radius, cell tree against the pre-turn tree from grade/_changes.py, build output excluded) and convention_drift (violations of the hardcoded D1 rule set, R1 file-scoped namespace only, in added or changed .cs lines per 100 changed lines, a Decimal at scale 2) exactly as the design defines them, with the design's NA reasons verbatim | phrase: grade/drift.py computes scope_creep and scope_creep_files (lines added plus deleted, CRLF-normalised with difflib, in files outside the task's blast_radius, cell tree against the pre-turn tree from grade/_changes.py, build output excluded) and convention_drift (violations of the hardcoded D1 rule set, R1 file-scoped namespace only, in added or changed .cs lines per 100 changed lines, a Decimal at scale 2) exactly as the design defines them, with the design's NA reasons verbatim |\n| done_when: spec_coverage, constraint_violations and instruction_reread_rate give their design NA reasons | phrase: spec_coverage, constraint_violations and instruction_reread_rate give their design NA reasons |\n| done_when: drift.grade_cell is registered in runner.GRADERS. | phrase: drift.grade_cell is registered in runner.GRADERS. |\n| done_when: Red first on the design's seeds: a 3-line edit in src/AiDe.Mcp gives scope_creep 3 and scope_creep_files 1 | phrase: Red first on the design's seeds: a 3-line edit in src/AiDe.Mcp gives scope_creep 3 and scope_creep_files 1 |\n| done_when: a pack-commit stand-in whose files lie outside blast_radius gives 0 (and the mutant \"use the base commit as the base\" scores more than 0 and is killed) | phrase: a pack-commit stand-in whose files lie outside blast_radius gives 0 (and the mutant \"use the base commit as the base\" scores more than 0 and is killed) |\n| done_when: a block-scoped namespace in a 10-line file gives convention_drift 10.00 | phrase: a block-scoped namespace in a 10-line file gives convention_drift 10.00 |\n| done_when: each red committed separately and failing on an assertion. | phrase: each red committed separately and failing on an assertion. |\n| done_when: With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, the 6 D1 cells of row15-d1-1 give scope_creep 0 and scope_creep_files 0 exactly (including the Codex cell that committed its files after the pack commit), and the cell that changed nothing gives convention_drift NA \"no lines changed\" | phrase: With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, the 6 D1 cells of row15-d1-1 give scope_creep 0 and scope_creep_files 0 exactly (including the Codex cell that committed its files after the pack commit), and the cell that changed nothing gives convention_drift NA \"no lines changed\" |\n| done_when: the archive stays byte-unchanged. | phrase: the archive stays byte-unchanged. |\n| done_when: tests/mutations/drift.json has a named mutant per branch, each killed, and grade.json and correctness.json stay all killed. | phrase: tests/mutations/drift.json has a named mutant per branch, each killed, and grade.json and correctness.json stay all killed. |\n| done_when: With HB_GATE_RUNS set, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips | phrase: With HB_GATE_RUNS set, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: uv run bench validate prints ok. | phrase: uv run bench validate prints ok. |\n| done_when: Your final message lists each red SHA with its failing assertion, each green SHA, the gate-run drift values per D1 cell, and the mutate_check results. | phrase: Your final message lists each red SHA with its failing assertion, each green SHA, the gate-run drift values per D1 cell, and the mutate_check results. |\n| not_in_scope: correctness.py (W3-GR-CODE c2 is live on it) | phrase: correctness.py (W3-GR-CODE c2 is live on it) |\n| not_in_scope: architecture, rigor, mutation (c4-c6) | phrase: architecture, rigor, mutation (c4-c6) |\n| not_in_scope: bench/metrics.yaml (propose any scale or entry change in your final message | phrase: bench/metrics.yaml (propose any scale or entry change in your final message |\n| not_in_scope: the Leader edits the catalog) | phrase: the Leader edits the catalog) |\n| not_in_scope: catalog_hash, tool_versions (W3-GRADE-CORE s2, live on runner.py: keep your runner.py edit to the one GRADERS line) | phrase: catalog_hash, tool_versions (W3-GRADE-CORE s2, live on runner.py: keep your runner.py edit to the one GRADERS line) |\n| not_in_scope: bench run, any model turn, pytest -m \"\" | phrase: bench run, any model turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- docs/design/phase3-graders.md: docs/design/phase3-graders.md sha256 ea4db9cd170dcaf00bf7f28ce0119db61a05b879c263d8547648c275a31fe0f4\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- grade/_changes.py: src/harness_bench/grade/_changes.py sha256 fa807c157301e4bb7c27f215bef6c8fabd0b14852f2830492361ad02bda67ff2\n- grade/drift.py: src/harness_bench/grade/drift.py sha256 3f41e83abba28be6858ebfbb82105c7a10d59538488eba8068b868361c6b14d7\n- src/AiDe.Mcp: unresolved (not found)\n- HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs: unresolved (not found)\n- tests/mutations/drift.json: unresolved (not found)\n- grade.json: tests/mutations/grade.json sha256 7760b1e3ded92fbee29db0da33c4544e54a7737b906f3d9ea3b9a8c2c6a5674d\n- correctness.json: tests/mutations/correctness.json sha256 19b907ba5e3d6ab5e06cf32b0f8ac9630bf9ad341547337c094b2fcc6a0192f6\n- correctness.py: src/harness_bench/grade/correctness.py sha256 7293085b6599c6440d8cae5e012e78827b67b37eac5490b73f31fccfd2ace520\n- bench/metrics.yaml: bench/metrics.yaml sha256 4b1b0dc7cd3094dd8a34a3ec09346f246e252d496c80371e290e2db0c9a93122\n- runner.py: src/harness_bench/grade/runner.py sha256 939530742a2995995273839bac60e39a210b462f98816fd949e370470e068fb8\n- docs/notes/spike-gr-code-trx.md: docs/notes/spike-gr-code-trx.md sha256 ffb65ee78047574b4ae1a7adaef18a42e654ffe3fcacde850070f9e7e612cc31\n- src/harness_bench/grade/{__init__,runner,_changes,drift}.py: unresolved (not found)\n- tasks/D1/task.yaml: tasks/D1/task.yaml sha256 be18eb02bd425e79e33496308fc2a7a8d93dbcdb621e32e262ff6c1292112727\n- tests/test_grade_correctness.py: tests/test_grade_correctness.py sha256 e0c30810b2da172ab0152c0d1c64116d3c36f82de3334c2f76f388a96eea6f6c\n- tests/mutations/correctness.json: tests/mutations/correctness.json sha256 19b907ba5e3d6ab5e06cf32b0f8ac9630bf9ad341547337c094b2fcc6a0192f6\n- C:/projects/x-harness-x-model-bench/runs/: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3C8THEC5GKBR4B77RQ81J57\nraw sha256: c6d2d868d38187a6ab3ec9b22c5afa253d339b1cc3923ce8a7294de05d455cde\ncompiler model: claude-opus-5-5\nengine seconds: 0.007\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3C8THEC5GKBR4B77RQ81J57 for claude-code v1: 21 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "grade/drift.py computes scope_creep and scope_creep_files (lines added plus deleted, CRLF-normalised with difflib, in files outside the task's blast_radius, cell tree against the pre-turn tree from grade/_changes.py, build output excluded) and convention_drift (violations of the hardcoded D1 rule set, R1 file-scoped namespace only, in added or changed .cs lines per 100 changed lines, a Decimal at scale 2) exactly as the design defines them, with the design's NA reasons verbatim",
+            "trace": {
+              "kind": "phrase",
+              "ref": "grade/drift.py computes scope_creep and scope_creep_files (lines added plus deleted, CRLF-normalised with difflib, in files outside the task's blast_radius, cell tree against the pre-turn tree from grade/_changes.py, build output excluded) and convention_drift (violations of the hardcoded D1 rule set, R1 file-scoped namespace only, in added or changed .cs lines per 100 changed lines, a Decimal at scale 2) exactly as the design defines them, with the design's NA reasons verbatim"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "spec_coverage, constraint_violations and instruction_reread_rate give their design NA reasons",
+            "trace": {
+              "kind": "phrase",
+              "ref": "spec_coverage, constraint_violations and instruction_reread_rate give their design NA reasons"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "drift.grade_cell is registered in runner.GRADERS.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "drift.grade_cell is registered in runner.GRADERS."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Red first on the design's seeds: a 3-line edit in src/AiDe.Mcp gives scope_creep 3 and scope_creep_files 1",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Red first on the design's seeds: a 3-line edit in src/AiDe.Mcp gives scope_creep 3 and scope_creep_files 1"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a pack-commit stand-in whose files lie outside blast_radius gives 0 (and the mutant \"use the base commit as the base\" scores more than 0 and is killed)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a pack-commit stand-in whose files lie outside blast_radius gives 0 (and the mutant \"use the base commit as the base\" scores more than 0 and is killed)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a block-scoped namespace in a 10-line file gives convention_drift 10.00",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a block-scoped namespace in a 10-line file gives convention_drift 10.00"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "each red committed separately and failing on an assertion.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "each red committed separately and failing on an assertion."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, the 6 D1 cells of row15-d1-1 give scope_creep 0 and scope_creep_files 0 exactly (including the Codex cell that committed its files after the pack commit), and the cell that changed nothing gives convention_drift NA \"no lines changed\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, the 6 D1 cells of row15-d1-1 give scope_creep 0 and scope_creep_files 0 exactly (including the Codex cell that committed its files after the pack commit), and the cell that changed nothing gives convention_drift NA \"no lines changed\""
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the archive stays byte-unchanged.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the archive stays byte-unchanged."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/drift.json has a named mutant per branch, each killed, and grade.json and correctness.json stay all killed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/drift.json has a named mutant per branch, each killed, and grade.json and correctness.json stay all killed."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "With HB_GATE_RUNS set, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips",
+            "trace": {
+              "kind": "phrase",
+              "ref": "With HB_GATE_RUNS set, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run bench validate prints ok.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run bench validate prints ok."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA with its failing assertion, each green SHA, the gate-run drift values per D1 cell, and the mutate_check results.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA with its failing assertion, each green SHA, the gate-run drift values per D1 cell, and the mutate_check results."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "correctness.py (W3-GR-CODE c2 is live on it)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "correctness.py (W3-GR-CODE c2 is live on it)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "architecture, rigor, mutation (c4-c6)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "architecture, rigor, mutation (c4-c6)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench/metrics.yaml (propose any scale or entry change in your final message",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/metrics.yaml (propose any scale or entry change in your final message"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the Leader edits the catalog)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the Leader edits the catalog)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "catalog_hash, tool_versions (W3-GRADE-CORE s2, live on runner.py: keep your runner.py edit to the one GRADERS line)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "catalog_hash, tool_versions (W3-GRADE-CORE s2, live on runner.py: keep your runner.py edit to the one GRADERS line)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run, any model turn, pytest -m \"\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run, any model turn, pytest -m \"\""
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "grade/drift.py computes scope_creep and scope_creep_files (lines added plus deleted, CRLF-normalised with difflib, in files outside the task's blast_radius, cell tree against the pre-turn tree from grade/_changes.py, build output excluded) and convention_drift (violations of the hardcoded D1 rule set, R1 file-scoped namespace only, in added or changed .cs lines per 100 changed lines, a Decimal at scale 2) exactly as the design defines them, with the design's NA reasons verbatim",
+            "spec_coverage, constraint_violations and instruction_reread_rate give their design NA reasons",
+            "drift.grade_cell is registered in runner.GRADERS.",
+            "Red first on the design's seeds: a 3-line edit in src/AiDe.Mcp gives scope_creep 3 and scope_creep_files 1",
+            "a pack-commit stand-in whose files lie outside blast_radius gives 0 (and the mutant \"use the base commit as the base\" scores more than 0 and is killed)",
+            "a block-scoped namespace in a 10-line file gives convention_drift 10.00",
+            "each red committed separately and failing on an assertion.",
+            "With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, the 6 D1 cells of row15-d1-1 give scope_creep 0 and scope_creep_files 0 exactly (including the Codex cell that committed its files after the pack commit), and the cell that changed nothing gives convention_drift NA \"no lines changed\"",
+            "the archive stays byte-unchanged.",
+            "tests/mutations/drift.json has a named mutant per branch, each killed, and grade.json and correctness.json stay all killed.",
+            "With HB_GATE_RUNS set, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips",
+            "uv run ruff check src tests tools is clean",
+            "uv run bench validate prints ok.",
+            "Your final message lists each red SHA with its failing assertion, each green SHA, the gate-run drift values per D1 cell, and the mutate_check results."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W3-GR-CODE slice c3 per docs/design/phase3-graders.md, slice-plan row \"GR-CODE c3\" and section \"Drift\" (rulings R-59, R-67, R-68, R-71 in docs/notes/rulings.md): the drift grader, red first, on top of c1 (joined: grade/_changes.py, the pre-turn commit under the tamper rule).",
+          "main_line_budget": "one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-graders.md; docs/notes/spike-gr-code-trx.md; docs/notes/rulings.md R-59, R-67, R-68, R-71; src/harness_bench/grade/{__init__,runner,_changes,drift}.py; tasks/D1/task.yaml (blast_radius); tests/test_grade_correctness.py (how c1 builds inputs from the gate runs); tests/mutations/correctness.json. The gate runs under C:/projects/x-harness-x-model-bench/runs/ are read-only. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "correctness.py (W3-GR-CODE c2 is live on it)",
+            "architecture, rigor, mutation (c4-c6)",
+            "bench/metrics.yaml (propose any scale or entry change in your final message",
+            "the Leader edits the catalog)",
+            "catalog_hash, tool_versions (W3-GRADE-CORE s2, live on runner.py: keep your runner.py edit to the one GRADERS line)",
+            "bench run, any model turn, pytest -m \"\"",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.007,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3C8THEC5GKBR4B77RQ81J57",
+        "raw_sha256": "c6d2d868d38187a6ab3ec9b22c5afa253d339b1cc3923ce8a7294de05d455cde",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": "docs/design/phase3-graders.md",
+            "reason": null,
+            "sha256": "ea4db9cd170dcaf00bf7f28ce0119db61a05b879c263d8547648c275a31fe0f4",
+            "status": "resolved",
+            "token": "docs/design/phase3-graders.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/_changes.py",
+            "reason": null,
+            "sha256": "fa807c157301e4bb7c27f215bef6c8fabd0b14852f2830492361ad02bda67ff2",
+            "status": "resolved",
+            "token": "grade/_changes.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/drift.py",
+            "reason": null,
+            "sha256": "3f41e83abba28be6858ebfbb82105c7a10d59538488eba8068b868361c6b14d7",
+            "status": "resolved",
+            "token": "grade/drift.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/AiDe.Mcp"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/drift.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/grade.json",
+            "reason": null,
+            "sha256": "7760b1e3ded92fbee29db0da33c4544e54a7737b906f3d9ea3b9a8c2c6a5674d",
+            "status": "resolved",
+            "token": "grade.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/correctness.json",
+            "reason": null,
+            "sha256": "19b907ba5e3d6ab5e06cf32b0f8ac9630bf9ad341547337c094b2fcc6a0192f6",
+            "status": "resolved",
+            "token": "correctness.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/correctness.py",
+            "reason": null,
+            "sha256": "7293085b6599c6440d8cae5e012e78827b67b37eac5490b73f31fccfd2ace520",
+            "status": "resolved",
+            "token": "correctness.py"
+          },
+          {
+            "nearest": null,
+            "path": "bench/metrics.yaml",
+            "reason": null,
+            "sha256": "4b1b0dc7cd3094dd8a34a3ec09346f246e252d496c80371e290e2db0c9a93122",
+            "status": "resolved",
+            "token": "bench/metrics.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "939530742a2995995273839bac60e39a210b462f98816fd949e370470e068fb8",
+            "status": "resolved",
+            "token": "runner.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/spike-gr-code-trx.md",
+            "reason": null,
+            "sha256": "ffb65ee78047574b4ae1a7adaef18a42e654ffe3fcacde850070f9e7e612cc31",
+            "status": "resolved",
+            "token": "docs/notes/spike-gr-code-trx.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/grade/{__init__,runner,_changes,drift}.py"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/D1/task.yaml",
+            "reason": null,
+            "sha256": "be18eb02bd425e79e33496308fc2a7a8d93dbcdb621e32e262ff6c1292112727",
+            "status": "resolved",
+            "token": "tasks/D1/task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_correctness.py",
+            "reason": null,
+            "sha256": "e0c30810b2da172ab0152c0d1c64116d3c36f82de3334c2f76f388a96eea6f6c",
+            "status": "resolved",
+            "token": "tests/test_grade_correctness.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/correctness.json",
+            "reason": null,
+            "sha256": "19b907ba5e3d6ab5e06cf32b0f8ac9630bf9ad341547337c094b2fcc6a0192f6",
+            "status": "resolved",
+            "token": "tests/mutations/correctness.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/projects/x-harness-x-model-bench/runs/"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
     }
   ],
   "changes": [
