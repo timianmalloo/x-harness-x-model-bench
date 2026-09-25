@@ -53,6 +53,7 @@ class Profile:
     auxiliary_models: tuple[str, ...] = ()
     set_model: bool = False  # pin the model with ACP session/set_model before the prompt (ADR-0003, R-13)
     credential_kind: str = "subscription login (copied)"  # what attempt.process_started records (R-13)
+    shutdown_grace: float = 10.0
 
     def model_allowed(self, served: str, pinned: str) -> bool:
         return model_allowed(served, pinned, self.auxiliary_models)
@@ -128,6 +129,9 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
     cred = data["credential"]
     if data.get("usage_source", "native_record") not in USAGE_SOURCES:
         raise ValueError(f"{harness}: usage_source must be one of {USAGE_SOURCES}")
+    grace = data.get("shutdown_grace_seconds")
+    if isinstance(grace, bool) or not isinstance(grace, (int, float)) or not 0 < grace <= 10:
+        raise BenchError("HB-USR-002", f"{harness}: shutdown_grace_seconds must be greater than 0 and at most 10")
     return Profile(
         harness=data["harness"],
         home_env=data["home_env"],
@@ -143,6 +147,7 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
         auxiliary_models=tuple(data.get("auxiliary_models") or ()),
         set_model=bool(data.get("set_model", False)),
         credential_kind=data.get("credential_kind", "subscription login (copied)"),
+        shutdown_grace=float(grace),
     )
 
 
@@ -160,6 +165,7 @@ class ProfileLauncher:
         self.mode = profile.mode
         self.set_model = profile.set_model
         self.credential_kind = profile.credential_kind
+        self.shutdown_grace = profile.shutdown_grace
         self.build: tools.Build | None = None
 
     def check_build(self) -> dict:

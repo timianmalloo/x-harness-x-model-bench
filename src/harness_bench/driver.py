@@ -11,8 +11,8 @@
 - Ack barrier: `before_send()` runs after the handshake and before `session/prompt` is written; the
   engine persists `prompt_sent` in it, so a failed append means the prompt is never sent (model
   QueuePromptSent -> PersistPromptSent -> SendPrompt). The driver never retries `session/prompt`.
-- The handshake has its own deadline; the turn itself is bounded by the engine, which terminates the
-  cell's job at the budget, so the reader sees EOF.
+- The handshake has its own deadline; the engine cancels a turn at its budget, then terminates the
+  cell's job after the profile's bounded grace if the adapter has not exited.
 
 Only this module speaks ACP (design D3 import lint).
 """
@@ -122,9 +122,11 @@ class _Timeout(Exception):
 class _Channel:
     """The adapter's stdio: a reader thread turns stdout into messages on a queue."""
 
-    def __init__(self, cell: CellProcess, result: TurnResult) -> None:
+    def __init__(self, cell: CellProcess, result: TurnResult, cancel: threading.Event | None = None) -> None:
         self.cell = cell
         self.result = result
+        self.cancel = cancel
+        self.cancel_handled = False
         self.inbox: queue.Queue = queue.Queue()
         self.seq = 0
         self.turn_start: float | None = None  # set when the prompt is sent
@@ -147,25 +149,52 @@ class _Channel:
             pass
         self.inbox.put(("eof", None))
 
-    def send(self, obj: dict) -> None:
+    def _observe_cancel(self, prompt_in_flight: bool) -> bool:
+        if self.cancel is None or not self.cancel.is_set():
+            return False
+        if not self.cancel_handled:
+            self.cancel_handled = True
+            if prompt_in_flight and self.result.session_id:
+                try:
+                    self.cell.proc.stdin.write(json.dumps({"jsonrpc": "2.0", "method": "session/cancel",
+                                                           "params": {"sessionId": self.result.session_id}}).encode("utf-8") + b"\n")
+                    self.cell.proc.stdin.flush()
+                except (OSError, ValueError):
+                    pass  # the hard deadline still owns termination
+            try:
+                self.cell.proc.stdin.close()
+            except (OSError, ValueError):
+                pass
+        return True
+
+    def send(self, obj: dict) -> bool:
+        if self.cancel_handled or (self.cancel is not None and self.cancel.is_set()):
+            return False  # late permission replies never turn a graceful cancel into _Eof
         try:
             self.cell.proc.stdin.write(json.dumps(obj).encode("utf-8") + b"\n")
             self.cell.proc.stdin.flush()
         except (OSError, ValueError):
             raise _Eof from None
+        return True
 
     def rpc(self, method: str, params: dict, deadline: float | None) -> dict:
         self.seq += 1
         rid = self.seq
-        self.send({"jsonrpc": "2.0", "id": rid, "method": method, "params": params})
+        if not self.send({"jsonrpc": "2.0", "id": rid, "method": method, "params": params}):
+            self._observe_cancel(False)
+            raise _Eof
+        if method == "session/prompt":
+            self.result.prompt_sent = True
         while True:
+            if self._observe_cancel(method == "session/prompt") and method != "session/prompt":
+                raise _Eof
             wait = None if deadline is None else deadline - time.monotonic()
             if wait is not None and wait <= 0:
                 raise _Timeout(method)
             try:
-                kind, payload = self.inbox.get(timeout=wait)
+                kind, payload = self.inbox.get(timeout=min(wait, 0.2) if wait is not None else 0.2)
             except queue.Empty:
-                raise _Timeout(method) from None
+                continue
             if kind == "eof":
                 raise _Eof
             if kind == "protocol":
@@ -218,14 +247,17 @@ def _prompt_error_cause(exc: _AcpError) -> Cause:
 
 def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handshake_timeout: float,
              before_send: Callable[[str | None], None], model: str | None = None,
-             result: TurnResult | None = None, mcp_servers: list[dict] | None = None) -> TurnResult:
+             result: TurnResult | None = None, mcp_servers: list[dict] | None = None,
+             cancel: threading.Event | None = None) -> TurnResult:
     """Handshake, ack barrier, one verbatim prompt. `before_send` exceptions propagate unsent.
 
     `model`: sent with `session/set_model` right after `session/new` (the ADR-0003 pin, for a profile that sets it);
     a refusal is `model_unavailable` by step, whatever its text, and the prompt is never sent (R-18).
-    `result`: a TurnResult the caller supplies and can read in `before_send` (agent_version, R-28)."""
+    `result`: a TurnResult the caller supplies and can read in `before_send` (agent_version, R-28).
+    `cancel`: an engine-owned event observed on this worker thread; it closes stdin and sends the ACP
+    notification only while a prompt is in flight."""
     result = result if result is not None else TurnResult()
-    ch = _Channel(cell, result)
+    ch = _Channel(cell, result, cancel)
     started = time.monotonic()
     deadline = started + handshake_timeout
     try:
@@ -259,8 +291,10 @@ def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handsh
     result.handshake_seconds = time.monotonic() - started
 
     before_send(result.session_id)  # the ack barrier: prompt_sent is durable before the prompt goes out
+    if cancel is not None and cancel.is_set():
+        ch._observe_cancel(False)
+        return result
     turn_start = ch.turn_start = time.monotonic()
-    result.prompt_sent = True
     try:
         done = ch.rpc("session/prompt", {"sessionId": result.session_id, "prompt": [{"type": "text", "text": prompt}]}, None)
         result.stop_reason = done.get("stopReason")

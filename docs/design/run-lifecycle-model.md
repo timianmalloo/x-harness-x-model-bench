@@ -17,8 +17,8 @@ summary: >-
   The TLA+ model of one run's lifecycle, the proof obligation the run engine is built against (US-44).
   TLC checks 16 safety invariants at the US-44 bounds (3 cells, parallelism 2, 1 engine crash) and at
   small bounds with `bench grade` contending, grading mutual exclusion at 2 passes, and 5 liveness
-  properties at 1 cell; each of 21 seeded-bug variants is rejected by its own target checked alone,
-  and a witness shows every cell can finish.
+  properties at 1 cell; each of 22 seeded-bug variants is rejected by its own target checked alone,
+  and two witnesses show that every cell can finish and the R-21 cancel grace is reachable.
   A mapping table binds every model action to the engine's ledger events, and a conformance test keeps
   the two in step.
 review-suggested:
@@ -45,7 +45,7 @@ It is **not** the engine, and it does not model: the agent's work inside a cell,
 - `models/run_lifecycle.safety.cfg`: 3 cells, parallelism 2, 1 crash, 1 grading pass, only the engine grading, `SYMMETRY Symmetry` (cells and passes), the 16 invariants.
 - `models/run_lifecycle.grading.cfg`: 2 cells, parallelism 2, 1 crash, 2 grading passes, the engine and `bench grade`, symmetry, the grading invariants.
 - `models/run_lifecycle.liveness.cfg`: 1 cell, 1 crash, 2 pass ids, only the engine grading, no symmetry, the 5 temporal properties.
-- `tools/check_models.py`: exit 0 only if (a) the real design passes every configuration it runs, (b) the reachability witness `NotAllCellsFinished` is violated (the run can finish), and (c) every seeded variant is rejected by its named invariant or property, **checked alone** (TLC stops at the first violation, so another invariant could otherwise pre-empt the target). `--quick` skips the US-44-bounds safety run; `--deep` adds it at 2 crashes. The constant `Graders` selects whether `bench grade` runs beside the engine.
+- `tools/check_models.py`: exit 0 only if (a) the real design passes every configuration it runs, (b) both reachability witnesses are violated (`NotAllCellsFinished` for a finished run and `NoGraceState` for the cancel grace), and (c) every seeded variant is rejected by its named invariant or property, **checked alone** (TLC stops at the first violation, so another invariant could otherwise pre-empt the target). Its reverse check rejects an unregistered `BUG` literal. `--quick` skips the US-44-bounds safety run; `--deep` adds it at 2 crashes. The constant `Graders` selects whether `bench grade` runs beside the engine.
 - **The action ↔ event mapping (the conformance contract with the engine):**
 
 | Model action | Engine behaviour and ledger event (`events.entity_kind` · transition) | Phase |
@@ -56,14 +56,16 @@ It is **not** the engine, and it does not model: the agent's work inside a cell,
 | `QueuePromptSent(c)` | the worker puts `prompt_sent` on the engine queue and **blocks** on an ack | 1 |
 | `PersistPromptSent(c)` | the engine thread appends and fsyncs cell · `cell.prompt_sent`, then sets the ack | 1 |
 | `SendPrompt(c)` | the worker, holding the ack, writes ACP `session/prompt` once (no event) | 1 |
-| `CellExits(c)` / `CellDies(c)` | at `end_turn` or adapter EOF the engine terminates the job; the job's active-process count reaching 0 is the exit (the engine re-issues `TerminateJobObject` until it does) | 1 |
-| `EngineKill(c)` | budget or handshake deadline → `TerminateJobObject` (no event yet) | 1 |
+| `CellExits(c)` / `CellDies(c)` | an unrequested exit, or the process tree emptying after `TerminateJobObject`; `CellDies` waits until `EndGrace` has issued the hard kill | 1, 2 |
+| `EngineKill(c)` | budget or handshake deadline → `session/cancel`, close stdin, set one `kill_deadline` (no event yet) | 1, 2 |
+| `GracefulExit(c)` | the adapter exits within the cancel grace → attempt · `attempt.process_ended{ended_by: grace}` | 2 |
+| `EndGrace(c)` | the engine reaches `kill_deadline` and issues `TerminateJobObject`; no event; `attempt.process_ended{ended_by: terminate}` later records the result | 2 |
 | `RecordExit(c)` | after the job reports no active process → cell · `cell.outcome{completed \| timed_out \| failed(cause) \| stopped}` | 1 |
 | `Archive(c)` | cell · `cell.archived{archive_attempt, archive_hash}` (the cell's job has no active process) | 1 |
 | `DeleteWorkspace(c)` | cell · `cell.workspace_deleted` | 1 |
 | `GradeStart/GradeCell/GradeEnd` | grading · `grading.started`, score rows, `grading.completed`, under `grade.lock`, each process with its own `grading_id`. The engine starts its one pass only when every cell has ended and been archived (or was never launched because of a stop), and ends it only after grading every archived cell; `bench grade` may run a pass at any time | 1 |
 | *(internal progress, no model action)* | cell · `cell.workspace_built`; attempt · `attempt.handshake_done` — stutter steps for the model; used for phase timings | 1 |
-| `StopCell(c)` | stop → terminate every running cell's job; `cell.outcome{stopped}` recorded by `RecordExit` after the job is empty; unlaunched cells stay unstarted | 2 |
+| `StopCell(c)` | stop → request cancel and start the grace for every running cell; `cell.outcome{stopped}` follows confirmation that the job is empty; unlaunched cells stay unstarted | 2 |
 | `WriteControl(k)` / `ApplyStop` / `ApplyAnswer` / `RemoveControl(k)` | control file (temp + rename) / control · `control.applied{uuid}` / file removed | 2 |
 | `RaiseDecision` / `TimeoutDefault` | decision · `decision.opened` / `decision.resolved{default}` | 2 |
 | `Crash` / `Resume` | process death / run · `run.resumed{epoch}` | 5 |
@@ -81,7 +83,7 @@ It is **not** the engine, and it does not model: the agent's work inside a cell,
 - **Executable specification / model checking** (Lamport). The design artifact is the TLA+ spec itself.
 - **Seeded-fault (mutation) testing of the model.** One `BUG` constant switches each guard off. A variant that passes proves the model cannot see that defect: a vacuity check, the model's analogue of D1 mutation testing.
 - **History variables** (`prompts`, `wasStopped`, `applyCount`, `gradeCount`, `flags`) record what happened, so invariants can speak about forbidden events. Guards never read them; a guard reading history hid a defect twice (see the confidence ledger).
-- **Reachability witness.** An invariant expected to be violated (`NotAllCellsFinished`) proves the checked space reaches a finished run, so safety is not passing on a stalled model.
+- **Reachability witnesses.** `NotAllCellsFinished` proves the checked space reaches a finished run; `NoGraceState` proves it reaches a cancel grace. Both are expected to be violated.
 - **Symmetry reduction** for safety only (TLC's symmetry is unsound for liveness).
 - **Solution-Selection Ladder:**
   - The spec requires TLC (US-44), so this is the minimum.
@@ -140,13 +142,13 @@ Kill semantics: kill first, confirm the cell's job is empty, then record the out
 
 | Failure mode | From which choice | Disposition | How addressed | Detection | Test |
 | --- | --- | --- | --- | --- | --- |
-| Vacuous model: an invariant holds only because the model cannot reach the bad state | Abstract modelling | prevent + detect | One seeded variant per invariant and per property, each asserted rejected by its own target | `check_models.py` prints `FAIL <bug> NOT rejected` | 21 variants, all rejected by their own target checked alone; `test_every_checked_property_has_a_seeded_variant`; `test_variant_config_checks_only_its_target` (defect class MOD-A) |
+| Vacuous model: an invariant holds only because the model cannot reach the bad state | Abstract modelling | prevent + detect | One seeded variant per invariant and per property, each asserted rejected by its own target; reverse registration check | `check_models.py` prints `FAIL <bug> NOT rejected` | 22 variants, all rejected by their own target checked alone on the slice-3 quick run; `test_every_checked_property_has_a_seeded_variant`; `test_variant_config_checks_only_its_target`; `test_an_unregistered_seeded_bug_is_rejected_by_the_reverse_check` (defect class MOD-A) |
 | A guard reads a history variable and hides a defect | History variables | prevent | Guards read only ledger, physical or process state | The `relaunch_prompted` variant | Found twice and fixed: `SendPrompt` (v1), then `QueuePromptSent` (v2); now the volatile `queued` / `pendingSend` |
 | Two guards enforce one invariant, masking a seeded bug | Defence in depth in the model | prevent | One guard per mechanism, or the variant removes every guard for it | `exceed_parallelism`, `reconcile_no_wait` | Found three times and fixed: parallelism (v1); `ignore_orphans` replaced by `NoLaunchBesideOrphan`; `reconcile_no_wait` now removes both waits |
 | A variant made vacuous by a later fix | Model revision | detect | Re-run every variant after each model change | `archive_live` after kill → record | Found and fixed: `archive_live` redefined as archiving once a kill is requested |
 | Actions too atomic (kill and record, persist and send, in one step) | Model granularity | prevent | v2 splits kill → confirm → record and queue → persist → send, so a crash can fall between each pair | `record_without_kill`, `send_before_persist` | Design gate round 1 (Distributed Systems) |
 | Failure paths missing (budget kill, failure before the prompt, grading contention) | Model scope | prevent | `EngineKill`, `StartFails`, `CellExits` before a prompt, `RecordExit`; the grading configuration at 2 passes | `launch_after_outcome`, `no_lock` | Design gate round 1 (Test Architect) |
-| Safety passes only because the run stalls early | `CHECK_DEADLOCK FALSE` | detect | Reachability witness `NotAllCellsFinished`, expected violated | The `witness` line | Every run |
+| Safety passes only because the run stalls early or never enters grace | `CHECK_DEADLOCK FALSE` | detect | Reachability witnesses `NotAllCellsFinished` and `NoGraceState`, expected violated | The two witness lines | Every run |
 | Model and engine drift apart | Two artifacts | detect | Mapping table above; an engine test replays the event sequences from the engine's tests against a Python transcription of the phase-1 guards, and rejects a seeded out-of-order ledger | Test failure in CI | `test_engine_conforms_to_lifecycle_model` (phase 1) |
 | State explosion makes CI slow | Bounds | mitigate + accept | Three configurations; symmetry; the second pass and `bench grade` kept out of the 3-cell run; CI runs `--quick` on each push and the US-44 bounds nightly | Script timing lines, flushed per line | Measured: `--quick` ≈ 3 min; US-44 bounds 5 min 37 s |
 | Bounds too small to show a real defect | Finite bounds | accept | Safety at the US-44 bounds (3 cells, parallelism 2, 1 crash). Two crashes are not checked to completion. Two passes and `bench grade` are checked at 2 cells; liveness at 1 cell. Residual risk stated. | — | — |
@@ -195,7 +197,8 @@ The check script prints one line per run: result, label, distinct states, second
 | All 16 invariants hold at small bounds with `bench grade` contending | `check_models.py`: 4,503,440 distinct states, 12 s | Verified |
 | All 16 invariants hold at the US-44 bounds (3 cells, parallelism 2, 1 crash, engine grading), with symmetry | TLC: 386,254,609 states generated, 77,212,448 distinct, depth 49, 5 min 37 s, "No error has been found"; the same 77,212,448 states (242 s) after the coordinator was removed | Verified |
 | Every cell can finish graded and deleted | Witness `NotAllCellsFinished` violated as expected | Verified |
-| Every seeded variant is rejected by its own target, checked alone | `check_models.py`: 21 of 21 `ok` | Verified |
+| Version-3 seeded variants were rejected by their own targets, checked alone | `check_models.py`: 21 of 21 `ok` | Verified |
+| R-21 grace refinement preserves all 16 invariants and 5 properties; both states are reachable | Full `uv run python tools/check_models.py`, 2026-09-25: liveness 58,016 states; grading 17,129,408; small safety 4,798,704; US-44 safety 85,060,752; seeded variants 22/22 rejected by own target; reachability witnesses 2/2 violated; US-44 bounds passed (3 cells, parallelism 2, 1 crash) | Verified |
 | Safety at 2 crashes, 3 cells | Stopped after 8 min at 170,716,518 distinct states, queue still growing | Not verified (residual) |
 | A new invariant pre-empted two older variants' targets | Both still printed "violated", but by `NoOutcomeWhileRunning`; fixed by checking each target alone | Verified (MOD-A) |
 | Guards on history hid `relaunch_prompted` twice; overlapping guards hid a seeded defect three times | Variant runs reported `NOT rejected`; each fixed and re-run | Verified |
