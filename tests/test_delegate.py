@@ -128,6 +128,14 @@ def test_the_launcher_seeds_from_the_cell(tmp_path):  # engine.py passes the cel
     assert allow[-1] == "Agent"
 
 
+def test_the_launcher_launches_copilot_from_the_cell(tmp_path):  # argv_env passes the cell's scenario (R-74 item 3)
+    launcher = profiles.ProfileLauncher(profiles.load(ROOT, "copilot"), tmp_path, {})
+    launcher.build = BUILD
+    six, _ = launcher.argv_env({"model": "gpt-6-sol", "scenario": 6}, tmp_path / "home", "")
+    five, _ = launcher.argv_env({"model": "gpt-6-sol", "scenario": 5}, tmp_path / "home", "")
+    assert six == [*five, *COPILOT_DELEGATE]
+
+
 def test_a_copilot_profile_without_the_tool_list_refuses_a_scenario6_launch():
     p = profiles.Profile("copilot", "COPILOT_HOME", None, None, ("{exe}", "--acp"))
     with pytest.raises(BenchError) as err:

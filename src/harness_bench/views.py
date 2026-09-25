@@ -26,7 +26,6 @@ Rules, each defined once here:
 - `meta_calls` counts class-`meta` tool calls per cell (Claude Code's `ToolSearch`): a cost axis, never scored (R-54 c3).
 - A class-`delegate` call (R-74) is in profile only in a cell whose frozen task scenario is 6, else HB-VAL-008 when
   executed and HB-VAL-009 when refused; `delegate_calls` counts them per cell, a cost axis, never scored (R-74 c2).
-
 """
 
 from __future__ import annotations
@@ -516,7 +515,6 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
         evidence={m: s["evidence"] for m, s in now.items() if s.get("evidence")}, extraction_id=extraction,
         warnings=[w for w in warnings if w is not None], meta_calls=meta, delegate_calls=delegate,
         served=tuple(sorted(served)) if served is not None else None, scenario=scenario)
-
 
 
 def load(run_dir: Path, catalog_version: str | None = None) -> RunView:

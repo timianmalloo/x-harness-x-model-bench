@@ -641,7 +641,6 @@ class Engine:
         argv, env = launcher.argv_env(argv_cell, home, traceparent)  # before seed: no credential copy on failure
         try:
             launcher.seed(home, cell)
-
             ended = self._attempt(self.active[cid], cell, launcher, build, argv, env, ws)
         finally:
             launcher.clean(home)  # every end: a spawn failure, a kill, a ledger failure, a bug (T-CELL-credclean)

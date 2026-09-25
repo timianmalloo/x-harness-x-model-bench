@@ -396,7 +396,6 @@ summary: >-
 
 ## Inherited classes (seeded from the pack)
 
-
 *Observed in production across independent codebases running the AI-Forward pack (`continuous-improvement.md` §6). Each is **uncontrolled here until this repo builds the control** — that is the work, not the copying.*
 
 | ID | Class | Signature | Why it survives | Control to build | Status here |

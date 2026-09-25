@@ -524,6 +524,30 @@ def test_a_sub_agents_out_of_profile_call_invalidates_the_cell(root, tmp_path): 
     assert ("a1b2c3", "WebSearch", "other") in tools and ("sess-a", "Agent", "delegate") in tools
 
 
+def test_a_copilot_hook_denial_of_task_outside_scenario6_is_a_refused_attempt_not_hb_val_004(root, tmp_path):  # R-74 c2
+    def deny_task(events):
+        start = next(e for e in events if e["type"] == "tool.execution_start")
+        done = next(e for e in events if e["type"] == "tool.execution_complete" and e["data"]["toolCallId"] == start["data"]["toolCallId"])
+        start["data"]["toolName"] = "task"
+        done["data"]["success"] = False
+        done["data"]["error"] = {"code": "denied", "message": "Denied by preToolUse hook"}
+        return events
+
+    cell = _cell(views.load(_copilot_run(root, tmp_path, deny_task, arm="fixed", scenario=5)), "a")
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+    assert _warnings(cell, "HB-VAL-009") == [("HB-VAL-009", "warning", "out-of-profile attempt refused: task")]
+
+
+def test_an_unreadable_sub_agent_record_makes_the_cell_not_recorded(root, tmp_path, monkeypatch):  # R-21 c2: no partial sum
+    real = normalize.record_unreadable
+    monkeypatch.setattr(normalize, "record_unreadable", lambda ex: "native record truncated at the size bound"
+                        if any(t.name == "WebSearch" for t in ex.tool_calls) else real(ex))
+    run_dir = _claude_q1_dir(root, tmp_path, permission_requests=1, change=_as_agent(False), scenario=6,
+                             extra_records={SUBAGENT_RECORD: _subagent_rows("WebSearch")})
+    completed = next(e for e in views.rows(run_dir, "events") if e["kind"] == "grading.completed")
+    assert completed["unreadable_records"] == {"a": "sub-agent record a1b2c3: native record truncated at the size bound"}
+
+
 def test_a_sub_agents_served_model_and_calls_reach_the_ledger(root, tmp_path):  # item 4: adherence is measurable later
     run_dir = _claude_q1_dir(root, tmp_path, permission_requests=1, change=_as_agent(False), scenario=6,
                              extra_records={SUBAGENT_RECORD: _subagent_rows("Write")})
@@ -534,7 +558,6 @@ def test_a_sub_agents_served_model_and_calls_reach_the_ledger(root, tmp_path):  
     assert sub == [("a1b2c3", SONNET, 20)]
     assert [(r["name"], r["tool_class"]) for r in views.rows(run_dir, "tool_calls") if r["native_session_id"] == "a1b2c3"] == [
         ("Write", "edit")]
-
 
 
 def test_a_copilot_hook_denial_of_an_other_call_is_a_refused_attempt_not_hb_val_004(root, tmp_path):  # R-54 (b)
@@ -927,7 +950,6 @@ def test_a_ledger_graded_before_r15_and_r24_exports_what_it_did_before(tmp_path,
         cell.pop("warnings")  # new in W2-VIEWS: a key the 5feece0 export did not have
         cell.pop("meta_calls")  # new in W2-VIEWS-FU (R-54 c3): the other one
         cell.pop("delegate_calls")  # new in W3-S6 (R-74 c2): a cost axis beside meta_calls
-
     assert doc == expected["exports"][name]
 
 

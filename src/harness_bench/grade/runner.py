@@ -232,7 +232,6 @@ class _Pass:
             tool_rows += normalize.tool_call_rows(self.plan["run_id"], cid, sid, sub, self.extraction)
             reason = normalize.record_unreadable(sub)
             sub_reason = sub_reason or (f"sub-agent record {sid}: {reason}" if reason else None)
-
         if (cid, self.extraction) not in held:
             for row in model_rows:
                 self.append("model_calls", row)
@@ -247,7 +246,6 @@ class _Pass:
         out_dir.mkdir(parents=True)
         ex, missing, model_rows, tool_rows = self._extract(cell, folder, session_id, held)
         unreadable = missing if ex is None else (normalize.record_unreadable(ex) or missing)
-
         if unreadable is not None:
             self.unreadable[cid] = unreadable
         if ex is not None and ex.tools_advertised is not None:

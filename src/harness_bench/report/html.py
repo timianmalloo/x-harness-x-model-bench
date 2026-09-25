@@ -142,7 +142,6 @@ def _scenario6_facts(view: views.RunView) -> list[tuple[str, str | None]]:
         return []
     facts: list[tuple[str, str | None]] = [("Coordination (scenario 6)", COORDINATION_BANNER),
                                            ("Scenario-6 allowance", _allowance())]
-
     combos: dict[str, dict] = {}
     for c in cells:
         combos.setdefault(c["combo"], c)
@@ -230,7 +229,6 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str]) -> s
     rows = [[(_e(report.flag_if_claude_code(report.flag_if_codex(
                 c.label + (f" · {COORDINATION_BANNER}" if c.scenario == 6 else ""), c.harness), c.harness)), False),
              (_e(c.outcome + (f" ({c.cause}, {c.code})" if c.code else "")), False),
-
              (_e(c.validity + (f" {c.validity_code}" if c.validity_code else "")), False),
              (_e(report.rate(c.scores.get("pass_at_1", na))), True), (_e(report.rate(c.scores.get("partial_credit", na))), True),
              (_e(report.cell_tokens(c.tokens, c.tokens_reason)), True), (_e(report.seconds(c.wall_ms)), True),

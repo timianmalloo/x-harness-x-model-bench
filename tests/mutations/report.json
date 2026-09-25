@@ -128,8 +128,8 @@
  {
   "name": "the cells table label never flags a codex cell",
   "file": "src/harness_bench/report/html.py",
-  "find": "(_e(report.flag_if_claude_code(report.flag_if_codex(c.label, c.harness), c.harness)), False)",
-  "replace": "(_e(report.flag_if_claude_code(c.label, c.harness)), False)",
+  "find": "report.flag_if_codex(\n                c.label + (f\" · {COORDINATION_BANNER}\" if c.scenario == 6 else \"\"), c.harness)",
+  "replace": "(c.label + (f\" · {COORDINATION_BANNER}\" if c.scenario == 6 else \"\"))",
   "tests": ["tests/test_report.py::test_the_leaderboard_and_cells_table_flag_only_the_codex_rows"]
  },
  {

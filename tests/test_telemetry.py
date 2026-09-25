@@ -269,7 +269,6 @@ def _assert_typed(ex) -> None:
         assert all(v is None or isinstance(v, str) for v in (c.start, c.end))
     for t in ex.tool_calls:
         assert isinstance(t.name, str) and t.tool_class in ("shell", "edit", "read", "meta", "delegate", "scripted user", "other")
-
         assert all(v is None or isinstance(v, str) for v in (t.start, t.end)) and t.ok in (True, False, None)
     for e in ex.errors:
         assert (e.status is None or type(e.status) is int) and isinstance(e.error_type, str) and isinstance(e.message, str)

@@ -28,6 +28,5 @@ record_glob: "projects/**/{session_id}.jsonl"
 # confirm: the R-74 c6 qualification turn lists the tree after one delegated turn; breaks: no such file, then sub-agent
 # calls are not recorded and the Claude Code allowance is withheld until a record source exists.
 subagent_glob: "projects/**/{session_id}/subagents/agent-*.jsonl"
-
 usage_source: acp_turn   # its native record misses the final and auxiliary calls (docs/notes/decision-token-source-per-harness.md)
 auxiliary_models: ["claude-haiku-4-5"]   # title generation; a served model starting with one of these is allowed (US-11)

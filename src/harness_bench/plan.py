@@ -200,7 +200,7 @@ def resolved_model_map(plan: dict, cell: dict) -> dict[str, str]:
     vendor = record.get("vendor") if isinstance(record, dict) else None
     task = (plan.get("tasks") or {}).get(cell.get("task"))
     model_map = task.get("model_map") if isinstance(task, dict) else None
-    if not vendor or not isinstance(model_map, dict):
+    if not isinstance(model_map, dict):
         return {}
     out = {}
     for key, model in model_map.items():
@@ -232,7 +232,6 @@ def profile_record(root: Path, harness: str) -> dict:
     # The plan's canonical form has no floats; the decimal string preserves a fractional profile value exactly.
     return {"profile_hash": file_hash(root / "bench" / "profiles" / f"{harness}.yaml"), "vendor": p.vendor, "usage_source": p.usage_source,
             "auxiliary_models": list(p.auxiliary_models), "record_glob": p.record_glob, "subagent_glob": p.subagent_glob,
-
             "shutdown_grace_seconds": format(p.shutdown_grace, "g")}
 
 

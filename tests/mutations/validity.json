@@ -105,7 +105,7 @@
  {
   "name": "R-15: the pass records only a missing record, not an unreadable one",
   "file": "src/harness_bench/grade/runner.py",
-  "find": "        unreadable = missing if ex is None else normalize.record_unreadable(ex)\n",
+  "find": "        unreadable = missing if ex is None else (normalize.record_unreadable(ex) or missing)\n",
   "replace": "        unreadable = missing\n",
   "tests": [
    "tests/test_views.py::test_a_killed_copilot_cell_with_no_shutdown_is_not_recorded"
@@ -498,7 +498,7 @@
  {
   "name": "R-54 (b): a hook-denied other call counts as an R-27 denial",
   "file": "src/harness_bench/views.py",
-  "find": "    denials = normalize.hook_denials([r for r in tools or [] if r.get(\"tool_class\") != OTHER])\n",
+  "find": "    denials = normalize.hook_denials([r for r in tools or [] if not _outside(r.get(\"tool_class\"), scenario)])\n",
   "replace": "    denials = normalize.hook_denials(tools or [])\n",
   "tests": [
    "tests/test_views.py::test_a_copilot_hook_denial_of_an_other_call_is_a_refused_attempt_not_hb_val_004"
@@ -517,8 +517,8 @@
  {
   "name": "R-54 (a): a meta call is treated as out of profile",
   "file": "src/harness_bench/views.py",
-  "find": "        if r.get(\"tool_class\") != OTHER:\n",
-  "replace": "        if r.get(\"tool_class\") not in (OTHER, META):\n",
+  "find": "        if not _outside(r.get(\"tool_class\"), scenario):\n",
+  "replace": "        if not (_outside(r.get(\"tool_class\"), scenario) or r.get(\"tool_class\") == META):\n",
   "tests": [
    "tests/test_views.py::test_the_claude_q1_refused_webfetch_is_a_valid_cell_with_the_refused_attempt_warning"
   ]
@@ -584,7 +584,7 @@
  {
   "name": "R-45 item 2: the advertised list is ignored",
   "file": "src/harness_bench/views.py",
-  "find": "    advertised = _advertised_out_of_class(cell[\"harness\"], as_dict(completed.get(\"tools_advertised\")).get(cid))\n",
+  "find": "    advertised = _advertised_out_of_class(cell[\"harness\"], as_dict(completed.get(\"tools_advertised\")).get(cid), scenario)\n",
   "replace": "    advertised = []\n",
   "tests": [
    "tests/test_views.py::test_the_pack_on_copilot_sample_advertising_web_search_is_invalid"
@@ -593,7 +593,7 @@
  {
   "name": "R-45 item 2: every advertised id is out of class",
   "file": "src/harness_bench/views.py",
-  "find": "copilot.TOOL_CLASS.get(name, OTHER) == OTHER]",
+  "find": "_outside(copilot.TOOL_CLASS.get(name, OTHER), scenario)]",
   "replace": "True]",
   "tests": [
    "tests/test_views.py::test_an_advertised_list_of_in_class_ids_is_no_finding"

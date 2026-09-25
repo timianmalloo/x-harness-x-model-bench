@@ -313,7 +313,6 @@ def test_claude_declared_mode_matches_the_recorded_effective_mode(tmp_path):  # 
     profile = profiles.load(ROOT, "claude-code", credential_source=tmp_path / "none")
     profile.seed_home(tmp_path / "home", "claude-opus-5-5")  # the seeded file: the template has a {delegate} slot (R-74)
     declared = json.loads((tmp_path / "home" / "settings.json").read_text(encoding="utf-8"))["permissions"]["defaultMode"]
-
     recording = ROOT / "tests" / "fixtures" / "acp" / "recordings" / "claude-code-x1.jsonl"
     messages = (json.loads(row["text"]) for line in recording.read_text(encoding="utf-8").splitlines()
                 if (row := json.loads(line)).get("dir") == "to_client")

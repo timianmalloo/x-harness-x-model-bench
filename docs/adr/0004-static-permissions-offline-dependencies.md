@@ -44,7 +44,6 @@ summary: >-
   - **Carried per cell, never per harness file.** `ProfileLauncher.seed` and `argv_env` take the cell. Claude row, scenario 6 only: `permissions.allow` gains `Agent` through the template's `{delegate}` placeholder. Copilot row, scenario 6 only: `--available-tools` gains `task write_agent read_agent list_agents`, before any scripted-user addition. Every other cell is seeded and launched byte for byte as before (`tests/test_delegate.py`, `tests/test_allowlist_classes.py`).
   - **Sub-agent records.** Claude Code's `subagent_glob` (`projects/**/{session_id}/subagents/agent-*.jsonl`) is read into `model_calls` and `tool_calls` under each sub-agent's own native session id, so the out-of-profile control sees inside a sub-agent. The path is an `assume:` from the store session-profile.py measured; the R-74 c6 qualification turn confirms it on 2.1.282, or the Claude Code allowance is withheld. Copilot's sub-agent rows are in the session's own `events.jsonl` (top-level `agentId`) and are read already.
   - R-45 c5's `Skill` finding is unchanged.
-
 - **Date:** 2026-09-23 (revised after council round 1)
 - **Deciders:** @timianmalloo; authored by Claude Code for the architect council
 - **Context spec/architecture:** `docs/specs/harness-bench.md` US-14, US-46; spec risk R14
@@ -70,7 +69,6 @@ We will give each harness a static profile that allows exactly these tool classe
 | Claude | Per-cell `settings.json`: `permissions.allow = [Bash, PowerShell, Edit, Write, NotebookEdit, Read, Glob, Grep]` (`PowerShell` added by R-34, `NotebookEdit` by R-35), `defaultMode = dontAsk` (declared; effective `default`, R-34). R-46's `assume:` says `WebFetch` and `WebSearch` prompt and are refused; qualification is pending. Scenario 6 only (R-74): `permissions.allow` also names `Agent`. |
 | Codex | ACP mode `agent-full-access` inside the container (approval `never`, reviewer `user`), and per-cell `config.toml` with `web_search = "disabled"` (R-46). |
 | Copilot | `--allow-tool shell --allow-tool write --disable-builtin-mcps --available-tools powershell list_powershell read_powershell stop_powershell apply_patch view glob rg skill` (R-45), no `--allow-all*`. Scenario 6 only (R-74): `--available-tools` also names `task write_agent read_agent list_agents`. |
-
 
 The permission files are mounted read-only over the writable home (ADR-0001), so an agent cannot widen its own profile. The driver refuses every permission callback, so anything outside the profile fails closed and is recorded. Task dependencies (NuGet, pip) are restored into the task image at bootstrap. Cells have no package-registry access (ADR-0005).
 

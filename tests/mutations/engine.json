@@ -105,7 +105,6 @@
   "file": "src/harness_bench/engine.py",
   "find": "        argv, env = launcher.argv_env(argv_cell, home, traceparent)  # before seed: no credential copy on failure\n        try:\n            launcher.seed(home, cell)\n",
   "replace": "        launcher.seed(home, cell)\n        argv, env = launcher.argv_env(argv_cell, home, traceparent)\n        try:\n",
-
   "tests": [
    "tests/test_engine.py::test_a_failing_argv_env_leaves_no_credential_copy"
   ]

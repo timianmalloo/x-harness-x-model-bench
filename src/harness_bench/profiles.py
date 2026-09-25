@@ -130,7 +130,6 @@ class Profile:
         return find_records(home, self.subagent_glob, session_id)
 
 
-
 def model_allowed(served: str, pinned: str, auxiliary_models) -> bool:
     """The pin, or a declared auxiliary model (prefix match: builds date-stamp them) (US-11)."""
     return served == pinned or any(served.startswith(a) for a in auxiliary_models)
@@ -152,7 +151,6 @@ def subagent_session_id(path: Path) -> str:
 
 
 def load(root: Path, harness: str, credential_source: Path | None = None) -> Profile:
-
     if harness not in HARNESSES:
         raise ValueError(f"no profile for harness {harness!r} (have {HARNESSES})")
     data = config.load_yaml(root / "bench" / "profiles" / f"{harness}.yaml")
@@ -187,7 +185,6 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
         shutdown_grace=float(grace),
         subagent_glob=data.get("subagent_glob") or "",
     )
-
 
 
 READERS = {"claude-code": claude_code.read, "codex": codex.read, "copilot": copilot.read}
