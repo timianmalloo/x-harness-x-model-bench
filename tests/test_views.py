@@ -66,20 +66,26 @@ def _edit_events(run_dir: Path, change) -> None:
 
 
 def _copilot_run(root: Path, tmp_path: Path, change=None, arm: str = "off", **kw) -> Path:
-    """Grade a real archived run using a committed Copilot native record (`arm`: off, on (rev 95), on-rev92)."""
+    """Grade a real archived run using a committed Copilot native record (`arm`: off, on (rev 95), on-rev92, fixed)."""
     assert "copilot" in profiles.READERS, "Copilot must be registered before grading its native record"
-    run_dir = make_run(root, tmp_path, {"a": GOOD}, harness="copilot", archived=set(), **kw)
-    folder = run_dir / "archive/a/attempt-1"
-    workspace = folder / "ws"
-    workspace.mkdir(parents=True)
-    (workspace / "slug.py").write_text(GOOD, encoding="utf-8")
-    record = folder / "home/session-state/sess-a/events.jsonl"
-    record.parent.mkdir(parents=True)
     source = next((COPILOT_FIX / arm).rglob("events.jsonl"))
     events = [json.loads(line) for line in source.read_text(encoding="utf-8").splitlines() if line.strip()]
     if change is not None:
         events = change(events)
-    record.write_text("\n".join(json.dumps(event) for event in events) + "\n", encoding="utf-8")
+    text = "\n".join(json.dumps(event) for event in events) + "\n"
+    return _native_run(root, tmp_path, "copilot", "session-state/sess-a/events.jsonl", text, **kw)
+
+
+def _native_run(root: Path, tmp_path: Path, harness: str, record_path: str, record_text: str, **kw) -> Path:
+    """Archive cell `a` with `record_text` as its native record at `home/<record_path>`, then grade it for real."""
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, harness=harness, archived=set(), **kw)
+    folder = run_dir / "archive/a/attempt-1"
+    workspace = folder / "ws"
+    workspace.mkdir(parents=True)
+    (workspace / "slug.py").write_text(GOOD, encoding="utf-8")
+    record = folder / "home" / record_path
+    record.parent.mkdir(parents=True)
+    record.write_text(record_text, encoding="utf-8")
     rows = [{"path": file.relative_to(folder).as_posix(), "kind": "file", "size": file.stat().st_size,
              "sha256": hashlib.sha256(file.read_bytes()).hexdigest(), "link_target": "", "archive_attempt": 1}
             for file in sorted(folder.rglob("*")) if file.is_file()]
@@ -324,6 +330,160 @@ def test_an_ordinary_tool_failure_is_not_a_hook_denial(root, tmp_path):  # the r
     run_dir = _copilot_run(root, tmp_path, arm="on")
     assert any(r["ok"] == 0 for r in views.rows(run_dir, "tool_calls"))
     assert _cell(views.load(run_dir), "a").validity == "valid"
+
+
+# --- R-45 item 2 as refined by R-54: an executed class-`other` call invalidates (HB-VAL-008); a refused one is the -----
+# --- warning HB-VAL-009 on a valid cell; `meta` calls are counted, never scored ---------------------------------------
+
+VALIDITY_FIX = Path(__file__).parent / "fixtures/validity"
+CODEX_MCP = Path(__file__).parent / "fixtures/native/codex/mcp-inside-exec.jsonl"  # qual-r45-1: a failed codex_apps call
+CC_Q1 = VALIDITY_FIX / "qual-r45-1-cc-opus-tools.jsonl"  # qual-r45-1 cc-opus: ToolSearch, then WebFetch refused (ok false)
+OUT_OF_PROFILE = ("invalid (out-of-profile tool called)", "HB-VAL-008")
+
+
+def _codex_mcp_run(root, tmp_path, **kw) -> views.CellView:
+    text = CODEX_MCP.read_text(encoding="utf-8")
+    return _cell(views.load(_native_run(root, tmp_path, "codex", "sessions/2026/09/rollout-2026-09-23-sess-a.jsonl", text, **kw)), "a")
+
+
+def _claude_q1_dir(root, tmp_path, permission_requests: int, change=None, **kw) -> Path:
+    """The cc-opus Q1 record's tool rows, graded as a Claude Code cell whose driver counted `permission_requests`."""
+    rows = [json.loads(line) if line.strip() else None for line in CC_Q1.read_text(encoding="utf-8").splitlines()]
+    if change is not None:
+        rows = change(rows)
+    text = "".join((json.dumps(r) if r is not None else "") + "\n" for r in rows)
+    kw.setdefault("turn_usage", [_usage("a", OPUS)])
+    return _native_run(root, tmp_path, "claude-code", "projects/C--cells-cell/sess-a.jsonl", text, model=OPUS,
+                       outcomes={"a": {"permission_requests": permission_requests}}, **kw)
+
+
+def _claude_q1_run(root, tmp_path, permission_requests: int, change=None, **kw) -> views.CellView:
+    return _cell(views.load(_claude_q1_dir(root, tmp_path, permission_requests, change, **kw)), "a")
+
+
+def _webfetch_result(is_error: bool | None):
+    """Set the WebFetch tool_result's is_error, or drop the result (None: a call with no result, ok null)."""
+    def change(rows):
+        use = next(r for r in rows if r and r["type"] == "assistant" and r["message"]["content"][0]["name"] == "WebFetch")
+        tid = use["message"]["content"][0]["id"]
+        out = []
+        for r in rows:
+            if r and r["type"] == "user" and r["message"]["content"][0]["tool_use_id"] == tid:
+                if is_error is None:
+                    continue
+                r["message"]["content"][0]["is_error"] = is_error
+            out.append(r)
+        return out
+    return change
+
+
+def test_the_codex_q1_mcp_call_executed_so_the_cell_is_invalid(root, tmp_path):  # R-55: the negative fixture
+    cell = _codex_mcp_run(root, tmp_path)
+    assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
+    assert _warnings(cell, "HB-VAL-009") == []
+
+
+def test_the_claude_q1_refused_webfetch_is_a_valid_cell_with_the_refused_attempt_warning(root, tmp_path):  # R-54 (b)
+    cell = _claude_q1_run(root, tmp_path, permission_requests=1)
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+    assert _warnings(cell, "HB-VAL-009") == [("HB-VAL-009", "warning", "out-of-profile attempt refused: WebFetch")]
+
+
+def test_a_failed_other_call_with_no_counted_request_executed(root, tmp_path):  # the refusal signal is the driver's count
+    cell = _claude_q1_run(root, tmp_path, permission_requests=0)
+    assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
+    assert _warnings(cell, "HB-VAL-009") == []
+
+
+def test_a_counted_request_never_excuses_an_other_call_that_succeeded(root, tmp_path):
+    cell = _claude_q1_run(root, tmp_path, permission_requests=1, change=_webfetch_result(False))
+    assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
+
+
+def test_an_other_call_with_no_result_is_not_refused(root, tmp_path):  # R-54: ok null is not refused
+    cell = _claude_q1_run(root, tmp_path, permission_requests=1, change=_webfetch_result(None))
+    assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
+
+
+def test_one_counted_request_refuses_one_failed_other_call_not_two(root, tmp_path):
+    def twice(rows):
+        webfetch = [r for r in rows if r and "WebFetch" in json.dumps(r)]
+        return rows + [json.loads(json.dumps(r).replace("toolu_01XtEMHFci9qYGLksa4gFf2w", "toolu_second")) for r in webfetch]
+    one = _claude_q1_run(root, tmp_path / "1", permission_requests=1, change=twice)
+    assert (one.validity, one.validity_code) == OUT_OF_PROFILE
+    two = _claude_q1_run(root, tmp_path / "2", permission_requests=2, change=twice)
+    assert (two.validity, _warnings(two, "HB-VAL-009")) == (
+        "valid", [("HB-VAL-009", "warning", "out-of-profile attempt refused: WebFetch, WebFetch")])
+
+
+def test_tool_search_is_counted_per_cell_and_never_invalidates(root, tmp_path):  # R-54 (a), c3
+    cell = _claude_q1_run(root, tmp_path, permission_requests=1)
+    assert cell.meta_calls == views.Measure(1)
+    assert views.Measure(None, "not graded") == _cell(views.load(make_run(root, tmp_path / "u", {"a": GOOD})), "a").meta_calls
+
+
+def test_a_codex_cell_counts_no_meta_call(root, tmp_path):  # measured zero: the reader read the record
+    assert _codex_mcp_run(root, tmp_path).meta_calls == views.Measure(0)
+
+
+def test_a_copilot_hook_denial_of_an_other_call_is_a_refused_attempt_not_hb_val_004(root, tmp_path):  # R-54 (b)
+    def deny_web_fetch(events):
+        start = next(e for e in events if e["type"] == "tool.execution_start")
+        done = next(e for e in events if e["type"] == "tool.execution_complete" and e["data"]["toolCallId"] == start["data"]["toolCallId"])
+        start["data"]["toolName"] = "web_fetch"
+        done["data"]["success"] = False
+        done["data"]["error"] = {"code": "denied", "message": "Denied by preToolUse hook"}
+        return events
+
+    cell = _cell(views.load(_copilot_run(root, tmp_path, deny_web_fetch, arm="fixed")), "a")
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+    assert _warnings(cell, "HB-VAL-009") == [("HB-VAL-009", "warning", "out-of-profile attempt refused: web_fetch")]
+
+
+@pytest.mark.parametrize(("requests", "expected"), [(0, OUT_OF_PROFILE), (1, ("invalid (model mismatch)", "HB-VAL-002"))])
+def test_an_executed_other_call_outranks_a_model_mismatch(root, tmp_path, requests, expected):  # the precedence slot
+    cell = _claude_q1_run(root, tmp_path, permission_requests=requests, turn_usage=[_usage("a", "gpt-other")])
+    assert (cell.validity, cell.validity_code) == expected  # requests=1: refused, so the mismatch shows (not vacuous)
+
+
+@pytest.mark.parametrize(("requests", "expected"), [(0, OUT_OF_PROFILE), (1, ("not recorded", "HB-VAL-003"))])
+def test_an_executed_other_call_outranks_not_recorded(root, tmp_path, requests, expected):  # measured in any record
+    run_dir = _claude_q1_dir(root, tmp_path, permission_requests=requests, turn_usage=[])
+    _edit_events(run_dir, _with_acp_usage(None))  # R-24 c2: the adapter reported no usage
+    cell = _cell(views.load(run_dir), "a")
+    assert (cell.validity, cell.validity_code) == expected
+
+
+def test_a_hook_denial_and_an_invalidating_cause_outrank_an_executed_other_call(root, tmp_path):  # the precedence slot
+    def deny_in_class_and_run_web_fetch(events):
+        starts = [e for e in events if e["type"] == "tool.execution_start"]
+        done = {e["data"]["toolCallId"]: e for e in events if e["type"] == "tool.execution_complete"}
+        done[starts[0]["data"]["toolCallId"]]["data"].update(success=False, error={"code": "denied", "message": "hook"})
+        starts[1]["data"]["toolName"] = "web_fetch"
+        return events
+
+    denied = _cell(views.load(_copilot_run(root, tmp_path / "1", deny_in_class_and_run_web_fetch, arm="fixed")), "a")
+    assert (denied.validity, denied.validity_code) == ("invalid (tools denied by hook)", "HB-VAL-004")
+    caused = _codex_mcp_run(root, tmp_path / "2", outcomes={"a": {"outcome": "failed", "cause": "provider", "code": "HB-CELL-108"}})
+    assert (caused.validity, caused.validity_code) == ("invalid (infrastructure)", "HB-CELL-108")
+
+
+def test_an_ungraded_cell_is_not_graded_before_any_tool_check(root, tmp_path):
+    cell = _cell(views.load(make_run(root, tmp_path, {"a": GOOD})), "a")
+    assert (cell.validity, _warnings(cell, "HB-VAL-009")) == ("not graded", [])
+
+
+def test_the_export_carries_the_refused_warning_and_the_meta_count(root, tmp_path):
+    doc = json.loads(views.export(views.load(_claude_q1_dir(root, tmp_path, permission_requests=1))))["cells"][0]
+    assert (doc["validity"], doc["validity_code"], doc["meta_calls"]) == ("valid", None, {"value": 1, "reason": None})
+    assert doc["warnings"] == [{"code": "HB-VAL-009", "level": "warning", "message": "out-of-profile attempt refused: WebFetch"}]
+
+
+def test_the_export_carries_the_out_of_profile_state(root, tmp_path):
+    text = CODEX_MCP.read_text(encoding="utf-8")
+    run_dir = _native_run(root, tmp_path, "codex", "sessions/2026/09/rollout-2026-09-23-sess-a.jsonl", text)
+    doc = json.loads(views.export(views.load(run_dir)))["cells"][0]
+    assert (doc["validity"], doc["validity_code"]) == OUT_OF_PROFILE
 
 
 # --- R-24, R-26 c5: Σ model_calls buckets == the ACP turn total, else an HB-VAL-005 warning (not a validity change) ---
@@ -571,7 +731,8 @@ def test_a_ledger_graded_before_r15_and_r24_exports_what_it_did_before(tmp_path,
     assert not any("unreadable_records" in e or "acp_usage" in e for e in events)  # a pre-R-15, pre-R-24 ledger
     doc = json.loads(views.export(views.load(run_dir)))
     for cell in doc["cells"]:
-        cell.pop("warnings")  # new in W2-VIEWS: the only key the 5feece0 export did not have
+        cell.pop("warnings")  # new in W2-VIEWS: a key the 5feece0 export did not have
+        cell.pop("meta_calls")  # new in W2-VIEWS-FU (R-54 c3): the other one
     assert doc == expected["exports"][name]
 
 

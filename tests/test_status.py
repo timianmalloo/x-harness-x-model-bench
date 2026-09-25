@@ -66,7 +66,8 @@ def test_a_cell_whose_native_record_is_unreadable_is_counted_as_not_recorded(roo
     assert status.parse(status.to_json(s)) == s  # bench-status/1 accepts the state
 
 
-@pytest.mark.parametrize("state", ["invalid (tools denied by hook)", "invalid (build mismatch)"])  # R-27, R-47; seam S2
+@pytest.mark.parametrize("state", ["invalid (tools denied by hook)", "invalid (build mismatch)",  # R-27, R-47; seam S2
+                                   "invalid (out-of-profile tool called)"])  # R-45 item 2, R-54
 def test_bench_status_accepts_the_wave_two_invalid_states(root, tmp_path, state):
     s = dataclasses.replace(status.build(make_run(root, tmp_path, {"a": GOOD}), now=NOW), validity={state: 1})
     assert status.parse(status.to_json(s)) == s
