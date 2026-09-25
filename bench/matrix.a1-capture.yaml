@@ -1,0 +1,10 @@
+# Leader capture for W2-USER-W (R-37 c1, R-51 c2): A1 once per harness, pack off, with the scripted user wired.
+schema: bench-matrix/1
+run_id: a1-capture
+bom: { file: bench/bom.yaml, subset: [A1] }
+repetitions: 1
+packs: ["off"]
+combos:
+  - { id: copilot-sol, harness: copilot,      model: gpt-6-sol }
+  - { id: codex-sol,   harness: codex,        model: gpt-6-sol }
+  - { id: cc-opus,     harness: claude-code,  model: claude-opus-5-5 }

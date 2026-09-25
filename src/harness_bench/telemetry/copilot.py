@@ -60,7 +60,8 @@ SUPPORTED_EVENT_VERSIONS = {1}
 TOOL_CLASS = {"powershell": "shell", "list_powershell": "shell", "read_powershell": "shell", "stop_powershell": "shell",
               "bash": "shell", "shell": "shell", "apply_patch": "edit", "write": "edit",
               "edit": "edit", "create": "edit", "view": "read", "glob": "read", "rg": "read", "grep": "read",
-              "skill": "read"}
+              "skill": "read",
+              "scripted_user-ask_user": "scripted user"}  # R-37 c2: the task's own MCP tool (a1-capture-1)
 
 
 def _tool_class(name: str) -> str:

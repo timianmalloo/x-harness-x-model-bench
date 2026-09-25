@@ -1,30 +1,65 @@
 [
-  {
-    "name": "R-37 c3: server passed to a non-scripted cell",
-    "file": "src/harness_bench/engine.py",
-    "find": "if task.get(\"scripted_user\") and cell[\"harness\"] != \"copilot\" else [])",
-    "replace": "if cell[\"harness\"] != \"copilot\" else [])",
-    "tests": ["tests/test_scripted_user_wiring.py::test_engine_supplies_server_only_to_scripted_task_and_closes_log_before_archive"]
-  },
-  {
-    "name": "R-51 c2: Copilot available-tools omits the scripted-user id",
-    "file": "src/harness_bench/profiles.py",
-    "find": "argv.extend([\"scripted_user-ask_user\", \"--allow-tool\", \"scripted_user\",",
-    "replace": "argv.extend([\"--allow-tool\", \"scripted_user\",",
-    "tests": ["tests/test_scripted_user_wiring.py::test_copilot_argv_is_exact_for_scripted_and_ordinary_cells"]
-  },
-  {
-    "name": "R-37 c4: log not closed before archive",
-    "file": "src/harness_bench/engine.py",
-    "find": "        archive_after_outcome()\n\n    def _attempt(",
-    "replace": "        self._archive(cell, cell_dir, launcher)\n\n    def _attempt(",
-    "tests": ["tests/test_scripted_user_wiring.py::test_engine_supplies_server_only_to_scripted_task_and_closes_log_before_archive"]
-  },
-  {
-    "name": "R-51: session/new sends an MCP server to Copilot",
-    "file": "src/harness_bench/engine.py",
-    "find": "if task.get(\"scripted_user\") and cell[\"harness\"] != \"copilot\" else [])",
-    "replace": "if task.get(\"scripted_user\") else [])",
-    "tests": ["tests/test_scripted_user_wiring.py::test_copilot_scripted_cell_uses_launch_config_and_never_session_mcp_servers"]
-  }
+ {
+  "name": "R-37 c3: server passed to a non-scripted cell",
+  "file": "src/harness_bench/engine.py",
+  "find": "if task.get(\"scripted_user\") and cell[\"harness\"] != \"copilot\" else [])",
+  "replace": "if cell[\"harness\"] != \"copilot\" else [])",
+  "tests": [
+   "tests/test_scripted_user_wiring.py::test_engine_supplies_server_only_to_scripted_task_and_closes_log_before_archive"
+  ]
+ },
+ {
+  "name": "R-51 c2: Copilot available-tools omits the scripted-user id",
+  "file": "src/harness_bench/profiles.py",
+  "find": "argv.extend([\"scripted_user-ask_user\", \"--allow-tool\", \"scripted_user\",",
+  "replace": "argv.extend([\"--allow-tool\", \"scripted_user\",",
+  "tests": [
+   "tests/test_scripted_user_wiring.py::test_copilot_argv_is_exact_for_scripted_and_ordinary_cells"
+  ]
+ },
+ {
+  "name": "R-37 c4: log not closed before archive",
+  "file": "src/harness_bench/engine.py",
+  "find": "        archive_after_outcome()\n\n    def _attempt(",
+  "replace": "        self._archive(cell, cell_dir, launcher)\n\n    def _attempt(",
+  "tests": [
+   "tests/test_scripted_user_wiring.py::test_engine_supplies_server_only_to_scripted_task_and_closes_log_before_archive"
+  ]
+ },
+ {
+  "name": "R-51: session/new sends an MCP server to Copilot",
+  "file": "src/harness_bench/engine.py",
+  "find": "if task.get(\"scripted_user\") and cell[\"harness\"] != \"copilot\" else [])",
+  "replace": "if task.get(\"scripted_user\") else [])",
+  "tests": [
+   "tests/test_scripted_user_wiring.py::test_copilot_scripted_cell_uses_launch_config_and_never_session_mcp_servers"
+  ]
+ },
+ {
+  "name": "Claude reader classes the scripted user tool as other",
+  "file": "src/harness_bench/telemetry/claude_code.py",
+  "find": "\"mcp__scripted_user__ask_user\": \"scripted user\"",
+  "replace": "\"mcp__scripted_user__ask_user\": \"other\"",
+  "tests": [
+   "tests/test_scripted_user_wiring.py::test_claude_reader_classes_the_scripted_user_tool"
+  ]
+ },
+ {
+  "name": "Copilot reader classes the scripted user tool as other",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "\"scripted_user-ask_user\": \"scripted user\"",
+  "replace": "\"scripted_user-ask_user\": \"other\"",
+  "tests": [
+   "tests/test_scripted_user_wiring.py::test_copilot_reader_classes_the_scripted_user_tool"
+  ]
+ },
+ {
+  "name": "Codex reader classes a scripted user MCP call as other",
+  "file": "src/harness_bench/telemetry/codex.py",
+  "find": "MCP_CLASSES.get(name, \"other\")",
+  "replace": "\"other\"",
+  "tests": [
+   "tests/test_scripted_user_wiring.py::test_codex_reader_classes_a_scripted_user_mcp_call"
+  ]
+ }
 ]

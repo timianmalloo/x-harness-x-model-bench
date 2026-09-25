@@ -40,6 +40,7 @@ CALL_TYPES = ("custom_tool_call", "function_call", "local_shell_call")
 OUTPUT_TYPES = ("custom_tool_call_output", "function_call_output", "local_shell_call_output")
 SHELL_NAMES = ("exec", "shell", "exec_command", "local_shell", "container.exec")
 EDIT_NAMES = ("apply_patch", "write_file", "edit")
+MCP_CLASSES = {"scripted_user.ask_user": "scripted user"}  # R-37 c2: the task's own MCP tool; every other MCP call is other
 
 
 def _is_injected_context(text: str) -> bool:
@@ -112,7 +113,8 @@ def read(path: Path) -> Extraction:
             server, tool = as_str(item.get("server")), as_str(item.get("tool"))
             if server and tool:
                 ok = {"completed": True, "failed": False}.get(as_str(item.get("status")))
-                ex.tool_calls.append(ToolCall(n, f"{server}.{tool}", "other", None, stamp, ok))
+                name = f"{server}.{tool}"
+                ex.tool_calls.append(ToolCall(n, name, MCP_CLASSES.get(name, "other"), None, stamp, ok))
         elif kind == "response_item" and ptype in CALL_TYPES and call_id is not None:
             open_tools[call_id] = {"n": n, "name": as_str(payload.get("name")) or ptype, "start": stamp}
         elif kind == "response_item" and ptype in OUTPUT_TYPES and call_id in open_tools:
