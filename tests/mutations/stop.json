@@ -152,5 +152,40 @@
     "find": "            host.keep_awake(False)\n            for w in self.writers.values():\n                w.close()\n            lock.release()\n",
     "replace": "            for w in self.writers.values():\n                w.close()\n            lock.release()\n        host.keep_awake(False)\n",
     "tests": ["tests/test_engine.py::test_keep_awake_is_released_when_the_run_raises"]
+  },
+  {
+    "name": "prompt sent after cancel races the send",
+    "file": "src/harness_bench/driver.py",
+    "find": "        if self.cancel_handled or (self.cancel is not None and self.cancel.is_set()):\n",
+    "replace": "        if self.cancel_handled:\n",
+    "tests": ["tests/test_driver.py::test_the_channel_drops_a_prompt_if_cancel_races_the_send"]
+  },
+  {
+    "name": "writes not dropped after cancel",
+    "file": "src/harness_bench/driver.py",
+    "find": "            return False  # late permission replies never turn a graceful cancel into _Eof\n",
+    "replace": "            raise _Eof  # late permission reply breaks the read loop\n",
+    "tests": ["tests/test_driver.py::test_writes_after_a_cancel_are_dropped"]
+  },
+  {
+    "name": "grace above ten seconds accepted",
+    "file": "src/harness_bench/profiles.py",
+    "find": "not 0 < grace <= 10",
+    "replace": "not 0 < grace <= 11",
+    "tests": ["tests/test_profiles.py::test_shutdown_grace_is_a_bounded_profile_datum_and_reaches_launcher"]
+  },
+  {
+    "name": "kill before the grace ends",
+    "file": "src/harness_bench/engine.py",
+    "find": "now < a.kill_deadline",
+    "replace": "now < a.kill_deadline - 0.5",
+    "tests": ["tests/test_engine.py::test_engine_kill_deadline_uses_one_injected_clock"]
+  },
+  {
+    "name": "hard kill retry suppressed while the job lives",
+    "file": "src/harness_bench/engine.py",
+    "find": "now < a.kill_deadline or a.ended\n",
+    "replace": "now < a.kill_deadline or a.ended or a.terminated\n",
+    "tests": ["tests/test_engine.py::test_hard_kill_retries_until_the_job_is_empty"]
   }
 ]

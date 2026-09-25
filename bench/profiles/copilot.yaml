@@ -5,6 +5,7 @@ credential: null
 credential_kind: "subscription login (credential store)"
 files: {}
 command: ["{exe}", "--acp", "--model", "{model}", "--allow-tool", "shell", "--allow-tool", "write", "--disable-builtin-mcps", "--available-tools", "powershell", "list_powershell", "read_powershell", "stop_powershell", "apply_patch", "view", "glob", "rg", "skill"]
+shutdown_grace_seconds: 10
 env:
   COPILOT_AUTO_UPDATE: "false"
 mode: null

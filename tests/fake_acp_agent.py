@@ -2,7 +2,7 @@
 
 Behaviour comes from the FAKE_ACP environment variable (JSON):
   {"mode": "ok" | "permission" | "hang_prompt" | "hang_handshake" | "eof_mid_turn" | "junk_lines" | "huge_line"
-          | "exit_before_prompt" | "provider_error" | "no_model_call" | "no_memory",
+          | "exit_before_prompt" | "provider_error" | "no_model_call" | "no_memory" | "stubborn" | "on_cancel",
    "record_dir": "<folder for a Claude-shaped native record>", "write_file": "<name written into cwd>",
    "sleep": <seconds to run the turn>, "model": "<served model>",
    "usage": [<model_usage entries for the prompt result, as claude-agent-acp reports them>],
@@ -128,10 +128,33 @@ def main() -> int:
         elif method == "session/set_model":
             Path(os.getcwd(), ".fake-set_model").write_text(json.dumps(msg["params"]), encoding="utf-8")
             send({"jsonrpc": "2.0", "id": mid, "result": {}})
+        elif method == "session/cancel":
+            Path(os.getcwd(), ".fake-cancel.json").write_text(json.dumps(msg), encoding="utf-8")
         elif method == "session/prompt":
             text = msg["params"]["prompt"][0]["text"]
             Path(os.getcwd(), ".fake-prompt.txt").write_text(text, encoding="utf-8", newline="")
             record(session_id, os.getcwd(), text)
+            if MODE in {"stubborn", "on_cancel"}:
+                if MODE == "stubborn":
+                    import subprocess
+
+                    child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"], stdout=OUT)
+                    Path(os.getcwd(), ".fake-stubborn-child.pid").write_text(str(child.pid), encoding="utf-8")
+                cancel = json.loads(sys.stdin.buffer.readline())
+                Path(os.getcwd(), ".fake-cancel.json").write_text(json.dumps(cancel), encoding="utf-8")
+                if MODE == "stubborn":
+                    time.sleep(60)
+                if CFG.get("late_permission"):
+                    send({"jsonrpc": "2.0", "id": 901, "method": "session/request_permission",
+                          "params": {"sessionId": session_id, "toolCall": {"toolCallId": "t2", "title": "late"},
+                                     "options": [{"optionId": "allow", "kind": "allow_once", "name": "Allow"}]}})
+                if not sys.stdin.buffer.readline() and CFG.get("shutdown_file"):
+                    Path(os.getcwd(), CFG["shutdown_file"]).write_text("shutdown\n", encoding="utf-8")
+                result = {"stopReason": "cancelled"}
+                if CFG.get("usage"):
+                    result.update({"usage": {"inputTokens": 1}, "_meta": {"quota": {"model_usage": CFG["usage"]}}})
+                send({"jsonrpc": "2.0", "id": mid, "result": result})
+                continue
             if CFG.get("echo_credential"):  # T-LOG-nosecret: an agent that prints its login everywhere it can
                 secret = (Path(CFG["record_dir"]) / ".credentials.json").read_text(encoding="utf-8")
                 sys.stderr.write(secret + "\n")

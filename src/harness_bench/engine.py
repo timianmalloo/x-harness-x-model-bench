@@ -11,9 +11,10 @@ never sends the prompt.
 Per cell, in order: launch intent -> working copy -> build check -> spawn into a Job Object -> handshake
 -> session opened -> prompt sent -> the turn -> the job terminated and confirmed empty (process ended)
 -> cause classified (provider-error scan first) -> outcome -> archive -> verify -> delete.
-A budget or a detected host sleep terminates the cell's job; the outcome is recorded only after the job
-reports no active process (kill -> confirm -> record). The parallelism slot is held from the launch
-intent until the process is confirmed gone. The lock file's mtime is the heartbeat.
+A budget or a detected host sleep requests cancel, then terminates the job at the bounded grace if needed;
+the outcome is recorded only after the job reports no active process (kill -> confirm -> record). The
+parallelism slot is held from launch intent until the process is confirmed gone. The lock file's mtime
+is the heartbeat.
 """
 
 from __future__ import annotations
@@ -28,7 +29,7 @@ import shutil
 import subprocess
 import threading
 import time
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from concurrent.futures import Future
 from concurrent.futures import TimeoutError as FutureTimeout
 from contextlib import contextmanager
@@ -67,6 +68,7 @@ class Launcher(Protocol):
     usage_source: str
     mode: str | None
     set_model: bool  # run_turn gets model= (the ACP session/set_model pin) only when true (R-13)
+    shutdown_grace: float
 
     def check_build(self) -> dict: ...
     def seed(self, home: Path, model: str) -> None: ...
@@ -83,8 +85,8 @@ class EngineConfig:
     launchers: dict[str, Launcher]
     build_workspace: object  # (cell, cell_dir) -> dict info; the working copy is cell_dir / "ws"
     grade: object | None  # (run_dir) -> pass summary dict; run once after every cell is terminal (grade/runner.py)
-    end_grace: float = 10.0
     loop_interval: float = 0.2
+    clock: Callable[[], float] = time.monotonic
 
 
 @dataclass
@@ -100,6 +102,9 @@ class _Active:
     proc: procs.CellProcess | None = None
     prompt_mono: float | None = None
     kill_reason: str | None = None
+    kill_deadline: float | None = None
+    cancel: threading.Event = field(default_factory=threading.Event)
+    terminated: bool = False
     ended: bool = False  # the turn is over: the worker ends the process itself; the engine never kills it now
     lock: threading.Lock = field(default_factory=threading.Lock)  # guards kill_reason/ended and terminate vs close
 
@@ -113,6 +118,7 @@ class Engine:
     def __init__(self, plan: dict, config: EngineConfig) -> None:
         self.plan = plan
         self.cfg = config
+        self.clock = config.clock if config is not None else time.monotonic
         self.params = plan["parameters"]
         self.trace_id = plan["trace_id"]
         self.inbox: queue.Queue = queue.Queue(maxsize=64)
@@ -191,7 +197,7 @@ class Engine:
         if kind == "cell.prompt_sent":
             a = self.active.get(row["cell_id"])
             if a:
-                a.prompt_mono = time.monotonic()
+                a.prompt_mono = self.clock()
         elif kind == "cell.outcome":
             self.outcomes[row["cell_id"]] = row
             cause = Cause[row["cause"]] if row["cause"] else None
@@ -234,8 +240,9 @@ class Engine:
                 self._drain(self.cfg.loop_interval)
                 if self.broken:  # nothing more is recorded: kill every live turn, keep draining until the workers exit
                     self._kill_all("aborted")
+                    self._check_kills(self.clock())
                 else:
-                    self._check_budgets()
+                    self.on_tick()
                     if sleep.slept():
                         self._kill_all("host_suspended")
                     if not self.stopped and min(_free_bytes(self.cfg.cells_root), _free_bytes(run_dir)) < self.params["disk_floor_bytes"]:
@@ -290,21 +297,34 @@ class Engine:
         self.active[cell["cell_id"]] = a
         a.thread.start()
 
-    @staticmethod
-    def _kill(a: _Active, reason: str | None) -> None:
-        """EngineKill: terminate a live turn's job; the worker's turn ends at EOF, then it confirms and records.
-        A turn that has already ended is never killed (nor classified by the kill): its worker is ending it."""
+    def _kill(self, a: _Active, reason: str | None) -> None:
+        """Request a cooperative end. The first reason owns the one hard deadline."""
         with a.lock:
-            if a.proc is None or a.ended or a.kill_reason:
+            if a.ended or a.kill_reason:
                 return
             a.kill_reason = reason
-            _job_query(a.proc.job.terminate, None)  # a failed kill never stops the engine thread; the worker confirms
+            a.kill_deadline = self.clock() + self.cfg.launchers[a.cell["harness"]].shutdown_grace
+            a.cancel.set()
 
-    def _check_budgets(self) -> None:
-        now = time.monotonic()
+    def on_tick(self) -> None:
+        """Read the engine clock once for budget and escalation decisions."""
+        now = self.clock()
+        self._check_budgets(now)
+        self._check_kills(now)
+
+    def _check_budgets(self, now: float) -> None:
         for a in self.active.values():
-            if a.prompt_mono and now - a.prompt_mono > a.cell["budget_seconds"]:
+            if a.prompt_mono is not None and now - a.prompt_mono > a.cell["budget_seconds"]:
                 self._kill(a, "timeout")
+
+    def _check_kills(self, now: float) -> None:
+        for a in self.active.values():
+            with a.lock:
+                if (a.kill_deadline is None or now < a.kill_deadline or a.ended
+                        or a.proc is None or not _job_query(a.proc.job.active, 1)):
+                    continue
+                a.terminated = True
+                _job_query(a.proc.job.terminate, None)  # retry on later ticks while the job remains active
 
     def _kill_all(self, reason: str) -> None:
         for a in self.active.values():
@@ -367,6 +387,12 @@ class Engine:
             self.request_stop(Cause.build_changed.code, str(exc))
             archive_after_outcome()
             return
+        if self.active[cid].cancel.is_set():
+            reason = self.active[cid].kill_reason
+            cause = Cause.timed_out if reason == "timeout" else Cause.host_suspended if reason == "host_suspended" else None
+            self._outcome(cell, "stopped" if reason == "stop" else "timed_out" if cause is Cause.timed_out else "failed", cause)
+            archive_after_outcome()
+            return
         traceparent = f"00-{self.trace_id}-{span_id(self.trace_id, cid, 'cell')}-01"
         argv_cell = cell
         if task.get("scripted_user") and cell["harness"] == "copilot":
@@ -387,11 +413,13 @@ class Engine:
             archive_after_outcome()
             return
         result, exit_status, tail = ended
-        cause = self._classify(result, launcher, home, exit_status, tail, self.active[cid].kill_reason)
+        kill_reason = self.active[cid].kill_reason
+        cause = None if kill_reason == "stop" else self._classify(result, launcher, home, exit_status, tail, kill_reason)
         for model, buckets in _usage_per_model(normalize.turn_usage({"_meta": (result.usage or {}).get("meta")})).items():
             self.record("turn_usage", {"kind": "turn_usage", "run_id": self.plan["run_id"], "cell_id": cid, "attempt": 1,
                                        "model": model, **buckets})
-        outcome = "completed" if cause is None else ("timed_out" if cause is Cause.timed_out else "failed")
+        outcome = "stopped" if kill_reason == "stop" else "completed" if cause is None else (
+            "timed_out" if cause is Cause.timed_out else "failed")
         last_update = result.last_update_seconds
         self._outcome(cell, outcome, cause, detail=result.detail[:300], stop_reason=result.stop_reason or "",
                       session_id=result.session_id or "", permission_requests=result.permission_requests,
@@ -442,17 +470,18 @@ class Engine:
             result = driver.run_turn(cp, cwd=ws, prompt=self.plan["tasks"][cell["task"]]["prompt"], mode=launcher.mode,
                                      handshake_timeout=self.params["handshake_timeout"], before_send=barrier,
                                      model=cell["model"] if launcher.set_model else None, result=result,
-                                     mcp_servers=mcp_servers)
+                                     mcp_servers=mcp_servers, cancel=a.cancel)
         finally:
             with a.lock:
                 a.ended = True
             try:
-                exit_status, confirmed = self._end_process(cp)
+                exit_status, confirmed, ended_by = self._end_process(a, cp, launcher.shutdown_grace)
                 drain.join(timeout=5)
                 turn_models = [u.model for u in normalize.turn_usage({"_meta": (result.usage or {}).get("meta")})]
                 tag = next((t for m in turn_models if (t := normalize.context_window_tag(m)) is not None), None)
                 ended = {"kind": "attempt.process_ended", "cell_id": cid, "exit_status": -1 if exit_status is None else exit_status,
-                         "confirmed": int(confirmed), "peak_memory": _job_query(cp.job.peak_memory, None),
+                         "confirmed": int(confirmed), "ended_by": ended_by,
+                         "peak_memory": _job_query(cp.job.peak_memory, None),
                          "cpu_ms": _job_query(cp.job.cpu_time_ms, None),  # null: not recorded, never a zeroed guess
                          "acp_usage": result.usage,  # R-24: the adapter's usage and _meta halves verbatim, or null
                          "context_window_tag": tag}  # R-32: e.g. "1m" from a served model id, disclosed; else None
@@ -463,16 +492,23 @@ class Engine:
                 self.record("events", ended)
         return result, exit_status, bytes(tail)
 
-    def _end_process(self, cp: procs.CellProcess) -> tuple[int | None, bool]:
+    def _end_process(self, a: _Active, cp: procs.CellProcess, grace: float) -> tuple[int | None, bool, str]:
         """Graceful first (stdin closed, the adapter flushes and exits), then terminate and confirm."""
         try:
             cp.proc.stdin.close()
-        except OSError:
+        except (OSError, ValueError):
             pass
-        deadline = time.monotonic() + self.cfg.end_grace
+        with a.lock:
+            remaining = grace if a.kill_deadline is None else max(0.0, a.kill_deadline - self.clock())
+        deadline = time.monotonic() + min(grace, remaining)
         while _job_query(cp.job.active, 1) and time.monotonic() < deadline:
-            time.sleep(0.1)
-        confirmed = _confirm(cp, self.params["kill_escalation"])
+            time.sleep(0.05)
+        with a.lock:
+            active = _job_query(cp.job.active, 1)
+            if active and not a.terminated:
+                a.terminated = True
+            terminated = a.terminated
+        confirmed = not active or _confirm(cp, self.params["kill_escalation"])
         if not confirmed:  # a kill that never takes effect: logged once, retried with capped backoff, the slot held
             log.error("kill unconfirmed; retrying", extra={"error_code": "HB-RUN-002",
                                                            "pids": _job_query(lambda: sorted(cp.job.pids()), [])})
@@ -481,9 +517,9 @@ class Engine:
             confirmed = _confirm(cp, wait)
             wait = min(wait * 2, KILL_RETRY_CAP)
         try:
-            return cp.wait(timeout=10), confirmed
+            return cp.wait(timeout=10), confirmed, ("terminate" if terminated else "grace" if a.kill_reason else "exit")
         except subprocess.TimeoutExpired:
-            return None, confirmed
+            return None, confirmed, ("terminate" if terminated else "grace" if a.kill_reason else "exit")
 
     def _classify(self, result: driver.TurnResult, launcher: Launcher, home: Path, exit_status: int | None,
                   tail: bytes, kill_reason: str | None) -> Cause | None:

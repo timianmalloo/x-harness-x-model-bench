@@ -55,6 +55,7 @@ VARIANTS = {
     "record_without_kill": ("prop", "EndedCellsGetArchived"),
     "no_budget_kill": ("prop", "PromptedCellsEnd"),
     "grade_skipped": ("prop", "ArchivedCellsGetGraded"),
+    "no_escalate": ("prop", "StopReachesTerminal"),
 }
 # The real design and the variants run at small bounds (2 cells, parallelism 1, 1 crash, 1 pass, the
 # engine and `bench grade` both grading); two-pass variants use the grading config. Every seeded
@@ -65,7 +66,7 @@ DEEP = {"MaxCrashes = 1": "MaxCrashes = 2"}
 TWO_PASS = {"no_lock"}             # variants that need two grading passes use the grading config
 # Variants whose defect needs a free slot beside an orphan run at parallelism 2.
 WIDER = {"reconcile_no_wait": {"Parallelism = 1": "Parallelism = 2"}}
-WITNESS = "NotAllCellsFinished"   # must be violated by the real design: the run can finish
+WITNESSES = {"witness": "NotAllCellsFinished", "grace-witness": "NoGraceState"}
 
 
 def ensure_jar() -> Path:
@@ -112,6 +113,12 @@ def with_bug(cfg_text: str, bug: str) -> str:
     return substitute(cfg_text, {'BUG = "none"': f'BUG = "{bug}"'})
 
 
+def unregistered_variants(tla: str) -> set[str]:
+    """Reverse MOD-A check: every seeded BUG guard must have its own target run."""
+    seeded = set(re.findall(r'\bBUG\s*[#=]\s*"([^"]+)"', tla)) - {"none"}
+    return seeded - VARIANTS.keys()
+
+
 def only_property(cfg_text: str, name: str) -> str:
     """A liveness variant is checked against its target property alone, so the right one rejects it."""
     head, _, tail = cfg_text.partition("PROPERTIES")
@@ -127,6 +134,10 @@ def only_invariant(cfg_text: str, name: str) -> str:
 
 
 def main(argv: list[str]) -> int:
+    uncovered = unregistered_variants((MODELS / f"{MODEL}.tla").read_text(encoding="utf-8"))
+    if uncovered:
+        print(f"FAIL unregistered seeded variants: {sorted(uncovered)}", flush=True)
+        return 1
     ensure_jar()
     safety = (MODELS / f"{MODEL}.safety.cfg").read_text(encoding="utf-8")
     liveness = (MODELS / f"{MODEL}.liveness.cfg").read_text(encoding="utf-8")
@@ -139,6 +150,7 @@ def main(argv: list[str]) -> int:
         runs.append(("safety", safety))
     if "--deep" in argv:
         runs.append(("safety-2-crashes", substitute(safety, DEEP)))
+    real_clean = {}
     for label, cfg in runs:
         code, out, secs = tlc(cfg, label)
         clean = code == 0 and "violated" not in out and "Error:" not in out
@@ -146,13 +158,19 @@ def main(argv: list[str]) -> int:
         if not clean:
             failures.append(label)
             print(out[-3000:], flush=True)
+        real_clean[label] = clean
 
-    code, out, secs = tlc(only_invariant(small, WITNESS), "witness")
-    reached = f"Invariant {WITNESS} is violated" in out
-    print(f"{'ok  ' if reached else 'FAIL'} {'witness':<24} every cell can finish graded and deleted ({secs:.0f}s)", flush=True)
-    if not reached:
-        failures.append("witness")
+    witnessed = 0
+    for label, name in WITNESSES.items():
+        code, out, secs = tlc(only_invariant(small, name), label)
+        reached = f"Invariant {name} is violated" in out
+        print(f"{'ok  ' if reached else 'FAIL'} {label:<24} {name} violated ({secs:.0f}s)", flush=True)
+        if reached:
+            witnessed += 1
+        else:
+            failures.append(label)
 
+    rejected = 0
     for bug, (kind, target) in VARIANTS.items():
         if kind == "prop":
             base = only_property(liveness, target)
@@ -168,6 +186,12 @@ def main(argv: list[str]) -> int:
               flush=True)
         if not caught:
             failures.append(bug)
+        else:
+            rejected += 1
+    print(f"seeded variants: {rejected}/{len(VARIANTS)} rejected by own target", flush=True)
+    print(f"reachability witnesses: {witnessed}/{len(WITNESSES)} violated", flush=True)
+    if "--quick" not in argv:
+        print(f"US-44 bounds: {'passed' if real_clean.get('safety') else 'FAILED'} (3 cells, parallelism 2, 1 crash)", flush=True)
     print(f"{len(failures)} failure(s)" if failures else "all model checks passed", flush=True)
     return 1 if failures else 0
 

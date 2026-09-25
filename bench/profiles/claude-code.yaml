@@ -4,18 +4,17 @@ home_env: CLAUDE_CONFIG_DIR
 credential: { source: "~/.claude/.credentials.json", name: ".credentials.json" }
 credential_kind: "subscription login (copied)"
 command: ["{node}", "{adapter}"]
+shutdown_grace_seconds: 10
 # allow: every id of the ADR-0004 classes (shell; file read and edit) that the pinned build exposes on this
 # platform, read from the build (R-34; tests/test_allowlist_classes.py). PowerShell is 2.1.282's Windows shell.
 # NotebookEdit is the deferred (ToolSearch-gated) file-edit id for .ipynb, in-class per R-35.
-# defaultMode is the declared mode; the ACP session reports "dontAsk is not available; falling back to default",
-# so the effective mode is recorded per cell (attempt.session_opened.permission_mode_effective) and shown in the
-# report header. The allowlist plus the driver's refusal of every permission request is what enforces US-14.
+# defaultMode matches the ACP session's effective default mode (R-34 c4).
 files:
   # disableClaudeAiConnectors (R-56 c1, R-57 gate 2): true in any settings source keeps claude.ai MCP cloud
   # connectors out of the cell (the pinned 2.1.282 settings schema; env ENABLE_CLAUDEAI_MCP_SERVERS also exists,
   # the settings key is used per the Leader's ruling). Closure is measured by the re-qualification cell's
   # account_connector_tools count, not this line alone.
-  settings.json: '{"permissions": {"allow": ["Bash", "PowerShell", "Edit", "Write", "NotebookEdit", "Read", "Glob", "Grep", "mcp__scripted_user__ask_user"], "defaultMode": "dontAsk"}, "disableClaudeAiConnectors": true}'
+  settings.json: '{"permissions": {"allow": ["Bash", "PowerShell", "Edit", "Write", "NotebookEdit", "Read", "Glob", "Grep", "mcp__scripted_user__ask_user"], "defaultMode": "default"}, "disableClaudeAiConnectors": true}'
 env:
   ANTHROPIC_MODEL: "{model}"
   CLAUDE_CODE_EXECUTABLE: "{exe}"
