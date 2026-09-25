@@ -26,5 +26,33 @@
     "find": "row.get(\"ok\") is None",
     "replace": "False",
     "tests": ["tests/test_grade_process.py::test_a_null_ok_is_na_with_the_missing_counts"]
+  },
+  {
+    "name": "success of another name counted",
+    "file": "src/harness_bench/grade/process.py",
+    "find": "later.get(\"name\") == name and later.get(\"ok\") == 1",
+    "replace": "later.get(\"ok\") == 1",
+    "tests": ["tests/test_grade_process.py::test_a_later_success_of_another_name_is_not_recovery"]
+  },
+  {
+    "name": "success before the failure counted",
+    "file": "src/harness_bench/grade/process.py",
+    "find": "calls[index + 1:]",
+    "replace": "calls",
+    "tests": ["tests/test_grade_process.py::test_a_success_before_the_failure_is_not_recovery"]
+  },
+  {
+    "name": "requests after the first edit counted",
+    "file": "src/harness_bench/grade/process.py",
+    "find": "row[\"start\"] < first",
+    "replace": "True",
+    "tests": ["tests/test_grade_process.py::test_seven_of_twenty_requests_before_the_first_edit_is_0_3500"]
+  },
+  {
+    "name": "summary rows not refused",
+    "file": "src/harness_bench/grade/process.py",
+    "find": "row.get(\"start\") is None",
+    "replace": "False",
+    "tests": ["tests/test_grade_process.py::test_summary_model_call_rows_are_na"]
   }
 ]
