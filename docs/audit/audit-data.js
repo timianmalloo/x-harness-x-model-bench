@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T04:33:24Z",
+  "generated": "2026-09-25T04:39:43Z",
   "audit": [
     {
       "actor": null,
@@ -10401,6 +10401,36 @@ window.AUDIT_DATA = {
       "git": {
         "sha": "dda9f6224be6b00dc931ee532c44a9785e54be95",
         "short": "dda9f6224",
+        "branch": "w2-user-design",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M3BDSDD2BGBV4Q7MQDX3A7PB",
+      "shortname": "w2-user-d-phase-c",
+      "datetime": "2026-09-25T04:39:43Z",
+      "session": "w2-user-d",
+      "prompt": "W2-USER-D phase C: record S-04b (six Leader-run variant turns): explain Copilot handshake-only exit 1 vs probe 0, add scrubbed facts to s04-results.json and an S-04b section to the spike note, update DR-S04-1 with measured facts without deciding it, commit.",
+      "summary": "Session HTTP reaches all three harnesses; Copilot launch config works; both under --disable-builtin-mcps (R-37 c2 closed for those transports); Copilot lists tools lazily at first prompt (handshake exit 1 is correct, not a probe bug: 30 s wait ran, initialize but no tools/list); Codex over HTTP calls via exec code tool, rollout McpToolCall (analyse extended red-first).",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": "Claude Opus 5.5",
+      "artifacts": [
+        "docs/notes/spike-s04-scripted-user.md",
+        "docs/design/phase2-scripted-user.md",
+        "tests/fixtures/acp/scripted-user/s04-results.json"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "S-04b recorded in results, spike note and DR-S04-1",
+      "done_when": "validate exit 0; selftest 0 failures; committed",
+      "tier": "T2",
+      "fan_out": 0,
+      "git": {
+        "sha": "85a8eec6a994bd7c1e25ce0d99176c3967c93d71",
+        "short": "85a8eec6a",
         "branch": "w2-user-design",
         "pushed": null
       }

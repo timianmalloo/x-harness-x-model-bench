@@ -1218,7 +1218,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "50656269dd216a00f40ee50941a630775fff4a23c66d062137486d19bd35c710"
+      "sourceSha256": "6d0a63120392996c2dedeedb95af547186114ef6869ad54ee97a939d147808f1"
     },
     {
       "id": "design-run-lifecycle-model",
@@ -1536,7 +1536,7 @@ window.DOCS_INDEX = {
       "phase": "",
       "reviewBy": "2026-12-25",
       "reviewSuggested": [],
-      "summary": "Eleven probe turns on the pinned builds (Leader-run, 2026-09-25). Claude Code 2.1.282 and Codex 0.156.0 start a stdio MCP server given in ACP session/new mcpServers, list ask_user, and call it on request; the reply reaches the model. Copilot 1.0.89-1 accepts session/new but rejects the stdio entry (\"Rejecting non-http/sse MCP server\"), with or without --disable-builtin-mcps, so the tool never reaches it: a decision request (R-37 c1), with an HTTP and a launch-config variant written for the Leader. On A1, Claude asked once (the key ambiguity, paraphrased; no match), Codex asked nothing. The rule table's held-out measurement: precision 1.0, 0/21 default-labelled matches, paraphrase recall 0/11 (overall 6/17); S-04 threshold set (regression floor met; T = 0.80 on paraphrase recall not met, so A1 clarification metrics carry \"low-confidence matcher\" in wave 2).",
+      "summary": "Eleven probe turns on the pinned builds (Leader-run, 2026-09-25). Claude Code 2.1.282 and Codex 0.156.0 start a stdio MCP server given in ACP session/new mcpServers, list ask_user, and call it on request; the reply reaches the model. Copilot 1.0.89-1 accepts session/new but rejects the stdio entry (\"Rejecting non-http/sse MCP server\"), with or without --disable-builtin-mcps, so the tool never reaches it: a decision request (R-37 c1), with an HTTP and a launch-config variant written for the Leader. On A1, Claude asked once (the key ambiguity, paraphrased; no match), Codex asked nothing. The rule table's held-out measurement: precision 1.0, 0/21 default-labelled matches, paraphrase recall 0/11 (overall 6/17); S-04 threshold set (regression floor met; T = 0.80 on paraphrase recall not met, so A1 clarification metrics carry \"low-confidence matcher\" in wave 2). S-04b: session HTTP is listed and called on all three harnesses, and Copilot's launch config works too, both under --disable-builtin-mcps; Copilot lists tools lazily, at the first prompt.",
       "tags": [
         "benchmark",
         "spike",
@@ -1567,7 +1567,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "78bd19f9213ad14cefd44f3555904c19eca8c2641d4b9c917e779100197e5437"
+      "sourceSha256": "eb2da9c50caab0eb1856d7407bba4811a01934d4a41f077b672ab3a85a2045be"
     },
     {
       "id": "proof-phase2",
@@ -2278,5 +2278,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "66768fae0fe7e79bea194b930b9affd2842f5e9a919ee7313358076e2c280592"
+  "graphSha256": "acacf8b07fea679046cd5f31c533240b67105ccd8e47ef4554304fb7e6fa4330"
 };

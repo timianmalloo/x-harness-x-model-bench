@@ -39,7 +39,8 @@ review-suggested: []
 
 **History:**
 - revision 1, `dda9f62`: the draft, with the measured facts marked pending;
-- revision 2: this one. It records the S-04 measurements and the threshold, the Copilot decision request, and the AI Systems Engineer's review (§14).
+- revision 2, `85a8eec`: the S-04 measurements and the threshold, the Copilot decision request, and the AI Systems Engineer's review (§14).
+- revision 2.1: this one. It adds the S-04b facts to §4.3, §5 and DR-S04-1. DR-S04-1 itself is left to the Owner.
 
 **Confidence labels.**
 - *Verified*: observed in this repo, in the pinned builds, or in a run.
@@ -127,9 +128,11 @@ The MCP traffic runs harness ↔ server and never crosses the ACP channel. So th
 | --- | --- | --- | --- | --- | --- | --- |
 | claude-code · Claude Code 2.1.282 via `claude-agent-acp` 0.81.2 · `claude-opus-5-5` | stdio, no `type`: **yes** | yes / yes (3/3) | yes, `mcp__scripted_user__ask_user` | yes | **yes, 1 question** | yes (the token in its text) |
 | codex · Codex 0.156.0 via `codex-acp` 1.12.0 · `gpt-6-sol` | stdio, no `type`: **yes** | yes / yes (3/3) | yes when called, `mcp__scripted_user__ask_user` (the rollout does not record tool definitions) | yes | **no** (listed, not called) | yes |
-| copilot · Copilot 1.0.89-1, native ACP · `gpt-6-sol` | stdio: **rejected** (Copilot log). http: *pending S-04b* | no / no (0/5) | no | no ("the tool isn't available") | no (could not) | — |
+| copilot · Copilot 1.0.89-1, native ACP · `gpt-6-sol` | stdio: **rejected** (Copilot log). S-04b: session `{type: "http"}` **yes**; launch config (`--additional-mcp-config`) **yes** | stdio: no (0/5). HTTP and launch config: yes / yes **at the first prompt** (listing is lazy; not during the handshake) | yes when called, `scripted_user-ask_user` | yes (HTTP and launch config) | not measured over HTTP or config | yes |
 
 Copilot is a harness the tool never reaches over stdio. It returns as **DR-S04-1** (§13). Nobody switches it to multi-turn alone.
+
+S-04b also ran session HTTP on Claude Code (listed during the handshake, called; ACP title `mcp__scripted_user__ask_user`) and on Codex (called from its `exec` code tool; the rollout records a structured `McpToolCall`). *Verified*, probe prompt, n = 1 each.
 
 ## 5. The allowlist class "scripted user" (R-37 c2, R-34)
 
@@ -139,7 +142,7 @@ ADR-0004's classes are platform-independent, and their ids are per build (R-34).
 | --- | --- | --- | --- |
 | claude-code | `permissions.allow` in the seeded `settings.json` (`bench/profiles/claude-code.yaml:14`) | `mcp__scripted_user__ask_user` | *Verified* (S-04): the id in the native record and the ACP title; 0 permission requests with it allowed |
 | codex | none: `agent-full-access` (approval `never`) covers MCP tool calls | native `mcp__scripted_user__ask_user`; ACP title `mcp.scripted_user.ask_user` | *Verified* (S-04): 0 permission requests |
-| copilot | `--allow-tool scripted_user` in the profile's `command` (`bench/profiles/copilot.yaml:7`) | `scripted_user` (the server's tools) | Syntax *Verified* from `copilot --help` 1.0.89-1. Effect *pending S-04b*, because the tool has not yet reached Copilot |
+| copilot | `--allow-tool scripted_user` in the profile's `command` (`bench/profiles/copilot.yaml:7`) | allow by server `scripted_user`; the tool's id is `scripted_user-ask_user` (ACP title and native record) | *Verified* (S-04b): 0 permission requests over session HTTP and over the launch config |
 
 - **The coverage test.** The class coverage test (R-34 c2, `tests/test_allowlist_classes.py`) lists the Claude id, read from a native record of the pinned build (a scrubbed cut of the S-04 record), never from memory. A build that renames the id turns it red.
 - **Deferred tools (R-35 c3).** *Verified*: Claude Code 2.1.282 defers the MCP tool behind `ToolSearch`. The model called `ToolSearch` first, then the tool. `ToolSearch` raised no permission request, so no allowlist change is needed for it. *Inferred*: the deferral costs one extra tool call per cell that asks, only on Claude Code. That is a harness property, disclosed, not corrected.
@@ -149,7 +152,7 @@ ADR-0004's classes are platform-independent, and their ids are per build (R-34).
 - The flag is **not** what drops the server: stdio is rejected with and without it.
 - Without the flag, the Copilot cell connects to the remote `github-mcp-server`; with the flag, it does not.
 - The profile does not carry the flag (`bench/profiles/copilot.yaml:7`, against ADR-0004:58). The Owner is ruling on that separately. This design cites the finding and does not change the profile.
-- Whether the flag drops a session-supplied **HTTP** server is the first S-04b variant.
+- S-04b, *Verified*: with the flag on, a session-supplied **HTTP** server and a launch-config stdio server were each listed and called. So the flag does not drop a server supplied by the session or at launch. This closes R-37 c2's second clause for those two transports.
 
 ## 6. The responder
 
@@ -329,7 +332,21 @@ Tests are named for W2-USER-M (`tests/test_scripted_user.py`) and W2-USER-W (`te
 
 ### DR-S04-1 (R-37 c1): the tool never reaches Copilot over stdio
 
-*Verified*: Copilot 1.0.89-1 rejects client-supplied stdio MCP servers. The options:
+*Verified*: Copilot 1.0.89-1 rejects client-supplied stdio MCP servers.
+
+**Measured in S-04b** (spike note, S-04b section; probe prompt, n = 1 per row; all Copilot rows with `--disable-builtin-mcps`):
+
+| Transport | Claude Code 2.1.282 | Codex 0.156.0 | Copilot 1.0.89-1 |
+| --- | --- | --- | --- |
+| stdio in `session/new` (S-04) | listed at handshake, called | listed at handshake, called | **rejected** |
+| HTTP in `session/new` | listed at handshake, called | called (from its `exec` code tool) | listed **at the first prompt**, called |
+| Copilot launch config, stdio | — | — | listed **at the first prompt**, called |
+
+- Every call returned the reply to the model, with 0 permission requests.
+- Not measured on any transport: an A1 turn on Copilot, tool-call timeouts, and same-cell injection.
+- Copilot's lazy listing means `tools_listed` (§8) appears only after the prompt. A Copilot cell's reach can only be read after the turn, which is when the engine writes `end`.
+
+The options, each with its measured status:
 
 - **(a) HTTP for every harness.** The engine runs one Streamable-HTTP server per cell on `127.0.0.1` and passes `{type: "http", name, url, headers: []}` in `session/new`.
   - Pro: one transport, so US-14 symmetry holds.
@@ -339,13 +356,21 @@ Tests are named for W2-USER-M (`tests/test_scripted_user.py`) and W2-USER-W (`te
     - **Readiness and teardown.** The server listens before `session/new`, lives until after R-21's grace, not only to the end of the turn, runs in its own Job Object, and leaves no port behind if the engine crashes.
     - **Proxy environment.** `HTTP_PROXY`/`NO_PROXY` in the cell's environment must not route `127.0.0.1`.
     - **Timeouts.** Tool-call timeouts differ per harness and per transport; S-04b records them.
-  - Needs S-04b variants 1, 2, 5 and 6 green.
-- **(b) HTTP for Copilot only; stdio for Claude Code and Codex.** The same server logic behind two transports: asymmetric in transport, and disclosed. The (a) risks apply to Copilot cells. Needs S-04b variants 1–2.
-- **(c) Copilot through its own launch flag.** `--additional-mcp-config @<cell>/mcp-config.json`, the same stdio server. This leaves ACP `session/new` for one harness, so it amends R-37's "passed in `session/new`". Needs S-04b variants 3–4.
+  - S-04b: **reaches all three harnesses** (probe prompt). The risks above are unmeasured and stay open.
+  - It changes R-37's "stdio" for every harness.
+  - Codex reached the tool through its `exec` code tool rather than a direct call. This is a harness behaviour, visible in its record, and not shown to differ from stdio.
+- **(b) HTTP for Copilot only; stdio for Claude Code and Codex.** The same server logic behind two transports: asymmetric in transport, and disclosed. The (a) risks apply to Copilot cells only.
+  - S-04b: **reaches Copilot.**
+  - It keeps `session/new` for all three.
+- **(c) Copilot through its own launch flag.** `--additional-mcp-config @<cell>/mcp-config.json`, the same stdio server. The harness starts it, so no bench-run port, no URL and none of (a)'s HTTP risks.
+  - S-04b: **reaches Copilot.**
+  - It leaves ACP `session/new` for one harness, so it amends R-37's "passed in `session/new`". The profile's `command` needs a per-cell file placeholder (a `profiles.py` seam).
 - **(d) Copilot A1 cells not applicable in wave 2.** The cost is not only 2 of 36 cells: one of three harnesses leaves the only scenario-1 task's cross-harness comparison. It is disclosed in the report.
 - **(e) Re-pin Copilot** (R-33) to a build that accepts client stdio servers, if one exists. Unverified that one does; a pin change re-opens the Copilot profile's qualification.
 
-**Default:** decide after S-04b. The author leans to (a) if the HTTP variants pass and Security clears the injection mitigation; else (b).
+**Status:** with the Owner. This design does not decide it.
+
+The measured facts separate the options on one axis: **transport symmetry** ((a)) against **no bench-run network endpoint** ((c), and stdio in (b) for two harnesses). (d) and (e) are no longer forced: two measured routes reach Copilot.
 
 ### DR-S04-2: the responder shares the matcher's recall ceiling (numbers for the Owner's ruling)
 

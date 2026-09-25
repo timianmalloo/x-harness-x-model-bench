@@ -20,6 +20,8 @@ summary: >-
   Codex asked nothing. The rule table's held-out measurement: precision 1.0, 0/21 default-labelled matches,
   paraphrase recall 0/11 (overall 6/17); S-04 threshold set (regression floor met; T = 0.80 on paraphrase recall
   not met, so A1 clarification metrics carry "low-confidence matcher" in wave 2).
+  S-04b: session HTTP is listed and called on all three harnesses, and Copilot's launch config works too, both under
+  --disable-builtin-mcps; Copilot lists tools lazily, at the first prompt.
 ---
 
 # Spike S-04: the scripted user (R-37 c1, c2; R-39 c1)
@@ -176,3 +178,40 @@ This is a reference measurement of the table. The matcher W2-USER-M builds must 
 6. Probe defects found and fixed, red-first in `probe_selftest.py`:
    - **OUT-A:** the summary printed to a cp1252 console crashed after it was saved. It hit three runs (Copilot probe with the flag, Claude A1, Copilot A1). Only for Claude A1 did it change the verdict: that exit status was 1, although the turn called the tool. The Leader's exit-code line ("claude-code a1 1") is superseded by the saved summary.
    - A `TEST-A` instance: "tool in the native record" counted the prompt's own bare word `ask_user`. It now needs the harness's qualified id.
+
+## S-04b: HTTP and launch-config variants (Leader-run, 2026-09-25, 04:34–04:36 UTC)
+
+**Runs:** six runs from `probe_turn.py` at `85a8eec`. Every Copilot run had `--allow-tool scripted_user --disable-builtin-mcps`. The facts are in `s04-results.json` (17 runs in all), re-analysed by the committed `analyse`.
+
+| Harness · transport | Run | Server `initialize` (client) | Listed | Called | Reply reached the model | Tool id (ACP title / native) | Permission requests |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Copilot 1.0.89-1 · session HTTP | handshake only | yes (`copilot-cli` 1.0.89-1, `2025-11-25`) | **no** (30 s) | — | — | — | 0 |
+| | probe | yes | yes | yes, 1 | yes | `scripted_user-ask_user` / `scripted_user-ask_user` | 0 |
+| Copilot 1.0.89-1 · launch config (`--additional-mcp-config`) | handshake only | yes | **no** (30 s) | — | — | — | 0 |
+| | probe | yes | yes | yes, 1 | yes | `scripted_user-ask_user` / `scripted_user-ask_user` | 0 |
+| Claude Code 2.1.282 · session HTTP | probe | yes (`claude-code`, `2025-11-25`) | yes | yes, 1 | yes | `ToolSearch`, then `mcp__scripted_user__ask_user` / same | 0 |
+| Codex 0.156.0 · session HTTP | probe | yes (`codex-mcp-client`, `2025-06-18`) | yes | yes, 1 | yes | `mcp.scripted_user.ask_user` / a structured `McpToolCall {server: scripted_user, tool: ask_user}` | 0 |
+
+No Copilot log in these runs has a `Rejecting` line or a `github-mcp-server` connection.
+
+### Why Copilot's handshake-only runs exit 1 and its probe runs exit 0
+
+It is not a probe bug. Copilot lists MCP tools lazily, at the first prompt. The evidence:
+- **The wait ran** (*Verified*). Both handshake-only recordings end at 33.3 s: the 30 s `--server-wait`, plus teardown. The runs with a prompt end at 6.7–7.8 s.
+- **The server was initialised but not listed** (*Verified*). In both handshake-only runs, the server log has `server/discover`, `initialize` and `notifications/initialized` in the first 2.5 s of the session. It has no `tools/list` in the 30 s that followed. `_wait_for_listing` polls for `tools/list`, so exit 1 is the correct reading of "not listed without a prompt".
+- **The probe runs listed after the prompt.**
+  - *Verified*: the same three messages arrive, then `tools/list`, then `tools/call`.
+  - *Inferred*, because the recorder and the server keep separate clocks: `tools/list` came within about a second of `session/prompt`. On the server's clock, it came 0.62 s (session HTTP) and 0.47 s (launch config) after `initialize`. On the recorder's clock, the prompt went out 0.0 s after `session/set_model` returned.
+- **Claude Code and Codex list during the handshake** (S-04: `tools/list` in their handshake-only runs). So `--handshake-only` is a reach test for those two harnesses, **not for Copilot**.
+
+### What S-04b decides nothing about, and what it measures
+
+- **R-37 c2 (*Verified* for HTTP and for the launch config):** `--disable-builtin-mcps` does not drop a Copilot server supplied by the session or at launch. Both were listed and called with the flag on. The flag's only observed effect is still the built-in `github-mcp-server` (S-04).
+- **Allowlist (*Verified*):** `--allow-tool scripted_user` covers the tool: 0 permission requests. The Copilot id is `scripted_user-ask_user`.
+- **One transport for all three harnesses is possible (*Verified*, probe prompt, n = 1 each).** Session HTTP was listed, called and answered on Claude Code, Codex and Copilot.
+- **Codex over HTTP (*Verified*):** the model reached the tool from its `exec` code tool (`ALL_TOOLS.filter(… "ask_user" …)`). The rollout records a structured `McpToolCall`, not the `mcp__…` id that the stdio run recorded. `analyse` was extended red-first to count that form (`probe_selftest.py`). The ACP title is the same as over stdio.
+- **Not measured:**
+  - an A1 turn over HTTP or the launch config;
+  - the Copilot A1 ask-versus-assume behaviour;
+  - tool-call timeouts;
+  - same-cell injection over HTTP (a Security hand-off, design §13).

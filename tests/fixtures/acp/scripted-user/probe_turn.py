@@ -81,6 +81,8 @@ PROBE_PROMPT = (
 )
 CLAUDE_TOOL_ID = f"mcp__{SERVER_NAME}__{TOOL}"
 TOOL_ID = re.compile(rf"mcp(?:__|\.){SERVER_NAME}(?:__|\.){TOOL}|{SERVER_NAME}[-/]{TOOL}")
+# S-04b: Codex 0.156's rollout records an MCP call made from its `exec` code tool as a structured item.
+MCP_CALL = re.compile(rf'"type":\s*"McpToolCall"[^{{}}]*"server":\s*"{SERVER_NAME}"[^{{}}]*"tool":\s*"{TOOL}"')
 # assume: Claude Code names an MCP tool mcp__<server>__<tool>. Confirm: the account connectors in this repo's own
 # native records are named mcp__claude_ai_<Name>__<tool> (R-36), and the probe's native record lists this id.
 # Breaks: the id differs, the allowlist misses it, and the model's call becomes a permission request, which the
@@ -256,6 +258,8 @@ def analyse(recording_path: Path, server_log_path: Path, native_paths: list[Path
     for path in native_paths:
         for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
             ids.update(TOOL_ID.findall(line))
+            if MCP_CALL.search(line):
+                ids.add(f"McpToolCall {SERVER_NAME}/{TOOL}")
             if TOOL in line:
                 hits += 1
                 if len(snippets) < 3:

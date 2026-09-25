@@ -173,6 +173,10 @@ def test_analyse(tmp: Path) -> None:
     codex.write_text('{"title": "mcp.scripted_user.ask_user"}\n', encoding="utf-8")
     check(probe_turn.analyse(rec_path, log_path, [codex], None)["native_record_tool_ids"] == ["mcp.scripted_user.ask_user"],
           "analyse: Codex's dotted id counts")
+    structured = tmp / "codex-http.jsonl"  # S-04b: Codex's rollout records {"type":"McpToolCall","server":..,"tool":..}
+    structured.write_text('{"item":{"type":"McpToolCall","id":"x","server":"scripted_user","tool":"ask_user"}}\n', encoding="utf-8")
+    check(probe_turn.analyse(rec_path, log_path, [structured], None)["native_record_tool_ids"] == ["McpToolCall scripted_user/ask_user"],
+          "analyse: Codex's structured McpToolCall counts")
     # the negative: an error from session/new, a server that never started, no native record
     rec_err = tmp / "rec-err.jsonl"
     rec_err.write_text("".join(json.dumps(r) + "\n" for r in [
