@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T12:07:50Z",
+  "generated": "2026-09-25T13:14:36Z",
   "audit": [
     {
       "actor": null,
@@ -23299,6 +23299,67 @@ window.AUDIT_DATA = {
       ],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "src/harness_bench/gateway/backend.py"
+      ],
+      "compiled": false,
+      "datetime": "2026-09-25T12:13:32Z",
+      "done_when": "ac44295 merged; backend.copilot_argv is the measured shape, red first; probe self-test 0 failures; mutant killed; pytest and ruff clean",
+      "goal": "Align s2's Copilot builder with the Leader's measured spike ac44295",
+      "id": "al-01M3C7RC2B5X05QXYAVAN46HHX",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader note: the measured Copilot judge shape (ac44295) differs from the probe s2 branched from; use it in any Copilot builder/reader; Copilot stays qualified: false (DR-GW-CP-1).",
+      "session": "w3-gwi-2",
+      "shortname": "w3-gwi-2-copilot-shape",
+      "skill": "implement",
+      "summary": "Merged ac44295 (probe conflict resolved toward the imported builders); backend.copilot_argv now -p <prompt> --model <pin> --disable-builtin-mcps --no-custom-instructions --available-tools none (red 5d9431b, green 17c211a); probe self-test 0 failures; mutate_check 67/67; full suite 1418 passed; ruff clean. Headless still launches Claude only; no Copilot entry.",
+      "tags": [
+        "W3-GW-I",
+        "R-63"
+      ],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M3CB86FNEAXKYGBKZH5X0P9M",
+      "shortname": "w3-gwi-3-judge-grader",
+      "datetime": "2026-09-25T13:14:36Z",
+      "session": "w3-gwi-3",
+      "prompt": "W3-GW-I slice 3 per brief-gwi3.md (Leader coord-opus-cq, R-4): grade/judge.py wired through the grader dispatch, the verdict_uses fact and synthesis, red first, offline.",
+      "summary": "W3-GW-I slice 3 (Claude Opus 5.5, R-4). grade/judge.py is built and registered (GRADERS[\"judge\"]): no bench/gateway.yaml -> every judged metric NA \"no qualified judge\"; no rubrics entry for the task -> \"no rubric for this task\"; else one gateway.pipeline.run per stipulated judge (a Launch per qualified judge, inside backend.judge_pass when a call environment is given), one verdict_uses row per (cell, item, judge) with the ADR-0006 Amendment 3 key, closed outcome enum and code, into the pass's own sealed segment, and the call's model_calls rows (principal gateway). Synthesis per design 10.1-10.2; while the second judge is unqualified or absent every C1 item is \"second judge not qualified\" (R-63 b). config.validate_gateway/load_gateway define bench/gateway.yaml (invocation_sha256 recomputed from the builders, so a placeholder is refused; qualified: true only on a harness Headless launches; R-70); bench/gateway.yaml is not committed. HB-GW-001..011 moved to errors.RUN_CODES (review A2). Reds 8db7588 (T-GW-20), 63f7aae (T-GW-22), 73c91f7 (T-GW-21), f20fbe4 (T-GW-12), each failing on an assertion; greens e3afb0b, 7c3edf9, 37a816c, 1912660 (ADR-0006 Amendment 3), plus the mutation commit. tests/mutations/judge.json: 28/28 killed. Outside the grants: CellInput.emit (grade/__init__.py) and runner's emit=self.append line; config.py (schema, loader, 2 lines in validate_repo); backend.HEADLESS_HARNESSES; tests/test_grade.py heads assertion. Remaining: in-run NA and the live flag (s4), the HB-GW-011 build check (T-GW-15), all-worktree known roots (s4), the catalog fields rubrics/artifact/note/scale: 1 and bench/rubrics/adr_quality.md (s5; without scale: 1 a synthesized adr_quality Decimal is HB-GRD-003), review F5's junction test.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "src/harness_bench/grade/judge.py",
+        "docs/adr/0006-append-only-run-ledger-and-derived-results.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "grade/judge.py wired through the grader dispatch with verdict_uses rows and synthesis (design 16 row s3)",
+      "done_when": "T-GW-12/20/21/22 red then green; verdict_uses in FACTS/KEYS/PASS_FACTS; judge_calls + guard; HB-GW codes in RUN_CODES; ADR-0006 Amendment 3; judge.json mutants killed; pytest, ruff, bench validate clean",
+      "tier": "T2",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-25T12:31:58Z",
+      "duration_seconds": 2558.0,
+      "git": {
+        "sha": "48290beb6f77643da6a4b5d0dfe32d695e8d2008",
+        "short": "48290beb6",
+        "branch": "w3-gwi-3",
+        "pushed": null
+      }
     }
   ],
   "changes": [
