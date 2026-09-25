@@ -1,1 +1,2 @@
 {"agent": "w3-gw-d", "at": 1790324174.1803992, "kind": "session-start", "path": "-", "seq": 1, "session": "w3-gw-d", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w3-gw-design"}
+{"agent": "w3-gw-d", "at": 1790327567.1686397, "kind": "session-end", "path": "-", "seq": 2, "session": "w3-gw-d", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w3-gw-design"}

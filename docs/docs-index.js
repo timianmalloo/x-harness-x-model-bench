@@ -1046,6 +1046,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "af59aae25e087249e9466b861ed062971fbae0fa7b544ef73951141d3df19293"
     },
     {
+      "id": "review-w3-egress-codex",
+      "path": "docs/notes/review-w3-egress-codex.md",
+      "title": "W3-EGRESS slice 1 cross-vendor security review",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-09",
+      "reviewSuggested": [],
+      "summary": "Security Adversary review of W3-EGRESS slice 1 at a45fbfa: BLOCK because synthetic sensitive values bypass the scanner and the gateway import lint permits a direct backend call.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "9e65e706ea947204a0a1d7ddcd11d657b1559207f3b242fb20377efa18cfdd63"
+    },
+    {
       "id": "row15-headroom",
       "path": "docs/notes/row15-headroom.md",
       "title": "Row 15: the headroom rule for raising the parallelism cap",
@@ -2650,5 +2671,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "e3c99615b76451e9cdc7071ba846c84922fe8f6814327f8886146cb31e4c4ca5"
+  "graphSha256": "201bff57da4c30b00c410b451cf3555656e28006a75af0fba2a40b321e1cac11"
 };

@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T09:09:04Z",
+  "generated": "2026-09-25T09:13:19Z",
   "audit": [
     {
       "actor": null,
@@ -17438,6 +17438,89 @@ window.AUDIT_DATA = {
       "skill": "design-slice",
       "started_at": "2026-09-25T08:17:35Z",
       "summary": "Row-17 design (docs/design/phase3-gateway-judges.md, revision 3) and spike GW-H (docs/notes/spike-gw-headless.md, tests/fixtures/gateway/gw-headless-results.json) from five Leader-run probe turns.\n\nMeasured:\n- Claude Code 2.1.282 serves claude-fable-5-1 with 0 tool events in text mode. --json-schema adds a StructuredOutput tool call.\n- Codex 0.156.0 serves gpt-6-sol but keeps its code-mode exec tool, which the model called once per turn; it failed closed.\n- Claude adds the account e-mail. Codex adds the operator's ~/.agents/skills root (user name, home path).\n- The OpenAI account is at 99% of its weekly limit until 2026-09-29T20:03Z.\n\nDesign decisions:\n- The Anthropic judge is Fable, text output. Codex is qualified: false and never spawned (DR-GW-1).\n- Call folders sit under the cells root, checked by check_cells_root. The request goes on stdin.\n- The key hashes request, schema, model and invocation_sha256. The store is write-once via os.link. A hit needs a matching storing row inside the known roots.\n- verdict_uses gets outcome (5 values) plus code. Calibration uses a set-checked label invariant and its own calibration ledger.\n- CLI-added context is detected at report time (DR-GW-5).\n\nGate: Patterns, Simplifier, Test Architect, Security and Data & Persistence, all opus, Adversary mode. Round 1 had three vetoes and one soft block. In round 2 all five cleared, four with conditions, which are applied. Five Owner decision requests: DR-GW-1 to DR-GW-5.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "src/harness_bench/egress.py",
+        "tests/test_egress.py",
+        "tests/mutations/egress.json"
+      ],
+      "compiled": false,
+      "datetime": "2026-09-25T08:28:55Z",
+      "done_when": "egress.check finds each US-47 class and withholds with hash + destination; red-then-green per class with synthetic values; the fake backend never receives a withheld payload; the gateway-only lint in test_architecture; tests/mutations/egress.json all killed; full pytest passes; ruff clean; the audit entry is the last commit.",
+      "duration_seconds": 686.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w3-egress",
+        "pushed": null,
+        "sha": "2be059b5eecf6e40145a2909042bc755937e7080",
+        "short": "2be059b5e"
+      },
+      "goal": "Row 18 offline half: the egress scanner every judge payload passes, plus the lint that makes it the only path to a judge backend.",
+      "id": "al-01M3BTX2V7APDP25WTSJYYFS66",
+      "kind": "skill",
+      "main_budget": 150,
+      "main_calls": 55,
+      "main_over_budget": false,
+      "outcome": "partial",
+      "prompt": "W3-EGRESS slice 1 (plan version 5, R-60): offline egress gate egress.check for US-47 classes, red-first tests with synthetic values, gateway-only spawner lint, tests/mutations/egress.json.",
+      "session": "w3-egress",
+      "shortname": "w3-egress-s1",
+      "signals": {
+        "acceptance_met": false,
+        "regression": false,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "implement",
+      "started_at": "2026-09-25T08:17:29Z",
+      "summary": "W3-EGRESS slice 1 (row 18, R-60, offline). src/harness_bench/egress.py: check(payload, *, destination, secrets, email, username, home, canaries) -> Verdict; six US-47 classes (credential in plain/base64/URL via report.credentials.encodings; token_shape via report.html.scan; email any case; username whole word; home path any separator form or case; canary any encoding); a hit is withheld: sensitive content with sha256 + destination + class names and no payload; Verdict.release never calls the backend on a hit. Red-then-green per class, synthetic runtime values only, a fake capturing backend. tests/test_architecture.py: the gateway-only spawner lint (harness_bench.gateway.backend; vacuous today, self-checked). tests/mutations/egress.json 7/7 killed. Full suite 1102 passed, 1 failed: test_docs_html_in_sync (docs/specs/harness-bench.html not re-rendered after ed9f247; pre-existing, outside owned paths). ruff clean. No network, listener, subprocess or real secret.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "src/harness_bench/egress.py",
+        "tests/test_egress.py",
+        "tests/test_architecture.py",
+        "tests/mutations/egress.json"
+      ],
+      "compiled": false,
+      "datetime": "2026-09-25T09:01:38Z",
+      "done_when": "Every Blocker and Major from the Codex and D&P reviews fixed red-first with separate red commits failing on assertions; the lint provably fires on synthetic gateway modules that bypass egress.check/release; each bypass input has a named test; mutants for new branches all killed; main merged; full suite green; ruff clean; closing audit entry last.",
+      "duration_seconds": 814.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w3-egress",
+        "pushed": null,
+        "sha": "cbfe9d45cc049a586a06d6bc425e7fc3aefc839b",
+        "short": "cbfe9d45c"
+      },
+      "goal": "Clear the W3-EGRESS join gates: Codex F1/F2/F3 and the D&P Majors, red-first, offline.",
+      "id": "al-01M3BWRZB1S79T27SN63WMA2K7",
+      "kind": "skill",
+      "main_budget": 150,
+      "main_calls": 60,
+      "main_over_budget": false,
+      "outcome": "success",
+      "prompt": "W3-EGRESS loop-back: fix Codex BLOCK F1/F2/F3 and D&P conditions red-first on w3-egress under R-60; merge main; mutants; full suite green.",
+      "session": "w3-egress",
+      "shortname": "w3-egress-s1-loopback",
+      "signals": {
+        "acceptance_met": true,
+        "regression": false,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "implement",
+      "started_at": "2026-09-25T08:48:04Z",
+      "summary": "W3-EGRESS loop-back (Codex BLOCK F1/F2/F3, D&P conditions). Merged main. Red-first: D&P Major 1 (required Operator refusing empty identifiers; Verdict.scanned) red 00e1fa6 green 9d264d0; Codex F3 (destination a clean lower-case backend id; payload repr=False; record() is destination/payload_sha256/classes/scanned) red baf1fc9 green 51f99de; D&P Major 2 (github_pat_, xai-, AIza shapes; runtime token_prefixes) red c290e81 green 6688912; Codex F1 (canonical views: NFKC, HTML entities, JSON escapes, URL layers, base64 runs, whitespace splits; any-case shapes; encoded identifiers; POSIX homes; unscannable fail-closed past MAX_LAYERS=4/MAX_VIEWS=64) red 978baea green fb70c54; Codex F2 (lint bound by behaviour: procs and injected-backend calls in gateway/ only inside egress.check(...).release; discovered spawners; outside-import ban; vacuity guard) red 4bb26e8 green a92e7b6, self-check 9/9 as expected, 0 findings over 49 real modules. tests/mutations/egress.json 32/32 killed. Full suite 1154 passed; ruff clean. No socket, listener, network, subprocess or real secret in the diff.",
       "tags": [],
       "tier": "T2",
       "tool": null
