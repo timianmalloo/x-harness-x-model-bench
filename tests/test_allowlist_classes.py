@@ -19,11 +19,13 @@ for the defect class "a per-platform tool id missing from a class allowlist" (do
 import json
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
 from harness_bench import profiles, tools
-from harness_bench.telemetry import claude_code
+from harness_bench.telemetry import claude_code, copilot
+
 
 ROOT = Path(__file__).resolve().parents[1]
 FIX = Path(__file__).parent / "fixtures"
@@ -45,8 +47,12 @@ CLASSES = {
 # R-54 (a): class `meta` loads a deferred tool's schema and invokes nothing. It runs with no permission callback, so it
 # needs no allowlist entry, and it is outside CLASSES (the allowlist tests below) on purpose.
 META = {"ToolSearch"}
+# R-74 item 1: class `delegate` starts, addresses or reads a sub-agent. In profile only in a scenario-6 cell (the view's
+# rule); the allowlist names it only in a scenario-6 cell's seeded settings (item 3). ListAgents, SendMessage, TaskStop and
+# Workflow stay out of profile: the operator's list is the allowance.
+DELEGATE = {"Agent"}
 OUT_OF_PROFILE = {
-    "Agent", "ListAgents", "ReportFindings", "ScheduleWakeup", "Skill", "Workflow",
+    "ListAgents", "ReportFindings", "ScheduleWakeup", "Skill", "Workflow",
     "CronCreate", "CronDelete", "CronList", "DesignSync", "EnterPlanMode", "EnterWorktree", "ExitPlanMode",
     "ExitWorktree", "Monitor", "PushNotification", "RemoteTrigger", "SendMessage", "TaskStop", "WebFetch", "WebSearch",
 }
@@ -65,8 +71,8 @@ def test_allowlist_covers_scripted_user_class(tmp_path):  # T-37-2a, R-34 class 
     assert CLASSES["scripted user"] == {"mcp__scripted_user__ask_user"}
     assert CLASSES["scripted user"] <= claude_allowlist(tmp_path)
     assert COPILOT_CLASSES["scripted user"] == {"scripted_user-ask_user"}
-COPILOT_OUT_OF_PROFILE = {"web_search", "web_fetch", "task", "write_agent", "read_agent",
-                          "list_agents", "sql"}
+COPILOT_OUT_OF_PROFILE = {"web_search", "web_fetch", "sql"}
+COPILOT_DELEGATE = {"task", "write_agent", "read_agent", "list_agents"}  # R-74 item 1: they left the set above
 
 
 def copilot_advertised(record: Path) -> set[str]:
@@ -82,35 +88,51 @@ def copilot_advertised(record: Path) -> set[str]:
     return ids
 
 
-def copilot_allowlist() -> set[str]:
-    command = profiles.load(ROOT, "copilot").command
-    if "--available-tools" not in command:
+def copilot_allowlist(scenario: int = 5) -> set[str]:
+    """The --available-tools list a Copilot cell of `scenario` is launched with (the real argv path, R-74 item 3)."""
+    build = SimpleNamespace(exe=Path("copilot.exe"), adapter=None)
+    argv = profiles.load(ROOT, "copilot").argv(build, "gpt-6-sol", scenario=scenario)
+    if "--available-tools" not in argv:
         return set()
-    start = command.index("--available-tools")
-    return set(command[start + 1:])
+    return set(argv[argv.index("--available-tools") + 1:])
 
 
 def test_copilot_pinned_build_tool_ids_are_all_classified():
     ids = copilot_advertised(COPILOT_ON)
     assert len(ids) == 21  # the committed pack-on sample; a recut has its own check below
-    known = set().union(*COPILOT_CLASSES.values()) | COPILOT_OUT_OF_PROFILE
+    known = set().union(*COPILOT_CLASSES.values()) | COPILOT_OUT_OF_PROFILE | COPILOT_DELEGATE
     assert {i for i in ids if i not in known and not i.startswith("github-mcp-server-")} == set()
     assert {i for i in ids if i.startswith("github-mcp-server-")}  # exercise the prefix class
 
 
-def test_copilot_allowlist_covers_every_in_class_id_and_nothing_outside_it():
+@pytest.mark.parametrize("scenario", [1, 5, 7])
+def test_copilot_allowlist_covers_every_in_class_id_and_nothing_outside_it(scenario):
     ids = copilot_advertised(COPILOT_ON)
     in_class = ids & set().union(*COPILOT_CLASSES.values())
-    allowed = copilot_allowlist()
+    allowed = copilot_allowlist(scenario)
     assert in_class - allowed == set()
     assert allowed - in_class == set()
-    assert allowed & COPILOT_OUT_OF_PROFILE == set()
+    assert allowed & (COPILOT_OUT_OF_PROFILE | COPILOT_DELEGATE) == set()
     assert not any(i.startswith("github-mcp-server-") for i in allowed)
+
+
+def test_a_scenario6_copilot_allowlist_adds_exactly_the_delegate_ids():  # R-74 c1, the mirror of the Claude test
+    ids = copilot_advertised(COPILOT_ON)
+    in_class = ids & set().union(*COPILOT_CLASSES.values())
+    allowed = copilot_allowlist(6)
+    assert allowed == in_class | COPILOT_DELEGATE
+    assert COPILOT_DELEGATE <= ids  # the pinned build advertises all four (the pack-on sample)
+    assert allowed & COPILOT_OUT_OF_PROFILE == set()
+
+
+def test_the_copilot_delegate_class_is_the_readers():  # R-74 c1, c3
+    assert {name for name, cls in copilot.TOOL_CLASS.items() if cls == "delegate"} == COPILOT_DELEGATE
+    assert not COPILOT_DELEGATE & COPILOT_OUT_OF_PROFILE
 
 
 def test_old_copilot_fixture_records_out_of_profile_ids():
     ids = copilot_advertised(COPILOT_ON)
-    assert COPILOT_OUT_OF_PROFILE <= ids
+    assert COPILOT_OUT_OF_PROFILE | COPILOT_DELEGATE <= ids
     assert any(i.startswith("github-mcp-server-") for i in ids)
 
 
@@ -143,12 +165,12 @@ def advertised(record: Path) -> tuple[set[str], set[str], set[str]]:
     return ids, versions, platforms
 
 
-def claude_allowlist(tmp_path: Path) -> set[str]:
-    """The allowlist a Claude Code cell is seeded with (the real profile path, not a copy of the YAML)."""
+def claude_allowlist(tmp_path: Path, scenario: int = 5) -> set[str]:
+    """The allowlist a Claude Code cell of `scenario` is seeded with (the real profile path, not a copy of the YAML)."""
     cred = tmp_path / "cred.json"
     cred.write_text("{}", encoding="utf-8")
-    home = tmp_path / "home"
-    profiles.load(ROOT, "claude-code", credential_source=cred).seed_home(home, model="claude-opus-5-5")
+    home = tmp_path / f"home-{scenario}"
+    profiles.load(ROOT, "claude-code", credential_source=cred).seed_home(home, model="claude-opus-5-5", scenario=scenario)
     return set(json.loads((home / "settings.json").read_text(encoding="utf-8"))["permissions"]["allow"])
 
 
@@ -164,20 +186,36 @@ def test_the_claude_code_allowlist_covers_every_class_id_the_pinned_build_advert
     assert in_class - claude_allowlist(tmp_path) == set()
 
 
-def test_the_claude_code_allowlist_names_nothing_outside_the_declared_classes(tmp_path):  # ADR-0004: no widening
-    assert claude_allowlist(tmp_path) <= set().union(*CLASSES.values())
+@pytest.mark.parametrize("scenario", [1, 5, 7])
+def test_the_claude_code_allowlist_names_nothing_outside_the_declared_classes(tmp_path, scenario):  # ADR-0004: no widening
+    allowed = claude_allowlist(tmp_path, scenario)
+    assert allowed <= set().union(*CLASSES.values())
+    assert not allowed & DELEGATE
+
+
+def test_a_scenario6_claude_code_allowlist_is_exactly_the_classes_and_agent(tmp_path):  # R-74 c1: red while Agent is out
+    allowed = claude_allowlist(tmp_path, 6)
+    assert allowed == set().union(*CLASSES.values()) | {"Agent"}
+    assert not allowed & OUT_OF_PROFILE
 
 
 def test_every_tool_id_the_pinned_build_advertises_is_classified():  # a new id in a later build is red here
     ids, _, _ = advertised(TOOL_LIST)
-    known = set().union(*CLASSES.values()) | META | OUT_OF_PROFILE
+    known = set().union(*CLASSES.values()) | META | DELEGATE | OUT_OF_PROFILE
     assert {i for i in ids if i not in known and not i.startswith("mcp__")} == set()
 
 
 def test_the_meta_class_is_exactly_tool_search_in_the_reader_and_here():  # R-54 c1
     assert META == {"ToolSearch"} and META <= advertised(TOOL_LIST)[0]
     assert {name for name, cls in claude_code.TOOL_CLASSES.items() if cls == "meta"} == META
-    assert not META & OUT_OF_PROFILE
+    assert not META & OUT_OF_PROFILE and not META & DELEGATE
+
+
+def test_the_delegate_class_is_exactly_agent_in_the_reader_and_here():  # R-74 c1, c3
+    assert DELEGATE == {"Agent"} and DELEGATE <= advertised(TOOL_LIST)[0]
+    assert {name for name, cls in claude_code.TOOL_CLASSES.items() if cls == "delegate"} == DELEGATE
+    assert not DELEGATE & OUT_OF_PROFILE
+    assert {"ListAgents", "SendMessage", "TaskStop", "Workflow"} <= OUT_OF_PROFILE
 
 
 @pytest.mark.native
