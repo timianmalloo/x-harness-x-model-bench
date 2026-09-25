@@ -30,6 +30,7 @@ from harness_bench.gateway.backend import (
     Headless,
     Launch,
     Reply,
+    call_folder,
     final_text,
 )
 from harness_bench.telemetry import Extraction, normalize
@@ -108,7 +109,12 @@ def _ask(backend: Backend, request_text: str, call_id: str) -> Reply:
 
 def _send(request_text: str, judge: Judge, ctx: Context, backend: Backend | Launch, call_id: str) -> Reply | None:
     """The reply, or None when egress withheld the request (the backend was never called). A `Launch` becomes a
-    `Headless` call only here, inside the release."""
+    `Headless` call only here, inside the release. Both CLIs send their working-folder path to the model (spike GW-H
+    result 6), so a headless call's folder path is checked too, and a hit withholds the call (T-GW-26)."""
+    if isinstance(backend, Launch) and egress.check(str(call_folder(backend, call_id)), destination=judge.model,
+                                                    operator=ctx.operator, secrets=ctx.secrets,
+                                                    canaries=ctx.canaries).withheld:
+        return None
     return egress.check(request_text, destination=judge.model, operator=ctx.operator, secrets=ctx.secrets,
                         canaries=ctx.canaries).release(
         lambda payload: _ask(Headless(backend) if isinstance(backend, Launch) else backend, payload, call_id))
