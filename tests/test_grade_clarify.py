@@ -6,6 +6,10 @@ Metrics: key_question_recall, key_question_precision, ask_vs_assume, asked_unmat
 from __future__ import annotations
 
 import ast
+import dataclasses
+import hashlib
+import json
+from decimal import Decimal
 from pathlib import Path
 
 from harness_bench import config
@@ -207,3 +211,45 @@ def test_clarify_module_never_imports_or_calls_matcher():
             assert "matcher" not in mod, f"Forbidden import from matcher: {mod}"
             for alias in node.names:
                 assert "matcher" not in alias.name, f"Forbidden import of matcher: {alias.name}"
+
+
+# --- Leader join fix: no guessed annotated id; ratios are decimals at the catalog scale ---------------------------
+
+
+def test_a_missing_clarification_set_is_na_never_a_guessed_id(tmp_path):
+    # The grader once fell back to {"goal-maximum"} when the set was missing: a guess, scored as if it were the oracle.
+    inp = _make_input(tmp_path, FIXTURES / "seeded_a")
+    inp.plan["tasks"]["A1"]["clarifications_path"] = str(tmp_path / "absent" / "clarifications.yaml")
+    inp = dataclasses.replace(inp, task_dir=tmp_path / "absent-task")
+    scores = clarify.grade_cell(inp)
+    for metric in ALL_METRICS:
+        assert (scores[metric].value, scores[metric].reason) == (None, "clarification set changed since the plan"), metric
+
+
+def test_a_non_integer_ratio_is_a_decimal_at_the_catalog_scale(tmp_path):
+    # Two annotated ids, one asked: recall 1/2. Integer division would store 0.
+    cset = tmp_path / "cset" / "clarifications.yaml"
+    cset.parent.mkdir()
+    cset.write_bytes(b"clarifications:\n  - id: goal-maximum\n  - id: input-format\n")
+    digest = hashlib.sha256(cset.read_bytes()).hexdigest()
+    log = tmp_path / "log"
+    log.mkdir()
+    rows = [
+        {"kind": "header", "schema": "bench-scripted-user-log/1", "task": "A1", "clarifications_sha256": digest,
+         "matcher_version": MATCHER_VERSION, "log_source": "env"},
+        {"kind": "tools_listed"},
+        {"kind": "call", "seq": 1, "t": 1.0, "question": "q", "question_sha256": "0" * 64,
+         "clarifications_sha256": digest, "matcher_version": MATCHER_VERSION,
+         "decision": {"clarification": "goal-maximum", "rung": "t0"}, "reply": "r"},
+        {"kind": "end", "calls": 1, "client_initialized": True, "tool_listed": True},
+    ]
+    (log / "scripted-user.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    inp = _make_input(tmp_path, log, cset_hash=digest)
+    inp.plan["tasks"]["A1"]["clarifications_path"] = str(cset)
+    scores = clarify.grade_cell(inp)
+    assert inp.metrics["key_question_recall"]["scale"] == 4
+    assert scores["key_question_recall"].value == Decimal("0.5")
+    assert isinstance(scores["key_question_recall"].value, Decimal)
+    assert scores["key_question_precision"].value == Decimal("1")
+    assert scores["ask_vs_assume"].value == Decimal("0.5")
+    assert scores["asked_unmatched"].value == 0
