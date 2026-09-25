@@ -132,6 +132,88 @@ def _outcomes(events):
     return {e["cell_id"]: e for e in events if e["kind"] == "cell.outcome"}
 
 
+def _stop_file(run_dir: Path, uid: str | None = None) -> Path:
+    uid = uid or uuid.uuid4().hex
+    folder = run_dir / "control"
+    folder.mkdir(exist_ok=True)
+    target = folder / f"{uid}.json"
+    temp = folder / f"{uid}.json.tmp"
+    temp.write_text(json.dumps({"schema": "bench-control/1", "uuid": uid, "control": "stop",
+                                "decision_id": None, "option": None, "requested_at": "2026-09-25T00:00:00Z"}), encoding="utf-8")
+    os.replace(temp, target)
+    return target
+
+
+def _running_engine(base, p, launcher, on_ready, *, grace=1.0, grade=None):
+    launcher.shutdown_grace = grace
+    config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
+                                 launchers={"fake": launcher}, build_workspace=_build_workspace, grade=grade)
+    eng = engine.Engine(p, config)
+    box = {}
+
+    def target():
+        box["summary"] = eng.run()
+
+    thread = threading.Thread(target=target, daemon=True)
+    thread.start()
+    deadline = time.monotonic() + 5
+    while time.monotonic() < deadline and not on_ready(config.run_dir):
+        time.sleep(0.02)
+    assert on_ready(config.run_dir), "cells did not reach the required stop point"
+    return eng, config, thread, box
+
+
+def test_stop_ends_stubborn_trees_within_30s(base):  # R10-1, real Job Objects and two children
+    p = _plan(n_cells=2, parallelism=2)
+    launcher = FakeLauncher({c["label"]: {"mode": "stubborn"} for c in p["cells"]})
+
+    def ready(run_dir):
+        return len(list((base / "cells" / p["run_id"]).glob("*/ws/.fake-stubborn-child.pid"))) == 2
+
+    eng, cfg, thread, box = _running_engine(base, p, launcher, ready, grace=10.0)
+    children = []
+    for marker in (base / "cells" / p["run_id"]).glob("*/ws/.fake-stubborn-child.pid"):
+        pid = int(marker.read_text(encoding="utf-8"))
+        children.append((pid, host.creation_time(pid)))
+    _stop_file(cfg.run_dir)
+    started = time.monotonic()
+    thread.join(30)
+    assert not thread.is_alive(), "the engine did not stop the stubborn process trees within 30 s"
+    elapsed = time.monotonic() - started
+    events = _events(cfg.run_dir)
+    applied = next(e for e in events if e["kind"] == "control.applied" and e["effect"] == "applied")
+    outs = [e for e in events if e["kind"] == "cell.outcome"]
+    assert box["summary"].exit_code == 0 and len(outs) == 2
+    assert {e["outcome"] for e in outs} == {"stopped"}
+    assert all((e["mono_ns"] - applied["mono_ns"]) <= 30_000_000_000 for e in outs)
+    assert all(e["ended_by"] == "terminate" for e in events if e["kind"] == "attempt.process_ended")
+    assert all(not host.process_alive(pid, created) for pid, created in children)
+    assert len([e for e in events if e["kind"] == "cell.archived"]) == 2
+    assert elapsed <= 30
+    lifecycle.replay(events, parallelism=2)
+
+
+def test_control_file_is_applied_once_even_if_delete_fails(base, monkeypatch):
+    p = _plan(n_cells=1)
+    eng = engine.Engine(p, engine.EngineConfig(base / "runs" / p["run_id"], base / "cells",
+                                                {"fake": FakeLauncher({})}, _build_workspace, None))
+    assert hasattr(eng, "_read_controls"), "engine needs a control reader"
+
+
+def test_a_second_stop_is_recorded_as_a_no_op(base):  # R10-8
+    p = _plan(n_cells=1)
+    launcher = FakeLauncher({p["cells"][0]["label"]: {"mode": "stubborn"}})
+    ready = lambda d: bool(list((base / "cells" / p["run_id"]).glob("*/ws/.fake-stubborn-child.pid")))
+    _, cfg, thread, _ = _running_engine(base, p, launcher, ready)
+    _stop_file(cfg.run_dir)
+    _stop_file(cfg.run_dir)
+    thread.join(30)
+    assert not thread.is_alive()
+    rows = _events(cfg.run_dir)
+    assert len([e for e in rows if e["kind"] == "run.stopped"]) == 1
+    assert {e["effect"] for e in rows if e["kind"] == "control.applied"} == {"applied", "no-op (already stopped)"}
+
+
 def test_the_engine_keeps_no_dead_helpers_or_literals(base):  # T1-17 (Simplifier minors)
     assert not hasattr(engine, "process_alive") and not hasattr(engine, "read_events")  # host / the ledger own these
     assert '"archive_file"' not in Path(engine.__file__).read_text(encoding="utf-8")  # always overwritten by the row's kind

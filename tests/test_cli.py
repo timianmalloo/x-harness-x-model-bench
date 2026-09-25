@@ -43,6 +43,25 @@ def test_an_unknown_run_is_exit_1_with_the_exact_message(capsys, root, tmp_path)
         assert (code, out, err) == (1, "", "HB-USR-001: no run nope under runs/. Run bench plan to create one.\n"), command
 
 
+def test_stop_refuses_unknown_and_unlocked_runs(capsys, root, tmp_path):  # CLI-1
+    assert _bench(capsys, root, tmp_path, "stop", "nope")[0] == 1
+    make_run(root, tmp_path, {"a": GOOD})
+    code, out, err = _bench(capsys, root, tmp_path, "stop", "r1")
+    assert code == 1 and out == "" and "not running" in err
+
+
+def test_stop_writes_an_atomic_control_file(capsys, root, tmp_path):  # CLI-2
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    with oslock.RunLock.acquire(run_dir / ".lock", "HB-RUN-003"):
+        code, out, err = _bench(capsys, root, tmp_path, "stop", "r1")
+    files = list((run_dir / "control").glob("*.json"))
+    assert code == 0 and err == "" and "stop requested" in out
+    assert len(files) == 1 and not list((run_dir / "control").glob("*.tmp"))
+    data = json.loads(files[0].read_text(encoding="utf-8"))
+    assert data["schema"] == "bench-control/1" and data["control"] == "stop"
+    assert data["uuid"] == files[0].stem and data["decision_id"] is None and data["option"] is None
+
+
 def test_usage_errors_are_exit_2(capsys, root, tmp_path):
     with pytest.raises(SystemExit) as e:
         _bench(capsys, root, tmp_path, "status")
