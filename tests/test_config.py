@@ -148,3 +148,24 @@ def test_task_folder_with_placeholder_home_vars_is_not_rejected(tmp_path):
     entry = {"id": "X5", "scenario": 5, "budget_minutes": 45}
     config.validate_task(d, entry, p, config.grader_modules(ROOT), config.pack_marker_bytes(ROOT))
     assert not any("user-profile path" in i for i in p.items)
+
+
+def test_vendored_workspace_content_is_exempt_from_the_profile_path_scan_but_oracle_is_not(tmp_path):
+    # R-42 condition 3: a workspace file pinned in source.vendored_paths must match the upstream
+    # archive byte for byte, so the profile-path scan must not force an edit there. "oracle" is
+    # listed too, on purpose: vendored_paths only ever pins workspace/ content, so an oracle file
+    # of the same name must still be scanned -- this guards the exemption staying workspace-scoped.
+    d = _write_task(tmp_path, "X6", status="draft", scenario=5,
+                     source={"kind": "authored", "upstream": "x", "repo": "x", "commit": "x",
+                             "vendored_paths": ["vendor/", "oracle"]})
+    (d / "workspace" / "vendor").mkdir(parents=True)
+    (d / "workspace" / "vendor" / "Upstream.cs").write_text(r"C:\Users\someone\AppData", encoding="utf-8")
+    (d / "workspace" / "Local.cs").write_text(r"C:\Users\someone\AppData", encoding="utf-8")
+    (d / "oracle").mkdir()
+    (d / "oracle" / "README.md").write_text(r"C:\Users\someone\AppData", encoding="utf-8")
+    p = config.Problems()
+    entry = {"id": "X6", "scenario": 5, "budget_minutes": 45}
+    config.validate_task(d, entry, p, config.grader_modules(ROOT), config.pack_marker_bytes(ROOT))
+    assert not any("workspace/vendor/Upstream.cs" in i for i in p.items)
+    assert "tasks/X6: workspace/Local.cs:1 hardcodes an absolute user-profile path" in p.items
+    assert "tasks/X6: oracle/README.md:1 hardcodes an absolute user-profile path" in p.items
