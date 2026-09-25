@@ -4,10 +4,10 @@ import json
 from pathlib import Path
 
 import pytest
+from test_engine import FakeLauncher, _build_workspace, _engine_run, _plan, _run
 
 from harness_bench import config, engine, plan, profiles, tools
 from harness_bench.scripted_user import clarifications, matcher, server
-from test_engine import FakeLauncher, _build_workspace, _engine_run, _plan, _run
 
 pytestmark = pytest.mark.native
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,7 +29,9 @@ def test_engine_supplies_server_only_to_scripted_task_and_closes_log_before_arch
     p = _plan()
     scripted, ordinary = p["cells"]
     ordinary["task"] = "X2"
-    p["tasks"] = {"X1": _scripted_task(), "X2": {"prompt": "Do the task.", "scripted_user": False}}
+    p["tasks"] = {"X1": _scripted_task(),
+                  "X2": {"prompt": "Do the task.", "scripted_user": False,
+                         "clarifications_path": str(CLARIFICATIONS)}}
     log_path = base / "cells" / p["run_id"] / scripted["cell_id"] / "scripted-user.jsonl"
     launcher = FakeLauncher({scripted["label"]: {"scripted_user_log": str(log_path)}})
 
@@ -40,6 +42,7 @@ def test_engine_supplies_server_only_to_scripted_task_and_closes_log_before_arch
     ordinary_sent = json.loads((_archived(base, p, ordinary) / "ws" / ".fake-session-new.json").read_text(encoding="utf-8"))
     assert ordinary_sent["mcpServers"] == []
     rows = [json.loads(line) for line in (_archived(base, p, scripted) / "scripted-user.jsonl").read_text(encoding="utf-8").splitlines()]
+    assert rows[0]["kind"] == "header" and rows[0]["clarifications_sha256"] == _scripted_task()["clarifications_sha256"]
     assert rows[-1] == {"kind": "end", "calls": 0, "client_initialized": False,
                         "tool_listed": True, "note": "no question asked"}
     assert not (_archived(base, p, ordinary) / "scripted-user.jsonl").exists()
@@ -77,8 +80,12 @@ def test_copilot_argv_is_exact_for_scripted_and_ordinary_cells(tmp_path):
             "stop_powershell", "apply_patch", "view", "glob", "rg", "skill"]
     assert profile.argv(build, "gpt-6-sol") == base
     cfg = tmp_path / "cell" / "mcp-config.json"
-    assert profile.argv(build, "gpt-6-sol", mcp_config=cfg) == [
-        *base, "scripted_user-ask_user", "--allow-tool", "scripted_user", "--additional-mcp-config", f"@{cfg}"]
+    scripted = [*base, "scripted_user-ask_user", "--allow-tool", "scripted_user",
+                "--additional-mcp-config", f"@{cfg}"]
+    assert profile.argv(build, "gpt-6-sol", mcp_config=cfg) == scripted
+    launcher = profiles.ProfileLauncher(profile, tmp_path, {})
+    launcher.build = build
+    assert launcher.argv_env({"model": "gpt-6-sol", "mcp_config": cfg}, tmp_path / "home", "")[0] == scripted
 
 
 def test_plan_freezes_scripted_user_hash_and_matcher_version():
@@ -90,7 +97,7 @@ def test_plan_freezes_scripted_user_hash_and_matcher_version():
     p = plan.build_plan(ROOT, matrix, bom, "scripted-user-plan", builds,
                         {"source": "../ai-forward", "commit": "c" * 40, "revision": 92})
     task = p["tasks"]["A1"]
-    assert task["scripted_user"] is True
+    assert task["scripted_user"] == 1  # the plan's canonical form has no booleans
     assert task["clarifications_sha256"] == clarifications.load(CLARIFICATIONS).sha256
     assert task["matcher_version"] == matcher.MATCHER_VERSION
     assert Path(task["clarifications_path"]) == CLARIFICATIONS

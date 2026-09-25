@@ -59,6 +59,12 @@ COPILOT_CLASSES = {
     "file edit": {"apply_patch"},
     "file read": {"view", "glob", "rg", "skill"},
 }
+
+
+def test_allowlist_covers_scripted_user_class(tmp_path):  # T-37-2a, R-34 class rule
+    assert CLASSES["scripted user"] == {"mcp__scripted_user__ask_user"}
+    assert CLASSES["scripted user"] <= claude_allowlist(tmp_path)
+    assert COPILOT_CLASSES["scripted user"] == {"scripted_user-ask_user"}
 COPILOT_OUT_OF_PROFILE = {"web_search", "web_fetch", "task", "write_agent", "read_agent",
                           "list_agents", "sql"}
 

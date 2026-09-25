@@ -79,7 +79,7 @@ class Profile:
             env["TRACEPARENT"] = traceparent
         return env
 
-    def argv(self, build: tools.Build, model: str | None = None) -> list[str]:
+    def argv(self, build: tools.Build, model: str | None = None, mcp_config: Path | None = None) -> list[str]:
         if model is None and any("{model}" in part for part in self.command):
             raise ValueError(f"{self.harness}: model is required by the command template")
         values = {"exe": str(build.exe), "model": model}
@@ -92,9 +92,15 @@ class Profile:
             if build.adapter is None:
                 raise BenchError("HB-PRE-007", f"{self.harness}: command needs an ACP adapter")
             values["adapter"] = str(build.adapter)
-        return [part.replace("{exe}", values["exe"]).replace("{model}", values["model"] or "")
+        argv = [part.replace("{exe}", values["exe"]).replace("{model}", values["model"] or "")
                 .replace("{node}", values.get("node", "")).replace("{adapter}", values.get("adapter", ""))
                 for part in self.command]
+        if mcp_config is not None:
+            if self.harness != "copilot" or "--available-tools" not in argv:
+                raise BenchError("HB-USR-002", "a scripted-user launch config needs the Copilot tool allowlist")
+            argv.extend(["scripted_user-ask_user", "--allow-tool", "scripted_user",
+                         "--additional-mcp-config", f"@{mcp_config}"])
+        return argv
 
     def native_records(self, home: Path, session_id: str) -> list[Path]:
         return find_records(home, self.record_glob, session_id)
@@ -172,7 +178,7 @@ class ProfileLauncher:
     def argv_env(self, cell: dict, home: Path, traceparent: str) -> tuple[list[str], dict[str, str]]:
         if self.build is None:
             raise RuntimeError("check_build must run before argv_env")
-        return self.profile.argv(self.build, cell["model"]), self.profile.cell_env(
+        return self.profile.argv(self.build, cell["model"], mcp_config=cell.get("mcp_config")), self.profile.cell_env(
             dict(os.environ), home, self.build, cell["model"], traceparent)
 
     def records(self, home: Path, session_id: str) -> list[Path]:
