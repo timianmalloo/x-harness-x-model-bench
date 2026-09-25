@@ -563,6 +563,16 @@ PARENT_ROLLOUT = "sessions/2026/09/rollout-2026-09-23-sess-a.jsonl"
 CHILD_ROLLOUT = "sessions/2026/09/25/rollout-2026-09-25T21-00-01-sess-luna.jsonl"
 
 
+def test_a_scenario5_codex_cell_that_calls_spawn_agent_is_still_hb_val_008(root, tmp_path):
+    """R-74 item 2: class delegate is out of profile outside scenario 6. The calls are delegate, and the cell is HB-VAL-008."""
+    run_dir = _native_run(root, tmp_path, "codex", PARENT_ROLLOUT,
+                          (CODEX_DELEGATE / "delegate-parent.jsonl").read_text(encoding="utf-8"), scenario=5)
+    cell = _cell(views.load(run_dir), "a")
+    tools = [(r["name"], r["tool_class"]) for r in views.rows(run_dir, "tool_calls")]
+    assert ("spawn_agent", "delegate") in tools and ("wait_agent", "delegate") in tools
+    assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
+
+
 def test_a_two_rollout_codex_home_records_model_calls_on_both_served_models(root, tmp_path):
     run_dir = _native_run(root, tmp_path, "codex", PARENT_ROLLOUT,
                           (CODEX_DELEGATE / "delegate-parent.jsonl").read_text(encoding="utf-8"),
