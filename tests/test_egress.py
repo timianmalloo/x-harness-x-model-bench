@@ -114,6 +114,18 @@ def test_the_operators_home_path_is_withheld_in_any_separator_form(form):
     assert (verdict.reason, verdict.payload_sha256) == ("withheld: sensitive content", _sha(text))
 
 
+@pytest.mark.parametrize("encode", [
+    lambda v: v,
+    lambda v: base64.b64encode(v.encode("utf-8")).decode("ascii"),
+], ids=["plain", "base64"])
+def test_a_planted_canary_is_withheld(encode):
+    canary = f"CANARY-{token_hex(8)}"
+    text = _plant(encode(canary))
+    verdict = egress.check(text, destination=DEST, canaries=[canary])
+    assert verdict.classes == ("canary",)
+    assert (verdict.reason, verdict.payload_sha256) == ("withheld: sensitive content", _sha(text))
+
+
 def test_a_withheld_payload_never_reaches_the_backend():
     value = _credential()
     backend = FakeBackend()
