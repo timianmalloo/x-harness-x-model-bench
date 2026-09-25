@@ -34,6 +34,7 @@ summary: >-
 - **Amendment note, R-45 and R-46 (2026-09-25):**
   - Copilot uses an explicit allowlist and disables built-in MCPs. Its pinned build advertised 21 tool ids in the committed pack-on sample, including web and GitHub MCP ids. The fixed-profile sample is pending R-45 condition 1's qualification recut.
   - Codex seeds `web_search = "disabled"` in each cell's `config.toml` (R-46). Its reader records any `web_search_call` as an out-of-profile tool call.
+  - Codex per-cell `config.toml` also sets `features.apps = false`; account app connectors are MCP servers other than the task's own (run `qual-r45-1`).
   - Claude Code's `WebFetch` and `WebSearch` are outside the allowlist. R-46 carries an `assume:` that both prompt in effective mode `default`; the qualification turn must confirm they are refused and recorded. A silent call would break that control.
 - **Date:** 2026-09-23 (revised after council round 1)
 - **Deciders:** @timianmalloo; authored by Claude Code for the architect council

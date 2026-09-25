@@ -185,7 +185,13 @@ def test_off_tool_calls_succeed_and_on_rev92_are_all_denied():
     on92 = copilot.read(ON_REV92).tool_calls
     assert len(on92) == 8 and all((t.ok, t.outcome_code) == (False, "denied") for t in on92)
     assert {t.name for t in on92} == {"skill", "glob", "powershell", "view", "rg"}
-    assert next(t.tool_class for t in on92 if t.name == "skill") == "other"  # C: skill is other (design 4.4)
+    assert next(t.tool_class for t in on92 if t.name == "skill") == "read"  # R-45: skill delivers SKILL.md
+
+
+def test_pack_on_skill_call_is_a_file_read():
+    skill_calls = [t for t in copilot.read(ON).tool_calls if t.name == "skill"]
+    assert len(skill_calls) == 1
+    assert [t.tool_class for t in skill_calls] == ["read"]
 
 
 def test_on_rev95_tool_calls_are_16_success_and_1_ordinary_failure_not_denied():  # R-27 c3
@@ -206,7 +212,7 @@ def test_r14c1_skill_tool_calls_requested_on_rev92_none_off():  # R-14 c1: skill
 @pytest.mark.parametrize("name, cls", [
     ("powershell", "shell"), ("bash", "shell"), ("shell", "shell"), ("apply_patch", "edit"), ("write", "edit"),
     ("edit", "edit"), ("create", "edit"), ("view", "read"), ("glob", "read"), ("rg", "read"), ("grep", "read"),
-    ("skill", "other"), ("some-unknown-tool", "other"),
+    ("skill", "read"), ("some-unknown-tool", "other"),
 ])
 def test_tool_class_mapping(name, cls):  # TA8
     assert copilot._tool_class(name) == cls

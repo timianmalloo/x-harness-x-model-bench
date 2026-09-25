@@ -58,7 +58,8 @@ __all__ = ["ProviderError", "read"]
 SUPPORTED_EVENT_VERSIONS = {1}
 
 TOOL_CLASS = {"powershell": "shell", "bash": "shell", "shell": "shell", "apply_patch": "edit", "write": "edit",
-              "edit": "edit", "create": "edit", "view": "read", "glob": "read", "rg": "read", "grep": "read"}
+              "edit": "edit", "create": "edit", "view": "read", "glob": "read", "rg": "read", "grep": "read",
+              "skill": "read"}
 
 
 def _tool_class(name: str) -> str:

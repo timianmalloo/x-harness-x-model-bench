@@ -8,6 +8,8 @@
   response reports only the last call.
 - Tool calls are `response_item` `custom_tool_call` / `function_call` / `local_shell_call`, closed by
   their `*_output` row with the same `call_id`; a `web_search_call` is a standalone out-of-profile row.
+- Code-mode MCP calls also appear as `event_msg` `item_completed` / `McpToolCall` items. Their
+  server and tool fields form one server-qualified, out-of-profile tool row.
 - An error is `event_msg`/`task_complete` with `error.message`, which embeds a JSON body with `status`
   and `error.type` (probe W3).
 - The first user message that is not tagged system context (`<environment_context>` and the like) is
@@ -73,6 +75,7 @@ def read(path: Path) -> Extraction:
     for n, row in rows(path, ex):
         kind = row.get("type")
         payload = as_dict(row.get("payload"))
+        item = as_dict(payload.get("item"))
         ptype = payload.get("type")
         stamp = as_str(row.get("timestamp"))
         call_id = as_str(payload.get("call_id"))
@@ -105,6 +108,11 @@ def read(path: Path) -> Extraction:
         elif kind == "response_item" and ptype == "web_search_call":
             ex.tool_calls.append(ToolCall(n, "web_search", "other", stamp,
                                           stamp if payload.get("status") == "completed" else None, None))
+        elif kind == "event_msg" and ptype == "item_completed" and item.get("type") == "McpToolCall":
+            server, tool = as_str(item.get("server")), as_str(item.get("tool"))
+            if server and tool:
+                ok = {"completed": True, "failed": False}.get(as_str(item.get("status")))
+                ex.tool_calls.append(ToolCall(n, f"{server}.{tool}", "other", None, stamp, ok))
         elif kind == "response_item" and ptype in CALL_TYPES and call_id is not None:
             open_tools[call_id] = {"n": n, "name": as_str(payload.get("name")) or ptype, "start": stamp}
         elif kind == "response_item" and ptype in OUTPUT_TYPES and call_id in open_tools:
