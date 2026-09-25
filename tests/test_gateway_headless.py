@@ -310,3 +310,25 @@ def test_t_gw_10_a_pass_sweeps_a_killed_pass_copy_but_never_one_whose_lock_is_he
             leftover.write_text("{}", encoding="utf-8")  # this pass's own copy, left by a hard kill mid-call
         assert (leftover.exists(), live.exists()) == (False, True)  # swept at pass end
     assert not oslock.is_held(cells / "gateway" / "grade-placeholder-1" / ".lock")
+
+
+# --------------------------------------------------------------------------------------------------- T-GW-26
+def test_t_gw_26_a_cells_root_path_holding_the_operators_user_name_is_withheld_before_any_spawn(tmp_path, base):
+    # Both CLIs send their working-folder path to the model (spike GW-H result 6), so the call folder's path goes
+    # through egress.check too: a cells root under the operator's user name is HB-GW-009, and nothing is spawned.
+    operator = _operator()
+    cells = base / operator.username / "cells"
+    result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path, operator), _launch(tmp_path, cells))
+    assert (result.outcome, result.code, result.model_calls) == ("failed", "HB-GW-009", ())
+    assert (_captured(tmp_path), _credential_copies(cells), (cells / "gateway").exists()) == ([], [], False)
+
+
+def test_t_gw_26b_a_pass_refuses_a_cells_root_below_an_instruction_file(base):
+    import pytest
+
+    from harness_bench.errors import BenchError
+    (base / "AGENTS.md").write_text("instructions a judge must never load", encoding="utf-8")
+    with pytest.raises(BenchError) as refused, gw_backend.judge_pass(base / "cells", "grade-placeholder-1",
+                                                                     (".credentials.json",)):
+        pass
+    assert refused.value.code == "HB-PRE-002" and not (base / "cells" / "gateway").exists()
