@@ -49,10 +49,13 @@ def _exact(payload: str, values: Sequence[str]) -> bool:
     return any(v in payload for v in encodings({v for v in values if v.strip()}))
 
 
-def check(payload: str, *, destination: str, secrets: Sequence[str] = ()) -> Verdict:
+def check(payload: str, *, destination: str, secrets: Sequence[str] = (), email: str | None = None,
+          username: str | None = None, home: str | None = None, canaries: Sequence[str] = ()) -> Verdict:
     """Scan `payload` bound for `destination`.
 
-    `secrets` are the credential values the caller holds at run time; they are never stored or returned.
+    Every value is supplied by the caller at run time and is never stored or returned: `secrets` are the
+    credential values the host holds; `email`, `username` and `home` identify the operator (never committed:
+    the origin repo is public, R-42); `canaries` are the planted US-13/US-48 markers.
     A hit returns a withheld verdict: no payload, only its sha256, the destination and the class names.
     """
     digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()

@@ -80,6 +80,15 @@ def test_a_token_shaped_string_is_withheld(make):
     assert (verdict.reason, verdict.payload_sha256) == ("withheld: sensitive content", _sha(text))
 
 
+@pytest.mark.parametrize("form", [str, str.upper], ids=["as-given", "other-case"])
+def test_the_operators_email_is_withheld_in_any_case(form):
+    email = f"operator-{token_hex(6)}@example.invalid"  # RFC 2606 .invalid: never a real mailbox
+    text = _plant(f"Contact: {form(email)}")
+    verdict = egress.check(text, destination=DEST, email=email)
+    assert verdict.classes == ("email",)
+    assert (verdict.reason, verdict.payload_sha256) == ("withheld: sensitive content", _sha(text))
+
+
 def test_a_withheld_payload_never_reaches_the_backend():
     value = _credential()
     backend = FakeBackend()
