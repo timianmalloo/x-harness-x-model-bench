@@ -1,0 +1,245 @@
+[
+ {
+  "name": "R-27: a hook denial does not invalidate",
+  "file": "src/harness_bench/views.py",
+  "find": "    if denials:  # R-27: measured, so it outranks a record that is otherwise unreadable\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_views.py::test_the_revision_92_pack_on_copilot_cell_is_invalid_tools_denied_by_hook",
+            "tests/test_views.py::test_one_denied_tool_call_is_enough_to_invalidate"]
+ },
+ {
+  "name": "R-27: an unreadable record outranks a measured hook denial",
+  "file": "src/harness_bench/views.py",
+  "find": "    if denials:  # R-27: measured, so it outranks a record that is otherwise unreadable\n        return \"invalid (tools denied by hook)\", \"HB-VAL-004\"\n    if unrecorded is not None:  # R-15 c1: distinct from a readable record with no call (HB-VAL-001)\n        return \"not recorded\", \"HB-VAL-003\"\n",
+  "replace": "    if unrecorded is not None:  # R-15 c1: distinct from a readable record with no call (HB-VAL-001)\n        return \"not recorded\", \"HB-VAL-003\"\n    if denials:  # R-27: measured, so it outranks a record that is otherwise unreadable\n        return \"invalid (tools denied by hook)\", \"HB-VAL-004\"\n",
+  "tests": ["tests/test_views.py::test_a_hook_denial_outranks_an_unreadable_record"]
+ },
+ {
+  "name": "R-27: every tool call counts as a hook denial",
+  "file": "src/harness_bench/telemetry/normalize.py",
+  "find": "    return sum(1 for r in tool_rows if r.get(\"outcome_code\") == HOOK_DENIED)\n",
+  "replace": "    return len(tool_rows)\n",
+  "tests": ["tests/test_views.py::test_the_revision_95_pack_on_copilot_cell_is_valid",
+            "tests/test_views.py::test_an_ordinary_tool_failure_is_not_a_hook_denial"]
+ },
+ {
+  "name": "R-15: an unreadable record reads no model call (HB-VAL-001)",
+  "file": "src/harness_bench/views.py",
+  "find": "    if unrecorded is not None:  # R-15 c1: distinct from a readable record with no call (HB-VAL-001)\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_views.py::test_a_killed_copilot_cell_with_no_shutdown_is_not_recorded",
+            "tests/test_views.py::test_a_cell_with_no_native_record_is_not_recorded"]
+ },
+ {
+  "name": "R-15: the pass's unreadable_records are not read",
+  "file": "src/harness_bench/views.py",
+  "find": "    return (completed.get(\"unreadable_records\") or {}).get(cid)\n",
+  "replace": "    return None\n",
+  "tests": ["tests/test_views.py::test_a_cell_with_no_native_record_is_not_recorded"]
+ },
+ {
+  "name": "R-15: acp_turn with a null acp_usage is not 'not recorded'",
+  "file": "src/harness_bench/views.py",
+  "find": "        return NO_ACP_USAGE if not usage and \"acp_usage\" in ended and ended[\"acp_usage\"] is None else None\n",
+  "replace": "        return None\n",
+  "tests": ["tests/test_views.py::test_an_acp_turn_cell_whose_adapter_reported_no_usage_is_not_recorded"]
+ },
+ {
+  "name": "R-15 c1: an adapter report with no model reads not recorded",
+  "file": "src/harness_bench/views.py",
+  "find": "and ended[\"acp_usage\"] is None else None\n",
+  "replace": "else None\n",
+  "tests": ["tests/test_views.py::test_an_acp_turn_cell_whose_adapter_reported_usage_with_no_model_is_still_no_model_call"]
+ },
+ {
+  "name": "R-21 c2: an unreadable record keeps its partial token sum",
+  "file": "src/harness_bench/views.py",
+  "find": "    totals = normalize.totals(source, ex, usage) if recorded and unrecorded is None else {}\n",
+  "replace": "    totals = normalize.totals(source, ex, usage) if recorded else {}\n",
+  "tests": ["tests/test_views.py::test_a_record_unreadable_as_a_whole_gives_no_partial_token_sum"]
+ },
+ {
+  "name": "R-21 c2: tokens of an unreadable record read 'no usage recorded'",
+  "file": "src/harness_bench/views.py",
+  "find": "        tokens_reason = f\"not recorded ({unrecorded})\"",
+  "replace": "        tokens_reason = \"no usage recorded\"",
+  "tests": ["tests/test_views.py::test_a_killed_copilot_cell_with_no_shutdown_is_not_recorded"]
+ },
+ {
+  "name": "R-15: a call-level missing field makes the record unreadable",
+  "file": "src/harness_bench/telemetry/normalize.py",
+  "find": "    fields = sorted({m.field for m in ex.missing if m.native_ordinal == 0})\n",
+  "replace": "    fields = sorted({m.field for m in ex.missing})\n",
+  "tests": ["tests/test_grade.py::test_a_record_level_missing_field_or_a_truncated_record_is_unreadable"]
+ },
+ {
+  "name": "R-15: a truncated record is readable",
+  "file": "src/harness_bench/telemetry/normalize.py",
+  "find": "    return \"native record truncated at the size bound\" if ex.truncated else None\n",
+  "replace": "    return None\n",
+  "tests": ["tests/test_grade.py::test_a_record_level_missing_field_or_a_truncated_record_is_unreadable",
+            "tests/test_grade.py::test_a_truncated_record_has_no_cost_from_a_partial_sum"]
+ },
+ {
+  "name": "R-15: the pass records only a missing record, not an unreadable one",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "        unreadable = missing if ex is None else normalize.record_unreadable(ex)\n",
+  "replace": "        unreadable = missing\n",
+  "tests": ["tests/test_views.py::test_a_killed_copilot_cell_with_no_shutdown_is_not_recorded"]
+ },
+ {
+  "name": "R-15: grading.completed records no unreadable cell",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "                                   \"unreadable_records\": dict(sorted(self.unreadable.items()))})  # R-15\n",
+  "replace": "                                   \"unreadable_records\": {}})\n",
+  "tests": ["tests/test_grade.py::test_grading_completed_names_each_cell_whose_native_record_could_not_be_read"]
+ },
+ {
+  "name": "R-15 sweep: a truncated record is priced from its partial sum",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "        elif source == \"native_record\" and unreadable is not None:",
+  "replace": "        elif False:",
+  "tests": ["tests/test_grade.py::test_a_truncated_record_has_no_cost_from_a_partial_sum"]
+ },
+ {
+  "name": "US-11: the task's model_map is ignored",
+  "file": "src/harness_bench/views.py",
+  "find": " and m not in mapped for m in served):\n",
+  "replace": " for m in served):\n",
+  "tests": ["tests/test_views.py::test_a_model_the_task_model_map_names_is_valid"]
+ },
+ {
+  "name": "US-11: any model_map allows every served model",
+  "file": "src/harness_bench/views.py",
+  "find": " and m not in mapped for m in served):\n",
+  "replace": " and not mapped for m in served):\n",
+  "tests": ["tests/test_views.py::test_a_model_the_model_map_does_not_name_is_still_a_mismatch"]
+ },
+ {
+  "name": "S3: the plan does not freeze the model_map",
+  "file": "src/harness_bench/plan.py",
+  "find": ", **_model_map(root / \"tasks\" / t[\"id\"])} for t in tasks},",
+  "replace": "} for t in tasks},",
+  "tests": ["tests/test_plan.py::test_the_plan_freezes_each_task_model_map"]
+ },
+ {
+  "name": "R-28: a different agent_version is not flagged",
+  "file": "src/harness_bench/views.py",
+  "find": "    if agent != pinned:\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_views.py::test_a_fake_agent_reporting_another_version_than_the_pin_is_flagged",
+            "tests/test_views.py::test_copilot_compares_its_own_version_when_there_is_no_adapter"]
+ },
+ {
+  "name": "R-28: the pin is the harness build, not the adapter agentInfo names",
+  "file": "src/harness_bench/views.py",
+  "find": "    pinned = build.get(\"adapter_version\") or build.get(\"version\")\n",
+  "replace": "    pinned = build.get(\"version\")\n",
+  "tests": ["tests/test_views.py::test_an_adapter_harness_compares_the_adapter_version"]
+ },
+ {
+  "name": "R-22 c1: a null agent_version is not a skip warning",
+  "file": "src/harness_bench/views.py",
+  "find": "    if agent is None:\n        return Finding(\"HB-VAL-006\", \"warning\", \"executed-build check skipped: no agent_version recorded\")\n",
+  "replace": "",
+  "tests": ["tests/test_views.py::test_a_null_agent_version_skips_the_check_with_a_warning_never_a_pass"]
+ },
+ {
+  "name": "R-22 c1: no pinned version passes silently",
+  "file": "src/harness_bench/views.py",
+  "find": "    if pinned is None:\n        return Finding(\"HB-VAL-006\", \"warning\", f\"executed-build check skipped: no pinned version for {harness}\")\n",
+  "replace": "    if pinned is None:\n        return None\n",
+  "tests": ["tests/test_views.py::test_a_plan_with_no_pinned_version_skips_the_check_with_a_warning"]
+ },
+ {
+  "name": "R-28: the build check is never run",
+  "file": "src/harness_bench/views.py",
+  "find": "    warnings = [_build_check(plan, cell[\"harness\"], events[\"attempt.session_opened\"])] if \"attempt.session_opened\" in events else []\n",
+  "replace": "    warnings = []\n",
+  "tests": ["tests/test_views.py::test_a_fake_agent_reporting_another_version_than_the_pin_is_flagged"]
+ },
+ {
+  "name": "R-26 c5: a bucket that disagrees with the ACP total is not a warning",
+  "file": "src/harness_bench/views.py",
+  "find": "        if not (is_count(usage.get(key)) and usage[key] == total):\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_views.py::test_a_bucket_that_disagrees_with_the_acp_turn_total_is_a_warning_not_a_validity_change"]
+ },
+ {
+  "name": "R-20 c2: inputTokens compared to uncached input only",
+  "file": "src/harness_bench/views.py",
+  "find": "ACP_TOTAL_KEYS = ((\"inputTokens\", (\"uncached_input\", \"cache_read\", \"cache_write\")),",
+  "replace": "ACP_TOTAL_KEYS = ((\"inputTokens\", (\"uncached_input\",)),",
+  "tests": ["tests/test_views.py::test_the_copilot_sample_agrees_with_its_acp_turn_total"]
+ },
+ {
+  "name": "R-24: no ACP usage passes the cross-check silently",
+  "file": "src/harness_bench/views.py",
+  "find": "    if not isinstance(usage, dict):\n        return Finding(\"HB-VAL-005\", \"warning\", \"token cross-check not run: no ACP usage recorded\")\n",
+  "replace": "    if not isinstance(usage, dict):\n        return None\n",
+  "tests": ["tests/test_views.py::test_a_copilot_cell_with_no_acp_usage_says_the_cross_check_did_not_run"]
+ },
+ {
+  "name": "R-26 c5: the cross-check also runs where the ACP usage is not the turn total",
+  "file": "src/harness_bench/views.py",
+  "find": "ACP_TOTAL_HARNESSES = (\"copilot\",)\n",
+  "replace": "ACP_TOTAL_HARNESSES = (\"copilot\", \"codex\")\n",
+  "tests": ["tests/test_views.py::test_the_cross_check_skips_a_harness_whose_acp_usage_is_not_the_turn_total"]
+ },
+ {
+  "name": "R-26 c5: the cross-check is never run",
+  "file": "src/harness_bench/views.py",
+  "find": "    if cell[\"harness\"] in ACP_TOTAL_HARNESSES and source == \"native_record\"",
+  "replace": "    if False and source == \"native_record\"",
+  "tests": ["tests/test_views.py::test_a_copilot_cell_with_no_acp_usage_says_the_cross_check_did_not_run"]
+ },
+ {
+  "name": "export: warnings dropped from the canonical result",
+  "file": "src/harness_bench/views.py",
+  "find": "              \"warnings\": [{\"code\": w.code, \"level\": w.level, \"message\": w.message} for w in c.warnings]}\n",
+  "replace": "              }\n",
+  "tests": ["tests/test_report.py::test_the_canonical_export_carries_each_cells_warnings"]
+ },
+ {
+  "name": "CLI: a not-recorded cell is not listed",
+  "file": "src/harness_bench/report/cli_table.py",
+  "find": " or c.validity == \"not recorded\"]\n",
+  "replace": "]\n",
+  "tests": ["tests/test_report.py::test_the_cli_table_lists_each_wave_two_state_under_the_cells_that_are_not_valid"]
+ },
+ {
+  "name": "CLI: warnings are not printed",
+  "file": "src/harness_bench/report/cli_table.py",
+  "find": "    if warned:\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_report.py::test_the_cli_table_lists_each_warning_with_its_code_after_the_table"]
+ },
+ {
+  "name": "HTML: the validity section lists no warnings",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    if warned:  # R-24/R-26 c5, R-28: flags that do not change validity\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_report.py::test_the_html_validity_section_lists_warnings_even_when_every_cell_is_valid"]
+ },
+ {
+  "name": "HTML: a cell with no warning reads empty, not none",
+  "file": "src/harness_bench/report/html.py",
+  "find": "             (_e(\", \".join(w.code for w in c.warnings) or \"none\"), False),\n",
+  "replace": "             (_e(\", \".join(w.code for w in c.warnings)), False),\n",
+  "tests": ["tests/test_report.py::test_the_html_cells_table_reads_none_for_a_cell_without_warnings"]
+ },
+ {
+  "name": "S2: bench-status/1 rejects not recorded",
+  "file": "src/harness_bench/status.py",
+  "find": "\"invalid (tools denied by hook)\", \"not recorded\", \"not graded\")",
+  "replace": "\"invalid (tools denied by hook)\", \"not graded\")",
+  "tests": ["tests/test_status.py::test_a_cell_whose_native_record_is_unreadable_is_counted_as_not_recorded"]
+ },
+ {
+  "name": "S2: bench-status/1 rejects tools denied by hook",
+  "file": "src/harness_bench/status.py",
+  "find": "\"invalid (model mismatch)\",\n            \"invalid (tools denied by hook)\", ",
+  "replace": "\"invalid (model mismatch)\",\n            ",
+  "tests": ["tests/test_status.py::test_bench_status_accepts_the_tools_denied_by_hook_state"]
+ }
+]

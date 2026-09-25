@@ -67,6 +67,6 @@
     "file": "src/harness_bench/views.py",
     "find": "    if not served:\n        return \"invalid (no model call)\", \"HB-VAL-001\"",
     "replace": "    if False:\n        return \"invalid (no model call)\", \"HB-VAL-001\"",
-    "tests": ["tests/test_views.py::test_copilot_missing_shutdown_is_no_model_call_in_wave_one"]
+    "tests": ["tests/test_views.py::test_copilot_empty_modelmetrics_has_no_model_call"]
   }
 ]
