@@ -261,3 +261,52 @@ def test_t_gw_28_a_failed_call_still_yields_its_rows_and_a_warm_pass_yields_none
     warm = pipeline.run(JUDGE, INPUTS, ctx, replay)
     assert (cold.outcome, len(cold.model_calls), warm.outcome, warm.model_calls, len(replay.received)) == \
         ("stored", 1, "hit", (), 1)
+
+
+# --------------------------------------------------------------------------------------------------- T-GW-10
+def _credential_copies(cells_root: Path) -> list[Path]:
+    return sorted(cells_root.rglob(".credentials.json")) if cells_root.exists() else []
+
+
+def test_t_gw_10_the_credential_is_present_during_the_call_and_gone_after_it(tmp_path, base):
+    result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path), _launch(tmp_path, base / "cells"))
+    [seen] = _captured(tmp_path)
+    assert (result.outcome, seen["credential_present"], _credential_copies(base / "cells")) == ("stored", True, [])
+
+
+def test_t_gw_10_the_credential_is_gone_after_a_timeout_and_after_an_exception_past_the_copy(tmp_path, base, monkeypatch):
+    timed_out = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path / "a"), _launch(tmp_path, base / "cells", timeout=2, sleep=60))
+    assert ((timed_out.outcome, timed_out.code), _credential_copies(base / "cells")) == (("failed", "HB-GW-001"), [])
+    present = []
+
+    def boom(argv, cwd, env, timeout, input=None):  # the spawn fails after the copy was made
+        present.extend(_credential_copies(base / "cells"))
+        raise RuntimeError("synthetic spawn failure")
+
+    monkeypatch.setattr(gw_backend.procs, "run", boom)
+    try:
+        failed = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path / "b"), _launch(tmp_path, base / "cells"))
+    except RuntimeError:
+        failed = None
+    assert failed is not None and (failed.outcome, failed.code) == ("failed", "HB-GW-001")  # never escapes (F6)
+    assert (len(present), _credential_copies(base / "cells")) == (1, [])
+
+
+def test_t_gw_10_a_pass_sweeps_a_killed_pass_copy_but_never_one_whose_lock_is_held(tmp_path, base):
+    from harness_bench import oslock
+    judge_pass = getattr(gw_backend, "judge_pass", None)
+    assert judge_pass is not None
+    cells = base / "cells"
+    killed = cells / "gateway" / "grade-killed" / "0123456789abcdef" / "home" / ".credentials.json"
+    live = cells / "gateway" / "grade-live" / "fedcba9876543210" / "home" / ".credentials.json"
+    for copy in (killed, live):
+        copy.parent.mkdir(parents=True)
+        copy.write_text("{}", encoding="utf-8")
+    with oslock.RunLock.acquire(cells / "gateway" / "grade-live" / ".lock"):
+        with judge_pass(cells, "grade-placeholder-1", (".credentials.json",)):
+            assert (killed.exists(), live.exists()) == (False, True)  # swept at pass start; the live pass kept
+            leftover = cells / "gateway" / "grade-placeholder-1" / "0000000000000000" / "home" / ".credentials.json"
+            leftover.parent.mkdir(parents=True)
+            leftover.write_text("{}", encoding="utf-8")  # this pass's own copy, left by a hard kill mid-call
+        assert (leftover.exists(), live.exists()) == (False, True)  # swept at pass end
+    assert not oslock.is_held(cells / "gateway" / "grade-placeholder-1" / ".lock")
