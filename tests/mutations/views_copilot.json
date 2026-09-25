@@ -9,8 +9,8 @@
   {
     "name": "mapper duplicates missing requests default as zero",
     "file": "src/harness_bench/views.py",
-    "find": "    if \"requests\" in row:\n        values[\"requests\"] = row[\"requests\"]",
-    "replace": "    if True:\n        values[\"requests\"] = row.get(\"requests\", 0)",
+    "find": "        if name in row:\n            values[name] = row[name]",
+    "replace": "        if True:\n            values[name] = row.get(name, 0)",
     "tests": ["tests/test_views.py::test_pre_amendment_model_call_row_defaults_to_one_request"]
   },
   {
@@ -44,8 +44,8 @@
   {
     "name": "ledger mapper requires start even though the model has a default",
     "file": "src/harness_bench/views.py",
-    "find": "if f.name != \"requests\"",
-    "replace": "if f.name in row",
+    "find": "values = {f.name: row[f.name] for f in fields(ModelCall) if f.name not in _MODEL_CALL_MIGRATED_FIELDS}",
+    "replace": "values = {f.name: row[f.name] for f in fields(ModelCall) if f.name in row}",
     "tests": ["tests/test_views.py::test_model_call_row_missing_start_still_raises"]
   },
   {
