@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T07:58:26Z",
+  "generated": "2026-09-25T08:34:16Z",
   "audit": [
     {
       "actor": null,
@@ -16032,6 +16032,326 @@ window.AUDIT_DATA = {
             "sha256": "55af0b606cbf188d685faf8c60ea1f17fb2521226de820a0acb81a099405fb8c",
             "status": "resolved",
             "token": "tests/test_lifecycle_conformance.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3BV6TXP8A867APQN9KXHQWW",
+      "shortname": "Goal: Cross-vendor security review, in Adversary mode, of track W3-EGRES…",
+      "datetime": "2026-09-25T08:34:15Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: Cross-vendor security review, in Adversary mode, of track W3-EGRESS slice 1 (plan docs/coordination/coordination-finish-harness-bench.md version 5; ruling R-60 condition 3 in docs/notes/rulings.md: a Security Adversary review on a different model than the author's): judge branch w3-egress and write the review to docs/notes/review-w3-egress-codex.md in your own worktree.\nDone when: docs/notes/review-w3-egress-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line for the changes in `git diff 87606c6..a45fbfa` on branch w3-egress, whose checkout is C:\\Projects\\x-harness-x-model-bench-w3-egress (read it by absolute path; do not edit it).; The review answers, as an adversary trying to get a sensitive value past the gate: can a credential, token, the operator's email, username or home path, or a canary reach the backend in any encoding the scanner misses (case, separators, base64 or URL encoding, JSON escaping, splitting across lines, Unicode look-alikes); can Verdict.release call the backend for a withheld payload; does a Verdict or its log ever carry the matched value; does the architecture lint actually bind once src/harness_bench/gateway/ exists (it assumes the spawner module is harness_bench.gateway.backend); and does the branch contain any network, listener, subprocess or real-secret access (R-60 forbids them).; The review lists 3 bypass mutants or bypass inputs of your own, each tried in a throwaway `git worktree add --detach` of commit a45fbfa (removed afterwards) against `uv run pytest -q -p no:cacheprovider tests/test_egress.py`, with the named test that caught it, or \"not caught\" (a finding).; The review file has V2 frontmatter (id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-09\", summary) and is committed on your branch.\nNot in scope: Editing any file other than docs/notes/review-w3-egress-codex.md.; Editing the w3-egress checkout.; Any real credential, network access or listener.; The full suite, tests/e2e, `-m \"\"`.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 45 minutes; commit the review before the deadline even if a probe is unfinished, and say so.\n\nGrounding: docs/specs/harness-bench.md US-47; docs/notes/rulings.md R-42, R-60; src/harness_bench/report/credentials.py and report/html.py (the reused helpers). Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-regress before committing.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3BV6W8YM13DRKSTE059KXKE",
+      "shortname": "compile-Goal: Cross-vendor security review, in Adversary mode, of track W3-EGRES…",
+      "datetime": "2026-09-25T08:34:16Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: Cross-vendor security review, in Adversary mode, of track W3-EGRESS slice 1 (plan docs/coordination/coordination-finish-harness-bench.md version 5; ruling R-60 condition 3 in docs/notes/rulings.md: a Security Adversary review on a different model than the author's): judge branch w3-egress and write the review to docs/notes/review-w3-egress-codex.md in your own worktree.\nDone when: docs/notes/review-w3-egress-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line for the changes in `git diff 87606c6..a45fbfa` on branch w3-egress, whose checkout is C:\\Projects\\x-harness-x-model-bench-w3-egress (read it by absolute path; do not edit it).; The review answers, as an adversary trying to get a sensitive value past the gate: can a credential, token, the operator's email, username or home path, or a canary reach the backend in any encoding the scanner misses (case, separators, base64 or URL encoding, JSON escaping, splitting across lines, Unicode look-alikes); can Verdict.release call the backend for a withheld payload; does a Verdict or its log ever carry the matched value; does the architecture lint actually bind once src/harness_bench/gateway/ exists (it assumes the spawner module is harness_bench.gateway.backend); and does the branch contain any network, listener, subprocess or real-secret access (R-60 forbids them).; The review lists 3 bypass mutants or bypass inputs of your own, each tried in a throwaway `git worktree add --detach` of commit a45fbfa (removed afterwards) against `uv run pytest -q -p no:cacheprovider tests/test_egress.py`, with the named test that caught it, or \"not caught\" (a finding).; The review file has V2 frontmatter (id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-09\", summary) and is committed on your branch.\nNot in scope: Editing any file other than docs/notes/review-w3-egress-codex.md.; Editing the w3-egress checkout.; Any real credential, network access or listener.; The full suite, tests/e2e, `-m \"\"`.; Any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 45 minutes; commit the review before the deadline even if a probe is unfinished, and say so.\nGrounding: docs/specs/harness-bench.md US-47; docs/notes/rulings.md R-42, R-60; src/harness_bench/report/credentials.py and report/html.py (the reused helpers). Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-regress before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: docs/notes/review-w3-egress-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line for the changes in `git diff 87606c6..a45fbfa` on branch w3-egress, whose checkout is C:\\Projects\\x-harness-x-model-bench-w3-egress (read it by absolute path | phrase: docs/notes/review-w3-egress-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line for the changes in `git diff 87606c6..a45fbfa` on branch w3-egress, whose checkout is C:\\Projects\\x-harness-x-model-bench-w3-egress (read it by absolute path |\n| done_when: do not edit it). | phrase: do not edit it). |\n| done_when: The review answers, as an adversary trying to get a sensitive value past the gate: can a credential, token, the operator's email, username or home path, or a canary reach the backend in any encoding the scanner misses (case, separators, base64 or URL encoding, JSON escaping, splitting across lines, Unicode look-alikes) | phrase: The review answers, as an adversary trying to get a sensitive value past the gate: can a credential, token, the operator's email, username or home path, or a canary reach the backend in any encoding the scanner misses (case, separators, base64 or URL encoding, JSON escaping, splitting across lines, Unicode look-alikes) |\n| done_when: can Verdict.release call the backend for a withheld payload | phrase: can Verdict.release call the backend for a withheld payload |\n| done_when: does a Verdict or its log ever carry the matched value | phrase: does a Verdict or its log ever carry the matched value |\n| done_when: does the architecture lint actually bind once src/harness_bench/gateway/ exists (it assumes the spawner module is harness_bench.gateway.backend) | phrase: does the architecture lint actually bind once src/harness_bench/gateway/ exists (it assumes the spawner module is harness_bench.gateway.backend) |\n| done_when: and does the branch contain any network, listener, subprocess or real-secret access (R-60 forbids them). | phrase: and does the branch contain any network, listener, subprocess or real-secret access (R-60 forbids them). |\n| done_when: The review lists 3 bypass mutants or bypass inputs of your own, each tried in a throwaway `git worktree add --detach` of commit a45fbfa (removed afterwards) against `uv run pytest -q -p no:cacheprovider tests/test_egress.py`, with the named test that caught it, or \"not caught\" (a finding). | phrase: The review lists 3 bypass mutants or bypass inputs of your own, each tried in a throwaway `git worktree add --detach` of commit a45fbfa (removed afterwards) against `uv run pytest -q -p no:cacheprovider tests/test_egress.py`, with the named test that caught it, or \"not caught\" (a finding). |\n| done_when: The review file has V2 frontmatter (id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-09\", summary) and is committed on your branch. | phrase: The review file has V2 frontmatter (id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-09\", summary) and is committed on your branch. |\n| not_in_scope: Editing any file other than docs/notes/review-w3-egress-codex.md. | phrase: Editing any file other than docs/notes/review-w3-egress-codex.md. |\n| not_in_scope: Editing the w3-egress checkout. | phrase: Editing the w3-egress checkout. |\n| not_in_scope: Any real credential, network access or listener. | phrase: Any real credential, network access or listener. |\n| not_in_scope: The full suite, tests/e2e, `-m \"\"`. | phrase: The full suite, tests/e2e, `-m \"\"`. |\n| not_in_scope: Any push. | phrase: Any push. |\nReferences\n- git diff 87606c6..a45fbfa: unresolved (not found)\n- git worktree add --detach: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider tests/test_egress.py: unresolved (not found)\n- -m : unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 e24377dd1b0e2469f6d3b32e20c9351ff25c467277cebf4b8e02376926b8be82\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- docs/notes/review-w3-egress-codex.md: unresolved (not found)\n- src/harness_bench/gateway/: unresolved (not found)\n- tests/test_egress.py: unresolved (not found)\n- coordination-finish-harness-bench: docs/coordination/coordination-finish-harness-bench.md sha256 e24377dd1b0e2469f6d3b32e20c9351ff25c467277cebf4b8e02376926b8be82\n- tests/e2e: unresolved (not found)\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094\n- src/harness_bench/report/credentials.py: src/harness_bench/report/credentials.py sha256 c47a8c7c7440959aadc7ed8f7b5f796338cec066635758640e2fbdd8349875f4\n- report/html.py: src/harness_bench/report/html.py sha256 434fed3daa4da1c79bb865e55affa8536d8862e2cd92a4d414c0d844c38e1cfc\n- graph neighbours: coordination-phase1-finish-run, design-phase1-walking-skeleton, rulings-register\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BV6TXP8A867APQN9KXHQWW\nraw sha256: 3eac2cca98d63bd929cf27f09d1c7ddca22a9c3ca7da8c62323c13cb3ee9a419\ncompiler model: claude-opus-5-5\nengine seconds: 0.003\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3BV6TXP8A867APQN9KXHQWW for codex v1: 14 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "docs/notes/review-w3-egress-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line for the changes in `git diff 87606c6..a45fbfa` on branch w3-egress, whose checkout is C:\\Projects\\x-harness-x-model-bench-w3-egress (read it by absolute path",
+            "trace": {
+              "kind": "phrase",
+              "ref": "docs/notes/review-w3-egress-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line for the changes in `git diff 87606c6..a45fbfa` on branch w3-egress, whose checkout is C:\\Projects\\x-harness-x-model-bench-w3-egress (read it by absolute path"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "do not edit it).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "do not edit it)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The review answers, as an adversary trying to get a sensitive value past the gate: can a credential, token, the operator's email, username or home path, or a canary reach the backend in any encoding the scanner misses (case, separators, base64 or URL encoding, JSON escaping, splitting across lines, Unicode look-alikes)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The review answers, as an adversary trying to get a sensitive value past the gate: can a credential, token, the operator's email, username or home path, or a canary reach the backend in any encoding the scanner misses (case, separators, base64 or URL encoding, JSON escaping, splitting across lines, Unicode look-alikes)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "can Verdict.release call the backend for a withheld payload",
+            "trace": {
+              "kind": "phrase",
+              "ref": "can Verdict.release call the backend for a withheld payload"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "does a Verdict or its log ever carry the matched value",
+            "trace": {
+              "kind": "phrase",
+              "ref": "does a Verdict or its log ever carry the matched value"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "does the architecture lint actually bind once src/harness_bench/gateway/ exists (it assumes the spawner module is harness_bench.gateway.backend)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "does the architecture lint actually bind once src/harness_bench/gateway/ exists (it assumes the spawner module is harness_bench.gateway.backend)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "and does the branch contain any network, listener, subprocess or real-secret access (R-60 forbids them).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "and does the branch contain any network, listener, subprocess or real-secret access (R-60 forbids them)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The review lists 3 bypass mutants or bypass inputs of your own, each tried in a throwaway `git worktree add --detach` of commit a45fbfa (removed afterwards) against `uv run pytest -q -p no:cacheprovider tests/test_egress.py`, with the named test that caught it, or \"not caught\" (a finding).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The review lists 3 bypass mutants or bypass inputs of your own, each tried in a throwaway `git worktree add --detach` of commit a45fbfa (removed afterwards) against `uv run pytest -q -p no:cacheprovider tests/test_egress.py`, with the named test that caught it, or \"not caught\" (a finding)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The review file has V2 frontmatter (id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-09\", summary) and is committed on your branch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The review file has V2 frontmatter (id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-09\", summary) and is committed on your branch."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing any file other than docs/notes/review-w3-egress-codex.md.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Editing any file other than docs/notes/review-w3-egress-codex.md."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing the w3-egress checkout.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Editing the w3-egress checkout."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any real credential, network access or listener.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Any real credential, network access or listener."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "The full suite, tests/e2e, `-m \"\"`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The full suite, tests/e2e, `-m \"\"`."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "docs/notes/review-w3-egress-codex.md states a verdict (CLEAR, CONDITION or BLOCK) with findings citing file:line for the changes in `git diff 87606c6..a45fbfa` on branch w3-egress, whose checkout is C:\\Projects\\x-harness-x-model-bench-w3-egress (read it by absolute path",
+            "do not edit it).",
+            "The review answers, as an adversary trying to get a sensitive value past the gate: can a credential, token, the operator's email, username or home path, or a canary reach the backend in any encoding the scanner misses (case, separators, base64 or URL encoding, JSON escaping, splitting across lines, Unicode look-alikes)",
+            "can Verdict.release call the backend for a withheld payload",
+            "does a Verdict or its log ever carry the matched value",
+            "does the architecture lint actually bind once src/harness_bench/gateway/ exists (it assumes the spawner module is harness_bench.gateway.backend)",
+            "and does the branch contain any network, listener, subprocess or real-secret access (R-60 forbids them).",
+            "The review lists 3 bypass mutants or bypass inputs of your own, each tried in a throwaway `git worktree add --detach` of commit a45fbfa (removed afterwards) against `uv run pytest -q -p no:cacheprovider tests/test_egress.py`, with the named test that caught it, or \"not caught\" (a finding).",
+            "The review file has V2 frontmatter (id, title, type: decision-note, status: accepted, owner \"@timianmalloo\", links: - { to: coordination-finish-harness-bench, rel: relates-to }, review-by \"2026-10-09\", summary) and is committed on your branch."
+          ],
+          "fan_out_cap": 0,
+          "goal": "Cross-vendor security review, in Adversary mode, of track W3-EGRESS slice 1 (plan docs/coordination/coordination-finish-harness-bench.md version 5; ruling R-60 condition 3 in docs/notes/rulings.md: a Security Adversary review on a different model than the author's): judge branch w3-egress and write the review to docs/notes/review-w3-egress-codex.md in your own worktree.",
+          "main_line_budget": "one slice of at most 45 minutes; commit the review before the deadline even if a probe is unfinished, and say so.\nGrounding: docs/specs/harness-bench.md US-47; docs/notes/rulings.md R-42, R-60; src/harness_bench/report/credentials.py and report/html.py (the reused helpers). Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-regress before committing.",
+          "not_in_scope": [
+            "Editing any file other than docs/notes/review-w3-egress-codex.md.",
+            "Editing the w3-egress checkout.",
+            "Any real credential, network access or listener.",
+            "The full suite, tests/e2e, `-m \"\"`.",
+            "Any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [
+          "coordination-phase1-finish-run",
+          "design-phase1-walking-skeleton",
+          "rulings-register"
+        ],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.003,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3BV6TXP8A867APQN9KXHQWW",
+        "raw_sha256": "3eac2cca98d63bd929cf27f09d1c7ddca22a9c3ca7da8c62323c13cb3ee9a419",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git diff 87606c6..a45fbfa"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git worktree add --detach"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q -p no:cacheprovider tests/test_egress.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-m "
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench.md",
+            "reason": null,
+            "sha256": "e24377dd1b0e2469f6d3b32e20c9351ff25c467277cebf4b8e02376926b8be82",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-finish-harness-bench.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/review-w3-egress-codex.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/gateway/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_egress.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench.md",
+            "reason": null,
+            "sha256": "e24377dd1b0e2469f6d3b32e20c9351ff25c467277cebf4b8e02376926b8be82",
+            "status": "resolved",
+            "token": "coordination-finish-harness-bench"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e"
+          },
+          {
+            "nearest": null,
+            "path": "docs/specs/harness-bench.md",
+            "reason": null,
+            "sha256": "7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094",
+            "status": "resolved",
+            "token": "docs/specs/harness-bench.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/credentials.py",
+            "reason": null,
+            "sha256": "c47a8c7c7440959aadc7ed8f7b5f796338cec066635758640e2fbdd8349875f4",
+            "status": "resolved",
+            "token": "src/harness_bench/report/credentials.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/html.py",
+            "reason": null,
+            "sha256": "434fed3daa4da1c79bb865e55affa8536d8862e2cd92a4d414c0d844c38e1cfc",
+            "status": "resolved",
+            "token": "report/html.py"
           }
         ],
         "schema": "compiled-prompt/1",
