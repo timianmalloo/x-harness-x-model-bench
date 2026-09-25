@@ -213,7 +213,7 @@
  {
   "name": "the served model is not checked",
   "file": "src/harness_bench/gateway/pipeline.py",
-  "find": "    if not all(m in judge.allowed_models for m in served):",
+  "find": "    if judge.model not in served or not all(m in judge.allowed_models for m in served):",
   "replace": "    if False:",
   "tests": [
    "tests/test_gateway_pipeline.py::test_t_gw_30_every_path_maps_to_exactly_one_outcome_and_code"
