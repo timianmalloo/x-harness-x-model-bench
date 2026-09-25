@@ -281,7 +281,8 @@ class Engine:
             for w in self.writers.values():
                 w.close()
             lock.release()
-        complete = not self.broken and not self.archive_failed and len(self.outcomes) == len(self.plan["cells"])
+        complete = (not self.broken and not self.archive_failed and not self.run_stopped  # a stopped run exits 3 (design 5)
+                    and len(self.outcomes) == len(self.plan["cells"]))
         return RunSummary(0 if complete else 3, dict(self.outcomes))
 
     def _stop_launching(self, code: str, reason: str) -> None:
@@ -355,11 +356,14 @@ class Engine:
                 continue
             effect = ("no-op (run ending)" if ending else "no-op (already stopped)" if self.run_stopped
                       else "applied" if data["control"] == "stop" else "rejected (invalid)")
-            self._append_now("events", {"kind": "control.applied", "uuid": uid, "control": data["control"],
-                                         "decision_id": data["decision_id"], "effect": effect})
-            self.applied_controls.add(uid)
-            if effect == "applied":
-                self._apply_stop()
+            try:
+                self._append_now("events", {"kind": "control.applied", "uuid": uid, "control": data["control"],
+                                             "decision_id": data["decision_id"], "effect": effect})
+                self.applied_controls.add(uid)
+                if effect == "applied":
+                    self._apply_stop()
+            except BenchError:  # the ledger broke (self.broken): the loop now kills, aborts and drains; the file stays
+                return
             try:
                 path.unlink()
             except OSError as exc:
