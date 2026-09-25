@@ -106,4 +106,10 @@ Times are Leader-measured: the runner's `duration_seconds` and the subagent's `d
   - Workers active by vendor during the run: none (Anthropic, OpenAI, GitHub, xAI and Google all idle); the Leader session polls only.
   - Planned end: by 02:24 PDT. The actual end and the headroom result go in `docs/notes/row15-headroom.md`.
 - **CANARY slice 3 (Grok) ended at its 720 s deadline with no commit.** Under R-4 and R-44 condition 2 the remainder moved to Claude Sonnet (W2-CLAUDE-PROFILE, joined `75c620e`).
+- **W2-HARBOR (row 9, spike A6): stopped and parked, not re-dispatched.** The Claude Opus agent drafted an exfiltration-style probe for the US-48 canary step. A safety classifier then refused its tool calls for the rest of its session, and its hand-back arrived marked unreviewed. The one file it left, `bench/harbor/canary.py`, contained an HTTP listener on all interfaces, so nothing was kept: the tree was removed, with no commit and no container created.
+  - Per the standing rule, the Leader does not re-dispatch work around a classifier refusal.
+  - Row 9 stays **not passed**. E1 stays deferred and E6 keeps the smoke slot (R-40, already ruled).
+  - The spike's canary design is a question for the operator: US-48 is withdrawn for authored tasks (ADR-0013) and applies only to Harbor containers.
+  - The unreviewed report's other claims (Harbor 0.23.0 installs without a key; Harbor's own agents need provider keys, so Harbor would be a task format only) are recorded as **Inferred**, not Verified.
+- **R-19 cosmic-ray window deferred.** It would hold the host for hours with no runner slice allowed, and STOP-I (Codex) is the smoke run's critical path. R-19 condition 1's "next night not used by a benchmark run" applies.
 - **The Grok R-11 datum:** 3 slices measured 3.1–4.35 MB each over 7.6–12 min, far under 16 MiB.

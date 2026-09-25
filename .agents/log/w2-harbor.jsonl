@@ -1,0 +1,2 @@
+{"agent": "w2-harbor", "at": 1790318549.454987, "kind": "session-start", "path": "-", "seq": 1, "session": "w2-harbor", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w2-harbor"}
+{"agent": "w2-harbor", "at": 1790319206.7602646, "kind": "session-end", "path": "-", "seq": 2, "session": "w2-harbor", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w2-harbor"}
