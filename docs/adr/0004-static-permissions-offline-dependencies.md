@@ -36,6 +36,8 @@ summary: >-
   - Codex seeds `web_search = "disabled"` in each cell's `config.toml` (R-46). Its reader records any `web_search_call` as an out-of-profile tool call.
   - Codex per-cell `config.toml` also sets `features.apps = false`; account app connectors are MCP servers other than the task's own (run `qual-r45-1`).
   - Claude Code's `WebFetch` and `WebSearch` are outside the allowlist. R-46 carries an `assume:` that both prompt in effective mode `default`; the qualification turn must confirm they are refused and recorded. A silent call would break that control.
+- **Amendment note, R-56 (2026-09-25):**
+  - Claude's per-cell `settings.json` also seeds `"disableClaudeAiConnectors": true` (the pinned 2.1.282 settings schema key that keeps claude.ai MCP cloud connectors out of a session). R-56 recorded eight `mcp__claude_ai_Claude_Docs__*` tools advertised to an unfixed cell (`account_connector_tools` 8, `claude_code.py:35`); none was called, but the tool descriptions are an "MCP server other than the task's own" (ADR-0004:51). Closure of this row (ADR-0004:82 "account MCP") is measured, not asserted by this line, by the Leader's re-qualification cell reading `account_connector_tools` 0.
 - **Date:** 2026-09-23 (revised after council round 1)
 - **Deciders:** @timianmalloo; authored by Claude Code for the architect council
 - **Context spec/architecture:** `docs/specs/harness-bench.md` US-14, US-46; spec risk R14

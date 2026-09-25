@@ -29,7 +29,7 @@ def copilot_canary_module():
 def test_each_missing_copilot_control_class_is_void(copilot_canary_module, tmp_path, removed):
     home = tmp_path / "home"
     home.mkdir()
-    copilot_canary_module._seed_copilot_control(home)
+    pairs = copilot_canary_module._seed_copilot_control(home)  # also plants the two skill-root canaries at home/..
     assert (home / "copilot-instructions.md").is_file()
     assert (home / "skills" / copilot_canary_module.COPILOT_SKILL / "SKILL.md").is_file()
     assert json.loads((home / "hooks" / "us13-canary.json").read_text(encoding="utf-8"))["hooks"]["sessionStart"]
@@ -37,7 +37,7 @@ def test_each_missing_copilot_control_class_is_void(copilot_canary_module, tmp_p
 
     marker = home / copilot_canary_module.COPILOT_HOOK_FILE
     marker.write_text(copilot_canary_module.COPILOT_HOOK, encoding="utf-8")
-    record = f"{copilot_canary_module.COPILOT_INSTRUCTION}\n{copilot_canary_module.COPILOT_SKILL}"
+    record = "\n".join(canary for canary, cls in pairs if cls not in {"hook", "settings model"})
     models = {copilot_canary_module.COPILOT_SETTINGS_MODEL}
     assert all(copilot_canary_module._copilot_shown(record, models, home).values())
 
@@ -275,6 +275,7 @@ def test_claude_profile_seeds_settings_and_a_credential_copy(tmp_path):
     p.seed_home(home, model="claude-sonnet-5")
     settings = json.loads((home / "settings.json").read_text(encoding="utf-8"))
     assert settings["permissions"]["defaultMode"] == "dontAsk"
+    assert settings["disableClaudeAiConnectors"] is True  # R-56 c1, R-57 gate 2: no claude.ai MCP cloud connectors
     assert set(settings["permissions"]["allow"]) == {
         "Bash", "PowerShell", "Edit", "Write", "NotebookEdit", "Read", "Glob", "Grep"}  # R-34, R-35
     assert (home / ".credentials.json").read_text(encoding="utf-8") == '{"secret": "x"}'
