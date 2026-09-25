@@ -439,6 +439,74 @@ def test_the_cli_table_has_no_account_context_flag_when_no_claude_code_cell():
     assert code == 0 and R36_FLAG not in out
 
 
+# --- wave-2 validity states and view warnings (R-15, R-27, R-24/R-26 c5, R-28) on every surface ---------------------
+
+TOKENS_WARNING = views.Finding("HB-VAL-005", "warning", "model_calls tokens differ from the ACP turn total: outputTokens ACP 516, model_calls 515")
+BUILD_FLAG = views.Finding("HB-CELL-115", "warning", "agent_version 1.0.90 differs from the pinned build 1.0.89-1")
+
+
+def _state_view(validity, code, warnings=()):
+    cell = _cell("a", "cop-sol", "copilot", "gpt-6-sol")
+    cell.validity, cell.validity_code, cell.warnings = validity, code, list(warnings)
+    return views.RunView("r1", {"cells": [{"harness": "copilot"}]}, True, "grade-1", None, [cell])
+
+
+def _lines_after(out: str, heading: str) -> list[str]:
+    lines = out.splitlines()
+    return lines[lines.index(heading) + 1:]
+
+
+@pytest.mark.parametrize(("validity", "code"), [("not recorded", "HB-VAL-003"), ("invalid (tools denied by hook)", "HB-VAL-004")])
+def test_the_cli_table_lists_each_wave_two_state_under_the_cells_that_are_not_valid(validity, code):
+    out, _ = cli_table.render(_state_view(validity, code), plain=True)
+    assert _lines_after(out, "Cells that are not valid:")[0] == f"  X1.cop-sol.pack-off.r1: {validity} {code}"
+
+
+@pytest.mark.parametrize(("validity", "code"), [("not recorded", "HB-VAL-003"), ("invalid (tools denied by hook)", "HB-VAL-004")])
+def test_the_html_validity_section_counts_and_lists_each_wave_two_state(validity, code):
+    banner = re.search(r'<section id="validity".*?</section>', html.render(_state_view(validity, code), archive_present=True),
+                       re.DOTALL).group(0)
+    assert f"<li>{validity}: 1</li>" in banner and f"<li>X1.cop-sol.pack-off.r1: {validity} {code}</li>" in banner
+
+
+def test_the_cli_table_lists_each_warning_with_its_code_after_the_table():
+    out, _ = cli_table.render(_state_view("valid", None, [TOKENS_WARNING, BUILD_FLAG]), plain=True)
+    assert _lines_after(out, "Warnings:")[:2] == [f"  X1.cop-sol.pack-off.r1: HB-VAL-005 {TOKENS_WARNING.message}",
+                                                  f"  X1.cop-sol.pack-off.r1: HB-CELL-115 {BUILD_FLAG.message}"]
+
+
+def test_the_cli_table_has_no_warnings_heading_without_a_warning():
+    out, _ = cli_table.render(_state_view("valid", None), plain=True)
+    assert "Warnings:" not in out.splitlines()
+
+
+def test_the_html_validity_section_lists_warnings_even_when_every_cell_is_valid():
+    doc = html.render(_state_view("valid", None, [BUILD_FLAG]), archive_present=True)
+    warnings = re.search(r'<ul id="validity-warnings">(.*?)</ul>', doc, re.DOTALL).group(1)
+    assert warnings == f"<li>X1.cop-sol.pack-off.r1: HB-CELL-115 {BUILD_FLAG.message}</li>"
+
+
+def test_the_html_cells_table_names_each_cells_warning_codes():
+    doc = html.render(_state_view("valid", None, [TOKENS_WARNING, BUILD_FLAG]), archive_present=True)
+    runs = re.search(r'<section id="runs".*?</section>', doc, re.DOTALL).group(0)
+    headers = re.findall(r'<th scope="col"[^>]*>([^<]*)</th>', runs)
+    cells = re.findall(r"<td[^>]*>(.*?)</td>", re.search(r"<tbody>(.*?)</tbody>", runs, re.DOTALL).group(1))
+    assert cells[headers.index("Warnings")] == "HB-VAL-005, HB-CELL-115"
+
+
+def test_the_html_cells_table_reads_none_for_a_cell_without_warnings():
+    doc = html.render(_state_view("valid", None), archive_present=True)
+    runs = re.search(r'<section id="runs".*?</section>', doc, re.DOTALL).group(0)
+    headers = re.findall(r'<th scope="col"[^>]*>([^<]*)</th>', runs)
+    cells = re.findall(r"<td[^>]*>(.*?)</td>", re.search(r"<tbody>(.*?)</tbody>", runs, re.DOTALL).group(1))
+    assert cells[headers.index("Warnings")] == "none" and '<ul id="validity-warnings">' not in doc
+
+
+def test_the_canonical_export_carries_each_cells_warnings():
+    cell = json.loads(views.export(_state_view("valid", None, [BUILD_FLAG])))["cells"][0]
+    assert cell["warnings"] == [{"code": "HB-CELL-115", "level": "warning", "message": BUILD_FLAG.message}]
+
+
 def test_no_connector_name_is_hard_coded_in_the_report_source():  # R-36 condition 3, R-6 condition 4
     from pathlib import Path
 
