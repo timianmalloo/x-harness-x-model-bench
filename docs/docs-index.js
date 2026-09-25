@@ -960,6 +960,34 @@ window.DOCS_INDEX = {
       "sourceSha256": "a103726bb5135533cce4b4d88bf681913174e64ef089bf55dc558ea0f8c15434"
     },
     {
+      "id": "note-spike-gr-code-stryker",
+      "path": "docs/notes/spike-gr-code-stryker.md",
+      "title": "Spike GR-CODE c6a - cached Stryker.NET 4.16.0 runs offline on D1; --version does not print the pin",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-09",
+      "reviewSuggested": [],
+      "summary": "dotnet-stryker 4.16.0 is extracted in the offline NuGet cache and is not an installed tool. `dotnet exec` of that DLL, with NUGET_PACKAGES pointed at the cache and additional-timeout 5000, scored D1's reference file twice: killed 12, timeout 0, survived 2, no coverage 0, and the two mutation-report.json files were byte-identical. `--version` exits 1.",
+      "tags": [
+        "spike",
+        "grading",
+        "dotnet",
+        "stryker",
+        "mutation",
+        "r-59"
+      ],
+      "links": [
+        {
+          "to": "design-phase3-graders",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "81f2e456754782b2340bbb75d09250870c53b60ea4d39d34e80294eb4dc75b62"
+    },
+    {
       "id": "review-w1-acp-codex",
       "path": "docs/notes/review-w1-acp-codex.md",
       "title": "W1-ACP cross-vendor join review",
@@ -1562,7 +1590,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "db16eb337074ce2cecad59d7aca0bc48ee4dec4f781b8f7aa4eed8c08f74c106"
+      "sourceSha256": "fe413bac2ff308f8577d477fa5ae4f75b38adc4a44b35c9ef5186c89a94f6d90"
     },
     {
       "id": "design-phase3-graders",
@@ -1796,7 +1824,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "97281a76489c8f96b97ed4c5b87e8479f5360a5fee2876d5bc2130c34af3a869"
+      "sourceSha256": "9cc6bdf007cb0d42d83ee4fa6d565b3d07e5bf27b63a0149f813b883cd5f5e6e"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -1868,7 +1896,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9c9efc16018f4866c4376fb2ec01357e49950a00e0dbde5402a4dbd7d897318c"
+      "sourceSha256": "b9280f03e3a9cd5c94eebc415a8e5bedfdadc016c6fde390023f3f457c8b89ee"
     },
     {
       "id": "note-spike-isolation-permissions",
@@ -2802,5 +2830,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "83bdfda649502b3e0adb410e986a54bd6fdca9d4e408ac0a595e9d9b802cb057"
+  "graphSha256": "714c7ab00392759398d317fb0f692b7aa19948db673473299055419e2409fd09"
 };
