@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T10:10:27Z",
+  "generated": "2026-09-25T10:33:36Z",
   "audit": [
     {
       "actor": null,
@@ -19572,6 +19572,440 @@ window.AUDIT_DATA = {
             "sha256": null,
             "status": "unresolved",
             "token": "tests/test_scripted_user*.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3C21B01QYY0X60ASZ32N8TD",
+      "shortname": "Goal: W3-GW-CP, the R-63 (c) spike harness: add Copilot `1.0.89-1` servi…",
+      "datetime": "2026-09-25T10:33:34Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W3-GW-CP, the R-63 (c) spike harness: add Copilot `1.0.89-1` serving `gpt-6-sol` as a third harness of tests/fixtures/gateway/probe_judge.py in the GW-H shape, so the Leader can run R-63's two probe turns (read docs/notes/rulings.md R-63, R-66, R-45, R-56 and docs/notes/spike-gw-headless.md first).\nDone when: `probe_judge.py run --harness copilot --model gpt-6-sol` builds the launch shape R-63 names (the pinned Copilot build, `--model gpt-6-sol`, `--disable-builtin-mcps`, an empty `--available-tools`, the decoy profile, a throwaway COPILOT_HOME holding only the copied credential, which is deleted after the turn), and `--dry-run` prints it and spawns nothing.; `analyse` reads Copilot's own native record for R-63 condition 1: the served model; `tools_advertised` from `promptCacheBreakState[0].models.<model>.tools` (R-45 b), reported as [] or null distinctly and never defaulted; tool events; permission lines; each canary class, pack marker and operator identifier as key paths only, never values; CLI-added classes recorded (R-66). An unreadable record is exit 2, never a pass.; tests/fixtures/gateway/probe_selftest.py gains Copilot cases, red first on placeholder records copied from the committed Copilot fixtures under tests/fixtures/native/copilot/ with every identifier replaced by a fixed placeholder: a qualifying record gives exit 0; a tool event, a null tools list, a served model other than the pin, and a canary hit each give exit 1 with the named reason.; `collect` accepts the Copilot summary in the committed scrubbed form (facts only, no paths, no text).; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, the dry-run argv (paths replaced by <placeholders>), and the record keys the analyser reads.\nNot in scope: running any live turn (the Leader runs both turns); src/harness_bench/gateway/** (W3-GW-I); bench/gateway.yaml; any change to the claude-code or codex paths beyond a shared helper; the real ~/.copilot (never read or write it; the credential copy source is the Leader's to supply at run time); any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 300k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: tests/fixtures/gateway/probe_judge.py; tests/fixtures/gateway/probe_selftest.py; docs/notes/spike-gw-headless.md; docs/notes/rulings.md R-45, R-56, R-63, R-66; src/harness_bench/profiles.py (the Copilot profile and its pinned build); src/harness_bench/telemetry/copilot.py (the record reader); tests/fixtures/native/copilot/. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3C21CQJXJVFDXWBKYXHFW3R",
+      "shortname": "compile-Goal: W3-GW-CP, the R-63 (c) spike harness: add Copilot `1.0.89-1` servi…",
+      "datetime": "2026-09-25T10:33:36Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-GW-CP, the R-63 (c) spike harness: add Copilot `1.0.89-1` serving `gpt-6-sol` as a third harness of tests/fixtures/gateway/probe_judge.py in the GW-H shape, so the Leader can run R-63's two probe turns (read docs/notes/rulings.md R-63, R-66, R-45, R-56 and docs/notes/spike-gw-headless.md first).\nDone when: `probe_judge.py run --harness copilot --model gpt-6-sol` builds the launch shape R-63 names (the pinned Copilot build, `--model gpt-6-sol`, `--disable-builtin-mcps`, an empty `--available-tools`, the decoy profile, a throwaway COPILOT_HOME holding only the copied credential, which is deleted after the turn), and `--dry-run` prints it and spawns nothing.; `analyse` reads Copilot's own native record for R-63 condition 1: the served model; `tools_advertised` from `promptCacheBreakState[0].models.<model>.tools` (R-45 b), reported as [] or null distinctly and never defaulted; tool events; permission lines; each canary class, pack marker and operator identifier as key paths only, never values; CLI-added classes recorded (R-66). An unreadable record is exit 2, never a pass.; tests/fixtures/gateway/probe_selftest.py gains Copilot cases, red first on placeholder records copied from the committed Copilot fixtures under tests/fixtures/native/copilot/ with every identifier replaced by a fixed placeholder: a qualifying record gives exit 0; a tool event, a null tools list, a served model other than the pin, and a canary hit each give exit 1 with the named reason.; `collect` accepts the Copilot summary in the committed scrubbed form (facts only, no paths, no text).; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, the dry-run argv (paths replaced by <placeholders>), and the record keys the analyser reads.\nNot in scope: running any live turn (the Leader runs both turns); src/harness_bench/gateway/** (W3-GW-I); bench/gateway.yaml; any change to the claude-code or codex paths beyond a shared helper; the real ~/.copilot (never read or write it; the credential copy source is the Leader's to supply at run time); any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 300k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: tests/fixtures/gateway/probe_judge.py; tests/fixtures/gateway/probe_selftest.py; docs/notes/spike-gw-headless.md; docs/notes/rulings.md R-45, R-56, R-63, R-66; src/harness_bench/profiles.py (the Copilot profile and its pinned build); src/harness_bench/telemetry/copilot.py (the record reader); tests/fixtures/native/copilot/. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: `probe_judge.py run --harness copilot --model gpt-6-sol` builds the launch shape R-63 names (the pinned Copilot build, `--model gpt-6-sol`, `--disable-builtin-mcps`, an empty `--available-tools`, the decoy profile, a throwaway COPILOT_HOME holding only the copied credential, which is deleted after the turn), and `--dry-run` prints it and spawns nothing. | phrase: `probe_judge.py run --harness copilot --model gpt-6-sol` builds the launch shape R-63 names (the pinned Copilot build, `--model gpt-6-sol`, `--disable-builtin-mcps`, an empty `--available-tools`, the decoy profile, a throwaway COPILOT_HOME holding only the copied credential, which is deleted after the turn), and `--dry-run` prints it and spawns nothing. |\n| done_when: `analyse` reads Copilot's own native record for R-63 condition 1: the served model | phrase: `analyse` reads Copilot's own native record for R-63 condition 1: the served model |\n| done_when: `tools_advertised` from `promptCacheBreakState[0].models.<model>.tools` (R-45 b), reported as [] or null distinctly and never defaulted | phrase: `tools_advertised` from `promptCacheBreakState[0].models.<model>.tools` (R-45 b), reported as [] or null distinctly and never defaulted |\n| done_when: tool events | phrase: tool events |\n| done_when: permission lines | phrase: permission lines |\n| done_when: each canary class, pack marker and operator identifier as key paths only, never values | phrase: each canary class, pack marker and operator identifier as key paths only, never values |\n| done_when: CLI-added classes recorded (R-66). An unreadable record is exit 2, never a pass. | phrase: CLI-added classes recorded (R-66). An unreadable record is exit 2, never a pass. |\n| done_when: tests/fixtures/gateway/probe_selftest.py gains Copilot cases, red first on placeholder records copied from the committed Copilot fixtures under tests/fixtures/native/copilot/ with every identifier replaced by a fixed placeholder: a qualifying record gives exit 0 | phrase: tests/fixtures/gateway/probe_selftest.py gains Copilot cases, red first on placeholder records copied from the committed Copilot fixtures under tests/fixtures/native/copilot/ with every identifier replaced by a fixed placeholder: a qualifying record gives exit 0 |\n| done_when: a tool event, a null tools list, a served model other than the pin, and a canary hit each give exit 1 with the named reason. | phrase: a tool event, a null tools list, a served model other than the pin, and a canary hit each give exit 1 with the named reason. |\n| done_when: `collect` accepts the Copilot summary in the committed scrubbed form (facts only, no paths, no text). | phrase: `collect` accepts the Copilot summary in the committed scrubbed form (facts only, no paths, no text). |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean. | phrase: uv run ruff check src tests tools is clean. |\n| done_when: Your final message lists each red SHA with its failing assertion, each green SHA, the dry-run argv (paths replaced by <placeholders>), and the record keys the analyser reads. | phrase: Your final message lists each red SHA with its failing assertion, each green SHA, the dry-run argv (paths replaced by <placeholders>), and the record keys the analyser reads. |\n| not_in_scope: running any live turn (the Leader runs both turns) | phrase: running any live turn (the Leader runs both turns) |\n| not_in_scope: src/harness_bench/gateway/** (W3-GW-I) | phrase: src/harness_bench/gateway/** (W3-GW-I) |\n| not_in_scope: bench/gateway.yaml | phrase: bench/gateway.yaml |\n| not_in_scope: any change to the claude-code or codex paths beyond a shared helper | phrase: any change to the claude-code or codex paths beyond a shared helper |\n| not_in_scope: the real ~/.copilot (never read or write it | phrase: the real ~/.copilot (never read or write it |\n| not_in_scope: the credential copy source is the Leader's to supply at run time) | phrase: the credential copy source is the Leader's to supply at run time) |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- 1.0.89-1: unresolved (not found)\n- gpt-6-sol: unresolved (not found)\n- probe_judge.py run --harness copilot --model gpt-6-sol: unresolved (not found)\n- --model gpt-6-sol: unresolved (not found)\n- --disable-builtin-mcps: unresolved (not found)\n- --available-tools: unresolved (not found)\n- --dry-run: unresolved (not found)\n- analyse: unresolved (not found)\n- tools_advertised: unresolved (not found)\n- promptCacheBreakState[0].models.<model>.tools: unresolved (not found)\n- collect: unresolved (not found)\n- tests/fixtures/gateway/probe_judge.py: tests/fixtures/gateway/probe_judge.py sha256 87c81553fcdb3bffba337f25f360cc8cbbd62bb79831dd8c2e4f8086c718d5a5\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- docs/notes/spike-gw-headless.md: docs/notes/spike-gw-headless.md sha256 669dc8dd313a0a2bc66b5e34a7cfc98ed8f98c1de4dfe1908c93157c8dcd8b96\n- probe_judge.py: tests/fixtures/gateway/probe_judge.py sha256 87c81553fcdb3bffba337f25f360cc8cbbd62bb79831dd8c2e4f8086c718d5a5\n- tests/fixtures/gateway/probe_selftest.py: tests/fixtures/gateway/probe_selftest.py sha256 94c6699326f206e9d6dbfb09a0350d0f82c558cc1fa1224dcd3de50b37f26564\n- tests/fixtures/native/copilot/: unresolved (not found)\n- src/harness_bench/gateway/**: unresolved (not found)\n- bench/gateway.yaml: unresolved (not found)\n- ~/.copilot: unresolved (not found)\n- src/harness_bench/profiles.py: src/harness_bench/profiles.py sha256 7e35ccb1c57832065ba4b8ac9ff8b8889829b4409360f211a9dac2ae7b3108bf\n- src/harness_bench/telemetry/copilot.py: src/harness_bench/telemetry/copilot.py sha256 c058575c1400dfd0aed59b1cdd597b6558a0118e6317f8ea29cc8c7dcf9ca714\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3C21B01QYY0X60ASZ32N8TD\nraw sha256: 81e5fb50919311b4cd11fb9cef152ef4f0eca1818865adc2176eac8e10fd8bde\ncompiler model: claude-opus-5-5\nengine seconds: 0.004\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3C21B01QYY0X60ASZ32N8TD for claude-code v1: 20 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "`probe_judge.py run --harness copilot --model gpt-6-sol` builds the launch shape R-63 names (the pinned Copilot build, `--model gpt-6-sol`, `--disable-builtin-mcps`, an empty `--available-tools`, the decoy profile, a throwaway COPILOT_HOME holding only the copied credential, which is deleted after the turn), and `--dry-run` prints it and spawns nothing.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`probe_judge.py run --harness copilot --model gpt-6-sol` builds the launch shape R-63 names (the pinned Copilot build, `--model gpt-6-sol`, `--disable-builtin-mcps`, an empty `--available-tools`, the decoy profile, a throwaway COPILOT_HOME holding only the copied credential, which is deleted after the turn), and `--dry-run` prints it and spawns nothing."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`analyse` reads Copilot's own native record for R-63 condition 1: the served model",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`analyse` reads Copilot's own native record for R-63 condition 1: the served model"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`tools_advertised` from `promptCacheBreakState[0].models.<model>.tools` (R-45 b), reported as [] or null distinctly and never defaulted",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`tools_advertised` from `promptCacheBreakState[0].models.<model>.tools` (R-45 b), reported as [] or null distinctly and never defaulted"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tool events",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tool events"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "permission lines",
+            "trace": {
+              "kind": "phrase",
+              "ref": "permission lines"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "each canary class, pack marker and operator identifier as key paths only, never values",
+            "trace": {
+              "kind": "phrase",
+              "ref": "each canary class, pack marker and operator identifier as key paths only, never values"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "CLI-added classes recorded (R-66). An unreadable record is exit 2, never a pass.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "CLI-added classes recorded (R-66). An unreadable record is exit 2, never a pass."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/fixtures/gateway/probe_selftest.py gains Copilot cases, red first on placeholder records copied from the committed Copilot fixtures under tests/fixtures/native/copilot/ with every identifier replaced by a fixed placeholder: a qualifying record gives exit 0",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/fixtures/gateway/probe_selftest.py gains Copilot cases, red first on placeholder records copied from the committed Copilot fixtures under tests/fixtures/native/copilot/ with every identifier replaced by a fixed placeholder: a qualifying record gives exit 0"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a tool event, a null tools list, a served model other than the pin, and a canary hit each give exit 1 with the named reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a tool event, a null tools list, a served model other than the pin, and a canary hit each give exit 1 with the named reason."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`collect` accepts the Copilot summary in the committed scrubbed form (facts only, no paths, no text).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`collect` accepts the Copilot summary in the committed scrubbed form (facts only, no paths, no text)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA with its failing assertion, each green SHA, the dry-run argv (paths replaced by <placeholders>), and the record keys the analyser reads.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA with its failing assertion, each green SHA, the dry-run argv (paths replaced by <placeholders>), and the record keys the analyser reads."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "running any live turn (the Leader runs both turns)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "running any live turn (the Leader runs both turns)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "src/harness_bench/gateway/** (W3-GW-I)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "src/harness_bench/gateway/** (W3-GW-I)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench/gateway.yaml",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/gateway.yaml"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any change to the claude-code or codex paths beyond a shared helper",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any change to the claude-code or codex paths beyond a shared helper"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the real ~/.copilot (never read or write it",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the real ~/.copilot (never read or write it"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the credential copy source is the Leader's to supply at run time)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the credential copy source is the Leader's to supply at run time)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "300k tokens",
+          "done_when": [
+            "`probe_judge.py run --harness copilot --model gpt-6-sol` builds the launch shape R-63 names (the pinned Copilot build, `--model gpt-6-sol`, `--disable-builtin-mcps`, an empty `--available-tools`, the decoy profile, a throwaway COPILOT_HOME holding only the copied credential, which is deleted after the turn), and `--dry-run` prints it and spawns nothing.",
+            "`analyse` reads Copilot's own native record for R-63 condition 1: the served model",
+            "`tools_advertised` from `promptCacheBreakState[0].models.<model>.tools` (R-45 b), reported as [] or null distinctly and never defaulted",
+            "tool events",
+            "permission lines",
+            "each canary class, pack marker and operator identifier as key paths only, never values",
+            "CLI-added classes recorded (R-66). An unreadable record is exit 2, never a pass.",
+            "tests/fixtures/gateway/probe_selftest.py gains Copilot cases, red first on placeholder records copied from the committed Copilot fixtures under tests/fixtures/native/copilot/ with every identifier replaced by a fixed placeholder: a qualifying record gives exit 0",
+            "a tool event, a null tools list, a served model other than the pin, and a canary hit each give exit 1 with the named reason.",
+            "`collect` accepts the Copilot summary in the committed scrubbed form (facts only, no paths, no text).",
+            "uv run pytest -q -p no:cacheprovider passes",
+            "uv run ruff check src tests tools is clean.",
+            "Your final message lists each red SHA with its failing assertion, each green SHA, the dry-run argv (paths replaced by <placeholders>), and the record keys the analyser reads."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W3-GW-CP, the R-63 (c) spike harness: add Copilot `1.0.89-1` serving `gpt-6-sol` as a third harness of tests/fixtures/gateway/probe_judge.py in the GW-H shape, so the Leader can run R-63's two probe turns (read docs/notes/rulings.md R-63, R-66, R-45, R-56 and docs/notes/spike-gw-headless.md first).",
+          "main_line_budget": "one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: tests/fixtures/gateway/probe_judge.py; tests/fixtures/gateway/probe_selftest.py; docs/notes/spike-gw-headless.md; docs/notes/rulings.md R-45, R-56, R-63, R-66; src/harness_bench/profiles.py (the Copilot profile and its pinned build); src/harness_bench/telemetry/copilot.py (the record reader); tests/fixtures/native/copilot/. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "running any live turn (the Leader runs both turns)",
+            "src/harness_bench/gateway/** (W3-GW-I)",
+            "bench/gateway.yaml",
+            "any change to the claude-code or codex paths beyond a shared helper",
+            "the real ~/.copilot (never read or write it",
+            "the credential copy source is the Leader's to supply at run time)",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.004,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3C21B01QYY0X60ASZ32N8TD",
+        "raw_sha256": "81e5fb50919311b4cd11fb9cef152ef4f0eca1818865adc2176eac8e10fd8bde",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "1.0.89-1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gpt-6-sol"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "probe_judge.py run --harness copilot --model gpt-6-sol"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--model gpt-6-sol"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--disable-builtin-mcps"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--available-tools"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--dry-run"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "analyse"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools_advertised"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "promptCacheBreakState[0].models.<model>.tools"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "collect"
+          },
+          {
+            "nearest": null,
+            "path": "tests/fixtures/gateway/probe_judge.py",
+            "reason": null,
+            "sha256": "87c81553fcdb3bffba337f25f360cc8cbbd62bb79831dd8c2e4f8086c718d5a5",
+            "status": "resolved",
+            "token": "tests/fixtures/gateway/probe_judge.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/spike-gw-headless.md",
+            "reason": null,
+            "sha256": "669dc8dd313a0a2bc66b5e34a7cfc98ed8f98c1de4dfe1908c93157c8dcd8b96",
+            "status": "resolved",
+            "token": "docs/notes/spike-gw-headless.md"
+          },
+          {
+            "nearest": null,
+            "path": "tests/fixtures/gateway/probe_judge.py",
+            "reason": null,
+            "sha256": "87c81553fcdb3bffba337f25f360cc8cbbd62bb79831dd8c2e4f8086c718d5a5",
+            "status": "resolved",
+            "token": "probe_judge.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/fixtures/gateway/probe_selftest.py",
+            "reason": null,
+            "sha256": "94c6699326f206e9d6dbfb09a0350d0f82c558cc1fa1224dcd3de50b37f26564",
+            "status": "resolved",
+            "token": "tests/fixtures/gateway/probe_selftest.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/native/copilot/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/gateway/**"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/gateway.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "~/.copilot"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/profiles.py",
+            "reason": null,
+            "sha256": "7e35ccb1c57832065ba4b8ac9ff8b8889829b4409360f211a9dac2ae7b3108bf",
+            "status": "resolved",
+            "token": "src/harness_bench/profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/copilot.py",
+            "reason": null,
+            "sha256": "c058575c1400dfd0aed59b1cdd597b6558a0118e6317f8ea29cc8c7dcf9ca714",
+            "status": "resolved",
+            "token": "src/harness_bench/telemetry/copilot.py"
           }
         ],
         "schema": "compiled-prompt/1",
