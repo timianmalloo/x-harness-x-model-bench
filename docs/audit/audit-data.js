@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T06:25:15Z",
+  "generated": "2026-09-25T07:05:09Z",
   "audit": [
     {
       "actor": null,
@@ -14212,6 +14212,40 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "id": "al-01M3BP3PR6452HENJYD4HZ9573",
+      "shortname": "w2-stopi1-slice1",
+      "datetime": "2026-09-25T07:05:09Z",
+      "session": "worker-codex-stopi1",
+      "prompt": "W2-STOP-I slice 1 per compiled request al-01M3BMRVCPP5SVSVZY727RHK59",
+      "summary": "S1-S3 verified on main; ERR-1, P-1..3, ST-1, SK-1 and R-50 red first then green. Red commits dd4aaa0 and e848f19; green commit 13aa924. Full pytest 967 passed, 8 deselected; Ruff clean; stop.json 10 of 10 named mutants killed. R-47 agent_version is null with a live ACP handshake reason.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "tests/mutations/stop.json"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled_from": "al-01M3BMRVCPP5SVSVZY727RHK59",
+      "goal": "Deliver W2-STOP-I slice 1 seams, data and skill contract in the assigned worktree",
+      "done_when": "Codes, outcomes, plan parameters, old-plan refusal, last-update status, build self-report fallback and cap 4 committed with red-first tests, all mutations killed, pytest and Ruff green",
+      "tier": "T2",
+      "fan_out": 0,
+      "signals": {
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-25T06:42:07Z",
+      "duration_seconds": 1382.0,
+      "git": {
+        "sha": "13aa9248829e621c82594dae18396afe7f07166b",
+        "short": "13aa92488",
+        "branch": "w2-stopi-1",
+        "pushed": null
+      }
     }
   ],
   "changes": [
