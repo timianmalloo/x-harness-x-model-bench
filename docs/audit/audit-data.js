@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T20:59:27Z",
+  "generated": "2026-09-25T21:06:27Z",
   "audit": [
     {
       "actor": null,
@@ -31787,6 +31787,321 @@ window.AUDIT_DATA = {
             "sha256": "24f729beef17064e342ca591276a62bd43a9e19dbab742badfe503d6607ca0a9",
             "status": "resolved",
             "token": "src/harness_bench/config.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3D6848MQA4FAV55BYYCCSY5",
+      "shortname": "Goal: write the R21-3 live test the STOP-I design promises (docs/design/…",
+      "datetime": "2026-09-25T21:06:26Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: write the R21-3 live test the STOP-I design promises (docs/design/phase2-stop-decisions.md lines 85 and 647; ruling R-21 in docs/notes/rulings.md): a Copilot cell ended by its budget still records `session.shutdown` and its tokens. The Leader runs it live; you write it and prove it collects.\nDone when: tests/e2e/test_r21_copilot_budget_kill.py (a new file, modelled on tests/e2e/test_walking_skeleton.py's real-cell setup) holds `test_copilot_budget_kill_records_session_shutdown`, marked @pytest.mark.credentials: it plans and runs one real copilot-sol cell (harness copilot, model gpt-6-sol, pinned; pack off) on a task whose prompt keeps the model busy well past a budget of about 45 s (for example tasks/X1 with the cell budget overridden in the matrix or plan parameters, whichever the engine supports; say which), lets the engine end it at the budget, then asserts from the archived native record and the ledger that: the cell's outcome is the budget end; the Copilot record contains a `session.shutdown` event; and the cell's tokens are recorded (not \"tokens: not recorded\", R-21 c2).; `uv run pytest -q -p no:cacheprovider tests/e2e/test_r21_copilot_budget_kill.py --collect-only -m credentials` collects exactly that one test, and the default ring deselects it (it never runs without -m credentials).; uv run ruff check src tests tools is clean; commit with git.\nNot in scope: running the test (it spends a live Copilot turn: the Leader runs it); any src/ change; bench/**; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit as soon as it collects.\n\nGrounding: docs/design/phase2-stop-decisions.md (sections 4.4, 5 and 16.2 R21-3); docs/notes/rulings.md R-21; tests/e2e/test_walking_skeleton.py and tests/e2e/conftest.py (how a real cell is planned and run); src/harness_bench/{engine,plan}.py (the budget parameter); src/harness_bench/telemetry/copilot.py (session.shutdown). Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3D685QR0XH05B317SVC0KE7",
+      "shortname": "compile-Goal: write the R21-3 live test the STOP-I design promises (docs/design/…",
+      "datetime": "2026-09-25T21:06:27Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: write the R21-3 live test the STOP-I design promises (docs/design/phase2-stop-decisions.md lines 85 and 647; ruling R-21 in docs/notes/rulings.md): a Copilot cell ended by its budget still records `session.shutdown` and its tokens. The Leader runs it live; you write it and prove it collects.\nDone when: tests/e2e/test_r21_copilot_budget_kill.py (a new file, modelled on tests/e2e/test_walking_skeleton.py's real-cell setup) holds `test_copilot_budget_kill_records_session_shutdown`, marked @pytest.mark.credentials: it plans and runs one real copilot-sol cell (harness copilot, model gpt-6-sol, pinned; pack off) on a task whose prompt keeps the model busy well past a budget of about 45 s (for example tasks/X1 with the cell budget overridden in the matrix or plan parameters, whichever the engine supports; say which), lets the engine end it at the budget, then asserts from the archived native record and the ledger that: the cell's outcome is the budget end; the Copilot record contains a `session.shutdown` event; and the cell's tokens are recorded (not \"tokens: not recorded\", R-21 c2).; `uv run pytest -q -p no:cacheprovider tests/e2e/test_r21_copilot_budget_kill.py --collect-only -m credentials` collects exactly that one test, and the default ring deselects it (it never runs without -m credentials).; uv run ruff check src tests tools is clean; commit with git.\nNot in scope: running the test (it spends a live Copilot turn: the Leader runs it); any src/ change; bench/**; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit as soon as it collects.\nGrounding: docs/design/phase2-stop-decisions.md (sections 4.4, 5 and 16.2 R21-3); docs/notes/rulings.md R-21; tests/e2e/test_walking_skeleton.py and tests/e2e/conftest.py (how a real cell is planned and run); src/harness_bench/{engine,plan}.py (the budget parameter); src/harness_bench/telemetry/copilot.py (session.shutdown). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: tests/e2e/test_r21_copilot_budget_kill.py (a new file, modelled on tests/e2e/test_walking_skeleton.py's real-cell setup) holds `test_copilot_budget_kill_records_session_shutdown`, marked @pytest.mark.credentials: it plans and runs one real copilot-sol cell (harness copilot, model gpt-6-sol, pinned | phrase: tests/e2e/test_r21_copilot_budget_kill.py (a new file, modelled on tests/e2e/test_walking_skeleton.py's real-cell setup) holds `test_copilot_budget_kill_records_session_shutdown`, marked @pytest.mark.credentials: it plans and runs one real copilot-sol cell (harness copilot, model gpt-6-sol, pinned |\n| done_when: pack off) on a task whose prompt keeps the model busy well past a budget of about 45 s (for example tasks/X1 with the cell budget overridden in the matrix or plan parameters, whichever the engine supports | phrase: pack off) on a task whose prompt keeps the model busy well past a budget of about 45 s (for example tasks/X1 with the cell budget overridden in the matrix or plan parameters, whichever the engine supports |\n| done_when: say which), lets the engine end it at the budget, then asserts from the archived native record and the ledger that: the cell's outcome is the budget end | phrase: say which), lets the engine end it at the budget, then asserts from the archived native record and the ledger that: the cell's outcome is the budget end |\n| done_when: the Copilot record contains a `session.shutdown` event | phrase: the Copilot record contains a `session.shutdown` event |\n| done_when: and the cell's tokens are recorded (not \"tokens: not recorded\", R-21 c2). | phrase: and the cell's tokens are recorded (not \"tokens: not recorded\", R-21 c2). |\n| done_when: `uv run pytest -q -p no:cacheprovider tests/e2e/test_r21_copilot_budget_kill.py --collect-only -m credentials` collects exactly that one test, and the default ring deselects it (it never runs without -m credentials). | phrase: `uv run pytest -q -p no:cacheprovider tests/e2e/test_r21_copilot_budget_kill.py --collect-only -m credentials` collects exactly that one test, and the default ring deselects it (it never runs without -m credentials). |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: commit with git. | phrase: commit with git. |\n| not_in_scope: running the test (it spends a live Copilot turn: the Leader runs it) | phrase: running the test (it spends a live Copilot turn: the Leader runs it) |\n| not_in_scope: any src/ change | phrase: any src/ change |\n| not_in_scope: bench/** | phrase: bench/** |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- session.shutdown: unresolved (not found)\n- test_copilot_budget_kill_records_session_shutdown: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider tests/e2e/test_r21_copilot_budget_kill.py --collect-only -m credentials: unresolved (not found)\n- docs/design/phase2-stop-decisions.md: docs/design/phase2-stop-decisions.md sha256 3dbc40e3d87e76548cf8bda92266fefc77892f87086a180ae5a9572d91b287b7\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- tests/e2e/test_r21_copilot_budget_kill.py: unresolved (not found)\n- tests/e2e/test_walking_skeleton.py's: unresolved (not found; nearest: tests/e2e/test_walking_skeleton.py)\n- tasks/X1: unresolved (not found)\n- src/: unresolved (not found)\n- bench/**: unresolved (not found)\n- runs/: unresolved (not found)\n- tests/e2e/test_walking_skeleton.py: tests/e2e/test_walking_skeleton.py sha256 e07e361dcf679552765b3b1850bb7b065c9fd23ebb4bc5a0c9fdc9c907630691\n- tests/e2e/conftest.py: tests/e2e/conftest.py sha256 8bc770ae835b53b7351f6108ccd6c270f4821b1d301805ec2a5d8e3f27f5fa86\n- src/harness_bench/{engine,plan}.py: unresolved (not found)\n- src/harness_bench/telemetry/copilot.py: src/harness_bench/telemetry/copilot.py sha256 9c2ea2541568e216b91397ba24c8a978d19c475b8cc9988d1d4e9d21fc2a253c\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3D6848MQA4FAV55BYYCCSY5\nraw sha256: dddf73ae36fd54007ec71d49e09b1faa6e715b72b612e57d12f54e8b6dd4fe14\ncompiler model: claude-opus-5-5\nengine seconds: 0.005\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3D6848MQA4FAV55BYYCCSY5 for claude-code v1: 13 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "tests/e2e/test_r21_copilot_budget_kill.py (a new file, modelled on tests/e2e/test_walking_skeleton.py's real-cell setup) holds `test_copilot_budget_kill_records_session_shutdown`, marked @pytest.mark.credentials: it plans and runs one real copilot-sol cell (harness copilot, model gpt-6-sol, pinned",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/e2e/test_r21_copilot_budget_kill.py (a new file, modelled on tests/e2e/test_walking_skeleton.py's real-cell setup) holds `test_copilot_budget_kill_records_session_shutdown`, marked @pytest.mark.credentials: it plans and runs one real copilot-sol cell (harness copilot, model gpt-6-sol, pinned"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "pack off) on a task whose prompt keeps the model busy well past a budget of about 45 s (for example tasks/X1 with the cell budget overridden in the matrix or plan parameters, whichever the engine supports",
+            "trace": {
+              "kind": "phrase",
+              "ref": "pack off) on a task whose prompt keeps the model busy well past a budget of about 45 s (for example tasks/X1 with the cell budget overridden in the matrix or plan parameters, whichever the engine supports"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "say which), lets the engine end it at the budget, then asserts from the archived native record and the ledger that: the cell's outcome is the budget end",
+            "trace": {
+              "kind": "phrase",
+              "ref": "say which), lets the engine end it at the budget, then asserts from the archived native record and the ledger that: the cell's outcome is the budget end"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the Copilot record contains a `session.shutdown` event",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the Copilot record contains a `session.shutdown` event"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "and the cell's tokens are recorded (not \"tokens: not recorded\", R-21 c2).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "and the cell's tokens are recorded (not \"tokens: not recorded\", R-21 c2)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`uv run pytest -q -p no:cacheprovider tests/e2e/test_r21_copilot_budget_kill.py --collect-only -m credentials` collects exactly that one test, and the default ring deselects it (it never runs without -m credentials).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`uv run pytest -q -p no:cacheprovider tests/e2e/test_r21_copilot_budget_kill.py --collect-only -m credentials` collects exactly that one test, and the default ring deselects it (it never runs without -m credentials)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "commit with git.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "commit with git."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "running the test (it spends a live Copilot turn: the Leader runs it)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "running the test (it spends a live Copilot turn: the Leader runs it)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any src/ change",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any src/ change"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench/**",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/**"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "tests/e2e/test_r21_copilot_budget_kill.py (a new file, modelled on tests/e2e/test_walking_skeleton.py's real-cell setup) holds `test_copilot_budget_kill_records_session_shutdown`, marked @pytest.mark.credentials: it plans and runs one real copilot-sol cell (harness copilot, model gpt-6-sol, pinned",
+            "pack off) on a task whose prompt keeps the model busy well past a budget of about 45 s (for example tasks/X1 with the cell budget overridden in the matrix or plan parameters, whichever the engine supports",
+            "say which), lets the engine end it at the budget, then asserts from the archived native record and the ledger that: the cell's outcome is the budget end",
+            "the Copilot record contains a `session.shutdown` event",
+            "and the cell's tokens are recorded (not \"tokens: not recorded\", R-21 c2).",
+            "`uv run pytest -q -p no:cacheprovider tests/e2e/test_r21_copilot_budget_kill.py --collect-only -m credentials` collects exactly that one test, and the default ring deselects it (it never runs without -m credentials).",
+            "uv run ruff check src tests tools is clean",
+            "commit with git."
+          ],
+          "fan_out_cap": 0,
+          "goal": "write the R21-3 live test the STOP-I design promises (docs/design/phase2-stop-decisions.md lines 85 and 647; ruling R-21 in docs/notes/rulings.md): a Copilot cell ended by its budget still records `session.shutdown` and its tokens. The Leader runs it live; you write it and prove it collects.",
+          "main_line_budget": "one slice of at most 18 minutes; commit as soon as it collects.\nGrounding: docs/design/phase2-stop-decisions.md (sections 4.4, 5 and 16.2 R21-3); docs/notes/rulings.md R-21; tests/e2e/test_walking_skeleton.py and tests/e2e/conftest.py (how a real cell is planned and run); src/harness_bench/{engine,plan}.py (the budget parameter); src/harness_bench/telemetry/copilot.py (session.shutdown). Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "running the test (it spends a live Copilot turn: the Leader runs it)",
+            "any src/ change",
+            "bench/**",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.005,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3D6848MQA4FAV55BYYCCSY5",
+        "raw_sha256": "dddf73ae36fd54007ec71d49e09b1faa6e715b72b612e57d12f54e8b6dd4fe14",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "session.shutdown"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_copilot_budget_kill_records_session_shutdown"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q -p no:cacheprovider tests/e2e/test_r21_copilot_budget_kill.py --collect-only -m credentials"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase2-stop-decisions.md",
+            "reason": null,
+            "sha256": "3dbc40e3d87e76548cf8bda92266fefc77892f87086a180ae5a9572d91b287b7",
+            "status": "resolved",
+            "token": "docs/design/phase2-stop-decisions.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e/test_r21_copilot_budget_kill.py"
+          },
+          {
+            "nearest": "tests/e2e/test_walking_skeleton.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e/test_walking_skeleton.py's"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/X1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/**"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": "tests/e2e/test_walking_skeleton.py",
+            "reason": null,
+            "sha256": "e07e361dcf679552765b3b1850bb7b065c9fd23ebb4bc5a0c9fdc9c907630691",
+            "status": "resolved",
+            "token": "tests/e2e/test_walking_skeleton.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/e2e/conftest.py",
+            "reason": null,
+            "sha256": "8bc770ae835b53b7351f6108ccd6c270f4821b1d301805ec2a5d8e3f27f5fa86",
+            "status": "resolved",
+            "token": "tests/e2e/conftest.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/{engine,plan}.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/copilot.py",
+            "reason": null,
+            "sha256": "9c2ea2541568e216b91397ba24c8a978d19c475b8cc9988d1d4e9d21fc2a253c",
+            "status": "resolved",
+            "token": "src/harness_bench/telemetry/copilot.py"
           }
         ],
         "schema": "compiled-prompt/1",
