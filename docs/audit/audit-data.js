@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T12:07:50Z",
+  "generated": "2026-09-25T13:25:30Z",
   "audit": [
     {
       "actor": null,
@@ -23299,6 +23299,55 @@ window.AUDIT_DATA = {
       ],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "src/harness_bench/gateway/backend.py"
+      ],
+      "compiled": false,
+      "datetime": "2026-09-25T12:13:32Z",
+      "done_when": "ac44295 merged; backend.copilot_argv is the measured shape, red first; probe self-test 0 failures; mutant killed; pytest and ruff clean",
+      "goal": "Align s2's Copilot builder with the Leader's measured spike ac44295",
+      "id": "al-01M3C7RC2B5X05QXYAVAN46HHX",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader note: the measured Copilot judge shape (ac44295) differs from the probe s2 branched from; use it in any Copilot builder/reader; Copilot stays qualified: false (DR-GW-CP-1).",
+      "session": "w3-gwi-2",
+      "shortname": "w3-gwi-2-copilot-shape",
+      "skill": "implement",
+      "summary": "Merged ac44295 (probe conflict resolved toward the imported builders); backend.copilot_argv now -p <prompt> --model <pin> --disable-builtin-mcps --no-custom-instructions --available-tools none (red 5d9431b, green 17c211a); probe self-test 0 failures; mutate_check 67/67; full suite 1418 passed; ruff clean. Headless still launches Claude only; no Copilot entry.",
+      "tags": [
+        "W3-GW-I",
+        "R-63"
+      ],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M3CBW49P59MADHQKTD6PP5NC",
+      "shortname": "w3-grcode-3-drift",
+      "datetime": "2026-09-25T13:25:30Z",
+      "session": "w3-grcode-3",
+      "prompt": "W3-GR-CODE slice c3 (the drift grader) per brief-grcode3.md: docs/design/phase3-graders.md section Drift and slice row GR-CODE c3; rulings R-59, R-67, R-68, R-71; on c1's grade/_changes.py.",
+      "summary": "grade/drift.py: scope_creep and scope_creep_files (difflib, CRLF-normalised, files outside blast_radius, cell tree vs _changes' pre-turn tree, build output excluded); convention_drift (D1 rule table, R1 file-scoped namespace, per 100 added or changed .cs lines); by-design NA reasons verbatim; shared NA (no working copy, pre-turn commit not found, HB-GRD-002 on a git timeout); drift.log evidence. Finding: the pack-on cells 35af and 4a62 carry the pack hook's docs/audit/.run-starts.json (3 lines), which a pure content diff counts as scope creep; resolved by excluding added files the pre-turn tree's own .gitignore names (git check-ignore --no-index, marked assume:). Registered in runner.GRADERS (import line + GRADERS line). Proposal for the Leader: bench/metrics.yaml convention_drift needs scale: 2, else the runner raises 'a Decimal for a metric with no catalog scale' and the whole drift grader is HB-GRD-003 in a real pass.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "src/harness_bench/grade/drift.py",
+        "src/harness_bench/grade/runner.py",
+        "tests/test_grade_drift.py",
+        "tests/mutations/drift.json"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "W3-GR-CODE c3: the drift grader (scope_creep, scope_creep_files, convention_drift; the design's NA reasons), red first, registered in runner.GRADERS",
+      "done_when": "the three design seeds red then green; the 6 D1 cells of row15-d1-1 give scope_creep 0 and _files 0, 35af convention_drift NA 'no lines changed', archive byte-unchanged; drift.json all killed, grade.json and correctness.json all killed; pytest with HB_GATE_RUNS 0 gate skips; ruff clean; bench validate ok",
+      "started_at": "2026-09-25T12:32:42Z",
+      "duration_seconds": 3168.0
     }
   ],
   "changes": [
