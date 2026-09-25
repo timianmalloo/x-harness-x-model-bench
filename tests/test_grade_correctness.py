@@ -499,3 +499,141 @@ def test_d1_behavioural_equivalence_is_na_no_differential_oracle(tmp_path, monke
     fake_public(monkeypatch, cell={"N.A.a": "Passed"}, pre={"N.A.a": "Passed"})
     assert c2_of(correctness.grade_cell(public_cell(tmp_path))) == \
         {"regression_count": (0, None), "behavioural_equivalence": (None, "no differential oracle in this task version")}
+
+
+def regressions_log(inp: CellInput) -> list[str]:
+    return (inp.out_dir / "regressions" / "regressions.log").read_text(encoding="utf-8").splitlines()
+
+
+def test_regression_count_counts_public_tests_that_passed_before_and_do_not_pass_after(tmp_path, monkeypatch):
+    graded_elsewhere(monkeypatch)
+    seen = fake_public(monkeypatch,
+                       pre={"N.A.kept": "Passed", "N.A.broken": "Passed", "N.A.fixed": "Failed", "N.A.removed": "Passed",
+                            "N.A.skipped": "Passed", "N.T.theory": ["Passed", "Passed"], "N.T.whole": ["Passed", "Passed"],
+                            "N.A.never": "NotExecuted"},
+                       cell={"N.A.kept": "Passed", "N.A.broken": "Failed", "N.A.fixed": "Passed", "N.A.skipped": "NotExecuted",
+                             "N.T.theory": ["Passed", "Failed"], "N.T.whole": ["Passed", "Passed"], "N.A.never": "Failed",
+                             "N.A.added": "Failed"})
+    inp = public_cell(tmp_path)
+    out = correctness.grade_cell(inp)
+    assert c2_of(out)["regression_count"] == (4, None)
+    assert out["regression_count"].evidence == "grading/g/c1/correctness/regressions/regressions.log"
+    assert regressions_log(inp)[-4:] == [f"regressed N.{k}" for k in ("A.broken", "A.removed", "A.skipped", "T.theory")]
+    argv = ["dotnet", "test", PUBLIC, "-p:RestoreSources=.", "-p:NuGetAudit=false", "--logger", "trx;LogFileName=public-0.trx",
+            "--results-directory", "TestResults", "-v:q"]
+    assert seen == [("cell", argv), ("pre-turn", argv)]  # the cell's tree first: a cell that does not build needs no base
+    assert sorted(p.name for p in (inp.out_dir / "regressions").iterdir()) == ["regressions.log"]  # copies removed
+
+
+TIMEOUT = done(None, timed_out=True)
+
+
+@pytest.mark.parametrize(("cell", "pre", "expected", "runs"), [
+    (done(1, COMPILE_LINE), None, (None, "workspace does not build"), ["cell"]),
+    (done(1, RESTORE_LINE), None, (None, "infrastructure failure before build: restore"), ["cell"]),
+    (TIMEOUT, None, (None, "HB-GRD-002 grading step timeout after 60 s"), ["cell"]),
+    (done(1, "exit 1, no error line"), None, (None, "named TRX result file missing"), ["cell"]),
+    ({"N.A.a": "Passed"}, done(1, COMPILE_LINE), (None, "pre-turn tree does not build"), ["cell", "pre-turn"]),
+    ({"N.A.a": "Passed"}, done(1, "exit 1, no error line"), (None, "pre-turn tree does not build"), ["cell", "pre-turn"]),
+    ({"N.A.a": "Passed"}, done(1, RESTORE_LINE), (None, "infrastructure failure before build: restore"), ["cell", "pre-turn"]),
+    ({"N.A.a": "Passed"}, TIMEOUT, (None, "HB-GRD-002 grading step timeout after 60 s"), ["cell", "pre-turn"]),
+])
+def test_regression_count_is_na_when_a_tree_does_not_build_or_the_suite_cannot_run(tmp_path, monkeypatch, cell, pre,
+                                                                                   expected, runs):
+    graded_elsewhere(monkeypatch)
+    seen = fake_public(monkeypatch, cell=cell, pre=pre)
+    out = correctness.grade_cell(public_cell(tmp_path))
+    assert c2_of(out)["regression_count"] == expected
+    assert [tree for tree, _ in seen] == runs
+
+
+def test_an_unreadable_public_trx_is_na_never_0(tmp_path, monkeypatch):
+    graded_elsewhere(monkeypatch)
+    fake_public(monkeypatch, cell={"N.A.a": "Passed"}, pre={"N.A.a": "Passed"})
+    faked = correctness.procs.run
+
+    def truncating(argv, cwd, **kwargs):
+        result = faked(argv, cwd=cwd, **kwargs)
+        if argv[:2] == ["dotnet", "test"] and Path(cwd).name == "cell":
+            (Path(cwd) / "TestResults" / "public-0.trx").write_text("<TestRun", encoding="utf-8")
+        return result
+
+    monkeypatch.setattr(correctness.procs, "run", truncating)
+    out = correctness.grade_cell(public_cell(tmp_path))
+    assert c2_of(out)["regression_count"] == (None, "named TRX result is unparsable")
+
+
+def test_a_deleted_public_project_makes_its_passing_tests_missing_so_they_count(tmp_path, monkeypatch):
+    graded_elsewhere(monkeypatch)
+    seen = fake_public(monkeypatch, pre={"N.A.x": "Passed", "N.A.y": ["Passed", "Passed"], "N.A.z": "Failed"})
+    out = correctness.grade_cell(public_cell(tmp_path, project=False))
+    assert c2_of(out)["regression_count"] == (2, None)
+    assert [tree for tree, _ in seen] == ["pre-turn"]
+
+
+def test_regression_count_with_no_builder_commit_is_na_not_found(tmp_path, monkeypatch):  # F11
+    graded_elsewhere(monkeypatch)
+    seen = fake_public(monkeypatch, cell={"N.A.a": "Passed"}, pre={"N.A.a": "Passed"})
+    out = correctness.grade_cell(public_cell(tmp_path, base_message="squashed by the agent"))
+    assert c2_of(out)["regression_count"] == \
+        (None, "pre-turn commit not found in the working copy")
+    assert seen == []
+
+
+def test_a_python_task_with_public_tests_is_na_not_built(tmp_path, monkeypatch):  # no such task yet (simplify)
+    graded_elsewhere(monkeypatch)
+    task_dir = tmp_path / "task"
+    shutil.copytree(ROOT / "tasks" / "X1", task_dir)
+    (task_dir / "workspace" / "test_slug.py").write_text("import unittest\n", encoding="utf-8")
+    folder = tmp_path / "run" / "archive" / "c1" / "attempt-1"
+    shutil.copytree(task_dir / "workspace", folder / "ws")
+    inp = cell_input(tmp_path / "run", folder, {"cell_id": "c1", "task": "X1", "pack": "off"}, tmp_path / "run" / "g")
+    out = correctness.grade_cell(dataclasses.replace(inp, task_dir=task_dir))
+    assert c2_of(out)["regression_count"] == \
+        (None, "public tests of runner 'unittest' not built")
+
+
+MARKER = "HOSTMARK-q7"  # stands for the operator's user, machine, a host path and every time
+
+
+def test_no_host_identifying_trx_attribute_or_results_file_line_is_read_stored_or_reported(tmp_path, monkeypatch):
+    graded_elsewhere(monkeypatch)
+    results = {"N.A.kept": "Passed", "N.A.broken": "Passed"}
+    fake_public(monkeypatch, cell={**results, "N.A.broken": "Failed"}, pre=results, marker=MARKER)
+    inp = public_cell(tmp_path)
+    out = correctness.grade_cell(inp)
+    assert c2_of(out)["regression_count"] == (1, None)
+    assert MARKER not in out["regression_count"].evidence
+    written = [p for p in (tmp_path / "run" / "grading").rglob("*") if p.is_file()]
+    assert written and not [p.name for p in written if MARKER.encode() in p.read_bytes()]
+
+
+def test_the_trx_reader_needs_only_names_ids_and_outcomes(tmp_path):
+    assert hasattr(correctness, "public_outcomes")
+    path = tmp_path / "r.trx"
+    path.write_text(trx({"N.A.a": "Passed", "N.T.t": ["Passed", "Failed"], "N.A.b": "NotExecuted"}), encoding="utf-8")
+    assert correctness.public_outcomes(path) == {"N.A.a": True, "N.T.t": False, "N.A.b": False}
+    path.write_text(trx({"N.A.a": "Passed"}, marker=MARKER), encoding="utf-8")  # the same answer with every host field
+    assert correctness.public_outcomes(path) == {"N.A.a": True}
+
+
+def test_the_pre_turn_commit_and_tree_are_found_once_per_cell_for_both_readers(tmp_path, monkeypatch):  # the c1 residual
+    from harness_bench.grade import _changes
+
+    calls = []
+    for name in ("pre_turn_commit", "pre_turn_tree"):
+        real = getattr(_changes, name)
+        monkeypatch.setattr(_changes, name, lambda *a, _r=real, _n=name, **k: calls.append(_n) or _r(*a, **k))
+    fake_public(monkeypatch, cell={"N.A.a": "Passed"}, pre={"N.A.a": "Passed"})
+    graded = []
+
+    def fake_grade(ws, *args):
+        graded.append(ws.name)
+        return CELL_BROKE if len(graded) == 1 else correctness.Result(0, Decimal(0), None, "x")
+
+    monkeypatch.setattr(correctness, "grade", fake_grade)
+    monkeypatch.setattr(correctness, "build_and_suite_clean", lambda *a: Score(0, None))
+    out = correctness.grade_cell(public_cell(tmp_path))
+    assert (encode(out["pass_at_1"]), c2_of(out)["regression_count"]) == ((0, None), (0, None))
+    assert graded == ["ws", "pre-turn"]  # DR-G4's control ran on the pre-turn tree
+    assert calls == ["pre_turn_commit", "pre_turn_tree"]
