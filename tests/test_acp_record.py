@@ -226,7 +226,7 @@ def test_turn_runs_one_cell_through_the_recorder_into_a_new_out_folder(base, tmp
     rec = _recorder()
     fake_build = tools.Build("codex", "0.0-fake", Path(sys.executable), "0" * 64, FAKE, "0.0-fake", "0" * 64)
     monkeypatch.setattr(tools, "resolve", lambda tools_dir: {"codex": fake_build})
-    monkeypatch.setattr(profiles.Profile, "argv", lambda self, build: [sys.executable, str(FAKE)])
+    monkeypatch.setattr(profiles.Profile, "argv", lambda self, build, model=None: [sys.executable, str(FAKE)])
     real_load = profiles.load
     monkeypatch.setattr(profiles, "load", lambda root, harness: real_load(root, harness, credential_source=tmp_path / "none"))
     out = tmp_path / "not" / "yet" / "codex-x1.raw.jsonl"
@@ -237,3 +237,48 @@ def test_turn_runs_one_cell_through_the_recorder_into_a_new_out_folder(base, tmp
     records = _read(out)
     assert records[0]["kind"] == "header" and records[-1] == {**records[-1], "kind": "exit", "code": 0}
     assert not list(base.rglob("auth.json"))  # no credential copy is left in the cell
+
+
+def test_turn_parser_accepts_every_harness_in_profiles_HARNESSES(monkeypatch):
+    """`turn --harness` must read the choice list from `profiles.HARNESSES`, not a hardcoded tuple, so a new
+    harness (Copilot today) needs no edit here (W1-CAP2 phase A)."""
+    from harness_bench import profiles
+    rec = _recorder()
+    seen = []
+    monkeypatch.setattr(rec, "turn", lambda args: seen.append(args.harness) or 0)
+    assert profiles.HARNESSES == ("claude-code", "codex", "copilot")  # today's set; the parser must track it
+    for harness in profiles.HARNESSES:
+        code = rec.main(["turn", "--harness", harness, "--model", "m", "--out", "x.jsonl"])
+        assert code == 0
+    assert seen == list(profiles.HARNESSES)
+
+
+@pytest.mark.native
+@pytest.mark.parametrize("set_model", [True, False], ids=["set-model-true", "set-model-false"])
+def test_turn_sends_session_set_model_right_after_session_new_iff_the_profile_sets_it(base, tmp_path, monkeypatch, set_model):
+    """Mirrors the engine's own call site (`engine.py`, `_attempt`): `model=cell["model"] if launcher.set_model
+    else None`. A profile with `set_model: true` (Copilot) must make the recorded to_agent stream carry
+    `session/set_model` with the model id right after `session/new`; a profile without it (Codex here, standing
+    in so the fake agent's normal reply path still completes the turn) must not (W1-CAP2 phase A)."""
+    from harness_bench import profiles, tools
+    rec = _recorder()
+    fake_build = tools.Build("codex", "0.0-fake", Path(sys.executable), "0" * 64, FAKE, "0.0-fake", "0" * 64)
+    monkeypatch.setattr(tools, "resolve", lambda tools_dir: {"codex": fake_build})
+    monkeypatch.setattr(profiles.Profile, "argv", lambda self, build, model=None: [sys.executable, str(FAKE)])
+    real_load = profiles.load
+
+    def load(root, harness):
+        return dataclasses.replace(real_load(root, harness, credential_source=tmp_path / "none"), set_model=set_model)
+
+    monkeypatch.setattr(profiles, "load", load)
+    out = tmp_path / f"codex-x1-{set_model}.raw.jsonl"
+    rec.main(["turn", "--harness", "codex", "--model", "gpt-6-sol", "--out", str(out), "--tools-dir", str(tmp_path),
+             "--cells-root", str(base), "--budget", "60", "--handshake", "10"])
+    to_agent = [json.loads(r["text"]) for r in _read(out) if r["kind"] == "line" and r["dir"] == "to_agent"]
+    methods = [m.get("method") for m in to_agent]
+    if set_model:
+        assert methods[methods.index("session/new") + 1] == "session/set_model"
+        setter = to_agent[methods.index("session/set_model")]
+        assert setter["params"]["modelId"] == "gpt-6-sol"
+    else:
+        assert "session/set_model" not in methods
