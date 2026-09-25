@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T07:19:07Z",
+  "generated": "2026-09-25T07:24:38Z",
   "audit": [
     {
       "actor": null,
@@ -14778,6 +14778,695 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "id": "al-01M3BQ79PXZS8JBGBK01EAJ29C",
+      "shortname": "Goal: W2-STOP-I slice 2 per docs/design/phase2-stop-decisions.md section…",
+      "datetime": "2026-09-25T07:24:35Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W2-STOP-I slice 2 per docs/design/phase2-stop-decisions.md section 17 row 2 and section 7 (read sections 7, 16 and 17 first; rulings R-49 and R-50 in docs/notes/rulings.md): prove the circuit breaker's acceptance criterion and hold the power request through stop and exception.\nDone when: Every seeded revert in the section 7 table is observed red by a named test, each red committed before its fix where a fix is needed (the breaker is already built at engine.py:51,196-201 - where the behaviour already holds, the test is a guard and its seeded revert is recorded as a mutant instead).; The neutral outcomes (AC-CB 4): the causes the design names as not counted by the breaker (including model_unavailable, Test Architect condition N1) are asserted not to advance or reset the streak, at unit level, with their own assertion and mutant.; The breaker threshold is asserted as the literal 3 (not compared against the constant under test).; R10-7b: host.keep_awake stays held through a stop and through an exception in Engine.run, and is released in the finally (engine.py:218/260 area), with a test for each path (only the normal end is tested today, test_engine.py:1000-1005).; tests/mutations/stop.json gains the breaker and keep_awake entries, each killed: uv run python tools/mutate_check.py tests/mutations/stop.json.; Per R-49: an ADR-0007 amendment note (docs/adr/0007-*.md, section 7) says the wave-2 breaker is a fuse that stops launching, not a decision, and that a future circuit_breaker decision's timeout default is \"launches stay stopped\", never a kill.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.\nNot in scope: driver.py, the control channel and bench stop (slices 3-4), decisions (slice 5), views.py, profiles; bench run, any model turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase2-stop-decisions.md; docs/notes/rulings.md R-49, R-50; docs/adr/0007-*.md; src/harness_bench/{engine,host,errors}.py; tests/test_engine.py; tests/mutations/stop.json. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-stopi2 before committing.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3BQ7AFB5P86QZNABHKGRHAT",
+      "shortname": "compile-Goal: W2-STOP-I slice 2 per docs/design/phase2-stop-decisions.md section…",
+      "datetime": "2026-09-25T07:24:36Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-STOP-I slice 2 per docs/design/phase2-stop-decisions.md section 17 row 2 and section 7 (read sections 7, 16 and 17 first; rulings R-49 and R-50 in docs/notes/rulings.md): prove the circuit breaker's acceptance criterion and hold the power request through stop and exception.\nDone when: Every seeded revert in the section 7 table is observed red by a named test, each red committed before its fix where a fix is needed (the breaker is already built at engine.py:51,196-201 - where the behaviour already holds, the test is a guard and its seeded revert is recorded as a mutant instead).; The neutral outcomes (AC-CB 4): the causes the design names as not counted by the breaker (including model_unavailable, Test Architect condition N1) are asserted not to advance or reset the streak, at unit level, with their own assertion and mutant.; The breaker threshold is asserted as the literal 3 (not compared against the constant under test).; R10-7b: host.keep_awake stays held through a stop and through an exception in Engine.run, and is released in the finally (engine.py:218/260 area), with a test for each path (only the normal end is tested today, test_engine.py:1000-1005).; tests/mutations/stop.json gains the breaker and keep_awake entries, each killed: uv run python tools/mutate_check.py tests/mutations/stop.json.; Per R-49: an ADR-0007 amendment note (docs/adr/0007-*.md, section 7) says the wave-2 breaker is a fuse that stops launching, not a decision, and that a future circuit_breaker decision's timeout default is \"launches stay stopped\", never a kill.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.\nNot in scope: driver.py, the control channel and bench stop (slices 3-4), decisions (slice 5), views.py, profiles; bench run, any model turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase2-stop-decisions.md; docs/notes/rulings.md R-49, R-50; docs/adr/0007-*.md; src/harness_bench/{engine,host,errors}.py; tests/test_engine.py; tests/mutations/stop.json. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-stopi2 before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: Every seeded revert in the section 7 table is observed red by a named test, each red committed before its fix where a fix is needed (the breaker is already built at engine.py:51,196-201 - where the behaviour already holds, the test is a guard and its seeded revert is recorded as a mutant instead). | phrase: Every seeded revert in the section 7 table is observed red by a named test, each red committed before its fix where a fix is needed (the breaker is already built at engine.py:51,196-201 - where the behaviour already holds, the test is a guard and its seeded revert is recorded as a mutant instead). |\n| done_when: The neutral outcomes (AC-CB 4): the causes the design names as not counted by the breaker (including model_unavailable, Test Architect condition N1) are asserted not to advance or reset the streak, at unit level, with their own assertion and mutant. | phrase: The neutral outcomes (AC-CB 4): the causes the design names as not counted by the breaker (including model_unavailable, Test Architect condition N1) are asserted not to advance or reset the streak, at unit level, with their own assertion and mutant. |\n| done_when: The breaker threshold is asserted as the literal 3 (not compared against the constant under test). | phrase: The breaker threshold is asserted as the literal 3 (not compared against the constant under test). |\n| done_when: R10-7b: host.keep_awake stays held through a stop and through an exception in Engine.run, and is released in the finally (engine.py:218/260 area), with a test for each path (only the normal end is tested today, test_engine.py:1000-1005). | phrase: R10-7b: host.keep_awake stays held through a stop and through an exception in Engine.run, and is released in the finally (engine.py:218/260 area), with a test for each path (only the normal end is tested today, test_engine.py:1000-1005). |\n| done_when: tests/mutations/stop.json gains the breaker and keep_awake entries, each killed: uv run python tools/mutate_check.py tests/mutations/stop.json. | phrase: tests/mutations/stop.json gains the breaker and keep_awake entries, each killed: uv run python tools/mutate_check.py tests/mutations/stop.json. |\n| done_when: Per R-49: an ADR-0007 amendment note (docs/adr/0007-*.md, section 7) says the wave-2 breaker is a fuse that stops launching, not a decision, and that a future circuit_breaker decision's timeout default is \"launches stay stopped\", never a kill. | phrase: Per R-49: an ADR-0007 amendment note (docs/adr/0007-*.md, section 7) says the wave-2 breaker is a fuse that stops launching, not a decision, and that a future circuit_breaker decision's timeout default is \"launches stay stopped\", never a kill. |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean. | phrase: uv run ruff check src tests tools is clean. |\n| done_when: Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result. | phrase: Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result. |\n| not_in_scope: driver.py, the control channel and bench stop (slices 3-4), decisions (slice 5), views.py, profiles | phrase: driver.py, the control channel and bench stop (slices 3-4), decisions (slice 5), views.py, profiles |\n| not_in_scope: bench run, any model turn, pytest -m \"\" | phrase: bench run, any model turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- docs/design/phase2-stop-decisions.md: docs/design/phase2-stop-decisions.md sha256 3dbc40e3d87e76548cf8bda92266fefc77892f87086a180ae5a9572d91b287b7\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- engine.py:218/260: unresolved (not found)\n- tests/mutations/stop.json: tests/mutations/stop.json sha256 4e005b93b6ad61bf66f7216ccb00b8c5dc125f8dbc3cf7f89d474a98a87b61b6\n- tools/mutate_check.py: tools/mutate_check.py sha256 4d1b3c10120a52082b1a43aa9407a8109459d7ba20fb83801eb85c2f511ba513\n- docs/adr/0007-*.md: unresolved (not found)\n- driver.py: src/harness_bench/driver.py sha256 20cbf9b6c8bba1cdbef5801ef24d0d6f5dd4444281a1c97ab8ef684a13784706\n- views.py: src/harness_bench/views.py sha256 6e53249eae24b9f23c6836d0b5fd15d741eb84a7cd808d88d7f92afbd994ffb7\n- src/harness_bench/{engine,host,errors}.py: unresolved (not found)\n- tests/test_engine.py: tests/test_engine.py sha256 333fe42a3de9c877ba04492bc469b1521c7934b5e7e5fcc8aa43665a5767466f\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BQ79PXZS8JBGBK01EAJ29C\nraw sha256: f70a20d4c88b6141e06fc884da8f9a3dfd53ef7632f374772d0ab2804431cd21\ncompiler model: claude-opus-5-5\nengine seconds: 0.003\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3BQ79PXZS8JBGBK01EAJ29C for codex v1: 12 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "Every seeded revert in the section 7 table is observed red by a named test, each red committed before its fix where a fix is needed (the breaker is already built at engine.py:51,196-201 - where the behaviour already holds, the test is a guard and its seeded revert is recorded as a mutant instead).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Every seeded revert in the section 7 table is observed red by a named test, each red committed before its fix where a fix is needed (the breaker is already built at engine.py:51,196-201 - where the behaviour already holds, the test is a guard and its seeded revert is recorded as a mutant instead)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The neutral outcomes (AC-CB 4): the causes the design names as not counted by the breaker (including model_unavailable, Test Architect condition N1) are asserted not to advance or reset the streak, at unit level, with their own assertion and mutant.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The neutral outcomes (AC-CB 4): the causes the design names as not counted by the breaker (including model_unavailable, Test Architect condition N1) are asserted not to advance or reset the streak, at unit level, with their own assertion and mutant."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The breaker threshold is asserted as the literal 3 (not compared against the constant under test).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The breaker threshold is asserted as the literal 3 (not compared against the constant under test)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "R10-7b: host.keep_awake stays held through a stop and through an exception in Engine.run, and is released in the finally (engine.py:218/260 area), with a test for each path (only the normal end is tested today, test_engine.py:1000-1005).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "R10-7b: host.keep_awake stays held through a stop and through an exception in Engine.run, and is released in the finally (engine.py:218/260 area), with a test for each path (only the normal end is tested today, test_engine.py:1000-1005)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/stop.json gains the breaker and keep_awake entries, each killed: uv run python tools/mutate_check.py tests/mutations/stop.json.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/stop.json gains the breaker and keep_awake entries, each killed: uv run python tools/mutate_check.py tests/mutations/stop.json."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Per R-49: an ADR-0007 amendment note (docs/adr/0007-*.md, section 7) says the wave-2 breaker is a fuse that stops launching, not a decision, and that a future circuit_breaker decision's timeout default is \"launches stay stopped\", never a kill.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Per R-49: an ADR-0007 amendment note (docs/adr/0007-*.md, section 7) says the wave-2 breaker is a fuse that stops launching, not a decision, and that a future circuit_breaker decision's timeout default is \"launches stay stopped\", never a kill."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "driver.py, the control channel and bench stop (slices 3-4), decisions (slice 5), views.py, profiles",
+            "trace": {
+              "kind": "phrase",
+              "ref": "driver.py, the control channel and bench stop (slices 3-4), decisions (slice 5), views.py, profiles"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run, any model turn, pytest -m \"\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run, any model turn, pytest -m \"\""
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "Every seeded revert in the section 7 table is observed red by a named test, each red committed before its fix where a fix is needed (the breaker is already built at engine.py:51,196-201 - where the behaviour already holds, the test is a guard and its seeded revert is recorded as a mutant instead).",
+            "The neutral outcomes (AC-CB 4): the causes the design names as not counted by the breaker (including model_unavailable, Test Architect condition N1) are asserted not to advance or reset the streak, at unit level, with their own assertion and mutant.",
+            "The breaker threshold is asserted as the literal 3 (not compared against the constant under test).",
+            "R10-7b: host.keep_awake stays held through a stop and through an exception in Engine.run, and is released in the finally (engine.py:218/260 area), with a test for each path (only the normal end is tested today, test_engine.py:1000-1005).",
+            "tests/mutations/stop.json gains the breaker and keep_awake entries, each killed: uv run python tools/mutate_check.py tests/mutations/stop.json.",
+            "Per R-49: an ADR-0007 amendment note (docs/adr/0007-*.md, section 7) says the wave-2 breaker is a fuse that stops launching, not a decision, and that a future circuit_breaker decision's timeout default is \"launches stay stopped\", never a kill.",
+            "uv run pytest -q -p no:cacheprovider passes",
+            "uv run ruff check src tests tools is clean.",
+            "Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W2-STOP-I slice 2 per docs/design/phase2-stop-decisions.md section 17 row 2 and section 7 (read sections 7, 16 and 17 first; rulings R-49 and R-50 in docs/notes/rulings.md): prove the circuit breaker's acceptance criterion and hold the power request through stop and exception.",
+          "main_line_budget": "one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase2-stop-decisions.md; docs/notes/rulings.md R-49, R-50; docs/adr/0007-*.md; src/harness_bench/{engine,host,errors}.py; tests/test_engine.py; tests/mutations/stop.json. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-stopi2 before committing.",
+          "not_in_scope": [
+            "driver.py, the control channel and bench stop (slices 3-4), decisions (slice 5), views.py, profiles",
+            "bench run, any model turn, pytest -m \"\"",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.003,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3BQ79PXZS8JBGBK01EAJ29C",
+        "raw_sha256": "f70a20d4c88b6141e06fc884da8f9a3dfd53ef7632f374772d0ab2804431cd21",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": "docs/design/phase2-stop-decisions.md",
+            "reason": null,
+            "sha256": "3dbc40e3d87e76548cf8bda92266fefc77892f87086a180ae5a9572d91b287b7",
+            "status": "resolved",
+            "token": "docs/design/phase2-stop-decisions.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "engine.py:218/260"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/stop.json",
+            "reason": null,
+            "sha256": "4e005b93b6ad61bf66f7216ccb00b8c5dc125f8dbc3cf7f89d474a98a87b61b6",
+            "status": "resolved",
+            "token": "tests/mutations/stop.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "4d1b3c10120a52082b1a43aa9407a8109459d7ba20fb83801eb85c2f511ba513",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/adr/0007-*.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/driver.py",
+            "reason": null,
+            "sha256": "20cbf9b6c8bba1cdbef5801ef24d0d6f5dd4444281a1c97ab8ef684a13784706",
+            "status": "resolved",
+            "token": "driver.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/views.py",
+            "reason": null,
+            "sha256": "6e53249eae24b9f23c6836d0b5fd15d741eb84a7cd808d88d7f92afbd994ffb7",
+            "status": "resolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/{engine,host,errors}.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_engine.py",
+            "reason": null,
+            "sha256": "333fe42a3de9c877ba04492bc469b1521c7934b5e7e5fcc8aa43665a5767466f",
+            "status": "resolved",
+            "token": "tests/test_engine.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3BQ7APNKA7XSC3JBWG0HA98",
+      "shortname": "Goal: W2-USER-W: wire the scripted user (the library at src/harness_benc…",
+      "datetime": "2026-09-25T07:24:36Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W2-USER-W: wire the scripted user (the library at src/harness_bench/scripted_user/, joined) into a real cell, per docs/design/phase2-scripted-user.md section 9 (the seams, file:line) and rulings R-37, R-51, R-52, R-53 in docs/notes/rulings.md - stdio on every harness; Claude Code and Codex through ACP session/new mcpServers; Copilot through its own --additional-mcp-config with mcpServers [] - red-first.\nDone when: driver.run_turn gains mcp_servers: list[dict] | None = None and sends `mcp_servers or []` in session/new; a driver test asserts both forms (T-37-3), red first.; engine._attempt passes the server entry (scripted_user.server.entry(clarifications_path, log_path), the log in the cell's own folder) only when the plan's task record has scripted_user true, and every other cell keeps mcpServers [] (R-37 c3) - an engine test with the fake ACP agent asserts both, red first.; For a Copilot scripted_user cell the entry goes into a per-cell MCP config file passed as --additional-mcp-config @<cell file>, with mcpServers [] in session/new (R-51); and because R-45's --available-tools list filters MCP tools (measured: run record, R-51 condition 2: \"Disabled tools: ... scripted_user-ask_user\"), that cell's argv also appends scripted_user-ask_user to the --available-tools list and --allow-tool scripted_user - only for scripted_user cells; a profile or engine test pins the exact argv for a scripted_user Copilot cell and for a normal one, red first.; bench/profiles/claude-code.yaml's allow list gains mcp__scripted_user__ask_user as the declared class \"scripted user\" (R-37 c2, R-34 rule) and tests/test_allowlist_classes.py names that class; Codex needs no id.; After the turn, the engine closes the log (scripted_user.log.close_log with header_row, design section 8) before the cell is archived, so the log is in the archive; a test asserts the end row (\"no question asked\" for a turn with zero calls).; The plan's task record freezes scripted_user, the clarification-set hash and matcher_version (design section 9 row 4) and bench validate loads each scenario-1 task's clarifications with scripted_user.clarifications.load so a malformed set fails validation.; A scripted_user cell whose server never listed the tool is recorded as \"tool not reached\" and its clarification metrics NOT_RECORDED (design section 8); only the log fact is in scope here, not the metric.; tests/mutations/scripted_user_wiring.json holds named mutants (server passed to a non-scripted cell; Copilot available-tools id missing; log not closed before archive; mcpServers sent for Copilot), each killed.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result, plus the exact argv of a scripted_user cell per harness.\nNot in scope: the matcher internals (joined); the stop and decision work (another Codex slice is changing engine.py's breaker area and tests/test_engine.py - keep your engine edits to _attempt and _run_cell's post-outcome step, and add your engine tests in a new file tests/test_scripted_user_wiring.py); live turns (the Leader runs one A1 cell per harness after the join); bench run, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase2-scripted-user.md; docs/notes/rulings.md R-34, R-37, R-45, R-51, R-52, R-53; docs/coordination/coordination-finish-harness-bench-run.md (R-51 condition 2 measurement); src/harness_bench/{driver,engine,plan,profiles,config}.py; src/harness_bench/scripted_user/; bench/profiles/*.yaml; tests/test_driver.py, tests/fake_acp_agent.py, tests/test_allowlist_classes.py. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-userw before committing.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3BQ7BXDZFZ1M5M8FHMT6PS9",
+      "shortname": "compile-Goal: W2-USER-W: wire the scripted user (the library at src/harness_benc…",
+      "datetime": "2026-09-25T07:24:38Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-USER-W: wire the scripted user (the library at src/harness_bench/scripted_user/, joined) into a real cell, per docs/design/phase2-scripted-user.md section 9 (the seams, file:line) and rulings R-37, R-51, R-52, R-53 in docs/notes/rulings.md - stdio on every harness; Claude Code and Codex through ACP session/new mcpServers; Copilot through its own --additional-mcp-config with mcpServers [] - red-first.\nDone when: driver.run_turn gains mcp_servers: list[dict] | None = None and sends `mcp_servers or []` in session/new; a driver test asserts both forms (T-37-3), red first.; engine._attempt passes the server entry (scripted_user.server.entry(clarifications_path, log_path), the log in the cell's own folder) only when the plan's task record has scripted_user true, and every other cell keeps mcpServers [] (R-37 c3) - an engine test with the fake ACP agent asserts both, red first.; For a Copilot scripted_user cell the entry goes into a per-cell MCP config file passed as --additional-mcp-config @<cell file>, with mcpServers [] in session/new (R-51); and because R-45's --available-tools list filters MCP tools (measured: run record, R-51 condition 2: \"Disabled tools: ... scripted_user-ask_user\"), that cell's argv also appends scripted_user-ask_user to the --available-tools list and --allow-tool scripted_user - only for scripted_user cells; a profile or engine test pins the exact argv for a scripted_user Copilot cell and for a normal one, red first.; bench/profiles/claude-code.yaml's allow list gains mcp__scripted_user__ask_user as the declared class \"scripted user\" (R-37 c2, R-34 rule) and tests/test_allowlist_classes.py names that class; Codex needs no id.; After the turn, the engine closes the log (scripted_user.log.close_log with header_row, design section 8) before the cell is archived, so the log is in the archive; a test asserts the end row (\"no question asked\" for a turn with zero calls).; The plan's task record freezes scripted_user, the clarification-set hash and matcher_version (design section 9 row 4) and bench validate loads each scenario-1 task's clarifications with scripted_user.clarifications.load so a malformed set fails validation.; A scripted_user cell whose server never listed the tool is recorded as \"tool not reached\" and its clarification metrics NOT_RECORDED (design section 8); only the log fact is in scope here, not the metric.; tests/mutations/scripted_user_wiring.json holds named mutants (server passed to a non-scripted cell; Copilot available-tools id missing; log not closed before archive; mcpServers sent for Copilot), each killed.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result, plus the exact argv of a scripted_user cell per harness.\nNot in scope: the matcher internals (joined); the stop and decision work (another Codex slice is changing engine.py's breaker area and tests/test_engine.py - keep your engine edits to _attempt and _run_cell's post-outcome step, and add your engine tests in a new file tests/test_scripted_user_wiring.py); live turns (the Leader runs one A1 cell per harness after the join); bench run, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase2-scripted-user.md; docs/notes/rulings.md R-34, R-37, R-45, R-51, R-52, R-53; docs/coordination/coordination-finish-harness-bench-run.md (R-51 condition 2 measurement); src/harness_bench/{driver,engine,plan,profiles,config}.py; src/harness_bench/scripted_user/; bench/profiles/*.yaml; tests/test_driver.py, tests/fake_acp_agent.py, tests/test_allowlist_classes.py. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-userw before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: driver.run_turn gains mcp_servers: list[dict] | None = None and sends `mcp_servers or []` in session/new | phrase: driver.run_turn gains mcp_servers: list[dict] | None = None and sends `mcp_servers or []` in session/new |\n| done_when: a driver test asserts both forms (T-37-3), red first. | phrase: a driver test asserts both forms (T-37-3), red first. |\n| done_when: engine._attempt passes the server entry (scripted_user.server.entry(clarifications_path, log_path), the log in the cell's own folder) only when the plan's task record has scripted_user true, and every other cell keeps mcpServers [] (R-37 c3) - an engine test with the fake ACP agent asserts both, red first. | phrase: engine._attempt passes the server entry (scripted_user.server.entry(clarifications_path, log_path), the log in the cell's own folder) only when the plan's task record has scripted_user true, and every other cell keeps mcpServers [] (R-37 c3) - an engine test with the fake ACP agent asserts both, red first. |\n| done_when: For a Copilot scripted_user cell the entry goes into a per-cell MCP config file passed as --additional-mcp-config @<cell file>, with mcpServers [] in session/new (R-51) | phrase: For a Copilot scripted_user cell the entry goes into a per-cell MCP config file passed as --additional-mcp-config @<cell file>, with mcpServers [] in session/new (R-51) |\n| done_when: and because R-45's --available-tools list filters MCP tools (measured: run record, R-51 condition 2: \"Disabled tools: ... scripted_user-ask_user\"), that cell's argv also appends scripted_user-ask_user to the --available-tools list and --allow-tool scripted_user - only for scripted_user cells | phrase: and because R-45's --available-tools list filters MCP tools (measured: run record, R-51 condition 2: \"Disabled tools: ... scripted_user-ask_user\"), that cell's argv also appends scripted_user-ask_user to the --available-tools list and --allow-tool scripted_user - only for scripted_user cells |\n| done_when: a profile or engine test pins the exact argv for a scripted_user Copilot cell and for a normal one, red first. | phrase: a profile or engine test pins the exact argv for a scripted_user Copilot cell and for a normal one, red first. |\n| done_when: bench/profiles/claude-code.yaml's allow list gains mcp__scripted_user__ask_user as the declared class \"scripted user\" (R-37 c2, R-34 rule) and tests/test_allowlist_classes.py names that class | phrase: bench/profiles/claude-code.yaml's allow list gains mcp__scripted_user__ask_user as the declared class \"scripted user\" (R-37 c2, R-34 rule) and tests/test_allowlist_classes.py names that class |\n| done_when: Codex needs no id. | phrase: Codex needs no id. |\n| done_when: After the turn, the engine closes the log (scripted_user.log.close_log with header_row, design section 8) before the cell is archived, so the log is in the archive | phrase: After the turn, the engine closes the log (scripted_user.log.close_log with header_row, design section 8) before the cell is archived, so the log is in the archive |\n| done_when: a test asserts the end row (\"no question asked\" for a turn with zero calls). | phrase: a test asserts the end row (\"no question asked\" for a turn with zero calls). |\n| done_when: The plan's task record freezes scripted_user, the clarification-set hash and matcher_version (design section 9 row 4) and bench validate loads each scenario-1 task's clarifications with scripted_user.clarifications.load so a malformed set fails validation. | phrase: The plan's task record freezes scripted_user, the clarification-set hash and matcher_version (design section 9 row 4) and bench validate loads each scenario-1 task's clarifications with scripted_user.clarifications.load so a malformed set fails validation. |\n| done_when: A scripted_user cell whose server never listed the tool is recorded as \"tool not reached\" and its clarification metrics NOT_RECORDED (design section 8) | phrase: A scripted_user cell whose server never listed the tool is recorded as \"tool not reached\" and its clarification metrics NOT_RECORDED (design section 8) |\n| done_when: only the log fact is in scope here, not the metric. | phrase: only the log fact is in scope here, not the metric. |\n| done_when: tests/mutations/scripted_user_wiring.json holds named mutants (server passed to a non-scripted cell | phrase: tests/mutations/scripted_user_wiring.json holds named mutants (server passed to a non-scripted cell |\n| done_when: Copilot available-tools id missing | phrase: Copilot available-tools id missing |\n| done_when: log not closed before archive | phrase: log not closed before archive |\n| done_when: mcpServers sent for Copilot), each killed. | phrase: mcpServers sent for Copilot), each killed. |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean. | phrase: uv run ruff check src tests tools is clean. |\n| done_when: Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result, plus the exact argv of a scripted_user cell per harness. | phrase: Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result, plus the exact argv of a scripted_user cell per harness. |\n| not_in_scope: the matcher internals (joined) | phrase: the matcher internals (joined) |\n| not_in_scope: the stop and decision work (another Codex slice is changing engine.py's breaker area and tests/test_engine.py - keep your engine edits to _attempt and _run_cell's post-outcome step, and add your engine tests in a new file tests/test_scripted_user_wiring.py) | phrase: the stop and decision work (another Codex slice is changing engine.py's breaker area and tests/test_engine.py - keep your engine edits to _attempt and _run_cell's post-outcome step, and add your engine tests in a new file tests/test_scripted_user_wiring.py) |\n| not_in_scope: live turns (the Leader runs one A1 cell per harness after the join) | phrase: live turns (the Leader runs one A1 cell per harness after the join) |\n| not_in_scope: bench run, pytest -m \"\" | phrase: bench run, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- mcp_servers or : unresolved (not found)\n- src/harness_bench/scripted_user/: unresolved (not found)\n- docs/design/phase2-scripted-user.md: docs/design/phase2-scripted-user.md sha256 e462b14bdb2f5c2c2d2113ac98c74dba0db79007045d9dec1ac4c73d0e2c312e\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- session/new: unresolved (not found)\n- bench/profiles/claude-code.yaml's: unresolved (not found; nearest: bench/profiles/claude-code.yaml)\n- tests/test_allowlist_classes.py: tests/test_allowlist_classes.py sha256 3231d30de0207443eab71bf4adb7d7621e9945dc9c5ecb358320a972ea0eccf9\n- tests/mutations/scripted_user_wiring.json: unresolved (not found)\n- tests/test_engine.py: tests/test_engine.py sha256 333fe42a3de9c877ba04492bc469b1521c7934b5e7e5fcc8aa43665a5767466f\n- tests/test_scripted_user_wiring.py: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench-run.md: docs/coordination/coordination-finish-harness-bench-run.md sha256 e80c46f563667756a660e41845ad6de62c7d4fa0332e5b3b7429b7c2c90a99ec\n- src/harness_bench/{driver,engine,plan,profiles,config}.py: unresolved (not found)\n- bench/profiles/*.yaml: unresolved (not found)\n- tests/test_driver.py: tests/test_driver.py sha256 c7613ca2e9545ad5960c02c1e92230daeb64a2aaee057a2aa310428fa01e6a85\n- tests/fake_acp_agent.py: tests/fake_acp_agent.py sha256 ae149d999ba89487bfe98b6b1a0d27ed5702dfd1742325a326669676ae95bcb5\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BQ7APNKA7XSC3JBWG0HA98\nraw sha256: c66dd53f55a6f88a06cc17a4ee31205e295a39c286532862922f7088bad46758\ncompiler model: claude-opus-5-5\nengine seconds: 0.003\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3BQ7APNKA7XSC3JBWG0HA98 for codex v1: 25 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "driver.run_turn gains mcp_servers: list[dict] | None = None and sends `mcp_servers or []` in session/new",
+            "trace": {
+              "kind": "phrase",
+              "ref": "driver.run_turn gains mcp_servers: list[dict] | None = None and sends `mcp_servers or []` in session/new"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a driver test asserts both forms (T-37-3), red first.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a driver test asserts both forms (T-37-3), red first."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "engine._attempt passes the server entry (scripted_user.server.entry(clarifications_path, log_path), the log in the cell's own folder) only when the plan's task record has scripted_user true, and every other cell keeps mcpServers [] (R-37 c3) - an engine test with the fake ACP agent asserts both, red first.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "engine._attempt passes the server entry (scripted_user.server.entry(clarifications_path, log_path), the log in the cell's own folder) only when the plan's task record has scripted_user true, and every other cell keeps mcpServers [] (R-37 c3) - an engine test with the fake ACP agent asserts both, red first."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "For a Copilot scripted_user cell the entry goes into a per-cell MCP config file passed as --additional-mcp-config @<cell file>, with mcpServers [] in session/new (R-51)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "For a Copilot scripted_user cell the entry goes into a per-cell MCP config file passed as --additional-mcp-config @<cell file>, with mcpServers [] in session/new (R-51)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "and because R-45's --available-tools list filters MCP tools (measured: run record, R-51 condition 2: \"Disabled tools: ... scripted_user-ask_user\"), that cell's argv also appends scripted_user-ask_user to the --available-tools list and --allow-tool scripted_user - only for scripted_user cells",
+            "trace": {
+              "kind": "phrase",
+              "ref": "and because R-45's --available-tools list filters MCP tools (measured: run record, R-51 condition 2: \"Disabled tools: ... scripted_user-ask_user\"), that cell's argv also appends scripted_user-ask_user to the --available-tools list and --allow-tool scripted_user - only for scripted_user cells"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a profile or engine test pins the exact argv for a scripted_user Copilot cell and for a normal one, red first.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a profile or engine test pins the exact argv for a scripted_user Copilot cell and for a normal one, red first."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "bench/profiles/claude-code.yaml's allow list gains mcp__scripted_user__ask_user as the declared class \"scripted user\" (R-37 c2, R-34 rule) and tests/test_allowlist_classes.py names that class",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/profiles/claude-code.yaml's allow list gains mcp__scripted_user__ask_user as the declared class \"scripted user\" (R-37 c2, R-34 rule) and tests/test_allowlist_classes.py names that class"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Codex needs no id.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Codex needs no id."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "After the turn, the engine closes the log (scripted_user.log.close_log with header_row, design section 8) before the cell is archived, so the log is in the archive",
+            "trace": {
+              "kind": "phrase",
+              "ref": "After the turn, the engine closes the log (scripted_user.log.close_log with header_row, design section 8) before the cell is archived, so the log is in the archive"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test asserts the end row (\"no question asked\" for a turn with zero calls).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test asserts the end row (\"no question asked\" for a turn with zero calls)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The plan's task record freezes scripted_user, the clarification-set hash and matcher_version (design section 9 row 4) and bench validate loads each scenario-1 task's clarifications with scripted_user.clarifications.load so a malformed set fails validation.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The plan's task record freezes scripted_user, the clarification-set hash and matcher_version (design section 9 row 4) and bench validate loads each scenario-1 task's clarifications with scripted_user.clarifications.load so a malformed set fails validation."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A scripted_user cell whose server never listed the tool is recorded as \"tool not reached\" and its clarification metrics NOT_RECORDED (design section 8)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A scripted_user cell whose server never listed the tool is recorded as \"tool not reached\" and its clarification metrics NOT_RECORDED (design section 8)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "only the log fact is in scope here, not the metric.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "only the log fact is in scope here, not the metric."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/scripted_user_wiring.json holds named mutants (server passed to a non-scripted cell",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/scripted_user_wiring.json holds named mutants (server passed to a non-scripted cell"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Copilot available-tools id missing",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Copilot available-tools id missing"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "log not closed before archive",
+            "trace": {
+              "kind": "phrase",
+              "ref": "log not closed before archive"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "mcpServers sent for Copilot), each killed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "mcpServers sent for Copilot), each killed."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result, plus the exact argv of a scripted_user cell per harness.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result, plus the exact argv of a scripted_user cell per harness."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the matcher internals (joined)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the matcher internals (joined)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the stop and decision work (another Codex slice is changing engine.py's breaker area and tests/test_engine.py - keep your engine edits to _attempt and _run_cell's post-outcome step, and add your engine tests in a new file tests/test_scripted_user_wiring.py)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the stop and decision work (another Codex slice is changing engine.py's breaker area and tests/test_engine.py - keep your engine edits to _attempt and _run_cell's post-outcome step, and add your engine tests in a new file tests/test_scripted_user_wiring.py)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "live turns (the Leader runs one A1 cell per harness after the join)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "live turns (the Leader runs one A1 cell per harness after the join)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run, pytest -m \"\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run, pytest -m \"\""
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "driver.run_turn gains mcp_servers: list[dict] | None = None and sends `mcp_servers or []` in session/new",
+            "a driver test asserts both forms (T-37-3), red first.",
+            "engine._attempt passes the server entry (scripted_user.server.entry(clarifications_path, log_path), the log in the cell's own folder) only when the plan's task record has scripted_user true, and every other cell keeps mcpServers [] (R-37 c3) - an engine test with the fake ACP agent asserts both, red first.",
+            "For a Copilot scripted_user cell the entry goes into a per-cell MCP config file passed as --additional-mcp-config @<cell file>, with mcpServers [] in session/new (R-51)",
+            "and because R-45's --available-tools list filters MCP tools (measured: run record, R-51 condition 2: \"Disabled tools: ... scripted_user-ask_user\"), that cell's argv also appends scripted_user-ask_user to the --available-tools list and --allow-tool scripted_user - only for scripted_user cells",
+            "a profile or engine test pins the exact argv for a scripted_user Copilot cell and for a normal one, red first.",
+            "bench/profiles/claude-code.yaml's allow list gains mcp__scripted_user__ask_user as the declared class \"scripted user\" (R-37 c2, R-34 rule) and tests/test_allowlist_classes.py names that class",
+            "Codex needs no id.",
+            "After the turn, the engine closes the log (scripted_user.log.close_log with header_row, design section 8) before the cell is archived, so the log is in the archive",
+            "a test asserts the end row (\"no question asked\" for a turn with zero calls).",
+            "The plan's task record freezes scripted_user, the clarification-set hash and matcher_version (design section 9 row 4) and bench validate loads each scenario-1 task's clarifications with scripted_user.clarifications.load so a malformed set fails validation.",
+            "A scripted_user cell whose server never listed the tool is recorded as \"tool not reached\" and its clarification metrics NOT_RECORDED (design section 8)",
+            "only the log fact is in scope here, not the metric.",
+            "tests/mutations/scripted_user_wiring.json holds named mutants (server passed to a non-scripted cell",
+            "Copilot available-tools id missing",
+            "log not closed before archive",
+            "mcpServers sent for Copilot), each killed.",
+            "uv run pytest -q -p no:cacheprovider passes",
+            "uv run ruff check src tests tools is clean.",
+            "Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result, plus the exact argv of a scripted_user cell per harness."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W2-USER-W: wire the scripted user (the library at src/harness_bench/scripted_user/, joined) into a real cell, per docs/design/phase2-scripted-user.md section 9 (the seams, file:line) and rulings R-37, R-51, R-52, R-53 in docs/notes/rulings.md - stdio on every harness; Claude Code and Codex through ACP session/new mcpServers; Copilot through its own --additional-mcp-config with mcpServers [] - red-first.",
+          "main_line_budget": "one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase2-scripted-user.md; docs/notes/rulings.md R-34, R-37, R-45, R-51, R-52, R-53; docs/coordination/coordination-finish-harness-bench-run.md (R-51 condition 2 measurement); src/harness_bench/{driver,engine,plan,profiles,config}.py; src/harness_bench/scripted_user/; bench/profiles/*.yaml; tests/test_driver.py, tests/fake_acp_agent.py, tests/test_allowlist_classes.py. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-userw before committing.",
+          "not_in_scope": [
+            "the matcher internals (joined)",
+            "the stop and decision work (another Codex slice is changing engine.py's breaker area and tests/test_engine.py - keep your engine edits to _attempt and _run_cell's post-outcome step, and add your engine tests in a new file tests/test_scripted_user_wiring.py)",
+            "live turns (the Leader runs one A1 cell per harness after the join)",
+            "bench run, pytest -m \"\"",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.003,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3BQ7APNKA7XSC3JBWG0HA98",
+        "raw_sha256": "c66dd53f55a6f88a06cc17a4ee31205e295a39c286532862922f7088bad46758",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "mcp_servers or "
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/scripted_user/"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase2-scripted-user.md",
+            "reason": null,
+            "sha256": "e462b14bdb2f5c2c2d2113ac98c74dba0db79007045d9dec1ac4c73d0e2c312e",
+            "status": "resolved",
+            "token": "docs/design/phase2-scripted-user.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "session/new"
+          },
+          {
+            "nearest": "bench/profiles/claude-code.yaml",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/profiles/claude-code.yaml's"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_allowlist_classes.py",
+            "reason": null,
+            "sha256": "3231d30de0207443eab71bf4adb7d7621e9945dc9c5ecb358320a972ea0eccf9",
+            "status": "resolved",
+            "token": "tests/test_allowlist_classes.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/scripted_user_wiring.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_engine.py",
+            "reason": null,
+            "sha256": "333fe42a3de9c877ba04492bc469b1521c7934b5e7e5fcc8aa43665a5767466f",
+            "status": "resolved",
+            "token": "tests/test_engine.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_scripted_user_wiring.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench-run.md",
+            "reason": null,
+            "sha256": "e80c46f563667756a660e41845ad6de62c7d4fa0332e5b3b7429b7c2c90a99ec",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-finish-harness-bench-run.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/{driver,engine,plan,profiles,config}.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/profiles/*.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_driver.py",
+            "reason": null,
+            "sha256": "c7613ca2e9545ad5960c02c1e92230daeb64a2aaee057a2aa310428fa01e6a85",
+            "status": "resolved",
+            "token": "tests/test_driver.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/fake_acp_agent.py",
+            "reason": null,
+            "sha256": "ae149d999ba89487bfe98b6b1a0d27ed5702dfd1742325a326669676ae95bcb5",
+            "status": "resolved",
+            "token": "tests/fake_acp_agent.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
     }
   ],
   "changes": [
