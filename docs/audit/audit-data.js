@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T02:56:25Z",
+  "generated": "2026-09-25T04:19:59Z",
   "audit": [
     {
       "actor": null,
@@ -8002,34 +8002,23 @@ window.AUDIT_DATA = {
       "tool": "Claude Code"
     },
     {
-      "id": "al-01M3B4PQD3X9VAZS5DEY3YAPJS",
-      "shortname": "Goal: W1-COP-I loop-back slice 6b (join review findings, Test Architect …",
-      "datetime": "2026-09-25T02:00:58Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W1-COP-I loop-back slice 6b (join review findings, Test Architect and Python developer): fix the views, report and profile findings in src/harness_bench/views.py, src/harness_bench/report/*.py and src/harness_bench/profiles.py, red-first, in the owned paths only.\nDone when: calls_per_cell becomes a Measure(value, reason) like its sibling fields: Measure(None, \"not recorded\") when a cell is ungraded, has no model_calls rows, or its extraction lists a `requests` missing field; a red test on an ungraded run folder asserts it is None (kills the mutant `calls_per_cell(ex.model_calls)` without the None guard), and a Copilot record with no `requests` object is not 0.; views.model_call builds its kwargs strictly: every field except `requests` must be present in the row (a missing start/end raises as before); only `requests` takes the ModelCall default; a red test proves a row missing `start` still raises.; The report header names the Copilot build as prerelease (ruling R-12 condition 1): \"copilot 1.0.89-1 (prerelease)\"; a report test on a fixture ledger shows the mark, red first against a header without it.; profiles.py uses one template language: str.replace for {exe}, {model}, {node} and {adapter} in argv (as cell_env already does), keeping the checks that {node}/{adapter} are required when named; a profile YAML without `command:` (or with an empty one) raises a coded error at load, not a bare KeyError, and Profile.command has no empty default; `build` is typed as tools.Build on argv and cell_env.; The cell environment also drops GH_ENTERPRISE_TOKEN, GITHUB_ENTERPRISE_TOKEN and GH_CONFIG_DIR, with the existing drop test extended.; The native Copilot instruction-list test builds its env with profiles.load(ROOT, \"copilot\").cell_env(...) (the production env), not a hand-built one.; tests/mutations/copilot.json and tests/mutations/views_copilot.json gain entries for these new branches, each killed (`uv run python tools/mutate_check.py` on each file); `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check results.\nNot in scope: plan.py, tools.py, cli.py (slice 6a), telemetry/* (other tracks), engine.py, tests/e2e; `bench run`, any model turn, `-m \"\"`; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/notes/rulings.md R-12, R-26, R-32; src/harness_bench/{views,profiles}.py, src/harness_bench/report/{html,cli_table,__init__}.py, tests/test_views.py, tests/test_report.py, tests/test_profiles.py, tests/test_plan.py (the native test), tests/mutations/*.json. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
+      "datetime": "2026-09-25T02:00:58Z",
+      "id": "al-01M3B4PQD3X9VAZS5DEY3YAPJS",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: W1-COP-I loop-back slice 6b (join review findings, Test Architect and Python developer): fix the views, report and profile findings in src/harness_bench/views.py, src/harness_bench/report/*.py and src/harness_bench/profiles.py, red-first, in the owned paths only.\nDone when: calls_per_cell becomes a Measure(value, reason) like its sibling fields: Measure(None, \"not recorded\") when a cell is ungraded, has no model_calls rows, or its extraction lists a `requests` missing field; a red test on an ungraded run folder asserts it is None (kills the mutant `calls_per_cell(ex.model_calls)` without the None guard), and a Copilot record with no `requests` object is not 0.; views.model_call builds its kwargs strictly: every field except `requests` must be present in the row (a missing start/end raises as before); only `requests` takes the ModelCall default; a red test proves a row missing `start` still raises.; The report header names the Copilot build as prerelease (ruling R-12 condition 1): \"copilot 1.0.89-1 (prerelease)\"; a report test on a fixture ledger shows the mark, red first against a header without it.; profiles.py uses one template language: str.replace for {exe}, {model}, {node} and {adapter} in argv (as cell_env already does), keeping the checks that {node}/{adapter} are required when named; a profile YAML without `command:` (or with an empty one) raises a coded error at load, not a bare KeyError, and Profile.command has no empty default; `build` is typed as tools.Build on argv and cell_env.; The cell environment also drops GH_ENTERPRISE_TOKEN, GITHUB_ENTERPRISE_TOKEN and GH_CONFIG_DIR, with the existing drop test extended.; The native Copilot instruction-list test builds its env with profiles.load(ROOT, \"copilot\").cell_env(...) (the production env), not a hand-built one.; tests/mutations/copilot.json and tests/mutations/views_copilot.json gain entries for these new branches, each killed (`uv run python tools/mutate_check.py` on each file); `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check results.\nNot in scope: plan.py, tools.py, cli.py (slice 6a), telemetry/* (other tracks), engine.py, tests/e2e; `bench run`, any model turn, `-m \"\"`; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/notes/rulings.md R-12, R-26, R-32; src/harness_bench/{views,profiles}.py, src/harness_bench/report/{html,cli_table,__init__}.py, tests/test_views.py, tests/test_report.py, tests/test_profiles.py, tests/test_plan.py (the native test), tests/mutations/*.json. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
+      "session": "prompt-compile",
+      "shortname": "Goal: W1-COP-I loop-back slice 6b (join review findings, Test Architect …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M3B4PQVTJXV80MESK4FSN2XW",
-      "shortname": "compile-Goal: W1-COP-I loop-back slice 6b (join review findings, Test Architect …",
-      "datetime": "2026-09-25T02:00:59Z",
-      "session": "coord-opus-cq",
-      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-COP-I loop-back slice 6b (join review findings, Test Architect and Python developer): fix the views, report and profile findings in src/harness_bench/views.py, src/harness_bench/report/*.py and src/harness_bench/profiles.py, red-first, in the owned paths only.\nDone when: calls_per_cell becomes a Measure(value, reason) like its sibling fields: Measure(None, \"not recorded\") when a cell is ungraded, has no model_calls rows, or its extraction lists a `requests` missing field; a red test on an ungraded run folder asserts it is None (kills the mutant `calls_per_cell(ex.model_calls)` without the None guard), and a Copilot record with no `requests` object is not 0.; views.model_call builds its kwargs strictly: every field except `requests` must be present in the row (a missing start/end raises as before); only `requests` takes the ModelCall default; a red test proves a row missing `start` still raises.; The report header names the Copilot build as prerelease (ruling R-12 condition 1): \"copilot 1.0.89-1 (prerelease)\"; a report test on a fixture ledger shows the mark, red first against a header without it.; profiles.py uses one template language: str.replace for {exe}, {model}, {node} and {adapter} in argv (as cell_env already does), keeping the checks that {node}/{adapter} are required when named; a profile YAML without `command:` (or with an empty one) raises a coded error at load, not a bare KeyError, and Profile.command has no empty default; `build` is typed as tools.Build on argv and cell_env.; The cell environment also drops GH_ENTERPRISE_TOKEN, GITHUB_ENTERPRISE_TOKEN and GH_CONFIG_DIR, with the existing drop test extended.; The native Copilot instruction-list test builds its env with profiles.load(ROOT, \"copilot\").cell_env(...) (the production env), not a hand-built one.; tests/mutations/copilot.json and tests/mutations/views_copilot.json gain entries for these new branches, each killed (`uv run python tools/mutate_check.py` on each file); `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check results.\nNot in scope: plan.py, tools.py, cli.py (slice 6a), telemetry/* (other tracks), engine.py, tests/e2e; `bench run`, any model turn, `-m \"\"`; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-12, R-26, R-32; src/harness_bench/{views,profiles}.py, src/harness_bench/report/{html,cli_table,__init__}.py, tests/test_views.py, tests/test_report.py, tests/test_profiles.py, tests/test_plan.py (the native test), tests/mutations/*.json. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: calls_per_cell becomes a Measure(value, reason) like its sibling fields: Measure(None, \"not recorded\") when a cell is ungraded, has no model_calls rows, or its extraction lists a `requests` missing field | phrase: calls_per_cell becomes a Measure(value, reason) like its sibling fields: Measure(None, \"not recorded\") when a cell is ungraded, has no model_calls rows, or its extraction lists a `requests` missing field |\n| done_when: a red test on an ungraded run folder asserts it is None (kills the mutant `calls_per_cell(ex.model_calls)` without the None guard), and a Copilot record with no `requests` object is not 0. | phrase: a red test on an ungraded run folder asserts it is None (kills the mutant `calls_per_cell(ex.model_calls)` without the None guard), and a Copilot record with no `requests` object is not 0. |\n| done_when: views.model_call builds its kwargs strictly: every field except `requests` must be present in the row (a missing start/end raises as before) | phrase: views.model_call builds its kwargs strictly: every field except `requests` must be present in the row (a missing start/end raises as before) |\n| done_when: only `requests` takes the ModelCall default | phrase: only `requests` takes the ModelCall default |\n| done_when: a red test proves a row missing `start` still raises. | phrase: a red test proves a row missing `start` still raises. |\n| done_when: The report header names the Copilot build as prerelease (ruling R-12 condition 1): \"copilot 1.0.89-1 (prerelease)\" | phrase: The report header names the Copilot build as prerelease (ruling R-12 condition 1): \"copilot 1.0.89-1 (prerelease)\" |\n| done_when: a report test on a fixture ledger shows the mark, red first against a header without it. | phrase: a report test on a fixture ledger shows the mark, red first against a header without it. |\n| done_when: profiles.py uses one template language: str.replace for {exe}, {model}, {node} and {adapter} in argv (as cell_env already does), keeping the checks that {node}/{adapter} are required when named | phrase: profiles.py uses one template language: str.replace for {exe}, {model}, {node} and {adapter} in argv (as cell_env already does), keeping the checks that {node}/{adapter} are required when named |\n| done_when: a profile YAML without `command:` (or with an empty one) raises a coded error at load, not a bare KeyError, and Profile.command has no empty default | phrase: a profile YAML without `command:` (or with an empty one) raises a coded error at load, not a bare KeyError, and Profile.command has no empty default |\n| done_when: `build` is typed as tools.Build on argv and cell_env. | phrase: `build` is typed as tools.Build on argv and cell_env. |\n| done_when: The cell environment also drops GH_ENTERPRISE_TOKEN, GITHUB_ENTERPRISE_TOKEN and GH_CONFIG_DIR, with the existing drop test extended. | phrase: The cell environment also drops GH_ENTERPRISE_TOKEN, GITHUB_ENTERPRISE_TOKEN and GH_CONFIG_DIR, with the existing drop test extended. |\n| done_when: The native Copilot instruction-list test builds its env with profiles.load(ROOT, \"copilot\").cell_env(...) (the production env), not a hand-built one. | phrase: The native Copilot instruction-list test builds its env with profiles.load(ROOT, \"copilot\").cell_env(...) (the production env), not a hand-built one. |\n| done_when: tests/mutations/copilot.json and tests/mutations/views_copilot.json gain entries for these new branches, each killed (`uv run python tools/mutate_check.py` on each file) | phrase: tests/mutations/copilot.json and tests/mutations/views_copilot.json gain entries for these new branches, each killed (`uv run python tools/mutate_check.py` on each file) |\n| done_when: `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean. | phrase: `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean. |\n| done_when: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check results. | phrase: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check results. |\n| not_in_scope: plan.py, tools.py, cli.py (slice 6a), telemetry/* (other tracks), engine.py, tests/e2e | phrase: plan.py, tools.py, cli.py (slice 6a), telemetry/* (other tracks), engine.py, tests/e2e |\n| not_in_scope: `bench run`, any model turn, `-m \"\"` | phrase: `bench run`, any model turn, `-m \"\"` |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- requests: unresolved (not found)\n- calls_per_cell(ex.model_calls: unresolved (not found)\n- start: unresolved (not found)\n- command: unresolved (not found)\n- build: unresolved (not found)\n- uv run python tools/mutate_check.py: unresolved (not found; nearest: tools/mutate_check.py)\n- uv run pytest -q -p no:cacheprovider: unresolved (not found)\n- uv run ruff check src tests tools: unresolved (not found)\n- bench run: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- src/harness_bench/views.py: src/harness_bench/views.py sha256 6fb7b3bf7d46e11a9a9b9bb7d1eead73223a4b29b03cd311991b849e3dfe1ec4\n- src/harness_bench/report/*.py: unresolved (not found)\n- src/harness_bench/profiles.py: src/harness_bench/profiles.py sha256 b01b90c10f208492e786e937d17f6940d55a9efbd34ae30c0436263a9c7850f8\n- start/end: unresolved (not found)\n- profiles.py: src/harness_bench/profiles.py sha256 b01b90c10f208492e786e937d17f6940d55a9efbd34ae30c0436263a9c7850f8\n- {node}/{adapter}: unresolved (not found)\n- tests/mutations/copilot.json: tests/mutations/copilot.json sha256 4a82ca7024ef53f0b5a76bb35af79cf6768ec0a69686aa9cc4f64f88112fffdd\n- tests/mutations/views_copilot.json: tests/mutations/views_copilot.json sha256 7cc514482374479014d4d11ced9ac244d9b578af8979ec1296ce636c16a0e093\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- plan.py: src/harness_bench/plan.py sha256 7e889c1252594f1fd4dbd50d8c186e6f2f3156bc700eb81b669a2f451bb2f461\n- tools.py: src/harness_bench/tools.py sha256 242fdb880636a44752285a570c9f628718fbdcd9c51f701378e968e10bdcdeec\n- cli.py: src/harness_bench/cli.py sha256 13e5826e6a6a8c2ff1c1a5fdd67ea0311c646c750ba57046dce40ab39415d803\n- telemetry/*: unresolved (not found)\n- engine.py: src/harness_bench/engine.py sha256 87bdeb5740d1595f2c192708b3d8d0410428095d207c01cecd9507534e65828d\n- tests/e2e: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- src/harness_bench/{views,profiles}.py: unresolved (not found)\n- src/harness_bench/report/{html,cli_table,__init__}.py: unresolved (not found)\n- tests/test_views.py: tests/test_views.py sha256 147942926b043ca9fd4741d1682215803f91a341a6a850b73cbc712f5d377469\n- tests/test_report.py: tests/test_report.py sha256 e9fe2c1bd3dc96a5d1cab81e045996470da7a9218d9a6d6a97d8271458489389\n- tests/test_profiles.py: tests/test_profiles.py sha256 f75f801055f6fedaad1165585d7b668b0e1f23518a29b77d116b3d843028abc9\n- tests/test_plan.py: tests/test_plan.py sha256 285210df9d3fa2b6ebf11a707da1a0c46e509571861eefb21b4b8d0829191afc\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3B4PQD3X9VAZS5DEY3YAPJS\nraw sha256: 4d3a60ba62f4cbeddf08f9690b9d84673a39825e0bd227d90d4ec599c890a4ad\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
-      "summary": "compiled al-01M3B4PQD3X9VAZS5DEY3YAPJS for codex v1: 18 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -8518,94 +8507,94 @@ window.AUDIT_DATA = {
         "template": "codex",
         "template_version": 1
       },
+      "datetime": "2026-09-25T02:00:59Z",
+      "dispatchable": true,
+      "id": "al-01M3B4PQVTJXV80MESK4FSN2XW",
+      "kind": "compilation",
       "mode": "pass-through",
-      "dispatchable": true
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-COP-I loop-back slice 6b (join review findings, Test Architect and Python developer): fix the views, report and profile findings in src/harness_bench/views.py, src/harness_bench/report/*.py and src/harness_bench/profiles.py, red-first, in the owned paths only.\nDone when: calls_per_cell becomes a Measure(value, reason) like its sibling fields: Measure(None, \"not recorded\") when a cell is ungraded, has no model_calls rows, or its extraction lists a `requests` missing field; a red test on an ungraded run folder asserts it is None (kills the mutant `calls_per_cell(ex.model_calls)` without the None guard), and a Copilot record with no `requests` object is not 0.; views.model_call builds its kwargs strictly: every field except `requests` must be present in the row (a missing start/end raises as before); only `requests` takes the ModelCall default; a red test proves a row missing `start` still raises.; The report header names the Copilot build as prerelease (ruling R-12 condition 1): \"copilot 1.0.89-1 (prerelease)\"; a report test on a fixture ledger shows the mark, red first against a header without it.; profiles.py uses one template language: str.replace for {exe}, {model}, {node} and {adapter} in argv (as cell_env already does), keeping the checks that {node}/{adapter} are required when named; a profile YAML without `command:` (or with an empty one) raises a coded error at load, not a bare KeyError, and Profile.command has no empty default; `build` is typed as tools.Build on argv and cell_env.; The cell environment also drops GH_ENTERPRISE_TOKEN, GITHUB_ENTERPRISE_TOKEN and GH_CONFIG_DIR, with the existing drop test extended.; The native Copilot instruction-list test builds its env with profiles.load(ROOT, \"copilot\").cell_env(...) (the production env), not a hand-built one.; tests/mutations/copilot.json and tests/mutations/views_copilot.json gain entries for these new branches, each killed (`uv run python tools/mutate_check.py` on each file); `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check results.\nNot in scope: plan.py, tools.py, cli.py (slice 6a), telemetry/* (other tracks), engine.py, tests/e2e; `bench run`, any model turn, `-m \"\"`; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-12, R-26, R-32; src/harness_bench/{views,profiles}.py, src/harness_bench/report/{html,cli_table,__init__}.py, tests/test_views.py, tests/test_report.py, tests/test_profiles.py, tests/test_plan.py (the native test), tests/mutations/*.json. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: calls_per_cell becomes a Measure(value, reason) like its sibling fields: Measure(None, \"not recorded\") when a cell is ungraded, has no model_calls rows, or its extraction lists a `requests` missing field | phrase: calls_per_cell becomes a Measure(value, reason) like its sibling fields: Measure(None, \"not recorded\") when a cell is ungraded, has no model_calls rows, or its extraction lists a `requests` missing field |\n| done_when: a red test on an ungraded run folder asserts it is None (kills the mutant `calls_per_cell(ex.model_calls)` without the None guard), and a Copilot record with no `requests` object is not 0. | phrase: a red test on an ungraded run folder asserts it is None (kills the mutant `calls_per_cell(ex.model_calls)` without the None guard), and a Copilot record with no `requests` object is not 0. |\n| done_when: views.model_call builds its kwargs strictly: every field except `requests` must be present in the row (a missing start/end raises as before) | phrase: views.model_call builds its kwargs strictly: every field except `requests` must be present in the row (a missing start/end raises as before) |\n| done_when: only `requests` takes the ModelCall default | phrase: only `requests` takes the ModelCall default |\n| done_when: a red test proves a row missing `start` still raises. | phrase: a red test proves a row missing `start` still raises. |\n| done_when: The report header names the Copilot build as prerelease (ruling R-12 condition 1): \"copilot 1.0.89-1 (prerelease)\" | phrase: The report header names the Copilot build as prerelease (ruling R-12 condition 1): \"copilot 1.0.89-1 (prerelease)\" |\n| done_when: a report test on a fixture ledger shows the mark, red first against a header without it. | phrase: a report test on a fixture ledger shows the mark, red first against a header without it. |\n| done_when: profiles.py uses one template language: str.replace for {exe}, {model}, {node} and {adapter} in argv (as cell_env already does), keeping the checks that {node}/{adapter} are required when named | phrase: profiles.py uses one template language: str.replace for {exe}, {model}, {node} and {adapter} in argv (as cell_env already does), keeping the checks that {node}/{adapter} are required when named |\n| done_when: a profile YAML without `command:` (or with an empty one) raises a coded error at load, not a bare KeyError, and Profile.command has no empty default | phrase: a profile YAML without `command:` (or with an empty one) raises a coded error at load, not a bare KeyError, and Profile.command has no empty default |\n| done_when: `build` is typed as tools.Build on argv and cell_env. | phrase: `build` is typed as tools.Build on argv and cell_env. |\n| done_when: The cell environment also drops GH_ENTERPRISE_TOKEN, GITHUB_ENTERPRISE_TOKEN and GH_CONFIG_DIR, with the existing drop test extended. | phrase: The cell environment also drops GH_ENTERPRISE_TOKEN, GITHUB_ENTERPRISE_TOKEN and GH_CONFIG_DIR, with the existing drop test extended. |\n| done_when: The native Copilot instruction-list test builds its env with profiles.load(ROOT, \"copilot\").cell_env(...) (the production env), not a hand-built one. | phrase: The native Copilot instruction-list test builds its env with profiles.load(ROOT, \"copilot\").cell_env(...) (the production env), not a hand-built one. |\n| done_when: tests/mutations/copilot.json and tests/mutations/views_copilot.json gain entries for these new branches, each killed (`uv run python tools/mutate_check.py` on each file) | phrase: tests/mutations/copilot.json and tests/mutations/views_copilot.json gain entries for these new branches, each killed (`uv run python tools/mutate_check.py` on each file) |\n| done_when: `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean. | phrase: `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean. |\n| done_when: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check results. | phrase: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check results. |\n| not_in_scope: plan.py, tools.py, cli.py (slice 6a), telemetry/* (other tracks), engine.py, tests/e2e | phrase: plan.py, tools.py, cli.py (slice 6a), telemetry/* (other tracks), engine.py, tests/e2e |\n| not_in_scope: `bench run`, any model turn, `-m \"\"` | phrase: `bench run`, any model turn, `-m \"\"` |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- requests: unresolved (not found)\n- calls_per_cell(ex.model_calls: unresolved (not found)\n- start: unresolved (not found)\n- command: unresolved (not found)\n- build: unresolved (not found)\n- uv run python tools/mutate_check.py: unresolved (not found; nearest: tools/mutate_check.py)\n- uv run pytest -q -p no:cacheprovider: unresolved (not found)\n- uv run ruff check src tests tools: unresolved (not found)\n- bench run: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- src/harness_bench/views.py: src/harness_bench/views.py sha256 6fb7b3bf7d46e11a9a9b9bb7d1eead73223a4b29b03cd311991b849e3dfe1ec4\n- src/harness_bench/report/*.py: unresolved (not found)\n- src/harness_bench/profiles.py: src/harness_bench/profiles.py sha256 b01b90c10f208492e786e937d17f6940d55a9efbd34ae30c0436263a9c7850f8\n- start/end: unresolved (not found)\n- profiles.py: src/harness_bench/profiles.py sha256 b01b90c10f208492e786e937d17f6940d55a9efbd34ae30c0436263a9c7850f8\n- {node}/{adapter}: unresolved (not found)\n- tests/mutations/copilot.json: tests/mutations/copilot.json sha256 4a82ca7024ef53f0b5a76bb35af79cf6768ec0a69686aa9cc4f64f88112fffdd\n- tests/mutations/views_copilot.json: tests/mutations/views_copilot.json sha256 7cc514482374479014d4d11ced9ac244d9b578af8979ec1296ce636c16a0e093\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- plan.py: src/harness_bench/plan.py sha256 7e889c1252594f1fd4dbd50d8c186e6f2f3156bc700eb81b669a2f451bb2f461\n- tools.py: src/harness_bench/tools.py sha256 242fdb880636a44752285a570c9f628718fbdcd9c51f701378e968e10bdcdeec\n- cli.py: src/harness_bench/cli.py sha256 13e5826e6a6a8c2ff1c1a5fdd67ea0311c646c750ba57046dce40ab39415d803\n- telemetry/*: unresolved (not found)\n- engine.py: src/harness_bench/engine.py sha256 87bdeb5740d1595f2c192708b3d8d0410428095d207c01cecd9507534e65828d\n- tests/e2e: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- src/harness_bench/{views,profiles}.py: unresolved (not found)\n- src/harness_bench/report/{html,cli_table,__init__}.py: unresolved (not found)\n- tests/test_views.py: tests/test_views.py sha256 147942926b043ca9fd4741d1682215803f91a341a6a850b73cbc712f5d377469\n- tests/test_report.py: tests/test_report.py sha256 e9fe2c1bd3dc96a5d1cab81e045996470da7a9218d9a6d6a97d8271458489389\n- tests/test_profiles.py: tests/test_profiles.py sha256 f75f801055f6fedaad1165585d7b668b0e1f23518a29b77d116b3d843028abc9\n- tests/test_plan.py: tests/test_plan.py sha256 285210df9d3fa2b6ebf11a707da1a0c46e509571861eefb21b4b8d0829191afc\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3B4PQD3X9VAZS5DEY3YAPJS\nraw sha256: 4d3a60ba62f4cbeddf08f9690b9d84673a39825e0bd227d90d4ec599c890a4ad\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W1-COP-I loop-back slice 6b (join review findings, Test Architect …",
+      "skill": null,
+      "summary": "compiled al-01M3B4PQD3X9VAZS5DEY3YAPJS for codex v1: 18 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
     },
     {
-      "id": "al-01M3B6HTKGKB9TWE5Q80TRQSEM",
-      "shortname": "R-34 Claude Code shell allowlist",
-      "datetime": "2026-09-25T02:33:15Z",
-      "session": "w1-r34",
-      "prompt": "Implement Owner ruling R-34 (rulings.md 444-457): PowerShell joins the Claude Code allowlist red-first, a build-sourced class-coverage test, the negative fixture from e2e-wave1-1790302505, permission_mode_effective recorded and shown, ADR-0004 amendment note, defect class, mutations r34.json.",
-      "summary": "Red 39a16d8 (8 failed), green 6bc7a83. Tool ids read from the tool list Claude Code 2.1.282 wrote to its native record in cell 17efb75ce2d5fc6d. Effective mode from session/new modes.currentModeId. r34.json 5/5 killed; 817 passed; ruff clean. Findings: NotebookEdit awaits a class ruling; claude.ai Claude Docs MCP tools appear (deferred) in the cell.",
-      "kind": "skill",
-      "skill": "implement",
-      "tool": null,
       "actor": "Claude Opus 5.5 (subagent of coord-opus-cq)",
       "artifacts": [
         "bench/profiles/claude-code.yaml",
         "tests/test_allowlist_classes.py",
         "tests/mutations/r34.json"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Implement R-34 conditions 1-4 in the w1-r34 tree",
+      "datetime": "2026-09-25T02:33:15Z",
       "done_when": "profile allows PowerShell; class-coverage test red then green; negative fixture test; permission_mode_effective on session_opened and in the report header; ADR-0004 note; PERM-A register entry; suite and ruff green; r34.json all killed",
-      "tier": "T1",
-      "fan_out": 0,
-      "signals": {
-        "verification_path": true,
-        "verification_executed": true,
-        "acceptance_met": true,
-        "regression": false
-      },
-      "started_at": "2026-09-25T02:20:22Z",
       "duration_seconds": 773.0,
+      "fan_out": 0,
       "git": {
-        "sha": "6bc7a83d098d6ef48936ea5ecc3601baa8ab132f",
-        "short": "6bc7a83d0",
         "branch": "w1-r34-claude-shell",
-        "pushed": null
-      }
-    },
-    {
-      "id": "al-01M3B7NH7NVG46TY4BYJTH43D0",
-      "shortname": "updatepack-93-95",
-      "datetime": "2026-09-25T02:52:45Z",
-      "session": "coord-opus-cq",
-      "prompt": "wave-1 close: /updatepack 93 -> 95 in harness-bench (W1-PACK revision), then qualify-codex-3",
-      "summary": "pack-apply (source df3baf2, rev 95): 14 UPDATE, 2 MERGE, 0 CONFLICT; conflict markers OK; pack-doctor 0 FAIL 3 WARN; offline suite 817 passed",
+        "pushed": null,
+        "sha": "6bc7a83d098d6ef48936ea5ecc3601baa8ab132f",
+        "short": "6bc7a83d0"
+      },
+      "goal": "Implement R-34 conditions 1-4 in the w1-r34 tree",
+      "id": "al-01M3B6HTKGKB9TWE5Q80TRQSEM",
       "kind": "skill",
-      "skill": "updatepack",
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
       "outcome": "success",
-      "compiled": false,
+      "prompt": "Implement Owner ruling R-34 (rulings.md 444-457): PowerShell joins the Claude Code allowlist red-first, a build-sourced class-coverage test, the negative fixture from e2e-wave1-1790302505, permission_mode_effective recorded and shown, ADR-0004 amendment note, defect class, mutations r34.json.",
+      "session": "w1-r34",
+      "shortname": "R-34 Claude Code shell allowlist",
+      "signals": {
+        "acceptance_met": true,
+        "regression": false,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "implement",
+      "started_at": "2026-09-25T02:20:22Z",
+      "summary": "Red 39a16d8 (8 failed), green 6bc7a83. Tool ids read from the tool list Claude Code 2.1.282 wrote to its native record in cell 17efb75ce2d5fc6d. Effective mode from session/new modes.currentModeId. r34.json 5/5 killed; 817 passed; ruff clean. Findings: NotebookEdit awaits a class ruling; claude.ai Claude Docs MCP tools appear (deferred) in the cell.",
+      "tags": [],
       "tier": "T1",
-      "fan_out": 0
+      "tool": null
     },
     {
-      "id": "al-01M3B7W2TGCTK67HJJE4PJF332",
-      "shortname": "Goal: Hook qualification smoke turn: make two file edits with your apply…",
-      "datetime": "2026-09-25T02:56:19Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: Hook qualification smoke turn: make two file edits with your apply_patch tool, never with a shell command, and record what happened to each.\nDone when: docs/notes/qualify-worker.md exists and was created with apply_patch.; You attempted one apply_patch that adds the file docs/notes/qualify-held.md, and docs/notes/qualify-worker.md has one line saying whether that patch was applied or refused, with the refusal text if there was one.; One commit touching only docs/notes/qualify-worker.md is on your branch.\nNot in scope: Writing any file with a shell command; retrying a refused patch; any other file; any test run; any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: 12 tool calls, 600 s",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3B7W8NZ82J8GMWTKKV5WDGC",
-      "shortname": "compile-Goal: Hook qualification smoke turn: make two file edits with your apply…",
-      "datetime": "2026-09-25T02:56:25Z",
-      "session": "coord-opus-cq",
-      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: Hook qualification smoke turn: make two file edits with your apply_patch tool, never with a shell command, and record what happened to each.\nDone when: docs/notes/qualify-worker.md exists and was created with apply_patch.; You attempted one apply_patch that adds the file docs/notes/qualify-held.md, and docs/notes/qualify-worker.md has one line saying whether that patch was applied or refused, with the refusal text if there was one.; One commit touching only docs/notes/qualify-worker.md is on your branch.\nNot in scope: Writing any file with a shell command; retrying a refused patch; any other file; any test run; any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: 12 tool calls, 600 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: docs/notes/qualify-worker.md exists and was created with apply_patch. | phrase: docs/notes/qualify-worker.md exists and was created with apply_patch. |\n| done_when: You attempted one apply_patch that adds the file docs/notes/qualify-held.md, and docs/notes/qualify-worker.md has one line saying whether that patch was applied or refused, with the refusal text if there was one. | phrase: You attempted one apply_patch that adds the file docs/notes/qualify-held.md, and docs/notes/qualify-worker.md has one line saying whether that patch was applied or refused, with the refusal text if there was one. |\n| done_when: One commit touching only docs/notes/qualify-worker.md is on your branch. | phrase: One commit touching only docs/notes/qualify-worker.md is on your branch. |\n| not_in_scope: Writing any file with a shell command | phrase: Writing any file with a shell command |\n| not_in_scope: retrying a refused patch | phrase: retrying a refused patch |\n| not_in_scope: any other file | phrase: any other file |\n| not_in_scope: any test run | phrase: any test run |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- docs/notes/qualify-worker.md: unresolved (not found)\n- docs/notes/qualify-held.md: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3B7W2TGCTK67HJJE4PJF332\nraw sha256: b7fff18ed574edfc3116495f32e883f2d24d4b87c1634fd4a3b246bd5d89576b\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
-      "summary": "compiled al-01M3B7W2TGCTK67HJJE4PJF332 for codex v1: 8 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
+      "compiled": false,
+      "datetime": "2026-09-25T02:52:45Z",
+      "fan_out": 0,
+      "id": "al-01M3B7NH7NVG46TY4BYJTH43D0",
+      "kind": "skill",
       "outcome": "success",
+      "prompt": "wave-1 close: /updatepack 93 -> 95 in harness-bench (W1-PACK revision), then qualify-codex-3",
+      "session": "coord-opus-cq",
+      "shortname": "updatepack-93-95",
+      "skill": "updatepack",
+      "summary": "pack-apply (source df3baf2, rev 95): 14 UPDATE, 2 MERGE, 0 CONFLICT; conflict markers OK; pack-doctor 0 FAIL 3 WARN; offline suite 817 passed",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-09-25T02:56:19Z",
+      "id": "al-01M3B7W2TGCTK67HJJE4PJF332",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: Hook qualification smoke turn: make two file edits with your apply_patch tool, never with a shell command, and record what happened to each.\nDone when: docs/notes/qualify-worker.md exists and was created with apply_patch.; You attempted one apply_patch that adds the file docs/notes/qualify-held.md, and docs/notes/qualify-worker.md has one line saying whether that patch was applied or refused, with the refusal text if there was one.; One commit touching only docs/notes/qualify-worker.md is on your branch.\nNot in scope: Writing any file with a shell command; retrying a refused patch; any other file; any test run; any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: 12 tool calls, 600 s",
+      "session": "prompt-compile",
+      "shortname": "Goal: Hook qualification smoke turn: make two file edits with your apply…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -8740,8 +8729,83 @@ window.AUDIT_DATA = {
         "template": "codex",
         "template_version": 1
       },
+      "datetime": "2026-09-25T02:56:25Z",
+      "dispatchable": true,
+      "id": "al-01M3B7W8NZ82J8GMWTKKV5WDGC",
+      "kind": "compilation",
       "mode": "pass-through",
-      "dispatchable": true
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: Hook qualification smoke turn: make two file edits with your apply_patch tool, never with a shell command, and record what happened to each.\nDone when: docs/notes/qualify-worker.md exists and was created with apply_patch.; You attempted one apply_patch that adds the file docs/notes/qualify-held.md, and docs/notes/qualify-worker.md has one line saying whether that patch was applied or refused, with the refusal text if there was one.; One commit touching only docs/notes/qualify-worker.md is on your branch.\nNot in scope: Writing any file with a shell command; retrying a refused patch; any other file; any test run; any push.\nTier: T0\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: 12 tool calls, 600 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: docs/notes/qualify-worker.md exists and was created with apply_patch. | phrase: docs/notes/qualify-worker.md exists and was created with apply_patch. |\n| done_when: You attempted one apply_patch that adds the file docs/notes/qualify-held.md, and docs/notes/qualify-worker.md has one line saying whether that patch was applied or refused, with the refusal text if there was one. | phrase: You attempted one apply_patch that adds the file docs/notes/qualify-held.md, and docs/notes/qualify-worker.md has one line saying whether that patch was applied or refused, with the refusal text if there was one. |\n| done_when: One commit touching only docs/notes/qualify-worker.md is on your branch. | phrase: One commit touching only docs/notes/qualify-worker.md is on your branch. |\n| not_in_scope: Writing any file with a shell command | phrase: Writing any file with a shell command |\n| not_in_scope: retrying a refused patch | phrase: retrying a refused patch |\n| not_in_scope: any other file | phrase: any other file |\n| not_in_scope: any test run | phrase: any test run |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- docs/notes/qualify-worker.md: unresolved (not found)\n- docs/notes/qualify-held.md: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3B7W2TGCTK67HJJE4PJF332\nraw sha256: b7fff18ed574edfc3116495f32e883f2d24d4b87c1634fd4a3b246bd5d89576b\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: Hook qualification smoke turn: make two file edits with your apply…",
+      "skill": null,
+      "summary": "compiled al-01M3B7W2TGCTK67HJJE4PJF332 for codex v1: 8 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-09-25T02:53:25Z",
+      "done_when": "1) NotebookEdit in bench/profiles/claude-code.yaml allow and test_allowlist_classes.py file-edit class, assume: removed. 2) account context (R1.4) flag in report header and each Claude Code row. 3) uv run pytest -q passes, uv run ruff check src tests tools clean, tests/mutations/r35_r36.json all killed.",
+      "duration_seconds": 604.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w1-r35-r36",
+        "pushed": null,
+        "sha": "936e0d65e4a26c19d0bf5a3df7205592abdf0853",
+        "short": "936e0d65e"
+      },
+      "goal": "Implement rulings R-35 (NotebookEdit in the Claude Code file-edit allowlist class) and R-36 part (a) (account context (R1.4) disclosure on Claude Code cells) per docs/notes/rulings.md, red-first.",
+      "id": "al-01M3B7PRFRH9SKGMJMBCYCEB3X",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Implement Owner rulings R-35 and R-36 part (a) for harness-bench: NotebookEdit in the Claude Code file-edit allowlist class, and the account context (R1.4) disclosure flag on every Claude Code cell. Leader coord-opus-cq, model Claude Sonnet 5 (R-33).",
+      "session": "w1-r35",
+      "shortname": "R-35, R-36(a): NotebookEdit allowlist + account context (R1.4) flag",
+      "skill": "implement",
+      "started_at": "2026-09-25T02:43:21Z",
+      "summary": "R-35: NotebookEdit added to Claude Code permissions.allow (file-edit class), red-first via tests/test_allowlist_classes.py and tests/test_profiles.py. R-36(a): account context (R1.4) flag added to report header, leaderboard/cells rows and CLI footer for every Claude Code cell (report/__init__.py has_claude_code_cell/flag_if_claude_code), following the N5 precedent; no connector name in report source. Full suite 823 passed, ruff clean, tests/mutations/r35_r36.json and tests/mutations/report.json all killed. Red 773b278, green 936e0d6.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "id": "al-01M3BCN8DCV3EVS0Y86KY9RB63",
+      "shortname": "design-slice-phase2-stop-decisions",
+      "datetime": "2026-09-25T04:19:59Z",
+      "session": "w2-stop-d",
+      "prompt": "You are track W2-STOP-D (plan version 4, docs/coordination/coordination-finish-harness-bench.md) of the harness-bench coordination run. Seat: Claude subagent, model Claude Opus 5.5. Leader: coord-opus-cq.\nGoal: the wave-2 design for row 10 (run-level stop, decision timeout, circuit breaker) as docs/design/phase2-stop-decisions.md, produced with the /design-slice skill and gated by the Patterns Expert, the Simplifier and the Test Architect (convened as subagents with model opus; the Test Architect holds a hard veto).\nDone when: the design fixes the bench stop control channel (controlFile); decision events and lifecycle rows; decision_timeout and the spend cap; the circuit-breaker acceptance criterion with a seeded-revert red; the R-21 grace as a TLA refinement of models/**; R-34 condition 4 (defaultMode); a promise-to-test row for every clause of plan row 10's carried exit condition; a line \"driver.py unchanged | changed (what)\". It states the slice plan for W2-STOP-I (Codex gpt-6-sol, <= 6 slices of <= 55 min) including seams S1-S3 from W2-VIEWS. The three reviewers' verdicts and dispositions are recorded in the gate section; V2 frontmatter written and docs-graph validate exits 0; change-log and audit entries written; everything committed on the branch.\nNot in scope: implementation code or tests; files outside the design, the docs index/audit files and docs/notes/; bench run, any model turn, pytest -m \"\"; any push. Tier T2, fan-out cap 3 reviewers, 150 tool calls, 2 h.",
+      "summary": "docs/design/phase2-stop-decisions.md revision 2.1 and docs/notes/stop-decision-calls.md. Content:\n- bench stop and bench answer as apply-once control files (bench-control/1);\n- the new facts control.applied, run.stopped, decision.opened and decision.resolved, and the ended_by field;\n- decision_timeout and spend_cap_tokens as plan parameters;\n- three decision kinds, each resolved exactly once;\n- the circuit-breaker acceptance criterion AC-CB with falsifying reverts;\n- the R-21 grace as a TLA refinement (GracefulExit, EndGrace, the no_escalate variant, the NoGraceState witness), spiked with the full check_models run: 27 ok, and the US-44 bounds at 85,060,752 states;\n- R-34 c4: defaultMode declared \"default\";\n- the promise-to-test table for plan :145;\n- the STOP-I six-slice plan.\nGate: Test Architect BLOCK, then PASS WITH CONDITIONS (the hard veto cleared); Simplifier BLOCK, then PASS WITH CONDITIONS; Patterns Expert PASS WITH CONDITIONS.\nOpen: Owner DR-1 (the spend-cap unit) and DR-2 (the breaker vs ADR-0007 §7); Leader S4-S7.",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/phase2-stop-decisions.md",
+        "docs/notes/stop-decision-calls.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Row 10 design (stop, decision timeout, circuit breaker) gated by Patterns Expert, Simplifier and Test Architect",
+      "done_when": "design fixes every listed item; STOP-I slice plan; gate verdicts recorded; docs-graph validate 0; audit/change entries; committed",
+      "tier": "T2",
+      "fan_out": 3,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-25T03:35:26Z",
+      "duration_seconds": 2673.0,
+      "git": {
+        "sha": "fef5ebb7800dbb883b231cb08873ccca8bf23476",
+        "short": "fef5ebb78",
+        "branch": "w2-stop-design",
+        "pushed": null
+      }
     }
   ],
   "changes": [
@@ -9009,6 +9073,31 @@ window.AUDIT_DATA = {
           "9322191 fix(W1-HOST): drop the untested extra kill after a failed assignment",
           "b6d1535 test(W1-HOST): the base fixture removes only this test's folder",
           "6ae3bcd docs(coord): plan version 3 amendments after capture window 1 and R-12..R-28"
+        ]
+      }
+    },
+    {
+      "id": "cl-01M3BCN8N1GKJ2M84V2E4J2WA8",
+      "datetime": "2026-09-25T04:19:59Z",
+      "session": null,
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "Row 10: run stop, decision requests with a timeout, circuit-breaker acceptance, R-21 grace refinement",
+      "prompt": "You are track W2-STOP-D (plan version 4, docs/coordination/coordination-finish-harness-bench.md) of the harness-bench coordination run. Seat: Claude subagent, model Claude Opus 5.5. Leader: coord-opus-cq.\nGoal: the wave-2 design for row 10 (run-level stop, decision timeout, circuit breaker) as docs/design/phase2-stop-decisions.md, produced with the /design-slice skill and gated by the Patterns Expert, the Simplifier and the Test Architect (convened as subagents with model opus; the Test Architect holds a hard veto).\nDone when: the design fixes the bench stop control channel (controlFile); decision events and lifecycle rows; decision_timeout and the spend cap; the circuit-breaker acceptance criterion with a seeded-revert red; the R-21 grace as a TLA refinement of models/**; R-34 condition 4 (defaultMode); a promise-to-test row for every clause of plan row 10's carried exit condition; a line \"driver.py unchanged | changed (what)\". It states the slice plan for W2-STOP-I (Codex gpt-6-sol, <= 6 slices of <= 55 min) including seams S1-S3 from W2-VIEWS. The three reviewers' verdicts and dispositions are recorded in the gate section; V2 frontmatter written and docs-graph validate exits 0; change-log and audit entries written; everything committed on the branch.\nNot in scope: implementation code or tests; files outside the design, the docs index/audit files and docs/notes/; bench run, any model turn, pytest -m \"\"; any push. Tier T2, fan-out cap 3 reviewers, 150 tool calls, 2 h.",
+      "summary": "docs/design/phase2-stop-decisions.md revision 2.1 and docs/notes/stop-decision-calls.md. Content:\n- bench stop and bench answer as apply-once control files (bench-control/1);\n- the new facts control.applied, run.stopped, decision.opened and decision.resolved, and the ended_by field;\n- decision_timeout and spend_cap_tokens as plan parameters;\n- three decision kinds, each resolved exactly once;\n- the circuit-breaker acceptance criterion AC-CB with falsifying reverts;\n- the R-21 grace as a TLA refinement (GracefulExit, EndGrace, the no_escalate variant, the NoGraceState witness), spiked with the full check_models run: 27 ok, and the US-44 bounds at 85,060,752 states;\n- R-34 c4: defaultMode declared \"default\";\n- the promise-to-test table for plan :145;\n- the STOP-I six-slice plan.\nGate: Test Architect BLOCK, then PASS WITH CONDITIONS (the hard veto cleared); Simplifier BLOCK, then PASS WITH CONDITIONS; Patterns Expert PASS WITH CONDITIONS.\nOpen: Owner DR-1 (the spend-cap unit) and DR-2 (the breaker vs ADR-0007 §7); Leader S4-S7.",
+      "rationale": "US-45/US-15/UXA-9/UXA-10 and R-21 need an unattended run that stops within 30 s and never stalls on a decision; the model refinement keeps the TLC semantics; the gate found and fixed a missing run-stop fact and non-falsifying breaker tests",
+      "artifacts": [
+        "docs/design/phase2-stop-decisions.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "5feece07b89d7fca0a84b8ab4354ba2b884014a3",
+        "after": "fef5ebb7800dbb883b231cb08873ccca8bf23476",
+        "branch": "w2-stop-design",
+        "pushed": null,
+        "commits": [
+          "fef5ebb docs(design): phase-2 stop/decisions revision 2 after the three-lens gate",
+          "0b20b21 docs(design): phase-2 stop, decisions and circuit breaker (row 10), revision 1 before the gate"
         ]
       }
     }

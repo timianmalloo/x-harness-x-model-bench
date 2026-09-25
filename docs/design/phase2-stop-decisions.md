@@ -81,7 +81,7 @@ Row 10 is on the critical path: STOP-D → STOP-I → USER-W → the smoke run (
 | S2 | VIEWS → STOP-I | the `VALIDITY` tuple (`status.py:33-34`) | STOP-I slice 1. STOP-I's own `OUTCOMES` change (`:32`) is an adjacent hunk, so **slice 1 lands S2 and the `OUTCOMES` line in one commit**. If S2 is already on `main`, slice 1 rebases on it first |
 | S3 | VIEWS → STOP-I | `model_map` frozen in the plan's task record | STOP-I slice 1. `plan.build_plan` adds `"model_map"` (from `task.yaml`; a dict or null) to `tasks[<id>]` (`plan.py:229`). The task folder is inside the version hash, so no new hash field is needed |
 | S4 (new) | STOP-I → VIEWS | `views._validity` returns `("not started", None)` for the outcome `skipped (decision)`. One line, at `views.py:245` | Without it, a skipped cell reads `invalid (no model call)`: a wrong label (IO rule). Request to the Leader: grant the line to STOP-I, or VIEWS takes it. STOP-I's tests read status, which does not depend on it |
-| S5 (new) | STOP-I → Leader | `tools/check_models.py` gains the `VARIANTS` line `"no_escalate": ("prop", "StopReachesTerminal")` and a second witness, `NoGraceState` (expected violated). `tests/test_check_models.py` gains the **reverse** test: every `BUG = "x"` or `BUG # "x"` literal in the `.tla` must be a `VARIANTS` key (TA M5b) | STOP-I does not own these paths. Without them, the new variant never runs and nothing notices (class MOD-A). Grant with slice 3 |
+| S5 (new) | STOP-I → Leader | `tools/check_models.py` gains the `VARIANTS` line `"no_escalate": ("prop", "StopReachesTerminal")` and a second witness, `NoGraceState` (expected violated). **Both witnesses run inside the scripted `main()`**, so the gate fails when either stops being violated; today `WITNESS` is a single constant (`check_models.py:68`; TA N3). `tests/test_check_models.py` gains the **reverse** test: every `BUG = "x"` or `BUG # "x"` literal in the `.tla` must be a `VARIANTS` key (TA M5b) | STOP-I does not own these paths. Without them, the new variant never runs and nothing notices (class MOD-A). **The grant is a precondition of slice 3's commit**: without it, slice 3 cannot claim the TLC clause of plan `:145` (TA N2) |
 | S6 (new) | STOP-I → Leader | the live Copilot grace test (R21-3, `@pytest.mark.credentials`) | A live turn on the GitHub login, run in a Leader capture window (R-9 rule 1). It must be **red on the commit before slice 3 and green after it, in the same window** (TA M9). Until then the claim is Flagged in the Proof Pack |
 | S7 (flag) | plan `:132` → STOP-I | "`last_update` in `bench status`" was a wave-1 seam to W2-STOP; the version-4 STOP-I row does not carry it | Leader: confirm it is dropped, or add it. Not designed here |
 
@@ -111,7 +111,7 @@ The cell aggregate (phase 1) gains two terminal outcomes: `stopped` and `skipped
 
 | kind | one row is exactly one … | fields (enums, ids and ints only; no free text from a cell) | writer | compute reader |
 | --- | --- | --- | --- | --- |
-| `control.applied` | **consumed** control file, keyed by `uuid`. The grain is "consumed", because rejections are rows too; the name is kept for the model mapping | `uuid`; `control` (`stop` \| `answer`); `decision_id` (answer) or null; `effect` (`applied` \| `rejected (already resolved)` \| `rejected (invalid)` \| `no-op (already stopped)` \| `no-op (run ending)`) | engine thread | `lifecycle.replay` (ControlAppliedOnce); the engine's dedup set, rebuilt from these rows at engine start |
+| `control.applied` | **consumed** control file, keyed by `uuid`. The grain is "consumed", because rejections are rows too; the name is kept for the model mapping | `uuid`; `control` (`stop` \| `answer`); `decision_id` (answer) or null; `effect` (`applied` \| `rejected (already resolved)` \| `rejected (invalid)` \| `no-op (already stopped)` \| `no-op (run ending)`) | engine thread | `lifecycle.replay` (ControlAppliedOnce); phase-5 resume (rebuilds the dedup set from these rows) |
 | `run.launch_stopped` (exists) | stop of launching, **at most one per run** (unchanged, `engine.py:267-274`) | `code`, `reason` | engine thread | `status.stop_code` (R-3); replay NoLaunchAfterStop |
 | `run.stopped` (new) | **run stop, at most one per run** (the model's `ApplyStop`) | `code` (`HB-RUN-006` operator, `HB-RUN-007` spend cap); `decision_id` or null (a stop that came from a decision) | engine thread | `status.phase`, `status.text`, replay |
 | `decision.opened` | decision request, keyed by `decision_id` (`D1`, `D2`, … in opening order) | `decision_id`; `decision_kind` (`blocked_cell` \| `qualification_gap` \| `spend_cap`); `subject` (a harness, a combo id, or the `run_id`); `cause_code`; `options` (a list of enums); `default` (enum). For `spend_cap` also `spend_tokens` and `cells_unmeasured` (a snapshot). The timeout and the cap are **not** copied, because both are in the frozen plan (S-8) | engine thread | `status.decisions`, the skill, replay |
@@ -156,8 +156,8 @@ The cell aggregate (phase 1) gains two terminal outcomes: `stopped` and `skipped
   - **A parse or schema failure:** the file is renamed `<name>.rejected` (kept as evidence) and logged with HB-USR-002 and the file name only. It gets no ledger row.
   - **A `uuid` already in the dedup set:** the file is deleted, with no row.
   - **Otherwise:** the engine appends `control.applied` with its effect, applies the effect (§5, §6), then deletes the file. A failed delete after the row is harmless, because the dedup set skips the file next tick.
-- The dedup set is loaded from the ledger's `control.applied` rows at engine start, so it carries into phase-5 resume.
-- **After the loop ends** (before grading), one final pass records each remaining file as `control.applied{effect: no-op (run ending)}` and deletes it (PE-10). So a control never disappears unrecorded.
+- The dedup set is an in-memory `set()` that starts empty (Simplifier N-1). `simplify:` a run's `events` never exist before its engine starts (`engine.py:211-212`), so there is nothing to rebuild. **Upgrade trigger:** phase-5 resume, which rebuilds the set from the `control.applied` rows.
+- **After grading, just before `run.completed`**, one final pass records each remaining file as `control.applied{effect: no-op (run ending)}` and deletes it (PE-10). A `bench stop` sent during grading, while the lock is still held (`engine.py:243-246`), is therefore recorded too (Simplifier N-2). A control never disappears unrecorded.
 
 ### 4.2 `bench answer <run_id> <decision_id> <option>`
 
@@ -296,8 +296,8 @@ HB-USR-001 and HB-USR-002 are reused for CLI refusals and malformed control file
 - **Breaks:** a stop during a slow build shows `stopping` past 30 s, and the ledger shows it. The fix is a cancel hook in `workspace.py`, which STOP-I does not own.
 
 **After the last active cell's worker exits:**
-1. the final control pass runs (§4.1);
-2. grading runs on the terminal cells (US-45);
+1. grading runs on the terminal cells (US-45);
+2. the final control pass runs (§4.1);
 3. `run.completed` is written;
 4. `bench run` exits 3, and unlaunched cells stay `not started`.
 
@@ -307,11 +307,10 @@ The same kill path (grace, then the hard floor) serves the budget kill (`timeout
 
 ### 6.1 Triggers, options, defaults
 
-A decision opens on the engine thread when a `cell.outcome` or a `SPEND` item is processed. It opens only when it can change something, and at most once per (`decision_kind`, `subject`):
+A decision opens on the engine thread when a `cell.outcome` or a `SPEND` item is processed. It opens only when it can change something, and at most once per (`decision_kind`, `subject`, `cause_code`). The cause is in the key so that a `blocked (permission)` on a harness does not hide a later `blocked (auth)` on the same harness, which is the expired login PE-4 exists for (Simplifier N-3):
 - The two pending-cell kinds (`blocked_cell`, `qualification_gap`) open only while launching is not stopped for **any** reason (breaker, disk floor, `build_changed` or a stop), and only while affected cells are pending (S-4, PE-13, TA M8).
 - `spend_cap` opens even after a launch stop, because running cells still spend.
 - No decision opens after a run stop (model `RaiseDecision` guard `~stopApplied`).
-- A later trigger for the same subject, while its request is open, joins that request and adds no row.
 
 | `decision_kind` | trigger | `subject` | options (closed enum) | default (on timeout) | effect of the default |
 | --- | --- | --- | --- | --- | --- |
@@ -340,7 +339,7 @@ A decision opens on the engine thread when a `cell.outcome` or a `SPEND` item is
 - **A control and an expiry in the same tick:** the control wins, because controls come first. A test pins this (TA M3).
 - **Exactly-once resolution by a state guard** (PE-15). One method, `_resolve(decision_id, state, option)`, returns without a row when the decision is already resolved. Every path calls it: answer, timeout and supersede. The losing answer is visible as `control.applied{effect: rejected (already resolved)}`.
 
-**One clock** (PE-8). `EngineConfig.clock` is the single source for every engine deadline: budgets (`prompt_mono`), the end grace, `kill_deadline` and decision deadlines. Only `ledger.stamp` keeps the real `mono_ns`. So a test that injects the clock must not measure on `mono_ns` (TA residual), and R10-1 uses the real clock.
+**One clock** (PE-8). `EngineConfig.clock` is the single source for every **engine-thread** deadline: budgets (`prompt_mono`), `kill_deadline` and decision deadlines. The worker's own wait in `_end_process` stays on `time.monotonic`, so a test with a frozen injected clock never hangs in it (Simplifier N-4). The engine's hard floor still bounds that wait, because it terminates at `kill_deadline`. Only `ledger.stamp` keeps the real `mono_ns`. So a test that injects the clock must not measure on `mono_ns` (TA residual), and R10-1 uses the real clock.
 
 **The state machine.** The decision logic is `_Decisions` in `engine.py`, a **Functional Core**: its methods `open`, `answer`, `expire(now)` and `supersede_all()` return the rows to append and do no I/O. The engine loop is the Imperative Shell.
 - `simplify:` one class in `engine.py`, not a new module (STOP-I owns no new file).
@@ -387,6 +386,7 @@ A decision opens on the engine thread when a `cell.outcome` or a `SPEND` item is
 | delete `self.infra_streak = 0` | `test_a_success_resets_the_infrastructure_streak` (`:838`: fail, ok, fail, fail, fail, ok → 5 intents; the mutant stops after the third cell) |
 | `cause.invalidates` → `cause is not None` | new `test_harness_failures_do_not_trip_the_breaker`: **4** `adapter_crash` cells at parallelism 1 give 4 intents and **no** `run.launch_stopped` row (the mutant stops after 3; TA B1a) |
 | the neutral-outcome guard removed | new unit test `test_neutral_outcomes_neither_count_nor_reset`, on `_after_append` with synthetic rows: fail, fail, `stopped`, fail → launching stopped; fail, fail, `model unavailable`, fail → launching stopped. TA M1: a `stopped` row cannot be observed at engine level before a stop |
+| only the `model_unavailable` exclusion removed (it is counted again) | the same test's **"not counted" half** (TA N1): after fail, fail, `model unavailable`, **no** launch stop yet; and three `model unavailable` rows alone stop nothing. The mutant stops launching on the third row in both cases |
 | `_stop_launching`'s `if self.stopped: return` removed | `…_stops_launching_once` (already in `engine.json`; kept) |
 | `self._kill_all(...)` added to the breaker path | new `test_the_breaker_leaves_running_cells_running`: at parallelism 2, a slow `ok` cell beside three fast failures ends `completed` |
 
@@ -499,7 +499,7 @@ This meets R-21 c3's "keeps its semantics": the same 16 invariants and 5 propert
 | pattern | where | why (ladder rung) |
 | --- | --- | --- |
 | **Command Mailbox + Single Writer** (ADR-0007 §3) | control files, applied on the engine thread | already the engine's shape (rung 2: reuse); the `STOP` inbox item is the precedent |
-| **Idempotent Receiver** (EIP); the dedup store is the ledger | `control.applied{uuid}` before the delete; replayed uuids skipped; the set rebuilt at start | ADR-0007 §3; the model's `ControlAppliedOnce` |
+| **Idempotent Receiver** (EIP) | `control.applied{uuid}` before the delete; replayed uuids skipped by an in-memory set (the ledger rebuild is phase 5) | ADR-0007 §3; the model's `ControlAppliedOnce` |
 | **Invalid Message Channel** (EIP) | malformed files → `.rejected`; transient I/O errors retried | PE-9 |
 | **Dead Letter** handling | the final control pass: `no-op (run ending)` | PE-10 |
 | **Atomic file write** (temp + `os.replace`) | `bench stop`, `bench answer` | stdlib (rung 3) |
@@ -620,7 +620,7 @@ This component touches no personal data. Checked: control files and the new rows
 
 ## 16. Test plan: promise → test
 
-All the test files are in STOP-I's owned set. The row ids name the tests that `tests/mutations/stop.json` credits (TA M4).
+Every test file here is in STOP-I's owned set except `tests/test_check_models.py` and `tools/check_models.py`, which are reached only through the S5 grant (TA N2). The row ids name the tests that `tests/mutations/stop.json` credits (TA M4).
 
 ### 16.1 Row 10's exit condition, clause by clause (plan `:145`, verbatim)
 
@@ -655,7 +655,7 @@ All the test files are in STOP-I's owned set. The row ids name the tests that `t
 | R10-10 | a stop between the spawn check and the spawn | `test_engine.py::test_a_stop_during_the_spawn_terminates_at_once` (`procs.spawn` is monkeypatched to apply the stop before it returns; TA m3) |
 | R10-11 | a turn that ends in the same tick as a stop keeps `completed` | `test_engine.py::test_an_ended_turn_keeps_its_outcome_under_a_stop` (PE-2) |
 | R10-12 | the breaker, then `bench stop` → `phase: stopped` | `test_engine.py::test_a_stop_after_the_breaker_is_still_a_run_stop` (S-1, PE-1) |
-| R10-13 | a control file after the loop → `no-op (run ending)` | `test_engine.py::test_a_late_control_is_recorded_not_lost` (PE-10) |
+| R10-13 | a control file after the loop, or during grading → `no-op (run ending)` | `test_engine.py::test_a_late_control_is_recorded_not_lost` (PE-10). The file is dropped from inside the grading hook, and the test asserts the row lies between `grading.completed` and `run.completed` (Simplifier N-2) |
 | R10-14 | stop precedence: a stopped cell whose record carries a provider error is still `stopped` | `test_engine.py::test_stop_outranks_a_provider_error` (TA M4) |
 | US15-4 | no decision with nothing pending, or after a launch stop (the breaker, then a `model unavailable` cell) | `test_engine.py::test_no_decision_after_a_launch_stop` (TA M8) |
 | US15-5 | the loop waits for an open decision when nothing else is left | `test_engine.py::test_the_run_waits_for_an_open_decision` |
@@ -713,8 +713,8 @@ Codex `gpt-6-sol`, effort high (R-33: stipulated). The plan has six slices of at
 | --- | --- | --- | --- | --- |
 | 1 · seams, data, skill test | S1 (VIEWS's HB-VAL codes, verbatim) + HB-RUN-006/007 (`errors.py`); S2 + the `OUTCOMES` line (`status.py`, one commit) **with both skill copies and SK-1**; S3 `model_map` (`plan.py`); `decision_timeout` and `spend_cap_tokens` in `DEFAULT_PARAMETERS`, the generic old-plan refusal, the plan flags and confirmation lines (`plan.py`, `cli.py`); the stale `getattr` removed. It skips whatever of S1–S3 is already on `main` | ERR-1, P-1..3, ST-1 (enums), SK-1 | VIEWS's S1/S2 request text | a commit; the seams are delivered (the plan's "S1–S3 by slice 2" is met by slice 1) |
 | 2 · breaker and power | the neutral outcomes (AC-CB 4, unit level); the `== 3` literal; the breaker and `keep_awake` entries in `tests/mutations/stop.json`; R10-7b | the §7 table (each revert observed red), CB-neutral, R10-7b | 1 | a commit; AC-CB is proven |
-| 3 · the grace (driver, profile, model) | the cancel Event, `session/cancel`, writes dropped after a cancel, no prompt after a cancel; `shutdown_grace_seconds` (profiles, launcher, plan record); one clock and `on_tick`; `kill_deadline`, `_check_kills`, `a.terminated`, `ended_by`; `end_grace` removed; the `models/run_lifecycle.tla` refinement; the `run-lifecycle-model.md` rows; `defaultMode: default` (R-34 c4); the fake modes `stubborn` and `on_cancel` | D-1, D-2, R10-6, R21-1, R21-4..6, PR-1..3; a full `check_models.py` run (needs S5), its output cited | 1 | a commit; the grace, and 22 of 22 variants rejected |
-| 4 · stop | the control reader, the dedup rebuild and the final pass; `bench stop`; `run.stopped`; the stop sequence; the pre-spawn check; stop precedence; the replay rules for stop and control; the `stopping`/`stopped` phase **with the skill** | R10-1, R10-3, R10-5, R10-7a, R10-8..14, R21-2, CLI-1..2, LC (stop, control) | 3 | a commit; the plan `:145` "Stop" clauses |
+| 3 · the grace (driver, profile, model) | the cancel Event, `session/cancel`, writes dropped after a cancel, no prompt after a cancel; `shutdown_grace_seconds` (profiles, launcher, plan record); one clock and `on_tick`; `kill_deadline`, `_check_kills`, `a.terminated`, `ended_by`; `end_grace` removed; the `models/run_lifecycle.tla` refinement; the `run-lifecycle-model.md` rows; `defaultMode: default` (R-34 c4); the fake modes `stubborn` and `on_cancel` | D-1, D-2, R10-6, R21-1, R21-4..6, PR-1..3; a full `check_models.py` run showing 22 variants, 2 witnesses and the US-44 bounds, its output cited | 1; **the S5 grant is a precondition of the commit** | a commit; the grace, and 22 of 22 variants rejected |
+| 4 · stop | the control reader, the dedup set and the final pass (after grading); `bench stop`; `run.stopped`; the stop sequence; the pre-spawn check; stop precedence; the replay rules for stop and control; the `stopping`/`stopped` phase **with the skill** | R10-1, R10-3, R10-5, R10-7a, R10-8..14, R21-2, CLI-1..2, LC (stop, control) | 3 | a commit; the plan `:145` "Stop" clauses |
 | 5 · decisions | `_Decisions`, the triggers and guards, `SPEND`, `bench answer`, the supersede, the loop condition; `decisions` in `bench-status/1` **with the skill** (R-3) | R10-2, R10-4, US15-1..7, CLI-3..4, ST-2..3, LC (decisions, skip) | 4 | a commit; the "Race" and "US-15" clauses |
 | 6 · proof | the full mutation pass over `tests/mutations/{engine,driver,status,cli,plan,stop}.json`; `python tools/check_models.py` (full); the Proof Pack figures for `docs/proof/phase2.md`, handed to the Leader; S4 if granted | all; the `pytest` default suite; ruff | 5 | a commit; join-ready |
 
@@ -840,7 +840,28 @@ The gate ran on revision 1 (`0b20b21`) on 2026-09-25. Three lenses were convened
 - **PE-5, resolved another way.** S-5's `threading.Event` replaces PE-5's callback token. It is level-triggered, so the lost-wakeup hazard PE-5 found cannot occur, and the Simplifier's stdlib rung wins.
 - **Not added:** `GraceImpliesKill`, from PE-7 (§8.1).
 
-**Re-gate of revision 2:** see the addendum below.
+**Re-gate of revision 2 (`fef5ebb`).** The same two agents re-read it. Revision 2.1 applies both sets of conditions.
+
+**Test Architect: PASS WITH CONDITIONS. The hard veto is cleared at the design gate.** B1 is resolved, and M1–M9 and m1–m5 are applied in a form that can fail.
+- **N1 (Major):** the "not counted" half of the `model_unavailable` rule gets its own assertion and its own mutant (§7). It is observed red in slice 2.
+- **N2:** S5 is a precondition of slice 3's commit (§2, §16, §17).
+- **N3:** both witnesses run inside `check_models.py main()` (§2 S5).
+- **At the STOP-I join, the veto clears only with a Proof Pack containing:**
+  - each `stop.json` mutant observed red on its named test, including N1's mutant;
+  - R10-1 red on the hard-floor mutant;
+  - the full `check_models.py` output (22 variants, 2 witnesses, the US-44 bounds);
+  - S6 red then green, or R21-3 listed as Flagged.
+
+**Simplifier: PASS WITH CONDITIONS. The soft veto is cleared.**
+- **N-1:** the dedup set is in memory, and the rebuild is phase 5 (§4.1).
+- **N-2:** the final pass runs after grading (§4.1, §5, R10-13).
+- **N-3:** the decision key is (kind, subject, cause_code) (§6.1).
+- **N-4:** the worker's end grace stays on `time.monotonic` (§6.2).
+- **N-5:** the duplicate bullet is deleted.
+
+**Patterns Expert:** PASS WITH CONDITIONS on revision 1; every condition is applied in revision 2. It was not re-convened, because the fan-out cap is 3 and its verdict was advisory.
+
+`GATE design · phase2-stop-decisions · PASS WITH CONDITIONS · round 2 · 2026-09-25 · hard veto cleared by the Test Architect, soft veto by the Simplifier, none by the author`
 
 ## Status
 
