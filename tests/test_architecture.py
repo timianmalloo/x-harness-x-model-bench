@@ -142,6 +142,28 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
         for rel in set(trees) - inside:
             found += [f"{rel}: imports the spawner {target}" for target in names[rel].values()
                       if target.startswith("harness_bench.gateway.") and target.rsplit(".", 1)[1] in spawners]
+        # Fable Major 1: outside gateway/, only today's procs callers reach procs (read 2026-09-25, not recalled:
+        # engine spawns; gitsafe, grade/correctness, plan, tools and workspace run; driver only names CellProcess in
+        # annotations). A new caller - a judge spawned from grade/judge.py above all - fails until added here on purpose.
+        allowed = {"engine", "gitsafe", "grade/correctness", "plan", "procs", "tools", "workspace"}
+        for rel in sorted(set(trees) - inside):
+            if Path(rel).with_suffix("").as_posix().removeprefix("src/harness_bench/") in allowed:
+                continue
+            typed = {id(sub) for n in ast.walk(trees[rel]) for ann in
+                     ([n.annotation] if isinstance(n, (ast.arg, ast.AnnAssign)) else
+                      [n.returns] if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) else [])
+                     if ann is not None for sub in ast.walk(ann)}
+            found += sorted({f"{rel}:{n.lineno}: reaches harness_bench.procs outside the allowlist"
+                             for n in ast.walk(trees[rel]) if isinstance(n, (ast.Name, ast.Attribute))
+                             and id(n) not in typed and "procs" in dotted(n, names[rel]).split(".")[1:]})
+        # A built judge with no gateway is unbound (assume: GW-I builds judging in grade/judge.py beside gateway/, as
+        # plan row W3-GW-I assigns it; if judging lands elsewhere, name that module here). Chosen over a dated
+        # assume: it fires on the event, not on a calendar.
+        judge = "src/harness_bench/grade/judge.py"
+        if judge in trees and not inside and not any(
+                isinstance(n, ast.Call) and dotted(n.func, names[judge]) == "harness_bench.grade.not_built"
+                for n in ast.walk(trees[judge])):
+            found.append(f"{judge}: the judge is built but there is no gateway/ package")
         return found
 
     # Self-check (Codex F2): synthetic packages, parsed and never imported or run. Each names whether it must fire.
