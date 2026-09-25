@@ -18,7 +18,14 @@ from harness_bench.report.credentials import encodings
 
 WITHHELD = "withheld: sensitive content"
 DESTINATION = re.compile(r"[a-z][a-z0-9._-]{0,31}(?::[a-z0-9._-]{1,31})?")
-CLASSES = ("credential", "token_shape", "email", "username", "home_path", "canary")
+CLASSES = ("credential", "token_shape", "token_prefix", "email", "username", "home_path", "canary")
+# Shapes the report's scan (report/html.py SECRET_SHAPES) does not yet name (D&P Major 2).
+EXTRA_SHAPES = (
+    re.compile(r"\bgithub_pat_[A-Za-z0-9_]{20,}"),  # GitHub fine-grained tokens
+    re.compile(r"\bxai-[A-Za-z0-9]{20,}"),  # xAI keys
+    re.compile(r"\bAIza[0-9A-Za-z_\-]{35}"),  # Google API keys
+)
+TOKEN_BODY = r"[A-Za-z0-9_\-]{16,}"  # after an operator prefix: a token body, not prose about the prefix
 
 T = TypeVar("T")
 
@@ -106,7 +113,10 @@ def check(payload: str, *, destination: str, operator: Operator, secrets: Sequen
     def hits(text: str) -> tuple[tuple[str, ...], tuple[str, ...]]:
         scans = {
             "credential": (lambda: _exact(text, secrets)) if secrets else None,
-            "token_shape": lambda: report_html.scan(text) > 0,  # the report's shape scan (HB-SEC-001), shapes only
+            # the report's shape scan (HB-SEC-001, shapes only), plus the shapes it does not yet name
+            "token_shape": lambda: report_html.scan(text) > 0 or any(p.search(text) for p in EXTRA_SHAPES),
+            "token_prefix": (lambda: any(re.search(re.escape(p) + TOKEN_BODY, text, re.IGNORECASE)
+                                         for p in token_prefixes if p.strip())) if token_prefixes else None,
             "email": lambda: _anycase(text, operator.email),
             "username": lambda: _word(text, operator.username),
             "home_path": lambda: _path(text, operator.home),
