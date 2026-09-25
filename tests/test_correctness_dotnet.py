@@ -17,7 +17,7 @@ FIXTURE = Path(__file__).parent / "fixtures" / "dotnet" / "OracleFixture.csproj"
 def built_fixture(tmp_path_factory):
     output = tmp_path_factory.mktemp("dotnet-fixture")
     source = tmp_path_factory.mktemp("dotnet-source")
-    for name in ("OracleFixture.csproj", "Program.cs"):
+    for name in ("OracleFixture.csproj", "Program.cs", "NuGet.Config"):
         shutil.copy2(FIXTURE.parent / name, source / name)
     done = procs.run(["dotnet", "build", str(source / FIXTURE.name), "-o", str(output), "--ignore-failed-sources",
                       "-p:UseSharedCompilation=false"],
@@ -26,10 +26,14 @@ def built_fixture(tmp_path_factory):
     return output
 
 
-def _grade(tmp_path, built_fixture, mode, *extra):
+def _grade(tmp_path, built_fixture, mode, *extra, stale=False):
     ws = tmp_path / "ws"
     ws.mkdir()
     (ws / "marker.txt").write_text("archived working copy", encoding="utf-8")
+    if stale:
+        old = ws / "TestResults" / "results.trx"
+        old.parent.mkdir()
+        old.write_text('<TestRun><ResultSummary><Counters total="1" passed="1" /></ResultSummary></TestRun>', encoding="utf-8")
     hidden = tmp_path / "task" / "tests"
     hidden.mkdir(parents=True)
     (hidden / "hidden.txt").write_text("hidden test", encoding="utf-8")
@@ -57,11 +61,35 @@ def test_dotnet_oracle_failed_tests_get_partial_credit(tmp_path, built_fixture):
     assert (result.passed, result.partial_credit) == (0, Decimal("0.5"))
 
 
-@pytest.mark.parametrize("mode", ["missing", "malformed", "zero", "wrong-file"])
-def test_dotnet_oracle_missing_or_invalid_named_summary_is_na(tmp_path, built_fixture, mode):
+def test_dotnet_oracle_nonzero_exit_is_not_a_pass_with_all_tests_passing(tmp_path, built_fixture):
+    result, _, _ = _grade(tmp_path, built_fixture, "exit-one")
+    assert (result.passed, result.partial_credit) == (0, Decimal(1))
+
+
+def test_dotnet_oracle_reads_named_trx_beside_nested_project(tmp_path, built_fixture):
+    result, _, _ = _grade(tmp_path, built_fixture, "nested")
+    assert (result.passed, result.partial_credit, result.reason) == (1, Decimal(1), None)
+
+
+def test_dotnet_oracle_does_not_read_stale_trx_from_archive(tmp_path, built_fixture):
+    result, _, _ = _grade(tmp_path, built_fixture, "missing", stale=True)
+    assert (result.passed, result.partial_credit, result.reason) == (None, None, "named TRX result file missing")
+
+
+def test_dotnet_oracle_multiple_named_trx_files_are_na(tmp_path, built_fixture):
+    result, _, _ = _grade(tmp_path, built_fixture, "duplicate")
+    assert (result.passed, result.partial_credit, result.reason) == (None, None, "multiple named TRX result files")
+
+
+@pytest.mark.parametrize(("mode", "reason"), [
+    ("missing", "named TRX result file missing"),
+    ("malformed", "named TRX result is unparsable"),
+    ("zero", "no hidden test ran"),
+    ("wrong-file", "named TRX result file missing"),
+])
+def test_dotnet_oracle_missing_or_invalid_named_summary_is_na(tmp_path, built_fixture, mode, reason):
     result, _, _ = _grade(tmp_path, built_fixture, mode)
-    assert result.passed is None and result.partial_credit is None
-    assert result.reason
+    assert (result.passed, result.partial_credit, result.reason) == (None, None, reason)
 
 
 def test_dotnet_oracle_timeout_is_na_and_leaves_no_process(tmp_path, built_fixture):

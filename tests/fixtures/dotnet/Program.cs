@@ -4,6 +4,12 @@ using System.Threading;
 
 if (!File.Exists("marker.txt") || !File.Exists("hidden.txt"))
     return 3;
+if (Environment.GetEnvironmentVariable("MSBUILDDISABLENODEREUSE") != "1" ||
+    Environment.GetEnvironmentVariable("UseSharedCompilation") != "false" ||
+    Environment.GetEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT") != "1" ||
+    Environment.GetEnvironmentVariable("GIT_CONFIG_KEY_0") != "core.fsmonitor" ||
+    Environment.GetEnvironmentVariable("GIT_CONFIG_VALUE_0") != "false")
+    return 4;
 
 var mode = args[0];
 if (mode == "hang")
@@ -12,8 +18,9 @@ if (mode == "hang")
     Thread.Sleep(Timeout.Infinite);
 }
 
-Directory.CreateDirectory("TestResults");
-var path = Path.Combine("TestResults", mode == "wrong-file" ? "decoy.trx" : "results.trx");
+var folder = mode is "nested" or "duplicate" ? Path.Combine("subproject", "TestResults") : "TestResults";
+Directory.CreateDirectory(folder);
+var path = Path.Combine(folder, mode == "wrong-file" ? "decoy.trx" : "results.trx");
 if (mode != "missing")
 {
     var total = mode == "zero" ? 0 : 2;
@@ -21,5 +28,10 @@ if (mode != "missing")
     var body = mode == "malformed" ? "not xml" :
         $"<TestRun xmlns=\"http://microsoft.com/schemas/VisualStudio/TeamTest/2010\"><ResultSummary outcome=\"Completed\"><Counters total=\"{total}\" passed=\"{passed}\" /></ResultSummary></TestRun>";
     File.WriteAllText(path, body);
+    if (mode == "duplicate")
+    {
+        Directory.CreateDirectory("TestResults");
+        File.WriteAllText(Path.Combine("TestResults", "results.trx"), body);
+    }
 }
-return mode == "partial" ? 1 : 0;
+return mode is "partial" or "exit-one" ? 1 : 0;
