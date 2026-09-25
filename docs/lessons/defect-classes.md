@@ -246,6 +246,15 @@ summary: >-
 - **Control:** `tests/test_allowlist_classes.py`. The allowlist must contain every class id in the tool list that the pinned build wrote to its own native record (`tests/fixtures/native/claude-code/tools-2.1.282-win32.jsonl`, cut from the cell above). An id the build advertises that is not classified fails the test. A native test fails when the installed pin is not the fixture's build or platform, so a pin bump forces a recut, and a new id then turns the test red. It was observed red at `39a16d8` (`{'PowerShell'}` missing). The negative fixture `tests/fixtures/ledger/r34-cc-opus-pack-on-powershell-denied.json` is kept as the negative control.
 - **Status:** `partially-controlled`. Recutting the fixture needs one real cell's native record: only an authenticated session writes the list, because an unauthenticated `claude -p` init omits `PowerShell`. The recut is therefore a manual step at a pin bump, forced by the native test.
 
+### COORD-B: a worker's message or seam request not read by the Leader
+- **Signature:** a worker sends `coord mail` or raises a `coord request` (a seam grant, a blocker). The Leader reads only the worker's final hand-back (the runner result or the subagent report). The request expires without a ruling, and the worker takes its fallback. The work stalls, or a fix lands outside its owner.
+- **Why it survives:** the runner result says `ready_for_review` and carries the commit receipts. Nothing in it says a request was raised and left open. The fallback is correct behaviour, so every gate stays green.
+- **Instances:**
+  - `2026-09-25`, W1-COP-I slice 5: `worker-codex-copi5` raised `req-01M3B110FQ1RQS4W2HRVTKN17B` (a `plan.py` seam: the bool `defaultDisabled` that canonical JSON forbids) and mailed the Leader three times. The request expired without a ruling. The fix went to a Claude Sonnet loop-back (`33bbf40` → `0baaa96`) only after the Leader read the mail. At first the Leader also wrongly reported that the request never reached the primary.
+- **Sweep:** every worker hand-back in this plan. The other mail on record (slices 1, 2 and 5) was informational and needed no ruling. Why the pack's `mail-doorbell` hook, wired in `.claude/settings.json`, did not surface the request in the Leader's session was not diagnosed.
+- **Control:** at every hand-back, the Leader runs `coord mail read` and `coord request list` before it reviews the result, and rules on or closes each open request. For now this is a Leader procedure. The upgrade trigger is a second instance: the join gate would then refuse while a request from that worker is open.
+- **Status:** `observed` (Leader procedure)
+
 ---
 
 ## Inherited classes (seeded from the pack)
