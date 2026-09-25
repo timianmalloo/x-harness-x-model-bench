@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T11:24:02Z",
+  "generated": "2026-09-25T11:59:35Z",
   "audit": [
     {
       "actor": null,
@@ -22129,6 +22129,40 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3C6YTW4Z0R7RKAR3JY4K66R",
+      "shortname": "w3-cost-phase-2-cost-grader",
+      "datetime": "2026-09-25T11:59:35Z",
+      "session": "w3-cost-2",
+      "prompt": "W3-COST phase 2: seam C-1 (move runner.py's inline cost_usd into cost.grade_cell, register GRADERS[\"cost\"]) plus the design and build of tokens_per_minute, output_tokens_per_turn, cache_hit_ratio, cache_write_amplification, context_growth (peak) and compactions, red first, per docs/design/phase3-graders.md Cost section and the COST phase 2 brief.",
+      "summary": "docs/design/phase3-cost.md decides each metric's definition from normalize.totals and the existing view measures (views.busy_ms, views.calls_per_cell, views.model_call), kind/class already fixed by the graders design; compactions is unconditionally NA (checked by grep: no compaction signal recorded by any harness). Red commit 9c66f2f (tests/test_grade_cost.py + tests/mutations/cost.json, ImportError against the pre-move cost.py). Green commit e7eaf43 (cost.grade_cell built, runner.py wired, tests/mutations/grade.json's 3 moved-cost_usd mutants repointed to cost.py, tests/test_grade_runner.py's BUILT constant updated). tests/mutations/cost.json: 12/12 killed. tests/mutations/grade.json: 31/31 killed (stays all killed). HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs uv run pytest: 1366 passed, 8 deselected, 0 skipped. uv run ruff check src tests tools: clean. uv run bench validate: ok.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "Claude Sonnet 5",
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Move cost_usd into cost.grade_cell (seam C-1) and build the five new cell-grain cost/efficiency metrics plus compactions, red first, per the Cost section of docs/design/phase3-graders.md.",
+      "done_when": "cost_usd byte-equal on fixtures and gate runs; docs/design/phase3-cost.md decides each new metric's definition/NA reasons; each red first on synthetic seeded inputs; tests/mutations/cost.json all killed and grade.json stays all killed; HB_GATE_RUNS pytest passes with 0 gate-run skips; ruff clean; bench validate ok.",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-25T11:59:14Z",
+      "duration_seconds": 21.0,
+      "git": {
+        "sha": "e7eaf43cb1924d6b4fc47ac8326817fb85d27e9c",
+        "short": "e7eaf43cb",
+        "branch": "w3-cost-2",
+        "pushed": null
+      }
     }
   ],
   "changes": [
