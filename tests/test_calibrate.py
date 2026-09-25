@@ -396,3 +396,26 @@ def test_an_entry_changed_after_calibration_is_not_a_kappa_input(tmp_path, base)
         entry.write_bytes(entry.read_bytes() + b" ")
     assert line(root, tmp_path) == \
         f"n = 3 · {SECOND} · vs human labels: {CLAUDE} κ not recorded: no recorded pairs (n = 0, exact 0)"
+
+
+def test_tools_calibrate_runs_one_pass_and_prints_the_header_line(tmp_path, base, monkeypatch, capsys):
+    """The CLI wrapper: the call environment is `bench grade --allow-model-calls`'s own (`cli._judge_calls`), stood in
+    here by the fake judge's; a refused labels file exits 1 with its HB code."""
+    import importlib.util
+
+    from harness_bench import cli
+
+    spec = importlib.util.spec_from_file_location("calibrate_tool", ROOT / "tools" / "calibrate.py")
+    tool = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(tool)
+    root = cal_root(tmp_path)
+    calls = fake_calls(tmp_path, base / "cells", judge.Calls)
+    monkeypatch.setattr(cli, "_judge_calls", lambda args, r: calls)
+    argv = ["--root", str(root), "--runs", str(tmp_path / "runs")]
+    assert tool.main(argv) == 0
+    out = capsys.readouterr().out.splitlines()
+    assert out[0].startswith("calibration cal-") and out[1] == f"n = 3 · {SECOND} · vs human labels: {NO_LABELS}"
+    write_labels(root, [label("c1-cal-01", 0)])
+    assert tool.main(argv) == 1
+    assert capsys.readouterr().err == f"{REFUSED}missing id c1-cal-02; missing id c1-cal-03\n"
+    assert spawns(tmp_path) == len(ITEMS)
