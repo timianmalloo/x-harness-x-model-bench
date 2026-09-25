@@ -171,14 +171,6 @@ def _binding(rubric: str, stipulation: Mapping) -> dict:
             "invocations": [j["invocation_sha256"] for j in stipulation["judges"]]}
 
 
-def _denylist(root: Path) -> tuple[str, ...]:
-    """The scrub's entries with every committed matrix's combos: a calibration has no plan of its own."""
-    combos = []
-    for path in sorted((root / "bench").glob("matrix*.yaml")):
-        combos += (yaml.safe_load(path.read_text(encoding="utf-8")) or {}).get("combos") or []
-    return scrub.denylist(root, {"matrix": {"combos": combos}})
-
-
 def _utc() -> str:
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
@@ -202,7 +194,7 @@ def run(root: Path, runs: Path, calls: judge.Calls, task: str = "C1") -> str:
     ctx = pipeline.Context(
         store=root / "cache" / "verdicts", known_roots=roots, own_run=folder,
         stored_by={"ledger": "calibration", "ledger_id": folder.name, "grading_or_calibration_id": cal_id},
-        denylist=_denylist(root), allow_model_calls=True, operator=calls.operator, secrets=calls.secrets,
+        denylist=scrub.bench_denylist(root), allow_model_calls=True, operator=calls.operator, secrets=calls.secrets,
         canaries=calls.canaries)
     jury = [(e, judge._judge(root, e)) for e in stipulation["judges"]]
     backends = [judge._backend(e, j, calls, cal_id, archive, stipulation["call_timeout_seconds"]) for e, j in jury]

@@ -79,7 +79,9 @@ areas:
       - { id: assumption_disclosure,     source: [J],    better: higher, grader: judge,        kind: score, weight: 1 }
       - { id: spec_quality,              source: [J],    better: higher, grader: judge,        kind: score, weight: 1 }
       - { id: architecture_conformance,  source: [D],    better: higher, grader: architecture, kind: score, weight: 1 }
-      - { id: adr_quality,               source: [J],    better: higher, grader: judge,        kind: score, weight: 1 }
+      - { id: adr_quality,               source: [J],    better: higher, grader: judge,        kind: score, weight: 1, scale: 1,
+          rubrics: { C1: adr_quality.md }, artifact: [docs/architecture.md, priority_queue.py],
+          note: "Judged: no proof, model check, trace conformance or test decides whether an architecture note's claims are stated and consistent with the code it describes (US-25; R-64)." }
       - { id: model_conformance,         source: [D],    better: higher, grader: formal,       kind: score, weight: 1, note: "G-tasks: real-code traces accepted by the agent's model / traces" }
       - { id: model_non_vacuity,         source: [D],    better: higher, grader: formal,       kind: score, weight: 1, note: "G-tasks: bug-seeded variants rejected / variants" }
   autonomy:
