@@ -65,33 +65,84 @@ def test_only_driver_speaks_acp():
             ("initialize" in _string_constants(p) and "session/new" in _string_constants(p))] == ["driver.py"]
 
 
-def test_only_the_gateway_reaches_a_judge_backend_and_only_beside_egress():
-    """US-47 / ADR-0005 / R-60: `egress.check` is the only path to a judge backend.
+def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
+    """US-47 / ADR-0005 / R-60 / Codex F2: in `gateway/`, a backend is reached only as `egress.check(...).release(b)`.
 
-    The spawner is `harness_bench.gateway.backend` (assume: W3-GW-I names its CLI spawner module so; confirm
-    at its join; if it is named otherwise, SPAWNER changes in the same commit, since a lint on a name nothing
-    uses passes vacuously). A module outside `gateway/` never imports it, and a gateway module that imports it
-    also imports `harness_bench.egress`. Relative imports are resolved. Today no gateway package exists, so
-    the scan finds no importer; the self-check below proves the rule fires on the shapes it must catch.
+    Bound to behaviour, not to a module name. A *sink* in a gateway module is a call into `harness_bench.procs`
+    (the only spawner, D3; GW-I "spawns through procs.run", plan row W3-GW-I) or a call of a function parameter
+    (an injected backend). A sink is *released* when it sits inside the arguments of `.release(...)` called on
+    an `egress.check(...)` result (directly, or through a name assigned from one). A top-level function or class
+    holding an unreleased sink is a *spawner*: every reference to it must be released, at least one must be, and
+    no module outside `gateway/` may import it. A gateway package that reaches no backend through a release
+    is unbound and fails too, so the rule cannot pass vacuously once `gateway/` lands. Today there is no gateway
+    package: the scan finds nothing, and the self-check proves the rule fires on each shape it must catch.
+    Residual: dynamic dispatch (getattr, importlib) and a judge CLI spawned through procs outside `gateway/`.
     """
-    spawner, gateway = "harness_bench.gateway.backend", ("harness_bench", "gateway")
+    gateway = ("harness_bench", "gateway")
 
-    def offends(rel: str, source: str) -> bool:
-        package = tuple(Path(rel).with_suffix("").parts[1:-1])  # rel is "src/harness_bench/.../x.py"
-        names = set()
-        for node in ast.walk(ast.parse(source)):
+    def package(rel: str) -> tuple[str, ...]:
+        return tuple(Path(rel).with_suffix("").parts[1:-1])  # rel is "src/harness_bench/.../x.py"
+
+    def aliases(rel: str, tree: ast.Module) -> dict[str, str]:
+        out, pkg = {}, package(rel)
+        for node in ast.walk(tree):
             if isinstance(node, ast.Import):
-                names |= {a.name for a in node.names}
+                out |= {(a.asname or a.name.split(".")[0]): (a.name if a.asname else a.name.split(".")[0])
+                        for a in node.names}
             elif isinstance(node, ast.ImportFrom):
-                base = list(package[:len(package) - node.level + 1]) if node.level else []
+                base = list(pkg[:len(pkg) - node.level + 1]) if node.level else []
                 module = ".".join(base + ([node.module] if node.module else []))
-                names |= {module} | {f"{module}.{a.name}" for a in node.names}
-        if not any(n == spawner or n.startswith(spawner + ".") for n in names):
-            return False
-        return package[:2] != gateway or "harness_bench.egress" not in names
+                out |= {(a.asname or a.name): f"{module}.{a.name}" for a in node.names}
+        return out
+
+    def dotted(expr: ast.expr, names: dict[str, str]) -> str:
+        if isinstance(expr, ast.Name):
+            return names.get(expr.id, "")
+        return f"{dotted(expr.value, names)}.{expr.attr}" if isinstance(expr, ast.Attribute) else ""
 
     def offenders(modules: dict[str, str]) -> list[str]:
-        return [rel for rel, source in modules.items() if offends(rel, source)]
+        trees = {rel: ast.parse(source) for rel, source in modules.items()}
+        names = {rel: aliases(rel, tree) for rel, tree in trees.items()}
+        inside = {rel for rel in trees if package(rel)[:2] == gateway}
+        found, spawners, released = [], set(), {}
+        for rel in inside:
+            tree, al = trees[rel], names[rel]
+            def is_check(n: ast.AST, al: dict[str, str] = al) -> bool:
+                return isinstance(n, ast.Call) and dotted(n.func, al) == "harness_bench.egress.check"
+
+            checked = {t.id for n in ast.walk(tree) if isinstance(n, ast.Assign) and is_check(n.value)
+                       for t in n.targets if isinstance(t, ast.Name)}
+            released[rel] = {id(sub) for n in ast.walk(tree)
+                             if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) and n.func.attr == "release"
+                             and (is_check(n.func.value) or isinstance(n.func.value, ast.Name) and n.func.value.id in checked)
+                             for arg in [*n.args, *(k.value for k in n.keywords)] for sub in ast.walk(arg)}
+            for top in tree.body:
+                params = {a.arg for f in ast.walk(top) if isinstance(f, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda))
+                          for a in [*f.args.posonlyargs, *f.args.args, *f.args.kwonlyargs]}
+                sinks = [n for n in ast.walk(top) if isinstance(n, ast.Call) and id(n) not in released[rel] and
+                         (dotted(n.func, al).startswith("harness_bench.procs") or
+                          isinstance(n.func, ast.Name) and n.func.id in params)]
+                if sinks and isinstance(top, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                    spawners.add(top.name)
+                elif sinks:
+                    found.append(f"{rel}:{sinks[0].lineno}: a backend call outside any release")
+        bound, used = False, set()
+        for rel in inside:
+            for n in ast.walk(trees[rel]):
+                ref = n.id if isinstance(n, ast.Name) else n.attr if isinstance(n, ast.Attribute) else None
+                if ref in spawners and id(n) in released[rel]:
+                    used.add(ref)
+                elif ref in spawners:
+                    found.append(f"{rel}:{n.lineno}: {ref} reached without egress.check(...).release")
+            bound |= any(isinstance(n, ast.Call) and id(n) in released[rel] and
+                         dotted(n.func, names[rel]).startswith("harness_bench.procs") for n in ast.walk(trees[rel]))
+        found += [f"gateway/: {s} is never released through egress.check(...).release" for s in spawners - used]
+        if inside and not (bound or used):
+            found.append("gateway/: no backend is reached through egress.check(...).release")
+        for rel in set(trees) - inside:
+            found += [f"{rel}: imports the spawner {target}" for target in names[rel].values()
+                      if target.startswith("harness_bench.gateway.") and target.rsplit(".", 1)[1] in spawners]
+        return found
 
     # Self-check (Codex F2): synthetic packages, parsed and never imported or run. Each names whether it must fire.
     gw, run = "src/harness_bench/gateway/", "procs.run(['judge-cli', p], None, None, 60)"
@@ -113,6 +164,8 @@ def test_only_the_gateway_reaches_a_judge_backend_and_only_beside_egress():
                                                 "src/harness_bench/grade/judge.py":
                                                 "from harness_bench.gateway.cli import HeadlessCli\n"}),
         "a-gateway-that-reaches-no-backend": (True, {gw + "__init__.py": "def judge(p):\n    return None\n"}),
+        "the-probe-beside-a-released-backend": (True, {gw + "cli.py": cli, gw + "__init__.py": released, gw +
+                                                       "backend.py": "def send(payload, backend):\n    return backend(payload)\n"}),
         "released-spawner-class": (False, {gw + "cli.py": cli, gw + "__init__.py": released,
                                            "src/harness_bench/grade/judge.py": "from harness_bench.gateway import judge\n"}),
         "released-lambda-via-a-checked-variable": (False, {gw + "__init__.py":
