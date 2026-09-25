@@ -14,6 +14,8 @@ calibration ledger and `bench/gateway.yaml`; nothing here is stored (DM7). A val
   It needs the operator's identifiers, which the report reads at run time (never committed, R-42).
 - **Verdict split by cell vendor** (R-58 c2): mean (Claude verdict - GPT verdict) per cell vendor, with n; the cell
   vendor is the cell harness profile's `vendor:` (R-73 item 1), never a model-id prefix. Disclosed, never a gate.
+- **Probe versions** (section 12, R-59 DR-4): a pass whose `grading.started` `catalog_version` ends in `.dev`
+  (`views._is_probe`, the one definition) reads `probe pass`. The version is the view's, which is that event's.
 - Rationales are untrusted text: `disagreement_text` returns them raw and the report renders every value through
   `html._e` (T-GW-36).
 """
@@ -246,5 +248,7 @@ def facts(root: Path | None, run_dir: Path | None, view: views.RunView,
     else:
         out += [("Agreement on this run", SECOND), ("Verdict split by cell vendor", SECOND)]
     out.append(("Judge spend", _spend_row(stipulation, run_dir / "model_calls" / f"{gid}.jsonl")))
+    # section 12: from grading.started's catalog_version (the view's), never the catalog file as it stands now
+    out.append(("Probe versions", "probe pass" if views._is_probe(view.catalog_version) else view.catalog_version))
     out.append(("Live-run scan", LIVE_RUN))
     return out
