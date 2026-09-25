@@ -68,6 +68,12 @@ def test_t39_4_n4_whitespace_stripped_and_collapsed():
     assert matcher.normalise("thesum") != matcher.normalise("the sum")
 
 
+def test_normalise_refuses_a_rule_it_does_not_know(monkeypatch):
+    monkeypatch.setattr(matcher, "RULES", (*matcher.RULES, {"id": "N6", "op": "stem"}))
+    with pytest.raises(ValueError, match="unknown normalisation op 'stem'"):
+        matcher.normalise("x")
+
+
 def test_t39_4_n5_trailing_marks_dropped_inner_and_leading_kept():
     assert matcher.normalise("total value?") == matcher.normalise("total value") == "total value"
     assert matcher.normalise("total value ?!.") == "total value"
@@ -537,13 +543,13 @@ class SpyOut:
     """An output stream that records, at each send, how many log rows are already on disk."""
 
     def __init__(self, log: Path) -> None:
-        self.log, self.sent = log, []
+        self.log, self.sent, self.flushes = log, [], 0
 
     def write(self, data: bytes) -> None:
         self.sent.append((json.loads(data), len(_rows(self.log))))
 
     def flush(self) -> None:
-        pass
+        self.flushes += 1
 
 
 def test_t37_4a_log_row_per_call_before_reply(tmp_path):
@@ -553,6 +559,7 @@ def test_t37_4a_log_row_per_call_before_reply(tmp_path):
     out = SpyOut(path)
     server.serve(srv, io.BytesIO(("\n".join(lines) + "\n").encode()), out)
     assert [(msg["id"], rows_on_disk) for msg, rows_on_disk in out.sent] == [(1, 1), (2, 2)]
+    assert out.flushes == 2  # each reply is flushed: the harness reads a line, not a buffer
     assert [(r["seq"], r["reply"]) for r in _rows(path)] == [(1, "Yes, ascending."), (2, DEFAULT)]
 
 
