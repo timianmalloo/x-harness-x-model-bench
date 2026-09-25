@@ -2,23 +2,41 @@ schema: bench-task/1
 id: F1
 scenario: 6
 title: "P0 wing spine as three coordinated tracks"
-status: stub
+status: ready   # DR-F1-1 and DR-F1-2 ruled as R-73 and R-74 (the operator, 2026-09-25); the oracle discriminates (oracle/evidence.md)
 language: csharp
 source:
   kind: authored
   upstream: "cfd-bench P0 wing spine, three tracks"
   repo: "https://github.com/timianmalloo/cfd-bench"
-  commit: "tbd"
+  commit: "496a0a8ca2fae9026927167a8f3e5da0a53f2233"
+  license: "none (the operator's own repository; operator decision 2026-09-25)"
+  vendored_paths:
+    - docs/backlog.md
+    - docs/knowledge/cfd-hydrofoil-simulation/
+    - docs/knowledge/knowledge-gap-register.md
+    - docs/notes/decision-0001-defer-geometry-kernel.md
+    - docs/proposals/build-phasing-plan.html
 budget:
   minutes: 60
   usd_cap: null
 blast_radius:
   - "src/**"
   - "tests/**"
+# One entry per track in prompt.md. assume: every role's model below is a proposal, not a ruling (DR-F1-1 in
+# oracle/README.md): the Anthropic ids fit Claude Code cells only; confirm by the Leader's ruling; if a Codex or
+# Copilot cell must run F1, this map and the routing table in prompt.md change together.
+# R-73 (the operator's decision of 2026-09-25): <role>@<vendor>; a cell reads only its own vendor's column.
+# OpenAI workhorse: gpt-6-luna. Copilot's recorded model list (tests/fixtures/native/copilot/provenance.json:66-76)
+# lists gpt-6-sol, gpt-6-luna and gpt-6-astra with no description, so the record gives no basis to prefer luna or
+# astra. assume: gpt-6-luna is the lighter model. Confirm: the R-74 qualification turn records the served model.
+# Breaks: luna equals the pin in capability, and the map reads non-discriminating (R-73 header).
 model_map:
-  domain-model: tbd
-  derived-quantities: tbd
-  tests: tbd
+  domain-model@anthropic: claude-opus-5-5
+  derived-quantities@anthropic: claude-sonnet-5
+  tests@anthropic: claude-sonnet-5
+  domain-model@openai: gpt-6-sol
+  derived-quantities@openai: gpt-6-luna
+  tests@openai: gpt-6-luna
 scripted_user: false
 graders:
   - correctness
@@ -28,4 +46,14 @@ graders:
   - cost
   - process
 oracle:
-  summary: "Hidden tests, intent-log completeness, model-map adherence, MAST coding."
+  summary: "Hidden xUnit tests for the wing spine contract; intent-log completeness, model-map adherence and MAST coding notes for the later graders."
+  runner: dotnet
+  command:
+    - cmd.exe
+    - /c
+    - 'F1.HiddenTests\run.cmd'
+    - --logger
+    - "trx;LogFileName=f1-hidden.trx"
+    - --results-directory
+    - TestResults
+    - "-v:q"

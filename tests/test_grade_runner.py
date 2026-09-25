@@ -195,9 +195,9 @@ def test_validate_passes_an_unchanged_frozen_task(tmp_path):
     assert [p for p in config.validate_repo(r) if "while frozen" in p] == []
 
 
-def test_the_committed_freeze_record_names_the_frozen_tasks_and_they_are_unchanged():  # L-1 (1c63c42); B1 added at its join
+def test_the_committed_freeze_record_names_the_frozen_tasks_and_they_are_unchanged():  # L-1 (1c63c42); B1 and F1 added at their joins
     freeze = config.load_yaml(ROOT / "bench" / "task-freeze.yaml")
-    assert sorted(freeze["tasks"]) == ["A1", "B1", "C1", "D1", "E6"]
+    assert sorted(freeze["tasks"]) == ["A1", "B1", "C1", "D1", "E6", "F1"]
     assert {t: plan.task_version_hash(ROOT / "tasks" / t) for t in freeze["tasks"]} == freeze["tasks"]
 
 
