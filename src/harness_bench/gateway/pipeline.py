@@ -23,6 +23,7 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from harness_bench import egress, profiles
+from harness_bench.errors import RUN_CODES
 from harness_bench.gateway import request, schema, scrub, store
 from harness_bench.gateway.backend import (
     Backend,
@@ -37,20 +38,8 @@ from harness_bench.telemetry import Extraction, normalize
 
 OUTCOMES = ("hit", "stored", "race_lost", "not_allowed", "failed")
 _FENCE = re.compile(r"```(?:json)?\n(.*)\n```", re.DOTALL)  # one Markdown code fence around the whole answer
-CODES = {  # design section 17; slice 1 reaches 001, 002, 003, 004, 005, 008, 009
-    "HB-GW-001": "judge unavailable: CLI error, timeout, provider error, breaker open, or a store write error "
-                 "other than a lost race",
-    "HB-GW-002": "invalid output",
-    "HB-GW-003": "served model not the pin",
-    "HB-GW-004": "blinding scan hit",
-    "HB-GW-005": "store entry invalid, or not matched by its storing row",
-    "HB-GW-006": "tool event in a judge call",
-    "HB-GW-007": "judge not qualified",
-    "HB-GW-008": "artifact over the bound or not UTF-8",
-    "HB-GW-009": "withheld: sensitive content",
-    "HB-GW-010": "leftover credential copy (a verify error)",
-    "HB-GW-011": "judge build changed",
-}
+# Design section 17, defined once in errors.RUN_CODES (review w3-gwi-1 A2); this is its HB-GW subset.
+CODES = {code: text for code, text in RUN_CODES.items() if code.startswith("HB-GW-")}
 
 
 @dataclass(frozen=True)
@@ -77,7 +66,7 @@ class Context:
     stored_by: dict  # {ledger, ledger_id, grading_or_calibration_id} of this pass
     denylist: tuple[str, ...]
     allow_model_calls: bool
-    operator: egress.Operator
+    operator: egress.Operator | None  # None only in a pass that may not call; a send would raise, so HB-GW-001
     secrets: tuple[str, ...] = ()
     canaries: tuple[str, ...] = ()
     breakers: set[str] = field(default_factory=set)  # judges whose breaker opened in this pass (section 8.3 step 5)
