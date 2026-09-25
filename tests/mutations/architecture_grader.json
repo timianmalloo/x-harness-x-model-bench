@@ -1,0 +1,275 @@
+[
+  {
+    "name": "GR-CODE c4: a stdlib import breaks the C1 rule",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "if n not in sys.stdlib_module_names and n not in local}",
+    "replace": "if n not in local}",
+    "tests": ["tests/test_grade_architecture.py::test_stdlib_and_working_copy_imports_conform"]
+  },
+  {
+    "name": "GR-CODE c4: a working-copy import breaks the C1 rule",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "if n not in sys.stdlib_module_names and n not in local}",
+    "replace": "if n not in sys.stdlib_module_names}",
+    "tests": ["tests/test_grade_architecture.py::test_stdlib_and_working_copy_imports_conform"]
+  },
+  {
+    "name": "GR-CODE c4: the working copy is only its root, not the importing file's folder",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "    for folder in {work, (work / path).parent}:\n",
+    "replace": "    for folder in {work}:\n",
+    "tests": ["tests/test_grade_architecture.py::test_a_test_file_may_import_the_root_module_and_its_own_neighbour_but_not_pytest"]
+  },
+  {
+    "name": "GR-CODE c4: the working copy is the whole tree, at any depth",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "for p in folder.iterdir() if p.suffix == \".py\" or p.is_dir()}",
+    "replace": "for p in folder.rglob(\"*\") if p.suffix == \".py\" or p.is_dir()}",
+    "tests": ["tests/test_grade_architecture.py::test_a_module_deeper_in_the_tree_is_not_the_working_copys_for_an_import"]
+  },
+  {
+    "name": "GR-CODE c4: a plain import is not read",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "        if isinstance(node, ast.Import):\n",
+    "replace": "        if False:\n",
+    "tests": ["tests/test_grade_architecture.py::test_the_c1_reference_plus_import_numpy_is_0"]
+  },
+  {
+    "name": "GR-CODE c4: a from-import is not read",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "        elif isinstance(node, ast.ImportFrom) and node.level == 0:\n",
+    "replace": "        elif False:\n",
+    "tests": ["tests/test_grade_architecture.py::test_an_import_outside_stdlib_and_the_working_copy_breaks_the_rule"]
+  },
+  {
+    "name": "GR-CODE c4: a relative import is read as a top-level name",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "        elif isinstance(node, ast.ImportFrom) and node.level == 0:\n",
+    "replace": "        elif isinstance(node, ast.ImportFrom):\n",
+    "tests": ["tests/test_grade_architecture.py::test_stdlib_and_working_copy_imports_conform"]
+  },
+  {
+    "name": "GR-CODE c4: a dotted import is read whole, not by its top-level name",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "            names += [alias.name.split(\".\")[0] for alias in node.names]\n",
+    "replace": "            names += [alias.name for alias in node.names]\n",
+    "tests": ["tests/test_grade_architecture.py::test_stdlib_and_working_copy_imports_conform"]
+  },
+  {
+    "name": "GR-CODE c4: a file that does not parse conforms",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "        return [\"<unparsed>\"]\n",
+    "replace": "        return []\n",
+    "tests": ["tests/test_grade_architecture.py::test_an_import_outside_stdlib_and_the_working_copy_breaks_the_rule"]
+  },
+  {
+    "name": "GR-CODE c4: a using directive is found only at a line start",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "USING = re.compile(r\"(?:^|(?<=[;{}]))\\s*",
+    "replace": "USING = re.compile(r\"^\\s*",
+    "tests": ["tests/test_grade_architecture.py::test_a_using_outside_system_and_aide_core_breaks_the_rule"]
+  },
+  {
+    "name": "GR-CODE c4: a global using is not a directive",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "(?:global\\s+)?using",
+    "replace": "using",
+    "tests": ["tests/test_grade_architecture.py::test_a_using_outside_system_and_aide_core_breaks_the_rule"]
+  },
+  {
+    "name": "GR-CODE c4: a using static is not a directive",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "(?:static\\s+)?",
+    "replace": "",
+    "tests": ["tests/test_grade_architecture.py::test_a_using_outside_system_and_aide_core_breaks_the_rule"]
+  },
+  {
+    "name": "GR-CODE c4: an alias using is not a directive",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "(?:\\w+\\s*=\\s*)?",
+    "replace": "",
+    "tests": ["tests/test_grade_architecture.py::test_a_using_outside_system_and_aide_core_breaks_the_rule"]
+  },
+  {
+    "name": "GR-CODE c4: a global:: name is not a directive",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "(?:global::)?",
+    "replace": "",
+    "tests": ["tests/test_grade_architecture.py::test_a_using_outside_system_and_aide_core_breaks_the_rule"]
+  },
+  {
+    "name": "GR-CODE c4: a generic alias is not a directive",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "(?:<[^;]*>)?",
+    "replace": "",
+    "tests": ["tests/test_grade_architecture.py::test_a_using_outside_system_and_aide_core_breaks_the_rule"]
+  },
+  {
+    "name": "GR-CODE c4: comments are read as code",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "    text = COMMENT.sub(\"\", (work / path).read_text(encoding=\"utf-8-sig\", errors=\"replace\"))\n",
+    "replace": "    text = (work / path).read_text(encoding=\"utf-8-sig\", errors=\"replace\")\n",
+    "tests": ["tests/test_grade_architecture.py::test_every_platform_and_own_layer_form_conforms_and_using_statements_are_not_directives"]
+  },
+  {
+    "name": "GR-CODE c4: a UTF-8 BOM hides the first using",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "encoding=\"utf-8-sig\", errors=\"replace\"",
+    "replace": "encoding=\"utf-8\", errors=\"replace\"",
+    "tests": ["tests/test_grade_architecture.py::test_a_using_outside_system_and_aide_core_breaks_the_rule"]
+  },
+  {
+    "name": "GR-CODE c4: a file that is not UTF-8 raises",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "encoding=\"utf-8-sig\", errors=\"replace\"",
+    "replace": "encoding=\"utf-8-sig\"",
+    "tests": ["tests/test_grade_architecture.py::test_a_projections_file_that_is_not_utf8_is_read_not_raised"]
+  },
+  {
+    "name": "GR-CODE c4: a name that only starts with a layer's name conforms",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "n.startswith(layer + \".\")",
+    "replace": "n.startswith(layer)",
+    "tests": ["tests/test_grade_architecture.py::test_a_using_outside_system_and_aide_core_breaks_the_rule"]
+  },
+  {
+    "name": "GR-CODE c4: the layer's own name breaks the rule",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "any(n == layer or n.startswith",
+    "replace": "any(n.startswith",
+    "tests": ["tests/test_grade_architecture.py::test_every_platform_and_own_layer_form_conforms_and_using_statements_are_not_directives"]
+  },
+  {
+    "name": "GR-CODE c4: AiDe.Core is not the Projections file's own layer",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "D1_LAYERS = (\"System\", \"AiDe.Core\")\n",
+    "replace": "D1_LAYERS = (\"System\",)\n",
+    "tests": ["tests/test_grade_architecture.py::test_the_d1_reference_is_1"]
+  },
+  {
+    "name": "GR-CODE c4: the rule reads files outside its folder",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "scope = [p for p in written if p.startswith(prefix) and p.endswith(suffix)]",
+    "replace": "scope = [p for p in written if p.endswith(suffix)]",
+    "tests": ["tests/test_grade_architecture.py::test_no_file_in_the_rule_scope_is_na_no_source_file_changed"]
+  },
+  {
+    "name": "GR-CODE c4: the rule reads files of any type",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "scope = [p for p in written if p.startswith(prefix) and p.endswith(suffix)]",
+    "replace": "scope = [p for p in written if p.startswith(prefix)]",
+    "tests": ["tests/test_grade_architecture.py::test_no_file_in_the_rule_scope_is_na_no_source_file_changed"]
+  },
+  {
+    "name": "GR-CODE c4: the Projections folder is a name prefix, not a folder",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "\"src/AiDe.Core/Projections/\", \".cs\"",
+    "replace": "\"src/AiDe.Core/Projections\", \".cs\"",
+    "tests": ["tests/test_grade_architecture.py::test_no_file_in_the_rule_scope_is_na_no_source_file_changed"]
+  },
+  {
+    "name": "GR-CODE c4: a deleted file is read",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "_changes.change_set(base, work).items() if status != \"deleted\"]",
+    "replace": "_changes.change_set(base, work).items()]",
+    "tests": ["tests/test_grade_architecture.py::test_a_deleted_projections_file_is_not_read"]
+  },
+  {
+    "name": "GR-CODE c4: a changed file is not read (only added files)",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "_changes.change_set(base, work).items() if status != \"deleted\"]",
+    "replace": "_changes.change_set(base, work).items() if status == \"added\"]",
+    "tests": ["tests/test_grade_architecture.py::test_a_changed_projections_file_is_read_whole"]
+  },
+  {
+    "name": "GR-CODE c4: use the base commit as the base (the pack commit reads as a change)",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "commit = _changes.pre_turn_commit(ws, inp.cell, timeout)",
+    "replace": "commit = _changes.pre_turn_commit(ws, {**inp.cell, \"pack\": \"off\"}, timeout)",
+    "tests": ["tests/test_grade_architecture.py::test_the_pack_commit_is_not_a_change"]
+  },
+  {
+    "name": "GR-CODE c4: a rule with no file in scope counts as passed",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "                if not scope:  # a rule with no file to read is not a rule of this cell\n                    continue\n",
+    "replace": "",
+    "tests": ["tests/test_grade_architecture.py::test_the_value_is_rules_passed_over_rules_with_files_in_scope"]
+  },
+  {
+    "name": "GR-CODE c4: every applied rule passes",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "                passed += not any(broken.values())\n",
+    "replace": "                passed += 1\n",
+    "tests": ["tests/test_grade_architecture.py::test_the_d1_reference_plus_using_newtonsoft_json_is_0"]
+  },
+  {
+    "name": "GR-CODE c4: the value is rules passed, not a ratio",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "(Decimal(passed) / Decimal(applied)).quantize(SCALE)",
+    "replace": "Decimal(passed).quantize(SCALE)",
+    "tests": ["tests/test_grade_architecture.py::test_the_value_is_rules_passed_over_rules_with_files_in_scope"]
+  },
+  {
+    "name": "GR-CODE c4: the value is not at scale 4",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "(Decimal(passed) / Decimal(applied)).quantize(SCALE)",
+    "replace": "(Decimal(passed) / Decimal(applied))",
+    "tests": ["tests/test_grade_architecture.py::test_the_c1_reference_with_no_imports_is_1"]
+  },
+  {
+    "name": "GR-CODE c4: no rule applied is scored instead of NA no source file changed",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "    if not applied:\n        return Score(None, NO_SOURCE, ev)\n",
+    "replace": "    if not applied:\n        return Score(Decimal(\"1.0000\"), None, ev)\n",
+    "tests": ["tests/test_grade_architecture.py::test_no_file_in_the_rule_scope_is_na_no_source_file_changed"]
+  },
+  {
+    "name": "GR-CODE c4: a task with no rule row reads the archive first",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "    if rules is None:  # a property of the task, so it reads before any property of the archive\n",
+    "replace": "    if rules is None and (inp.archive / \"ws\").is_dir():\n",
+    "tests": ["tests/test_grade_architecture.py::test_a_task_with_no_rule_row_is_na_before_the_archive_is_read"]
+  },
+  {
+    "name": "GR-CODE c4: a metric outside the applicable set is returned",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "    if METRIC not in inp.metrics:\n        return {}\n",
+    "replace": "",
+    "tests": ["tests/test_grade_architecture.py::test_architecture_is_registered_and_writes_its_log_as_evidence"]
+  },
+  {
+    "name": "GR-CODE c4: a missing working copy reads as a missing pre-turn commit",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "    if not ws.is_dir():\n        return Score(None, NO_WORKING_COPY)\n",
+    "replace": "",
+    "tests": ["tests/test_grade_architecture.py::test_the_shared_na_reasons"]
+  },
+  {
+    "name": "GR-CODE c4: a missing pre-turn commit is graded",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "    if commit is None:\n        return Score(None, _changes.NOT_FOUND)\n",
+    "replace": "",
+    "tests": ["tests/test_grade_architecture.py::test_the_shared_na_reasons"]
+  },
+  {
+    "name": "GR-CODE c4: a git timeout raises instead of NA HB-GRD-002",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "        if not exc.result.timed_out:\n            raise\n",
+    "replace": "        raise\n",
+    "tests": ["tests/test_grade_architecture.py::test_a_git_archive_timeout_is_na_hb_grd_002"]
+  },
+  {
+    "name": "GR-CODE c4: the evidence log marks a breaking file as passed",
+    "file": "src/harness_bench/grade/architecture.py",
+    "find": "{'fail' if b else 'pass'}",
+    "replace": "{'pass'}",
+    "tests": ["tests/test_grade_architecture.py::test_architecture_is_registered_and_writes_its_log_as_evidence"]
+  },
+  {
+    "name": "GR-CODE c4: architecture is not registered in runner.GRADERS",
+    "file": "src/harness_bench/grade/runner.py",
+    "find": "GRADERS[\"architecture\"] = architecture.grade_cell  # GR-CODE c4\n",
+    "replace": "",
+    "tests": ["tests/test_grade_architecture.py::test_architecture_is_registered_and_writes_its_log_as_evidence"]
+  }
+]
