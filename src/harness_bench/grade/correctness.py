@@ -1,11 +1,18 @@
-"""Correctness from hidden tests (US-28): pass@1 and partial credit for one archived cell.
+"""Correctness from hidden tests (US-28): pass@1, partial credit and build_and_suite_clean for one archived cell.
 
 - The hidden tests run in a grading copy (the archived working copy, then the task's `tests/`), never in
   the archive, in their own Job Object under the grading-step deadline (HB-GRD-002). The copy is removed
   afterwards; the oracle's output is kept as the evidence.
 - `unittest` summaries and the named TRX file from a `dotnet` oracle are parsed strictly; a missing or
   invalid summary is NA, never 0. A pass needs exit status 0 and every test passed.
-- pass@k, pass^k, regressions and build checks are later phases (Spec S-08b).
+- DR-G4, decided by cause (R-67 c1; measured in docs/notes/spike-gr-code-trx.md): a dotnet step that wrote no TRX
+  is classified from MSBuild's canonical error lines. A restore error (`NUxxxx`) is NA
+  `infrastructure failure before build: restore`; a failing `dotnet --version` is NA `... sdk`. A compiler error
+  (`CSxxxx`) scores 0 only when the same oracle on the pre-turn tree (`_changes`) compiles and runs its tests under the
+  same toolchain; otherwise NA `pre-turn tree does not build` (or the control's own infrastructure reason).
+- build_and_suite_clean: 1 iff the working copy builds on its own, in a grading copy without build output: every
+  `*.csproj` builds offline (`dotnet build`, sorted, the first failure decides), or `python -m compileall -q` exits 0.
+- pass@k and pass^k are derived (row 19); regressions and behavioural equivalence are GR-CODE c2.
 """
 
 from __future__ import annotations
@@ -21,6 +28,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from harness_bench import archive, procs
+from harness_bench.grade import CellInput, Score, _changes
 from harness_bench.profiles import CELL_ENV
 
 RAN = re.compile(r"^Ran (\d+) tests? in ", re.MULTILINE)
@@ -29,6 +37,14 @@ NOT_PASSED = ("failures", "errors", "skipped", "expected failures", "unexpected 
 HOST_ENV = ("PATH", "SYSTEMROOT", "SYSTEMDRIVE", "WINDIR", "TEMP", "TMP")
 DOTNET_HOST_ENV = ("USERPROFILE", "APPDATA", "LOCALAPPDATA", "HOMEDRIVE", "HOMEPATH", "ProgramData", "ProgramFiles",
                    "NUGET_PACKAGES")
+# MSBuild's canonical error line, `<origin>: error <code>: <text>` (spike: `…Broken.cs(5,31): error CS1002: ; expected`,
+# `…AiDe.Core.csproj : error NU1101: Unable to find package …`). simplify: C# and NuGet codes only; ceiling D1, the one
+# dotnet task; upgrade trigger: an F# or VB task.
+BUILD_ERROR = re.compile(r": error (NU|CS)\d{4}: ")
+RESTORE = "infrastructure failure before build: restore"
+SDK = "infrastructure failure before build: sdk"
+PRE_TURN_BROKEN = "pre-turn tree does not build"
+OFFLINE = ("-p:RestoreSources=.", "-p:NuGetAudit=false", "-v:q", "-nologo")  # the host cache only, as the D1 oracle
 
 
 @dataclass(frozen=True)
@@ -37,6 +53,13 @@ class Result:
     partial_credit: Decimal | None  # fraction of hidden tests passing
     reason: str | None
     evidence: str  # relative to the run directory
+    compile_error: bool = False  # no TRX, and the step's output carries a compiler error and no restore error
+
+
+def build_failure(output: str) -> str | None:
+    """'restore', 'compile' or None, from the error codes in a dotnet step's output; a restore error comes first."""
+    codes = set(BUILD_ERROR.findall(output))
+    return "restore" if "NU" in codes else "compile" if "CS" in codes else None
 
 
 def parse_unittest(output: str) -> tuple[int, int] | None:
@@ -147,11 +170,14 @@ def grade(ws: Path, task_dir: Path, oracle: dict, out_dir: Path, run_dir: Path, 
     if (version_done and version_done.timed_out) or (done and done.timed_out) or done is None:
         return Result(None, None, f"HB-GRD-002 grading step timeout after {timeout:g} s", evidence)
     if kind == "dotnet" and version_done and version_done.returncode != 0:
-        return Result(None, None, "dotnet --version failed", evidence)
+        return Result(None, None, SDK, evidence)
     if kind == "dotnet" and spec is None:
         return Result(None, None, "oracle command has no named TRX result", evidence)
+    cause = build_failure(done.stdout) if kind == "dotnet" and not trx_files else None
+    if cause == "restore":
+        return Result(None, None, RESTORE, evidence)
     if kind == "dotnet" and not trx_files:
-        return Result(None, None, "named TRX result file missing", evidence)
+        return Result(None, None, "named TRX result file missing", evidence, compile_error=cause == "compile")
     if kind == "dotnet" and len(trx_files) != 1:
         return Result(None, None, "multiple named TRX result files", evidence)
     if kind == "unittest":
@@ -162,3 +188,75 @@ def grade(ws: Path, task_dir: Path, oracle: dict, out_dir: Path, run_dir: Path, 
     if total == 0:
         return Result(None, None, "no hidden test ran", evidence)
     return Result(int(done.returncode == 0 and passed == total), Decimal(passed) / Decimal(total), None, evidence)
+
+
+def _by_cause(inp: CellInput, oracle: dict, cell: Result, timeout: float) -> Result:
+    """The cell's tree did not compile: 0 only when the pre-turn tree does under the same toolchain (DR-G4, R-67 c1).
+
+    simplify: one control run per compile-failing cell, not memoised; ceiling: compile failures are rare (none in the
+    gate runs, G16); upgrade trigger: GR-CODE c2's memoised pre-turn run for regression_count, which this then reuses.
+    """
+    ws = inp.archive / "ws"
+    commit = _changes.pre_turn_commit(ws, inp.cell, timeout)
+    if commit is None:
+        return Result(None, None, _changes.NOT_FOUND, cell.evidence)
+    control = inp.out_dir / "pre-turn-oracle"
+    control.mkdir()
+    with _changes.pre_turn_tree(ws, commit, inp.out_dir / "pre-turn", timeout) as tree:
+        base = grade(tree, inp.task_dir, oracle, control, inp.run_dir, timeout)
+    if base.reason is None:  # the hidden tests compiled and ran on the pre-turn tree: the cell broke the build
+        return Result(0, Decimal(0), None, cell.evidence)
+    if base.reason in (RESTORE, SDK) or base.reason.startswith("HB-GRD-002"):  # the control could not tell
+        return Result(None, None, base.reason, cell.evidence)
+    return Result(None, None, PRE_TURN_BROKEN, cell.evidence)
+
+
+def build_and_suite_clean(inp: CellInput, oracle: dict, timeout: float) -> Score:
+    """1 iff the working copy builds on its own (analysis rung); NA only for a failure before the build."""
+    kind, ws = oracle.get("runner"), inp.archive / "ws"
+    if kind not in ("unittest", "dotnet") or not oracle.get("command"):
+        return Score(None, f"oracle runner {kind!r} not built (phase 1 runs unittest)")
+    if not ws.is_dir():
+        return Score(None, "no working copy in the archive")
+    out = inp.out_dir / "build"
+    out.mkdir()
+    env = _env()
+    if kind == "dotnet":
+        env.update({k: os.environ[k] for k in DOTNET_HOST_ENV if k in os.environ})  # ADR-0013, as the oracle step
+    steps, lines, last = [], [], None
+    started = time.monotonic()
+    with _changes.grading_copy(ws, out / "work") as work:
+        if kind == "unittest":
+            steps = [[sys.executable, "-m", "compileall", "-q", "."]]
+        else:
+            projects = sorted(p.relative_to(work).as_posix() for p in work.rglob("*.csproj") if p.is_file())
+            steps = [["dotnet", "--version"], *(["dotnet", "build", p, *OFFLINE] for p in projects)]
+        for argv in steps:
+            remaining = timeout - (time.monotonic() - started)
+            last = procs.run(argv, cwd=work, env=env, timeout=remaining) if remaining > 0 else None
+            lines.append(f"$ {' '.join(argv)}\nexit {last.returncode if last else 'not run'}\n"
+                         f"--- stdout\n{last.stdout if last else ''}\n--- stderr\n{last.stderr if last else ''}\n")
+            if last is None or last.timed_out or last.returncode != 0:
+                break
+    log = out / "build.log"
+    log.write_text("".join(lines), encoding="utf-8")
+    evidence = log.relative_to(inp.run_dir).as_posix()
+    if last is None or last.timed_out:
+        return Score(None, f"HB-GRD-002 grading step timeout after {timeout:g} s", evidence)
+    if last.returncode != 0 and steps[len(lines) - 1] == ["dotnet", "--version"]:
+        return Score(None, SDK, evidence)
+    if last.returncode != 0 and kind == "dotnet" and build_failure(last.stdout) == "restore":
+        return Score(None, RESTORE, evidence)
+    # assume: a dotnet working copy with no project builds nothing, so it is not a clean build (0, never a vacuous 1).
+    # Confirm: D1's workspace always holds six projects; if false, only a cell that deleted them all reads 0.
+    return Score(int(last.returncode == 0 and len(steps) > 1 if kind == "dotnet" else last.returncode == 0), None, evidence)
+
+
+def grade_cell(inp: CellInput) -> dict[str, Score]:
+    """pass@1 and partial credit from the hidden tests (US-28; seam C-2), decided by cause, and build_and_suite_clean."""
+    oracle, timeout = inp.task.get("oracle") or {}, inp.plan["parameters"]["grading_step_timeout"]
+    c = grade(inp.archive / "ws", inp.task_dir, oracle, inp.out_dir, inp.run_dir, timeout)
+    if c.compile_error:
+        c = _by_cause(inp, oracle, c, timeout)
+    return {"pass_at_1": Score(c.passed, c.reason, c.evidence), "partial_credit": Score(c.partial_credit, c.reason, c.evidence),
+            "build_and_suite_clean": build_and_suite_clean(inp, oracle, timeout)}

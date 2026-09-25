@@ -893,6 +893,38 @@ window.DOCS_INDEX = {
       "sourceSha256": "5574be99122a6888e8c4d6dd9612b656694b134410c4d15df881419d330cbf8e"
     },
     {
+      "id": "note-20260925-spike-gr-code-trx",
+      "path": "docs/notes/spike-gr-code-trx.md",
+      "title": "Spike GR-CODE c1 - what D1's per-test TRX and the dotnet build summary contain, measured with the pinned SDK",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-12-25",
+      "reviewSuggested": [],
+      "summary": "Measured on this host with dotnet 10.0.303: D1's hidden-test step writes one TRX whose ResultSummary/Counters and per-test UnitTestResult rows are documented here; with -v:q neither dotnet test nor dotnet build prints a build summary, only MSBuild canonical error lines (CSxxxx for a compile error, NUxxxx for a restore error) and no TRX. A ProjectReference to a missing project is only warning MSB9008 and exits 0, so the design's broken-reference seed does not score 0 under its own definition (flagged).",
+      "tags": [
+        "spike",
+        "grading",
+        "dotnet",
+        "trx",
+        "correctness",
+        "dr-g4"
+      ],
+      "links": [
+        {
+          "to": "design-phase3-graders",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "ffb65ee78047574b4ae1a7adaef18a42e654ffe3fcacde850070f9e7e612cc31"
+    },
+    {
       "id": "note-20260925-stop-decision-calls",
       "path": "docs/notes/stop-decision-calls.md",
       "title": "Row 10 design calls: decision triggers, the spend-cap unit, and defaultMode",
@@ -1110,7 +1142,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "145b7c6d529e32389ea6507864d161a0823d67517ce7ef912410b9aa370d20db"
+      "sourceSha256": "a04b332e39c044e00097abeb7d2f621e83525e4a60f0be2b179fb40ea8378ae9"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -1698,7 +1730,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5bf81c8af1b55928251631bf00c6b0a263e39527e39c2dd3584c2114a5811e18"
+      "sourceSha256": "2d46d29c5ad7f0fd43dff184b429c9b6fe98c83ad59816c5acf605943c6495ed"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -2671,5 +2703,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "201bff57da4c30b00c410b451cf3555656e28006a75af0fba2a40b321e1cac11"
+  "graphSha256": "c7acb271a82d8107b52240fdaf513b6f9cbf9c1b2767b3ca67dd9ca54efb341d"
 };
