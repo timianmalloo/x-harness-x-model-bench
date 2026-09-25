@@ -66,6 +66,20 @@ def test_a_credential_value_is_withheld_in_each_encoding(encode):
     assert (verdict.payload_sha256, verdict.destination) == (_sha(text), DEST)
 
 
+@pytest.mark.parametrize("make", [
+    lambda: "sk-ant-" + token_hex(16),
+    lambda: "sk-proj-" + token_hex(20),
+    lambda: "ghp_" + token_hex(18),
+    lambda: "eyJ" + ".".join(token_hex(8) for _ in range(3)),
+], ids=["anthropic", "openai", "github", "jwt"])
+def test_a_token_shaped_string_is_withheld(make):
+    # Each value is random hex in a known token's shape: it matches the pattern and authenticates nothing.
+    text = _plant(make())
+    verdict = egress.check(text, destination=DEST)
+    assert verdict.classes == ("token_shape",)
+    assert (verdict.reason, verdict.payload_sha256) == ("withheld: sensitive content", _sha(text))
+
+
 def test_a_withheld_payload_never_reaches_the_backend():
     value = _credential()
     backend = FakeBackend()
