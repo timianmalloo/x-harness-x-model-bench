@@ -52,3 +52,4 @@ tasks:
   # Fixtures: operator-authored, never in the smoke or full grid; selectable by id only.
   - { id: X1, scenario: 5, smoke: false, fixture: true, budget_minutes: 5, source: authored, title: "Fixture: implement slugify (phase-1 walking skeleton)" }
   - { id: Q1, scenario: 5, smoke: false, fixture: true, budget_minutes: 5, source: authored, title: "Fixture: out-of-profile tool probe (R-45/R-46 qualification)" }
+  - { id: Q6, scenario: 6, smoke: false, fixture: true, budget_minutes: 5, source: authored, title: "Fixture: delegation qualification (R-74)" }

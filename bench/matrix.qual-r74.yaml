@@ -1,0 +1,11 @@
+# Qualification (R-74): Q6 once per harness on the scenario-6 profile (the delegate allowance), pack on.
+# Codex is not in it: no Codex allowance is built until its delegation ids are measured, and the operator reserves
+# Codex for benchmark runs (2026-09-25).
+schema: bench-matrix/1
+run_id: qual-r74
+bom: { file: bench/bom.yaml, subset: [Q6] }
+repetitions: 1
+packs: ["on"]
+combos:
+  - { id: cc-opus,     harness: claude-code,  model: claude-opus-5-5 }
+  - { id: copilot-sol, harness: copilot,      model: gpt-6-sol }

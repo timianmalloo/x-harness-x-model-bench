@@ -151,3 +151,8 @@ Every Codex track ran on Claude under R-4: the OpenAI allowance is out until 202
    - **The ChatGPT connector activity log (R-55):** closed by the measured control. `apps = false` is in every Codex cell's config, and `requal-codex-1` measured no MCP call. The account log itself is visible only to the account owner.
    - **The 30 calibration labels (R-58: HUMAN):** the operator will not label them, so R-58's labelling condition goes back to the Owner seat for a re-ruling before W3-CAL is dispatched.
    - **Informational, no action:** Grok authenticates with `XAI_API_KEY` (disclosed); row 9 (Harbor) stays parked; the Anthropic allowance remains a risk.
+
+**R-74 qualification, run `qual-r74` (2026-09-25; Q6 × {cc-opus, copilot-sol}, pack on, revision 95):** both cells completed and are valid, and `pass_at_1` is 1 for both.
+- **Claude Code 2.1.282:** one `Agent` call (class `delegate`, ok). The sub-agent served `claude-sonnet-5`, so routing is supported: `ANTHROPIC_MODEL` did not force the sub-agent onto the pin. Its record was at `home/projects/<cwd>/<session>/subagents/agent-<id>.jsonl`, which confirms S6's `subagent_glob` assume. There were 0 executed `other` rows.
+- **Copilot 1.0.89-1:** one `task` call (class `delegate`, ok), and the sub-agent served `gpt-6-luna`, so routing is supported.
+- **Codex:** not measured, because the operator reserves Codex for benchmark runs. No Codex allowance exists, so under R-74 a run that includes `codex-sol` banners F1 as `not run (delegation not qualified on codex)`.
