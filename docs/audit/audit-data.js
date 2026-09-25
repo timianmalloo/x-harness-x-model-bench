@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T08:55:14Z",
+  "generated": "2026-09-25T09:23:24Z",
   "audit": [
     {
       "actor": null,
@@ -17309,6 +17309,43 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3BY0TVHQKK6K1PKTMJCY7BC",
+      "shortname": "w3-core-1: CellInput, GRADERS dispatch, completeness, freeze",
+      "datetime": "2026-09-25T09:23:24Z",
+      "session": "w3-core-1c",
+      "prompt": "Goal: W3-GRADE-CORE slice 1 per docs/design/phase3-graders.md (read it whole first; its slice-plan row \"CORE s1\", sections on CellInput, the GRADERS registry, the completeness check, and the tasks-freeze rule; rulings R-59, R-62 in docs/notes/rulings.md): the per-cell grader input and dispatch by each task's `graders` list, red-first, so later grader tracks plug in one module at a time.\nDone when: A frozen CellInput replaces the `grade(run_dir, task_dir)` signature of every grader module in src/harness_bench/grade/ (the signature hunks only; the bodies stay not built), and Score(value, reason, evidence) enforces NA <=> reason, as the design specifies.; A GRADERS registry in grade/runner.py dispatches by the task's de-duplicated `graders` list and replaces the fixed METRICS tuple (runner.py:34); an unbuilt grader yields NOT_RECORDED \"not built\" for each of its metrics, never an exception and never 0.; The completeness check requires every (cell, metric) row exactly once before grading.completed, else HB-GRD-004; a malformed grader output is HB-GRD-003 (the design's definitions).; SEAM GRANT S-4 (Leader; W2-STOP-I owns errors.py but is busy): add exactly the HB-GRD-003 and HB-GRD-004 rows to src/harness_bench/errors.py and their lines in tests/test_errors.py, nothing else in that file.; GRANTS V-2 and V-3 (Leader): the tests/test_grade.py hunks the design names, and in src/harness_bench/config.py the tasks-freeze check (validate_repo fails with `tasks/<id> changed while frozen (R-59 c5): <hash> != <frozen>` against bench/task-freeze.yaml, which the Leader committed at 1c63c42) and the duplicate-grader-name rejection in validate_task.; Red first for: dispatch, \"not built\", HB-GRD-003, HB-GRD-004, duplicate graders, the freeze check (each red committed separately, failing on an assertion).; On the two committed mini-runs the design names, pass_at_1, partial_credit and cost_usd equal the 0.3 values, every other applicable metric is `not built`, and the 0.3 export digests stay exactly as bench/regrade-baseline-0.3.yaml records (row15-d1-1 8b35fdf9..., a1-capture-1 30126414...) - assert them in a test.; tests/mutations/grade.json gains named mutants for each new branch, all killed; the existing grade.json mutants stay killed (re-point any whose source text changed): uv run python tools/mutate_check.py tests/mutations/grade.json.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean; uv run bench validate prints ok.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.\nNot in scope: catalog_hash, tool_versions and tools/check_regrade.py (CORE slice 2); any grader body; views.py; cli.py and plan.py (seams S-1..S-3 wait for W2-STOP-I); bench run, any model turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase3-graders.md; docs/notes/rulings.md R-59, R-62; src/harness_bench/grade/; src/harness_bench/{config,errors,views}.py; bench/task-freeze.yaml; bench/regrade-baseline-0.3.yaml; bench/metrics.yaml; tests/test_grade.py, tests/test_errors.py, tests/test_config.py; tests/mutations/grade.json. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-core1 before committing.",
+      "summary": "W3-GRADE-CORE slice 1 (Claude Opus 5.5, moved from Codex under R-4). Seven reds committed separately, each failing on an assertion: 7618a04 dispatch, 3e04199 not built, bf9e323 HB-GRD-003, 5b871fb HB-GRD-004, a34c9ca duplicate graders, 6929198 freeze check, c12c4ca Score invariant. Greens: b33351c (CellInput, Score, GRADERS dispatch, not built, HB-GRD-003/004, completeness check, catalog 0.4.dev with kind and 2 new ids, errors.py's two HB-GRD rows only), 8656b76 (validate_task duplicate graders, validate_repo tasks freeze), fa4dd21 (the two committed mini-runs regrade to their 0.3 values with the other metrics not built and the 0.3 export unchanged; the gate runs' 0.3 export digests equal bench/regrade-baseline-0.3.yaml; 17 new named mutants). Gates: pytest 1119 passed, 2 skipped (gate-run digests, absent in the worktree; passed with HB_GATE_RUNS on the operator host); ruff clean; bench validate ok; mutate_check grade.json 34/34 killed; validity.json's 4 runner.py mutants killed. Findings for the Leader: test_views.py:140-141 '0.3' literal changed to the catalog's own version (outside the V-2 grant; the design's V-2 missed this sibling); C-1/C-2 adapter moves deferred (validity.json pins runner.py text); CellInput carries two extra fields (extraction, prices); grading_copy, the grade.grader_done log event, kind/rubrics validation and the registry check in validate are not built (not in this brief's Done-when).",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "claude-opus-5-5",
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "W3-GRADE-CORE slice 1 per docs/design/phase3-graders.md: the per-cell grader input (CellInput) and the dispatch by each task's graders list (GRADERS), with the completeness check, HB-GRD-003/004, duplicate-grader rejection and the tasks-freeze check, red-first.",
+      "done_when": "CellInput and Score(value, reason, evidence) replace grade(run_dir, task_dir); GRADERS replaces METRICS; unbuilt -> NA not built; HB-GRD-003 and HB-GRD-004 per the design; errors.py gains exactly the two HB-GRD rows; validate rejects duplicate graders and a changed frozen task; each red committed separately on an assertion; the two committed mini-runs keep their 0.3 values and exports; grade.json mutants all killed; pytest, ruff and bench validate green.",
+      "tier": "T2",
+      "main_calls": 125,
+      "main_budget": 180,
+      "main_over_budget": false,
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-25T08:58:15Z",
+      "duration_seconds": 1509.0,
+      "git": {
+        "sha": "fa4dd21ee61d4bae324f6cc8d476eeea03bd8027",
+        "short": "fa4dd21ee",
+        "branch": "w3-core-1c",
+        "pushed": null
+      }
     }
   ],
   "changes": [
