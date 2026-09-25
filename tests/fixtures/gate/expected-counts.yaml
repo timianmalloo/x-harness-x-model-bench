@@ -27,12 +27,12 @@ runs:
       instruction_reread_rate: 0      # exact: NA by design (DR-G2)
       architecture_conformance: 5     # exact: 35af NA no source file changed
       cost_usd: 0                     # exact: every cell NA, no price list entry
-      tokens_per_minute: null         # W3-COST phase 2 states these (its design, one definition per quantity)
-      output_tokens_per_turn: null
-      cache_hit_ratio: null
-      cache_write_amplification: null
-      context_growth: null
-      compactions: null
+      tokens_per_minute: 0            # exact, measured: every cell NA (cc: acp_turn misses calls; cx, cp: no model call time recorded)
+      output_tokens_per_turn: 6       # exact, measured
+      cache_hit_ratio: 6              # exact, measured
+      cache_write_amplification: 6    # exact, measured
+      context_growth: 4               # exact, measured: the cc cells NA (acp_turn misses calls)
+      compactions: 0                  # exact: NA by design (no harness records a compaction)
       tool_error_rate: 4              # exact: the 2 Codex cells NA per-call outcome missing
       stuck_loops: 4                  # exact: as tool_error_rate
       recovery_rate: 2                # exact: cc on and off; Copilot no failed tool call; Codex outcome missing
@@ -51,12 +51,12 @@ runs:
       regression_count: 0             # exact: NA task has no public tests
       behavioural_equivalence: 0      # exact: NA not a D-task
       cost_usd: 0                     # exact: NA no price list entry
-      tokens_per_minute: null         # W3-COST phase 2
-      output_tokens_per_turn: null
-      cache_hit_ratio: null
-      cache_write_amplification: null
-      context_growth: null
-      compactions: null
+      tokens_per_minute: 0            # exact, measured: every cell NA (cc: acp_turn misses calls; cx, cp: no model call time recorded)
+      output_tokens_per_turn: 3       # exact, measured
+      cache_hit_ratio: 3              # exact, measured
+      cache_write_amplification: 3    # exact, measured
+      context_growth: 2               # exact, measured: the cc cells NA (acp_turn misses calls)
+      compactions: 0                  # exact: NA by design (no harness records a compaction)
       tool_error_rate: 2              # exact: cc 0.0000, cp 0.0000; codex NA
       stuck_loops: 2                  # exact: as tool_error_rate
       recovery_rate: 0                # exact: cc and cp no failed tool call; codex NA
