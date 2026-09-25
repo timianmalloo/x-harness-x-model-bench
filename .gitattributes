@@ -3,6 +3,8 @@
 # derived files the coord merge drivers compare by byte identity mean the same thing
 # on Windows and macOS. Run `git add --renormalize .` once after adding this.
 * text=auto eol=lf
+# Vendored from cfd-bench with git archive. That blob is CRLF; do not renormalize it.
+tasks/B1/workspace/docs/proposals/build-phasing-plan.html -text
 docs/docs-index.js merge=coord-regen
 docs/audit/audit-data.js merge=coord-regen
 docs/audit/index.html merge=coord-regen
