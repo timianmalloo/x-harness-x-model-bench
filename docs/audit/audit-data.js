@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T07:58:26Z",
+  "generated": "2026-09-25T08:28:55Z",
   "audit": [
     {
       "actor": null,
@@ -16040,6 +16040,47 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3BTX2V7APDP25WTSJYYFS66",
+      "shortname": "w3-egress-s1",
+      "datetime": "2026-09-25T08:28:55Z",
+      "session": "w3-egress",
+      "prompt": "W3-EGRESS slice 1 (plan version 5, R-60): offline egress gate egress.check for US-47 classes, red-first tests with synthetic values, gateway-only spawner lint, tests/mutations/egress.json.",
+      "summary": "W3-EGRESS slice 1 (row 18, R-60, offline). src/harness_bench/egress.py: check(payload, *, destination, secrets, email, username, home, canaries) -> Verdict; six US-47 classes (credential in plain/base64/URL via report.credentials.encodings; token_shape via report.html.scan; email any case; username whole word; home path any separator form or case; canary any encoding); a hit is withheld: sensitive content with sha256 + destination + class names and no payload; Verdict.release never calls the backend on a hit. Red-then-green per class, synthetic runtime values only, a fake capturing backend. tests/test_architecture.py: the gateway-only spawner lint (harness_bench.gateway.backend; vacuous today, self-checked). tests/mutations/egress.json 7/7 killed. Full suite 1102 passed, 1 failed: test_docs_html_in_sync (docs/specs/harness-bench.html not re-rendered after ed9f247; pre-existing, outside owned paths). ruff clean. No network, listener, subprocess or real secret.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "src/harness_bench/egress.py",
+        "tests/test_egress.py",
+        "tests/mutations/egress.json"
+      ],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "Row 18 offline half: the egress scanner every judge payload passes, plus the lint that makes it the only path to a judge backend.",
+      "done_when": "egress.check finds each US-47 class and withholds with hash + destination; red-then-green per class with synthetic values; the fake backend never receives a withheld payload; the gateway-only lint in test_architecture; tests/mutations/egress.json all killed; full pytest passes; ruff clean; the audit entry is the last commit.",
+      "tier": "T2",
+      "main_calls": 55,
+      "main_budget": 150,
+      "main_over_budget": false,
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": false,
+        "regression": false
+      },
+      "started_at": "2026-09-25T08:17:29Z",
+      "duration_seconds": 686.0,
+      "git": {
+        "sha": "2be059b5eecf6e40145a2909042bc755937e7080",
+        "short": "2be059b5e",
+        "branch": "w3-egress",
+        "pushed": null
+      }
     }
   ],
   "changes": [
