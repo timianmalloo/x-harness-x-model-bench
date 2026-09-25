@@ -13,10 +13,10 @@ Rules, each defined once here:
 - Validity, tokens, the time split, leaderboard rows and exports are derived, never stored. A value that
   was not measured is a `Measure(None, reason)`, never 0 (US-27).
 - Validity, in order: an invalidating cause; `invalid (build mismatch)` (HB-VAL-007, R-47); not graded;
-  `invalid (tools denied by hook)` (HB-VAL-004, R-27);
-  `not recorded` for an unreadable usage record (HB-VAL-003, R-15), distinct from `invalid (no model call)`
-  (HB-VAL-001, a readable record with no call); `invalid (model mismatch)` (HB-VAL-002) for a served model that is
-  not the pin, a declared auxiliary model, or one the task's `model_map` names (US-11); else valid.
+  `invalid (tools denied by hook)` (HB-VAL-004, R-27); `invalid (model mismatch)` (HB-VAL-002) for a served model
+  that is not the pin, a declared auxiliary model, or one the task's `model_map` names (US-11), even in a partial
+  record; `not recorded` for an unreadable usage record (HB-VAL-003, R-15), distinct from `invalid (no model call)`
+  (HB-VAL-001, a readable record with no call); else valid.
 - Warnings flag a cell without changing its validity: HB-VAL-005 (Σ model_calls vs the ACP turn total, R-24/R-26
   c5) and HB-VAL-006 (the executed-build check skipped, R-22 c1, R-47). One code has one level and one emitter; a
   `Cause` code is never a view finding (R-47).
@@ -254,7 +254,7 @@ NO_ACP_USAGE = "the adapter reported no usage"
 
 # R-24, R-26 c5: the ACP turn total cross-checks Σ of the current extraction's model_calls buckets.
 # simplify: a harness list in code. Ceiling: harnesses whose adapter `usage` is the turn total over every model.
-# Upgrade trigger: a second such harness -> a profile datum. Verified: Copilot's ACP usage equals Σ modelMetrics in all
+# Upgrade trigger: any change to this list -> a profile datum instead (D&P). Verified: Copilot's ACP usage equals Σ modelMetrics in all
 # three captured samples (tests/fixtures/native/copilot/provenance.json). Codex's adapter reports the last call only and
 # Claude Code's the main model only (normalize docstring; tests/fixtures/acp/*-prompt-response.json), so a check there
 # would fire on every cell.
@@ -324,12 +324,14 @@ def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: 
         return "not graded", None
     if denials:  # R-27: measured, so it outranks a record that is otherwise unreadable
         return "invalid (tools denied by hook)", "HB-VAL-004"
+    # A served model that is neither the pin, a declared auxiliary model, nor one the task's model_map names. Seen in a
+    # partial record it is still measured, so it outranks "not recorded" (D&P); an empty served set cannot mismatch.
+    if any(not profiles.model_allowed(m, cell["model"], prof["auxiliary_models"]) and m not in mapped for m in served):
+        return "invalid (model mismatch)", "HB-VAL-002"
     if unrecorded is not None:  # R-15 c1: distinct from a readable record with no call (HB-VAL-001)
         return "not recorded", "HB-VAL-003"
     if not served:
         return "invalid (no model call)", "HB-VAL-001"
-    if any(not profiles.model_allowed(m, cell["model"], prof["auxiliary_models"]) and m not in mapped for m in served):
-        return "invalid (model mismatch)", "HB-VAL-002"
     return "valid", None
 
 

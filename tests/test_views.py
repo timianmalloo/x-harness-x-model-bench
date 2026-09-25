@@ -596,7 +596,7 @@ def test_a_pass_before_r15_names_no_unreadable_record_so_its_cells_read_as_befor
 def test_a_later_pass_with_a_new_extraction_supersedes_the_earlier_reading(root, tmp_path, monkeypatch, first_unreadable):
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     real = normalize.record_unreadable
-    cut = lambda ex: "native record truncated at the size bound"  # noqa: E731
+    cut = lambda ex: "native record truncated at the size bound"
     monkeypatch.setattr(normalize, "record_unreadable", cut if first_unreadable else real)
     runner.run_pass(run_dir, root)
     monkeypatch.setattr(normalize, "record_unreadable", real if first_unreadable else cut)
