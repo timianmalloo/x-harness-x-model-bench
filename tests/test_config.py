@@ -125,3 +125,21 @@ def test_ready_scenario1_task_without_clarifications_is_rejected(tmp_path):  # U
     entry = {"id": "X1", "scenario": 1, "budget_minutes": 45}
     config.validate_task(d, entry, p, config.grader_modules(ROOT), config.pack_marker_bytes(ROOT))
     assert "tasks/X1: status ready requires oracle/clarifications.yaml for scenario 1" in p.items
+
+
+def test_task_folder_with_operator_profile_path_is_rejected(tmp_path):
+    d = _write_task(tmp_path, "X4", status="draft", scenario=5)
+    (d / "prompt.md").write_text("line one\n" r"Run from C:\Users\malla\projects\bench" "\n", encoding="utf-8")
+    p = config.Problems()
+    entry = {"id": "X4", "scenario": 5, "budget_minutes": 45}
+    config.validate_task(d, entry, p, config.grader_modules(ROOT), config.pack_marker_bytes(ROOT))
+    assert "tasks/X4: prompt.md:2 hardcodes an absolute user-profile path" in p.items
+
+
+def test_task_folder_with_placeholder_home_vars_is_not_rejected(tmp_path):
+    d = _write_task(tmp_path, "X5", status="draft", scenario=5)
+    (d / "prompt.md").write_text("use %USERPROFILE%\\bench or $HOME/bench\n", encoding="utf-8")
+    p = config.Problems()
+    entry = {"id": "X5", "scenario": 5, "budget_minutes": 45}
+    config.validate_task(d, entry, p, config.grader_modules(ROOT), config.pack_marker_bytes(ROOT))
+    assert not any("user-profile path" in i for i in p.items)
