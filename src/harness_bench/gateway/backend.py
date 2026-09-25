@@ -82,13 +82,18 @@ def codex_argv(exe: str, model: str, work: Path, last: Path, output_schema: Path
 
 
 def copilot_argv(exe: str, model: str, prompt: str) -> list[str]:
-    """Copilot 1.0.89-1 in print mode, moved unchanged from the probe (R-63 c1): every built-in and MCP tool off and
-    an empty `--available-tools` allowlist, which is the last token so nothing is swallowed as a tool id.
+    """Copilot 1.0.89-1 in print mode, the shape measured in spike ac44295 (docs/notes/spike-gw-headless.md, last
+    section): built-in MCP servers off, custom instructions off (without it Copilot loaded AGENTS.md and CLAUDE.md
+    from ancestor folders), and an allowlist naming no real tool (`none`). A bare trailing `--available-tools`
+    filtered nothing: 17 tools advertised and `powershell` ran unapproved. This shape gave tools_advertised [] and
+    0 tool events. The answer is the record's last `assistant.message`, not stdout (CLI banners); the home is an
+    empty COPILOT_HOME (login in the Windows credential store). DR-GW-CP-1 is open: no Copilot judge is qualified.
 
-    assume: the prompt still travels in argv for Copilot: stdin delivery with `-p` is unspiked (R-63 spiked the argv
-    shape). Confirm: the Leader's stdin re-probe. Breaks: nothing today, because `Headless` launches Claude only; a
-    Copilot judge entry must bring a stdin shape before the gateway spawns it."""
-    return [exe, "-p", prompt, "--model", model, "--disable-builtin-mcps", "--available-tools"]
+    assume: the prompt still travels in argv for Copilot: stdin delivery with `-p` is unspiked. Confirm: a Leader
+    re-probe with stdin. Breaks: nothing today, because `Headless` launches Claude only; a Copilot judge entry must
+    bring a stdin shape before the gateway spawns it."""
+    return [exe, "-p", prompt, "--model", model, "--disable-builtin-mcps", "--no-custom-instructions",
+            "--available-tools", "none"]
 
 
 def invocation_sha256(harness: str, model: str, system: str, output: str, build_version: str, exe_sha256: str) -> str:
