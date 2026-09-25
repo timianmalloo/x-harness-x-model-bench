@@ -922,7 +922,9 @@ def test_copilot_missing_requests_is_not_zero(root, tmp_path):
 def test_pre_amendment_model_call_row_defaults_to_one_request():
     row = {"native_ordinal": 1, "model": "gpt-6-sol", "uncached_input": 2, "cache_read": 3,
            "cache_write": 4, "output": 5, "reasoning": None, "start": None, "end": None}
-    assert views.model_call(row).requests == 1
+    call = views.model_call(row)
+    assert call.requests == 1
+    assert call.total_nano_aiu is None  # R-15 Q6: absent before Amendment 2, the same migrated-field pattern
 
 
 def test_model_call_row_missing_start_still_raises():

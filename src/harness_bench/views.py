@@ -238,11 +238,17 @@ def turn_usage(row: dict) -> normalize.TurnUsage:
     return normalize.TurnUsage(**{f.name: row[f.name] for f in fields(normalize.TurnUsage)})
 
 
+_MODEL_CALL_MIGRATED_FIELDS = ("requests", "total_nano_aiu")  # optional: absent in a pre-amendment ledger row
+
+
 def model_call(row: dict) -> ModelCall:
-    """Map one ledger row; missing requests uses only the ModelCall field default."""
-    values = {f.name: row[f.name] for f in fields(ModelCall) if f.name != "requests"}
-    if "requests" in row:
-        values["requests"] = row["requests"]
+    """Map one ledger row; a field a migration made optional (`requests`, absent before Amendment 1;
+    `total_nano_aiu`, absent before Amendment 2) uses only the ModelCall field default when the row
+    does not carry it. Any other field's absence is a real defect and still raises KeyError."""
+    values = {f.name: row[f.name] for f in fields(ModelCall) if f.name not in _MODEL_CALL_MIGRATED_FIELDS}
+    for name in _MODEL_CALL_MIGRATED_FIELDS:
+        if name in row:
+            values[name] = row[name]
     return ModelCall(**values)
 
 

@@ -29,7 +29,14 @@ class ModelCall:
     `session.shutdown.modelMetrics`, and it can summarise several requests: `requests` there is
     `requests.count`. `requests` is additive (calls per cell = Σ `requests`); **a row count is not a
     call count**. Its default of 1 is the single home of that default (design D&P C-b) -- a reader that
-    does not report it (a pre-amendment ledger, or Claude Code/Codex) reads as one call per row."""
+    does not report it (a pre-amendment ledger, or Claude Code/Codex) reads as one call per row.
+
+    `total_nano_aiu` (ADR-0006 Amendment 2, ruling R-15 Q6) is Copilot's own
+    `modelMetrics.<model>.totalNanoAiu`, stored verbatim as an additive measure at this row's grain --
+    no arithmetic, no conversion, and no second definition of tokens is derived from it (R-15 c2). Null,
+    never 0, when the native record does not carry it (a missing key, or a value that is not an int).
+    Claude Code and Codex report no AI-unit measure at all, so their rows leave it null by the dataclass
+    default, the same pattern `reasoning` uses for a bucket a harness's format has no concept of."""
     native_ordinal: int
     model: str
     uncached_input: int
@@ -40,6 +47,7 @@ class ModelCall:
     start: str | None = None
     end: str | None = None
     requests: int = 1
+    total_nano_aiu: int | None = None  # Copilot's native AI-unit billing measure, verbatim; null, never 0, when absent
 
 
 @dataclass(frozen=True)

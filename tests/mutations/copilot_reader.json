@@ -87,8 +87,8 @@
  {
   "name": "TA10: model_call_rows without requests",
   "file": "src/harness_bench/telemetry/normalize.py",
-  "find": "             \"reasoning\": c.reasoning, \"start\": c.start, \"end\": c.end, \"requests\": c.requests} for c in ex.model_calls]",
-  "replace": "             \"reasoning\": c.reasoning, \"start\": c.start, \"end\": c.end} for c in ex.model_calls]",
+  "find": "             \"reasoning\": c.reasoning, \"start\": c.start, \"end\": c.end, \"requests\": c.requests,\n             \"total_nano_aiu\": c.total_nano_aiu} for c in ex.model_calls]",
+  "replace": "             \"reasoning\": c.reasoning, \"start\": c.start, \"end\": c.end,\n             \"total_nano_aiu\": c.total_nano_aiu} for c in ex.model_calls]",
   "tests": ["tests/test_telemetry_copilot.py::test_model_call_and_tool_call_rows_carry_requests_and_outcome_code"]
  },
  {
@@ -111,5 +111,45 @@
   "find": "    model_metrics = as_dict(shutdown_data.get(\"modelMetrics\"))",
   "replace": "    model_metrics = as_dict(shutdown_data.get(\"modelMetrics\")) or {\"leaked-default\": {}}",
   "tests": ["tests/test_telemetry_copilot.py::test_us11_an_emptied_modelmetrics_yields_no_model_calls"]
+ },
+ {
+  "name": "R-15 Q6: totalNanoAiu 0 instead of null when absent",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "        total_nano_aiu = raw_nano_aiu if is_count(raw_nano_aiu) else None",
+  "replace": "        total_nano_aiu = raw_nano_aiu if is_count(raw_nano_aiu) else 0",
+  "tests": ["tests/test_telemetry_copilot.py::test_total_nano_aiu_is_null_never_zero_when_the_key_is_absent",
+            "tests/test_telemetry_copilot.py::test_total_nano_aiu_is_null_for_a_non_int_value"]
+ },
+ {
+  "name": "R-15 Q6: totalNanoAiu summed twice",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "        total_nano_aiu = raw_nano_aiu if is_count(raw_nano_aiu) else None",
+  "replace": "        total_nano_aiu = (raw_nano_aiu * 2) if is_count(raw_nano_aiu) else None",
+  "tests": ["tests/test_telemetry_copilot.py::test_off_yields_one_row_per_model_in_the_last_shutdown_with_requests",
+            "tests/test_telemetry_copilot.py::test_on_yields_one_row_per_model_in_the_last_shutdown_with_requests",
+            "tests/test_telemetry_copilot.py::test_on_rev92_yields_one_row_per_model_in_the_last_shutdown_with_requests"]
+ },
+ {
+  "name": "R-15 Q6: totalNanoAiu read from the wrong key",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "        raw_nano_aiu = metrics.get(\"totalNanoAiu\")",
+  "replace": "        raw_nano_aiu = metrics.get(\"totalPremiumRequests\")",
+  "tests": ["tests/test_telemetry_copilot.py::test_off_yields_one_row_per_model_in_the_last_shutdown_with_requests",
+            "tests/test_telemetry_copilot.py::test_on_yields_one_row_per_model_in_the_last_shutdown_with_requests",
+            "tests/test_telemetry_copilot.py::test_on_rev92_yields_one_row_per_model_in_the_last_shutdown_with_requests"]
+ },
+ {
+  "name": "R-15 Q6: model_call_rows drops total_nano_aiu",
+  "file": "src/harness_bench/telemetry/normalize.py",
+  "find": "             \"reasoning\": c.reasoning, \"start\": c.start, \"end\": c.end, \"requests\": c.requests,\n             \"total_nano_aiu\": c.total_nano_aiu} for c in ex.model_calls]",
+  "replace": "             \"reasoning\": c.reasoning, \"start\": c.start, \"end\": c.end, \"requests\": c.requests} for c in ex.model_calls]",
+  "tests": ["tests/test_telemetry_copilot.py::test_model_call_and_tool_call_rows_carry_requests_and_outcome_code"]
+ },
+ {
+  "name": "R-15 Q6 (nit): total_nano_aiu dropped from views.model_call's migrated-field list",
+  "file": "src/harness_bench/views.py",
+  "find": "_MODEL_CALL_MIGRATED_FIELDS = (\"requests\", \"total_nano_aiu\")  # optional: absent in a pre-amendment ledger row",
+  "replace": "_MODEL_CALL_MIGRATED_FIELDS = (\"requests\",)  # optional: absent in a pre-amendment ledger row",
+  "tests": ["tests/test_views.py::test_pre_amendment_model_call_row_defaults_to_one_request"]
  }
 ]

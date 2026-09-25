@@ -14,7 +14,11 @@ because its record carries the CLI build version, not a distinct format version 
   usage.inputTokens`, else HB-TEL-001 `input_tokens`, F7); `reasoning` is a component of output and is
   never added into it. `start`/`end` are set only for a single-request report (`requests == 1`), from
   the shutdown row's own timestamp -- Copilot keeps no per-call clock (design section 3), so a
-  multi-request report's model time is NOT_RECORDED.
+  multi-request report's model time is NOT_RECORDED. `total_nano_aiu` is
+  `modelMetrics.<model>.totalNanoAiu`, stored verbatim (ADR-0006 Amendment 2, R-15 Q6); null, never 0,
+  when the key is absent or not an int -- no second definition of tokens is derived from it. Its absence
+  is **not** added to `ex.missing`: no reader consumes it yet, and `ex.missing` gates `cost_usd`
+  (`grade/runner.py`); the null on the row is its own "not recorded" evidence (R-15 Q6 loop-back).
 - `tool_calls`: `tool.execution_start` paired with `tool.execution_complete` by `toolCallId` (the
   Correlation Identifier), even when completions arrive interleaved or out of order across several
   open calls. `outcome_code` is `data.error.code`, but only when the call did not succeed: **null on
@@ -50,6 +54,7 @@ from harness_bench.telemetry import (
     as_dict,
     as_list,
     as_str,
+    is_count,
     rows,
 )
 
@@ -159,6 +164,11 @@ def read(path: Path) -> Extraction:
         cache_write = ex.count(n, usage, "cacheWriteTokens")
         output = ex.count(n, usage, "outputTokens")
         reasoning = ex.count(n, usage, "reasoningTokens")
+        # Not flagged in ex.missing (R-15 Q6 loop-back, D&P condition 1): no reader consumes this column
+        # yet, and ex.missing gates cost_usd (grade/runner.py) -- a column with no consumer must not null
+        # a scored metric. The null on the row itself is the "not recorded" evidence (ADR-0006 Amendment 2).
+        raw_nano_aiu = metrics.get("totalNanoAiu")
+        total_nano_aiu = raw_nano_aiu if is_count(raw_nano_aiu) else None
 
         usage_input = usage.get("inputTokens")
         if not (type(usage_input) is int and uncached_input + cache_read + cache_write == usage_input):
@@ -166,7 +176,8 @@ def read(path: Path) -> Extraction:
 
         single_request = requests == 1
         ex.model_calls.append(ModelCall(n, model, uncached_input, cache_read, cache_write, output, reasoning,
-                                        stamp if single_request else None, stamp if single_request else None, requests))
+                                        stamp if single_request else None, stamp if single_request else None, requests,
+                                        total_nano_aiu=total_nano_aiu))
 
     return ex
 
