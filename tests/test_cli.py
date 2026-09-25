@@ -285,14 +285,22 @@ def test_run_refuses_a_run_that_already_started(capsys, root, tmp_path, base, mo
     fired). Spying on preflight.check pins the early-exit to cli.py's own line, not the engine's."""
     from harness_bench import plan as plan_mod
     from harness_bench import preflight
+    from harness_bench.errors import BenchError
 
     calls = []
-    monkeypatch.setattr(preflight, "check", lambda *a, **k: calls.append(1))
+
+    def spy(*a, **k):  # records the call, then ends cmd_run so a mutant fails on the asserts below, not a KeyError
+        calls.append(1)
+        raise BenchError("HB-PRE-003", "preflight reached")
+
+    monkeypatch.setattr(preflight, "check", spy)
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     # make_run's plan carries only the two parameters it needs; fill in the rest so
-    # require_run_parameters (checked before the events-exists guard) does not fire first.
+    # require_run_parameters (checked before the events-exists guard) does not fire first, and give it an
+    # empty task map so a mutant that skips the guard reaches preflight.check (Test Architect gate, STOP-I join).
     p = json.loads((run_dir / "plan.json").read_text(encoding="utf-8"))
     p["parameters"] = {**plan_mod.DEFAULT_PARAMETERS, **p["parameters"]}
+    p.setdefault("tasks", {})
     p["plan_hash"] = plan_mod.plan_hash(p)
     (run_dir / "plan.json").write_text(json.dumps(p), encoding="utf-8")
     code, _, err = _bench(capsys, root, tmp_path, "--cells-root", str(base / "cells"), "--tools-dir", str(_fake_tree(tmp_path / "t")),

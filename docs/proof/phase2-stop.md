@@ -259,6 +259,11 @@ Verbatim row-10 exit conditions (`docs/coordination/coordination-finish-harness-
 | **Circuit breaker:** acceptance criterion, red-first test | design section 7 AC-CB-1..8; `stop.json`'s 10 `breaker *` / `power *` mutants | section 2: all killed, incl. N1's `model_unavailable`-not-counted mutant (`breaker counts model unavailable`) |
 | power request (`host.keep_awake`) held through stop and exception | `test_keep_awake_is_held_through_a_stop` / `..._an_operator_stop` (R10-7a), `test_keep_awake_is_released_when_the_run_raises` (R10-7b) | section 2: killed |
 | TLC seeded variants still fail | `check_models.py` (full) | section 4: 22/22 rejected |
+| **R21-3 (design 16.2): FLAGGED, no test at HEAD** | none: `test_copilot_budget_kill_records_session_shutdown` (`@pytest.mark.credentials`) is promised but not written | **Flagged** (design section 21: "S6 red then green, or R21-3 listed as Flagged"). Confirm: write the test and observe it red, then green, in one Copilot capture window (the Leader's, before the smoke run). Breaks: a budget-killed Copilot cell reads `invalid (no model call)` instead of `tokens: not recorded` (R-21 c2). `docs/proof/phase2.md`'s R-21 row stays Inferred until then. |
+
+**Design 16.2 and 16.3 (Test Architect gate at the join, spot-checked, not exhaustive):** 13 of the 16.2 named tests exist at HEAD (D-1 is `test_driver.py::test_cancel_closes_stdin_during_the_handshake`; R21-4 is two functions, `test_engine.py:729` and `:739`). 16.3's T2 (Hypothesis) exists at `test_engine.py:337-339`, and T3 holds (`session/cancel` appears in no `src` module but `driver.py`). The one hole found is R21-3, flagged above.
+
+**Join fixes (Leader, after the gate):** the `cli.json` "a started run re-run" mutant now fails on the test's own assertion (`'HB-PRE-003: preflight reached'` does not start with `HB-USR-002`), not on a `KeyError`: the fixture plan carries an empty task map, and the `preflight.check` spy raises after recording. The dotnet timeout test's liveness check is `host.process_alive` (exit code, not `os.kill(pid, 0)`), so an ended process whose object is still held elsewhere reads as ended (section 6's lingering-handle candidate).
 
 ## 6. `test_correctness_dotnet.py::test_dotnet_oracle_timeout_is_na_and_leaves_no_process` — diagnosis
 
