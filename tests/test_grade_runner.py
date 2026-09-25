@@ -86,6 +86,15 @@ def test_an_unbuilt_grader_is_na_not_built_for_each_of_its_metrics_never_0(root,
     assert {m: got.get(m) for m in C2} == C2
 
 
+def test_a_metric_a_registered_grader_does_not_return_is_na_not_built_never_0(root, tmp_path, monkeypatch):
+    # every registered grader now returns all its metrics, so a stub that returns a subset reaches the branch
+    set_graders(root, ["cost"])
+    with_grader(monkeypatch, "cost", lambda inp: {"cost_usd": Score(None, "a stub reason")})
+    got = {r["metric_id"]: (r["value"], r["reason"]) for r in graded(root, tmp_path)}
+    assert got["cost_usd"] == (None, "a stub reason")
+    assert {m: got[m] for m in COST - {"cost_usd"}} == {m: (None, "not built") for m in COST - {"cost_usd"}}
+
+
 # --- a failing or malformed grader is NA HB-GRD-003, and the pass continues (F3) ---------------------------------
 
 

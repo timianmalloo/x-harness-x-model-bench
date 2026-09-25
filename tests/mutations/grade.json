@@ -146,7 +146,7 @@
   "file": "src/harness_bench/grade/runner.py",
   "find": "out[m] if m in out else Score(None, NOT_BUILT)",
   "replace": "out[m] if m in out else Score(0, None)",
-  "tests": ["tests/test_grade_runner.py::test_an_unbuilt_grader_is_na_not_built_for_each_of_its_metrics_never_0"]
+  "tests": ["tests/test_grade_runner.py::test_a_metric_a_registered_grader_does_not_return_is_na_not_built_never_0"]
  },
  {
   "name": "a raising grader fails the pass instead of NA HB-GRD-003",
