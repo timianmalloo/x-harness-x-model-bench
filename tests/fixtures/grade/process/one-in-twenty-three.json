@@ -1,0 +1,142 @@
+{
+  "tool_calls": [
+    {
+      "native_ordinal": 1,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 2,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 3,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 4,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 5,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 6,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 7,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 8,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 9,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 10,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 11,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 12,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 0
+    },
+    {
+      "native_ordinal": 13,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 14,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 15,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 16,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 17,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 18,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 19,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 20,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 21,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 22,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    },
+    {
+      "native_ordinal": 23,
+      "name": "Bash",
+      "tool_class": "shell",
+      "ok": 1
+    }
+  ]
+}
