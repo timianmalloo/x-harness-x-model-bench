@@ -99,6 +99,7 @@ def test_off_yields_one_row_per_model_in_the_last_shutdown_with_requests():
     call = ex.model_calls[0]
     assert call.model == "gpt-6-sol" and call.requests == 5 and (call.start, call.end) == (None, None)
     assert (call.uncached_input, call.cache_read, call.cache_write, call.output, call.reasoning) == (15, 46801, 12170, 515, 166)
+    assert call.total_nano_aiu == 4496520000  # R-15 Q6: modelMetrics.<model>.totalNanoAiu, verbatim
     assert ex.missing == []
 
 
@@ -108,6 +109,7 @@ def test_on_yields_one_row_per_model_in_the_last_shutdown_with_requests():  # re
     call = ex.model_calls[0]
     assert call.model == "gpt-6-sol" and call.requests == 9 and (call.start, call.end) == (None, None)
     assert (call.uncached_input, call.cache_read, call.cache_write, call.output, call.reasoning) == (27, 787795, 102909, 1778, 545)
+    assert call.total_nano_aiu == 43266550000  # R-15 Q6
     assert ex.missing == []
 
 
@@ -140,6 +142,7 @@ def test_on_rev92_yields_one_row_per_model_in_the_last_shutdown_with_requests():
     call = ex.model_calls[0]
     assert call.model == "gpt-6-sol" and call.requests == 6 and (call.start, call.end) == (None, None)
     assert (call.uncached_input, call.cache_read, call.cache_write, call.output, call.reasoning) == (18, 439386, 88237, 525, 170)
+    assert call.total_nano_aiu == 31375570000  # R-15 Q6
     assert ex.missing == []
 
 
@@ -161,6 +164,47 @@ def test_claude_code_and_codex_still_default_requests_to_one():  # design sectio
     codex_calls = codex.read(FIX / "native/codex/ok.jsonl").model_calls
     assert claude_call.requests == 1
     assert codex_calls and all(c.requests == 1 for c in codex_calls)
+
+
+def test_claude_code_and_codex_leave_total_nano_aiu_null():  # R-15 Q6: neither native record carries an AI-unit measure
+    from harness_bench.telemetry import claude_code, codex
+
+    claude_call = claude_code.read(FIX / "native/claude-code/ok.jsonl").model_calls[0]
+    codex_calls = codex.read(FIX / "native/codex/ok.jsonl").model_calls
+    assert claude_call.total_nano_aiu is None
+    assert codex_calls and all(c.total_nano_aiu is None for c in codex_calls)
+
+
+# R-15 Q6: `total_nano_aiu` is stored verbatim, null (never 0) when the native record does not carry it -------
+
+def test_total_nano_aiu_is_null_never_zero_when_the_key_is_absent(tmp_path):
+    metrics = _model_metrics()
+    del metrics["gpt-6-sol"]["totalNanoAiu"]
+    path = _write(tmp_path, [_start(), _user("prompt"), _shutdown(metrics)])
+    ex = copilot.read(path)
+    call = ex.model_calls[0]
+    assert call.total_nano_aiu is None  # never 0
+    assert ("HB-TEL-001", "totalNanoAiu") in {(m.code, m.field) for m in ex.missing}
+
+
+def test_total_nano_aiu_is_null_for_a_non_int_value(tmp_path):
+    metrics = _model_metrics()
+    metrics["gpt-6-sol"]["totalNanoAiu"] = "35887260000"  # a string, not an int
+    path = _write(tmp_path, [_start(), _user("prompt"), _shutdown(metrics)])
+    ex = copilot.read(path)
+    call = ex.model_calls[0]
+    assert call.total_nano_aiu is None
+    assert ("HB-TEL-001", "totalNanoAiu") in {(m.code, m.field) for m in ex.missing}
+
+
+def test_total_nano_aiu_zero_is_recorded_not_treated_as_absent(tmp_path):  # 0 is a valid measured value, distinct from null
+    metrics = _model_metrics()
+    metrics["gpt-6-sol"]["totalNanoAiu"] = 0
+    path = _write(tmp_path, [_start(), _user("prompt"), _shutdown(metrics)])
+    ex = copilot.read(path)
+    call = ex.model_calls[0]
+    assert call.total_nano_aiu == 0
+    assert ("HB-TEL-001", "totalNanoAiu") not in {(m.code, m.field) for m in ex.missing}
 
 
 def test_off_hooks_are_zero_not_none_and_on_rev92_is_eight_and_eight():  # section 4.5 / 13 reader test
@@ -387,6 +431,7 @@ def test_model_call_and_tool_call_rows_carry_requests_and_outcome_code():  # TA9
     off_ex = copilot.read(OFF)
     model_rows = normalize.model_call_rows("r1", "c1", off_ex.session_id, off_ex, "x")
     assert model_rows[0]["requests"] == 5  # a pre-amendment reader's `.get("requests", 1)` would under-count 5x
+    assert model_rows[0]["total_nano_aiu"] == 4496520000  # ADR-0006 Amendment 2, R-15 Q6: carried to the ledger row
 
     on92_ex = copilot.read(ON_REV92)  # the revision-92 negative control: 8/8 denied
     on92_rows = normalize.tool_call_rows("r1", "c1", on92_ex.session_id, on92_ex, "x")
