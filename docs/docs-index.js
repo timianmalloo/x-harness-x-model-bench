@@ -1823,7 +1823,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "669dc8dd313a0a2bc66b5e34a7cfc98ed8f98c1de4dfe1908c93157c8dcd8b96"
+      "sourceSha256": "58005e78a98383b528e807dfc0c9d8cee6b17b92736c7b62b9068ff67a6c3630"
     },
     {
       "id": "note-spike-isolation-permissions",
@@ -2724,5 +2724,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "111e75d9c2a80c90847bfb8235f8940ba923157eeb6402005b08942074fbb3c7"
+  "graphSha256": "f6d949807faf3b879569a8d71d9385104ff36bbf1eb47d544fe6c5c28f2c16a5"
 };

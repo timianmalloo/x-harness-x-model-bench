@@ -1,0 +1,229 @@
+{
+ "format": "gw-headless-probe/1",
+ "runs": [
+  {
+   "format": "gw-headless-probe/1",
+   "label": "copilot-gpt-6-sol-text-20260925T115857Z",
+   "harness": "copilot",
+   "model": "gpt-6-sol",
+   "schema_mode": "text",
+   "decoy_profile": true,
+   "build": {
+    "version": "1.0.89-1",
+    "sha256": "417d0721237ff370a415cf5c11c7523f9332f220a6ee0f5eb8e802a9662ef246",
+    "adapter_version": null,
+    "adapter_sha256": null,
+    "agent_version": null,
+    "agent_version_reason": "ACP initialize.agentInfo.version requires a live handshake; not recorded at plan time"
+   },
+   "captured_utc": "2026-09-25T11:59:16+00:00",
+   "nonce": "c677abe0",
+   "session_id": null,
+   "canaries": {
+    "instruction file above the working folder (CLAUDE.md)": "hb-gw-canary-0-c677abe0",
+    "instruction file above the working folder (AGENTS.md)": "hb-gw-canary-1-c677abe0",
+    "user memory (~/.claude/CLAUDE.md, via USERPROFILE)": "hb-gw-canary-2-c677abe0",
+    "user memory (~/.codex/AGENTS.md, via USERPROFILE)": "hb-gw-canary-3-c677abe0",
+    "skill (~/.claude/skills, via USERPROFILE)": "hb-gw-canary-4-c677abe0",
+    "skill (~/.agents/skills, via USERPROFILE)": "hb-gw-canary-5-c677abe0"
+   },
+   "exit": {
+    "returncode": 0,
+    "timed_out": false,
+    "truncated": false,
+    "seconds": 18.5
+   },
+   "home_written": {
+    "config.json": 1,
+    "logs": 2,
+    "session-state": 6,
+    "session-store.db": 1,
+    "session-store.db-shm": 1,
+    "session-store.db-wal": 1
+   },
+   "credential_copy_deleted": true,
+   "facts": {
+    "record_found": true,
+    "served_models": [
+     "gpt-6-sol"
+    ],
+    "served_equals_pin": true,
+    "model_calls": 1,
+    "usage_record": {
+     "uncached_input": 6,
+     "cache_read": 11870,
+     "cache_write": 12055,
+     "output": 485
+    },
+    "missing_usage_fields": [],
+    "provider_errors": [],
+    "tool_events": 1,
+    "tool_names": [
+     "powershell"
+    ],
+    "tools_advertised": [
+     "powershell",
+     "read_powershell",
+     "stop_powershell",
+     "list_powershell",
+     "apply_patch",
+     "view",
+     "web_fetch",
+     "fetch_copilot_cli_documentation",
+     "skill",
+     "sql",
+     "session_store_sql",
+     "read_agent",
+     "list_agents",
+     "write_agent",
+     "rg",
+     "glob",
+     "task"
+    ],
+    "account_connector_tools": null,
+    "context_kinds": [
+     "system.message"
+    ],
+    "system_prompt_in_record": null,
+    "prompt_intact": true,
+    "reads": {
+     "canaries": {
+      "instruction file above the working folder (AGENTS.md)": [
+       "system.message:data.content",
+       "system.message:data.contentBlocks[].content"
+      ],
+      "instruction file above the working folder (CLAUDE.md)": [
+       "assistant.message:data.content",
+       "stdout:raw[4]",
+       "system.message:data.content",
+       "system.message:data.contentBlocks[].content"
+      ]
+     },
+     "operator skills": {},
+     "operator identifiers": {
+      "host name": [
+       "assistant.message:data.content",
+       "stdout:raw[4]",
+       "tool.execution_complete:data.result.content"
+      ]
+     },
+     "pack markers": {}
+    },
+    "stdout": {
+     "parsed": false,
+     "event_types": {},
+     "item_types": {},
+     "usage": {}
+    },
+    "final": {
+     "source": "final text is not JSON",
+     "schema_errors": [
+      "final text is not JSON"
+     ],
+     "scores": null,
+     "host_name_in_final": false
+    },
+    "qualified": false,
+    "reasons": [
+     "1 tool event(s) in the record: ['powershell']",
+     "tools advertised: ['powershell', 'read_powershell', 'stop_powershell', 'list_powershell', 'apply_patch', 'view', 'web_fetch', 'fetch_copilot_cli_documentation', 'skill', 'sql', 'session_store_sql', 'read_agent', 'list_agents', 'write_agent', 'rg', 'glob', 'task']",
+     "canaries present: ['instruction file above the working folder (AGENTS.md)', 'instruction file above the working folder (CLAUDE.md)']",
+     "operator identifiers present: ['host name']",
+     "output contract: ['final text is not JSON']"
+    ]
+   }
+  },
+  {
+   "format": "gw-headless-probe/1",
+   "label": "copilot-gpt-6-sol-text-20260925T120016Z",
+   "harness": "copilot",
+   "model": "gpt-6-sol",
+   "schema_mode": "text",
+   "decoy_profile": true,
+   "build": {
+    "version": "1.0.89-1",
+    "sha256": "417d0721237ff370a415cf5c11c7523f9332f220a6ee0f5eb8e802a9662ef246",
+    "adapter_version": null,
+    "adapter_sha256": null,
+    "agent_version": null,
+    "agent_version_reason": "ACP initialize.agentInfo.version requires a live handshake; not recorded at plan time"
+   },
+   "captured_utc": "2026-09-25T12:00:25+00:00",
+   "nonce": "ef6ddf01",
+   "session_id": null,
+   "canaries": {
+    "instruction file above the working folder (CLAUDE.md)": "hb-gw-canary-0-ef6ddf01",
+    "instruction file above the working folder (AGENTS.md)": "hb-gw-canary-1-ef6ddf01",
+    "user memory (~/.claude/CLAUDE.md, via USERPROFILE)": "hb-gw-canary-2-ef6ddf01",
+    "user memory (~/.codex/AGENTS.md, via USERPROFILE)": "hb-gw-canary-3-ef6ddf01",
+    "skill (~/.claude/skills, via USERPROFILE)": "hb-gw-canary-4-ef6ddf01",
+    "skill (~/.agents/skills, via USERPROFILE)": "hb-gw-canary-5-ef6ddf01"
+   },
+   "exit": {
+    "returncode": 0,
+    "timed_out": false,
+    "truncated": false,
+    "seconds": 9.3
+   },
+   "home_written": {
+    "config.json": 1,
+    "logs": 2,
+    "session-state": 6,
+    "session-store.db": 1,
+    "session-store.db-shm": 1,
+    "session-store.db-wal": 1
+   },
+   "credential_copy_deleted": true,
+   "facts": {
+    "record_found": true,
+    "served_models": [
+     "gpt-6-sol"
+    ],
+    "served_equals_pin": true,
+    "model_calls": 1,
+    "usage_record": {
+     "uncached_input": 3,
+     "cache_read": 0,
+     "cache_write": 3236,
+     "output": 202
+    },
+    "missing_usage_fields": [],
+    "provider_errors": [],
+    "tool_events": 0,
+    "tool_names": [],
+    "tools_advertised": [],
+    "account_connector_tools": null,
+    "context_kinds": [
+     "system.message"
+    ],
+    "system_prompt_in_record": null,
+    "prompt_intact": true,
+    "reads": {
+     "canaries": {},
+     "operator skills": {},
+     "operator identifiers": {},
+     "pack markers": {}
+    },
+    "stdout": {
+     "parsed": true,
+     "event_types": {
+      "None": 1
+     },
+     "item_types": {},
+     "usage": {}
+    },
+    "final": {
+     "source": "text",
+     "schema_errors": [],
+     "scores": [
+      2,
+      2
+     ],
+     "host_name_in_final": false
+    },
+    "qualified": true,
+    "reasons": []
+   }
+  }
+ ]
+}
