@@ -1,0 +1,15 @@
+# A synthetic clarification set for tests/test_scripted_user.py (W2-USER-M's own fixture; no task, no held-out data).
+schema: bench-clarifications/1
+task: Z0
+default_reply: "Decide and state your assumption."
+clarifications:
+  - id: order-ascending
+    type: Behavior
+    deleted_information: "the sort order: ascending"
+    question: "Should the output be sorted in “ascending” order?"
+    reply: "Yes, ascending."
+  - id: size-bound
+    type: Input
+    deleted_information: "the input bound: at most 100000 items"
+    question: "What is the maximum input size?"
+    reply: "At most 100000 items."
