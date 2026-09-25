@@ -55,6 +55,9 @@ T = TypeVar("T")
 _B64_RUN = re.compile(r"[A-Za-z0-9+/_-]{8,}={0,2}")
 _JSON_ESCAPE = re.compile(r"\\(u[0-9a-fA-F]{4}|[\\/\"bfnrt])")
 _JSON_CHARS = {"b": "\b", "f": "\f", "n": "\n", "r": "\r", "t": "\t"}
+_WRAP = re.compile(r"(?<=[A-Za-z0-9+/=_-])\r?\n(?=[A-Za-z0-9+/_-])")  # a newline between two base64 characters
+_HEX_RUN = re.compile(r"(?<![0-9a-fA-F])(?:[0-9a-fA-F]{2}){16,}(?![0-9a-fA-F])")
+_CONTINUATION = re.compile(r"\\\r?\n[ \t]*")
 
 
 @dataclass(frozen=True)
@@ -124,10 +127,12 @@ def _printable(raw: bytes) -> str:
     return kept if kept and len(kept) >= PRINTABLE_SHARE * len(decoded) else ""
 
 
-def _base64_text(text: str) -> str:
-    """The base64 / base64url runs in `text` that decode to mostly-printable text, one per line."""
+def _decoded_runs(text: str) -> str:
+    """The base64 / base64url runs (also across newline wraps) and even-length hex runs of 32+ digits in `text`
+    that decode to mostly-printable text, one per line."""
     out = []
-    for run in _B64_RUN.findall(text):
+    unwrapped = _WRAP.sub("", text)
+    for run in {*_B64_RUN.findall(text), *_B64_RUN.findall(unwrapped)}:
         body = run.rstrip("=").replace("-", "+").replace("_", "/")
         if len(body) % 4 == 1:
             continue
@@ -136,7 +141,13 @@ def _base64_text(text: str) -> str:
         except binascii.Error:
             continue
         out.append(_printable(raw))
-    return "\n".join(o for o in out if o)
+    out += [_printable(bytes.fromhex(run)) for run in _HEX_RUN.findall(text)]
+    return "\n".join(sorted(o for o in out if o))
+
+
+def _joined(text: str) -> str:
+    """The text with backslash-newline continuations removed (a value continued over a line)."""
+    return _CONTINUATION.sub("", text)
 
 
 def _controls_removed(text: str) -> str:
@@ -157,7 +168,7 @@ def _views(payload: str) -> tuple[list[str], bool]:
             return views, False
         seen.add(text)
         views.append(text)
-        for derived in (_decode_layer(text), _base64_text(text), _controls_removed(text)):
+        for derived in (_decode_layer(text), _decoded_runs(text), _controls_removed(text), _joined(text)):
             if derived and derived != text:
                 queue.append((derived, depth + 1))
     return views, True
@@ -180,13 +191,17 @@ def _encoded(views: list[str], value: str) -> bool:
 
 
 def _anycase(views: list[str], value: str) -> bool:
-    """The value in any view ignoring case (an email's domain is case-insensitive), or an encoded form."""
-    return any(value.casefold() in v.casefold() for v in views) or _encoded(views, value)
+    """The value in any view ignoring case (an email's domain is case-insensitive), also across whitespace and
+    line splits, or an encoded form."""
+    return any(value.casefold() in v.casefold() or _ws(value).casefold() in _ws(v).casefold() for v in views) or \
+        _encoded(views, value)
 
 
 def _word(views: list[str], value: str) -> bool:
-    """The value as a whole word (no letter or digit on either side) in any view ignoring case, or encoded."""
-    word = re.compile(rf"(?<![^\W_]){re.escape(value)}(?![^\W_])", re.IGNORECASE)
+    """The value as a whole word (no letter or digit on either side) in any view ignoring case, whitespace allowed
+    between its characters (a line split), or encoded. Whitespace only inside it, so the boundaries still hold."""
+    body = r"\s*".join(re.escape(c) for c in value)
+    word = re.compile(rf"(?<![^\W_]){body}(?![^\W_])", re.IGNORECASE)
     return any(word.search(v) for v in views) or _encoded(views, value)
 
 
