@@ -258,9 +258,9 @@ KEYS = ("bench/gateway.yaml judge 1: keys must be ['build', 'harness', 'invocati
 @pytest.mark.parametrize(("change", "expected"), [
     ({"invocation_sha256": "0" * 64}, NOT_THE_BUILDERS),  # a placeholder hash
     ({"model": "claude-opus-5-5"}, NOT_THE_BUILDERS),  # a hash of another invocation
-    ({"harness": "copilot", "invocation_sha256": gw_backend.invocation_sha256(
-        "copilot", CLAUDE, gw_backend.JUDGE_SYSTEM, "text", "2.1.282", "0" * 64)},
-     "bench/gateway.yaml judge 1: qualified: true on copilot, which the gateway does not launch (R-70 item 4)"),
+    ({"harness": "codex", "invocation_sha256": gw_backend.invocation_sha256(
+        "codex", CLAUDE, gw_backend.JUDGE_SYSTEM, "text", "2.1.282", "0" * 64)},
+     "bench/gateway.yaml judge 1: qualified: true on codex, which the gateway does not launch (R-70 item 4)"),
     ({"model": "Claude Fable"}, "bench/gateway.yaml judge 1: model must be a lower-case model id (an egress destination)"),
     ({"output": "json"}, "bench/gateway.yaml judge 1: output must be one of ('text', 'native')"),
     ({"qualified": "yes"}, "bench/gateway.yaml judge 1: qualified must be true or false"),
@@ -271,6 +271,17 @@ KEYS = ("bench/gateway.yaml judge 1: keys must be ['build', 'harness', 'invocati
 ])
 def test_a_stipulation_entry_is_refused_on_each_rule(change, expected):
     assert problems(stipulation(**change)) == [expected]
+
+
+def test_a_qualified_copilot_entry_is_launchable_once_the_copilot_branch_is_built():
+    # R-70 item 4 kept a qualified Copilot entry out while `Headless` could not launch it; slice 4 builds the branch
+    # (tests/test_gateway_headless.py). bench/gateway.yaml still gains the entry only from the Leader's turn (3(b)).
+    g = stipulation()
+    g["judges"][1] |= {"harness": "copilot", "output": "text", "qualified": True,
+                       "build": {"version": "1.0.89-1", "exe_sha256": "2" * 64},
+                       "invocation_sha256": gw_backend.invocation_sha256("copilot", CODEX, gw_backend.JUDGE_SYSTEM,
+                                                                         "text", "1.0.89-1", "2" * 64)}
+    assert problems(g) == []
 
 
 def test_a_stipulation_names_one_or_two_judges_a_positive_timeout_and_its_schema():

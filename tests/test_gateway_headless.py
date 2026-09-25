@@ -7,19 +7,24 @@ model CLI is launched and no network call is made. The credential is a synthetic
 clean `base` folder (no instruction file above it); operator identifiers are random synthetic strings (R-42).
 """
 
+import dataclasses
 import hashlib
+import inspect
 import json
 import sys
 from pathlib import Path
 from secrets import token_hex
 
-from harness_bench import egress, profiles, tools
+import pytest
+
+from harness_bench import egress, ledger, profiles, tools
 from harness_bench.gateway import backend as gw_backend
 from harness_bench.gateway import pipeline, request, scrub
 
 FIX = Path(__file__).resolve().parent / "fixtures" / "gateway"
 RECORDS = FIX / "records"
 FAKE = FIX / "fake_judge_cli.py"
+ROOT = Path(__file__).resolve().parents[1]
 PIN = "claude-fable-5-1"
 JUDGE = pipeline.Judge(model=PIN, invocation_sha256="d" * 64, allowed_models=(PIN, "claude-haiku-4-5"), qualified=True)
 ENTRIES = (*scrub.FAMILY_WORDS, "harness-placeholder", "combo-placeholder")
@@ -79,13 +84,26 @@ def test_the_builders_put_the_request_on_stdin_never_in_argv(tmp_path):
     assert c[-1] == "-" and "model=gpt-6-sol" in c and "include_apply_patch_tool=false" not in c
 
 
-def test_the_copilot_builder_is_the_measured_shape():
+def test_the_copilot_builder_is_the_measured_shape_with_the_request_on_stdin():
     # Spike ac44295 (docs/notes/spike-gw-headless.md, last section): a bare trailing --available-tools filtered
     # nothing (17 tools advertised, powershell ran unapproved) and ancestor AGENTS.md/CLAUDE.md were loaded; the
-    # shape below gave tools_advertised [] and 0 tool events. DR-GW-CP-1 is open: no Copilot judge is qualified.
-    assert gw_backend.copilot_argv("copilot.exe", "gpt-6-sol", "P") == [
-        "copilot.exe", "-p", "P", "--model", "gpt-6-sol", "--disable-builtin-mcps", "--no-custom-instructions",
-        "--available-tools", "none"]
+    # measured flags gave tools_advertised [] and 0 tool events. R-70 item 2: the request never travels in argv.
+    assert list(inspect.signature(gw_backend.copilot_argv).parameters) == ["exe", "model"]
+    assert gw_backend.copilot_argv("copilot.exe", "gpt-6-sol") == [
+        "copilot.exe", "--model", "gpt-6-sol", "--disable-builtin-mcps", "--no-custom-instructions",
+        "--available-tools", "none", "-p"]
+
+
+def test_the_copilot_system_prompt_route_is_explicit_and_inside_the_invocation_hash():
+    # R-70 3(a): Copilot 1.0.89-1 passes no system prompt in argv, so the gateway prepends JUDGE_SYSTEM to the request
+    # on stdin, and invocation_sha256 hashes that stdin template beside the argv template: exactly what is sent.
+    route = getattr(gw_backend, "copilot_request", None)
+    assert route is not None, "gateway.backend.copilot_request (R-70 3(a)) is not built"
+    assert route("S", "R") == "S\n\nR"
+    shape = {"argv": gw_backend.copilot_argv("<exe>", "gpt-6-sol"), "stdin": route("S", "<request>"), "system": "S",
+             "output": "text", "harness": "copilot", "build_version": "1.0.89-1", "exe_sha256": "a" * 64}
+    assert gw_backend.invocation_sha256("copilot", "gpt-6-sol", "S", "text", "1.0.89-1", "a" * 64) == \
+        hashlib.sha256(ledger.canonical(shape)).hexdigest()
 
 
 def test_invocation_sha256_changes_with_each_part_of_the_invocation():
@@ -358,3 +376,75 @@ def test_f6_an_egress_value_error_never_escapes_the_pipeline(tmp_path, base):
         except ValueError:
             outcomes.append("escaped")
     assert (outcomes, _captured(tmp_path)) == ([("failed", "HB-GW-001")] * 2, [])
+
+
+# ---------------------------------------------------------------------- the Copilot branch (R-70 3(a); slice 4)
+COPILOT_PIN = "gpt-6-sol"
+COPILOT_JUDGE = pipeline.Judge(model=COPILOT_PIN, invocation_sha256="c" * 64, allowed_models=(COPILOT_PIN,),
+                               qualified=True)
+BANNERS = "Disabled tools: apply_patch, powershell, view\n"  # print-mode stdout (spike finding 4), then a decoy answer
+
+
+def _copilot_launch(tmp_path, cells_root, record: str = "qualified") -> gw_backend.Launch:
+    """The real Copilot profile (bench/profiles/copilot.yaml: `credential: null`, the ACP record glob) launching the
+    fake CLI, which replays a placeholder record from fixtures/gateway/copilot/ and prints banners plus a decoy JSON
+    answer on stdout, so a stdout reader would store other scores."""
+    stdout = tmp_path / "copilot.stdout.txt"
+    decoy = {"items": [{"item": n, "score": 0, "rationale": "stdout is not the answer"} for n in (1, 2)]}
+    stdout.write_text(BANNERS + json.dumps(decoy) + "\n", encoding="utf-8")
+    cfg = {"record": str(FIX / "copilot" / f"{record}.jsonl"), "stdout": str(stdout),
+           "capture": str(tmp_path / "capture")}
+    profile = profiles.load(ROOT, "copilot")
+    profile = dataclasses.replace(profile, env=profile.env | {"HB_FAKE_JUDGE": json.dumps(cfg)})
+    build = tools.Build(harness="copilot", version="1.0.89-1", exe=FAKE, sha256="0" * 64, adapter=None,
+                        adapter_version=None, adapter_sha256=None)
+    return gw_backend.Launch(profile=profile, build=build, model=COPILOT_PIN, cells_root=cells_root,
+                             grading_id="grade-placeholder-1", archive=tmp_path / "archive", timeout=60,
+                             prefix=(sys.executable,))
+
+
+def test_a_copilot_call_sends_the_request_on_stdin_to_an_empty_home_and_reads_the_answer_from_the_record(tmp_path,
+                                                                                                        base):
+    """The gate for HEADLESS_HARNESSES gaining copilot (R-70 item 4): the builder, the reader and the home are
+    complete, on the placeholder record of the qualifying shape."""
+    result = pipeline.run(COPILOT_JUDGE, INPUTS, _ctx(tmp_path), _copilot_launch(tmp_path, base / "cells"))
+    assert (result.outcome, result.code) == ("stored", None)
+    assert [v["score"] for v in result.verdicts] == [2, 2]  # the record's last assistant.message; stdout says 0, 0
+    [seen] = _captured(tmp_path)
+    assert seen["argv"] == ["--model", COPILOT_PIN, "--disable-builtin-mcps", "--no-custom-instructions",
+                            "--available-tools", "none", "-p"]
+    assert seen["stdin"] == f"{gw_backend.JUDGE_SYSTEM}\n\n{_rendered()}"  # the system route, then the request
+    assert seen["home_files"] == []  # an empty COPILOT_HOME: nothing is copied, the login is the credential store
+    call = base / "cells" / "gateway" / "grade-placeholder-1" / result.cache_key[:16]
+    assert Path(seen["cwd"]) == call / "work" and Path(seen["userprofile"]) == call / "profile"
+    assert not call.exists()
+    archived = tmp_path / "archive" / result.cache_key[:16] / "record.jsonl"
+    assert archived.read_bytes() == (FIX / "copilot" / "qualified.jsonl").read_bytes()
+    assert [(r["model"], r["principal"], r["cell_id"]) for r in result.model_calls] == [(COPILOT_PIN, "gateway", None)]
+    assert gw_backend.HEADLESS_HARNESSES == ("claude-code", "copilot")
+
+
+def test_a_copilot_answer_is_none_without_an_assistant_message_never_stdout(tmp_path):
+    record = tmp_path / "events.jsonl"
+    record.write_text(json.dumps({"type": "user.message", "data": {"content": "placeholder"}}) + "\n",
+                      encoding="utf-8")
+    reply = gw_backend.Reply(BANNERS + json.dumps({"items": []}), record, "copilot")
+    assert gw_backend.final_text(reply) is None
+
+
+@pytest.mark.parametrize(("record", "code"), [
+    ("tool-event", "HB-GW-006"),  # a tool ran: 0 tool events is the rule (section 8.3 step 1)
+    ("null-tools", "HB-GW-006"),  # tools_advertised not recorded is not [] (R-63 c1): fail-closed
+    ("wrong-model", "HB-GW-003"),  # the record serves gpt-6-other
+])
+def test_a_copilot_record_that_breaks_the_qualified_shape_fails_the_call(tmp_path, base, record, code):
+    result = pipeline.run(COPILOT_JUDGE, INPUTS, _ctx(tmp_path), _copilot_launch(tmp_path, base / "cells", record))
+    assert (result.outcome, result.code, result.verdicts) == ("failed", code, None)
+    assert len(_captured(tmp_path)) == 1 and not list((tmp_path / "cache" / "verdicts").glob("*.json"))
+
+
+def test_t_gw_32_an_unqualified_copilot_judge_is_never_spawned(tmp_path, base):  # R-70 c3
+    unqualified = dataclasses.replace(COPILOT_JUDGE, qualified=False)
+    result = pipeline.run(unqualified, INPUTS, _ctx(tmp_path), _copilot_launch(tmp_path, base / "cells"))
+    assert (result.outcome, result.code, result.model_calls) == ("failed", "HB-GW-007", ())
+    assert _captured(tmp_path) == [] and not (base / "cells" / "gateway").exists()
