@@ -8,12 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_repo_inputs_are_valid():
-    # D1 vendors ai-de's pinned tree byte-for-byte (R-42); a parallel track is removing the
-    # operator's hardcoded profile path from its non-vendored files. Until that lands, D1 is
-    # the one expected exception to the new profile-path check (W2-VALIDATE); every other task,
-    # and every other kind of D1 problem, must still be clean.
-    unexpected = [i for i in config.validate_repo(ROOT) if not (i.startswith("tasks/D1:") and "user-profile path" in i)]
-    assert unexpected == []
+    assert config.validate_repo(ROOT) == []
 
 
 def test_every_metric_grader_has_a_module():

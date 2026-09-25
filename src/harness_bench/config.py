@@ -172,11 +172,24 @@ def _workspace_vendoring_problems(task_dir: Path, pack_markers: list[bytes], p: 
             break
 
 
-def _profile_path_problems(task_dir: Path, p: Problems, where: str) -> None:
+def _is_vendored(f: Path, ws: Path, vendored_paths: list[str]) -> bool:
+    """True when `f` is a workspace/ file pinned by R-42 condition 3's source.vendored_paths --
+    those bytes must match the upstream archive exactly (test_task_vendoring.py), so the
+    profile-path scan must not force an edit there. Scoped to files under workspace/ only:
+    vendored_paths never pins task.yaml, prompt.md, oracle/** or tests/**, so those are always
+    scanned regardless of what vendored_paths lists."""
+    if ws not in f.parents:
+        return False
+    rel_ws = f.relative_to(ws).as_posix()
+    return any(rel_ws == vp or rel_ws.startswith(vp + "/") for vp in vendored_paths)
+
+
+def _profile_path_problems(task_dir: Path, p: Problems, where: str, vendored_paths: list[str]) -> None:
     """Any text file anywhere under the task folder that hardcodes an operator's home-directory
     path is refused, naming the file and the first offending line. Binary files are skipped."""
+    ws = task_dir / "workspace"
     for f in sorted(task_dir.rglob("*")):
-        if not f.is_file():
+        if not f.is_file() or _is_vendored(f, ws, vendored_paths):
             continue
         data = f.read_bytes()
         if b"\x00" in data[:8000]:
@@ -189,12 +202,14 @@ def _profile_path_problems(task_dir: Path, p: Problems, where: str) -> None:
 
 def validate_task(task_dir: Path, bom_entry: dict | None, p: Problems, grader_modules: set[str], pack_markers: list[bytes]) -> None:
     where = f"tasks/{task_dir.name}"
-    _profile_path_problems(task_dir, p, where)
     ty = task_dir / "task.yaml"
     if not ty.is_file():
         p.add(where, "missing task.yaml")
+        _profile_path_problems(task_dir, p, where, [])
         return
     t = load_yaml(ty)
+    vendored_paths = [str(vp).rstrip("/") for vp in (t.get("source") or {}).get("vendored_paths") or []]
+    _profile_path_problems(task_dir, p, where, vendored_paths)
     if t.get("schema") != "bench-task/1":
         p.add(where, "schema must be bench-task/1")
     if t.get("id") != task_dir.name:
