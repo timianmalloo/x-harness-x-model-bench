@@ -5,10 +5,10 @@ Judges never see the harness or model name. Pinned model, temperature 0, verdict
 Spec: S-09 (docs/specs/README.md).
 """
 
-from pathlib import Path
+from collections.abc import Mapping
 
-from harness_bench.grade import Result, not_built
+from harness_bench.grade import CellInput, Score
 
 
-def grade(run_dir: Path, task_dir: Path) -> Result:
-    raise not_built("judge", "S-09")
+def grade_cell(inp: CellInput) -> Mapping[str, Score]:  # not registered in runner.GRADERS: NA "not built"
+    raise NotImplementedError("grade.judge is not built yet; spec S-09 in docs/specs/README.md")

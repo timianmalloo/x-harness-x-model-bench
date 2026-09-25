@@ -22,7 +22,7 @@ from archived_runs import (
     set_prices,
 )
 
-from harness_bench import archive, ledger, profiles, views
+from harness_bench import archive, config, ledger, profiles, views
 from harness_bench import plan as plan_mod
 from harness_bench.errors import BenchError
 from harness_bench.grade import cost, runner
@@ -137,8 +137,9 @@ def test_an_ungraded_run_has_no_scores_and_says_so(root, tmp_path):
 def test_a_pass_is_current_only_for_its_catalog_version(root, tmp_path):
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     done = runner.run_pass(run_dir, root)
-    assert (views.load(run_dir).grading_id, views.load(run_dir).catalog_version) == (done.grading_id, "0.3")
-    assert views.load(run_dir, "0.3").grading_id == done.grading_id
+    version = config.load_yaml(root / "bench" / "metrics.yaml")["version"]  # the catalog's own (0.4.dev in wave 3)
+    assert (views.load(run_dir).grading_id, views.load(run_dir).catalog_version) == (done.grading_id, version)
+    assert views.load(run_dir, version).grading_id == done.grading_id
     assert (views.load(run_dir, "9.9").grading_id, views.load(run_dir, "9.9").catalog_version) == (None, "9.9")
 
 

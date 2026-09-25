@@ -28,7 +28,7 @@ from archived_runs import (
     set_prices,
 )
 
-from harness_bench import ledger, lifecycle, oslock, views
+from harness_bench import config, ledger, lifecycle, oslock, views
 from harness_bench.errors import BenchError
 from harness_bench.grade import correctness, cost, runner
 from harness_bench.telemetry import codex, normalize
@@ -334,10 +334,11 @@ def test_a_pass_seals_its_own_segments_and_brackets_its_scores(root, tmp_path):
         assert result.heads[fact] == report.head_hash
     events = pass_rows(run_dir, "events", result.grading_id)
     assert [e["kind"] for e in events] == ["grading.started", "grading.completed"]
-    assert events[0]["catalog_version"] == "0.3" and events[0]["grader_build"] == runner.grader_build()
+    assert events[0]["catalog_version"] == config.load_yaml(root / "bench" / "metrics.yaml")["version"]  # the catalog's own (V-2)
+    assert events[0]["grader_build"] == runner.grader_build()
     assert result.grading_id in views.completed_passes(run_dir)
     keys = [(s["cell_id"], s["metric_id"]) for s in pass_rows(run_dir, "scores", result.grading_id)]
-    assert len(keys) == len(set(keys)) == 2 * len(runner.METRICS)  # GradedOncePerPass
+    assert len(keys) == len(set(keys)) == 2 * 12  # GradedOncePerPass: X1's correctness (5) and cost (7) score metrics
     assert all(s["archive_attempt"] == 1 for s in pass_rows(run_dir, "scores", result.grading_id))
 
 
