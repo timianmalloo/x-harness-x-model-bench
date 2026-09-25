@@ -135,6 +135,11 @@ def test_base_model_id_strips_only_a_trailing_bracket_tag(model, base, tag):
     assert normalize.context_window_tag(model) == tag
 
 
+def test_base_model_id_never_strips_a_bracket_that_is_not_trailing():
+    assert normalize.base_model_id("weird[legacy]-model") == "weird[legacy]-model"
+    assert normalize.context_window_tag("weird[legacy]-model") is None
+
+
 # real cc-opus turn_usage rows, run e2e-wave1-1790299304 cell 17efb75ce2d5fc6d (pin claude-opus-5-5)
 CC_OPUS_USAGE = [normalize.TurnUsage("claude-haiku-4-5-20251001", 929, 0, 0, 14, 0),
                  normalize.TurnUsage("claude-opus-5-5[1m]", 10, 179401, 27730, 1385, 0)]

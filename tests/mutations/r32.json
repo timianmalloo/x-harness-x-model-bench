@@ -1,0 +1,38 @@
+[
+ {
+  "name": "strip every bracket anywhere, not only a trailing one",
+  "file": "src/harness_bench/telemetry/normalize.py",
+  "find": "_TAG_RE = re.compile(r\"\\[([^\\[\\]]+)\\]$\")  # a trailing bracketed context-window tag, e.g. \"[1m]\"\n",
+  "replace": "_TAG_RE = re.compile(r\"\\[([^\\[\\]]+)\\]\")  # BUG: strips a bracket anywhere, not just trailing\n",
+  "tests": ["tests/test_telemetry.py::test_base_model_id_never_strips_a_bracket_that_is_not_trailing"]
+ },
+ {
+  "name": "never strip the tag (identity comparison stays broken)",
+  "file": "src/harness_bench/telemetry/normalize.py",
+  "find": "    return _TAG_RE.sub(\"\", model)\n",
+  "replace": "    return model\n",
+  "tests": ["tests/test_telemetry.py::test_base_model_id_strips_only_a_trailing_bracket_tag"]
+ },
+ {
+  "name": "the context-window tag is never recorded on attempt.process_ended",
+  "file": "src/harness_bench/engine.py",
+  "find": "                tag = next((t for m in turn_models if (t := normalize.context_window_tag(m)) is not None), None)\n",
+  "replace": "                tag = None\n",
+  "tests": ["tests/test_engine.py::test_context_window_tag_is_recorded_on_process_ended_from_a_tagged_served_model"]
+ },
+ {
+  "name": "served_models compares by the tagged served id, not the base id",
+  "file": "src/harness_bench/telemetry/normalize.py",
+  "find": "        return {base_model_id(u.model) for u in usage if u.output or u.uncached_input or u.cache_read}\n",
+  "replace": "        return {u.model for u in usage if u.output or u.uncached_input or u.cache_read}\n",
+  "tests": ["tests/test_telemetry.py::test_served_models_reads_the_base_id_not_the_tagged_served_id",
+            "tests/test_views.py::test_a_context_window_tag_is_not_a_model_mismatch"]
+ },
+ {
+  "name": "totals group by the tagged served id, splitting one model's usage in two",
+  "file": "src/harness_bench/telemetry/normalize.py",
+  "find": "        bucket = out.setdefault(base_model_id(item.model), dict.fromkeys(BUCKETS, 0))\n",
+  "replace": "        bucket = out.setdefault(item.model, dict.fromkeys(BUCKETS, 0))\n",
+  "tests": ["tests/test_telemetry.py::test_totals_groups_a_tagged_and_an_untagged_served_id_under_one_base_model"]
+ }
+]

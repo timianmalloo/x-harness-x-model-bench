@@ -103,6 +103,7 @@ class CellView:
     tokens: dict[str, dict[str, int]] | None  # per model, disjoint buckets; None = not recorded
     tokens_reason: str | None
     calls_per_cell: int | None = None  # requests in the current extraction; None when not graded
+    context_window_tag: str | None = None  # R-32: e.g. "1m", from attempt.process_ended; None = not recorded
     scores: dict[str, Measure] = field(default_factory=dict)
     evidence: dict[str, str] = field(default_factory=dict)
     extraction_id: str | None = None
@@ -282,7 +283,8 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
         wall_ms=wall, model_ms=model, tool_ms=tool, idle_ms=_idle(wall, model, tool),
         tokens=totals or None, tokens_reason=tokens_reason, calls_per_cell=calls_per_cell(ex.model_calls if calls is not None else None),
         scores={m: Measure(s["value"], s["reason"]) for m, s in now.items()},
-        evidence={m: s["evidence"] for m, s in now.items() if s.get("evidence")}, extraction_id=extraction)
+        evidence={m: s["evidence"] for m, s in now.items() if s.get("evidence")}, extraction_id=extraction,
+        context_window_tag=events.get("attempt.process_ended", {}).get("context_window_tag"))
 
 
 def load(run_dir: Path, catalog_version: str | None = None) -> RunView:

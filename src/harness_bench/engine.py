@@ -420,10 +420,13 @@ class Engine:
             try:
                 exit_status, confirmed = self._end_process(cp)
                 drain.join(timeout=5)
+                turn_models = [u.model for u in normalize.turn_usage({"_meta": (result.usage or {}).get("meta")})]
+                tag = next((t for m in turn_models if (t := normalize.context_window_tag(m)) is not None), None)
                 ended = {"kind": "attempt.process_ended", "cell_id": cid, "exit_status": -1 if exit_status is None else exit_status,
                          "confirmed": int(confirmed), "peak_memory": _job_query(cp.job.peak_memory, None),
                          "cpu_ms": _job_query(cp.job.cpu_time_ms, None),  # null: not recorded, never a zeroed guess
-                         "acp_usage": result.usage}  # R-24: the adapter's usage and _meta halves verbatim, or null
+                         "acp_usage": result.usage,  # R-24: the adapter's usage and _meta halves verbatim, or null
+                         "context_window_tag": tag}  # R-32: e.g. "1m" from a served model id, disclosed; else None
             finally:
                 with a.lock:
                     cp.close()
