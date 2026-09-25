@@ -296,16 +296,16 @@ def _token_cross_check(ended: dict, calls: list[ModelCall]) -> Finding | None:
     return Finding("HB-VAL-005", "warning", "model_calls tokens differ from the ACP turn total: " + "; ".join(diffs))
 
 
-def _unrecorded(source: str, completed: dict, cid: str, ended: dict, usage: list) -> str | None:
+def _unrecorded(source: str, record_reason: str | None, ended: dict, usage: list) -> str | None:
     """Why the cell's authoritative usage record is not recorded (R-15, R-21 c2), or None when it was read.
 
-    - `native_record`: the current pass names the cell in `grading.completed.unreadable_records` (no record, more
-      than one, or unreadable as a whole). A pass from before R-15 names none, so its cells read as before.
+    - `native_record`: `record_reason`, the current pass's `grading.completed.unreadable_records` entry (no record,
+      more than one, or unreadable as a whole). A pass from before R-15 names none, so its cells read as before.
     - `acp_turn`: `attempt.process_ended.acp_usage` is recorded as null (R-24 c2: the adapter reported nothing) and
       there is no `turn_usage` row. A ledger from before R-24 has no `acp_usage` key and reads as before."""
     if source == "acp_turn":
         return NO_ACP_USAGE if not usage and "acp_usage" in ended and ended["acp_usage"] is None else None
-    return (completed.get("unreadable_records") or {}).get(cid)
+    return record_reason
 
 
 def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: set[str] | None,
@@ -353,7 +353,8 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     served = normalize.served_models(source, ex, usage) if recorded else None
     completed = next((e for e in facts["events"] if e["kind"] == "grading.completed" and e["grading_id"] == grading_id), {})
     ended = events.get("attempt.process_ended", {})
-    unrecorded = _unrecorded(source, completed, cid, ended, usage)
+    record_reason = as_dict(completed.get("unreadable_records")).get(cid)  # the native record, whatever the token source
+    unrecorded = _unrecorded(source, record_reason, ended, usage)
     warnings = [_build_check(plan, cell["harness"], events["attempt.session_opened"])] if "attempt.session_opened" in events else []
     if cell["harness"] in ACP_TOTAL_HARNESSES and source == "native_record" and calls is not None and unrecorded is None:
         warnings.append(_token_cross_check(ended, ex.model_calls))
@@ -362,9 +363,14 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
         tokens_reason = f"not recorded ({unrecorded})"  # R-21 c2: never a partial sum or a zero
     else:
         tokens_reason = None if totals else ("not graded" if not recorded else "no usage recorded")
-    wall = _wall(events)
-    model = _model_time(source, calls)
-    tool = Measure(None, "not graded") if tools is None else busy_ms(tools)
+    wall = _wall(events)  # lifecycle-derived: never gated on the native record
+    if record_reason is not None:  # Codex F1: every native-record measure is NA with the reason, never a partial one
+        model = tool = idle = per_cell = Measure(None, record_reason)
+    else:
+        model = _model_time(source, calls)
+        tool = Measure(None, "not graded") if tools is None else busy_ms(tools)
+        idle = _idle(wall, model, tool)
+        per_cell = calls_per_cell(ex.model_calls if calls else None)
     state = outcome["outcome"] if outcome else ("no outcome" if "cell.launch_intent" in events else "not started")
     validity, validity_code = _validity(cell, prof, outcome, state, served, unrecorded, normalize.hook_denials(tools or []),
                                         _mapped(plan, cell))
@@ -373,8 +379,8 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
         cell_id=cid, label=cell.get("label", cid), combo=cell["combo"], pack=cell["pack"], harness=cell["harness"], model=cell["model"],
         outcome=state, cause=cause.label if cause else None,
         code=cause.code if cause else None, validity=validity, validity_code=validity_code,
-        wall_ms=wall, model_ms=model, tool_ms=tool, idle_ms=_idle(wall, model, tool),
-        tokens=totals or None, tokens_reason=tokens_reason, calls_per_cell=calls_per_cell(ex.model_calls if calls else None),
+        wall_ms=wall, model_ms=model, tool_ms=tool, idle_ms=idle,
+        tokens=totals or None, tokens_reason=tokens_reason, calls_per_cell=per_cell,
         scores={m: Measure(s["value"], s["reason"]) for m, s in now.items()},
         evidence={m: s["evidence"] for m, s in now.items() if s.get("evidence")}, extraction_id=extraction,
         warnings=[w for w in warnings if w is not None])
