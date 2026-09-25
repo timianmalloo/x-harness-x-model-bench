@@ -1383,7 +1383,7 @@ window.DOCS_INDEX = {
           "reason": "Amendment 1: model_calls grain re-declared per native usage report with requests and model in the key; tool_calls.outcome_code (R-26, R-27)"
         }
       ],
-      "summary": "The TLA+ model of one run's lifecycle, the proof obligation the run engine is built against (US-44). TLC checks 16 safety invariants at the US-44 bounds (3 cells, parallelism 2, 1 engine crash) and at small bounds with `bench grade` contending, grading mutual exclusion at 2 passes, and 5 liveness properties at 1 cell; each of 21 seeded-bug variants is rejected by its own target checked alone, and a witness shows every cell can finish. A mapping table binds every model action to the engine's ledger events, and a conformance test keeps the two in step.",
+      "summary": "The TLA+ model of one run's lifecycle, the proof obligation the run engine is built against (US-44). TLC checks 16 safety invariants at the US-44 bounds (3 cells, parallelism 2, 1 engine crash) and at small bounds with `bench grade` contending, grading mutual exclusion at 2 passes, and 5 liveness properties at 1 cell; each of 22 seeded-bug variants is rejected by its own target checked alone, and two witnesses show that every cell can finish and the R-21 cancel grace is reachable. A mapping table binds every model action to the engine's ledger events, and a conformance test keeps the two in step.",
       "tags": [
         "benchmark",
         "tla",
@@ -1414,7 +1414,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "77323517b6789bd05c44b00838b099b2754907afa8fcc7fa7dea4933accb4196"
+      "sourceSha256": "2d300301d99c0b9a0205e5f40faf745f7ae3613525ec326d34253e580ee46752"
     },
     {
       "id": "audit-log",
@@ -2425,5 +2425,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "536b19846314809b01417abcf5583b39721f789a269fcebeff2f30e3a3fc0d70"
+  "graphSha256": "9af811de024293bb8c0fe7e3b816d6f6d8ee68f678c2cf7bba707f0699270ead"
 };

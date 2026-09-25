@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T07:58:26Z",
+  "generated": "2026-09-25T08:33:59Z",
   "audit": [
     {
       "actor": null,
@@ -16040,6 +16040,39 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3BV6BF34WEX3450H0VXFK09",
+      "shortname": "W2-STOP-I slice 3 grace",
+      "datetime": "2026-09-25T08:33:59Z",
+      "session": "worker-codex-stopi3",
+      "prompt": "Goal: W2-STOP-I slice 3 per docs/design/phase2-stop-decisions.md section 17 row 3 and sections 4.4, 4.5, 4.7, 5, 8 and 18 (read them first; rulings R-21, R-34, R-49, R-50 in docs/notes/rulings.md): the R-21 grace - a cancel that lets a harness exit cleanly before the kill - in the driver, the profile, the engine clock and the TLA model, red-first.\nDone when: driver.py gains the cancel threading.Event of section 4.5: on cancel it sends ACP session/cancel and closes stdin on the worker thread, drops writes after a cancel, and never sends a prompt after a cancel; tests D-1 and D-2 red first (the fake ACP agent gains the modes `stubborn` and `on_cancel` the design names).; shutdown_grace_seconds (at most 10 s) is a profile datum carried to the launcher and the plan record (section 4.4), with a test.; The engine has one clock and on_tick, kill_deadline, _check_kills, a.terminated and ended_by (section 5); end_grace is removed; tests R10-6, R21-1 and R21-4..6 red first.; bench/profiles/claude-code.yaml declares defaultMode \"default\" (R-34 condition 4, section 4.7), with PR-1..3.; models/run_lifecycle.tla gains the grace refinement of section 8.1 (the `grace` variable, GracefulExit and EndGrace, the no_escalate variant, the NoGraceState witness) and docs/design/run-lifecycle-model.md gains the rows (section 8.3).; Seam S5 is granted (plan version-4 dispatch notes): tools/check_models.py gains the no_escalate variant and the two-witness main(), with the reverse test in tests/test_check_models.py.; A FULL `uv run python tools/check_models.py` run shows 22 of 22 variants rejected by their own target, 2 witnesses, and the US-44 bounds; paste its summary lines into the final commit message (not a partial run; TLC needs Java, which is on this host - check `java -version` first).; tests/mutations/stop.json gains named mutants for each new branch (a prompt sent after cancel; writes not dropped; grace above 10 s accepted; kill before the grace ends), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, the check_models summary, and the mutate_check result.\nNot in scope: the control channel, bench stop and run.stopped (slice 4); decisions and bench answer (slice 5); views.py; the scripted-user wiring (joined: keep the driver's mcp_servers parameter and its tests intact); bench run, any live turn (the Leader runs the live Copilot grace test in a capture window: section 17's S6); pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains (a later slice continues).\n\nGrounding: docs/design/phase2-stop-decisions.md; docs/design/run-lifecycle-model.md; models/**; tools/check_models.py; src/harness_bench/{driver,engine,profiles,plan,lifecycle}.py; bench/profiles/*.yaml; tests/test_driver.py, tests/test_engine.py, tests/fake_acp_agent.py, tests/test_check_models.py, tests/test_lifecycle_conformance.py. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-stopi3 before committing.",
+      "summary": "R-21 grace implemented. Full TLC: 22/22 variants, 2/2 witnesses, 85,060,752 US-44 safety states. Mutation check: 27/27 killed. Pytest: 1,099 passed, 8 deselected. Ruff clean. Red SHAs a6d25cb, cf53be0, 5799229.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Deliver the R-21 cancel grace across driver, profiles, engine clock, and TLA model",
+      "done_when": "Red-first tests, full TLC 22/22 plus two witnesses and US-44 bounds, mutation checks, full pytest, and Ruff pass; green commit records results",
+      "tier": "T2",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-25T07:58:45Z",
+      "duration_seconds": 2114.0,
+      "git": {
+        "sha": "57992295f14c8927a79f8af4aeb5ad47d1b7107d",
+        "short": "57992295f",
+        "branch": "w2-stopi-3",
+        "pushed": null
+      }
     }
   ],
   "changes": [

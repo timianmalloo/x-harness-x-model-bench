@@ -136,7 +136,7 @@ def test_phase1_plan_has_four_cells_and_every_recorded_field():
 def test_plan_records_each_profiles_shutdown_grace():  # PR-3
     p = _phase1_plan()
     assert {h: record["shutdown_grace_seconds"] for h, record in p["profiles"].items()} == {
-        "claude-code": 10, "codex": 10}
+        "claude-code": "10", "codex": "10"}
 
 
 def test_stop_parameters_are_frozen_with_the_ruling_units():  # P-1
@@ -202,10 +202,10 @@ def test_the_plan_records_each_harness_profile_it_uses():  # grading and views r
     assert p["profiles"] == {
         "claude-code": {"profile_hash": plan.file_hash(ROOT / "bench" / "profiles" / "claude-code.yaml"),
                         "usage_source": "acp_turn", "auxiliary_models": ["claude-haiku-4-5"],
-                        "record_glob": "projects/**/{session_id}.jsonl"},
+                            "record_glob": "projects/**/{session_id}.jsonl", "shutdown_grace_seconds": "10"},
         "codex": {"profile_hash": plan.file_hash(ROOT / "bench" / "profiles" / "codex.yaml"),
                   "usage_source": "native_record", "auxiliary_models": [],
-                  "record_glob": "sessions/**/rollout-*-{session_id}.jsonl"},
+                      "record_glob": "sessions/**/rollout-*-{session_id}.jsonl", "shutdown_grace_seconds": "10"},
     }
 
 

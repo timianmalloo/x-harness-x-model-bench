@@ -180,8 +180,10 @@ def _validate_ids(cells: list[dict]) -> None:
 
 def profile_record(root: Path, harness: str) -> dict:
     p = profiles.load(root, harness)
+    # The plan's canonical form has no floats; the decimal string preserves a fractional profile value exactly.
     return {"profile_hash": file_hash(root / "bench" / "profiles" / f"{harness}.yaml"), "usage_source": p.usage_source,
-            "auxiliary_models": list(p.auxiliary_models), "record_glob": p.record_glob}
+            "auxiliary_models": list(p.auxiliary_models), "record_glob": p.record_glob,
+            "shutdown_grace_seconds": format(p.shutdown_grace, "g")}
 
 
 def instruction_list(exe: Path, ws: Path, env: dict[str, str]) -> list[dict]:

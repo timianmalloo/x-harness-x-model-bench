@@ -1,6 +1,7 @@
 """The ACP cell driver (ADR-0002; design: driver.py): bounded reader, strict parse, deny-all permissions,
 verbatim prompt, ack barrier, handshake deadline."""
 
+import io
 import json
 import os
 import sys
@@ -198,6 +199,7 @@ def test_cancel_closes_stdin_during_the_handshake(tmp_path):  # D-1
         driver.run_turn(cell, tmp_path, "p", None, 5, lambda sid: None, cancel=cancel)
         assert cell.proc.stdin.closed
         assert not (tmp_path / ".fake-prompt.txt").exists()
+        assert not (tmp_path / ".fake-cancel.json").exists()
     finally:
         timer.join()
         cell.terminate_and_confirm(timeout=10)
@@ -236,6 +238,19 @@ def test_no_prompt_after_a_cancel_request(tmp_path):  # R10-6
     finally:
         cell.terminate_and_confirm(timeout=10)
         cell.close()
+
+
+def test_the_channel_drops_a_prompt_if_cancel_races_the_send():  # R10-6, send boundary
+    from types import SimpleNamespace
+
+    cancel = threading.Event()
+    incoming = io.BytesIO()
+    outgoing = io.BytesIO()
+    cell = SimpleNamespace(proc=SimpleNamespace(stdin=outgoing, stdout=incoming))
+    ch = driver._Channel(cell, driver.TurnResult(), cancel)
+    cancel.set()
+    assert not ch.send({"jsonrpc": "2.0", "method": "session/prompt", "params": {"sessionId": "s"}})
+    assert outgoing.getvalue() == b""
 
 
 # D5: recorded adapter output replayed through the driver ------------------------------------------

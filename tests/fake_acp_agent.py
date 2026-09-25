@@ -128,6 +128,8 @@ def main() -> int:
         elif method == "session/set_model":
             Path(os.getcwd(), ".fake-set_model").write_text(json.dumps(msg["params"]), encoding="utf-8")
             send({"jsonrpc": "2.0", "id": mid, "result": {}})
+        elif method == "session/cancel":
+            Path(os.getcwd(), ".fake-cancel.json").write_text(json.dumps(msg), encoding="utf-8")
         elif method == "session/prompt":
             text = msg["params"]["prompt"][0]["text"]
             Path(os.getcwd(), ".fake-prompt.txt").write_text(text, encoding="utf-8", newline="")

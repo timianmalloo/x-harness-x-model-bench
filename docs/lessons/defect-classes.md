@@ -25,7 +25,7 @@ summary: >-
 3. Climb the control ladder (CI6) and record the highest rung that actually holds: *make it impossible* > *automated control* > *always-loaded instruction* > *knowledge doc* > *register entry only*.
 4. A control is not a control until it has been **observed failing** on the un-fixed code.
 
-**Status counts:** controlled 6 · partially-controlled 5 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled.
+**Status counts:** controlled 7 · partially-controlled 5 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled.
 **Recurrence since last review:**
 - 4 instances of MOD-A in one session; the control was built after the fourth.
 - 2026-09-23: EDIT-B recurred once after registration, and its hook control was then built.
@@ -321,6 +321,16 @@ summary: >-
 - **Control:** `probe_selftest.py` `test_emit_on_a_legacy_console` runs `emit` under `PYTHONIOENCODING=cp1252` with a `−` and an emoji and requires exit 0. It was observed red on the old `emit` (2 failures), then green. The rule: stdout carries JSON escapes (`ensure_ascii=True`); files are written in UTF-8.
 - **Status:** `controlled` for the probe (the self-test is run by hand before a probe run); the upgrade trigger is a second instance, in a tool whose output a gate reads.
 - **Second instance, on the decode side (2026-09-25, W2-USER-M): the upgrade trigger fired.** `tools/mutate_check.py` read pytest's output with `text=True`, which uses the locale codec (cp1252). A failing test whose message held U+3041 (UTF-8 bytes include `0x81`) crashed the tool with `UnicodeDecodeError`, then `TypeError`. `mutate_check` is a gate. **Control:** `subprocess.run(..., encoding="utf-8", errors="replace")`, with `tests/test_mutate_check.py::test_non_ascii_test_output_is_decoded_as_utf8_not_the_locale` in the default suite, observed red (the exact crash), then green. The rule, extended: child output is decoded as UTF-8 explicitly, never by the locale. **Sweep:** `text=True` without `encoding=` in `src/`, `tools/` and `tests/` is a next step, done by grep at the next join.
+
+---
+
+### STOP-A: a deadline requested on an exceptional loop branch but never serviced
+- **Signature:** the engine sets a cancel event and `kill_deadline`, but the loop branch entered after a ledger failure does not call `_check_kills`. A child that ignores cancel remains alive after the grace.
+- **Instances:** 2026-09-25, W2-STOP-I slice 3. The first full suite failed `test_after_the_ledger_breaks_no_worker_blocks_forever` at its 30 s bound. The normal branch called `on_tick`; the broken-ledger branch called `_kill_all` repeatedly without checking the deadlines. Final review then found that `a.terminated` prevented a second attempt while a failed termination left the job active; `test_hard_kill_retries_until_the_job_is_empty` was red before the guard changed.
+- **Sweep:** the normal, broken-ledger and host-suspend paths in `Engine.run` were checked. The normal branch calls `on_tick`; the broken branch now calls `_check_kills(clock())`; host suspension requests a kill through `_kill_all` and the next tick checks it.
+- **Derived rule:** every path that requests a bounded cancel must keep servicing its hard deadline until the job is confirmed empty. A broken ledger or an unsuccessful first terminate cannot disable process cleanup.
+- **Control:** `tests/test_engine.py::test_after_the_ledger_breaks_no_worker_blocks_forever` was observed failing on the branch regression and passes after the fix. `test_hard_kill_retries_until_the_job_is_empty` was red on the one-attempt guard and green after it was removed. `test_engine_kill_deadline_uses_one_injected_clock` checks the floor for timeout, host suspension and stop; the `kill before the grace ends` mutant in `tests/mutations/stop.json` is killed.
+- **Status:** `controlled`
 
 ---
 
