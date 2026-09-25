@@ -122,6 +122,12 @@ def test_tools_advertised_is_not_recorded_without_a_checkpoint(tmp_path):
     assert copilot.read(path).tools_advertised is None
 
 
+def test_tools_advertised_is_not_an_empty_list_for_an_empty_checkpoint(tmp_path):
+    checkpoint = _row("session.usage_checkpoint", {"promptCacheBreakState": [{"models": {}}]})
+    path = _write(tmp_path, [_start(), checkpoint, _shutdown(_model_metrics())])
+    assert copilot.read(path).tools_advertised is None
+
+
 def test_tools_advertised_is_not_an_empty_list_for_an_unreadable_record(tmp_path):
     path = tmp_path / "events.jsonl"
     path.write_text("not json\n", encoding="utf-8")

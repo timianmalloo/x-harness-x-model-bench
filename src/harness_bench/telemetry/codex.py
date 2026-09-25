@@ -7,7 +7,7 @@
 - The record is complete for this harness (profile usage_source native_record); the adapter's prompt
   response reports only the last call.
 - Tool calls are `response_item` `custom_tool_call` / `function_call` / `local_shell_call`, closed by
-  their `*_output` row with the same `call_id`.
+  their `*_output` row with the same `call_id`; a `web_search_call` is a standalone out-of-profile row.
 - An error is `event_msg`/`task_complete` with `error.message`, which embeds a JSON body with `status`
   and `error.type` (probe W3).
 - The first user message that is not tagged system context (`<environment_context>` and the like) is
@@ -102,6 +102,9 @@ def read(path: Path) -> Extraction:
             texts = [c.get("text") for c in as_list(payload.get("content")) if isinstance(c, dict) and isinstance(c.get("text"), str)]
             if texts and not all(_is_injected_context(t) for t in texts):
                 ex.first_user_text = "".join(t for t in texts if not _is_injected_context(t))
+        elif kind == "response_item" and ptype == "web_search_call":
+            ex.tool_calls.append(ToolCall(n, "web_search", "other", stamp,
+                                          stamp if payload.get("status") == "completed" else None, None))
         elif kind == "response_item" and ptype in CALL_TYPES and call_id is not None:
             open_tools[call_id] = {"n": n, "name": as_str(payload.get("name")) or ptype, "start": stamp}
         elif kind == "response_item" and ptype in OUTPUT_TYPES and call_id in open_tools:

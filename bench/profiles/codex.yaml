@@ -5,7 +5,9 @@ credential: { source: "~/.codex/auth.json", name: "auth.json" }
 credential_kind: "subscription login (copied)"
 command: ["{node}", "{adapter}"]
 files:
-  config.toml: 'model = "{model}"'
+  config.toml: |-
+    model = "{model}"
+    web_search = "disabled"
 env:
   CODEX_PATH: "{exe}"
 mode: agent-full-access

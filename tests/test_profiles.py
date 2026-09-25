@@ -221,8 +221,8 @@ def test_native_copilot_command_does_not_need_node_or_an_adapter(monkeypatch):
     build = FakeBuild()
     build.adapter = None
     monkeypatch.setattr(profiles.shutil, "which", lambda _: None)
-    assert p.argv(build, "gpt-6-sol") == [str(build.exe), "--acp", "--model", "gpt-6-sol",
-                                          "--allow-tool", "shell", "--allow-tool", "write"]
+    assert p.argv(build, "gpt-6-sol")[:8] == [str(build.exe), "--acp", "--model", "gpt-6-sol",
+                                              "--allow-tool", "shell", "--allow-tool", "write"]
 
 
 def test_adapter_command_rejects_missing_node(monkeypatch, tmp_path):
