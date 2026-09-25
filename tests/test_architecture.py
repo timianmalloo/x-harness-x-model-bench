@@ -141,9 +141,43 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
                    if isinstance(t, ast.Attribute) and isinstance(t.value, ast.Name) and t.value.id in receivers
                    and any(isinstance(v, ast.Name) and v.id in params for v in ast.walk(n.value))}
 
+        def origins(expr: ast.expr | None) -> set[str | None]:
+            """The root names an assigned value can be: `b = backend`, `b = backend.judge`, `b = x or backend`."""
+            if isinstance(expr, (ast.Tuple, ast.List, ast.Set)):
+                return {o for e in expr.elts for o in origins(e)}
+            if isinstance(expr, ast.IfExp):
+                return origins(expr.body) | origins(expr.orelse)
+            if isinstance(expr, ast.BoolOp):
+                return {o for e in expr.values for o in origins(e)}
+            if isinstance(expr, (ast.NamedExpr, ast.Starred)):
+                return origins(expr.value)
+            return {root(expr)[0]} if expr is not None else set()
+
+        def names(target: ast.expr) -> set[str]:
+            return {n.id for n in ast.walk(target) if isinstance(n, ast.Name)}
+
+        # Review w3-gwi-1 F2: a local name assigned from a non-data parameter, or from such a local, is the backend
+        # too (to a fixed point). An annotated local with a plain-data annotation is data, as a parameter is.
+        aliases_of_params: set[str] = set()
+        while True:
+            grown = set(aliases_of_params)
+            for n in ast.walk(top):
+                if isinstance(n, ast.Assign):
+                    pairs = [(t, n.value) for t in n.targets]
+                elif isinstance(n, ast.AnnAssign) and not data_typed(n.annotation):
+                    pairs = [(n.target, n.value)]
+                elif isinstance(n, (ast.NamedExpr, ast.For, ast.AsyncFor)):
+                    pairs = [(n.target, n.value if isinstance(n, ast.NamedExpr) else n.iter)]
+                else:
+                    continue
+                grown |= {name for t, v in pairs if origins(v) & (params | aliases_of_params) for name in names(t)}
+            if grown == aliases_of_params:
+                break
+            aliases_of_params = grown
+
         def is_sink(call: ast.Call) -> bool:
             base, attrs = root(call.func)
-            return ("procs" in dotted(call.func, al).split(".")[1:] or base in params or
+            return ("procs" in dotted(call.func, al).split(".")[1:] or base in params or base in aliases_of_params or
                     base in receivers and bool(attrs) and attrs[0] in tainted)
         return [n for n in ast.walk(top) if isinstance(n, ast.Call) and id(n) not in rel_released and is_sink(n)]
 

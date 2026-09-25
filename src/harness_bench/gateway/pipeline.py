@@ -106,11 +106,14 @@ def _recorded(outcome: str, cache_key: str, found: store.Found, items: int, esca
     return Result(outcome, None, cache_key, found.entry_sha256, tuple(verdicts), escaped)
 
 
+def _sha256(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
 def run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend) -> Result:
     if request.bound_problem(inputs.artifacts) is not None:
         return Result("failed", "HB-GW-008")
-    rubric = inputs.rubric
-    rendered = request.render(inputs.preamble, rubric, inputs.items, inputs.artifacts, ctx.denylist)
+    rendered = request.render(inputs.preamble, inputs.rubric, inputs.items, inputs.artifacts, ctx.denylist)
     escaped = rendered.escaped
     if scrub.scan(rendered.text, ctx.denylist):
         return Result("failed", "HB-GW-004", escaped=escaped)
@@ -146,7 +149,7 @@ def run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend) -> Result:
         return Result("failed", "HB-GW-003", escaped=escaped)
     entry = {"format": store.FORMAT, "key_inputs": key_inputs,
              "components": {"artifact_sha256": rendered.artifact_sha256,
-                            "rubric_sha256": hashlib.sha256(rubric.encode("utf-8")).hexdigest(),
+                            "rubric_sha256": _sha256(inputs.rubric),
                             "template_version": request.TEMPLATE_VERSION, "scrub_version": scrub.SCRUB_VERSION,
                             "schema_sha256": key_inputs["schema_sha256"]},
              "served_models": list(served), "stored_by": dict(ctx.stored_by), "native_session_id": session,
