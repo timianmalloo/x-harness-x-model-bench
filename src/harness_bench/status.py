@@ -31,7 +31,7 @@ LIVENESS = ("alive", "stalled", "not running")
 COMPLETION = ("complete", "in progress", "incomplete")
 OUTCOMES = ("completed", "timed_out", "failed", "no outcome", "not started")
 VALIDITY = ("valid", "invalid (infrastructure)", "invalid (benchmark)", "invalid (no model call)", "invalid (model mismatch)",
-            "not graded")
+            "invalid (tools denied by hook)", "invalid (build mismatch)", "not recorded", "not graded")
 RUN_ID = r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}"
 # CELL_ID, LABEL: the ids and labels plan.py freezes (config.py owns the one definition; plan.py
 # validates every cell against it at plan time, so status never emits what its own parser rejects).

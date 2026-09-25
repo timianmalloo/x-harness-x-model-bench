@@ -4,13 +4,59 @@ import os
 import shutil
 from decimal import Decimal
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
 from harness_bench import procs
 from harness_bench.grade import correctness
+from harness_bench.profiles import CELL_ENV
 
 FIXTURE = Path(__file__).parent / "fixtures" / "dotnet" / "OracleFixture.csproj"
+
+
+@pytest.mark.parametrize("runner", ["dotnet", "unittest"])
+@pytest.mark.parametrize("nuget_packages", [None, r"Z:\host-cache"])
+def test_grading_step_uses_host_profile_only_for_dotnet(tmp_path, monkeypatch, runner, nuget_packages):
+    profile = {
+        "USERPROFILE": r"Z:\host-user",
+        "APPDATA": r"Z:\host-user\Roaming",
+        "LOCALAPPDATA": r"Z:\host-user\Local",
+        "HOMEDRIVE": "Z:",
+        "HOMEPATH": r"\host-user",
+        "ProgramData": r"Z:\ProgramData",
+        "ProgramFiles": r"Z:\Program Files",
+    }
+    for key, value in profile.items():
+        monkeypatch.setenv(key, value)
+    if nuget_packages is None:
+        monkeypatch.delenv("NUGET_PACKAGES", raising=False)
+    else:
+        monkeypatch.setenv("NUGET_PACKAGES", nuget_packages)
+
+    seen = []
+    done = SimpleNamespace(returncode=0, stdout="10.0.303", stderr="Ran 1 test in 0.0s\n\nOK\n", timed_out=False)
+
+    def capture(argv, **kwargs):
+        seen.append((argv, kwargs["env"]))
+        return done
+
+    monkeypatch.setattr(correctness.procs, "run", capture)
+    (tmp_path / "ws").mkdir()
+    (tmp_path / "task" / "tests").mkdir(parents=True)
+    command = ["dotnet", "test", "--logger", "trx;LogFileName=results.trx"] if runner == "dotnet" else ["{python}", "-m", "unittest"]
+    correctness.grade(tmp_path / "ws", tmp_path / "task", {"runner": runner, "command": command},
+                      tmp_path / "run" / "out", tmp_path / "run", 30)
+
+    expected = {key: os.environ[key] for key in correctness.HOST_ENV if key in os.environ}
+    expected.update(CELL_ENV)
+    expected.update(PYTHONDONTWRITEBYTECODE="1", PYTHONHASHSEED="0", PYTHONUTF8="1")
+    if runner == "dotnet":
+        expected.update(profile)
+        if nuget_packages is not None:
+            expected["NUGET_PACKAGES"] = nuget_packages
+    assert len(seen) == (2 if runner == "dotnet" else 1)
+    assert all(env == expected for _, env in seen)
 
 
 @pytest.fixture(scope="module")

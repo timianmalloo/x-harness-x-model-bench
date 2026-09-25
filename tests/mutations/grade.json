@@ -52,8 +52,8 @@
  {
   "name": "an oracle timeout scored instead of NA",
   "file": "src/harness_bench/grade/correctness.py",
-  "find": "    if done.timed_out:\n",
-  "replace": "    if False:\n",
+  "find": " or (done and done.timed_out) or ",
+  "replace": " or False or ",
   "tests": ["tests/test_grade.py::test_an_oracle_timeout_is_na_with_hb_grd_002"]
  },
  {
@@ -108,8 +108,8 @@
  {
   "name": "grading.completed records no heads (R-2)",
   "file": "src/harness_bench/grade/runner.py",
-  "find": ",\n                                   \"heads\": dict(heads)})",
-  "replace": "})",
+  "find": "\n                                   \"heads\": dict(heads),  # ruling R-2: bench verify checks each against its seal\n",
+  "replace": "\n",
   "tests": ["tests/test_grade.py::test_grading_completed_records_the_sealed_heads_of_its_other_facts",
             "tests/test_verify.py::test_deleting_a_completed_pass_fact_segment_is_exit_5"]
  },

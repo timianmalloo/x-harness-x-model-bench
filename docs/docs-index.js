@@ -333,7 +333,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "63ceb0fbc882a93bd80672c1b083d77af86fe58401b232155453420f95c672b9"
+      "sourceSha256": "847adce10871a3cc2341f0660ca72379cce0c07c9e8184482b118a990cd9984d"
     },
     {
       "id": "adr-0005-egress-control",
@@ -1025,6 +1025,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "0eb44e13d5b0174835d76d56681a8e5d32f9296d8a827a0cb6fe762379b43fcc"
     },
     {
+      "id": "row15-headroom",
+      "path": "docs/notes/row15-headroom.md",
+      "title": "Row 15: the headroom rule for raising the parallelism cap",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-09",
+      "reviewSuggested": [],
+      "summary": "The rule, written before the measurement run (R-38 condition 1, plan row 15), that decides what parallelism the D1 samples support: memory, CPU and host headroom per cell, times the candidate parallelism, against the host figures.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "d7f4b843efa22e8ba757165c3aa3ef977edd5c17660ec8d89093e7a15847ca32"
+    },
+    {
       "id": "rulings-register",
       "path": "docs/notes/rulings.md",
       "title": "Owner rulings",
@@ -1047,7 +1068,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "44a62b075323cdc116075c64da88376efa2f5b9c97c28fae43f3a5612f53cc8d"
+      "sourceSha256": "69aad3cdb5923bc32663f1ccef54d1223f7982c1b01d325bfeda0fdd77de9b69"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -1193,6 +1214,67 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "b15244d34330ebd4917bbc7599bd30944f2de10767b6a719ec18a0e19c25ee7f"
+    },
+    {
+      "id": "design-phase2-scripted-user",
+      "path": "docs/design/phase2-scripted-user.md",
+      "title": "Design: the scripted user for scenario 1 (phase 2, row 8)",
+      "type": "design",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 2 · smoke on all harnesses (wave 2: row 8, the scripted user)",
+      "reviewBy": "2027-03-25",
+      "reviewSuggested": [],
+      "summary": "The scenario-1 scripted user per R-37 and R-39: a bench-owned MCP server exposing one tool, ask_user(question) -> reply, passed in ACP session/new mcpServers, one prompt per cell; a deterministic matcher (exact, then five normalisation rules; a miss gets exactly \"Decide and state your assumption.\"); a per-call log with \"no question asked\" for zero calls; the \"scripted user\" allowlist class; the seams for W2-USER-W. Revision 2 after spike S-04: stdio works on Claude Code and Codex (Verified); Copilot 1.0.89-1 rejects client stdio servers (a decision request, with HTTP and launch-config variants written); the rule table scores precision 1.0 and recall 6/17 on the held-out set (0/11 on paraphrases); the S-04 threshold is set (regression floor met; confidence T = 0.80 on paraphrase recall not met). AI Systems Engineer: CLEAR WITH CONDITIONS, conditions applied.",
+      "tags": [
+        "benchmark",
+        "scenario-1",
+        "scripted-user",
+        "mcp",
+        "acp",
+        "matcher",
+        "clarification"
+      ],
+      "links": [
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0002-cell-driver",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0004-static-permissions",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0009-model-gateway",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-phase1-walking-skeleton",
+          "rel": "refines"
+        },
+        {
+          "to": "note-spike-s04-scripted-user",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        },
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "e462b14bdb2f5c2c2d2113ac98c74dba0db79007045d9dec1ac4c73d0e2c312e"
     },
     {
       "id": "design-phase2-stop-decisions",
@@ -1416,7 +1498,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ae2ac2b5641b4f193d21d7f18d20a7eaa7b6669b5935f320a854c149ae1954d2"
+      "sourceSha256": "1757792fee1560ff534b7f16e21e3b708454b0724b16cf136981194302644140"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -1571,6 +1653,49 @@ window.DOCS_INDEX = {
       "sourceSha256": "6be48da395ad06a2e18cf0e664f395e84f62f915bd6629db4ca86712b119edda"
     },
     {
+      "id": "note-spike-s04-scripted-user",
+      "path": "docs/notes/spike-s04-scripted-user.md",
+      "title": "Spike S-04: the scripted user's ask_user tool reaches Claude Code and Codex over stdio; Copilot rejects stdio from the client",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-12-25",
+      "reviewSuggested": [],
+      "summary": "Eleven probe turns on the pinned builds (Leader-run, 2026-09-25). Claude Code 2.1.282 and Codex 0.156.0 start a stdio MCP server given in ACP session/new mcpServers, list ask_user, and call it on request; the reply reaches the model. Copilot 1.0.89-1 accepts session/new but rejects the stdio entry (\"Rejecting non-http/sse MCP server\"), with or without --disable-builtin-mcps, so the tool never reaches it: a decision request (R-37 c1), with an HTTP and a launch-config variant written for the Leader. On A1, Claude asked once (the key ambiguity, paraphrased; no match), Codex asked nothing. The rule table's held-out measurement: precision 1.0, 0/21 default-labelled matches, paraphrase recall 0/11 (overall 6/17); S-04 threshold set (regression floor met; T = 0.80 on paraphrase recall not met, so A1 clarification metrics carry \"low-confidence matcher\" in wave 2). S-04b: session HTTP is listed and called on all three harnesses, and Copilot's launch config works too, both under --disable-builtin-mcps; Copilot lists tools lazily, at the first prompt.",
+      "tags": [
+        "benchmark",
+        "spike",
+        "phase-2",
+        "scenario-1",
+        "scripted-user",
+        "mcp",
+        "acp",
+        "matcher",
+        "S-04"
+      ],
+      "links": [
+        {
+          "to": "design-phase2-scripted-user",
+          "rel": "relates-to"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "relates-to"
+        },
+        {
+          "to": "adr-0004-static-permissions",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "eb2da9c50caab0eb1856d7407bba4811a01934d4a41f077b672ab3a85a2045be"
+    },
+    {
       "id": "proof-phase2",
       "path": "docs/proof/phase2.md",
       "title": "Proof Pack - phase 2 (wave-by-wave joins)",
@@ -1657,7 +1782,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f7d28e130ada6b2aeef28d7bc5bb7d57bfeb1fdb7d4ce9b107de8ebd704f498d"
+      "sourceSha256": "2bb7516987d6e093495dc26957eee01be6880dd749cbb2d98b01aea1653b75ad"
     },
     {
       "id": "coordination-phase1-finish",
@@ -2279,5 +2404,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "1090476e2dae99d14cc07e89a8c69c4838ef2818b1ddef5096d2bd1b7dc7d411"
+  "graphSha256": "00a24991f4f08baa48cdf3540d36a08a5b109d67ee02e1ad34325d625f5b4815"
 };

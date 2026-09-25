@@ -8,9 +8,9 @@ The workspace has **531 files, 5,272,935 bytes**. `uv run pytest -q -p no:cachep
 
 ## Hidden xUnit discrimination through the shared grader
 
-Command: `uv run python tasks/D1/oracle/probe.py` (exit 0). The probe calls `harness_bench.grade.correctness.grade` twice. For the reference call, it copies `workspace/` and overlays only `oracle/reference/src/AiDe.Core/Projections/EvidenceCensusProjection.cs`. The shared grader then overlays `tasks/D1/tests/` into its disposable grading copy. The reference never enters the agent workspace.
+Command: `uv run python tasks/D1/oracle/probe.py` (exit 0, rerun for W2-TASKS-b slice 3). The probe calls `harness_bench.grade.correctness.grade` twice. For the reference call, it copies `workspace/` and overlays only `oracle/reference/src/AiDe.Core/Projections/EvidenceCensusProjection.cs`. The shared grader then overlays `tasks/D1/tests/` into its disposable grading copy. The reference never enters the agent workspace.
 
-The `task.yaml` oracle command is `cmd.exe /c D1.HiddenTests\run.cmd --logger "trx;LogFileName=d1-hidden.trx" --results-directory TestResults -v:q`. The wrapper invokes `dotnet test D1.HiddenTests\D1.HiddenTests.csproj -p:RestoreSources=. -p:RestorePackagesPath=C:\Users\malla\.nuget\packages -p:NuGetAudit=false` with the same logger arguments. `NuGet.Config` clears package sources and names only the grading copy. The wrapper supplies the local Windows profile paths omitted by the shared grader's minimal environment. The grader recorded `dotnet --version` as `10.0.303` on both calls.
+The `task.yaml` oracle command is `cmd.exe /c D1.HiddenTests\run.cmd --logger "trx;LogFileName=d1-hidden.trx" --results-directory TestResults -v:q`. The wrapper invokes `dotnet test D1.HiddenTests\D1.HiddenTests.csproj -p:RestoreSources=. -p:NuGetAudit=false` with the same logger arguments. `NuGet.Config` clears package sources and names only the grading copy. The shared grader passes the host profile and NuGet cache environment to dotnet steps. The grader recorded `dotnet --version` as `10.0.303` on both calls.
 
 | Grading copy | dotnet exit | Named TRX | xUnit result | `correctness.grade` result |
 | --- | ---: | --- | --- | --- |
@@ -27,4 +27,4 @@ Failing test names on the base:
 
 The base failures are runtime xUnit failures: the hidden test project compiles without the new projection, then reflection reports its absence. The named TRX is parsed by `correctness.grade`; a build failure before TRX would be NA and would not satisfy this evidence.
 
-assume: the grading host uses this Windows profile and has the dependencies in `C:/Users/malla/.nuget/packages`. Confirm with the same probe on the actual grading host while registry access is disabled. If false, restore fails and the grader returns NA. No package registry is configured in the grading copy.
+assume: the grading host has the dependencies in its NuGet global packages cache at `%USERPROFILE%\.nuget\packages` (or `NUGET_PACKAGES` when set). Confirm with the same probe on the actual grading host while registry access is disabled. If false, restore fails and the grader returns NA. No package registry is configured in the grading copy.

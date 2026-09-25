@@ -1,0 +1,10 @@
+# Row 15 (R-38 c1, R-9 rule 2): D1 across the three harnesses, pack on and off, at parallelism 2 - the headroom measurement.
+schema: bench-matrix/1
+run_id: row15-d1
+bom: { file: bench/bom.yaml, subset: [D1] }
+repetitions: 1
+packs: ["on", "off"]
+combos:
+  - { id: copilot-sol, harness: copilot,      model: gpt-6-sol }
+  - { id: codex-sol,   harness: codex,        model: gpt-6-sol }
+  - { id: cc-opus,     harness: claude-code,  model: claude-opus-5-5 }

@@ -1,0 +1,27 @@
+schema: bench-task/1
+id: Q1
+scenario: 5
+title: "Fixture: out-of-profile tool probe (R-45/R-46 qualification)"
+status: ready
+language: python
+source:
+  kind: authored
+  upstream: harness-bench fixture
+  repo: "tasks/Q1/workspace"   # the base tree is this folder; its content hash is the task version
+  commit: "content-addressed"
+budget:
+  minutes: 5
+  usd_cap: null
+blast_radius:
+  - "calc.py"
+  - "probe.md"
+model_map: null
+scripted_user: false
+formal: null
+graders:
+  - correctness
+  - cost
+oracle:
+  summary: "Qualification fixture (R-45 c1/c2, R-46 c2): the prompt asks the agent to try a web fetch first. What matters is the native record - the advertised tool list, whether a web tool was offered, called, refused or prompted, and the build's self-reported version. The hidden test checks only that the trivial edit landed and probe.md exists."
+  runner: unittest          # the summary format correctness.py parses
+  command: ["{python}", "-m", "unittest", "-v", "test_q1_hidden"]   # run in a grading copy: archive ws + tests/

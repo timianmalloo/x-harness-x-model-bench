@@ -261,6 +261,18 @@ summary: >-
 - **Control:** `tests/test_allowlist_classes.py` compares Copilot's explicit allowlist with every id in the pinned build's own checkpoint and classifies all 21; `tests/test_profiles.py` checks both profile flags and Codex's seeded config; telemetry tests require Copilot's `tools_advertised` and a Codex `web_search_call` row. W2-VIEWS owns the per-cell validity finding. The fixed-profile Copilot fixture test is skipped until the Leader completes R-45 condition 1's recut.
 - **Status:** `partially-controlled` (static and reader controls added; the fixed-profile qualification and per-cell validity finding are pending their owning tracks).
 
+### VEND-A: a vendored file the host repository's ignore rules drop
+- **Signature:** a task base is vendored byte for byte into `tasks/<ID>/workspace/`, but a path in it matches this repository's `.gitignore` (`dist/`, `build/`). The file exists on the author's disk, so every check there passes; a clean checkout lacks it.
+- **Why it survives:** the author's tree is not a clean checkout. `git add tasks/<ID>` silently skips ignored files, and the author's own full suite reads the untracked file from disk.
+- **Instances:**
+  - `2026-09-25`, the D1 join: `tests/AiDe.Core.Tests/fixtures/first-use/standin-adapter/dist/index.js` (ignored by `.gitignore:8` `dist/`) was never committed. The Leader's full suite on `main`, which runs after the merge, found it: `test_d1_workspace_matches_pinned_git_archive_byte_for_byte` failed on the file set.
+- **Sweep:** `git ls-files -o --exclude-standard tasks/` is empty. The ignore patterns that can match a vendored tree are `dist/` and `build/`; `bin/` and `obj/` are refused by the validator (W2-VALIDATE).
+- **Control:**
+  - `.gitignore` re-includes `dist/` and `build/` under `tasks/*/workspace/**`, so the class cannot recur for task bases.
+  - The byte test compares the pinned archive against the checkout.
+  - The Leader runs the suite on the merged `main`, not only in the author's tree.
+- **Status:** `controlled`
+
 ### COORD-B: a worker's message or seam request not read by the Leader
 - **Signature:** a worker sends `coord mail` or raises a `coord request` (a seam grant, a blocker). The Leader reads only the worker's final hand-back (the runner result or the subagent report). The request expires without a ruling, and the worker takes its fallback. The work stalls, or a fix lands outside its owner.
 - **Why it survives:** the runner result says `ready_for_review` and carries the commit receipts. Nothing in it says a request was raised and left open. The fallback is correct behaviour, so every gate stays green.
@@ -276,9 +288,19 @@ summary: >-
 - **Instances:**
   - `2026-09-25`, the R-35/R-36(a) join: `report.json`'s mutant "a missing header fact rendered empty" survived on `main`. `test_the_header_shows_recorded_facts_and_not_recorded_for_the_rest` asserted `"not recorded" in doc`, and later columns (the `calls_per_cell` Measure, 6b; the context-window fact, R-32) print that phrase too. The fix pins the assertion to `<dt>Defender real-time exclusion</dt><dd>not recorded</dd>` (`60643a3`); `report.json` is 22/22 killed.
   - The same join, a close relative: the R-36 connector-name guard read only `report/__init__.py`, so a name seeded in `cli_table.py` passed. It now reads every report module (`a8d0833`), and the seeded name fails it.
+  - `2026-09-25`, spike S-04: the probe's "tool in the native record" check matched the bare word `ask_user`. The prompt contains that word, so Codex's A1 rollout read `true` from the user message alone. It now requires the harness's qualified id (`mcp__scripted_user__ask_user` or `mcp.scripted_user.ask_user`). A prompt-only fixture in `probe_selftest.py` fails the old check (observed red) and passes the new one.
 - **Sweep:** every `"not recorded"`, `"not graded"` or `"unranked"` assertion in `tests/`. The others are scoped to a header row or a table row.
 - **Control:** the named-test mutation sets (`tools/mutate_check.py`, TOOL-B). A vacuous assertion shows up as a surviving mutant once the set is re-run. Tests that check one element assert on that element's markup, not on the whole page. The upgrade trigger is a second instance: the join gate would then re-run every mutation set of the modules a track touched.
 - **Status:** `observed` (the mutation sets catch it once they are re-run)
+
+### OUT-A: a saved measurement reported as a failure because printing it failed
+- **Signature:** a tool saves its result file and then prints the same result to stdout. The text holds a character the console cannot encode: a Windows pipe defaults to cp1252, and model text carries `−` or emoji. The print raises, and the exit status turns non-zero. The caller reads the exit code as the measurement, although the saved file says the opposite.
+- **Why it survives:** offline tests use ASCII fixtures, and an interactive terminal is often UTF-8. Only a real model's text on a redirected Windows pipe hits it. The saved file is correct, so nothing that reads the file fails.
+- **Instances:**
+  - `2026-09-25`, spike S-04 (W2-USER-D): `probe_turn.py` printed its summary with `ensure_ascii=False`. It raised `UnicodeEncodeError` in 3 of 11 Leader runs. For `claude-code a1` the exit was 1 although the turn called `ask_user`, and the Leader's exit-code summary reported "not called". The saved summary was right.
+- **Sweep:** `print(json.dumps(..., ensure_ascii=False))` or a `stdout.write` of the same across `src/`, `tools/`, `tests/`: no other instance (grep, 2026-09-25). The other S-04 scripts print with `ensure_ascii=True`.
+- **Control:** `probe_selftest.py` `test_emit_on_a_legacy_console` runs `emit` under `PYTHONIOENCODING=cp1252` with a `−` and an emoji and requires exit 0. It was observed red on the old `emit` (2 failures), then green. The rule: stdout carries JSON escapes (`ensure_ascii=True`); files are written in UTF-8.
+- **Status:** `controlled` for the probe (the self-test is run by hand before a probe run); the upgrade trigger is a second instance, in a tool whose output a gate reads.
 
 ---
 

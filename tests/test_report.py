@@ -439,6 +439,95 @@ def test_the_cli_table_has_no_account_context_flag_when_no_claude_code_cell():
     assert code == 0 and R36_FLAG not in out
 
 
+# --- wave-2 validity states and view warnings (R-15, R-27, R-24/R-26 c5, R-47) on every surface ---------------------
+
+TOKENS_WARNING = views.Finding("HB-VAL-005", "warning", "model_calls tokens differ from the ACP turn total: outputTokens ACP 516, model_calls 515")
+BUILD_FLAG = views.Finding("HB-VAL-006", "warning", "executed-build check skipped: no recorded agent_version for copilot")
+
+
+def _state_view(validity, code, warnings=()):
+    cell = _cell("a", "cop-sol", "copilot", "gpt-6-sol")
+    cell.validity, cell.validity_code, cell.warnings = validity, code, list(warnings)
+    return views.RunView("r1", {"cells": [{"harness": "copilot"}]}, True, "grade-1", None, [cell])
+
+
+def _lines_after(out: str, heading: str) -> list[str]:
+    lines = out.splitlines()
+    return lines[lines.index(heading) + 1:]
+
+
+@pytest.mark.parametrize(("validity", "code"), [("not recorded", "HB-VAL-003"), ("invalid (tools denied by hook)", "HB-VAL-004"),
+                                           ("invalid (build mismatch)", "HB-VAL-007")])
+def test_the_cli_table_lists_each_wave_two_state_under_the_cells_that_are_not_valid(validity, code):
+    out, _ = cli_table.render(_state_view(validity, code), plain=True)
+    assert _lines_after(out, "Cells that are not valid:")[0] == f"  X1.cop-sol.pack-off.r1: {validity} {code}"
+
+
+@pytest.mark.parametrize(("validity", "code"), [("not recorded", "HB-VAL-003"), ("invalid (tools denied by hook)", "HB-VAL-004"),
+                                           ("invalid (build mismatch)", "HB-VAL-007")])
+def test_the_html_validity_section_counts_and_lists_each_wave_two_state(validity, code):
+    banner = re.search(r'<section id="validity".*?</section>', html.render(_state_view(validity, code), archive_present=True),
+                       re.DOTALL).group(0)
+    assert f"<li>{validity}: 1</li>" in banner and f"<li>X1.cop-sol.pack-off.r1: {validity} {code}</li>" in banner
+
+
+def test_the_cli_table_lists_each_warning_with_its_code_after_the_table():
+    out, _ = cli_table.render(_state_view("valid", None, [TOKENS_WARNING, BUILD_FLAG]), plain=True)
+    assert _lines_after(out, "Warnings:")[:2] == [f"  X1.cop-sol.pack-off.r1: HB-VAL-005 {TOKENS_WARNING.message}",
+                                                  f"  X1.cop-sol.pack-off.r1: HB-VAL-006 {BUILD_FLAG.message}"]
+
+
+def test_the_cli_table_has_no_warnings_heading_without_a_warning():
+    out, _ = cli_table.render(_state_view("valid", None), plain=True)
+    assert "Warnings:" not in out.splitlines()
+
+
+def test_the_html_validity_section_lists_warnings_even_when_every_cell_is_valid():
+    doc = html.render(_state_view("valid", None, [BUILD_FLAG]), archive_present=True)
+    warnings = re.search(r'<ul id="validity-warnings">(.*?)</ul>', doc, re.DOTALL).group(1)
+    assert warnings == f"<li>X1.cop-sol.pack-off.r1: HB-VAL-006 {BUILD_FLAG.message}</li>"
+
+
+def test_the_html_cells_table_names_each_cells_warning_codes():
+    doc = html.render(_state_view("valid", None, [TOKENS_WARNING, BUILD_FLAG]), archive_present=True)
+    runs = re.search(r'<section id="runs".*?</section>', doc, re.DOTALL).group(0)
+    headers = re.findall(r'<th scope="col"[^>]*>([^<]*)</th>', runs)
+    cells = re.findall(r"<td[^>]*>(.*?)</td>", re.search(r"<tbody>(.*?)</tbody>", runs, re.DOTALL).group(1))
+    assert cells[headers.index("Warnings")] == "HB-VAL-005, HB-VAL-006"
+
+
+def test_the_html_cells_table_reads_none_for_a_cell_without_warnings():
+    doc = html.render(_state_view("valid", None), archive_present=True)
+    runs = re.search(r'<section id="runs".*?</section>', doc, re.DOTALL).group(0)
+    headers = re.findall(r'<th scope="col"[^>]*>([^<]*)</th>', runs)
+    cells = re.findall(r"<td[^>]*>(.*?)</td>", re.search(r"<tbody>(.*?)</tbody>", runs, re.DOTALL).group(1))
+    assert cells[headers.index("Warnings")] == "none" and '<ul id="validity-warnings">' not in doc
+
+
+def test_the_canonical_export_carries_a_build_mismatch():  # R-47 c2
+    cell = json.loads(views.export(_state_view("invalid (build mismatch)", "HB-VAL-007")))["cells"][0]
+    assert (cell["validity"], cell["validity_code"]) == ("invalid (build mismatch)", "HB-VAL-007")
+
+
+def _header_fact(doc: str, name: str) -> str:
+    return re.search(rf"<dt>{re.escape(name)}</dt><dd>(.*?)</dd>", doc).group(1)
+
+
+def test_the_header_names_the_skipped_executed_build_check():  # R-47 c3: HB-VAL-006 is the disclosed state
+    doc = html.render(_state_view("valid", None, [BUILD_FLAG]), archive_present=True)
+    assert _header_fact(doc, "Executed-build check") == "skipped for 1 of 1 cells (HB-VAL-006): no recorded agent_version"
+
+
+def test_the_header_says_the_executed_build_check_ran_when_no_cell_skipped_it():
+    doc = html.render(_state_view("valid", None), archive_present=True)
+    assert _header_fact(doc, "Executed-build check") == "checked against the recorded agent_version (HB-VAL-007 on a mismatch)"
+
+
+def test_the_canonical_export_carries_each_cells_warnings():
+    cell = json.loads(views.export(_state_view("valid", None, [BUILD_FLAG])))["cells"][0]
+    assert cell["warnings"] == [{"code": "HB-VAL-006", "level": "warning", "message": BUILD_FLAG.message}]
+
+
 def test_no_connector_name_is_hard_coded_in_the_report_source():  # R-36 condition 3, R-6 condition 4
     from pathlib import Path
 

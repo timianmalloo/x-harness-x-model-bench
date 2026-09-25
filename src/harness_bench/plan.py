@@ -132,6 +132,12 @@ def _prompt(task_dir: Path) -> dict:
     return {"prompt": text, "prompt_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest()}
 
 
+def _model_map(task_dir: Path) -> dict:
+    """The task's `model_map` ({role: model}, scenario 6; null otherwise), frozen so the served-model check reads the
+    run, not today's task.yaml (US-11; W2-VIEWS seam S3)."""
+    return {"model_map": config.load_yaml(task_dir / "task.yaml").get("model_map")}
+
+
 def _validate_ids(cells: list[dict]) -> None:
     """Every frozen cell_id and label must match bench-status/1's id and label patterns (config.py),
     so status never has to emit a document its own strict parser would reject."""
@@ -227,7 +233,7 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, p
         "matrix_hash": _sha(matrix),
         "bom_version": str(bom.get("version")),
         "tasks": {t["id"]: {"version_hash": versions[t["id"]], "scenario": t["scenario"], "budget_seconds": t["budget_minutes"] * 60,
-                            **_prompt(root / "tasks" / t["id"])} for t in tasks},
+                            **_prompt(root / "tasks" / t["id"]), **_model_map(root / "tasks" / t["id"])} for t in tasks},
         "builds": {h: builds[h] for h in sorted(harnesses)},
         "profiles": {h: profile_record(root, h) for h in sorted(harnesses)},
         "pack": pack,

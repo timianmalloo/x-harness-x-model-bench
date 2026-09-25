@@ -46,6 +46,15 @@ def test_copilot_set_model_refusal_uses_the_existing_model_unavailable_cause():
     )
 
 
+def test_the_wave_two_validity_codes_are_named():  # seam S1 (R-15, R-27)
+    assert errors.RUN_CODES["HB-VAL-003"] == "validity: not recorded (the usage record is missing or unreadable)"
+    assert errors.RUN_CODES["HB-VAL-004"] == "validity: tools denied by hook"
+    assert errors.RUN_CODES["HB-VAL-005"] == "warning: model_calls tokens differ from the ACP turn total, or the check did not run"
+    assert errors.RUN_CODES["HB-VAL-006"] == "warning: executed-build check skipped (no agent_version, or no recorded self-report)"
+    assert errors.RUN_CODES["HB-VAL-007"] == ("validity: build mismatch (the session's agent_version differs from the pinned "
+                                              "build's recorded self-report)")  # R-47
+
+
 def test_run_level_codes_are_unique_and_named():
     assert len(errors.RUN_CODES) == len(set(errors.RUN_CODES))
     for code in ("HB-PRE-002", "HB-RUN-001", "HB-LED-002", "HB-LED-005", "HB-SEC-001", "HB-USR-001"):
