@@ -30,6 +30,10 @@ from harness_bench.errors import BenchError
 from harness_bench.ledger import canonical
 
 SCHEMA = "bench-plan/1"
+# Instruction rows come from `copilot instruction list --json` verbatim, and Copilot may add
+# non-string fields (e.g. `defaultDisabled`: bool) the ledger's canonical form forbids (ADR-0006).
+# Only these identity fields are frozen into the plan, and only when they are strings.
+INSTRUCTION_IDENTITY_FIELDS = ("sourcePath", "id", "label", "location", "type")
 PHASE1_MAX_PARALLELISM = 2
 # Plan parameters (ADR-0007: shown at confirmation, recorded in the plan). Seconds unless named.
 DEFAULT_PARAMETERS = {
@@ -156,6 +160,12 @@ def instruction_list(exe: Path, ws: Path, env: dict[str, str]) -> list[dict]:
     return rows
 
 
+def _instruction_identity(row: dict) -> dict:
+    """Project one instruction row to its string-valued identity fields (ledger canonical is
+    str/int/None/list/dict only; a bool like `defaultDisabled` must not reach the plan)."""
+    return {k: row[k] for k in INSTRUCTION_IDENTITY_FIELDS if isinstance(row.get(k), str)}
+
+
 def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, pack: dict,
                parallelism: int = DEFAULT_PARAMETERS["parallelism"], parameters: dict | None = None) -> dict:
     if not 1 <= parallelism <= PHASE1_MAX_PARALLELISM:
@@ -192,7 +202,7 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, p
                 instruction_counts[task_id, arm] = len(rows)
                 instruction_lists.append({"task": task_id, "task_version": versions[task_id], "pack": arm,
                                           "build_sha256": builds["copilot"]["sha256"], "count": len(rows),
-                                          "instructions": rows})
+                                          "instructions": [_instruction_identity(row) for row in rows]})
         finally:
             shutil.rmtree(probe, onexc=archive.make_writable)
     params = {**DEFAULT_PARAMETERS, **(parameters or {}), "parallelism": parallelism}
