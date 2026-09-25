@@ -102,7 +102,8 @@ def cmd_plan(args) -> int:
     builds = {h: b.record() for h, b in tools.resolve(Path(args.tools_dir)).items()}
     pack = _pack(Path(args.pack_source), Path(args.tools_dir).parent / "pack")
     run_id = args.run_id or f"{matrix.get('run_id', 'run')}-{datetime.now(UTC):%Y%m%dT%H%M%S}"
-    p = plan.build_plan(root, matrix, bom, run_id, builds, pack, parallelism=args.parallelism)
+    p = plan.build_plan(root, matrix, bom, run_id, builds, pack, parallelism=args.parallelism,
+                        tools_dir=Path(args.tools_dir), cells_root=Path(args.cells_root))
     console = Console(no_color=_plain(), highlight=False)
     table = Table(title=f"plan {run_id}: {matrix_path.name}")
     for col in ("combo", "harness", "model", "planned build", "cells"):
