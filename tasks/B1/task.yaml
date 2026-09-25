@@ -2,13 +2,19 @@ schema: bench-task/1
 id: B1
 scenario: 2
 title: "P0 conventions and spine primer to full spec"
-status: stub
+status: ready
 language: csharp
 source:
   kind: authored
   upstream: "cfd-bench phasing plan P0 paragraph"
   repo: "https://github.com/timianmalloo/cfd-bench"
-  commit: "tbd"
+  commit: "496a0a8ca2fae9026927167a8f3e5da0a53f2233"  # git -C C:\projects\cfd-bench rev-parse HEAD, 2026-09-25
+  license: "none (the operator's own repository; operator decision 2026-09-25)"
+  # git ls-tree of this commit lists no LICENSE, LICENSE.md, or COPYING.
+  # The operator ruled on 2026-09-25 to proceed without a licence file and to record that.
+  copyright: null
+  vendored_paths:
+    - docs/proposals/build-phasing-plan.html
 budget:
   minutes: 20
   usd_cap: null
@@ -17,9 +23,12 @@ blast_radius:
 model_map: null
 scripted_user: false
 graders:
+  - correctness
   - judge
   - drift
   - cost
   - process
 oracle:
   summary: "Rubric from the /specify definition of done (core scenario, non-goals, Gherkin ACs, ISO 25010 NFRs, three layers) + reference spec."
+  runner: unittest
+  command: ["{python}", "-m", "unittest", "-v", "test_b1_hidden"]
