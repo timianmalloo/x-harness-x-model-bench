@@ -7,6 +7,7 @@ through `Verdict.release`, which never calls the backend for a withheld payload.
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import re
 from collections.abc import Callable, Sequence
@@ -31,6 +32,9 @@ class Verdict:
     classes: tuple[str, ...]
     payload: str | None
     scanned: tuple[str, ...] = ()
+
+    def record(self) -> dict:
+        return dataclasses.asdict(self)
 
     @property
     def withheld(self) -> bool:

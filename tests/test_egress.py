@@ -166,6 +166,32 @@ def test_the_verdict_names_what_was_scanned_so_clean_differs_from_not_scanned():
     assert set(full.scanned) <= set(egress.CLASSES) and full.classes == ()
 
 
+def test_an_unsafe_destination_is_refused_without_echoing_it():
+    # Codex F3: the destination is a fixed backend id, never caller text that can carry content.
+    value, canary = _credential(), f"canary-{token_hex(8)}"
+    for destination, canaries in ((value, ()), ("judge:claude\nnext", ()), ("", ()), ("x" * 65, ()),
+                                  (canary, (canary,)), (f"judge:{canary}", (canary,))):
+        with pytest.raises(ValueError) as refused:
+            egress.check(PAYLOAD, destination=destination, operator=_operator(), canaries=canaries)
+        assert destination not in str(refused.value) or not destination
+
+
+def test_the_verdict_record_and_repr_carry_no_content():
+    # Codex F3 and D&P: the ledger shape is (destination, payload_sha256, classes, scanned) only, and neither the
+    # clean payload nor a matched identifier appears in the repr or the record.
+    clean = egress.check(PAYLOAD, destination=DEST, operator=_operator())
+    assert "retry wrapper" not in repr(clean)
+    assert clean.record() == {"destination": DEST, "payload_sha256": _sha(PAYLOAD), "classes": (),
+                              "scanned": clean.scanned}
+    email, username, home = f"op-{token_hex(6)}@example.invalid", f"u{token_hex(5)}", f"C:\\Users\\h{token_hex(5)}"
+    operator = _operator(email=email, username=username, home=home)
+    for planted, value in ((email, email), (f"by {username}.", username), (home, home)):
+        verdict = egress.check(_plant(planted), destination=DEST, operator=operator)
+        assert verdict.withheld
+        assert value not in repr(verdict) and value not in repr(verdict.record())
+    assert all(v not in repr(operator) for v in (email, username, home))
+
+
 def test_a_withheld_payload_never_reaches_the_backend():
     value = _credential()
     backend = FakeBackend()
