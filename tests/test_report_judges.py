@@ -16,7 +16,7 @@ from pathlib import Path
 
 from archived_runs import GOOD, make_run
 from test_calibrate import cal_root, calibrate
-from test_grade_judge import CLAUDE, FIX, ROOT, fake_calls, spawns
+from test_grade_judge import CLAUDE, FIX, ROOT, fake_calls, judged_root, spawns
 
 from harness_bench import egress, views
 from harness_bench.grade import judge, runner
@@ -150,6 +150,24 @@ def test_t_gw_29_the_header_names_both_judges_their_served_ids_and_the_unqualifi
     assert _dd(page, "Live-run scan") == ("judge calls are refused while a run is live under any worktree's runs/ or "
                                           "--runs; a run under a --runs folder outside every worktree is not seen "
                                           "(R-65 c3)")
+
+
+def test_a_dev_catalog_pass_reads_probe_pass(tmp_path):
+    """Section 12 Probe versions: a pass whose grading.started catalog_version is `.dev` reads `probe pass`
+    (R-59 DR-4). The catalog file is relabelled after the pass, so the row cannot be the file's current version."""
+    root = judged_root(tmp_path)
+    catalog = root / "bench" / "metrics.yaml"
+    raw = catalog.read_text(encoding="utf-8")
+    assert raw.count("version: '0.4'") == 1
+    catalog.write_text(raw.replace("version: '0.4'", 'version: "0.4.dev"', 1), encoding="utf-8")
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
+    gid = runner.run_pass(run_dir, root).grading_id
+    catalog.write_text(catalog.read_text(encoding="utf-8").replace('version: "0.4.dev"', "version: '0.4'", 1),
+                       encoding="utf-8")
+    view = views.load(run_dir, "0.4.dev")
+    assert view.grading_id == gid and view.catalog_version == "0.4.dev"
+    page = html.render(view, False, run_dir, root=root)
+    assert "<dt>Probe versions</dt><dd>probe pass</dd>" in page
 
 
 def test_t_gw_29_without_the_operators_identifiers_the_cli_context_is_not_recorded_and_no_pass_no_block(tmp_path,

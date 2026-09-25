@@ -247,8 +247,8 @@
  {
   "name": "cmd_grade skips the up-front live-run refusal",
   "file": "src/harness_bench/cli.py",
-  "find": "        gateway.refuse_if_live(gateway.run_roots(root, Path(args.runs)))\n",
-  "replace": "",
+  "find": "live_scan = (roots, gateway.refuse_if_live(roots))",
+  "replace": "live_scan = (roots, ())",
   "tests": ["tests/test_grade_judge.py::test_t_gw_19_bench_grade_allow_model_calls_refuses_a_live_run_before_the_pass_starts"]
  },
  {
@@ -278,5 +278,40 @@
   "find": "    if not email:\n",
   "replace": "    if False:\n",
   "tests": ["tests/test_grade_judge.py::test_bench_grade_allow_model_calls_needs_the_operators_email_for_egress"]
+ },
+ {
+  "name": "grading.started records no scanned roots and no run liveness",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "\"scanned_roots\": [str(p) for p in self.live_scan[0]],",
+  "replace": "\"scanned_roots\": [],",
+  "tests": ["tests/test_grade_judge.py::test_grading_started_records_the_scanned_roots_and_each_runs_liveness"]
+ },
+ {
+  "name": "a not-running run is left out of the live-run scan record",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "            found.append((run, s.liveness))\n",
+  "replace": "            found.append((run, s.liveness)) if s.liveness != \"not running\" else None\n",
+  "tests": ["tests/test_grade_judge.py::test_grading_started_records_the_scanned_roots_and_each_runs_liveness"]
+ },
+ {
+  "name": "a scanned run's liveness is recorded as alive",
+  "file": "src/harness_bench/gateway/backend.py",
+  "find": "            found.append((run, s.liveness))\n",
+  "replace": "            found.append((run, \"alive\"))\n",
+  "tests": ["tests/test_grade_judge.py::test_grading_started_records_the_scanned_roots_and_each_runs_liveness"]
+ },
+ {
+  "name": "a .dev catalog pass is not a probe pass",
+  "file": "src/harness_bench/report/judges.py",
+  "find": "\"probe pass\" if views._is_probe(view.catalog_version) else view.catalog_version",
+  "replace": "view.catalog_version",
+  "tests": ["tests/test_report_judges.py::test_a_dev_catalog_pass_reads_probe_pass"]
+ },
+ {
+  "name": "probe versions reads the catalog file, not grading.started",
+  "file": "src/harness_bench/report/judges.py",
+  "find": "views._is_probe(view.catalog_version)",
+  "replace": "views._is_probe(str(config.load_yaml(root / \"bench\" / \"metrics.yaml\")[\"version\"]))",
+  "tests": ["tests/test_report_judges.py::test_a_dev_catalog_pass_reads_probe_pass"]
  }
 ]

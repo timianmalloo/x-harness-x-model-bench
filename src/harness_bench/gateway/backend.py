@@ -275,12 +275,15 @@ def run_roots(repo: Path, runs: Path) -> tuple[Path, ...]:
     return tuple(dict.fromkeys([*roots, runs.resolve()]))
 
 
-def refuse_if_live(roots: tuple[Path, ...]) -> None:
-    """Section 6 and R-65: HB-GRD-005 when any known run under `roots` has lock liveness `alive` or `stalled`
-    (`status.build`; phase is not consulted). `status.require_known` is the one filter: a folder with no plan.json,
-    such as a calibration ledger, is not a run (T-GW-19c). The refusal names every scanned root and each live run; a
-    stalled one with its lock path and heartbeat age (R-65 c1, c2). A lock is never deleted here."""
-    live = []
+def scan_runs(roots: tuple[Path, ...]) -> tuple[tuple[tuple[Path, str], ...], tuple[str, ...]]:
+    """Each known run under `roots` with its lock liveness, and the refusal lines for the live ones.
+
+    One definition (R-65 c1): `status.require_known` is the filter and `status.build` is the status check
+    (`alive`, `stalled`, or `not running`; phase is not consulted). `refuse_if_live` raises from the lines;
+    `grading.started` records the runs. A folder with no plan.json, such as a calibration ledger, is not a
+    run (T-GW-19c). A lock is never deleted here."""
+    found: list[tuple[Path, str]] = []
+    live: list[str] = []
     for root in roots:
         for run in sorted(p for p in root.iterdir() if p.is_dir()) if root.is_dir() else []:
             try:
@@ -288,13 +291,23 @@ def refuse_if_live(roots: tuple[Path, ...]) -> None:
             except BenchError:
                 continue
             s = status.build(run)
+            found.append((run, s.liveness))
             if s.liveness == "alive":
                 live.append(f"{run} alive")
             elif s.liveness == "stalled":
                 live.append(f"{run} stalled (lock {run / '.lock'}, heartbeat {s.lock_age_s} s old)")
+    return tuple(found), tuple(live)
+
+
+def refuse_if_live(roots: tuple[Path, ...]) -> tuple[tuple[Path, str], ...]:
+    """Section 6 and R-65: HB-GRD-005 when `scan_runs` finds a run whose liveness is `alive` or `stalled`.
+    The refusal names every scanned root and each live run; a stalled one with its lock path and heartbeat
+    age (R-65 c1, c2)."""
+    found, live = scan_runs(roots)
     if live:
         raise BenchError("HB-GRD-005", f"model calls refused while a run is live; scanned "
                                        f"{', '.join(map(str, roots))}; {'; '.join(live)}")
+    return found  # the scan, for grading.started (R-65 c1)
 
 
 @contextmanager

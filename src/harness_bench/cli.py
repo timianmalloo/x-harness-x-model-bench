@@ -252,11 +252,12 @@ def cmd_grade(args) -> int:
     only, and the pass prints its misses. With `--allow-model-calls`, the one CLI path that may spawn a judge, the
     gateway's live-run refusal runs first, before the pass starts (HB-GRD-005), and again before the first spawn."""
     run_dir, root = _run_dir(args), Path(args.root)
-    judging = None
+    judging, live_scan = None, None
     if args.allow_model_calls:
-        gateway.refuse_if_live(gateway.run_roots(root, Path(args.runs)))
+        roots = gateway.run_roots(root, Path(args.runs))
+        live_scan = (roots, gateway.refuse_if_live(roots))  # the scan grading.started records (R-65 c1)
         judging = judge.calling(_judge_calls(args, root))
-    result = runner.run_pass(run_dir, root, judging)
+    result = runner.run_pass(run_dir, root, judging, live_scan)
     print(f"graded {result.cells_graded} cell(s) in pass {result.grading_id}")
     if judging is None:
         print(f"judge misses: {judge.misses(run_dir, result.grading_id)} call(s)")  # US-26 c2
