@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T02:33:15Z",
+  "generated": "2026-09-25T02:53:25Z",
   "audit": [
     {
       "actor": null,
@@ -8556,6 +8556,34 @@ window.AUDIT_DATA = {
         "sha": "6bc7a83d098d6ef48936ea5ecc3601baa8ab132f",
         "short": "6bc7a83d0",
         "branch": "w1-r34-claude-shell",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M3B7PRFRH9SKGMJMBCYCEB3X",
+      "shortname": "R-35, R-36(a): NotebookEdit allowlist + account context (R1.4) flag",
+      "datetime": "2026-09-25T02:53:25Z",
+      "session": "w1-r35",
+      "prompt": "Implement Owner rulings R-35 and R-36 part (a) for harness-bench: NotebookEdit in the Claude Code file-edit allowlist class, and the account context (R1.4) disclosure flag on every Claude Code cell. Leader coord-opus-cq, model Claude Sonnet 5 (R-33).",
+      "summary": "R-35: NotebookEdit added to Claude Code permissions.allow (file-edit class), red-first via tests/test_allowlist_classes.py and tests/test_profiles.py. R-36(a): account context (R1.4) flag added to report header, leaderboard/cells rows and CLI footer for every Claude Code cell (report/__init__.py has_claude_code_cell/flag_if_claude_code), following the N5 precedent; no connector name in report source. Full suite 823 passed, ruff clean, tests/mutations/r35_r36.json and tests/mutations/report.json all killed. Red 773b278, green 936e0d6.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Implement rulings R-35 (NotebookEdit in the Claude Code file-edit allowlist class) and R-36 part (a) (account context (R1.4) disclosure on Claude Code cells) per docs/notes/rulings.md, red-first.",
+      "done_when": "1) NotebookEdit in bench/profiles/claude-code.yaml allow and test_allowlist_classes.py file-edit class, assume: removed. 2) account context (R1.4) flag in report header and each Claude Code row. 3) uv run pytest -q passes, uv run ruff check src tests tools clean, tests/mutations/r35_r36.json all killed.",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-09-25T02:43:21Z",
+      "duration_seconds": 604.0,
+      "git": {
+        "sha": "936e0d65e4a26c19d0bf5a3df7205592abdf0853",
+        "short": "936e0d65e",
+        "branch": "w1-r35-r36",
         "pushed": null
       }
     }
