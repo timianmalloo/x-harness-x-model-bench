@@ -26,7 +26,7 @@ from harness_bench import archive, ledger, profiles, views
 from harness_bench import plan as plan_mod
 from harness_bench.errors import BenchError
 from harness_bench.grade import cost, runner
-from harness_bench.telemetry import normalize
+from harness_bench.telemetry import copilot, normalize
 
 SONNET = "claude-sonnet-5"
 OPUS = "claude-opus-5-5"
@@ -467,6 +467,49 @@ def test_a_hook_denial_and_an_invalidating_cause_outrank_an_executed_other_call(
     assert (denied.validity, denied.validity_code) == ("invalid (tools denied by hook)", "HB-VAL-004")
     caused = _codex_mcp_run(root, tmp_path / "2", outcomes={"a": {"outcome": "failed", "cause": "provider", "code": "HB-CELL-108"}})
     assert (caused.validity, caused.validity_code) == ("invalid (infrastructure)", "HB-CELL-108")
+
+
+# R-45 item 2: for Copilot, an out-of-class id the checkpoint advertised is the same invalidating finding. The pass records
+# the reader's `tools_advertised` per cell on `grading.completed` (the R-15 `unreadable_records` shape).
+
+
+def _advertised(arm: str) -> list[str] | None:
+    return copilot.read(next((COPILOT_FIX / arm).rglob("events.jsonl"))).tools_advertised
+
+
+def _advertised_run(monkeypatch, advertised: list[str] | None, run) -> views.CellView:
+    """`run()` grades cell a under a pass whose `grading.completed.tools_advertised` records `advertised` for it."""
+    append = runner._Pass.append
+
+    def with_advertised(self, fact, record):
+        if record.get("kind") == "grading.completed":
+            record = {**record, "tools_advertised": {"a": advertised}}
+        return append(self, fact, record)
+
+    monkeypatch.setattr(runner._Pass, "append", with_advertised)
+    return _cell(views.load(run()), "a")
+
+
+def test_the_pack_on_copilot_sample_advertising_web_search_is_invalid(root, tmp_path, monkeypatch):  # R-45 item 2
+    cell = _advertised_run(monkeypatch, _advertised("on"), lambda: _copilot_run(root, tmp_path, arm="on"))
+    assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
+
+
+def test_the_fixed_profile_copilot_sample_is_valid(root, tmp_path, monkeypatch):  # R-45 c1: qual-r45-1, fixed profile
+    cell = _advertised_run(monkeypatch, _advertised("fixed"), lambda: _copilot_run(root, tmp_path, arm="fixed"))
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+
+
+def test_an_unrecorded_advertised_list_is_no_finding(root, tmp_path, monkeypatch):  # null: not read, never a finding
+    cell = _advertised_run(monkeypatch, None, lambda: _copilot_run(root, tmp_path, arm="fixed"))
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+
+
+def test_the_advertised_list_is_read_only_for_copilot(root, tmp_path, monkeypatch):  # the ids are Copilot's class map
+    codex_ok = (Path(__file__).parent / "fixtures/native/codex/ok.jsonl").read_text(encoding="utf-8")
+    cell = _advertised_run(monkeypatch, ["web_search"], lambda: _native_run(
+        root, tmp_path, "codex", "sessions/2026/09/rollout-2026-09-23-sess-a.jsonl", codex_ok))
+    assert (cell.validity, cell.validity_code) == ("valid", None)
 
 
 def test_an_ungraded_cell_is_not_graded_before_any_tool_check(root, tmp_path):
