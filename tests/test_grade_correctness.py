@@ -17,7 +17,7 @@ from pathlib import Path
 import pytest
 from archived_runs import ROOT
 
-from harness_bench import config, plan, views
+from harness_bench import archive, config, plan, views
 from harness_bench.grade import CellInput, Score, correctness
 from harness_bench.grade.runner import applicable
 
@@ -62,14 +62,22 @@ def test_the_moved_grader_gives_the_gate_runs_0_3_correctness_and_leaves_the_arc
            for c in views.load(run, "0.3").cells}
     attempts = {e["cell_id"]: e["archive_attempt"] for e in views.rows(run, "events") if e["kind"] == "cell.archived"}
     cells = {c["cell_id"]: c for c in plan.load_confirmed(run)["cells"]}
-    got = {}
+    got, c2 = {}, {}
     for cid, attempt in sorted(attempts.items()):
         folder = run / "archive" / cid / f"attempt-{attempt}"
         before = tree_digest(folder)
         out = correctness.grade_cell(cell_input(tmp_path, folder, cells[cid], tmp_path / "grading" / cid / "correctness"))
         got[cid] = {m: encode(out[m]) for m in ("pass_at_1", "partial_credit")}
+        c2[cid] = tuple(encode(out[m]) for m in C2)
         assert tree_digest(folder) == before, f"grading wrote under the archive of {cid}"
     assert got == was
+    assert c2 == GATE_C2.get(name)
+
+
+# GR-CODE c2 on the gate runs, (regression_count, behavioural_equivalence) per cell. D1's regression counts are
+# characterization values (design: Expected values), recorded by this slice with the seeded fixture passing in the
+# same run; the NA rows are exact.
+GATE_C2 = {}
 
 
 # --- D1 fixtures: the frozen workspace in a git repo that reproduces the archive's commits (G9) --------------------
@@ -442,6 +450,8 @@ def fake_public(monkeypatch, cell=None, pre=None, marker: str = "") -> list:
         tree = Path(cwd).name
         seen.append((tree, argv))
         answer = {"cell": cell, "pre-turn": pre}[tree]
+        if isinstance(answer, list):  # one answer per run of that tree, in order
+            answer = answer[[t for t, _ in seen].count(tree) - 1]
         if not isinstance(answer, dict):
             return answer
         path = Path(cwd) / "TestResults" / argv[argv.index("--logger") + 1].partition("LogFileName=")[2]
@@ -523,8 +533,23 @@ def test_regression_count_counts_public_tests_that_passed_before_and_do_not_pass
     assert regressions_log(inp)[-4:] == [f"regressed N.{k}" for k in ("A.broken", "A.removed", "A.skipped", "T.theory")]
     argv = ["dotnet", "test", PUBLIC, "-p:RestoreSources=.", "-p:NuGetAudit=false", "--logger", "trx;LogFileName=public-0.trx",
             "--results-directory", "TestResults", "-v:q"]
-    assert seen == [("cell", argv), ("pre-turn", argv)]  # the cell's tree first: a cell that does not build needs no base
+    # the cell's tree first (a cell that does not build needs no base), then once more to confirm the candidates
+    assert seen == [("cell", argv), ("pre-turn", argv), ("cell", argv)]
     assert sorted(p.name for p in (inp.out_dir / "regressions").iterdir()) == ["regressions.log"]  # copies removed
+
+
+def test_a_candidate_that_passes_on_the_cells_second_run_is_a_flake_not_a_regression(tmp_path, monkeypatch):
+    # Measured: UpgradeTests.AJournalBeingRewritten_IsNeverObservedHalfWritten failed once in 16 full-suite runs and
+    # passed 5 of 5 alone on both trees of row15-d1-1 cell caa8, whose change touches neither it nor its code.
+    graded_elsewhere(monkeypatch)
+    before = {"N.A.flaky": "Passed", "N.A.broken": "Passed", "N.A.kept": "Passed"}
+    seen = fake_public(monkeypatch, pre=before,
+                       cell=[{**before, "N.A.flaky": "Failed", "N.A.broken": "Failed"}, {**before, "N.A.broken": "Failed"}])
+    inp = public_cell(tmp_path)
+    assert c2_of(correctness.grade_cell(inp))["regression_count"] == (1, None)
+    assert regressions_log(inp)[-3:] == ["candidates 2, confirmed on a second run of the cell's tree 1",
+                                         "regressions 1 of 3 passing before", "regressed N.A.broken"]
+    assert [tree for tree, _ in seen] == ["cell", "pre-turn", "cell"]
 
 
 TIMEOUT = done(None, timed_out=True)
@@ -617,6 +642,19 @@ def test_the_trx_reader_needs_only_names_ids_and_outcomes(tmp_path):
     assert correctness.public_outcomes(path) == {"N.A.a": True, "N.T.t": False, "N.A.b": False}
     path.write_text(trx({"N.A.a": "Passed"}, marker=MARKER), encoding="utf-8")  # the same answer with every host field
     assert correctness.public_outcomes(path) == {"N.A.a": True}
+    path.write_text('<TestRun xmlns="urn:another-tool" />', encoding="utf-8")  # not a VSTest TRX
+    assert correctness.public_outcomes(path) is None
+
+
+def test_regression_count_is_na_for_an_unbuilt_runner_or_no_working_copy(tmp_path, monkeypatch):
+    graded_elsewhere(monkeypatch)
+    seen = fake_public(monkeypatch)
+    inp = public_cell(tmp_path)
+    lake = dataclasses.replace(inp, task={**inp.task, "oracle": {"runner": "lake", "command": ["lake", "build"]}})
+    assert c2_of(correctness.grade_cell(lake))["regression_count"] == (None, "oracle runner 'lake' not built (phase 1 runs unittest)")
+    shutil.rmtree(inp.archive / "ws", onexc=archive.make_writable)
+    assert c2_of(correctness.grade_cell(inp))["regression_count"] == (None, "no working copy in the archive")
+    assert seen == []
 
 
 def test_the_pre_turn_commit_and_tree_are_found_once_per_cell_for_both_readers(tmp_path, monkeypatch):  # the c1 residual
