@@ -69,6 +69,16 @@ def test_copilot_missing_exe_is_hb_pre_007(tmp_path):
     assert error.value.code == "HB-PRE-007"
 
 
+def test_resolve_requires_an_adapter_entry_script(tmp_path):
+    tree = _fake_tree(tmp_path)
+    missing = tree / "node_modules/@agentclientprotocol/claude-agent-acp/dist/index.js"
+    missing.unlink()
+    with pytest.raises(BenchError) as error:
+        tools.resolve(tree)
+    assert error.value.code == "HB-PRE-007"
+    assert str(missing) in str(error.value)
+
+
 def test_copilot_binary_change_is_detected_at_cell_start(tmp_path):
     tree = _fake_tree(tmp_path)
     planned = tools.resolve(tree)["copilot"].record()
