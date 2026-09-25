@@ -476,9 +476,7 @@ def test_one_code_one_level_one_emitter():  # R-47 c1: a Cause code is never a v
     assert {"HB-VAL-005", "HB-VAL-006"} <= {c for c, _ in emitted}  # the scan sees the view's findings (not vacuous)
     assert {c for c, _ in emitted}.isdisjoint({c.code for c in Cause})
     two_levels = {c for c, level in emitted if any(c == o and level != lv for o, lv in emitted)}
-    # HB-LED-002's pre-R-2 "records no heads" warning predates R-47; its own code needs an errors.py row outside this
-    # track's seam grant (named in the W2-VIEWS hand-back). The exact set makes the exclusion fail once it is fixed.
-    assert two_levels == {"HB-LED-002"}
+    assert two_levels == set()  # R-47 open item closed: the pre-R-2 "records no heads" warning has its own code
 
 
 def test_every_validity_views_can_return_is_a_bench_status_state_or_a_named_exclusion():  # D&P minor

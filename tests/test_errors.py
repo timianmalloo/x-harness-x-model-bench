@@ -55,6 +55,11 @@ def test_the_wave_two_validity_codes_are_named():  # seam S1 (R-15, R-27)
                                               "build's recorded self-report)")  # R-47
 
 
+def test_the_pre_r2_no_heads_warning_has_its_own_code():  # R-47 c1: one code, one level
+    assert errors.RUN_CODES["HB-LED-006"] == ("warning: grading.completed records no heads (written before ruling R-2); "
+                                              "only its seals are checked")
+
+
 def test_run_level_codes_are_unique_and_named():
     assert len(errors.RUN_CODES) == len(set(errors.RUN_CODES))
     for code in ("HB-PRE-002", "HB-RUN-001", "HB-LED-002", "HB-LED-005", "HB-SEC-001", "HB-USR-001"):
