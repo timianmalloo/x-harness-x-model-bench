@@ -1,4 +1,4 @@
-"""`bench`: validate, plan, run, status, grade, report, verify, teardown, tools install (design: Exposed contracts).
+"""`bench`: validate, plan, run, status, stop, answer, grade, report, verify, teardown, tools install (design: Exposed contracts).
 
 This is the composition root: it builds the real launchers, the working-copy builder and the grading hook,
 and hands them to the engine. Errors go to stderr as `<code>: <message>`. Exit codes (design):
@@ -176,21 +176,49 @@ def cmd_status(args) -> int:
     return OK
 
 
-def cmd_stop(args) -> int:
-    run_dir = _run_dir(args)
+def _require_running(run_dir: Path, run_id: str, action: str) -> None:
+    """A control is written only while an engine holds the run's lock: nothing else would ever read it."""
     if not oslock.is_held(run_dir / ".lock"):
         completion = status.build(run_dir).completion
-        raise BenchError("HB-USR-002", f"run {args.run_id} is not running ({completion}); nothing to stop")
+        raise BenchError("HB-USR-002", f"run {run_id} is not running ({completion}); nothing to {action}")
+
+
+def _write_control(run_dir: Path, control: str, decision_id: str | None = None, option: str | None = None) -> str:
+    """A `bench-control/1` file, written as a temp file then os.replace, so the engine never reads a partial one
+    (design 4.1). Returns its uuid, which is also its file stem."""
     uid = uuid.uuid4().hex
     control_dir = run_dir / "control"
     control_dir.mkdir(exist_ok=True)
     target = control_dir / f"{uid}.json"
     temp = control_dir / f"{uid}.json.tmp"
-    payload = {"schema": "bench-control/1", "uuid": uid, "control": "stop", "decision_id": None,
-               "option": None, "requested_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")}
+    payload = {"schema": "bench-control/1", "uuid": uid, "control": control, "decision_id": decision_id,
+               "option": option, "requested_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")}
     temp.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
     os.replace(temp, target)
+    return uid
+
+
+def cmd_stop(args) -> int:
+    run_dir = _run_dir(args)
+    _require_running(run_dir, args.run_id, "stop")
+    uid = _write_control(run_dir, "stop")
     print(f"stop requested ({uid}). bench status {args.run_id} shows stopped within 30 s.")
+    return OK
+
+
+def cmd_answer(args) -> int:
+    """Design 4.2: checked at write time against the ledger; the engine re-checks when it applies the file."""
+    run_dir = _run_dir(args)
+    _require_running(run_dir, args.run_id, "answer")
+    decision = next((d for d in status.build(run_dir).decisions if d.decision_id == args.decision_id), None)
+    if decision is None:
+        raise BenchError("HB-USR-002", f"run {args.run_id} has no decision {args.decision_id}")
+    if decision.state != "open":
+        raise BenchError("HB-USR-002", f"decision {decision.decision_id} is not open ({decision.state}); nothing to answer")
+    if args.option not in decision.options:
+        raise BenchError("HB-USR-002", f"decision {decision.decision_id} offers {' | '.join(decision.options)}, not {args.option}")
+    uid = _write_control(run_dir, "answer", decision.decision_id, args.option)
+    print(f"answer requested ({uid}): {decision.decision_id} {args.option}. bench status {args.run_id} shows the decision's state.")
     return OK
 
 
@@ -288,18 +316,22 @@ def build_parser() -> argparse.ArgumentParser:
     pl.add_argument("--json", action="store_true", help="print the cell list as JSON")
     for name, text in (("run", "run a confirmed plan to completion, then grade it"), ("status", "a run's progress (US-20)"),
                        ("stop", "request that a running run stop within 30 seconds"),
+                       ("answer", "answer an open decision request (US-15)"),
                        ("grade", "a new grading pass"), ("report", "CLI table and report.html"),
                        ("verify", "check every ledger segment and archive"), ("teardown", "remove the run's archived cell folders")):
         sp = sub.add_parser(name, help=text)
         sp.add_argument("run_id")
         if name == "status":
             sp.add_argument("--json", action="store_true", help="bench-status/1 on stdout")
+        if name == "answer":
+            sp.add_argument("decision_id", help="the decision's id in bench status, e.g. D1")
+            sp.add_argument("option", help="one of the options bench status lists for it")
     tl = sub.add_parser("tools", help="the pinned harness builds")
     tl.add_argument("action", choices=["install"])
     return p
 
 
-COMMANDS = {"validate": cmd_validate, "plan": cmd_plan, "run": cmd_run, "status": cmd_status, "stop": cmd_stop, "grade": cmd_grade,
+COMMANDS = {"validate": cmd_validate, "plan": cmd_plan, "run": cmd_run, "status": cmd_status, "stop": cmd_stop, "answer": cmd_answer, "grade": cmd_grade,
             "report": cmd_report, "verify": cmd_verify, "teardown": cmd_teardown, "tools": cmd_tools}
 
 
