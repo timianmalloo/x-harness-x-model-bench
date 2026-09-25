@@ -1,0 +1,100 @@
+[
+  {
+    "name": "GR-CODE c6: no working copy branch disabled in grade_cell",
+    "file": "src/harness_bench/grade/mutation.py",
+    "find": "    if not ws.is_dir():\n",
+    "replace": "    if False:\n",
+    "tests": ["tests/test_grade_mutation.py::test_no_working_copy_is_na"]
+  },
+  {
+    "name": "GR-CODE c6: pre-turn commit not found branch disabled in grade_cell",
+    "file": "src/harness_bench/grade/mutation.py",
+    "find": "    if commit is None:\n",
+    "replace": "    if False:\n",
+    "tests": ["tests/test_grade_mutation.py::test_no_builder_commit_is_na"]
+  },
+  {
+    "name": "GR-CODE c6: no tests written branch disabled in grade_cell",
+    "file": "src/harness_bench/grade/mutation.py",
+    "find": "        if not changed_test_projects:\n",
+    "replace": "        if False:\n",
+    "tests": ["tests/test_grade_mutation.py::test_no_tests_written_when_only_source_changed_is_na"]
+  },
+  {
+    "name": "GR-CODE c6: no non-test source changed branch disabled in grade_cell",
+    "file": "src/harness_bench/grade/mutation.py",
+    "find": "        if not changed_non_test_sources:\n",
+    "replace": "        if False:\n",
+    "tests": ["tests/test_grade_mutation.py::test_no_non_test_source_changed_is_na"]
+  },
+  {
+    "name": "GR-CODE c6: mutation tool not available branch disabled in grade_cell",
+    "file": "src/harness_bench/grade/mutation.py",
+    "find": "        if stryker_dll is None or shutil.which(\"dotnet\") is None:\n",
+    "replace": "        if False:\n",
+    "tests": ["tests/test_grade_mutation.py::test_mutation_tool_not_available_is_na"]
+  },
+  {
+    "name": "GR-CODE c6: timeout branch disabled in grade_cell",
+    "file": "src/harness_bench/grade/mutation.py",
+    "find": "        if done.timed_out:\n",
+    "replace": "        if False:\n",
+    "tests": ["tests/test_grade_mutation.py::test_mutation_timeout_is_na"]
+  },
+  {
+    "name": "GR-CODE c6: mutation run failed branch disabled in grade_cell",
+    "file": "src/harness_bench/grade/mutation.py",
+    "find": "        if done.returncode != 0:\n",
+    "replace": "        if False:\n",
+    "tests": ["tests/test_grade_mutation.py::test_mutation_run_failed_is_na"]
+  },
+  {
+    "name": "GR-CODE c6: no mutants generated branch disabled in grade_cell",
+    "file": "src/harness_bench/grade/mutation.py",
+    "find": "        if denom == 0:\n",
+    "replace": "        if False:\n",
+    "tests": ["tests/test_grade_mutation.py::test_no_mutants_generated_is_na"]
+  },
+  {
+    "name": "GR-CODE c6: mutation score denominator drops no_coverage",
+    "file": "src/harness_bench/grade/mutation.py",
+    "find": "        denom = killed + timeout_count + survived + no_coverage",
+    "replace": "        denom = killed + timeout_count + survived",
+    "tests": ["tests/test_grade_mutation.py::test_mutation_score_with_timeout_and_no_coverage"]
+  },
+  {
+    "name": "GR-CODE c6: mutation score numerator drops timeout",
+    "file": "src/harness_bench/grade/mutation.py",
+    "find": "        score_val = (Decimal(killed + timeout_count) / Decimal(denom)).quantize(SCALE)",
+    "replace": "        score_val = (Decimal(killed) / Decimal(denom)).quantize(SCALE)",
+    "tests": ["tests/test_grade_mutation.py::test_mutation_score_with_timeout_and_no_coverage"]
+  },
+  {
+    "name": "GR-CODE c6: additional-timeout pinned setting changed in stryker config",
+    "file": "src/harness_bench/grade/mutation.py",
+    "find": "                \"additional-timeout\": 5000,",
+    "replace": "                \"additional-timeout\": 10000,",
+    "tests": ["tests/test_grade_mutation.py::test_stryker_config_json_pinned_timeout_and_command_args"]
+  },
+  {
+    "name": "GR-CODE c6: skip-version-check flag omitted from command args",
+    "file": "src/harness_bench/grade/mutation.py",
+    "find": "            \"--skip-version-check\",\n",
+    "replace": "",
+    "tests": ["tests/test_grade_mutation.py::test_stryker_config_json_pinned_timeout_and_command_args"]
+  },
+  {
+    "name": "GR-CODE c6: metric filtering disabled in grade_cell",
+    "file": "src/harness_bench/grade/mutation.py",
+    "find": "        return {m: res[m] for m in inp.metrics if m in res} if inp.metrics else res",
+    "replace": "        return res",
+    "tests": ["tests/test_grade_mutation.py::test_mutation_filters_metrics_when_requested"]
+  },
+  {
+    "name": "GR-CODE c6: mutation not registered in runner.GRADERS",
+    "file": "src/harness_bench/grade/runner.py",
+    "find": "GRADERS[\"mutation\"] = mutation.grade_cell  # GR-CODE c6\n",
+    "replace": "",
+    "tests": ["tests/test_grade_mutation.py::test_mutation_is_registered_in_runner_graders"]
+  }
+]

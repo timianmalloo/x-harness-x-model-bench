@@ -5,6 +5,7 @@ Fast tests only (fake Stryker, conftest fails any unmarked test that starts dotn
 
 from __future__ import annotations
 
+import json
 import shutil
 from decimal import Decimal
 from pathlib import Path
@@ -73,7 +74,8 @@ def grade_d1(tmp_path: Path, folder: Path, cell: dict, timeout: int = 900) -> di
 
 
 def fake_stryker(monkeypatch, returncode: int = 0, report_content: str | None = None,
-                 timed_out: bool = False, stdout: str = "", stderr: str = "") -> list[list[str]]:
+                 timed_out: bool = False, stdout: str = "", stderr: str = "",
+                 configs: list[dict] | None = None) -> list[list[str]]:
     seen = []
     from harness_bench import procs
     real_run = procs.run
@@ -85,6 +87,10 @@ def fake_stryker(monkeypatch, returncode: int = 0, report_content: str | None = 
             if timed_out:
                 return procs.Completed(None, "", "", True, False, 0.0)
             cwd = Path(kwargs.get("cwd", ""))
+            if configs is not None:
+                cfg_path = cwd / "stryker-config.json"
+                if cfg_path.is_file():
+                    configs.append(json.loads(cfg_path.read_text(encoding="utf-8")))
             if report_content is not None and returncode == 0:
                 report_dir = cwd / "StrykerOutput" / "reports"
                 report_dir.mkdir(parents=True, exist_ok=True)
@@ -108,6 +114,28 @@ def test_mutation_score_computed_from_stryker_report_fixture(tmp_path, monkeypat
     assert score.value == Decimal("0.8571")
     assert score.reason is None
     assert score.evidence == "grading/g/c1/mutation/mutation.log"
+
+
+def test_mutation_score_with_timeout_and_no_coverage(tmp_path, monkeypatch):
+    folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
+    report = {
+        "schemaVersion": "2",
+        "thresholds": {},
+        "files": {
+            "f.cs": {
+                "mutants": [
+                    *([{"status": "Killed"}] * 10),
+                    *([{"status": "Timeout"}] * 2),
+                    *([{"status": "Survived"}] * 2),
+                    *([{"status": "NoCoverage"}] * 2),
+                ]
+            }
+        },
+    }
+    fake_stryker(monkeypatch, returncode=0, report_content=json.dumps(report))
+    inp = mutation_input(tmp_path / "run", folder, cell, tmp_path / "run" / "grading" / "g" / "c1" / "mutation")
+    out = mutation.grade_cell(inp)
+    assert out[METRIC].value == Decimal("0.7500")
 
 
 # --- Red 2: mutation-specific NA reasons ----------------------------------------------------------------------------
@@ -179,7 +207,8 @@ def test_mutation_timeout_is_na(tmp_path, monkeypatch):
 
 def test_stryker_config_json_pinned_timeout_and_command_args(tmp_path, monkeypatch):
     folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
-    seen_calls = fake_stryker(monkeypatch, returncode=0, report_content=REPORT_FIXTURE)
+    configs = []
+    seen_calls = fake_stryker(monkeypatch, returncode=0, report_content=REPORT_FIXTURE, configs=configs)
     inp = mutation_input(tmp_path / "run", folder, cell, tmp_path / "run" / "grading" / "g" / "c1" / "mutation")
     out = mutation.grade_cell(inp)
     assert out[METRIC].value == Decimal("0.8571")
@@ -192,6 +221,9 @@ def test_stryker_config_json_pinned_timeout_and_command_args(tmp_path, monkeypat
     assert "--break-on-initial-test-failure" in call
     assert "--config-file" in call
     assert "stryker-config.json" in call
+    assert len(configs) == 1
+    assert configs[0]["stryker-config"]["additional-timeout"] == 5000
+    assert configs[0]["stryker-config"]["project"] == "AiDe.Core.csproj"
 
 
 def test_mutation_is_registered_in_runner_graders():
