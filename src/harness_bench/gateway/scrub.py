@@ -47,6 +47,15 @@ def denylist(root: Path, plan: dict) -> tuple[str, ...]:
     return tuple(sorted(entries))
 
 
+def bench_denylist(root: Path) -> tuple[str, ...]:
+    """The denylist with every committed matrix's combos, for text that no one plan owns: a calibration pass and
+    `bench validate`'s scan of a judged metric's note and rubric (R-64 c2)."""
+    combos = []
+    for path in sorted((root / "bench").glob("matrix*.yaml")):
+        combos += (yaml.safe_load(path.read_text(encoding="utf-8")) or {}).get("combos") or []
+    return denylist(root, {"matrix": {"combos": combos}})
+
+
 def _normal(text: str) -> str:
     """NFKC with format characters removed, repeated until it settles (removal can let NFKC compose further)."""
     for _ in range(_MAX_PASSES):

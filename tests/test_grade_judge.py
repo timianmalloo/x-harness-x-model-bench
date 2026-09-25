@@ -322,16 +322,21 @@ def test_no_view_counts_verdict_uses_rows_as_calls():
     """Amendment 3's guard ("a row count is not a call count"): outside its writer (grade/judge.py) and the store's
     provenance check (gateway/store.py), the fact is named only in the code lists (views.FACTS and KEYS,
     runner.PASS_FACTS), so every other reader goes through the generic fact loops or `views.judge_calls`. A new
-    function naming the fact fails here until it is reviewed and listed."""
+    function naming the fact fails here until it is reviewed and listed.
+
+    Reviewed: `report/judges.py` `facts` (slice 5) reads the pass's rows to join the two judges' verdicts per item
+    (`agreement` counts items, which is the rows' grain) and counts judge spend by native session in `model_calls`,
+    never by rows."""
     src = ROOT / "src" / "harness_bench"
     writers = {"grade/judge.py", "gateway/store.py"}
+    reviewed = {("report/judges.py", "facts")}
     found = []
     for path in sorted(src.rglob("*.py")):
         rel = path.relative_to(src).as_posix()
         if rel in writers:
             continue
         for top in ast.parse(path.read_text(encoding="utf-8")).body:
-            if isinstance(top, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
+            if isinstance(top, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef) and (rel, top.name) not in reviewed:
                 found += [f"{rel}:{n.lineno} {top.name}" for n in ast.walk(top)
                           if isinstance(n, ast.Constant) and n.value == "verdict_uses"]
     assert found == []

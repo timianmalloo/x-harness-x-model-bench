@@ -197,8 +197,8 @@ def test_each_rubrics_value_must_name_an_existing_file(tmp_path):
     path = root / "bench" / "metrics.yaml"
     area = next(a for a, v in config.load_yaml(path)["areas"].items() if any(m["id"] == "adr_quality" for m in v["metrics"]))
     text = path.read_text(encoding="utf-8")
-    old = "{ id: adr_quality,               source: [J],    better: higher, grader: judge,        kind: score, weight: 1 }"
+    old = "rubrics: { C1: adr_quality.md }"  # the catalog entry since W3-GW-I slice 5 (design section 13)
     assert text.count(old) == 1
-    path.write_text(text.replace(old, old[:-2] + ", rubrics: {C1: missing.md} }"), encoding="utf-8")
+    path.write_text(text.replace(old, "rubrics: { C1: missing.md }"), encoding="utf-8")
     assert _rubric_problems(root) == [(f"bench/metrics.yaml: {area}.adr_quality: rubrics C1 names bench/rubrics/missing.md, "
                                        "which does not exist")]

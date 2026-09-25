@@ -106,9 +106,9 @@ def _sealed_rows(path: Path) -> list[dict] | None:
 def _vouches(folder: Path, fact: str, pass_id: str, cache_key: str, sha: str, session: str) -> bool:
     """The storing pass's sealed segments and archived record vouch for this exact entry.
 
-    assume: a calibration ledger keeps the run layout (`<fact>/<id>.jsonl`, `grading/<id>/gateway/<call>/record.jsonl`);
-    design section 8.2 says only "the calibration ledger's folder". Breaks: a calibration-stored entry is refused
-    (HB-GW-005, fail-closed). Confirm at slice 5, which writes that ledger.
+    A calibration ledger keeps the run layout (`<fact>/<id>.jsonl`, `grading/<id>/gateway/<call>/record.jsonl`):
+    `gateway.calibration.run` writes it so (slice 5), and a second calibration pass reads its entries as hits
+    (tests/test_calibrate.py).
     """
     uses = _sealed_rows(folder / fact / f"{pass_id}.jsonl")
     calls = _sealed_rows(folder / "model_calls" / f"{pass_id}.jsonl")

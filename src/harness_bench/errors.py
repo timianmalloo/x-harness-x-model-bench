@@ -92,6 +92,8 @@ RUN_CODES: dict[str, str] = {
     "HB-GW-009": "withheld: sensitive content",
     "HB-GW-010": "leftover credential copy (a verify error)",
     "HB-GW-011": "judge build changed",
+    # design section 11 as amended by R-72 item 4: checked only when the labels file exists, all or none
+    "HB-CAL-001": "labels do not match the manifest",
 }
 
 _ALL_CODES = set(RUN_CODES) | {c.code for c in Cause}

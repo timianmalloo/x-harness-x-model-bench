@@ -16,9 +16,10 @@ import html as _html
 import re
 from pathlib import Path
 
-from harness_bench import profiles, report, views
+from harness_bench import egress, profiles, report, views
 from harness_bench.errors import BenchError
 from harness_bench.plan import resolved_model_map
+from harness_bench.report import judges
 from harness_bench.report.credentials import encodings
 
 SECRET_SHAPES = (
@@ -156,7 +157,8 @@ def _scenario6_facts(view: views.RunView) -> list[tuple[str, str | None]]:
     return facts
 
 
-def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | None = None) -> str:
+def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | None = None,
+            judging: list[tuple[str, str | None]] | None = None) -> str:
     plan = view.plan
     planned = ", ".join(views.build_label(h, str(b.get("version", ""))) for h, b in sorted((plan.get("builds") or {}).items()))
     facts = [("Run", view.run_id), ("State", "complete" if view.completed else "incomplete"),
@@ -168,7 +170,8 @@ def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | N
              ("Network mode", view.header.get("network_mode")), ("Defender real-time exclusion", None),
              ("Context window", _context_window_fact(view.cells, tags)),
              *_claude_code_permission_fact(view.cells, modes or {}),
-             ("Price list hash", (plan.get("price_list_hash") or "")[:12]), *_scenario6_facts(view)]
+             ("Price list hash", (plan.get("price_list_hash") or "")[:12]), *_scenario6_facts(view),
+             *(judging or [])]  # the judge block (design section 12): every value, rationales too, through _e
     if report.has_codex_cell(plan):
         facts.append((report.N5_FLAG, f"see {report.N5_EVIDENCE}"))
     if report.has_claude_code_cell(plan):
@@ -239,12 +242,16 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str]) -> s
     return f'<section id="runs"><h2>Cells</h2>{_table("runs", "Every cell of the run", headers, rows)}</section>'
 
 
-def render(view: views.RunView, archive_present: bool, run_dir: Path | None = None) -> str:
+def render(view: views.RunView, archive_present: bool, run_dir: Path | None = None, root: Path | None = None,
+           operator: egress.Operator | None = None) -> str:
+    """The page; `root` (the bench root) adds the judge block for a pass that looked up judge verdicts, and
+    `operator` (read at run time, never committed) lets it name the classes each judge CLI added."""
     tags = _context_window_tags(run_dir)  # R-32: read from events, not from views.py (ruling R-32 condition 3)
+    judging = judges.facts(root, run_dir, view, operator)
     return ("<!doctype html>\n"
             f'<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
             f"<title>harness-bench run {_e(view.run_id)}</title><style>{STYLE}</style></head>"
-            f"<body><main>{_header(view, tags, _permission_modes(run_dir))}{_validity(view)}{_leaderboard(view)}{_runs(view, archive_present, tags)}"
+            f"<body><main>{_header(view, tags, _permission_modes(run_dir), judging)}{_validity(view)}{_leaderboard(view)}{_runs(view, archive_present, tags)}"
             f"</main></body></html>\n")
 
 
@@ -257,8 +264,9 @@ def scan(text: str, credential_values: set[str] = frozenset()) -> int:
     return found
 
 
-def write(run_dir: Path, view: views.RunView, credential_values: set[str] = frozenset()) -> Path:
-    doc = render(view, archive_present=(run_dir / "archive").is_dir(), run_dir=run_dir)
+def write(run_dir: Path, view: views.RunView, credential_values: set[str] = frozenset(), root: Path | None = None,
+          operator: egress.Operator | None = None) -> Path:
+    doc = render(view, archive_present=(run_dir / "archive").is_dir(), run_dir=run_dir, root=root, operator=operator)
     found = scan(doc, credential_values)
     if found:
         raise BenchError("HB-SEC-001", f"{found} credential-shaped string(s) in the report; nothing was written")

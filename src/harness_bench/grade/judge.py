@@ -145,23 +145,26 @@ def _backend(entry: Mapping, j: pipeline.Judge, calls: Calls | None, grading_id:
                   prefix=calls.prefix)
 
 
-def _inputs(inp: CellInput, entry: Mapping, task: str) -> pipeline.Inputs:
-    """The request's inputs (section 7.1): the catalog `note:` as the preamble (R-64), the rubric file, and each
-    `artifact:` file from the cell's archived working copy, in catalog order.
-
-    assume: the catalog fields are `rubrics: {<task>: <file under bench/rubrics/>}` (graders design, catalog 0.4) and
-    `artifact: [<path>]` (design section 13); `bench/metrics.yaml` carries neither yet (slice 5 adds them). Confirm
-    against CORE s2's `validate_metrics` at the join. Breaks: another field name reads as no rubric (NA `no rubric for
-    this task`, fail-closed).
-    assume: an artifact file the cell did not write is sent empty, so the judge scores it as missing (the rubric's 0).
-    Confirm: the Owner, before the first C1 judge pass. Breaks: an empty file and a missing file score alike."""
-    rubric = (inp.root / "bench" / "rubrics" / entry["rubrics"][task]).read_text(encoding="utf-8")
+def rubric_of(root: Path, entry: Mapping, task: str) -> tuple[str, int]:
+    """The task's rubric file under bench/rubrics/ and its item count; the items must be numbered 1..n."""
+    rubric = (root / "bench" / "rubrics" / entry["rubrics"][task]).read_text(encoding="utf-8")
     numbers = [int(n) for n in _ITEM.findall(rubric)]
     if not numbers or numbers != list(range(1, len(numbers) + 1)):
         raise ValueError(f"the rubric for {entry['id']} does not number its items 1..n")
+    return rubric, len(numbers)
+
+
+def _inputs(inp: CellInput, entry: Mapping, task: str) -> pipeline.Inputs:
+    """The request's inputs (section 7.1): the catalog `note:` as the preamble (R-64), the rubric file, and each
+    `artifact:` file from the cell's archived working copy, in catalog order. The catalog fields are `rubrics:
+    {<task>: <file under bench/rubrics/>}` (graders design; `config.validate_rubrics`) and `artifact: [<path>]`
+    (design section 13); `bench/metrics.yaml`'s adr_quality entry carries both since slice 5.
+    assume: an artifact file the cell did not write is sent empty, so the judge scores it as missing (the rubric's 0).
+    Confirm: the Owner, before the first C1 judge pass. Breaks: an empty file and a missing file score alike."""
+    rubric, items = rubric_of(inp.root, entry, task)
     ws = inp.archive / "ws"
     artifacts = tuple((path, (ws / path).read_bytes() if (ws / path).is_file() else b"") for path in entry["artifact"])
-    return pipeline.Inputs(preamble=entry.get("note") or "", rubric=rubric, items=len(numbers), artifacts=artifacts)
+    return pipeline.Inputs(preamble=entry.get("note") or "", rubric=rubric, items=items, artifacts=artifacts)
 
 
 def _record(inp: CellInput, grading_id: str, metric: str, items: int, model: str, result: pipeline.Result) -> None:

@@ -358,11 +358,23 @@ RUBRIC_COPIES = {"bench/rubrics/adr_quality.md": "tasks/C1/oracle/rubric.md"}
 def validate_rubrics(root: Path, p: Problems) -> None:
     """R-59 DR-5 (seam V-3): each `rubrics:` value names a file under bench/rubrics/, and a catalog rubric copied
     from a frozen task folder equals it byte for byte (checked once the catalog copy exists)."""
+    # scrub imports config, so the denylist is imported where it is used
+    from harness_bench.gateway import scrub
+
+    entries = None
     for area_id, area in (load_yaml(root / "bench" / "metrics.yaml").get("areas") or {}).items():
         for m in area.get("metrics") or []:
             for task, name in sorted((m.get("rubrics") or {}).items()):
                 if not (root / "bench" / "rubrics" / str(name)).is_file():
                     p.add("bench/metrics.yaml", f"{area_id}.{m.get('id')}: rubrics {task} names bench/rubrics/{name}, which does not exist")
+            if m.get("rubrics"):  # R-64 c2: the note is rendered before the rubric in every judge request
+                entries = entries if entries is not None else scrub.bench_denylist(root)
+                texts = [("note", str(m.get("note") or ""))] + [
+                    (f"rubric {name}", (root / "bench" / "rubrics" / str(name)).read_text(encoding="utf-8"))
+                    for name in sorted(set(m["rubrics"].values())) if (root / "bench" / "rubrics" / str(name)).is_file()]
+                for what, text in texts:
+                    if scrub.scan(text, entries):
+                        p.add("bench/metrics.yaml", f"{area_id}.{m.get('id')}: {what} holds a scrub denylist entry (R-64 c2)")
     for copy, original in RUBRIC_COPIES.items():
         if (root / copy).is_file() and (not (root / original).is_file() or (root / copy).read_bytes() != (root / original).read_bytes()):
             p.add(copy, f"differs from {original} (R-59 DR-5: byte for byte)")
