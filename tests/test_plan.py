@@ -197,6 +197,50 @@ def test_the_plan_freezes_each_task_model_map(tmp_path):  # seam S3: views read 
     assert _phase1_plan(root=root)["tasks"]["X1"]["model_map"] == {"implement": "gpt-6-sol"}
 
 
+def test_the_plan_freezes_each_task_graders_list(tmp_path):  # seam S-1: the pass reads the run's list, not today's task.yaml
+    assert _phase1_plan()["tasks"]["X1"]["graders"] == ["correctness", "cost"]  # X1's task.yaml, verbatim
+    root = tmp_path / "root"
+    shutil.copytree(ROOT / "tasks" / "X1", root / "tasks" / "X1")
+    shutil.copytree(ROOT / "bench", root / "bench")
+    task_yaml = root / "tasks" / "X1" / "task.yaml"
+    task_yaml.write_text(task_yaml.read_text(encoding="utf-8").replace("  - cost\n", "  - cost\n  - process\n"), encoding="utf-8")
+    assert _phase1_plan(root=root)["tasks"]["X1"]["graders"] == ["correctness", "cost", "process"]
+
+
+def test_tree_hash_is_the_one_recipe_path_nul_lf_bytes_nul_in_sorted_path_order(tmp_path):  # seam S-2 (R-59 c1)
+    (tmp_path / "b").mkdir()
+    (tmp_path / "b" / "y.md").write_bytes(b"one\r\ntwo\n")
+    (tmp_path / "a.yaml").write_bytes(b"k: v\n")
+    expected = hashlib.sha256(b"a.yaml\0k: v\n\0" b"b/y.md\0one\ntwo\n\0").hexdigest()
+    assert plan.tree_hash(tmp_path, [tmp_path / "b" / "y.md", tmp_path / "a.yaml"]) == expected  # any order in, sorted out
+    assert plan.tree_hash(tmp_path, []) == hashlib.sha256(b"").hexdigest()
+
+
+def test_task_version_hash_is_tree_hash_over_every_task_file(monkeypatch):  # seam S-2: one recipe, one definition
+    task = ROOT / "tasks" / "X1"
+    files = sorted(p for p in task.rglob("*") if p.is_file() and "__pycache__" not in p.parts)
+    assert plan.task_version_hash(task) == plan.tree_hash(task, files)
+    seen = []
+    monkeypatch.setattr(plan, "tree_hash", lambda base, fs: seen.append((base, sorted(fs))) or "spy")
+    assert (plan.task_version_hash(task), seen) == ("spy", [(task, files)])
+
+
+def test_cmd_plan_refuses_a_changed_frozen_task_before_building_a_plan(monkeypatch, tmp_path, capsys):  # seam S-3 (R-59 c5)
+    root = tmp_path / "root"
+    shutil.copytree(ROOT / "bench", root / "bench")
+    shutil.copytree(ROOT / "tasks" / "X1", root / "tasks" / "X1")
+    (root / "bench" / "task-freeze.yaml").write_text(f"schema: bench-task-freeze/1\ntasks: {{X1: '{'0' * 64}'}}\n", encoding="utf-8")
+    actual = plan.task_version_hash(root / "tasks" / "X1")
+    monkeypatch.setattr(cli.tools, "resolve", lambda path: {})
+    monkeypatch.setattr(cli, "_pack", lambda *args: {"source": "pack", "commit": "c" * 40, "revision": 1})
+    monkeypatch.setattr(cli.plan, "build_plan", lambda *a, **k: pytest.fail("a plan was built over a changed frozen task"))
+    args = SimpleNamespace(root=str(root), matrix=str(root / "bench" / "matrix.phase1.yaml"), tools_dir=str(tmp_path / "t"),
+                           cells_root=str(tmp_path / "c"), pack_source=str(tmp_path / "p"), run_id="p", parallelism=2,
+                           json=False, confirm=False, decision_timeout_minutes=30, spend_cap_tokens=None)
+    assert cli.cmd_plan(args) == cli.INVALID
+    assert capsys.readouterr().err == f"x tasks/X1 changed while frozen (R-59 c5): {actual} != {'0' * 64}\n"
+
+
 def test_the_plan_records_each_harness_profile_it_uses():  # grading and views read the run, not today's files (US-26)
     p = _phase1_plan()
     assert p["profiles"] == {
