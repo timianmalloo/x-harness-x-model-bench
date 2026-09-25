@@ -2160,3 +2160,17 @@ def test_a_cell_with_no_usage_is_unmeasured_never_zero(base):  # US15-3b (design
     assert [(e["spend_tokens"], e["cells_unmeasured"]) for e in _kind(events, "decision.opened")] == [(45, 1)]
     assert _resolutions(events) == [("D1", "default applied (timeout)", "stop")]
     assert len(_kind(events, "cell.launch_intent")) == 2 and summary.exit_code == 3
+
+
+def test_no_decision_after_a_launch_stop(base):  # US15-4 (S-4, PE-13, TA M8)
+    _, events, _ = _decision_run(base, _decision_plan([("fake", "A", AUTH), ("fake", "A", {})], parallelism=1,
+                                                      decision_timeout=0))
+    assert [e["decision_kind"] for e in _kind(events, "decision.opened")] == ["blocked_cell"]  # the positive control
+    _, events, _ = _decision_run(base, _decision_plan([("fake", "A", AUTH)], parallelism=1, decision_timeout=0))
+    assert _kind(events, "decision.opened") == []  # nothing pending: nothing it could change
+    p, launcher = _decision_plan([("fake", "A", {**UNSERVED, "sleep": 8}), *[("fake", "B", {"mode": "provider_error"})] * 3,
+                                  ("fake", "A", {})], parallelism=2, decision_timeout=0)
+    _, events, _ = _decision_run(base, (p, launcher))
+    assert [e["code"] for e in _kind(events, "run.launch_stopped")] == ["HB-CELL-108"]  # the breaker, first
+    assert _outcomes(events)[p["cells"][0]["cell_id"]]["cause"] == "model_unavailable"  # then the gap, combo A pending
+    assert _kind(events, "decision.opened") == []
