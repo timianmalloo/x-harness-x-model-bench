@@ -160,3 +160,28 @@ def test_t_gw_29_without_the_operators_identifiers_the_cli_context_is_not_record
     assert "<dt>Judges</dt>" not in html.render(views.load(other), False, other, root=root)  # no judge pass
 
 
+def _strings(value) -> list[str]:
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, dict):
+        return [s for v in value.values() for s in _strings(v)]
+    if isinstance(value, list):
+        return [s for v in value for s in _strings(v)]
+    return []
+
+
+def test_t_gw_34_no_report_or_export_embeds_judge_record_text(tmp_path, base):
+    assert judges is not None, NOT_BUILT
+    root, run_dir, gid = judged_run(tmp_path, base)
+    [record] = sorted((run_dir / "grading" / gid / "gateway").glob("*/record.jsonl"))
+    texts = {s for line in record.read_text(encoding="utf-8").splitlines() for s in _strings(json.loads(line))
+             if len(s) >= 24}
+    assert len(texts) > 5  # the record has text to leak
+    view = views.load(run_dir)
+    page = html.write(run_dir, view, set(), root=root, operator=PLACEHOLDER).read_text(encoding="utf-8")
+    assert "<dt>Judges</dt>" in page  # the judge block is rendered, so the check is not vacuous
+    export = views.export(view).decode("utf-8")
+    assert [t for t in texts if t in page or t in export] == []
+    assert spawns(tmp_path / "pass") == 1
+
+
