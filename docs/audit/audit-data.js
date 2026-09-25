@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T11:13:50Z",
+  "generated": "2026-09-25T11:24:02Z",
   "audit": [
     {
       "actor": null,
@@ -20509,6 +20509,1626 @@ window.AUDIT_DATA = {
       ],
       "tier": "T1",
       "tool": null
+    },
+    {
+      "id": "al-01M3C4XKH4ZXSCNXSDK6TMC4EH",
+      "shortname": "Goal: W3-GR-PROC slice p3 per docs/design/phase3-graders.md, section \"Pr…",
+      "datetime": "2026-09-25T11:23:58Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W3-GR-PROC slice p3 per docs/design/phase3-graders.md, section \"Process\" and slice-plan row \"GR-PROC p1-p3\": completion_without_intervention and the time_to_first_green NA, red first, on top of p1 and p2 (joined in src/harness_bench/grade/process.py).\nDone when: completion_without_intervention follows the design exactly: 0 when the cell ended for an agent-attributable reason (budget or timeout, or a refusal); otherwise, when outcome is \"completed\" and stop_reason is \"end_turn\", 1 iff stuck_loops is 0, 0 iff stuck_loops is 1 or more, and NA \"stuck-loop count not measurable\" when stuck_loops is NA; the other NA reasons are exactly \"no cell outcome\" and \"cell ended by infrastructure: <cause>\".; time_to_first_green is always NA \"test runs not identifiable in the tool record (no command text extracted)\".; tests/test_grade_process.py gains red-first cases on synthetic seeded inputs: a budget end gives 0; an infrastructure cause gives the infrastructure NA; completed with a 3-run of failures gives 0; completed with no failures gives 1; completed with a null ok gives \"stuck-loop count not measurable\"; time_to_first_green gives its NA.; tests/mutations/process.json gains one named mutant per new branch (a budget end scored 1; an NA stuck count scored 1; an infrastructure end scored 0), each killed: uv run python tools/mutate_check.py tests/mutations/process.json.; uv run pytest -q -p no:cacheprovider tests/test_grade_process.py passes and uv run ruff check src tests tools is clean.; Commit the red test first; commit the green as soon as it passes, before anything else.\nNot in scope: registering process in runner.GRADERS; the rebuild-from-sealed-segments test (the Leader does it at the join); any file outside src/harness_bench/grade/process.py, tests/test_grade_process.py, tests/mutations/process.json and tests/fixtures/grade/process/; reading runs/; bench run; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one slice of at most 10 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase3-graders.md (section Process); src/harness_bench/grade/process.py; src/harness_bench/grade/__init__.py (CellInput: cell, events, record_reason); src/harness_bench/errors.py (the cause codes and which are agent-attributable); tests/test_grade_process.py. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3C4XM5EG7452KCEDPDAF7ZY",
+      "shortname": "compile-Goal: W3-GR-PROC slice p3 per docs/design/phase3-graders.md, section \"Pr…",
+      "datetime": "2026-09-25T11:23:59Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-GR-PROC slice p3 per docs/design/phase3-graders.md, section \"Process\" and slice-plan row \"GR-PROC p1-p3\": completion_without_intervention and the time_to_first_green NA, red first, on top of p1 and p2 (joined in src/harness_bench/grade/process.py).\nDone when: completion_without_intervention follows the design exactly: 0 when the cell ended for an agent-attributable reason (budget or timeout, or a refusal); otherwise, when outcome is \"completed\" and stop_reason is \"end_turn\", 1 iff stuck_loops is 0, 0 iff stuck_loops is 1 or more, and NA \"stuck-loop count not measurable\" when stuck_loops is NA; the other NA reasons are exactly \"no cell outcome\" and \"cell ended by infrastructure: <cause>\".; time_to_first_green is always NA \"test runs not identifiable in the tool record (no command text extracted)\".; tests/test_grade_process.py gains red-first cases on synthetic seeded inputs: a budget end gives 0; an infrastructure cause gives the infrastructure NA; completed with a 3-run of failures gives 0; completed with no failures gives 1; completed with a null ok gives \"stuck-loop count not measurable\"; time_to_first_green gives its NA.; tests/mutations/process.json gains one named mutant per new branch (a budget end scored 1; an NA stuck count scored 1; an infrastructure end scored 0), each killed: uv run python tools/mutate_check.py tests/mutations/process.json.; uv run pytest -q -p no:cacheprovider tests/test_grade_process.py passes and uv run ruff check src tests tools is clean.; Commit the red test first; commit the green as soon as it passes, before anything else.\nNot in scope: registering process in runner.GRADERS; the rebuild-from-sealed-segments test (the Leader does it at the join); any file outside src/harness_bench/grade/process.py, tests/test_grade_process.py, tests/mutations/process.json and tests/fixtures/grade/process/; reading runs/; bench run; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one slice of at most 10 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-graders.md (section Process); src/harness_bench/grade/process.py; src/harness_bench/grade/__init__.py (CellInput: cell, events, record_reason); src/harness_bench/errors.py (the cause codes and which are agent-attributable); tests/test_grade_process.py. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: completion_without_intervention follows the design exactly: 0 when the cell ended for an agent-attributable reason (budget or timeout, or a refusal) | phrase: completion_without_intervention follows the design exactly: 0 when the cell ended for an agent-attributable reason (budget or timeout, or a refusal) |\n| done_when: otherwise, when outcome is \"completed\" and stop_reason is \"end_turn\", 1 iff stuck_loops is 0, 0 iff stuck_loops is 1 or more, and NA \"stuck-loop count not measurable\" when stuck_loops is NA | phrase: otherwise, when outcome is \"completed\" and stop_reason is \"end_turn\", 1 iff stuck_loops is 0, 0 iff stuck_loops is 1 or more, and NA \"stuck-loop count not measurable\" when stuck_loops is NA |\n| done_when: the other NA reasons are exactly \"no cell outcome\" and \"cell ended by infrastructure: <cause>\". | phrase: the other NA reasons are exactly \"no cell outcome\" and \"cell ended by infrastructure: <cause>\". |\n| done_when: time_to_first_green is always NA \"test runs not identifiable in the tool record (no command text extracted)\". | phrase: time_to_first_green is always NA \"test runs not identifiable in the tool record (no command text extracted)\". |\n| done_when: tests/test_grade_process.py gains red-first cases on synthetic seeded inputs: a budget end gives 0 | phrase: tests/test_grade_process.py gains red-first cases on synthetic seeded inputs: a budget end gives 0 |\n| done_when: an infrastructure cause gives the infrastructure NA | phrase: an infrastructure cause gives the infrastructure NA |\n| done_when: completed with a 3-run of failures gives 0 | phrase: completed with a 3-run of failures gives 0 |\n| done_when: completed with no failures gives 1 | phrase: completed with no failures gives 1 |\n| done_when: completed with a null ok gives \"stuck-loop count not measurable\" | phrase: completed with a null ok gives \"stuck-loop count not measurable\" |\n| done_when: time_to_first_green gives its NA. | phrase: time_to_first_green gives its NA. |\n| done_when: tests/mutations/process.json gains one named mutant per new branch (a budget end scored 1 | phrase: tests/mutations/process.json gains one named mutant per new branch (a budget end scored 1 |\n| done_when: an NA stuck count scored 1 | phrase: an NA stuck count scored 1 |\n| done_when: an infrastructure end scored 0), each killed: uv run python tools/mutate_check.py tests/mutations/process.json. | phrase: an infrastructure end scored 0), each killed: uv run python tools/mutate_check.py tests/mutations/process.json. |\n| done_when: uv run pytest -q -p no:cacheprovider tests/test_grade_process.py passes and uv run ruff check src tests tools is clean. | phrase: uv run pytest -q -p no:cacheprovider tests/test_grade_process.py passes and uv run ruff check src tests tools is clean. |\n| done_when: Commit the red test first | phrase: Commit the red test first |\n| done_when: commit the green as soon as it passes, before anything else. | phrase: commit the green as soon as it passes, before anything else. |\n| not_in_scope: registering process in runner.GRADERS | phrase: registering process in runner.GRADERS |\n| not_in_scope: the rebuild-from-sealed-segments test (the Leader does it at the join) | phrase: the rebuild-from-sealed-segments test (the Leader does it at the join) |\n| not_in_scope: any file outside src/harness_bench/grade/process.py, tests/test_grade_process.py, tests/mutations/process.json and tests/fixtures/grade/process/ | phrase: any file outside src/harness_bench/grade/process.py, tests/test_grade_process.py, tests/mutations/process.json and tests/fixtures/grade/process/ |\n| not_in_scope: reading runs/ | phrase: reading runs/ |\n| not_in_scope: bench run | phrase: bench run |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- docs/design/phase3-graders.md: docs/design/phase3-graders.md sha256 6687032ef769dbca0c8223a763a86382b8ea0e93006e4bb5f9cdc007a14bc7f5\n- src/harness_bench/grade/process.py: src/harness_bench/grade/process.py sha256 b3ff1eaa94d1333afcd590db020c189afd682e05994911dbf496259750db483f\n- tests/test_grade_process.py: tests/test_grade_process.py sha256 89c6310f69d2a98072eedcc3625bbfb5b506fed976444c2027351206023419e6\n- tests/mutations/process.json: tests/mutations/process.json sha256 a6c7164a2de8055df34dc43f1a90b17c7a9cc3923f0b7a5632967d8ba10d1e3f\n- tools/mutate_check.py: tools/mutate_check.py sha256 4d1b3c10120a52082b1a43aa9407a8109459d7ba20fb83801eb85c2f511ba513\n- tests/fixtures/grade/process/: unresolved (not found)\n- runs/: unresolved (not found)\n- src/harness_bench/grade/__init__.py: src/harness_bench/grade/__init__.py sha256 2b15d94f29b58402f4bc652b500cae8edbbb0ce6153e8a8d50ce66d54b3fc289\n- src/harness_bench/errors.py: src/harness_bench/errors.py sha256 2cfc0dcaca076a239dbd1b3c7eb430e017848a946580f936de8ffb3bc26743b9\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3C4XKH4ZXSCNXSDK6TMC4EH\nraw sha256: b7b2cffe8610b51b8ca8bb4c47972c2758fae6290b321c4729200410ab4e4db3\ncompiler model: claude-opus-5-5\nengine seconds: 0.004\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3C4XKH4ZXSCNXSDK6TMC4EH for claude-code v1: 22 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "completion_without_intervention follows the design exactly: 0 when the cell ended for an agent-attributable reason (budget or timeout, or a refusal)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "completion_without_intervention follows the design exactly: 0 when the cell ended for an agent-attributable reason (budget or timeout, or a refusal)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "otherwise, when outcome is \"completed\" and stop_reason is \"end_turn\", 1 iff stuck_loops is 0, 0 iff stuck_loops is 1 or more, and NA \"stuck-loop count not measurable\" when stuck_loops is NA",
+            "trace": {
+              "kind": "phrase",
+              "ref": "otherwise, when outcome is \"completed\" and stop_reason is \"end_turn\", 1 iff stuck_loops is 0, 0 iff stuck_loops is 1 or more, and NA \"stuck-loop count not measurable\" when stuck_loops is NA"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the other NA reasons are exactly \"no cell outcome\" and \"cell ended by infrastructure: <cause>\".",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the other NA reasons are exactly \"no cell outcome\" and \"cell ended by infrastructure: <cause>\"."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "time_to_first_green is always NA \"test runs not identifiable in the tool record (no command text extracted)\".",
+            "trace": {
+              "kind": "phrase",
+              "ref": "time_to_first_green is always NA \"test runs not identifiable in the tool record (no command text extracted)\"."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/test_grade_process.py gains red-first cases on synthetic seeded inputs: a budget end gives 0",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/test_grade_process.py gains red-first cases on synthetic seeded inputs: a budget end gives 0"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "an infrastructure cause gives the infrastructure NA",
+            "trace": {
+              "kind": "phrase",
+              "ref": "an infrastructure cause gives the infrastructure NA"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "completed with a 3-run of failures gives 0",
+            "trace": {
+              "kind": "phrase",
+              "ref": "completed with a 3-run of failures gives 0"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "completed with no failures gives 1",
+            "trace": {
+              "kind": "phrase",
+              "ref": "completed with no failures gives 1"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "completed with a null ok gives \"stuck-loop count not measurable\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "completed with a null ok gives \"stuck-loop count not measurable\""
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "time_to_first_green gives its NA.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "time_to_first_green gives its NA."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/process.json gains one named mutant per new branch (a budget end scored 1",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/process.json gains one named mutant per new branch (a budget end scored 1"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "an NA stuck count scored 1",
+            "trace": {
+              "kind": "phrase",
+              "ref": "an NA stuck count scored 1"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "an infrastructure end scored 0), each killed: uv run python tools/mutate_check.py tests/mutations/process.json.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "an infrastructure end scored 0), each killed: uv run python tools/mutate_check.py tests/mutations/process.json."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider tests/test_grade_process.py passes and uv run ruff check src tests tools is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider tests/test_grade_process.py passes and uv run ruff check src tests tools is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit the red test first",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit the red test first"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "commit the green as soon as it passes, before anything else.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "commit the green as soon as it passes, before anything else."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "registering process in runner.GRADERS",
+            "trace": {
+              "kind": "phrase",
+              "ref": "registering process in runner.GRADERS"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the rebuild-from-sealed-segments test (the Leader does it at the join)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the rebuild-from-sealed-segments test (the Leader does it at the join)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file outside src/harness_bench/grade/process.py, tests/test_grade_process.py, tests/mutations/process.json and tests/fixtures/grade/process/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file outside src/harness_bench/grade/process.py, tests/test_grade_process.py, tests/mutations/process.json and tests/fixtures/grade/process/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "reading runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "reading runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens",
+          "done_when": [
+            "completion_without_intervention follows the design exactly: 0 when the cell ended for an agent-attributable reason (budget or timeout, or a refusal)",
+            "otherwise, when outcome is \"completed\" and stop_reason is \"end_turn\", 1 iff stuck_loops is 0, 0 iff stuck_loops is 1 or more, and NA \"stuck-loop count not measurable\" when stuck_loops is NA",
+            "the other NA reasons are exactly \"no cell outcome\" and \"cell ended by infrastructure: <cause>\".",
+            "time_to_first_green is always NA \"test runs not identifiable in the tool record (no command text extracted)\".",
+            "tests/test_grade_process.py gains red-first cases on synthetic seeded inputs: a budget end gives 0",
+            "an infrastructure cause gives the infrastructure NA",
+            "completed with a 3-run of failures gives 0",
+            "completed with no failures gives 1",
+            "completed with a null ok gives \"stuck-loop count not measurable\"",
+            "time_to_first_green gives its NA.",
+            "tests/mutations/process.json gains one named mutant per new branch (a budget end scored 1",
+            "an NA stuck count scored 1",
+            "an infrastructure end scored 0), each killed: uv run python tools/mutate_check.py tests/mutations/process.json.",
+            "uv run pytest -q -p no:cacheprovider tests/test_grade_process.py passes and uv run ruff check src tests tools is clean.",
+            "Commit the red test first",
+            "commit the green as soon as it passes, before anything else."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W3-GR-PROC slice p3 per docs/design/phase3-graders.md, section \"Process\" and slice-plan row \"GR-PROC p1-p3\": completion_without_intervention and the time_to_first_green NA, red first, on top of p1 and p2 (joined in src/harness_bench/grade/process.py).",
+          "main_line_budget": "one slice of at most 10 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-graders.md (section Process); src/harness_bench/grade/process.py; src/harness_bench/grade/__init__.py (CellInput: cell, events, record_reason); src/harness_bench/errors.py (the cause codes and which are agent-attributable); tests/test_grade_process.py. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "registering process in runner.GRADERS",
+            "the rebuild-from-sealed-segments test (the Leader does it at the join)",
+            "any file outside src/harness_bench/grade/process.py, tests/test_grade_process.py, tests/mutations/process.json and tests/fixtures/grade/process/",
+            "reading runs/",
+            "bench run",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.004,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3C4XKH4ZXSCNXSDK6TMC4EH",
+        "raw_sha256": "b7b2cffe8610b51b8ca8bb4c47972c2758fae6290b321c4729200410ab4e4db3",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": "docs/design/phase3-graders.md",
+            "reason": null,
+            "sha256": "6687032ef769dbca0c8223a763a86382b8ea0e93006e4bb5f9cdc007a14bc7f5",
+            "status": "resolved",
+            "token": "docs/design/phase3-graders.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/process.py",
+            "reason": null,
+            "sha256": "b3ff1eaa94d1333afcd590db020c189afd682e05994911dbf496259750db483f",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/process.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_process.py",
+            "reason": null,
+            "sha256": "89c6310f69d2a98072eedcc3625bbfb5b506fed976444c2027351206023419e6",
+            "status": "resolved",
+            "token": "tests/test_grade_process.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/process.json",
+            "reason": null,
+            "sha256": "a6c7164a2de8055df34dc43f1a90b17c7a9cc3923f0b7a5632967d8ba10d1e3f",
+            "status": "resolved",
+            "token": "tests/mutations/process.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "4d1b3c10120a52082b1a43aa9407a8109459d7ba20fb83801eb85c2f511ba513",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/grade/process/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/__init__.py",
+            "reason": null,
+            "sha256": "2b15d94f29b58402f4bc652b500cae8edbbb0ce6153e8a8d50ce66d54b3fc289",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/__init__.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "2cfc0dcaca076a239dbd1b3c7eb430e017848a946580f936de8ffb3bc26743b9",
+            "status": "resolved",
+            "token": "src/harness_bench/errors.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3C4XMD7452XHB1JR5CP8WNF",
+      "shortname": "Goal: W3-GR-CODE slice c2 per docs/design/phase3-graders.md, slice-plan …",
+      "datetime": "2026-09-25T11:23:59Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W3-GR-CODE slice c2 per docs/design/phase3-graders.md, slice-plan row \"GR-CODE c2\" and section \"Correctness\" (regression_count, behavioural_equivalence; rulings R-59, R-62, R-67, R-68 in docs/notes/rulings.md): regression_count and the behavioural_equivalence NA, red first, on top of c1 (joined: grade/_changes.py, build_and_suite_clean, docs/notes/spike-gr-code-trx.md).\nDone when: regression_count counts the task's public tests that pass on the pre-turn tree and fail after the cell, keyed by className + \".\" + name from the per-test TRX results as the spike note records, exactly as the design defines it; A1, C1 and E6 give NA \"task has no public tests\".; behavioural_equivalence is NA on every task with the design's reasons (including the recorded deviation \"not a D-task\" on non-D tasks).; Red first on a seeded inverted D1 test (regression_count = 1) and on the non-D tasks, each red committed separately and failing on an assertion; the pre-turn test run is memoised per cell (the c1 residual) and the archive stays byte-unchanged.; No TRX attribute that identifies the host (runUser, computerName, storage, codeBase, the Results File line, any time) is read, stored or reported; a test asserts it.; tests/mutations/correctness.json gains a named mutant per new branch, each killed, and grade.json stays all killed.; With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips; uv run ruff check src tests tools is clean; uv run bench validate prints ok.; Your final message lists each red SHA with its failing assertion, each green SHA, the gate-run values of regression_count per D1 cell, and the mutate_check results.\nNot in scope: drift, architecture, rigor, mutation (c3-c6); catalog_hash, tool_versions, check_regrade (CORE s2); cost; the broken-ProjectReference seed (it waits on an Owner ruling); cli.py, plan.py, views.py, engine.py; bench run, any model turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase3-graders.md; docs/notes/spike-gr-code-trx.md; docs/notes/rulings.md R-59, R-62, R-67, R-68; src/harness_bench/grade/{__init__,runner,correctness,_changes}.py; tasks/D1/**; tests/test_grade_correctness.py; tests/mutations/correctness.json. The gate runs under C:/projects/x-harness-x-model-bench/runs/ are read-only. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3C4XN4HZGV2MB4XDKRFESC7",
+      "shortname": "compile-Goal: W3-GR-CODE slice c2 per docs/design/phase3-graders.md, slice-plan …",
+      "datetime": "2026-09-25T11:24:00Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-GR-CODE slice c2 per docs/design/phase3-graders.md, slice-plan row \"GR-CODE c2\" and section \"Correctness\" (regression_count, behavioural_equivalence; rulings R-59, R-62, R-67, R-68 in docs/notes/rulings.md): regression_count and the behavioural_equivalence NA, red first, on top of c1 (joined: grade/_changes.py, build_and_suite_clean, docs/notes/spike-gr-code-trx.md).\nDone when: regression_count counts the task's public tests that pass on the pre-turn tree and fail after the cell, keyed by className + \".\" + name from the per-test TRX results as the spike note records, exactly as the design defines it; A1, C1 and E6 give NA \"task has no public tests\".; behavioural_equivalence is NA on every task with the design's reasons (including the recorded deviation \"not a D-task\" on non-D tasks).; Red first on a seeded inverted D1 test (regression_count = 1) and on the non-D tasks, each red committed separately and failing on an assertion; the pre-turn test run is memoised per cell (the c1 residual) and the archive stays byte-unchanged.; No TRX attribute that identifies the host (runUser, computerName, storage, codeBase, the Results File line, any time) is read, stored or reported; a test asserts it.; tests/mutations/correctness.json gains a named mutant per new branch, each killed, and grade.json stays all killed.; With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips; uv run ruff check src tests tools is clean; uv run bench validate prints ok.; Your final message lists each red SHA with its failing assertion, each green SHA, the gate-run values of regression_count per D1 cell, and the mutate_check results.\nNot in scope: drift, architecture, rigor, mutation (c3-c6); catalog_hash, tool_versions, check_regrade (CORE s2); cost; the broken-ProjectReference seed (it waits on an Owner ruling); cli.py, plan.py, views.py, engine.py; bench run, any model turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-graders.md; docs/notes/spike-gr-code-trx.md; docs/notes/rulings.md R-59, R-62, R-67, R-68; src/harness_bench/grade/{__init__,runner,correctness,_changes}.py; tasks/D1/**; tests/test_grade_correctness.py; tests/mutations/correctness.json. The gate runs under C:/projects/x-harness-x-model-bench/runs/ are read-only. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: regression_count counts the task's public tests that pass on the pre-turn tree and fail after the cell, keyed by className + \".\" + name from the per-test TRX results as the spike note records, exactly as the design defines it | phrase: regression_count counts the task's public tests that pass on the pre-turn tree and fail after the cell, keyed by className + \".\" + name from the per-test TRX results as the spike note records, exactly as the design defines it |\n| done_when: A1, C1 and E6 give NA \"task has no public tests\". | phrase: A1, C1 and E6 give NA \"task has no public tests\". |\n| done_when: behavioural_equivalence is NA on every task with the design's reasons (including the recorded deviation \"not a D-task\" on non-D tasks). | phrase: behavioural_equivalence is NA on every task with the design's reasons (including the recorded deviation \"not a D-task\" on non-D tasks). |\n| done_when: Red first on a seeded inverted D1 test (regression_count = 1) and on the non-D tasks, each red committed separately and failing on an assertion | phrase: Red first on a seeded inverted D1 test (regression_count = 1) and on the non-D tasks, each red committed separately and failing on an assertion |\n| done_when: the pre-turn test run is memoised per cell (the c1 residual) and the archive stays byte-unchanged. | phrase: the pre-turn test run is memoised per cell (the c1 residual) and the archive stays byte-unchanged. |\n| done_when: No TRX attribute that identifies the host (runUser, computerName, storage, codeBase, the Results File line, any time) is read, stored or reported | phrase: No TRX attribute that identifies the host (runUser, computerName, storage, codeBase, the Results File line, any time) is read, stored or reported |\n| done_when: a test asserts it. | phrase: a test asserts it. |\n| done_when: tests/mutations/correctness.json gains a named mutant per new branch, each killed, and grade.json stays all killed. | phrase: tests/mutations/correctness.json gains a named mutant per new branch, each killed, and grade.json stays all killed. |\n| done_when: With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips | phrase: With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: uv run bench validate prints ok. | phrase: uv run bench validate prints ok. |\n| done_when: Your final message lists each red SHA with its failing assertion, each green SHA, the gate-run values of regression_count per D1 cell, and the mutate_check results. | phrase: Your final message lists each red SHA with its failing assertion, each green SHA, the gate-run values of regression_count per D1 cell, and the mutate_check results. |\n| not_in_scope: drift, architecture, rigor, mutation (c3-c6) | phrase: drift, architecture, rigor, mutation (c3-c6) |\n| not_in_scope: catalog_hash, tool_versions, check_regrade (CORE s2) | phrase: catalog_hash, tool_versions, check_regrade (CORE s2) |\n| not_in_scope: cost | phrase: cost |\n| not_in_scope: the broken-ProjectReference seed (it waits on an Owner ruling) | phrase: the broken-ProjectReference seed (it waits on an Owner ruling) |\n| not_in_scope: cli.py, plan.py, views.py, engine.py | phrase: cli.py, plan.py, views.py, engine.py |\n| not_in_scope: bench run, any model turn, pytest -m \"\" | phrase: bench run, any model turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- docs/design/phase3-graders.md: docs/design/phase3-graders.md sha256 6687032ef769dbca0c8223a763a86382b8ea0e93006e4bb5f9cdc007a14bc7f5\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- grade/_changes.py: src/harness_bench/grade/_changes.py sha256 fa807c157301e4bb7c27f215bef6c8fabd0b14852f2830492361ad02bda67ff2\n- docs/notes/spike-gr-code-trx.md: docs/notes/spike-gr-code-trx.md sha256 ffb65ee78047574b4ae1a7adaef18a42e654ffe3fcacde850070f9e7e612cc31\n- tests/mutations/correctness.json: tests/mutations/correctness.json sha256 19b907ba5e3d6ab5e06cf32b0f8ac9630bf9ad341547337c094b2fcc6a0192f6\n- grade.json: tests/mutations/grade.json sha256 be410e99de0ea2a556ebb0fdf5d430d9e3663f36961fc3d2776d91ddd9b80dde\n- HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs: unresolved (not found)\n- cli.py: src/harness_bench/cli.py sha256 5748d61ab5678076aa9a6685da8c8c3f87a262353d7a33a237ef0b6715294873\n- plan.py: src/harness_bench/plan.py sha256 76dc9b1744eca436176d885270d53a29100424c0df56343b91bf632e2536f0a4\n- views.py: src/harness_bench/views.py sha256 16fb01788f1f64120b03ba83932eaac5e57c0860418bdd541870cc94515932e1\n- engine.py: src/harness_bench/engine.py sha256 138926a80c1cfa818a16699e768f3a3c3d06c10d0a94f3570e91b21eae79c5c8\n- src/harness_bench/grade/{__init__,runner,correctness,_changes}.py: unresolved (not found)\n- tasks/D1/**: unresolved (not found)\n- tests/test_grade_correctness.py: tests/test_grade_correctness.py sha256 e0c30810b2da172ab0152c0d1c64116d3c36f82de3334c2f76f388a96eea6f6c\n- C:/projects/x-harness-x-model-bench/runs/: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3C4XMD7452XHB1JR5CP8WNF\nraw sha256: 65197aade6f7978f4e794cd575c8f92d19334a681b26f689b03dd6fb1d45c476\ncompiler model: claude-opus-5-5\nengine seconds: 0.004\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3C4XMD7452XHB1JR5CP8WNF for claude-code v1: 19 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "regression_count counts the task's public tests that pass on the pre-turn tree and fail after the cell, keyed by className + \".\" + name from the per-test TRX results as the spike note records, exactly as the design defines it",
+            "trace": {
+              "kind": "phrase",
+              "ref": "regression_count counts the task's public tests that pass on the pre-turn tree and fail after the cell, keyed by className + \".\" + name from the per-test TRX results as the spike note records, exactly as the design defines it"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A1, C1 and E6 give NA \"task has no public tests\".",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A1, C1 and E6 give NA \"task has no public tests\"."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "behavioural_equivalence is NA on every task with the design's reasons (including the recorded deviation \"not a D-task\" on non-D tasks).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "behavioural_equivalence is NA on every task with the design's reasons (including the recorded deviation \"not a D-task\" on non-D tasks)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Red first on a seeded inverted D1 test (regression_count = 1) and on the non-D tasks, each red committed separately and failing on an assertion",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Red first on a seeded inverted D1 test (regression_count = 1) and on the non-D tasks, each red committed separately and failing on an assertion"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the pre-turn test run is memoised per cell (the c1 residual) and the archive stays byte-unchanged.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the pre-turn test run is memoised per cell (the c1 residual) and the archive stays byte-unchanged."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "No TRX attribute that identifies the host (runUser, computerName, storage, codeBase, the Results File line, any time) is read, stored or reported",
+            "trace": {
+              "kind": "phrase",
+              "ref": "No TRX attribute that identifies the host (runUser, computerName, storage, codeBase, the Results File line, any time) is read, stored or reported"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test asserts it.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test asserts it."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/correctness.json gains a named mutant per new branch, each killed, and grade.json stays all killed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/correctness.json gains a named mutant per new branch, each killed, and grade.json stays all killed."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips",
+            "trace": {
+              "kind": "phrase",
+              "ref": "With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run bench validate prints ok.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run bench validate prints ok."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA with its failing assertion, each green SHA, the gate-run values of regression_count per D1 cell, and the mutate_check results.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA with its failing assertion, each green SHA, the gate-run values of regression_count per D1 cell, and the mutate_check results."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "drift, architecture, rigor, mutation (c3-c6)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "drift, architecture, rigor, mutation (c3-c6)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "catalog_hash, tool_versions, check_regrade (CORE s2)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "catalog_hash, tool_versions, check_regrade (CORE s2)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "cost",
+            "trace": {
+              "kind": "phrase",
+              "ref": "cost"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the broken-ProjectReference seed (it waits on an Owner ruling)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the broken-ProjectReference seed (it waits on an Owner ruling)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "cli.py, plan.py, views.py, engine.py",
+            "trace": {
+              "kind": "phrase",
+              "ref": "cli.py, plan.py, views.py, engine.py"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run, any model turn, pytest -m \"\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run, any model turn, pytest -m \"\""
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "regression_count counts the task's public tests that pass on the pre-turn tree and fail after the cell, keyed by className + \".\" + name from the per-test TRX results as the spike note records, exactly as the design defines it",
+            "A1, C1 and E6 give NA \"task has no public tests\".",
+            "behavioural_equivalence is NA on every task with the design's reasons (including the recorded deviation \"not a D-task\" on non-D tasks).",
+            "Red first on a seeded inverted D1 test (regression_count = 1) and on the non-D tasks, each red committed separately and failing on an assertion",
+            "the pre-turn test run is memoised per cell (the c1 residual) and the archive stays byte-unchanged.",
+            "No TRX attribute that identifies the host (runUser, computerName, storage, codeBase, the Results File line, any time) is read, stored or reported",
+            "a test asserts it.",
+            "tests/mutations/correctness.json gains a named mutant per new branch, each killed, and grade.json stays all killed.",
+            "With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips",
+            "uv run ruff check src tests tools is clean",
+            "uv run bench validate prints ok.",
+            "Your final message lists each red SHA with its failing assertion, each green SHA, the gate-run values of regression_count per D1 cell, and the mutate_check results."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W3-GR-CODE slice c2 per docs/design/phase3-graders.md, slice-plan row \"GR-CODE c2\" and section \"Correctness\" (regression_count, behavioural_equivalence; rulings R-59, R-62, R-67, R-68 in docs/notes/rulings.md): regression_count and the behavioural_equivalence NA, red first, on top of c1 (joined: grade/_changes.py, build_and_suite_clean, docs/notes/spike-gr-code-trx.md).",
+          "main_line_budget": "one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-graders.md; docs/notes/spike-gr-code-trx.md; docs/notes/rulings.md R-59, R-62, R-67, R-68; src/harness_bench/grade/{__init__,runner,correctness,_changes}.py; tasks/D1/**; tests/test_grade_correctness.py; tests/mutations/correctness.json. The gate runs under C:/projects/x-harness-x-model-bench/runs/ are read-only. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "drift, architecture, rigor, mutation (c3-c6)",
+            "catalog_hash, tool_versions, check_regrade (CORE s2)",
+            "cost",
+            "the broken-ProjectReference seed (it waits on an Owner ruling)",
+            "cli.py, plan.py, views.py, engine.py",
+            "bench run, any model turn, pytest -m \"\"",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.004,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3C4XMD7452XHB1JR5CP8WNF",
+        "raw_sha256": "65197aade6f7978f4e794cd575c8f92d19334a681b26f689b03dd6fb1d45c476",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": "docs/design/phase3-graders.md",
+            "reason": null,
+            "sha256": "6687032ef769dbca0c8223a763a86382b8ea0e93006e4bb5f9cdc007a14bc7f5",
+            "status": "resolved",
+            "token": "docs/design/phase3-graders.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/_changes.py",
+            "reason": null,
+            "sha256": "fa807c157301e4bb7c27f215bef6c8fabd0b14852f2830492361ad02bda67ff2",
+            "status": "resolved",
+            "token": "grade/_changes.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/spike-gr-code-trx.md",
+            "reason": null,
+            "sha256": "ffb65ee78047574b4ae1a7adaef18a42e654ffe3fcacde850070f9e7e612cc31",
+            "status": "resolved",
+            "token": "docs/notes/spike-gr-code-trx.md"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/correctness.json",
+            "reason": null,
+            "sha256": "19b907ba5e3d6ab5e06cf32b0f8ac9630bf9ad341547337c094b2fcc6a0192f6",
+            "status": "resolved",
+            "token": "tests/mutations/correctness.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/grade.json",
+            "reason": null,
+            "sha256": "be410e99de0ea2a556ebb0fdf5d430d9e3663f36961fc3d2776d91ddd9b80dde",
+            "status": "resolved",
+            "token": "grade.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "5748d61ab5678076aa9a6685da8c8c3f87a262353d7a33a237ef0b6715294873",
+            "status": "resolved",
+            "token": "cli.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "76dc9b1744eca436176d885270d53a29100424c0df56343b91bf632e2536f0a4",
+            "status": "resolved",
+            "token": "plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/views.py",
+            "reason": null,
+            "sha256": "16fb01788f1f64120b03ba83932eaac5e57c0860418bdd541870cc94515932e1",
+            "status": "resolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/engine.py",
+            "reason": null,
+            "sha256": "138926a80c1cfa818a16699e768f3a3c3d06c10d0a94f3570e91b21eae79c5c8",
+            "status": "resolved",
+            "token": "engine.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/grade/{__init__,runner,correctness,_changes}.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/D1/**"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_correctness.py",
+            "reason": null,
+            "sha256": "e0c30810b2da172ab0152c0d1c64116d3c36f82de3334c2f76f388a96eea6f6c",
+            "status": "resolved",
+            "token": "tests/test_grade_correctness.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/projects/x-harness-x-model-bench/runs/"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3C4XNBTQG78PV7FW6Z9ZR6J",
+      "shortname": "Goal: W3-GW-I slice 2 per docs/design/phase3-gateway-judges.md section 1…",
+      "datetime": "2026-09-25T11:24:00Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W3-GW-I slice 2 per docs/design/phase3-gateway-judges.md section 16 row s2 and sections 8.1-8.4 (read the design whole first; rulings R-58, R-60, R-63, R-65, R-66 in docs/notes/rulings.md; the slice-1 review docs/notes/review-w3-gwi-1-fable.md): the headless judge backend, red first, offline in tests.\nDone when: src/harness_bench/gateway/ gains the headless backend: the launch builders (moved from tests/fixtures/gateway/probe_judge.py, one definition), the prompt on stdin through procs.run(input=), per-call folders under the cells root with check_cells_root, the credential copy and sweep, the `qualified` gate, the served-model, tool-event and schema checks read from each CLI's native record (not its stdout self-report; review A5), the breaker, the record archive, and model_calls rows with principal `gateway`; every failure maps to BackendDown or a closed HB-GW code (review F6: a ValueError from egress or any other exception never escapes pipeline.run).; SEAM GRANT (Leader): add an `input` parameter to src/harness_bench/procs.run with its own red test in the procs test file, and add the gateway backend module to the procs-caller allowlist in tests/test_architecture.py; nothing else in either file except the next item.; SEAM GRANT (Leader, review F2, a condition before this slice lands): the gateway lint in tests/test_architecture.py also taints a local name assigned from a non-data parameter (`b = backend; b.judge(text)` is a sink), red first on that exact probe.; Contract tests replay the spike's records copied into tests/fixtures/gateway/records/ with every identifier replaced by a fixed placeholder; the copy script fails if a real value remains; T-GW-07..10, 26, 28, 32 and 35 are red first, each red committed separately and failing on an assertion.; tests/mutations/gateway.json gains a named mutant per new branch, each killed: uv run python tools/mutate_check.py tests/mutations/gateway.json.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.\nNot in scope: grade/judge.py (slice 3); --allow-model-calls and cmd_grade (slice 4); calibration and the header (slice 5); bench/gateway.yaml entries (the Leader fills invocation_sha256 from a live probe); any live model call or process launch of a real CLI in a test (tests use recorded files and a fake executable); any real credential, e-mail, username, host name or path in a committed file; cli.py, plan.py, engine.py, errors.py; bench run, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase3-gateway-judges.md; docs/notes/review-w3-gwi-1-fable.md; docs/notes/spike-gw-headless.md; docs/notes/rulings.md R-58, R-60, R-63, R-65, R-66; src/harness_bench/gateway/; src/harness_bench/{procs,egress,workspace}.py; src/harness_bench/telemetry/{claude_code,codex,copilot}.py; tests/fixtures/gateway/; tests/test_architecture.py. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3C4XPNKJ2C347R2FC3C600K",
+      "shortname": "compile-Goal: W3-GW-I slice 2 per docs/design/phase3-gateway-judges.md section 1…",
+      "datetime": "2026-09-25T11:24:01Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-GW-I slice 2 per docs/design/phase3-gateway-judges.md section 16 row s2 and sections 8.1-8.4 (read the design whole first; rulings R-58, R-60, R-63, R-65, R-66 in docs/notes/rulings.md; the slice-1 review docs/notes/review-w3-gwi-1-fable.md): the headless judge backend, red first, offline in tests.\nDone when: src/harness_bench/gateway/ gains the headless backend: the launch builders (moved from tests/fixtures/gateway/probe_judge.py, one definition), the prompt on stdin through procs.run(input=), per-call folders under the cells root with check_cells_root, the credential copy and sweep, the `qualified` gate, the served-model, tool-event and schema checks read from each CLI's native record (not its stdout self-report; review A5), the breaker, the record archive, and model_calls rows with principal `gateway`; every failure maps to BackendDown or a closed HB-GW code (review F6: a ValueError from egress or any other exception never escapes pipeline.run).; SEAM GRANT (Leader): add an `input` parameter to src/harness_bench/procs.run with its own red test in the procs test file, and add the gateway backend module to the procs-caller allowlist in tests/test_architecture.py; nothing else in either file except the next item.; SEAM GRANT (Leader, review F2, a condition before this slice lands): the gateway lint in tests/test_architecture.py also taints a local name assigned from a non-data parameter (`b = backend; b.judge(text)` is a sink), red first on that exact probe.; Contract tests replay the spike's records copied into tests/fixtures/gateway/records/ with every identifier replaced by a fixed placeholder; the copy script fails if a real value remains; T-GW-07..10, 26, 28, 32 and 35 are red first, each red committed separately and failing on an assertion.; tests/mutations/gateway.json gains a named mutant per new branch, each killed: uv run python tools/mutate_check.py tests/mutations/gateway.json.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.\nNot in scope: grade/judge.py (slice 3); --allow-model-calls and cmd_grade (slice 4); calibration and the header (slice 5); bench/gateway.yaml entries (the Leader fills invocation_sha256 from a live probe); any live model call or process launch of a real CLI in a test (tests use recorded files and a fake executable); any real credential, e-mail, username, host name or path in a committed file; cli.py, plan.py, engine.py, errors.py; bench run, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-gateway-judges.md; docs/notes/review-w3-gwi-1-fable.md; docs/notes/spike-gw-headless.md; docs/notes/rulings.md R-58, R-60, R-63, R-65, R-66; src/harness_bench/gateway/; src/harness_bench/{procs,egress,workspace}.py; src/harness_bench/telemetry/{claude_code,codex,copilot}.py; tests/fixtures/gateway/; tests/test_architecture.py. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: src/harness_bench/gateway/ gains the headless backend: the launch builders (moved from tests/fixtures/gateway/probe_judge.py, one definition), the prompt on stdin through procs.run(input=), per-call folders under the cells root with check_cells_root, the credential copy and sweep, the `qualified` gate, the served-model, tool-event and schema checks read from each CLI's native record (not its stdout self-report | phrase: src/harness_bench/gateway/ gains the headless backend: the launch builders (moved from tests/fixtures/gateway/probe_judge.py, one definition), the prompt on stdin through procs.run(input=), per-call folders under the cells root with check_cells_root, the credential copy and sweep, the `qualified` gate, the served-model, tool-event and schema checks read from each CLI's native record (not its stdout self-report |\n| done_when: review A5), the breaker, the record archive, and model_calls rows with principal `gateway` | phrase: review A5), the breaker, the record archive, and model_calls rows with principal `gateway` |\n| done_when: every failure maps to BackendDown or a closed HB-GW code (review F6: a ValueError from egress or any other exception never escapes pipeline.run). | phrase: every failure maps to BackendDown or a closed HB-GW code (review F6: a ValueError from egress or any other exception never escapes pipeline.run). |\n| done_when: SEAM GRANT (Leader): add an `input` parameter to src/harness_bench/procs.run with its own red test in the procs test file, and add the gateway backend module to the procs-caller allowlist in tests/test_architecture.py | phrase: SEAM GRANT (Leader): add an `input` parameter to src/harness_bench/procs.run with its own red test in the procs test file, and add the gateway backend module to the procs-caller allowlist in tests/test_architecture.py |\n| done_when: nothing else in either file except the next item. | phrase: nothing else in either file except the next item. |\n| done_when: SEAM GRANT (Leader, review F2, a condition before this slice lands): the gateway lint in tests/test_architecture.py also taints a local name assigned from a non-data parameter (`b = backend | phrase: SEAM GRANT (Leader, review F2, a condition before this slice lands): the gateway lint in tests/test_architecture.py also taints a local name assigned from a non-data parameter (`b = backend |\n| done_when: b.judge(text)` is a sink), red first on that exact probe. | phrase: b.judge(text)` is a sink), red first on that exact probe. |\n| done_when: Contract tests replay the spike's records copied into tests/fixtures/gateway/records/ with every identifier replaced by a fixed placeholder | phrase: Contract tests replay the spike's records copied into tests/fixtures/gateway/records/ with every identifier replaced by a fixed placeholder |\n| done_when: the copy script fails if a real value remains | phrase: the copy script fails if a real value remains |\n| done_when: T-GW-07..10, 26, 28, 32 and 35 are red first, each red committed separately and failing on an assertion. | phrase: T-GW-07..10, 26, 28, 32 and 35 are red first, each red committed separately and failing on an assertion. |\n| done_when: tests/mutations/gateway.json gains a named mutant per new branch, each killed: uv run python tools/mutate_check.py tests/mutations/gateway.json. | phrase: tests/mutations/gateway.json gains a named mutant per new branch, each killed: uv run python tools/mutate_check.py tests/mutations/gateway.json. |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean. | phrase: uv run ruff check src tests tools is clean. |\n| done_when: Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result. | phrase: Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result. |\n| not_in_scope: grade/judge.py (slice 3) | phrase: grade/judge.py (slice 3) |\n| not_in_scope: --allow-model-calls and cmd_grade (slice 4) | phrase: --allow-model-calls and cmd_grade (slice 4) |\n| not_in_scope: calibration and the header (slice 5) | phrase: calibration and the header (slice 5) |\n| not_in_scope: bench/gateway.yaml entries (the Leader fills invocation_sha256 from a live probe) | phrase: bench/gateway.yaml entries (the Leader fills invocation_sha256 from a live probe) |\n| not_in_scope: any live model call or process launch of a real CLI in a test (tests use recorded files and a fake executable) | phrase: any live model call or process launch of a real CLI in a test (tests use recorded files and a fake executable) |\n| not_in_scope: any real credential, e-mail, username, host name or path in a committed file | phrase: any real credential, e-mail, username, host name or path in a committed file |\n| not_in_scope: cli.py, plan.py, engine.py, errors.py | phrase: cli.py, plan.py, engine.py, errors.py |\n| not_in_scope: bench run, pytest -m \"\" | phrase: bench run, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- qualified: unresolved (not found)\n- gateway: unresolved (not found)\n- input: unresolved (not found)\n- b = backend; b.judge(text: unresolved (not found)\n- docs/design/phase3-gateway-judges.md: docs/design/phase3-gateway-judges.md sha256 61cfd44cdac602696254e7d583e506632d4d03ba4085917387d46cf9fab1e519\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- docs/notes/review-w3-gwi-1-fable.md: docs/notes/review-w3-gwi-1-fable.md sha256 c8a775b475343292c568faba0f0eb5e1513089c18bf3467c55de7bb1a54e077d\n- src/harness_bench/gateway/: unresolved (not found)\n- tests/fixtures/gateway/probe_judge.py: tests/fixtures/gateway/probe_judge.py sha256 d524dfd5edae29fbb0e00dd2fc9e33e7edcd458afee52e662c7c62e1cabaa0fd\n- src/harness_bench/procs.run: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 f1697b9510840340277de7beb91fe6a29afbb9f1d679a485f8e74377f39c2d5f\n- tests/fixtures/gateway/records/: unresolved (not found)\n- tests/mutations/gateway.json: tests/mutations/gateway.json sha256 03dee9a120c4d7696ca317d5d961a1e68ad1ed357d18fc6d0c24285e57384a43\n- tools/mutate_check.py: tools/mutate_check.py sha256 4d1b3c10120a52082b1a43aa9407a8109459d7ba20fb83801eb85c2f511ba513\n- grade/judge.py: src/harness_bench/grade/judge.py sha256 ada5733d94b2e66bc8fe23c424357cc2971038389259668826a32d4401f20f7b\n- bench/gateway.yaml: unresolved (not found)\n- cli.py: src/harness_bench/cli.py sha256 5748d61ab5678076aa9a6685da8c8c3f87a262353d7a33a237ef0b6715294873\n- plan.py: src/harness_bench/plan.py sha256 76dc9b1744eca436176d885270d53a29100424c0df56343b91bf632e2536f0a4\n- engine.py: src/harness_bench/engine.py sha256 138926a80c1cfa818a16699e768f3a3c3d06c10d0a94f3570e91b21eae79c5c8\n- errors.py: src/harness_bench/errors.py sha256 2cfc0dcaca076a239dbd1b3c7eb430e017848a946580f936de8ffb3bc26743b9\n- docs/notes/spike-gw-headless.md: docs/notes/spike-gw-headless.md sha256 669dc8dd313a0a2bc66b5e34a7cfc98ed8f98c1de4dfe1908c93157c8dcd8b96\n- src/harness_bench/{procs,egress,workspace}.py: unresolved (not found)\n- src/harness_bench/telemetry/{claude_code,codex,copilot}.py: unresolved (not found)\n- tests/fixtures/gateway/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3C4XNBTQG78PV7FW6Z9ZR6J\nraw sha256: 311b7bb6924449fbd1de9ac3942b71e33fcfe8ba80466033692eb29252488c87\ncompiler model: claude-opus-5-5\nengine seconds: 0.004\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3C4XNBTQG78PV7FW6Z9ZR6J for claude-code v1: 23 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "src/harness_bench/gateway/ gains the headless backend: the launch builders (moved from tests/fixtures/gateway/probe_judge.py, one definition), the prompt on stdin through procs.run(input=), per-call folders under the cells root with check_cells_root, the credential copy and sweep, the `qualified` gate, the served-model, tool-event and schema checks read from each CLI's native record (not its stdout self-report",
+            "trace": {
+              "kind": "phrase",
+              "ref": "src/harness_bench/gateway/ gains the headless backend: the launch builders (moved from tests/fixtures/gateway/probe_judge.py, one definition), the prompt on stdin through procs.run(input=), per-call folders under the cells root with check_cells_root, the credential copy and sweep, the `qualified` gate, the served-model, tool-event and schema checks read from each CLI's native record (not its stdout self-report"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "review A5), the breaker, the record archive, and model_calls rows with principal `gateway`",
+            "trace": {
+              "kind": "phrase",
+              "ref": "review A5), the breaker, the record archive, and model_calls rows with principal `gateway`"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "every failure maps to BackendDown or a closed HB-GW code (review F6: a ValueError from egress or any other exception never escapes pipeline.run).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "every failure maps to BackendDown or a closed HB-GW code (review F6: a ValueError from egress or any other exception never escapes pipeline.run)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "SEAM GRANT (Leader): add an `input` parameter to src/harness_bench/procs.run with its own red test in the procs test file, and add the gateway backend module to the procs-caller allowlist in tests/test_architecture.py",
+            "trace": {
+              "kind": "phrase",
+              "ref": "SEAM GRANT (Leader): add an `input` parameter to src/harness_bench/procs.run with its own red test in the procs test file, and add the gateway backend module to the procs-caller allowlist in tests/test_architecture.py"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "nothing else in either file except the next item.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "nothing else in either file except the next item."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "SEAM GRANT (Leader, review F2, a condition before this slice lands): the gateway lint in tests/test_architecture.py also taints a local name assigned from a non-data parameter (`b = backend",
+            "trace": {
+              "kind": "phrase",
+              "ref": "SEAM GRANT (Leader, review F2, a condition before this slice lands): the gateway lint in tests/test_architecture.py also taints a local name assigned from a non-data parameter (`b = backend"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "b.judge(text)` is a sink), red first on that exact probe.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "b.judge(text)` is a sink), red first on that exact probe."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Contract tests replay the spike's records copied into tests/fixtures/gateway/records/ with every identifier replaced by a fixed placeholder",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Contract tests replay the spike's records copied into tests/fixtures/gateway/records/ with every identifier replaced by a fixed placeholder"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the copy script fails if a real value remains",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the copy script fails if a real value remains"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "T-GW-07..10, 26, 28, 32 and 35 are red first, each red committed separately and failing on an assertion.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "T-GW-07..10, 26, 28, 32 and 35 are red first, each red committed separately and failing on an assertion."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/gateway.json gains a named mutant per new branch, each killed: uv run python tools/mutate_check.py tests/mutations/gateway.json.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/gateway.json gains a named mutant per new branch, each killed: uv run python tools/mutate_check.py tests/mutations/gateway.json."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "grade/judge.py (slice 3)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "grade/judge.py (slice 3)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "--allow-model-calls and cmd_grade (slice 4)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "--allow-model-calls and cmd_grade (slice 4)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "calibration and the header (slice 5)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "calibration and the header (slice 5)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench/gateway.yaml entries (the Leader fills invocation_sha256 from a live probe)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/gateway.yaml entries (the Leader fills invocation_sha256 from a live probe)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any live model call or process launch of a real CLI in a test (tests use recorded files and a fake executable)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any live model call or process launch of a real CLI in a test (tests use recorded files and a fake executable)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any real credential, e-mail, username, host name or path in a committed file",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any real credential, e-mail, username, host name or path in a committed file"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "cli.py, plan.py, engine.py, errors.py",
+            "trace": {
+              "kind": "phrase",
+              "ref": "cli.py, plan.py, engine.py, errors.py"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run, pytest -m \"\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run, pytest -m \"\""
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "src/harness_bench/gateway/ gains the headless backend: the launch builders (moved from tests/fixtures/gateway/probe_judge.py, one definition), the prompt on stdin through procs.run(input=), per-call folders under the cells root with check_cells_root, the credential copy and sweep, the `qualified` gate, the served-model, tool-event and schema checks read from each CLI's native record (not its stdout self-report",
+            "review A5), the breaker, the record archive, and model_calls rows with principal `gateway`",
+            "every failure maps to BackendDown or a closed HB-GW code (review F6: a ValueError from egress or any other exception never escapes pipeline.run).",
+            "SEAM GRANT (Leader): add an `input` parameter to src/harness_bench/procs.run with its own red test in the procs test file, and add the gateway backend module to the procs-caller allowlist in tests/test_architecture.py",
+            "nothing else in either file except the next item.",
+            "SEAM GRANT (Leader, review F2, a condition before this slice lands): the gateway lint in tests/test_architecture.py also taints a local name assigned from a non-data parameter (`b = backend",
+            "b.judge(text)` is a sink), red first on that exact probe.",
+            "Contract tests replay the spike's records copied into tests/fixtures/gateway/records/ with every identifier replaced by a fixed placeholder",
+            "the copy script fails if a real value remains",
+            "T-GW-07..10, 26, 28, 32 and 35 are red first, each red committed separately and failing on an assertion.",
+            "tests/mutations/gateway.json gains a named mutant per new branch, each killed: uv run python tools/mutate_check.py tests/mutations/gateway.json.",
+            "uv run pytest -q -p no:cacheprovider passes",
+            "uv run ruff check src tests tools is clean.",
+            "Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W3-GW-I slice 2 per docs/design/phase3-gateway-judges.md section 16 row s2 and sections 8.1-8.4 (read the design whole first; rulings R-58, R-60, R-63, R-65, R-66 in docs/notes/rulings.md; the slice-1 review docs/notes/review-w3-gwi-1-fable.md): the headless judge backend, red first, offline in tests.",
+          "main_line_budget": "one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-gateway-judges.md; docs/notes/review-w3-gwi-1-fable.md; docs/notes/spike-gw-headless.md; docs/notes/rulings.md R-58, R-60, R-63, R-65, R-66; src/harness_bench/gateway/; src/harness_bench/{procs,egress,workspace}.py; src/harness_bench/telemetry/{claude_code,codex,copilot}.py; tests/fixtures/gateway/; tests/test_architecture.py. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "grade/judge.py (slice 3)",
+            "--allow-model-calls and cmd_grade (slice 4)",
+            "calibration and the header (slice 5)",
+            "bench/gateway.yaml entries (the Leader fills invocation_sha256 from a live probe)",
+            "any live model call or process launch of a real CLI in a test (tests use recorded files and a fake executable)",
+            "any real credential, e-mail, username, host name or path in a committed file",
+            "cli.py, plan.py, engine.py, errors.py",
+            "bench run, pytest -m \"\"",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.004,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3C4XNBTQG78PV7FW6Z9ZR6J",
+        "raw_sha256": "311b7bb6924449fbd1de9ac3942b71e33fcfe8ba80466033692eb29252488c87",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "qualified"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gateway"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "input"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "b = backend; b.judge(text"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase3-gateway-judges.md",
+            "reason": null,
+            "sha256": "61cfd44cdac602696254e7d583e506632d4d03ba4085917387d46cf9fab1e519",
+            "status": "resolved",
+            "token": "docs/design/phase3-gateway-judges.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/review-w3-gwi-1-fable.md",
+            "reason": null,
+            "sha256": "c8a775b475343292c568faba0f0eb5e1513089c18bf3467c55de7bb1a54e077d",
+            "status": "resolved",
+            "token": "docs/notes/review-w3-gwi-1-fable.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/gateway/"
+          },
+          {
+            "nearest": null,
+            "path": "tests/fixtures/gateway/probe_judge.py",
+            "reason": null,
+            "sha256": "d524dfd5edae29fbb0e00dd2fc9e33e7edcd458afee52e662c7c62e1cabaa0fd",
+            "status": "resolved",
+            "token": "tests/fixtures/gateway/probe_judge.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/procs.run"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "f1697b9510840340277de7beb91fe6a29afbb9f1d679a485f8e74377f39c2d5f",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/gateway/records/"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/gateway.json",
+            "reason": null,
+            "sha256": "03dee9a120c4d7696ca317d5d961a1e68ad1ed357d18fc6d0c24285e57384a43",
+            "status": "resolved",
+            "token": "tests/mutations/gateway.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "4d1b3c10120a52082b1a43aa9407a8109459d7ba20fb83801eb85c2f511ba513",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/judge.py",
+            "reason": null,
+            "sha256": "ada5733d94b2e66bc8fe23c424357cc2971038389259668826a32d4401f20f7b",
+            "status": "resolved",
+            "token": "grade/judge.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/gateway.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "5748d61ab5678076aa9a6685da8c8c3f87a262353d7a33a237ef0b6715294873",
+            "status": "resolved",
+            "token": "cli.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "76dc9b1744eca436176d885270d53a29100424c0df56343b91bf632e2536f0a4",
+            "status": "resolved",
+            "token": "plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/engine.py",
+            "reason": null,
+            "sha256": "138926a80c1cfa818a16699e768f3a3c3d06c10d0a94f3570e91b21eae79c5c8",
+            "status": "resolved",
+            "token": "engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "2cfc0dcaca076a239dbd1b3c7eb430e017848a946580f936de8ffb3bc26743b9",
+            "status": "resolved",
+            "token": "errors.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/spike-gw-headless.md",
+            "reason": null,
+            "sha256": "669dc8dd313a0a2bc66b5e34a7cfc98ed8f98c1de4dfe1908c93157c8dcd8b96",
+            "status": "resolved",
+            "token": "docs/notes/spike-gw-headless.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/{procs,egress,workspace}.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/telemetry/{claude_code,codex,copilot}.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/gateway/"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3C4XPXEV06RVG3FQGW0XQPW",
+      "shortname": "Goal: W3-COST phase 2 per docs/design/phase3-graders.md, section \"Cost\" …",
+      "datetime": "2026-09-25T11:24:01Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W3-COST phase 2 per docs/design/phase3-graders.md, section \"Cost\" and slice-plan row \"COST phase 2\", and seam C-1: the cost grader as its own module under the one-definition rule, red first.\nDone when: Seam C-1: runner.py's `_cost` scoring (the cost_usd block) moves verbatim into cost.grade_cell(inp), registered in runner.GRADERS[\"cost\"]; cost_usd stays byte-equal on the CORE s1 fixtures (tests/fixtures/ledger/**) and, with HB_GATE_RUNS set, on the gate runs (all 9 cells give today's NA reasons exactly, e.g. \"no price list entry for gpt-6-sol\").; A short design section, docs/design/phase3-cost.md (V2 frontmatter, linked to the graders design), decides for each cell-grain metric the design names (tokens_per_minute, output_tokens_per_turn, cache_hit_ratio, cache_write_amplification, context_growth, compactions): its definition from existing view measures and normalize.totals only (one definition per quantity: a metric that is already a view measure stays a view measure), its kind and class, and its NA reasons; any metric it cannot define from recorded data is NA with a reason, never 0.; The metrics the design decides are built in grade/cost.py, each red first on synthetic seeded inputs with an exact value and each NA reason; each red committed separately and failing on an assertion.; tests/mutations/cost.json has a named mutant per branch, each killed, and grade.json stays all killed.; With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips; uv run ruff check src tests tools is clean; uv run bench validate prints ok.; Your final message lists each red SHA with its failing assertion, each green SHA, the design decisions, and the mutate_check results.\nNot in scope: bench/metrics.yaml catalog entries for new metrics (propose them in the design; the Leader edits the catalog at the join); bench/prices.yaml; telemetry readers; views.py; cli.py, plan.py, engine.py; the correctness grader; bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 300k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase3-graders.md (sections Cost, Data model, DM7); docs/adr/0006*; src/harness_bench/grade/{__init__,runner,cost}.py; src/harness_bench/telemetry/normalize.py; src/harness_bench/views.py (existing measures); tests/test_grade_runner.py; tests/fixtures/ledger/. The gate runs under C:/projects/x-harness-x-model-bench/runs/ are read-only. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3C4XQWK8GKTM9WFN46XDR5P",
+      "shortname": "compile-Goal: W3-COST phase 2 per docs/design/phase3-graders.md, section \"Cost\" …",
+      "datetime": "2026-09-25T11:24:02Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-COST phase 2 per docs/design/phase3-graders.md, section \"Cost\" and slice-plan row \"COST phase 2\", and seam C-1: the cost grader as its own module under the one-definition rule, red first.\nDone when: Seam C-1: runner.py's `_cost` scoring (the cost_usd block) moves verbatim into cost.grade_cell(inp), registered in runner.GRADERS[\"cost\"]; cost_usd stays byte-equal on the CORE s1 fixtures (tests/fixtures/ledger/**) and, with HB_GATE_RUNS set, on the gate runs (all 9 cells give today's NA reasons exactly, e.g. \"no price list entry for gpt-6-sol\").; A short design section, docs/design/phase3-cost.md (V2 frontmatter, linked to the graders design), decides for each cell-grain metric the design names (tokens_per_minute, output_tokens_per_turn, cache_hit_ratio, cache_write_amplification, context_growth, compactions): its definition from existing view measures and normalize.totals only (one definition per quantity: a metric that is already a view measure stays a view measure), its kind and class, and its NA reasons; any metric it cannot define from recorded data is NA with a reason, never 0.; The metrics the design decides are built in grade/cost.py, each red first on synthetic seeded inputs with an exact value and each NA reason; each red committed separately and failing on an assertion.; tests/mutations/cost.json has a named mutant per branch, each killed, and grade.json stays all killed.; With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips; uv run ruff check src tests tools is clean; uv run bench validate prints ok.; Your final message lists each red SHA with its failing assertion, each green SHA, the design decisions, and the mutate_check results.\nNot in scope: bench/metrics.yaml catalog entries for new metrics (propose them in the design; the Leader edits the catalog at the join); bench/prices.yaml; telemetry readers; views.py; cli.py, plan.py, engine.py; the correctness grader; bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 300k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-graders.md (sections Cost, Data model, DM7); docs/adr/0006*; src/harness_bench/grade/{__init__,runner,cost}.py; src/harness_bench/telemetry/normalize.py; src/harness_bench/views.py (existing measures); tests/test_grade_runner.py; tests/fixtures/ledger/. The gate runs under C:/projects/x-harness-x-model-bench/runs/ are read-only. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: Seam C-1: runner.py's `_cost` scoring (the cost_usd block) moves verbatim into cost.grade_cell(inp), registered in runner.GRADERS[\"cost\"] | phrase: Seam C-1: runner.py's `_cost` scoring (the cost_usd block) moves verbatim into cost.grade_cell(inp), registered in runner.GRADERS[\"cost\"] |\n| done_when: cost_usd stays byte-equal on the CORE s1 fixtures (tests/fixtures/ledger/**) and, with HB_GATE_RUNS set, on the gate runs (all 9 cells give today's NA reasons exactly, e.g. \"no price list entry for gpt-6-sol\"). | phrase: cost_usd stays byte-equal on the CORE s1 fixtures (tests/fixtures/ledger/**) and, with HB_GATE_RUNS set, on the gate runs (all 9 cells give today's NA reasons exactly, e.g. \"no price list entry for gpt-6-sol\"). |\n| done_when: A short design section, docs/design/phase3-cost.md (V2 frontmatter, linked to the graders design), decides for each cell-grain metric the design names (tokens_per_minute, output_tokens_per_turn, cache_hit_ratio, cache_write_amplification, context_growth, compactions): its definition from existing view measures and normalize.totals only (one definition per quantity: a metric that is already a view measure stays a view measure), its kind and class, and its NA reasons | phrase: A short design section, docs/design/phase3-cost.md (V2 frontmatter, linked to the graders design), decides for each cell-grain metric the design names (tokens_per_minute, output_tokens_per_turn, cache_hit_ratio, cache_write_amplification, context_growth, compactions): its definition from existing view measures and normalize.totals only (one definition per quantity: a metric that is already a view measure stays a view measure), its kind and class, and its NA reasons |\n| done_when: any metric it cannot define from recorded data is NA with a reason, never 0. | phrase: any metric it cannot define from recorded data is NA with a reason, never 0. |\n| done_when: The metrics the design decides are built in grade/cost.py, each red first on synthetic seeded inputs with an exact value and each NA reason | phrase: The metrics the design decides are built in grade/cost.py, each red first on synthetic seeded inputs with an exact value and each NA reason |\n| done_when: each red committed separately and failing on an assertion. | phrase: each red committed separately and failing on an assertion. |\n| done_when: tests/mutations/cost.json has a named mutant per branch, each killed, and grade.json stays all killed. | phrase: tests/mutations/cost.json has a named mutant per branch, each killed, and grade.json stays all killed. |\n| done_when: With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips | phrase: With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: uv run bench validate prints ok. | phrase: uv run bench validate prints ok. |\n| done_when: Your final message lists each red SHA with its failing assertion, each green SHA, the design decisions, and the mutate_check results. | phrase: Your final message lists each red SHA with its failing assertion, each green SHA, the design decisions, and the mutate_check results. |\n| not_in_scope: bench/metrics.yaml catalog entries for new metrics (propose them in the design | phrase: bench/metrics.yaml catalog entries for new metrics (propose them in the design |\n| not_in_scope: the Leader edits the catalog at the join) | phrase: the Leader edits the catalog at the join) |\n| not_in_scope: bench/prices.yaml | phrase: bench/prices.yaml |\n| not_in_scope: telemetry readers | phrase: telemetry readers |\n| not_in_scope: views.py | phrase: views.py |\n| not_in_scope: cli.py, plan.py, engine.py | phrase: cli.py, plan.py, engine.py |\n| not_in_scope: the correctness grader | phrase: the correctness grader |\n| not_in_scope: bench run, any model turn, pytest -m \"\" | phrase: bench run, any model turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- _cost: unresolved (not found)\n- docs/design/phase3-graders.md: docs/design/phase3-graders.md sha256 6687032ef769dbca0c8223a763a86382b8ea0e93006e4bb5f9cdc007a14bc7f5\n- tests/fixtures/ledger/**: unresolved (not found)\n- docs/design/phase3-cost.md: unresolved (not found)\n- grade/cost.py: src/harness_bench/grade/cost.py sha256 0bd383030c2444841841b105f4267e30f6073e13f47fa154112402ea338e0596\n- tests/mutations/cost.json: unresolved (not found)\n- grade.json: tests/mutations/grade.json sha256 be410e99de0ea2a556ebb0fdf5d430d9e3663f36961fc3d2776d91ddd9b80dde\n- HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs: unresolved (not found)\n- bench/metrics.yaml: bench/metrics.yaml sha256 dd717be9966ac8ed98b26f925521352124c62ce4826cbed3e11bc413f8bfb2f5\n- bench/prices.yaml: bench/prices.yaml sha256 b28b804e8336c78042f7eb06e0ec6682a0753546b8b053b252f1e38e26a8d091\n- views.py: src/harness_bench/views.py sha256 16fb01788f1f64120b03ba83932eaac5e57c0860418bdd541870cc94515932e1\n- cli.py: src/harness_bench/cli.py sha256 5748d61ab5678076aa9a6685da8c8c3f87a262353d7a33a237ef0b6715294873\n- plan.py: src/harness_bench/plan.py sha256 76dc9b1744eca436176d885270d53a29100424c0df56343b91bf632e2536f0a4\n- engine.py: src/harness_bench/engine.py sha256 138926a80c1cfa818a16699e768f3a3c3d06c10d0a94f3570e91b21eae79c5c8\n- docs/adr/0006*: unresolved (not found)\n- src/harness_bench/grade/{__init__,runner,cost}.py: unresolved (not found)\n- src/harness_bench/telemetry/normalize.py: src/harness_bench/telemetry/normalize.py sha256 4ba56261fe1258a8781956fbf205b3f8b15fbd2cb1ee61c624e1b0c36542ad5a\n- src/harness_bench/views.py: src/harness_bench/views.py sha256 16fb01788f1f64120b03ba83932eaac5e57c0860418bdd541870cc94515932e1\n- tests/test_grade_runner.py: tests/test_grade_runner.py sha256 28bee48966d5c692f01cf98549eff0ef33342e7a3f38e2b0a66fb97b25fa33d0\n- tests/fixtures/ledger/: unresolved (not found)\n- C:/projects/x-harness-x-model-bench/runs/: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3C4XPXEV06RVG3FQGW0XQPW\nraw sha256: 1eeffd3b6a47ad469eae65cc7c20fb5e1a0ec5a757b5d85413d97938af54d872\ncompiler model: claude-opus-5-5\nengine seconds: 0.004\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3C4XPXEV06RVG3FQGW0XQPW for claude-code v1: 20 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "Seam C-1: runner.py's `_cost` scoring (the cost_usd block) moves verbatim into cost.grade_cell(inp), registered in runner.GRADERS[\"cost\"]",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Seam C-1: runner.py's `_cost` scoring (the cost_usd block) moves verbatim into cost.grade_cell(inp), registered in runner.GRADERS[\"cost\"]"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "cost_usd stays byte-equal on the CORE s1 fixtures (tests/fixtures/ledger/**) and, with HB_GATE_RUNS set, on the gate runs (all 9 cells give today's NA reasons exactly, e.g. \"no price list entry for gpt-6-sol\").",
+            "trace": {
+              "kind": "phrase",
+              "ref": "cost_usd stays byte-equal on the CORE s1 fixtures (tests/fixtures/ledger/**) and, with HB_GATE_RUNS set, on the gate runs (all 9 cells give today's NA reasons exactly, e.g. \"no price list entry for gpt-6-sol\")."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A short design section, docs/design/phase3-cost.md (V2 frontmatter, linked to the graders design), decides for each cell-grain metric the design names (tokens_per_minute, output_tokens_per_turn, cache_hit_ratio, cache_write_amplification, context_growth, compactions): its definition from existing view measures and normalize.totals only (one definition per quantity: a metric that is already a view measure stays a view measure), its kind and class, and its NA reasons",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A short design section, docs/design/phase3-cost.md (V2 frontmatter, linked to the graders design), decides for each cell-grain metric the design names (tokens_per_minute, output_tokens_per_turn, cache_hit_ratio, cache_write_amplification, context_growth, compactions): its definition from existing view measures and normalize.totals only (one definition per quantity: a metric that is already a view measure stays a view measure), its kind and class, and its NA reasons"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "any metric it cannot define from recorded data is NA with a reason, never 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any metric it cannot define from recorded data is NA with a reason, never 0."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The metrics the design decides are built in grade/cost.py, each red first on synthetic seeded inputs with an exact value and each NA reason",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The metrics the design decides are built in grade/cost.py, each red first on synthetic seeded inputs with an exact value and each NA reason"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "each red committed separately and failing on an assertion.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "each red committed separately and failing on an assertion."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/cost.json has a named mutant per branch, each killed, and grade.json stays all killed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/cost.json has a named mutant per branch, each killed, and grade.json stays all killed."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips",
+            "trace": {
+              "kind": "phrase",
+              "ref": "With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run bench validate prints ok.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run bench validate prints ok."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA with its failing assertion, each green SHA, the design decisions, and the mutate_check results.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA with its failing assertion, each green SHA, the design decisions, and the mutate_check results."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench/metrics.yaml catalog entries for new metrics (propose them in the design",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/metrics.yaml catalog entries for new metrics (propose them in the design"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the Leader edits the catalog at the join)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the Leader edits the catalog at the join)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench/prices.yaml",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/prices.yaml"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "telemetry readers",
+            "trace": {
+              "kind": "phrase",
+              "ref": "telemetry readers"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "views.py",
+            "trace": {
+              "kind": "phrase",
+              "ref": "views.py"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "cli.py, plan.py, engine.py",
+            "trace": {
+              "kind": "phrase",
+              "ref": "cli.py, plan.py, engine.py"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the correctness grader",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the correctness grader"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run, any model turn, pytest -m \"\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run, any model turn, pytest -m \"\""
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "300k tokens",
+          "done_when": [
+            "Seam C-1: runner.py's `_cost` scoring (the cost_usd block) moves verbatim into cost.grade_cell(inp), registered in runner.GRADERS[\"cost\"]",
+            "cost_usd stays byte-equal on the CORE s1 fixtures (tests/fixtures/ledger/**) and, with HB_GATE_RUNS set, on the gate runs (all 9 cells give today's NA reasons exactly, e.g. \"no price list entry for gpt-6-sol\").",
+            "A short design section, docs/design/phase3-cost.md (V2 frontmatter, linked to the graders design), decides for each cell-grain metric the design names (tokens_per_minute, output_tokens_per_turn, cache_hit_ratio, cache_write_amplification, context_growth, compactions): its definition from existing view measures and normalize.totals only (one definition per quantity: a metric that is already a view measure stays a view measure), its kind and class, and its NA reasons",
+            "any metric it cannot define from recorded data is NA with a reason, never 0.",
+            "The metrics the design decides are built in grade/cost.py, each red first on synthetic seeded inputs with an exact value and each NA reason",
+            "each red committed separately and failing on an assertion.",
+            "tests/mutations/cost.json has a named mutant per branch, each killed, and grade.json stays all killed.",
+            "With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, uv run pytest -q -p no:cacheprovider passes with 0 gate-run skips",
+            "uv run ruff check src tests tools is clean",
+            "uv run bench validate prints ok.",
+            "Your final message lists each red SHA with its failing assertion, each green SHA, the design decisions, and the mutate_check results."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W3-COST phase 2 per docs/design/phase3-graders.md, section \"Cost\" and slice-plan row \"COST phase 2\", and seam C-1: the cost grader as its own module under the one-definition rule, red first.",
+          "main_line_budget": "one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-graders.md (sections Cost, Data model, DM7); docs/adr/0006*; src/harness_bench/grade/{__init__,runner,cost}.py; src/harness_bench/telemetry/normalize.py; src/harness_bench/views.py (existing measures); tests/test_grade_runner.py; tests/fixtures/ledger/. The gate runs under C:/projects/x-harness-x-model-bench/runs/ are read-only. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "bench/metrics.yaml catalog entries for new metrics (propose them in the design",
+            "the Leader edits the catalog at the join)",
+            "bench/prices.yaml",
+            "telemetry readers",
+            "views.py",
+            "cli.py, plan.py, engine.py",
+            "the correctness grader",
+            "bench run, any model turn, pytest -m \"\"",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.004,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3C4XPXEV06RVG3FQGW0XQPW",
+        "raw_sha256": "1eeffd3b6a47ad469eae65cc7c20fb5e1a0ec5a757b5d85413d97938af54d872",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_cost"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase3-graders.md",
+            "reason": null,
+            "sha256": "6687032ef769dbca0c8223a763a86382b8ea0e93006e4bb5f9cdc007a14bc7f5",
+            "status": "resolved",
+            "token": "docs/design/phase3-graders.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/ledger/**"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/design/phase3-cost.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/cost.py",
+            "reason": null,
+            "sha256": "0bd383030c2444841841b105f4267e30f6073e13f47fa154112402ea338e0596",
+            "status": "resolved",
+            "token": "grade/cost.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/cost.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/grade.json",
+            "reason": null,
+            "sha256": "be410e99de0ea2a556ebb0fdf5d430d9e3663f36961fc3d2776d91ddd9b80dde",
+            "status": "resolved",
+            "token": "grade.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs"
+          },
+          {
+            "nearest": null,
+            "path": "bench/metrics.yaml",
+            "reason": null,
+            "sha256": "dd717be9966ac8ed98b26f925521352124c62ce4826cbed3e11bc413f8bfb2f5",
+            "status": "resolved",
+            "token": "bench/metrics.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "bench/prices.yaml",
+            "reason": null,
+            "sha256": "b28b804e8336c78042f7eb06e0ec6682a0753546b8b053b252f1e38e26a8d091",
+            "status": "resolved",
+            "token": "bench/prices.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/views.py",
+            "reason": null,
+            "sha256": "16fb01788f1f64120b03ba83932eaac5e57c0860418bdd541870cc94515932e1",
+            "status": "resolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "5748d61ab5678076aa9a6685da8c8c3f87a262353d7a33a237ef0b6715294873",
+            "status": "resolved",
+            "token": "cli.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "76dc9b1744eca436176d885270d53a29100424c0df56343b91bf632e2536f0a4",
+            "status": "resolved",
+            "token": "plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/engine.py",
+            "reason": null,
+            "sha256": "138926a80c1cfa818a16699e768f3a3c3d06c10d0a94f3570e91b21eae79c5c8",
+            "status": "resolved",
+            "token": "engine.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/adr/0006*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/grade/{__init__,runner,cost}.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/normalize.py",
+            "reason": null,
+            "sha256": "4ba56261fe1258a8781956fbf205b3f8b15fbd2cb1ee61c624e1b0c36542ad5a",
+            "status": "resolved",
+            "token": "src/harness_bench/telemetry/normalize.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/views.py",
+            "reason": null,
+            "sha256": "16fb01788f1f64120b03ba83932eaac5e57c0860418bdd541870cc94515932e1",
+            "status": "resolved",
+            "token": "src/harness_bench/views.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_runner.py",
+            "reason": null,
+            "sha256": "28bee48966d5c692f01cf98549eff0ef33342e7a3f38e2b0a66fb97b25fa33d0",
+            "status": "resolved",
+            "token": "tests/test_grade_runner.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/ledger/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/projects/x-harness-x-model-bench/runs/"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
     }
   ],
   "changes": [
