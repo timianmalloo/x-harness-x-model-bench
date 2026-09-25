@@ -204,8 +204,11 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
         # plan row W3-GW-I assigns it; if judging lands elsewhere, name that module here). Chosen over a dated
         # assume: it fires on the event, not on a calendar.
         judge = "src/harness_bench/grade/judge.py"
+        # A stub is either shape the codebase has used: `raise not_built(...)` (phase 1) or `raise NotImplementedError`
+        # from `grade_cell` (W3-GRADE-CORE s1 retired not_built).
         if judge in trees and not inside and not any(
-                isinstance(n, ast.Call) and dotted(n.func, names[judge]) == "harness_bench.grade.not_built"
+                (isinstance(n, ast.Call) and dotted(n.func, names[judge]) == "harness_bench.grade.not_built")
+                or (isinstance(n, ast.Raise) and n.exc is not None and "NotImplementedError" in ast.unparse(n.exc))
                 for n in ast.walk(trees[judge])):
             found.append(f"{judge}: the judge is built but there is no gateway/ package")
         return found
@@ -257,6 +260,9 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
         "the-judge-stub-without-a-gateway": (False, {"src/harness_bench/grade/judge.py":
                                                      "from harness_bench.grade import not_built\n\n"
                                                      "def grade(run_dir, task_dir):\n    raise not_built('judge', 'S-09')\n"}),
+        "the-current-judge-stub-without-a-gateway": (False, {"src/harness_bench/grade/judge.py":
+                                                             "def grade_cell(inp):\n"
+                                                             "    raise NotImplementedError('grade.judge is not built yet')\n"}),
         # Fable Major 2: an injected backend called by method, or kept on self, is still a backend call.
         "a-method-on-an-injected-backend": (True, {gw + "cli.py": cli, gw + "__init__.py": released, gw + "direct.py":
                                                    "def judge_direct(p, backend):\n    return backend.judge(p)\n"}),

@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T09:38:21Z",
+  "generated": "2026-09-25T09:55:34Z",
   "audit": [
     {
       "actor": null,
@@ -17594,6 +17594,48 @@ window.AUDIT_DATA = {
       "skill": "implement",
       "started_at": "2026-09-25T08:58:15Z",
       "summary": "W3-GRADE-CORE slice 1 (Claude Opus 5.5, moved from Codex under R-4). Seven reds committed separately, each failing on an assertion: 7618a04 dispatch, 3e04199 not built, bf9e323 HB-GRD-003, 5b871fb HB-GRD-004, a34c9ca duplicate graders, 6929198 freeze check, c12c4ca Score invariant. Greens: b33351c (CellInput, Score, GRADERS dispatch, not built, HB-GRD-003/004, completeness check, catalog 0.4.dev with kind and 2 new ids, errors.py's two HB-GRD rows only), 8656b76 (validate_task duplicate graders, validate_repo tasks freeze), fa4dd21 (the two committed mini-runs regrade to their 0.3 values with the other metrics not built and the 0.3 export unchanged; the gate runs' 0.3 export digests equal bench/regrade-baseline-0.3.yaml; 17 new named mutants). Gates: pytest 1119 passed, 2 skipped (gate-run digests, absent in the worktree; passed with HB_GATE_RUNS on the operator host); ruff clean; bench validate ok; mutate_check grade.json 34/34 killed; validity.json's 4 runner.py mutants killed. Findings for the Leader: test_views.py:140-141 '0.3' literal changed to the catalog's own version (outside the V-2 grant; the design's V-2 missed this sibling); C-1/C-2 adapter moves deferred (validity.json pins runner.py text); CellInput carries two extra fields (extraction, prices); grading_copy, the grade.grader_done log event, kind/rubrics validation and the registry check in validate are not built (not in this brief's Done-when).",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "src/harness_bench/egress.py",
+        "tests/test_egress.py",
+        "tests/test_architecture.py",
+        "tests/mutations/egress.json"
+      ],
+      "compiled": false,
+      "datetime": "2026-09-25T09:31:53Z",
+      "done_when": "The three Fable Majors fixed red-first (each red committed separately, failing on assertions), the minors done red-first, the GW-I and slice-2 notes documented, mutants for each new branch all killed, full suite green, ruff clean on owned files, closing audit entry last.",
+      "duration_seconds": 847.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w3-egress-b",
+        "pushed": null,
+        "sha": "a5e641f5b3c67ffc2dcbf4464cd51fb53c590ab3",
+        "short": "a5e641f5b"
+      },
+      "goal": "Land the Fable re-review's three Majors (and cheap minors) before the GW-I join, offline under R-60.",
+      "id": "al-01M3BYGC3JG4C9MRP9JE5G6AVB",
+      "kind": "skill",
+      "main_budget": 150,
+      "main_calls": 50,
+      "main_over_budget": false,
+      "outcome": "success",
+      "prompt": "W3-EGRESS 1b: Fable re-review Majors 1-3 (procs allowlist and built-judge-without-gateway; method and self-attribute sinks; Cc/Cf and non-clean base64) red-first, the minors if cheap, the GW-I and slice-2 notes, mutants, full suite, ruff.",
+      "session": "w3-egress",
+      "shortname": "w3-egress-s1b",
+      "signals": {
+        "acceptance_met": true,
+        "regression": false,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "implement",
+      "started_at": "2026-09-25T09:17:46Z",
+      "summary": "W3-EGRESS slice 1b (Fable re-review PASS WITH CONDITIONS, three Majors + minors). Major 1 (procs allowlist outside gateway/: engine, gitsafe, grade/correctness, plan, tools, workspace, read not recalled; a built grade/judge.py without gateway/ is a finding, chosen over a dated assume) red f2572fa green 0342612. Major 2 (calls rooted at a non-data parameter and on self attributes assigned from one are sinks) red 15a2b24 green a4a0c66 (+57080f3 style fix; 98b963e drops the redundant spawner fixpoint). Major 3 (Cc/Cf-removed view; base64 decoded with errors replaced, NULs and non-printables stripped, kept at >= 80% printable) red cc01b55 green 786da7c. Minors (backslash-newline continuation, whitespace-split email/username, hex runs >= 32, newline-wrapped base64) red 285d879 green 599ec18. Lint self-check 23/23 as expected, 0 findings over 49 real modules. tests/mutations/egress.json 48/48 killed. Full suite 1175 passed. ruff clean on owned files; tests/fixtures/gateway/probe_selftest.py (W3-GW-D, aaf986c on main) has RUF100, not owned. No socket, listener, network, subprocess or real secret in the diff.",
       "tags": [],
       "tier": "T2",
       "tool": null
