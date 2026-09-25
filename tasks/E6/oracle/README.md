@@ -2,14 +2,14 @@
 
 The oracle validates candidate C# implementations for the 10 HumanEval problems using an xUnit test project (`tests/E6.Tests.csproj`) executed via `dotnet test` with a named TRX logger (`trx;LogFileName=e6.trx`).
 
-The execution is wrapped in `run.cmd` to provide standard environment paths (`USERPROFILE`, `APPDATA`, `LOCALAPPDATA`, `ProgramFiles`) to the subprocess under `HOST_ENV` (`correctness.py`), while restoring strictly offline against the local NuGet cache.
+The execution is wrapped in `run.cmd` to keep restore offline. The shared grader passes the host profile and NuGet cache environment to dotnet steps.
 
 ## Offline Restore & Local Cache Discipline (ADR-0005)
 
 <!-- assume: local nuget cache -->
-assume: Restore works offline without contacting remote package registries by reading cached packages (`xunit 2.9.2`, `xunit.runner.visualstudio 2.8.2`, `Microsoft.NET.Test.Sdk 17.12.0`) from the local NuGet cache at `%USERPROFILE%\.nuget\packages` (on this host: `C:\Users\malla\.nuget\packages`), configured via `tests/NuGet.Config` with `<clear />` and `<add key="local-cache" value="C:\Users\malla\.nuget\packages" />`.
+assume: Restore works offline without contacting remote package registries by reading cached packages (`xunit 2.9.2`, `xunit.runner.visualstudio 2.8.2`, `Microsoft.NET.Test.Sdk 17.12.0`) from the host NuGet global packages cache at `%USERPROFILE%\.nuget\packages` (or `NUGET_PACKAGES` when set). `tests/NuGet.Config` limits sources to the grading copy; `run.cmd` passes `RestoreSources=.` and disables NuGet audit.
 confirm: Running `dotnet restore` with `<clear />` succeeds in ~100 ms with no remote network egress, and `dotnet nuget locals global-packages` confirms the package path.
-breaks: If the local cache does not contain `xunit`, `xunit.runner.visualstudio`, or `Microsoft.NET.Test.Sdk`, or if executed in an environment where `C:\Users\malla\.nuget\packages` is not mounted/present, restore fails.
+breaks: If the host cache does not contain `xunit`, `xunit.runner.visualstudio`, or `Microsoft.NET.Test.Sdk`, restore fails.
 
 ## Reference Solution
 

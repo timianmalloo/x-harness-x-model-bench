@@ -19,5 +19,12 @@
     "find": "    if (version_done and version_done.timed_out) or (done and done.timed_out) or done is None:\n",
     "replace": "    if False:\n",
     "tests": ["tests/test_correctness_dotnet.py::test_dotnet_oracle_timeout_is_na_and_leaves_no_process"]
+  },
+  {
+    "name": "host profile keys omitted from dotnet grading step",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "        env.update({k: os.environ[k] for k in DOTNET_HOST_ENV if k in os.environ})\n",
+    "replace": "        pass\n",
+    "tests": ["tests/test_correctness_dotnet.py::test_grading_step_uses_host_profile_only_for_dotnet"]
   }
 ]

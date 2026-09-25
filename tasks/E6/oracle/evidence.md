@@ -4,7 +4,7 @@ Grading copy matches `src/harness_bench/grade/correctness.py`: the tree under te
 
 Oracle runner: `dotnet` (`src/harness_bench/grade/correctness.py`)
 Command: `cmd /c run.cmd --logger trx;LogFileName=e6.trx`
-Underlying execution: `dotnet test tests/E6.Tests.csproj --logger trx;LogFileName=e6.trx` with offline NuGet cache in `tests/NuGet.Config`.
+Underlying execution: `dotnet test tests/E6.Tests.csproj -p:RestoreSources=. -p:NuGetAudit=false --logger trx;LogFileName=e6.trx` with the host NuGet global packages cache at `%USERPROFILE%\.nuget\packages` (or `NUGET_PACKAGES` when set).
 
 Runner script: `tasks/E6/oracle/grade_e6.py`
 
@@ -26,7 +26,7 @@ cmd /c run.cmd --logger trx;LogFileName=e6.trx
 Exit code: **1**
 
 Summary from TRX / test runner:
-`Failed!  - Failed: 42, Passed: 0, Skipped: 0, Total: 42, Duration: 28 ms - E6.Tests.dll (net10.0)`
+`Failed!  - Failed: 42, Passed: 0, Skipped: 0, Total: 42, Duration: 32 ms - E6.Tests.dll (net10.0)`
 
 All 42 tests failed with `System.NotImplementedException`:
 
@@ -91,11 +91,12 @@ cmd /c run.cmd --logger trx;LogFileName=e6.trx
 Exit code: **0**
 
 Summary from TRX / test runner:
-`Passed!  - Failed: 0, Passed: 42, Skipped: 0, Total: 42, Duration: 29 ms - E6.Tests.dll (net10.0)`
+`Passed!  - Failed: 0, Passed: 42, Skipped: 0, Total: 42, Duration: 28 ms - E6.Tests.dll (net10.0)`
 
 No failing tests. 42 / 42 passed (100% partial credit, passed=1).
 
 ## Validate
 
 - `uv run bench validate`: exit code 0 (`ok: bom, metrics, example matrix and every task folder are valid`)
-- `uv run pytest -q -p no:cacheprovider`: exit code 0 (837 passed, 8 deselected)
+- `uv run pytest -q -p no:cacheprovider`: exit code 0 (852 passed, 1 skipped, 8 deselected)
+- `uv run ruff check src tests tools`: exit code 0 (`All checks passed!`)
