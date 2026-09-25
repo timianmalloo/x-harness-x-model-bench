@@ -3,8 +3,10 @@
 plus `compactions`, each on a synthetic seeded `CellInput`.
 """
 
+from decimal import Decimal
 from pathlib import Path
 
+from harness_bench import config
 from harness_bench.grade import CellInput, Score
 from harness_bench.grade.cost import grade_cell
 from harness_bench.telemetry import Extraction, MissingField, ModelCall
@@ -164,3 +166,16 @@ def test_context_growth_is_na_for_an_acp_turn_harness():
     ex = Extraction(model_calls=[call(uncached_input=900, output=10)])
     scores = grade_cell(ci(harness="claude-code", extraction=ex, turn_usage=[TurnUsage("m", 900, 0, 0, 10, 0)]))
     assert scores["context_growth"] == Score(None, "the native record misses calls (token source acp_turn)")
+
+
+def test_cache_percentages_keep_four_places_at_real_cache_rates():
+    # An integer percent read 100 for every harness at the measured rates (a Copilot cell: 787795 reads, 27 uncached),
+    # hiding the very difference the benchmark compares. The catalog gives both metrics scale 4.
+    ex = Extraction(model_calls=[call(uncached_input=27, cache_read=787795, cache_write=102909, output=10)])
+    scores = grade_cell(ci(extraction=ex, model_calls=[row(uncached_input=27, cache_read=787795, cache_write=102909,
+                                                               output=10)]))
+    assert scores["cache_hit_ratio"] == Score(Decimal("99.9966"), None)
+    assert scores["cache_write_amplification"] == Score(Decimal("13.0629"), None)
+    catalog = config.load_yaml(Path(__file__).resolve().parents[1] / "bench" / "metrics.yaml")
+    scales = {m["id"]: m.get("scale") for a in catalog["areas"].values() for m in a.get("metrics") or []}
+    assert (scales["cache_hit_ratio"], scales["cache_write_amplification"]) == (4, 4)
