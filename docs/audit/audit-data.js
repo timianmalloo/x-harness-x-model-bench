@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T09:02:49Z",
+  "generated": "2026-09-25T09:09:04Z",
   "audit": [
     {
       "actor": null,
@@ -17375,6 +17375,72 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T1",
       "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/phase3-gateway-judges.md",
+        "docs/notes/spike-gw-headless.md",
+        "tests/fixtures/gateway/gw-headless-results.json"
+      ],
+      "compiled": false,
+      "datetime": "2026-09-25T09:07:54Z",
+      "done_when": "Design and spike note committed with the vetoes cleared or the block reported",
+      "duration_seconds": 3019.0,
+      "fan_out": 5,
+      "git": {
+        "branch": "w3-gw-design",
+        "pushed": null,
+        "sha": "aaf986c52caf7e1ec06c1c90b6e167c4055dff51",
+        "short": "aaf986c52"
+      },
+      "goal": "Row-17 gateway and judges design via /design-slice, driven by a headless-judge spike, gated by five personas",
+      "id": "al-01M3BX4EZ5DJJ0V30BJ5AGWMBM",
+      "kind": "skill",
+      "main_budget": 180,
+      "main_calls": 150,
+      "main_over_budget": false,
+      "outcome": "success",
+      "persona_yield": [
+        {
+          "accepted": 11,
+          "persona": "patterns-expert",
+          "raised": 11
+        },
+        {
+          "accepted": 10,
+          "persona": "the-simplifier",
+          "raised": 11
+        },
+        {
+          "accepted": 18,
+          "persona": "test-architect",
+          "raised": 18
+        },
+        {
+          "accepted": 14,
+          "persona": "security-identity-architect",
+          "raised": 14
+        },
+        {
+          "accepted": 14,
+          "persona": "data-persistence-architect",
+          "raised": 14
+        }
+      ],
+      "prompt": "You are track W3-GW-D (plan docs/coordination/coordination-finish-harness-bench.md, \"Version 5: wave 3 tracks\") of the harness-bench coordination run. Seat: Claude subagent, model Claude Opus 5.5, paired with the AI Systems Engineer persona (.claude/agents/ai-systems-engineer.md; convene with model \"opus\"). Leader: coord-opus-cq.\n\nGoal: the row-17 design (model gateway and judges, ADR-0009) as docs/design/phase3-gateway-judges.md via the /design-slice skill (.claude/skills/design-slice/SKILL.md; read reference/*.md at each stage), gated by Patterns Expert, Simplifier, Test Architect (hard veto), Security & Identity Architect (hard veto) and Data & Persistence Architect (hard veto) — each convened as a subagent with model \"opus\", in Adversary mode.\nThis track runs in TWO PHASES because live model turns are a Leader seam.\nPHASE A: read rulings R-58..R-62 (docs/notes/rulings.md) in full, ADR-0009, ADR-0006, ADR-0005, the spec's judges/κ/calibration/US-31/US-35/US-46/US-47 text, src/harness_bench/grade/, bench/metrics.yaml. Write a headless-judge probe script under tests/fixtures/gateway/ that, for each judge CLI on the pinned builds in .tools/harness (Claude Code 2.1.282 with `-p --model claude-fable-5-1`, then the R-58 fallback `claude-opus-5-5`; Codex 0.156.0 `exec` with `-c model=gpt-6-sol`), runs ONE judge-shaped prompt with every tool denied, in a throwaway home that holds only the copied credential, and records from each CLI's own native record: the served model, the count of tool events (the US-46 prompt asks it to run a command; the expectation is 0), and whether anything besides the credential was read. Stipulate every model (R-33). Do NOT run it: end phase A with the exact command lines for the Leader and where results land. Also draft the design with every clause the rulings name, measured facts marked `pending spike`.\nPHASE B (when the Leader sends results): fill docs/notes/spike-gw-headless.md with the measurements; finish the design: the judge stipulation (R-58, Fable or the fallback, fixed before any verdict is cached), when judges run (never in-run; `bench grade --allow-model-calls` refuses while any run is running), the cache key (ADR-0006), `verdict_uses` and where it is recorded, the gateway's model_calls principal, the blinding scrub (no harness/model/combo id, no pack marker in any request, US-35 c1), schema-validated output, verdicts more than one step apart NOT_RECORDED, the calibration unit (one label per artifact × rubric item) and κ (inter-judge plus agreement with the operator's 30 labels; the human half `not recorded` until the operator labels), the per-cell-vendor verdict split in the header (self-preference measured, R-58), the C1 rubric → catalog id (bench/rubrics/, C1's oracle/rubric.md kept byte-identical, R-59), and the slice plan for W3-GW-I (Codex gpt-6-sol). Get the five verdicts and dispositions into the gate record, V2 frontmatter, `python docs/ai-forward-pack/scripts/docs-graph.py validate` exit 0, commit.\nDone when: phase B's design and spike note are committed with the vetoes cleared or the block reported.\nNot in scope: implementation code; `bench run`; live turns yourself; any API key (subscriptions only); `pytest -m \"\"`; any push.\nTier: T2 · Fan-out cap: 6 reviewers · Budget: 180 calls · 2.5 h over both phases.\n\n[Phase B message from the Leader] W3-GW-D: probe results are in — start PHASE B. ... all five turns exit 1 ... Claude Code 2.1.282 SERVES claude-fable-5-1 ... native schema mode adds a StructuredOutput tool event ... Codex: both modes 1 tool event `exec`, operator skill microsoft-foundry present, operator identifiers present ... Do phase B per your brief: collect into tests/fixtures/gateway/gw-headless-results.json, fill the spike note, let the measurements drive the design; the Codex exec event and whether Codex can be tool-free on 0.156.0 (if not, a decision request with options; do not decide it); how the identifiers and skill listing reach each judge and what the blinding scrub and US-35 c1 require (egress.check exists on the w3-egress branch). DR-GW-2..4 as decision requests. Then the five-persona gate, the rollups, audit/change-log entries, validate, commit.",
+      "session": "w3-gw-d",
+      "shortname": "design-slice-phase3-gateway-judges",
+      "signals": {
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "design-slice",
+      "started_at": "2026-09-25T08:17:35Z",
+      "summary": "Row-17 design (docs/design/phase3-gateway-judges.md, revision 3) and spike GW-H (docs/notes/spike-gw-headless.md, tests/fixtures/gateway/gw-headless-results.json) from five Leader-run probe turns.\n\nMeasured:\n- Claude Code 2.1.282 serves claude-fable-5-1 with 0 tool events in text mode. --json-schema adds a StructuredOutput tool call.\n- Codex 0.156.0 serves gpt-6-sol but keeps its code-mode exec tool, which the model called once per turn; it failed closed.\n- Claude adds the account e-mail. Codex adds the operator's ~/.agents/skills root (user name, home path).\n- The OpenAI account is at 99% of its weekly limit until 2026-09-29T20:03Z.\n\nDesign decisions:\n- The Anthropic judge is Fable, text output. Codex is qualified: false and never spawned (DR-GW-1).\n- Call folders sit under the cells root, checked by check_cells_root. The request goes on stdin.\n- The key hashes request, schema, model and invocation_sha256. The store is write-once via os.link. A hit needs a matching storing row inside the known roots.\n- verdict_uses gets outcome (5 values) plus code. Calibration uses a set-checked label invariant and its own calibration ledger.\n- CLI-added context is detected at report time (DR-GW-5).\n\nGate: Patterns, Simplifier, Test Architect, Security and Data & Persistence, all opus, Adversary mode. Round 1 had three vetoes and one soft block. In round 2 all five cleared, four with conditions, which are applied. Five Owner decision requests: DR-GW-1 to DR-GW-5.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     }
   ],
   "changes": [
@@ -17695,26 +17761,50 @@ window.AUDIT_DATA = {
       "title": "Scripted user design rev 2 + spike S-04"
     },
     {
-      "id": "cl-01M3BW21KZ3MXGB8DEHTMZZNF7",
-      "datetime": "2026-09-25T08:49:06Z",
-      "session": null,
-      "kind": "design",
-      "skill": "design-slice",
-      "title": "Row-16 graders: per-cell CellInput and dispatch by task graders; catalog 0.4.dev probe with catalog_hash; byte-identity gate on views.export",
-      "prompt": "W3-GRADE-D row-16 design (plan v5)",
-      "summary": "Design for full graders and catalog 0.4 versioning; gated by TA, Simplifier, D&P",
-      "rationale": "R-59 requires content-addressed catalog versions and a US-4 control; the fixed METRICS tuple and grade(run_dir, task_dir) stubs cannot dispatch per task; ledger bytes cannot match across passes (grading_id timestamp), so the export is the reproducibility surface",
       "artifacts": [
         "docs/design/phase3-graders.md"
       ],
-      "tags": [],
+      "datetime": "2026-09-25T08:49:06Z",
       "git": {
-        "before": "87606c6",
         "after": "87606c66e27e50467732d7b470fe7cf4ea7c6369",
+        "before": "87606c6",
         "branch": "w3-grade-design",
-        "pushed": null,
-        "commits": []
-      }
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M3BW21KZ3MXGB8DEHTMZZNF7",
+      "kind": "design",
+      "prompt": "W3-GRADE-D row-16 design (plan v5)",
+      "rationale": "R-59 requires content-addressed catalog versions and a US-4 control; the fixed METRICS tuple and grade(run_dir, task_dir) stubs cannot dispatch per task; ledger bytes cannot match across passes (grading_id timestamp), so the export is the reproducibility surface",
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Design for full graders and catalog 0.4 versioning; gated by TA, Simplifier, D&P",
+      "tags": [],
+      "title": "Row-16 graders: per-cell CellInput and dispatch by task graders; catalog 0.4.dev probe with catalog_hash; byte-identity gate on views.export"
+    },
+    {
+      "artifacts": [
+        "docs/design/phase3-gateway-judges.md"
+      ],
+      "datetime": "2026-09-25T09:07:54Z",
+      "git": {
+        "after": "aaf986c52caf7e1ec06c1c90b6e167c4055dff51",
+        "before": "87606c6",
+        "branch": "w3-gw-design",
+        "commits": [
+          "aaf986c docs(design): W3-GW-D phase A - headless-judge probe and the row-17 gateway/judges draft"
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M3BX4F6MZ93H89G8CVSPV8RP",
+      "kind": "design",
+      "prompt": "You are track W3-GW-D (plan docs/coordination/coordination-finish-harness-bench.md, \"Version 5: wave 3 tracks\") of the harness-bench coordination run. Seat: Claude subagent, model Claude Opus 5.5, paired with the AI Systems Engineer persona (.claude/agents/ai-systems-engineer.md; convene with model \"opus\"). Leader: coord-opus-cq.\n\nGoal: the row-17 design (model gateway and judges, ADR-0009) as docs/design/phase3-gateway-judges.md via the /design-slice skill (.claude/skills/design-slice/SKILL.md; read reference/*.md at each stage), gated by Patterns Expert, Simplifier, Test Architect (hard veto), Security & Identity Architect (hard veto) and Data & Persistence Architect (hard veto) — each convened as a subagent with model \"opus\", in Adversary mode.\nThis track runs in TWO PHASES because live model turns are a Leader seam.\nPHASE A: read rulings R-58..R-62 (docs/notes/rulings.md) in full, ADR-0009, ADR-0006, ADR-0005, the spec's judges/κ/calibration/US-31/US-35/US-46/US-47 text, src/harness_bench/grade/, bench/metrics.yaml. Write a headless-judge probe script under tests/fixtures/gateway/ that, for each judge CLI on the pinned builds in .tools/harness (Claude Code 2.1.282 with `-p --model claude-fable-5-1`, then the R-58 fallback `claude-opus-5-5`; Codex 0.156.0 `exec` with `-c model=gpt-6-sol`), runs ONE judge-shaped prompt with every tool denied, in a throwaway home that holds only the copied credential, and records from each CLI's own native record: the served model, the count of tool events (the US-46 prompt asks it to run a command; the expectation is 0), and whether anything besides the credential was read. Stipulate every model (R-33). Do NOT run it: end phase A with the exact command lines for the Leader and where results land. Also draft the design with every clause the rulings name, measured facts marked `pending spike`.\nPHASE B (when the Leader sends results): fill docs/notes/spike-gw-headless.md with the measurements; finish the design: the judge stipulation (R-58, Fable or the fallback, fixed before any verdict is cached), when judges run (never in-run; `bench grade --allow-model-calls` refuses while any run is running), the cache key (ADR-0006), `verdict_uses` and where it is recorded, the gateway's model_calls principal, the blinding scrub (no harness/model/combo id, no pack marker in any request, US-35 c1), schema-validated output, verdicts more than one step apart NOT_RECORDED, the calibration unit (one label per artifact × rubric item) and κ (inter-judge plus agreement with the operator's 30 labels; the human half `not recorded` until the operator labels), the per-cell-vendor verdict split in the header (self-preference measured, R-58), the C1 rubric → catalog id (bench/rubrics/, C1's oracle/rubric.md kept byte-identical, R-59), and the slice plan for W3-GW-I (Codex gpt-6-sol). Get the five verdicts and dispositions into the gate record, V2 frontmatter, `python docs/ai-forward-pack/scripts/docs-graph.py validate` exit 0, commit.\nDone when: phase B's design and spike note are committed with the vetoes cleared or the block reported.\nNot in scope: implementation code; `bench run`; live turns yourself; any API key (subscriptions only); `pytest -m \"\"`; any push.\nTier: T2 · Fan-out cap: 6 reviewers · Budget: 180 calls · 2.5 h over both phases.\n\n[Phase B message from the Leader] W3-GW-D: probe results are in — start PHASE B. ... all five turns exit 1 ... Claude Code 2.1.282 SERVES claude-fable-5-1 ... native schema mode adds a StructuredOutput tool event ... Codex: both modes 1 tool event `exec`, operator skill microsoft-foundry present, operator identifiers present ... Do phase B per your brief: collect into tests/fixtures/gateway/gw-headless-results.json, fill the spike note, let the measurements drive the design; the Codex exec event and whether Codex can be tool-free on 0.156.0 (if not, a decision request with options; do not decide it); how the identifiers and skill listing reach each judge and what the blinding scrub and US-35 c1 require (egress.check exists on the w3-egress branch). DR-GW-2..4 as decision requests. Then the five-persona gate, the rollups, audit/change-log entries, validate, commit.",
+      "rationale": "Spike GW-H measured Fable served tool-free in text mode and Codex keeping a fail-closed code-mode exec tool; the five-persona gate added cells-root folders, stdin delivery, the qualified gate, provenance-checked hits and the label set invariant",
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Row-17 design (docs/design/phase3-gateway-judges.md, revision 3) and spike GW-H (docs/notes/spike-gw-headless.md, tests/fixtures/gateway/gw-headless-results.json) from five Leader-run probe turns.\n\nMeasured:\n- Claude Code 2.1.282 serves claude-fable-5-1 with 0 tool events in text mode. --json-schema adds a StructuredOutput tool call.\n- Codex 0.156.0 serves gpt-6-sol but keeps its code-mode exec tool, which the model called once per turn; it failed closed.\n- Claude adds the account e-mail. Codex adds the operator's ~/.agents/skills root (user name, home path).\n- The OpenAI account is at 99% of its weekly limit until 2026-09-29T20:03Z.\n\nDesign decisions:\n- The Anthropic judge is Fable, text output. Codex is qualified: false and never spawned (DR-GW-1).\n- Call folders sit under the cells root, checked by check_cells_root. The request goes on stdin.\n- The key hashes request, schema, model and invocation_sha256. The store is write-once via os.link. A hit needs a matching storing row inside the known roots.\n- verdict_uses gets outcome (5 values) plus code. Calibration uses a set-checked label invariant and its own calibration ledger.\n- CLI-added context is detected at report time (DR-GW-5).\n\nGate: Patterns, Simplifier, Test Architect, Security and Data & Persistence, all opus, Adversary mode. Round 1 had three vetoes and one soft block. In round 2 all five cleared, four with conditions, which are applied. Five Owner decision requests: DR-GW-1 to DR-GW-5.",
+      "tags": [],
+      "title": "Row-17 gateway: Fable judge (text), Codex judge not qualified (DR-GW-1), cells-root call folders, stdin, request+invocation key, verified-provenance write-once store, verdict_uses outcome+code"
     }
   ],
   "messages": [

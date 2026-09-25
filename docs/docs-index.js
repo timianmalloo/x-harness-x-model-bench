@@ -393,7 +393,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5579371da7d906094f8304af6de731b17fedbd4380e480704572ac5dcdc54398"
+      "sourceSha256": "9527f6472003f7649c6c2d6e1d67a0f90fc18034855d401df43d15804875cdba"
     },
     {
       "id": "adr-0007-run-engine",
@@ -1368,6 +1368,84 @@ window.DOCS_INDEX = {
       "sourceSha256": "3dbc40e3d87e76548cf8bda92266fefc77892f87086a180ae5a9572d91b287b7"
     },
     {
+      "id": "design-phase3-gateway-judges",
+      "path": "docs/design/phase3-gateway-judges.md",
+      "title": "Design: the model gateway and the two judges (phase 3, row 17)",
+      "type": "design",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 3 · wave 3 (row 17: the gateway, the judges, calibration; built by W3-GW-I)",
+      "reviewBy": "2027-03-25",
+      "reviewSuggested": [],
+      "summary": "Row 17 per R-58 and R-59, driven by spike GW-H and revised through a five-persona gate. The gateway calls judges through the pinned headless CLIs, from call folders under the cells root, only under bench grade --allow-model-calls and never while any run is live. The Anthropic judge is claude-fable-5-1 (served on 2.1.282, text output, 0 tool events). The OpenAI judge gpt-6-sol is not qualified and is never spawned: Codex 0.156 keeps its code-mode exec tool (DR-GW-1). Requests are scrubbed, scanned, egress-checked and sent on stdin; answers are schema-validated; verdicts live in a request-keyed memo store whose hits are checked against the storing ledger. Calibration is one human label per (artifact, rubric item), set-checked before any verdict. The gate passed in two rounds, with every veto cleared by its holder. Five Owner decisions are open.",
+      "tags": [
+        "benchmark",
+        "gateway",
+        "judges",
+        "calibration",
+        "kappa",
+        "blinding",
+        "US-26",
+        "US-35",
+        "US-46",
+        "US-47",
+        "R-58",
+        "R-59"
+      ],
+      "links": [
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0009-model-gateway",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0005-egress-control",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0013-native-cells",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0012-proportionate-security",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0003-harness-profile",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-phase1-walking-skeleton",
+          "rel": "refines"
+        },
+        {
+          "to": "note-spike-gw-headless",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        },
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "61cfd44cdac602696254e7d583e506632d4d03ba4085917387d46cf9fab1e519"
+    },
+    {
       "id": "design-phase3-graders",
       "path": "docs/design/phase3-graders.md",
       "title": "Design: full graders — per-cell grader input, dispatch by task graders, catalog 0.4 versioning, and the byte-identity gate (phase 3, row 16)",
@@ -1545,7 +1623,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "e80c46f563667756a660e41845ad6de62c7d4fa0332e5b3b7429b7c2c90a99ec"
+      "sourceSha256": "6149319ea64c332b00011cf5ef4f793e5a096a199027a81fd19a8874b3f23b45"
     },
     {
       "id": "coordination-phase1-finish-run",
@@ -1599,7 +1677,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ad0157fbf84e68297bedd95ca1f240064a903239bfe32917d4f90a9e0a112b61"
+      "sourceSha256": "5bf81c8af1b55928251631bf00c6b0a263e39527e39c2dd3584c2114a5811e18"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -1625,6 +1703,53 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "6e60fa814c6eae61a7b55760e8315c186138ee62e0783571b412994046748e4e"
+    },
+    {
+      "id": "note-spike-gw-headless",
+      "path": "docs/notes/spike-gw-headless.md",
+      "title": "Spike GW-H: the headless judge CLIs with every tool denied: Claude qualifies in text mode; Codex keeps its code-mode exec tool",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-12-25",
+      "reviewSuggested": [
+        {
+          "by": "design-phase3-gateway-judges",
+          "on": "2026-09-25",
+          "reason": "row-17 gateway design gated (rev 3): Fable judge, Codex not qualified (DR-GW-1), CLI-added context (DR-GW-5)"
+        }
+      ],
+      "summary": "Five Leader-run probe turns (2026-09-25). Claude Code 2.1.282 serves claude-fable-5-1 (and the fallback claude-opus-5-5) with 0 tool events in text mode; --json-schema adds a StructuredOutput tool call, so text mode is used. Codex 0.156.0 serves gpt-6-sol but still advertises its code-mode exec tool: the model called it once per turn and it failed closed (\"code-mode host is disabled\"), so Codex does not meet R-58 c4 as launched (a decision request). The CLIs add context the gateway cannot scan: the Claude account e-mail on some calls, the operator's ~/.agents/skills root (user name, home path) in Codex, and each CLI's self-identification. The OpenAI account is at 99% of its weekly limit until 2026-09-29T20:03Z.",
+      "tags": [
+        "benchmark",
+        "spike",
+        "phase-3",
+        "gateway",
+        "judges",
+        "US-46",
+        "R-58"
+      ],
+      "links": [
+        {
+          "to": "design-phase3-gateway-judges",
+          "rel": "relates-to"
+        },
+        {
+          "to": "adr-0009-model-gateway",
+          "rel": "relates-to"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "669dc8dd313a0a2bc66b5e34a7cfc98ed8f98c1de4dfe1908c93157c8dcd8b96"
     },
     {
       "id": "note-spike-isolation-permissions",
@@ -1953,7 +2078,13 @@ window.DOCS_INDEX = {
       "owner": "@timianmalloo",
       "phase": "Phase 1 · walking skeleton",
       "reviewBy": "2027-03-22",
-      "reviewSuggested": [],
+      "reviewSuggested": [
+        {
+          "by": "design-phase3-gateway-judges",
+          "on": "2026-09-25",
+          "reason": "row-17 gateway design gated (rev 3): Fable judge, Codex not qualified (DR-GW-1), CLI-added context (DR-GW-5)"
+        }
+      ],
       "summary": "The only personal data is the operator's own: the account email that appears in harness transcripts, and the username in home paths. Both stay in local, gitignored run archives; the report embeds no transcript text and shows archive-relative paths. No third party receives personal data beyond the model providers the operator's own subscriptions already use.",
       "tags": [
         "privacy",
@@ -1975,10 +2106,14 @@ window.DOCS_INDEX = {
         {
           "to": "design-phase2-copilot-profile",
           "rel": "documents"
+        },
+        {
+          "to": "design-phase3-gateway-judges",
+          "rel": "documents"
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f4809e11dc8d98e2ac33d92d6682d73ee7a9fb282fd3b96cd0f6b15b4d3802bc"
+      "sourceSha256": "8a234feb6e1c15bb06d9eaac3ec6142a14c4eeddb494fce360c8d231317842b3"
     },
     {
       "id": "findings-t1-engine-hardening",
@@ -2422,7 +2557,13 @@ window.DOCS_INDEX = {
       "owner": "@timianmalloo",
       "phase": "Phase 1 · walking skeleton",
       "reviewBy": "2027-03-22",
-      "reviewSuggested": [],
+      "reviewSuggested": [
+        {
+          "by": "design-phase3-gateway-judges",
+          "on": "2026-09-25",
+          "reason": "row-17 gateway design gated (rev 3): Fable judge, Codex not qualified (DR-GW-1), CLI-added context (DR-GW-5)"
+        }
+      ],
       "summary": "harness-bench is a local benchmark run by one trusted operator (ADR-0012). Each cell works natively in its own git working copy, and nothing more (ADR-0013). The controls that remain protect result validity (hidden tests never in the agent's tree) and what the operator shares (no credential in a published report). The agent's reach outside its working copy is accepted by the owner.",
       "tags": [
         "security",
@@ -2446,6 +2587,10 @@ window.DOCS_INDEX = {
           "rel": "documents"
         },
         {
+          "to": "design-phase3-gateway-judges",
+          "rel": "documents"
+        },
+        {
           "to": "adr-0012-proportionate-security",
           "rel": "depends-on"
         },
@@ -2461,7 +2606,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart LR\n  subgraph Host[\"Host (trusted: the operator)\"]\n    Engine[\"bench engine\\n(single writer)\"]\n    Runs[\"runs/&lt;id&gt;\\nledger + archives\"]\n    Creds[\"subscription logins\\n(harness homes)\"]\n    Report[\"report HTML\"]\n  end\n  subgraph Cell[\"Cell (the agent, with the operator's rights)\"]\n    Agent[\"harness + model\"]\n    WS[\"own git working copy\"]\n  end\n  Oracle[\"hidden tests / oracle\"]\n  Engine -- \"B1 spawn into Job Object, kill\" --> Cell\n  Creds -- \"B1 per-cell copy\" --> Cell\n  Cell -- \"B4 archive\" --> Runs\n  Oracle -. \"B2 never in the task clone\" .- Cell\n  Runs --> Report\n  Report -- \"B5 publish\" --> Shared[\"shared report\"]"
         }
       ],
-      "sourceSha256": "5e3283637a1cecac92b20b5b71104ef359b3f270c38c46814b1361a2247cb71f"
+      "sourceSha256": "cf96632215fe35af4ab9d8c3c91929e5925db17785e8b6bdeef34158a400c17b"
     }
   ],
   "surfaces": [
@@ -2505,5 +2650,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "b340b47866465e20da93ea4752fa1a419a558caba9c40b04598b1da491e3732d"
+  "graphSha256": "e3c99615b76451e9cdc7071ba846c84922fe8f6814327f8886146cb31e4c4ca5"
 };
