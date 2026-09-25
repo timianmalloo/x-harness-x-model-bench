@@ -1,4 +1,5 @@
 import hashlib
+import importlib.util
 import json
 import os
 import shutil
@@ -12,6 +13,33 @@ from harness_bench.errors import BenchError
 from harness_bench.ledger import canonical
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_wave1_matrix_parses_and_walking_skeleton_selects_it():
+    matrix_path = ROOT / "bench" / "matrix.wave1.yaml"
+    matrix = config.load_yaml(matrix_path)
+    bom = config.load_yaml(ROOT / "bench" / "bom.yaml")
+    problems = config.Problems()
+    config.validate_matrix(matrix, bom, problems, str(matrix_path))
+    assert problems.items == []
+    assert matrix["schema"] == "bench-matrix/1"
+    assert matrix["bom"]["subset"] == ["X1"]
+    assert matrix["repetitions"] == 1 and matrix["packs"] == ["on", "off"]
+    assert [(c["id"], c["harness"], c["model"]) for c in matrix["combos"]] == [
+        ("copilot-sol", "copilot", "gpt-6-sol"),
+        ("codex-sol", "codex", "gpt-6-sol"),
+        ("cc-opus", "claude-code", "claude-opus-5-5"),
+    ]
+    assert len(plan.expand(matrix, bom)) == 6
+
+    spec = importlib.util.spec_from_file_location("walking_skeleton_selection", ROOT / "tests" / "e2e" / "test_walking_skeleton.py")
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    marker = next(mark for mark in module.test_the_walking_skeleton_runs_end_to_end.pytestmark if mark.name == "parametrize")
+    assert marker.kwargs["ids"] == ["phase1", "wave1"]
+    assert marker.args[1] == [("phase1", "bench/matrix.phase1.yaml"), ("wave1", "bench/matrix.wave1.yaml")]
+    assert {mark.name for mark in module.pytestmark} == {"native", "credentials"}
 
 
 def _inputs(subset):

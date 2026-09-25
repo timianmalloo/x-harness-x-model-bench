@@ -72,7 +72,8 @@ def _header(view: views.RunView) -> str:
     planned = ", ".join(f"{h} {b.get('version', '')}".strip() for h, b in sorted((plan.get("builds") or {}).items()))
     facts = [("Run", view.run_id), ("State", "complete" if view.completed else "incomplete"),
              ("Plan hash", (plan.get("plan_hash") or "")[:12]), ("Catalog version", view.catalog_version),
-             ("Pack revision", (plan.get("pack") or {}).get("revision")), ("Planned builds", planned),
+             ("Pack revision", (plan.get("pack") or {}).get("revision")),
+             ("Pack commit", (plan.get("pack") or {}).get("commit")), ("Planned builds", planned),
              ("Executed builds", view.header.get("executed_builds")), ("Credential kind", view.header.get("credential_kind")),
              ("Network mode", view.header.get("network_mode")), ("Defender real-time exclusion", None),
              ("Price list hash", (plan.get("price_list_hash") or "")[:12])]
