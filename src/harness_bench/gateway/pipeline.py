@@ -23,7 +23,14 @@ from pathlib import Path
 
 from harness_bench import egress
 from harness_bench.gateway import request, schema, scrub, store
-from harness_bench.gateway.backend import Backend, BackendDown, Reply, read_reply
+from harness_bench.gateway.backend import (
+    Backend,
+    BackendDown,
+    Headless,
+    Launch,
+    Reply,
+    read_reply,
+)
 
 OUTCOMES = ("hit", "stored", "race_lost", "not_allowed", "failed")
 CODES = {  # design section 17; slice 1 reaches 001, 002, 003, 004, 005, 008, 009
@@ -47,6 +54,7 @@ class Judge:
     model: str  # the stipulated model id; also the egress destination
     invocation_sha256: str  # section 9.1; built from the argv template in slice 2
     allowed_models: tuple[str, ...]  # the pin plus declared auxiliaries (US-11)
+    qualified: bool  # gateway.yaml `qualified`, set by the Leader from a probe of the exact invocation (section 8.4)
 
 
 @dataclass(frozen=True)
@@ -78,6 +86,8 @@ class Result:
     entry_sha256: str | None = None
     verdicts: tuple[dict, ...] | None = None
     escaped: tuple[str, ...] = ()  # files whose closing fence was escaped (flagged, US-46)
+    model_calls: tuple[dict, ...] = ()  # the call's `model_calls` rows, principal `gateway` (section 4.2)
+    fenced: bool = False  # the answer came fenced and was unwrapped once (T-GW-35)
 
     def __post_init__(self) -> None:
         recorded = self.outcome in ("hit", "stored", "race_lost")
@@ -87,15 +97,17 @@ class Result:
             raise ValueError(f"not a result of the closed set: {self.outcome!r}, {self.code!r}")
 
 
-def _ask(backend: Backend, request_text: str) -> Reply:
+def _ask(backend: Backend, request_text: str, call_id: str) -> Reply:
     """The one call into a backend; every reference to it sits inside `egress.check(...).release(...)`."""
-    return backend.judge(request_text)
+    return backend.judge(request_text, call_id)
 
 
-def _send(request_text: str, judge: Judge, ctx: Context, backend: Backend) -> Reply | None:
-    """The reply, or None when egress withheld the request (the backend was never called)."""
+def _send(request_text: str, judge: Judge, ctx: Context, backend: Backend | Launch, call_id: str) -> Reply | None:
+    """The reply, or None when egress withheld the request (the backend was never called). A `Launch` becomes a
+    `Headless` call only here, inside the release."""
     return egress.check(request_text, destination=judge.model, operator=ctx.operator, secrets=ctx.secrets,
-                        canaries=ctx.canaries).release(lambda payload: _ask(backend, payload))
+                        canaries=ctx.canaries).release(
+        lambda payload: _ask(Headless(backend) if isinstance(backend, Launch) else backend, payload, call_id))
 
 
 def _recorded(outcome: str, cache_key: str, found: store.Found, items: int, escaped: tuple[str, ...]) -> Result:
@@ -110,7 +122,7 @@ def _sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend) -> Result:
+def run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend | Launch) -> Result:
     if request.bound_problem(inputs.artifacts) is not None:
         return Result("failed", "HB-GW-008")
     rendered = request.render(inputs.preamble, inputs.rubric, inputs.items, inputs.artifacts, ctx.denylist)
@@ -131,7 +143,7 @@ def run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend) -> Result:
     if found.state == "orphaned":
         store.move_orphan(ctx.store, cache_key, time.strftime("%Y%m%dT%H%M%SZ", time.gmtime()))
     try:
-        reply = _send(rendered.text, judge, ctx, backend)
+        reply = _send(rendered.text, judge, ctx, backend, cache_key[:16])
     except BackendDown:
         return Result("failed", "HB-GW-001", escaped=escaped)
     if reply is None:

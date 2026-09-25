@@ -13,7 +13,8 @@ from harness_bench.gateway import backend as gw_backend
 from harness_bench.gateway import pipeline, request, scrub
 
 SESSION = "00000000-0000-4000-8000-000000000001"
-JUDGE = pipeline.Judge(model="judge-model-a", invocation_sha256="c" * 64, allowed_models=("judge-model-a",))
+JUDGE = pipeline.Judge(model="judge-model-a", invocation_sha256="c" * 64, allowed_models=("judge-model-a",),
+                       qualified=True)
 ENTRIES = (*scrub.FAMILY_WORDS, "harness-placeholder", "combo-placeholder")
 INPUTS = pipeline.Inputs(preamble="No mechanical oracle applies.", rubric="1. Names the structure.\n2. States costs.\n",
                          items=2, artifacts=(("docs/architecture.md", b"# Queue\nA heap, drafted with Claude.\n"),))
@@ -38,14 +39,48 @@ def _stdout(answer: object, models: tuple[str, ...] = ("judge-model-a",)) -> str
                        "modelUsage": {m: {} for m in models}})
 
 
-def _replay(inputs: pipeline.Inputs, answer: object = GOOD) -> gw_backend.ReplayBackend:
+def claude_record(path, models: tuple[str, ...], session: str = SESSION, tool: str | None = None,
+                  error: tuple[int, str] | None = None):
+    """A synthetic Claude Code native record in the reader's row shape: one assistant row per served model, an
+    optional tool_use (and its result), or an API error row instead of any model call. Placeholder values only."""
+    rows = [{"type": "user", "sessionId": session, "message": {"role": "user", "content": "the request"}}]
+    if error is not None:
+        rows.append({"type": "assistant", "sessionId": session, "isApiErrorMessage": True, "apiErrorStatus": error[0],
+                     "error": error[1], "message": {"model": "<synthetic>", "content": [{"type": "text", "text": "x"}]}})
+    for n, model in enumerate(() if error else models):
+        content = [{"type": "tool_use", "id": f"toolu_placeholder{n}", "name": tool, "input": {}}] if tool else []
+        rows.append({"type": "assistant", "sessionId": session, "timestamp": "2026-09-25T00:00:00.000Z",
+                     "message": {"id": f"msg_placeholder{n}", "model": model, "content": content,
+                                 "usage": {"input_tokens": 3 + n, "cache_read_input_tokens": 5, "output_tokens": 7,
+                                           "cache_creation_input_tokens": 11}}})
+        if tool:
+            rows.append({"type": "user", "sessionId": session, "message": {"role": "user", "content": [
+                {"type": "tool_result", "tool_use_id": f"toolu_placeholder{n}", "content": "ok"}]}})
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    return path
+
+
+def _recorded(tmp_path, stdout: str, models: tuple[str, ...] = ("judge-model-a",), **record) -> gw_backend.Recorded:
+    name = f"record-{token_hex(4)}.jsonl"
+    return gw_backend.Recorded(stdout, claude_record(tmp_path / "recorded" / name, models, **record))
+
+
+def _digest(inputs: pipeline.Inputs) -> str:
     rendered = request.render(inputs.preamble, inputs.rubric, inputs.items, inputs.artifacts, ENTRIES)
-    digest = hashlib.sha256(rendered.text.encode("utf-8")).hexdigest()
-    return gw_backend.ReplayBackend({digest: _stdout(answer)})
+    return hashlib.sha256(rendered.text.encode("utf-8")).hexdigest()
+
+
+def _archive(tmp_path):
+    return tmp_path / "archive"  # outside the known roots: an archive under runs/ would name a storing ledger
+
+
+def _replay(inputs: pipeline.Inputs, answer: object = GOOD, tmp_path=None) -> gw_backend.ReplayBackend:
+    return gw_backend.ReplayBackend({_digest(inputs): _recorded(tmp_path, _stdout(answer))}, _archive(tmp_path))
 
 
 def test_t_gw_04_the_scan_is_independent_of_the_scrub(tmp_path, monkeypatch):
-    replay = _replay(INPUTS)
+    replay = _replay(INPUTS, tmp_path=tmp_path)
     monkeypatch.setattr(scrub, "scrub", lambda text, entries: text)  # a scrub that leaves "Claude" in
     result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path), replay)
     assert (result.outcome, result.code, result.verdicts) == ("failed", "HB-GW-004", None)
@@ -59,16 +94,16 @@ class RacingBackend:
         self.inner, self.store_root, self.winner = inner, store_root, winner
         self.received = inner.received
 
-    def judge(self, request_text: str) -> gw_backend.Reply:
+    def judge(self, request_text: str, call_id: str) -> gw_backend.Reply:
         k = pipeline.store.key(self.winner["key_inputs"])
         self.store_root.mkdir(parents=True, exist_ok=True)
         (self.store_root / f"{k}.json").write_text(json.dumps(self.winner), encoding="utf-8")
-        return self.inner.judge(request_text)
+        return self.inner.judge(request_text, call_id)
 
 
 def _path(name: str, tmp_path, monkeypatch) -> tuple[pipeline.Result, list[str]]:
     """Drive one named path of sections 6-9; return its result and what reached the backend."""
-    ctx, inputs, replay = _ctx(tmp_path), INPUTS, _replay(INPUTS)
+    ctx, inputs, replay = _ctx(tmp_path), INPUTS, _replay(INPUTS, tmp_path=tmp_path)
     if name == "stored":
         pass
     elif name == "hit":
@@ -89,18 +124,16 @@ def _path(name: str, tmp_path, monkeypatch) -> tuple[pipeline.Result, list[str]]
     elif name == "withheld by egress":
         canary = f"CANARY-{token_hex(8)}"
         inputs = pipeline.Inputs(INPUTS.preamble, INPUTS.rubric, 2, (("docs/architecture.md", canary.encode()),))
-        replay, ctx = _replay(inputs), _ctx(tmp_path, canaries=(canary,))
+        replay, ctx = _replay(inputs, tmp_path=tmp_path), _ctx(tmp_path, canaries=(canary,))
     elif name == "backend down":
-        replay = gw_backend.ReplayBackend({}, down=True)
+        replay = gw_backend.ReplayBackend({}, _archive(tmp_path), down=True)
     elif name == "answer fails the schema":
-        replay = _replay(INPUTS, {"items": [{"item": 1, "score": 3, "rationale": "r"}]})
+        replay = _replay(INPUTS, {"items": [{"item": 1, "score": 3, "rationale": "r"}]}, tmp_path)
     elif name == "stdout not readable":
-        rendered = request.render(INPUTS.preamble, INPUTS.rubric, 2, INPUTS.artifacts, ENTRIES)
-        replay = gw_backend.ReplayBackend({hashlib.sha256(rendered.text.encode()).hexdigest(): "not json"})
+        replay = gw_backend.ReplayBackend({_digest(INPUTS): _recorded(tmp_path, "not json")}, _archive(tmp_path))
     elif name == "served another model":
-        rendered = request.render(INPUTS.preamble, INPUTS.rubric, 2, INPUTS.artifacts, ENTRIES)
-        replay = gw_backend.ReplayBackend({hashlib.sha256(rendered.text.encode()).hexdigest():
-                                           _stdout(GOOD, ("judge-model-q",))})
+        replay = gw_backend.ReplayBackend({_digest(INPUTS): _recorded(tmp_path, _stdout(GOOD, ("judge-model-q",)),
+                                                                      ("judge-model-q",))}, _archive(tmp_path))
     elif name == "store write error":
         def refuse(src, dst):
             raise PermissionError("synthetic")
@@ -135,7 +168,7 @@ def _storing_ledger(run_dir, k: str, sha: str) -> None:
             w.append(row)
             w.seal()
     folder = run_dir / "grading" / "grade-placeholder-1" / "gateway" / k[:16]
-    folder.mkdir(parents=True)
+    folder.mkdir(parents=True, exist_ok=True)
     (folder / "record.jsonl").write_text("{}\n", encoding="utf-8")
 
 
@@ -178,7 +211,7 @@ def test_t_gw_30_every_path_maps_to_exactly_one_outcome_and_code(tmp_path, monke
 
 
 def test_t_gw_30_a_recorded_result_carries_the_validated_verdicts(tmp_path):
-    result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path), _replay(INPUTS))
+    result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path), _replay(INPUTS, tmp_path=tmp_path))
     assert result.verdicts == tuple(GOOD["items"])
     entry = json.loads((tmp_path / "cache" / "verdicts" / f"{result.cache_key}.json").read_text(encoding="utf-8"))
     assert entry["key_inputs"]["model"] == "judge-model-a"
@@ -191,8 +224,8 @@ def test_t_gw_30_a_recorded_result_carries_the_validated_verdicts(tmp_path):
 
 def test_t_gw_30_an_orphan_is_moved_aside_before_a_fresh_call_stores_its_key(tmp_path):
     ctx = _ctx(tmp_path)
-    first = pipeline.run(JUDGE, INPUTS, ctx, _replay(INPUTS))
-    replay = _replay(INPUTS)
+    first = pipeline.run(JUDGE, INPUTS, ctx, _replay(INPUTS, tmp_path=tmp_path))
+    replay = _replay(INPUTS, tmp_path=tmp_path)
     second = pipeline.run(JUDGE, INPUTS, ctx, replay)
     assert (first.outcome, second.outcome, len(replay.received)) == ("stored", "stored", 1)
     orphans = list((ctx.store / "orphaned").glob(f"{first.cache_key}.*.json"))
@@ -201,26 +234,26 @@ def test_t_gw_30_an_orphan_is_moved_aside_before_a_fresh_call_stores_its_key(tmp
 
 
 AUX_JUDGE = pipeline.Judge(model="judge-model-a", invocation_sha256="c" * 64,
-                           allowed_models=("judge-model-a", "judge-aux-b"))
+                           allowed_models=("judge-model-a", "judge-aux-b"), qualified=True)
 
 
-def _served(served: tuple[str, ...]) -> gw_backend.ReplayBackend:
-    rendered = request.render(INPUTS.preamble, INPUTS.rubric, INPUTS.items, INPUTS.artifacts, ENTRIES)
-    return gw_backend.ReplayBackend({hashlib.sha256(rendered.text.encode("utf-8")).hexdigest(): _stdout(GOOD, served)})
+def _served(served: tuple[str, ...], tmp_path) -> gw_backend.ReplayBackend:
+    return gw_backend.ReplayBackend({_digest(INPUTS): _recorded(tmp_path, _stdout(GOOD, served), served)},
+                                    _archive(tmp_path))
 
 
 def test_an_answer_the_pin_never_served_is_not_stored(tmp_path):
     # Review F1 (Fable, w3-gwi-1): an allowed auxiliary model alone is not the judge (design 4.3; HB-GW-003).
-    result = pipeline.run(AUX_JUDGE, INPUTS, _ctx(tmp_path), _served(("judge-aux-b",)))
+    result = pipeline.run(AUX_JUDGE, INPUTS, _ctx(tmp_path), _served(("judge-aux-b",), tmp_path))
     assert (result.outcome, result.code, result.verdicts) == ("failed", "HB-GW-003", None)
     assert not list((tmp_path / "cache" / "verdicts").glob("*.json"))
 
 
 def test_the_pin_with_an_allowed_auxiliary_model_is_stored(tmp_path):
-    result = pipeline.run(AUX_JUDGE, INPUTS, _ctx(tmp_path), _served(("judge-model-a", "judge-aux-b")))
+    result = pipeline.run(AUX_JUDGE, INPUTS, _ctx(tmp_path), _served(("judge-model-a", "judge-aux-b"), tmp_path))
     assert (result.outcome, result.code) == ("stored", None)
 
 
 def test_the_pin_with_a_model_outside_the_allowed_set_is_not_stored(tmp_path):
-    result = pipeline.run(AUX_JUDGE, INPUTS, _ctx(tmp_path), _served(("judge-model-a", "judge-model-q")))
+    result = pipeline.run(AUX_JUDGE, INPUTS, _ctx(tmp_path), _served(("judge-model-a", "judge-model-q"), tmp_path))
     assert (result.outcome, result.code, result.verdicts) == ("failed", "HB-GW-003", None)
