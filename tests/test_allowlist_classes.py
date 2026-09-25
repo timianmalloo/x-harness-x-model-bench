@@ -23,6 +23,7 @@ from pathlib import Path
 import pytest
 
 from harness_bench import profiles, tools
+from harness_bench.telemetry import claude_code
 
 ROOT = Path(__file__).resolve().parents[1]
 FIX = Path(__file__).parent / "fixtures"
@@ -40,8 +41,11 @@ CLASSES = {
     "file read": {"Read", "Glob", "Grep"},  # "Reads a file ..." / "Fast file pattern matching" / "Content search"
 }
 # Outside every declared class: ADR-0004 denies them ("any other tool the harness offers", web tools, MCP servers).
+# R-54 (a): class `meta` loads a deferred tool's schema and invokes nothing. It runs with no permission callback, so it
+# needs no allowlist entry, and it is outside CLASSES (the allowlist tests below) on purpose.
+META = {"ToolSearch"}
 OUT_OF_PROFILE = {
-    "Agent", "ListAgents", "ReportFindings", "ScheduleWakeup", "Skill", "ToolSearch", "Workflow",
+    "Agent", "ListAgents", "ReportFindings", "ScheduleWakeup", "Skill", "Workflow",
     "CronCreate", "CronDelete", "CronList", "DesignSync", "EnterPlanMode", "EnterWorktree", "ExitPlanMode",
     "ExitWorktree", "Monitor", "PushNotification", "RemoteTrigger", "SendMessage", "TaskStop", "WebFetch", "WebSearch",
 }
@@ -158,8 +162,14 @@ def test_the_claude_code_allowlist_names_nothing_outside_the_declared_classes(tm
 
 def test_every_tool_id_the_pinned_build_advertises_is_classified():  # a new id in a later build is red here
     ids, _, _ = advertised(TOOL_LIST)
-    known = set().union(*CLASSES.values()) | OUT_OF_PROFILE
+    known = set().union(*CLASSES.values()) | META | OUT_OF_PROFILE
     assert {i for i in ids if i not in known and not i.startswith("mcp__")} == set()
+
+
+def test_the_meta_class_is_exactly_tool_search_in_the_reader_and_here():  # R-54 c1
+    assert META == {"ToolSearch"} and META <= advertised(TOOL_LIST)[0]
+    assert {name for name, cls in claude_code.TOOL_CLASSES.items() if cls == "meta"} == META
+    assert not META & OUT_OF_PROFILE
 
 
 @pytest.mark.native

@@ -31,6 +31,17 @@ def test_claude_tool_calls_are_classified_and_closed_by_their_result():
     assert ex.tool_calls[0].start and ex.tool_calls[0].end
 
 
+def test_claude_tool_search_is_class_meta(tmp_path):  # R-54 (a): it loads a schema and invokes nothing
+    rows = [{"type": "assistant", "timestamp": "2026-09-25T05:20:53.616Z",
+             "message": {"id": "m1", "model": "claude-opus-5-5", "usage": {},
+                         "content": [{"type": "tool_use", "id": "t1", "name": "ToolSearch", "input": {"query": "select:WebFetch"}}]}},
+            {"type": "user", "timestamp": "2026-09-25T05:20:54.244Z",
+             "message": {"content": [{"type": "tool_result", "tool_use_id": "t1", "content": "loaded"}]}}]
+    record = tmp_path / "s.jsonl"
+    record.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    assert [(t.name, t.tool_class, t.ok) for t in claude_code.read(record).tool_calls] == [("ToolSearch", "meta", True)]
+
+
 def test_claude_first_user_text_is_the_prompt():
     assert claude_code.read(FIX / "native/claude-code/ok.jsonl").first_user_text == PROMPT
 
@@ -257,7 +268,7 @@ def _assert_typed(ex) -> None:
         assert c.reasoning is None or (type(c.reasoning) is int and 0 <= c.reasoning < 1 << 63)
         assert all(v is None or isinstance(v, str) for v in (c.start, c.end))
     for t in ex.tool_calls:
-        assert isinstance(t.name, str) and t.tool_class in ("shell", "edit", "read", "other")
+        assert isinstance(t.name, str) and t.tool_class in ("shell", "edit", "read", "meta", "other")
         assert all(v is None or isinstance(v, str) for v in (t.start, t.end)) and t.ok in (True, False, None)
     for e in ex.errors:
         assert (e.status is None or type(e.status) is int) and isinstance(e.error_type, str) and isinstance(e.message, str)
