@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T10:10:27Z",
+  "generated": "2026-09-25T10:44:44Z",
   "audit": [
     {
       "actor": null,
@@ -19580,6 +19580,44 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3C2NRAB93CGYKQH2JNXHMN6",
+      "shortname": "W3-GR-CODE c1",
+      "datetime": "2026-09-25T10:44:43Z",
+      "session": "w3-grcode-1",
+      "prompt": "W3-GR-CODE slice c1 brief (brief-grcode1.md), under R-4 on Claude Code",
+      "summary": "C-2 move 34afffb; reds 5640aa0 (syntax), 8e38181 (deleted member), dc64e75 (empty cache), fbdb135 (pack-on base); greens 2b7f323 (_changes), e1ae7f5 (DR-G4 + build_and_suite_clean), 56dc17d (branch tests), a6e8570 (mutants, spike note). correctness.json 25/25 killed, grade.json 34/34. pytest 1267 passed with HB_GATE_RUNS. Flagged: the broken-ProjectReference seed exits 0 (MSB9008 warning); decision request to the Leader.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "Claude Opus 5.5",
+      "artifacts": [
+        "src/harness_bench/grade/_changes.py",
+        "src/harness_bench/grade/correctness.py",
+        "docs/notes/spike-gr-code-trx.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "GR-CODE c1: build_and_suite_clean, DR-G4 by cause (R-67 c1), the shared change reader _changes, seam C-2, red first",
+      "done_when": "spike note; _changes + correctness implement build_and_suite_clean and DR-G4; grade_cell registered; C-2 byte-equal on fixtures and gate runs; 4 reds on assertions; archive immutable; mutants killed; pytest, ruff, bench validate green",
+      "tier": "T2",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-25T10:11:13Z",
+      "duration_seconds": 2010.0,
+      "git": {
+        "sha": "a6e8570c9a05056e187eb22b808b102a2cec68df",
+        "short": "a6e8570c9",
+        "branch": "w3-grcode-1",
+        "pushed": null
+      }
     }
   ],
   "changes": [
