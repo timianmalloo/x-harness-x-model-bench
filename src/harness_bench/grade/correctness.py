@@ -281,6 +281,12 @@ def build_and_suite_clean(inp: CellInput, oracle: dict, timeout: float) -> Score
     return Score(int(last.returncode == 0 and len(steps) > 1 if kind == "dotnet" else last.returncode == 0), None, evidence)
 
 
+def run_step(argv: list[str], cwd: Path, env: dict, timeout: float):
+    """One grading process for a grader outside this module: grade/correctness is the grader on the egress lint's
+    procs allowlist (R-60), so other graders reach procs only through here (rigor through build_tree)."""
+    return procs.run(argv, cwd=cwd, env=env, timeout=timeout)
+
+
 def build_tree(
     tree: Path,
     flags: tuple[str, ...],

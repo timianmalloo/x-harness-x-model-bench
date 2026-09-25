@@ -21,8 +21,7 @@ from contextlib import ExitStack
 from decimal import Decimal
 from pathlib import Path
 
-from harness_bench import procs
-from harness_bench.grade import CellInput, Score, _changes
+from harness_bench.grade import CellInput, Score, _changes, correctness
 from harness_bench.profiles import CELL_ENV
 
 METRIC = "mutation_score"
@@ -194,7 +193,7 @@ def grade_cell(inp: CellInput) -> Mapping[str, Score]:
         if remaining <= 0:
             return written(Score(None, f"HB-GRD-002 grading step timeout after {timeout:g} s"))
 
-        done = procs.run(cmd, cwd=work_tree, env=env, timeout=remaining)
+        done = correctness.run_step(cmd, work_tree, env, remaining)  # the procs allowlist (R-60)
         log.append(
             f"$ {' '.join(cmd)}\nexit {done.returncode if done else 'not run'}\n"
             f"--- stdout\n{done.stdout if done else ''}\n--- stderr\n{done.stderr if done else ''}\n"
