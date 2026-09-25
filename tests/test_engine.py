@@ -2221,3 +2221,19 @@ def test_an_answer_of_stop_is_an_operator_stop(base):  # US15-7 (design 6.1)
     assert [(e["code"], e["decision_id"]) for e in _kind(events, "run.stopped")] == [("HB-RUN-006", "D1")]
     outs = _outcomes(events)
     assert outs[running]["outcome"] == "stopped" and waiting not in outs and summary.exit_code == 3
+
+
+def test_continue_on_the_spend_cap_disables_the_cap(base):  # US15-7 (design 6.1)
+    p, launcher = _decision_plan([("fake", "A", {})] * 3, parallelism=1, spend_cap_tokens=CELL_TOKENS - 5)
+    first = p["cells"][0]["cell_id"]
+    sent = []
+
+    def script(eng, offset, run_dir):
+        if first in eng.outcomes and not sent:
+            sent.append(_answer_file(run_dir, "D1", "continue"))
+
+    eng, events, summary = _decision_run(base, (p, launcher), script)
+    assert _resolutions(events) == [("D1", "answered", "continue")]
+    assert [o["outcome"] for o in _outcomes(events).values()] == ["completed"] * 3
+    assert _kind(events, "run.stopped") == [] and summary.exit_code == 0
+    assert eng.spend_cap is None  # disabled for the rest of the run: 135 tokens spent against a 40-token cap
