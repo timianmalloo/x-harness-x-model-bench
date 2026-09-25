@@ -60,9 +60,10 @@ def second_call(root, then):
 
 
 def test_two_real_equal_passes_pass_the_gate_and_the_judge_half_is_not_claimed(gate_run):
+    before = views.completed_passes(gate_run[1])
     report = run_gate(gate_run)
     assert (report.failures, report.notes) == ([], [JUDGE_NOTE])
-    assert len(views.completed_passes(gate_run[1])) == 3  # the 0.3 pass, A and B: both gate passes are real
+    assert len(views.completed_passes(gate_run[1]) - before) == 2  # A and B: both gate passes are real and completed
 
 
 def test_a_dead_pass_b_fails_the_gate(gate_run, monkeypatch):
