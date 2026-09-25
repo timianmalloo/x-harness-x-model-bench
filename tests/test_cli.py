@@ -366,3 +366,47 @@ def test_plan_json_ids_equal_the_frozen_plans_cell_ids(capsys, root, tmp_path): 
     assert code == 0, err
     frozen = json.loads((tmp_path / "runs" / "p2" / "plan.json").read_text(encoding="utf-8"))
     assert json_ids == {c["cell_id"] for c in frozen["cells"]}
+
+
+BLOCKED = {"kind": "decision.opened", "decision_id": "D1", "decision_kind": "blocked_cell", "subject": "codex",
+           "cause_code": "HB-CELL-202", "options": ["continue", "stop"], "default": "continue",
+           "recorded_at": "2026-09-25T00:00:00.000Z"}
+
+
+def _decision_run(root, tmp_path, *resolution: dict):
+    """An archived run whose ledger holds decision D1 (blocked codex), then each given row."""
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, unstarted=("b",))
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
+        for row in (BLOCKED, *resolution):
+            ev.append(row)
+    return run_dir
+
+
+def _bench_exit(capsys, root, tmp_path, *args):
+    """_bench, with argparse's usage exit returned as a code, so a missing command fails on an assertion."""
+    try:
+        return _bench(capsys, root, tmp_path, *args)
+    except SystemExit as exc:
+        out, err = capsys.readouterr()
+        return exc.code, out, err
+
+
+def test_answer_refuses_what_the_engine_could_not_apply(capsys, root, tmp_path):  # CLI-3 (design 4.2)
+    assert _bench_exit(capsys, root, tmp_path, "answer", "nope", "D1", "continue") == (
+        1, "", "HB-USR-001: no run nope under runs/. Run bench plan to create one.\n")
+    run_dir = _decision_run(root, tmp_path)
+    assert _bench_exit(capsys, root, tmp_path, "answer", "r1", "D1", "continue") == (
+        1, "", "HB-USR-002: run r1 is not running (incomplete); nothing to answer\n")
+    with oslock.RunLock.acquire(run_dir / ".lock", "HB-RUN-003"):
+        assert _bench_exit(capsys, root, tmp_path, "answer", "r1", "D9", "continue") == (
+            1, "", "HB-USR-002: run r1 has no decision D9\n")
+        assert _bench_exit(capsys, root, tmp_path, "answer", "r1", "D1", "skip_combo") == (
+            1, "", "HB-USR-002: decision D1 offers continue | stop, not skip_combo\n")
+    assert not (run_dir / "control").exists()
+    later = tmp_path / "later"
+    run_dir = _decision_run(root, later, {"kind": "decision.resolved", "decision_id": "D1",
+                                          "state": "default applied (timeout)", "option": "continue"})
+    with oslock.RunLock.acquire(run_dir / ".lock", "HB-RUN-003"):
+        assert _bench_exit(capsys, root, later, "answer", "r1", "D1", "stop") == (
+            1, "", "HB-USR-002: decision D1 is not open (default applied (timeout)); nothing to answer\n")
+    assert not (run_dir / "control").exists()
