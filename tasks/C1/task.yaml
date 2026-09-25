@@ -2,20 +2,26 @@ schema: bench-task/1
 id: C1
 scenario: 3
 title: "Concept-oriented requirements to architecture"
-status: stub
-language: other
+status: ready
+language: python
 source:
   kind: public
-  upstream: "ProjDevBench (concept-oriented problem)"
-  repo: "tbd"
-  commit: "tbd"
+  upstream: "ProjDevBench problem 011 STLite Priority Queue (ACMOJ 2623)"
+  repo: "https://github.com/zsworld6/projdevbench"
+  commit: "9af6f408e45047947d2a6d1d27b64828c3eb913d"  # git ls-remote refs/heads/main, 2026-09-25; matches R-7 prefix 9af6f40
+  license: MIT
+  # README.md at this commit, section "License", body is the two words "MIT License".
+  # git ls-tree -r of this commit has no LICENSE, LICENSE.md, or COPYING. No copyright line exists to copy.
+  copyright: null
 budget:
   minutes: 30
   usd_cap: null
 blast_radius:
-  - "**"
+  - "priority_queue.py"
+  - "docs/**"
 model_map: null
 scripted_user: false
+formal: null
 graders:
   - correctness
   - architecture
@@ -23,4 +29,6 @@ graders:
   - cost
   - process
 oracle:
-  summary: "Upstream OJ tests + architecture review rubric."
+  summary: "Local unittest (ACMOJ is not used) for a max-heap priority queue with merge and compare-failure rollback, plus structural checks that docs/architecture.md contains the required sections. Judge rubric text is oracle/rubric.md (wave 3)."
+  runner: unittest
+  command: ["{python}", "-m", "unittest", "-v", "test_c1_hidden"]
