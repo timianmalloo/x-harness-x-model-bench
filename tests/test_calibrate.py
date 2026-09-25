@@ -322,3 +322,15 @@ def test_t_gw_17_one_category_is_not_recorded_with_n_and_exact_agreement():
     assert calibration.Kappa(n=5, exact=5, value=None, reason="kappa undefined: one category").text() == \
         "not recorded: kappa undefined: one category (n = 5, exact 5)"
     assert calibration.Kappa(n=10, exact=6, value="0.375", reason=None).text() == "0.375 (n = 10, exact 6)"
+
+
+# --------------------------------------------------------------------------------------------------- T-GW-17b
+def test_t_gw_17b_only_the_labelled_rubric_item_of_the_seven_item_verdict_set_is_compared(tmp_path, base):
+    """Each item's verdict set scores all 7 rubric items (ANSWER); the join takes the verdict on the item's own
+    `rubric_item` (4, 1, 6 -> 0, 2, 2). Labels of 2 everywhere agree on two items: kappa 0 with exact 2. Comparing
+    item 1 (2 everywhere) would read one category, and item 4 (0 everywhere) exact 0."""
+    assert calibration is not None, NOT_BUILT
+    root = cal_root(tmp_path)
+    write_labels(root, [label(i, 2) for i, _ in ITEMS])
+    calibrate(root, tmp_path, base)
+    assert line(root, tmp_path) == f"n = 3 · {SECOND} · vs human labels: {CLAUDE} κ 0.000 (n = 3, exact 2)"
