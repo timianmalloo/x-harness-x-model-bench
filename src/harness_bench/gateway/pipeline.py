@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -33,6 +34,7 @@ from harness_bench.gateway.backend import (
 )
 
 OUTCOMES = ("hit", "stored", "race_lost", "not_allowed", "failed")
+_FENCE = re.compile(r"```(?:json)?\n(.*)\n```", re.DOTALL)  # one Markdown code fence around the whole answer
 CODES = {  # design section 17; slice 1 reaches 001, 002, 003, 004, 005, 008, 009
     "HB-GW-001": "judge unavailable: CLI error, timeout, provider error, breaker open, or a store write error "
                  "other than a lost race",
@@ -110,12 +112,13 @@ def _send(request_text: str, judge: Judge, ctx: Context, backend: Backend | Laun
         lambda payload: _ask(Headless(backend) if isinstance(backend, Launch) else backend, payload, call_id))
 
 
-def _recorded(outcome: str, cache_key: str, found: store.Found, items: int, escaped: tuple[str, ...]) -> Result:
+def _recorded(outcome: str, cache_key: str, found: store.Found, items: int, escaped: tuple[str, ...],
+              fenced: bool = False) -> Result:
     """A hit or a lost race carries the stored verdicts only when they still have the answer's shape."""
     verdicts = found.entry["verdicts"]
     if schema.validate({"items": verdicts}, items):
         return Result("failed", "HB-GW-005", escaped=escaped)
-    return Result(outcome, None, cache_key, found.entry_sha256, tuple(verdicts), escaped)
+    return Result(outcome, None, cache_key, found.entry_sha256, tuple(verdicts), escaped, fenced=fenced)
 
 
 def _sha256(text: str) -> str:
@@ -158,8 +161,10 @@ def run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend | Launch) -
     if judge.model not in served or not all(m in judge.allowed_models for m in served):
         return Result("failed", "HB-GW-003", escaped=escaped)
     text = final_text(reply)
+    fence = _FENCE.fullmatch(text.strip()) if text is not None else None
+    fenced = fence is not None  # a fenced JSON answer is unwrapped once, and recorded as fenced (T-GW-35)
     try:
-        answer = json.loads(text) if text is not None else None
+        answer = json.loads(fence.group(1) if fence else text) if text is not None else None
     except ValueError:
         answer = None
     if answer is None or schema.validate(answer, inputs.items):
@@ -170,8 +175,9 @@ def run(judge: Judge, inputs: Inputs, ctx: Context, backend: Backend | Launch) -
                             "template_version": request.TEMPLATE_VERSION, "scrub_version": scrub.SCRUB_VERSION,
                             "schema_sha256": key_inputs["schema_sha256"]},
              "served_models": list(served), "stored_by": dict(ctx.stored_by), "native_session_id": session,
-             "created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "verdicts": answer["items"]}
+             "created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "fenced": int(fenced),  # canonical form has no bool (ADR-0006:49)
+             "verdicts": answer["items"]}
     written = store.write_once(ctx.store, cache_key, entry, judge.allowed_models)
     if written.state == "failed":
         return Result("failed", written.code, escaped=escaped)
-    return _recorded(written.state, cache_key, written, inputs.items, escaped)
+    return _recorded(written.state, cache_key, written, inputs.items, escaped, fenced)

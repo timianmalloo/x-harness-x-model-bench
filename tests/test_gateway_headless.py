@@ -176,7 +176,7 @@ def test_t_gw_35_a_fenced_answer_is_unwrapped_once_and_recorded_as_fenced(tmp_pa
     assert (result.outcome, result.code, result.fenced) == ("stored", None, True)
     assert [v["score"] for v in result.verdicts] == [2, 2]
     entry = json.loads((tmp_path / "cache" / "verdicts" / f"{result.cache_key}.json").read_text(encoding="utf-8"))
-    assert entry.get("fenced") is True
+    assert entry.get("fenced") == 1  # canonical form: 0 or 1
 
 
 def test_t_gw_35_a_twice_fenced_answer_is_not_unwrapped_again(tmp_path, base):
@@ -187,4 +187,4 @@ def test_t_gw_35_a_twice_fenced_answer_is_not_unwrapped_again(tmp_path, base):
 def test_t_gw_35_an_unfenced_answer_is_recorded_as_not_fenced(tmp_path, base):
     result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path), _launch(tmp_path, base / "cells"))
     entry = json.loads((tmp_path / "cache" / "verdicts" / f"{result.cache_key}.json").read_text(encoding="utf-8"))
-    assert (result.outcome, result.fenced, entry.get("fenced")) == ("stored", False, False)
+    assert (result.outcome, result.fenced, entry.get("fenced")) == ("stored", False, 0)
