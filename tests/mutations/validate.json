@@ -23,8 +23,15 @@
  {
   "name": "an absolute operator profile path anywhere under a task folder is no longer refused",
   "file": "src/harness_bench/config.py",
-  "find": "    _profile_path_problems(task_dir, p, where)\n",
+  "find": "    _profile_path_problems(task_dir, p, where, vendored_paths)\n",
   "replace": "",
   "tests": ["tests/test_config.py::test_task_folder_with_operator_profile_path_is_rejected"]
+ },
+ {
+  "name": "the vendored-content exemption drops its workspace/ scoping, so vendored_paths also exempts oracle/** and the rest of the task folder",
+  "file": "src/harness_bench/config.py",
+  "find": "    if ws not in f.parents:\n        return False\n    rel_ws = f.relative_to(ws).as_posix()\n    return any(rel_ws == vp or rel_ws.startswith(vp + \"/\") for vp in vendored_paths)",
+  "replace": "    rel_ws = f.relative_to(ws.parent).as_posix()\n    return any(rel_ws == vp or rel_ws.startswith(vp + \"/\") for vp in vendored_paths)",
+  "tests": ["tests/test_config.py::test_vendored_workspace_content_is_exempt_from_the_profile_path_scan_but_oracle_is_not"]
  }
 ]
