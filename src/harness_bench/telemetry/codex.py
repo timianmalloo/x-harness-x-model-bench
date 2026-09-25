@@ -40,6 +40,9 @@ CALL_TYPES = ("custom_tool_call", "function_call", "local_shell_call")
 OUTPUT_TYPES = ("custom_tool_call_output", "function_call_output", "local_shell_call_output")
 SHELL_NAMES = ("exec", "shell", "exec_command", "local_shell", "container.exec")
 EDIT_NAMES = ("apply_patch", "write_file", "edit")
+# R-74 item 5: the collaboration ids the pinned 0.156.0 system message names (ok.jsonl:4). qual-r74-codex-1 issued
+# spawn_agent and wait_agent. Static here, as the Claude and Copilot readers; in profile only in a scenario-6 cell (views).
+DELEGATE_NAMES = ("spawn_agent", "send_message", "followup_task", "wait_agent", "interrupt_agent", "list_agents")
 MCP_CLASSES = {"scripted_user.ask_user": "scripted user"}  # R-37 c2: the task's own MCP tool; every other MCP call is other
 
 
@@ -55,6 +58,8 @@ def _tool_class(name: str) -> str:
         return "shell"
     if name in EDIT_NAMES:
         return "edit"
+    if name in DELEGATE_NAMES:
+        return "delegate"
     return "other"
 
 

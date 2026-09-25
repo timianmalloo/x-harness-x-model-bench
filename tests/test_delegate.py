@@ -49,9 +49,8 @@ def test_the_other_claude_code_agent_ids_stay_out_of_profile(tmp_path, name):
 def test_each_reader_delegate_set_is_exactly_the_operators_list():
     assert [n for n, c in claude_code.TOOL_CLASSES.items() if c == "delegate"] == ["Agent"]
     assert [n for n, c in copilot.TOOL_CLASS.items() if c == "delegate"] == COPILOT_DELEGATE
-    # Codex: measured before allowed (item 5). The ids its own system message names (ok.jsonl:4) stay `other` until then.
-    assert {codex._tool_class(n) for n in ("spawn_agent", "send_message", "followup_task", "wait_agent",
-                                           "interrupt_agent", "list_agents")} == {"other"}
+    # R-74 item 5: the ids the pinned record names (ok.jsonl:4), measured by qual-r74-codex-1.
+    assert [n for n in codex.DELEGATE_NAMES if codex._tool_class(n) == "delegate"] == list(codex.DELEGATE_NAMES)
 
 
 def test_codex_classes_the_measured_spawn_and_wait_calls_as_delegate():  # R-74 item 5: qual-r74-codex-1 issued these two
@@ -119,11 +118,27 @@ def test_the_scenario6_ids_come_before_the_scripted_user_additions(tmp_path):  #
     assert _copilot_tools(argv)[-5:] == [*COPILOT_DELEGATE, "scripted_user-ask_user"]
 
 
-def test_a_codex_scenario6_cell_is_seeded_and_launched_exactly_as_before(tmp_path):  # no allowance before item 5
+def test_a_codex_scenario6_cell_enables_multi_agent_and_every_other_cell_disables_it(tmp_path):
+    """R-74 item 5: 0.156.0 feature `multi_agent` (stable, default true). The allowance is that feature, not argv."""
     p = profiles.load(ROOT, "codex", credential_source=tmp_path / "none")
-    p.seed_home(tmp_path / "a", "gpt-6-sol", scenario=6)
-    p.seed_home(tmp_path / "b", "gpt-6-sol")
-    assert (tmp_path / "a" / "config.toml").read_bytes() == (tmp_path / "b" / "config.toml").read_bytes()
+    p.seed_home(tmp_path / "six", "gpt-6-sol", scenario=6)
+    p.seed_home(tmp_path / "five", "gpt-6-sol", scenario=5)
+    p.seed_home(tmp_path / "plain", "gpt-6-sol")
+    six = (tmp_path / "six" / "config.toml").read_text(encoding="utf-8")
+    five = (tmp_path / "five" / "config.toml").read_text(encoding="utf-8")
+    plain = (tmp_path / "plain" / "config.toml").read_text(encoding="utf-8")
+    assert "multi_agent = true" in six and "apps = false" in six
+    assert "multi_agent = false" in five and "apps = false" in five
+    assert "multi_agent = false" in plain
+    assert p.argv(BUILD, "gpt-6-sol", scenario=6) == p.argv(BUILD, "gpt-6-sol")
+
+
+def test_the_launcher_seeds_codex_multi_agent_from_the_cell(tmp_path):  # engine.py passes the cell (R-74 item 3, item 5)
+    launcher = profiles.ProfileLauncher(profiles.load(ROOT, "codex", credential_source=tmp_path / "none"), tmp_path, {})
+    launcher.seed(tmp_path / "six", {"model": "gpt-6-sol", "scenario": 6})
+    launcher.seed(tmp_path / "five", {"model": "gpt-6-sol", "scenario": 5})
+    assert "multi_agent = true" in (tmp_path / "six" / "config.toml").read_text(encoding="utf-8")
+    assert "multi_agent = false" in (tmp_path / "five" / "config.toml").read_text(encoding="utf-8")
 
 
 def test_the_launcher_seeds_from_the_cell(tmp_path):  # engine.py passes the cell (R-74 item 3)

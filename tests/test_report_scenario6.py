@@ -70,7 +70,7 @@ def test_the_coordination_banner_is_in_the_header_and_on_every_scenario6_row(roo
 def test_the_header_names_the_scenario6_allowance_per_harness(root, tmp_path):  # R-74 c6
     header, _ = _page(_run(root, tmp_path, 6))
     assert ("<dt>Scenario-6 allowance</dt><dd>claude-code Agent · copilot task, write_agent, read_agent, list_agents · "
-            "codex not qualified</dd>") in header
+            "codex spawn_agent, send_message, followup_task, wait_agent, interrupt_agent, list_agents</dd>") in header
 
 
 def test_a_run_with_no_scenario6_cell_shows_none_of_it(root, tmp_path):  # the negative control

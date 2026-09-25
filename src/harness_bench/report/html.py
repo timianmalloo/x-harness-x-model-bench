@@ -125,7 +125,7 @@ COORDINATION_BANNER = "coordination: not built in 0.4"  # R-73 c6: grade/coordin
 
 def _allowance() -> str:
     """R-74 c6: the scenario-6 allowance per harness, in the ruling's order, from the profiles' own delegate ids (the
-    readers'); a harness with none reads `not qualified` (Codex until its measured turn, R-74 item 5)."""
+    readers'); a harness with none reads `not qualified`."""
     parts = []
     for harness in ("claude-code", "copilot", "codex"):
         ids = profiles.DELEGATE_IDS.get(harness)
