@@ -10,14 +10,12 @@
 
 from __future__ import annotations
 
-import os
 import re
 import time
 from collections.abc import Mapping
 from contextlib import ExitStack
 from pathlib import Path
 
-from harness_bench import procs
 from harness_bench.grade import CellInput, Score, _changes, correctness
 
 METRIC = "static_analysis_delta"
@@ -56,39 +54,6 @@ def parse_warnings(output: str, tree: Path) -> set[tuple[str, int, str]]:
     return warnings
 
 
-def _build_tree(
-    tree: Path,
-    env: dict[str, str],
-    timeout: float,
-    started: float,
-    log: list[str],
-) -> tuple[set[tuple[str, int, str]], str | None]:
-    """Build all projects in `tree` with dotnet, collecting distinct warnings or returning a failure reason."""
-    projects = sorted(p.relative_to(tree).as_posix() for p in tree.rglob("*.csproj") if p.is_file())
-    if not projects:
-        return set(), correctness.NOT_BUILDING
-    steps = [["dotnet", "--version"], *(["dotnet", "build", p, *BUILD_FLAGS] for p in projects)]
-    warnings: set[tuple[str, int, str]] = set()
-    last = None
-    for argv in steps:
-        remaining = timeout - (time.monotonic() - started)
-        last = procs.run(argv, cwd=tree, env=env, timeout=remaining) if remaining > 0 else None
-        log.append(
-            f"{tree.name}: $ {' '.join(argv)}\nexit {last.returncode if last else 'not run'}\n"
-            f"--- stdout\n{last.stdout if last else ''}\n--- stderr\n{last.stderr if last else ''}\n"
-        )
-        if last is None or last.timed_out:
-            return set(), f"HB-GRD-002 grading step timeout after {timeout:g} s"
-        if last.returncode != 0:
-            if argv == ["dotnet", "--version"]:
-                return set(), correctness.SDK
-            if correctness.build_failure(last.stdout) == "restore":
-                return set(), correctness.RESTORE
-            return set(), correctness.NOT_BUILDING
-        warnings |= parse_warnings(last.stdout, tree)
-    return warnings, None
-
-
 def grade_cell(inp: CellInput) -> Mapping[str, Score]:
     """Grade rigor metrics: static_analysis_delta from dotnet build warnings delta, plus 4 NA-by-design metrics."""
     ws = inp.archive / "ws"
@@ -108,7 +73,6 @@ def grade_cell(inp: CellInput) -> Mapping[str, Score]:
         out.mkdir(parents=True, exist_ok=True)
         log_file = out / "rigor.log"
         evidence = log_file.relative_to(inp.run_dir).as_posix()
-        env = correctness._env() | {k: os.environ[k] for k in correctness.DOTNET_HOST_ENV if k in os.environ}
         log: list[str] = []
 
         def written(score: Score) -> dict[str, Score]:
@@ -117,12 +81,13 @@ def grade_cell(inp: CellInput) -> Mapping[str, Score]:
             return {m: res[m] for m in inp.metrics if m in res} if inp.metrics else res
 
         with _changes.grading_copy(ws, out / "cell") as cell_tree:
-            cell_warnings, cell_fail = _build_tree(cell_tree, env, timeout, started, log)
+            cell_outputs, cell_fail = correctness.build_tree(cell_tree, BUILD_FLAGS, timeout, started, log)
+            cell_warnings = {w for out_text in cell_outputs for w in parse_warnings(out_text, cell_tree)}
 
         if cell_fail:
             return written(Score(None, cell_fail, evidence))
 
-        pre_warnings, pre_fail = _build_tree(pre.tree, env, timeout, started, log)
+        pre_outputs, pre_fail = correctness.build_tree(pre.tree, BUILD_FLAGS, timeout, started, log)
         if pre_fail:
             reason = (
                 pre_fail
@@ -131,6 +96,7 @@ def grade_cell(inp: CellInput) -> Mapping[str, Score]:
             )
             return written(Score(None, reason, evidence))
 
+        pre_warnings = {w for out_text in pre_outputs for w in parse_warnings(out_text, pre.tree)}
         delta = len(cell_warnings) - len(pre_warnings)
         log.append(
             f"cell distinct warnings: {len(cell_warnings)}\n"

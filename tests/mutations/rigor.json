@@ -1,0 +1,121 @@
+[
+  {
+    "name": "GR-CODE c5: TreatWarningsAsErrors=false flag omitted from build flags",
+    "file": "src/harness_bench/grade/rigor.py",
+    "find": "BUILD_FLAGS = (*correctness.OFFLINE, \"-p:TreatWarningsAsErrors=false\")",
+    "replace": "BUILD_FLAGS = (*correctness.OFFLINE,)",
+    "tests": ["tests/test_grade_rigor.py::test_treat_warnings_as_errors_flag_in_build_flags"]
+  },
+  {
+    "name": "GR-CODE c5: no working copy branch disabled in grade_cell",
+    "file": "src/harness_bench/grade/rigor.py",
+    "find": "    if not ws.is_dir():\n",
+    "replace": "    if False:\n",
+    "tests": ["tests/test_grade_rigor.py::test_static_analysis_delta_no_working_copy_is_na"]
+  },
+  {
+    "name": "GR-CODE c5: pre-turn commit not found branch disabled in grade_cell",
+    "file": "src/harness_bench/grade/rigor.py",
+    "find": "        if pre.commit is None:\n",
+    "replace": "        if False:\n",
+    "tests": ["tests/test_grade_rigor.py::test_static_analysis_delta_no_builder_commit_is_na"]
+  },
+  {
+    "name": "GR-CODE c5: cell build failure branch disabled in grade_cell",
+    "file": "src/harness_bench/grade/rigor.py",
+    "find": "        if cell_fail:\n",
+    "replace": "        if False:\n",
+    "tests": ["tests/test_grade_rigor.py::test_cell_build_failure_is_na_workspace_does_not_build"]
+  },
+  {
+    "name": "GR-CODE c5: pre-turn build failure branch disabled in grade_cell",
+    "file": "src/harness_bench/grade/rigor.py",
+    "find": "        if pre_fail:\n",
+    "replace": "        if False:\n",
+    "tests": ["tests/test_grade_rigor.py::test_pre_turn_tree_does_not_build_is_na"]
+  },
+  {
+    "name": "GR-CODE c5: step timeout branch disabled in build_tree",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "        if not last or last.timed_out:\n            return outputs, f\"HB-GRD-002 grading step timeout after {timeout:g} s\"\n",
+    "replace": "        if False:\n            pass\n",
+    "tests": ["tests/test_grade_rigor.py::test_static_analysis_delta_timeout_is_na"]
+  },
+  {
+    "name": "GR-CODE c5: restore failure branch disabled in build_tree",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "            if build_failure(last.stdout) == \"restore\":\n                return outputs, RESTORE\n",
+    "replace": "            if False:\n                pass\n",
+    "tests": ["tests/test_grade_rigor.py::test_static_analysis_delta_restore_failure_is_na"]
+  },
+  {
+    "name": "GR-CODE c5: sdk failure branch disabled in build_tree",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "            if argv == [\"dotnet\", \"--version\"]:\n                return outputs, SDK\n",
+    "replace": "            if False:\n                pass\n",
+    "tests": ["tests/test_grade_rigor.py::test_static_analysis_delta_sdk_failure_is_na"]
+  },
+  {
+    "name": "GR-CODE c5: no csproj projects in tree returns 0 warnings instead of not building",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "    if not projects:\n        return [], NOT_BUILDING\n",
+    "replace": "    if not projects:\n        return [], None\n",
+    "tests": ["tests/test_grade_rigor.py::test_no_csproj_in_working_copy_is_na_workspace_does_not_build"]
+  },
+  {
+    "name": "GR-CODE c5: delta calculation inverted",
+    "file": "src/harness_bench/grade/rigor.py",
+    "find": "        delta = len(cell_warnings) - len(pre_warnings)",
+    "replace": "        delta = len(pre_warnings) - len(cell_warnings)",
+    "tests": ["tests/test_grade_rigor.py::test_static_analysis_delta_positive"]
+  },
+  {
+    "name": "GR-CODE c5: delta clamped to non-negative",
+    "file": "src/harness_bench/grade/rigor.py",
+    "find": "        delta = len(cell_warnings) - len(pre_warnings)",
+    "replace": "        delta = max(0, len(cell_warnings) - len(pre_warnings))",
+    "tests": ["tests/test_grade_rigor.py::test_static_analysis_delta_can_be_negative"]
+  },
+  {
+    "name": "GR-CODE c5: warnings not accumulated across projects",
+    "file": "src/harness_bench/grade/rigor.py",
+    "find": "cell_warnings = {w for out_text in cell_outputs for w in parse_warnings(out_text, cell_tree)}",
+    "replace": "cell_warnings = set(parse_warnings(cell_outputs[-1], cell_tree)) if cell_outputs else set()",
+    "tests": ["tests/test_grade_rigor.py::test_warnings_accumulated_across_all_projects"]
+  },
+  {
+    "name": "GR-CODE c5: warning line regex matches error instead of warning",
+    "file": "src/harness_bench/grade/rigor.py",
+    "find": "WARNING_LINE = re.compile(r\"^(.+?)\\s*:\\s*warning\\s+([A-Za-z0-9_]+)\\s*:\", re.MULTILINE)",
+    "replace": "WARNING_LINE = re.compile(r\"^(.+?)\\s*:\\s*error\\s+([A-Za-z0-9_]+)\\s*:\", re.MULTILINE)",
+    "tests": ["tests/test_grade_rigor.py::test_static_analysis_delta_positive"]
+  },
+  {
+    "name": "GR-CODE c5: line number not extracted in parse_warnings",
+    "file": "src/harness_bench/grade/rigor.py",
+    "find": "        line_no = int(lm.group(1)) if lm else 0",
+    "replace": "        line_no = 0",
+    "tests": ["tests/test_grade_rigor.py::test_parse_warnings_extracts_file_line_code"]
+  },
+  {
+    "name": "GR-CODE c5: rigor NA by design reason altered",
+    "file": "src/harness_bench/grade/rigor.py",
+    "find": "    \"verification_before_done\": \"test runs not identifiable in the tool record (no command text extracted)\",",
+    "replace": "    \"verification_before_done\": \"not built\",",
+    "tests": ["tests/test_grade_rigor.py::test_rigor_na_by_design_metrics_give_the_designs_reasons_verbatim"]
+  },
+  {
+    "name": "GR-CODE c5: rigor metric filtering disabled in grade_cell",
+    "file": "src/harness_bench/grade/rigor.py",
+    "find": "            return {m: res[m] for m in inp.metrics if m in res} if inp.metrics else res",
+    "replace": "            return res",
+    "tests": ["tests/test_grade_rigor.py::test_rigor_filters_metrics_when_requested"]
+  },
+  {
+    "name": "GR-CODE c5: rigor not registered in runner.GRADERS",
+    "file": "src/harness_bench/grade/runner.py",
+    "find": "GRADERS[\"rigor\"] = rigor.grade_cell  # GR-CODE c5\n",
+    "replace": "",
+    "tests": ["tests/test_grade_rigor.py::test_rigor_is_registered_in_runner_graders"]
+  }
+]

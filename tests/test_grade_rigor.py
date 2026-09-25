@@ -7,17 +7,18 @@
 
 from __future__ import annotations
 
+import os
 import shutil
 from decimal import Decimal
 from pathlib import Path
 
 import pytest
-from archived_runs import ROOT
+from archived_runs import ROOT, gate_runs_root
 from test_grade_correctness import BROKEN, d1_cell, done, git, tree_digest
 
-from harness_bench import config, plan
+from harness_bench import config, plan, views
 from harness_bench.archive import make_writable
-from harness_bench.grade import CellInput, Score, rigor
+from harness_bench.grade import CellInput, Score, rigor, runner
 from harness_bench.grade.runner import applicable
 
 CATALOG = config.load_yaml(ROOT / "bench" / "metrics.yaml")
@@ -192,4 +193,190 @@ def test_static_analysis_delta_sdk_failure_is_na(tmp_path, monkeypatch):
     fake_dotnet(monkeypatch, done(1, "bad sdk"))
     got = grade_d1(tmp_path, folder, cell)
     assert got.get(METRIC) == (None, "infrastructure failure before build: sdk")
+
+
+# --- fast unit tests for static_analysis_delta branches -------------------------------------------------------------
+
+
+def test_cell_build_failure_is_na_workspace_does_not_build(tmp_path, monkeypatch):
+    folder, cell = d1_cell(tmp_path, {})
+    fake_dotnet(monkeypatch, done(0, "10.0.303"), done(1, "error CS1002: ; expected"))
+    got = grade_d1(tmp_path, folder, cell)
+    assert got.get(METRIC) == (None, "workspace does not build")
+
+
+def test_static_analysis_delta_positive(tmp_path, monkeypatch):
+    folder, cell = d1_cell(tmp_path, {})
+    from harness_bench import procs
+    real_run = procs.run
+
+    def run(argv, *args, **kwargs):
+        executable = Path(argv[0]).name.lower() if argv else ""
+        if executable in ("dotnet", "dotnet.exe"):
+            cwd = Path(kwargs.get("cwd", ""))
+            if argv[1:] == ["--version"]:
+                return done(0, "10.0.303")
+            if cwd.name == "cell":
+                return done(0, "src/AiDe.Core/Projections/Foo.cs(10,5): warning CS0168: The variable 'unused' is declared but never used\n")
+            return done(0, "")
+        return real_run(argv, *args, **kwargs)
+
+    monkeypatch.setattr(procs, "run", run)
+    got = grade_d1(tmp_path, folder, cell)
+    assert got.get(METRIC) == (1, None)
+
+
+def test_static_analysis_delta_can_be_negative(tmp_path, monkeypatch):
+    folder, cell = d1_cell(tmp_path, {})
+    from harness_bench import procs
+    real_run = procs.run
+
+    def run(argv, *args, **kwargs):
+        executable = Path(argv[0]).name.lower() if argv else ""
+        if executable in ("dotnet", "dotnet.exe"):
+            cwd = Path(kwargs.get("cwd", ""))
+            if argv[1:] == ["--version"]:
+                return done(0, "10.0.303")
+            if cwd.name == "pre-turn":
+                return done(0, "src/AiDe.Core/Projections/Foo.cs(10,5): warning CS0168: The variable 'unused' is declared but never used\n")
+            return done(0, "")
+        return real_run(argv, *args, **kwargs)
+
+    monkeypatch.setattr(procs, "run", run)
+    got = grade_d1(tmp_path, folder, cell)
+    assert got.get(METRIC) == (-1, None)
+
+
+def test_warnings_accumulated_across_all_projects(tmp_path, monkeypatch):
+    folder, cell = d1_cell(tmp_path, {})
+    from harness_bench import procs
+    real_run = procs.run
+    seen_builds = 0
+
+    def run(argv, *args, **kwargs):
+        nonlocal seen_builds
+        executable = Path(argv[0]).name.lower() if argv else ""
+        if executable in ("dotnet", "dotnet.exe"):
+            cwd = Path(kwargs.get("cwd", ""))
+            if argv[1:] == ["--version"]:
+                return done(0, "10.0.303")
+            if cwd.name == "cell":
+                seen_builds += 1
+                if seen_builds == 1:
+                    return done(0, "src/AiDe.Core/Projections/A.cs(10): warning CS0168: unused\nsrc/AiDe.Core/Projections/B.cs(20): warning CS0219: unused\n")
+                if seen_builds == 2:
+                    return done(0, "src/AiDe.Core/Projections/B.cs(20): warning CS0219: unused\nsrc/AiDe.Core/Projections/C.cs(30): warning CS0168: unused\n")
+            return done(0, "")
+        return real_run(argv, *args, **kwargs)
+
+    monkeypatch.setattr(procs, "run", run)
+    got = grade_d1(tmp_path, folder, cell)
+    assert got.get(METRIC) == (3, None)
+
+
+def test_no_csproj_in_working_copy_is_na_workspace_does_not_build(tmp_path):
+    folder, cell = d1_cell(tmp_path, {})
+    for p in (folder / "ws").rglob("*.csproj"):
+        p.unlink()
+    git(folder / "ws", "add", "-A")
+    git(folder / "ws", "commit", "-q", "-m", "delete all csproj")
+    got = grade_d1(tmp_path, folder, cell)
+    assert got.get(METRIC) == (None, "workspace does not build")
+
+
+def test_treat_warnings_as_errors_flag_in_build_flags():
+    assert "-p:TreatWarningsAsErrors=false" in rigor.BUILD_FLAGS
+
+
+def test_rigor_is_registered_in_runner_graders():
+    assert runner.GRADERS["rigor"] is rigor.grade_cell
+
+
+def test_parse_warnings_extracts_file_line_code(tmp_path):
+    tree = tmp_path / "ws"
+    tree.mkdir()
+    (tree / "A.cs").write_text("", encoding="utf-8")
+    output = (
+        f"{tree / 'A.cs'}(12,34): warning CS0168: variable unused\n"
+        f"{tree / 'A.cs'}(56): warning CS0219: assigned unused\n"
+        "outside.cs: warning CS8600: converting null\n"
+        "invalid line without warning format\n"
+    )
+    warnings = rigor.parse_warnings(output, tree)
+    assert ("A.cs", 12, "CS0168") in warnings
+    assert ("A.cs", 56, "CS0219") in warnings
+    assert ("outside.cs", 0, "CS8600") in warnings
+
+
+def test_rigor_evidence_log_written_and_clean_exit(tmp_path, monkeypatch):
+    folder, cell = d1_cell(tmp_path, {})
+    fake_dotnet(monkeypatch, done(0, "10.0.303"), done(0, ""))
+    inp = rigor_input(tmp_path / "run", folder, cell, tmp_path / "run" / "grading" / "g" / "c1" / "rigor")
+    out = rigor.grade_cell(inp)
+    assert out[METRIC].evidence == "grading/g/c1/rigor/rigor.log"
+    log = tmp_path / "run" / "grading" / "g" / "c1" / "rigor" / "rigor.log"
+    assert log.is_file()
+    assert "static_analysis_delta: 0" in log.read_text(encoding="utf-8")
+
+
+def test_rigor_filters_metrics_when_requested(tmp_path, monkeypatch):
+    folder, cell = d1_cell(tmp_path, {})
+    fake_dotnet(monkeypatch, done(0, "10.0.303"), done(0, ""))
+    inp = rigor_input(tmp_path / "run", folder, cell, tmp_path / "run" / "grading" / "g" / "c1" / "rigor")
+    inp_subset = CellInput(
+        run_dir=inp.run_dir,
+        root=inp.root,
+        plan=inp.plan,
+        cell=inp.cell,
+        task=inp.task,
+        task_dir=inp.task_dir,
+        archive=inp.archive,
+        out_dir=inp.out_dir,
+        events=inp.events,
+        record_reason=inp.record_reason,
+        model_calls=inp.model_calls,
+        tool_calls=inp.tool_calls,
+        turn_usage=inp.turn_usage,
+        metrics={"verification_before_done": {}},
+        allow_model_calls=inp.allow_model_calls,
+        extraction=inp.extraction,
+        prices=inp.prices,
+    )
+    out = rigor.grade_cell(inp_subset)
+    assert list(out.keys()) == ["verification_before_done"]
+
+
+def test_rigor_is_in_grader_build():
+    assert Path(rigor.__file__).resolve() in {p.resolve() for p in Path(runner.__file__).parent.glob("*.py")}
+
+
+# --- the gate run row15-d1-1, read-only (HB_GATE_RUNS) ---------------------------------------------------------------
+
+GATE_RUNS = Path(os.environ.get("HB_GATE_RUNS") or gate_runs_root())
+D1_GATE = {  # cp = copilot-sol, cx = codex-sol, cc = cc-opus; on/off = the pack
+    "2535962f830d7718": (0, None),  # cx off
+    "35af195cfe821dca": (0, None),  # cc on
+    "3ff04431d3b5ac27": (0, None),  # cx on
+    "4a6250261f80ded4": (0, None),  # cp on
+    "c3d40fa1377ba0dc": (0, None),  # cc off
+    "caa8ca38b1a929a8": (0, None),  # cp off
+}
+
+
+@pytest.mark.slow
+def test_the_d1_gate_cells_static_analysis_delta_and_archive_unchanged(tmp_path):
+    run = GATE_RUNS / "row15-d1-1"
+    if not (run / "plan.json").is_file():
+        pytest.skip("gate run row15-d1-1 is not on this host (set HB_GATE_RUNS to the runs folder)")
+    attempts = {e["cell_id"]: e["archive_attempt"] for e in views.rows(run, "events") if e["kind"] == "cell.archived"}
+    cells = {c["cell_id"]: c for c in plan.load_confirmed(run)["cells"]}
+    got = {}
+    for cid, attempt in sorted(attempts.items()):
+        folder = run / "archive" / cid / f"attempt-{attempt}"
+        before = tree_digest(folder)
+        out = rigor.grade_cell(rigor_input(tmp_path / "run", folder, cells[cid], tmp_path / "run" / "grading" / cid / "rigor"))
+        got[cid] = encode(out[METRIC])
+        assert tree_digest(folder) == before, f"grading wrote under the archive of {cid}"
+    assert got == D1_GATE
+
 
