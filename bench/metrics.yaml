@@ -87,9 +87,9 @@ areas:
     metrics:
       - { id: completion_without_intervention, source: [D], better: higher, grader: process, kind: score, weight: 1 }
       - { id: stuck_loops,                     source: [D], better: lower,  grader: process, kind: score, weight: 1 }
-      - { id: recovery_rate,                   source: [D], better: higher, grader: process, kind: score, weight: 1 }
-      - { id: tool_error_rate,                 source: [H], better: lower,  grader: process, kind: score, weight: 1 }
-      - { id: planning_ratio,                  source: [D], better: higher, grader: process, kind: score, weight: 0, note: "diagnostic; no a-priori good direction" }
+      - { id: recovery_rate,                   source: [D], better: higher, grader: process, kind: score, weight: 1, scale: 4 }
+      - { id: tool_error_rate,                 source: [H], better: lower,  grader: process, kind: score, weight: 1, scale: 4 }
+      - { id: planning_ratio,                  source: [D], better: higher, grader: process, kind: score, weight: 0, scale: 4, note: "diagnostic; no a-priori good direction" }
       - { id: time_to_first_green,             source: [D], better: lower,  grader: process, kind: score, weight: 1 }
   coordination:
     title: Coordination & pack effect
