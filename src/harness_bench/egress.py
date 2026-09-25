@@ -10,7 +10,7 @@ from __future__ import annotations
 import hashlib
 import re
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TypeVar
 
 from harness_bench.report import html as report_html
@@ -72,22 +72,32 @@ def _path(payload: str, value: str | None) -> bool:
     return bool(value and value.strip()) and _path_form(value) in _path_form(payload)
 
 
-def check(payload: str, *, destination: str, secrets: Sequence[str] = (), email: str | None = None,
-          username: str | None = None, home: str | None = None, canaries: Sequence[str] = ()) -> Verdict:
+@dataclass(frozen=True)
+class Operator:
+    """The operator's identifiers, supplied at run time and never committed (the origin repo is public, R-42)."""
+
+    email: str = field(repr=False)
+    username: str = field(repr=False)
+    home: str = field(repr=False)
+
+
+def check(payload: str, *, destination: str, operator: Operator | None = None, secrets: Sequence[str] = (),
+          canaries: Sequence[str] = ()) -> Verdict:
     """Scan `payload` bound for `destination`.
 
     Every value is supplied by the caller at run time and is never stored or returned: `secrets` are the
-    credential values the host holds; `email`, `username` and `home` identify the operator (never committed:
-    the origin repo is public, R-42); `canaries` are the planted US-13/US-48 markers.
-    A hit returns a withheld verdict: no payload, only its sha256, the destination and the class names.
+    credential values the host holds; `operator` identifies the operator; `canaries` are the planted
+    US-13/US-48 markers. A hit returns a withheld verdict: no payload, only its sha256, the destination and
+    the class names.
     """
+    op = operator or Operator("", "", "")
     digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
     classes = tuple(name for name, hit in (
         ("credential", _exact(payload, secrets)),
         ("token_shape", report_html.scan(payload) > 0),  # the report's shape scan (HB-SEC-001), shapes only
-        ("email", _anycase(payload, email)),
-        ("username", _word(payload, username)),
-        ("home_path", _path(payload, home)),
+        ("email", _anycase(payload, op.email)),
+        ("username", _word(payload, op.username)),
+        ("home_path", _path(payload, op.home)),
         ("canary", _exact(payload, canaries)),
     ) if hit)
     return Verdict(destination, digest, classes, None if classes else payload)
