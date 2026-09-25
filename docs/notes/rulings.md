@@ -681,3 +681,37 @@ Append only. One entry per ruling. Newest last.
   2. `bench validate` rejects a plan whose frozen clarification-set hash differs from the file's.
 
 **A1 in the smoke matrix (R-38):** stays, 6 of 36 cells; Copilot is reachable under R-51. Gates before the smoke run: R-51 c2 and c3; R-38 c5 unchanged. Every A1 cell carries `low-confidence matcher`.
+
+## R-54 · 2026-09-25 · Owner seat (Fable) · `ToolSearch` is class `meta`; a refused out-of-profile call is a recorded attempt, an executed one invalidates
+
+- **Ruling:** (a) Claude Code's `ToolSearch` is a new class **`meta`**: it loads a schema and invokes nothing. `TOOL_CLASSES` (`telemetry/claude_code.py:32`) gains `"ToolSearch": "meta"`; `OUT_OF_PROFILE` (`test_allowlist_classes.py:44`) loses it; no other id joins; `Skill` and `Agent` stay out of profile. (b) R-45 item 2 is refined: a class `other` row invalidates the cell **only when the call executed**. A row the record shows **refused** — Claude: `ok=0` with the driver's `permission_requests` incremented (events seq 22: `1`); Copilot: a hook denial — is the finding `out-of-profile attempt refused` on a **valid** cell, disclosed in the report. The refusal signal is the driver's count or the native denial envelope, never the model's prose. `ok=null` (every Codex `exec` row, tool_calls seq 18–26) is *not* refused.
+- **Reasoning:** the cc-opus record ran `ToolSearch` (`select:WebFetch`, native :21–23) with no permission callback; the one callback was `WebFetch` (native :34–35, `Tool permission request failed: Error: Tool use aborted`), which `driver.py:175-177` answers `cancelled`. That is ADR-0004:60: fails closed *and* recorded. Invalidating a refused attempt punishes the control for working; `ToolSearch` as `other` invalidates every Claude cell that reads a deferred schema (16 deferred names, native :5).
+- **Conditions:**
+  1. Red-first: a reader test expects `meta` for `ToolSearch`; the class-coverage test's `meta` set is exactly `{ToolSearch}`.
+  2. The per-cell finding (W2-VIEWS) reads `ok` and the refusal signal; its E2E has a refused and an executed `other` row.
+  3. `meta` calls are counted per cell (a cost axis), never scored.
+
+## R-55 · 2026-09-25 · Owner seat (Fable) · Codex apps: the Q1 cell is the negative fixture; wave 1 stands, disclosed, not re-run; the operator checks the connector log
+
+- **Ruling:** the qual-r45-1 Codex cell is `invalid (out-of-profile tool called)`, kept as the negative fixture (R-34 c1's shape). Wave-1 and phase-1 Codex results **stand, disclosed, not re-run** — R-45 c3's treatment — with this disclosure beside the `phase2.md:183-190` table, in one block with the R-45 c3 Copilot text, which has not landed (`grep R-45 docs/proof/phase2.md`: none): *"Every Codex cell ran with `apps` on: the ChatGPT account's app connectors were advertised as the `codex_apps` MCP server. Whether any cell called one is not recorded (run folders removed; no reader row). ADR-0004:60 is Inferred for Codex on those runs."* One **ask** to the operator: read the ChatGPT connector activity log for the phase-1 and wave-1 windows; a recorded call re-opens this ruling.
+- **Reasoning:** rollout `:17` is a `McpToolCall`: server `codex_apps`, tool `higgsfield.create_website`, `readOnlyHint: false`, arguments `{url: https://example.com/}`, status `failed` with a connector schema-validation error — the request left the cell and reached the connector layer; whether it reached Higgsfield is not recorded. The cell's system prompt carries an "Apps (Connectors)" section (rollout `:1`): exposure is in the record. Seeded `config.toml` has only `model` and `web_search`; `codex.py:37` reads no MCP item, so the call left no row. Worse than Copilot's case: called, with write semantics, on the operator's account. The fix slice (ADR-0004:51) needs no ruling.
+- **Conditions:**
+  1. Red-first: a profile test asserts `[features] apps = false` in the seeded `config.toml`; a reader test feeds a `McpToolCall` item and expects a class `other` row carrying `server` and `tool`.
+  2. Re-qualify Codex on the same Q1 fixture after the fix: no `codex_apps` string in the rollout (system prompt included), `probe.md` = `no web tool available`. That cell, not the fix's E2E, closes ADR-0004:82 for Codex.
+  3. ADR-0004's Codex row lists the setting verbatim; PERM-B gains the instance.
+
+## R-56 · 2026-09-25 · Owner seat (Fable) · R-46's Claude `assume:` is confirmed for `WebFetch` by the driver's cancel; ADR-0004:82 closure per harness
+
+- **Ruling:** confirmed for `WebFetch`: effective mode `default` (events seq 19; the stderr fallback line), a permission callback, cancelled by the driver, count 1. **Not** a `dontAsk` denial. `WebSearch` was not exercised: **Inferred** (same deferred class, same path), disclosed in the ADR row. ADR-0004:82 ("allowed shell succeeds; web fetch and out-of-profile tool refused and recorded"): **Copilot — closed** (9 advertised ids = the allowlist, `probe.md` "no web tool available", 0 callbacks; R-45 c2 resolved: the pin is `1.0.89-1`, the ACP self-report; the exe's `1.0.89-3` is disclosed). **Claude — closed for web, open for MCP:** eight `mcp__claude_ai_Claude_Docs__*` tools advertised (native :26; `account_connector_tools` 8, `claude_code.py:35`), an "MCP server other than the task's own" (ADR-0004:51); none called; whether a call prompts is unmeasured. **Codex — open** until R-55 c2.
+- **Reasoning:** `PowerShell` ran `ok=1` in all three cells (tool_calls seq 6, 13, 26). The Claude connector arrives with the copied subscription login, not the profile: Codex apps' class, one step earlier (advertised, not called).
+- **Conditions:**
+  1. The Leader reads the pinned 2.1.282 build for the setting that keeps account MCP servers out of a cell (check, not recall); if none, the Q1 fixture gains a probe naming an `mcp__claude_ai_*` tool and the measured outcome is recorded. Closure = `account_connector_tools` 0, or a driver-counted refusal.
+  2. ADR-0004's Claude row: `WebFetch` Verified refused-by-callback; `WebSearch` Inferred; account MCP per c1.
+  3. `docs/proof/phase2.md` gains the per-harness Q1 outcome table (R-46 c2).
+
+## R-57 · 2026-09-25 · Owner seat (Fable) · Gates for the D1 night-1 run (R-38) beyond the running fix slice
+
+- **Ruling:** night 1 does not start until: (1) R-55 c2's Codex re-qualification cell is green; (2) R-56 c1 is resolved for Claude — four of the night's six cells are cc-opus or codex-sol, each able to reach the operator's account otherwise; (3) R-54's per-cell finding exists in `bench report` — without it the night's validity is Inferred, and rigor ranks above speed; (4) R-45 item 1 (Copilot `skill` → `read`) has landed, or every pack-on Copilot cell is invalid under (3); (5) each slice's model is stipulated (R-33). `cost_usd` null (scores seq 3/6/9) is the subscriptions condition, not a gate.
+- **Reasoning:** a fix slice proves machinery; a qualification cell on the fixed profile proves the exposure is gone (R-45 c1's pattern). Copilot needs no further gate.
+- **Conditions:**
+  1. The night-1 run record cites the qualification cell ids and the finding's test; R-38 c1's shape is unchanged.
