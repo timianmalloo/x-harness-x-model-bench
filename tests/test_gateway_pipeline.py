@@ -198,3 +198,29 @@ def test_t_gw_30_an_orphan_is_moved_aside_before_a_fresh_call_stores_its_key(tmp
     orphans = list((ctx.store / "orphaned").glob(f"{first.cache_key}.*.json"))
     assert len(orphans) == 1
     assert hashlib.sha256(orphans[0].read_bytes()).hexdigest() == first.entry_sha256
+
+
+AUX_JUDGE = pipeline.Judge(model="judge-model-a", invocation_sha256="c" * 64,
+                           allowed_models=("judge-model-a", "judge-aux-b"))
+
+
+def _served(served: tuple[str, ...]) -> gw_backend.ReplayBackend:
+    rendered = request.render(INPUTS.preamble, INPUTS.rubric, INPUTS.items, INPUTS.artifacts, ENTRIES)
+    return gw_backend.ReplayBackend({hashlib.sha256(rendered.text.encode("utf-8")).hexdigest(): _stdout(GOOD, served)})
+
+
+def test_an_answer_the_pin_never_served_is_not_stored(tmp_path):
+    # Review F1 (Fable, w3-gwi-1): an allowed auxiliary model alone is not the judge (design 4.3; HB-GW-003).
+    result = pipeline.run(AUX_JUDGE, INPUTS, _ctx(tmp_path), _served(("judge-aux-b",)))
+    assert (result.outcome, result.code, result.verdicts) == ("failed", "HB-GW-003", None)
+    assert not list((tmp_path / "cache" / "verdicts").glob("*.json"))
+
+
+def test_the_pin_with_an_allowed_auxiliary_model_is_stored(tmp_path):
+    result = pipeline.run(AUX_JUDGE, INPUTS, _ctx(tmp_path), _served(("judge-model-a", "judge-aux-b")))
+    assert (result.outcome, result.code) == ("stored", None)
+
+
+def test_the_pin_with_a_model_outside_the_allowed_set_is_not_stored(tmp_path):
+    result = pipeline.run(AUX_JUDGE, INPUTS, _ctx(tmp_path), _served(("judge-model-a", "judge-model-q")))
+    assert (result.outcome, result.code, result.verdicts) == ("failed", "HB-GW-003", None)
