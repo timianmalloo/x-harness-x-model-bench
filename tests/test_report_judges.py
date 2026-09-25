@@ -159,6 +159,8 @@ def test_t_gw_29_without_the_operators_identifiers_the_cli_context_is_not_record
     page = html.render(views.load(run_dir), False, run_dir, root=root)
     assert _dd(page, "CLI-added context") == "not recorded: the operator's identifiers were not supplied"
     other = make_run(root, tmp_path / "other", {"a": GOOD}, combos={"a": "combo-placeholder"})
+    runner.run_pass(other, root, judge.IN_RUN)  # a graded pass that looked up no judge verdict (section 6)
+    assert views.load(other).grading_id is not None
     assert "<dt>Judges</dt>" not in html.render(views.load(other), False, other, root=root)  # no judge pass
 
 

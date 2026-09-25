@@ -1,0 +1,212 @@
+[
+ {
+  "name": "kappa with p_e = 1 divides instead of reading one category",
+  "file": "src/harness_bench/gateway/calibration.py",
+  "find": "    if p_e == 1:",
+  "replace": "    if False:",
+  "tests": ["tests/test_calibrate.py::test_t_gw_17_one_category_is_not_recorded_with_n_and_exact_agreement"]
+ },
+ {
+  "name": "kappa rounds half up instead of half even",
+  "file": "src/harness_bench/gateway/calibration.py",
+  "find": "str(Decimal(round(value * 1000)).scaleb(-3))",
+  "replace": "str(Decimal(int(value * 1000 + Fraction(1, 2))).scaleb(-3))",
+  "tests": ["tests/test_calibrate.py::test_t_gw_17_kappa_is_unweighted_cohen_at_scale_3_half_even_with_n_and_exact_agreement"]
+ },
+ {
+  "name": "kappa over no pairs divides by zero",
+  "file": "src/harness_bench/gateway/calibration.py",
+  "find": "    if n == 0:",
+  "replace": "    if False:",
+  "tests": ["tests/test_calibrate.py::test_t_gw_17_one_category_is_not_recorded_with_n_and_exact_agreement"]
+ },
+ {
+  "name": "an absent labels file is refused (R-72 item 4: file-conditional)",
+  "file": "src/harness_bench/gateway/calibration.py",
+  "find": "    if not path.is_file():\n        return None\n    raw = path.read_bytes()",
+  "replace": "    if not path.is_file():\n        raise BenchError(\"HB-CAL-001\", \"absent\")\n    raw = path.read_bytes()",
+  "tests": ["tests/test_calibrate.py::test_t_gw_16_with_no_labels_file_the_calibration_spawns_and_the_human_half_is_not_recorded"]
+ },
+ {
+  "name": "an empty labels file is read as absent",
+  "file": "src/harness_bench/gateway/calibration.py",
+  "find": "    if not isinstance(rows, list) or not rows:",
+  "replace": "    if False:",
+  "tests": ["tests/test_calibrate.py::test_t_gw_16_a_labels_file_that_does_not_match_the_manifest_is_refused_before_any_spawn[empty file]"]
+ },
+ {
+  "name": "a duplicated label id passes",
+  "file": "src/harness_bench/gateway/calibration.py",
+  "find": "if c > 1)]",
+  "replace": "if c > 2)]",
+  "tests": ["tests/test_calibrate.py::test_t_gw_16_a_labels_file_that_does_not_match_the_manifest_is_refused_before_any_spawn[duplicate]"]
+ },
+ {
+  "name": "a missing label id passes",
+  "file": "src/harness_bench/gateway/calibration.py",
+  "find": "for i in sorted(ids - set(seen))] if rows else []",
+  "replace": "for i in sorted(ids - set(seen))] if False else []",
+  "tests": ["tests/test_calibrate.py::test_t_gw_16_a_labels_file_that_does_not_match_the_manifest_is_refused_before_any_spawn[missing]"]
+ },
+ {
+  "name": "an unknown label id passes",
+  "file": "src/harness_bench/gateway/calibration.py",
+  "find": "for i in sorted(set(seen) - ids)]",
+  "replace": "for i in sorted(set())]",
+  "tests": ["tests/test_calibrate.py::test_t_gw_16_a_labels_file_that_does_not_match_the_manifest_is_refused_before_any_spawn[unknown id]"]
+ },
+ {
+  "name": "a bool score passes as 1",
+  "file": "src/harness_bench/gateway/calibration.py",
+  "find": "        if isinstance(score, bool) or score not in SCORES:",
+  "replace": "        if score not in SCORES:",
+  "tests": ["tests/test_calibrate.py::test_t_gw_16_a_labels_file_that_does_not_match_the_manifest_is_refused_before_any_spawn[bool score]"]
+ },
+ {
+  "name": "calibration.started never records the labels sha256",
+  "file": "src/harness_bench/gateway/calibration.py",
+  "find": "\"labels_sha256\": labels.sha256 if labels else None,",
+  "replace": "\"labels_sha256\": None,",
+  "tests": ["tests/test_calibrate.py::test_t_gw_16_a_matching_labels_file_is_recorded_by_its_sha256_and_scored"]
+ },
+ {
+  "name": "the join compares rubric item 1 instead of the labelled item",
+  "file": "src/harness_bench/gateway/calibration.py",
+  "find": "= scores[row[\"rubric_item\"]]",
+  "replace": "= scores[1]",
+  "tests": ["tests/test_calibrate.py::test_t_gw_17b_only_the_labelled_rubric_item_of_the_seven_item_verdict_set_is_compared"]
+ },
+ {
+  "name": "a changed bound hash is not stale",
+  "file": "src/harness_bench/gateway/calibration.py",
+  "find": "    if stipulation is None or {k: started.get(k) for k in BOUND} != _binding(rubric, stipulation):",
+  "replace": "    if stipulation is None:",
+  "tests": ["tests/test_calibrate.py::test_t_gw_17c_a_changed_template_schema_rubric_or_invocation_reads_calibration_stale"]
+ },
+ {
+  "name": "a relabel after calibration is scored as if unchanged",
+  "file": "src/harness_bench/gateway/calibration.py",
+  "find": "    if (labels.sha256 if labels else None) != started.get(\"labels_sha256\"):",
+  "replace": "    if False:",
+  "tests": ["tests/test_calibrate.py::test_t_gw_16b_a_relabel_after_calibration_reads_labels_changed"]
+ },
+ {
+  "name": "no blind attestation is not disclosed",
+  "file": "src/harness_bench/gateway/calibration.py",
+  "find": "[UNBLINDED] if labels.blind is not True else []",
+  "replace": "[]",
+  "tests": ["tests/test_calibrate.py::test_r72_c4_the_blind_attestation_and_labelled_utc_are_read_and_shown"]
+ },
+ {
+  "name": "post-dated labels are not disclosed",
+  "file": "src/harness_bench/gateway/calibration.py",
+  "find": "labels.earliest_utc > started[\"started_utc\"]",
+  "replace": "labels.earliest_utc < started[\"started_utc\"]",
+  "tests": ["tests/test_calibrate.py::test_r72_c4_the_blind_attestation_and_labelled_utc_are_read_and_shown"]
+ },
+ {
+  "name": "an unqualified second judge gets an inter-judge kappa",
+  "file": "src/harness_bench/gateway/calibration.py",
+  "find": "    if len(stipulation[\"judges\"]) < 2 or not stipulation[\"judges\"][1][\"qualified\"]:",
+  "replace": "    if len(stipulation[\"judges\"]) < 2:",
+  "tests": ["tests/test_calibrate.py::test_t_gw_16_with_no_labels_file_the_calibration_spawns_and_the_human_half_is_not_recorded"]
+ },
+ {
+  "name": "an unqualified judge is scored against the labels",
+  "file": "src/harness_bench/gateway/calibration.py",
+  "find": "    judges = [j for j in stipulation[\"judges\"] if j[\"qualified\"]]",
+  "replace": "    judges = list(stipulation[\"judges\"])",
+  "tests": ["tests/test_calibrate.py::test_t_gw_16_a_matching_labels_file_is_recorded_by_its_sha256_and_scored"]
+ },
+ {
+  "name": "an entry changed since calibration still feeds kappa",
+  "file": "src/harness_bench/gateway/calibration.py",
+  "find": "!= row[\"entry_sha256\"]:\n        return None",
+  "replace": "!= row[\"entry_sha256\"] and False:\n        return None",
+  "tests": ["tests/test_calibrate.py::test_an_entry_changed_after_calibration_is_not_a_kappa_input"]
+ },
+ {
+  "name": "the gateway's own request is not subtracted from the record",
+  "file": "src/harness_bench/report/judges.py",
+  "find": "if hashlib.sha256(s.encode(\"utf-8\")).hexdigest() != request_sha256 and",
+  "replace": "if True and",
+  "tests": ["tests/test_report_judges.py::test_t_gw_24_the_gateways_own_request_is_subtracted_and_an_unparseable_record_is_not_recorded"]
+ },
+ {
+  "name": "an unparseable record reads as no classes instead of not recorded",
+  "file": "src/harness_bench/report/judges.py",
+  "find": "    except (OSError, UnicodeDecodeError, ValueError):\n        return None",
+  "replace": "    except (OSError, UnicodeDecodeError, ValueError):\n        return ()",
+  "tests": ["tests/test_report_judges.py::test_t_gw_24_the_gateways_own_request_is_subtracted_and_an_unparseable_record_is_not_recorded"]
+ },
+ {
+  "name": "the cell vendor is inferred from the model-id prefix (R-73 item 1)",
+  "file": "src/harness_bench/report/judges.py",
+  "find": "vendor[c[\"harness\"]] = profiles.load(root, c[\"harness\"]).vendor",
+  "replace": "vendor[c[\"harness\"]] = \"anthropic\" if c[\"model\"].startswith(\"claude\") else \"openai\"",
+  "tests": ["tests/test_report_judges.py::test_t_gw_27_the_cell_vendor_is_the_profiles_vendor_never_a_model_id_prefix"]
+ },
+ {
+  "name": "the vendor split's sign is GPT minus Claude",
+  "file": "src/harness_bench/report/judges.py",
+  "find": ".append(claude - gpt)",
+  "replace": ".append(gpt - claude)",
+  "tests": ["tests/test_report_judges.py::test_t_gw_27_the_vendor_split_is_claude_minus_gpt_per_cell_vendor_with_n"]
+ },
+ {
+  "name": "the vendor split is at scale 2",
+  "file": "src/harness_bench/report/judges.py",
+  "find": "    return Decimal(round(value * 1000)).scaleb(-3)",
+  "replace": "    return Decimal(round(value * 100) * 10).scaleb(-3)",
+  "tests": ["tests/test_report_judges.py::test_t_gw_27_the_vendor_split_is_claude_minus_gpt_per_cell_vendor_with_n"]
+ },
+ {
+  "name": "a two-step disagreement counts as within one step",
+  "file": "src/harness_bench/report/judges.py",
+  "find": "if abs(a - b) <= 1)",
+  "replace": "if abs(a - b) <= 2)",
+  "tests": ["tests/test_report_judges.py::test_t_gw_27_pairs_join_the_two_judges_verdicts_per_cell_and_item"]
+ },
+ {
+  "name": "the header omits the unqualified second judge (R-63 c3)",
+  "file": "src/harness_bench/report/judges.py",
+  "find": "    if not second:\n        out.append",
+  "replace": "    if False:\n        out.append",
+  "tests": ["tests/test_report_judges.py::test_t_gw_29_the_header_names_both_judges_their_served_ids_and_the_unqualified_one"]
+ },
+ {
+  "name": "a pass with no judge lookup still gets the judge block",
+  "file": "src/harness_bench/report/judges.py",
+  "find": "    if not uses or stipulation is None:",
+  "replace": "    if stipulation is None:",
+  "tests": ["tests/test_report_judges.py::test_t_gw_29_without_the_operators_identifiers_the_cli_context_is_not_recorded_and_no_pass_no_block"]
+ },
+ {
+  "name": "the CLI-added context is scanned with no operator identifiers",
+  "file": "src/harness_bench/report/judges.py",
+  "find": "    if operator is None:\n        return NO_OPERATOR",
+  "replace": "    if False:\n        return NO_OPERATOR",
+  "tests": ["tests/test_report_judges.py::test_t_gw_29_without_the_operators_identifiers_the_cli_context_is_not_recorded_and_no_pass_no_block"]
+ },
+ {
+  "name": "the R-62 a3 disclosure sentence is dropped",
+  "file": "src/harness_bench/report/judges.py",
+  "find": "    out.append((\"Calibration disclosure\", calibration.DISCLOSURE))",
+  "replace": "    pass",
+  "tests": ["tests/test_report_judges.py::test_t_gw_29_the_header_names_both_judges_their_served_ids_and_the_unqualified_one"]
+ },
+ {
+  "name": "a header value is rendered without _e (T-GW-36)",
+  "file": "src/harness_bench/report/html.py",
+  "find": "<dd>{_fact(v)}</dd>",
+  "replace": "<dd>{v}</dd>",
+  "tests": ["tests/test_report_judges.py::test_t_gw_36_a_script_rationale_renders_as_inert_text"]
+ },
+ {
+  "name": "a judged metric's note is not scanned with the denylist (R-64 c2)",
+  "file": "src/harness_bench/config.py",
+  "find": "                    if scrub.scan(text, entries):",
+  "replace": "                    if False:",
+  "tests": ["tests/test_calibrate.py::test_r64_c2_bench_validate_scans_a_judged_metrics_note_and_rubric_with_the_scrub_denylist"]
+ }
+]
