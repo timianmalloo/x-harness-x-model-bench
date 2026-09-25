@@ -78,6 +78,21 @@ def test_plan_flags_and_confirmation_name_the_timeout_and_token_cap(monkeypatch,
     assert "spend cap: 900 tokens, checked when each cell ends" in output
 
 
+def test_plan_flags_refuse_non_positive_values(root):
+    parser = cli.build_parser()
+    for flag, value in (("--decision-timeout-minutes", "0"), ("--spend-cap-tokens", "-1")):
+        with pytest.raises(SystemExit) as error:
+            parser.parse_args(["--root", str(root), "plan", flag, value])
+        assert error.value.code == 2
+
+
+def test_bench_run_refuses_a_confirmed_old_plan_before_starting(capsys, root, tmp_path):  # P-2
+    make_run(root, tmp_path, {"a": GOOD})  # the fixture's confirmed plan lacks newer engine parameters
+    code, out, err = _bench(capsys, root, tmp_path, "run", "r1")
+    assert code == 1 and out == ""
+    assert "HB-USR-002: old plan missing parameters" in err
+
+
 def test_status_json_writes_only_bench_status_to_stdout(capsys, root, tmp_path, monkeypatch):
     make_run(root, tmp_path, {"a": GOOD})
     monkeypatch.setenv("NO_COLOR", "1")
@@ -219,7 +234,7 @@ def test_run_closes_its_engine_log_handler_so_the_file_is_deletable(capsys, root
     run_dir = tmp_path / "runs" / "r1"
     run_dir.mkdir(parents=True)
     (run_dir / "plan.json").write_text("{}", encoding="utf-8")
-    p = {"run_id": "r1", "trace_id": "a" * 32, "tasks": {}, "builds": {}}
+    p = {"run_id": "r1", "trace_id": "a" * 32, "tasks": {}, "builds": {}, "parameters": plan.DEFAULT_PARAMETERS.copy()}
     monkeypatch.setattr(plan, "load_confirmed", lambda rd: p)
     monkeypatch.setattr(preflight, "check", lambda *a, **k: None)
 

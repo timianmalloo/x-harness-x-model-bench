@@ -152,15 +152,21 @@ def test_no_free_text_from_cells_reaches_status(root, tmp_path):  # ADR-0011 C4 
 
 
 def test_last_update_is_reported_for_timed_out_and_stopped_cells(root, tmp_path):  # R-50
-    run_dir = make_run(root, tmp_path, {"a": GOOD, "b": GOOD}, outcomes={
-        "a": {"outcome": "timed_out", "last_update_ms": 4200},
-        "b": {"outcome": "stopped", "last_update_ms": None},
+    timed_out, stopped = "aaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbb"
+    run_dir = make_run(root, tmp_path, {timed_out: GOOD, stopped: GOOD}, outcomes={
+        timed_out: {"outcome": "timed_out", "last_update_ms": 4200},
+        stopped: {"outcome": "stopped", "last_update_ms": None},
     })
     s = status.build(run_dir, now=NOW)
-    assert s.last_update_ms == {"a": 4200, "b": None}
+    assert s.last_update_ms == {timed_out: 4200, stopped: None}
     assert status.parse(status.to_json(s)).last_update_ms == s.last_update_ms
-    assert "a: last update 4200 ms ago" in status.text(s)
-    assert "b: last update not recorded" in status.text(s)
+    assert f"{timed_out}: last update 4200 ms into turn" in status.text(s)
+    assert f"{stopped}: last update not recorded" in status.text(s)
+
+
+def test_stopped_and_decision_skip_are_closed_outcomes():  # ST-1
+    assert "stopped" in status.OUTCOMES
+    assert "skipped (decision)" in status.OUTCOMES
 
 
 def test_the_skill_names_every_status_field():  # SK-1, R-3 condition 3
@@ -196,6 +202,7 @@ _statuses = st.builds(
     completion=st.sampled_from(status.COMPLETION), lock_age_s=st.none() | st.integers(0, 10**6),
     cells_total=st.integers(0, 600), cells_ended=st.integers(0, 600),
     outcomes=st.dictionaries(st.sampled_from(status.OUTCOMES), st.integers(0, 600)),
+    last_update_ms=st.dictionaries(_ids, st.none() | st.integers(0, 10**9), max_size=4),
     validity=st.dictionaries(st.sampled_from(status.VALIDITY), st.integers(0, 600)),
     causes=st.dictionaries(st.from_regex(r"HB-CELL-[0-9]{3}", fullmatch=True), st.integers(0, 600)),
     running=st.lists(_running, max_size=4), decisions=st.just([]),
