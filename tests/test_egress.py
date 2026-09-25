@@ -100,6 +100,20 @@ def test_the_operators_username_is_withheld_as_a_whole_word(context):
     assert egress.check(_plant(f"{username}9z"), destination=DEST, username=username).classes == ()
 
 
+@pytest.mark.parametrize("form", [
+    lambda h: h + "\\projects\\repo\\main.py",
+    lambda h: h.replace("\\", "/") + "/projects",
+    lambda h: h.replace("\\", "\\\\"),
+    str.lower,
+], ids=["backslash", "forward-slash", "json-escaped", "other-case"])
+def test_the_operators_home_path_is_withheld_in_any_separator_form(form):
+    home = f"C:\\Users\\egress-{token_hex(4)}"  # a synthetic folder name; no real home is read
+    text = _plant(f"cwd: {form(home)}")
+    verdict = egress.check(text, destination=DEST, home=home)
+    assert verdict.classes == ("home_path",)
+    assert (verdict.reason, verdict.payload_sha256) == ("withheld: sensitive content", _sha(text))
+
+
 def test_a_withheld_payload_never_reaches_the_backend():
     value = _credential()
     backend = FakeBackend()
