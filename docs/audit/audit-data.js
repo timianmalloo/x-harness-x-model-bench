@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T10:33:36Z",
+  "generated": "2026-09-25T10:41:42Z",
   "audit": [
     {
       "actor": null,
@@ -20006,6 +20006,388 @@ window.AUDIT_DATA = {
             "sha256": "c058575c1400dfd0aed59b1cdd597b6558a0118e6317f8ea29cc8c7dcf9ca714",
             "status": "resolved",
             "token": "src/harness_bench/telemetry/copilot.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3C2G5WWJVFAEWS4GHGPDSMM",
+      "shortname": "Goal: W3-GR-PROC slice p2 per docs/design/phase3-graders.md, section \"Pr…",
+      "datetime": "2026-09-25T10:41:41Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W3-GR-PROC slice p2 per docs/design/phase3-graders.md, section \"Process\" and slice-plan row \"GR-PROC p1-p3\": the process grader's recovery_rate and planning_ratio, red first, on top of p1 (joined: tool_error_rate and stuck_loops in src/harness_bench/grade/process.py).\nDone when: recovery_rate is failed calls followed later by an ok == 1 call of the same name, divided by failed calls, as a Decimal quantized to 4 places, over the same non-meta calls p1 counts; its NA reasons are exactly \"no failed tool call\" and the p1 missing-outcome reason.; planning_ratio is the sum of `requests` of model calls that start before the first edit-class tool call, divided by the sum of `requests`, as a Decimal quantized to 4 places; its NA reasons are exactly \"no edit-class tool call (edits through the shell are not classed)\" and \"model calls not itemised in time (summary rows)\", as the design defines them.; tests/test_grade_process.py gains red-first cases on synthetic seeded fixtures under tests/fixtures/grade/process/: a failure later followed by a success of the same name gives 1.0000; a failure never followed by a success gives 0.0000; no failed call gives the NA; 7 of 20 requests before the first edit gives 0.3500; no edit-class call gives its NA; summary model-call rows give their NA.; tests/mutations/process.json gains one named mutant per new branch (success of another name counted; success before the failure counted; requests after the first edit counted; summary rows not refused), each killed: uv run python tools/mutate_check.py tests/mutations/process.json.; uv run pytest -q -p no:cacheprovider tests/test_grade_process.py passes and uv run ruff check src tests tools is clean.; Commit the red test first, then the green code, with git; commit the green as soon as it passes.\nNot in scope: completion_without_intervention and time_to_first_green (slice p3); registering process in runner.GRADERS; bench/metrics.yaml; any file outside src/harness_bench/grade/process.py, tests/test_grade_process.py, tests/mutations/process.json and tests/fixtures/grade/process/; reading runs/; bench run; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one slice of at most 12 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase3-graders.md (section Process); src/harness_bench/grade/process.py; src/harness_bench/grade/__init__.py (CellInput, Score); tests/test_grade_process.py; src/harness_bench/telemetry/normalize.py (the model_calls row fields, incl. requests and the start time). Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3C2G6KFX8A84KQMN9ESCYXD",
+      "shortname": "compile-Goal: W3-GR-PROC slice p2 per docs/design/phase3-graders.md, section \"Pr…",
+      "datetime": "2026-09-25T10:41:41Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-GR-PROC slice p2 per docs/design/phase3-graders.md, section \"Process\" and slice-plan row \"GR-PROC p1-p3\": the process grader's recovery_rate and planning_ratio, red first, on top of p1 (joined: tool_error_rate and stuck_loops in src/harness_bench/grade/process.py).\nDone when: recovery_rate is failed calls followed later by an ok == 1 call of the same name, divided by failed calls, as a Decimal quantized to 4 places, over the same non-meta calls p1 counts; its NA reasons are exactly \"no failed tool call\" and the p1 missing-outcome reason.; planning_ratio is the sum of `requests` of model calls that start before the first edit-class tool call, divided by the sum of `requests`, as a Decimal quantized to 4 places; its NA reasons are exactly \"no edit-class tool call (edits through the shell are not classed)\" and \"model calls not itemised in time (summary rows)\", as the design defines them.; tests/test_grade_process.py gains red-first cases on synthetic seeded fixtures under tests/fixtures/grade/process/: a failure later followed by a success of the same name gives 1.0000; a failure never followed by a success gives 0.0000; no failed call gives the NA; 7 of 20 requests before the first edit gives 0.3500; no edit-class call gives its NA; summary model-call rows give their NA.; tests/mutations/process.json gains one named mutant per new branch (success of another name counted; success before the failure counted; requests after the first edit counted; summary rows not refused), each killed: uv run python tools/mutate_check.py tests/mutations/process.json.; uv run pytest -q -p no:cacheprovider tests/test_grade_process.py passes and uv run ruff check src tests tools is clean.; Commit the red test first, then the green code, with git; commit the green as soon as it passes.\nNot in scope: completion_without_intervention and time_to_first_green (slice p3); registering process in runner.GRADERS; bench/metrics.yaml; any file outside src/harness_bench/grade/process.py, tests/test_grade_process.py, tests/mutations/process.json and tests/fixtures/grade/process/; reading runs/; bench run; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one slice of at most 12 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-graders.md (section Process); src/harness_bench/grade/process.py; src/harness_bench/grade/__init__.py (CellInput, Score); tests/test_grade_process.py; src/harness_bench/telemetry/normalize.py (the model_calls row fields, incl. requests and the start time). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: recovery_rate is failed calls followed later by an ok == 1 call of the same name, divided by failed calls, as a Decimal quantized to 4 places, over the same non-meta calls p1 counts | phrase: recovery_rate is failed calls followed later by an ok == 1 call of the same name, divided by failed calls, as a Decimal quantized to 4 places, over the same non-meta calls p1 counts |\n| done_when: its NA reasons are exactly \"no failed tool call\" and the p1 missing-outcome reason. | phrase: its NA reasons are exactly \"no failed tool call\" and the p1 missing-outcome reason. |\n| done_when: planning_ratio is the sum of `requests` of model calls that start before the first edit-class tool call, divided by the sum of `requests`, as a Decimal quantized to 4 places | phrase: planning_ratio is the sum of `requests` of model calls that start before the first edit-class tool call, divided by the sum of `requests`, as a Decimal quantized to 4 places |\n| done_when: its NA reasons are exactly \"no edit-class tool call (edits through the shell are not classed)\" and \"model calls not itemised in time (summary rows)\", as the design defines them. | phrase: its NA reasons are exactly \"no edit-class tool call (edits through the shell are not classed)\" and \"model calls not itemised in time (summary rows)\", as the design defines them. |\n| done_when: tests/test_grade_process.py gains red-first cases on synthetic seeded fixtures under tests/fixtures/grade/process/: a failure later followed by a success of the same name gives 1.0000 | phrase: tests/test_grade_process.py gains red-first cases on synthetic seeded fixtures under tests/fixtures/grade/process/: a failure later followed by a success of the same name gives 1.0000 |\n| done_when: a failure never followed by a success gives 0.0000 | phrase: a failure never followed by a success gives 0.0000 |\n| done_when: no failed call gives the NA | phrase: no failed call gives the NA |\n| done_when: 7 of 20 requests before the first edit gives 0.3500 | phrase: 7 of 20 requests before the first edit gives 0.3500 |\n| done_when: no edit-class call gives its NA | phrase: no edit-class call gives its NA |\n| done_when: summary model-call rows give their NA. | phrase: summary model-call rows give their NA. |\n| done_when: tests/mutations/process.json gains one named mutant per new branch (success of another name counted | phrase: tests/mutations/process.json gains one named mutant per new branch (success of another name counted |\n| done_when: success before the failure counted | phrase: success before the failure counted |\n| done_when: requests after the first edit counted | phrase: requests after the first edit counted |\n| done_when: summary rows not refused), each killed: uv run python tools/mutate_check.py tests/mutations/process.json. | phrase: summary rows not refused), each killed: uv run python tools/mutate_check.py tests/mutations/process.json. |\n| done_when: uv run pytest -q -p no:cacheprovider tests/test_grade_process.py passes and uv run ruff check src tests tools is clean. | phrase: uv run pytest -q -p no:cacheprovider tests/test_grade_process.py passes and uv run ruff check src tests tools is clean. |\n| done_when: Commit the red test first, then the green code, with git | phrase: Commit the red test first, then the green code, with git |\n| done_when: commit the green as soon as it passes. | phrase: commit the green as soon as it passes. |\n| not_in_scope: completion_without_intervention and time_to_first_green (slice p3) | phrase: completion_without_intervention and time_to_first_green (slice p3) |\n| not_in_scope: registering process in runner.GRADERS | phrase: registering process in runner.GRADERS |\n| not_in_scope: bench/metrics.yaml | phrase: bench/metrics.yaml |\n| not_in_scope: any file outside src/harness_bench/grade/process.py, tests/test_grade_process.py, tests/mutations/process.json and tests/fixtures/grade/process/ | phrase: any file outside src/harness_bench/grade/process.py, tests/test_grade_process.py, tests/mutations/process.json and tests/fixtures/grade/process/ |\n| not_in_scope: reading runs/ | phrase: reading runs/ |\n| not_in_scope: bench run | phrase: bench run |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- requests: unresolved (not found)\n- docs/design/phase3-graders.md: docs/design/phase3-graders.md sha256 6687032ef769dbca0c8223a763a86382b8ea0e93006e4bb5f9cdc007a14bc7f5\n- src/harness_bench/grade/process.py: src/harness_bench/grade/process.py sha256 f3dec815de548643aaa8d6fd472bd988729fa93319fd8488a5598b8a72cd1998\n- tests/test_grade_process.py: tests/test_grade_process.py sha256 22173ddde0233fd42a610aab78a6d8d662e55409681e987f545a5effc9e08f7c\n- tests/fixtures/grade/process/: unresolved (not found)\n- tests/mutations/process.json: tests/mutations/process.json sha256 a95e2ee181f35e013f0209f9e3738f4202333f77043507a19603fcb2a378d015\n- tools/mutate_check.py: tools/mutate_check.py sha256 4d1b3c10120a52082b1a43aa9407a8109459d7ba20fb83801eb85c2f511ba513\n- bench/metrics.yaml: bench/metrics.yaml sha256 dd717be9966ac8ed98b26f925521352124c62ce4826cbed3e11bc413f8bfb2f5\n- runs/: unresolved (not found)\n- src/harness_bench/grade/__init__.py: src/harness_bench/grade/__init__.py sha256 2b15d94f29b58402f4bc652b500cae8edbbb0ce6153e8a8d50ce66d54b3fc289\n- src/harness_bench/telemetry/normalize.py: src/harness_bench/telemetry/normalize.py sha256 4ba56261fe1258a8781956fbf205b3f8b15fbd2cb1ee61c624e1b0c36542ad5a\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3C2G5WWJVFAEWS4GHGPDSMM\nraw sha256: 43f6d93533c34946fd9992de7c1373657d5728460b9a0b1c3cf59637f260b4b0\ncompiler model: claude-opus-5-5\nengine seconds: 0.004\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3C2G5WWJVFAEWS4GHGPDSMM for claude-code v1: 24 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "recovery_rate is failed calls followed later by an ok == 1 call of the same name, divided by failed calls, as a Decimal quantized to 4 places, over the same non-meta calls p1 counts",
+            "trace": {
+              "kind": "phrase",
+              "ref": "recovery_rate is failed calls followed later by an ok == 1 call of the same name, divided by failed calls, as a Decimal quantized to 4 places, over the same non-meta calls p1 counts"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "its NA reasons are exactly \"no failed tool call\" and the p1 missing-outcome reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "its NA reasons are exactly \"no failed tool call\" and the p1 missing-outcome reason."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "planning_ratio is the sum of `requests` of model calls that start before the first edit-class tool call, divided by the sum of `requests`, as a Decimal quantized to 4 places",
+            "trace": {
+              "kind": "phrase",
+              "ref": "planning_ratio is the sum of `requests` of model calls that start before the first edit-class tool call, divided by the sum of `requests`, as a Decimal quantized to 4 places"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "its NA reasons are exactly \"no edit-class tool call (edits through the shell are not classed)\" and \"model calls not itemised in time (summary rows)\", as the design defines them.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "its NA reasons are exactly \"no edit-class tool call (edits through the shell are not classed)\" and \"model calls not itemised in time (summary rows)\", as the design defines them."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/test_grade_process.py gains red-first cases on synthetic seeded fixtures under tests/fixtures/grade/process/: a failure later followed by a success of the same name gives 1.0000",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/test_grade_process.py gains red-first cases on synthetic seeded fixtures under tests/fixtures/grade/process/: a failure later followed by a success of the same name gives 1.0000"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a failure never followed by a success gives 0.0000",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a failure never followed by a success gives 0.0000"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "no failed call gives the NA",
+            "trace": {
+              "kind": "phrase",
+              "ref": "no failed call gives the NA"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "7 of 20 requests before the first edit gives 0.3500",
+            "trace": {
+              "kind": "phrase",
+              "ref": "7 of 20 requests before the first edit gives 0.3500"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "no edit-class call gives its NA",
+            "trace": {
+              "kind": "phrase",
+              "ref": "no edit-class call gives its NA"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "summary model-call rows give their NA.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "summary model-call rows give their NA."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/process.json gains one named mutant per new branch (success of another name counted",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/process.json gains one named mutant per new branch (success of another name counted"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "success before the failure counted",
+            "trace": {
+              "kind": "phrase",
+              "ref": "success before the failure counted"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "requests after the first edit counted",
+            "trace": {
+              "kind": "phrase",
+              "ref": "requests after the first edit counted"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "summary rows not refused), each killed: uv run python tools/mutate_check.py tests/mutations/process.json.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "summary rows not refused), each killed: uv run python tools/mutate_check.py tests/mutations/process.json."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider tests/test_grade_process.py passes and uv run ruff check src tests tools is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider tests/test_grade_process.py passes and uv run ruff check src tests tools is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit the red test first, then the green code, with git",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit the red test first, then the green code, with git"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "commit the green as soon as it passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "commit the green as soon as it passes."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "completion_without_intervention and time_to_first_green (slice p3)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "completion_without_intervention and time_to_first_green (slice p3)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "registering process in runner.GRADERS",
+            "trace": {
+              "kind": "phrase",
+              "ref": "registering process in runner.GRADERS"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench/metrics.yaml",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/metrics.yaml"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file outside src/harness_bench/grade/process.py, tests/test_grade_process.py, tests/mutations/process.json and tests/fixtures/grade/process/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file outside src/harness_bench/grade/process.py, tests/test_grade_process.py, tests/mutations/process.json and tests/fixtures/grade/process/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "reading runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "reading runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens",
+          "done_when": [
+            "recovery_rate is failed calls followed later by an ok == 1 call of the same name, divided by failed calls, as a Decimal quantized to 4 places, over the same non-meta calls p1 counts",
+            "its NA reasons are exactly \"no failed tool call\" and the p1 missing-outcome reason.",
+            "planning_ratio is the sum of `requests` of model calls that start before the first edit-class tool call, divided by the sum of `requests`, as a Decimal quantized to 4 places",
+            "its NA reasons are exactly \"no edit-class tool call (edits through the shell are not classed)\" and \"model calls not itemised in time (summary rows)\", as the design defines them.",
+            "tests/test_grade_process.py gains red-first cases on synthetic seeded fixtures under tests/fixtures/grade/process/: a failure later followed by a success of the same name gives 1.0000",
+            "a failure never followed by a success gives 0.0000",
+            "no failed call gives the NA",
+            "7 of 20 requests before the first edit gives 0.3500",
+            "no edit-class call gives its NA",
+            "summary model-call rows give their NA.",
+            "tests/mutations/process.json gains one named mutant per new branch (success of another name counted",
+            "success before the failure counted",
+            "requests after the first edit counted",
+            "summary rows not refused), each killed: uv run python tools/mutate_check.py tests/mutations/process.json.",
+            "uv run pytest -q -p no:cacheprovider tests/test_grade_process.py passes and uv run ruff check src tests tools is clean.",
+            "Commit the red test first, then the green code, with git",
+            "commit the green as soon as it passes."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W3-GR-PROC slice p2 per docs/design/phase3-graders.md, section \"Process\" and slice-plan row \"GR-PROC p1-p3\": the process grader's recovery_rate and planning_ratio, red first, on top of p1 (joined: tool_error_rate and stuck_loops in src/harness_bench/grade/process.py).",
+          "main_line_budget": "one slice of at most 12 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-graders.md (section Process); src/harness_bench/grade/process.py; src/harness_bench/grade/__init__.py (CellInput, Score); tests/test_grade_process.py; src/harness_bench/telemetry/normalize.py (the model_calls row fields, incl. requests and the start time). Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "completion_without_intervention and time_to_first_green (slice p3)",
+            "registering process in runner.GRADERS",
+            "bench/metrics.yaml",
+            "any file outside src/harness_bench/grade/process.py, tests/test_grade_process.py, tests/mutations/process.json and tests/fixtures/grade/process/",
+            "reading runs/",
+            "bench run",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.004,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3C2G5WWJVFAEWS4GHGPDSMM",
+        "raw_sha256": "43f6d93533c34946fd9992de7c1373657d5728460b9a0b1c3cf59637f260b4b0",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "requests"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase3-graders.md",
+            "reason": null,
+            "sha256": "6687032ef769dbca0c8223a763a86382b8ea0e93006e4bb5f9cdc007a14bc7f5",
+            "status": "resolved",
+            "token": "docs/design/phase3-graders.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/process.py",
+            "reason": null,
+            "sha256": "f3dec815de548643aaa8d6fd472bd988729fa93319fd8488a5598b8a72cd1998",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/process.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_process.py",
+            "reason": null,
+            "sha256": "22173ddde0233fd42a610aab78a6d8d662e55409681e987f545a5effc9e08f7c",
+            "status": "resolved",
+            "token": "tests/test_grade_process.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/grade/process/"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/process.json",
+            "reason": null,
+            "sha256": "a95e2ee181f35e013f0209f9e3738f4202333f77043507a19603fcb2a378d015",
+            "status": "resolved",
+            "token": "tests/mutations/process.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "4d1b3c10120a52082b1a43aa9407a8109459d7ba20fb83801eb85c2f511ba513",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "bench/metrics.yaml",
+            "reason": null,
+            "sha256": "dd717be9966ac8ed98b26f925521352124c62ce4826cbed3e11bc413f8bfb2f5",
+            "status": "resolved",
+            "token": "bench/metrics.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/__init__.py",
+            "reason": null,
+            "sha256": "2b15d94f29b58402f4bc652b500cae8edbbb0ce6153e8a8d50ce66d54b3fc289",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/__init__.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/normalize.py",
+            "reason": null,
+            "sha256": "4ba56261fe1258a8781956fbf205b3f8b15fbd2cb1ee61c624e1b0c36542ad5a",
+            "status": "resolved",
+            "token": "src/harness_bench/telemetry/normalize.py"
           }
         ],
         "schema": "compiled-prompt/1",
