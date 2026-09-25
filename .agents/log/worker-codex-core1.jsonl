@@ -1,0 +1,2 @@
+{"agent": "worker-codex-core1", "at": 1790326515.2220104, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-codex-core1", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w3-core-1"}
+{"agent": "worker-codex-core1", "at": 1790326631.7064104, "kind": "session-end", "path": "-", "seq": 2, "session": "worker-codex-core1", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w3-core-1"}

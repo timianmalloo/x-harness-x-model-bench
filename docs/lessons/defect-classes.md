@@ -281,6 +281,14 @@ summary: >-
   - **Per cell (W2-VIEWS-FU):** an executed class-`other` call, or an out-of-class advertised Copilot tool, makes the cell `invalid (out-of-profile tool called)` (HB-VAL-008). A refused call is the HB-VAL-009 warning. `tests/test_telemetry_copilot.py` holds the reader's class table to the profile's `--available-tools` list.
 - **Status:** `controlled` for Copilot, Codex and Claude Code on the pinned builds. A pin bump re-runs the class tests; a new id or tool fails them.
 
+### CLN-C: a worktree force-removed in the same command as the check that should have stopped it
+- **Signature:** the Leader prints a tree's dirty-file and unmerged-commit counts, then runs `git worktree remove --force` and `git branch -D` in the same command, so the counts are never read before the removal.
+- **Why it survives:** the Leader expected an empty tree (0 turns reported), and the check looked like a guard even though nothing gated on it. `--force` and `-D` override exactly the refusals that would have caught it.
+- **Instances:** `2026-09-25`, after the Codex usage limit. `w2-stopi-4` showed `3` dirty files and `2` commits ahead, and was removed anyway. The two commits were recovered from the object store (`git branch w2-stopi-4 0f24e77`). The three uncommitted files, the slice's in-progress tail, were lost.
+- **Sweep:** every removal this session went through `cleanup_merged.sh` or `coord worktree cleanup` (both HOLD a dirty or unmerged tree), except the HARBOR tree (untracked, inspected first) and this one.
+- **Control:** the Leader never runs `git worktree remove --force` or `git branch -D` directly. A failed or partial slice's tree is kept until its commits are on a named branch and its dirty files are inspected, and removal goes through the holding scripts. For now this is a Leader procedure. The upgrade trigger is a second instance: a wrapper that refuses `--force` on an unmerged branch.
+- **Status:** `observed` (Leader procedure)
+
 ### VEND-A: a vendored file the host repository's ignore rules drop
 - **Signature:** a task base is vendored byte for byte into `tasks/<ID>/workspace/`, but a path in it matches this repository's `.gitignore` (`dist/`, `build/`). The file exists on the author's disk, so every check there passes; a clean checkout lacks it.
 - **Why it survives:** the author's tree is not a clean checkout. `git add tasks/<ID>` silently skips ignored files, and the author's own full suite reads the untracked file from disk.
