@@ -174,6 +174,23 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
                                                            "def judge(p, operator):\n"
                                                            "    verdict = check(p, destination='judge:x', operator=operator)\n"
                                                            f"    return verdict.release(lambda p: {run[6:]})\n"}),
+        # Fable re-review Major 1: outside gateway/, only today's procs callers may reach procs.
+        "the-judge-grader-spawns-the-judge-cli": (True, {"src/harness_bench/grade/judge.py":
+                                                         f"from harness_bench import procs\n\ndef grade(p):\n    return {run}\n"}),
+        "a-new-grader-spawns-through-procs": (True, {"src/harness_bench/grade/jury.py":
+                                                     f"from harness_bench import procs\n\ndef ask(p):\n    return {run}\n"}),
+        "a-new-module-aliases-procs-run": (True, {"src/harness_bench/grade/mutation.py":
+                                                  "from harness_bench.procs import run as r\n\nspawn = r\n"}),
+        "an-allowlisted-caller": (False, {"src/harness_bench/gitsafe.py":
+                                          "from harness_bench import procs\n\ndef git(a):\n"
+                                          "    return procs.run(['git', *a], None, None, 60)\n"}),
+        "a-type-only-use-of-procs": (False, {"src/harness_bench/driver.py": "from harness_bench.procs import CellProcess\n\n"
+                                             "def turn(cell: CellProcess) -> None:\n    return None\n"}),
+        "a-built-judge-without-a-gateway": (True, {"src/harness_bench/grade/judge.py":
+                                                   "def grade(run_dir, task_dir):\n    return None\n"}),
+        "the-judge-stub-without-a-gateway": (False, {"src/harness_bench/grade/judge.py":
+                                                     "from harness_bench.grade import not_built\n\n"
+                                                     "def grade(run_dir, task_dir):\n    raise not_built('judge', 'S-09')\n"}),
     }
     assert {name: bool(offenders(mods)) for name, (_, mods) in cases.items()} == \
         {name: fires for name, (fires, _) in cases.items()}
