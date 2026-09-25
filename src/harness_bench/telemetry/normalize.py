@@ -90,6 +90,17 @@ def served_models(source: str, ex: Extraction, usage: list[TurnUsage]) -> set[st
     return {base_model_id(c.model) for c in ex.model_calls if c.output or c.uncached_input or c.cache_read}
 
 
+def record_unreadable(ex: Extraction) -> str | None:
+    """Why a native record that was found cannot be read as a whole (R-15), or None. A missing field at
+    `native_ordinal` 0 is the record's own, not a call's (line numbers start at 1): Copilot's `session.shutdown`
+    or `events.version`. A truncated record lost its tail. A call-level missing field (HB-TEL-001) is not this:
+    the record was read, and that call's measure is NOT_RECORDED on its own."""
+    fields = sorted({m.field for m in ex.missing if m.native_ordinal == 0})
+    if fields:
+        return f"native record fields missing: {', '.join(fields)}"
+    return "native record truncated at the size bound" if ex.truncated else None
+
+
 def classify(errors: list[ProviderError]) -> Cause | None:
     """One classifier for the native record and the driver's prompt errors (R-23). A status is evidence and decides
     first: 408, 429 or 5xx is provider, any other status is model_unavailable; only without a status does the error

@@ -62,6 +62,7 @@ RUN_CODES: dict[str, str] = {
     "HB-GRD-002": "grading step timeout",
     "HB-VAL-001": "validity: no model call",
     "HB-VAL-002": "validity: model mismatch",
+    "HB-VAL-003": "validity: not recorded (the usage record is missing or unreadable)",
     "HB-SEC-001": "credential value found in a report to be published",
     "HB-USR-001": "unknown run id",
     "HB-USR-002": "invalid input",

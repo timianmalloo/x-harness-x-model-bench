@@ -94,7 +94,7 @@ class CellView:
     outcome: str  # completed | timed_out | failed | not started | no outcome (launched; the run is incomplete)
     cause: str | None  # the cause's report label
     code: str | None
-    validity: str  # valid | invalid (<attribution>) | invalid (no model call) | invalid (model mismatch) | not graded | not started | no outcome
+    validity: str  # valid | invalid (<attribution>) | invalid (no model call) | invalid (model mismatch) | not recorded | not graded | not started | no outcome
     validity_code: str | None
     wall_ms: Measure
     model_ms: Measure
@@ -241,7 +241,25 @@ def _idle(wall: Measure, model: Measure, tool: Measure) -> Measure:
     return Measure(idle) if idle >= 0 else Measure(None, "model and tool time exceed wall time")
 
 
-def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: set[str] | None) -> tuple[str, str | None]:
+NO_ACP_USAGE = "the adapter reported no usage"
+
+
+def _unrecorded(source: str, completed: dict, cid: str, ended: dict, usage: list, extraction: str | None) -> str | None:
+    """Why the cell's authoritative usage record is not recorded (R-15, R-21 c2), or None when it was read.
+
+    - `native_record`: the current pass names the cell in `grading.completed.unreadable_records` (no record, more
+      than one, or unreadable as a whole). A pass from before R-15 names none, so its cells read as before.
+    - `acp_turn`: `attempt.process_ended.acp_usage` is recorded as null (R-24 c2: the adapter reported nothing) and
+      there is no `turn_usage` row. A ledger from before R-24 has no `acp_usage` key and reads as before."""
+    if source == "acp_turn":
+        return NO_ACP_USAGE if not usage and "acp_usage" in ended and ended["acp_usage"] is None else None
+    if extraction is None:
+        return None
+    return (completed.get("unreadable_records") or {}).get(cid)
+
+
+def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: set[str] | None,
+              unrecorded: str | None = None) -> tuple[str, str | None]:
     if outcome is None:
         return state, None  # not started | no outcome
     cause = Cause[outcome["cause"]] if outcome.get("cause") else None
@@ -249,6 +267,8 @@ def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: 
         return f"invalid ({cause.attribution})", cause.code
     if served is None:
         return "not graded", None
+    if unrecorded is not None:  # R-15 c1: distinct from a readable record with no call (HB-VAL-001)
+        return "not recorded", "HB-VAL-003"
     if not served:
         return "invalid (no model call)", "HB-VAL-001"
     if any(not profiles.model_allowed(m, cell["model"], prof["auxiliary_models"]) for m in served):
@@ -272,13 +292,18 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     ex = Extraction(model_calls=[model_call(r) for r in calls or []])
     recorded = source == "acp_turn" or calls is not None
     served = normalize.served_models(source, ex, usage) if recorded else None
-    totals = normalize.totals(source, ex, usage) if recorded else {}
-    tokens_reason = None if totals else ("not graded" if not recorded else "no usage recorded")
+    completed = next((e for e in facts["events"] if e["kind"] == "grading.completed" and e["grading_id"] == grading_id), {})
+    unrecorded = _unrecorded(source, completed, cid, events.get("attempt.process_ended", {}), usage, extraction)
+    totals = normalize.totals(source, ex, usage) if recorded and unrecorded is None else {}
+    if unrecorded is not None:
+        tokens_reason = f"not recorded ({unrecorded})"  # R-21 c2: never a partial sum or a zero
+    else:
+        tokens_reason = None if totals else ("not graded" if not recorded else "no usage recorded")
     wall = _wall(events)
     model = _model_time(source, calls)
     tool = Measure(None, "not graded") if tools is None else busy_ms(tools)
     state = outcome["outcome"] if outcome else ("no outcome" if "cell.launch_intent" in events else "not started")
-    validity, validity_code = _validity(cell, prof, outcome, state, served)
+    validity, validity_code = _validity(cell, prof, outcome, state, served, unrecorded)
     cause = Cause[outcome["cause"]] if outcome and outcome.get("cause") else None
     return CellView(
         cell_id=cid, label=cell.get("label", cid), combo=cell["combo"], pack=cell["pack"], harness=cell["harness"], model=cell["model"],
