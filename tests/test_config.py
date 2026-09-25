@@ -34,7 +34,7 @@ def test_ready_task_without_oracle_or_pinned_source_is_rejected(tmp_path):
     (d / "tests" / "README.md").write_text("placeholder", encoding="utf-8")
     p = config.Problems()
     entry = {"id": "X0", "scenario": 5, "budget_minutes": 45}
-    config.validate_task(d, entry, p, config.grader_modules(ROOT))
+    config.validate_task(d, entry, p, config.grader_modules(ROOT), config.pack_marker_bytes(ROOT))
     msgs = " ".join(p.items)
     assert "hidden tests or an oracle" in msgs
     assert "workspace/" in msgs
@@ -52,7 +52,7 @@ def test_formal_task_without_tool_or_formal_grader_is_rejected(tmp_path):
     d = _write_task(tmp_path, "X7", scenario=7, formal=None, graders=["cost"])
     p = config.Problems()
     entry = {"id": "X7", "scenario": 7, "budget_minutes": 45}
-    config.validate_task(d, entry, p, config.grader_modules(ROOT))
+    config.validate_task(d, entry, p, config.grader_modules(ROOT), config.pack_marker_bytes(ROOT))
     msgs = " ".join(p.items)
     assert "formal.tool" in msgs
     assert "formal grader" in msgs

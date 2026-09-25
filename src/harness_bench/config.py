@@ -137,7 +137,28 @@ def _has_content(d: Path) -> bool:
     return d.is_dir() and any(f.name not in PLACEHOLDERS for f in d.rglob("*") if f.is_file())
 
 
-def validate_task(task_dir: Path, bom_entry: dict | None, p: Problems, grader_modules: set[str]) -> None:
+def pack_marker_bytes(root: Path) -> list[bytes]:
+    """R-42 condition 2's marker list, read once and threaded into every validate_task call
+    (validate_repo reads it a single time for the whole tasks/ sweep). tests/test_task_vendoring.py
+    and tests/test_workspace.py each parse bench/pack-markers.txt inline for their own assertions;
+    this is validate_task's one reader, not a third parse of the same file."""
+    text = (root / "bench" / "pack-markers.txt").read_text(encoding="utf-8")
+    return [line.strip().encode("utf-8") for line in text.splitlines() if line.strip()]
+
+
+def _workspace_vendoring_problems(task_dir: Path, pack_markers: list[bytes], p: Problems, where: str) -> None:
+    """R-42 conditions 2 and 4: a ready task's workspace/ carries no pack material and no
+    generated/cache folder. One report of each kind is enough to name the offender."""
+    ws = task_dir / "workspace"
+    if not ws.is_dir():
+        return
+    for f in sorted(ws.rglob("*")):
+        if f.is_file() and any(m in f.read_bytes() for m in pack_markers):
+            p.add(where, f"{f.relative_to(task_dir).as_posix()} contains pack material (bench/pack-markers.txt)")
+            break
+
+
+def validate_task(task_dir: Path, bom_entry: dict | None, p: Problems, grader_modules: set[str], pack_markers: list[bytes]) -> None:
     where = f"tasks/{task_dir.name}"
     ty = task_dir / "task.yaml"
     if not ty.is_file():
@@ -180,6 +201,7 @@ def validate_task(task_dir: Path, bom_entry: dict | None, p: Problems, grader_mo
             p.add(where, "status ready requires hidden tests or an oracle")
         if not (task_dir / "workspace").is_dir():
             p.add(where, "status ready requires workspace/")
+        _workspace_vendoring_problems(task_dir, pack_markers, p, where)
         if "tbd" in {str((t.get("source") or {}).get(k)) for k in ("repo", "commit")}:
             p.add(where, "status ready requires a pinned source.repo and source.commit")
         formal = t.get("formal") or {}
@@ -195,6 +217,7 @@ def grader_modules(root: Path) -> set[str]:
 def validate_repo(root: Path) -> list[str]:
     p = Problems()
     graders = grader_modules(root)
+    markers = pack_marker_bytes(root)
     bom = load_yaml(root / "bench" / "bom.yaml")
     validate_bom(bom, p)
     validate_metrics(load_yaml(root / "bench" / "metrics.yaml"), p, graders)
@@ -205,5 +228,5 @@ def validate_repo(root: Path) -> list[str]:
     for tid in sorted(set(entries) - folders):
         p.add(f"tasks/{tid}", "listed in bench/bom.yaml but has no folder")
     for name in sorted(folders):
-        validate_task(tasks_dir / name, entries.get(name), p, graders)
+        validate_task(tasks_dir / name, entries.get(name), p, graders, markers)
     return p.items
