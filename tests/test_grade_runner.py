@@ -16,6 +16,7 @@ COST = {"cost_usd", "tokens_per_minute", "output_tokens_per_turn", "cache_hit_ra
         "context_growth", "compactions"}
 PROCESS = {"completion_without_intervention", "stuck_loops", "recovery_rate", "tool_error_rate", "planning_ratio",
            "time_to_first_green"}
+BUILT = {"pass_at_1", "partial_credit", "cost_usd"}  # the metrics the registered graders return in slice 1
 
 
 @pytest.fixture
@@ -48,3 +49,10 @@ def graded(root, tmp_path) -> list[dict]:
 def test_the_pass_writes_one_row_per_applicable_metric_of_the_tasks_graders(root, tmp_path, names, expected):
     set_graders(root, names)
     assert sorted(r["metric_id"] for r in graded(root, tmp_path)) == sorted(expected)
+
+
+def test_an_unbuilt_grader_is_na_not_built_for_each_of_its_metrics_never_0(root, tmp_path):
+    set_graders(root, ["correctness", "cost", "process"])
+    got = {r["metric_id"]: (r["value"], r["reason"]) for r in graded(root, tmp_path)}
+    assert {m: v for m, v in got.items() if m not in BUILT} == {m: (None, "not built") for m in (CORRECTNESS | COST | PROCESS) - BUILT}
+    assert (got.get("pass_at_1"), got.get("partial_credit")) == ((1, None), ("1.0000", None))  # the built metrics are measured
