@@ -89,6 +89,17 @@ def test_the_operators_email_is_withheld_in_any_case(form):
     assert (verdict.reason, verdict.payload_sha256) == ("withheld: sensitive content", _sha(text))
 
 
+@pytest.mark.parametrize("context", ["by {u}.", "owner={U}", "/srv/{u}/work"], ids=["prose", "other-case", "path"])
+def test_the_operators_username_is_withheld_as_a_whole_word(context):
+    username = f"op{token_hex(4)}"
+    text = _plant(context.format(u=username, U=username.upper()))
+    verdict = egress.check(text, destination=DEST, username=username)
+    assert verdict.classes == ("username",)
+    assert (verdict.reason, verdict.payload_sha256) == ("withheld: sensitive content", _sha(text))
+    # Inside a longer word it is not the username (a short name would otherwise withhold ordinary prose).
+    assert egress.check(_plant(f"{username}9z"), destination=DEST, username=username).classes == ()
+
+
 def test_a_withheld_payload_never_reaches_the_backend():
     value = _credential()
     backend = FakeBackend()
