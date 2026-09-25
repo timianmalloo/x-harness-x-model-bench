@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T08:40:41Z",
+  "generated": "2026-09-25T08:47:00Z",
   "audit": [
     {
       "actor": null,
@@ -16393,6 +16393,409 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "id": "al-01M3BVY5CM5CF06QBJXZRYZSA9",
+      "shortname": "Goal: W2-STOP-I slice 4 per docs/design/phase2-stop-decisions.md section…",
+      "datetime": "2026-09-25T08:46:59Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W2-STOP-I slice 4 per docs/design/phase2-stop-decisions.md section 17 row 4 and sections 4.1, 4.6, 5, 8.3, 11 and 16 (read them first; rulings R-3, R-49, R-50 in docs/notes/rulings.md): an operator stop that ends a run within 30 s, red-first, on top of slice 3's grace (joined).\nDone when: `bench stop <run_id>` writes a control file under runs/<id>/control/ (temp file, then os.replace; section 4.1) and the engine's control reader applies each file exactly once (a dedup set) and records control.applied; tests CLI-1..2 and the control-reader tests red first.; The stop sequence of section 5: launching stops, running cells get the R-21 grace then the kill, a pre-spawn check refuses a cell after the stop, stop precedence and the final pass after grading are as specified, and run.stopped is recorded; R10-1 proves a real process tree with a child that ignores termination (the fake agent's `stubborn` mode) is stopped within 30 s by the engine's clock with outcome `stopped` (two stubborn cells), and R10-3, R10-5, R10-7a, R10-8..14 and R21-2 are red first.; bench-status/1 shows the `stopping` and `stopped` phases within 30 s (UXA-10), with both skill copies naming them in the same commit (R-3; SK-1 stays green).; The lifecycle conformance rows for stop and control (section 8.3, LC) and the replay rules for stop and control (a resumed read of the ledger reproduces the state) are tested.; tests/mutations/stop.json gains a named mutant per new branch (a control file applied twice; a cell spawned after the stop; the grace skipped on stop; run.stopped not recorded), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check result, and the measured stop time of the R10-1 test.\nNot in scope: decisions and bench answer (slice 5); views.py beyond what the stopped outcome already reads; the TLA model (already refined in slice 3; change it only if a conformance row requires it, and then run the full check_models); bench run, any live turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase2-stop-decisions.md; docs/notes/rulings.md R-3, R-49, R-50; src/harness_bench/{engine,cli,status,lifecycle,driver,errors}.py; tests/test_engine.py, tests/test_cli.py, tests/test_status.py, tests/test_lifecycle_conformance.py, tests/fake_acp_agent.py; tests/mutations/stop.json. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-stopi4 before committing.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3BVY69KT04H7565298AMZK5",
+      "shortname": "compile-Goal: W2-STOP-I slice 4 per docs/design/phase2-stop-decisions.md section…",
+      "datetime": "2026-09-25T08:47:00Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-STOP-I slice 4 per docs/design/phase2-stop-decisions.md section 17 row 4 and sections 4.1, 4.6, 5, 8.3, 11 and 16 (read them first; rulings R-3, R-49, R-50 in docs/notes/rulings.md): an operator stop that ends a run within 30 s, red-first, on top of slice 3's grace (joined).\nDone when: `bench stop <run_id>` writes a control file under runs/<id>/control/ (temp file, then os.replace; section 4.1) and the engine's control reader applies each file exactly once (a dedup set) and records control.applied; tests CLI-1..2 and the control-reader tests red first.; The stop sequence of section 5: launching stops, running cells get the R-21 grace then the kill, a pre-spawn check refuses a cell after the stop, stop precedence and the final pass after grading are as specified, and run.stopped is recorded; R10-1 proves a real process tree with a child that ignores termination (the fake agent's `stubborn` mode) is stopped within 30 s by the engine's clock with outcome `stopped` (two stubborn cells), and R10-3, R10-5, R10-7a, R10-8..14 and R21-2 are red first.; bench-status/1 shows the `stopping` and `stopped` phases within 30 s (UXA-10), with both skill copies naming them in the same commit (R-3; SK-1 stays green).; The lifecycle conformance rows for stop and control (section 8.3, LC) and the replay rules for stop and control (a resumed read of the ledger reproduces the state) are tested.; tests/mutations/stop.json gains a named mutant per new branch (a control file applied twice; a cell spawned after the stop; the grace skipped on stop; run.stopped not recorded), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check result, and the measured stop time of the R10-1 test.\nNot in scope: decisions and bench answer (slice 5); views.py beyond what the stopped outcome already reads; the TLA model (already refined in slice 3; change it only if a conformance row requires it, and then run the full check_models); bench run, any live turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase2-stop-decisions.md; docs/notes/rulings.md R-3, R-49, R-50; src/harness_bench/{engine,cli,status,lifecycle,driver,errors}.py; tests/test_engine.py, tests/test_cli.py, tests/test_status.py, tests/test_lifecycle_conformance.py, tests/fake_acp_agent.py; tests/mutations/stop.json. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-stopi4 before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: `bench stop <run_id>` writes a control file under runs/<id>/control/ (temp file, then os.replace | phrase: `bench stop <run_id>` writes a control file under runs/<id>/control/ (temp file, then os.replace |\n| done_when: section 4.1) and the engine's control reader applies each file exactly once (a dedup set) and records control.applied | phrase: section 4.1) and the engine's control reader applies each file exactly once (a dedup set) and records control.applied |\n| done_when: tests CLI-1..2 and the control-reader tests red first. | phrase: tests CLI-1..2 and the control-reader tests red first. |\n| done_when: The stop sequence of section 5: launching stops, running cells get the R-21 grace then the kill, a pre-spawn check refuses a cell after the stop, stop precedence and the final pass after grading are as specified, and run.stopped is recorded | phrase: The stop sequence of section 5: launching stops, running cells get the R-21 grace then the kill, a pre-spawn check refuses a cell after the stop, stop precedence and the final pass after grading are as specified, and run.stopped is recorded |\n| done_when: R10-1 proves a real process tree with a child that ignores termination (the fake agent's `stubborn` mode) is stopped within 30 s by the engine's clock with outcome `stopped` (two stubborn cells), and R10-3, R10-5, R10-7a, R10-8..14 and R21-2 are red first. | phrase: R10-1 proves a real process tree with a child that ignores termination (the fake agent's `stubborn` mode) is stopped within 30 s by the engine's clock with outcome `stopped` (two stubborn cells), and R10-3, R10-5, R10-7a, R10-8..14 and R21-2 are red first. |\n| done_when: bench-status/1 shows the `stopping` and `stopped` phases within 30 s (UXA-10), with both skill copies naming them in the same commit (R-3 | phrase: bench-status/1 shows the `stopping` and `stopped` phases within 30 s (UXA-10), with both skill copies naming them in the same commit (R-3 |\n| done_when: SK-1 stays green). | phrase: SK-1 stays green). |\n| done_when: The lifecycle conformance rows for stop and control (section 8.3, LC) and the replay rules for stop and control (a resumed read of the ledger reproduces the state) are tested. | phrase: The lifecycle conformance rows for stop and control (section 8.3, LC) and the replay rules for stop and control (a resumed read of the ledger reproduces the state) are tested. |\n| done_when: tests/mutations/stop.json gains a named mutant per new branch (a control file applied twice | phrase: tests/mutations/stop.json gains a named mutant per new branch (a control file applied twice |\n| done_when: a cell spawned after the stop | phrase: a cell spawned after the stop |\n| done_when: the grace skipped on stop | phrase: the grace skipped on stop |\n| done_when: run.stopped not recorded), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json. | phrase: run.stopped not recorded), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json. |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean. | phrase: uv run ruff check src tests tools is clean. |\n| done_when: Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check result, and the measured stop time of the R10-1 test. | phrase: Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check result, and the measured stop time of the R10-1 test. |\n| not_in_scope: decisions and bench answer (slice 5) | phrase: decisions and bench answer (slice 5) |\n| not_in_scope: views.py beyond what the stopped outcome already reads | phrase: views.py beyond what the stopped outcome already reads |\n| not_in_scope: the TLA model (already refined in slice 3 | phrase: the TLA model (already refined in slice 3 |\n| not_in_scope: change it only if a conformance row requires it, and then run the full check_models) | phrase: change it only if a conformance row requires it, and then run the full check_models) |\n| not_in_scope: bench run, any live turn, pytest -m \"\" | phrase: bench run, any live turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- bench stop <run_id: unresolved (not found)\n- stubborn: unresolved (not found)\n- stopped: unresolved (not found)\n- stopping: unresolved (not found)\n- docs/design/phase2-stop-decisions.md: docs/design/phase2-stop-decisions.md sha256 3dbc40e3d87e76548cf8bda92266fefc77892f87086a180ae5a9572d91b287b7\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- runs/<id>/control/: unresolved (not found)\n- bench-status/1: unresolved (not found)\n- tests/mutations/stop.json: tests/mutations/stop.json sha256 e79382d44c7252adc4804e8e9659802ef0a80e33b95a5a594a47779994b0813c\n- tools/mutate_check.py: tools/mutate_check.py sha256 4d1b3c10120a52082b1a43aa9407a8109459d7ba20fb83801eb85c2f511ba513\n- views.py: src/harness_bench/views.py sha256 6e53249eae24b9f23c6836d0b5fd15d741eb84a7cd808d88d7f92afbd994ffb7\n- src/harness_bench/{engine,cli,status,lifecycle,driver,errors}.py: unresolved (not found)\n- tests/test_engine.py: tests/test_engine.py sha256 b9ebeaa2c8f8fe5b501cba81f8d79ccadd208e8eb905eab28c0cddceacc59387\n- tests/test_cli.py: tests/test_cli.py sha256 d788f4f7625b865eb56a4e3e5989c25b36cc70e2191734ed3bb81b3a81969077\n- tests/test_status.py: tests/test_status.py sha256 b220a3deda86fdb94e51ac99898f6160447bc0844f95c3e343aeea26b7c514e1\n- tests/test_lifecycle_conformance.py: tests/test_lifecycle_conformance.py sha256 55af0b606cbf188d685faf8c60ea1f17fb2521226de820a0acb81a099405fb8c\n- tests/fake_acp_agent.py: tests/fake_acp_agent.py sha256 4a56930aabd8fb0c1ddb7837f038183666632096705abd721d64ed7fb423886b\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BVY5CM5CF06QBJXZRYZSA9\nraw sha256: 2e0631314ee28b87e893ff81ff02dac027bda2705822d469cc45b16266ee9f63\ncompiler model: claude-opus-5-5\nengine seconds: 0.003\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3BVY5CM5CF06QBJXZRYZSA9 for codex v1: 21 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "`bench stop <run_id>` writes a control file under runs/<id>/control/ (temp file, then os.replace",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`bench stop <run_id>` writes a control file under runs/<id>/control/ (temp file, then os.replace"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "section 4.1) and the engine's control reader applies each file exactly once (a dedup set) and records control.applied",
+            "trace": {
+              "kind": "phrase",
+              "ref": "section 4.1) and the engine's control reader applies each file exactly once (a dedup set) and records control.applied"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests CLI-1..2 and the control-reader tests red first.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests CLI-1..2 and the control-reader tests red first."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The stop sequence of section 5: launching stops, running cells get the R-21 grace then the kill, a pre-spawn check refuses a cell after the stop, stop precedence and the final pass after grading are as specified, and run.stopped is recorded",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The stop sequence of section 5: launching stops, running cells get the R-21 grace then the kill, a pre-spawn check refuses a cell after the stop, stop precedence and the final pass after grading are as specified, and run.stopped is recorded"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "R10-1 proves a real process tree with a child that ignores termination (the fake agent's `stubborn` mode) is stopped within 30 s by the engine's clock with outcome `stopped` (two stubborn cells), and R10-3, R10-5, R10-7a, R10-8..14 and R21-2 are red first.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "R10-1 proves a real process tree with a child that ignores termination (the fake agent's `stubborn` mode) is stopped within 30 s by the engine's clock with outcome `stopped` (two stubborn cells), and R10-3, R10-5, R10-7a, R10-8..14 and R21-2 are red first."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "bench-status/1 shows the `stopping` and `stopped` phases within 30 s (UXA-10), with both skill copies naming them in the same commit (R-3",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench-status/1 shows the `stopping` and `stopped` phases within 30 s (UXA-10), with both skill copies naming them in the same commit (R-3"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "SK-1 stays green).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "SK-1 stays green)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The lifecycle conformance rows for stop and control (section 8.3, LC) and the replay rules for stop and control (a resumed read of the ledger reproduces the state) are tested.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The lifecycle conformance rows for stop and control (section 8.3, LC) and the replay rules for stop and control (a resumed read of the ledger reproduces the state) are tested."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/stop.json gains a named mutant per new branch (a control file applied twice",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/stop.json gains a named mutant per new branch (a control file applied twice"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a cell spawned after the stop",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a cell spawned after the stop"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the grace skipped on stop",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the grace skipped on stop"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "run.stopped not recorded), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "run.stopped not recorded), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check result, and the measured stop time of the R10-1 test.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check result, and the measured stop time of the R10-1 test."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "decisions and bench answer (slice 5)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "decisions and bench answer (slice 5)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "views.py beyond what the stopped outcome already reads",
+            "trace": {
+              "kind": "phrase",
+              "ref": "views.py beyond what the stopped outcome already reads"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the TLA model (already refined in slice 3",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the TLA model (already refined in slice 3"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "change it only if a conformance row requires it, and then run the full check_models)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "change it only if a conformance row requires it, and then run the full check_models)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run, any live turn, pytest -m \"\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run, any live turn, pytest -m \"\""
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "`bench stop <run_id>` writes a control file under runs/<id>/control/ (temp file, then os.replace",
+            "section 4.1) and the engine's control reader applies each file exactly once (a dedup set) and records control.applied",
+            "tests CLI-1..2 and the control-reader tests red first.",
+            "The stop sequence of section 5: launching stops, running cells get the R-21 grace then the kill, a pre-spawn check refuses a cell after the stop, stop precedence and the final pass after grading are as specified, and run.stopped is recorded",
+            "R10-1 proves a real process tree with a child that ignores termination (the fake agent's `stubborn` mode) is stopped within 30 s by the engine's clock with outcome `stopped` (two stubborn cells), and R10-3, R10-5, R10-7a, R10-8..14 and R21-2 are red first.",
+            "bench-status/1 shows the `stopping` and `stopped` phases within 30 s (UXA-10), with both skill copies naming them in the same commit (R-3",
+            "SK-1 stays green).",
+            "The lifecycle conformance rows for stop and control (section 8.3, LC) and the replay rules for stop and control (a resumed read of the ledger reproduces the state) are tested.",
+            "tests/mutations/stop.json gains a named mutant per new branch (a control file applied twice",
+            "a cell spawned after the stop",
+            "the grace skipped on stop",
+            "run.stopped not recorded), each killed: uv run python tools/mutate_check.py tests/mutations/stop.json.",
+            "uv run pytest -q -p no:cacheprovider passes",
+            "uv run ruff check src tests tools is clean.",
+            "Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check result, and the measured stop time of the R10-1 test."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W2-STOP-I slice 4 per docs/design/phase2-stop-decisions.md section 17 row 4 and sections 4.1, 4.6, 5, 8.3, 11 and 16 (read them first; rulings R-3, R-49, R-50 in docs/notes/rulings.md): an operator stop that ends a run within 30 s, red-first, on top of slice 3's grace (joined).",
+          "main_line_budget": "one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase2-stop-decisions.md; docs/notes/rulings.md R-3, R-49, R-50; src/harness_bench/{engine,cli,status,lifecycle,driver,errors}.py; tests/test_engine.py, tests/test_cli.py, tests/test_status.py, tests/test_lifecycle_conformance.py, tests/fake_acp_agent.py; tests/mutations/stop.json. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-stopi4 before committing.",
+          "not_in_scope": [
+            "decisions and bench answer (slice 5)",
+            "views.py beyond what the stopped outcome already reads",
+            "the TLA model (already refined in slice 3",
+            "change it only if a conformance row requires it, and then run the full check_models)",
+            "bench run, any live turn, pytest -m \"\"",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.003,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3BVY5CM5CF06QBJXZRYZSA9",
+        "raw_sha256": "2e0631314ee28b87e893ff81ff02dac027bda2705822d469cc45b16266ee9f63",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench stop <run_id"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stubborn"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stopped"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stopping"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase2-stop-decisions.md",
+            "reason": null,
+            "sha256": "3dbc40e3d87e76548cf8bda92266fefc77892f87086a180ae5a9572d91b287b7",
+            "status": "resolved",
+            "token": "docs/design/phase2-stop-decisions.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/<id>/control/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench-status/1"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/stop.json",
+            "reason": null,
+            "sha256": "e79382d44c7252adc4804e8e9659802ef0a80e33b95a5a594a47779994b0813c",
+            "status": "resolved",
+            "token": "tests/mutations/stop.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "4d1b3c10120a52082b1a43aa9407a8109459d7ba20fb83801eb85c2f511ba513",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/views.py",
+            "reason": null,
+            "sha256": "6e53249eae24b9f23c6836d0b5fd15d741eb84a7cd808d88d7f92afbd994ffb7",
+            "status": "resolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/{engine,cli,status,lifecycle,driver,errors}.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_engine.py",
+            "reason": null,
+            "sha256": "b9ebeaa2c8f8fe5b501cba81f8d79ccadd208e8eb905eab28c0cddceacc59387",
+            "status": "resolved",
+            "token": "tests/test_engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_cli.py",
+            "reason": null,
+            "sha256": "d788f4f7625b865eb56a4e3e5989c25b36cc70e2191734ed3bb81b3a81969077",
+            "status": "resolved",
+            "token": "tests/test_cli.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_status.py",
+            "reason": null,
+            "sha256": "b220a3deda86fdb94e51ac99898f6160447bc0844f95c3e343aeea26b7c514e1",
+            "status": "resolved",
+            "token": "tests/test_status.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_lifecycle_conformance.py",
+            "reason": null,
+            "sha256": "55af0b606cbf188d685faf8c60ea1f17fb2521226de820a0acb81a099405fb8c",
+            "status": "resolved",
+            "token": "tests/test_lifecycle_conformance.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/fake_acp_agent.py",
+            "reason": null,
+            "sha256": "4a56930aabd8fb0c1ddb7837f038183666632096705abd721d64ed7fb423886b",
+            "status": "resolved",
+            "token": "tests/fake_acp_agent.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
     }
   ],
   "changes": [
@@ -16785,6 +17188,15 @@ window.AUDIT_DATA = {
       "kind": "done",
       "ref": "al-01M3BRCKP0JSSQTTW8BS8SCVEZ",
       "session": "worker-codex-userw"
+    },
+    {
+      "id": "mail-01M3BVMNBWTZ25ZPR2EM0N4XXT",
+      "ts": "2026-09-25T08:41:48Z",
+      "from": "worker-codex-regress",
+      "to": "coord-opus-cq",
+      "kind": "done",
+      "ref": "docs/notes/review-w3-egress-codex.md@a2481f9",
+      "session": "worker-codex-regress"
     }
   ]
 };
