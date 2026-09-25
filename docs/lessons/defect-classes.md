@@ -247,6 +247,7 @@ summary: >-
 - **Control:**
   - At a join, the push is its own command, run only after the suite's exit code has been read as 0 in an earlier step (`pytest … > log; echo "exit=$?"`, then a separate push).
   - **After the second instance:** the merge also reports its own exit (`git merge …; echo "merge=$?"`), and nothing else runs until it reads 0. The Leader commits its own pending audit and ledger lines before any merge.
+  - A fourth instance on 2026-09-25, at the W3-GW-I follow-up a join. A `python script && pytest …; …; git commit` chain ran the commit after the script's assertion failed, because `&&` bound only the first pair. The commit carried two stale mutants that the next step caught (not pushed; fixed in the next commit). A fifth, related shape the same day: the Leader ran `mutate_check` and edited `backend.py` in the primary checkout while the full gate ran there, so that gate's result was void; it was re-run. The rule: one step per command at a join, or `set -e` for the chain; never a source edit or mutation run in a checkout whose suite is running.
   - The upgrade trigger for a hook is a third instance. **It fired (the B1 freeze, 2026-09-25).** The rule, extended: every pytest the Leader runs reads its exit code, and a "no tests ran" result (exit 4 or 5) is a failure, never a pass. The hook that refuses a bare `pytest … | tail` is the next step. `tools/heredoc_guard.py` already refuses a gate behind a pipe (E2E-E / CT27), but it did not match this shape.
 - **Status:** `observed` (Leader procedure, third instance; hook upgrade owed)
 
