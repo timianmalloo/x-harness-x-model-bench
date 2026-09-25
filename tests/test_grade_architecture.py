@@ -11,7 +11,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from archived_runs import ROOT
-from test_grade_correctness import git, tree_digest
+from test_grade_correctness import d1_cell, git, tree_digest
 
 from harness_bench import config, plan
 from harness_bench.grade import CellInput, architecture
@@ -23,6 +23,8 @@ C1 = ROOT / "tasks" / "C1"
 C1_VERSION = plan.task_version_hash(C1)
 C1_REFERENCE = {rel: (C1 / "oracle" / "reference" / rel).read_text(encoding="utf-8")
                 for rel in ("priority_queue.py", "docs/architecture.md")}
+PROJECTION = "src/AiDe.Core/Projections/EvidenceCensusProjection.cs"
+D1_REFERENCE = {PROJECTION: (ROOT / "tasks" / "D1" / "oracle" / "reference" / PROJECTION).read_text(encoding="utf-8")}
 
 
 def encode(score) -> tuple:
@@ -74,3 +76,8 @@ def test_the_c1_reference_with_no_imports_is_1(tmp_path):  # design: Architectur
 def test_the_c1_reference_plus_import_numpy_is_0(tmp_path):  # design: Architecture, Fixtures
     overlay = {**C1_REFERENCE, "priority_queue.py": "import numpy\n" + C1_REFERENCE["priority_queue.py"]}
     assert grade(tmp_path, *c1_cell(tmp_path, overlay)) == ("0.0000", None)
+
+
+def test_the_d1_reference_plus_using_newtonsoft_json_is_0(tmp_path):  # design: Architecture, Fixtures
+    overlay = {PROJECTION: "using Newtonsoft.Json;\n" + D1_REFERENCE[PROJECTION]}
+    assert grade(tmp_path, *d1_cell(tmp_path, overlay)) == ("0.0000", None)
