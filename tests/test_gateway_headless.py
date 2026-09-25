@@ -102,3 +102,15 @@ def test_a_headless_call_sends_the_request_on_stdin_from_a_cells_root_folder_and
     assert archived.read_text(encoding="utf-8").count('"sessionId"') > 0
     assert hashlib.sha256(archived.read_bytes()).hexdigest() != hashlib.sha256(
         (RECORDS / "claude-fable-text.record.jsonl").read_bytes()).hexdigest()  # this call's own session id
+
+
+# --------------------------------------------------------------------------------------------------- T-GW-32
+def test_t_gw_32_an_unqualified_judge_is_never_spawned(tmp_path, base):
+    unqualified = pipeline.Judge(model=PIN, invocation_sha256="d" * 64, allowed_models=(PIN,), qualified=False)
+    result = pipeline.run(unqualified, INPUTS, _ctx(tmp_path), _launch(tmp_path, base / "cells"))
+    assert (result.outcome, result.code, result.verdicts, result.model_calls) == ("failed", "HB-GW-007", None, ())
+    assert _captured(tmp_path) == []  # 0 spawns
+    assert not (base / "cells" / "gateway").exists()  # no call folder, no credential copy
+    # the gate comes before the store: not even a cache-only pass reads a verdict for it (design 10.1)
+    result = pipeline.run(unqualified, INPUTS, _ctx(tmp_path, allow_model_calls=False), _launch(tmp_path, base / "c2"))
+    assert (result.outcome, result.code) == ("failed", "HB-GW-007")
