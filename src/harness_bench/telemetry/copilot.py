@@ -66,6 +66,8 @@ TOOL_CLASS = {"powershell": "shell", "list_powershell": "shell", "read_powershel
               "bash": "shell", "shell": "shell", "apply_patch": "edit", "write": "edit",
               "edit": "edit", "create": "edit", "view": "read", "glob": "read", "rg": "read", "grep": "read",
               "skill": "read",
+              # R-74 item 1: start, address or read a sub-agent; in profile only in a scenario-6 cell (views)
+              "task": "delegate", "write_agent": "delegate", "read_agent": "delegate", "list_agents": "delegate",
               "scripted_user-ask_user": "scripted user"}  # R-37 c2: the task's own MCP tool (a1-capture-1)
 
 

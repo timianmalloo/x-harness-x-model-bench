@@ -267,6 +267,56 @@ def validate_task(task_dir: Path, bom_entry: dict | None, p: Problems, grader_mo
             p.add(where, "status ready requires a pinned formal.toolchain and, for fixed statements, formal.statement_hash")
 
 
+def map_key(key) -> tuple[str, str] | None:
+    """R-73: a scenario-6 `model_map` key is `<role>@<vendor>`, both parts nonempty; None for any other key. The one
+    parser of the key (R-73 c2; tests/test_model_map.py asserts no second one)."""
+    if not isinstance(key, str) or key.count("@") != 1:
+        return None
+    role, vendor = key.split("@")
+    return (role, vendor) if role and vendor else None
+
+
+def model_map_problems(model_map, vendors: dict[str, frozenset[str]]) -> list[str]:
+    """R-73 c1: a scenario-6 map against the vendors the profiles declare (`vendors`: vendor -> the auxiliary models of
+    its harnesses). Every key is `<role>@<vendor>` for a declared vendor, every value names a model that is not an
+    auxiliary one, and every role is present for every declared vendor.
+    Not checked here: that a harness of the vendor serves the value. R-73 c1 reads that from the harness's own recording
+    or the R-74 qualification record, and no committed per-harness served list exists yet (named in the W3-S6 report)."""
+    if not isinstance(model_map, dict):
+        return ["model_map must be a mapping of <role>@<vendor> to a model (R-73)"]
+    out: list[str] = []
+    roles: dict[str, set[str]] = {}
+    for key, model in model_map.items():
+        parsed = map_key(key)
+        if parsed is None:
+            out.append(f"key {key!r} is not <role>@<vendor> (R-73)")
+            continue
+        role, vendor = parsed
+        if vendor not in vendors:
+            out.append(f"key {key!r} names vendor {vendor!r}, which no profile declares")
+            continue
+        roles.setdefault(role, set()).add(vendor)
+        if not isinstance(model, str) or not model.strip():
+            out.append(f"{key} must name a model")
+        elif any(model.startswith(aux) for aux in vendors[vendor]):
+            out.append(f"{key} names {model}, an auxiliary model of a {vendor} harness")
+    for role in sorted(roles):
+        out.extend(f"role {role!r} has no model for vendor {vendor!r}" for vendor in sorted(set(vendors) - roles[role]))
+    return out
+
+
+def profile_vendors(root: Path) -> dict[str, frozenset[str]]:
+    """vendor -> the auxiliary models of its harnesses, from the profiles' own loader (R-73 item 1)."""
+    # profiles imports config, so the loader is imported where it is used
+    from harness_bench import profiles
+
+    out: dict[str, frozenset[str]] = {}
+    for harness in profiles.HARNESSES:
+        p = profiles.load(root, harness)
+        out[p.vendor] = out.get(p.vendor, frozenset()) | frozenset(p.auxiliary_models)
+    return out
+
+
 def grader_modules(root: Path) -> set[str]:
     gdir = root / "src" / "harness_bench" / "grade"
     return {f.stem for f in gdir.glob("*.py") if not f.stem.startswith("_")}
@@ -287,8 +337,15 @@ def validate_repo(root: Path) -> list[str]:
     folders = {d.name for d in tasks_dir.iterdir() if d.is_dir() and not d.name.startswith("_")}
     for tid in sorted(set(entries) - folders):
         p.add(f"tasks/{tid}", "listed in bench/bom.yaml but has no folder")
+    vendors = profile_vendors(root)
     for name in sorted(folders):
         validate_task(tasks_dir / name, entries.get(name), p, graders, markers)
+        t = load_yaml(tasks_dir / name / "task.yaml") if (tasks_dir / name / "task.yaml").is_file() else {}
+        # R-73 c1 from draft on. assume: a stub's map is a placeholder (F1 and F2 read `tbd`, like their source.commit);
+        # confirm: the Leader's F1 map at draft; breaks: a stub planned as is -- bench plan refuses it (R-73 item 5).
+        if t.get("scenario") == 6 and t.get("status") in ("draft", "ready") and t.get("model_map"):
+            for problem in model_map_problems(t["model_map"], vendors):
+                p.add(f"tasks/{name}", f"model_map: {problem}")
     validate_task_freeze(root, p)
     validate_rubrics(root, p)
     return p.items

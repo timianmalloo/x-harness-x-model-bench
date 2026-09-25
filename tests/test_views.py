@@ -83,16 +83,21 @@ def _copilot_run(root: Path, tmp_path: Path, change=None, arm: str = "off", chec
     return _native_run(root, tmp_path, "copilot", "session-state/sess-a/events.jsonl", text, **kw)
 
 
-def _native_run(root: Path, tmp_path: Path, harness: str, record_path: str, record_text: str, **kw) -> Path:
-    """Archive cell `a` with `record_text` as its native record at `home/<record_path>`, then grade it for real."""
+def _native_run(root: Path, tmp_path: Path, harness: str, record_path: str, record_text: str,
+                extra_records: dict[str, str] | None = None, scenario: int | None = None, **kw) -> Path:
+    """Archive cell `a` with `record_text` as its native record at `home/<record_path>` (and each of `extra_records`, a
+    path -> text map, e.g. a sub-agent record), under a plan whose task scenario is `scenario`; then grade it for real."""
     run_dir = make_run(root, tmp_path, {"a": GOOD}, harness=harness, archived=set(), **kw)
+    if scenario is not None:
+        _edit_plan(run_dir, lambda p: {**p, "tasks": {"X1": {"scenario": scenario, "model_map": None}}})
     folder = run_dir / "archive/a/attempt-1"
     workspace = folder / "ws"
     workspace.mkdir(parents=True)
     (workspace / "slug.py").write_text(GOOD, encoding="utf-8")
-    record = folder / "home" / record_path
-    record.parent.mkdir(parents=True)
-    record.write_text(record_text, encoding="utf-8")
+    for path, text in {record_path: record_text, **(extra_records or {})}.items():
+        record = folder / "home" / path
+        record.parent.mkdir(parents=True, exist_ok=True)
+        record.write_text(text, encoding="utf-8")
     rows = [{"path": file.relative_to(folder).as_posix(), "kind": "file", "size": file.stat().st_size,
              "sha256": hashlib.sha256(file.read_bytes()).hexdigest(), "link_target": "", "archive_attempt": 1}
             for file in sorted(folder.rglob("*")) if file.is_file()]
@@ -436,6 +441,125 @@ def test_a_codex_cell_counts_no_meta_call(root, tmp_path):  # measured zero: the
     assert _codex_mcp_run(root, tmp_path).meta_calls == views.Measure(0)
 
 
+# --- R-74 item 2: an executed `delegate` call is in profile iff the frozen task scenario is 6 -------------------------
+
+
+def _as_agent(result_is_error: bool | None):
+    """The Q1 record's WebFetch call renamed to `Agent` (a delegate id), its result set as `_webfetch_result` does."""
+    def change(rows):
+        return [json.loads(json.dumps(r).replace("WebFetch", "Agent")) if r is not None else None
+                for r in _webfetch_result(result_is_error)(rows)]
+    return change
+
+
+def test_an_executed_agent_call_in_a_scenario5_cell_is_out_of_profile(root, tmp_path):  # R-74 c2
+    cell = _claude_q1_run(root, tmp_path, permission_requests=0, change=_as_agent(False), scenario=5)
+    assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
+    assert _warnings(cell, "HB-VAL-008") == []  # the finding is the validity code, not a warning
+    assert cell.delegate_calls == views.Measure(1)
+
+
+def test_an_executed_agent_call_in_a_scenario6_cell_is_valid_and_counted(root, tmp_path):  # R-74 c2: never scored
+    cell = _claude_q1_run(root, tmp_path, permission_requests=0, change=_as_agent(False), scenario=6)
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+    assert cell.delegate_calls == views.Measure(1)
+    assert _warnings(cell, "HB-VAL-009") == []
+    assert "delegate_calls" not in cell.scores
+
+
+def test_a_refused_agent_call_in_a_scenario5_cell_is_the_refused_attempt_warning(root, tmp_path):  # R-74 c2, R-54 (b)
+    cell = _claude_q1_run(root, tmp_path, permission_requests=1, change=_as_agent(True), scenario=5)
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+    assert _warnings(cell, "HB-VAL-009") == [("HB-VAL-009", "warning", "out-of-profile attempt refused: Agent")]
+
+
+def test_a_plan_with_no_frozen_scenario_keeps_agent_out_of_profile(root, tmp_path):  # never allowed by default
+    cell = _claude_q1_run(root, tmp_path, permission_requests=0, change=_as_agent(False))
+    assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
+
+
+def test_a_scenario6_cell_still_invalidates_on_an_executed_other_call(root, tmp_path):  # the allowance is one class only
+    cell = _claude_q1_run(root, tmp_path, permission_requests=0, scenario=6)
+    assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
+    assert cell.delegate_calls == views.Measure(0)
+
+
+def test_a_copilot_scenario5_cell_advertising_task_is_out_of_profile_and_a_scenario6_cell_is_not(root, tmp_path):
+    def advertise_task(events):
+        for e in events:
+            if e["type"] == "session.usage_checkpoint":
+                for state in e["data"]["promptCacheBreakState"]:
+                    for model in state["models"].values():
+                        model["tools"].append({"name": "task", "safe": True})
+        return events
+    five = _cell(views.load(_copilot_run(root, tmp_path / "5", advertise_task, arm="fixed", checkpoint=True, scenario=5)), "a")
+    six = _cell(views.load(_copilot_run(root, tmp_path / "6", advertise_task, arm="fixed", checkpoint=True, scenario=6)), "a")
+    assert (five.validity, five.validity_code) == OUT_OF_PROFILE
+    assert (six.validity, six.validity_code) == ("valid", None)
+
+
+# --- R-74 item 4: a Claude Code cell's sub-agent records are read (a placeholder sub-agent record) -------------------
+
+SUBAGENT_RECORD = "projects/C--cells-cell/sess-a/subagents/agent-a1b2c3.jsonl"
+
+
+def _subagent_rows(tool: str, model: str = SONNET) -> str:
+    rows = [{"type": "user", "timestamp": "2026-09-25T05:21:00.000Z", "sessionId": "sess-a", "agentId": "a1b2c3",
+             "isSidechain": True, "message": {"role": "user", "content": "write notes.md"}},
+            {"type": "assistant", "timestamp": "2026-09-25T05:21:01.000Z", "sessionId": "sess-a", "agentId": "a1b2c3",
+             "isSidechain": True, "message": {"id": "sub-m1", "model": model, "usage": {
+                 "input_tokens": 10, "cache_read_input_tokens": 100, "cache_creation_input_tokens": 5, "output_tokens": 20},
+                 "content": [{"type": "tool_use", "id": "sub-t1", "name": tool, "input": {}}]}},
+            {"type": "user", "timestamp": "2026-09-25T05:21:02.000Z", "sessionId": "sess-a", "agentId": "a1b2c3",
+             "isSidechain": True, "message": {"content": [{"type": "tool_result", "tool_use_id": "sub-t1", "content": "ok"}]}}]
+    return "".join(json.dumps(r) + "\n" for r in rows)
+
+
+def test_a_sub_agents_out_of_profile_call_invalidates_the_cell(root, tmp_path):  # item 4: the control is not blind inside
+    run_dir = _claude_q1_dir(root, tmp_path, permission_requests=1, change=_as_agent(False), scenario=6,
+                             extra_records={SUBAGENT_RECORD: _subagent_rows("WebSearch")})
+    cell = _cell(views.load(run_dir), "a")
+    assert (cell.validity, cell.validity_code) == OUT_OF_PROFILE
+    tools = [(r["native_session_id"], r["name"], r["tool_class"]) for r in views.rows(run_dir, "tool_calls")]
+    assert ("a1b2c3", "WebSearch", "other") in tools and ("sess-a", "Agent", "delegate") in tools
+
+
+def test_a_copilot_hook_denial_of_task_outside_scenario6_is_a_refused_attempt_not_hb_val_004(root, tmp_path):  # R-74 c2
+    def deny_task(events):
+        start = next(e for e in events if e["type"] == "tool.execution_start")
+        done = next(e for e in events if e["type"] == "tool.execution_complete" and e["data"]["toolCallId"] == start["data"]["toolCallId"])
+        start["data"]["toolName"] = "task"
+        done["data"]["success"] = False
+        done["data"]["error"] = {"code": "denied", "message": "Denied by preToolUse hook"}
+        return events
+
+    cell = _cell(views.load(_copilot_run(root, tmp_path, deny_task, arm="fixed", scenario=5)), "a")
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+    assert _warnings(cell, "HB-VAL-009") == [("HB-VAL-009", "warning", "out-of-profile attempt refused: task")]
+
+
+def test_an_unreadable_sub_agent_record_makes_the_cell_not_recorded(root, tmp_path, monkeypatch):  # R-21 c2: no partial sum
+    real = normalize.record_unreadable
+    monkeypatch.setattr(normalize, "record_unreadable", lambda ex: "native record truncated at the size bound"
+                        if any(t.name == "WebSearch" for t in ex.tool_calls) else real(ex))
+    run_dir = _claude_q1_dir(root, tmp_path, permission_requests=1, change=_as_agent(False), scenario=6,
+                             extra_records={SUBAGENT_RECORD: _subagent_rows("WebSearch")})
+    completed = next(e for e in views.rows(run_dir, "events") if e["kind"] == "grading.completed")
+    assert completed["unreadable_records"] == {"a": "sub-agent record a1b2c3: native record truncated at the size bound"}
+
+
+def test_a_sub_agents_served_model_and_calls_reach_the_ledger(root, tmp_path):  # item 4: adherence is measurable later
+    run_dir = _claude_q1_dir(root, tmp_path, permission_requests=1, change=_as_agent(False), scenario=6,
+                             extra_records={SUBAGENT_RECORD: _subagent_rows("Write")})
+    cell = _cell(views.load(run_dir), "a")
+    assert (cell.validity, cell.validity_code) == ("valid", None)
+    sub = [(r["native_session_id"], r["model"], r["output"]) for r in views.rows(run_dir, "model_calls")
+           if r["native_session_id"] == "a1b2c3"]
+    assert sub == [("a1b2c3", SONNET, 20)]
+    assert [(r["name"], r["tool_class"]) for r in views.rows(run_dir, "tool_calls") if r["native_session_id"] == "a1b2c3"] == [
+        ("Write", "edit")]
+
+
 def test_a_copilot_hook_denial_of_an_other_call_is_a_refused_attempt_not_hb_val_004(root, tmp_path):  # R-54 (b)
     def deny_web_fetch(events):
         start = next(e for e in events if e["type"] == "tool.execution_start")
@@ -608,21 +732,42 @@ def test_the_cross_check_skips_a_harness_whose_acp_usage_is_not_the_turn_total(r
 # --- US-11: a model the task's model_map routes to is allowed, like the pin (F1; seam S3 freezes it in the plan) -------
 
 
-def _mapped_run(root, tmp_path, model_map):
-    run_dir = make_run(root, tmp_path, {"a": GOOD}, model="gpt-other")  # the record serves gpt-6-sol
-    _edit_plan(run_dir, lambda p: {**p, "tasks": {"X1": {"model_map": model_map}}})
+def _mapped_run(root, tmp_path, model_map, model="gpt-other", served=CODEX_MODEL):
+    """A Codex cell pinned to `model` whose record serves `served` (the captured record, its model id replaced)."""
+    record = tmp_path / "record.jsonl"
+    record.write_text((Path(__file__).parent / "fixtures/native/codex/ok.jsonl").read_text(encoding="utf-8")
+                      .replace(CODEX_MODEL, served), encoding="utf-8")
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, model=model, native_record=record)
+    _edit_plan(run_dir, lambda p: {**p, "tasks": {"X1": {"scenario": 6, "model_map": model_map}}})
     runner.run_pass(run_dir, root)
     return _cell(views.load(run_dir), "a")
 
 
-def test_a_model_the_task_model_map_names_is_valid(root, tmp_path):  # US-11: "or a model allowed by the task's model_map"
-    cell = _mapped_run(root, tmp_path, {"implement": CODEX_MODEL, "review": SONNET})
+# R-73 items 3 and 4: the F1 map per vendor (the OpenAI workhorse id is a placeholder of the right shape)
+F1_MAP = {"domain-model@anthropic": OPUS, "derived-quantities@anthropic": SONNET, "tests@anthropic": SONNET,
+          "domain-model@openai": CODEX_MODEL, "derived-quantities@openai": "gpt-6-astra", "tests@openai": "gpt-6-astra"}
+
+
+def test_a_model_the_task_model_map_names_for_the_cells_vendor_is_valid(root, tmp_path):  # US-11 per vendor (R-73 c2)
+    cell = _mapped_run(root, tmp_path, F1_MAP, model=CODEX_MODEL, served="gpt-6-astra")
     assert (cell.validity, cell.validity_code) == ("valid", None)
 
 
-def test_a_model_the_model_map_does_not_name_is_still_a_mismatch(root, tmp_path):  # the negative control
-    cell = _mapped_run(root, tmp_path, {"review": SONNET})
+def test_a_codex_cell_serving_the_anthropic_column_is_a_model_mismatch(root, tmp_path):  # R-73 item 2: red on main
+    cell = _mapped_run(root, tmp_path, F1_MAP, model=CODEX_MODEL, served=SONNET)
     assert (cell.validity, cell.validity_code) == ("invalid (model mismatch)", "HB-VAL-002")
+
+
+def test_a_model_the_model_map_does_not_name_is_still_a_mismatch(root, tmp_path):  # the negative control
+    cell = _mapped_run(root, tmp_path, {"review@openai": SONNET})
+    assert (cell.validity, cell.validity_code) == ("invalid (model mismatch)", "HB-VAL-002")
+
+
+def test_mapped_is_exactly_the_cells_own_vendor_column(root):  # R-73 c2, with the F1 map frozen in a plan
+    frozen = {"tasks": {"F1": {"scenario": 6, "model_map": F1_MAP}},
+              "profiles": {h: plan_mod.profile_record(root, h) for h in ("claude-code", "codex")}}
+    assert views._mapped(frozen, {"task": "F1", "harness": "codex"}) == frozenset({CODEX_MODEL, "gpt-6-astra"})
+    assert views._mapped(frozen, {"task": "F1", "harness": "claude-code"}) == frozenset({OPUS, SONNET})
 
 
 # --- R-47 (R-28 c2 re-pointed): agent_version against the pinned build's recorded self-report -> HB-VAL-007 ----------
@@ -804,6 +949,7 @@ def test_a_ledger_graded_before_r15_and_r24_exports_what_it_did_before(tmp_path,
     for cell in doc["cells"]:
         cell.pop("warnings")  # new in W2-VIEWS: a key the 5feece0 export did not have
         cell.pop("meta_calls")  # new in W2-VIEWS-FU (R-54 c3): the other one
+        cell.pop("delegate_calls")  # new in W3-S6 (R-74 c2): a cost axis beside meta_calls
     assert doc == expected["exports"][name]
 
 

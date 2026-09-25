@@ -44,8 +44,8 @@
   {
     "name": "R-45 Copilot class test accepts web_search",
     "file": "tests/test_allowlist_classes.py",
-    "find": "return set(command[start + 1:])",
-    "replace": "return set(command[start + 1:]) | {\"web_search\"}",
+    "find": "return set(argv[argv.index(\"--available-tools\") + 1:])",
+    "replace": "return set(argv[argv.index(\"--available-tools\") + 1:]) | {\"web_search\"}",
     "tests": ["tests/test_allowlist_classes.py::test_copilot_allowlist_covers_every_in_class_id_and_nothing_outside_it"]
   }
 ]

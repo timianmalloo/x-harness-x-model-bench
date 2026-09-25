@@ -192,11 +192,11 @@ def test_profile_load_rejects_missing_or_empty_command(tmp_path, command):
     # omitted grace also raises HB-USR-002 (line 133), which masked "profile command cannot be
     # empty" (tests/mutations/copilot.json) for the command=[] case: that mutation removed `not
     # command` from the line-127 check, the empty-command case fell through, and the test still
-    # passed because the later grace check raised the same coded error for an unrelated reason.
+    # passed because the later grace check raised the same coded error for an unrelated reason. The Leader added vendor at the W3-S6 join (R-73 made it required and it masked the same guard).
     profile_dir = tmp_path / "bench" / "profiles"
     profile_dir.mkdir(parents=True)
     data = {"harness": "copilot", "home_env": "COPILOT_HOME", "credential": None,
-            "record_glob": "events.jsonl", "shutdown_grace_seconds": 10}
+            "record_glob": "events.jsonl", "shutdown_grace_seconds": 10, "vendor": "openai"}
     if command is not None:
         data["command"] = command
     import yaml
@@ -314,9 +314,10 @@ def test_shutdown_grace_is_a_bounded_profile_datum_and_reaches_launcher(tmp_path
     assert error.value.code == "HB-USR-002"
 
 
-def test_claude_declared_mode_matches_the_recorded_effective_mode():  # PR-3, R-34 c4
-    profile = profiles.load(ROOT, "claude-code")
-    declared = json.loads(profile.files["settings.json"])["permissions"]["defaultMode"]
+def test_claude_declared_mode_matches_the_recorded_effective_mode(tmp_path):  # PR-3, R-34 c4
+    profile = profiles.load(ROOT, "claude-code", credential_source=tmp_path / "none")
+    profile.seed_home(tmp_path / "home", "claude-opus-5-5")  # the seeded file: the template has a {delegate} slot (R-74)
+    declared = json.loads((tmp_path / "home" / "settings.json").read_text(encoding="utf-8"))["permissions"]["defaultMode"]
     recording = ROOT / "tests" / "fixtures" / "acp" / "recordings" / "claude-code-x1.jsonl"
     messages = (json.loads(row["text"]) for line in recording.read_text(encoding="utf-8").splitlines()
                 if (row := json.loads(line)).get("dir") == "to_client")

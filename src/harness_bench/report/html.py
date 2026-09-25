@@ -16,8 +16,9 @@ import html as _html
 import re
 from pathlib import Path
 
-from harness_bench import report, views
+from harness_bench import profiles, report, views
 from harness_bench.errors import BenchError
+from harness_bench.plan import resolved_model_map
 from harness_bench.report.credentials import encodings
 
 SECRET_SHAPES = (
@@ -118,6 +119,43 @@ def _build_check_fact(cells: list[views.CellView]) -> str:
     return "checked against the recorded agent_version (HB-VAL-007 on a mismatch)"
 
 
+COORDINATION_BANNER = "coordination: not built in 0.4"  # R-73 c6: grade/coordination.py is not in GRADERS in 0.4
+
+
+def _allowance() -> str:
+    """R-74 c6: the scenario-6 allowance per harness, in the ruling's order, from the profiles' own delegate ids (the
+    readers'); a harness with none reads `not qualified` (Codex until its measured turn, R-74 item 5)."""
+    parts = []
+    for harness in ("claude-code", "copilot", "codex"):
+        ids = profiles.DELEGATE_IDS.get(harness)
+        parts.append(f"{harness} {', '.join(ids)}" if ids else f"{harness} not qualified")
+    return " · ".join(parts)
+
+
+def _scenario6_facts(view: views.RunView) -> list[tuple[str, str | None]]:
+    """R-73 c6, R-74 c6: for a run with scenario-6 cells, the coordination banner, the allowance, per combo the resolved
+    role -> model map of its vendor (the one resolver) with `non-discriminating` beside a role on the pin, and per cell
+    the served-model set. No rows without a scenario-6 cell."""
+    plan = view.plan
+    cells = [c for c in plan.get("cells", []) if views._scenario(plan, c) == 6]
+    if not cells:
+        return []
+    facts: list[tuple[str, str | None]] = [("Coordination (scenario 6)", COORDINATION_BANNER),
+                                           ("Scenario-6 allowance", _allowance())]
+    combos: dict[str, dict] = {}
+    for c in cells:
+        combos.setdefault(c["combo"], c)
+    for combo, c in combos.items():
+        roles = resolved_model_map(plan, c)
+        facts.append((f"Model map ({combo})", ", ".join(
+            f"{role} → {model}" + (" (non-discriminating)" if model == c["model"] else "") for role, model in roles.items())))
+    served = {v.cell_id: v.served for v in view.cells}
+    for c in cells:
+        s = served.get(c["cell_id"])
+        facts.append((f"Served models ({c['label']})", None if s is None else (", ".join(s) or "none")))
+    return facts
+
+
 def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | None = None) -> str:
     plan = view.plan
     planned = ", ".join(views.build_label(h, str(b.get("version", ""))) for h, b in sorted((plan.get("builds") or {}).items()))
@@ -130,7 +168,7 @@ def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | N
              ("Network mode", view.header.get("network_mode")), ("Defender real-time exclusion", None),
              ("Context window", _context_window_fact(view.cells, tags)),
              *_claude_code_permission_fact(view.cells, modes or {}),
-             ("Price list hash", (plan.get("price_list_hash") or "")[:12])]
+             ("Price list hash", (plan.get("price_list_hash") or "")[:12]), *_scenario6_facts(view)]
     if report.has_codex_cell(plan):
         facts.append((report.N5_FLAG, f"see {report.N5_EVIDENCE}"))
     if report.has_claude_code_cell(plan):
@@ -188,7 +226,8 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str]) -> s
                ("Wall", True), ("Tool time", True), ("Model time", True), ("Idle", True), ("Cost", True), ("Context window", False),
                ("Warnings", False), ("Evidence", False)]
     na = views.Measure(None, "not graded")
-    rows = [[(_e(report.flag_if_claude_code(report.flag_if_codex(c.label, c.harness), c.harness)), False),
+    rows = [[(_e(report.flag_if_claude_code(report.flag_if_codex(
+                c.label + (f" · {COORDINATION_BANNER}" if c.scenario == 6 else ""), c.harness), c.harness)), False),
              (_e(c.outcome + (f" ({c.cause}, {c.code})" if c.code else "")), False),
              (_e(c.validity + (f" {c.validity_code}" if c.validity_code else "")), False),
              (_e(report.rate(c.scores.get("pass_at_1", na))), True), (_e(report.rate(c.scores.get("partial_credit", na))), True),

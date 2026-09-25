@@ -377,6 +377,24 @@ summary: >-
 
 ---
 
+### PERM-C: a scenario's required capability denied by the profile every scenario shares
+- **Signature:** one tool profile serves every scenario, and it denies a capability that one scenario's measures are defined over. That scenario then measures nothing. Or it measures an agent that works around the denial, and the workaround is scored as the treatment. It is a sibling of PERM-A: there, an id is missing from a class; here, a whole class is missing for one scenario.
+- **Instances:** `2026-09-25`, DR-F1-2 (R-74). F1's `model_map_adherence` and `per_agent_attribution` are defined over sub-agent sessions (`tasks/F1/oracle/README.md:57-58`). Claude Code's `Agent` and Copilot's `task`, `write_agent`, `read_agent` and `list_agents` were out of profile on every cell (`test_allowlist_classes.py:48-52`, `:68-69`), so a delegating F1 cell would read `invalid (out-of-profile tool called)`. Caught before any F1 cell ran.
+- **Why it survives:** the profile is written once from ADR-0004's classes, and the allowlist tests check it against the build's ids, not against what each scenario needs. A scenario is added to the BOM without anyone reading its metrics against the profile.
+- **Sweep:** scenario 1's `scripted_user` is the other scenario-conditional profile addition. It already follows the per-cell shape (`profiles.py` argv, R-51 c1). Scenario 7's toolchain is a workspace fact, not a tool profile (`bom.yaml:49-51`). No other scenario's metric names a tool class the profile denies.
+- **Control:** the scenario-parameterised allowlist tests in `tests/test_allowlist_classes.py`. A scenario-6 cell's allowlist is exactly the classes plus the delegate ids; every other scenario's names no delegate id. `tests/test_delegate.py` checks that every other cell is seeded and launched byte for byte as before. The scenario rule has one emitter, `views._out_of_profile` (`tests/test_views.py`, R-74 c2). Mutants: `tests/mutations/scenario6.json`.
+- **Status:** `controlled` offline. The allowance on each harness still waits for its R-74 c6 qualification turn.
+
+### MAP-A: a treatment parameter authored in one vendor's ids and applied to every combo
+- **Signature:** a per-task parameter that names models (a role → model map) is written in one vendor's ids. The same text reaches every combo, so a cell of another vendor either cannot follow it or is scored against a routing it cannot perform. A value-only resolver also admits the other vendor's ids as allowed served models in every cell. It is a sibling of PERM-A.
+- **Instances:** `2026-09-25`, DR-F1-1 (R-73). The F1 draft map (`0f8cc9f`, `task.yaml:28-31`) had Anthropic ids only, with bare role keys. `views._mapped` folded every value into one allowance (`views.py:436-437`), so a Codex cell serving `claude-sonnet-5` read `valid`. Red at `12d9990`.
+- **Why it survives:** the map was authored against the one harness whose models the author knew. The served-model check read values and ignored whose they were.
+- **Sweep:** `model_map` is the only per-role parameter in `bench-task/1` (`config.py`). `auxiliary_models` is already per harness (`profiles.py`). No other task field names a model.
+- **Control:** keys are `<role>@<vendor>`, and the vendor is a profile fact (`bench/profiles/*.yaml` `vendor:`). `config.model_map_problems` refuses a bare key, an undeclared vendor, a missing role for any declared vendor, and an auxiliary-model value (from draft on). `plan.resolved_model_map` is the one resolver, and `tests/test_model_map.py` asserts that no second `@` parser exists. `bench plan` refuses a scenario-6 cell whose every role equals its pin. Mutants: `tests/mutations/scenario6.json`.
+- **Status:** `partially-controlled`. The check that a harness of the vendor serves the value is not built, because no committed per-harness served list exists (R-73 c1).
+
+---
+
 ## Inherited classes (seeded from the pack)
 
 *Observed in production across independent codebases running the AI-Forward pack (`continuous-improvement.md` §6). Each is **uncontrolled here until this repo builds the control** — that is the work, not the copying.*

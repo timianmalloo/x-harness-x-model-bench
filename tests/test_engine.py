@@ -63,7 +63,7 @@ class FakeLauncher:
             raise BuildChanged("fake", "binary replaced after planning")
         return {"version": "0", "sha256": "f" * 64, "adapter_version": "0", "adapter_sha256": "e" * 64}
 
-    def seed(self, home: Path, model: str) -> None:
+    def seed(self, home: Path, cell: dict) -> None:
         home.mkdir(parents=True, exist_ok=True)
         (home / ".credentials.json").write_text(json.dumps({"token": SECRET}), encoding="utf-8")
 

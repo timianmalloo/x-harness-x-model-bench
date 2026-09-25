@@ -215,20 +215,33 @@ class _Pass:
         return PassResult(self.grading_id, heads, graded, [f"{fact}/{r.segment_id}" for fact, r in abandoned])
 
     def _extract(self, cell: dict, folder: Path, session_id: str, held: set) -> tuple[Extraction | None, str | None, list, list]:
-        """(the record as read, why there is none, its model-call rows, its tool-call rows); rows unstamped."""
-        records = profiles.find_records(folder / "home", self.plan["profiles"][cell["harness"]]["record_glob"], session_id)
+        """(the record as read, why it is not recorded, its model-call rows, its tool-call rows); rows unstamped. With a
+        record read, the reason is a sub-agent record's that could not be read as a whole (R-74 item 4, R-21 c2)."""
+        record = self.plan["profiles"][cell["harness"]]
+        records = profiles.find_records(folder / "home", record["record_glob"], session_id)
         if len(records) != 1:
             return None, "no native record for the session" if not records else "more than one native record for the session", [], []
         ex = profiles.READERS[cell["harness"]](records[0])
         cid = cell["cell_id"]
         model_rows = normalize.model_call_rows(self.plan["run_id"], cid, session_id, ex, self.extraction)
         tool_rows = normalize.tool_call_rows(self.plan["run_id"], cid, session_id, ex, self.extraction)
+        # R-74 item 4: each sub-agent record of the session is read into the same facts, keyed by its own native session
+        # id, so the out-of-profile control and the served models see inside sub-agents. A plan from before the field
+        # names none. The main record stays the cell's extraction (the graders' input).
+        sub_reason = None
+        for path in profiles.find_records(folder / "home", record.get("subagent_glob") or "", session_id):
+            sub = profiles.READERS[cell["harness"]](path)
+            sid = profiles.subagent_session_id(path)
+            model_rows += normalize.model_call_rows(self.plan["run_id"], cid, sid, sub, self.extraction)
+            tool_rows += normalize.tool_call_rows(self.plan["run_id"], cid, sid, sub, self.extraction)
+            reason = normalize.record_unreadable(sub)
+            sub_reason = sub_reason or (f"sub-agent record {sid}: {reason}" if reason else None)
         if (cid, self.extraction) not in held:
             for row in model_rows:
                 self.append("model_calls", row)
             for row in tool_rows:
                 self.append("tool_calls", row)
-        return ex, None, model_rows, tool_rows
+        return ex, sub_reason, model_rows, tool_rows
 
     def _grade_cell(self, cell: dict, attempt: int, session_id: str, held: set, usage: dict, events: tuple) -> None:
         cid = cell["cell_id"]
@@ -236,7 +249,7 @@ class _Pass:
         out_dir = self.run_dir / "grading" / self.grading_id / cid
         out_dir.mkdir(parents=True)
         ex, missing, model_rows, tool_rows = self._extract(cell, folder, session_id, held)
-        unreadable = missing if ex is None else normalize.record_unreadable(ex)
+        unreadable = missing if ex is None else (normalize.record_unreadable(ex) or missing)
         if unreadable is not None:
             self.unreadable[cid] = unreadable
         if ex is not None and ex.tools_advertised is not None:

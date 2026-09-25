@@ -1,5 +1,6 @@
 # Codex cell profile (ADR-0003, ADR-0004, ADR-0013). agent-full-access: approval never, no sandbox (spike N1.1).
 harness: codex
+vendor: openai   # R-73 item 1: a profile fact, never inferred from a model id
 home_env: CODEX_HOME
 credential: { source: "~/.codex/auth.json", name: "auth.json" }
 credential_kind: "subscription login (copied)"

@@ -32,6 +32,7 @@ __all__ = ["ProviderError", "read"]
 TOOL_CLASSES = {"Bash": "shell", "PowerShell": "shell", "Edit": "edit", "Write": "edit", "MultiEdit": "edit",
                 "NotebookEdit": "edit", "Read": "read", "Glob": "read", "Grep": "read",
                 "ToolSearch": "meta",  # R-54 (a): loads a deferred tool's schema, invokes nothing; counted, never scored
+                "Agent": "delegate",  # R-74 item 1: starts a sub-agent; in profile only in a scenario-6 cell (views)
                 "mcp__scripted_user__ask_user": "scripted user"}  # R-37 c2: the task's own MCP tool (a1-capture-1)
 # Account connectors as the pinned 2.1.282 record advertises them: prompt_snapshot tools and deferred_tools_delta.
 _ACCOUNT_CONNECTOR = re.compile(r"mcp__claude_ai_[A-Za-z0-9_]+")

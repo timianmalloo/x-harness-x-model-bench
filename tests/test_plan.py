@@ -245,11 +245,13 @@ def test_the_plan_records_each_harness_profile_it_uses():  # grading and views r
     p = _phase1_plan()
     assert p["profiles"] == {
         "claude-code": {"profile_hash": plan.file_hash(ROOT / "bench" / "profiles" / "claude-code.yaml"),
-                        "usage_source": "acp_turn", "auxiliary_models": ["claude-haiku-4-5"],
-                            "record_glob": "projects/**/{session_id}.jsonl", "shutdown_grace_seconds": "10"},
+                        "vendor": "anthropic", "usage_source": "acp_turn", "auxiliary_models": ["claude-haiku-4-5"],
+                            "record_glob": "projects/**/{session_id}.jsonl", "shutdown_grace_seconds": "10",
+                        "subagent_glob": "projects/**/{session_id}/subagents/agent-*.jsonl"},
         "codex": {"profile_hash": plan.file_hash(ROOT / "bench" / "profiles" / "codex.yaml"),
-                  "usage_source": "native_record", "auxiliary_models": [],
-                      "record_glob": "sessions/**/rollout-*-{session_id}.jsonl", "shutdown_grace_seconds": "10"},
+                  "vendor": "openai", "usage_source": "native_record", "auxiliary_models": [],
+                      "record_glob": "sessions/**/rollout-*-{session_id}.jsonl", "shutdown_grace_seconds": "10",
+                  "subagent_glob": ""},
     }
 
 

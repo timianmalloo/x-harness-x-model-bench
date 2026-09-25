@@ -1,0 +1,341 @@
+[
+ {
+  "name": "R-73/R-74 (W3-S6): a profile without a vendor loads",
+  "file": "src/harness_bench/profiles.py",
+  "find": "    if not isinstance(vendor, str) or not vendor.strip():\n",
+  "replace": "    if False:\n",
+  "tests": [
+   "tests/test_model_map.py::test_a_profile_without_a_vendor_is_refused_never_inferred"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): the plan freezes no vendor",
+  "file": "src/harness_bench/plan.py",
+  "find": "\"vendor\": p.vendor,",
+  "replace": "\"vendor\": None,",
+  "tests": [
+   "tests/test_model_map.py::test_the_plan_freezes_each_profile_vendor"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): the resolver admits every vendor's column",
+  "file": "src/harness_bench/plan.py",
+  "find": "parsed is not None and parsed[1] == vendor and isinstance",
+  "replace": "parsed is not None and isinstance",
+  "tests": [
+   "tests/test_model_map.py::test_the_resolver_gives_a_codex_cell_exactly_the_openai_column",
+   "tests/test_model_map.py::test_the_resolver_gives_a_claude_code_cell_exactly_the_anthropic_column",
+   "tests/test_views.py::test_a_codex_cell_serving_the_anthropic_column_is_a_model_mismatch"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): a bare key parses as a map key",
+  "file": "src/harness_bench/config.py",
+  "find": "key.count(\"@\") != 1:",
+  "replace": "key.count(\"@\") > 1:",
+  "tests": [
+   "tests/test_model_map.py::test_each_map_defect_is_named"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): an undeclared vendor is accepted",
+  "file": "src/harness_bench/config.py",
+  "find": "        if vendor not in vendors:\n",
+  "replace": "        if False:\n",
+  "tests": [
+   "tests/test_model_map.py::test_each_map_defect_is_named"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): a missing role per vendor is accepted",
+  "file": "src/harness_bench/config.py",
+  "find": "sorted(set(vendors) - roles[role])",
+  "replace": "sorted(set())",
+  "tests": [
+   "tests/test_model_map.py::test_each_map_defect_is_named"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): an auxiliary-model value is accepted",
+  "file": "src/harness_bench/config.py",
+  "find": "        elif any(model.startswith(aux) for aux in vendors[vendor]):\n",
+  "replace": "        elif False:\n",
+  "tests": [
+   "tests/test_model_map.py::test_each_map_defect_is_named"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): a draft map is not checked",
+  "file": "src/harness_bench/config.py",
+  "find": "t.get(\"status\") in (\"draft\", \"ready\") and t.get(\"model_map\")",
+  "replace": "t.get(\"status\") in (\"ready\",) and t.get(\"model_map\")",
+  "tests": [
+   "tests/test_model_map.py::test_the_f1_draft_map_is_refused_by_bench_validate"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): a stub map is checked",
+  "file": "src/harness_bench/config.py",
+  "find": "t.get(\"status\") in (\"draft\", \"ready\") and t.get(\"model_map\")",
+  "replace": "t.get(\"model_map\")",
+  "tests": [
+   "tests/test_model_map.py::test_a_stub_map_is_a_placeholder_and_the_plan_still_refuses_it"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): a pin-equal map is planned",
+  "file": "src/harness_bench/plan.py",
+  "find": "        if all(model == c[\"model\"] for model in roles.values()):\n",
+  "replace": "        if False:\n",
+  "tests": [
+   "tests/test_model_map.py::test_bench_plan_refuses_a_scenario6_cell_whose_every_role_is_its_pin"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): a map with no role for the vendor is read as pin-equal",
+  "file": "src/harness_bench/plan.py",
+  "find": "        if not roles:\n",
+  "replace": "        if False:\n",
+  "tests": [
+   "tests/test_model_map.py::test_bench_plan_refuses_a_scenario6_cell_with_no_role_for_its_vendor"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): no scenario-6 cell is checked",
+  "file": "src/harness_bench/plan.py",
+  "find": "        if c[\"scenario\"] != 6:\n",
+  "replace": "        if True:\n",
+  "tests": [
+   "tests/test_model_map.py::test_bench_plan_refuses_a_scenario6_cell_whose_every_role_is_its_pin"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): no scenario-6 header rows",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    if not cells:\n        return []\n",
+  "replace": "    if True:\n        return []\n",
+  "tests": [
+   "tests/test_report_scenario6.py"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): a pin-equal role is not labelled",
+  "file": "src/harness_bench/report/html.py",
+  "find": "(\" (non-discriminating)\" if model == c[\"model\"] else \"\")",
+  "replace": "\"\"",
+  "tests": [
+   "tests/test_report_scenario6.py::test_the_header_carries_the_resolved_map_of_each_combo_with_non_discriminating_roles"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): the served set is not shown",
+  "file": "src/harness_bench/report/html.py",
+  "find": "(\", \".join(s) or \"none\")",
+  "replace": "\"none\"",
+  "tests": [
+   "tests/test_report_scenario6.py::test_the_header_carries_each_cells_served_models"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): no banner on a scenario-6 row",
+  "file": "src/harness_bench/report/html.py",
+  "find": "if c.scenario == 6 else \"\"",
+  "replace": "if False else \"\"",
+  "tests": [
+   "tests/test_report_scenario6.py::test_the_coordination_banner_is_in_the_header_and_on_every_scenario6_row"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): Claude Code Agent is other",
+  "file": "src/harness_bench/telemetry/claude_code.py",
+  "find": "\"Agent\": \"delegate\",",
+  "replace": "\"Agent\": \"other\",",
+  "tests": [
+   "tests/test_delegate.py::test_claude_code_classes_agent_as_delegate_from_a_synthetic_row"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): Copilot task is other",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "\"task\": \"delegate\",",
+  "replace": "\"task\": \"other\",",
+  "tests": [
+   "tests/test_delegate.py::test_copilot_classes_the_four_ids_as_delegate_from_synthetic_rows"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): delegate is in profile in every scenario",
+  "file": "src/harness_bench/views.py",
+  "find": "(tool_class == DELEGATE and scenario != 6)",
+  "replace": "False",
+  "tests": [
+   "tests/test_views.py::test_an_executed_agent_call_in_a_scenario5_cell_is_out_of_profile"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): delegate is out of profile in scenario 6",
+  "file": "src/harness_bench/views.py",
+  "find": "(tool_class == DELEGATE and scenario != 6)",
+  "replace": "(tool_class == DELEGATE)",
+  "tests": [
+   "tests/test_views.py::test_an_executed_agent_call_in_a_scenario6_cell_is_valid_and_counted"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): the call check reads class other only",
+  "file": "src/harness_bench/views.py",
+  "find": "        if not _outside(r.get(\"tool_class\"), scenario):\n",
+  "replace": "        if r.get(\"tool_class\") != OTHER:\n",
+  "tests": [
+   "tests/test_views.py::test_an_executed_agent_call_in_a_scenario5_cell_is_out_of_profile"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): the advertised check reads class other only",
+  "file": "src/harness_bench/views.py",
+  "find": "_outside(copilot.TOOL_CLASS.get(name, OTHER), scenario)",
+  "replace": "copilot.TOOL_CLASS.get(name, OTHER) == OTHER",
+  "tests": [
+   "tests/test_views.py::test_a_copilot_scenario5_cell_advertising_task_is_out_of_profile_and_a_scenario6_cell_is_not"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): a hook-denied delegate call outside scenario 6 is an R-27 denial",
+  "file": "src/harness_bench/views.py",
+  "find": "if not _outside(r.get(\"tool_class\"), scenario)])",
+  "replace": "if r.get(\"tool_class\") != OTHER])",
+  "tests": [
+   "tests/test_views.py::test_a_copilot_hook_denial_of_task_outside_scenario6_is_a_refused_attempt_not_hb_val_004"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): delegate_calls counts meta",
+  "file": "src/harness_bench/views.py",
+  "find": "r.get(\"tool_class\") == DELEGATE))",
+  "replace": "r.get(\"tool_class\") == META))",
+  "tests": [
+   "tests/test_views.py::test_an_executed_agent_call_in_a_scenario6_cell_is_valid_and_counted",
+   "tests/test_views.py::test_a_scenario6_cell_still_invalidates_on_an_executed_other_call"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): the frozen scenario is not read",
+  "file": "src/harness_bench/views.py",
+  "find": "return as_dict(as_dict(plan.get(\"tasks\")).get(cell.get(\"task\"))).get(\"scenario\")",
+  "replace": "return None",
+  "tests": [
+   "tests/test_views.py::test_an_executed_agent_call_in_a_scenario6_cell_is_valid_and_counted"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): the allowance in every scenario",
+  "file": "src/harness_bench/profiles.py",
+  "find": "if scenario == 6 else ()",
+  "replace": "if scenario is not None else ()",
+  "tests": [
+   "tests/test_delegate.py::test_a_scenario6_claude_code_cell_is_seeded_with_agent_and_every_other_cell_exactly_as_before",
+   "tests/test_allowlist_classes.py::test_the_claude_code_allowlist_names_nothing_outside_the_declared_classes"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): the Claude template slot stays empty",
+  "file": "src/harness_bench/profiles.py",
+  "find": ".replace(\"{delegate}\", delegate)",
+  "replace": ".replace(\"{delegate}\", \"\")",
+  "tests": [
+   "tests/test_delegate.py::test_a_scenario6_claude_code_cell_is_seeded_with_agent_and_every_other_cell_exactly_as_before",
+   "tests/test_allowlist_classes.py::test_a_scenario6_claude_code_allowlist_is_exactly_the_classes_and_agent"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): the Copilot ids are not appended",
+  "file": "src/harness_bench/profiles.py",
+  "find": "            argv.extend(delegate)\n",
+  "replace": "            pass\n",
+  "tests": [
+   "tests/test_delegate.py::test_a_scenario6_copilot_cell_advertises_the_four_ids_and_every_other_cell_exactly_as_before",
+   "tests/test_allowlist_classes.py::test_a_scenario6_copilot_allowlist_adds_exactly_the_delegate_ids"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): a Copilot launch with no tool list takes the ids",
+  "file": "src/harness_bench/profiles.py",
+  "find": "            if \"--available-tools\" not in argv:\n                raise BenchError(\"HB-USR-002\", \"a scenario-6",
+  "replace": "            if False:\n                raise BenchError(\"HB-USR-002\", \"a scenario-6",
+  "tests": [
+   "tests/test_delegate.py::test_a_copilot_profile_without_the_tool_list_refuses_a_scenario6_launch"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): the launcher seeds without the scenario",
+  "file": "src/harness_bench/profiles.py",
+  "find": "cell[\"model\"], cell.get(\"scenario\"))  # R-74",
+  "replace": "cell[\"model\"], None)  # R-74",
+  "tests": [
+   "tests/test_delegate.py::test_the_launcher_seeds_from_the_cell"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): the launcher launches without the scenario",
+  "file": "src/harness_bench/profiles.py",
+  "find": "scenario=cell.get(\"scenario\")), self.profile.cell_env(",
+  "replace": "scenario=None), self.profile.cell_env(",
+  "tests": [
+   "tests/test_delegate.py::test_the_launcher_launches_copilot_from_the_cell"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): the profile loads no sub-agent glob",
+  "file": "src/harness_bench/profiles.py",
+  "find": "subagent_glob=data.get(\"subagent_glob\") or \"\",",
+  "replace": "subagent_glob=\"\",",
+  "tests": [
+   "tests/test_delegate.py::test_the_claude_code_profile_names_the_sub_agent_records_of_a_session"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): an empty glob is globbed",
+  "file": "src/harness_bench/profiles.py",
+  "find": "    if not session_id or not record_glob:\n",
+  "replace": "    if not session_id:\n",
+  "tests": [
+   "tests/test_delegate.py::test_the_claude_code_profile_names_the_sub_agent_records_of_a_session"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): the plan freezes no sub-agent glob",
+  "file": "src/harness_bench/plan.py",
+  "find": "\"subagent_glob\": p.subagent_glob,",
+  "replace": "\"subagent_glob\": \"\",",
+  "tests": [
+   "tests/test_plan.py::test_the_plan_records_each_harness_profile_it_uses"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): the runner reads no sub-agent record",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "record.get(\"subagent_glob\") or \"\", session_id)",
+  "replace": "\"\", session_id)",
+  "tests": [
+   "tests/test_views.py::test_a_sub_agents_out_of_profile_call_invalidates_the_cell"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): a sub-agent's rows take the main session id",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "            sid = profiles.subagent_session_id(path)\n",
+  "replace": "            sid = session_id\n",
+  "tests": [
+   "tests/test_views.py::test_a_sub_agents_served_model_and_calls_reach_the_ledger"
+  ]
+ },
+ {
+  "name": "R-73/R-74 (W3-S6): an unreadable sub-agent record is ignored",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "        return ex, sub_reason, model_rows, tool_rows\n",
+  "replace": "        return ex, None, model_rows, tool_rows\n",
+  "tests": [
+   "tests/test_views.py::test_an_unreadable_sub_agent_record_makes_the_cell_not_recorded"
+  ]
+ }
+]
