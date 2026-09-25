@@ -8,6 +8,7 @@ through `Verdict.release`, which never calls the backend for a withheld payload.
 from __future__ import annotations
 
 import hashlib
+import re
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import TypeVar
@@ -54,6 +55,13 @@ def _anycase(payload: str, value: str | None) -> bool:
     return bool(value and value.strip()) and value.casefold() in payload.casefold()
 
 
+def _word(payload: str, value: str | None) -> bool:
+    """A non-empty value as a whole word (no letter or digit on either side), ignoring case."""
+    if not (value and value.strip()):
+        return False
+    return re.search(rf"(?<![^\W_]){re.escape(value)}(?![^\W_])", payload, re.IGNORECASE) is not None
+
+
 def check(payload: str, *, destination: str, secrets: Sequence[str] = (), email: str | None = None,
           username: str | None = None, home: str | None = None, canaries: Sequence[str] = ()) -> Verdict:
     """Scan `payload` bound for `destination`.
@@ -68,5 +76,6 @@ def check(payload: str, *, destination: str, secrets: Sequence[str] = (), email:
         ("credential", _exact(payload, secrets)),
         ("token_shape", report_html.scan(payload) > 0),  # the report's shape scan (HB-SEC-001), shapes only
         ("email", _anycase(payload, email)),
+        ("username", _word(payload, username)),
     ) if hit)
     return Verdict(destination, digest, classes, None if classes else payload)
