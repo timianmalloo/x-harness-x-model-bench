@@ -189,3 +189,98 @@ def test_the_calibration_request_is_the_production_template_with_the_full_rubric
     assert f"Rubric:\n{rubric}\n\nOracle: the rubric above." in sent
     assert " docs/architecture.md>>>\n# Architecture\n\nPlaceholder calibration note " in sent
     assert " priority_queue.py>>>\nclass PriorityQueue:\n    pass\n<<<END DATA " in sent
+
+
+# -------------------------------------------------------------------------------------- T-GW-16b and T-GW-17c
+CHANGED = "vs human labels: not recorded: labels changed since calibration"
+
+
+def test_t_gw_16b_a_relabel_after_calibration_reads_labels_changed(tmp_path, base):
+    assert calibration is not None, NOT_BUILT
+    root = cal_root(tmp_path)
+    write_labels(root, [label(i, VERDICTS[i]) for i, _ in ITEMS])
+    calibrate(root, tmp_path, base)
+    write_labels(root, [label(i, 1) for i, _ in ITEMS])  # one relabel after the calibration pass
+    assert line(root, tmp_path) == f"n = 3 · {SECOND} · {CHANGED}"
+
+
+def test_t_gw_16b_labels_that_arrive_after_a_calibration_without_labels_read_labels_changed(tmp_path, base):
+    """R-72 item 5: the recorded sha256 is null, so a later file is a change; a new calibration pass completes the
+    human half from the store with 0 spawns."""
+    assert calibration is not None, NOT_BUILT
+    root = cal_root(tmp_path)
+    calibrate(root, tmp_path, base)
+    write_labels(root, [label(i, VERDICTS[i]) for i, _ in ITEMS])
+    assert line(root, tmp_path) == f"n = 3 · {SECOND} · {CHANGED}"
+    calibrate(root, tmp_path, base)
+    assert spawns(tmp_path) == len(ITEMS)
+    assert line(root, tmp_path) == f"n = 3 · {SECOND} · vs human labels: {CLAUDE} κ 1.000 (n = 3, exact 3)"
+
+
+def _rubric(root: Path) -> None:
+    path = root / "bench" / "rubrics" / "adr_quality.md"
+    path.write_bytes(path.read_bytes() + b"\n")
+
+
+def _template(monkeypatch) -> None:
+    from harness_bench.gateway import request
+    monkeypatch.setattr(request, "TEMPLATE_VERSION", "judge-request/2")
+
+
+def _schema(monkeypatch) -> None:
+    from harness_bench.gateway import schema
+    monkeypatch.setattr(schema, "schema_sha256", lambda: "5" * 64)
+
+
+def _invocation(root: Path) -> None:
+    from harness_bench.gateway import backend
+    path = root / "bench" / "gateway.yaml"
+    g = yaml.safe_load(path.read_text(encoding="utf-8"))
+    first = g["judges"][0]
+    first["build"]["exe_sha256"] = "2" * 64  # another build of the same CLI: a new invocation_sha256
+    first["invocation_sha256"] = backend.invocation_sha256(first["harness"], first["model"], backend.JUDGE_SYSTEM,
+                                                           first["output"], first["build"]["version"], "2" * 64)
+    path.write_text(yaml.safe_dump(g, sort_keys=False), encoding="utf-8")
+
+
+@pytest.mark.parametrize("change", ["template", "schema", "rubric", "invocation"])
+def test_t_gw_17c_a_changed_template_schema_rubric_or_invocation_reads_calibration_stale(tmp_path, base, monkeypatch,
+                                                                                       change):
+    assert calibration is not None, NOT_BUILT
+    root = cal_root(tmp_path)
+    calibrate(root, tmp_path, base)
+    assert line(root, tmp_path) == f"n = 3 · {SECOND} · vs human labels: {NO_LABELS}"
+    {"template": lambda: _template(monkeypatch), "schema": lambda: _schema(monkeypatch),
+     "rubric": lambda: _rubric(root), "invocation": lambda: _invocation(root)}[change]()
+    assert line(root, tmp_path) == "not recorded: calibration stale"
+
+
+def test_with_no_calibration_pass_the_row_says_so(tmp_path):
+    assert calibration is not None, NOT_BUILT
+    assert line(cal_root(tmp_path), tmp_path) == "not recorded: no calibration pass"
+
+
+# ------------------------------------------------------------------------------------- R-72 conditions 3 and 4
+def test_r72_c3_intended_score_is_never_a_label_nor_a_kappa_input(tmp_path, base):
+    """With the manifest present (every intended_score equal to the judge's verdict) and labels.yaml absent, the
+    human half is NOT_RECORDED and no kappa is computed; no module of the calibration path reads the field."""
+    assert calibration is not None, NOT_BUILT
+    root = cal_root(tmp_path)
+    calibrate(root, tmp_path, base)
+    assert "κ" not in line(root, tmp_path).split("vs human labels:")[1]
+    for path in (ROOT / "src" / "harness_bench" / "gateway" / "calibration.py", ROOT / "tools" / "calibrate.py"):
+        assert "intended_score" not in path.read_text(encoding="utf-8"), path.name
+
+
+@pytest.mark.parametrize(("blind", "utc", "notes"), [
+    (True, "2026-09-25T00:00:00Z", ""),
+    (False, "2026-09-25T00:00:00Z", " · labeller blinding: not recorded"),
+    (None, "2026-09-25T00:00:00Z", " · labeller blinding: not recorded"),
+    (True, "2999-01-01T00:00:00Z", " · labels post-date the calibration verdicts"),
+], ids=["blind, before", "not blind", "no attestation", "post-dated"])
+def test_r72_c4_the_blind_attestation_and_labelled_utc_are_read_and_shown(tmp_path, base, blind, utc, notes):
+    assert calibration is not None, NOT_BUILT
+    root = cal_root(tmp_path)
+    write_labels(root, [label(i, VERDICTS[i], utc) for i, _ in ITEMS], blind=blind)
+    calibrate(root, tmp_path, base)
+    assert line(root, tmp_path) == f"n = 3 · {SECOND} · vs human labels: {CLAUDE} κ 1.000 (n = 3, exact 3){notes}"
