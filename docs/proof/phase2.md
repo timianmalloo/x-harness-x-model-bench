@@ -166,3 +166,41 @@ The initial collection-`ImportError` red at `086f85c` is recorded, but it is not
 - The version gate does not cover `tool_calls` or `first_user_text` (by design; documented in the docstring).
 - No committed revision-95 pack-on fixture exists yet. It was captured on 2026-09-24 (16 of 17 tools succeeded, 27 of 27 hooks) and scrubbed, but stays uncommitted until the fixture swap.
 - Tool-class names not seen in the fixtures remain Inferred.
+
+
+## Wave-1 exit (the Copilot-vs-Codex capability), 2026-09-25
+
+**Passed:** `tests/e2e/test_walking_skeleton.py::test_the_walking_skeleton_runs_end_to_end[wave1]`, 1 passed in 147 s, run `e2e-wave1-1790303859` (Leader-run, live; `HB_PACK_SOURCE` = the revision-95 checkout `df3baf2`, now `origin/main`; record `docs/proof/wave1-e2e-last.json`).
+
+Inputs:
+- Matrix `bench/matrix.wave1.yaml`: X1 × {copilot-sol, codex-sol, cc-opus} × pack {on, off} × 1.
+- Builds: Copilot CLI 1.0.89-1 (prerelease), Codex 0.156.0 (codex-acp 1.12.0), Claude Code 2.1.282 (claude-agent-acp 0.81.2, SDK 0.3.282 via override).
+
+What the run established:
+- Every phase-1 Claim-1 assertion holds on all 6 cells: 6 valid; US-10 prompt hashes; US-12 build hashes; US-14 zero ACP permission requests; zero Copilot hook denials and at least one successful tool call per Copilot cell; `verify: ok` before and after a byte-identical re-grade; no process left; the run folder removable.
+- Also asserted: pack revision >= 95; Copilot pack-on instruction count > 0 and pack-off 0; `last_update_ms` non-null on every outcome.
+
+| combo | pack | valid | pass@1 | tokens/cell | wall/cell |
+| --- | --- | --- | --- | --- | --- |
+| copilot-sol | off | 1/1 | 1.00 | 60,754 | 20.0 s |
+| copilot-sol | on | 1/1 | 1.00 | 689,426 | 71.4 s |
+| codex-sol | off | 1/1 | 1.00 | 78,769 | 38.0 s |
+| codex-sol | on | 1/1 | 1.00 | 281,623 | 64.7 s |
+| cc-opus | off | 1/1 | 1.00 | 100,340 | 14.6 s |
+| cc-opus | on | 1/1 | 1.00 | 211,937 | 23.8 s |
+
+One repetition per combo, so no interval is computed. Cost is `NA` for every cell (subscriptions only; no price-list entry).
+
+**Negative fixtures (earlier live runs on the same inputs):**
+- `e2e-wave1-1790299304`: both cc-opus cells were `invalid (model mismatch)`, because Claude Code reports `claude-opus-5-5[1m]`. R-32 fixed it (identity via `normalize.base_model_id`; the tag is recorded and disclosed).
+- `e2e-wave1-1790302505`: US-14 permission requests `[0,1,0,0,0,0]`, because Claude Code pack-on called `PowerShell`, which was not on the allowlist. R-34 fixed it: `PowerShell` was added, and `permission_mode_effective` is recorded, reading `default` (declared `dontAsk`).
+
+**Copilot US-13 isolation (Leader-run, live):**
+- The control showed 4 of 4 classes (hook, instruction, settings model, skill).
+- The isolated probe leaked none.
+- The red variant (`COPILOT_HOME` dropped) leaked all four.
+- The settings canary is `gpt-6-astra`. The unpinned probe served `claude-sonnet-5`, the account default, which led to R-33: every model is stipulated.
+
+**A3 (host credential rotation), partial:** `~/.claude/.credentials.json` and `~/.codex/auth.json` were byte-identical before and after two 6-cell runs, and both host logins still authenticate. A token refresh happens only near expiry, so the long-run check rides on the overnight smoke run.
+
+**R-36 condition (account connectors in Claude Code cells):** the native records of the cc-opus pack-on and pack-off cells in `e2e-wave1-1790302505` (same inputs) list the **same 8** account-level deferred tools, all under the `mcp__claude_ai_` prefix: batch, create, delete, export, guide, query, read, update of one connector. So R1.4's "applies equally to pack on and off" is **Verified for this run**. None was called, and the allowlist denies them.
