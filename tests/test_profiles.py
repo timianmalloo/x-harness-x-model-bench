@@ -2,6 +2,8 @@
 
 import importlib.util
 import json
+import shutil
+import subprocess
 import time
 from pathlib import Path
 
@@ -29,12 +31,12 @@ def test_each_missing_copilot_control_class_is_void(copilot_canary_module, tmp_p
     assert (home / "copilot-instructions.md").is_file()
     assert (home / "skills" / copilot_canary_module.COPILOT_SKILL / "SKILL.md").is_file()
     assert json.loads((home / "hooks" / "us13-canary.json").read_text(encoding="utf-8"))["hooks"]["sessionStart"]
-    assert json.loads((home / "settings.json").read_text(encoding="utf-8"))["model"] == copilot_canary_module.MODELS["copilot"]
+    assert json.loads((home / "settings.json").read_text(encoding="utf-8"))["model"] == copilot_canary_module.COPILOT_SETTINGS_MODEL
 
     marker = home / copilot_canary_module.COPILOT_HOOK_FILE
     marker.write_text(copilot_canary_module.COPILOT_HOOK, encoding="utf-8")
     record = f"{copilot_canary_module.COPILOT_INSTRUCTION}\n{copilot_canary_module.COPILOT_SKILL}"
-    models = {copilot_canary_module.MODELS["copilot"]}
+    models = {copilot_canary_module.COPILOT_SETTINGS_MODEL}
     assert all(copilot_canary_module._copilot_shown(record, models, home).values())
 
     if removed == "instruction":
@@ -53,6 +55,62 @@ def test_copilot_canary_model_oracle_reads_native_assistant_messages(copilot_can
     records = list((ROOT / "tests" / "fixtures" / "native" / "copilot" / "off").rglob("events.jsonl"))
     assert len(records) == 1
     assert copilot_canary_module._copilot_models(records) == {"gpt-6-sol"}
+
+
+def test_copilot_settings_canary_is_advertised_and_not_the_pin(copilot_canary_module):  # TA W1-COP-I finding 2
+    def model_lists(node):
+        if isinstance(node, dict):
+            for key, value in node.items():
+                yield from ([value] if key == "available_model_ids" else model_lists(value))
+        elif isinstance(node, list):
+            for value in node:
+                yield from model_lists(value)
+
+    provenance = json.loads((ROOT / "tests" / "fixtures" / "native" / "copilot" / "provenance.json").read_text(encoding="utf-8"))
+    lists = list(model_lists(provenance))
+    canary = copilot_canary_module.COPILOT_SETTINGS_MODEL
+    assert lists and all(canary in advertised for advertised in lists)
+    assert canary not in ("gpt-6-sol", "auto", copilot_canary_module.MODELS["copilot"])
+
+
+def test_every_copilot_canary_turn_sees_the_fake_profile(copilot_canary_module, tmp_path, monkeypatch):  # TA finding 1
+    """The blocker: the probe had the operator's real USERPROFILE/HOME, so a profile leak could not show. Now every turn
+    sees the fake profile; only the isolated probe keeps the engine's COPILOT_HOME."""
+    operator = tmp_path / "operator"
+    for key, value in (("USERPROFILE", operator), ("HOME", operator), ("COPILOT_HOME", operator / ".copilot")):
+        monkeypatch.setenv(key, str(value))
+    p = profiles.load(ROOT, "copilot")
+    profile = copilot_canary_module._fake_profile(tmp_path / "probe")
+    assert profile == tmp_path / "probe" / "profile" and not operator.exists()
+    dot = profile / ".copilot"
+    assert {path.relative_to(dot).as_posix() for path in dot.rglob("*") if path.is_file()} == {
+        "copilot-instructions.md", f"skills/{copilot_canary_module.COPILOT_SKILL}/SKILL.md", "hooks/us13-canary.json",
+        "settings.json"}
+    home = tmp_path / "probe" / "home"
+
+    probe = copilot_canary_module._copilot_env(p, home, FakeBuild(), profile, isolated=True)
+    assert (probe["COPILOT_HOME"], probe["USERPROFILE"], probe["HOME"]) == (str(home), str(profile), str(profile))
+    control = copilot_canary_module._copilot_env(p, home, FakeBuild(), profile, isolated=False)
+    assert not any(key.upper() == "COPILOT_HOME" for key in control)  # Copilot falls back to <USERPROFILE>/.copilot
+    assert (control["USERPROFILE"], control["HOME"]) == (str(profile), str(profile))
+    assert {k: v for k, v in control.items() if k != "COPILOT_HOME"} == {k: v for k, v in probe.items() if k != "COPILOT_HOME"}
+
+
+def test_the_copilot_canary_profile_refuses_the_operators_profile(copilot_canary_module, tmp_path, monkeypatch):
+    monkeypatch.setattr(copilot_canary_module, "USER", tmp_path / "profile")
+    with pytest.raises(AssertionError, match="operator's profile"):
+        copilot_canary_module._fake_profile(tmp_path)
+    assert not (tmp_path / "profile").exists()
+
+
+@pytest.mark.skipif(not (shutil.which("pwsh") or shutil.which("powershell")), reason="no PowerShell")
+def test_the_copilot_hook_canary_writes_its_marker(copilot_canary_module, tmp_path):
+    dot = copilot_canary_module._fake_profile(tmp_path / "control") / ".copilot"
+    assert not copilot_canary_module._copilot_shown("", set(), dot)["hook"]
+    (hook,) = json.loads((dot / "hooks" / "us13-canary.json").read_text(encoding="utf-8"))["hooks"]["sessionStart"]
+    shell = shutil.which("pwsh") or shutil.which("powershell")
+    subprocess.run([shell, "-NoProfile", "-NonInteractive", "-Command", hook["powershell"]], check=True, timeout=60, cwd=tmp_path)
+    assert copilot_canary_module._copilot_shown("", set(), dot)["hook"]
 
 
 class FakeBuild:
