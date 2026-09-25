@@ -108,3 +108,24 @@ def test_pre_turn_tree_does_not_build_is_na(tmp_path, monkeypatch):  # design: R
     folder, cell = d1_cell(tmp_path, {})
     got = grade_d1(tmp_path, folder, cell)
     assert got.get(METRIC) == (None, "pre-turn tree does not build")
+
+
+# --- the 4 NA-by-design metrics ------------------------------------------------------------------------------------
+
+
+NA_BY_DESIGN = {
+    "verification_before_done": "test runs not identifiable in the tool record (no command text extracted)",
+    "test_quality": "mechanical rung is mutation_score (not counted twice); no rubric for this task",
+    "maintainability": "no maintainability tool pinned in this catalog version",
+    "style_conformance": (
+        "no task-defined style rules (a root .editorconfig exists only in pack-on trees: a treatment); no rubric for"
+        " this task"
+    ),
+}
+
+
+@pytest.mark.parametrize(("metric", "reason"), list(NA_BY_DESIGN.items()))
+def test_rigor_na_by_design_metrics_give_the_designs_reasons_verbatim(tmp_path, metric, reason):
+    folder, cell = d1_cell(tmp_path, {})
+    got = grade_d1(tmp_path, folder, cell)
+    assert got.get(metric) == (None, reason)
