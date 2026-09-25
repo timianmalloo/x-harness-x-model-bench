@@ -250,7 +250,7 @@ def test_a_non_integer_ratio_is_a_decimal_at_the_catalog_scale(tmp_path):
     assert inp.metrics["key_question_recall"]["scale"] == 4
     assert scores["key_question_recall"].value == Decimal("0.5")
     assert isinstance(scores["key_question_recall"].value, Decimal)
-    assert scores["key_question_precision"].value == Decimal("1")
+    assert scores["key_question_precision"].value == Decimal(1)
     assert scores["ask_vs_assume"].value == Decimal("0.5")
     assert scores["asked_unmatched"].value == 0
 
@@ -259,5 +259,5 @@ def test_no_question_asked_writes_scaled_ratios_as_decimals(tmp_path):
     # A scaled metric has one representation in the ledger: the runner writes a Decimal as "0.0000" but an int as 0.
     scores = clarify.grade_cell(_make_input(tmp_path, FIXTURES / "no_questions"))
     for metric in ("key_question_recall", "ask_vs_assume"):
-        assert (scores[metric].value, type(scores[metric].value)) == (Decimal("0"), Decimal), metric
+        assert (scores[metric].value, type(scores[metric].value)) == (Decimal(0), Decimal), metric
     assert (scores["asked_unmatched"].value, type(scores["asked_unmatched"].value)) == (0, int)
