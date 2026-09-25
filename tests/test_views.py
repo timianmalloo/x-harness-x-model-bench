@@ -504,6 +504,42 @@ def test_a_record_unreadable_as_a_whole_gives_no_partial_token_sum(root, tmp_pat
                                                                 "not recorded (native record truncated at the size bound)")
 
 
+TRUNCATED = "native record truncated at the size bound"
+
+
+def _truncated_facts(unreadable: dict) -> tuple[dict, dict, dict]:
+    """One Codex cell whose pre-cut rows are complete: a 2 s model call, a 1 s tool call, 10 s of wall time."""
+    plan = {"profiles": {"codex": {"usage_source": "native_record", "auxiliary_models": []}}}
+    cell = {"cell_id": "a", "harness": "codex", "combo": "c", "pack": "off", "model": CODEX_MODEL}
+    call = {"cell_id": "a", "extraction_id": "x1", "native_ordinal": 3, "model": CODEX_MODEL, "uncached_input": 10,
+            "cache_read": 0, "cache_write": 0, "output": 5, "reasoning": 0, "requests": 1,
+            "start": "2026-09-23T10:00:01.000Z", "end": "2026-09-23T10:00:03.000Z"}
+    tool = {"cell_id": "a", "extraction_id": "x1", "start": "2026-09-23T10:00:04.000Z", "end": "2026-09-23T10:00:05.000Z"}
+    events = [{"kind": "cell.launch_intent", "cell_id": "a"}, {"kind": "attempt.process_started", "cell_id": "a", "mono_ns": 0},
+              {"kind": "attempt.process_ended", "cell_id": "a", "mono_ns": 10_000_000_000},
+              {"kind": "cell.outcome", "cell_id": "a", "outcome": "completed", "cause": None},
+              {"kind": "grading.completed", "grading_id": "g1", "unreadable_records": unreadable}]
+    score = {"grading_id": "g1", "cell_id": "a", "metric_id": "pass_at_1", "value": 1, "reason": None, "extraction_id": "x1"}
+    facts = {"events": events, "model_calls": [call], "tool_calls": [tool], "scores": [score], "turn_usage": []}
+    return plan, cell, facts
+
+
+def test_a_truncated_record_gives_no_partial_time_or_call_count():  # Codex review F1
+    whole = views._cell_view(*_truncated_facts({}), "g1")  # the control: the pre-cut spans and calls are complete
+    assert (whole.model_ms, whole.tool_ms, whole.idle_ms, whole.calls_per_cell) == (
+        views.Measure(2000), views.Measure(1000), views.Measure(7000), views.Measure(1))
+    cut = views._cell_view(*_truncated_facts({"a": TRUNCATED}), "g1")
+    assert (cut.model_ms, cut.tool_ms, cut.idle_ms, cut.calls_per_cell) == (views.Measure(None, TRUNCATED),) * 4
+    assert cut.wall_ms == whole.wall_ms == views.Measure(10_000)  # lifecycle-derived: not gated
+
+
+def test_a_harness_whose_record_is_missing_has_no_measured_zero_tool_time(root, tmp_path):  # F1 on acp_turn (no record found)
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, harness="claude-code", model=SONNET, turn_usage=[_usage("a", SONNET)])
+    runner.run_pass(run_dir, root)  # the builder's record is Codex-shaped, so the Claude Code glob finds none
+    cell = _cell(views.load(run_dir), "a")
+    assert (cell.validity, cell.tool_ms) == ("valid", views.Measure(None, "no native record for the session"))
+
+
 def test_an_acp_turn_cell_whose_adapter_reported_no_usage_is_not_recorded(root, tmp_path):  # R-15 for acp_turn (R-24 c2)
     run_dir = make_run(root, tmp_path, {"a": GOOD}, harness="claude-code", model=SONNET, turn_usage=[])
     _edit_events(run_dir, lambda e: {**e, "acp_usage": None} if e["kind"] == "attempt.process_ended" else e)
