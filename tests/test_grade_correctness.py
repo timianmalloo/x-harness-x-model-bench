@@ -160,3 +160,71 @@ def test_an_empty_nuget_cache_is_na_restore_never_0(tmp_path, d1_dotnet, monkeyp
     got = grade_d1(tmp_path, *d1_cell(tmp_path, REFERENCE))
     assert {m: got.get(m) for m in BUILT_CORRECTNESS} == \
         dict.fromkeys(BUILT_CORRECTNESS, (None, "infrastructure failure before build: restore"))
+
+
+# --- the shared change reader: the pre-turn commit and the change set (git only; no dotnet) -------------------------
+
+
+def changes_of(tmp_path: Path, folder: Path, cell: dict) -> tuple[str | None, dict[str, str] | None]:
+    """(pre-turn commit, change set against it); the archive's bytes must not move (F9)."""
+    from harness_bench.grade import _changes
+
+    ws, out = folder / "ws", tmp_path / "out"
+    before = tree_digest(folder)
+    commit = _changes.pre_turn_commit(ws, cell, 120)
+    changed = None
+    if commit is not None:
+        with _changes.pre_turn_tree(ws, commit, out / "pre-turn", 120) as base, _changes.grading_copy(ws, out / "copy") as copy:
+            changed = _changes.change_set(base, copy)
+        assert not (out / "pre-turn").exists() and not (out / "copy").exists(), "a disposable tree was left behind"
+    assert tree_digest(folder) == before, "reading the changes wrote under the archive"
+    return commit, changed
+
+
+@pytest.mark.parametrize("committed", [None, "Add evidence census projection"])  # uncommitted, or 3ff0's own commit
+def test_the_pack_on_base_is_the_pack_commit_so_the_pack_is_not_a_change(tmp_path, committed):  # F10
+    folder, cell = d1_cell(tmp_path, {}, pack=True)
+    pack_commit = git(folder / "ws", "rev-parse", "HEAD")
+    for rel, text in REFERENCE.items():
+        (folder / "ws" / rel).write_text(text, encoding="utf-8", newline="")
+    (folder / "ws" / "src" / "AiDe.Core" / "bin").mkdir()  # build output never counts
+    (folder / "ws" / "src" / "AiDe.Core" / "bin" / "AiDe.Core.dll").write_bytes(b"MZ")
+    if committed:
+        git(folder / "ws", "add", PROJECTION)
+        git(folder / "ws", "commit", "-q", "-m", committed)
+    assert changes_of(tmp_path, folder, cell) == (pack_commit, {PROJECTION: "added"})
+
+
+def test_a_pack_off_cell_takes_the_root_even_when_its_second_commit_looks_like_a_pack(tmp_path):  # tamper rule
+    folder, cell = d1_cell(tmp_path, {}, pack=True)
+    root = git(folder / "ws", "rev-list", "--max-parents=0", "HEAD")
+    cell["pack"] = "off"
+    assert changes_of(tmp_path, folder, cell) == (root, {".editorconfig": "added", "docs/pack/stand-in.md": "added"})
+
+
+def test_a_later_look_alike_pack_commit_is_ignored(tmp_path):  # tamper rule: only the root's first-parent child
+    folder, cell = d1_cell(tmp_path, {}, pack=True)
+    pack_commit = git(folder / "ws", "rev-parse", "HEAD")
+    path = folder / "ws" / "src" / "AiDe.Core" / "PathComparison.cs"
+    path.write_text(path.read_text(encoding="utf-8").replace("How two", "How 2"), encoding="utf-8", newline="")
+    git(folder / "ws", "commit", "-q", "-a", "-m", "ai-forward pack revision 96")
+    assert changes_of(tmp_path, folder, cell) == (pack_commit, {"src/AiDe.Core/PathComparison.cs": "changed"})
+
+
+@pytest.mark.parametrize("fault", ["base message", "no pack commit"])
+def test_no_builder_commit_is_na_pre_turn_commit_not_found(tmp_path, fault):  # F11
+    folder, cell = d1_cell(tmp_path, {})
+    if fault == "base message":  # history rewritten: the root no longer carries the builder's exact message
+        git(folder / "ws", "commit", "-q", "--amend", "-m", f"D1 base ({D1_VERSION[:11]})")
+    else:  # a pack-on cell whose pack commit is missing
+        cell["pack"] = "on"
+    assert changes_of(tmp_path, folder, cell) == (None, None)
+
+
+def test_a_crlf_only_difference_and_a_deletion_are_read_by_content(tmp_path):
+    folder, cell = d1_cell(tmp_path, {})
+    ws = folder / "ws"
+    path = ws / "src" / "AiDe.Core" / "PathComparison.cs"
+    path.write_bytes(path.read_bytes().replace(b"\n", b"\r\n"))  # CRLF-normalised: not a change
+    (ws / "LICENSE").unlink()
+    assert changes_of(tmp_path, folder, cell)[1] == {"LICENSE": "deleted"}
