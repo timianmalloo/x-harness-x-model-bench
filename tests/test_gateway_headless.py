@@ -91,7 +91,7 @@ def test_the_copilot_builder_is_the_measured_shape_with_the_request_on_stdin():
     assert list(inspect.signature(gw_backend.copilot_argv).parameters) == ["exe", "model"]
     assert gw_backend.copilot_argv("copilot.exe", "gpt-6-sol") == [
         "copilot.exe", "--model", "gpt-6-sol", "--disable-builtin-mcps", "--no-custom-instructions",
-        "--available-tools", "none", "-p"]
+        "--available-tools", "none"]
 
 
 def test_the_copilot_system_prompt_route_is_explicit_and_inside_the_invocation_hash():
@@ -412,7 +412,7 @@ def test_a_copilot_call_sends_the_request_on_stdin_to_an_empty_home_and_reads_th
     assert [v["score"] for v in result.verdicts] == [2, 2]  # the record's last assistant.message; stdout says 0, 0
     [seen] = _captured(tmp_path)
     assert seen["argv"] == ["--model", COPILOT_PIN, "--disable-builtin-mcps", "--no-custom-instructions",
-                            "--available-tools", "none", "-p"]
+                            "--available-tools", "none"]
     assert seen["stdin"] == f"{gw_backend.JUDGE_SYSTEM}\n\n{_rendered()}"  # the system route, then the request
     assert seen["home_files"] == []  # an empty COPILOT_HOME: nothing is copied, the login is the credential store
     call = base / "cells" / "gateway" / "grade-placeholder-1" / result.cache_key[:16]

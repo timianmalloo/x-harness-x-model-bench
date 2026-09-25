@@ -125,7 +125,7 @@ def launch_shapes(tmp: Path) -> None:
     check("codex argv: text mode has no schema flag", "--output-schema" not in c, c)
     p = pj.copilot_argv("copilot.exe", COPILOT_PIN)
     check("copilot argv: model pinned", p[p.index("--model") + 1] == COPILOT_PIN, p)
-    check("copilot argv: -p last, the request on stdin (R-70 item 2)", p[-1] == "-p", p)
+    check("copilot argv: no -p, the request on piped stdin (R-70 item 2; a bare -p is refused)", "-p" not in p, p)
     check("copilot argv: built-in and MCP servers disabled", "--disable-builtin-mcps" in p, p)
     # a bare trailing --available-tools filtered nothing on 1.0.89-1 (turn 1, 2026-09-25): the allowlist names no real tool
     check("copilot argv: the allowlist names no real tool", p[-3:-1] == ["--available-tools", "none"], p)
