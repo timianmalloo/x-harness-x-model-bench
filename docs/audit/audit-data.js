@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T17:00:33Z",
+  "generated": "2026-09-25T18:02:49Z",
   "audit": [
     {
       "actor": null,
@@ -28852,34 +28852,23 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M3CR5SPDRW21FAQPF8CWJXFQ",
-      "shortname": "Goal: W3-GR-CODE slice c5 per docs/design/phase3-graders.md, section \"Ri…",
-      "datetime": "2026-09-25T17:00:29Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W3-GR-CODE slice c5 per docs/design/phase3-graders.md, section \"Rigor\" and slice-plan row \"GR-CODE c5\" (rulings R-67, R-68, R-71): the rigor grader, red first, on top of c1-c4 (joined: grade/_changes.py gives the pre-turn tree; grade/correctness.py builds with dotnet).\nDone when: grade/rigor.py computes static_analysis_delta exactly as the design defines it (distinct (file, line, code) warnings from `dotnet build` of the cell's tree minus the same on the pre-turn tree; an int, may be negative; NA \"workspace does not build\" or \"pre-turn tree does not build\"), reusing _changes and correctness's build helpers (one definition, no second build path); verification_before_done, test_quality, maintainability and style_conformance give the design's NA reasons verbatim; rigor.grade_cell is registered in runner.GRADERS on its own line (as process, clarify, drift and architecture are).; Red first on the design's seed: an added unused local (CS0168) in a D1 source file gives static_analysis_delta exactly +1; and each NA reason; each red committed separately and failing on an assertion.; Every test that runs the real dotnet is marked @pytest.mark.slow (the default ring must not start dotnet; a conftest control may already enforce this); fast tests use a fake dotnet as tests/test_grade_correctness.py does.; With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs and HB_REQUIRE_DOTNET=1, `uv run pytest -q -p no:cacheprovider -m slow tests/test_grade_rigor.py` passes and gives the six D1 cells' static_analysis_delta as characterization values (report them).; tests/mutations/rigor.json (a new file) names a mutant per branch, each killed: uv run python tools/mutate_check.py tests/mutations/rigor.json; the exactly-once find control in tests/test_mutate_check.py stays green.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean; uv run bench validate prints ok.; Commit the red test first, then the green, with git; commit each green as soon as it passes.\nNot in scope: mutation_score and the Stryker pin (c6); bench/metrics.yaml (name any scale you need in your final message); correctness.py, drift.py, architecture.py beyond reusing their helpers; bench run, any model turn; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 300k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase3-graders.md (sections Rigor, Slice plan); docs/notes/spike-gr-code-trx.md (the build summary lines); src/harness_bench/grade/{__init__,runner,_changes,correctness,architecture}.py; tests/test_grade_correctness.py (the fake dotnet and d1_cell); tests/archived_runs.py (gate_runs_root). The gate runs under C:/projects/x-harness-x-model-bench/runs/ are read-only. Use python, not python3 (Windows). Always read each pytest exit code; \"no tests ran\" is a failure.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
+      "datetime": "2026-09-25T17:00:29Z",
+      "id": "al-01M3CR5SPDRW21FAQPF8CWJXFQ",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: W3-GR-CODE slice c5 per docs/design/phase3-graders.md, section \"Rigor\" and slice-plan row \"GR-CODE c5\" (rulings R-67, R-68, R-71): the rigor grader, red first, on top of c1-c4 (joined: grade/_changes.py gives the pre-turn tree; grade/correctness.py builds with dotnet).\nDone when: grade/rigor.py computes static_analysis_delta exactly as the design defines it (distinct (file, line, code) warnings from `dotnet build` of the cell's tree minus the same on the pre-turn tree; an int, may be negative; NA \"workspace does not build\" or \"pre-turn tree does not build\"), reusing _changes and correctness's build helpers (one definition, no second build path); verification_before_done, test_quality, maintainability and style_conformance give the design's NA reasons verbatim; rigor.grade_cell is registered in runner.GRADERS on its own line (as process, clarify, drift and architecture are).; Red first on the design's seed: an added unused local (CS0168) in a D1 source file gives static_analysis_delta exactly +1; and each NA reason; each red committed separately and failing on an assertion.; Every test that runs the real dotnet is marked @pytest.mark.slow (the default ring must not start dotnet; a conftest control may already enforce this); fast tests use a fake dotnet as tests/test_grade_correctness.py does.; With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs and HB_REQUIRE_DOTNET=1, `uv run pytest -q -p no:cacheprovider -m slow tests/test_grade_rigor.py` passes and gives the six D1 cells' static_analysis_delta as characterization values (report them).; tests/mutations/rigor.json (a new file) names a mutant per branch, each killed: uv run python tools/mutate_check.py tests/mutations/rigor.json; the exactly-once find control in tests/test_mutate_check.py stays green.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean; uv run bench validate prints ok.; Commit the red test first, then the green, with git; commit each green as soon as it passes.\nNot in scope: mutation_score and the Stryker pin (c6); bench/metrics.yaml (name any scale you need in your final message); correctness.py, drift.py, architecture.py beyond reusing their helpers; bench run, any model turn; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 300k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase3-graders.md (sections Rigor, Slice plan); docs/notes/spike-gr-code-trx.md (the build summary lines); src/harness_bench/grade/{__init__,runner,_changes,correctness,architecture}.py; tests/test_grade_correctness.py (the fake dotnet and d1_cell); tests/archived_runs.py (gate_runs_root). The gate runs under C:/projects/x-harness-x-model-bench/runs/ are read-only. Use python, not python3 (Windows). Always read each pytest exit code; \"no tests ran\" is a failure.",
+      "session": "prompt-compile",
+      "shortname": "Goal: W3-GR-CODE slice c5 per docs/design/phase3-graders.md, section \"Ri…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M3CR5TSTATB6V69NKHA6VZD0",
-      "shortname": "compile-Goal: W3-GR-CODE slice c5 per docs/design/phase3-graders.md, section \"Ri…",
-      "datetime": "2026-09-25T17:00:30Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-GR-CODE slice c5 per docs/design/phase3-graders.md, section \"Rigor\" and slice-plan row \"GR-CODE c5\" (rulings R-67, R-68, R-71): the rigor grader, red first, on top of c1-c4 (joined: grade/_changes.py gives the pre-turn tree; grade/correctness.py builds with dotnet).\nDone when: grade/rigor.py computes static_analysis_delta exactly as the design defines it (distinct (file, line, code) warnings from `dotnet build` of the cell's tree minus the same on the pre-turn tree; an int, may be negative; NA \"workspace does not build\" or \"pre-turn tree does not build\"), reusing _changes and correctness's build helpers (one definition, no second build path); verification_before_done, test_quality, maintainability and style_conformance give the design's NA reasons verbatim; rigor.grade_cell is registered in runner.GRADERS on its own line (as process, clarify, drift and architecture are).; Red first on the design's seed: an added unused local (CS0168) in a D1 source file gives static_analysis_delta exactly +1; and each NA reason; each red committed separately and failing on an assertion.; Every test that runs the real dotnet is marked @pytest.mark.slow (the default ring must not start dotnet; a conftest control may already enforce this); fast tests use a fake dotnet as tests/test_grade_correctness.py does.; With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs and HB_REQUIRE_DOTNET=1, `uv run pytest -q -p no:cacheprovider -m slow tests/test_grade_rigor.py` passes and gives the six D1 cells' static_analysis_delta as characterization values (report them).; tests/mutations/rigor.json (a new file) names a mutant per branch, each killed: uv run python tools/mutate_check.py tests/mutations/rigor.json; the exactly-once find control in tests/test_mutate_check.py stays green.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean; uv run bench validate prints ok.; Commit the red test first, then the green, with git; commit each green as soon as it passes.\nNot in scope: mutation_score and the Stryker pin (c6); bench/metrics.yaml (name any scale you need in your final message); correctness.py, drift.py, architecture.py beyond reusing their helpers; bench run, any model turn; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 300k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-graders.md (sections Rigor, Slice plan); docs/notes/spike-gr-code-trx.md (the build summary lines); src/harness_bench/grade/{__init__,runner,_changes,correctness,architecture}.py; tests/test_grade_correctness.py (the fake dotnet and d1_cell); tests/archived_runs.py (gate_runs_root). The gate runs under C:/projects/x-harness-x-model-bench/runs/ are read-only. Use python, not python3 (Windows). Always read each pytest exit code; \"no tests ran\" is a failure.\nTrace\n| clause | trace |\n|---|---|\n| done_when: grade/rigor.py computes static_analysis_delta exactly as the design defines it (distinct (file, line, code) warnings from `dotnet build` of the cell's tree minus the same on the pre-turn tree | phrase: grade/rigor.py computes static_analysis_delta exactly as the design defines it (distinct (file, line, code) warnings from `dotnet build` of the cell's tree minus the same on the pre-turn tree |\n| done_when: an int, may be negative | phrase: an int, may be negative |\n| done_when: NA \"workspace does not build\" or \"pre-turn tree does not build\"), reusing _changes and correctness's build helpers (one definition, no second build path) | phrase: NA \"workspace does not build\" or \"pre-turn tree does not build\"), reusing _changes and correctness's build helpers (one definition, no second build path) |\n| done_when: verification_before_done, test_quality, maintainability and style_conformance give the design's NA reasons verbatim | phrase: verification_before_done, test_quality, maintainability and style_conformance give the design's NA reasons verbatim |\n| done_when: rigor.grade_cell is registered in runner.GRADERS on its own line (as process, clarify, drift and architecture are). | phrase: rigor.grade_cell is registered in runner.GRADERS on its own line (as process, clarify, drift and architecture are). |\n| done_when: Red first on the design's seed: an added unused local (CS0168) in a D1 source file gives static_analysis_delta exactly +1 | phrase: Red first on the design's seed: an added unused local (CS0168) in a D1 source file gives static_analysis_delta exactly +1 |\n| done_when: and each NA reason | phrase: and each NA reason |\n| done_when: each red committed separately and failing on an assertion. | phrase: each red committed separately and failing on an assertion. |\n| done_when: Every test that runs the real dotnet is marked @pytest.mark.slow (the default ring must not start dotnet | phrase: Every test that runs the real dotnet is marked @pytest.mark.slow (the default ring must not start dotnet |\n| done_when: a conftest control may already enforce this) | phrase: a conftest control may already enforce this) |\n| done_when: fast tests use a fake dotnet as tests/test_grade_correctness.py does. | phrase: fast tests use a fake dotnet as tests/test_grade_correctness.py does. |\n| done_when: With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs and HB_REQUIRE_DOTNET=1, `uv run pytest -q -p no:cacheprovider -m slow tests/test_grade_rigor.py` passes and gives the six D1 cells' static_analysis_delta as characterization values (report them). | phrase: With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs and HB_REQUIRE_DOTNET=1, `uv run pytest -q -p no:cacheprovider -m slow tests/test_grade_rigor.py` passes and gives the six D1 cells' static_analysis_delta as characterization values (report them). |\n| done_when: tests/mutations/rigor.json (a new file) names a mutant per branch, each killed: uv run python tools/mutate_check.py tests/mutations/rigor.json | phrase: tests/mutations/rigor.json (a new file) names a mutant per branch, each killed: uv run python tools/mutate_check.py tests/mutations/rigor.json |\n| done_when: the exactly-once find control in tests/test_mutate_check.py stays green. | phrase: the exactly-once find control in tests/test_mutate_check.py stays green. |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: uv run bench validate prints ok. | phrase: uv run bench validate prints ok. |\n| done_when: Commit the red test first, then the green, with git | phrase: Commit the red test first, then the green, with git |\n| done_when: commit each green as soon as it passes. | phrase: commit each green as soon as it passes. |\n| not_in_scope: mutation_score and the Stryker pin (c6) | phrase: mutation_score and the Stryker pin (c6) |\n| not_in_scope: bench/metrics.yaml (name any scale you need in your final message) | phrase: bench/metrics.yaml (name any scale you need in your final message) |\n| not_in_scope: correctness.py, drift.py, architecture.py beyond reusing their helpers | phrase: correctness.py, drift.py, architecture.py beyond reusing their helpers |\n| not_in_scope: bench run, any model turn | phrase: bench run, any model turn |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- dotnet build: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider -m slow tests/test_grade_rigor.py: unresolved (not found)\n- docs/design/phase3-graders.md: docs/design/phase3-graders.md sha256 ea4db9cd170dcaf00bf7f28ce0119db61a05b879c263d8547648c275a31fe0f4\n- grade/_changes.py: src/harness_bench/grade/_changes.py sha256 fa807c157301e4bb7c27f215bef6c8fabd0b14852f2830492361ad02bda67ff2\n- grade/correctness.py: src/harness_bench/grade/correctness.py sha256 40bfc8e9edbd1c6acc62df3944d1ce6554464becdbd9c03826cbcb21193013fd\n- grade/rigor.py: src/harness_bench/grade/rigor.py sha256 5631c36a153951740769550c65b8969c80c5a4da550638d1cac8d1f530fdd863\n- tests/test_grade_correctness.py: tests/test_grade_correctness.py sha256 8a36b8d9919d31fef0db44b8a9733fdb1e740bc7d21b1b1a1adf67c721ea6cc8\n- HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs: unresolved (not found)\n- tests/test_grade_rigor.py: unresolved (not found)\n- tests/mutations/rigor.json: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 8be5ff1e7e337e0198336c6d9546fa448b924bab0e090c2e8685c962b52ba13d\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 6730694a4378e8fd89c0af582c64c767d8279bdd7a5aeeefbdf912e79a0bf545\n- bench/metrics.yaml: bench/metrics.yaml sha256 1cd27b528ab09a86e0cc9af4dd3976bf8308bea15c8a8b1b46878a549577e355\n- correctness.py: src/harness_bench/grade/correctness.py sha256 40bfc8e9edbd1c6acc62df3944d1ce6554464becdbd9c03826cbcb21193013fd\n- drift.py: src/harness_bench/grade/drift.py sha256 136e3f48bc3fe1f1357ef522600bae3f318105a8d0dada2bd01d025971ded3df\n- architecture.py: src/harness_bench/grade/architecture.py sha256 27bf16d6b5191f6966397c50a0ea051f588a9a78c2634c8c16d72bcbc11201e5\n- docs/notes/spike-gr-code-trx.md: docs/notes/spike-gr-code-trx.md sha256 336b5b273dd9fbfb8df380c6096761cb31081537922c9e52315dbf0d5a694e71\n- src/harness_bench/grade/{__init__,runner,_changes,correctness,architecture}.py: unresolved (not found)\n- tests/archived_runs.py: tests/archived_runs.py sha256 a18faad1b4f2eee79b76642748408dca0ebff1fdbdb0776a5bed357e7a3cb842\n- C:/projects/x-harness-x-model-bench/runs/: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3CR5SPDRW21FAQPF8CWJXFQ\nraw sha256: f1c0bb761472df4468d0fcb3cf0d85d85b38d9cfa1a9b2d38dd4de98c9496431\ncompiler model: claude-opus-5-5\nengine seconds: 0.005\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3CR5SPDRW21FAQPF8CWJXFQ for claude-code v1: 24 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -29302,38 +29291,38 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3CR5V0JRQRP49YSGT29118N",
-      "shortname": "Goal: W2-TASKS-c F1 finalize per rulings R-73 and R-74 (read them in doc…",
-      "datetime": "2026-09-25T17:00:31Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W2-TASKS-c F1 finalize per rulings R-73 and R-74 (read them in docs/notes/rulings.md first): the F1 task gets its per-vendor model map and goes ready.\nDone when: tasks/F1/task.yaml's model_map uses the R-73 keys `<role>@<vendor>` for the three roles (domain-model, derived-quantities, tests) and both vendors: anthropic claude-opus-5-5 / claude-sonnet-5 / claude-sonnet-5 (as the F1 author proposed); openai domain-model gpt-6-sol, and for derived-quantities and tests ONE lighter OpenAI model chosen by a cited check: read the recorded Codex and Copilot model lists in the committed native fixtures (tests/fixtures/native/codex/ and tests/fixtures/native/copilot/, searching for gpt-6-astra and gpt-6-luna and any description beside them), and state in a task.yaml comment which id you chose and the file:line that supports it; if the record gives no basis to prefer one, choose gpt-6-luna and write `assume:` with what would confirm it.; tasks/F1/prompt.md's routing table shows both vendors' columns with identical text for every combo (R-73 condition).; `uv run bench validate` prints ok (config refuses a bare key or a missing role for a declared vendor, so this proves the map's shape).; tasks/F1/task.yaml status is ready.; Commit with git; your final message names the chosen OpenAI id, the file:line cited, and the commit SHA.\nNot in scope: bench/task-freeze.yaml (the Leader freezes F1); bench/bom.yaml; src/**; tests/**; bench run, any model turn; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 15 minutes; commit as soon as bench validate prints ok.\n\nGrounding: docs/notes/rulings.md R-73, R-74; tasks/F1/ (task.yaml, prompt.md, oracle/README.md); src/harness_bench/config.py (map_key, model_map_problems); bench/profiles/*.yaml (vendor). Use python, not python3 (Windows).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3CR5W2WG5105KBDS6PSAFYR",
-      "shortname": "compile-Goal: W2-TASKS-c F1 finalize per rulings R-73 and R-74 (read them in doc…",
-      "datetime": "2026-09-25T17:00:32Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-TASKS-c F1 finalize per rulings R-73 and R-74 (read them in docs/notes/rulings.md first): the F1 task gets its per-vendor model map and goes ready.\nDone when: tasks/F1/task.yaml's model_map uses the R-73 keys `<role>@<vendor>` for the three roles (domain-model, derived-quantities, tests) and both vendors: anthropic claude-opus-5-5 / claude-sonnet-5 / claude-sonnet-5 (as the F1 author proposed); openai domain-model gpt-6-sol, and for derived-quantities and tests ONE lighter OpenAI model chosen by a cited check: read the recorded Codex and Copilot model lists in the committed native fixtures (tests/fixtures/native/codex/ and tests/fixtures/native/copilot/, searching for gpt-6-astra and gpt-6-luna and any description beside them), and state in a task.yaml comment which id you chose and the file:line that supports it; if the record gives no basis to prefer one, choose gpt-6-luna and write `assume:` with what would confirm it.; tasks/F1/prompt.md's routing table shows both vendors' columns with identical text for every combo (R-73 condition).; `uv run bench validate` prints ok (config refuses a bare key or a missing role for a declared vendor, so this proves the map's shape).; tasks/F1/task.yaml status is ready.; Commit with git; your final message names the chosen OpenAI id, the file:line cited, and the commit SHA.\nNot in scope: bench/task-freeze.yaml (the Leader freezes F1); bench/bom.yaml; src/**; tests/**; bench run, any model turn; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 15 minutes; commit as soon as bench validate prints ok.\nGrounding: docs/notes/rulings.md R-73, R-74; tasks/F1/ (task.yaml, prompt.md, oracle/README.md); src/harness_bench/config.py (map_key, model_map_problems); bench/profiles/*.yaml (vendor). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: tasks/F1/task.yaml's model_map uses the R-73 keys `<role>@<vendor>` for the three roles (domain-model, derived-quantities, tests) and both vendors: anthropic claude-opus-5-5 / claude-sonnet-5 / claude-sonnet-5 (as the F1 author proposed) | phrase: tasks/F1/task.yaml's model_map uses the R-73 keys `<role>@<vendor>` for the three roles (domain-model, derived-quantities, tests) and both vendors: anthropic claude-opus-5-5 / claude-sonnet-5 / claude-sonnet-5 (as the F1 author proposed) |\n| done_when: openai domain-model gpt-6-sol, and for derived-quantities and tests ONE lighter OpenAI model chosen by a cited check: read the recorded Codex and Copilot model lists in the committed native fixtures (tests/fixtures/native/codex/ and tests/fixtures/native/copilot/, searching for gpt-6-astra and gpt-6-luna and any description beside them), and state in a task.yaml comment which id you chose and the file:line that supports it | phrase: openai domain-model gpt-6-sol, and for derived-quantities and tests ONE lighter OpenAI model chosen by a cited check: read the recorded Codex and Copilot model lists in the committed native fixtures (tests/fixtures/native/codex/ and tests/fixtures/native/copilot/, searching for gpt-6-astra and gpt-6-luna and any description beside them), and state in a task.yaml comment which id you chose and the file:line that supports it |\n| done_when: if the record gives no basis to prefer one, choose gpt-6-luna and write `assume:` with what would confirm it. | phrase: if the record gives no basis to prefer one, choose gpt-6-luna and write `assume:` with what would confirm it. |\n| done_when: tasks/F1/prompt.md's routing table shows both vendors' columns with identical text for every combo (R-73 condition). | phrase: tasks/F1/prompt.md's routing table shows both vendors' columns with identical text for every combo (R-73 condition). |\n| done_when: `uv run bench validate` prints ok (config refuses a bare key or a missing role for a declared vendor, so this proves the map's shape). | phrase: `uv run bench validate` prints ok (config refuses a bare key or a missing role for a declared vendor, so this proves the map's shape). |\n| done_when: tasks/F1/task.yaml status is ready. | phrase: tasks/F1/task.yaml status is ready. |\n| done_when: Commit with git | phrase: Commit with git |\n| done_when: your final message names the chosen OpenAI id, the file:line cited, and the commit SHA. | phrase: your final message names the chosen OpenAI id, the file:line cited, and the commit SHA. |\n| not_in_scope: bench/task-freeze.yaml (the Leader freezes F1) | phrase: bench/task-freeze.yaml (the Leader freezes F1) |\n| not_in_scope: bench/bom.yaml | phrase: bench/bom.yaml |\n| not_in_scope: src/** | phrase: src/** |\n| not_in_scope: tests/** | phrase: tests/** |\n| not_in_scope: bench run, any model turn | phrase: bench run, any model turn |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- role>@<vendor: unresolved (not found)\n- assume: unresolved (not found)\n- uv run bench validate: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- tasks/F1/task.yaml's: unresolved (not found)\n- /: unresolved (outside repo)\n- tests/fixtures/native/codex/: unresolved (not found)\n- tests/fixtures/native/copilot/: unresolved (not found)\n- task.yaml: unresolved (ambiguous: 27 matches)\n- tasks/F1/prompt.md's: unresolved (not found)\n- tasks/F1/task.yaml: tasks/F1/task.yaml sha256 284ab34f3a0663861b7df5219025ba0aabca769de1f790b7892469e6f3b0f601\n- bench/task-freeze.yaml: bench/task-freeze.yaml sha256 4c11b7debdb88e2b55c1d0be873d5c9cf80a625816248718cd6122726d0bbff5\n- bench/bom.yaml: bench/bom.yaml sha256 0750cab5eae11826bdf4e1ccd2ebc9f2e10fc3d3b1325340de1b2af582b24307\n- src/**: unresolved (not found)\n- tests/**: unresolved (not found)\n- tasks/F1/: unresolved (not found)\n- prompt.md: unresolved (ambiguous: 8 matches)\n- oracle/README.md: unresolved (ambiguous: 6 matches)\n- src/harness_bench/config.py: src/harness_bench/config.py sha256 24f729beef17064e342ca591276a62bd43a9e19dbab742badfe503d6607ca0a9\n- bench/profiles/*.yaml: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3CR5V0JRQRP49YSGT29118N\nraw sha256: 57309d595ebfbbf57186e3714ba205a6c2583a9b45c0aab5155aef439ad2926d\ncompiler model: claude-opus-5-5\nengine seconds: 0.005\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3CR5V0JRQRP49YSGT29118N for claude-code v1: 14 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-25T17:00:30Z",
+      "dispatchable": true,
+      "id": "al-01M3CR5TSTATB6V69NKHA6VZD0",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-GR-CODE slice c5 per docs/design/phase3-graders.md, section \"Rigor\" and slice-plan row \"GR-CODE c5\" (rulings R-67, R-68, R-71): the rigor grader, red first, on top of c1-c4 (joined: grade/_changes.py gives the pre-turn tree; grade/correctness.py builds with dotnet).\nDone when: grade/rigor.py computes static_analysis_delta exactly as the design defines it (distinct (file, line, code) warnings from `dotnet build` of the cell's tree minus the same on the pre-turn tree; an int, may be negative; NA \"workspace does not build\" or \"pre-turn tree does not build\"), reusing _changes and correctness's build helpers (one definition, no second build path); verification_before_done, test_quality, maintainability and style_conformance give the design's NA reasons verbatim; rigor.grade_cell is registered in runner.GRADERS on its own line (as process, clarify, drift and architecture are).; Red first on the design's seed: an added unused local (CS0168) in a D1 source file gives static_analysis_delta exactly +1; and each NA reason; each red committed separately and failing on an assertion.; Every test that runs the real dotnet is marked @pytest.mark.slow (the default ring must not start dotnet; a conftest control may already enforce this); fast tests use a fake dotnet as tests/test_grade_correctness.py does.; With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs and HB_REQUIRE_DOTNET=1, `uv run pytest -q -p no:cacheprovider -m slow tests/test_grade_rigor.py` passes and gives the six D1 cells' static_analysis_delta as characterization values (report them).; tests/mutations/rigor.json (a new file) names a mutant per branch, each killed: uv run python tools/mutate_check.py tests/mutations/rigor.json; the exactly-once find control in tests/test_mutate_check.py stays green.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean; uv run bench validate prints ok.; Commit the red test first, then the green, with git; commit each green as soon as it passes.\nNot in scope: mutation_score and the Stryker pin (c6); bench/metrics.yaml (name any scale you need in your final message); correctness.py, drift.py, architecture.py beyond reusing their helpers; bench run, any model turn; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 300k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/design/phase3-graders.md (sections Rigor, Slice plan); docs/notes/spike-gr-code-trx.md (the build summary lines); src/harness_bench/grade/{__init__,runner,_changes,correctness,architecture}.py; tests/test_grade_correctness.py (the fake dotnet and d1_cell); tests/archived_runs.py (gate_runs_root). The gate runs under C:/projects/x-harness-x-model-bench/runs/ are read-only. Use python, not python3 (Windows). Always read each pytest exit code; \"no tests ran\" is a failure.\nTrace\n| clause | trace |\n|---|---|\n| done_when: grade/rigor.py computes static_analysis_delta exactly as the design defines it (distinct (file, line, code) warnings from `dotnet build` of the cell's tree minus the same on the pre-turn tree | phrase: grade/rigor.py computes static_analysis_delta exactly as the design defines it (distinct (file, line, code) warnings from `dotnet build` of the cell's tree minus the same on the pre-turn tree |\n| done_when: an int, may be negative | phrase: an int, may be negative |\n| done_when: NA \"workspace does not build\" or \"pre-turn tree does not build\"), reusing _changes and correctness's build helpers (one definition, no second build path) | phrase: NA \"workspace does not build\" or \"pre-turn tree does not build\"), reusing _changes and correctness's build helpers (one definition, no second build path) |\n| done_when: verification_before_done, test_quality, maintainability and style_conformance give the design's NA reasons verbatim | phrase: verification_before_done, test_quality, maintainability and style_conformance give the design's NA reasons verbatim |\n| done_when: rigor.grade_cell is registered in runner.GRADERS on its own line (as process, clarify, drift and architecture are). | phrase: rigor.grade_cell is registered in runner.GRADERS on its own line (as process, clarify, drift and architecture are). |\n| done_when: Red first on the design's seed: an added unused local (CS0168) in a D1 source file gives static_analysis_delta exactly +1 | phrase: Red first on the design's seed: an added unused local (CS0168) in a D1 source file gives static_analysis_delta exactly +1 |\n| done_when: and each NA reason | phrase: and each NA reason |\n| done_when: each red committed separately and failing on an assertion. | phrase: each red committed separately and failing on an assertion. |\n| done_when: Every test that runs the real dotnet is marked @pytest.mark.slow (the default ring must not start dotnet | phrase: Every test that runs the real dotnet is marked @pytest.mark.slow (the default ring must not start dotnet |\n| done_when: a conftest control may already enforce this) | phrase: a conftest control may already enforce this) |\n| done_when: fast tests use a fake dotnet as tests/test_grade_correctness.py does. | phrase: fast tests use a fake dotnet as tests/test_grade_correctness.py does. |\n| done_when: With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs and HB_REQUIRE_DOTNET=1, `uv run pytest -q -p no:cacheprovider -m slow tests/test_grade_rigor.py` passes and gives the six D1 cells' static_analysis_delta as characterization values (report them). | phrase: With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs and HB_REQUIRE_DOTNET=1, `uv run pytest -q -p no:cacheprovider -m slow tests/test_grade_rigor.py` passes and gives the six D1 cells' static_analysis_delta as characterization values (report them). |\n| done_when: tests/mutations/rigor.json (a new file) names a mutant per branch, each killed: uv run python tools/mutate_check.py tests/mutations/rigor.json | phrase: tests/mutations/rigor.json (a new file) names a mutant per branch, each killed: uv run python tools/mutate_check.py tests/mutations/rigor.json |\n| done_when: the exactly-once find control in tests/test_mutate_check.py stays green. | phrase: the exactly-once find control in tests/test_mutate_check.py stays green. |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: uv run bench validate prints ok. | phrase: uv run bench validate prints ok. |\n| done_when: Commit the red test first, then the green, with git | phrase: Commit the red test first, then the green, with git |\n| done_when: commit each green as soon as it passes. | phrase: commit each green as soon as it passes. |\n| not_in_scope: mutation_score and the Stryker pin (c6) | phrase: mutation_score and the Stryker pin (c6) |\n| not_in_scope: bench/metrics.yaml (name any scale you need in your final message) | phrase: bench/metrics.yaml (name any scale you need in your final message) |\n| not_in_scope: correctness.py, drift.py, architecture.py beyond reusing their helpers | phrase: correctness.py, drift.py, architecture.py beyond reusing their helpers |\n| not_in_scope: bench run, any model turn | phrase: bench run, any model turn |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- dotnet build: unresolved (not found)\n- uv run pytest -q -p no:cacheprovider -m slow tests/test_grade_rigor.py: unresolved (not found)\n- docs/design/phase3-graders.md: docs/design/phase3-graders.md sha256 ea4db9cd170dcaf00bf7f28ce0119db61a05b879c263d8547648c275a31fe0f4\n- grade/_changes.py: src/harness_bench/grade/_changes.py sha256 fa807c157301e4bb7c27f215bef6c8fabd0b14852f2830492361ad02bda67ff2\n- grade/correctness.py: src/harness_bench/grade/correctness.py sha256 40bfc8e9edbd1c6acc62df3944d1ce6554464becdbd9c03826cbcb21193013fd\n- grade/rigor.py: src/harness_bench/grade/rigor.py sha256 5631c36a153951740769550c65b8969c80c5a4da550638d1cac8d1f530fdd863\n- tests/test_grade_correctness.py: tests/test_grade_correctness.py sha256 8a36b8d9919d31fef0db44b8a9733fdb1e740bc7d21b1b1a1adf67c721ea6cc8\n- HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs: unresolved (not found)\n- tests/test_grade_rigor.py: unresolved (not found)\n- tests/mutations/rigor.json: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 8be5ff1e7e337e0198336c6d9546fa448b924bab0e090c2e8685c962b52ba13d\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 6730694a4378e8fd89c0af582c64c767d8279bdd7a5aeeefbdf912e79a0bf545\n- bench/metrics.yaml: bench/metrics.yaml sha256 1cd27b528ab09a86e0cc9af4dd3976bf8308bea15c8a8b1b46878a549577e355\n- correctness.py: src/harness_bench/grade/correctness.py sha256 40bfc8e9edbd1c6acc62df3944d1ce6554464becdbd9c03826cbcb21193013fd\n- drift.py: src/harness_bench/grade/drift.py sha256 136e3f48bc3fe1f1357ef522600bae3f318105a8d0dada2bd01d025971ded3df\n- architecture.py: src/harness_bench/grade/architecture.py sha256 27bf16d6b5191f6966397c50a0ea051f588a9a78c2634c8c16d72bcbc11201e5\n- docs/notes/spike-gr-code-trx.md: docs/notes/spike-gr-code-trx.md sha256 336b5b273dd9fbfb8df380c6096761cb31081537922c9e52315dbf0d5a694e71\n- src/harness_bench/grade/{__init__,runner,_changes,correctness,architecture}.py: unresolved (not found)\n- tests/archived_runs.py: tests/archived_runs.py sha256 a18faad1b4f2eee79b76642748408dca0ebff1fdbdb0776a5bed357e7a3cb842\n- C:/projects/x-harness-x-model-bench/runs/: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3CR5SPDRW21FAQPF8CWJXFQ\nraw sha256: f1c0bb761472df4468d0fcb3cf0d85d85b38d9cfa1a9b2d38dd4de98c9496431\ncompiler model: claude-opus-5-5\nengine seconds: 0.005\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W3-GR-CODE slice c5 per docs/design/phase3-graders.md, section \"Ri…",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3CR5SPDRW21FAQPF8CWJXFQ for claude-code v1: 24 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-25T17:00:31Z",
+      "id": "al-01M3CR5V0JRQRP49YSGT29118N",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: W2-TASKS-c F1 finalize per rulings R-73 and R-74 (read them in docs/notes/rulings.md first): the F1 task gets its per-vendor model map and goes ready.\nDone when: tasks/F1/task.yaml's model_map uses the R-73 keys `<role>@<vendor>` for the three roles (domain-model, derived-quantities, tests) and both vendors: anthropic claude-opus-5-5 / claude-sonnet-5 / claude-sonnet-5 (as the F1 author proposed); openai domain-model gpt-6-sol, and for derived-quantities and tests ONE lighter OpenAI model chosen by a cited check: read the recorded Codex and Copilot model lists in the committed native fixtures (tests/fixtures/native/codex/ and tests/fixtures/native/copilot/, searching for gpt-6-astra and gpt-6-luna and any description beside them), and state in a task.yaml comment which id you chose and the file:line that supports it; if the record gives no basis to prefer one, choose gpt-6-luna and write `assume:` with what would confirm it.; tasks/F1/prompt.md's routing table shows both vendors' columns with identical text for every combo (R-73 condition).; `uv run bench validate` prints ok (config refuses a bare key or a missing role for a declared vendor, so this proves the map's shape).; tasks/F1/task.yaml status is ready.; Commit with git; your final message names the chosen OpenAI id, the file:line cited, and the commit SHA.\nNot in scope: bench/task-freeze.yaml (the Leader freezes F1); bench/bom.yaml; src/**; tests/**; bench run, any model turn; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 15 minutes; commit as soon as bench validate prints ok.\n\nGrounding: docs/notes/rulings.md R-73, R-74; tasks/F1/ (task.yaml, prompt.md, oracle/README.md); src/harness_bench/config.py (map_key, model_map_problems); bench/profiles/*.yaml (vendor). Use python, not python3 (Windows).",
+      "session": "prompt-compile",
+      "shortname": "Goal: W2-TASKS-c F1 finalize per rulings R-73 and R-74 (read them in doc…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -29666,38 +29655,38 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3CR5WAGJKX8W1YR4GCW13VK",
-      "shortname": "Goal: W3-GW-I follow-up a: two small items left from slices 4 and 5 (doc…",
       "datetime": "2026-09-25T17:00:32Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W3-GW-I follow-up a: two small items left from slices 4 and 5 (docs/design/phase3-gateway-judges.md sections 6 and 12; rulings R-59 DR-4 and R-65 in docs/notes/rulings.md), red first.\nDone when: R-65 condition 1: a grading pass's grading.started event records the run roots the live-run check scanned and each scanned run's liveness (alive, stalled or not running), from gateway.backend.run_roots and the same status check refuse_if_live uses (one definition); a test on a synthetic runs/ with one not-running run is red first, then green.; The report header's judge block gains the section 12 \"Probe versions\" row: a `.dev` catalog pass reads `probe pass` (R-59 DR-4), from grading.started's catalog_version; a test red first, then green.; A named mutant per new branch in tests/mutations/judge.json, each killed (uv run python tools/mutate_check.py tests/mutations/judge.json); the exactly-once find control in tests/test_mutate_check.py stays green.; uv run pytest -q -p no:cacheprovider on the touched test files passes and uv run ruff check src tests tools is clean.; Commit each red test as soon as it fails, then each green, with git.\nNot in scope: any live model call or real CLI launch; bench/gateway.yaml; calibration; views.py beyond reading grading.started; engine.py; bench run; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase3-gateway-judges.md sections 6 and 12; docs/notes/rulings.md R-59, R-65; src/harness_bench/gateway/backend.py (run_roots, refuse_if_live); src/harness_bench/grade/runner.py (grading.started); src/harness_bench/report/judges.py; tests/test_grade_judge.py; tests/test_report_judges.py. Use python, not python3 (Windows).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
+      "dispatchable": true,
+      "id": "al-01M3CR5W2WG5105KBDS6PSAFYR",
+      "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-TASKS-c F1 finalize per rulings R-73 and R-74 (read them in docs/notes/rulings.md first): the F1 task gets its per-vendor model map and goes ready.\nDone when: tasks/F1/task.yaml's model_map uses the R-73 keys `<role>@<vendor>` for the three roles (domain-model, derived-quantities, tests) and both vendors: anthropic claude-opus-5-5 / claude-sonnet-5 / claude-sonnet-5 (as the F1 author proposed); openai domain-model gpt-6-sol, and for derived-quantities and tests ONE lighter OpenAI model chosen by a cited check: read the recorded Codex and Copilot model lists in the committed native fixtures (tests/fixtures/native/codex/ and tests/fixtures/native/copilot/, searching for gpt-6-astra and gpt-6-luna and any description beside them), and state in a task.yaml comment which id you chose and the file:line that supports it; if the record gives no basis to prefer one, choose gpt-6-luna and write `assume:` with what would confirm it.; tasks/F1/prompt.md's routing table shows both vendors' columns with identical text for every combo (R-73 condition).; `uv run bench validate` prints ok (config refuses a bare key or a missing role for a declared vendor, so this proves the map's shape).; tasks/F1/task.yaml status is ready.; Commit with git; your final message names the chosen OpenAI id, the file:line cited, and the commit SHA.\nNot in scope: bench/task-freeze.yaml (the Leader freezes F1); bench/bom.yaml; src/**; tests/**; bench run, any model turn; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 15 minutes; commit as soon as bench validate prints ok.\nGrounding: docs/notes/rulings.md R-73, R-74; tasks/F1/ (task.yaml, prompt.md, oracle/README.md); src/harness_bench/config.py (map_key, model_map_problems); bench/profiles/*.yaml (vendor). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: tasks/F1/task.yaml's model_map uses the R-73 keys `<role>@<vendor>` for the three roles (domain-model, derived-quantities, tests) and both vendors: anthropic claude-opus-5-5 / claude-sonnet-5 / claude-sonnet-5 (as the F1 author proposed) | phrase: tasks/F1/task.yaml's model_map uses the R-73 keys `<role>@<vendor>` for the three roles (domain-model, derived-quantities, tests) and both vendors: anthropic claude-opus-5-5 / claude-sonnet-5 / claude-sonnet-5 (as the F1 author proposed) |\n| done_when: openai domain-model gpt-6-sol, and for derived-quantities and tests ONE lighter OpenAI model chosen by a cited check: read the recorded Codex and Copilot model lists in the committed native fixtures (tests/fixtures/native/codex/ and tests/fixtures/native/copilot/, searching for gpt-6-astra and gpt-6-luna and any description beside them), and state in a task.yaml comment which id you chose and the file:line that supports it | phrase: openai domain-model gpt-6-sol, and for derived-quantities and tests ONE lighter OpenAI model chosen by a cited check: read the recorded Codex and Copilot model lists in the committed native fixtures (tests/fixtures/native/codex/ and tests/fixtures/native/copilot/, searching for gpt-6-astra and gpt-6-luna and any description beside them), and state in a task.yaml comment which id you chose and the file:line that supports it |\n| done_when: if the record gives no basis to prefer one, choose gpt-6-luna and write `assume:` with what would confirm it. | phrase: if the record gives no basis to prefer one, choose gpt-6-luna and write `assume:` with what would confirm it. |\n| done_when: tasks/F1/prompt.md's routing table shows both vendors' columns with identical text for every combo (R-73 condition). | phrase: tasks/F1/prompt.md's routing table shows both vendors' columns with identical text for every combo (R-73 condition). |\n| done_when: `uv run bench validate` prints ok (config refuses a bare key or a missing role for a declared vendor, so this proves the map's shape). | phrase: `uv run bench validate` prints ok (config refuses a bare key or a missing role for a declared vendor, so this proves the map's shape). |\n| done_when: tasks/F1/task.yaml status is ready. | phrase: tasks/F1/task.yaml status is ready. |\n| done_when: Commit with git | phrase: Commit with git |\n| done_when: your final message names the chosen OpenAI id, the file:line cited, and the commit SHA. | phrase: your final message names the chosen OpenAI id, the file:line cited, and the commit SHA. |\n| not_in_scope: bench/task-freeze.yaml (the Leader freezes F1) | phrase: bench/task-freeze.yaml (the Leader freezes F1) |\n| not_in_scope: bench/bom.yaml | phrase: bench/bom.yaml |\n| not_in_scope: src/** | phrase: src/** |\n| not_in_scope: tests/** | phrase: tests/** |\n| not_in_scope: bench run, any model turn | phrase: bench run, any model turn |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- role>@<vendor: unresolved (not found)\n- assume: unresolved (not found)\n- uv run bench validate: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- tasks/F1/task.yaml's: unresolved (not found)\n- /: unresolved (outside repo)\n- tests/fixtures/native/codex/: unresolved (not found)\n- tests/fixtures/native/copilot/: unresolved (not found)\n- task.yaml: unresolved (ambiguous: 27 matches)\n- tasks/F1/prompt.md's: unresolved (not found)\n- tasks/F1/task.yaml: tasks/F1/task.yaml sha256 284ab34f3a0663861b7df5219025ba0aabca769de1f790b7892469e6f3b0f601\n- bench/task-freeze.yaml: bench/task-freeze.yaml sha256 4c11b7debdb88e2b55c1d0be873d5c9cf80a625816248718cd6122726d0bbff5\n- bench/bom.yaml: bench/bom.yaml sha256 0750cab5eae11826bdf4e1ccd2ebc9f2e10fc3d3b1325340de1b2af582b24307\n- src/**: unresolved (not found)\n- tests/**: unresolved (not found)\n- tasks/F1/: unresolved (not found)\n- prompt.md: unresolved (ambiguous: 8 matches)\n- oracle/README.md: unresolved (ambiguous: 6 matches)\n- src/harness_bench/config.py: src/harness_bench/config.py sha256 24f729beef17064e342ca591276a62bd43a9e19dbab742badfe503d6607ca0a9\n- bench/profiles/*.yaml: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3CR5V0JRQRP49YSGT29118N\nraw sha256: 57309d595ebfbbf57186e3714ba205a6c2583a9b45c0aab5155aef439ad2926d\ncompiler model: claude-opus-5-5\nengine seconds: 0.005\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W2-TASKS-c F1 finalize per rulings R-73 and R-74 (read them in doc…",
       "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
+      "summary": "compiled al-01M3CR5V0JRQRP49YSGT29118N for claude-code v1: 14 clauses, 0 assumptions, 0 decision requests",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M3CR5X0ANMZS93X2CVAR6821",
-      "shortname": "compile-Goal: W3-GW-I follow-up a: two small items left from slices 4 and 5 (doc…",
-      "datetime": "2026-09-25T17:00:33Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-GW-I follow-up a: two small items left from slices 4 and 5 (docs/design/phase3-gateway-judges.md sections 6 and 12; rulings R-59 DR-4 and R-65 in docs/notes/rulings.md), red first.\nDone when: R-65 condition 1: a grading pass's grading.started event records the run roots the live-run check scanned and each scanned run's liveness (alive, stalled or not running), from gateway.backend.run_roots and the same status check refuse_if_live uses (one definition); a test on a synthetic runs/ with one not-running run is red first, then green.; The report header's judge block gains the section 12 \"Probe versions\" row: a `.dev` catalog pass reads `probe pass` (R-59 DR-4), from grading.started's catalog_version; a test red first, then green.; A named mutant per new branch in tests/mutations/judge.json, each killed (uv run python tools/mutate_check.py tests/mutations/judge.json); the exactly-once find control in tests/test_mutate_check.py stays green.; uv run pytest -q -p no:cacheprovider on the touched test files passes and uv run ruff check src tests tools is clean.; Commit each red test as soon as it fails, then each green, with git.\nNot in scope: any live model call or real CLI launch; bench/gateway.yaml; calibration; views.py beyond reading grading.started; engine.py; bench run; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase3-gateway-judges.md sections 6 and 12; docs/notes/rulings.md R-59, R-65; src/harness_bench/gateway/backend.py (run_roots, refuse_if_live); src/harness_bench/grade/runner.py (grading.started); src/harness_bench/report/judges.py; tests/test_grade_judge.py; tests/test_report_judges.py. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: R-65 condition 1: a grading pass's grading.started event records the run roots the live-run check scanned and each scanned run's liveness (alive, stalled or not running), from gateway.backend.run_roots and the same status check refuse_if_live uses (one definition) | phrase: R-65 condition 1: a grading pass's grading.started event records the run roots the live-run check scanned and each scanned run's liveness (alive, stalled or not running), from gateway.backend.run_roots and the same status check refuse_if_live uses (one definition) |\n| done_when: a test on a synthetic runs/ with one not-running run is red first, then green. | phrase: a test on a synthetic runs/ with one not-running run is red first, then green. |\n| done_when: The report header's judge block gains the section 12 \"Probe versions\" row: a `.dev` catalog pass reads `probe pass` (R-59 DR-4), from grading.started's catalog_version | phrase: The report header's judge block gains the section 12 \"Probe versions\" row: a `.dev` catalog pass reads `probe pass` (R-59 DR-4), from grading.started's catalog_version |\n| done_when: a test red first, then green. | phrase: a test red first, then green. |\n| done_when: A named mutant per new branch in tests/mutations/judge.json, each killed (uv run python tools/mutate_check.py tests/mutations/judge.json) | phrase: A named mutant per new branch in tests/mutations/judge.json, each killed (uv run python tools/mutate_check.py tests/mutations/judge.json) |\n| done_when: the exactly-once find control in tests/test_mutate_check.py stays green. | phrase: the exactly-once find control in tests/test_mutate_check.py stays green. |\n| done_when: uv run pytest -q -p no:cacheprovider on the touched test files passes and uv run ruff check src tests tools is clean. | phrase: uv run pytest -q -p no:cacheprovider on the touched test files passes and uv run ruff check src tests tools is clean. |\n| done_when: Commit each red test as soon as it fails, then each green, with git. | phrase: Commit each red test as soon as it fails, then each green, with git. |\n| not_in_scope: any live model call or real CLI launch | phrase: any live model call or real CLI launch |\n| not_in_scope: bench/gateway.yaml | phrase: bench/gateway.yaml |\n| not_in_scope: calibration | phrase: calibration |\n| not_in_scope: views.py beyond reading grading.started | phrase: views.py beyond reading grading.started |\n| not_in_scope: engine.py | phrase: engine.py |\n| not_in_scope: bench run | phrase: bench run |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- .dev: unresolved (not found)\n- probe pass: unresolved (not found)\n- docs/design/phase3-gateway-judges.md: docs/design/phase3-gateway-judges.md sha256 fe413bac2ff308f8577d477fa5ae4f75b38adc4a44b35c9ef5186c89a94f6d90\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- runs/: unresolved (not found)\n- tests/mutations/judge.json: tests/mutations/judge.json sha256 46ffd47ad33d047185f8e4dcb6185bae1a5880d01df6c8539c79086fe748080a\n- tools/mutate_check.py: tools/mutate_check.py sha256 8be5ff1e7e337e0198336c6d9546fa448b924bab0e090c2e8685c962b52ba13d\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 6730694a4378e8fd89c0af582c64c767d8279bdd7a5aeeefbdf912e79a0bf545\n- bench/gateway.yaml: bench/gateway.yaml sha256 39cd001d13d37e6812832b11bbbcf0b075c0cff5daa78e963f93c8c7cdd18471\n- views.py: src/harness_bench/views.py sha256 ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842\n- engine.py: src/harness_bench/engine.py sha256 b9b6924fcf9f64f8120001c5426764c67d74e05588aa1f15220c867c9459eca4\n- src/harness_bench/gateway/backend.py: src/harness_bench/gateway/backend.py sha256 0e6fec7bb25d6b446889bf94848b2f4ad5d01dadd4b22dea7eef123f4eb50094\n- src/harness_bench/grade/runner.py: src/harness_bench/grade/runner.py sha256 437da680c3a6c533c10afaa61faeef992242860e4791bd7b11b8e86020fb1820\n- src/harness_bench/report/judges.py: src/harness_bench/report/judges.py sha256 bb18cdda08ece9a7f308abae736bebf60f5fc69b354e5c0cf63b706f46d37dd4\n- tests/test_grade_judge.py: tests/test_grade_judge.py sha256 05d8cf24a0ebaa3fcc8c445cdbc2a5710f44bc8b539d101b17d0799cc2ab1d1b\n- tests/test_report_judges.py: tests/test_report_judges.py sha256 af0e196ab220b66292f69116cad7e1b47237bd2110a4e2568934d06f500cecb6\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3CR5WAGJKX8W1YR4GCW13VK\nraw sha256: 600b146eb960e08ea6655743304775ac3af4019592240c827778c3873eb2846e\ncompiler model: claude-opus-5-5\nengine seconds: 0.005\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3CR5WAGJKX8W1YR4GCW13VK for claude-code v1: 15 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-25T17:00:32Z",
+      "id": "al-01M3CR5WAGJKX8W1YR4GCW13VK",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: W3-GW-I follow-up a: two small items left from slices 4 and 5 (docs/design/phase3-gateway-judges.md sections 6 and 12; rulings R-59 DR-4 and R-65 in docs/notes/rulings.md), red first.\nDone when: R-65 condition 1: a grading pass's grading.started event records the run roots the live-run check scanned and each scanned run's liveness (alive, stalled or not running), from gateway.backend.run_roots and the same status check refuse_if_live uses (one definition); a test on a synthetic runs/ with one not-running run is red first, then green.; The report header's judge block gains the section 12 \"Probe versions\" row: a `.dev` catalog pass reads `probe pass` (R-59 DR-4), from grading.started's catalog_version; a test red first, then green.; A named mutant per new branch in tests/mutations/judge.json, each killed (uv run python tools/mutate_check.py tests/mutations/judge.json); the exactly-once find control in tests/test_mutate_check.py stays green.; uv run pytest -q -p no:cacheprovider on the touched test files passes and uv run ruff check src tests tools is clean.; Commit each red test as soon as it fails, then each green, with git.\nNot in scope: any live model call or real CLI launch; bench/gateway.yaml; calibration; views.py beyond reading grading.started; engine.py; bench run; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase3-gateway-judges.md sections 6 and 12; docs/notes/rulings.md R-59, R-65; src/harness_bench/gateway/backend.py (run_roots, refuse_if_live); src/harness_bench/grade/runner.py (grading.started); src/harness_bench/report/judges.py; tests/test_grade_judge.py; tests/test_report_judges.py. Use python, not python3 (Windows).",
+      "session": "prompt-compile",
+      "shortname": "Goal: W3-GW-I follow-up a: two small items left from slices 4 and 5 (doc…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -30001,6 +29990,365 @@ window.AUDIT_DATA = {
             "sha256": "af0e196ab220b66292f69116cad7e1b47237bd2110a4e2568934d06f500cecb6",
             "status": "resolved",
             "token": "tests/test_report_judges.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-09-25T17:00:33Z",
+      "dispatchable": true,
+      "id": "al-01M3CR5X0ANMZS93X2CVAR6821",
+      "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-GW-I follow-up a: two small items left from slices 4 and 5 (docs/design/phase3-gateway-judges.md sections 6 and 12; rulings R-59 DR-4 and R-65 in docs/notes/rulings.md), red first.\nDone when: R-65 condition 1: a grading pass's grading.started event records the run roots the live-run check scanned and each scanned run's liveness (alive, stalled or not running), from gateway.backend.run_roots and the same status check refuse_if_live uses (one definition); a test on a synthetic runs/ with one not-running run is red first, then green.; The report header's judge block gains the section 12 \"Probe versions\" row: a `.dev` catalog pass reads `probe pass` (R-59 DR-4), from grading.started's catalog_version; a test red first, then green.; A named mutant per new branch in tests/mutations/judge.json, each killed (uv run python tools/mutate_check.py tests/mutations/judge.json); the exactly-once find control in tests/test_mutate_check.py stays green.; uv run pytest -q -p no:cacheprovider on the touched test files passes and uv run ruff check src tests tools is clean.; Commit each red test as soon as it fails, then each green, with git.\nNot in scope: any live model call or real CLI launch; bench/gateway.yaml; calibration; views.py beyond reading grading.started; engine.py; bench run; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase3-gateway-judges.md sections 6 and 12; docs/notes/rulings.md R-59, R-65; src/harness_bench/gateway/backend.py (run_roots, refuse_if_live); src/harness_bench/grade/runner.py (grading.started); src/harness_bench/report/judges.py; tests/test_grade_judge.py; tests/test_report_judges.py. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: R-65 condition 1: a grading pass's grading.started event records the run roots the live-run check scanned and each scanned run's liveness (alive, stalled or not running), from gateway.backend.run_roots and the same status check refuse_if_live uses (one definition) | phrase: R-65 condition 1: a grading pass's grading.started event records the run roots the live-run check scanned and each scanned run's liveness (alive, stalled or not running), from gateway.backend.run_roots and the same status check refuse_if_live uses (one definition) |\n| done_when: a test on a synthetic runs/ with one not-running run is red first, then green. | phrase: a test on a synthetic runs/ with one not-running run is red first, then green. |\n| done_when: The report header's judge block gains the section 12 \"Probe versions\" row: a `.dev` catalog pass reads `probe pass` (R-59 DR-4), from grading.started's catalog_version | phrase: The report header's judge block gains the section 12 \"Probe versions\" row: a `.dev` catalog pass reads `probe pass` (R-59 DR-4), from grading.started's catalog_version |\n| done_when: a test red first, then green. | phrase: a test red first, then green. |\n| done_when: A named mutant per new branch in tests/mutations/judge.json, each killed (uv run python tools/mutate_check.py tests/mutations/judge.json) | phrase: A named mutant per new branch in tests/mutations/judge.json, each killed (uv run python tools/mutate_check.py tests/mutations/judge.json) |\n| done_when: the exactly-once find control in tests/test_mutate_check.py stays green. | phrase: the exactly-once find control in tests/test_mutate_check.py stays green. |\n| done_when: uv run pytest -q -p no:cacheprovider on the touched test files passes and uv run ruff check src tests tools is clean. | phrase: uv run pytest -q -p no:cacheprovider on the touched test files passes and uv run ruff check src tests tools is clean. |\n| done_when: Commit each red test as soon as it fails, then each green, with git. | phrase: Commit each red test as soon as it fails, then each green, with git. |\n| not_in_scope: any live model call or real CLI launch | phrase: any live model call or real CLI launch |\n| not_in_scope: bench/gateway.yaml | phrase: bench/gateway.yaml |\n| not_in_scope: calibration | phrase: calibration |\n| not_in_scope: views.py beyond reading grading.started | phrase: views.py beyond reading grading.started |\n| not_in_scope: engine.py | phrase: engine.py |\n| not_in_scope: bench run | phrase: bench run |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- .dev: unresolved (not found)\n- probe pass: unresolved (not found)\n- docs/design/phase3-gateway-judges.md: docs/design/phase3-gateway-judges.md sha256 fe413bac2ff308f8577d477fa5ae4f75b38adc4a44b35c9ef5186c89a94f6d90\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- runs/: unresolved (not found)\n- tests/mutations/judge.json: tests/mutations/judge.json sha256 46ffd47ad33d047185f8e4dcb6185bae1a5880d01df6c8539c79086fe748080a\n- tools/mutate_check.py: tools/mutate_check.py sha256 8be5ff1e7e337e0198336c6d9546fa448b924bab0e090c2e8685c962b52ba13d\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 6730694a4378e8fd89c0af582c64c767d8279bdd7a5aeeefbdf912e79a0bf545\n- bench/gateway.yaml: bench/gateway.yaml sha256 39cd001d13d37e6812832b11bbbcf0b075c0cff5daa78e963f93c8c7cdd18471\n- views.py: src/harness_bench/views.py sha256 ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842\n- engine.py: src/harness_bench/engine.py sha256 b9b6924fcf9f64f8120001c5426764c67d74e05588aa1f15220c867c9459eca4\n- src/harness_bench/gateway/backend.py: src/harness_bench/gateway/backend.py sha256 0e6fec7bb25d6b446889bf94848b2f4ad5d01dadd4b22dea7eef123f4eb50094\n- src/harness_bench/grade/runner.py: src/harness_bench/grade/runner.py sha256 437da680c3a6c533c10afaa61faeef992242860e4791bd7b11b8e86020fb1820\n- src/harness_bench/report/judges.py: src/harness_bench/report/judges.py sha256 bb18cdda08ece9a7f308abae736bebf60f5fc69b354e5c0cf63b706f46d37dd4\n- tests/test_grade_judge.py: tests/test_grade_judge.py sha256 05d8cf24a0ebaa3fcc8c445cdbc2a5710f44bc8b539d101b17d0799cc2ab1d1b\n- tests/test_report_judges.py: tests/test_report_judges.py sha256 af0e196ab220b66292f69116cad7e1b47237bd2110a4e2568934d06f500cecb6\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3CR5WAGJKX8W1YR4GCW13VK\nraw sha256: 600b146eb960e08ea6655743304775ac3af4019592240c827778c3873eb2846e\ncompiler model: claude-opus-5-5\nengine seconds: 0.005\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W3-GW-I follow-up a: two small items left from slices 4 and 5 (doc…",
+      "skill": null,
+      "summary": "compiled al-01M3CR5WAGJKX8W1YR4GCW13VK for claude-code v1: 15 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-09-25T13:40:02Z",
+      "done_when": "task.yaml pinned; workspace vendored; prompt and model_map; hidden tests fail on base and pass on reference with evidence; oracle notes; bench validate ok",
+      "duration_seconds": 773.0,
+      "goal": "tasks/F1 authored toward ready with a discriminating dotnet oracle",
+      "id": "al-01M3CCPRR3BDFN679NN1ZHX5XX",
+      "kind": "command",
+      "outcome": "success",
+      "prompt": "W2-TASKS-c (task F1) of the harness-bench coordination run on Claude Code under R-4: author tasks/F1/ from stub toward ready per the brief (brief-tasks-f1.md): pin cfd-bench, vendor the base, prompt with three tracks and model routing, model_map, dotnet hidden tests failing on base and passing on a reference under oracle/, oracle notes for coordination and judge graders, bench validate ok. Operator ruling 2026-09-25: cfd-bench proceeds without a licence file.",
+      "session": "w2-tasks-f1",
+      "shortname": "new-bench-task-F1",
+      "skill": "new-bench-task",
+      "started_at": "2026-09-25T13:27:09Z",
+      "summary": "F1 -> draft. Source: local clone C:/projects/cfd-bench rev-parse HEAD 496a0a8ca2fae9026927167a8f3e5da0a53f2233, clean; licence none (operator decision 2026-09-25). Workspace: 29 files git-archived from 5 vendored paths, blob ids equal the source; vendoring_check.py exit 0. Oracle: uv run python tasks/F1/oracle/probe.py exit 0 - base dotnet exit 1, f1-hidden.trx 10 failed/0 passed (UnitsConvertAndRejectNonFiniteValues, RectangularWingMatchesItsClosedForms, TaperedWingMatchesItsClosedForms, CrankedWingIntegratesEverySegment, SweepAndTwistDoNotChangeThePlanformQuantities, MillimetreStationsGiveTheSameQuantities, WashoutIsRootTwistMinusTipTwist, CreateRejectsAnInvalidStationList, WingKeepsItsOwnCopyOfTheStationsInOrder, EveryDerivationRejectsANullWing), grade passed=0; reference dotnet exit 0, 10 passed, grade passed=1; dotnet 10.0.303. mutants.py: 6/6 killed. bench validate ok (draft and simulated ready). Draft because DR-F1-1 (model_map is one map, Anthropic ids proposed: opus-5-5 / sonnet-5 / sonnet-5) and DR-F1-2 (Agent/task sub-agent tools out of profile, R-45) are open.",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "id": "al-01M3CVQW02BTBPT12HSH1NARP9",
+      "shortname": "Goal: W3-GR-CODE slice c6a, the Stryker.NET spike for the mutation grade…",
+      "datetime": "2026-09-25T18:02:47Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W3-GR-CODE slice c6a, the Stryker.NET spike for the mutation grader (docs/design/phase3-graders.md, sections \"Mutation\" and \"Catalog-version rule\" 3; rulings R-59 c4): measure, on this host, whether and how a pinned Stryker.NET runs offline against D1, and write the spike note. No grader code.\nDone when: docs/notes/spike-gr-code-stryker.md (V2 frontmatter: id note-spike-gr-code-stryker, type decision-note, status accepted, owner \"@timianmalloo\", links to design-phase3-graders, review-by \"2026-10-09\", summary) records, each fact labelled Verified (observed, with the exact command and exit code) or Inferred: whether a dotnet-stryker package is in this host's offline NuGet cache (search the cache folder and `dotnet tool list -g`/`--local` without installing anything from the network); if absent, that fact is the spike's result and the note ends with the options for the Leader (an operator-approved one-time install of a named version, or the metric NA \"mutation tool not available\" in 0.4).; If a Stryker.NET build is available offline: the pinned version string, the command that prints it (the tool_versions probe), a run on tasks/D1's reference solution plus its hidden tests in a throwaway copy with the timeout settings pinned in a stryker-config.json, the report file it writes and the fields for killed, timeout, survived and no coverage, the wall time, and whether two runs give equal counts.; No network install is made; nothing outside a throwaway folder under C:\\Projects is written except the note; commit the note with git.; Your final message states the result in one line, the note's commit SHA, and each measured command with its exit code.\nNot in scope: grade/mutation.py (slice c6b); any `dotnet tool install` or NuGet download from the network; tasks/**; src/**; bench run; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit the note as soon as its first result is measured, then extend it.\n\nGrounding: docs/design/phase3-graders.md (Mutation; Catalog-version rule 3); docs/notes/spike-gr-code-trx.md (how the dotnet oracle runs offline); tasks/D1/ (the reference and hidden tests); src/harness_bench/grade/correctness.py. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3CVQXJCJW1SNXVP50E1HB9K",
+      "shortname": "compile-Goal: W3-GR-CODE slice c6a, the Stryker.NET spike for the mutation grade…",
+      "datetime": "2026-09-25T18:02:49Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W3-GR-CODE slice c6a, the Stryker.NET spike for the mutation grader (docs/design/phase3-graders.md, sections \"Mutation\" and \"Catalog-version rule\" 3; rulings R-59 c4): measure, on this host, whether and how a pinned Stryker.NET runs offline against D1, and write the spike note. No grader code.\nDone when: docs/notes/spike-gr-code-stryker.md (V2 frontmatter: id note-spike-gr-code-stryker, type decision-note, status accepted, owner \"@timianmalloo\", links to design-phase3-graders, review-by \"2026-10-09\", summary) records, each fact labelled Verified (observed, with the exact command and exit code) or Inferred: whether a dotnet-stryker package is in this host's offline NuGet cache (search the cache folder and `dotnet tool list -g`/`--local` without installing anything from the network); if absent, that fact is the spike's result and the note ends with the options for the Leader (an operator-approved one-time install of a named version, or the metric NA \"mutation tool not available\" in 0.4).; If a Stryker.NET build is available offline: the pinned version string, the command that prints it (the tool_versions probe), a run on tasks/D1's reference solution plus its hidden tests in a throwaway copy with the timeout settings pinned in a stryker-config.json, the report file it writes and the fields for killed, timeout, survived and no coverage, the wall time, and whether two runs give equal counts.; No network install is made; nothing outside a throwaway folder under C:\\Projects is written except the note; commit the note with git.; Your final message states the result in one line, the note's commit SHA, and each measured command with its exit code.\nNot in scope: grade/mutation.py (slice c6b); any `dotnet tool install` or NuGet download from the network; tasks/**; src/**; bench run; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit the note as soon as its first result is measured, then extend it.\nGrounding: docs/design/phase3-graders.md (Mutation; Catalog-version rule 3); docs/notes/spike-gr-code-trx.md (how the dotnet oracle runs offline); tasks/D1/ (the reference and hidden tests); src/harness_bench/grade/correctness.py. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: docs/notes/spike-gr-code-stryker.md (V2 frontmatter: id note-spike-gr-code-stryker, type decision-note, status accepted, owner \"@timianmalloo\", links to design-phase3-graders, review-by \"2026-10-09\", summary) records, each fact labelled Verified (observed, with the exact command and exit code) or Inferred: whether a dotnet-stryker package is in this host's offline NuGet cache (search the cache folder and `dotnet tool list -g`/`--local` without installing anything from the network) | phrase: docs/notes/spike-gr-code-stryker.md (V2 frontmatter: id note-spike-gr-code-stryker, type decision-note, status accepted, owner \"@timianmalloo\", links to design-phase3-graders, review-by \"2026-10-09\", summary) records, each fact labelled Verified (observed, with the exact command and exit code) or Inferred: whether a dotnet-stryker package is in this host's offline NuGet cache (search the cache folder and `dotnet tool list -g`/`--local` without installing anything from the network) |\n| done_when: if absent, that fact is the spike's result and the note ends with the options for the Leader (an operator-approved one-time install of a named version, or the metric NA \"mutation tool not available\" in 0.4). | phrase: if absent, that fact is the spike's result and the note ends with the options for the Leader (an operator-approved one-time install of a named version, or the metric NA \"mutation tool not available\" in 0.4). |\n| done_when: If a Stryker.NET build is available offline: the pinned version string, the command that prints it (the tool_versions probe), a run on tasks/D1's reference solution plus its hidden tests in a throwaway copy with the timeout settings pinned in a stryker-config.json, the report file it writes and the fields for killed, timeout, survived and no coverage, the wall time, and whether two runs give equal counts. | phrase: If a Stryker.NET build is available offline: the pinned version string, the command that prints it (the tool_versions probe), a run on tasks/D1's reference solution plus its hidden tests in a throwaway copy with the timeout settings pinned in a stryker-config.json, the report file it writes and the fields for killed, timeout, survived and no coverage, the wall time, and whether two runs give equal counts. |\n| done_when: No network install is made | phrase: No network install is made |\n| done_when: nothing outside a throwaway folder under C:\\Projects is written except the note | phrase: nothing outside a throwaway folder under C:\\Projects is written except the note |\n| done_when: commit the note with git. | phrase: commit the note with git. |\n| done_when: Your final message states the result in one line, the note's commit SHA, and each measured command with its exit code. | phrase: Your final message states the result in one line, the note's commit SHA, and each measured command with its exit code. |\n| not_in_scope: grade/mutation.py (slice c6b) | phrase: grade/mutation.py (slice c6b) |\n| not_in_scope: any `dotnet tool install` or NuGet download from the network | phrase: any `dotnet tool install` or NuGet download from the network |\n| not_in_scope: tasks/** | phrase: tasks/** |\n| not_in_scope: src/** | phrase: src/** |\n| not_in_scope: bench run | phrase: bench run |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- dotnet tool list -g: unresolved (not found)\n- --local: unresolved (not found)\n- dotnet tool install: unresolved (not found)\n- docs/design/phase3-graders.md: docs/design/phase3-graders.md sha256 ea4db9cd170dcaf00bf7f28ce0119db61a05b879c263d8547648c275a31fe0f4\n- docs/notes/spike-gr-code-stryker.md: unresolved (not found)\n- design-phase3-graders: docs/design/phase3-graders.md sha256 ea4db9cd170dcaf00bf7f28ce0119db61a05b879c263d8547648c275a31fe0f4\n- -g`/`--local: unresolved (not found)\n- tasks/D1's: unresolved (not found)\n- stryker-config.json: unresolved (not found)\n- grade/mutation.py: src/harness_bench/grade/mutation.py sha256 a2994a35dd49e3a9ead7e19fb7d314c8c16b2df004e2192a79e2f2bce9f4fc05\n- tasks/**: unresolved (not found)\n- src/**: unresolved (not found)\n- docs/notes/spike-gr-code-trx.md: docs/notes/spike-gr-code-trx.md sha256 336b5b273dd9fbfb8df380c6096761cb31081537922c9e52315dbf0d5a694e71\n- tasks/D1/: unresolved (not found)\n- src/harness_bench/grade/correctness.py: src/harness_bench/grade/correctness.py sha256 40bfc8e9edbd1c6acc62df3944d1ce6554464becdbd9c03826cbcb21193013fd\n- graph neighbours: adr-0006-results-data-model, adr-0008-telemetry, adr-0009-model-gateway, adr-0010-untrusted-cell-output, adr-0013-native-cells, arch-harness-bench, coordination-finish-harness-bench, design-phase1-walking-skeleton, design-phase2-scripted-user, note-spike-s04-scripted-user, proposal-cross-harness-benchmarking, rulings-register, spec-harness-bench\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3CVQW02BTBPT12HSH1NARP9\nraw sha256: 6b6171b24d95c33d7652bef12c2ef2c5ab06963295276123b0a443e5aee11fbd\ncompiler model: claude-opus-5-5\nengine seconds: 0.005\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3CVQW02BTBPT12HSH1NARP9 for claude-code v1: 13 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "docs/notes/spike-gr-code-stryker.md (V2 frontmatter: id note-spike-gr-code-stryker, type decision-note, status accepted, owner \"@timianmalloo\", links to design-phase3-graders, review-by \"2026-10-09\", summary) records, each fact labelled Verified (observed, with the exact command and exit code) or Inferred: whether a dotnet-stryker package is in this host's offline NuGet cache (search the cache folder and `dotnet tool list -g`/`--local` without installing anything from the network)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "docs/notes/spike-gr-code-stryker.md (V2 frontmatter: id note-spike-gr-code-stryker, type decision-note, status accepted, owner \"@timianmalloo\", links to design-phase3-graders, review-by \"2026-10-09\", summary) records, each fact labelled Verified (observed, with the exact command and exit code) or Inferred: whether a dotnet-stryker package is in this host's offline NuGet cache (search the cache folder and `dotnet tool list -g`/`--local` without installing anything from the network)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "if absent, that fact is the spike's result and the note ends with the options for the Leader (an operator-approved one-time install of a named version, or the metric NA \"mutation tool not available\" in 0.4).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "if absent, that fact is the spike's result and the note ends with the options for the Leader (an operator-approved one-time install of a named version, or the metric NA \"mutation tool not available\" in 0.4)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "If a Stryker.NET build is available offline: the pinned version string, the command that prints it (the tool_versions probe), a run on tasks/D1's reference solution plus its hidden tests in a throwaway copy with the timeout settings pinned in a stryker-config.json, the report file it writes and the fields for killed, timeout, survived and no coverage, the wall time, and whether two runs give equal counts.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "If a Stryker.NET build is available offline: the pinned version string, the command that prints it (the tool_versions probe), a run on tasks/D1's reference solution plus its hidden tests in a throwaway copy with the timeout settings pinned in a stryker-config.json, the report file it writes and the fields for killed, timeout, survived and no coverage, the wall time, and whether two runs give equal counts."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "No network install is made",
+            "trace": {
+              "kind": "phrase",
+              "ref": "No network install is made"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "nothing outside a throwaway folder under C:\\Projects is written except the note",
+            "trace": {
+              "kind": "phrase",
+              "ref": "nothing outside a throwaway folder under C:\\Projects is written except the note"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "commit the note with git.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "commit the note with git."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message states the result in one line, the note's commit SHA, and each measured command with its exit code.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message states the result in one line, the note's commit SHA, and each measured command with its exit code."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "grade/mutation.py (slice c6b)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "grade/mutation.py (slice c6b)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any `dotnet tool install` or NuGet download from the network",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any `dotnet tool install` or NuGet download from the network"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "tasks/**",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tasks/**"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "src/**",
+            "trace": {
+              "kind": "phrase",
+              "ref": "src/**"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "docs/notes/spike-gr-code-stryker.md (V2 frontmatter: id note-spike-gr-code-stryker, type decision-note, status accepted, owner \"@timianmalloo\", links to design-phase3-graders, review-by \"2026-10-09\", summary) records, each fact labelled Verified (observed, with the exact command and exit code) or Inferred: whether a dotnet-stryker package is in this host's offline NuGet cache (search the cache folder and `dotnet tool list -g`/`--local` without installing anything from the network)",
+            "if absent, that fact is the spike's result and the note ends with the options for the Leader (an operator-approved one-time install of a named version, or the metric NA \"mutation tool not available\" in 0.4).",
+            "If a Stryker.NET build is available offline: the pinned version string, the command that prints it (the tool_versions probe), a run on tasks/D1's reference solution plus its hidden tests in a throwaway copy with the timeout settings pinned in a stryker-config.json, the report file it writes and the fields for killed, timeout, survived and no coverage, the wall time, and whether two runs give equal counts.",
+            "No network install is made",
+            "nothing outside a throwaway folder under C:\\Projects is written except the note",
+            "commit the note with git.",
+            "Your final message states the result in one line, the note's commit SHA, and each measured command with its exit code."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W3-GR-CODE slice c6a, the Stryker.NET spike for the mutation grader (docs/design/phase3-graders.md, sections \"Mutation\" and \"Catalog-version rule\" 3; rulings R-59 c4): measure, on this host, whether and how a pinned Stryker.NET runs offline against D1, and write the spike note. No grader code.",
+          "main_line_budget": "one slice of at most 18 minutes; commit the note as soon as its first result is measured, then extend it.\nGrounding: docs/design/phase3-graders.md (Mutation; Catalog-version rule 3); docs/notes/spike-gr-code-trx.md (how the dotnet oracle runs offline); tasks/D1/ (the reference and hidden tests); src/harness_bench/grade/correctness.py. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "grade/mutation.py (slice c6b)",
+            "any `dotnet tool install` or NuGet download from the network",
+            "tasks/**",
+            "src/**",
+            "bench run",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [
+          "adr-0006-results-data-model",
+          "adr-0008-telemetry",
+          "adr-0009-model-gateway",
+          "adr-0010-untrusted-cell-output",
+          "adr-0013-native-cells",
+          "arch-harness-bench",
+          "coordination-finish-harness-bench",
+          "design-phase1-walking-skeleton",
+          "design-phase2-scripted-user",
+          "note-spike-s04-scripted-user",
+          "proposal-cross-harness-benchmarking",
+          "rulings-register",
+          "spec-harness-bench"
+        ],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.005,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3CVQW02BTBPT12HSH1NARP9",
+        "raw_sha256": "6b6171b24d95c33d7652bef12c2ef2c5ab06963295276123b0a443e5aee11fbd",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "dotnet tool list -g"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--local"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "dotnet tool install"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase3-graders.md",
+            "reason": null,
+            "sha256": "ea4db9cd170dcaf00bf7f28ce0119db61a05b879c263d8547648c275a31fe0f4",
+            "status": "resolved",
+            "token": "docs/design/phase3-graders.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/spike-gr-code-stryker.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase3-graders.md",
+            "reason": null,
+            "sha256": "ea4db9cd170dcaf00bf7f28ce0119db61a05b879c263d8547648c275a31fe0f4",
+            "status": "resolved",
+            "token": "design-phase3-graders"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-g`/`--local"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/D1's"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stryker-config.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/mutation.py",
+            "reason": null,
+            "sha256": "a2994a35dd49e3a9ead7e19fb7d314c8c16b2df004e2192a79e2f2bce9f4fc05",
+            "status": "resolved",
+            "token": "grade/mutation.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/**"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/**"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/spike-gr-code-trx.md",
+            "reason": null,
+            "sha256": "336b5b273dd9fbfb8df380c6096761cb31081537922c9e52315dbf0d5a694e71",
+            "status": "resolved",
+            "token": "docs/notes/spike-gr-code-trx.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/D1/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/correctness.py",
+            "reason": null,
+            "sha256": "40bfc8e9edbd1c6acc62df3944d1ce6554464becdbd9c03826cbcb21193013fd",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/correctness.py"
           }
         ],
         "schema": "compiled-prompt/1",

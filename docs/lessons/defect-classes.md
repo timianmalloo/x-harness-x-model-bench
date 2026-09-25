@@ -357,6 +357,20 @@ summary: >-
 
 ---
 
+### GATE-RUN-A: a read-only gate run written by a concurrent build or git command
+- **Signature:** an archived benchmark run, which is write-once by design and whose bytes `bench verify` checks against `archive_files`, is written by a process that treats it as a working tree: a `dotnet build` or restore run in place, or a git command that refreshes `.git/index`. The run's integrity breaks silently until a gate-run test or `bench verify` reads it.
+- **Instances:**
+  - `2026-09-25` 11:09–11:10 PDT: about 1,900 `bin/obj` files across all six `row15-d1-1` cells were rewritten or created, while an Agy slice (rigor), a Grok slice (Stryker spike) and the Leader's default ring all ran. The rigor code builds only in copies, so the writer is **Inferred**: an exploratory command by one of the workers. The Leader restored from the scratch copy before capturing the restore metadata that would have named it. It was caught by `test_the_d1_gate_cells_conform_and_the_archive_is_unchanged`. 273 files were restored and 1,605 created files removed, each by its `archive_files` row hash.
+  - `2026-09-25` 01:25 PDT: `.git/index` of cells `35af…` and `c3d4…` changed after archiving (the same mtime is in the scratch copy made later). The original bytes are not recoverable, so `bench verify row15-d1-1` stays at exit 5 with these two findings (Flagged).
+- **Why it survives:** W3-GATE-RUNS made every worktree's tests read the primary checkout's real runs, which is right for coverage, but the folders are writable by any process of the user. A run's archive looks like a normal working tree to a build tool.
+- **Control:**
+  - Every batch gate runs `bench verify` on both gate runs; a new finding blocks the push.
+  - Every brief says to run no build, restore or git command under `runs/`.
+  - Tried and reverted: an OS-level deny of write on the archive folders (`icacls /deny (W,D,DC)`) also broke reads (`PermissionError` in `bench verify`).
+- **Status:** `partially-controlled` (a check and a rule, not a prevention); the upgrade is an in-process guard that refuses a `procs.run` whose cwd is under a gate run.
+
+---
+
 ### TRUTH-A: a ground-truth quantity whose human source is unavailable, re-sourced from a model under the human name
 - **Signature:** a measure defined against human labels (calibration agreement, a labelled question set) loses its human source. The labels are then produced by a model, and the report keeps the human name. It is a sibling of the plausible-wrong-number class: the value looks measured, but it measures model-model agreement.
 - **Instances:** `2026-09-25`, DR-CAL-1. The operator declined to label the 30 calibration items (R-58 had made them HUMAN). R-72 rejected model-authored labels and ruled the human half NOT_RECORDED `no human labels (operator declined 2026-09-25)`. Caught before any label was written.
