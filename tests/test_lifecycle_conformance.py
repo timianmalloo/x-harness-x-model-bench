@@ -96,6 +96,12 @@ SEEDED = {  # name -> (events, scores, the rule the replay must name)
     "prompt after the outcome (NoPromptAfterOutcome)":
         (GOOD[:4] + [GOOD[4], GOOD[6], GOOD[7], {"kind": "cell.prompt_sent", "cell_id": "a"}], [], "NoPromptAfterOutcome"),
     "launch after a stop (NoLaunchAfterStop)": ([GOOD[0], {"kind": "run.launch_stopped"}, GOOD[1]], [], "NoLaunchAfterStop"),
+    "launch after a run stop (NoLaunchAfterStop)":
+        ([GOOD[0], {"kind": "run.stopped", "code": "HB-RUN-006"}, GOOD[1]], [], "NoLaunchAfterStop"),
+    "a control applied twice (ControlAppliedOnce)":
+        ([GOOD[0], {"kind": "control.applied", "uuid": "f" * 32}] * 2, [], "ControlAppliedOnce"),
+    "a run stopped twice (RunStoppedOnce)":
+        ([GOOD[0], {"kind": "run.stopped", "code": "HB-RUN-006"}] * 2, [], "RunStoppedOnce"),
     "a second launch of one cell": (GOOD[:3] + [{"kind": "cell.launch_intent", "cell_id": "a"}], [], "WriteIntent"),
     "a working copy built after the process started":
         (_cell("cell.launch_intent", "attempt.process_started", "cell.workspace_built"), [], "workspace before process"),
@@ -125,6 +131,27 @@ def test_each_seeded_out_of_order_ledger_is_rejected_under_its_rule(name):
 def test_every_guard_of_the_table_has_a_seeded_case():
     seeded = {rule for _, _, rule in SEEDED.values()}
     assert {r for r in lifecycle.RULES if not any(s in r for s in seeded)} == set()
+
+
+STOPPED = GOOD[:6] + [  # golden (design 16.3 D6): an operator stop of a running cell, then a control after grading
+    {"kind": "control.applied", "uuid": "a" * 32, "control": "stop", "decision_id": None, "effect": "applied"},
+    {"kind": "run.launch_stopped", "code": "HB-RUN-006", "reason": "bench stop"},
+    {"kind": "run.stopped", "code": "HB-RUN-006", "decision_id": None},
+    {"kind": "control.applied", "uuid": "b" * 32, "control": "stop", "decision_id": None, "effect": "no-op (already stopped)"},
+    {"kind": "attempt.process_ended", "cell_id": "a", "ended_by": "terminate"},
+    {"kind": "cell.outcome", "cell_id": "a", "outcome": "stopped", "cause": None},
+    {"kind": "cell.archived", "cell_id": "a"},
+    {"kind": "cell.workspace_deleted", "cell_id": "a"},
+    {"kind": "control.applied", "uuid": "c" * 32, "control": "stop", "decision_id": None, "effect": "no-op (run ending)"},
+    {"kind": "run.completed"},
+]
+
+
+def test_a_stopped_run_replays_and_a_second_read_gives_the_same_verdict():  # LC (design 8.3): stop and control rows
+    lifecycle.replay(STOPPED, parallelism=1)
+    lifecycle.replay(list(STOPPED), parallelism=1)  # the replay keeps no state between reads: a resumed read agrees
+    with pytest.raises(lifecycle.ConformanceError, match="NoLaunchAfterStop"):
+        lifecycle.replay(STOPPED[:-1] + [{"kind": "cell.launch_intent", "cell_id": "b"}], parallelism=1)
 
 
 def test_parallelism_bound_is_enforced_by_the_replay():

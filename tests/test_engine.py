@@ -8,10 +8,12 @@ Every run's events are replayed against the model's phase-1 guards (lifecycle.re
 import ctypes
 import errno
 import json
+import logging
 import os
 import shutil
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import uuid
@@ -19,6 +21,8 @@ from concurrent.futures import Future
 from pathlib import Path
 
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from harness_bench import engine, host, ledger, lifecycle, plan
 from harness_bench.errors import BenchError
@@ -130,6 +134,379 @@ def _events(run_dir: Path) -> list[dict]:
 
 def _outcomes(events):
     return {e["cell_id"]: e for e in events if e["kind"] == "cell.outcome"}
+
+
+CONTROL_UID = "0123456789abcdef0123456789abcdef"
+CONTROL_EFFECTS = {"applied", "rejected (already resolved)", "rejected (invalid)", "no-op (already stopped)",
+                   "no-op (run ending)"}  # design 3: the closed effect set of control.applied
+
+
+def _control(uid: str, **over) -> dict:
+    return {"schema": "bench-control/1", "uuid": uid, "control": "stop", "decision_id": None, "option": None,
+            "requested_at": "2026-09-25T00:00:00Z", **over}
+
+
+def _stop_file(run_dir: Path, uid: str | None = None, body: str | None = None, name: str | None = None) -> Path:
+    """A control file written as `bench stop` writes it: a temp file, then os.replace (design 4.1)."""
+    uid = uid or uuid.uuid4().hex
+    folder = run_dir / "control"
+    folder.mkdir(parents=True, exist_ok=True)
+    target = folder / f"{name or uid}.json"
+    temp = folder / f"{name or uid}.json.tmp"
+    temp.write_text(json.dumps(_control(uid)) if body is None else body, encoding="utf-8")
+    os.replace(temp, target)
+    return target
+
+
+def _wait(predicate, limit: float = 20.0) -> None:
+    deadline = time.monotonic() + limit
+    while time.monotonic() < deadline and not predicate():
+        time.sleep(0.02)
+    assert predicate(), f"not reached within {limit} s"
+
+
+def _stop_and_wait(run_dir: Path) -> None:
+    """Called from a cell's worker thread: drop a stop file, return once the engine thread has consumed it."""
+    control = _stop_file(run_dir)
+    _wait(lambda: not control.exists())
+
+
+def _running_engine(base, p, launcher, on_ready, *, grace=1.0, grade=None):
+    """Start the engine on its own thread and return once on_ready(engine) holds (the point to stop at)."""
+    launcher.shutdown_grace = grace
+    config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
+                                 launchers={"fake": launcher}, build_workspace=_build_workspace, grade=grade)
+    eng = engine.Engine(p, config)
+    box = {}
+
+    def target():
+        try:
+            box["summary"] = eng.run()
+        except BenchError as exc:
+            box["error"] = exc
+
+    thread = threading.Thread(target=target, daemon=True, name="engine-under-test")
+    thread.start()
+    _wait(lambda: on_ready(eng))
+    return eng, config, thread, box
+
+
+def _confirm(p: dict, base: Path) -> dict:
+    """Freeze the plan under runs/<id>/ so `bench status` can read the run while and after it runs."""
+    p["profiles"] = {"fake": {"profile_hash": "", "usage_source": "acp_turn", "auxiliary_models": [],
+                              "record_glob": "projects/**/*.jsonl"}}
+    p["plan_hash"] = plan.plan_hash(p)
+    plan.confirm(base / "runs" / p["run_id"], p)
+    return p
+
+
+def _markers(base: Path, p: dict, name: str) -> list[Path]:
+    return [m for m in (base / "cells" / p["run_id"]).glob(f"*/ws/{name}") if m.stat().st_size]
+
+
+def test_stop_ends_stubborn_trees_within_30s(base):  # R10-1 and R10-3: real Job Objects, two children that ignore it
+    from harness_bench import status
+    p = _confirm(_plan(n_cells=2, parallelism=2), base)
+    launcher = FakeLauncher({c["label"]: {"mode": "stubborn"} for c in p["cells"]})
+    _, cfg, thread, box = _running_engine(base, p, launcher, lambda _: len(_markers(base, p, ".fake-stubborn-child.pid")) == 2,
+                                          grace=10.0)
+    children = [(pid, host.creation_time(pid)) for pid in
+                (int(m.read_text(encoding="utf-8")) for m in _markers(base, p, ".fake-stubborn-child.pid"))]
+    _stop_file(cfg.run_dir)
+    started = time.monotonic()
+    phase = None
+    while phase != "stopped" and time.monotonic() - started <= 30:  # R10-3: what `bench status` shows (UXA-10)
+        phase = status.build(cfg.run_dir).phase
+        time.sleep(0.1)
+    shown = time.monotonic() - started
+    thread.join(30)
+    assert not thread.is_alive(), "the engine did not stop the stubborn process trees within 30 s"
+    events = _events(cfg.run_dir)
+    applied = next(e for e in events if e["kind"] == "control.applied")
+    outs = [e for e in events if e["kind"] == "cell.outcome"]
+    stop_s = (max(e["mono_ns"] for e in outs) - applied["mono_ns"]) / 1e9  # the engine's clock: the ledger's mono_ns
+    print(f"\nR10-1 measured: last cell.outcome{{stopped}} {stop_s:.2f} s after control.applied; "
+          f"bench status showed stopped {shown:.2f} s after the control file was written")
+    assert applied["effect"] == "applied"
+    assert phase == "stopped" and shown <= 30
+    assert [e["outcome"] for e in outs] == ["stopped", "stopped"] and stop_s <= 30
+    assert [e["ended_by"] for e in events if e["kind"] == "attempt.process_ended"] == ["terminate", "terminate"]
+    assert all(not host.process_alive(pid, created) for pid, created in children)
+    assert len([e for e in events if e["kind"] == "cell.archived"]) == 2  # US-45: every started cell is archived
+    assert box["summary"].exit_code == 3  # design 5, step 4: a stopped run exits 3
+    lifecycle.replay(events, parallelism=2)
+
+
+def test_a_second_stop_is_recorded_as_a_no_op(base):  # R10-8; a re-read of the ledger rebuilds the engine's control state
+    p = _plan(n_cells=1)
+    launcher = FakeLauncher({p["cells"][0]["label"]: {"mode": "stubborn"}})
+    eng, cfg, thread, _ = _running_engine(base, p, launcher, lambda _: bool(_markers(base, p, ".fake-stubborn-child.pid")))
+    _stop_file(cfg.run_dir)
+    _stop_file(cfg.run_dir)
+    thread.join(30)
+    assert not thread.is_alive()
+    rows = _events(cfg.run_dir)
+    controls = [e for e in rows if e["kind"] == "control.applied"]
+    assert [e["code"] for e in rows if e["kind"] == "run.stopped"] == ["HB-RUN-006"]
+    assert sorted(e["effect"] for e in controls) == ["applied", "no-op (already stopped)"]
+    assert {e["uuid"] for e in controls} == eng.applied_controls  # the dedup set, rebuilt from control.applied (design 4.1)
+    assert next(e["code"] for e in rows if e["kind"] == "run.stopped") == eng.run_stopped
+    lifecycle.replay(rows, parallelism=1)
+
+
+@pytest.fixture
+def reader(base):
+    """An engine with only its events writer: the control reader driven on this thread, with no loop."""
+    p = _plan(n_cells=1)
+    run_dir = base / "runs" / p["run_id"]
+    run_dir.mkdir(parents=True)
+    eng = engine.Engine(p, engine.EngineConfig(run_dir, base / "cells", {"fake": FakeLauncher({})}, _build_workspace, None))
+    eng.writers["events"] = ledger.SegmentWriter.create(run_dir / "events", "engine-1")
+    yield eng
+    eng.writers["events"].close()
+
+
+MALFORMED = {  # name -> (file stem or None for the uuid, body): R10-9's Postel cases
+    "an extra key": (None, json.dumps({**_control(CONTROL_UID), "extra": 1})),
+    "a missing key": (None, json.dumps({k: v for k, v in _control(CONTROL_UID).items() if k != "option"})),
+    "over 4 KiB": (None, json.dumps(_control(CONTROL_UID)) + " " * 5000),  # valid JSON: only the size refuses it
+    "not JSON": (None, "{not json"),
+    "a stem that is not the uuid": ("f" * 32, json.dumps(_control(CONTROL_UID))),
+    "a uuid outside the grammar": ("XYZ", json.dumps(_control("XYZ"))),
+    "a stop carrying an option": (None, json.dumps(_control(CONTROL_UID, option="continue"))),
+    "a time that is not UTC ISO": (None, json.dumps(_control(CONTROL_UID, requested_at="yesterday"))),
+}
+
+
+@pytest.mark.parametrize("case", sorted(MALFORMED))
+def test_a_malformed_control_file_is_quarantined(reader, case, caplog):  # R10-9
+    name, body = MALFORMED[case]
+    path = _stop_file(reader.cfg.run_dir, uid=CONTROL_UID, body=body, name=name)
+    with caplog.at_level(logging.WARNING, logger="harness_bench.engine"):
+        reader._read_controls()
+    assert not path.exists() and path.with_suffix(".rejected").exists()
+    assert _events(reader.cfg.run_dir) == [] and reader.run_stopped is None and reader.stopped is None
+    assert [(r.message, r.error_code, r.detail) for r in caplog.records] == [("control rejected", "HB-USR-002", path.name)]
+
+
+def test_a_control_file_that_cannot_be_read_is_retried_next_tick(reader, monkeypatch):  # R10-9b (PE-9)
+    path = _stop_file(reader.cfg.run_dir)
+    real = Path.read_bytes
+
+    def held(self):
+        if self == path:
+            raise PermissionError(13, "held by the indexer")
+        return real(self)
+
+    monkeypatch.setattr(Path, "read_bytes", held)
+    reader._read_controls()
+    assert path.exists() and not path.with_suffix(".rejected").exists() and _events(reader.cfg.run_dir) == []
+    monkeypatch.undo()
+    reader._read_controls()
+    assert not path.exists()
+    assert [(e["kind"], e.get("effect")) for e in _events(reader.cfg.run_dir)] == [
+        ("control.applied", "applied"), ("run.launch_stopped", None), ("run.stopped", None)]  # design 5, steps 1-3
+
+
+def test_control_file_is_applied_once_even_if_delete_fails(reader, monkeypatch):  # design 4.1: the dedup set
+    path = _stop_file(reader.cfg.run_dir)
+    real = Path.unlink
+
+    def held(self, missing_ok=False):
+        if self == path:
+            raise PermissionError(13, "held by antivirus")
+        return real(self, missing_ok=missing_ok)
+
+    monkeypatch.setattr(Path, "unlink", held)
+    reader._read_controls()
+    reader._read_controls()
+    assert path.exists()
+    assert [e["kind"] for e in _events(reader.cfg.run_dir)] == ["control.applied", "run.launch_stopped", "run.stopped"]
+    monkeypatch.undo()
+    reader._read_controls()
+    assert not path.exists() and len(_events(reader.cfg.run_dir)) == 3  # deleted with no second row
+
+
+_JSON = st.none() | st.booleans() | st.integers() | st.text(max_size=12) | st.lists(st.integers(), max_size=2) | st.sampled_from(
+    ["stop", "answer", "bench-control/1", "D1", "D0", "continue", "2026-09-25T00:00:00Z", "2026-99-99T00:00:00Z",
+     CONTROL_UID])
+
+
+@settings(max_examples=60, deadline=None)
+@given(over=st.dictionaries(st.sampled_from([*_control(CONTROL_UID), "extra"]), _JSON, max_size=4),
+       drop=st.sets(st.sampled_from(list(_control(CONTROL_UID))), max_size=2), stem_is_uuid=st.booleans())
+def test_any_control_object_never_raises_and_keeps_the_closed_effects(over, drop, stem_is_uuid):  # design 16.3 D2
+    with tempfile.TemporaryDirectory() as tmp:
+        p = _plan(n_cells=1)
+        run_dir = Path(tmp) / "run"
+        run_dir.mkdir()
+        eng = engine.Engine(p, engine.EngineConfig(run_dir, Path(tmp) / "cells", {"fake": FakeLauncher({})},
+                                                   _build_workspace, None))
+        eng.writers["events"] = ledger.SegmentWriter.create(run_dir / "events", "engine-1")
+        try:
+            data = {k: v for k, v in {**_control(CONTROL_UID), **over}.items() if k not in drop}
+            _stop_file(run_dir, body=json.dumps(data), name=CONTROL_UID if stem_is_uuid else "e" * 32)
+            eng._read_controls()
+            rows = _events(run_dir)
+        finally:
+            eng.writers["events"].close()
+        controls = [e for e in rows if e["kind"] == "control.applied"]
+        assert {e["effect"] for e in controls} <= CONTROL_EFFECTS and {e["control"] for e in controls} <= {"stop", "answer"}
+        assert len(controls) <= 1 and not list((run_dir / "control").glob("*.json"))  # consumed or quarantined
+        assert ([e["kind"] for e in rows if e["kind"] == "run.stopped"] == ["run.stopped"]) == (
+            [e["effect"] for e in controls] == ["applied"])
+
+
+def test_a_failed_append_of_a_control_row_ends_the_run_incomplete_not_raised(base, monkeypatch):  # design 11
+    real = ledger.SegmentWriter.append
+
+    def failing(self, record):
+        if record.get("kind") == "control.applied":
+            raise OSError("disk full")
+        return real(self, record)
+
+    p = _plan(n_cells=1)
+    launcher = FakeLauncher({p["cells"][0]["label"]: {"hang": True}})
+    eng, cfg, thread, box = _running_engine(base, p, launcher, lambda e: any(a.prompt_mono for a in list(e.active.values())))
+    started = next(e for e in _events(cfg.run_dir) if e["kind"] == "attempt.process_started")
+    monkeypatch.setattr(ledger.SegmentWriter, "append", failing)
+    _stop_file(cfg.run_dir)
+    thread.join(30)
+    assert not thread.is_alive()
+    assert "error" not in box, box.get("error")  # the ledger broke: the loop aborts and drains, never raises
+    assert box["summary"].exit_code == 3 and eng.broken
+    assert not host.process_alive(started["pid"], started["created_at"])  # the live cell was killed on the way out
+
+
+def test_a_stop_during_the_build_never_spawns(base):  # R10-5
+    p = _plan(n_cells=1)
+    launcher = FakeLauncher({})
+    seeded = []
+    real_seed = launcher.seed
+    launcher.seed = lambda home, model: (seeded.append(home), real_seed(home, model))
+    run_dir = base / "runs" / p["run_id"]
+
+    def build_then_stop(cell, cell_dir):
+        info = _build_workspace(cell, cell_dir)
+        _stop_and_wait(run_dir)
+        return info
+
+    summary, events, _ = _run(base, p, launcher, build_workspace=build_then_stop)
+    kinds = [e["kind"] for e in events if e.get("cell_id")]
+    out = _outcomes(events)[p["cells"][0]["cell_id"]]
+    assert "attempt.process_started" not in kinds and seeded == []  # no spawn, and no login copied for one
+    assert (out["outcome"], out["cause"], out["code"]) == ("stopped", None, None)
+    assert "cell.archived" in kinds and summary.exit_code == 3
+
+
+def test_a_stop_after_the_build_check_is_caught_at_the_spawn(base):  # design 11: the spawn linearization point
+    p = _plan(n_cells=1)
+    launcher = FakeLauncher({})
+    real_seed = launcher.seed
+    run_dir = base / "runs" / p["run_id"]
+    launcher.seed = lambda home, model: (real_seed(home, model), _stop_and_wait(run_dir))
+    summary, events, _ = _run(base, p, launcher)
+    out = _outcomes(events)[p["cells"][0]["cell_id"]]
+    assert not [e for e in events if e["kind"] == "attempt.process_started"]
+    assert (out["outcome"], out["cause"]) == ("stopped", None) and summary.exit_code == 3
+
+
+def test_a_stop_during_the_spawn_terminates_at_once(base, monkeypatch):  # R10-10 (TA m3)
+    from harness_bench import procs
+    p = _plan(n_cells=1)
+    run_dir = base / "runs" / p["run_id"]
+    real_spawn = procs.spawn
+
+    def spawn_then_stop(*args, **kwargs):
+        cp = real_spawn(*args, **kwargs)
+        _stop_and_wait(run_dir)
+        return cp
+
+    monkeypatch.setattr(procs, "spawn", spawn_then_stop)
+    summary, events, _ = _run(base, p, FakeLauncher({}), shutdown_grace=6.0)
+    out = _outcomes(events)[p["cells"][0]["cell_id"]]
+    assert out["outcome"] == "stopped" and not [e for e in events if e["kind"] == "cell.prompt_sent"]
+    assert next(e for e in events if e["kind"] == "attempt.process_ended")["ended_by"] == "terminate"  # no grace: no prompt
+    assert summary.exit_code == 3
+
+
+def test_an_operator_stop_gives_the_grace_before_the_kill(base):  # R21-4 through bench stop's control file
+    p = _plan(n_cells=1)
+    launcher = FakeLauncher({p["cells"][0]["label"]: {"mode": "on_cancel"}})
+    _, cfg, thread, box = _running_engine(base, p, launcher, lambda _: bool(_markers(base, p, ".fake-prompt.txt")), grace=6.0)
+    _stop_file(cfg.run_dir)
+    thread.join(30)
+    assert not thread.is_alive()
+    events = _events(cfg.run_dir)
+    out = _outcomes(events)[p["cells"][0]["cell_id"]]
+    assert (out["outcome"], out["cause"], out["stop_reason"]) == ("stopped", None, "cancelled")
+    assert next(e for e in events if e["kind"] == "attempt.process_ended")["ended_by"] == "grace"
+    assert box["summary"].exit_code == 3
+
+
+def test_an_ended_turn_keeps_its_outcome_under_a_stop(base):  # R10-11, R21-2 (PE-2)
+    p = _plan(n_cells=1)
+    launcher = FakeLauncher({p["cells"][0]["label"]: {"linger": 2}})  # the turn ends, then the process lingers
+    _, cfg, thread, box = _running_engine(base, p, launcher, lambda e: any(a.ended for a in list(e.active.values())),
+                                          grace=6.0)
+    _stop_file(cfg.run_dir)
+    thread.join(30)
+    assert not thread.is_alive()
+    events = _events(cfg.run_dir)
+    applied = next(e for e in events if e["kind"] == "control.applied")
+    ended = next(e for e in events if e["kind"] == "attempt.process_ended")
+    out = _outcomes(events)[p["cells"][0]["cell_id"]]
+    assert applied["effect"] == "applied" and [e["kind"] for e in events].count("run.stopped") == 1
+    assert (out["outcome"], out["cause"]) == ("completed", None)
+    assert ended["ended_by"] == "exit" and ended["mono_ns"] - applied["mono_ns"] <= 6_000_000_000  # within the grace
+    assert box["summary"].exit_code == 3
+    lifecycle.replay(events, parallelism=1)
+
+
+def test_a_stop_after_the_breaker_is_still_a_run_stop(base):  # R10-12 (S-1, PE-1)
+    from harness_bench import status
+    p = _confirm(_plan(n_cells=5, parallelism=2), base)
+    slow, *fast = p["cells"]
+    launcher = FakeLauncher({slow["label"]: {"hang": True}, **{c["label"]: {"mode": "provider_error"} for c in fast}})
+    _, cfg, thread, box = _running_engine(base, p, launcher, lambda e: e.stopped is not None)
+    _stop_file(cfg.run_dir)
+    thread.join(30)
+    assert not thread.is_alive()
+    events = _events(cfg.run_dir)
+    assert [e["code"] for e in events if e["kind"] == "run.launch_stopped"] == ["HB-CELL-108"]
+    assert [e["code"] for e in events if e["kind"] == "run.stopped"] == ["HB-RUN-006"]
+    assert _outcomes(events)[slow["cell_id"]]["outcome"] == "stopped"
+    s = status.build(cfg.run_dir)
+    assert (s.phase, s.stop_code) == ("stopped", "HB-CELL-108")  # R-3: stop_code stays the launch stop's code
+    assert box["summary"].exit_code == 3
+    lifecycle.replay(events, parallelism=2)
+
+
+def test_a_late_control_is_recorded_not_lost(base):  # R10-13 (PE-10, Simplifier N-2)
+    p = _plan(n_cells=1)
+    run_dir = base / "runs" / p["run_id"]
+    summary, events, _ = _run(base, p, FakeLauncher({}), grade=lambda d: (_stop_file(d), {"cells_graded": 1})[1])
+    controls = [e for e in events if e["kind"] == "control.applied"]
+    assert [e["effect"] for e in controls] == ["no-op (run ending)"]
+    assert [e["kind"] for e in events[-2:]] == ["control.applied", "run.completed"]  # after grading, before the end
+    assert not list((run_dir / "control").iterdir())
+    assert "run.stopped" not in [e["kind"] for e in events] and summary.exit_code == 0
+
+
+def test_stop_outranks_a_provider_error(base):  # R10-14 (TA M4)
+    p = _plan(n_cells=1)
+    launcher = FakeLauncher({p["cells"][0]["label"]: {"mode": "provider_error", "hang": True}})
+    records = lambda _: [r for r in (base / "cells" / p["run_id"]).rglob("projects/**/*.jsonl") if r.stat().st_size]
+    _, cfg, thread, box = _running_engine(base, p, launcher, records)
+    _stop_file(cfg.run_dir)
+    thread.join(30)
+    assert not thread.is_alive()
+    events = _events(cfg.run_dir)
+    out = _outcomes(events)[p["cells"][0]["cell_id"]]
+    assert (out["outcome"], out["cause"], out["code"]) == ("stopped", None, None)
+    archived = [r.read_text(encoding="utf-8") for r in (cfg.run_dir / "archive").rglob("projects/**/*.jsonl")]
+    assert any("isApiErrorMessage" in text for text in archived)  # the provider error was there to outrank
+    assert box["summary"].exit_code == 3
 
 
 def test_the_engine_keeps_no_dead_helpers_or_literals(base):  # T1-17 (Simplifier minors)
@@ -1189,6 +1566,33 @@ def test_keep_awake_is_held_through_a_stop(base, monkeypatch):
     assert [e["code"] for e in events if e["kind"] == "run.launch_stopped"] == ["HB-RUN-006"]
     assert _outcomes(events)[p["cells"][0]["cell_id"]]["outcome"] == "completed"
     assert summary.exit_code == 3
+
+
+def test_keep_awake_is_held_through_an_operator_stop(base, monkeypatch):  # R10-7a, through bench stop's control file
+    p = _plan(n_cells=2, parallelism=1)
+    config = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
+                                 launchers={"fake": FakeLauncher({p["cells"][0]["label"]: {"hang": True}})},
+                                 build_workspace=_build_workspace, grade=None)
+    eng = engine.Engine(p, config)
+    calls = []
+    monkeypatch.setattr(host, "keep_awake", lambda flag: calls.append((flag, len(eng.active), eng.stopped)))
+    real_tick = eng.on_tick
+
+    def stop_while_running():
+        real_tick()
+        if any(a.prompt_mono for a in eng.active.values()) and not (config.run_dir / "control").exists():
+            _stop_file(config.run_dir)  # once: the reader removes the file, not the folder
+
+    eng.on_tick = stop_while_running
+    box = {}
+    thread = threading.Thread(target=lambda: box.setdefault("summary", eng.run()), daemon=True)
+    thread.start()
+    thread.join(30)
+    assert not thread.is_alive()
+    events = _events(config.run_dir)
+    assert calls == [(True, 0, None), (False, 0, "HB-RUN-006")]  # released only after every stopped worker ended
+    assert [e["outcome"] for e in events if e["kind"] == "cell.outcome"] == ["stopped"]
+    assert box["summary"].exit_code == 3
 
 
 def test_keep_awake_is_released_when_the_run_raises(base, monkeypatch):

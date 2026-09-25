@@ -17,6 +17,8 @@ from dataclasses import dataclass
 UNMAPPED = "unmapped transition"
 WRITE_INTENT_ONCE = "WriteIntent: exactly once, first"
 NO_LAUNCH_AFTER_STOP = "NoLaunchAfterStop"
+CONTROL_APPLIED_ONCE = "ControlAppliedOnce"
+RUN_STOPPED_ONCE = "RunStoppedOnce"
 FOLLOWS_INTENT = "every transition follows cell.launch_intent"
 AT_MOST_ONCE = "each transition at most once per cell (AtMostOnePrompt, one attempt in phase 1)"
 PARALLELISM_BOUND = "ParallelismBound"
@@ -62,6 +64,8 @@ TABLE: dict[str, Transition] = {
     "cell.workspace_kept": Transition("(delete refused: archive kept, workspace kept)", "engine", after=("cell.archived",),
                                       after_rule="NothingDeletedUnarchived"),
     "run.launch_stopped": Transition("(no further WriteIntent)", "engine"),
+    "control.applied": Transition("ApplyStop / ApplyAnswer (controlApplied)", "engine"),
+    "run.stopped": Transition("ApplyStop", "engine"),
     "run.completed": Transition("(run end)", "engine"),
     "grading.started": Transition("GradeStart", "grading"),
     "grading.completed": Transition("GradeEnd", "grading"),
@@ -69,7 +73,8 @@ TABLE: dict[str, Transition] = {
     "ledger.tail_repaired": Transition("(ledger)", "ledger"),
 }
 ENGINE_TRANSITIONS = frozenset(k for k, t in TABLE.items() if t.writer == "engine")
-RULES = (UNMAPPED, WRITE_INTENT_ONCE, NO_LAUNCH_AFTER_STOP, FOLLOWS_INTENT, AT_MOST_ONCE, PARALLELISM_BOUND,
+RULES = (UNMAPPED, WRITE_INTENT_ONCE, NO_LAUNCH_AFTER_STOP, CONTROL_APPLIED_ONCE, RUN_STOPPED_ONCE,
+         FOLLOWS_INTENT, AT_MOST_ONCE, PARALLELISM_BOUND,
          NO_OUTCOME_WHILE_RUNNING, NO_ARCHIVE_WHILE_LIVE, ARCHIVED_CELLS_GET_GRADED, GRADED_ONCE_PER_PASS,
          *sorted({r for t in TABLE.values() for r in (t.after_rule, t.not_after_rule) if r}))
 
@@ -89,6 +94,8 @@ def replay(events: list[dict], parallelism: int, scores: list[dict] = ()) -> Non
     seen: dict[str, list[str]] = defaultdict(list)
     running: set[str] = set()
     stopped = False
+    run_stopped = False
+    applied_controls: set[str] = set()
     archived_at_start: dict[str, set[str]] = {}  # grading_id -> cells archived when the pass started
 
     def fail(cell: str, rule: str, kind: str) -> None:
@@ -100,6 +107,16 @@ def replay(events: list[dict], parallelism: int, scores: list[dict] = ()) -> Non
         if t is None:
             raise ConformanceError(f"{UNMAPPED} {kind!r} (not in the lifecycle table)")
         if kind == "run.launch_stopped":
+            stopped = True
+        if kind == "control.applied":
+            uid = e["uuid"]
+            if uid in applied_controls:
+                raise ConformanceError(f"{CONTROL_APPLIED_ONCE}: {uid}")
+            applied_controls.add(uid)
+        if kind == "run.stopped":
+            if run_stopped:
+                raise ConformanceError(RUN_STOPPED_ONCE)
+            run_stopped = True
             stopped = True
         if kind == "grading.started":
             archived_at_start[e["grading_id"]] = {c for c, d in seen.items() if "cell.archived" in d}

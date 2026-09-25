@@ -187,5 +187,168 @@
     "find": "now < a.kill_deadline or a.ended\n",
     "replace": "now < a.kill_deadline or a.ended or a.terminated\n",
     "tests": ["tests/test_engine.py::test_hard_kill_retries_until_the_job_is_empty"]
+  },
+  {
+    "name": "a control file applied twice",
+    "file": "src/harness_bench/engine.py",
+    "find": "            if uid in self.applied_controls:\n",
+    "replace": "            if False:\n",
+    "tests": ["tests/test_engine.py::test_control_file_is_applied_once_even_if_delete_fails"]
+  },
+  {
+    "name": "a second stop applied again",
+    "file": "src/harness_bench/engine.py",
+    "find": "            effect = (\"no-op (run ending)\" if ending else \"no-op (already stopped)\" if self.run_stopped\n",
+    "replace": "            effect = (\"no-op (run ending)\" if ending else \"no-op (already stopped)\" if False\n",
+    "tests": ["tests/test_engine.py::test_a_second_stop_is_recorded_as_a_no_op"]
+  },
+  {
+    "name": "a cell spawned after the stop",
+    "file": "src/harness_bench/engine.py",
+    "find": "            if a.kill_reason is not None:  # the stop won before the spawn linearization point\n                return procs.SpawnError(\"stopped before spawn\", None)\n",
+    "replace": "            pass\n",
+    "tests": ["tests/test_engine.py::test_a_stop_after_the_build_check_is_caught_at_the_spawn"]
+  },
+  {
+    "name": "a stop during the build reaches the seed",
+    "file": "src/harness_bench/engine.py",
+    "find": "        if self.active[cid].cancel.is_set():\n",
+    "replace": "        if False:\n",
+    "tests": ["tests/test_engine.py::test_a_stop_during_the_build_never_spawns"]
+  },
+  {
+    "name": "a spawn that raced the stop is not terminated",
+    "file": "src/harness_bench/engine.py",
+    "find": "            if a.kill_reason is not None:  # the stop raced a spawn that had already passed its check\n                a.terminated = True\n                _job_query(cp.job.terminate, None)\n",
+    "replace": "            pass\n",
+    "tests": ["tests/test_engine.py::test_a_stop_during_the_spawn_terminates_at_once"]
+  },
+  {
+    "name": "the grace skipped on stop",
+    "file": "src/harness_bench/engine.py",
+    "find": "        self._kill_all(\"stop\")\n",
+    "replace": "        self._kill_all(\"stop\")\n        self._check_kills(float(\"inf\"))\n",
+    "tests": ["tests/test_engine.py::test_an_operator_stop_gives_the_grace_before_the_kill"]
+  },
+  {
+    "name": "run.stopped not recorded",
+    "file": "src/harness_bench/engine.py",
+    "find": "        self._append_now(\"events\", {\"kind\": \"run.stopped\", \"code\": \"HB-RUN-006\", \"decision_id\": None})\n",
+    "replace": "",
+    "tests": ["tests/test_engine.py::test_a_second_stop_is_recorded_as_a_no_op"]
+  },
+  {
+    "name": "run.stopped skipped when launching was already stopped",
+    "file": "src/harness_bench/engine.py",
+    "find": "    def _apply_stop(self) -> None:\n",
+    "replace": "    def _apply_stop(self) -> None:\n        if self.stopped:\n            return\n",
+    "tests": ["tests/test_engine.py::test_a_stop_after_the_breaker_is_still_a_run_stop"],
+    "timeout": 240
+  },
+  {
+    "name": "the hard floor removed",
+    "file": "src/harness_bench/engine.py",
+    "find": "                a.terminated = True\n                _job_query(a.proc.job.terminate, None)  # retry on later ticks while the job remains active\n",
+    "replace": "                pass\n",
+    "tests": ["tests/test_engine.py::test_stop_ends_stubborn_trees_within_30s"],
+    "timeout": 240
+  },
+  {
+    "name": "the final control pass after grading removed",
+    "file": "src/harness_bench/engine.py",
+    "find": "                self._read_controls(ending=True)\n",
+    "replace": "",
+    "tests": ["tests/test_engine.py::test_a_late_control_is_recorded_not_lost"]
+  },
+  {
+    "name": "stop precedence dropped",
+    "file": "src/harness_bench/engine.py",
+    "find": "        cause = None if kill_reason == \"stop\" else self._classify(",
+    "replace": "        cause = self._classify(",
+    "tests": ["tests/test_engine.py::test_stop_outranks_a_provider_error"]
+  },
+  {
+    "name": "the ended guard dropped from the kill",
+    "file": "src/harness_bench/engine.py",
+    "find": "            if a.ended or a.kill_reason:\n",
+    "replace": "            if a.kill_reason:\n",
+    "tests": ["tests/test_engine.py::test_an_ended_turn_keeps_its_outcome_under_a_stop"]
+  },
+  {
+    "name": "power request released at an operator stop",
+    "file": "src/harness_bench/engine.py",
+    "find": "        self._kill_all(\"stop\")\n",
+    "replace": "        host.keep_awake(False)\n        self._kill_all(\"stop\")\n",
+    "tests": ["tests/test_engine.py::test_keep_awake_is_held_through_an_operator_stop"]
+  },
+  {
+    "name": "a stopped run exits 0",
+    "file": "src/harness_bench/engine.py",
+    "find": "and not self.run_stopped  # a stopped run exits 3 (design 5)",
+    "replace": "# a stopped run exits 3 (design 5)",
+    "tests": ["tests/test_engine.py::test_a_stop_during_the_build_never_spawns"]
+  },
+  {
+    "name": "a control append failure raises out of the run",
+    "file": "src/harness_bench/engine.py",
+    "find": "            except BenchError:  # the ledger broke (self.broken): the loop now kills, aborts and drains; the file stays\n                return\n",
+    "replace": "            except BenchError:\n                raise\n",
+    "tests": ["tests/test_engine.py::test_a_failed_append_of_a_control_row_ends_the_run_incomplete_not_raised"]
+  },
+  {
+    "name": "a malformed control file not quarantined",
+    "file": "src/harness_bench/engine.py",
+    "find": "                    path.replace(path.with_suffix(\".rejected\"))\n",
+    "replace": "                    pass\n",
+    "tests": ["tests/test_engine.py::test_a_malformed_control_file_is_quarantined"]
+  },
+  {
+    "name": "an unreadable control file raises",
+    "file": "src/harness_bench/engine.py",
+    "find": "                raw = path.read_bytes()\n            except OSError as exc:\n",
+    "replace": "                raw = path.read_bytes()\n            except KeyError as exc:\n",
+    "tests": ["tests/test_engine.py::test_a_control_file_that_cannot_be_read_is_retried_next_tick"]
+  },
+  {
+    "name": "stopped phase absent from status",
+    "file": "src/harness_bench/status.py",
+    "find": "PHASE = (\"starting\", \"running\", \"stopping\", \"stopped\")",
+    "replace": "PHASE = (\"starting\", \"running\", \"stopping\")",
+    "tests": ["tests/test_status.py::test_status_shows_stopped_with_counts"]
+  },
+  {
+    "name": "stopping phase never shown",
+    "file": "src/harness_bench/status.py",
+    "find": "        phase = \"stopped\" if launched <= with_outcome else \"stopping\"\n",
+    "replace": "        phase = \"stopped\"\n",
+    "tests": ["tests/test_status.py::test_status_shows_stopping_while_a_launched_cell_has_no_outcome"]
+  },
+  {
+    "name": "bench stop writes in place",
+    "file": "src/harness_bench/cli.py",
+    "find": "    os.replace(temp, target)\n",
+    "replace": "    target.write_bytes(temp.read_bytes())\n",
+    "tests": ["tests/test_cli.py::test_stop_writes_an_atomic_control_file"]
+  },
+  {
+    "name": "bench stop accepts a run that is not running",
+    "file": "src/harness_bench/cli.py",
+    "find": "    if not oslock.is_held(run_dir / \".lock\"):\n        completion = status.build(run_dir).completion\n",
+    "replace": "    if False:\n        completion = status.build(run_dir).completion\n",
+    "tests": ["tests/test_cli.py::test_stop_refuses_unknown_and_unlocked_runs"]
+  },
+  {
+    "name": "replay accepts a control applied twice",
+    "file": "src/harness_bench/lifecycle.py",
+    "find": "            if uid in applied_controls:\n",
+    "replace": "            if False:\n",
+    "tests": ["tests/test_lifecycle_conformance.py::test_each_seeded_out_of_order_ledger_is_rejected_under_its_rule"]
+  },
+  {
+    "name": "replay accepts a run stopped twice",
+    "file": "src/harness_bench/lifecycle.py",
+    "find": "            if run_stopped:\n",
+    "replace": "            if False:\n",
+    "tests": ["tests/test_lifecycle_conformance.py::test_each_seeded_out_of_order_ledger_is_rejected_under_its_rule"]
   }
 ]

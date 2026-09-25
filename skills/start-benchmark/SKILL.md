@@ -58,10 +58,11 @@ Pause only for the plan confirmation (stage 2) and for decision requests. `bench
 
 ## Reading `bench-status/1`
 
-Fields: `schema` (`bench-status/1`), `run_id`, `checked_at`, `liveness` (`alive` · `stalled` · `not running`), `completion` (`complete` · `in progress` · `incomplete`), `phase` (`starting` · `running`), `stop_code`, `cells_total`, `cells_ended`, `running[]` (`cell_id`, `label`, `elapsed_s`, `budget_s`, `killing`), `outcomes` (`completed` · `timed_out` · `stopped` · `skipped (decision)` · `failed` · `no outcome` · `not started`), `last_update_ms`, `validity`, `causes` (cause codes), `decisions`, `graded`, `lock_age_s`.
+Fields: `schema` (`bench-status/1`), `run_id`, `checked_at`, `liveness` (`alive` · `stalled` · `not running`), `completion` (`complete` · `in progress` · `incomplete`), `phase` (`starting` · `running` · `stopping` · `stopped`), `stop_code`, `cells_total`, `cells_ended`, `running[]` (`cell_id`, `label`, `elapsed_s`, `budget_s`, `killing`), `outcomes` (`completed` · `timed_out` · `stopped` · `skipped (decision)` · `failed` · `no outcome` · `not started`), `last_update_ms`, `validity`, `causes` (cause codes), `decisions`, `graded`, `lock_age_s`.
 
 - `alive`: report progress (`cells_ended`/`cells_total`, running cells against their budgets) and keep watching.
 - `phase: starting`: the run has begun but no cell has reached its process yet (workspace build, spawn, handshake); `elapsed_s` on any listed cell is 0 until its prompt is sent. `phase: running`: at least one cell's process has started; it never reverts to `starting`.
+- `phase: stopping`: an operator stop was recorded and launched cells are still ending. `phase: stopped`: every launched cell has an outcome. After `bench stop <run_id>`, poll `bench status <run_id>` until `stopped` appears within 30 s; relay the stopped, never started and previously ended counts.
 - `stop_code`: null unless the engine recorded `run.launch_stopped` (a run-level stop, e.g. a preflight or disk-floor code); report it as the reason launching new cells stopped.
 - `last_update_ms`: a map from ended `timed_out` or `stopped` cell ids to the last ACP update's elapsed milliseconds from the turn start. Null means no update was recorded. It does not describe live running cells.
 - `decisions`: empty until the decision workflow is implemented.

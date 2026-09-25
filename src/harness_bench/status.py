@@ -38,7 +38,8 @@ RUN_ID = r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}"
 # validates every cell against it at plan time, so status never emits what its own parser rejects).
 # PHASE (ruling R-3): a closed enum. "starting": launch has begun (cell.launch_intent recorded) but
 # no cell has reached attempt.process_started yet. "running": at least one has (a one-way move).
-PHASE = ("starting", "running")
+# "stopping": run.stopped is recorded and a launched cell has no outcome; "stopped": every launched cell has one.
+PHASE = ("starting", "running", "stopping", "stopped")
 CAUSE_CODE = re.compile(r"HB-CELL-[0-9]{3}")
 STOP_CODE = re.compile(r"HB-[A-Z]+-[0-9]{3}")
 TIME = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z")
@@ -70,7 +71,7 @@ class Status:
     running: list[RunningCell]
     decisions: list
     stop_code: str | None  # run.launch_stopped's code; null unless one was recorded (ruling R-3)
-    phase: str  # starting | running (ruling R-3)
+    phase: str  # starting | running | stopping | stopped (ruling R-3; design 4.6)
     graded: bool
 
 
@@ -136,6 +137,10 @@ def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = N
             causes[cell.code] = causes.get(cell.code, 0) + 1
     ended_count = sum(1 for c in view.cells if c.outcome in ("completed", "timed_out", "stopped", "skipped (decision)", "failed"))
     phase = "running" if started else "starting"
+    if any(e["kind"] == "run.stopped" for e in events):
+        launched = {e["cell_id"] for e in events if e["kind"] == "cell.launch_intent"}
+        with_outcome = {e["cell_id"] for e in events if e["kind"] == "cell.outcome"}
+        phase = "stopped" if launched <= with_outcome else "stopping"
     stopped = [e for e in events if e["kind"] == "run.launch_stopped"]
     stop_code = stopped[-1]["code"] if stopped else None
     return Status(SCHEMA, view.run_id, now.strftime("%Y-%m-%dT%H:%M:%SZ"), liveness, completion, age, len(view.cells), ended_count,
@@ -148,7 +153,13 @@ def _counts(title: str, order: tuple[str, ...], counts: dict[str, int]) -> str |
 
 
 def text(s: Status) -> str:
-    if s.liveness == "alive":
+    if s.phase == "stopped":
+        lines = [(f"Run {s.run_id}: stopped (HB-RUN-006). {s.outcomes.get('stopped', 0)} stopped, "
+                  f"{s.outcomes.get('not started', 0)} never started, "
+                  f"{s.cells_ended - s.outcomes.get('stopped', 0)} ended before the stop.")]
+    elif s.phase == "stopping":
+        lines = [f"Run {s.run_id}: stopping. {sum(1 for r in s.running)} cells still ending."]
+    elif s.liveness == "alive":
         lines = [f"Run {s.run_id}: running. {s.cells_ended}/{s.cells_total} cells ended, {len(s.running)} running."]
     elif s.liveness == "stalled":
         lines = [f"Run {s.run_id}: stalled. The engine holds the lock but has not progressed for {s.lock_age_s} s."]

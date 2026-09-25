@@ -11,6 +11,7 @@ import argparse
 import json
 import os
 import sys
+import uuid
 from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
@@ -175,6 +176,24 @@ def cmd_status(args) -> int:
     return OK
 
 
+def cmd_stop(args) -> int:
+    run_dir = _run_dir(args)
+    if not oslock.is_held(run_dir / ".lock"):
+        completion = status.build(run_dir).completion
+        raise BenchError("HB-USR-002", f"run {args.run_id} is not running ({completion}); nothing to stop")
+    uid = uuid.uuid4().hex
+    control_dir = run_dir / "control"
+    control_dir.mkdir(exist_ok=True)
+    target = control_dir / f"{uid}.json"
+    temp = control_dir / f"{uid}.json.tmp"
+    payload = {"schema": "bench-control/1", "uuid": uid, "control": "stop", "decision_id": None,
+               "option": None, "requested_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")}
+    temp.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
+    os.replace(temp, target)
+    print(f"stop requested ({uid}). bench status {args.run_id} shows stopped within 30 s.")
+    return OK
+
+
 def cmd_grade(args) -> int:
     result = runner.run_pass(_run_dir(args), Path(args.root))
     print(f"graded {result.cells_graded} cell(s) in pass {result.grading_id}")
@@ -268,6 +287,7 @@ def build_parser() -> argparse.ArgumentParser:
     pl.add_argument("--confirm", action="store_true", help="write runs/<run_id>/plan.json (frozen)")
     pl.add_argument("--json", action="store_true", help="print the cell list as JSON")
     for name, text in (("run", "run a confirmed plan to completion, then grade it"), ("status", "a run's progress (US-20)"),
+                       ("stop", "request that a running run stop within 30 seconds"),
                        ("grade", "a new grading pass"), ("report", "CLI table and report.html"),
                        ("verify", "check every ledger segment and archive"), ("teardown", "remove the run's archived cell folders")):
         sp = sub.add_parser(name, help=text)
@@ -279,7 +299,7 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
-COMMANDS = {"validate": cmd_validate, "plan": cmd_plan, "run": cmd_run, "status": cmd_status, "grade": cmd_grade,
+COMMANDS = {"validate": cmd_validate, "plan": cmd_plan, "run": cmd_run, "status": cmd_status, "stop": cmd_stop, "grade": cmd_grade,
             "report": cmd_report, "verify": cmd_verify, "teardown": cmd_teardown, "tools": cmd_tools}
 
 
