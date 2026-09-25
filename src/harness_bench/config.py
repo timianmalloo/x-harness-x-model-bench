@@ -207,6 +207,8 @@ def validate_task(task_dir: Path, bom_entry: dict | None, p: Problems, grader_mo
             p.add(where, "status ready requires hidden tests or an oracle")
         if not (task_dir / "workspace").is_dir():
             p.add(where, "status ready requires workspace/")
+        if t.get("scenario") == 1 and not (task_dir / "oracle" / "clarifications.yaml").is_file():
+            p.add(where, "status ready requires oracle/clarifications.yaml for scenario 1")
         _workspace_vendoring_problems(task_dir, pack_markers, p, where)
         if "tbd" in {str((t.get("source") or {}).get(k)) for k in ("repo", "commit")}:
             p.add(where, "status ready requires a pinned source.repo and source.commit")
