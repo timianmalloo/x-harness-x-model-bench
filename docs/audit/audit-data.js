@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T12:58:14Z",
+  "generated": "2026-09-25T13:12:11Z",
   "audit": [
     {
       "actor": null,
@@ -24357,6 +24357,40 @@ window.AUDIT_DATA = {
       ],
       "tier": "T2",
       "tool": "Claude Code"
+    },
+    {
+      "actor": "claude-opus-5-5",
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-09-25T13:04:05Z",
+      "done_when": "brief-core2.md Done when (S-1..S-3, V-1, V-3, V-4, US-4, check_regrade, GRADERS, mutants, gates green)",
+      "duration_seconds": 3946.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w3-core-2",
+        "pushed": null,
+        "sha": "d2a65eda68cb4b5fede5de098545122a49976d5f",
+        "short": "d2a65eda6"
+      },
+      "goal": "W3-GRADE-CORE slice 2: the catalog-version controls and the re-grade gate, red first",
+      "id": "al-01M3CAMY1Q22SK36RM9EQC92GR",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Goal: W3-GRADE-CORE slice 2 per docs/design/phase3-graders.md, slice-plan row \"CORE s2\", sections \"Catalog-version rule (R-59)\" 1-5, \"Tasks-freeze rule\", \"The byte-identity gate\" and seams S-1..S-3, V-1, V-3, V-4 (read the design whole first; rulings R-59, R-62, R-64 in docs/notes/rulings.md): the catalog-version controls and the re-grade gate, red first.\nDone when: SEAM GRANTS S-1..S-3 (Leader; W2-STOP-I's feature slices are joined and slice 6 edits no plan.py or cli.py code): the plan's task record freezes `graders`; `plan.tree_hash(base, files)` exists and task_version_hash calls it; cmd_plan makes the tasks-freeze check; each red first.; `catalog_hash` (via plan.tree_hash) and measured `tool_versions` (python; dotnet per dotnet task with cwd tasks/<task>/workspace; dotnet-stryker when pinned; an absent tool is \"not recorded\", never empty or guessed; 30 s timeout) are on `grading.started`.; GRANT V-1 (Leader): in views.py a `.dev` pass is never current, views.load(run, \"0.4.dev\") still reads it, and RunView.header[\"probe_passes\"] counts the skipped passes; the 0.3 exports stay exactly as bench/regrade-baseline-0.3.yaml records.; tests/test_catalog_version.py implements the US-4 control's checks (a)-(e) against tests/fixtures/catalog/<version>/ and bench/catalog-freeze.yaml (read-only to you; the Leader owns it), red first on a grader constant changed without a bump, a weight changed without a bump, a rewritten golden file and an edited freeze entry; a `.dev` version prints `probe: exempt`.; GRANT V-3 (Leader): config.validate_repo asserts bench/rubrics/adr_quality.md equals tasks/C1/oracle/rubric.md byte for byte and each `rubrics:` value names an existing file, red first.; GRANT V-4 (Leader): the `slow` marker is registered, pyproject addopts becomes -m 'not credentials and not slow', .github/workflows/ci.yml:25 becomes -m \"not credentials and not slow\"; a test covers HB_REQUIRE_DOTNET=1 failing on a missing dotnet and the skip without it.; tools/check_regrade.py and its test: red on a dead pass B, a moved value, a moved 0.3 byte and an all-NA pass, as the design's byte-identity gate defines.; runner.GRADERS registers `process` and `clarify` (both built on main); a test asserts that grading the CORE s1 mini-runs twice gives byte-equal exports (the rebuild-from-sealed-segments check).; tests/mutations/grade.json gains a named mutant per new branch, each killed, and every existing mutation file you touch stays all killed.; With HB_GATE_RUNS=C:/projects/x-harness-x-model-bench/runs, uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean; uv run bench validate prints ok.; Your final message lists each red SHA with its failing assertion, each green SHA, the mutate_check results, and every file outside the grants you touched.\nNot in scope: bench/catalog-freeze.yaml content and the 0.4 freeze itself (Leader); golden exports for 0.4 (Leader, at the freeze); grader bodies (correctness, cost, judge, process, clarify); verdict_uses (S-5; W3-GW-I slice 3); engine.py, status.py, errors.py; bench run, any model turn, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 55 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/design/phase3-graders.md; docs/notes/rulings.md R-59, R-62, R-64; src/harness_bench/grade/{__init__,runner}.py; src/harness_bench/{plan,cli,views,config}.py; bench/metrics.yaml; bench/task-freeze.yaml; bench/regrade-baseline-0.3.yaml; tests/test_grade_runner.py; tests/test_views.py; tests/test_config.py; tests/mutations/grade.json; pyproject.toml; .github/workflows/ci.yml. The gate runs under C:/projects/x-harness-x-model-bench/runs/ are read-only. Use python, not python3 (Windows).",
+      "session": "w3-core-2",
+      "shortname": "w3-grade-core-s2",
+      "signals": {
+        "acceptance_met": true,
+        "regression": false,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "implement",
+      "started_at": "2026-09-25T11:58:19Z",
+      "summary": "W3-GRADE-CORE slice 2 (Claude Opus 5.5, R-4), branch w3-core-2. Red first on each item, then green:\nS-1 the plan freezes each task's graders; S-2 plan.tree_hash is the one recipe and task_version_hash calls it; S-3 cmd_plan runs the tasks-freeze check.\ngrading.started carries catalog_hash (tree_hash over bench/metrics.yaml and bench/rubrics/**) and measured tool_versions (python; dotnet per dotnet task in its workspace; PINNED_TOOLS, empty until GR-CODE c6; not recorded when unmeasurable; 30 s), probed through tools.measured_version.\nGRADERS registers process and clarify. V-1: a .dev pass is never current, load(run, version) still reads it, header probe_passes counts the skipped passes; test roots release the .dev label (make_root(release=False) keeps it).\nUS-4 control tests/test_catalog_version.py checks (a)-(e); .dev prints probe: exempt. V-3: validate_rubrics (byte equality with tasks/C1/oracle/rubric.md; each rubrics value names a file). V-4: slow marker, addopts and ci.yml exclude slow; tests/slow_ring.dotnet_gate.\ntools/check_regrade.py (criteria 1-7, P2-P4) and tests/fixtures/gate/expected-counts.yaml; a dry run on a scratch copy of a1-capture-1 matched every stated count; the six W3-COST cost counts stay null (gate red until stated).\nProof: full default suite 1439 passed (HB_GATE_RUNS set); ruff clean; bench validate ok; mutate_check grade.json 68/68 killed (34 new).",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     }
   ],
   "changes": [
