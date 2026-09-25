@@ -79,7 +79,8 @@ class Build:
     def record(self) -> dict:
         """What the plan freezes and every cell start re-checks."""
         return {"version": self.version, "sha256": self.sha256, "adapter_version": self.adapter_version,
-                "adapter_sha256": self.adapter_sha256}
+                "adapter_sha256": self.adapter_sha256, "agent_version": None,
+                "agent_version_reason": "ACP initialize.agentInfo.version requires a live handshake; not recorded at plan time"}
 
 
 def resolve(tools_dir: Path) -> dict[str, Build]:

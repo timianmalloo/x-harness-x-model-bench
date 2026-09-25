@@ -40,7 +40,8 @@ def test_resolve_names_version_executable_adapter_and_hash(tmp_path):
     assert claude.adapter.name == "index.js" and "claude-agent-acp" in claude.adapter.as_posix()
     assert len(claude.sha256) == 64 and claude.sha256 != codex.sha256
     assert claude.record() == {"version": "2.1.274", "sha256": claude.sha256, "adapter_version": "0.79.0",
-                               "adapter_sha256": claude.adapter_sha256}
+                               "adapter_sha256": claude.adapter_sha256, "agent_version": None,
+                               "agent_version_reason": "ACP initialize.agentInfo.version requires a live handshake; not recorded at plan time"}
 
 
 def test_hash_covers_the_adapter_too(tmp_path):
@@ -57,7 +58,8 @@ def test_copilot_resolves_platform_build_without_adapter(tmp_path):
     assert len(copilot.sha256) == 64
     assert copilot.adapter is None
     assert copilot.record() == {"version": "1.0.89-1", "sha256": copilot.sha256,
-                                "adapter_version": None, "adapter_sha256": None}
+                                "adapter_version": None, "adapter_sha256": None, "agent_version": None,
+                                "agent_version_reason": "ACP initialize.agentInfo.version requires a live handshake; not recorded at plan time"}
     tools.check_build(copilot, copilot.record())
 
 

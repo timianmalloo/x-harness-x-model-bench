@@ -29,7 +29,7 @@ from harness_bench.plan import DEFAULT_PARAMETERS
 SCHEMA = "bench-status/1"
 LIVENESS = ("alive", "stalled", "not running")
 COMPLETION = ("complete", "in progress", "incomplete")
-OUTCOMES = ("completed", "timed_out", "failed", "no outcome", "not started")
+OUTCOMES = ("completed", "timed_out", "stopped", "skipped (decision)", "failed", "no outcome", "not started")
 VALIDITY = ("valid", "invalid (infrastructure)", "invalid (benchmark)", "invalid (no model call)", "invalid (model mismatch)",
             "invalid (tools denied by hook)", "invalid (build mismatch)", "invalid (out-of-profile tool called)", "not recorded",
             "not graded")
@@ -64,6 +64,7 @@ class Status:
     cells_total: int
     cells_ended: int
     outcomes: dict[str, int]
+    last_update_ms: dict[str, int | None]  # ended timed_out/stopped cells; elapsed from turn start, null = not recorded
     validity: dict[str, int]
     causes: dict[str, int]
     running: list[RunningCell]
@@ -118,6 +119,11 @@ def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = N
             elapsed = max(0, int((now - _when(sent["recorded_at"])).total_seconds())) if sent else 0
             running.append(RunningCell(cid, c.get("label", cid), elapsed, c["budget_seconds"], bool(sent) and elapsed > c["budget_seconds"]))
     outcomes: dict[str, int] = {}
+    last_update_ms: dict[str, int | None] = {}
+    for event in events:
+        if event["kind"] == "cell.outcome" and event.get("outcome") in ("timed_out", "stopped"):
+            value = event.get("last_update_ms")
+            last_update_ms[event["cell_id"]] = value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else None
     validity: dict[str, int] = {}
     causes: dict[str, int] = {}
     for cell in view.cells:
@@ -128,12 +134,12 @@ def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = N
             validity[cell.validity] = validity.get(cell.validity, 0) + 1
         if cell.code:
             causes[cell.code] = causes.get(cell.code, 0) + 1
-    ended_count = sum(1 for c in view.cells if c.outcome in ("completed", "timed_out", "failed"))
+    ended_count = sum(1 for c in view.cells if c.outcome in ("completed", "timed_out", "stopped", "skipped (decision)", "failed"))
     phase = "running" if started else "starting"
     stopped = [e for e in events if e["kind"] == "run.launch_stopped"]
     stop_code = stopped[-1]["code"] if stopped else None
     return Status(SCHEMA, view.run_id, now.strftime("%Y-%m-%dT%H:%M:%SZ"), liveness, completion, age, len(view.cells), ended_count,
-                  outcomes, validity, causes, running, [], stop_code, phase, view.grading_id is not None)
+                  outcomes, last_update_ms, validity, causes, running, [], stop_code, phase, view.grading_id is not None)
 
 
 def _counts(title: str, order: tuple[str, ...], counts: dict[str, int]) -> str | None:
@@ -153,6 +159,8 @@ def text(s: Status) -> str:
             lines.append(f"{r.cell_id}: killing (unconfirmed, {r.elapsed_s - r.budget_s} s)")
         else:
             lines.append(f"{r.cell_id} {r.label}: running {r.elapsed_s} s of {r.budget_s} s")
+    for cell_id, value in sorted(s.last_update_ms.items()):
+        lines.append(f"{cell_id}: last update {value} ms into turn" if value is not None else f"{cell_id}: last update not recorded")
     for line in (_counts("Outcomes", OUTCOMES, s.outcomes), _counts("Validity", VALIDITY, s.validity), _counts("Causes", (), s.causes)):
         if line:
             lines.append(line)
@@ -200,6 +208,10 @@ def parse(document: str) -> Status:
     _int(data["cells_total"], "cells_total")
     _int(data["cells_ended"], "cells_ended")
     _count_map(data["outcomes"], OUTCOMES, "outcomes")
+    _require(isinstance(data["last_update_ms"], dict), "last_update_ms must be an object")
+    for cell_id, value in data["last_update_ms"].items():
+        _require(isinstance(cell_id, str) and bool(CELL_ID.fullmatch(cell_id)), "last_update_ms has a malformed cell id")
+        _int(value, f"last_update_ms.{cell_id}", nullable=True)
     _count_map(data["validity"], VALIDITY, "validity")
     _count_map(data["causes"], CAUSE_CODE, "causes")
     _require(data["decisions"] == [], "decisions must be empty in phase 1")

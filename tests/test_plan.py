@@ -133,6 +133,46 @@ def test_phase1_plan_has_four_cells_and_every_recorded_field():
     assert p["parameters"]["parallelism"] == 2
 
 
+def test_stop_parameters_are_frozen_with_the_ruling_units():  # P-1
+    p = _phase1_plan()
+    assert p["parameters"]["decision_timeout"] == 1800
+    assert p["parameters"]["spend_cap_tokens"] is None
+    assert _phase1_plan(parameters={"decision_timeout": 120, "spend_cap_tokens": 1000})["parameters"]["spend_cap_tokens"] == 1000
+
+
+def test_stop_parameters_refuse_non_positive_values():
+    for parameters in ({"decision_timeout": 0}, {"decision_timeout": -1}, {"spend_cap_tokens": 0},
+                       {"spend_cap_tokens": -1}, {"spend_cap_tokens": True}):
+        with pytest.raises(BenchError) as error:
+            _phase1_plan(parameters=parameters)
+        assert error.value.code == "HB-USR-002"
+
+
+def test_plan_freezes_the_builds_unrecorded_self_report_reason():  # R-47 condition 3, null path
+    builds = {"claude-code": {"agent_version": None, "agent_version_reason": "ACP initialize requires a live handshake"},
+              "codex": {"agent_version": None, "agent_version_reason": "ACP initialize requires a live handshake"}}
+    p = _phase1_plan(builds=builds)
+    assert p["builds"] == builds
+
+
+def test_an_old_confirmed_plan_missing_a_parameter_is_refused(tmp_path):  # P-2
+    p = _phase1_plan()
+    p["parameters"].pop("git_timeout")
+    p["plan_hash"] = plan.plan_hash(p)
+    plan.confirm(tmp_path / "runs" / "old", p)
+    with pytest.raises(BenchError) as error:
+        plan.require_run_parameters(plan.load_confirmed(tmp_path / "runs" / "old"))
+    assert error.value.code == "HB-USR-002"
+    assert "git_timeout" in error.value.message
+
+
+def test_row15_supports_parallelism_four_and_refuses_five():  # R-38 condition 2
+    assert plan.PHASE1_MAX_PARALLELISM == 4
+    assert _phase1_plan(parallelism=4)["parameters"]["parallelism"] == 4
+    with pytest.raises(BenchError):
+        _phase1_plan(parallelism=5)
+
+
 def test_the_plan_freezes_each_task_prompt_verbatim_with_its_hash():  # US-10: the prompt the agent receives
     p = _phase1_plan()
     raw = (ROOT / "tasks" / "X1" / "prompt.md").read_bytes().decode("utf-8")
@@ -200,7 +240,7 @@ def test_load_confirmed_without_a_plan_is_unknown_run(tmp_path):
 
 def test_parallelism_above_the_phase1_cap_is_refused():
     with pytest.raises(BenchError):
-        _phase1_plan(parallelism=3)
+        _phase1_plan(parallelism=5)
 
 
 def test_a_combo_id_that_breaks_the_status_label_regex_is_refused_at_plan_time():  # T4-5
@@ -397,12 +437,13 @@ def test_cmd_plan_passes_configured_tools_and_cells_roots_to_probe(monkeypatch, 
     def fake_build_plan(*args, **kwargs):
         received.update(kwargs)
         return {"cells": [], "builds": {}, "pack": {"revision": 1, "commit": "c" * 40},
-                "parameters": {"parallelism": 2}, "envelope_seconds": 0, "price_list_hash": ""}
+                "parameters": {"parallelism": 2, **kwargs["parameters"]}, "envelope_seconds": 0, "price_list_hash": ""}
 
     monkeypatch.setattr(cli.plan, "build_plan", fake_build_plan)
     args = SimpleNamespace(root=str(ROOT), matrix=str(ROOT / "bench" / "matrix.phase1.yaml"),
                            tools_dir=str(tmp_path / "custom-tools"), cells_root=str(tmp_path / "cells-root"),
-                           pack_source=str(tmp_path / "pack"), run_id="p", parallelism=2, json=False, confirm=False)
+                           pack_source=str(tmp_path / "pack"), run_id="p", parallelism=2, json=False, confirm=False,
+                           decision_timeout_minutes=30, spend_cap_tokens=None)
     assert cli.cmd_plan(args) == 0
     assert received["tools_dir"] == Path(args.tools_dir)
     assert received["cells_root"] == Path(args.cells_root)

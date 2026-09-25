@@ -7,6 +7,7 @@ from cells. The text form uses the exact strings of the design's CLI state table
 import dataclasses
 import json
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 from archived_runs import GOOD, make_root, make_run
@@ -150,6 +151,35 @@ def test_no_free_text_from_cells_reaches_status(root, tmp_path):  # ADR-0011 C4 
     assert secret not in status.to_json(s) and secret not in status.text(s)
 
 
+def test_last_update_is_reported_for_timed_out_and_stopped_cells(root, tmp_path):  # R-50
+    timed_out, stopped = "aaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbb"
+    run_dir = make_run(root, tmp_path, {timed_out: GOOD, stopped: GOOD}, outcomes={
+        timed_out: {"outcome": "timed_out", "last_update_ms": 4200},
+        stopped: {"outcome": "stopped", "last_update_ms": None},
+    })
+    s = status.build(run_dir, now=NOW)
+    assert s.last_update_ms == {timed_out: 4200, stopped: None}
+    assert status.parse(status.to_json(s)).last_update_ms == s.last_update_ms
+    assert f"{timed_out}: last update 4200 ms into turn" in status.text(s)
+    assert f"{stopped}: last update not recorded" in status.text(s)
+
+
+def test_stopped_and_decision_skip_are_closed_outcomes():  # ST-1
+    assert "stopped" in status.OUTCOMES
+    assert "skipped (decision)" in status.OUTCOMES
+
+
+def test_the_skill_names_every_status_field():  # SK-1, R-3 condition 3
+    expected = {field.name for field in dataclasses.fields(status.Status)}
+    expected |= {field.name for field in dataclasses.fields(status.RunningCell)}
+    expected |= set(status.PHASE) | set(status.OUTCOMES)
+    assert {"stopped", "skipped (decision)", "last_update_ms"} <= expected
+    for skill in (".claude/skills/start-benchmark/SKILL.md", ".agents/skills/start-benchmark/SKILL.md"):
+        text = (Path(__file__).resolve().parents[1] / skill).read_text(encoding="utf-8")
+        missing = {name for name in expected if name not in text}
+        assert not missing, (skill, sorted(missing))
+
+
 def test_the_json_form_round_trips_and_is_strict(root, tmp_path):
     s = status.build(_live_run(root, tmp_path), now=NOW)
     doc = status.to_json(s)
@@ -173,6 +203,7 @@ _statuses = st.builds(
     completion=st.sampled_from(status.COMPLETION), lock_age_s=st.none() | st.integers(0, 10**6),
     cells_total=st.integers(0, 600), cells_ended=st.integers(0, 600),
     outcomes=st.dictionaries(st.sampled_from(status.OUTCOMES), st.integers(0, 600)),
+    last_update_ms=st.dictionaries(_ids, st.none() | st.integers(0, 10**9), max_size=4),
     validity=st.dictionaries(st.sampled_from(status.VALIDITY), st.integers(0, 600)),
     causes=st.dictionaries(st.from_regex(r"HB-CELL-[0-9]{3}", fullmatch=True), st.integers(0, 600)),
     running=st.lists(_running, max_size=4), decisions=st.just([]),

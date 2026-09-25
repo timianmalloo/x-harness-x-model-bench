@@ -36,10 +36,12 @@ logger = logging.getLogger(__name__)
 # non-string fields (e.g. `defaultDisabled`: bool) the ledger's canonical form forbids (ADR-0006).
 # Only these identity fields are frozen into the plan, and only when they are strings.
 INSTRUCTION_IDENTITY_FIELDS = ("sourcePath", "id", "label", "location", "type")
-PHASE1_MAX_PARALLELISM = 2
+PHASE1_MAX_PARALLELISM = 4
 # Plan parameters (ADR-0007: shown at confirmation, recorded in the plan). Seconds unless named.
 DEFAULT_PARAMETERS = {
     "parallelism": 2,
+    "decision_timeout": 1800,
+    "spend_cap_tokens": None,
     "git_timeout": 120,
     "spawn_timeout": 30,
     "handshake_timeout": 60,
@@ -183,6 +185,13 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, p
                tools_dir: Path | None = None, cells_root: Path | None = None) -> dict:
     if not 1 <= parallelism <= PHASE1_MAX_PARALLELISM:
         raise BenchError("HB-USR-002", f"parallelism must be 1-{PHASE1_MAX_PARALLELISM} in phase 1, got {parallelism}")
+    params = {**DEFAULT_PARAMETERS, **(parameters or {}), "parallelism": parallelism}
+    for name in ("decision_timeout", "spend_cap_tokens"):
+        value = params[name]
+        if value is None and name == "spend_cap_tokens":
+            continue
+        if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+            raise BenchError("HB-USR-002", f"{name} must be a positive integer")
     tasks = select_tasks(bom, matrix["bom"]["subset"])
     versions = {t["id"]: task_version_hash(root / "tasks" / t["id"]) for t in tasks}
     cells = expand(matrix, bom, versions)
@@ -223,7 +232,6 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, p
                 shutil.rmtree(probe, onexc=archive.make_writable)
             except OSError as exc:
                 logger.warning("Could not remove plan probe %s: %s", probe, exc)
-    params = {**DEFAULT_PARAMETERS, **(parameters or {}), "parallelism": parallelism}
     body = {
         "schema": SCHEMA,
         "run_id": run_id,
@@ -270,3 +278,10 @@ def load_confirmed(run_dir: Path) -> dict:
     if plan_hash(data) != data.get("plan_hash"):
         raise BenchError("HB-LED-002", f"{path} was edited after confirmation (plan_hash mismatch)")
     return data
+
+
+def require_run_parameters(data: dict) -> None:
+    """An old plan is readable, but cannot start under a newer engine's defaults."""
+    missing = set(DEFAULT_PARAMETERS) - set(data.get("parameters", {}))
+    if missing:
+        raise BenchError("HB-USR-002", f"old plan missing parameters {sorted(missing)}; plan a new run")

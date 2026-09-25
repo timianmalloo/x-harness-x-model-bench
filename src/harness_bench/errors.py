@@ -53,6 +53,8 @@ RUN_CODES: dict[str, str] = {
     "HB-RUN-003": "teardown refused: the run's lock is held by a live engine",
     "HB-RUN-004": "free space below the floor: launching stopped, running cells continue",
     "HB-RUN-005": "run lock held: another engine is running this run",
+    "HB-RUN-006": "run stopped by the operator (bench stop, or a decision answered stop): running cells stopped, no new launch",
+    "HB-RUN-007": "spend cap reached: the run stopped (the spend_cap default or answer)",
     "HB-LED-001": "torn tail repaired by its writer",
     "HB-LED-002": "chain or seal break",
     "HB-LED-003": "duplicate key or second outcome",

@@ -79,6 +79,12 @@ def test_a_held_run_lock_and_a_refused_teardown_have_their_own_codes():  # T1-13
     assert errors.RUN_CODES["HB-RUN-003"].startswith("teardown refused")
 
 
+def test_stop_and_spend_cap_have_the_designs_run_codes():  # ERR-1, phase 2 section 4.9
+    assert errors.RUN_CODES["HB-RUN-006"] == ("run stopped by the operator (bench stop, or a decision answered stop): "
+                                              "running cells stopped, no new launch")
+    assert errors.RUN_CODES["HB-RUN-007"] == "spend cap reached: the run stopped (the spend_cap default or answer)"
+
+
 def test_every_cause_and_run_code_is_a_valid_bench_error_code():  # kills the _ALL_CODES survivors (cosmic-ray)
     for code in [c.code for c in errors.Cause] + list(errors.RUN_CODES):
         assert errors.BenchError(code, "x").code == code

@@ -366,9 +366,7 @@ class Engine:
             self.record("turn_usage", {"kind": "turn_usage", "run_id": self.plan["run_id"], "cell_id": cid, "attempt": 1,
                                        "model": model, **buckets})
         outcome = "completed" if cause is None else ("timed_out" if cause is Cause.timed_out else "failed")
-        # assume: the driver reports `last_update_seconds` (seam request req-01M38KX8503601BEP857749VVF to T3); until it
-        # does, last_update_ms is null (not recorded), never a guessed number.
-        last_update = getattr(result, "last_update_seconds", None)
+        last_update = result.last_update_seconds
         self._outcome(cell, outcome, cause, detail=result.detail[:300], stop_reason=result.stop_reason or "",
                       session_id=result.session_id or "", permission_requests=result.permission_requests,
                       exit_status=exit_status if exit_status is not None else -1,
