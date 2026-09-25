@@ -1,4 +1,4 @@
-"""One judge lookup for one (artifact, rubric) request: the section 8 pipeline, offline half (slice 1).
+"""One judge lookup for one (artifact, rubric) request: the section 8 pipeline (slices 1-2).
 
 The steps run in a fixed order, and the first failing step is the one recorded (design section 4.1):
 1. bound (HB-GW-008); 2. render in the section 7.2 order; 3. the independent scan of the whole request (HB-GW-004);
