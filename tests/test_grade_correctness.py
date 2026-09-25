@@ -147,12 +147,14 @@ def test_d1_base_plus_a_file_with_a_syntax_error_scores_0_not_na(tmp_path, d1_do
     got = grade_d1(tmp_path, *d1_cell(tmp_path, BROKEN))
     assert {m: got.get(m) for m in BUILT_CORRECTNESS} == \
         {"pass_at_1": (0, None), "partial_credit": ("0.0000", None), "build_and_suite_clean": (0, None)}
+    assert got.get("regression_count") == (None, "workspace does not build")  # c2, on real dotnet
 
 
 def test_d1_reference_with_a_member_deleted_that_unchanged_files_use_scores_0(tmp_path, d1_dotnet):  # TA 9: by cause
     got = grade_d1(tmp_path, *d1_cell(tmp_path, {**REFERENCE, "src/AiDe.Core/PathComparison.cs": without_member}))
     assert {m: got.get(m) for m in BUILT_CORRECTNESS} == \
         {"pass_at_1": (0, None), "partial_credit": ("0.0000", None), "build_and_suite_clean": (0, None)}
+    assert got.get("regression_count") == (None, "workspace does not build")  # c2, on real dotnet
 
 
 IPC_TESTS = "tests/AiDe.Core.Tests/IpcFramingTests.cs"
@@ -178,8 +180,8 @@ def test_an_empty_nuget_cache_is_na_restore_never_0(tmp_path, d1_dotnet, monkeyp
     (tmp_path / "empty-nuget").mkdir()
     monkeypatch.setenv("NUGET_PACKAGES", str(tmp_path / "empty-nuget"))
     got = grade_d1(tmp_path, *d1_cell(tmp_path, REFERENCE))
-    assert {m: got.get(m) for m in BUILT_CORRECTNESS} == \
-        dict.fromkeys(BUILT_CORRECTNESS, (None, "infrastructure failure before build: restore"))
+    assert {m: got.get(m) for m in (*BUILT_CORRECTNESS, "regression_count")} == \
+        dict.fromkeys((*BUILT_CORRECTNESS, "regression_count"), (None, "infrastructure failure before build: restore"))
 
 
 # --- the shared change reader: the pre-turn commit and the change set (git only; no dotnet) -------------------------
