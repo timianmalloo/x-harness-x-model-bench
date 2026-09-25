@@ -220,6 +220,22 @@ def test_turn_usage_is_summed_per_model_before_it_is_recorded(base):  # T1-6: on
         ("m-a", 2, 4, 6, 8, 10), ("m-b", 1, 2, 3, 4, 5)]
 
 
+def test_context_window_tag_is_recorded_on_process_ended_from_a_tagged_served_model(base):  # R-32
+    tc = {"inputTokens": 1, "cachedInputTokens": 0, "cachedWriteTokens": 0, "outputTokens": 1, "reasoningOutputTokens": 0}
+    usage = [{"model": "claude-haiku-4-5-20251001", "token_count": tc}, {"model": "claude-opus-5-5[1m]", "token_count": tc}]
+    p = _plan(n_cells=1)
+    _, events, _ = _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"usage": usage}}))
+    ended = next(e for e in events if e["kind"] == "attempt.process_ended")
+    assert ended["context_window_tag"] == "1m"
+
+
+def test_context_window_tag_is_null_when_no_served_model_carries_one(base):  # R-32 negative control
+    p = _plan(n_cells=1)
+    _, events, _ = _run(base, p, FakeLauncher({}))  # the default USAGE names "fake-model", no bracket
+    ended = next(e for e in events if e["kind"] == "attempt.process_ended")
+    assert ended["context_window_tag"] is None
+
+
 def test_the_outcome_records_updates_and_last_update_ms(base, monkeypatch):  # T1-11
     from harness_bench import driver
     real = driver.run_turn

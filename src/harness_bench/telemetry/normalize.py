@@ -9,11 +9,16 @@
 - classify: provider errors to a cause. 408, 429, 5xx and overload are `failed (provider)`
   (infrastructure); any other 4xx is `failed (model unavailable)` (benchmark: the plan pinned a model
   the account cannot serve) (probe W3).
+- base_model_id / context_window_tag (R-32): Claude Code suffixes a served model id with the
+  context window it ran (`claude-opus-5-5[1m]`); the API model id carries no such suffix. Model
+  identity (`served_models`, per-model `totals`) is the base id; the tag itself is disclosed
+  separately (recorded once per cell on the attempt's terminal event, engine.py).
 """
 
 from __future__ import annotations
 
 import hashlib
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -22,6 +27,19 @@ from harness_bench.telemetry import Extraction, ProviderError, as_dict, as_int
 
 BUCKETS = ("uncached_input", "cache_read", "cache_write", "output")
 PROVIDER_TYPES = ("overloaded", "rate_limit", "timeout", "api_error", "server_error", "unavailable")
+_TAG_RE = re.compile(r"\[([^\[\]]+)\]$")  # a trailing bracketed context-window tag, e.g. "[1m]"
+
+
+def base_model_id(model: str) -> str:
+    """Model identity (R-32): strip only a trailing `[...]` tag. `claude-opus-5-5[1m]` -> `claude-opus-5-5`;
+    anything else in the id is identity, and an id with no trailing bracket is unchanged."""
+    return _TAG_RE.sub("", model)
+
+
+def context_window_tag(model: str) -> str | None:
+    """The trailing bracketed tag itself (R-32), or None when the served id carries none."""
+    m = _TAG_RE.search(model)
+    return m.group(1) if m else None
 
 
 @dataclass(frozen=True)
@@ -59,17 +77,17 @@ def totals(source: str, ex: Extraction, usage: list[TurnUsage]) -> dict[str, dic
     out: dict[str, dict[str, int]] = {}
     items = usage if source == "acp_turn" else ex.model_calls
     for item in items:
-        bucket = out.setdefault(item.model, dict.fromkeys(BUCKETS, 0))
+        bucket = out.setdefault(base_model_id(item.model), dict.fromkeys(BUCKETS, 0))
         for b in BUCKETS:
             bucket[b] += getattr(item, b)
     return out
 
 
 def served_models(source: str, ex: Extraction, usage: list[TurnUsage]) -> set[str]:
-    """Models with at least one successful call, from the authoritative source (US-11)."""
+    """Models with at least one successful call, from the authoritative source (US-11), by base id (R-32)."""
     if source == "acp_turn":
-        return {u.model for u in usage if u.output or u.uncached_input or u.cache_read}
-    return {c.model for c in ex.model_calls if c.output or c.uncached_input or c.cache_read}
+        return {base_model_id(u.model) for u in usage if u.output or u.uncached_input or u.cache_read}
+    return {base_model_id(c.model) for c in ex.model_calls if c.output or c.uncached_input or c.cache_read}
 
 
 def classify(errors: list[ProviderError]) -> Cause | None:

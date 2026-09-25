@@ -168,6 +168,40 @@ def test_the_header_names_the_pinned_pack_revision_and_commit(root, tmp_path):
     assert f"<dt>Pack commit</dt><dd>{'a' * 40}</dd>" in doc
 
 
+# --- R-32: the context-window tag is disclosed, in the header and per cell -------------------------------
+# `render` reads the tag straight from the run's `attempt.process_ended` events (via `run_dir`), never
+# from views.py (ruling R-32 condition 3: views.py carries no wave-1 owner and is not touched).
+
+
+def test_the_header_and_drill_down_disclose_a_tagged_cells_context_window(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, harness="claude-code", model="claude-opus-5-5",
+                        combos={"a": "cc-opus"}, context_window_tag={"a": "1m"})
+    doc = html.render(views.load(run_dir), archive_present=True, run_dir=run_dir)
+    header = re.search(r'<section id="header".*?</section>', doc, re.DOTALL).group(0)
+    assert "<dt>Context window</dt><dd>Claude Code cells ran with the 1M context window</dd>" in header
+    runs = re.search(r'<section id="runs".*?</section>', doc, re.DOTALL).group(0)
+    row = next(r for r in re.findall(r"<tr>.*?</tr>", runs, re.DOTALL) if "cc-opus" in r)
+    assert "<td>Claude Code cells ran with the 1M context window</td>" in row
+
+
+def test_the_header_and_drill_down_read_not_recorded_without_a_tag(root, tmp_path):
+    run_dir = make_run(root, tmp_path, {"b": GOOD}, harness="codex", combos={"b": "codex-sol"})  # no context_window_tag
+    doc = html.render(views.load(run_dir), archive_present=True, run_dir=run_dir)
+    header = re.search(r'<section id="header".*?</section>', doc, re.DOTALL).group(0)
+    assert "<dt>Context window</dt><dd>not recorded</dd>" in header
+    runs = re.search(r'<section id="runs".*?</section>', doc, re.DOTALL).group(0)
+    row = next(r for r in re.findall(r"<tr>.*?</tr>", runs, re.DOTALL) if "codex-sol" in r)
+    assert "<td>not recorded</td>" in row
+
+
+def test_render_without_a_run_dir_reads_not_recorded(root, tmp_path):  # render() stays usable with no ledger access
+    run_dir = make_run(root, tmp_path, {"a": GOOD}, harness="claude-code", model="claude-opus-5-5",
+                        context_window_tag={"a": "1m"})
+    doc = html.render(views.load(run_dir), archive_present=True)  # no run_dir passed
+    header = re.search(r'<section id="header".*?</section>', doc, re.DOTALL).group(0)
+    assert "<dt>Context window</dt><dd>not recorded</dd>" in header
+
+
 def test_the_page_makes_no_network_request_and_has_no_script(page):
     assert not re.search(r"https?://|<script|@import|url\(|<link", page)
 

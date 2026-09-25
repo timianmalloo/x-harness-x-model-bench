@@ -53,3 +53,13 @@ def cell_tokens(totals: dict[str, dict[str, int]] | None, reason: str | None) ->
     if not totals:
         return f"NA ({reason})"
     return f"{sum(sum(b.values()) for b in totals.values()):,} tok"
+
+
+HARNESS_LABEL = {"claude-code": "Claude Code", "codex": "Codex", "copilot": "Copilot"}
+
+
+def context_window(harness: str, tag: str | None) -> str:
+    """R-32: the harness's disclosed context-window tag, or "not recorded" when none was recorded."""
+    if not tag:
+        return "not recorded"
+    return f"{HARNESS_LABEL.get(harness, harness)} cells ran with the {tag.upper()} context window"
