@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T01:37:46Z",
+  "generated": "2026-09-25T02:00:59Z",
   "audit": [
     {
       "actor": null,
@@ -7487,34 +7487,23 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M3B3C7QSMCAWZ4CXTJTNEPH8",
-      "shortname": "Goal: W1-COP-I loop-back slice 6a (join review findings, Test Architect …",
-      "datetime": "2026-09-25T01:37:46Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W1-COP-I loop-back slice 6a (join review findings, Test Architect and Python developer, 2026-09-25): fix the plan probe and the pinned-tools findings in src/harness_bench/plan.py, src/harness_bench/tools.py and src/harness_bench/cli.py, red-first, in the owned paths only.\nDone when: build_plan takes the tools folder from the CLI's --tools-dir instead of hard-coding root/.tools/harness (a red test with a non-default tools dir shows the probe resolves the planned build from it), and the plan probe's temporary folder lives under the configured cells root, with unit tests passing tmp_path.; A test asserts the probe folder is removed after both the success path and the HB-PRE-008 path (kills the mutant that deletes the finally cleanup), and a cleanup OSError is logged with the leftover path while the coded BenchError is the one raised.; The fake instruction list in tests/test_plan.py answers from the working copy's content (rows only when AGENTS.md exists, with install_pack faked to write it), so replacing `if arm == \"on\":` with `if False:` in build_plan is killed by a named test.; The identity-projection test's raw row includes a non-string identity value (for example \"type\": True and \"id\": 3), so the mutant `if k in row` in _instruction_identity is killed.; instruction_list reports a timeout as \"timed out after 120 s\" and a truncated stdout as truncated, not \"did not return JSON\".; tools.resolve still requires the adapter entry script when the harness has an adapter: a test that removes dist/index.js expects HB-PRE-007 (kills the mutant that drops the adapter from the required files); LAYOUT becomes a typed structure (a frozen dataclass or TypedDict) so `mypy src/harness_bench/tools.py` reports no new index errors.; tests/mutations/plan.json and tools entries in tests/mutations/copilot.json cover the new branches (pack-off refusal, pack-on install, identity projection, instruction_list failure paths, adapterless required files, adapter_version/adapter_sha256 None) and every mutation is killed by `uv run python tools/mutate_check.py` on each file.; `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and both mutate_check results.\nNot in scope: views.py, report/*, profiles.py, bench/profiles/*.yaml, telemetry/*, engine.py, tests/e2e (other slices); `bench run`, any model turn, `-m \"\"`; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: src/harness_bench/{plan,tools,cli}.py, tests/test_plan.py, tests/test_tools.py, tests/mutations/copilot.json, tools/mutate_check.py. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
+      "datetime": "2026-09-25T01:37:46Z",
+      "id": "al-01M3B3C7QSMCAWZ4CXTJTNEPH8",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: W1-COP-I loop-back slice 6a (join review findings, Test Architect and Python developer, 2026-09-25): fix the plan probe and the pinned-tools findings in src/harness_bench/plan.py, src/harness_bench/tools.py and src/harness_bench/cli.py, red-first, in the owned paths only.\nDone when: build_plan takes the tools folder from the CLI's --tools-dir instead of hard-coding root/.tools/harness (a red test with a non-default tools dir shows the probe resolves the planned build from it), and the plan probe's temporary folder lives under the configured cells root, with unit tests passing tmp_path.; A test asserts the probe folder is removed after both the success path and the HB-PRE-008 path (kills the mutant that deletes the finally cleanup), and a cleanup OSError is logged with the leftover path while the coded BenchError is the one raised.; The fake instruction list in tests/test_plan.py answers from the working copy's content (rows only when AGENTS.md exists, with install_pack faked to write it), so replacing `if arm == \"on\":` with `if False:` in build_plan is killed by a named test.; The identity-projection test's raw row includes a non-string identity value (for example \"type\": True and \"id\": 3), so the mutant `if k in row` in _instruction_identity is killed.; instruction_list reports a timeout as \"timed out after 120 s\" and a truncated stdout as truncated, not \"did not return JSON\".; tools.resolve still requires the adapter entry script when the harness has an adapter: a test that removes dist/index.js expects HB-PRE-007 (kills the mutant that drops the adapter from the required files); LAYOUT becomes a typed structure (a frozen dataclass or TypedDict) so `mypy src/harness_bench/tools.py` reports no new index errors.; tests/mutations/plan.json and tools entries in tests/mutations/copilot.json cover the new branches (pack-off refusal, pack-on install, identity projection, instruction_list failure paths, adapterless required files, adapter_version/adapter_sha256 None) and every mutation is killed by `uv run python tools/mutate_check.py` on each file.; `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and both mutate_check results.\nNot in scope: views.py, report/*, profiles.py, bench/profiles/*.yaml, telemetry/*, engine.py, tests/e2e (other slices); `bench run`, any model turn, `-m \"\"`; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: src/harness_bench/{plan,tools,cli}.py, tests/test_plan.py, tests/test_tools.py, tests/mutations/copilot.json, tools/mutate_check.py. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
+      "session": "prompt-compile",
+      "shortname": "Goal: W1-COP-I loop-back slice 6a (join review findings, Test Architect …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M3B3C867CQK4S7105XE840B3",
-      "shortname": "compile-Goal: W1-COP-I loop-back slice 6a (join review findings, Test Architect …",
-      "datetime": "2026-09-25T01:37:46Z",
-      "session": "coord-opus-cq",
-      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-COP-I loop-back slice 6a (join review findings, Test Architect and Python developer, 2026-09-25): fix the plan probe and the pinned-tools findings in src/harness_bench/plan.py, src/harness_bench/tools.py and src/harness_bench/cli.py, red-first, in the owned paths only.\nDone when: build_plan takes the tools folder from the CLI's --tools-dir instead of hard-coding root/.tools/harness (a red test with a non-default tools dir shows the probe resolves the planned build from it), and the plan probe's temporary folder lives under the configured cells root, with unit tests passing tmp_path.; A test asserts the probe folder is removed after both the success path and the HB-PRE-008 path (kills the mutant that deletes the finally cleanup), and a cleanup OSError is logged with the leftover path while the coded BenchError is the one raised.; The fake instruction list in tests/test_plan.py answers from the working copy's content (rows only when AGENTS.md exists, with install_pack faked to write it), so replacing `if arm == \"on\":` with `if False:` in build_plan is killed by a named test.; The identity-projection test's raw row includes a non-string identity value (for example \"type\": True and \"id\": 3), so the mutant `if k in row` in _instruction_identity is killed.; instruction_list reports a timeout as \"timed out after 120 s\" and a truncated stdout as truncated, not \"did not return JSON\".; tools.resolve still requires the adapter entry script when the harness has an adapter: a test that removes dist/index.js expects HB-PRE-007 (kills the mutant that drops the adapter from the required files); LAYOUT becomes a typed structure (a frozen dataclass or TypedDict) so `mypy src/harness_bench/tools.py` reports no new index errors.; tests/mutations/plan.json and tools entries in tests/mutations/copilot.json cover the new branches (pack-off refusal, pack-on install, identity projection, instruction_list failure paths, adapterless required files, adapter_version/adapter_sha256 None) and every mutation is killed by `uv run python tools/mutate_check.py` on each file.; `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and both mutate_check results.\nNot in scope: views.py, report/*, profiles.py, bench/profiles/*.yaml, telemetry/*, engine.py, tests/e2e (other slices); `bench run`, any model turn, `-m \"\"`; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: src/harness_bench/{plan,tools,cli}.py, tests/test_plan.py, tests/test_tools.py, tests/mutations/copilot.json, tools/mutate_check.py. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: build_plan takes the tools folder from the CLI's --tools-dir instead of hard-coding root/.tools/harness (a red test with a non-default tools dir shows the probe resolves the planned build from it), and the plan probe's temporary folder lives under the configured cells root, with unit tests passing tmp_path. | phrase: build_plan takes the tools folder from the CLI's --tools-dir instead of hard-coding root/.tools/harness (a red test with a non-default tools dir shows the probe resolves the planned build from it), and the plan probe's temporary folder lives under the configured cells root, with unit tests passing tmp_path. |\n| done_when: A test asserts the probe folder is removed after both the success path and the HB-PRE-008 path (kills the mutant that deletes the finally cleanup), and a cleanup OSError is logged with the leftover path while the coded BenchError is the one raised. | phrase: A test asserts the probe folder is removed after both the success path and the HB-PRE-008 path (kills the mutant that deletes the finally cleanup), and a cleanup OSError is logged with the leftover path while the coded BenchError is the one raised. |\n| done_when: The fake instruction list in tests/test_plan.py answers from the working copy's content (rows only when AGENTS.md exists, with install_pack faked to write it), so replacing `if arm == \"on\":` with `if False:` in build_plan is killed by a named test. | phrase: The fake instruction list in tests/test_plan.py answers from the working copy's content (rows only when AGENTS.md exists, with install_pack faked to write it), so replacing `if arm == \"on\":` with `if False:` in build_plan is killed by a named test. |\n| done_when: The identity-projection test's raw row includes a non-string identity value (for example \"type\": True and \"id\": 3), so the mutant `if k in row` in _instruction_identity is killed. | phrase: The identity-projection test's raw row includes a non-string identity value (for example \"type\": True and \"id\": 3), so the mutant `if k in row` in _instruction_identity is killed. |\n| done_when: instruction_list reports a timeout as \"timed out after 120 s\" and a truncated stdout as truncated, not \"did not return JSON\". | phrase: instruction_list reports a timeout as \"timed out after 120 s\" and a truncated stdout as truncated, not \"did not return JSON\". |\n| done_when: tools.resolve still requires the adapter entry script when the harness has an adapter: a test that removes dist/index.js expects HB-PRE-007 (kills the mutant that drops the adapter from the required files) | phrase: tools.resolve still requires the adapter entry script when the harness has an adapter: a test that removes dist/index.js expects HB-PRE-007 (kills the mutant that drops the adapter from the required files) |\n| done_when: LAYOUT becomes a typed structure (a frozen dataclass or TypedDict) so `mypy src/harness_bench/tools.py` reports no new index errors. | phrase: LAYOUT becomes a typed structure (a frozen dataclass or TypedDict) so `mypy src/harness_bench/tools.py` reports no new index errors. |\n| done_when: tests/mutations/plan.json and tools entries in tests/mutations/copilot.json cover the new branches (pack-off refusal, pack-on install, identity projection, instruction_list failure paths, adapterless required files, adapter_version/adapter_sha256 None) and every mutation is killed by `uv run python tools/mutate_check.py` on each file. | phrase: tests/mutations/plan.json and tools entries in tests/mutations/copilot.json cover the new branches (pack-off refusal, pack-on install, identity projection, instruction_list failure paths, adapterless required files, adapter_version/adapter_sha256 None) and every mutation is killed by `uv run python tools/mutate_check.py` on each file. |\n| done_when: `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean. | phrase: `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean. |\n| done_when: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and both mutate_check results. | phrase: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and both mutate_check results. |\n| not_in_scope: views.py, report/*, profiles.py, bench/profiles/*.yaml, telemetry/*, engine.py, tests/e2e (other slices) | phrase: views.py, report/*, profiles.py, bench/profiles/*.yaml, telemetry/*, engine.py, tests/e2e (other slices) |\n| not_in_scope: `bench run`, any model turn, `-m \"\"` | phrase: `bench run`, any model turn, `-m \"\"` |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- if arm == \"on: unresolved (not found)\n- if False: unresolved (not found)\n- if k in row: unresolved (not found)\n- mypy src/harness_bench/tools.py: unresolved (not found; nearest: src/harness_bench/tools.py)\n- uv run python tools/mutate_check.py: unresolved (not found; nearest: tools/mutate_check.py)\n- uv run pytest -q -p no:cacheprovider: unresolved (not found)\n- uv run ruff check src tests tools: unresolved (not found)\n- bench run: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- src/harness_bench/plan.py: src/harness_bench/plan.py sha256 fb773e2d2bbe469bb2e27110bff30eb418b9567065a845d98e15f7fa66f6c120\n- src/harness_bench/tools.py: src/harness_bench/tools.py sha256 f669a5da58671cc29d1725e15b09265ee359a5d41570735d406a7fea7f0e7940\n- src/harness_bench/cli.py: src/harness_bench/cli.py sha256 76fef0c3cabcb719bb63664d0b08765042445f13cacfe7f8adebe2f123824d4a\n- root/.tools/harness: unresolved (not found)\n- tests/test_plan.py: tests/test_plan.py sha256 839cb3e4b9624773cc71f13f77a86f37c40f6f8db6ef5ca5ee41a57b6f6efe78\n- AGENTS.md: unresolved (ambiguous: 3 matches)\n- dist/index.js: unresolved (not found)\n- tests/mutations/plan.json: unresolved (not found)\n- tests/mutations/copilot.json: tests/mutations/copilot.json sha256 fba3738bd770d2af3b6c429c78687b627fb343e639cacbb30b6200c6071973c9\n- adapter_version/adapter_sha256: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- views.py: src/harness_bench/views.py sha256 6fb7b3bf7d46e11a9a9b9bb7d1eead73223a4b29b03cd311991b849e3dfe1ec4\n- report/*: unresolved (not found)\n- profiles.py: src/harness_bench/profiles.py sha256 b01b90c10f208492e786e937d17f6940d55a9efbd34ae30c0436263a9c7850f8\n- bench/profiles/*.yaml: unresolved (not found)\n- telemetry/*: unresolved (not found)\n- engine.py: src/harness_bench/engine.py sha256 fd8b33c00711c1b0fbb348d4e7be802c88f608c901c30053112e465559ffbca4\n- tests/e2e: unresolved (not found)\n- src/harness_bench/{plan,tools,cli}.py: unresolved (not found)\n- tests/test_tools.py: tests/test_tools.py sha256 f3d8da7ef55f2f2f953a19044e95665c35847cd8bc4490362467f9f34b0e361d\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3B3C7QSMCAWZ4CXTJTNEPH8\nraw sha256: ab6008c6b0dfce493a7a5f89cf7ddf66ad88f7b52b84416ffd35ca1eb4024a73\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
-      "summary": "compiled al-01M3B3C7QSMCAWZ4CXTJTNEPH8 for codex v1: 13 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -7920,6 +7909,609 @@ window.AUDIT_DATA = {
             "sha256": "f3d8da7ef55f2f2f953a19044e95665c35847cd8bc4490362467f9f34b0e361d",
             "status": "resolved",
             "token": "tests/test_tools.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "datetime": "2026-09-25T01:37:46Z",
+      "dispatchable": true,
+      "id": "al-01M3B3C867CQK4S7105XE840B3",
+      "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-COP-I loop-back slice 6a (join review findings, Test Architect and Python developer, 2026-09-25): fix the plan probe and the pinned-tools findings in src/harness_bench/plan.py, src/harness_bench/tools.py and src/harness_bench/cli.py, red-first, in the owned paths only.\nDone when: build_plan takes the tools folder from the CLI's --tools-dir instead of hard-coding root/.tools/harness (a red test with a non-default tools dir shows the probe resolves the planned build from it), and the plan probe's temporary folder lives under the configured cells root, with unit tests passing tmp_path.; A test asserts the probe folder is removed after both the success path and the HB-PRE-008 path (kills the mutant that deletes the finally cleanup), and a cleanup OSError is logged with the leftover path while the coded BenchError is the one raised.; The fake instruction list in tests/test_plan.py answers from the working copy's content (rows only when AGENTS.md exists, with install_pack faked to write it), so replacing `if arm == \"on\":` with `if False:` in build_plan is killed by a named test.; The identity-projection test's raw row includes a non-string identity value (for example \"type\": True and \"id\": 3), so the mutant `if k in row` in _instruction_identity is killed.; instruction_list reports a timeout as \"timed out after 120 s\" and a truncated stdout as truncated, not \"did not return JSON\".; tools.resolve still requires the adapter entry script when the harness has an adapter: a test that removes dist/index.js expects HB-PRE-007 (kills the mutant that drops the adapter from the required files); LAYOUT becomes a typed structure (a frozen dataclass or TypedDict) so `mypy src/harness_bench/tools.py` reports no new index errors.; tests/mutations/plan.json and tools entries in tests/mutations/copilot.json cover the new branches (pack-off refusal, pack-on install, identity projection, instruction_list failure paths, adapterless required files, adapter_version/adapter_sha256 None) and every mutation is killed by `uv run python tools/mutate_check.py` on each file.; `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and both mutate_check results.\nNot in scope: views.py, report/*, profiles.py, bench/profiles/*.yaml, telemetry/*, engine.py, tests/e2e (other slices); `bench run`, any model turn, `-m \"\"`; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: src/harness_bench/{plan,tools,cli}.py, tests/test_plan.py, tests/test_tools.py, tests/mutations/copilot.json, tools/mutate_check.py. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: build_plan takes the tools folder from the CLI's --tools-dir instead of hard-coding root/.tools/harness (a red test with a non-default tools dir shows the probe resolves the planned build from it), and the plan probe's temporary folder lives under the configured cells root, with unit tests passing tmp_path. | phrase: build_plan takes the tools folder from the CLI's --tools-dir instead of hard-coding root/.tools/harness (a red test with a non-default tools dir shows the probe resolves the planned build from it), and the plan probe's temporary folder lives under the configured cells root, with unit tests passing tmp_path. |\n| done_when: A test asserts the probe folder is removed after both the success path and the HB-PRE-008 path (kills the mutant that deletes the finally cleanup), and a cleanup OSError is logged with the leftover path while the coded BenchError is the one raised. | phrase: A test asserts the probe folder is removed after both the success path and the HB-PRE-008 path (kills the mutant that deletes the finally cleanup), and a cleanup OSError is logged with the leftover path while the coded BenchError is the one raised. |\n| done_when: The fake instruction list in tests/test_plan.py answers from the working copy's content (rows only when AGENTS.md exists, with install_pack faked to write it), so replacing `if arm == \"on\":` with `if False:` in build_plan is killed by a named test. | phrase: The fake instruction list in tests/test_plan.py answers from the working copy's content (rows only when AGENTS.md exists, with install_pack faked to write it), so replacing `if arm == \"on\":` with `if False:` in build_plan is killed by a named test. |\n| done_when: The identity-projection test's raw row includes a non-string identity value (for example \"type\": True and \"id\": 3), so the mutant `if k in row` in _instruction_identity is killed. | phrase: The identity-projection test's raw row includes a non-string identity value (for example \"type\": True and \"id\": 3), so the mutant `if k in row` in _instruction_identity is killed. |\n| done_when: instruction_list reports a timeout as \"timed out after 120 s\" and a truncated stdout as truncated, not \"did not return JSON\". | phrase: instruction_list reports a timeout as \"timed out after 120 s\" and a truncated stdout as truncated, not \"did not return JSON\". |\n| done_when: tools.resolve still requires the adapter entry script when the harness has an adapter: a test that removes dist/index.js expects HB-PRE-007 (kills the mutant that drops the adapter from the required files) | phrase: tools.resolve still requires the adapter entry script when the harness has an adapter: a test that removes dist/index.js expects HB-PRE-007 (kills the mutant that drops the adapter from the required files) |\n| done_when: LAYOUT becomes a typed structure (a frozen dataclass or TypedDict) so `mypy src/harness_bench/tools.py` reports no new index errors. | phrase: LAYOUT becomes a typed structure (a frozen dataclass or TypedDict) so `mypy src/harness_bench/tools.py` reports no new index errors. |\n| done_when: tests/mutations/plan.json and tools entries in tests/mutations/copilot.json cover the new branches (pack-off refusal, pack-on install, identity projection, instruction_list failure paths, adapterless required files, adapter_version/adapter_sha256 None) and every mutation is killed by `uv run python tools/mutate_check.py` on each file. | phrase: tests/mutations/plan.json and tools entries in tests/mutations/copilot.json cover the new branches (pack-off refusal, pack-on install, identity projection, instruction_list failure paths, adapterless required files, adapter_version/adapter_sha256 None) and every mutation is killed by `uv run python tools/mutate_check.py` on each file. |\n| done_when: `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean. | phrase: `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean. |\n| done_when: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and both mutate_check results. | phrase: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and both mutate_check results. |\n| not_in_scope: views.py, report/*, profiles.py, bench/profiles/*.yaml, telemetry/*, engine.py, tests/e2e (other slices) | phrase: views.py, report/*, profiles.py, bench/profiles/*.yaml, telemetry/*, engine.py, tests/e2e (other slices) |\n| not_in_scope: `bench run`, any model turn, `-m \"\"` | phrase: `bench run`, any model turn, `-m \"\"` |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- if arm == \"on: unresolved (not found)\n- if False: unresolved (not found)\n- if k in row: unresolved (not found)\n- mypy src/harness_bench/tools.py: unresolved (not found; nearest: src/harness_bench/tools.py)\n- uv run python tools/mutate_check.py: unresolved (not found; nearest: tools/mutate_check.py)\n- uv run pytest -q -p no:cacheprovider: unresolved (not found)\n- uv run ruff check src tests tools: unresolved (not found)\n- bench run: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- src/harness_bench/plan.py: src/harness_bench/plan.py sha256 fb773e2d2bbe469bb2e27110bff30eb418b9567065a845d98e15f7fa66f6c120\n- src/harness_bench/tools.py: src/harness_bench/tools.py sha256 f669a5da58671cc29d1725e15b09265ee359a5d41570735d406a7fea7f0e7940\n- src/harness_bench/cli.py: src/harness_bench/cli.py sha256 76fef0c3cabcb719bb63664d0b08765042445f13cacfe7f8adebe2f123824d4a\n- root/.tools/harness: unresolved (not found)\n- tests/test_plan.py: tests/test_plan.py sha256 839cb3e4b9624773cc71f13f77a86f37c40f6f8db6ef5ca5ee41a57b6f6efe78\n- AGENTS.md: unresolved (ambiguous: 3 matches)\n- dist/index.js: unresolved (not found)\n- tests/mutations/plan.json: unresolved (not found)\n- tests/mutations/copilot.json: tests/mutations/copilot.json sha256 fba3738bd770d2af3b6c429c78687b627fb343e639cacbb30b6200c6071973c9\n- adapter_version/adapter_sha256: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- views.py: src/harness_bench/views.py sha256 6fb7b3bf7d46e11a9a9b9bb7d1eead73223a4b29b03cd311991b849e3dfe1ec4\n- report/*: unresolved (not found)\n- profiles.py: src/harness_bench/profiles.py sha256 b01b90c10f208492e786e937d17f6940d55a9efbd34ae30c0436263a9c7850f8\n- bench/profiles/*.yaml: unresolved (not found)\n- telemetry/*: unresolved (not found)\n- engine.py: src/harness_bench/engine.py sha256 fd8b33c00711c1b0fbb348d4e7be802c88f608c901c30053112e465559ffbca4\n- tests/e2e: unresolved (not found)\n- src/harness_bench/{plan,tools,cli}.py: unresolved (not found)\n- tests/test_tools.py: tests/test_tools.py sha256 f3d8da7ef55f2f2f953a19044e95665c35847cd8bc4490362467f9f34b0e361d\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3B3C7QSMCAWZ4CXTJTNEPH8\nraw sha256: ab6008c6b0dfce493a7a5f89cf7ddf66ad88f7b52b84416ffd35ca1eb4024a73\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W1-COP-I loop-back slice 6a (join review findings, Test Architect …",
+      "skill": null,
+      "summary": "compiled al-01M3B3C7QSMCAWZ4CXTJTNEPH8 for codex v1: 13 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": "Claude Opus 5.5 (subagent)",
+      "artifacts": [
+        "tests/e2e/test_us13_canary.py",
+        "tests/e2e/test_walking_skeleton.py",
+        "tests/test_profiles.py",
+        "tests/test_workspace.py"
+      ],
+      "compiled": false,
+      "datetime": "2026-09-25T01:48:31Z",
+      "done_when": "Gates green (pytest non-credentials, ruff) and fixes committed with AGENT_SESSION=w1-copi-l2",
+      "duration_seconds": 610.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w1-copi-e2e-l2",
+        "pushed": null,
+        "sha": "8beee2238d3efb880c23c48b7d54e032513eecab",
+        "short": "8beee2238"
+      },
+      "goal": "Fix TA findings 1-4 in the L2 tree; credentials e2e not run (Leader runs them live).",
+      "id": "al-01M3B3ZYBYG423AVEAZCFQ8C18",
+      "kind": "skill",
+      "main_budget": 80,
+      "main_calls": 30,
+      "main_over_budget": false,
+      "outcome": "success",
+      "prompt": "W1-COP-I loop-back L2: fix the Test Architect join findings 1-4 (Copilot US-13 probe cannot fail; settings canary model; wave-1 exit asserts; US-9 scan positive control).",
+      "session": "w1-copi-l2",
+      "shortname": "w1-copi-l2",
+      "signals": {
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "implement",
+      "started_at": "2026-09-25T01:38:21Z",
+      "summary": "3b59f15: Copilot US-13 canary under a fake operator profile; control drops COPILOT_HOME; probe keeps cell_env with fake USERPROFILE/HOME; new test_copilot_probe_without_copilot_home_goes_red; settings canary gpt-6-astra. 8beee22: wave1 asserts HB_PACK_SOURCE, revision>=95, instruction_count on/off, last_update_ms non-null; US-9 scan seeded red. 774 passed, 8 deselected; ruff clean; 7/7 scratch mutants killed.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "Claude Sonnet 5",
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-09-25T01:54:48Z",
+      "done_when": "red test on real cc-opus rows shows HB-VAL-002; green shows valid + context_window_tag=1m; negative control (genuinely different model) still HB-VAL-002; mutation file killed; pytest and ruff clean; views.py diff empty against baseline",
+      "duration_seconds": 1605.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w1-r32-context-tag",
+        "pushed": null,
+        "sha": "cebca925242ff73cc2f83a37d91b75e51fe19c9b",
+        "short": "cebca9252"
+      },
+      "goal": "Fix HB-VAL-002 false positive on a Claude Code context-window tag ([1m]); record and disclose the tag; keep views.py untouched.",
+      "id": "al-01M3B4BDYTDNFPHK2H3AK8DNZ5",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader-assigned wave-1 seam (coord-opus-cq): implement Owner ruling R-32 for harness-bench — normalize.base_model_id strips a trailing context-window tag for the served-model identity check and per-model totals, engine.py records context_window_tag on attempt.process_ended, the report discloses it; views.py has no wave-1 owner and is not touched.",
+      "session": "w1-r32",
+      "shortname": "R-32 context-window tag seam",
+      "skill": "implement",
+      "started_at": "2026-09-25T01:28:03Z",
+      "summary": "Red commit a60ee84 (tests only, HB-VAL-002 on real cc-opus rows of e2e-wave1-1790299304); green fix in normalize.py/engine.py (099ac14); scope correction (cebca92) reverted an initial CellView.context_window_tag addition that violated the views.py exclusion, reworking report/html.py to read the tag from attempt.process_ended events via the existing views.rows() utility. uv run pytest: 784 passed, 7 deselected (one unrelated transient Windows flake in test_workspace.py, confirmed clean on re-run). ruff clean. tests/mutations/r32.json: 5/5 mutants killed via mutate_check.py. Seam: none needed — the identity fix lives entirely in normalize.py; views.py and profiles.py/driver.py untouched.",
+      "tags": [
+        "R-32",
+        "wave-1",
+        "context-window-tag"
+      ],
+      "tier": "T1",
+      "tool": "Claude Code"
+    },
+    {
+      "id": "al-01M3B4PQD3X9VAZS5DEY3YAPJS",
+      "shortname": "Goal: W1-COP-I loop-back slice 6b (join review findings, Test Architect …",
+      "datetime": "2026-09-25T02:00:58Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W1-COP-I loop-back slice 6b (join review findings, Test Architect and Python developer): fix the views, report and profile findings in src/harness_bench/views.py, src/harness_bench/report/*.py and src/harness_bench/profiles.py, red-first, in the owned paths only.\nDone when: calls_per_cell becomes a Measure(value, reason) like its sibling fields: Measure(None, \"not recorded\") when a cell is ungraded, has no model_calls rows, or its extraction lists a `requests` missing field; a red test on an ungraded run folder asserts it is None (kills the mutant `calls_per_cell(ex.model_calls)` without the None guard), and a Copilot record with no `requests` object is not 0.; views.model_call builds its kwargs strictly: every field except `requests` must be present in the row (a missing start/end raises as before); only `requests` takes the ModelCall default; a red test proves a row missing `start` still raises.; The report header names the Copilot build as prerelease (ruling R-12 condition 1): \"copilot 1.0.89-1 (prerelease)\"; a report test on a fixture ledger shows the mark, red first against a header without it.; profiles.py uses one template language: str.replace for {exe}, {model}, {node} and {adapter} in argv (as cell_env already does), keeping the checks that {node}/{adapter} are required when named; a profile YAML without `command:` (or with an empty one) raises a coded error at load, not a bare KeyError, and Profile.command has no empty default; `build` is typed as tools.Build on argv and cell_env.; The cell environment also drops GH_ENTERPRISE_TOKEN, GITHUB_ENTERPRISE_TOKEN and GH_CONFIG_DIR, with the existing drop test extended.; The native Copilot instruction-list test builds its env with profiles.load(ROOT, \"copilot\").cell_env(...) (the production env), not a hand-built one.; tests/mutations/copilot.json and tests/mutations/views_copilot.json gain entries for these new branches, each killed (`uv run python tools/mutate_check.py` on each file); `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check results.\nNot in scope: plan.py, tools.py, cli.py (slice 6a), telemetry/* (other tracks), engine.py, tests/e2e; `bench run`, any model turn, `-m \"\"`; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/notes/rulings.md R-12, R-26, R-32; src/harness_bench/{views,profiles}.py, src/harness_bench/report/{html,cli_table,__init__}.py, tests/test_views.py, tests/test_report.py, tests/test_profiles.py, tests/test_plan.py (the native test), tests/mutations/*.json. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3B4PQVTJXV80MESK4FSN2XW",
+      "shortname": "compile-Goal: W1-COP-I loop-back slice 6b (join review findings, Test Architect …",
+      "datetime": "2026-09-25T02:00:59Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W1-COP-I loop-back slice 6b (join review findings, Test Architect and Python developer): fix the views, report and profile findings in src/harness_bench/views.py, src/harness_bench/report/*.py and src/harness_bench/profiles.py, red-first, in the owned paths only.\nDone when: calls_per_cell becomes a Measure(value, reason) like its sibling fields: Measure(None, \"not recorded\") when a cell is ungraded, has no model_calls rows, or its extraction lists a `requests` missing field; a red test on an ungraded run folder asserts it is None (kills the mutant `calls_per_cell(ex.model_calls)` without the None guard), and a Copilot record with no `requests` object is not 0.; views.model_call builds its kwargs strictly: every field except `requests` must be present in the row (a missing start/end raises as before); only `requests` takes the ModelCall default; a red test proves a row missing `start` still raises.; The report header names the Copilot build as prerelease (ruling R-12 condition 1): \"copilot 1.0.89-1 (prerelease)\"; a report test on a fixture ledger shows the mark, red first against a header without it.; profiles.py uses one template language: str.replace for {exe}, {model}, {node} and {adapter} in argv (as cell_env already does), keeping the checks that {node}/{adapter} are required when named; a profile YAML without `command:` (or with an empty one) raises a coded error at load, not a bare KeyError, and Profile.command has no empty default; `build` is typed as tools.Build on argv and cell_env.; The cell environment also drops GH_ENTERPRISE_TOKEN, GITHUB_ENTERPRISE_TOKEN and GH_CONFIG_DIR, with the existing drop test extended.; The native Copilot instruction-list test builds its env with profiles.load(ROOT, \"copilot\").cell_env(...) (the production env), not a hand-built one.; tests/mutations/copilot.json and tests/mutations/views_copilot.json gain entries for these new branches, each killed (`uv run python tools/mutate_check.py` on each file); `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.; Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check results.\nNot in scope: plan.py, tools.py, cli.py (slice 6a), telemetry/* (other tracks), engine.py, tests/e2e; `bench run`, any model turn, `-m \"\"`; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-12, R-26, R-32; src/harness_bench/{views,profiles}.py, src/harness_bench/report/{html,cli_table,__init__}.py, tests/test_views.py, tests/test_report.py, tests/test_profiles.py, tests/test_plan.py (the native test), tests/mutations/*.json. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: calls_per_cell becomes a Measure(value, reason) like its sibling fields: Measure(None, \"not recorded\") when a cell is ungraded, has no model_calls rows, or its extraction lists a `requests` missing field | phrase: calls_per_cell becomes a Measure(value, reason) like its sibling fields: Measure(None, \"not recorded\") when a cell is ungraded, has no model_calls rows, or its extraction lists a `requests` missing field |\n| done_when: a red test on an ungraded run folder asserts it is None (kills the mutant `calls_per_cell(ex.model_calls)` without the None guard), and a Copilot record with no `requests` object is not 0. | phrase: a red test on an ungraded run folder asserts it is None (kills the mutant `calls_per_cell(ex.model_calls)` without the None guard), and a Copilot record with no `requests` object is not 0. |\n| done_when: views.model_call builds its kwargs strictly: every field except `requests` must be present in the row (a missing start/end raises as before) | phrase: views.model_call builds its kwargs strictly: every field except `requests` must be present in the row (a missing start/end raises as before) |\n| done_when: only `requests` takes the ModelCall default | phrase: only `requests` takes the ModelCall default |\n| done_when: a red test proves a row missing `start` still raises. | phrase: a red test proves a row missing `start` still raises. |\n| done_when: The report header names the Copilot build as prerelease (ruling R-12 condition 1): \"copilot 1.0.89-1 (prerelease)\" | phrase: The report header names the Copilot build as prerelease (ruling R-12 condition 1): \"copilot 1.0.89-1 (prerelease)\" |\n| done_when: a report test on a fixture ledger shows the mark, red first against a header without it. | phrase: a report test on a fixture ledger shows the mark, red first against a header without it. |\n| done_when: profiles.py uses one template language: str.replace for {exe}, {model}, {node} and {adapter} in argv (as cell_env already does), keeping the checks that {node}/{adapter} are required when named | phrase: profiles.py uses one template language: str.replace for {exe}, {model}, {node} and {adapter} in argv (as cell_env already does), keeping the checks that {node}/{adapter} are required when named |\n| done_when: a profile YAML without `command:` (or with an empty one) raises a coded error at load, not a bare KeyError, and Profile.command has no empty default | phrase: a profile YAML without `command:` (or with an empty one) raises a coded error at load, not a bare KeyError, and Profile.command has no empty default |\n| done_when: `build` is typed as tools.Build on argv and cell_env. | phrase: `build` is typed as tools.Build on argv and cell_env. |\n| done_when: The cell environment also drops GH_ENTERPRISE_TOKEN, GITHUB_ENTERPRISE_TOKEN and GH_CONFIG_DIR, with the existing drop test extended. | phrase: The cell environment also drops GH_ENTERPRISE_TOKEN, GITHUB_ENTERPRISE_TOKEN and GH_CONFIG_DIR, with the existing drop test extended. |\n| done_when: The native Copilot instruction-list test builds its env with profiles.load(ROOT, \"copilot\").cell_env(...) (the production env), not a hand-built one. | phrase: The native Copilot instruction-list test builds its env with profiles.load(ROOT, \"copilot\").cell_env(...) (the production env), not a hand-built one. |\n| done_when: tests/mutations/copilot.json and tests/mutations/views_copilot.json gain entries for these new branches, each killed (`uv run python tools/mutate_check.py` on each file) | phrase: tests/mutations/copilot.json and tests/mutations/views_copilot.json gain entries for these new branches, each killed (`uv run python tools/mutate_check.py` on each file) |\n| done_when: `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean. | phrase: `uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean. |\n| done_when: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check results. | phrase: Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check results. |\n| not_in_scope: plan.py, tools.py, cli.py (slice 6a), telemetry/* (other tracks), engine.py, tests/e2e | phrase: plan.py, tools.py, cli.py (slice 6a), telemetry/* (other tracks), engine.py, tests/e2e |\n| not_in_scope: `bench run`, any model turn, `-m \"\"` | phrase: `bench run`, any model turn, `-m \"\"` |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- requests: unresolved (not found)\n- calls_per_cell(ex.model_calls: unresolved (not found)\n- start: unresolved (not found)\n- command: unresolved (not found)\n- build: unresolved (not found)\n- uv run python tools/mutate_check.py: unresolved (not found; nearest: tools/mutate_check.py)\n- uv run pytest -q -p no:cacheprovider: unresolved (not found)\n- uv run ruff check src tests tools: unresolved (not found)\n- bench run: unresolved (not found)\n- -m : unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- src/harness_bench/views.py: src/harness_bench/views.py sha256 6fb7b3bf7d46e11a9a9b9bb7d1eead73223a4b29b03cd311991b849e3dfe1ec4\n- src/harness_bench/report/*.py: unresolved (not found)\n- src/harness_bench/profiles.py: src/harness_bench/profiles.py sha256 b01b90c10f208492e786e937d17f6940d55a9efbd34ae30c0436263a9c7850f8\n- start/end: unresolved (not found)\n- profiles.py: src/harness_bench/profiles.py sha256 b01b90c10f208492e786e937d17f6940d55a9efbd34ae30c0436263a9c7850f8\n- {node}/{adapter}: unresolved (not found)\n- tests/mutations/copilot.json: tests/mutations/copilot.json sha256 4a82ca7024ef53f0b5a76bb35af79cf6768ec0a69686aa9cc4f64f88112fffdd\n- tests/mutations/views_copilot.json: tests/mutations/views_copilot.json sha256 7cc514482374479014d4d11ced9ac244d9b578af8979ec1296ce636c16a0e093\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- plan.py: src/harness_bench/plan.py sha256 7e889c1252594f1fd4dbd50d8c186e6f2f3156bc700eb81b669a2f451bb2f461\n- tools.py: src/harness_bench/tools.py sha256 242fdb880636a44752285a570c9f628718fbdcd9c51f701378e968e10bdcdeec\n- cli.py: src/harness_bench/cli.py sha256 13e5826e6a6a8c2ff1c1a5fdd67ea0311c646c750ba57046dce40ab39415d803\n- telemetry/*: unresolved (not found)\n- engine.py: src/harness_bench/engine.py sha256 87bdeb5740d1595f2c192708b3d8d0410428095d207c01cecd9507534e65828d\n- tests/e2e: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- src/harness_bench/{views,profiles}.py: unresolved (not found)\n- src/harness_bench/report/{html,cli_table,__init__}.py: unresolved (not found)\n- tests/test_views.py: tests/test_views.py sha256 147942926b043ca9fd4741d1682215803f91a341a6a850b73cbc712f5d377469\n- tests/test_report.py: tests/test_report.py sha256 e9fe2c1bd3dc96a5d1cab81e045996470da7a9218d9a6d6a97d8271458489389\n- tests/test_profiles.py: tests/test_profiles.py sha256 f75f801055f6fedaad1165585d7b668b0e1f23518a29b77d116b3d843028abc9\n- tests/test_plan.py: tests/test_plan.py sha256 285210df9d3fa2b6ebf11a707da1a0c46e509571861eefb21b4b8d0829191afc\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3B4PQD3X9VAZS5DEY3YAPJS\nraw sha256: 4d3a60ba62f4cbeddf08f9690b9d84673a39825e0bd227d90d4ec599c890a4ad\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3B4PQD3X9VAZS5DEY3YAPJS for codex v1: 18 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "calls_per_cell becomes a Measure(value, reason) like its sibling fields: Measure(None, \"not recorded\") when a cell is ungraded, has no model_calls rows, or its extraction lists a `requests` missing field",
+            "trace": {
+              "kind": "phrase",
+              "ref": "calls_per_cell becomes a Measure(value, reason) like its sibling fields: Measure(None, \"not recorded\") when a cell is ungraded, has no model_calls rows, or its extraction lists a `requests` missing field"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a red test on an ungraded run folder asserts it is None (kills the mutant `calls_per_cell(ex.model_calls)` without the None guard), and a Copilot record with no `requests` object is not 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a red test on an ungraded run folder asserts it is None (kills the mutant `calls_per_cell(ex.model_calls)` without the None guard), and a Copilot record with no `requests` object is not 0."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "views.model_call builds its kwargs strictly: every field except `requests` must be present in the row (a missing start/end raises as before)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "views.model_call builds its kwargs strictly: every field except `requests` must be present in the row (a missing start/end raises as before)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "only `requests` takes the ModelCall default",
+            "trace": {
+              "kind": "phrase",
+              "ref": "only `requests` takes the ModelCall default"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a red test proves a row missing `start` still raises.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a red test proves a row missing `start` still raises."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The report header names the Copilot build as prerelease (ruling R-12 condition 1): \"copilot 1.0.89-1 (prerelease)\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The report header names the Copilot build as prerelease (ruling R-12 condition 1): \"copilot 1.0.89-1 (prerelease)\""
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a report test on a fixture ledger shows the mark, red first against a header without it.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a report test on a fixture ledger shows the mark, red first against a header without it."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "profiles.py uses one template language: str.replace for {exe}, {model}, {node} and {adapter} in argv (as cell_env already does), keeping the checks that {node}/{adapter} are required when named",
+            "trace": {
+              "kind": "phrase",
+              "ref": "profiles.py uses one template language: str.replace for {exe}, {model}, {node} and {adapter} in argv (as cell_env already does), keeping the checks that {node}/{adapter} are required when named"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a profile YAML without `command:` (or with an empty one) raises a coded error at load, not a bare KeyError, and Profile.command has no empty default",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a profile YAML without `command:` (or with an empty one) raises a coded error at load, not a bare KeyError, and Profile.command has no empty default"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`build` is typed as tools.Build on argv and cell_env.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`build` is typed as tools.Build on argv and cell_env."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The cell environment also drops GH_ENTERPRISE_TOKEN, GITHUB_ENTERPRISE_TOKEN and GH_CONFIG_DIR, with the existing drop test extended.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The cell environment also drops GH_ENTERPRISE_TOKEN, GITHUB_ENTERPRISE_TOKEN and GH_CONFIG_DIR, with the existing drop test extended."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The native Copilot instruction-list test builds its env with profiles.load(ROOT, \"copilot\").cell_env(...) (the production env), not a hand-built one.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The native Copilot instruction-list test builds its env with profiles.load(ROOT, \"copilot\").cell_env(...) (the production env), not a hand-built one."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/copilot.json and tests/mutations/views_copilot.json gain entries for these new branches, each killed (`uv run python tools/mutate_check.py` on each file)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/copilot.json and tests/mutations/views_copilot.json gain entries for these new branches, each killed (`uv run python tools/mutate_check.py` on each file)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check results.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check results."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "plan.py, tools.py, cli.py (slice 6a), telemetry/* (other tracks), engine.py, tests/e2e",
+            "trace": {
+              "kind": "phrase",
+              "ref": "plan.py, tools.py, cli.py (slice 6a), telemetry/* (other tracks), engine.py, tests/e2e"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "`bench run`, any model turn, `-m \"\"`",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`bench run`, any model turn, `-m \"\"`"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "calls_per_cell becomes a Measure(value, reason) like its sibling fields: Measure(None, \"not recorded\") when a cell is ungraded, has no model_calls rows, or its extraction lists a `requests` missing field",
+            "a red test on an ungraded run folder asserts it is None (kills the mutant `calls_per_cell(ex.model_calls)` without the None guard), and a Copilot record with no `requests` object is not 0.",
+            "views.model_call builds its kwargs strictly: every field except `requests` must be present in the row (a missing start/end raises as before)",
+            "only `requests` takes the ModelCall default",
+            "a red test proves a row missing `start` still raises.",
+            "The report header names the Copilot build as prerelease (ruling R-12 condition 1): \"copilot 1.0.89-1 (prerelease)\"",
+            "a report test on a fixture ledger shows the mark, red first against a header without it.",
+            "profiles.py uses one template language: str.replace for {exe}, {model}, {node} and {adapter} in argv (as cell_env already does), keeping the checks that {node}/{adapter} are required when named",
+            "a profile YAML without `command:` (or with an empty one) raises a coded error at load, not a bare KeyError, and Profile.command has no empty default",
+            "`build` is typed as tools.Build on argv and cell_env.",
+            "The cell environment also drops GH_ENTERPRISE_TOKEN, GITHUB_ENTERPRISE_TOKEN and GH_CONFIG_DIR, with the existing drop test extended.",
+            "The native Copilot instruction-list test builds its env with profiles.load(ROOT, \"copilot\").cell_env(...) (the production env), not a hand-built one.",
+            "tests/mutations/copilot.json and tests/mutations/views_copilot.json gain entries for these new branches, each killed (`uv run python tools/mutate_check.py` on each file)",
+            "`uv run pytest -q -p no:cacheprovider` passes and `uv run ruff check src tests tools` is clean.",
+            "Your final message lists each red SHA with the failing assertion it produced, each green SHA, and the mutate_check results."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W1-COP-I loop-back slice 6b (join review findings, Test Architect and Python developer): fix the views, report and profile findings in src/harness_bench/views.py, src/harness_bench/report/*.py and src/harness_bench/profiles.py, red-first, in the owned paths only.",
+          "main_line_budget": "one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-12, R-26, R-32; src/harness_bench/{views,profiles}.py, src/harness_bench/report/{html,cli_table,__init__}.py, tests/test_views.py, tests/test_report.py, tests/test_profiles.py, tests/test_plan.py (the native test), tests/mutations/*.json. Use `python`, not `python3` (Windows). Set AGENT_SESSION to your session id before committing.",
+          "not_in_scope": [
+            "plan.py, tools.py, cli.py (slice 6a), telemetry/* (other tracks), engine.py, tests/e2e",
+            "`bench run`, any model turn, `-m \"\"`",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.002,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3B4PQD3X9VAZS5DEY3YAPJS",
+        "raw_sha256": "4d3a60ba62f4cbeddf08f9690b9d84673a39825e0bd227d90d4ec599c890a4ad",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "requests"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "calls_per_cell(ex.model_calls"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "start"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "command"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build"
+          },
+          {
+            "nearest": "tools/mutate_check.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run python tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q -p no:cacheprovider"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run ruff check src tests tools"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench run"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-m "
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python3"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/views.py",
+            "reason": null,
+            "sha256": "6fb7b3bf7d46e11a9a9b9bb7d1eead73223a4b29b03cd311991b849e3dfe1ec4",
+            "status": "resolved",
+            "token": "src/harness_bench/views.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/report/*.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/profiles.py",
+            "reason": null,
+            "sha256": "b01b90c10f208492e786e937d17f6940d55a9efbd34ae30c0436263a9c7850f8",
+            "status": "resolved",
+            "token": "src/harness_bench/profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "start/end"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/profiles.py",
+            "reason": null,
+            "sha256": "b01b90c10f208492e786e937d17f6940d55a9efbd34ae30c0436263a9c7850f8",
+            "status": "resolved",
+            "token": "profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "{node}/{adapter}"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/copilot.json",
+            "reason": null,
+            "sha256": "4a82ca7024ef53f0b5a76bb35af79cf6768ec0a69686aa9cc4f64f88112fffdd",
+            "status": "resolved",
+            "token": "tests/mutations/copilot.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/views_copilot.json",
+            "reason": null,
+            "sha256": "7cc514482374479014d4d11ced9ac244d9b578af8979ec1296ce636c16a0e093",
+            "status": "resolved",
+            "token": "tests/mutations/views_copilot.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "7e889c1252594f1fd4dbd50d8c186e6f2f3156bc700eb81b669a2f451bb2f461",
+            "status": "resolved",
+            "token": "plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/tools.py",
+            "reason": null,
+            "sha256": "242fdb880636a44752285a570c9f628718fbdcd9c51f701378e968e10bdcdeec",
+            "status": "resolved",
+            "token": "tools.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "13e5826e6a6a8c2ff1c1a5fdd67ea0311c646c750ba57046dce40ab39415d803",
+            "status": "resolved",
+            "token": "cli.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "telemetry/*"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/engine.py",
+            "reason": null,
+            "sha256": "87bdeb5740d1595f2c192708b3d8d0410428095d207c01cecd9507534e65828d",
+            "status": "resolved",
+            "token": "engine.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/{views,profiles}.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/report/{html,cli_table,__init__}.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_views.py",
+            "reason": null,
+            "sha256": "147942926b043ca9fd4741d1682215803f91a341a6a850b73cbc712f5d377469",
+            "status": "resolved",
+            "token": "tests/test_views.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_report.py",
+            "reason": null,
+            "sha256": "e9fe2c1bd3dc96a5d1cab81e045996470da7a9218d9a6d6a97d8271458489389",
+            "status": "resolved",
+            "token": "tests/test_report.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_profiles.py",
+            "reason": null,
+            "sha256": "f75f801055f6fedaad1165585d7b668b0e1f23518a29b77d116b3d843028abc9",
+            "status": "resolved",
+            "token": "tests/test_profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_plan.py",
+            "reason": null,
+            "sha256": "285210df9d3fa2b6ebf11a707da1a0c46e509571861eefb21b4b8d0829191afc",
+            "status": "resolved",
+            "token": "tests/test_plan.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/*.json"
           }
         ],
         "schema": "compiled-prompt/1",
