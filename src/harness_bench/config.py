@@ -34,6 +34,14 @@ MAX_BUDGET_MINUTES = 60
 PLACEHOLDERS = {"README.md", ".gitkeep"}
 # R-42 condition 4: generated/cache folder names that must never be vendored into workspace/.
 GENERATED_DIR_NAMES = {"bin", "obj", ".vs", "__pycache__", "node_modules", ".pytest_cache"}
+# An absolute path under an operator's home directory. %USERPROFILE% and $HOME are fine: they
+# resolve per-machine and name no one, so this pattern never matches them.
+PROFILE_PATH = re.compile(
+    r"[A-Za-z]:[\\/]Users[\\/][^\\/\s\"'<>]+"
+    r"|(?<![\w.-])/home/[^/\s\"'<>]+"
+    r"|(?<![\w.-])/Users/[^/\s\"'<>]+",
+    re.IGNORECASE,
+)
 
 
 @dataclass
@@ -164,8 +172,24 @@ def _workspace_vendoring_problems(task_dir: Path, pack_markers: list[bytes], p: 
             break
 
 
+def _profile_path_problems(task_dir: Path, p: Problems, where: str) -> None:
+    """Any text file anywhere under the task folder that hardcodes an operator's home-directory
+    path is refused, naming the file and the first offending line. Binary files are skipped."""
+    for f in sorted(task_dir.rglob("*")):
+        if not f.is_file():
+            continue
+        data = f.read_bytes()
+        if b"\x00" in data[:8000]:
+            continue
+        for lineno, line in enumerate(data.decode("utf-8", errors="replace").splitlines(), start=1):
+            if PROFILE_PATH.search(line):
+                p.add(where, f"{f.relative_to(task_dir).as_posix()}:{lineno} hardcodes an absolute user-profile path")
+                break
+
+
 def validate_task(task_dir: Path, bom_entry: dict | None, p: Problems, grader_modules: set[str], pack_markers: list[bytes]) -> None:
     where = f"tasks/{task_dir.name}"
+    _profile_path_problems(task_dir, p, where)
     ty = task_dir / "task.yaml"
     if not ty.is_file():
         p.add(where, "missing task.yaml")
