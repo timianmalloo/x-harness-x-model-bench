@@ -24,7 +24,7 @@ from pathlib import Path
 from harness_bench import archive, ledger, profiles
 from harness_bench.errors import BenchError, Cause
 from harness_bench.plan import load_confirmed
-from harness_bench.telemetry import Extraction, ModelCall, normalize
+from harness_bench.telemetry import Extraction, ModelCall, as_dict, is_count, normalize
 
 ENGINE_PREFIX = "engine-"
 GRADE_PREFIX = "grade-"
@@ -106,6 +106,7 @@ class CellView:
     scores: dict[str, Measure] = field(default_factory=dict)
     evidence: dict[str, str] = field(default_factory=dict)
     extraction_id: str | None = None
+    warnings: list[Finding] = field(default_factory=list)  # view checks that flag a cell without changing its validity
 
 
 @dataclass
@@ -243,6 +244,33 @@ def _idle(wall: Measure, model: Measure, tool: Measure) -> Measure:
 
 NO_ACP_USAGE = "the adapter reported no usage"
 
+# R-24, R-26 c5: the ACP turn total cross-checks Σ of the current extraction's model_calls buckets.
+# simplify: a harness list in code. Ceiling: harnesses whose adapter `usage` is the turn total over every model.
+# Upgrade trigger: a second such harness -> a profile datum. Verified: Copilot's ACP usage equals Σ modelMetrics in all
+# three captured samples (tests/fixtures/native/copilot/provenance.json). Codex's adapter reports the last call only and
+# Claude Code's the main model only (normalize docstring; tests/fixtures/acp/*-prompt-response.json), so a check there
+# would fire on every cell.
+ACP_TOTAL_HARNESSES = ("copilot",)
+ACP_TOTAL_KEYS = (("inputTokens", ("uncached_input", "cache_read", "cache_write")), ("outputTokens", ("output",)),
+                  ("cachedReadTokens", ("cache_read",)), ("cachedWriteTokens", ("cache_write",)))
+
+
+def _token_cross_check(ended: dict, calls: list[ModelCall]) -> Finding | None:
+    """HB-VAL-005, a warning, never a validity change: the ACP turn total and Σ model_calls disagree, or no ACP usage
+    was recorded (the check did not run, which is never read as a pass). Copilot's `inputTokens` includes cache read
+    and write (R-20 c2)."""
+    usage = as_dict(ended.get("acp_usage")).get("usage")
+    if not isinstance(usage, dict):
+        return Finding("HB-VAL-005", "warning", "token cross-check not run: no ACP usage recorded")
+    diffs = []
+    for key, buckets in ACP_TOTAL_KEYS:
+        total = sum(getattr(c, b) for c in calls for b in buckets)
+        if not (is_count(usage.get(key)) and usage[key] == total):
+            diffs.append(f"{key} ACP {usage.get(key)}, model_calls {total}")
+    if not diffs:
+        return None
+    return Finding("HB-VAL-005", "warning", "model_calls tokens differ from the ACP turn total: " + "; ".join(diffs))
+
 
 def _unrecorded(source: str, completed: dict, cid: str, ended: dict, usage: list, extraction: str | None) -> str | None:
     """Why the cell's authoritative usage record is not recorded (R-15, R-21 c2), or None when it was read.
@@ -295,7 +323,11 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     recorded = source == "acp_turn" or calls is not None
     served = normalize.served_models(source, ex, usage) if recorded else None
     completed = next((e for e in facts["events"] if e["kind"] == "grading.completed" and e["grading_id"] == grading_id), {})
-    unrecorded = _unrecorded(source, completed, cid, events.get("attempt.process_ended", {}), usage, extraction)
+    ended = events.get("attempt.process_ended", {})
+    unrecorded = _unrecorded(source, completed, cid, ended, usage, extraction)
+    warnings = []
+    if cell["harness"] in ACP_TOTAL_HARNESSES and source == "native_record" and calls is not None and unrecorded is None:
+        warnings.append(_token_cross_check(ended, ex.model_calls))
     totals = normalize.totals(source, ex, usage) if recorded and unrecorded is None else {}
     if unrecorded is not None:
         tokens_reason = f"not recorded ({unrecorded})"  # R-21 c2: never a partial sum or a zero
@@ -314,7 +346,8 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
         wall_ms=wall, model_ms=model, tool_ms=tool, idle_ms=_idle(wall, model, tool),
         tokens=totals or None, tokens_reason=tokens_reason, calls_per_cell=calls_per_cell(ex.model_calls if calls else None),
         scores={m: Measure(s["value"], s["reason"]) for m, s in now.items()},
-        evidence={m: s["evidence"] for m, s in now.items() if s.get("evidence")}, extraction_id=extraction)
+        evidence={m: s["evidence"] for m, s in now.items() if s.get("evidence")}, extraction_id=extraction,
+        warnings=[w for w in warnings if w is not None])
 
 
 def load(run_dir: Path, catalog_version: str | None = None) -> RunView:
