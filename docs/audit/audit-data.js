@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T08:47:00Z",
+  "generated": "2026-09-25T09:20:50Z",
   "audit": [
     {
       "actor": null,
@@ -16796,6 +16796,42 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3BXW4CPAEPZ27A9ZZ9N3YK6",
+      "shortname": "w2-stopi-4c",
+      "datetime": "2026-09-25T09:20:50Z",
+      "session": "w2-stopi-4c",
+      "prompt": "W2-STOP-I slice 4 moved from Codex to Claude Code under R-4; finish the brief (brief-stopi4.md) red-first on top of b3baf80 and 0f24e77.",
+      "summary": "W2-STOP-I slice 4 finished on Claude Code (R-4) from Codex's b3baf80 (red: CLI-1/2, control reader) and 0f24e77 (green: bench stop, control reader, stop sequence, pre-spawn check, stopping/stopped phases, LC replay rules). 53edf5a: skills/start-benchmark source synced (0f24e77 had edited only the copies; test_skills_in_sync failed). ef1602d red: 8 failed (7 on exit_code == 3 for a stopped run, design 5 step 4; 1 on BenchError raised from a failed control.applied append, design 11). 80356c3 green: a stopped run exits 3; a control append failure aborts and drains. 0cf9cee: 23 stop.json mutants; mutate_check 50/50 killed. Full suite 1130 passed, ruff clean. R10-1 measured: last stopped outcome 10.16-10.20 s after control.applied (grace 10 s), status showed stopped at 10.43 s.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "Claude Opus 5.5",
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "W2-STOP-I slice 4 (moved from Codex under R-4): an operator stop that ends a run within 30 s, red-first, on top of slice 3's grace; finish what b3baf80/0f24e77 did not cover.",
+      "done_when": "bench stop writes an atomic control file and the engine applies each once (CLI-1..2, control reader); the section-5 stop sequence with R10-1 (two stubborn cells, stopped within 30 s), R10-3, R10-5, R10-7a, R10-8..14 and R21-2 red first; bench-status/1 stopping/stopped with both skill copies (SK-1 green); LC stop/control rows and the ledger re-read tested; stop.json mutants each killed by mutate_check; full pytest green; ruff clean.",
+      "tier": "T2",
+      "main_calls": 62,
+      "main_budget": 150,
+      "main_over_budget": false,
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-25T08:58:12Z",
+      "duration_seconds": 1358.0,
+      "git": {
+        "sha": "0cf9ceeec1dcca2b932c50b9c1cb0c12a928bac0",
+        "short": "0cf9ceeec",
+        "branch": "w2-stopi-4c",
+        "pushed": null
+      }
     }
   ],
   "changes": [
