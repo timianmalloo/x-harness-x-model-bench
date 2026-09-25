@@ -42,6 +42,7 @@ class FakeLauncher:
     usage_source = "acp_turn"
     mode = None
     set_model = False
+    shutdown_grace = 1.0
 
     def __init__(self, behaviours: dict[str, dict], build_changed: bool = False, missing_exe: bool = False,
                  build_changed_for: set[str] | None = None):
@@ -291,6 +292,45 @@ def test_the_adapter_is_given_time_to_flush_its_record_before_the_kill(base):  #
     _, _, config = _run(base, p, FakeLauncher({p["cells"][0]["label"]: {"flush_on_eof": True}}))
     record = next((config.run_dir / "archive").rglob("projects/**/*.jsonl"))
     assert "flushed-on-exit" in record.read_text(encoding="utf-8")
+
+
+def test_engine_kill_deadline_uses_one_injected_clock(base):  # R21-5, PE-8
+    now = [100.0]
+    config = engine.EngineConfig(run_dir=base / "r", cells_root=base / "c", launchers={"fake": FakeLauncher({})},
+                                 build_workspace=_build_workspace, grade=None, clock=lambda: now[0])
+    eng = engine.Engine(_plan(n_cells=1), config)
+    a = engine._Active(eng.plan["cells"][0], threading.current_thread())
+    eng.active[a.cell["cell_id"]] = a
+    eng._kill(a, "timeout")
+    assert a.kill_deadline == 101.0 and a.cancel.is_set()
+    now[0] = 100.9
+    eng._check_kills(now[0])
+    assert not a.terminated
+
+
+def test_a_budget_kill_lets_the_agent_write_its_shutdown_record(base):  # R21-1
+    p = _plan(n_cells=1, budget=1)
+    label = p["cells"][0]["label"]
+    _, events, config = _run(base, p, FakeLauncher({label: {"mode": "on_cancel", "shutdown_file": "shutdown.txt"}}))
+    assert next((config.run_dir / "archive").rglob("shutdown.txt")).read_text(encoding="utf-8") == "shutdown\n"
+    assert _outcomes(events)[p["cells"][0]["cell_id"]]["outcome"] == "timed_out"
+
+
+def test_a_cancelled_turn_is_classified_by_its_kill_reason(base):  # R21-4, budget branch
+    p = _plan(n_cells=1, budget=1)
+    label = p["cells"][0]["label"]
+    _, events, _ = _run(base, p, FakeLauncher({label: {"mode": "on_cancel"}}))
+    out = _outcomes(events)[p["cells"][0]["cell_id"]]
+    ended = next(e for e in events if e["kind"] == "attempt.process_ended")
+    assert (out["outcome"], out["cause"], out["stop_reason"]) == ("timed_out", "timed_out", "cancelled")
+    assert ended["ended_by"] == "grace"
+
+
+def test_ended_by_records_who_ended_the_job(base):  # R21-6
+    p = _plan(n_cells=1, budget=1)
+    label = p["cells"][0]["label"]
+    _, events, _ = _run(base, p, FakeLauncher({label: {"mode": "stubborn"}}))
+    assert next(e for e in events if e["kind"] == "attempt.process_ended")["ended_by"] == "terminate"
 
 
 def test_an_unconfirmed_kill_is_logged_once_and_retried_with_capped_backoff(base, monkeypatch, caplog):  # T-FI-unkillable

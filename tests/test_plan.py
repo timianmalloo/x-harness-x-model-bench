@@ -133,6 +133,12 @@ def test_phase1_plan_has_four_cells_and_every_recorded_field():
     assert p["parameters"]["parallelism"] == 2
 
 
+def test_plan_records_each_profiles_shutdown_grace():  # PR-3
+    p = _phase1_plan()
+    assert {h: record["shutdown_grace_seconds"] for h, record in p["profiles"].items()} == {
+        "claude-code": 10, "codex": 10}
+
+
 def test_stop_parameters_are_frozen_with_the_ruling_units():  # P-1
     p = _phase1_plan()
     assert p["parameters"]["decision_timeout"] == 1800
