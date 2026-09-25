@@ -78,6 +78,23 @@ def grade_d1(tmp_path: Path, folder: Path, cell: dict, timeout: int = 900) -> di
     return {m: encode(s) for m, s in out.items()}
 
 
+def fake_dotnet(monkeypatch, *results) -> list[list[str]]:
+    """procs.run answers `results` in order for dotnet commands; returns the dotnet argv seen."""
+    seen, queue = [], list(results)
+    from harness_bench import procs
+    real_run = procs.run
+
+    def run(argv, *args, **kwargs):
+        executable = Path(argv[0]).name.lower() if argv else ""
+        if executable in ("dotnet", "dotnet.exe"):
+            seen.append(list(argv))
+            return queue.pop(0) if len(queue) > 1 else queue[0]
+        return real_run(argv, *args, **kwargs)
+
+    monkeypatch.setattr(procs, "run", run)
+    return seen
+
+
 # --- the design's seeded fixture (CS0168) ---------------------------------------------------------------------------
 
 
@@ -97,17 +114,22 @@ def test_d1_syntax_error_is_na_workspace_does_not_build(tmp_path):  # design: Ri
 
 
 def test_pre_turn_tree_does_not_build_is_na(tmp_path, monkeypatch):  # design: Rigor, NA reasons
-    seen = []
-    # Fast test: fake dotnet answers version=0, cell build=0, pre-turn build=1 (compile error)
-    queue = [done(0, "10.0.303"), done(0, ""), done(0, "10.0.303"), done(1, "error CS1002: ; expected")]
-
-    def run(argv, **kwargs):
-        seen.append(argv)
-        return queue.pop(0) if queue else done(0, "")
-
-    from harness_bench import procs
-    monkeypatch.setattr(procs, "run", run)
     folder, cell = d1_cell(tmp_path, {})
+    from harness_bench import procs
+    real_run = procs.run
+
+    def run(argv, *args, **kwargs):
+        executable = Path(argv[0]).name.lower() if argv else ""
+        if executable in ("dotnet", "dotnet.exe"):
+            cwd = Path(kwargs.get("cwd", ""))
+            if cwd.name == "pre-turn" and len(argv) > 1 and argv[1] == "build":
+                return done(1, "error CS1002: ; expected")
+            if argv[1:] == ["--version"]:
+                return done(0, "10.0.303")
+            return done(0, "")
+        return real_run(argv, *args, **kwargs)
+
+    monkeypatch.setattr(procs, "run", run)
     got = grade_d1(tmp_path, folder, cell)
     assert got.get(METRIC) == (None, "pre-turn tree does not build")
 
@@ -127,8 +149,9 @@ NA_BY_DESIGN = {
 
 
 @pytest.mark.parametrize(("metric", "reason"), list(NA_BY_DESIGN.items()))
-def test_rigor_na_by_design_metrics_give_the_designs_reasons_verbatim(tmp_path, metric, reason):
+def test_rigor_na_by_design_metrics_give_the_designs_reasons_verbatim(tmp_path, monkeypatch, metric, reason):
     folder, cell = d1_cell(tmp_path, {})
+    fake_dotnet(monkeypatch, done(0, "10.0.303"), done(0, ""))
     got = grade_d1(tmp_path, folder, cell)
     assert got.get(metric) == (None, reason)
 
@@ -151,28 +174,22 @@ def test_static_analysis_delta_no_builder_commit_is_na(tmp_path):
 
 
 def test_static_analysis_delta_timeout_is_na(tmp_path, monkeypatch):
-    from harness_bench import procs
-
     folder, cell = d1_cell(tmp_path, {})
-    monkeypatch.setattr(procs, "run", lambda argv, **kwargs: done(None, timed_out=True))
+    fake_dotnet(monkeypatch, done(None, timed_out=True))
     got = grade_d1(tmp_path, folder, cell, timeout=60)
     assert got.get(METRIC) == (None, "HB-GRD-002 grading step timeout after 60 s")
 
 
 def test_static_analysis_delta_restore_failure_is_na(tmp_path, monkeypatch):
-    from harness_bench import procs
-
     folder, cell = d1_cell(tmp_path, {})
-    queue = [done(0, "10.0.303"), done(1, r"C:\p\a.csproj : error NU1101: Unable to find package [x]")]
-    monkeypatch.setattr(procs, "run", lambda argv, **kwargs: queue.pop(0))
+    fake_dotnet(monkeypatch, done(0, "10.0.303"), done(1, r"C:\p\a.csproj : error NU1101: Unable to find package [x]"))
     got = grade_d1(tmp_path, folder, cell)
     assert got.get(METRIC) == (None, "infrastructure failure before build: restore")
 
 
 def test_static_analysis_delta_sdk_failure_is_na(tmp_path, monkeypatch):
-    from harness_bench import procs
-
     folder, cell = d1_cell(tmp_path, {})
-    monkeypatch.setattr(procs, "run", lambda argv, **kwargs: done(1, "bad sdk"))
+    fake_dotnet(monkeypatch, done(1, "bad sdk"))
     got = grade_d1(tmp_path, folder, cell)
     assert got.get(METRIC) == (None, "infrastructure failure before build: sdk")
+

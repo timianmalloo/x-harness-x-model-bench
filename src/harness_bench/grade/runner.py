@@ -52,6 +52,7 @@ from harness_bench.grade import (
     drift,
     judge,
     process,
+    rigor,
 )
 from harness_bench.plan import file_hash, load_confirmed, task_version_hash, tree_hash
 from harness_bench.telemetry import Extraction, normalize
@@ -91,6 +92,7 @@ GRADERS["process"] = process.grade_cell  # GR-PROC p1-p3
 GRADERS["clarify"] = clarify.grade_cell  # GR-CLAR l1
 GRADERS["drift"] = drift.grade_cell  # GR-CODE c3
 GRADERS["architecture"] = architecture.grade_cell  # GR-CODE c4
+GRADERS["rigor"] = rigor.grade_cell  # GR-CODE c5
 TOOL_TIMEOUT = 30  # seconds per version probe (R-59 c4)
 NOT_RECORDED = "not recorded"
 # Tools a grader runs beyond python and dotnet: key -> the command that prints its version (its last stdout line).
