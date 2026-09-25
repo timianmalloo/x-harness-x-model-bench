@@ -25,7 +25,7 @@ def _key(inputs: dict) -> str:
     return hashlib.sha256(json.dumps(inputs, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
-def _entry(inputs: dict,run_id: str = "run-placeholder-1", gid: str = "grade-placeholder-1") -> dict:
+def _entry(inputs: dict, run_id: str = "run-placeholder-1", gid: str = "grade-placeholder-1") -> dict:
     return {"format": "verdict-set/1", "key_inputs": inputs,
             "components": {"artifact_sha256": "d" * 64, "rubric_sha256": "e" * 64, "template_version": "judge-request/1",
                            "scrub_version": "scrub/1", "schema_sha256": inputs["schema_sha256"]},
@@ -202,6 +202,7 @@ def test_t_gw_13_a_forged_chain_is_hb_gw_005(tmp_path):
 def test_t_gw_13_a_pruned_storing_ledger_orphans_the_entry_and_this_runs_own_row_accepts_it(tmp_path):
     root, runs, k, entry, sha = _stored(tmp_path)
     own = tmp_path / "wt2" / "runs" / "run-placeholder-2"
+    own.parent.mkdir(parents=True)
     (runs / RUN).rename(own)  # the storing run is gone from every known root; this run holds an earlier row
     assert store.lookup(root, k, (runs,), ALLOWED, None) == store.Found("orphaned")
     assert store.lookup(root, k, (runs,), ALLOWED, own) == store.Found("hit", None, entry, sha)

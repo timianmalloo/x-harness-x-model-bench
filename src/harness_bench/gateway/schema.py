@@ -55,7 +55,7 @@ def validate(answer: object, items: int) -> list[str]:
     """Every problem with `answer`, in a fixed order; [] when it is a valid verdict set for a rubric of `items`."""
     out: list[str] = []
     _check(answer, json.loads(SCHEMA_PATH.read_text(encoding="utf-8")), "$", out)
-    rows = answer.get("items") if isinstance(answer, dict) else None
+    rows = answer["items"] if isinstance(answer, dict) and "items" in answer else None
     if not isinstance(rows, list):
         return out
     ids = [r["item"] for r in rows if isinstance(r, dict) and type(r.get("item")) is int]
