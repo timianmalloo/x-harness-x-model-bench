@@ -6,7 +6,6 @@ catalog's `kind: score` metrics of each grader, written out here so a catalog ed
 """
 
 import hashlib
-import os
 import shutil
 import sys
 from decimal import Decimal
@@ -14,7 +13,15 @@ from pathlib import Path
 
 import pytest
 import yaml
-from archived_runs import CODEX_MODEL, GOOD, ROOT, make_root, make_run, pass_rows
+from archived_runs import (
+    CODEX_MODEL,
+    GOOD,
+    ROOT,
+    gate_runs_root,
+    make_root,
+    make_run,
+    pass_rows,
+)
 
 from harness_bench import config, ledger, plan, procs, views
 from harness_bench.errors import BenchError
@@ -197,7 +204,7 @@ def test_the_committed_freeze_record_names_the_frozen_tasks_and_they_are_unchang
 # --- the 0.3 values and exports survive the 0.4.dev dispatch (R-59 c6; design: the byte-identity gate) ------------
 
 MINI_RUNS = Path(__file__).parent / "fixtures" / "ledger"  # two committed X1 runs graded under 0.3 (D6)
-GATE_RUNS = Path(os.environ.get("HB_GATE_RUNS") or ROOT / "runs")
+GATE_RUNS = gate_runs_root()
 
 
 @pytest.mark.parametrize("name", ["c44dd2b-no-heads", "heads"])

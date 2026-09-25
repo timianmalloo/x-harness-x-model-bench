@@ -6,13 +6,12 @@
 """
 
 import dataclasses
-import os
 import shutil
 from decimal import Decimal
 from pathlib import Path
 
 import pytest
-from archived_runs import ROOT
+from archived_runs import ROOT, gate_runs_root
 from test_grade_correctness import d1_cell, tree_digest
 
 from harness_bench import config, plan, procs, views
@@ -229,7 +228,7 @@ def test_the_cells_own_ignore_rule_hides_nothing_and_a_tracked_file_under_a_pre_
 
 # --- the gate run row15-d1-1, read-only (HB_GATE_RUNS) ---------------------------------------------------------------
 
-GATE_RUNS = Path(os.environ.get("HB_GATE_RUNS") or ROOT / "runs")
+GATE_RUNS = gate_runs_root()
 D1_GATE = {  # cp = copilot-sol, cx = codex-sol, cc = cc-opus; on/off = the pack (design: Drift, Fixtures)
     "4a6250261f80ded4": ("0.00", None),  # cp on
     "3ff04431d3b5ac27": ("0.00", None),  # cx on: committed its two files after the pack commit

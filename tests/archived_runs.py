@@ -7,7 +7,9 @@ real captured Codex record as its native record.
 
 import hashlib
 import json
+import os
 import shutil
+import subprocess
 from pathlib import Path
 
 import yaml
@@ -18,6 +20,38 @@ from harness_bench.grade import runner
 
 ROOT = Path(__file__).resolve().parents[1]
 FIX = Path(__file__).parent / "fixtures"
+
+
+def gate_runs_root() -> Path:
+    """The folder of archived gate runs.
+
+    `HB_GATE_RUNS` when that variable is set; otherwise `runs/` of this repository's primary
+    checkout (the first entry of `git worktree list --porcelain`); otherwise `ROOT / "runs"`.
+    A linked worktree's own `runs/` is empty, so the last fallback skips runs that live on the
+    main checkout.
+    """
+    configured = os.environ.get("HB_GATE_RUNS")
+    if configured:
+        return Path(configured)
+    try:
+        listed = subprocess.run(
+            ["git", "worktree", "list", "--porcelain"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return ROOT / "runs"
+    if listed.returncode != 0:
+        return ROOT / "runs"
+    for line in (listed.stdout or "").splitlines():
+        if line.startswith("worktree "):
+            return Path(line.removeprefix("worktree ")) / "runs"
+    return ROOT / "runs"
+
+
 GOOD = '''import re
 
 
