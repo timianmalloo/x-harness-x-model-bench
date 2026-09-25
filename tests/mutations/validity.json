@@ -616,5 +616,23 @@
   "tests": [
    "tests/test_views.py::test_an_unrecorded_advertised_list_is_no_finding"
   ]
+ },
+ {
+  "name": "S1: the grading pass never records tools_advertised",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "            self.advertised[cid] = ex.tools_advertised\n",
+  "replace": "            pass\n",
+  "tests": [
+   "tests/test_views.py::test_a_real_grading_pass_carries_the_advertised_list_to_the_view"
+  ]
+ },
+ {
+  "name": "S2: list_powershell loses its shell class",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "\"list_powershell\": \"shell\", ",
+  "replace": "",
+  "tests": [
+   "tests/test_telemetry_copilot.py::test_every_available_tools_id_in_the_copilot_profile_has_a_reader_class"
+  ]
  }
 ]

@@ -57,7 +57,8 @@ __all__ = ["ProviderError", "read"]
 
 SUPPORTED_EVENT_VERSIONS = {1}
 
-TOOL_CLASS = {"powershell": "shell", "bash": "shell", "shell": "shell", "apply_patch": "edit", "write": "edit",
+TOOL_CLASS = {"powershell": "shell", "list_powershell": "shell", "read_powershell": "shell", "stop_powershell": "shell",
+              "bash": "shell", "shell": "shell", "apply_patch": "edit", "write": "edit",
               "edit": "edit", "create": "edit", "view": "read", "glob": "read", "rg": "read", "grep": "read",
               "skill": "read"}
 

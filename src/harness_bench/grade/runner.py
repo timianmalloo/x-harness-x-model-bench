@@ -86,6 +86,7 @@ class _Pass:
         self.prices = config.load_yaml(prices_path) if self.prices_ok else {}
         self.writers: dict[str, ledger.SegmentWriter] = {}
         self.unreadable: dict[str, str] = {}  # cell_id -> why its native record could not be read (R-15)
+        self.advertised: dict[str, list[str]] = {}  # cell_id -> the tool ids its record advertised, when read (R-45 item 2)
 
     def append(self, fact: str, record: dict) -> None:
         self.writers[fact].append(ledger.stamp(record))
@@ -117,7 +118,8 @@ class _Pass:
             heads = {fact: self.writers[fact].seal() for fact in PASS_FACTS if fact != "events"}
             self.append("events", {"kind": "grading.completed", "grading_id": self.grading_id, "cells_graded": graded,
                                    "heads": dict(heads),  # ruling R-2: bench verify checks each against its seal
-                                   "unreadable_records": dict(sorted(self.unreadable.items()))})  # R-15
+                                   "unreadable_records": dict(sorted(self.unreadable.items())),  # R-15
+                                   "tools_advertised": dict(sorted(self.advertised.items()))})  # R-45 item 2
             heads["events"] = self.writers["events"].seal()
         finally:
             for w in self.writers.values():
@@ -146,6 +148,8 @@ class _Pass:
         unreadable = missing if ex is None else normalize.record_unreadable(ex)
         if unreadable is not None:
             self.unreadable[cid] = unreadable
+        if ex is not None and ex.tools_advertised is not None:
+            self.advertised[cid] = ex.tools_advertised
         task_dir = self.root / "tasks" / cell["task"]
         if task_version_hash(task_dir) != cell["task_version"]:  # the hidden tests must be the ones the plan named
             c = correctness.Result(None, None, "task changed since the plan (version hash mismatch)", "")
