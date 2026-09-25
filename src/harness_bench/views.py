@@ -132,6 +132,8 @@ class CellView:
     warnings: list[Finding] = field(default_factory=list)  # view checks that flag a cell without changing its validity
     meta_calls: Measure = field(default_factory=lambda: Measure(None, "not graded"))  # R-54 c3: a cost axis, never scored
     delegate_calls: Measure = field(default_factory=lambda: Measure(None, "not graded"))  # R-74 c2: a cost axis, never scored
+    served: tuple[str, ...] | None = None  # the served models validity reads (base ids); None = not recorded (R-73 c6 header)
+    scenario: int | None = None  # the cell's frozen task scenario (R-74 item 2); None when the plan froze none
 
 
 @dataclass
@@ -512,7 +514,9 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
         tokens=totals or None, tokens_reason=tokens_reason, calls_per_cell=per_cell,
         scores={m: Measure(s["value"], s["reason"]) for m, s in now.items()},
         evidence={m: s["evidence"] for m, s in now.items() if s.get("evidence")}, extraction_id=extraction,
-        warnings=[w for w in warnings if w is not None], meta_calls=meta, delegate_calls=delegate)
+        warnings=[w for w in warnings if w is not None], meta_calls=meta, delegate_calls=delegate,
+        served=tuple(sorted(served)) if served is not None else None, scenario=scenario)
+
 
 
 def load(run_dir: Path, catalog_version: str | None = None) -> RunView:
