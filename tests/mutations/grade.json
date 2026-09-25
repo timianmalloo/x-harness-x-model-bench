@@ -271,30 +271,30 @@
  },
  {
   "name": "an absent tool is probed anyway (a guessed version)",
-  "file": "src/harness_bench/grade/runner.py",
-  "find": "    if exe is None:\n        return NOT_RECORDED\n",
+  "file": "src/harness_bench/tools.py",
+  "find": "    if exe is None:\n        return None\n",
   "replace": "",
   "tests": ["tests/test_grade_runner.py::test_a_tool_that_cannot_be_measured_is_not_recorded_never_empty_or_guessed"]
  },
  {
   "name": "a failed probe's output recorded as the version",
-  "file": "src/harness_bench/grade/runner.py",
+  "file": "src/harness_bench/tools.py",
   "find": "done.returncode == 0 and not done.timed_out and lines",
   "replace": "not done.timed_out and lines",
   "tests": ["tests/test_grade_runner.py::test_a_tool_that_cannot_be_measured_is_not_recorded_never_empty_or_guessed"]
  },
  {
   "name": "a timed-out probe's output recorded as the version",
-  "file": "src/harness_bench/grade/runner.py",
+  "file": "src/harness_bench/tools.py",
   "find": "done.returncode == 0 and not done.timed_out and lines",
   "replace": "done.returncode == 0 and lines",
   "tests": ["tests/test_grade_runner.py::test_a_tool_that_cannot_be_measured_is_not_recorded_never_empty_or_guessed"]
  },
  {
   "name": "a probe that cannot start crashes the pass",
-  "file": "src/harness_bench/grade/runner.py",
-  "find": "    except OSError:\n        return NOT_RECORDED\n",
-  "replace": "    except ValueError:\n        return NOT_RECORDED\n",
+  "file": "src/harness_bench/tools.py",
+  "find": "    except OSError:\n        return None\n",
+  "replace": "    except ValueError:\n        return None\n",
   "tests": ["tests/test_grade_runner.py::test_a_tool_that_cannot_be_measured_is_not_recorded_never_empty_or_guessed"]
  },
  {
@@ -477,7 +477,7 @@
  },
  {
   "name": "HB_REQUIRE_DOTNET=1 with no dotnet skips instead of failing",
-  "file": "tests/conftest.py",
+  "file": "tests/slow_ring.py",
   "find": "    if which(\"dotnet\") is None:\n        pytest.fail(",
   "replace": "    if which(\"dotnet\") is None:\n        pytest.skip(",
   "tests": ["tests/test_catalog_version.py::test_hb_require_dotnet_fails_a_missing_dotnet_and_its_absence_skips"]

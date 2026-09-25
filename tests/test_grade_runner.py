@@ -275,8 +275,8 @@ def test_tool_versions_measure_dotnet_once_per_dotnet_task_in_its_workspace_with
         calls.append((Path(argv[0]).stem.lower(), argv[1:], Path(cwd), timeout))
         return procs.Completed(0, "10.0.100\n", "", False, False, 0.1)
 
-    monkeypatch.setattr(runner.shutil, "which", lambda name: f"C:/fake/{name}.exe")
-    monkeypatch.setattr(runner.procs, "run", fake_run)
+    monkeypatch.setattr(runner.tools.shutil, "which", lambda name: f"C:/fake/{name}.exe")
+    monkeypatch.setattr(runner.tools.procs, "run", fake_run)
     plan_ = {"cells": [{"task": "T2"}, {"task": "T1"}, {"task": "T1"}]}
     assert runner.tool_versions(r, plan_) == {"python": sys.version.split()[0], "dotnet[T1]": "10.0.100"}
     assert calls == [("dotnet", ["--version"], r / "tasks" / "T1" / "workspace", 30)]  # global.json there picks the SDK
@@ -292,16 +292,16 @@ def test_a_tool_that_cannot_be_measured_is_not_recorded_never_empty_or_guessed(t
         return procs.Completed(1 if fault == "exit 1" else 0,  # a timed-out tree is killed: its code proves nothing
                                "" if fault == "empty" else "10.0.100\n", "", fault == "timeout", False, 30.0)
 
-    monkeypatch.setattr(runner.shutil, "which", lambda name: None if fault == "absent" else f"C:/fake/{name}.exe")
-    monkeypatch.setattr(runner.procs, "run", fake_run)
+    monkeypatch.setattr(runner.tools.shutil, "which", lambda name: None if fault == "absent" else f"C:/fake/{name}.exe")
+    monkeypatch.setattr(runner.tools.procs, "run", fake_run)
     assert runner.tool_versions(r, {"cells": [{"task": "T1"}]})["dotnet[T1]"] == "not recorded"
 
 
 def test_a_pinned_tool_is_measured_by_its_pinned_command(tmp_path, monkeypatch):
     r = dotnet_root(tmp_path)
     monkeypatch.setattr(runner, "PINNED_TOOLS", {"dotnet-stryker": ["dotnet", "stryker-version-probe"]})
-    monkeypatch.setattr(runner.shutil, "which", lambda name: f"C:/fake/{name}.exe")
-    monkeypatch.setattr(runner.procs, "run", lambda argv, cwd, env, timeout: procs.Completed(
+    monkeypatch.setattr(runner.tools.shutil, "which", lambda name: f"C:/fake/{name}.exe")
+    monkeypatch.setattr(runner.tools.procs, "run", lambda argv, cwd, env, timeout: procs.Completed(
         0, "banner\n4.5.0\n" if argv[1:] == ["stryker-version-probe"] else "10.0.100\n", "", False, False, 0.1))
     assert runner.tool_versions(r, {"cells": [{"task": "T2"}]}) == {"python": sys.version.split()[0], "dotnet-stryker": "4.5.0"}
 

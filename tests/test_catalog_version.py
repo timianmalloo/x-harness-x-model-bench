@@ -25,10 +25,10 @@ from collections.abc import Callable
 from decimal import Decimal
 from pathlib import Path
 
-import conftest
 import pytest
 import yaml
 from archived_runs import ROOT, make_root, set_catalog_version
+from slow_ring import dotnet_gate
 
 from harness_bench import config, views
 from harness_bench.grade import Score, runner
@@ -227,7 +227,7 @@ def test_both_selectors_exclude_the_slow_ring():  # TA re-review 1: a command-li
 ])
 def test_hb_require_dotnet_fails_a_missing_dotnet_and_its_absence_skips(env, which, outcome):
     try:
-        conftest.dotnet_gate(env, lambda name: which)
+        dotnet_gate(env, lambda name: which)
         got = "run"
     except pytest.skip.Exception as exc:
         got = f"skip: {exc.msg}"

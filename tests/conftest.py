@@ -2,10 +2,10 @@ import os
 import shutil
 import sys
 import uuid
-from collections.abc import Callable, Mapping
 from pathlib import Path
 
 import pytest
+from slow_ring import dotnet_gate
 
 from harness_bench import archive
 
@@ -32,15 +32,6 @@ def base():
     if root.parent.exists() and not any(root.parent.iterdir()):
         root.parent.rmdir()
 
-
-
-def dotnet_gate(env: Mapping[str, str], which: Callable[[str], str | None] = shutil.which) -> None:
-    """The slow ring's opt-in (design phase3-graders, Catalog-version rule 4; V-4): without HB_REQUIRE_DOTNET=1 a slow
-    test skips; with it, a missing dotnet fails the test instead of skipping, so the grading host cannot pass vacuously."""
-    if env.get("HB_REQUIRE_DOTNET") != "1":
-        pytest.skip("dotnet not required")
-    if which("dotnet") is None:
-        pytest.fail("HB_REQUIRE_DOTNET=1 but dotnet is not on PATH")
 
 
 @pytest.fixture

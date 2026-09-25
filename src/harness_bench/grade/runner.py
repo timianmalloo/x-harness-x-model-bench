@@ -29,9 +29,7 @@ from __future__ import annotations
 import dataclasses
 import hashlib
 import logging
-import os
 import secrets
-import shutil
 import sys
 import time
 import traceback
@@ -41,7 +39,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
 
-from harness_bench import config, ledger, oslock, procs, profiles, views
+from harness_bench import config, ledger, oslock, profiles, tools, views
 from harness_bench.errors import BenchError
 from harness_bench.grade import (
     CellInput,
@@ -124,16 +122,8 @@ def catalog_hash(root: Path) -> str:
 
 
 def _version(argv: list[str], cwd: Path) -> str:
-    """The last line the tool prints for its version, measured now; `not recorded` when it cannot be measured."""
-    exe = shutil.which(argv[0])
-    if exe is None:
-        return NOT_RECORDED
-    try:
-        done = procs.run([exe, *argv[1:]], cwd=str(cwd), env=dict(os.environ), timeout=TOOL_TIMEOUT)
-    except OSError:
-        return NOT_RECORDED
-    lines = done.stdout.strip().splitlines()
-    return lines[-1].strip() if done.returncode == 0 and not done.timed_out and lines else NOT_RECORDED
+    """The tool's version, measured now by tools.measured_version (procs' allowlisted caller); `not recorded` otherwise."""
+    return tools.measured_version(argv, cwd, TOOL_TIMEOUT) or NOT_RECORDED
 
 
 def tool_versions(root: Path, plan: Mapping) -> dict[str, str]:
