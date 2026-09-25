@@ -90,12 +90,41 @@ def test_only_the_gateway_reaches_a_judge_backend_and_only_beside_egress():
             return False
         return package[:2] != gateway or "harness_bench.egress" not in names
 
-    assert offends("src/harness_bench/grade/judge.py", "from harness_bench.gateway.backend import spawn")
-    assert offends("src/harness_bench/gateway/judge.py", "from .backend import spawn")
-    assert not offends("src/harness_bench/gateway/judge.py", "from . import backend\nfrom harness_bench import egress")
-    assert not offends("src/harness_bench/grade/judge.py", "from harness_bench.gateway import judge")
-    assert [p.relative_to(ROOT).as_posix() for p in MODULES
-            if offends(p.relative_to(ROOT).as_posix(), p.read_text(encoding="utf-8"))] == []
+    def offenders(modules: dict[str, str]) -> list[str]:
+        return [rel for rel, source in modules.items() if offends(rel, source)]
+
+    # Self-check (Codex F2): synthetic packages, parsed and never imported or run. Each names whether it must fire.
+    gw, run = "src/harness_bench/gateway/", "procs.run(['judge-cli', p], None, None, 60)"
+    cli = f"from harness_bench import procs\n\nclass HeadlessCli:\n    def __call__(self, p):\n        return {run}\n"
+    released = ("from harness_bench import egress\nfrom .cli import HeadlessCli\n\ndef judge(p, operator):\n"
+                "    return egress.check(p, destination='judge:x', operator=operator).release(HeadlessCli())\n")
+    cases = {
+        "codex-f2-probe": (True, {gw + "backend.py": "def send(payload, backend):\n    return backend(payload)\n"}),
+        "imports-egress-without-using-it": (True, {gw + "judge.py": "from harness_bench import egress, procs\n\n"
+                                                   f"def judge(p):\n    return {run}\n"}),
+        "releases-a-fabricated-verdict": (True, {gw + "judge.py": "from harness_bench import egress, procs\n\n"
+                                                 "def judge(p):\n    return egress.Verdict('judge:x', 'h', (), p)"
+                                                 f".release(lambda p: {run})\n"}),
+        "ignores-the-check-result": (True, {gw + "cli.py": cli, gw + "__init__.py":
+                                            "from harness_bench import egress\nfrom .cli import HeadlessCli\n\n"
+                                            "def judge(p, operator):\n    egress.check(p, destination='judge:x', "
+                                            "operator=operator)\n    return HeadlessCli()(p)\n"}),
+        "a-grader-imports-the-spawner": (True, {gw + "cli.py": cli, gw + "__init__.py": released,
+                                                "src/harness_bench/grade/judge.py":
+                                                "from harness_bench.gateway.cli import HeadlessCli\n"}),
+        "a-gateway-that-reaches-no-backend": (True, {gw + "__init__.py": "def judge(p):\n    return None\n"}),
+        "released-spawner-class": (False, {gw + "cli.py": cli, gw + "__init__.py": released,
+                                           "src/harness_bench/grade/judge.py": "from harness_bench.gateway import judge\n"}),
+        "released-lambda-via-a-checked-variable": (False, {gw + "__init__.py":
+                                                           "from harness_bench.egress import check\n"
+                                                           "from harness_bench.procs import run\n\n"
+                                                           "def judge(p, operator):\n"
+                                                           "    verdict = check(p, destination='judge:x', operator=operator)\n"
+                                                           f"    return verdict.release(lambda p: {run[6:]})\n"}),
+    }
+    assert {name: bool(offenders(mods)) for name, (_, mods) in cases.items()} == \
+        {name: fires for name, (fires, _) in cases.items()}
+    assert offenders({p.relative_to(ROOT).as_posix(): p.read_text(encoding="utf-8") for p in MODULES}) == []
 
 
 D0_PATHS = [ROOT / "README.md", ROOT / "bench", SRC,
