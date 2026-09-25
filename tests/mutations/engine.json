@@ -2,8 +2,8 @@
  {
   "name": "record the outcome before the process is confirmed gone",
   "file": "src/harness_bench/engine.py",
-  "find": "        exit_status, confirmed = self._end_process(cp)\n",
-  "replace": "        exit_status, confirmed = None, True\n",
+  "find": "                exit_status, confirmed, ended_by = self._end_process(a, cp, launcher.shutdown_grace)\n",
+  "replace": "                exit_status, confirmed, ended_by = None, True, \"exit\"\n",
   "tests": [
    "tests/test_engine.py::test_happy_run_completes_archives_and_deletes_every_cell",
    "tests/test_engine.py::test_the_adapter_is_given_time_to_flush_its_record_before_the_kill"
@@ -21,7 +21,7 @@
  {
   "name": "budget never enforced",
   "file": "src/harness_bench/engine.py",
-  "find": "                    self._check_budgets()\n",
+  "find": "        self._check_budgets(now)\n",
   "replace": "",
   "tests": [
    "tests/test_engine.py::test_budget_kill_is_timed_out_and_recorded_only_after_the_tree_is_gone"
@@ -94,8 +94,8 @@
  {
   "name": "T1-1 a turn that has ended is still killed by its budget",
   "file": "src/harness_bench/engine.py",
-  "find": "            if a.proc is None or a.ended or a.kill_reason:\n",
-  "replace": "            if a.proc is None or a.kill_reason:\n",
+  "find": "            if a.ended or a.kill_reason:\n                return\n",
+  "replace": "            if a.kill_reason:\n                return\n",
   "tests": [
    "tests/test_engine.py::test_a_budget_expiring_after_the_turn_ended_is_not_a_timeout"
   ]
@@ -103,8 +103,8 @@
  {
   "name": "T1-2 seed before argv_env",
   "file": "src/harness_bench/engine.py",
-  "find": "        argv, env = launcher.argv_env(cell, home, traceparent)  # before seed: a failure here leaves no credential copy\n        try:\n            launcher.seed(home, cell[\"model\"])\n",
-  "replace": "        launcher.seed(home, cell[\"model\"])\n        argv, env = launcher.argv_env(cell, home, traceparent)\n        try:\n",
+  "find": "        argv, env = launcher.argv_env(argv_cell, home, traceparent)  # before seed: no credential copy on failure\n        try:\n            launcher.seed(home, cell[\"model\"])\n",
+  "replace": "        launcher.seed(home, cell[\"model\"])\n        argv, env = launcher.argv_env(argv_cell, home, traceparent)\n        try:\n",
   "tests": [
    "tests/test_engine.py::test_a_failing_argv_env_leaves_no_credential_copy"
   ]
@@ -269,8 +269,8 @@
  {
   "name": "T1-12 a failed stderr-tail write costs the cell",
   "file": "src/harness_bench/engine.py",
-  "find": "            except OSError as exc:\n                log.warning(",
-  "replace": "            except FileNotFoundError as exc:\n                log.warning(",
+  "find": "            except OSError as exc:\n                log.warning(\"adapter stderr tail not kept\"",
+  "replace": "            except FileNotFoundError as exc:\n                log.warning(\"adapter stderr tail not kept\"",
   "tests": [
    "tests/test_engine.py::test_the_outcome_is_recorded_before_the_best_effort_files"
   ]
@@ -305,7 +305,7 @@
  {
   "name": "T1-15 the job is not ended at end_turn (T-JOB-daemon)",
   "file": "src/harness_bench/engine.py",
-  "find": "        confirmed = _confirm(cp, self.params[\"kill_escalation\"])\n",
+  "find": "        confirmed = not active or _confirm(cp, self.params[\"kill_escalation\"])\n",
   "replace": "        confirmed = True\n",
   "tests": [
    "tests/test_engine.py::test_a_build_server_left_by_the_turn_is_gone_before_the_job_is_closed"

@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from harness_bench import procs
+from harness_bench import host, procs
 from harness_bench.grade import correctness
 from harness_bench.profiles import CELL_ENV
 
@@ -143,7 +143,9 @@ def test_dotnet_oracle_timeout_is_na_and_leaves_no_process(tmp_path, built_fixtu
     result, _, _ = _grade(tmp_path, built_fixture, "hang", str(pid_file))
     assert pid_file.is_file(), "dotnet fixture did not start"
     pid = int(pid_file.read_text(encoding="utf-8"))
-    with pytest.raises(OSError):
-        os.kill(pid, 0)
+    # Not os.kill(pid, 0): it does not raise while any party still holds a handle to the ended process object (AV,
+    # another tool), the probable cause of the one unreproduced failure (Test Architect, STOP-I join). The exit code
+    # decides. assume: the pid is not reused by a new live process within the 2 s window; breaks: a false "alive".
+    assert not host.process_alive(pid, host.creation_time(pid))
     assert result.passed is None and result.partial_credit is None
     assert result.reason.startswith("HB-GRD-002")
