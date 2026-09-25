@@ -333,7 +333,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "63ceb0fbc882a93bd80672c1b083d77af86fe58401b232155453420f95c672b9"
+      "sourceSha256": "847adce10871a3cc2341f0660ca72379cce0c07c9e8184482b118a990cd9984d"
     },
     {
       "id": "adr-0005-egress-control",
@@ -1025,6 +1025,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "0eb44e13d5b0174835d76d56681a8e5d32f9296d8a827a0cb6fe762379b43fcc"
     },
     {
+      "id": "row15-headroom",
+      "path": "docs/notes/row15-headroom.md",
+      "title": "Row 15: the headroom rule for raising the parallelism cap",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-09",
+      "reviewSuggested": [],
+      "summary": "The rule, written before the measurement run (R-38 condition 1, plan row 15), that decides what parallelism the D1 samples support: memory, CPU and host headroom per cell, times the candidate parallelism, against the host figures.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "d7f4b843efa22e8ba757165c3aa3ef977edd5c17660ec8d89093e7a15847ca32"
+    },
+    {
       "id": "rulings-register",
       "path": "docs/notes/rulings.md",
       "title": "Owner rulings",
@@ -1047,7 +1068,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "44a62b075323cdc116075c64da88376efa2f5b9c97c28fae43f3a5612f53cc8d"
+      "sourceSha256": "56a85173e87d7e5db40304542c831b8b45e20bc0585122089b8dea6133df1c9f"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -1416,7 +1437,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ae2ac2b5641b4f193d21d7f18d20a7eaa7b6669b5935f320a854c149ae1954d2"
+      "sourceSha256": "c8030d35a4338c61764466b4194fc793ce38b1c285bd9e6f59cdc566486171e5"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -1657,7 +1678,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f7d28e130ada6b2aeef28d7bc5bb7d57bfeb1fdb7d4ce9b107de8ebd704f498d"
+      "sourceSha256": "2bb7516987d6e093495dc26957eee01be6880dd749cbb2d98b01aea1653b75ad"
     },
     {
       "id": "coordination-phase1-finish",
@@ -2279,5 +2300,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "1090476e2dae99d14cc07e89a8c69c4838ef2818b1ddef5096d2bd1b7dc7d411"
+  "graphSha256": "cdb9051852cd6b56b0b7d5979abe23ed465a444bdb4fa0d9a984bcecc9b98519"
 };

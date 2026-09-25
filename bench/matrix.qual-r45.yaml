@@ -1,0 +1,10 @@
+# Qualification (R-45 c1/c2, R-46 c2): Q1 once per harness, pack on, on the fixed profiles.
+schema: bench-matrix/1
+run_id: qual-r45
+bom: { file: bench/bom.yaml, subset: [Q1] }
+repetitions: 1
+packs: ["on"]
+combos:
+  - { id: copilot-sol, harness: copilot,      model: gpt-6-sol }
+  - { id: codex-sol,   harness: codex,        model: gpt-6-sol }
+  - { id: cc-opus,     harness: claude-code,  model: claude-opus-5-5 }

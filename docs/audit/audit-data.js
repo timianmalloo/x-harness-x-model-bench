@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T04:25:51Z",
+  "generated": "2026-09-25T04:47:15Z",
   "audit": [
     {
       "actor": null,
@@ -11665,34 +11665,23 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M3BCYTN70VHH1JCYEGQQNCT6",
-      "shortname": "Goal: the R-45/R-46 seam-grant slice: close the ADR-0004 profile gap on …",
-      "datetime": "2026-09-25T04:25:12Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: the R-45/R-46 seam-grant slice: close the ADR-0004 profile gap on Copilot and Codex, red-first, and make an out-of-profile Copilot tool visible to a test that reads the pinned build's own record (rulings R-45 and R-46 in docs/notes/rulings.md; read both in full first).\nDone when: bench/profiles/copilot.yaml command gains --disable-builtin-mcps and --available-tools powershell list_powershell read_powershell stop_powershell apply_patch view glob rg skill (R-45 item 1), with a test in tests/test_profiles.py that fails on the current profile and states the missing flags.; A Copilot class test (in tests/test_allowlist_classes.py, following its Claude Code shape) reads the advertised tool list from the pinned build's own record - session.usage_checkpoint, data.promptCacheBreakState[0].models.<model>.tools, in tests/fixtures/native/copilot/on/session-state/*/events.jsonl - classifies every id, asserts the --available-tools list covers every in-class id and contains no out-of-profile id (web_search, web_fetch, task, write_agent, read_agent, list_agents, sql, every github-mcp-server-*), and asserts the advertised list in a fixture from the FIXED profile contains no out-of-profile id. It is red today on the committed samples (21 advertised ids); mark the fixed-profile half as a pending recut with pytest.mark.skip and a reason naming R-45 condition 1 (the Leader recuts the fixture from a qualification turn after this slice).; The Copilot reader (src/harness_bench/telemetry/copilot.py) records tools_advertised on Extraction (a new field in src/harness_bench/telemetry/__init__.py: list[str] | None, None when the record is unreadable or carries no checkpoint, never []), red-first on the committed fixture.; bench/profiles/codex.yaml's seeded config.toml gains web_search = \"disabled\" (R-46), with a profile test red on the current template.; src/harness_bench/telemetry/codex.py records a web_search_call item as a tool_calls row of class other (R-46 condition 1), red-first on a synthetic record line.; docs/adr/0004-static-permissions-offline-dependencies.md gains an amendment note citing R-45 and R-46: the Copilot row lists the flags verbatim; the Codex row names web_search = \"disabled\"; the Claude row cites R-46's assume.; tests/mutations/profile_classes.json holds named mutants (a flag dropped from copilot.yaml; web_search_call ignored; tools_advertised [] instead of None; an out-of-profile id accepted by the class test), each killed: uv run python tools/mutate_check.py tests/mutations/profile_classes.json.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.\nNot in scope: views.py and the per-cell out-of-profile validity finding (W2-VIEWS owns it); profiles.py code beyond what the YAML change needs; claude-code.yaml; recutting fixtures or any live turn; bench run, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/notes/rulings.md R-4, R-33, R-34, R-35, R-45, R-46; docs/adr/0004-static-permissions-offline-dependencies.md; bench/profiles/{copilot,codex,claude-code}.yaml; src/harness_bench/profiles.py; src/harness_bench/telemetry/{__init__,copilot,codex}.py; tests/test_allowlist_classes.py; tests/test_profiles.py; tests/test_telemetry.py and tests/test_telemetry_copilot.py; tests/fixtures/native/copilot/. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-r45 before committing.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
+      "datetime": "2026-09-25T04:25:12Z",
+      "id": "al-01M3BCYTN70VHH1JCYEGQQNCT6",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: the R-45/R-46 seam-grant slice: close the ADR-0004 profile gap on Copilot and Codex, red-first, and make an out-of-profile Copilot tool visible to a test that reads the pinned build's own record (rulings R-45 and R-46 in docs/notes/rulings.md; read both in full first).\nDone when: bench/profiles/copilot.yaml command gains --disable-builtin-mcps and --available-tools powershell list_powershell read_powershell stop_powershell apply_patch view glob rg skill (R-45 item 1), with a test in tests/test_profiles.py that fails on the current profile and states the missing flags.; A Copilot class test (in tests/test_allowlist_classes.py, following its Claude Code shape) reads the advertised tool list from the pinned build's own record - session.usage_checkpoint, data.promptCacheBreakState[0].models.<model>.tools, in tests/fixtures/native/copilot/on/session-state/*/events.jsonl - classifies every id, asserts the --available-tools list covers every in-class id and contains no out-of-profile id (web_search, web_fetch, task, write_agent, read_agent, list_agents, sql, every github-mcp-server-*), and asserts the advertised list in a fixture from the FIXED profile contains no out-of-profile id. It is red today on the committed samples (21 advertised ids); mark the fixed-profile half as a pending recut with pytest.mark.skip and a reason naming R-45 condition 1 (the Leader recuts the fixture from a qualification turn after this slice).; The Copilot reader (src/harness_bench/telemetry/copilot.py) records tools_advertised on Extraction (a new field in src/harness_bench/telemetry/__init__.py: list[str] | None, None when the record is unreadable or carries no checkpoint, never []), red-first on the committed fixture.; bench/profiles/codex.yaml's seeded config.toml gains web_search = \"disabled\" (R-46), with a profile test red on the current template.; src/harness_bench/telemetry/codex.py records a web_search_call item as a tool_calls row of class other (R-46 condition 1), red-first on a synthetic record line.; docs/adr/0004-static-permissions-offline-dependencies.md gains an amendment note citing R-45 and R-46: the Copilot row lists the flags verbatim; the Codex row names web_search = \"disabled\"; the Claude row cites R-46's assume.; tests/mutations/profile_classes.json holds named mutants (a flag dropped from copilot.yaml; web_search_call ignored; tools_advertised [] instead of None; an out-of-profile id accepted by the class test), each killed: uv run python tools/mutate_check.py tests/mutations/profile_classes.json.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.\nNot in scope: views.py and the per-cell out-of-profile validity finding (W2-VIEWS owns it); profiles.py code beyond what the YAML change needs; claude-code.yaml; recutting fixtures or any live turn; bench run, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/notes/rulings.md R-4, R-33, R-34, R-35, R-45, R-46; docs/adr/0004-static-permissions-offline-dependencies.md; bench/profiles/{copilot,codex,claude-code}.yaml; src/harness_bench/profiles.py; src/harness_bench/telemetry/{__init__,copilot,codex}.py; tests/test_allowlist_classes.py; tests/test_profiles.py; tests/test_telemetry.py and tests/test_telemetry_copilot.py; tests/fixtures/native/copilot/. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-r45 before committing.",
+      "session": "prompt-compile",
+      "shortname": "Goal: the R-45/R-46 seam-grant slice: close the ADR-0004 profile gap on …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M3BCYV126JEXESE0YHNCJ33M",
-      "shortname": "compile-Goal: the R-45/R-46 seam-grant slice: close the ADR-0004 profile gap on …",
-      "datetime": "2026-09-25T04:25:12Z",
-      "session": "coord-opus-cq",
-      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: the R-45/R-46 seam-grant slice: close the ADR-0004 profile gap on Copilot and Codex, red-first, and make an out-of-profile Copilot tool visible to a test that reads the pinned build's own record (rulings R-45 and R-46 in docs/notes/rulings.md; read both in full first).\nDone when: bench/profiles/copilot.yaml command gains --disable-builtin-mcps and --available-tools powershell list_powershell read_powershell stop_powershell apply_patch view glob rg skill (R-45 item 1), with a test in tests/test_profiles.py that fails on the current profile and states the missing flags.; A Copilot class test (in tests/test_allowlist_classes.py, following its Claude Code shape) reads the advertised tool list from the pinned build's own record - session.usage_checkpoint, data.promptCacheBreakState[0].models.<model>.tools, in tests/fixtures/native/copilot/on/session-state/*/events.jsonl - classifies every id, asserts the --available-tools list covers every in-class id and contains no out-of-profile id (web_search, web_fetch, task, write_agent, read_agent, list_agents, sql, every github-mcp-server-*), and asserts the advertised list in a fixture from the FIXED profile contains no out-of-profile id. It is red today on the committed samples (21 advertised ids); mark the fixed-profile half as a pending recut with pytest.mark.skip and a reason naming R-45 condition 1 (the Leader recuts the fixture from a qualification turn after this slice).; The Copilot reader (src/harness_bench/telemetry/copilot.py) records tools_advertised on Extraction (a new field in src/harness_bench/telemetry/__init__.py: list[str] | None, None when the record is unreadable or carries no checkpoint, never []), red-first on the committed fixture.; bench/profiles/codex.yaml's seeded config.toml gains web_search = \"disabled\" (R-46), with a profile test red on the current template.; src/harness_bench/telemetry/codex.py records a web_search_call item as a tool_calls row of class other (R-46 condition 1), red-first on a synthetic record line.; docs/adr/0004-static-permissions-offline-dependencies.md gains an amendment note citing R-45 and R-46: the Copilot row lists the flags verbatim; the Codex row names web_search = \"disabled\"; the Claude row cites R-46's assume.; tests/mutations/profile_classes.json holds named mutants (a flag dropped from copilot.yaml; web_search_call ignored; tools_advertised [] instead of None; an out-of-profile id accepted by the class test), each killed: uv run python tools/mutate_check.py tests/mutations/profile_classes.json.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.\nNot in scope: views.py and the per-cell out-of-profile validity finding (W2-VIEWS owns it); profiles.py code beyond what the YAML change needs; claude-code.yaml; recutting fixtures or any live turn; bench run, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-4, R-33, R-34, R-35, R-45, R-46; docs/adr/0004-static-permissions-offline-dependencies.md; bench/profiles/{copilot,codex,claude-code}.yaml; src/harness_bench/profiles.py; src/harness_bench/telemetry/{__init__,copilot,codex}.py; tests/test_allowlist_classes.py; tests/test_profiles.py; tests/test_telemetry.py and tests/test_telemetry_copilot.py; tests/fixtures/native/copilot/. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-r45 before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: bench/profiles/copilot.yaml command gains --disable-builtin-mcps and --available-tools powershell list_powershell read_powershell stop_powershell apply_patch view glob rg skill (R-45 item 1), with a test in tests/test_profiles.py that fails on the current profile and states the missing flags. | phrase: bench/profiles/copilot.yaml command gains --disable-builtin-mcps and --available-tools powershell list_powershell read_powershell stop_powershell apply_patch view glob rg skill (R-45 item 1), with a test in tests/test_profiles.py that fails on the current profile and states the missing flags. |\n| done_when: A Copilot class test (in tests/test_allowlist_classes.py, following its Claude Code shape) reads the advertised tool list from the pinned build's own record - session.usage_checkpoint, data.promptCacheBreakState[0].models.<model>.tools, in tests/fixtures/native/copilot/on/session-state/*/events.jsonl - classifies every id, asserts the --available-tools list covers every in-class id and contains no out-of-profile id (web_search, web_fetch, task, write_agent, read_agent, list_agents, sql, every github-mcp-server-*), and asserts the advertised list in a fixture from the FIXED profile contains no out-of-profile id. It is red today on the committed samples (21 advertised ids) | phrase: A Copilot class test (in tests/test_allowlist_classes.py, following its Claude Code shape) reads the advertised tool list from the pinned build's own record - session.usage_checkpoint, data.promptCacheBreakState[0].models.<model>.tools, in tests/fixtures/native/copilot/on/session-state/*/events.jsonl - classifies every id, asserts the --available-tools list covers every in-class id and contains no out-of-profile id (web_search, web_fetch, task, write_agent, read_agent, list_agents, sql, every github-mcp-server-*), and asserts the advertised list in a fixture from the FIXED profile contains no out-of-profile id. It is red today on the committed samples (21 advertised ids) |\n| done_when: mark the fixed-profile half as a pending recut with pytest.mark.skip and a reason naming R-45 condition 1 (the Leader recuts the fixture from a qualification turn after this slice). | phrase: mark the fixed-profile half as a pending recut with pytest.mark.skip and a reason naming R-45 condition 1 (the Leader recuts the fixture from a qualification turn after this slice). |\n| done_when: The Copilot reader (src/harness_bench/telemetry/copilot.py) records tools_advertised on Extraction (a new field in src/harness_bench/telemetry/__init__.py: list[str] | None, None when the record is unreadable or carries no checkpoint, never []), red-first on the committed fixture. | phrase: The Copilot reader (src/harness_bench/telemetry/copilot.py) records tools_advertised on Extraction (a new field in src/harness_bench/telemetry/__init__.py: list[str] | None, None when the record is unreadable or carries no checkpoint, never []), red-first on the committed fixture. |\n| done_when: bench/profiles/codex.yaml's seeded config.toml gains web_search = \"disabled\" (R-46), with a profile test red on the current template. | phrase: bench/profiles/codex.yaml's seeded config.toml gains web_search = \"disabled\" (R-46), with a profile test red on the current template. |\n| done_when: src/harness_bench/telemetry/codex.py records a web_search_call item as a tool_calls row of class other (R-46 condition 1), red-first on a synthetic record line. | phrase: src/harness_bench/telemetry/codex.py records a web_search_call item as a tool_calls row of class other (R-46 condition 1), red-first on a synthetic record line. |\n| done_when: docs/adr/0004-static-permissions-offline-dependencies.md gains an amendment note citing R-45 and R-46: the Copilot row lists the flags verbatim | phrase: docs/adr/0004-static-permissions-offline-dependencies.md gains an amendment note citing R-45 and R-46: the Copilot row lists the flags verbatim |\n| done_when: the Codex row names web_search = \"disabled\" | phrase: the Codex row names web_search = \"disabled\" |\n| done_when: the Claude row cites R-46's assume. | phrase: the Claude row cites R-46's assume. |\n| done_when: tests/mutations/profile_classes.json holds named mutants (a flag dropped from copilot.yaml | phrase: tests/mutations/profile_classes.json holds named mutants (a flag dropped from copilot.yaml |\n| done_when: web_search_call ignored | phrase: web_search_call ignored |\n| done_when: tools_advertised [] instead of None | phrase: tools_advertised [] instead of None |\n| done_when: an out-of-profile id accepted by the class test), each killed: uv run python tools/mutate_check.py tests/mutations/profile_classes.json. | phrase: an out-of-profile id accepted by the class test), each killed: uv run python tools/mutate_check.py tests/mutations/profile_classes.json. |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean. | phrase: uv run ruff check src tests tools is clean. |\n| done_when: Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result. | phrase: Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result. |\n| not_in_scope: views.py and the per-cell out-of-profile validity finding (W2-VIEWS owns it) | phrase: views.py and the per-cell out-of-profile validity finding (W2-VIEWS owns it) |\n| not_in_scope: profiles.py code beyond what the YAML change needs | phrase: profiles.py code beyond what the YAML change needs |\n| not_in_scope: claude-code.yaml | phrase: claude-code.yaml |\n| not_in_scope: recutting fixtures or any live turn | phrase: recutting fixtures or any live turn |\n| not_in_scope: bench run, pytest -m \"\" | phrase: bench run, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- R-45/R-46: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- bench/profiles/copilot.yaml: bench/profiles/copilot.yaml sha256 e92cdb19c79d4951b969e2c302aa3318c78e7ac64d496138538f4c552700e7ff\n- tests/test_profiles.py: tests/test_profiles.py sha256 a9dedfa0fe2366db5d30fd989ffc229c2b86c042aad485223de00a717edc5f2b\n- tests/test_allowlist_classes.py: tests/test_allowlist_classes.py sha256 179b88f65569991e5353c2a96c8d342afa69f4839401e25b1abb0ac89ee5b6f1\n- tests/fixtures/native/copilot/on/session-state/*/events.jsonl: unresolved (not found)\n- src/harness_bench/telemetry/copilot.py: src/harness_bench/telemetry/copilot.py sha256 55c8699b09be78dc2b3bca5459db841b5f7fb271d6a27a0fc216956c4165c860\n- src/harness_bench/telemetry/__init__.py: src/harness_bench/telemetry/__init__.py sha256 08e770e6ea5acac7c92bc383ad5706cf1c7ceb21b414b2479e7d0448f7b947ea\n- bench/profiles/codex.yaml's: unresolved (not found; nearest: bench/profiles/codex.yaml)\n- src/harness_bench/telemetry/codex.py: src/harness_bench/telemetry/codex.py sha256 1d7509dc9021f646e196af9de98e67463a2c7933e9b3f02a7f53708af2cb2105\n- docs/adr/0004-static-permissions-offline-dependencies.md: docs/adr/0004-static-permissions-offline-dependencies.md sha256 63ceb0fbc882a93bd80672c1b083d77af86fe58401b232155453420f95c672b9\n- tests/mutations/profile_classes.json: unresolved (not found)\n- copilot.yaml: bench/profiles/copilot.yaml sha256 e92cdb19c79d4951b969e2c302aa3318c78e7ac64d496138538f4c552700e7ff\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- views.py: src/harness_bench/views.py sha256 1684f9a2aa88f6d9aee5f908afc46a2920425b3f0bca7c627ea82b6e5f0ff5be\n- profiles.py: src/harness_bench/profiles.py sha256 1d22ad0c83321b3e89899104ebf91858a872a46b994bf9f6a1bb56fd4f967747\n- claude-code.yaml: bench/profiles/claude-code.yaml sha256 462583ff2d9e816b95bb85838525e738ad34c1fcaea7c60bd5e2404279bce0a7\n- bench/profiles/{copilot,codex,claude-code}.yaml: unresolved (not found)\n- src/harness_bench/profiles.py: src/harness_bench/profiles.py sha256 1d22ad0c83321b3e89899104ebf91858a872a46b994bf9f6a1bb56fd4f967747\n- src/harness_bench/telemetry/{__init__,copilot,codex}.py: unresolved (not found)\n- tests/test_telemetry.py: tests/test_telemetry.py sha256 5a0293c040a81b7a1cb67307b11fdde4ab4f89a03c8e2842f545679c7f78f79c\n- tests/test_telemetry_copilot.py: tests/test_telemetry_copilot.py sha256 53fa7a411ea14df90a267975871c09930e4ce01e59dc68255b010ee6d590e4d0\n- tests/fixtures/native/copilot/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BCYTN70VHH1JCYEGQQNCT6\nraw sha256: 4145adf1d607c80679700a30539f62e8acbb619392759d3bfad53237579c2849\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
-      "summary": "compiled al-01M3BCYTN70VHH1JCYEGQQNCT6 for codex v1: 22 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -12121,38 +12110,38 @@ window.AUDIT_DATA = {
         "template": "codex",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3BD00DJQHERVWP71XX14FK1",
-      "shortname": "Goal: W2-TASKS-e slice 1: author task E6 (\"HumanEval-C# batch of 10\", sc…",
-      "datetime": "2026-09-25T04:25:51Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: W2-TASKS-e slice 1: author task E6 (\"HumanEval-C# batch of 10\", scenario 5, MultiPL-E) in tasks/E6/ toward ready, per .claude/skills/new-bench-task/SKILL.md and tasks/README.md, graded by the dotnet correctness runner (src/harness_bench/grade/correctness.py: oracle runner dotnet, a command whose --logger names a TRX file, e.g. trx;LogFileName=e6.trx).\nDone when: tasks/E6/task.yaml pins source.repo https://github.com/nuprl/MultiPL-E and source.commit to the full SHA of 3025a53 (read with git ls-remote or a shallow clone into a temp folder outside the repo), records source.license with the licence and copyright line read from that commit's licence file (and the HumanEval licence it inherits, if the repo states one), and copies the licence text into tasks/E6/.; You pick 10 HumanEval-C# problems from that commit, list them with their upstream ids in tasks/E6/README.md, and tasks/E6/prompt.md asks for all 10 in one C# project in the workspace (text identical for every harness).; tasks/E6/workspace/ holds the base: a C# class library project with the 10 method signatures as stubs that throw NotImplementedException; no test code in the workspace (US-8).; tasks/E6/tests/ holds the hidden tests as an xUnit test project (one test per upstream assertion, ported from the upstream C# test harness) that references the workspace project; restore works offline on this host (no package registry at grading, ADR-0005) - record in tasks/E6/oracle/README.md which local NuGet cache or packages it relies on as an assume: with confirm and breaks.; The hidden tests are observed to FAIL on the base workspace and PASS on a reference solution kept only under tasks/E6/oracle/reference/, both run through harness_bench.grade.correctness.grade (write a small script under tasks/E6/oracle/ that calls it); commands, exit codes, pass counts and failing test names go in tasks/E6/oracle/evidence.md.; uv run bench validate prints ok; uv run pytest -q -p no:cacheprovider passes.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any bench/bom.yaml change you need (do not edit it).\nNot in scope: bench/bom.yaml; src/**; other task folders; bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; no printing of large files; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/notes/rulings.md R-7, R-33, R-40, R-41; tasks/README.md; tasks/X1 and tasks/C1 (ready tasks); src/harness_bench/grade/correctness.py and tests/fixtures/dotnet/ (a working offline dotnet test fixture); docs/adr/ ADR-0005. The .NET SDK on this host is 10.0.303. Use python, not python3 (Windows). Set AGENT_SESSION=worker-agy-te1 before committing.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3BD00R0P18ZA8YJ7XWMQRGH",
-      "shortname": "compile-Goal: W2-TASKS-e slice 1: author task E6 (\"HumanEval-C# batch of 10\", sc…",
-      "datetime": "2026-09-25T04:25:51Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-TASKS-e slice 1: author task E6 (\"HumanEval-C# batch of 10\", scenario 5, MultiPL-E) in tasks/E6/ toward ready, per .claude/skills/new-bench-task/SKILL.md and tasks/README.md, graded by the dotnet correctness runner (src/harness_bench/grade/correctness.py: oracle runner dotnet, a command whose --logger names a TRX file, e.g. trx;LogFileName=e6.trx).\nDone when: tasks/E6/task.yaml pins source.repo https://github.com/nuprl/MultiPL-E and source.commit to the full SHA of 3025a53 (read with git ls-remote or a shallow clone into a temp folder outside the repo), records source.license with the licence and copyright line read from that commit's licence file (and the HumanEval licence it inherits, if the repo states one), and copies the licence text into tasks/E6/.; You pick 10 HumanEval-C# problems from that commit, list them with their upstream ids in tasks/E6/README.md, and tasks/E6/prompt.md asks for all 10 in one C# project in the workspace (text identical for every harness).; tasks/E6/workspace/ holds the base: a C# class library project with the 10 method signatures as stubs that throw NotImplementedException; no test code in the workspace (US-8).; tasks/E6/tests/ holds the hidden tests as an xUnit test project (one test per upstream assertion, ported from the upstream C# test harness) that references the workspace project; restore works offline on this host (no package registry at grading, ADR-0005) - record in tasks/E6/oracle/README.md which local NuGet cache or packages it relies on as an assume: with confirm and breaks.; The hidden tests are observed to FAIL on the base workspace and PASS on a reference solution kept only under tasks/E6/oracle/reference/, both run through harness_bench.grade.correctness.grade (write a small script under tasks/E6/oracle/ that calls it); commands, exit codes, pass counts and failing test names go in tasks/E6/oracle/evidence.md.; uv run bench validate prints ok; uv run pytest -q -p no:cacheprovider passes.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any bench/bom.yaml change you need (do not edit it).\nNot in scope: bench/bom.yaml; src/**; other task folders; bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; no printing of large files; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-7, R-33, R-40, R-41; tasks/README.md; tasks/X1 and tasks/C1 (ready tasks); src/harness_bench/grade/correctness.py and tests/fixtures/dotnet/ (a working offline dotnet test fixture); docs/adr/ ADR-0005. The .NET SDK on this host is 10.0.303. Use python, not python3 (Windows). Set AGENT_SESSION=worker-agy-te1 before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: tasks/E6/task.yaml pins source.repo https://github.com/nuprl/MultiPL-E and source.commit to the full SHA of 3025a53 (read with git ls-remote or a shallow clone into a temp folder outside the repo), records source.license with the licence and copyright line read from that commit's licence file (and the HumanEval licence it inherits, if the repo states one), and copies the licence text into tasks/E6/. | phrase: tasks/E6/task.yaml pins source.repo https://github.com/nuprl/MultiPL-E and source.commit to the full SHA of 3025a53 (read with git ls-remote or a shallow clone into a temp folder outside the repo), records source.license with the licence and copyright line read from that commit's licence file (and the HumanEval licence it inherits, if the repo states one), and copies the licence text into tasks/E6/. |\n| done_when: You pick 10 HumanEval-C# problems from that commit, list them with their upstream ids in tasks/E6/README.md, and tasks/E6/prompt.md asks for all 10 in one C# project in the workspace (text identical for every harness). | phrase: You pick 10 HumanEval-C# problems from that commit, list them with their upstream ids in tasks/E6/README.md, and tasks/E6/prompt.md asks for all 10 in one C# project in the workspace (text identical for every harness). |\n| done_when: tasks/E6/workspace/ holds the base: a C# class library project with the 10 method signatures as stubs that throw NotImplementedException | phrase: tasks/E6/workspace/ holds the base: a C# class library project with the 10 method signatures as stubs that throw NotImplementedException |\n| done_when: no test code in the workspace (US-8). | phrase: no test code in the workspace (US-8). |\n| done_when: tasks/E6/tests/ holds the hidden tests as an xUnit test project (one test per upstream assertion, ported from the upstream C# test harness) that references the workspace project | phrase: tasks/E6/tests/ holds the hidden tests as an xUnit test project (one test per upstream assertion, ported from the upstream C# test harness) that references the workspace project |\n| done_when: restore works offline on this host (no package registry at grading, ADR-0005) - record in tasks/E6/oracle/README.md which local NuGet cache or packages it relies on as an assume: with confirm and breaks. | phrase: restore works offline on this host (no package registry at grading, ADR-0005) - record in tasks/E6/oracle/README.md which local NuGet cache or packages it relies on as an assume: with confirm and breaks. |\n| done_when: The hidden tests are observed to FAIL on the base workspace and PASS on a reference solution kept only under tasks/E6/oracle/reference/, both run through harness_bench.grade.correctness.grade (write a small script under tasks/E6/oracle/ that calls it) | phrase: The hidden tests are observed to FAIL on the base workspace and PASS on a reference solution kept only under tasks/E6/oracle/reference/, both run through harness_bench.grade.correctness.grade (write a small script under tasks/E6/oracle/ that calls it) |\n| done_when: commands, exit codes, pass counts and failing test names go in tasks/E6/oracle/evidence.md. | phrase: commands, exit codes, pass counts and failing test names go in tasks/E6/oracle/evidence.md. |\n| done_when: uv run bench validate prints ok | phrase: uv run bench validate prints ok |\n| done_when: uv run pytest -q -p no:cacheprovider passes. | phrase: uv run pytest -q -p no:cacheprovider passes. |\n| done_when: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any bench/bom.yaml change you need (do not edit it). | phrase: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any bench/bom.yaml change you need (do not edit it). |\n| not_in_scope: bench/bom.yaml | phrase: bench/bom.yaml |\n| not_in_scope: src/** | phrase: src/** |\n| not_in_scope: other task folders | phrase: other task folders |\n| not_in_scope: bench run, any model turn, pytest -m \"\" | phrase: bench run, any model turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- tasks/E6/: unresolved (not found)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- src/harness_bench/grade/correctness.py: src/harness_bench/grade/correctness.py sha256 e1e34566c546e33bf268da234d12ba505f9c7f14a5bc1b8257bf0228e7d052ab\n- tasks/E6/task.yaml: tasks/E6/task.yaml sha256 f3ffdd9f3574bb01e71ead9139374dae3d232bf22431132fac52ed64fa04c2a6\n- https://github.com/nuprl/MultiPL-E: unresolved (not found)\n- tasks/E6/README.md: unresolved (not found)\n- tasks/E6/prompt.md: unresolved (not found)\n- tasks/E6/workspace/: unresolved (not found)\n- tasks/E6/tests/: unresolved (not found)\n- tasks/E6/oracle/README.md: unresolved (not found)\n- tasks/E6/oracle/reference/: unresolved (not found)\n- tasks/E6/oracle/: unresolved (not found)\n- tasks/E6/oracle/evidence.md: unresolved (not found; nearest: tasks/C1/oracle/evidence.md)\n- bench/bom.yaml: bench/bom.yaml sha256 e9a32d8b6ea35381544b86fc68fb73a92507905e65d31a0ba1a7d8fb18549114\n- src/**: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- tasks/X1: unresolved (not found)\n- tasks/C1: unresolved (not found)\n- tests/fixtures/dotnet/: unresolved (not found)\n- docs/adr/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BD00DJQHERVWP71XX14FK1\nraw sha256: 324724e5cee3584b997dfebc72b181614824b4e96a8be6d7ec5594196a175e4a\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3BD00DJQHERVWP71XX14FK1 for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-25T04:25:12Z",
+      "dispatchable": true,
+      "id": "al-01M3BCYV126JEXESE0YHNCJ33M",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: the R-45/R-46 seam-grant slice: close the ADR-0004 profile gap on Copilot and Codex, red-first, and make an out-of-profile Copilot tool visible to a test that reads the pinned build's own record (rulings R-45 and R-46 in docs/notes/rulings.md; read both in full first).\nDone when: bench/profiles/copilot.yaml command gains --disable-builtin-mcps and --available-tools powershell list_powershell read_powershell stop_powershell apply_patch view glob rg skill (R-45 item 1), with a test in tests/test_profiles.py that fails on the current profile and states the missing flags.; A Copilot class test (in tests/test_allowlist_classes.py, following its Claude Code shape) reads the advertised tool list from the pinned build's own record - session.usage_checkpoint, data.promptCacheBreakState[0].models.<model>.tools, in tests/fixtures/native/copilot/on/session-state/*/events.jsonl - classifies every id, asserts the --available-tools list covers every in-class id and contains no out-of-profile id (web_search, web_fetch, task, write_agent, read_agent, list_agents, sql, every github-mcp-server-*), and asserts the advertised list in a fixture from the FIXED profile contains no out-of-profile id. It is red today on the committed samples (21 advertised ids); mark the fixed-profile half as a pending recut with pytest.mark.skip and a reason naming R-45 condition 1 (the Leader recuts the fixture from a qualification turn after this slice).; The Copilot reader (src/harness_bench/telemetry/copilot.py) records tools_advertised on Extraction (a new field in src/harness_bench/telemetry/__init__.py: list[str] | None, None when the record is unreadable or carries no checkpoint, never []), red-first on the committed fixture.; bench/profiles/codex.yaml's seeded config.toml gains web_search = \"disabled\" (R-46), with a profile test red on the current template.; src/harness_bench/telemetry/codex.py records a web_search_call item as a tool_calls row of class other (R-46 condition 1), red-first on a synthetic record line.; docs/adr/0004-static-permissions-offline-dependencies.md gains an amendment note citing R-45 and R-46: the Copilot row lists the flags verbatim; the Codex row names web_search = \"disabled\"; the Claude row cites R-46's assume.; tests/mutations/profile_classes.json holds named mutants (a flag dropped from copilot.yaml; web_search_call ignored; tools_advertised [] instead of None; an out-of-profile id accepted by the class test), each killed: uv run python tools/mutate_check.py tests/mutations/profile_classes.json.; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result.\nNot in scope: views.py and the per-cell out-of-profile validity finding (W2-VIEWS owns it); profiles.py code beyond what the YAML change needs; claude-code.yaml; recutting fixtures or any live turn; bench run, pytest -m \"\"; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-4, R-33, R-34, R-35, R-45, R-46; docs/adr/0004-static-permissions-offline-dependencies.md; bench/profiles/{copilot,codex,claude-code}.yaml; src/harness_bench/profiles.py; src/harness_bench/telemetry/{__init__,copilot,codex}.py; tests/test_allowlist_classes.py; tests/test_profiles.py; tests/test_telemetry.py and tests/test_telemetry_copilot.py; tests/fixtures/native/copilot/. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-r45 before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: bench/profiles/copilot.yaml command gains --disable-builtin-mcps and --available-tools powershell list_powershell read_powershell stop_powershell apply_patch view glob rg skill (R-45 item 1), with a test in tests/test_profiles.py that fails on the current profile and states the missing flags. | phrase: bench/profiles/copilot.yaml command gains --disable-builtin-mcps and --available-tools powershell list_powershell read_powershell stop_powershell apply_patch view glob rg skill (R-45 item 1), with a test in tests/test_profiles.py that fails on the current profile and states the missing flags. |\n| done_when: A Copilot class test (in tests/test_allowlist_classes.py, following its Claude Code shape) reads the advertised tool list from the pinned build's own record - session.usage_checkpoint, data.promptCacheBreakState[0].models.<model>.tools, in tests/fixtures/native/copilot/on/session-state/*/events.jsonl - classifies every id, asserts the --available-tools list covers every in-class id and contains no out-of-profile id (web_search, web_fetch, task, write_agent, read_agent, list_agents, sql, every github-mcp-server-*), and asserts the advertised list in a fixture from the FIXED profile contains no out-of-profile id. It is red today on the committed samples (21 advertised ids) | phrase: A Copilot class test (in tests/test_allowlist_classes.py, following its Claude Code shape) reads the advertised tool list from the pinned build's own record - session.usage_checkpoint, data.promptCacheBreakState[0].models.<model>.tools, in tests/fixtures/native/copilot/on/session-state/*/events.jsonl - classifies every id, asserts the --available-tools list covers every in-class id and contains no out-of-profile id (web_search, web_fetch, task, write_agent, read_agent, list_agents, sql, every github-mcp-server-*), and asserts the advertised list in a fixture from the FIXED profile contains no out-of-profile id. It is red today on the committed samples (21 advertised ids) |\n| done_when: mark the fixed-profile half as a pending recut with pytest.mark.skip and a reason naming R-45 condition 1 (the Leader recuts the fixture from a qualification turn after this slice). | phrase: mark the fixed-profile half as a pending recut with pytest.mark.skip and a reason naming R-45 condition 1 (the Leader recuts the fixture from a qualification turn after this slice). |\n| done_when: The Copilot reader (src/harness_bench/telemetry/copilot.py) records tools_advertised on Extraction (a new field in src/harness_bench/telemetry/__init__.py: list[str] | None, None when the record is unreadable or carries no checkpoint, never []), red-first on the committed fixture. | phrase: The Copilot reader (src/harness_bench/telemetry/copilot.py) records tools_advertised on Extraction (a new field in src/harness_bench/telemetry/__init__.py: list[str] | None, None when the record is unreadable or carries no checkpoint, never []), red-first on the committed fixture. |\n| done_when: bench/profiles/codex.yaml's seeded config.toml gains web_search = \"disabled\" (R-46), with a profile test red on the current template. | phrase: bench/profiles/codex.yaml's seeded config.toml gains web_search = \"disabled\" (R-46), with a profile test red on the current template. |\n| done_when: src/harness_bench/telemetry/codex.py records a web_search_call item as a tool_calls row of class other (R-46 condition 1), red-first on a synthetic record line. | phrase: src/harness_bench/telemetry/codex.py records a web_search_call item as a tool_calls row of class other (R-46 condition 1), red-first on a synthetic record line. |\n| done_when: docs/adr/0004-static-permissions-offline-dependencies.md gains an amendment note citing R-45 and R-46: the Copilot row lists the flags verbatim | phrase: docs/adr/0004-static-permissions-offline-dependencies.md gains an amendment note citing R-45 and R-46: the Copilot row lists the flags verbatim |\n| done_when: the Codex row names web_search = \"disabled\" | phrase: the Codex row names web_search = \"disabled\" |\n| done_when: the Claude row cites R-46's assume. | phrase: the Claude row cites R-46's assume. |\n| done_when: tests/mutations/profile_classes.json holds named mutants (a flag dropped from copilot.yaml | phrase: tests/mutations/profile_classes.json holds named mutants (a flag dropped from copilot.yaml |\n| done_when: web_search_call ignored | phrase: web_search_call ignored |\n| done_when: tools_advertised [] instead of None | phrase: tools_advertised [] instead of None |\n| done_when: an out-of-profile id accepted by the class test), each killed: uv run python tools/mutate_check.py tests/mutations/profile_classes.json. | phrase: an out-of-profile id accepted by the class test), each killed: uv run python tools/mutate_check.py tests/mutations/profile_classes.json. |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean. | phrase: uv run ruff check src tests tools is clean. |\n| done_when: Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result. | phrase: Your final message lists each red SHA with its failing assertion, each green SHA, and the mutate_check result. |\n| not_in_scope: views.py and the per-cell out-of-profile validity finding (W2-VIEWS owns it) | phrase: views.py and the per-cell out-of-profile validity finding (W2-VIEWS owns it) |\n| not_in_scope: profiles.py code beyond what the YAML change needs | phrase: profiles.py code beyond what the YAML change needs |\n| not_in_scope: claude-code.yaml | phrase: claude-code.yaml |\n| not_in_scope: recutting fixtures or any live turn | phrase: recutting fixtures or any live turn |\n| not_in_scope: bench run, pytest -m \"\" | phrase: bench run, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- R-45/R-46: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- bench/profiles/copilot.yaml: bench/profiles/copilot.yaml sha256 e92cdb19c79d4951b969e2c302aa3318c78e7ac64d496138538f4c552700e7ff\n- tests/test_profiles.py: tests/test_profiles.py sha256 a9dedfa0fe2366db5d30fd989ffc229c2b86c042aad485223de00a717edc5f2b\n- tests/test_allowlist_classes.py: tests/test_allowlist_classes.py sha256 179b88f65569991e5353c2a96c8d342afa69f4839401e25b1abb0ac89ee5b6f1\n- tests/fixtures/native/copilot/on/session-state/*/events.jsonl: unresolved (not found)\n- src/harness_bench/telemetry/copilot.py: src/harness_bench/telemetry/copilot.py sha256 55c8699b09be78dc2b3bca5459db841b5f7fb271d6a27a0fc216956c4165c860\n- src/harness_bench/telemetry/__init__.py: src/harness_bench/telemetry/__init__.py sha256 08e770e6ea5acac7c92bc383ad5706cf1c7ceb21b414b2479e7d0448f7b947ea\n- bench/profiles/codex.yaml's: unresolved (not found; nearest: bench/profiles/codex.yaml)\n- src/harness_bench/telemetry/codex.py: src/harness_bench/telemetry/codex.py sha256 1d7509dc9021f646e196af9de98e67463a2c7933e9b3f02a7f53708af2cb2105\n- docs/adr/0004-static-permissions-offline-dependencies.md: docs/adr/0004-static-permissions-offline-dependencies.md sha256 63ceb0fbc882a93bd80672c1b083d77af86fe58401b232155453420f95c672b9\n- tests/mutations/profile_classes.json: unresolved (not found)\n- copilot.yaml: bench/profiles/copilot.yaml sha256 e92cdb19c79d4951b969e2c302aa3318c78e7ac64d496138538f4c552700e7ff\n- tools/mutate_check.py: tools/mutate_check.py sha256 75dbffb7f2fe1f58752d4bfbf38d7ca192b998a5f00c9eb016b7b157598ba1e5\n- views.py: src/harness_bench/views.py sha256 1684f9a2aa88f6d9aee5f908afc46a2920425b3f0bca7c627ea82b6e5f0ff5be\n- profiles.py: src/harness_bench/profiles.py sha256 1d22ad0c83321b3e89899104ebf91858a872a46b994bf9f6a1bb56fd4f967747\n- claude-code.yaml: bench/profiles/claude-code.yaml sha256 462583ff2d9e816b95bb85838525e738ad34c1fcaea7c60bd5e2404279bce0a7\n- bench/profiles/{copilot,codex,claude-code}.yaml: unresolved (not found)\n- src/harness_bench/profiles.py: src/harness_bench/profiles.py sha256 1d22ad0c83321b3e89899104ebf91858a872a46b994bf9f6a1bb56fd4f967747\n- src/harness_bench/telemetry/{__init__,copilot,codex}.py: unresolved (not found)\n- tests/test_telemetry.py: tests/test_telemetry.py sha256 5a0293c040a81b7a1cb67307b11fdde4ab4f89a03c8e2842f545679c7f78f79c\n- tests/test_telemetry_copilot.py: tests/test_telemetry_copilot.py sha256 53fa7a411ea14df90a267975871c09930e4ce01e59dc68255b010ee6d590e4d0\n- tests/fixtures/native/copilot/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BCYTN70VHH1JCYEGQQNCT6\nraw sha256: 4145adf1d607c80679700a30539f62e8acbb619392759d3bfad53237579c2849\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: the R-45/R-46 seam-grant slice: close the ADR-0004 profile gap on …",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3BCYTN70VHH1JCYEGQQNCT6 for codex v1: 22 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-25T04:25:51Z",
+      "id": "al-01M3BD00DJQHERVWP71XX14FK1",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: W2-TASKS-e slice 1: author task E6 (\"HumanEval-C# batch of 10\", scenario 5, MultiPL-E) in tasks/E6/ toward ready, per .claude/skills/new-bench-task/SKILL.md and tasks/README.md, graded by the dotnet correctness runner (src/harness_bench/grade/correctness.py: oracle runner dotnet, a command whose --logger names a TRX file, e.g. trx;LogFileName=e6.trx).\nDone when: tasks/E6/task.yaml pins source.repo https://github.com/nuprl/MultiPL-E and source.commit to the full SHA of 3025a53 (read with git ls-remote or a shallow clone into a temp folder outside the repo), records source.license with the licence and copyright line read from that commit's licence file (and the HumanEval licence it inherits, if the repo states one), and copies the licence text into tasks/E6/.; You pick 10 HumanEval-C# problems from that commit, list them with their upstream ids in tasks/E6/README.md, and tasks/E6/prompt.md asks for all 10 in one C# project in the workspace (text identical for every harness).; tasks/E6/workspace/ holds the base: a C# class library project with the 10 method signatures as stubs that throw NotImplementedException; no test code in the workspace (US-8).; tasks/E6/tests/ holds the hidden tests as an xUnit test project (one test per upstream assertion, ported from the upstream C# test harness) that references the workspace project; restore works offline on this host (no package registry at grading, ADR-0005) - record in tasks/E6/oracle/README.md which local NuGet cache or packages it relies on as an assume: with confirm and breaks.; The hidden tests are observed to FAIL on the base workspace and PASS on a reference solution kept only under tasks/E6/oracle/reference/, both run through harness_bench.grade.correctness.grade (write a small script under tasks/E6/oracle/ that calls it); commands, exit codes, pass counts and failing test names go in tasks/E6/oracle/evidence.md.; uv run bench validate prints ok; uv run pytest -q -p no:cacheprovider passes.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any bench/bom.yaml change you need (do not edit it).\nNot in scope: bench/bom.yaml; src/**; other task folders; bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; no printing of large files; if time runs short, commit what is green and name what remains.\n\nGrounding: docs/notes/rulings.md R-7, R-33, R-40, R-41; tasks/README.md; tasks/X1 and tasks/C1 (ready tasks); src/harness_bench/grade/correctness.py and tests/fixtures/dotnet/ (a working offline dotnet test fixture); docs/adr/ ADR-0005. The .NET SDK on this host is 10.0.303. Use python, not python3 (Windows). Set AGENT_SESSION=worker-agy-te1 before committing.",
+      "session": "prompt-compile",
+      "shortname": "Goal: W2-TASKS-e slice 1: author task E6 (\"HumanEval-C# batch of 10\", sc…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -12511,6 +12500,535 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
+      "datetime": "2026-09-25T04:25:51Z",
+      "dispatchable": true,
+      "id": "al-01M3BD00R0P18ZA8YJ7XWMQRGH",
+      "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-TASKS-e slice 1: author task E6 (\"HumanEval-C# batch of 10\", scenario 5, MultiPL-E) in tasks/E6/ toward ready, per .claude/skills/new-bench-task/SKILL.md and tasks/README.md, graded by the dotnet correctness runner (src/harness_bench/grade/correctness.py: oracle runner dotnet, a command whose --logger names a TRX file, e.g. trx;LogFileName=e6.trx).\nDone when: tasks/E6/task.yaml pins source.repo https://github.com/nuprl/MultiPL-E and source.commit to the full SHA of 3025a53 (read with git ls-remote or a shallow clone into a temp folder outside the repo), records source.license with the licence and copyright line read from that commit's licence file (and the HumanEval licence it inherits, if the repo states one), and copies the licence text into tasks/E6/.; You pick 10 HumanEval-C# problems from that commit, list them with their upstream ids in tasks/E6/README.md, and tasks/E6/prompt.md asks for all 10 in one C# project in the workspace (text identical for every harness).; tasks/E6/workspace/ holds the base: a C# class library project with the 10 method signatures as stubs that throw NotImplementedException; no test code in the workspace (US-8).; tasks/E6/tests/ holds the hidden tests as an xUnit test project (one test per upstream assertion, ported from the upstream C# test harness) that references the workspace project; restore works offline on this host (no package registry at grading, ADR-0005) - record in tasks/E6/oracle/README.md which local NuGet cache or packages it relies on as an assume: with confirm and breaks.; The hidden tests are observed to FAIL on the base workspace and PASS on a reference solution kept only under tasks/E6/oracle/reference/, both run through harness_bench.grade.correctness.grade (write a small script under tasks/E6/oracle/ that calls it); commands, exit codes, pass counts and failing test names go in tasks/E6/oracle/evidence.md.; uv run bench validate prints ok; uv run pytest -q -p no:cacheprovider passes.; Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any bench/bom.yaml change you need (do not edit it).\nNot in scope: bench/bom.yaml; src/**; other task folders; bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; no printing of large files; if time runs short, commit what is green and name what remains.\nGrounding: docs/notes/rulings.md R-7, R-33, R-40, R-41; tasks/README.md; tasks/X1 and tasks/C1 (ready tasks); src/harness_bench/grade/correctness.py and tests/fixtures/dotnet/ (a working offline dotnet test fixture); docs/adr/ ADR-0005. The .NET SDK on this host is 10.0.303. Use python, not python3 (Windows). Set AGENT_SESSION=worker-agy-te1 before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: tasks/E6/task.yaml pins source.repo https://github.com/nuprl/MultiPL-E and source.commit to the full SHA of 3025a53 (read with git ls-remote or a shallow clone into a temp folder outside the repo), records source.license with the licence and copyright line read from that commit's licence file (and the HumanEval licence it inherits, if the repo states one), and copies the licence text into tasks/E6/. | phrase: tasks/E6/task.yaml pins source.repo https://github.com/nuprl/MultiPL-E and source.commit to the full SHA of 3025a53 (read with git ls-remote or a shallow clone into a temp folder outside the repo), records source.license with the licence and copyright line read from that commit's licence file (and the HumanEval licence it inherits, if the repo states one), and copies the licence text into tasks/E6/. |\n| done_when: You pick 10 HumanEval-C# problems from that commit, list them with their upstream ids in tasks/E6/README.md, and tasks/E6/prompt.md asks for all 10 in one C# project in the workspace (text identical for every harness). | phrase: You pick 10 HumanEval-C# problems from that commit, list them with their upstream ids in tasks/E6/README.md, and tasks/E6/prompt.md asks for all 10 in one C# project in the workspace (text identical for every harness). |\n| done_when: tasks/E6/workspace/ holds the base: a C# class library project with the 10 method signatures as stubs that throw NotImplementedException | phrase: tasks/E6/workspace/ holds the base: a C# class library project with the 10 method signatures as stubs that throw NotImplementedException |\n| done_when: no test code in the workspace (US-8). | phrase: no test code in the workspace (US-8). |\n| done_when: tasks/E6/tests/ holds the hidden tests as an xUnit test project (one test per upstream assertion, ported from the upstream C# test harness) that references the workspace project | phrase: tasks/E6/tests/ holds the hidden tests as an xUnit test project (one test per upstream assertion, ported from the upstream C# test harness) that references the workspace project |\n| done_when: restore works offline on this host (no package registry at grading, ADR-0005) - record in tasks/E6/oracle/README.md which local NuGet cache or packages it relies on as an assume: with confirm and breaks. | phrase: restore works offline on this host (no package registry at grading, ADR-0005) - record in tasks/E6/oracle/README.md which local NuGet cache or packages it relies on as an assume: with confirm and breaks. |\n| done_when: The hidden tests are observed to FAIL on the base workspace and PASS on a reference solution kept only under tasks/E6/oracle/reference/, both run through harness_bench.grade.correctness.grade (write a small script under tasks/E6/oracle/ that calls it) | phrase: The hidden tests are observed to FAIL on the base workspace and PASS on a reference solution kept only under tasks/E6/oracle/reference/, both run through harness_bench.grade.correctness.grade (write a small script under tasks/E6/oracle/ that calls it) |\n| done_when: commands, exit codes, pass counts and failing test names go in tasks/E6/oracle/evidence.md. | phrase: commands, exit codes, pass counts and failing test names go in tasks/E6/oracle/evidence.md. |\n| done_when: uv run bench validate prints ok | phrase: uv run bench validate prints ok |\n| done_when: uv run pytest -q -p no:cacheprovider passes. | phrase: uv run pytest -q -p no:cacheprovider passes. |\n| done_when: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any bench/bom.yaml change you need (do not edit it). | phrase: Your final message lists your commit SHAs, the fail-on-base and pass-on-reference evidence, and any bench/bom.yaml change you need (do not edit it). |\n| not_in_scope: bench/bom.yaml | phrase: bench/bom.yaml |\n| not_in_scope: src/** | phrase: src/** |\n| not_in_scope: other task folders | phrase: other task folders |\n| not_in_scope: bench run, any model turn, pytest -m \"\" | phrase: bench run, any model turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- tasks/E6/: unresolved (not found)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- src/harness_bench/grade/correctness.py: src/harness_bench/grade/correctness.py sha256 e1e34566c546e33bf268da234d12ba505f9c7f14a5bc1b8257bf0228e7d052ab\n- tasks/E6/task.yaml: tasks/E6/task.yaml sha256 f3ffdd9f3574bb01e71ead9139374dae3d232bf22431132fac52ed64fa04c2a6\n- https://github.com/nuprl/MultiPL-E: unresolved (not found)\n- tasks/E6/README.md: unresolved (not found)\n- tasks/E6/prompt.md: unresolved (not found)\n- tasks/E6/workspace/: unresolved (not found)\n- tasks/E6/tests/: unresolved (not found)\n- tasks/E6/oracle/README.md: unresolved (not found)\n- tasks/E6/oracle/reference/: unresolved (not found)\n- tasks/E6/oracle/: unresolved (not found)\n- tasks/E6/oracle/evidence.md: unresolved (not found; nearest: tasks/C1/oracle/evidence.md)\n- bench/bom.yaml: bench/bom.yaml sha256 e9a32d8b6ea35381544b86fc68fb73a92507905e65d31a0ba1a7d8fb18549114\n- src/**: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- tasks/X1: unresolved (not found)\n- tasks/C1: unresolved (not found)\n- tests/fixtures/dotnet/: unresolved (not found)\n- docs/adr/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BD00DJQHERVWP71XX14FK1\nraw sha256: 324724e5cee3584b997dfebc72b181614824b4e96a8be6d7ec5594196a175e4a\ncompiler model: claude-opus-5-5\nengine seconds: 0.002\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: W2-TASKS-e slice 1: author task E6 (\"HumanEval-C# batch of 10\", sc…",
+      "skill": null,
+      "summary": "compiled al-01M3BD00DJQHERVWP71XX14FK1 for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "tests/mutations/profile_classes.json"
+      ],
+      "compiled": false,
+      "datetime": "2026-09-25T04:35:17Z",
+      "done_when": "Profile flags and telemetry extraction are tested red-first; ADR and class control are amended; four named mutants are killed; full pytest and Ruff pass; commits and evidence are returned to Owner.",
+      "duration_seconds": 572.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w2-r45-profiles",
+        "pushed": null,
+        "sha": "984ff3753fc257c556307236d0043b6de6e0aeba",
+        "short": "984ff3753"
+      },
+      "goal": "Close the R-45/R-46 ADR-0004 profile gap on Copilot and Codex in the assigned worktree.",
+      "id": "al-01M3BDH958CHNQ5S4AEPA0BEAX",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "R-45/R-46 seam-grant slice: red-first Copilot and Codex profile and telemetry controls, ADR amendment, named mutants, full gates; no fixture recut or push.",
+      "session": "worker-codex-r45",
+      "shortname": "r45-r46-profile-seam",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "coordination-worker",
+      "started_at": "2026-09-25T04:25:45Z",
+      "summary": "Red af45dbf exposed seven failing assertions. Green 407dc5c passed 152 focused tests. Green 984ff37 killed four named mutants. Full suite: 846 passed, 1 skipped, 8 deselected; Ruff clean. Fixed-profile Copilot fixture test remains skipped under R-45 condition 1.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/audit/audit-log.jsonl"
+      ],
+      "datetime": "2026-09-25T04:36:36Z",
+      "git": {
+        "branch": "w2-r45-profiles",
+        "pushed": null,
+        "sha": "52e045a8105c19402f281f2f7ccb6f65e6be0a18",
+        "short": "52e045a81"
+      },
+      "id": "al-01M3BDKP7D7AZSTDYMTQZ5VWGQ",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Correct the R-45/R-46 red-run evidence wording in al-01M3BDH958CHNQ5S4AEPA0BEAX.",
+      "session": "worker-codex-r45",
+      "shortname": "r45-r46-red-wording-correction",
+      "skill": null,
+      "summary": "Correction to al-01M3BDH958CHNQ5S4AEPA0BEAX: af45dbf produced seven failing tests, four AssertionError failures (Copilot flags, Codex config, Copilot class coverage, Codex web_search_call) and three AttributeError failures (tools_advertised missing on committed, no-checkpoint, and unreadable records). No test result changed.",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "tasks/D1/oracle/evidence.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-09-25T04:34:33Z",
+      "done_when": "Pinned clean vendor tree; base fails and reference passes through correctness.grade; requested gates pass",
+      "fan_out": 0,
+      "git": {
+        "branch": "w2-tasks-b2",
+        "pushed": null,
+        "sha": "2f7726f4bd0e12f5bbcf7672445d844bd5dac6d0",
+        "short": "2f7726f4b"
+      },
+      "goal": "D1 ready with pinned archive, hidden xUnit oracle and reference evidence",
+      "id": "al-01M3BDFY324410E92X8KM1DR08",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "W2-TASKS-b slice 2: author D1 toward ready from pinned ai-de 88e0c33f; vendor only archive-selected code; prove hidden dotnet tests red on base and green on reference; run validate, pytest and Ruff.",
+      "session": "worker-codex-tb2",
+      "shortname": "new-bench-task-D1",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "new-bench-task",
+      "summary": "D1 ready: 531 files, 5272935 bytes; shared correctness.grade base 0/5 and reference 5/5; vendoring byte comparison and pack scan pass; validate, 836 pytest, Ruff pass; validator gap req-01M3BD3PRJ41KK7MYY3097EJZ8.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M3BE76MMB8DJXQGEV4D9D0CH",
+      "shortname": "Goal: W2-TASKS-b slice 3: the dotnet grading step gets the host profile …",
+      "datetime": "2026-09-25T04:47:15Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: W2-TASKS-b slice 3: the dotnet grading step gets the host profile and NuGet variables it needs from the grader itself, so no task wrapper hardcodes an operator path; join task E6 into this branch and remove the hardcoded paths from D1 and E6.\nDone when: First, git merge w2-tasks-e1 (the Agy-authored E6 task, not yet on main) into your branch and commit the merge.; A red commit adds a test in tests/test_correctness_dotnet.py that fails on the current code: the environment passed to a dotnet oracle step contains USERPROFILE, APPDATA, LOCALAPPDATA, HOMEDRIVE, HOMEPATH, ProgramData, ProgramFiles and NUGET_PACKAGES (NUGET_PACKAGES only when set on the host) taken from the grader's own process environment, while a unittest step's environment stays exactly as today (HOST_ENV plus CELL_ENV); the green commit implements it in src/harness_bench/grade/correctness.py with a named tuple of the extra keys and a one-line comment citing ADR-0013 (grading runs natively on the host).; tasks/D1/tests/D1.HiddenTests/run.cmd and tasks/E6/tests/run.cmd no longer set any profile variable or contain any absolute user path; they call dotnet test with the offline restore flags only (keep -p:RestoreSources=. and -p:NuGetAudit=false; drop RestorePackagesPath or derive it from %USERPROFILE%).; tasks/D1/oracle/evidence.md and tasks/D1/oracle/README.md, and any E6 file, say %USERPROFILE%\\.nuget\\packages (or \"the host NuGet global packages cache\") instead of a literal user path; git grep -n -i \"Users\\\\\\\\malla\\|Users/malla\" -- tasks/ returns nothing.; Both tasks are re-proved through harness_bench.grade.correctness.grade: D1 base 0/5 exit 1 and reference 5/5 exit 0 (python tasks/D1/oracle/probe.py), E6 base fails and reference passes (python tasks/E6/oracle/grade_e6.py or its equivalent); the new numbers replace the old ones in each evidence.md.; tests/mutations/correctness.json gains a named mutant (the extra profile keys not passed to a dotnet step), killed.; uv run bench validate prints ok; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each SHA, both tasks' base and reference results, and the mutate_check result.\nNot in scope: src/harness_bench/config.py (a parallel track adds a path scan to the validator); other src files; bench/bom.yaml; rewriting git history; bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\n\nGrounding: src/harness_bench/grade/correctness.py (HOST_ENV at line 29, _env); src/harness_bench/profiles.py CELL_ENV; docs/adr/ ADR-0013; tasks/D1 and the w2-tasks-e1 branch's tasks/E6; tests/test_correctness_dotnet.py; tests/mutations/correctness.json. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-tb3 before committing.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3BE76XN6AR1720F7HKDGBHS",
+      "shortname": "compile-Goal: W2-TASKS-b slice 3: the dotnet grading step gets the host profile …",
+      "datetime": "2026-09-25T04:47:15Z",
+      "session": "coord-opus-cq",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: W2-TASKS-b slice 3: the dotnet grading step gets the host profile and NuGet variables it needs from the grader itself, so no task wrapper hardcodes an operator path; join task E6 into this branch and remove the hardcoded paths from D1 and E6.\nDone when: First, git merge w2-tasks-e1 (the Agy-authored E6 task, not yet on main) into your branch and commit the merge.; A red commit adds a test in tests/test_correctness_dotnet.py that fails on the current code: the environment passed to a dotnet oracle step contains USERPROFILE, APPDATA, LOCALAPPDATA, HOMEDRIVE, HOMEPATH, ProgramData, ProgramFiles and NUGET_PACKAGES (NUGET_PACKAGES only when set on the host) taken from the grader's own process environment, while a unittest step's environment stays exactly as today (HOST_ENV plus CELL_ENV); the green commit implements it in src/harness_bench/grade/correctness.py with a named tuple of the extra keys and a one-line comment citing ADR-0013 (grading runs natively on the host).; tasks/D1/tests/D1.HiddenTests/run.cmd and tasks/E6/tests/run.cmd no longer set any profile variable or contain any absolute user path; they call dotnet test with the offline restore flags only (keep -p:RestoreSources=. and -p:NuGetAudit=false; drop RestorePackagesPath or derive it from %USERPROFILE%).; tasks/D1/oracle/evidence.md and tasks/D1/oracle/README.md, and any E6 file, say %USERPROFILE%\\.nuget\\packages (or \"the host NuGet global packages cache\") instead of a literal user path; git grep -n -i \"Users\\\\\\\\malla\\|Users/malla\" -- tasks/ returns nothing.; Both tasks are re-proved through harness_bench.grade.correctness.grade: D1 base 0/5 exit 1 and reference 5/5 exit 0 (python tasks/D1/oracle/probe.py), E6 base fails and reference passes (python tasks/E6/oracle/grade_e6.py or its equivalent); the new numbers replace the old ones in each evidence.md.; tests/mutations/correctness.json gains a named mutant (the extra profile keys not passed to a dotnet step), killed.; uv run bench validate prints ok; uv run pytest -q -p no:cacheprovider passes; uv run ruff check src tests tools is clean.; Your final message lists each SHA, both tasks' base and reference results, and the mutate_check result.\nNot in scope: src/harness_bench/config.py (a parallel track adds a path scan to the validator); other src files; bench/bom.yaml; rewriting git history; bench run, any model turn, pytest -m \"\"; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 400k tokens\nMain-line budget: one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: src/harness_bench/grade/correctness.py (HOST_ENV at line 29, _env); src/harness_bench/profiles.py CELL_ENV; docs/adr/ ADR-0013; tasks/D1 and the w2-tasks-e1 branch's tasks/E6; tests/test_correctness_dotnet.py; tests/mutations/correctness.json. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-tb3 before committing.\nTrace\n| clause | trace |\n|---|---|\n| done_when: First, git merge w2-tasks-e1 (the Agy-authored E6 task, not yet on main) into your branch and commit the merge. | phrase: First, git merge w2-tasks-e1 (the Agy-authored E6 task, not yet on main) into your branch and commit the merge. |\n| done_when: A red commit adds a test in tests/test_correctness_dotnet.py that fails on the current code: the environment passed to a dotnet oracle step contains USERPROFILE, APPDATA, LOCALAPPDATA, HOMEDRIVE, HOMEPATH, ProgramData, ProgramFiles and NUGET_PACKAGES (NUGET_PACKAGES only when set on the host) taken from the grader's own process environment, while a unittest step's environment stays exactly as today (HOST_ENV plus CELL_ENV) | phrase: A red commit adds a test in tests/test_correctness_dotnet.py that fails on the current code: the environment passed to a dotnet oracle step contains USERPROFILE, APPDATA, LOCALAPPDATA, HOMEDRIVE, HOMEPATH, ProgramData, ProgramFiles and NUGET_PACKAGES (NUGET_PACKAGES only when set on the host) taken from the grader's own process environment, while a unittest step's environment stays exactly as today (HOST_ENV plus CELL_ENV) |\n| done_when: the green commit implements it in src/harness_bench/grade/correctness.py with a named tuple of the extra keys and a one-line comment citing ADR-0013 (grading runs natively on the host). | phrase: the green commit implements it in src/harness_bench/grade/correctness.py with a named tuple of the extra keys and a one-line comment citing ADR-0013 (grading runs natively on the host). |\n| done_when: tasks/D1/tests/D1.HiddenTests/run.cmd and tasks/E6/tests/run.cmd no longer set any profile variable or contain any absolute user path | phrase: tasks/D1/tests/D1.HiddenTests/run.cmd and tasks/E6/tests/run.cmd no longer set any profile variable or contain any absolute user path |\n| done_when: they call dotnet test with the offline restore flags only (keep -p:RestoreSources=. and -p:NuGetAudit=false | phrase: they call dotnet test with the offline restore flags only (keep -p:RestoreSources=. and -p:NuGetAudit=false |\n| done_when: drop RestorePackagesPath or derive it from %USERPROFILE%). | phrase: drop RestorePackagesPath or derive it from %USERPROFILE%). |\n| done_when: tasks/D1/oracle/evidence.md and tasks/D1/oracle/README.md, and any E6 file, say %USERPROFILE%\\.nuget\\packages (or \"the host NuGet global packages cache\") instead of a literal user path | phrase: tasks/D1/oracle/evidence.md and tasks/D1/oracle/README.md, and any E6 file, say %USERPROFILE%\\.nuget\\packages (or \"the host NuGet global packages cache\") instead of a literal user path |\n| done_when: git grep -n -i \"Users\\\\\\\\malla\\|Users/malla\" -- tasks/ returns nothing. | phrase: git grep -n -i \"Users\\\\\\\\malla\\|Users/malla\" -- tasks/ returns nothing. |\n| done_when: Both tasks are re-proved through harness_bench.grade.correctness.grade: D1 base 0/5 exit 1 and reference 5/5 exit 0 (python tasks/D1/oracle/probe.py), E6 base fails and reference passes (python tasks/E6/oracle/grade_e6.py or its equivalent) | phrase: Both tasks are re-proved through harness_bench.grade.correctness.grade: D1 base 0/5 exit 1 and reference 5/5 exit 0 (python tasks/D1/oracle/probe.py), E6 base fails and reference passes (python tasks/E6/oracle/grade_e6.py or its equivalent) |\n| done_when: the new numbers replace the old ones in each evidence.md. | phrase: the new numbers replace the old ones in each evidence.md. |\n| done_when: tests/mutations/correctness.json gains a named mutant (the extra profile keys not passed to a dotnet step), killed. | phrase: tests/mutations/correctness.json gains a named mutant (the extra profile keys not passed to a dotnet step), killed. |\n| done_when: uv run bench validate prints ok | phrase: uv run bench validate prints ok |\n| done_when: uv run pytest -q -p no:cacheprovider passes | phrase: uv run pytest -q -p no:cacheprovider passes |\n| done_when: uv run ruff check src tests tools is clean. | phrase: uv run ruff check src tests tools is clean. |\n| done_when: Your final message lists each SHA, both tasks' base and reference results, and the mutate_check result. | phrase: Your final message lists each SHA, both tasks' base and reference results, and the mutate_check result. |\n| not_in_scope: src/harness_bench/config.py (a parallel track adds a path scan to the validator) | phrase: src/harness_bench/config.py (a parallel track adds a path scan to the validator) |\n| not_in_scope: other src files | phrase: other src files |\n| not_in_scope: bench/bom.yaml | phrase: bench/bom.yaml |\n| not_in_scope: rewriting git history | phrase: rewriting git history |\n| not_in_scope: bench run, any model turn, pytest -m \"\" | phrase: bench run, any model turn, pytest -m \"\" |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- tests/test_correctness_dotnet.py: tests/test_correctness_dotnet.py sha256 8307c83a5be3ebcc21e1dde9e5bd4ce62e9d094ed768bdd9c450db84b4494ca8\n- src/harness_bench/grade/correctness.py: src/harness_bench/grade/correctness.py sha256 e1e34566c546e33bf268da234d12ba505f9c7f14a5bc1b8257bf0228e7d052ab\n- tasks/D1/tests/D1.HiddenTests/run.cmd: tasks/D1/tests/D1.HiddenTests/run.cmd sha256 9b07bc8a2beed9d7ad3df97326869e90ce2d8276b124e13b522de35c9952886b\n- tasks/E6/tests/run.cmd: unresolved (not found; nearest: tasks/D1/tests/D1.HiddenTests/run.cmd)\n- tasks/D1/oracle/evidence.md: tasks/D1/oracle/evidence.md sha256 6c76b59ecb615a0c29a166bd084996a14fad13484f16201f87b4916917b7d2b2\n- tasks/D1/oracle/README.md: tasks/D1/oracle/README.md sha256 60f44baf5f79bf46d6bc5e0fa487d7c3e15e382a8f3a8bf1ef5f1b710cc9f57c\n- Users\\\\\\\\malla\\|Users/malla: unresolved (not found)\n- tasks/: unresolved (not found)\n- 0/5: unresolved (not found)\n- 5/5: unresolved (not found)\n- tasks/D1/oracle/probe.py: tasks/D1/oracle/probe.py sha256 46fc3b8de24549332de58cf5c146ce694c190b1db91d612e92b0af3d91dab103\n- tasks/E6/oracle/grade_e6.py: unresolved (not found)\n- evidence.md: unresolved (ambiguous: 2 matches)\n- tests/mutations/correctness.json: tests/mutations/correctness.json sha256 3043319b38cefa0596cb59d6304308c4c1af7fb361198b9cb1e3aae97dce8468\n- src/harness_bench/config.py: src/harness_bench/config.py sha256 91500aa1d48f64a513f1735686589c429e71503f9824c412e0cae6b178c0110d\n- bench/bom.yaml: bench/bom.yaml sha256 e9a32d8b6ea35381544b86fc68fb73a92507905e65d31a0ba1a7d8fb18549114\n- src/harness_bench/profiles.py: src/harness_bench/profiles.py sha256 1d22ad0c83321b3e89899104ebf91858a872a46b994bf9f6a1bb56fd4f967747\n- docs/adr/: unresolved (not found)\n- tasks/D1: unresolved (not found)\n- tasks/E6: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3BE76MMB8DJXQGEV4D9D0CH\nraw sha256: 8b15280eb026af9ef790e858b5863ea98e78de9b275f942337f7908902206867\ncompiler model: claude-opus-5-5\nengine seconds: 0.003\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M3BE76MMB8DJXQGEV4D9D0CH for codex v1: 21 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "First, git merge w2-tasks-e1 (the Agy-authored E6 task, not yet on main) into your branch and commit the merge.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "First, git merge w2-tasks-e1 (the Agy-authored E6 task, not yet on main) into your branch and commit the merge."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A red commit adds a test in tests/test_correctness_dotnet.py that fails on the current code: the environment passed to a dotnet oracle step contains USERPROFILE, APPDATA, LOCALAPPDATA, HOMEDRIVE, HOMEPATH, ProgramData, ProgramFiles and NUGET_PACKAGES (NUGET_PACKAGES only when set on the host) taken from the grader's own process environment, while a unittest step's environment stays exactly as today (HOST_ENV plus CELL_ENV)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A red commit adds a test in tests/test_correctness_dotnet.py that fails on the current code: the environment passed to a dotnet oracle step contains USERPROFILE, APPDATA, LOCALAPPDATA, HOMEDRIVE, HOMEPATH, ProgramData, ProgramFiles and NUGET_PACKAGES (NUGET_PACKAGES only when set on the host) taken from the grader's own process environment, while a unittest step's environment stays exactly as today (HOST_ENV plus CELL_ENV)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the green commit implements it in src/harness_bench/grade/correctness.py with a named tuple of the extra keys and a one-line comment citing ADR-0013 (grading runs natively on the host).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the green commit implements it in src/harness_bench/grade/correctness.py with a named tuple of the extra keys and a one-line comment citing ADR-0013 (grading runs natively on the host)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tasks/D1/tests/D1.HiddenTests/run.cmd and tasks/E6/tests/run.cmd no longer set any profile variable or contain any absolute user path",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tasks/D1/tests/D1.HiddenTests/run.cmd and tasks/E6/tests/run.cmd no longer set any profile variable or contain any absolute user path"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "they call dotnet test with the offline restore flags only (keep -p:RestoreSources=. and -p:NuGetAudit=false",
+            "trace": {
+              "kind": "phrase",
+              "ref": "they call dotnet test with the offline restore flags only (keep -p:RestoreSources=. and -p:NuGetAudit=false"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "drop RestorePackagesPath or derive it from %USERPROFILE%).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "drop RestorePackagesPath or derive it from %USERPROFILE%)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tasks/D1/oracle/evidence.md and tasks/D1/oracle/README.md, and any E6 file, say %USERPROFILE%\\.nuget\\packages (or \"the host NuGet global packages cache\") instead of a literal user path",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tasks/D1/oracle/evidence.md and tasks/D1/oracle/README.md, and any E6 file, say %USERPROFILE%\\.nuget\\packages (or \"the host NuGet global packages cache\") instead of a literal user path"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "git grep -n -i \"Users\\\\\\\\malla\\|Users/malla\" -- tasks/ returns nothing.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "git grep -n -i \"Users\\\\\\\\malla\\|Users/malla\" -- tasks/ returns nothing."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Both tasks are re-proved through harness_bench.grade.correctness.grade: D1 base 0/5 exit 1 and reference 5/5 exit 0 (python tasks/D1/oracle/probe.py), E6 base fails and reference passes (python tasks/E6/oracle/grade_e6.py or its equivalent)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Both tasks are re-proved through harness_bench.grade.correctness.grade: D1 base 0/5 exit 1 and reference 5/5 exit 0 (python tasks/D1/oracle/probe.py), E6 base fails and reference passes (python tasks/E6/oracle/grade_e6.py or its equivalent)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the new numbers replace the old ones in each evidence.md.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the new numbers replace the old ones in each evidence.md."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/correctness.json gains a named mutant (the extra profile keys not passed to a dotnet step), killed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/correctness.json gains a named mutant (the extra profile keys not passed to a dotnet step), killed."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run bench validate prints ok",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run bench validate prints ok"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your final message lists each SHA, both tasks' base and reference results, and the mutate_check result.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your final message lists each SHA, both tasks' base and reference results, and the mutate_check result."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "src/harness_bench/config.py (a parallel track adds a path scan to the validator)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "src/harness_bench/config.py (a parallel track adds a path scan to the validator)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "other src files",
+            "trace": {
+              "kind": "phrase",
+              "ref": "other src files"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench/bom.yaml",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/bom.yaml"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "rewriting git history",
+            "trace": {
+              "kind": "phrase",
+              "ref": "rewriting git history"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench run, any model turn, pytest -m \"\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench run, any model turn, pytest -m \"\""
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "400k tokens",
+          "done_when": [
+            "First, git merge w2-tasks-e1 (the Agy-authored E6 task, not yet on main) into your branch and commit the merge.",
+            "A red commit adds a test in tests/test_correctness_dotnet.py that fails on the current code: the environment passed to a dotnet oracle step contains USERPROFILE, APPDATA, LOCALAPPDATA, HOMEDRIVE, HOMEPATH, ProgramData, ProgramFiles and NUGET_PACKAGES (NUGET_PACKAGES only when set on the host) taken from the grader's own process environment, while a unittest step's environment stays exactly as today (HOST_ENV plus CELL_ENV)",
+            "the green commit implements it in src/harness_bench/grade/correctness.py with a named tuple of the extra keys and a one-line comment citing ADR-0013 (grading runs natively on the host).",
+            "tasks/D1/tests/D1.HiddenTests/run.cmd and tasks/E6/tests/run.cmd no longer set any profile variable or contain any absolute user path",
+            "they call dotnet test with the offline restore flags only (keep -p:RestoreSources=. and -p:NuGetAudit=false",
+            "drop RestorePackagesPath or derive it from %USERPROFILE%).",
+            "tasks/D1/oracle/evidence.md and tasks/D1/oracle/README.md, and any E6 file, say %USERPROFILE%\\.nuget\\packages (or \"the host NuGet global packages cache\") instead of a literal user path",
+            "git grep -n -i \"Users\\\\\\\\malla\\|Users/malla\" -- tasks/ returns nothing.",
+            "Both tasks are re-proved through harness_bench.grade.correctness.grade: D1 base 0/5 exit 1 and reference 5/5 exit 0 (python tasks/D1/oracle/probe.py), E6 base fails and reference passes (python tasks/E6/oracle/grade_e6.py or its equivalent)",
+            "the new numbers replace the old ones in each evidence.md.",
+            "tests/mutations/correctness.json gains a named mutant (the extra profile keys not passed to a dotnet step), killed.",
+            "uv run bench validate prints ok",
+            "uv run pytest -q -p no:cacheprovider passes",
+            "uv run ruff check src tests tools is clean.",
+            "Your final message lists each SHA, both tasks' base and reference results, and the mutate_check result."
+          ],
+          "fan_out_cap": 0,
+          "goal": "W2-TASKS-b slice 3: the dotnet grading step gets the host profile and NuGet variables it needs from the grader itself, so no task wrapper hardcodes an operator path; join task E6 into this branch and remove the hardcoded paths from D1 and E6.",
+          "main_line_budget": "one slice of at most 50 minutes; commit at every green; if time runs short, commit what is green and name what remains.\nGrounding: src/harness_bench/grade/correctness.py (HOST_ENV at line 29, _env); src/harness_bench/profiles.py CELL_ENV; docs/adr/ ADR-0013; tasks/D1 and the w2-tasks-e1 branch's tasks/E6; tests/test_correctness_dotnet.py; tests/mutations/correctness.json. Use python, not python3 (Windows). Set AGENT_SESSION=worker-codex-tb3 before committing.",
+          "not_in_scope": [
+            "src/harness_bench/config.py (a parallel track adds a path scan to the validator)",
+            "other src files",
+            "bench/bom.yaml",
+            "rewriting git history",
+            "bench run, any model turn, pytest -m \"\"",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.003,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3BE76MMB8DJXQGEV4D9D0CH",
+        "raw_sha256": "8b15280eb026af9ef790e858b5863ea98e78de9b275f942337f7908902206867",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": "tests/test_correctness_dotnet.py",
+            "reason": null,
+            "sha256": "8307c83a5be3ebcc21e1dde9e5bd4ce62e9d094ed768bdd9c450db84b4494ca8",
+            "status": "resolved",
+            "token": "tests/test_correctness_dotnet.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/correctness.py",
+            "reason": null,
+            "sha256": "e1e34566c546e33bf268da234d12ba505f9c7f14a5bc1b8257bf0228e7d052ab",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/correctness.py"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/D1/tests/D1.HiddenTests/run.cmd",
+            "reason": null,
+            "sha256": "9b07bc8a2beed9d7ad3df97326869e90ce2d8276b124e13b522de35c9952886b",
+            "status": "resolved",
+            "token": "tasks/D1/tests/D1.HiddenTests/run.cmd"
+          },
+          {
+            "nearest": "tasks/D1/tests/D1.HiddenTests/run.cmd",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/E6/tests/run.cmd"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/D1/oracle/evidence.md",
+            "reason": null,
+            "sha256": "6c76b59ecb615a0c29a166bd084996a14fad13484f16201f87b4916917b7d2b2",
+            "status": "resolved",
+            "token": "tasks/D1/oracle/evidence.md"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/D1/oracle/README.md",
+            "reason": null,
+            "sha256": "60f44baf5f79bf46d6bc5e0fa487d7c3e15e382a8f3a8bf1ef5f1b710cc9f57c",
+            "status": "resolved",
+            "token": "tasks/D1/oracle/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Users\\\\\\\\malla\\|Users/malla"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "0/5"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "5/5"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/D1/oracle/probe.py",
+            "reason": null,
+            "sha256": "46fc3b8de24549332de58cf5c146ce694c190b1db91d612e92b0af3d91dab103",
+            "status": "resolved",
+            "token": "tasks/D1/oracle/probe.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/E6/oracle/grade_e6.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "evidence.md"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/correctness.json",
+            "reason": null,
+            "sha256": "3043319b38cefa0596cb59d6304308c4c1af7fb361198b9cb1e3aae97dce8468",
+            "status": "resolved",
+            "token": "tests/mutations/correctness.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "91500aa1d48f64a513f1735686589c429e71503f9824c412e0cae6b178c0110d",
+            "status": "resolved",
+            "token": "src/harness_bench/config.py"
+          },
+          {
+            "nearest": null,
+            "path": "bench/bom.yaml",
+            "reason": null,
+            "sha256": "e9a32d8b6ea35381544b86fc68fb73a92507905e65d31a0ba1a7d8fb18549114",
+            "status": "resolved",
+            "token": "bench/bom.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/profiles.py",
+            "reason": null,
+            "sha256": "1d22ad0c83321b3e89899104ebf91858a872a46b994bf9f6a1bb56fd4f967747",
+            "status": "resolved",
+            "token": "src/harness_bench/profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/adr/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/D1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/E6"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
       "mode": "pass-through",
       "dispatchable": true
     }
@@ -12845,6 +13363,24 @@ window.AUDIT_DATA = {
       "kind": "done",
       "ref": "src/harness_bench/grade/correctness.py@766534c",
       "session": "worker-codex-tb1"
+    },
+    {
+      "id": "mail-01M3BDJX23BR003Z6B7DXVWEQ5",
+      "ts": "2026-09-25T04:36:10Z",
+      "from": "worker-codex-r45",
+      "to": "coord-opus-cq",
+      "kind": "done",
+      "ref": "al-01M3BDH958CHNQ5S4AEPA0BEAX",
+      "session": "worker-codex-r45"
+    },
+    {
+      "id": "mail-01M3BDM4382TWCEFCT4SF5Q0QW",
+      "ts": "2026-09-25T04:36:50Z",
+      "from": "worker-codex-tb2",
+      "to": "coord-opus-cq",
+      "kind": "done",
+      "ref": "tasks/D1/oracle/evidence.md@3d34d307d07815a1dabe76781a9ab9b244c4de4e",
+      "session": "worker-codex-tb2"
     }
   ]
 };
