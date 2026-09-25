@@ -20,11 +20,13 @@ import json
 import os
 import shutil
 import uuid
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
-from harness_bench import ledger, procs, profiles, tools
+from harness_bench import ledger, oslock, procs, profiles, tools, workspace
 
 # The judge's system prompt: part of the invocation (section 9.1), so a change is a new invocation_sha256.
 JUDGE_SYSTEM = "You are a grader. You score one artifact against a rubric and answer with one JSON object only."
@@ -176,6 +178,10 @@ class Headless:
         try:
             for d in (home, work, decoy):
                 d.mkdir(parents=True, exist_ok=True)
+            source, name = launch.profile.credential_source, launch.profile.credential_name
+            if source is None or name is None or not source.is_file():
+                raise BackendDown("no credential to copy for the judge call")
+            shutil.copyfile(source, home / name)  # inside the try whose finally deletes it (section 8.2)
             session = str(uuid.uuid4())
             argv = [*launch.prefix, *claude_argv(str(launch.build.exe), launch.model, launch.system, session)]
             env = launch.profile.cell_env(dict(os.environ), home, launch.build, launch.model, "")
@@ -187,8 +193,44 @@ class Headless:
             if len(records) != 1:
                 raise BackendDown(f"{len(records)} native records for the call, expected 1")
             return Reply(done.stdout, archive_record(records[0], launch.archive, call_id), launch.profile.harness)
+        except BackendDown:
+            raise
+        except Exception as exc:  # any other failure is the judge being unavailable, never an escape (review F6)
+            raise BackendDown(f"judge call failed: {type(exc).__name__}") from exc
         finally:
+            launch.profile.clean_home(home)  # the credential copy never outlives the call
             shutil.rmtree(folder, ignore_errors=True)
+
+
+def sweep_credentials(cells_root: Path, names: tuple[str, ...], own: str | None = None) -> list[Path]:
+    """Remove every leftover credential copy under `<cells root>/gateway/` (a hard-killed pass; section 8.2), in the
+    pass folders whose `.lock` is free, plus `own` (the calling pass's folder). A folder whose lock another pass
+    holds is never touched: the cells root is shared across worktrees. Returns the copies removed."""
+    removed = []
+    root = cells_root / "gateway"
+    for pass_dir in sorted(p for p in root.iterdir() if p.is_dir()) if root.is_dir() else []:
+        if pass_dir.name != own and oslock.is_held(pass_dir / ".lock"):
+            continue
+        for name in names:
+            for copy in sorted(pass_dir.glob(f"*/home/{name}")):
+                copy.unlink(missing_ok=True)
+                removed.append(copy)
+    return removed
+
+
+@contextmanager
+def judge_pass(cells_root: Path, grading_id: str, credential_names: tuple[str, ...]) -> Iterator[None]:
+    """One pass's hold on `<cells root>/gateway/<grading_id>/`: refuse a cells root below an instruction file
+    (HB-PRE-002, `workspace.check_cells_root`), take the pass `.lock`, and sweep leftover credential copies at the
+    start and the end of the pass (section 8.2; T-GW-10, T-GW-26b)."""
+    workspace.check_cells_root(cells_root)
+    lock = oslock.RunLock.acquire(cells_root / "gateway" / grading_id / ".lock")
+    try:
+        sweep_credentials(cells_root, credential_names)
+        yield
+    finally:
+        lock.release()
+        sweep_credentials(cells_root, credential_names, own=grading_id)
 
 
 def final_text(reply: Reply) -> str | None:
