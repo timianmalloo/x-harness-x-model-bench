@@ -180,10 +180,10 @@
   ]
  },
  {
-  "name": "no base64 views",
+  "name": "no decoded-run views",
   "file": "src/harness_bench/egress.py",
-  "find": "for derived in (_decode_layer(text), _base64_text(text)):",
-  "replace": "for derived in (_decode_layer(text),):",
+  "find": "(_decode_layer(text), _decoded_runs(text), _controls_removed(text), _joined(text))",
+  "replace": "(_decode_layer(text), _controls_removed(text), _joined(text))",
   "tests": [
    "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
   ]
@@ -243,10 +243,127 @@
   ]
  },
  {
-  "name": "lint: an injected backend call is not a sink",
+  "name": "no Cc/Cf-removed view",
+  "file": "src/harness_bench/egress.py",
+  "find": "(_decode_layer(text), _decoded_runs(text), _controls_removed(text), _joined(text))",
+  "replace": "(_decode_layer(text), _decoded_runs(text), _joined(text))",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "decoded runs strict UTF-8",
+  "file": "src/harness_bench/egress.py",
+  "find": "raw.decode(\"utf-8\", errors=\"replace\")",
+  "replace": "raw.decode(\"utf-8\")",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "NULs not set aside",
+  "file": "src/harness_bench/egress.py",
+  "find": ".replace(\"\\0\", \"\")",
+  "replace": "",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "one non-printable byte drops the run",
+  "file": "src/harness_bench/egress.py",
+  "find": "len(kept) >= PRINTABLE_SHARE * len(decoded)",
+  "replace": "len(kept) == len(decoded)",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "replacement characters count as text",
+  "file": "src/harness_bench/egress.py",
+  "find": " and c != \"\\ufffd\"",
+  "replace": "",
+  "tests": [
+   "tests/test_egress.py::test_a_decoding_that_is_mostly_invalid_bytes_is_noise_not_a_view"
+  ]
+ },
+ {
+  "name": "no continuation view",
+  "file": "src/harness_bench/egress.py",
+  "find": "(_decode_layer(text), _decoded_runs(text), _controls_removed(text), _joined(text))",
+  "replace": "(_decode_layer(text), _decoded_runs(text), _controls_removed(text))",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "no whitespace-split email",
+  "file": "src/harness_bench/egress.py",
+  "find": " or _ws(value).casefold() in _ws(v).casefold()",
+  "replace": "",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "no whitespace-split username",
+  "file": "src/harness_bench/egress.py",
+  "find": "body = r\"\\s*\".join(re.escape(c) for c in value)",
+  "replace": "body = \"\".join(re.escape(c) for c in value)",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "no hex runs",
+  "file": "src/harness_bench/egress.py",
+  "find": "out += [_printable(bytes.fromhex(run)) for run in _HEX_RUN.findall(text)]",
+  "replace": "out += []",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "newline-wrapped base64 not joined",
+  "file": "src/harness_bench/egress.py",
+  "find": "unwrapped = _WRAP.sub(\"\", text)",
+  "replace": "unwrapped = text",
+  "tests": [
+   "tests/test_egress.py::test_a_transformed_sensitive_value_is_withheld_and_never_reaches_the_backend"
+  ]
+ },
+ {
+  "name": "lint: a parameter-rooted call is not a sink",
   "file": "tests/test_architecture.py",
-  "find": " or\n                          isinstance(n.func, ast.Name) and n.func.id in params)]",
-  "replace": ")]",
+  "find": " or base in params or",
+  "replace": " or",
+  "tests": [
+   "tests/test_architecture.py::test_a_judge_backend_is_reached_only_through_egress_check_and_release"
+  ]
+ },
+ {
+  "name": "lint: a self attribute from an injected backend is not a sink",
+  "file": "tests/test_architecture.py",
+  "find": "base in receivers and bool(attrs) and attrs[0] in tainted)",
+  "replace": "False)",
+  "tests": [
+   "tests/test_architecture.py::test_a_judge_backend_is_reached_only_through_egress_check_and_release"
+  ]
+ },
+ {
+  "name": "lint: a data-typed parameter is a backend",
+  "file": "tests/test_architecture.py",
+  "find": "if a.arg not in receivers and not data_typed(a.annotation)}",
+  "replace": "if a.arg not in receivers}",
+  "tests": [
+   "tests/test_architecture.py::test_a_judge_backend_is_reached_only_through_egress_check_and_release"
+  ]
+ },
+ {
+  "name": "lint: self is a backend",
+  "file": "tests/test_architecture.py",
+  "find": "if a.arg not in receivers and not data_typed(a.annotation)}",
+  "replace": "if not data_typed(a.annotation)}",
   "tests": [
    "tests/test_architecture.py::test_a_judge_backend_is_reached_only_through_egress_check_and_release"
   ]
@@ -283,6 +400,33 @@
   "file": "tests/test_architecture.py",
   "find": "target.rsplit(\".\", 1)[1] in spawners]",
   "replace": "False]",
+  "tests": [
+   "tests/test_architecture.py::test_a_judge_backend_is_reached_only_through_egress_check_and_release"
+  ]
+ },
+ {
+  "name": "lint: any module may reach procs",
+  "file": "tests/test_architecture.py",
+  "find": "and id(n) not in typed and \"procs\" in dotted(n, names[rel]).split(\".\")[1:]})",
+  "replace": "and False})",
+  "tests": [
+   "tests/test_architecture.py::test_a_judge_backend_is_reached_only_through_egress_check_and_release"
+  ]
+ },
+ {
+  "name": "lint: annotations count as reaching procs",
+  "file": "tests/test_architecture.py",
+  "find": "and id(n) not in typed and",
+  "replace": "and",
+  "tests": [
+   "tests/test_architecture.py::test_a_judge_backend_is_reached_only_through_egress_check_and_release"
+  ]
+ },
+ {
+  "name": "lint: a built judge without a gateway passes",
+  "file": "tests/test_architecture.py",
+  "find": "if judge in trees and not inside and not any(",
+  "replace": "if False and not any(",
   "tests": [
    "tests/test_architecture.py::test_a_judge_backend_is_reached_only_through_egress_check_and_release"
   ]

@@ -6,11 +6,15 @@ through `Verdict.release`, which never calls the backend for a withheld payload.
 
 Canonicalization contract (Codex F1). The scan reads every *view* of the payload, not only the text as sent:
 the payload itself; each layer of NFKC normalization, HTML entities, JSON string escapes and URL
-percent-encoding, applied until the text stops changing; and the base64 / base64url runs in any view that
-decode to printable UTF-8, followed the same way. Exact values (credentials, canaries) also match across
-whitespace and line splits. A payload whose views are still changing after MAX_LAYERS layers, or that yields
-more than MAX_VIEWS views, is withheld as `unscannable` (fail closed). Not decoded, and so a residual: hex,
-ROT-n, compression, encryption, and a value spread over separately-encoded pieces.
+percent-encoding, applied until the text stops changing; the text with control and format characters (Cc, Cf:
+NUL, BOM, zero-width space, soft hyphen) removed; and the base64 / base64url runs in any view that decode to
+mostly-printable text (errors replaced, NULs and non-printables stripped), followed the same way. Exact values
+(credentials, canaries) also match across whitespace and line splits. A payload whose views are still changing
+after MAX_LAYERS layers, or that yields more than MAX_VIEWS views, is withheld as `unscannable` (fail closed).
+Not decoded, and so a residual: ROT-n, compression, encryption, and a value spread over separately-encoded pieces.
+
+For slice 2 (US-47 c3): the capture test must plant the canary in the payload as the gateway assembles it
+(rubric, delimited artifact, oracle), not in a string handed to `check` directly, or it proves only this module.
 """
 
 from __future__ import annotations
@@ -44,12 +48,16 @@ TOKEN_BODY = r"[A-Za-z0-9_\-]{16,}"  # after an operator prefix: a token body, n
 # simplify: fixed bounds; raise them if a real judge payload is ever withheld as unscannable.
 MAX_LAYERS = 4
 MAX_VIEWS = 64
+PRINTABLE_SHARE = 0.8  # simplify: a decoded run at least this printable is text; tune on a real false view
 
 T = TypeVar("T")
 
 _B64_RUN = re.compile(r"[A-Za-z0-9+/_-]{8,}={0,2}")
 _JSON_ESCAPE = re.compile(r"\\(u[0-9a-fA-F]{4}|[\\/\"bfnrt])")
 _JSON_CHARS = {"b": "\b", "f": "\f", "n": "\n", "r": "\r", "t": "\t"}
+_WRAP = re.compile(r"(?<=[A-Za-z0-9+/=_-])\r?\n(?=[A-Za-z0-9+/_-])")  # a newline between two base64 characters
+_HEX_RUN = re.compile(r"(?<![0-9a-fA-F])(?:[0-9a-fA-F]{2}){16,}(?![0-9a-fA-F])")
+_CONTINUATION = re.compile(r"\\\r?\n[ \t]*")
 
 
 @dataclass(frozen=True)
@@ -108,20 +116,44 @@ def _decode_layer(text: str) -> str:
     return urllib.parse.unquote(_json_unescape(html.unescape(unicodedata.normalize("NFKC", text))))
 
 
-def _base64_text(text: str) -> str:
-    """The base64 / base64url runs in `text` that decode to printable UTF-8, one per line."""
+def _printable(raw: bytes) -> str:
+    """`raw` as text with its non-printable characters removed, when it is mostly text; "" when it is noise.
+
+    Decoded with errors="replace" and NULs set aside (UTF-16 text read as UTF-8), so one bad byte or UTF-16 no
+    longer drops the whole run (Fable Major 3). Noise (the decoding of an ordinary word) is mostly non-printable.
+    """
+    decoded = raw.decode("utf-8", errors="replace").replace("\0", "")
+    kept = "".join(c for c in decoded if (c.isprintable() or c.isspace()) and c != "\ufffd")
+    return kept if kept and len(kept) >= PRINTABLE_SHARE * len(decoded) else ""
+
+
+def _decoded_runs(text: str) -> str:
+    """The base64 / base64url runs (also across newline wraps) and even-length hex runs of 32+ digits in `text`
+    that decode to mostly-printable text, one per line."""
     out = []
-    for run in _B64_RUN.findall(text):
+    unwrapped = _WRAP.sub("", text)
+    for run in {*_B64_RUN.findall(text), *_B64_RUN.findall(unwrapped)}:
         body = run.rstrip("=").replace("-", "+").replace("_", "/")
         if len(body) % 4 == 1:
             continue
         try:
-            decoded = base64.b64decode(body + "=" * (-len(body) % 4), validate=True).decode("utf-8")
-        except (binascii.Error, UnicodeDecodeError):
+            raw = base64.b64decode(body + "=" * (-len(body) % 4), validate=True)
+        except binascii.Error:
             continue
-        if decoded and all(c.isprintable() or c.isspace() for c in decoded):
-            out.append(decoded)
-    return "\n".join(out)
+        out.append(_printable(raw))
+    out += [_printable(bytes.fromhex(run)) for run in _HEX_RUN.findall(text)]
+    return "\n".join(sorted(o for o in out if o))
+
+
+def _joined(text: str) -> str:
+    """The text with backslash-newline continuations removed (a value continued over a line)."""
+    return _CONTINUATION.sub("", text)
+
+
+def _controls_removed(text: str) -> str:
+    """The text without control and format characters (Cc, Cf: NUL, BOM, zero-width space, soft hyphen), keeping
+    whitespace, so a value interleaved with them still matches (Fable Major 3)."""
+    return "".join(c for c in text if c.isspace() or unicodedata.category(c) not in ("Cc", "Cf"))
 
 
 def _views(payload: str) -> tuple[list[str], bool]:
@@ -136,7 +168,7 @@ def _views(payload: str) -> tuple[list[str], bool]:
             return views, False
         seen.add(text)
         views.append(text)
-        for derived in (_decode_layer(text), _base64_text(text)):
+        for derived in (_decode_layer(text), _decoded_runs(text), _controls_removed(text), _joined(text)):
             if derived and derived != text:
                 queue.append((derived, depth + 1))
     return views, True
@@ -159,13 +191,17 @@ def _encoded(views: list[str], value: str) -> bool:
 
 
 def _anycase(views: list[str], value: str) -> bool:
-    """The value in any view ignoring case (an email's domain is case-insensitive), or an encoded form."""
-    return any(value.casefold() in v.casefold() for v in views) or _encoded(views, value)
+    """The value in any view ignoring case (an email's domain is case-insensitive), also across whitespace and
+    line splits, or an encoded form."""
+    return any(value.casefold() in v.casefold() or _ws(value).casefold() in _ws(v).casefold() for v in views) or \
+        _encoded(views, value)
 
 
 def _word(views: list[str], value: str) -> bool:
-    """The value as a whole word (no letter or digit on either side) in any view ignoring case, or encoded."""
-    word = re.compile(rf"(?<![^\W_]){re.escape(value)}(?![^\W_])", re.IGNORECASE)
+    """The value as a whole word (no letter or digit on either side) in any view ignoring case, whitespace allowed
+    between its characters (a line split), or encoded. Whitespace only inside it, so the boundaries still hold."""
+    body = r"\s*".join(re.escape(c) for c in value)
+    word = re.compile(rf"(?<![^\W_]){body}(?![^\W_])", re.IGNORECASE)
     return any(word.search(v) for v in views) or _encoded(views, value)
 
 

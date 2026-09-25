@@ -158,6 +158,10 @@ def _b64(text: str) -> str:
     return base64.b64encode(text.encode("utf-8")).decode("ascii")
 
 
+def _b64b(data: bytes) -> str:
+    return base64.b64encode(data).decode("ascii")
+
+
 def _q(text: str) -> str:
     return urllib.parse.quote(text, safe="")
 
@@ -185,7 +189,33 @@ TRANSFORMED = {
     "fullwidth-canary": lambda s: (_fullwidth(s.canary), "canary"),
     "url-encoded-canary": lambda s: (_q(s.url_canary), "canary"),
     "nested-past-the-decoding-bound": lambda s: (_q(_q(_q(_q(_q(_q(_q(_q(s.cred)))))))), "unscannable"),
+    # Fable Major 3: control and format characters (Cc/Cf) inside a value, and base64 that is not clean UTF-8.
+    "nul-interleaved-credential": lambda s: ("".join(c + "\0" for c in s.cred), "credential"),  # UTF-16LE read as UTF-8
+    "bom-inside-a-canary": lambda s: (s.canary[:5] + "\ufeff" + s.canary[5:], "canary"),
+    "zero-width-space-inside-an-email": lambda s: (s.email[:4] + "\u200b" + s.email[4:], "email"),
+    "soft-hyphen-inside-a-username": lambda s: (f"by {s.username[:3]}\u00ad{s.username[3:]}.", "username"),
+    "base64-of-utf16-canary": lambda s: (_b64b(s.canary.encode("utf-16-le")), "canary"),
+    "base64-with-one-non-printable-byte": lambda s: (_b64b(b"\x07" + s.cred.encode()), "credential"),
+    "base64-with-one-invalid-utf8-byte": lambda s: (_b64b(b"\xff" + s.cred.encode()), "credential"),
+    # Fable minors.
+    "backslash-newline-continued-credential": lambda s: (s.cred[:10] + chr(92) + "\n" + s.cred[10:], "credential"),
+    "line-split-email": lambda s: (s.email[:5] + "\n" + s.email[5:], "email"),
+    "line-split-username": lambda s: (f"by {s.username[:3]}\n{s.username[3:]}.", "username"),
+    "hex-credential": lambda s: (s.cred.encode("utf-8").hex(), "credential"),
+    "newline-wrapped-base64-token-shape": lambda s: (_wrapped(_b64("ghp_" + token_hex(18))), "token_shape"),
 }
+
+
+def test_a_decoding_that_is_mostly_invalid_bytes_is_noise_not_a_view():
+    # Replacement characters count against a decoded run, so decoding ordinary words adds no views (a probe on the
+    # spec and design docs measured 3 views, 6 when they counted as printable).
+    assert egress._printable(bytes([0xFF] * 4) + b"ab") == ""
+    assert egress._printable(b"\x07" + b"a" * 9) == "a" * 9
+
+
+def _wrapped(text: str, width: int = 12) -> str:
+    """MIME-style: the text in lines of `width` characters."""
+    return "\n".join(text[i:i + width] for i in range(0, len(text), width))
 
 
 class _Synthetic:
