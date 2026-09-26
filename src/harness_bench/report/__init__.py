@@ -6,7 +6,12 @@ measured reads `NA (<reason>)`, never 0, 0% or $0 (US-27). Numbers carry their u
 
 from __future__ import annotations
 
+import re
+from dataclasses import dataclass
 from decimal import Decimal
+from pathlib import Path
+
+import yaml
 
 from harness_bench.views import Measure
 
@@ -80,3 +85,126 @@ def context_window(harness: str, tag: str | None) -> str:
     if not tag:
         return "not recorded"
     return f"{HARNESS_LABEL.get(harness, harness)} cells ran with the {tag.upper()} context window"
+
+
+# R-75 c4/c6 and R-76 c2. The header rows sit with Probe versions; both surfaces read these formatters.
+_FAILING_LINE = re.compile(r"^initial_failing_tests: (.*)$", re.MULTILINE)
+
+
+def _load_yaml(path: Path) -> dict:
+    if not path.is_file():
+        return {}
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, yaml.YAMLError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _allowance_findings(root: Path | None) -> list[dict]:
+    if root is None:
+        return []
+    findings = _load_yaml(root / "bench" / "regrade-allowed-findings.yaml").get("findings") or []
+    return [row for row in findings if isinstance(row, dict)]
+
+
+def _format_gate_allowance(findings: list[dict]) -> str:
+    groups: dict[tuple[str, str, str, str], list[str]] = {}
+    for row in findings:
+        key = (str(row.get("run", "")), str(row.get("ruling", "")), str(row.get("class", "")), str(row.get("path", "")))
+        cell = str(row.get("cell", ""))
+        groups.setdefault(key, []).append(f"{cell[:4]}..." if len(cell) > 4 else cell)
+    parts = []
+    for (run, ruling, klass, path), cells in groups.items():
+        n = len(cells)
+        word = "error" if n == 1 else "errors"
+        parts.append(f"{run} criterion 7 - {n} verify {word} allowed "
+                     f"({ruling}, {klass}; {path} of {', '.join(cells)}; not read by any grader)")
+    return "; ".join(parts)
+
+
+def gate_allowance(root: Path | None) -> str:
+    """R-76 c2. ``none`` when the allowance file is absent or has no entries."""
+    findings = _allowance_findings(root)
+    if not findings:
+        return "none"
+    return _format_gate_allowance(findings)
+
+
+@dataclass(frozen=True)
+class _Baseline:
+    low: int
+    high: int
+    flake_band: int
+    note: str
+
+
+def _d1_baseline(root: Path | None) -> _Baseline | None:
+    if root is None:
+        return None
+    band = ((_load_yaml(root / "bench" / "task-baselines.yaml").get("tasks") or {}).get("D1") or {}).get(
+        "initial_failing_tests") or {}
+    try:
+        return _Baseline(int(band["low"]), int(band["high"]), int(band["flake_band"]), str(band["note"]))
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def has_d1_cell(plan: dict) -> bool:
+    return any(c.get("task") == "D1" for c in plan.get("cells", []))
+
+
+def disclosure_rows(root: Path | None, plan: dict) -> list[tuple[str, str]]:
+    """Header rows: the gate allowance always, the D1 red baseline only when the run has a D1 cell."""
+    rows = [("Gate allowance", gate_allowance(root))]
+    if not has_d1_cell(plan):
+        return rows
+    base = _d1_baseline(root)
+    if base is None:
+        rows.append(("D1 baseline red tests", "not recorded"))
+    else:
+        rows.append(("D1 baseline red tests", f"{base.low}-{base.high} ({base.note})"))
+    return rows
+
+
+def initial_failing_tests(run_dir: Path | None, evidence: str | None) -> str:
+    """The ``initial_failing_tests`` line in the score's evidence log, or ``not recorded``."""
+    if not run_dir or not evidence:
+        return "not recorded"
+    try:
+        text = (run_dir / evidence).read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return "not recorded"
+    match = _FAILING_LINE.search(text)
+    if match is None:
+        return "not recorded"
+    return match.group(1).strip()
+
+
+def mutation_score_text(measure: Measure, failing: str, high: int | None, band: int | None) -> str:
+    """The score with its failing-test count beside it. Above high + flake_band the score is not shown."""
+    score = na(measure) if measure.value is None else f"{Decimal(measure.value):.4f}"
+    try:
+        n = int(failing)
+    except (TypeError, ValueError):
+        return f"{score} ({failing})"
+    if high is not None and band is not None:
+        limit = high + band
+        if n > limit:
+            return "red tests added"
+    return f"{score} ({n})"
+
+
+def d1_mutation_values(root: Path | None, run_dir: Path | None, view) -> dict[str, str]:
+    """cell_id -> the D1 mutation_score as the report shows it."""
+    base = _d1_baseline(root)
+    tasks = {c.get("cell_id"): c.get("task") for c in view.plan.get("cells", [])}
+    high = base.high if base else None
+    band = base.flake_band if base else None
+    out = {}
+    for cell in view.cells:
+        if tasks.get(cell.cell_id) != "D1" or "mutation_score" not in cell.scores:
+            continue
+        failing = initial_failing_tests(run_dir, cell.evidence.get("mutation_score"))
+        out[cell.cell_id] = mutation_score_text(cell.scores["mutation_score"], failing, high, band)
+    return out

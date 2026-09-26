@@ -279,7 +279,7 @@ def cmd_report(args) -> int:
     run_dir = _run_dir(args)
     root = Path(args.root)
     view = views.load(run_dir)
-    text, code = cli_table.render(view, plain=_plain())
+    text, code = cli_table.render(view, plain=_plain(), run_dir=run_dir, root=root)
     if code == OK:
         # html.write's credential scan must run before a label reaches the terminal (residual 5).
         report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator())
