@@ -227,6 +227,29 @@ def test_stryker_config_json_pinned_timeout_and_command_args(tmp_path, monkeypat
     assert configs[0]["stryker-config"]["project"] == "AiDe.Core.csproj"
 
 
+def test_initial_failing_tests_parsed_from_stryker_warning(tmp_path, monkeypatch):
+    folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
+    stdout = "[12:00:00 WRN] 75 tests are failing. Stryker will continue but outcome will be impacted.\n"
+    fake_stryker(monkeypatch, returncode=0, report_content=REPORT_FIXTURE, stdout=stdout)
+    out_dir = tmp_path / "run" / "grading" / "g" / "c1" / "mutation"
+    out = mutation.grade_cell(mutation_input(tmp_path / "run", folder, cell, out_dir))
+    assert out[METRIC].value == Decimal("0.8571")
+    assert out[METRIC].reason is None
+    log = (out_dir / "mutation.log").read_text(encoding="utf-8")
+    assert "initial_failing_tests: 75\n" in log
+
+
+def test_initial_failing_tests_not_recorded_when_the_line_is_absent(tmp_path, monkeypatch):
+    folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
+    fake_stryker(monkeypatch, returncode=0, report_content=REPORT_FIXTURE, stdout="The final mutation score is 85.71 %\n")
+    out_dir = tmp_path / "run" / "grading" / "g" / "c1" / "mutation"
+    out = mutation.grade_cell(mutation_input(tmp_path / "run", folder, cell, out_dir))
+    assert out[METRIC].value == Decimal("0.8571")
+    log = (out_dir / "mutation.log").read_text(encoding="utf-8")
+    assert "initial_failing_tests: not recorded\n" in log
+    assert "initial_failing_tests: 0\n" not in log
+
+
 def test_mutation_is_registered_in_runner_graders():
     assert "mutation" in runner.GRADERS and runner.GRADERS["mutation"] is mutation.grade_cell
 
