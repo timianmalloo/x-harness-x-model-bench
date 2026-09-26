@@ -38,7 +38,7 @@ def render(view: views.RunView, plain: bool, run_dir: Path | None = None, root: 
                       report.tokens(r.tokens), report.seconds(r.wall_ms), report.usd(r.cost_usd))
     buf = io.StringIO()
     console = Console(file=buf, width=250, color_system=None if plain else "auto", legacy_windows=False, highlight=False)
-    for label, value in report.disclosure_rows(root, view.plan):  # same rows as the HTML header, beside Probe versions
+    for label, value in report.disclosure_rows(root, view.plan, run_dir, view):  # same rows as the HTML header
         console.print(f"{label}: {value}", markup=False)
     console.print(table)
     not_valid = [c for c in view.cells if c.validity.startswith("invalid") or c.validity == "not recorded"]

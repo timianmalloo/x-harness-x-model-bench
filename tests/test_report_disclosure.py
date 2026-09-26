@@ -1,5 +1,6 @@
-"""R-75 c4/c6 and R-76 c2: the report header discloses the gate allowance and the D1 red baseline,
-and every D1 mutation_score carries the cell's initial_failing_tests. Synthetic run dirs only.
+"""R-76 c2 and R-77: the report header discloses the gate allowance, and the D1 red baseline is
+derived per run from the run's own Stryker cells. Every D1 mutation_score carries the cell's
+initial_failing_tests. Synthetic run dirs only; no file under runs/.
 """
 
 import inspect
@@ -8,7 +9,6 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
-import yaml
 
 from harness_bench import config, egress, views
 from harness_bench.report import cli_table, html
@@ -20,8 +20,12 @@ ALLOWANCE = (
     "row15-d1-1 criterion 7 - 2 verify errors allowed "
     "(R-76, GATE-RUN-A; ws/.git/index of 35af..., c3d4...; not read by any grader)"
 )
-BASELINE = "74-75 (vendored subset; AiDe.sln and docs/ absent)"
-NOTE = "vendored subset; AiDe.sln and docs/ absent"
+# R-77 item 3, verbatim, beside the derivation.
+ASSUME = (
+    "assume: at least one Stryker cell in the run added no red test; confirmed by the TRX diff of "
+    "Conditions 4; if false, the flag under-reports by the smallest added count, never over-reports."
+)
+FLAKE_BAND = 1
 
 
 def _fact(doc: str, name: str) -> str | None:
@@ -48,19 +52,53 @@ def _cli(view: views.RunView, run_dir: Path, root: Path) -> str:
     return out
 
 
-def _view(task: str, evidence: str = "grading/grade-1/a/mutation.log") -> views.RunView:
+def _cell(cell_id: str, task: str, *, score: Decimal | None = Decimal("0.8095"), evidence: str | None = None,
+          reason: str | None = None) -> views.CellView:
     na = views.Measure(None, "not graded")
-    cell = views.CellView(
-        cell_id="a", label=f"{task}.c.pack-off.r1", combo="c", pack="off", harness="copilot", model="gpt-6-sol",
-        outcome="completed", cause=None, code=None, validity="valid", validity_code=None, wall_ms=na, model_ms=na,
-        tool_ms=na, idle_ms=na, tokens=None, tokens_reason="not graded",
-        scores={"mutation_score": views.Measure(Decimal("0.8095"), None), "pass_at_1": views.Measure(Decimal(1), None)},
-        evidence={"mutation_score": evidence})
-    plan = {"cells": [{"cell_id": "a", "task": task, "harness": "copilot"}], "builds": {}}
-    return views.RunView("synth", plan, True, "grade-1", "0.4", [cell])
+    scores = {"pass_at_1": views.Measure(Decimal(1), None)}
+    if score is not None or reason is not None:
+        scores["mutation_score"] = views.Measure(score, reason)
+    return views.CellView(
+        cell_id=cell_id, label=f"{task}.c.pack-off.{cell_id}", combo="c", pack="off", harness="copilot",
+        model="gpt-6-sol", outcome="completed", cause=None, code=None, validity="valid", validity_code=None,
+        wall_ms=na, model_ms=na, tool_ms=na, idle_ms=na, tokens=None, tokens_reason="not graded",
+        scores=scores, evidence={"mutation_score": evidence} if evidence else {})
 
 
-def _baseline(root: Path, low: int, high: int, note: str, flake: int = 1) -> None:
+def _view_of(cells: list[views.CellView], tasks: dict[str, str]) -> views.RunView:
+    plan = {"cells": [{"cell_id": c, "task": t, "harness": "copilot"} for c, t in tasks.items()], "builds": {}}
+    return views.RunView("synth", plan, True, "grade-1", "0.4", cells)
+
+
+def _view(task: str, evidence: str = "grading/grade-1/a/mutation.log") -> views.RunView:
+    return _view_of([_cell("a", task, evidence=evidence)], {"a": task})
+
+
+def _write_counts(run_dir: Path, counts: list[int | str | None]) -> tuple[views.RunView, list[str]]:
+    """One D1 cell per count. An int is a Stryker cell; \"not recorded\" has no line; None is NA."""
+    cells = []
+    tasks = {}
+    for i, count in enumerate(counts):
+        cell_id = chr(ord("a") + i)
+        tasks[cell_id] = "D1"
+        evidence = f"grading/grade-1/{cell_id}/mutation.log"
+        if count is None:
+            cells.append(_cell(cell_id, "D1", score=None, reason="no tests written", evidence=evidence))
+            body = None
+        else:
+            cells.append(_cell(cell_id, "D1", evidence=evidence))
+            body = "mutation_score: 0.8095\n" if count == "absent-line" else f"initial_failing_tests: {count}\n"
+        if body is not None:
+            log = run_dir / evidence
+            log.parent.mkdir(parents=True, exist_ok=True)
+            log.write_text(body, encoding="utf-8")
+    if not run_dir.is_dir():
+        run_dir.mkdir()
+    return _view_of(cells, tasks), [c.label for c in cells]
+
+
+def _stale_task_constant(root: Path) -> None:
+    """A leftover per-task file with numbers other than the cells'. No reader may consult it."""
     bench = root / "bench"
     bench.mkdir(parents=True, exist_ok=True)
     (bench / "task-baselines.yaml").write_text(
@@ -68,22 +106,16 @@ def _baseline(root: Path, low: int, high: int, note: str, flake: int = 1) -> Non
         "tasks:\n"
         "  D1:\n"
         "    initial_failing_tests:\n"
-        f"      low: {low}\n"
-        f"      high: {high}\n"
-        f"      flake_band: {flake}\n"
-        "      source: synthetic\n"
-        f"      note: \"{note}\"\n",
+        "      low: 74\n"
+        "      high: 75\n"
+        "      flake_band: 1\n"
+        "      source: synthetic leftover\n"
+        "      note: \"vendored subset; AiDe.sln and docs/ absent\"\n",
         encoding="utf-8")
 
 
-def test_task_baselines_records_the_d1_red_baseline():
-    path = config.repo_root() / "bench" / "task-baselines.yaml"
-    assert path.is_file()
-    band = yaml.safe_load(path.read_text(encoding="utf-8"))["tasks"]["D1"]["initial_failing_tests"]
-    assert yaml.safe_load(path.read_text(encoding="utf-8"))["schema"] == "bench-task-baselines/1"
-    assert (band["low"], band["high"], band["flake_band"]) == (74, 75, 1)
-    assert band["source"] == "row15-d1-1, Leader 2026-09-25/26 (R-75 c4)"
-    assert band["note"] == NOTE
+def _surfaces(view: views.RunView, run_dir: Path, root: Path) -> tuple[str, str]:
+    return html.render(view, True, run_dir, root=root), _cli(view, run_dir, root)
 
 
 def test_gate_allowance_quotes_the_committed_allowance(tmp_path):
@@ -116,51 +148,86 @@ def test_gate_allowance_is_none_when_there_is_no_allowance(tmp_path, kind):
     assert "verify errors allowed" not in out
 
 
-@pytest.mark.parametrize(("task", "low", "high", "note", "expected"), [
-    ("D1", 74, 75, NOTE, BASELINE),
-    ("X1", 74, 75, NOTE, None),
-    ("D1", 10, 12, "other note", "10-12 (other note)"),
-])
-def test_d1_baseline_row_comes_from_task_baselines_and_only_for_a_d1_cell(tmp_path, task, low, high, note, expected):
+def test_no_d1_cell_omits_the_baseline_row(tmp_path):
     root = tmp_path / "root"
-    _baseline(root, low, high, note)
-    view = _view(task)
+    root.mkdir()
+    view = _view("X1")
     run_dir = tmp_path / "run"
     run_dir.mkdir()
-    doc = html.render(view, True, run_dir, root=root)
-    out = _cli(view, run_dir, root)
-    assert _fact(doc, "D1 baseline red tests") == expected
-    if expected is None:
-        assert "D1 baseline red tests" not in out
-        assert _column(doc, "mutation_score") is None
-    else:
-        assert f"D1 baseline red tests: {expected}" in out
+    doc, out = _surfaces(view, run_dir, root)
+    assert _fact(doc, "D1 baseline red tests") is None
+    assert "D1 baseline red tests" not in out
+    assert _column(doc, "mutation_score") is None
 
 
-@pytest.mark.parametrize(("count", "shown"), [
-    ("74", "0.8095 (74)"),
-    ("76", "0.8095 (76)"),
-    ("77", "red tests added"),
-    ("absent-log", "0.8095 (not recorded)"),
-    ("absent-line", "0.8095 (not recorded)"),
+def _derived(low: int, high: int, n: int) -> str:
+    text = f"{low}-{high} over {n} cells (derived from this run, R-77)"
+    if high - low > FLAKE_BAND:
+        text += f" - baseline unstable within run (spread {high - low})"
+    return text
+
+
+@pytest.mark.parametrize(("counts", "header", "flags"), [
+    ([69, 69, 69, 71], _derived(69, 71, 4), {3: "red tests added"}),
+    ([69, 70, 71], _derived(69, 71, 3), {1: "0.8095 (70)", 2: "red tests added"}),
+    ([69], "not derived (1 cell)", {0: "0.8095 (69) - not checked"}),
+    ([74, 74, 74, 74, 74], _derived(74, 74, 5), {}),
 ])
-def test_d1_mutation_score_carries_its_initial_failing_tests(tmp_path, count, shown):
+def test_d1_baseline_is_derived_from_this_runs_stryker_cells(tmp_path, counts, header, flags):
     root = tmp_path / "root"
-    _baseline(root, 74, 75, NOTE)
+    root.mkdir()
     run_dir = tmp_path / "run"
-    evidence = "grading/grade-1/a/mutation.log"
-    if count != "absent-log":
-        log = run_dir / evidence
-        log.parent.mkdir(parents=True)
-        body = "mutation_score: 0.8095\n" if count == "absent-line" else f"initial_failing_tests: {count}\n"
-        log.write_text(body, encoding="utf-8")
-    else:
-        run_dir.mkdir()
-    view = _view("D1", evidence)
-    doc = html.render(view, True, run_dir, root=root)
-    assert _column(doc, "mutation_score") == [shown]
-    out = _cli(view, run_dir, root)
-    assert f"{view.cells[0].label}: mutation_score {shown}" in out
-    if shown == "red tests added":
-        assert "0.8095" not in out.split("mutation_score", 1)[1]
-        assert "77" not in _column(doc, "mutation_score")[0]
+    view, labels = _write_counts(run_dir, counts)
+    doc, out = _surfaces(view, run_dir, root)
+    assert _fact(doc, "D1 baseline red tests") == header
+    assert f"D1 baseline red tests: {header}" in out
+    column = _column(doc, "mutation_score")
+    assert column is not None and len(column) == len(counts)
+    for i, count in enumerate(counts):
+        shown = flags.get(i, f"0.8095 ({count})")
+        assert column[i] == shown
+        assert f"{labels[i]}: mutation_score {shown}" in out
+    if "red tests added" not in flags.values():
+        assert "red tests added" not in doc
+        assert "red tests added" not in out
+    if "baseline unstable" not in header:
+        assert "baseline unstable" not in doc
+        assert "baseline unstable" not in out
+
+
+def test_a_na_cell_is_excluded_from_the_derived_baseline(tmp_path):
+    """A cell whose mutation_score has no value is not a Stryker cell (R-77)."""
+    root = tmp_path / "root"
+    root.mkdir()
+    run_dir = tmp_path / "run"
+    view, _ = _write_counts(run_dir, [69, 69, None])
+    doc, out = _surfaces(view, run_dir, root)
+    header = _derived(69, 69, 2)
+    assert _fact(doc, "D1 baseline red tests") == header
+    assert f"D1 baseline red tests: {header}" in out
+    assert "baseline unstable" not in header
+    column = _column(doc, "mutation_score")
+    assert column[0] == "0.8095 (69)"
+    assert column[1] == "0.8095 (69)"
+    assert column[2].startswith("NA (")
+
+
+def test_a_stored_task_baseline_does_not_change_the_derived_row(tmp_path):
+    root = tmp_path / "root"
+    _stale_task_constant(root)
+    run_dir = tmp_path / "run"
+    view, labels = _write_counts(run_dir, [69, 69, 69, 71])
+    doc, out = _surfaces(view, run_dir, root)
+    header = _derived(69, 71, 4)
+    assert _fact(doc, "D1 baseline red tests") == header
+    assert f"D1 baseline red tests: {header}" in out
+    assert "74-75" not in doc
+    assert "74-75" not in out
+    column = _column(doc, "mutation_score")
+    assert column == ["0.8095 (69)", "0.8095 (69)", "0.8095 (69)", "red tests added"]
+    assert f"{labels[3]}: mutation_score red tests added" in out
+
+
+def test_the_r77_assume_sits_beside_the_derivation():
+    text = (config.repo_root() / "src" / "harness_bench" / "report" / "__init__.py").read_text(encoding="utf-8")
+    assert ASSUME in text

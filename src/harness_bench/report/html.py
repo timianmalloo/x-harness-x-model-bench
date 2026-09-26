@@ -158,7 +158,8 @@ def _scenario6_facts(view: views.RunView) -> list[tuple[str, str | None]]:
 
 
 def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | None = None,
-            judging: list[tuple[str, str | None]] | None = None, root: Path | None = None) -> str:
+            judging: list[tuple[str, str | None]] | None = None, root: Path | None = None,
+            run_dir: Path | None = None) -> str:
     plan = view.plan
     planned = ", ".join(views.build_label(h, str(b.get("version", ""))) for h, b in sorted((plan.get("builds") or {}).items()))
     facts = [("Run", view.run_id), ("State", "complete" if view.completed else "incomplete"),
@@ -172,7 +173,7 @@ def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | N
              *_claude_code_permission_fact(view.cells, modes or {}),
              ("Price list hash", (plan.get("price_list_hash") or "")[:12]), *_scenario6_facts(view),
              *(judging or []),  # Probe versions is the last judge-block row (report/judges.py)
-             *report.disclosure_rows(root, plan)]  # R-76 gate allowance; R-75 c4 D1 baseline when the run has a D1 cell
+             *report.disclosure_rows(root, plan, run_dir, view)]  # R-76 gate allowance; R-77 D1 baseline from this run
     if report.has_codex_cell(plan):
         facts.append((report.N5_FLAG, f"see {report.N5_EVIDENCE}"))
     if report.has_claude_code_cell(plan):
@@ -257,7 +258,7 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
     return ("<!doctype html>\n"
             f'<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
             f"<title>harness-bench run {_e(view.run_id)}</title><style>{STYLE}</style></head>"
-            f"<body><main>{_header(view, tags, _permission_modes(run_dir), judging, root)}{_validity(view)}{_leaderboard(view)}{_runs(view, archive_present, tags, run_dir, root)}"
+            f"<body><main>{_header(view, tags, _permission_modes(run_dir), judging, root, run_dir)}{_validity(view)}{_leaderboard(view)}{_runs(view, archive_present, tags, run_dir, root)}"
             f"</main></body></html>\n")
 
 
