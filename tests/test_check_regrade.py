@@ -6,17 +6,19 @@ Red first: a dead pass B, a value moved by pass B, a moved 0.3 byte and an all-N
 
 import hashlib
 import importlib.util
+import os
 import shutil
+import stat
 import sys
 from pathlib import Path
 
 import pytest
 import yaml
-from archived_runs import ROOT, make_root
+from archived_runs import ROOT, gate_runs_root, make_root
 
-from harness_bench import config, views
+from harness_bench import config, plan, views
 from harness_bench.errors import BenchError
-from harness_bench.grade import Score, runner
+from harness_bench.grade import Score, _changes, runner
 
 _spec = importlib.util.spec_from_file_location("check_regrade", ROOT / "tools" / "check_regrade.py")
 check_regrade = importlib.util.module_from_spec(_spec)
@@ -199,3 +201,37 @@ def test_an_empty_allowance_passes(gate_run, tmp_path, monkeypatch):
     assert loaded == []
     report = run_gate(gate_run)
     assert (report.failures, report.notes) == ([], [JUDGE_NOTE])
+
+
+def _file_hashes(tree: Path) -> dict[str, str]:
+    return {p.relative_to(tree).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in tree.rglob("*") if p.is_file()}
+
+
+def test_a_junk_git_index_leaves_the_pre_turn_commit_and_file_hash_map_unchanged(tmp_path):
+    """R-76 item 4. Copy one row15-d1-1 D1 cell's ws/; never write under the gate run."""
+    run = gate_runs_root() / "row15-d1-1"
+    if not (run / "plan.json").is_file():
+        pytest.skip("gate run row15-d1-1 is not on this host (set HB_GATE_RUNS to the runs folder)")
+    cell_id = "c3d40fa1377ba0dc"
+    cell = next(c for c in plan.load_confirmed(run)["cells"] if c["cell_id"] == cell_id)
+    attempt = next(e["archive_attempt"] for e in views.rows(run, "events")
+                   if e["kind"] == "cell.archived" and e["cell_id"] == cell_id)
+    src = run / "archive" / cell_id / f"attempt-{attempt}" / "ws"
+    source_index = (src / ".git" / "index").read_bytes()
+    clean, junk = tmp_path / "clean", tmp_path / "junk"
+    shutil.copytree(src, clean, symlinks=True)
+    shutil.copytree(src, junk, symlinks=True)
+    index = junk / ".git" / "index"
+    os.chmod(index, stat.S_IWRITE)
+    index.write_bytes(b"junk")
+    commit = _changes.pre_turn_commit(clean, cell, 120)
+    assert _changes.pre_turn_commit(junk, cell, 120) == commit
+    assert commit
+
+    def hashes(ws: Path, dest: Path) -> dict[str, str]:
+        with _changes.pre_turn_tree(ws, commit, dest, 120) as tree:
+            return _file_hashes(tree)
+
+    assert hashes(junk, tmp_path / "junk-tree") == hashes(clean, tmp_path / "clean-tree")
+    assert (src / ".git" / "index").read_bytes() == source_index
