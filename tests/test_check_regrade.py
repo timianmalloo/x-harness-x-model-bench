@@ -167,6 +167,24 @@ def test_an_allowed_verify_tuple_is_a_note_not_a_failure(gate_run, tmp_path, mon
     assert report.notes == [JUDGE_NOTE, note]
 
 
+@pytest.mark.parametrize("part", ["run", "cell", "path"])
+def test_the_same_tuple_with_a_different_run_cell_or_path_is_a_failure(gate_run, tmp_path, monkeypatch, part):
+    entry_run, cell, path = gate_run[1].name, _CELL, _PATH
+    if part == "run":
+        entry_run = entry_run + "-other"
+    elif part == "cell":
+        cell = "0000000000000000"
+    else:
+        path = "ws/bin/dropped.dll"
+    message = _finding_message(cell, path)
+    entry = _allowance_entry(entry_run)
+    monkeypatch.setattr(check_regrade, "ALLOWANCE", _write_allowance(tmp_path, [entry]), raising=False)
+    _verify_returns(monkeypatch, [views.Finding(_CODE, "error", message)])
+    report = run_gate(gate_run)
+    assert report.failures == [f"criterion 7: {_CODE} {message}"]
+    assert report.notes == [JUDGE_NOTE]
+
+
 def test_an_empty_allowance_passes(gate_run, tmp_path, monkeypatch):
     path = _write_allowance(tmp_path, [])
     monkeypatch.setattr(check_regrade, "ALLOWANCE", path, raising=False)
