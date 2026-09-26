@@ -141,6 +141,13 @@ def test_codex_unexpected_status_401_is_blocked_auth(tmp_path):  # R-23: 401 in 
     assert (ex.errors[0].status, normalize.classify(ex.errors)) == (401, Cause.blocked_auth)
 
 
+def test_codex_unexpected_status_403_is_blocked_auth(tmp_path):  # R-23: 403 is an auth block too
+    message = "unexpected status 403 Forbidden: Incorrect API key provided: sk-****"
+    ex = _codex_task_complete(tmp_path, message)
+    assert ex.errors[0].message == message
+    assert (ex.errors[0].status, normalize.classify(ex.errors)) == (403, Cause.blocked_auth)
+
+
 # classification (design: failure taxonomy; W3) -------------------------------------------------
 
 @pytest.mark.parametrize("status, etype, cause", [
