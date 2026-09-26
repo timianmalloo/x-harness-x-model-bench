@@ -14,8 +14,10 @@ It passes only when every criterion holds:
    `HB-GRD-` or `infrastructure failure`;
 6. judge calls: never claimed. With no judged cell the gate notes `judge half not exercised: not proven`; with one, the
    zero-call proof needs the gateway's per-call record for pass B (W3-GW-D, S-5), so it is noted `not proven`;
-7. `bench verify R` has no error the allowance does not note (a warning, e.g. `anchor: not recorded`, is noted).
-   A noted error is `verify error allowed (R-76): …` (R-76).
+7. `bench verify R` has no error (a warning, e.g. `anchor: not recorded`, is noted). An error whose exact
+   `(run, code, cell, path)` is in bench/regrade-allowed-findings.yaml is noted `verify error allowed (R-76): …`
+   and is not a failure (R-76). An allowance path whose first segment under `ws/` is outside build output fails
+   at load (`criterion 7: allowance names a graded path`).
 Preconditions checked by `main`: P2 the price list equals the plan's; P3 `bench validate` is green; P4 no engine holds R.
 
 Usage: python tools/check_regrade.py <run_dir>... [--root <bench root>] [--version 0.4]
@@ -34,6 +36,7 @@ from pathlib import Path
 
 from harness_bench import config, ledger, oslock, views
 from harness_bench.grade import runner
+from harness_bench.grade._changes import BUILD_OUTPUT
 from harness_bench.plan import file_hash, load_confirmed
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -120,6 +123,10 @@ def gate(run_dir: Path, grade: Callable[[Path], str], *, baseline: dict, frozen_
     report.notes.append("judge calls in pass B: not proven (the gateway per-call record is W3-GW-D's, S-5)" if judged
                         else "judge half not exercised: not proven")  # 6
     allowance = load_allowance(ALLOWANCE)  # 7
+    problems = allowance_failures(allowance)
+    report.failures.extend(problems)
+    if problems:  # a rejected allowance forgives nothing
+        allowance = []
     for f in views.verify(run_dir):
         if f.level != "error":
             report.notes.append(f"verify warning: {f.code} {f.message}")
@@ -128,6 +135,24 @@ def gate(run_dir: Path, grade: Callable[[Path], str], *, baseline: dict, frozen_
         else:
             report.failures.append(f"criterion 7: {f.code} {f.message}")
     return report
+
+
+def _segment_under_ws(path: str) -> str:
+    parts = path.split("/")
+    try:
+        index = parts.index("ws")
+    except ValueError:
+        return ""
+    return parts[index + 1] if index + 1 < len(parts) else ""
+
+
+def allowance_failures(entries: list[dict]) -> list[str]:
+    """An entry whose first path segment under `ws/` is not build output fails the gate at load (R-76)."""
+    for entry in entries:
+        segment = _segment_under_ws(str(entry.get("path") or ""))
+        if segment not in BUILD_OUTPUT:
+            return ["criterion 7: allowance names a graded path"]
+    return []
 
 
 def load_allowance(path: Path) -> list[dict]:
