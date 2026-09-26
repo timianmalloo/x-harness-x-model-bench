@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-25T21:30:44Z",
+  "generated": "2026-09-26T00:43:45Z",
   "audit": [
     {
       "actor": null,
@@ -32511,6 +32511,600 @@ window.AUDIT_DATA = {
             "sha256": "755f6b5c8f0832aefbfdb98d3e6feee6d9ca4c31cac1434c096ad27c8d9ac7eb",
             "status": "resolved",
             "token": "tests/test_delegate.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3DJNX7S65ME9YHEQPSHGTMN",
+      "shortname": "Goal: fix the judge request so a judge answers exactly the verdict-set s…",
+      "datetime": "2026-09-26T00:43:40Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: fix the judge request so a judge answers exactly the verdict-set shape (docs/design/phase3-gateway-judges.md section 7.2; the gateway's request template and schema), red first.\nMeasured (smoke-1 judge pass, 2026-09-25): 21 of 42 Copilot gpt-6-sol calls failed HB-GW-002 because the answer added a top-level key beside \"items\" (\"sum\": 13 in one, \"total\": 12 in two); the other answers were schema-clean. The schema (additionalProperties false) is right; the request does not say that no other key is allowed.\nDone when: The rendered judge request (gateway/request.py's template, section 7.2 order unchanged) states plainly that the answer is one JSON object with exactly one key, \"items\", and no other key (no total, sum or score summary); request.TEMPLATE_VERSION is bumped, so every cache key built from the old template changes (a stored Claude verdict under the old template is not reused).; A test is red first: the rendered request contains that sentence; and a test pins that an answer with an extra top-level key (\"total\") is still refused HB-GW-002 by the schema (the validation stays strict); T-GW-33's golden request is updated deliberately in the same commit as the template, with the new TEMPLATE_VERSION.; tests/mutations/gateway.json gains a named mutant (the sentence removed), killed; the exactly-once find control stays green; uv run pytest -q -p no:cacheprovider on the gateway and judge test files passes and uv run ruff check src tests tools is clean.; Commit the red test first, then the green.\nNot in scope: loosening the schema; bench/gateway.yaml (the invocation hash does not include the request text); any live judge call; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 15 minutes; commit the red and the green immediately.\n\nGrounding: src/harness_bench/gateway/{request,schema,pipeline}.py; src/harness_bench/gateway/schemas/verdict-set.v1.json; tests/test_gateway_request.py; tests/fixtures/gateway/golden/; tests/mutations/gateway.json. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3DJNZ6TQ0MBDAMYD29V72PX",
+      "shortname": "compile-Goal: fix the judge request so a judge answers exactly the verdict-set s…",
+      "datetime": "2026-09-26T00:43:42Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: fix the judge request so a judge answers exactly the verdict-set shape (docs/design/phase3-gateway-judges.md section 7.2; the gateway's request template and schema), red first. Measured (smoke-1 judge pass, 2026-09-25): 21 of 42 Copilot gpt-6-sol calls failed HB-GW-002 because the answer added a top-level key beside \"items\" (\"sum\": 13 in one, \"total\": 12 in two); the other answers were schema-clean. The schema (additionalProperties false) is right; the request does not say that no other key is allowed.\nDone when: The rendered judge request (gateway/request.py's template, section 7.2 order unchanged) states plainly that the answer is one JSON object with exactly one key, \"items\", and no other key (no total, sum or score summary); request.TEMPLATE_VERSION is bumped, so every cache key built from the old template changes (a stored Claude verdict under the old template is not reused).; A test is red first: the rendered request contains that sentence; and a test pins that an answer with an extra top-level key (\"total\") is still refused HB-GW-002 by the schema (the validation stays strict); T-GW-33's golden request is updated deliberately in the same commit as the template, with the new TEMPLATE_VERSION.; tests/mutations/gateway.json gains a named mutant (the sentence removed), killed; the exactly-once find control stays green; uv run pytest -q -p no:cacheprovider on the gateway and judge test files passes and uv run ruff check src tests tools is clean.; Commit the red test first, then the green.\nNot in scope: loosening the schema; bench/gateway.yaml (the invocation hash does not include the request text); any live judge call; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 15 minutes; commit the red and the green immediately.\nGrounding: src/harness_bench/gateway/{request,schema,pipeline}.py; src/harness_bench/gateway/schemas/verdict-set.v1.json; tests/test_gateway_request.py; tests/fixtures/gateway/golden/; tests/mutations/gateway.json. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: The rendered judge request (gateway/request.py's template, section 7.2 order unchanged) states plainly that the answer is one JSON object with exactly one key, \"items\", and no other key (no total, sum or score summary) | phrase: The rendered judge request (gateway/request.py's template, section 7.2 order unchanged) states plainly that the answer is one JSON object with exactly one key, \"items\", and no other key (no total, sum or score summary) |\n| done_when: request.TEMPLATE_VERSION is bumped, so every cache key built from the old template changes (a stored Claude verdict under the old template is not reused). | phrase: request.TEMPLATE_VERSION is bumped, so every cache key built from the old template changes (a stored Claude verdict under the old template is not reused). |\n| done_when: A test is red first: the rendered request contains that sentence | phrase: A test is red first: the rendered request contains that sentence |\n| done_when: and a test pins that an answer with an extra top-level key (\"total\") is still refused HB-GW-002 by the schema (the validation stays strict) | phrase: and a test pins that an answer with an extra top-level key (\"total\") is still refused HB-GW-002 by the schema (the validation stays strict) |\n| done_when: T-GW-33's golden request is updated deliberately in the same commit as the template, with the new TEMPLATE_VERSION. | phrase: T-GW-33's golden request is updated deliberately in the same commit as the template, with the new TEMPLATE_VERSION. |\n| done_when: tests/mutations/gateway.json gains a named mutant (the sentence removed), killed | phrase: tests/mutations/gateway.json gains a named mutant (the sentence removed), killed |\n| done_when: the exactly-once find control stays green | phrase: the exactly-once find control stays green |\n| done_when: uv run pytest -q -p no:cacheprovider on the gateway and judge test files passes and uv run ruff check src tests tools is clean. | phrase: uv run pytest -q -p no:cacheprovider on the gateway and judge test files passes and uv run ruff check src tests tools is clean. |\n| done_when: Commit the red test first, then the green. | phrase: Commit the red test first, then the green. |\n| not_in_scope: loosening the schema | phrase: loosening the schema |\n| not_in_scope: bench/gateway.yaml (the invocation hash does not include the request text) | phrase: bench/gateway.yaml (the invocation hash does not include the request text) |\n| not_in_scope: any live judge call | phrase: any live judge call |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- docs/design/phase3-gateway-judges.md: docs/design/phase3-gateway-judges.md sha256 fe413bac2ff308f8577d477fa5ae4f75b38adc4a44b35c9ef5186c89a94f6d90\n- gateway/request.py's: unresolved (not found; nearest: src/harness_bench/gateway/request.py)\n- tests/mutations/gateway.json: tests/mutations/gateway.json sha256 0ba89d28cdc32518af22ea3a53f6add9921bb4103e2365e2b4b668ad09f412a6\n- bench/gateway.yaml: bench/gateway.yaml sha256 39cd001d13d37e6812832b11bbbcf0b075c0cff5daa78e963f93c8c7cdd18471\n- runs/: unresolved (not found)\n- src/harness_bench/gateway/{request,schema,pipeline}.py: unresolved (not found)\n- src/harness_bench/gateway/schemas/verdict-set.v1.json: src/harness_bench/gateway/schemas/verdict-set.v1.json sha256 7565fcc5881979c2997d76da94b322dc0feb3d763a554f448b3824da6e092098\n- tests/test_gateway_request.py: tests/test_gateway_request.py sha256 b774da9ad99c25b66aae6e25ab00addc2baaa1fa92a14dbc0e43140d3ae56f55\n- tests/fixtures/gateway/golden/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3DJNX7S65ME9YHEQPSHGTMN\nraw sha256: d0a50c4ef59bfbd56b21780eeac61dcee6ec5f1c01b0f2e61a3f69bcbc208d82\ncompiler model: claude-opus-5-5\nengine seconds: 0.005\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3DJNX7S65ME9YHEQPSHGTMN for claude-code v1: 14 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "The rendered judge request (gateway/request.py's template, section 7.2 order unchanged) states plainly that the answer is one JSON object with exactly one key, \"items\", and no other key (no total, sum or score summary)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The rendered judge request (gateway/request.py's template, section 7.2 order unchanged) states plainly that the answer is one JSON object with exactly one key, \"items\", and no other key (no total, sum or score summary)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "request.TEMPLATE_VERSION is bumped, so every cache key built from the old template changes (a stored Claude verdict under the old template is not reused).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "request.TEMPLATE_VERSION is bumped, so every cache key built from the old template changes (a stored Claude verdict under the old template is not reused)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A test is red first: the rendered request contains that sentence",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A test is red first: the rendered request contains that sentence"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "and a test pins that an answer with an extra top-level key (\"total\") is still refused HB-GW-002 by the schema (the validation stays strict)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "and a test pins that an answer with an extra top-level key (\"total\") is still refused HB-GW-002 by the schema (the validation stays strict)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "T-GW-33's golden request is updated deliberately in the same commit as the template, with the new TEMPLATE_VERSION.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "T-GW-33's golden request is updated deliberately in the same commit as the template, with the new TEMPLATE_VERSION."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/gateway.json gains a named mutant (the sentence removed), killed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/gateway.json gains a named mutant (the sentence removed), killed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the exactly-once find control stays green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the exactly-once find control stays green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider on the gateway and judge test files passes and uv run ruff check src tests tools is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider on the gateway and judge test files passes and uv run ruff check src tests tools is clean."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit the red test first, then the green.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit the red test first, then the green."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "loosening the schema",
+            "trace": {
+              "kind": "phrase",
+              "ref": "loosening the schema"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench/gateway.yaml (the invocation hash does not include the request text)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/gateway.yaml (the invocation hash does not include the request text)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any live judge call",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any live judge call"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "The rendered judge request (gateway/request.py's template, section 7.2 order unchanged) states plainly that the answer is one JSON object with exactly one key, \"items\", and no other key (no total, sum or score summary)",
+            "request.TEMPLATE_VERSION is bumped, so every cache key built from the old template changes (a stored Claude verdict under the old template is not reused).",
+            "A test is red first: the rendered request contains that sentence",
+            "and a test pins that an answer with an extra top-level key (\"total\") is still refused HB-GW-002 by the schema (the validation stays strict)",
+            "T-GW-33's golden request is updated deliberately in the same commit as the template, with the new TEMPLATE_VERSION.",
+            "tests/mutations/gateway.json gains a named mutant (the sentence removed), killed",
+            "the exactly-once find control stays green",
+            "uv run pytest -q -p no:cacheprovider on the gateway and judge test files passes and uv run ruff check src tests tools is clean.",
+            "Commit the red test first, then the green."
+          ],
+          "fan_out_cap": 0,
+          "goal": "fix the judge request so a judge answers exactly the verdict-set shape (docs/design/phase3-gateway-judges.md section 7.2; the gateway's request template and schema), red first. Measured (smoke-1 judge pass, 2026-09-25): 21 of 42 Copilot gpt-6-sol calls failed HB-GW-002 because the answer added a top-level key beside \"items\" (\"sum\": 13 in one, \"total\": 12 in two); the other answers were schema-clean. The schema (additionalProperties false) is right; the request does not say that no other key is allowed.",
+          "main_line_budget": "one slice of at most 15 minutes; commit the red and the green immediately.\nGrounding: src/harness_bench/gateway/{request,schema,pipeline}.py; src/harness_bench/gateway/schemas/verdict-set.v1.json; tests/test_gateway_request.py; tests/fixtures/gateway/golden/; tests/mutations/gateway.json. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "loosening the schema",
+            "bench/gateway.yaml (the invocation hash does not include the request text)",
+            "any live judge call",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.005,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3DJNX7S65ME9YHEQPSHGTMN",
+        "raw_sha256": "d0a50c4ef59bfbd56b21780eeac61dcee6ec5f1c01b0f2e61a3f69bcbc208d82",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": "docs/design/phase3-gateway-judges.md",
+            "reason": null,
+            "sha256": "fe413bac2ff308f8577d477fa5ae4f75b38adc4a44b35c9ef5186c89a94f6d90",
+            "status": "resolved",
+            "token": "docs/design/phase3-gateway-judges.md"
+          },
+          {
+            "nearest": "src/harness_bench/gateway/request.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gateway/request.py's"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/gateway.json",
+            "reason": null,
+            "sha256": "0ba89d28cdc32518af22ea3a53f6add9921bb4103e2365e2b4b668ad09f412a6",
+            "status": "resolved",
+            "token": "tests/mutations/gateway.json"
+          },
+          {
+            "nearest": null,
+            "path": "bench/gateway.yaml",
+            "reason": null,
+            "sha256": "39cd001d13d37e6812832b11bbbcf0b075c0cff5daa78e963f93c8c7cdd18471",
+            "status": "resolved",
+            "token": "bench/gateway.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/gateway/{request,schema,pipeline}.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/gateway/schemas/verdict-set.v1.json",
+            "reason": null,
+            "sha256": "7565fcc5881979c2997d76da94b322dc0feb3d763a554f448b3824da6e092098",
+            "status": "resolved",
+            "token": "src/harness_bench/gateway/schemas/verdict-set.v1.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_gateway_request.py",
+            "reason": null,
+            "sha256": "b774da9ad99c25b66aae6e25ab00addc2baaa1fa92a14dbc0e43140d3ae56f55",
+            "status": "resolved",
+            "token": "tests/test_gateway_request.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/gateway/golden/"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3DJNZDJVJ9ZG44569G65DA3",
+      "shortname": "Goal: classify an authentication failure in a native record as an auth b…",
+      "datetime": "2026-09-26T00:43:42Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: classify an authentication failure in a native record as an auth block, not \"model unavailable\" (src/harness_bench/telemetry/normalize.py::classify, ruling R-23's one classifier; errors.py's blocked_auth HB-CELL-202), red first.\nMeasured (smoke-1, 2026-09-25): both F1 codex-sol cells ended `failed (model unavailable)` HB-CELL-116 because the parent Codex rollout's task_complete carried `unexpected status 401 Unauthorized: Incorrect API key provided: sk-svcac****` (masked by Codex) with no separate status field; classify() saw no status, no provider type, and fell through to model_unavailable. A 401 or 403 is an authentication or permission failure, for which the engine already has blocked_auth (HB-CELL-202) and its decision request.\nDone when: The Codex reader (and any reader whose error text carries \"unexpected status NNN\") parses that status into ProviderError.status when the record has no status field; classify() returns blocked_auth for 401 and 403 (and keeps 408/429/5xx as provider, any other status as model_unavailable, as R-23 says); a record message is never copied into a cause detail beyond what it already stores (keys stay masked as the CLI printed them).; Tests red first on placeholder records (no real key fragment: use `sk-****`): a Codex rollout with \"unexpected status 401\" gives blocked_auth; 403 too; 404 stays model_unavailable; 429 stays provider; each red committed separately and failing on an assertion.; tests/mutations (the file that covers normalize.classify) gains a named mutant per new branch, each killed; the exactly-once find control stays green; uv run pytest -q -p no:cacheprovider on the touched test files passes; uv run ruff check src tests tools is clean.\nNot in scope: re-running or re-grading smoke-1 (the Leader does); the engine's decision logic; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: src/harness_bench/telemetry/{normalize,codex}.py; src/harness_bench/errors.py (Cause); docs/notes/rulings.md R-23; tests/test_telemetry.py; tests/mutations/*.json (find the one covering classify). Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3DJP2D4N7RFKPWZSQP354TM",
+      "shortname": "compile-Goal: classify an authentication failure in a native record as an auth b…",
+      "datetime": "2026-09-26T00:43:45Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: classify an authentication failure in a native record as an auth block, not \"model unavailable\" (src/harness_bench/telemetry/normalize.py::classify, ruling R-23's one classifier; errors.py's blocked_auth HB-CELL-202), red first. Measured (smoke-1, 2026-09-25): both F1 codex-sol cells ended `failed (model unavailable)` HB-CELL-116 because the parent Codex rollout's task_complete carried `unexpected status 401 Unauthorized: Incorrect API key provided: sk-svcac****` (masked by Codex) with no separate status field; classify() saw no status, no provider type, and fell through to model_unavailable. A 401 or 403 is an authentication or permission failure, for which the engine already has blocked_auth (HB-CELL-202) and its decision request.\nDone when: The Codex reader (and any reader whose error text carries \"unexpected status NNN\") parses that status into ProviderError.status when the record has no status field; classify() returns blocked_auth for 401 and 403 (and keeps 408/429/5xx as provider, any other status as model_unavailable, as R-23 says); a record message is never copied into a cause detail beyond what it already stores (keys stay masked as the CLI printed them).; Tests red first on placeholder records (no real key fragment: use `sk-****`): a Codex rollout with \"unexpected status 401\" gives blocked_auth; 403 too; 404 stays model_unavailable; 429 stays provider; each red committed separately and failing on an assertion.; tests/mutations (the file that covers normalize.classify) gains a named mutant per new branch, each killed; the exactly-once find control stays green; uv run pytest -q -p no:cacheprovider on the touched test files passes; uv run ruff check src tests tools is clean.\nNot in scope: re-running or re-grading smoke-1 (the Leader does); the engine's decision logic; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: src/harness_bench/telemetry/{normalize,codex}.py; src/harness_bench/errors.py (Cause); docs/notes/rulings.md R-23; tests/test_telemetry.py; tests/mutations/*.json (find the one covering classify). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: The Codex reader (and any reader whose error text carries \"unexpected status NNN\") parses that status into ProviderError.status when the record has no status field | phrase: The Codex reader (and any reader whose error text carries \"unexpected status NNN\") parses that status into ProviderError.status when the record has no status field |\n| done_when: classify() returns blocked_auth for 401 and 403 (and keeps 408/429/5xx as provider, any other status as model_unavailable, as R-23 says) | phrase: classify() returns blocked_auth for 401 and 403 (and keeps 408/429/5xx as provider, any other status as model_unavailable, as R-23 says) |\n| done_when: a record message is never copied into a cause detail beyond what it already stores (keys stay masked as the CLI printed them). | phrase: a record message is never copied into a cause detail beyond what it already stores (keys stay masked as the CLI printed them). |\n| done_when: Tests red first on placeholder records (no real key fragment: use `sk-****`): a Codex rollout with \"unexpected status 401\" gives blocked_auth | phrase: Tests red first on placeholder records (no real key fragment: use `sk-****`): a Codex rollout with \"unexpected status 401\" gives blocked_auth |\n| done_when: 403 too | phrase: 403 too |\n| done_when: 404 stays model_unavailable | phrase: 404 stays model_unavailable |\n| done_when: 429 stays provider | phrase: 429 stays provider |\n| done_when: each red committed separately and failing on an assertion. | phrase: each red committed separately and failing on an assertion. |\n| done_when: tests/mutations (the file that covers normalize.classify) gains a named mutant per new branch, each killed | phrase: tests/mutations (the file that covers normalize.classify) gains a named mutant per new branch, each killed |\n| done_when: the exactly-once find control stays green | phrase: the exactly-once find control stays green |\n| done_when: uv run pytest -q -p no:cacheprovider on the touched test files passes | phrase: uv run pytest -q -p no:cacheprovider on the touched test files passes |\n| done_when: uv run ruff check src tests tools is clean. | phrase: uv run ruff check src tests tools is clean. |\n| not_in_scope: re-running or re-grading smoke-1 (the Leader does) | phrase: re-running or re-grading smoke-1 (the Leader does) |\n| not_in_scope: the engine's decision logic | phrase: the engine's decision logic |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- failed (model unavailable: unresolved (not found)\n- unexpected status 401 Unauthorized: Incorrect API key provided: sk-svcac****: unresolved (not found)\n- sk-****: unresolved (not found)\n- src/harness_bench/telemetry/normalize.py::classify: unresolved (not found)\n- 408/429/5xx: unresolved (not found)\n- tests/mutations: unresolved (not found)\n- runs/: unresolved (not found)\n- src/harness_bench/telemetry/{normalize,codex}.py: unresolved (not found)\n- src/harness_bench/errors.py: src/harness_bench/errors.py sha256 1b117deb2172662741123cb2984a3fa7dd87e19a4a01606651d530fd8c3dcb21\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- tests/test_telemetry.py: tests/test_telemetry.py sha256 d3d583aaadded0c1c58be2f7e60a9a69bc18254ceb865c4bcf5d6592ce42a3b5\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3DJNZDJVJ9ZG44569G65DA3\nraw sha256: 35d75634fdb6aaf79a71c6c7524f8f3445e5892f1cd2c4bf9fe08ec570102866\ncompiler model: claude-opus-5-5\nengine seconds: 0.005\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3DJNZDJVJ9ZG44569G65DA3 for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "The Codex reader (and any reader whose error text carries \"unexpected status NNN\") parses that status into ProviderError.status when the record has no status field",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The Codex reader (and any reader whose error text carries \"unexpected status NNN\") parses that status into ProviderError.status when the record has no status field"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "classify() returns blocked_auth for 401 and 403 (and keeps 408/429/5xx as provider, any other status as model_unavailable, as R-23 says)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "classify() returns blocked_auth for 401 and 403 (and keeps 408/429/5xx as provider, any other status as model_unavailable, as R-23 says)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a record message is never copied into a cause detail beyond what it already stores (keys stay masked as the CLI printed them).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a record message is never copied into a cause detail beyond what it already stores (keys stay masked as the CLI printed them)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Tests red first on placeholder records (no real key fragment: use `sk-****`): a Codex rollout with \"unexpected status 401\" gives blocked_auth",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Tests red first on placeholder records (no real key fragment: use `sk-****`): a Codex rollout with \"unexpected status 401\" gives blocked_auth"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "403 too",
+            "trace": {
+              "kind": "phrase",
+              "ref": "403 too"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "404 stays model_unavailable",
+            "trace": {
+              "kind": "phrase",
+              "ref": "404 stays model_unavailable"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "429 stays provider",
+            "trace": {
+              "kind": "phrase",
+              "ref": "429 stays provider"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "each red committed separately and failing on an assertion.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "each red committed separately and failing on an assertion."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations (the file that covers normalize.classify) gains a named mutant per new branch, each killed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations (the file that covers normalize.classify) gains a named mutant per new branch, each killed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the exactly-once find control stays green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the exactly-once find control stays green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider on the touched test files passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider on the touched test files passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "re-running or re-grading smoke-1 (the Leader does)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "re-running or re-grading smoke-1 (the Leader does)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the engine's decision logic",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the engine's decision logic"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "The Codex reader (and any reader whose error text carries \"unexpected status NNN\") parses that status into ProviderError.status when the record has no status field",
+            "classify() returns blocked_auth for 401 and 403 (and keeps 408/429/5xx as provider, any other status as model_unavailable, as R-23 says)",
+            "a record message is never copied into a cause detail beyond what it already stores (keys stay masked as the CLI printed them).",
+            "Tests red first on placeholder records (no real key fragment: use `sk-****`): a Codex rollout with \"unexpected status 401\" gives blocked_auth",
+            "403 too",
+            "404 stays model_unavailable",
+            "429 stays provider",
+            "each red committed separately and failing on an assertion.",
+            "tests/mutations (the file that covers normalize.classify) gains a named mutant per new branch, each killed",
+            "the exactly-once find control stays green",
+            "uv run pytest -q -p no:cacheprovider on the touched test files passes",
+            "uv run ruff check src tests tools is clean."
+          ],
+          "fan_out_cap": 0,
+          "goal": "classify an authentication failure in a native record as an auth block, not \"model unavailable\" (src/harness_bench/telemetry/normalize.py::classify, ruling R-23's one classifier; errors.py's blocked_auth HB-CELL-202), red first. Measured (smoke-1, 2026-09-25): both F1 codex-sol cells ended `failed (model unavailable)` HB-CELL-116 because the parent Codex rollout's task_complete carried `unexpected status 401 Unauthorized: Incorrect API key provided: sk-svcac****` (masked by Codex) with no separate status field; classify() saw no status, no provider type, and fell through to model_unavailable. A 401 or 403 is an authentication or permission failure, for which the engine already has blocked_auth (HB-CELL-202) and its decision request.",
+          "main_line_budget": "one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: src/harness_bench/telemetry/{normalize,codex}.py; src/harness_bench/errors.py (Cause); docs/notes/rulings.md R-23; tests/test_telemetry.py; tests/mutations/*.json (find the one covering classify). Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "re-running or re-grading smoke-1 (the Leader does)",
+            "the engine's decision logic",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.005,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3DJNZDJVJ9ZG44569G65DA3",
+        "raw_sha256": "35d75634fdb6aaf79a71c6c7524f8f3445e5892f1cd2c4bf9fe08ec570102866",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "failed (model unavailable"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "unexpected status 401 Unauthorized: Incorrect API key provided: sk-svcac****"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "sk-****"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/telemetry/normalize.py::classify"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "408/429/5xx"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/telemetry/{normalize,codex}.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "1b117deb2172662741123cb2984a3fa7dd87e19a4a01606651d530fd8c3dcb21",
+            "status": "resolved",
+            "token": "src/harness_bench/errors.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_telemetry.py",
+            "reason": null,
+            "sha256": "d3d583aaadded0c1c58be2f7e60a9a69bc18254ceb865c4bcf5d6592ce42a3b5",
+            "status": "resolved",
+            "token": "tests/test_telemetry.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/*.json"
           }
         ],
         "schema": "compiled-prompt/1",

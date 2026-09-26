@@ -1,1 +1,2 @@
 {"agent": "worker-grok-q6task", "at": 1790369989.2534642, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-grok-q6task", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w3-q6task"}
+{"agent": "worker-grok-q6task", "at": 1790374509.3942475, "kind": "session-end", "path": "-", "seq": 2, "session": "worker-grok-q6task", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w3-q6task"}
