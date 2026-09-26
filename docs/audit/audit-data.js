@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-26T17:39:16Z",
+  "generated": "2026-09-26T19:30:40Z",
   "audit": [
     {
       "actor": null,
@@ -34327,6 +34327,362 @@ window.AUDIT_DATA = {
             "sha256": null,
             "status": "unresolved",
             "token": "tests/test_report*.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/*.json"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3FK5DMGWA65J6KR9T28SVD1",
+      "shortname": "Goal: prevent defect class MUT-A (docs/lessons/defect-classes.md, read i…",
+      "datetime": "2026-09-26T19:30:37Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: prevent defect class MUT-A (docs/lessons/defect-classes.md, read it first): a process stopped between applying and restoring a mutation in tools/mutate_check.py leaves the mutant in the source; make that leftover detectable and undoable, red first.\nMeasured (Leader, 2026-09-26): twice today a Grok worker was stopped at its deadline mid mutate_check and left a mutant applied (mutation.py \"not recorded\" -> \"0\"; html.py leaderboard without flag_if_codex); the file's try/finally restore does not run when the process tree is killed.\nDone when: Before applying a mutation, mutate_check writes a sidecar record at <repo>/.git/mutate-applied.json (the git dir of the checkout it runs in, found with git rev-parse --git-dir, so each worktree has its own) holding the file path, the original bytes' sha256 and the original bytes (base64), and removes the sidecar only after the restore wrote the original bytes back; python tools/mutate_check.py --restore restores the file from the sidecar when the file's current bytes differ from the recorded original, removes the sidecar, and prints what it did; exits 0 with \"nothing to restore\" when there is no sidecar; A mutate_check run refuses to start (exit 2, message naming the file and \"--restore\") while a sidecar exists; python tools/mutate_check.py --check-clean exits 1 naming the file when a sidecar exists and 0 otherwise (the Leader's join runs it); Tests red first in tests/test_mutate_check.py on a tmp repo (git init in tmp_path; never the real repo's files): a mutation interrupted after apply (simulate by making the named test step raise KeyboardInterrupt or by calling the apply half directly) leaves a sidecar and --restore returns the original bytes; a normal run leaves no sidecar; a run refuses while a sidecar exists; --check-clean both ways; A test earns its place by a failure only it catches: parametrize shared shapes, no duplicate of an existing test; the docs line in docs/lessons/defect-classes.md MUT-A Control names the tool behaviour and Status moves to controlled; tests/mutations (the file covering tools/mutate_check.py, or a new one in the existing format) gains named mutants for: the sidecar never written, the refusal skipped; each killed; the exactly-once find control stays green; uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py passes (do not run the whole suite: the Leader's grading run is using the machine); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: changing how kills are judged; the cosmic-ray mode; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: docs/lessons/defect-classes.md MUT-A; tools/mutate_check.py; tests/test_mutate_check.py; tests/mutations/*.json. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3FK5G4RBHVJ97AYJNCQ0EPK",
+      "shortname": "compile-Goal: prevent defect class MUT-A (docs/lessons/defect-classes.md, read i…",
+      "datetime": "2026-09-26T19:30:40Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: prevent defect class MUT-A (docs/lessons/defect-classes.md, read it first): a process stopped between applying and restoring a mutation in tools/mutate_check.py leaves the mutant in the source; make that leftover detectable and undoable, red first. Measured (Leader, 2026-09-26): twice today a Grok worker was stopped at its deadline mid mutate_check and left a mutant applied (mutation.py \"not recorded\" -> \"0\"; html.py leaderboard without flag_if_codex); the file's try/finally restore does not run when the process tree is killed.\nDone when: Before applying a mutation, mutate_check writes a sidecar record at <repo>/.git/mutate-applied.json (the git dir of the checkout it runs in, found with git rev-parse --git-dir, so each worktree has its own) holding the file path, the original bytes' sha256 and the original bytes (base64), and removes the sidecar only after the restore wrote the original bytes back; python tools/mutate_check.py --restore restores the file from the sidecar when the file's current bytes differ from the recorded original, removes the sidecar, and prints what it did; exits 0 with \"nothing to restore\" when there is no sidecar; A mutate_check run refuses to start (exit 2, message naming the file and \"--restore\") while a sidecar exists; python tools/mutate_check.py --check-clean exits 1 naming the file when a sidecar exists and 0 otherwise (the Leader's join runs it); Tests red first in tests/test_mutate_check.py on a tmp repo (git init in tmp_path; never the real repo's files): a mutation interrupted after apply (simulate by making the named test step raise KeyboardInterrupt or by calling the apply half directly) leaves a sidecar and --restore returns the original bytes; a normal run leaves no sidecar; a run refuses while a sidecar exists; --check-clean both ways; A test earns its place by a failure only it catches: parametrize shared shapes, no duplicate of an existing test; the docs line in docs/lessons/defect-classes.md MUT-A Control names the tool behaviour and Status moves to controlled; tests/mutations (the file covering tools/mutate_check.py, or a new one in the existing format) gains named mutants for: the sidecar never written, the refusal skipped; each killed; the exactly-once find control stays green; uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py passes (do not run the whole suite: the Leader's grading run is using the machine); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: changing how kills are judged; the cosmic-ray mode; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/lessons/defect-classes.md MUT-A; tools/mutate_check.py; tests/test_mutate_check.py; tests/mutations/*.json. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: Before applying a mutation, mutate_check writes a sidecar record at <repo>/.git/mutate-applied.json (the git dir of the checkout it runs in, found with git rev-parse --git-dir, so each worktree has its own) holding the file path, the original bytes' sha256 and the original bytes (base64), and removes the sidecar only after the restore wrote the original bytes back | phrase: Before applying a mutation, mutate_check writes a sidecar record at <repo>/.git/mutate-applied.json (the git dir of the checkout it runs in, found with git rev-parse --git-dir, so each worktree has its own) holding the file path, the original bytes' sha256 and the original bytes (base64), and removes the sidecar only after the restore wrote the original bytes back |\n| done_when: python tools/mutate_check.py --restore restores the file from the sidecar when the file's current bytes differ from the recorded original, removes the sidecar, and prints what it did | phrase: python tools/mutate_check.py --restore restores the file from the sidecar when the file's current bytes differ from the recorded original, removes the sidecar, and prints what it did |\n| done_when: exits 0 with \"nothing to restore\" when there is no sidecar | phrase: exits 0 with \"nothing to restore\" when there is no sidecar |\n| done_when: A mutate_check run refuses to start (exit 2, message naming the file and \"--restore\") while a sidecar exists | phrase: A mutate_check run refuses to start (exit 2, message naming the file and \"--restore\") while a sidecar exists |\n| done_when: python tools/mutate_check.py --check-clean exits 1 naming the file when a sidecar exists and 0 otherwise (the Leader's join runs it) | phrase: python tools/mutate_check.py --check-clean exits 1 naming the file when a sidecar exists and 0 otherwise (the Leader's join runs it) |\n| done_when: Tests red first in tests/test_mutate_check.py on a tmp repo (git init in tmp_path | phrase: Tests red first in tests/test_mutate_check.py on a tmp repo (git init in tmp_path |\n| done_when: never the real repo's files): a mutation interrupted after apply (simulate by making the named test step raise KeyboardInterrupt or by calling the apply half directly) leaves a sidecar and --restore returns the original bytes | phrase: never the real repo's files): a mutation interrupted after apply (simulate by making the named test step raise KeyboardInterrupt or by calling the apply half directly) leaves a sidecar and --restore returns the original bytes |\n| done_when: a normal run leaves no sidecar | phrase: a normal run leaves no sidecar |\n| done_when: a run refuses while a sidecar exists | phrase: a run refuses while a sidecar exists |\n| done_when: --check-clean both ways | phrase: --check-clean both ways |\n| done_when: A test earns its place by a failure only it catches: parametrize shared shapes, no duplicate of an existing test | phrase: A test earns its place by a failure only it catches: parametrize shared shapes, no duplicate of an existing test |\n| done_when: the docs line in docs/lessons/defect-classes.md MUT-A Control names the tool behaviour and Status moves to controlled | phrase: the docs line in docs/lessons/defect-classes.md MUT-A Control names the tool behaviour and Status moves to controlled |\n| done_when: tests/mutations (the file covering tools/mutate_check.py, or a new one in the existing format) gains named mutants for: the sidecar never written, the refusal skipped | phrase: tests/mutations (the file covering tools/mutate_check.py, or a new one in the existing format) gains named mutants for: the sidecar never written, the refusal skipped |\n| done_when: each killed | phrase: each killed |\n| done_when: the exactly-once find control stays green | phrase: the exactly-once find control stays green |\n| done_when: uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py passes (do not run the whole suite: the Leader's grading run is using the machine) | phrase: uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py passes (do not run the whole suite: the Leader's grading run is using the machine) |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: changing how kills are judged | phrase: changing how kills are judged |\n| not_in_scope: the cosmic-ray mode | phrase: the cosmic-ray mode |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- docs/lessons/defect-classes.md: unresolved (ambiguous: 3 matches)\n- tools/mutate_check.py: tools/mutate_check.py sha256 8be5ff1e7e337e0198336c6d9546fa448b924bab0e090c2e8685c962b52ba13d\n- mutation.py: src/harness_bench/grade/mutation.py sha256 927f8a85eb43c56a6dd0a0d85c044b14a192fba0343fc22fb8bbed3c6f6c54c1\n- html.py: src/harness_bench/report/html.py sha256 a355f7279ff3f76ad9c7c1d85da5cd3c6ca126999ab6571d04f4172cfc82e2eb\n- try/finally: unresolved (not found)\n- repo>/.git/mutate-applied.json: unresolved (not found)\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 6730694a4378e8fd89c0af582c64c767d8279bdd7a5aeeefbdf912e79a0bf545\n- tests/mutations: unresolved (not found)\n- runs/: unresolved (not found)\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3FK5DMGWA65J6KR9T28SVD1\nraw sha256: 98a02b23925a2f95bfaec47dcb84a8ec89667d708f9b9a931e5737cacaf62345\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3FK5DMGWA65J6KR9T28SVD1 for claude-code v1: 22 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "Before applying a mutation, mutate_check writes a sidecar record at <repo>/.git/mutate-applied.json (the git dir of the checkout it runs in, found with git rev-parse --git-dir, so each worktree has its own) holding the file path, the original bytes' sha256 and the original bytes (base64), and removes the sidecar only after the restore wrote the original bytes back",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Before applying a mutation, mutate_check writes a sidecar record at <repo>/.git/mutate-applied.json (the git dir of the checkout it runs in, found with git rev-parse --git-dir, so each worktree has its own) holding the file path, the original bytes' sha256 and the original bytes (base64), and removes the sidecar only after the restore wrote the original bytes back"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "python tools/mutate_check.py --restore restores the file from the sidecar when the file's current bytes differ from the recorded original, removes the sidecar, and prints what it did",
+            "trace": {
+              "kind": "phrase",
+              "ref": "python tools/mutate_check.py --restore restores the file from the sidecar when the file's current bytes differ from the recorded original, removes the sidecar, and prints what it did"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "exits 0 with \"nothing to restore\" when there is no sidecar",
+            "trace": {
+              "kind": "phrase",
+              "ref": "exits 0 with \"nothing to restore\" when there is no sidecar"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A mutate_check run refuses to start (exit 2, message naming the file and \"--restore\") while a sidecar exists",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A mutate_check run refuses to start (exit 2, message naming the file and \"--restore\") while a sidecar exists"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "python tools/mutate_check.py --check-clean exits 1 naming the file when a sidecar exists and 0 otherwise (the Leader's join runs it)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "python tools/mutate_check.py --check-clean exits 1 naming the file when a sidecar exists and 0 otherwise (the Leader's join runs it)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Tests red first in tests/test_mutate_check.py on a tmp repo (git init in tmp_path",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Tests red first in tests/test_mutate_check.py on a tmp repo (git init in tmp_path"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "never the real repo's files): a mutation interrupted after apply (simulate by making the named test step raise KeyboardInterrupt or by calling the apply half directly) leaves a sidecar and --restore returns the original bytes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "never the real repo's files): a mutation interrupted after apply (simulate by making the named test step raise KeyboardInterrupt or by calling the apply half directly) leaves a sidecar and --restore returns the original bytes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a normal run leaves no sidecar",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a normal run leaves no sidecar"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a run refuses while a sidecar exists",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a run refuses while a sidecar exists"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "--check-clean both ways",
+            "trace": {
+              "kind": "phrase",
+              "ref": "--check-clean both ways"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A test earns its place by a failure only it catches: parametrize shared shapes, no duplicate of an existing test",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A test earns its place by a failure only it catches: parametrize shared shapes, no duplicate of an existing test"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the docs line in docs/lessons/defect-classes.md MUT-A Control names the tool behaviour and Status moves to controlled",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the docs line in docs/lessons/defect-classes.md MUT-A Control names the tool behaviour and Status moves to controlled"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations (the file covering tools/mutate_check.py, or a new one in the existing format) gains named mutants for: the sidecar never written, the refusal skipped",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations (the file covering tools/mutate_check.py, or a new one in the existing format) gains named mutants for: the sidecar never written, the refusal skipped"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "each killed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "each killed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the exactly-once find control stays green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the exactly-once find control stays green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py passes (do not run the whole suite: the Leader's grading run is using the machine)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py passes (do not run the whole suite: the Leader's grading run is using the machine)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "changing how kills are judged",
+            "trace": {
+              "kind": "phrase",
+              "ref": "changing how kills are judged"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the cosmic-ray mode",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the cosmic-ray mode"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "Before applying a mutation, mutate_check writes a sidecar record at <repo>/.git/mutate-applied.json (the git dir of the checkout it runs in, found with git rev-parse --git-dir, so each worktree has its own) holding the file path, the original bytes' sha256 and the original bytes (base64), and removes the sidecar only after the restore wrote the original bytes back",
+            "python tools/mutate_check.py --restore restores the file from the sidecar when the file's current bytes differ from the recorded original, removes the sidecar, and prints what it did",
+            "exits 0 with \"nothing to restore\" when there is no sidecar",
+            "A mutate_check run refuses to start (exit 2, message naming the file and \"--restore\") while a sidecar exists",
+            "python tools/mutate_check.py --check-clean exits 1 naming the file when a sidecar exists and 0 otherwise (the Leader's join runs it)",
+            "Tests red first in tests/test_mutate_check.py on a tmp repo (git init in tmp_path",
+            "never the real repo's files): a mutation interrupted after apply (simulate by making the named test step raise KeyboardInterrupt or by calling the apply half directly) leaves a sidecar and --restore returns the original bytes",
+            "a normal run leaves no sidecar",
+            "a run refuses while a sidecar exists",
+            "--check-clean both ways",
+            "A test earns its place by a failure only it catches: parametrize shared shapes, no duplicate of an existing test",
+            "the docs line in docs/lessons/defect-classes.md MUT-A Control names the tool behaviour and Status moves to controlled",
+            "tests/mutations (the file covering tools/mutate_check.py, or a new one in the existing format) gains named mutants for: the sidecar never written, the refusal skipped",
+            "each killed",
+            "the exactly-once find control stays green",
+            "uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py passes (do not run the whole suite: the Leader's grading run is using the machine)",
+            "uv run ruff check src tests tools is clean",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "prevent defect class MUT-A (docs/lessons/defect-classes.md, read it first): a process stopped between applying and restoring a mutation in tools/mutate_check.py leaves the mutant in the source; make that leftover detectable and undoable, red first. Measured (Leader, 2026-09-26): twice today a Grok worker was stopped at its deadline mid mutate_check and left a mutant applied (mutation.py \"not recorded\" -> \"0\"; html.py leaderboard without flag_if_codex); the file's try/finally restore does not run when the process tree is killed.",
+          "main_line_budget": "one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/lessons/defect-classes.md MUT-A; tools/mutate_check.py; tests/test_mutate_check.py; tests/mutations/*.json. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "changing how kills are judged",
+            "the cosmic-ray mode",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.006,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3FK5DMGWA65J6KR9T28SVD1",
+        "raw_sha256": "98a02b23925a2f95bfaec47dcb84a8ec89667d708f9b9a931e5737cacaf62345",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "8be5ff1e7e337e0198336c6d9546fa448b924bab0e090c2e8685c962b52ba13d",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/mutation.py",
+            "reason": null,
+            "sha256": "927f8a85eb43c56a6dd0a0d85c044b14a192fba0343fc22fb8bbed3c6f6c54c1",
+            "status": "resolved",
+            "token": "mutation.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/html.py",
+            "reason": null,
+            "sha256": "a355f7279ff3f76ad9c7c1d85da5cd3c6ca126999ab6571d04f4172cfc82e2eb",
+            "status": "resolved",
+            "token": "html.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "try/finally"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "repo>/.git/mutate-applied.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "6730694a4378e8fd89c0af582c64c767d8279bdd7a5aeeefbdf912e79a0bf545",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
           },
           {
             "nearest": null,
