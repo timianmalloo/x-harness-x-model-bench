@@ -6,6 +6,8 @@
 - Tests with test projects added or changed relative to pre-turn tree.
 - NA reasons: "no tests written", "no non-test source changed", "no mutants generated",
   "mutation tool not available", "mutation run failed: <exit code>".
+- Records initial_failing_tests from Stryker's "<n> tests are failing" line (R-75).
+  An absent line is "not recorded", never 0. A non-zero exit stays "mutation run failed: <exit code>".
 """
 
 from __future__ import annotations
@@ -41,6 +43,8 @@ TEST_PROJECT_MARKER = re.compile(
     r"<PackageReference\s+Include=\"Microsoft\.NET\.Test\.Sdk\"|<IsTestProject>\s*true\s*</IsTestProject>",
     re.IGNORECASE,
 )
+# Stryker 4.16.0: "{FailingTestsCount} tests are failing. Stryker will continue..."
+_INITIAL_FAILING = re.compile(r"(\d+) tests are failing")
 
 __all__ = [
     "DOTNET_HOST_ENV",
@@ -74,6 +78,14 @@ def find_stryker_dll() -> Path | None:
         if dll.is_file():
             return dll
     return None
+
+
+def _initial_failing_tests(stdout: str, stderr: str = "") -> str:
+    """The count in Stryker's warning, or "not recorded" when that line was not printed."""
+    match = _INITIAL_FAILING.search(stdout) or _INITIAL_FAILING.search(stderr)
+    if match is None:
+        return "not recorded"
+    return match.group(1)
 
 
 def _is_test_project(csproj: Path) -> bool:
@@ -174,7 +186,6 @@ def grade_cell(inp: CellInput) -> Mapping[str, Score]:
             "exec",
             str(stryker_dll),
             "--skip-version-check",
-            "--break-on-initial-test-failure",
             "--config-file",
             "stryker-config.json",
         ]
@@ -198,6 +209,10 @@ def grade_cell(inp: CellInput) -> Mapping[str, Score]:
             f"$ {' '.join(cmd)}\nexit {done.returncode if done else 'not run'}\n"
             f"--- stdout\n{done.stdout if done else ''}\n--- stderr\n{done.stderr if done else ''}\n"
         )
+        log.append(
+            "initial_failing_tests: "
+            f"{_initial_failing_tests(done.stdout if done else '', done.stderr if done else '')}\n"
+        )
         if done.timed_out:
             return written(Score(None, f"HB-GRD-002 grading step timeout after {timeout:g} s"))
         if done.returncode != 0:
@@ -206,6 +221,8 @@ def grade_cell(inp: CellInput) -> Mapping[str, Score]:
         reports = sorted(work_tree.rglob("mutation-report.json"))
         if not reports:
             return written(Score(None, NO_MUTANTS_GENERATED))
+        # The grading copy is removed on exit. Keep the report where the score's evidence lives.
+        shutil.copyfile(reports[0], out / "mutation-report.json")
 
         try:
             data = json.loads(reports[0].read_text(encoding="utf-8"))
