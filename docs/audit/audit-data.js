@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-26T15:40:50Z",
+  "generated": "2026-09-26T15:44:18Z",
   "audit": [
     {
       "actor": null,
@@ -33523,6 +33523,385 @@ window.AUDIT_DATA = {
       "artifacts": [],
       "tags": [],
       "outcome": "success"
+    },
+    {
+      "id": "al-01M3F66XZWW7FYGTMAKHQSFP9A",
+      "shortname": "Goal: implement ruling R-76 (docs/notes/rulings.md, last entry; read it …",
+      "datetime": "2026-09-26T15:44:15Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: implement ruling R-76 (docs/notes/rulings.md, last entry; read it first) in tools/check_regrade.py: criterion 7 consults a pinned allowance of exact (run, code, cell, path) verify errors, red first.\nMeasured (Leader, 2026-09-26): bench verify row15-d1-1 exits 5 with exactly two errors, HB-LED-005 for ws/.git/index of cells 35af195cfe821dca and c3d40fa1377ba0dc (the known GATE-RUN-A instance, docs/lessons/defect-classes.md); bench verify a1-capture-1 is ok.\nDone when: bench/regrade-allowed-findings.yaml holds exactly the two R-76 tuples, each with ruling R-76, class GATE-RUN-A, recorded 2026-09-25 and the register line it cites; check_regrade.py criterion 7 writes an allowed error to report.notes as \"verify error allowed (R-76): ...\" and any other error to report.failures as before; an allowance entry whose first path segment under ws/ is not in harness_bench.grade._changes.BUILD_OUTPUT fails at load as \"criterion 7: allowance names a graded path\"; views.verify and bench verify are unchanged; Tests red first in tests/test_check_regrade.py, each committed on its own and failing on an assertion: an allowed tuple is a note not a failure; the same tuple with a different run, cell or path is a failure (one parametrized test); an entry outside BUILD_OUTPUT fails at load; an empty allowance passes; the R-76 item 4 fixture: copy one row15-d1-1 D1 cell's ws/ to tmp_path (read the gate run only, never write under runs/), overwrite the copy's .git/index with junk bytes, and assert pre_turn_commit returns the same commit and pre_turn_tree yields the same file-hash map as an untouched copy; A test earns its place by a failure only it catches: no test that duplicates another's failure; docs/lessons/defect-classes.md GATE-RUN-A gains the control line of R-76 condition 3 (status stays partially-controlled); tests/mutations (the file covering tools/check_regrade.py, or a new one in the existing format) gains named mutants: the allowance consulted for every error regardless of tuple, and the BUILD_OUTPUT check removed; each killed; the exactly-once find control stays green; uv run pytest -q -p no:cacheprovider tests/test_check_regrade.py passes; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: the report header line (R-76 condition 2, a later report slice); running check_regrade on the real runs (the Leader does); any build, restore or git command under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: docs/notes/rulings.md R-76; tools/check_regrade.py; tests/test_check_regrade.py; src/harness_bench/grade/_changes.py (BUILD_OUTPUT, pre_turn_commit, pre_turn_tree); tests/slow_ring.py or the gate_runs_root() helper for reading HB_GATE_RUNS; tests/mutations/*.json. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3F670BPM9T0G1HT0KCMHDK9",
+      "shortname": "compile-Goal: implement ruling R-76 (docs/notes/rulings.md, last entry; read it …",
+      "datetime": "2026-09-26T15:44:18Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement ruling R-76 (docs/notes/rulings.md, last entry; read it first) in tools/check_regrade.py: criterion 7 consults a pinned allowance of exact (run, code, cell, path) verify errors, red first. Measured (Leader, 2026-09-26): bench verify row15-d1-1 exits 5 with exactly two errors, HB-LED-005 for ws/.git/index of cells 35af195cfe821dca and c3d40fa1377ba0dc (the known GATE-RUN-A instance, docs/lessons/defect-classes.md); bench verify a1-capture-1 is ok.\nDone when: bench/regrade-allowed-findings.yaml holds exactly the two R-76 tuples, each with ruling R-76, class GATE-RUN-A, recorded 2026-09-25 and the register line it cites; check_regrade.py criterion 7 writes an allowed error to report.notes as \"verify error allowed (R-76): ...\" and any other error to report.failures as before; an allowance entry whose first path segment under ws/ is not in harness_bench.grade._changes.BUILD_OUTPUT fails at load as \"criterion 7: allowance names a graded path\"; views.verify and bench verify are unchanged; Tests red first in tests/test_check_regrade.py, each committed on its own and failing on an assertion: an allowed tuple is a note not a failure; the same tuple with a different run, cell or path is a failure (one parametrized test); an entry outside BUILD_OUTPUT fails at load; an empty allowance passes; the R-76 item 4 fixture: copy one row15-d1-1 D1 cell's ws/ to tmp_path (read the gate run only, never write under runs/), overwrite the copy's .git/index with junk bytes, and assert pre_turn_commit returns the same commit and pre_turn_tree yields the same file-hash map as an untouched copy; A test earns its place by a failure only it catches: no test that duplicates another's failure; docs/lessons/defect-classes.md GATE-RUN-A gains the control line of R-76 condition 3 (status stays partially-controlled); tests/mutations (the file covering tools/check_regrade.py, or a new one in the existing format) gains named mutants: the allowance consulted for every error regardless of tuple, and the BUILD_OUTPUT check removed; each killed; the exactly-once find control stays green; uv run pytest -q -p no:cacheprovider tests/test_check_regrade.py passes; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: the report header line (R-76 condition 2, a later report slice); running check_regrade on the real runs (the Leader does); any build, restore or git command under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/notes/rulings.md R-76; tools/check_regrade.py; tests/test_check_regrade.py; src/harness_bench/grade/_changes.py (BUILD_OUTPUT, pre_turn_commit, pre_turn_tree); tests/slow_ring.py or the gate_runs_root() helper for reading HB_GATE_RUNS; tests/mutations/*.json. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: bench/regrade-allowed-findings.yaml holds exactly the two R-76 tuples, each with ruling R-76, class GATE-RUN-A, recorded 2026-09-25 and the register line it cites | phrase: bench/regrade-allowed-findings.yaml holds exactly the two R-76 tuples, each with ruling R-76, class GATE-RUN-A, recorded 2026-09-25 and the register line it cites |\n| done_when: check_regrade.py criterion 7 writes an allowed error to report.notes as \"verify error allowed (R-76): ...\" and any other error to report.failures as before | phrase: check_regrade.py criterion 7 writes an allowed error to report.notes as \"verify error allowed (R-76): ...\" and any other error to report.failures as before |\n| done_when: an allowance entry whose first path segment under ws/ is not in harness_bench.grade._changes.BUILD_OUTPUT fails at load as \"criterion 7: allowance names a graded path\" | phrase: an allowance entry whose first path segment under ws/ is not in harness_bench.grade._changes.BUILD_OUTPUT fails at load as \"criterion 7: allowance names a graded path\" |\n| done_when: views.verify and bench verify are unchanged | phrase: views.verify and bench verify are unchanged |\n| done_when: Tests red first in tests/test_check_regrade.py, each committed on its own and failing on an assertion: an allowed tuple is a note not a failure | phrase: Tests red first in tests/test_check_regrade.py, each committed on its own and failing on an assertion: an allowed tuple is a note not a failure |\n| done_when: the same tuple with a different run, cell or path is a failure (one parametrized test) | phrase: the same tuple with a different run, cell or path is a failure (one parametrized test) |\n| done_when: an entry outside BUILD_OUTPUT fails at load | phrase: an entry outside BUILD_OUTPUT fails at load |\n| done_when: an empty allowance passes | phrase: an empty allowance passes |\n| done_when: the R-76 item 4 fixture: copy one row15-d1-1 D1 cell's ws/ to tmp_path (read the gate run only, never write under runs/), overwrite the copy's .git/index with junk bytes, and assert pre_turn_commit returns the same commit and pre_turn_tree yields the same file-hash map as an untouched copy | phrase: the R-76 item 4 fixture: copy one row15-d1-1 D1 cell's ws/ to tmp_path (read the gate run only, never write under runs/), overwrite the copy's .git/index with junk bytes, and assert pre_turn_commit returns the same commit and pre_turn_tree yields the same file-hash map as an untouched copy |\n| done_when: A test earns its place by a failure only it catches: no test that duplicates another's failure | phrase: A test earns its place by a failure only it catches: no test that duplicates another's failure |\n| done_when: docs/lessons/defect-classes.md GATE-RUN-A gains the control line of R-76 condition 3 (status stays partially-controlled) | phrase: docs/lessons/defect-classes.md GATE-RUN-A gains the control line of R-76 condition 3 (status stays partially-controlled) |\n| done_when: tests/mutations (the file covering tools/check_regrade.py, or a new one in the existing format) gains named mutants: the allowance consulted for every error regardless of tuple, and the BUILD_OUTPUT check removed | phrase: tests/mutations (the file covering tools/check_regrade.py, or a new one in the existing format) gains named mutants: the allowance consulted for every error regardless of tuple, and the BUILD_OUTPUT check removed |\n| done_when: each killed | phrase: each killed |\n| done_when: the exactly-once find control stays green | phrase: the exactly-once find control stays green |\n| done_when: uv run pytest -q -p no:cacheprovider tests/test_check_regrade.py passes | phrase: uv run pytest -q -p no:cacheprovider tests/test_check_regrade.py passes |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: the report header line (R-76 condition 2, a later report slice) | phrase: the report header line (R-76 condition 2, a later report slice) |\n| not_in_scope: running check_regrade on the real runs (the Leader does) | phrase: running check_regrade on the real runs (the Leader does) |\n| not_in_scope: any build, restore or git command under runs/ | phrase: any build, restore or git command under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- tools/check_regrade.py: tools/check_regrade.py sha256 63c42feefe2a3b88799853464a784a7b4cba88b93c8dae36c745b84adf7411c5\n- ws/.git/index: unresolved (not found)\n- docs/lessons/defect-classes.md: unresolved (ambiguous: 3 matches)\n- bench/regrade-allowed-findings.yaml: unresolved (not found)\n- check_regrade.py: tools/check_regrade.py sha256 63c42feefe2a3b88799853464a784a7b4cba88b93c8dae36c745b84adf7411c5\n- ws/: unresolved (not found)\n- tests/test_check_regrade.py: tests/test_check_regrade.py sha256 9d63cf05899aa2af35a6227aa3a93037209e7f5055f8e4f43a7f46023ffd737a\n- runs/: unresolved (not found)\n- .git/index: unresolved (not found)\n- tests/mutations: unresolved (not found)\n- src/harness_bench/grade/_changes.py: src/harness_bench/grade/_changes.py sha256 fa807c157301e4bb7c27f215bef6c8fabd0b14852f2830492361ad02bda67ff2\n- tests/slow_ring.py: tests/slow_ring.py sha256 f91e76444043925f59861a477597c2b429e76ca06276c2dd00f4639e6d1474c2\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3F66XZWW7FYGTMAKHQSFP9A\nraw sha256: a0fa1651a4930abc172261ac8612824bc05502ab5f0db8efbf833ef9ec2e3fc3\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3F66XZWW7FYGTMAKHQSFP9A for claude-code v1: 21 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "bench/regrade-allowed-findings.yaml holds exactly the two R-76 tuples, each with ruling R-76, class GATE-RUN-A, recorded 2026-09-25 and the register line it cites",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/regrade-allowed-findings.yaml holds exactly the two R-76 tuples, each with ruling R-76, class GATE-RUN-A, recorded 2026-09-25 and the register line it cites"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "check_regrade.py criterion 7 writes an allowed error to report.notes as \"verify error allowed (R-76): ...\" and any other error to report.failures as before",
+            "trace": {
+              "kind": "phrase",
+              "ref": "check_regrade.py criterion 7 writes an allowed error to report.notes as \"verify error allowed (R-76): ...\" and any other error to report.failures as before"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "an allowance entry whose first path segment under ws/ is not in harness_bench.grade._changes.BUILD_OUTPUT fails at load as \"criterion 7: allowance names a graded path\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "an allowance entry whose first path segment under ws/ is not in harness_bench.grade._changes.BUILD_OUTPUT fails at load as \"criterion 7: allowance names a graded path\""
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "views.verify and bench verify are unchanged",
+            "trace": {
+              "kind": "phrase",
+              "ref": "views.verify and bench verify are unchanged"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Tests red first in tests/test_check_regrade.py, each committed on its own and failing on an assertion: an allowed tuple is a note not a failure",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Tests red first in tests/test_check_regrade.py, each committed on its own and failing on an assertion: an allowed tuple is a note not a failure"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the same tuple with a different run, cell or path is a failure (one parametrized test)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the same tuple with a different run, cell or path is a failure (one parametrized test)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "an entry outside BUILD_OUTPUT fails at load",
+            "trace": {
+              "kind": "phrase",
+              "ref": "an entry outside BUILD_OUTPUT fails at load"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "an empty allowance passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "an empty allowance passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the R-76 item 4 fixture: copy one row15-d1-1 D1 cell's ws/ to tmp_path (read the gate run only, never write under runs/), overwrite the copy's .git/index with junk bytes, and assert pre_turn_commit returns the same commit and pre_turn_tree yields the same file-hash map as an untouched copy",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the R-76 item 4 fixture: copy one row15-d1-1 D1 cell's ws/ to tmp_path (read the gate run only, never write under runs/), overwrite the copy's .git/index with junk bytes, and assert pre_turn_commit returns the same commit and pre_turn_tree yields the same file-hash map as an untouched copy"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A test earns its place by a failure only it catches: no test that duplicates another's failure",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A test earns its place by a failure only it catches: no test that duplicates another's failure"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "docs/lessons/defect-classes.md GATE-RUN-A gains the control line of R-76 condition 3 (status stays partially-controlled)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "docs/lessons/defect-classes.md GATE-RUN-A gains the control line of R-76 condition 3 (status stays partially-controlled)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations (the file covering tools/check_regrade.py, or a new one in the existing format) gains named mutants: the allowance consulted for every error regardless of tuple, and the BUILD_OUTPUT check removed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations (the file covering tools/check_regrade.py, or a new one in the existing format) gains named mutants: the allowance consulted for every error regardless of tuple, and the BUILD_OUTPUT check removed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "each killed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "each killed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the exactly-once find control stays green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the exactly-once find control stays green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider tests/test_check_regrade.py passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider tests/test_check_regrade.py passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the report header line (R-76 condition 2, a later report slice)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the report header line (R-76 condition 2, a later report slice)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "running check_regrade on the real runs (the Leader does)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "running check_regrade on the real runs (the Leader does)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any build, restore or git command under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any build, restore or git command under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "bench/regrade-allowed-findings.yaml holds exactly the two R-76 tuples, each with ruling R-76, class GATE-RUN-A, recorded 2026-09-25 and the register line it cites",
+            "check_regrade.py criterion 7 writes an allowed error to report.notes as \"verify error allowed (R-76): ...\" and any other error to report.failures as before",
+            "an allowance entry whose first path segment under ws/ is not in harness_bench.grade._changes.BUILD_OUTPUT fails at load as \"criterion 7: allowance names a graded path\"",
+            "views.verify and bench verify are unchanged",
+            "Tests red first in tests/test_check_regrade.py, each committed on its own and failing on an assertion: an allowed tuple is a note not a failure",
+            "the same tuple with a different run, cell or path is a failure (one parametrized test)",
+            "an entry outside BUILD_OUTPUT fails at load",
+            "an empty allowance passes",
+            "the R-76 item 4 fixture: copy one row15-d1-1 D1 cell's ws/ to tmp_path (read the gate run only, never write under runs/), overwrite the copy's .git/index with junk bytes, and assert pre_turn_commit returns the same commit and pre_turn_tree yields the same file-hash map as an untouched copy",
+            "A test earns its place by a failure only it catches: no test that duplicates another's failure",
+            "docs/lessons/defect-classes.md GATE-RUN-A gains the control line of R-76 condition 3 (status stays partially-controlled)",
+            "tests/mutations (the file covering tools/check_regrade.py, or a new one in the existing format) gains named mutants: the allowance consulted for every error regardless of tuple, and the BUILD_OUTPUT check removed",
+            "each killed",
+            "the exactly-once find control stays green",
+            "uv run pytest -q -p no:cacheprovider tests/test_check_regrade.py passes",
+            "uv run ruff check src tests tools is clean",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "implement ruling R-76 (docs/notes/rulings.md, last entry; read it first) in tools/check_regrade.py: criterion 7 consults a pinned allowance of exact (run, code, cell, path) verify errors, red first. Measured (Leader, 2026-09-26): bench verify row15-d1-1 exits 5 with exactly two errors, HB-LED-005 for ws/.git/index of cells 35af195cfe821dca and c3d40fa1377ba0dc (the known GATE-RUN-A instance, docs/lessons/defect-classes.md); bench verify a1-capture-1 is ok.",
+          "main_line_budget": "one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/notes/rulings.md R-76; tools/check_regrade.py; tests/test_check_regrade.py; src/harness_bench/grade/_changes.py (BUILD_OUTPUT, pre_turn_commit, pre_turn_tree); tests/slow_ring.py or the gate_runs_root() helper for reading HB_GATE_RUNS; tests/mutations/*.json. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "the report header line (R-76 condition 2, a later report slice)",
+            "running check_regrade on the real runs (the Leader does)",
+            "any build, restore or git command under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.006,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3F66XZWW7FYGTMAKHQSFP9A",
+        "raw_sha256": "a0fa1651a4930abc172261ac8612824bc05502ab5f0db8efbf833ef9ec2e3fc3",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/check_regrade.py",
+            "reason": null,
+            "sha256": "63c42feefe2a3b88799853464a784a7b4cba88b93c8dae36c745b84adf7411c5",
+            "status": "resolved",
+            "token": "tools/check_regrade.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ws/.git/index"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/regrade-allowed-findings.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "tools/check_regrade.py",
+            "reason": null,
+            "sha256": "63c42feefe2a3b88799853464a784a7b4cba88b93c8dae36c745b84adf7411c5",
+            "status": "resolved",
+            "token": "check_regrade.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ws/"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_check_regrade.py",
+            "reason": null,
+            "sha256": "9d63cf05899aa2af35a6227aa3a93037209e7f5055f8e4f43a7f46023ffd737a",
+            "status": "resolved",
+            "token": "tests/test_check_regrade.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".git/index"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/_changes.py",
+            "reason": null,
+            "sha256": "fa807c157301e4bb7c27f215bef6c8fabd0b14852f2830492361ad02bda67ff2",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/_changes.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/slow_ring.py",
+            "reason": null,
+            "sha256": "f91e76444043925f59861a477597c2b429e76ca06276c2dd00f4639e6d1474c2",
+            "status": "resolved",
+            "token": "tests/slow_ring.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/*.json"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
     }
   ],
   "changes": [
