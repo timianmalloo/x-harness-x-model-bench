@@ -148,6 +148,13 @@ def test_codex_unexpected_status_403_is_blocked_auth(tmp_path):  # R-23: 403 is 
     assert (ex.errors[0].status, normalize.classify(ex.errors)) == (403, Cause.blocked_auth)
 
 
+def test_codex_unexpected_status_404_stays_model_unavailable(tmp_path):  # R-23: any other status stays model_unavailable
+    message = "unexpected status 404 Not Found: model missing sk-****"
+    ex = _codex_task_complete(tmp_path, message)
+    assert ex.errors[0].message == message
+    assert (ex.errors[0].status, normalize.classify(ex.errors)) == (404, Cause.model_unavailable)
+
+
 # classification (design: failure taxonomy; W3) -------------------------------------------------
 
 @pytest.mark.parametrize("status, etype, cause", [
