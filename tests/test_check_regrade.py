@@ -6,16 +6,19 @@ Red first: a dead pass B, a value moved by pass B, a moved 0.3 byte and an all-N
 
 import hashlib
 import importlib.util
+import os
 import shutil
+import stat
 import sys
 from pathlib import Path
 
 import pytest
-from archived_runs import ROOT, make_root
+import yaml
+from archived_runs import ROOT, gate_runs_root, make_root
 
-from harness_bench import config, views
+from harness_bench import config, plan, views
 from harness_bench.errors import BenchError
-from harness_bench.grade import Score, runner
+from harness_bench.grade import Score, _changes, runner
 
 _spec = importlib.util.spec_from_file_location("check_regrade", ROOT / "tools" / "check_regrade.py")
 check_regrade = importlib.util.module_from_spec(_spec)
@@ -126,3 +129,109 @@ def test_the_committed_expected_counts_name_both_gate_runs_and_every_applicable_
         metrics = {m for ms in runner.applicable(catalog, graders).values() for m in ms}
         assert set(runs[run]["counts"]) == metrics, run
         assert all(n is None or 0 <= n <= cells for n in runs[run]["counts"].values()), run
+
+
+# --- R-76: criterion 7's pinned allowance of exact (run, code, cell, path) verify errors ---------------------------
+
+_CELL = "35af195cfe821dca"
+_PATH = "ws/.git/index"
+_CODE = "HB-LED-005"
+
+
+def _finding_message(cell: str, path: str) -> str:
+    return f"{cell}: archived file {path} does not match its archive_files row"
+
+
+def _allowance_entry(run: str, cell: str = _CELL, path: str = _PATH, code: str = _CODE) -> dict:
+    return {"run": run, "code": code, "cell": cell, "path": path, "ruling": "R-76", "class": "GATE-RUN-A",
+            "recorded": "2026-09-25",
+            "register": "docs/lessons/defect-classes.md GATE-RUN-A: .git/index of cells 35af… and c3d4… (2026-09-25)"}
+
+
+def _write_allowance(directory: Path, entries: list[dict]) -> Path:
+    path = directory / "regrade-allowed-findings.yaml"
+    path.write_text(yaml.safe_dump({"findings": entries}, sort_keys=False), encoding="utf-8")
+    return path
+
+
+def _verify_returns(monkeypatch, findings):
+    monkeypatch.setattr(views, "verify", lambda _run_dir: findings)
+
+
+def test_an_allowed_verify_tuple_is_a_note_not_a_failure(gate_run, tmp_path, monkeypatch):
+    run = gate_run[1].name
+    message = _finding_message(_CELL, _PATH)
+    monkeypatch.setattr(check_regrade, "ALLOWANCE", _write_allowance(tmp_path, [_allowance_entry(run)]), raising=False)
+    _verify_returns(monkeypatch, [views.Finding(_CODE, "error", message)])
+    report = run_gate(gate_run)
+    note = f"verify error allowed (R-76): {_CODE} {message}"
+    assert report.failures == []
+    assert report.notes == [JUDGE_NOTE, note]
+
+
+@pytest.mark.parametrize("part", ["run", "cell", "path"])
+def test_the_same_tuple_with_a_different_run_cell_or_path_is_a_failure(gate_run, tmp_path, monkeypatch, part):
+    entry_run, cell, path = gate_run[1].name, _CELL, _PATH
+    if part == "run":
+        entry_run = entry_run + "-other"
+    elif part == "cell":
+        cell = "0000000000000000"
+    else:
+        path = "ws/bin/dropped.dll"
+    message = _finding_message(cell, path)
+    entry = _allowance_entry(entry_run)
+    monkeypatch.setattr(check_regrade, "ALLOWANCE", _write_allowance(tmp_path, [entry]), raising=False)
+    _verify_returns(monkeypatch, [views.Finding(_CODE, "error", message)])
+    report = run_gate(gate_run)
+    assert report.failures == [f"criterion 7: {_CODE} {message}"]
+    assert report.notes == [JUDGE_NOTE]
+
+
+def test_an_allowance_entry_outside_build_output_fails_at_load(gate_run, tmp_path, monkeypatch):
+    entry = _allowance_entry(gate_run[1].name, path="ws/src/Program.cs")
+    monkeypatch.setattr(check_regrade, "ALLOWANCE", _write_allowance(tmp_path, [entry]), raising=False)
+    report = run_gate(gate_run)
+    assert report.failures == ["criterion 7: allowance names a graded path"]
+
+
+def test_an_empty_allowance_passes(gate_run, tmp_path, monkeypatch):
+    path = _write_allowance(tmp_path, [])
+    monkeypatch.setattr(check_regrade, "ALLOWANCE", path, raising=False)
+    loaded = getattr(check_regrade, "load_allowance", lambda _p: None)(path)
+    assert loaded == []
+    report = run_gate(gate_run)
+    assert (report.failures, report.notes) == ([], [JUDGE_NOTE])
+
+
+def _file_hashes(tree: Path) -> dict[str, str]:
+    return {p.relative_to(tree).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in tree.rglob("*") if p.is_file()}
+
+
+def test_a_junk_git_index_leaves_the_pre_turn_commit_and_file_hash_map_unchanged(tmp_path):
+    """R-76 item 4. Copy one row15-d1-1 D1 cell's ws/; never write under the gate run."""
+    run = gate_runs_root() / "row15-d1-1"
+    if not (run / "plan.json").is_file():
+        pytest.skip("gate run row15-d1-1 is not on this host (set HB_GATE_RUNS to the runs folder)")
+    cell_id = "c3d40fa1377ba0dc"
+    cell = next(c for c in plan.load_confirmed(run)["cells"] if c["cell_id"] == cell_id)
+    attempt = next(e["archive_attempt"] for e in views.rows(run, "events")
+                   if e["kind"] == "cell.archived" and e["cell_id"] == cell_id)
+    src = run / "archive" / cell_id / f"attempt-{attempt}" / "ws"
+    source_index = (src / ".git" / "index").read_bytes()
+    clean, junk = tmp_path / "clean", tmp_path / "junk"
+    shutil.copytree(src, clean, symlinks=True)
+    shutil.copytree(src, junk, symlinks=True)
+    index = junk / ".git" / "index"
+    os.chmod(index, stat.S_IWRITE)
+    index.write_bytes(b"junk")
+    commit = _changes.pre_turn_commit(clean, cell, 120)
+    assert _changes.pre_turn_commit(junk, cell, 120) == commit
+    assert commit
+
+    def hashes(ws: Path, dest: Path) -> dict[str, str]:
+        with _changes.pre_turn_tree(ws, commit, dest, 120) as tree:
+            return _file_hashes(tree)
+
+    assert hashes(junk, tmp_path / "junk-tree") == hashes(clean, tmp_path / "clean-tree")
+    assert (src / ".git" / "index").read_bytes() == source_index
