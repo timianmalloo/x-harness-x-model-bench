@@ -219,7 +219,7 @@ def test_stryker_config_json_pinned_timeout_and_command_args(tmp_path, monkeypat
     assert call[1] == "exec"
     assert "Stryker.CLI.dll" in call[2]
     assert "--skip-version-check" in call
-    assert "--break-on-initial-test-failure" in call
+    assert "--break-on-initial-test-failure" not in call
     assert "--config-file" in call
     assert "stryker-config.json" in call
     assert len(configs) == 1
