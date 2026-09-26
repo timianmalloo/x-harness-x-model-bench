@@ -1,0 +1,72 @@
+[
+ {
+  "name": "401 is not blocked_auth",
+  "file": "src/harness_bench/telemetry/normalize.py",
+  "find": "        if e.status == 401:\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_telemetry.py::test_codex_unexpected_status_401_is_blocked_auth"]
+ },
+ {
+  "name": "403 is not blocked_auth",
+  "file": "src/harness_bench/telemetry/normalize.py",
+  "find": "        if e.status == 403:\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_telemetry.py::test_codex_unexpected_status_403_is_blocked_auth"]
+ },
+ {
+  "name": "404 is blocked_auth",
+  "file": "src/harness_bench/telemetry/normalize.py",
+  "find": "        if e.status == 401:\n",
+  "replace": "        if e.status == 401 or e.status == 404:\n",
+  "tests": ["tests/test_telemetry.py::test_codex_unexpected_status_404_stays_model_unavailable"]
+ },
+ {
+  "name": "429 is blocked_auth",
+  "file": "src/harness_bench/telemetry/normalize.py",
+  "find": "        if e.status == 403:\n",
+  "replace": "        if e.status == 403 or e.status == 429:\n",
+  "tests": ["tests/test_telemetry.py::test_codex_unexpected_status_429_stays_provider"]
+ },
+ {
+  "name": "unexpected status text is not a status",
+  "file": "src/harness_bench/telemetry/__init__.py",
+  "find": "    return int(found.group(1)) if found else None\n",
+  "replace": "    return None\n",
+  "tests": [
+   "tests/test_telemetry.py::test_codex_unexpected_status_401_is_blocked_auth",
+   "tests/test_telemetry.py::test_codex_unexpected_status_429_stays_provider"
+  ]
+ },
+ {
+  "name": "unexpected status matches only 401",
+  "file": "src/harness_bench/telemetry/__init__.py",
+  "find": "_UNEXPECTED_STATUS = re.compile(r\"unexpected status (\\d{3})\\b\")\n",
+  "replace": "_UNEXPECTED_STATUS = re.compile(r\"unexpected status (401)\\b\")\n",
+  "tests": [
+   "tests/test_telemetry.py::test_codex_unexpected_status_403_is_blocked_auth",
+   "tests/test_telemetry.py::test_codex_unexpected_status_404_stays_model_unavailable",
+   "tests/test_telemetry.py::test_codex_unexpected_status_429_stays_provider"
+  ]
+ },
+ {
+  "name": "unexpected status text overrides a status field",
+  "file": "src/harness_bench/telemetry/codex.py",
+  "find": "    if status is None:\n        status = unexpected_status(message)\n",
+  "replace": "    status = unexpected_status(message) or status\n",
+  "tests": ["tests/test_telemetry.py::test_a_codex_status_field_wins_over_unexpected_status_text"]
+ },
+ {
+  "name": "Claude ignores unexpected status when the record has no status field",
+  "file": "src/harness_bench/telemetry/claude_code.py",
+  "find": "                status = unexpected_status(f\"{text}\\n{as_str(row.get('error')) or ''}\")\n",
+  "replace": "                status = None\n",
+  "tests": ["tests/test_telemetry.py::test_unexpected_status_text_is_a_status_for_every_reader"]
+ },
+ {
+  "name": "Copilot ignores unexpected status when the record has no status field",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "unexpected_status(raw)",
+  "replace": "None",
+  "tests": ["tests/test_telemetry.py::test_unexpected_status_text_is_a_status_for_every_reader"]
+ }
+]

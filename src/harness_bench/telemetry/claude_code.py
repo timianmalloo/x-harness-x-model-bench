@@ -25,6 +25,7 @@ from harness_bench.telemetry import (
     as_status,
     as_str,
     rows,
+    unexpected_status,
 )
 
 __all__ = ["ProviderError", "read"]
@@ -94,8 +95,11 @@ def read(path: Path) -> Extraction:
         if kind != "assistant":
             continue
         if row.get("isApiErrorMessage"):
-            ex.errors.append(ProviderError(n, as_status(row.get("apiErrorStatus")), as_str(row.get("error")) or "unknown",
-                                           (_text(message.get("content")) or "")[:300]))
+            text = _text(message.get("content")) or ""
+            status = as_status(row.get("apiErrorStatus"))
+            if status is None:  # no status field: the CLI text may carry `unexpected status NNN`
+                status = unexpected_status(f"{text}\n{as_str(row.get('error')) or ''}")
+            ex.errors.append(ProviderError(n, status, as_str(row.get("error")) or "unknown", text[:300]))
             continue
         model = message.get("model")
         if not isinstance(model, str) or model == "<synthetic>":

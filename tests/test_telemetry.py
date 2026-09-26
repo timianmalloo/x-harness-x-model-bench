@@ -126,12 +126,75 @@ def test_codex_task_complete_error_is_a_provider_error_row():  # probe W3
     assert ex.model_calls == []
 
 
+def _codex_task_complete(tmp_path, message: str):
+    """A placeholder rollout: task_complete carries only error text, no status field. The key is the masked `sk-****`."""
+    record = tmp_path / "rollout.jsonl"
+    row = {"type": "event_msg", "payload": {"type": "task_complete", "error": {"message": message}}}
+    record.write_text(json.dumps(row) + "\n", encoding="utf-8")
+    return codex.read(record)
+
+
+def test_codex_unexpected_status_401_is_blocked_auth(tmp_path):  # R-23: 401 in the CLI text is an auth block
+    message = "unexpected status 401 Unauthorized: Incorrect API key provided: sk-****"
+    ex = _codex_task_complete(tmp_path, message)
+    assert ex.errors[0].message == message  # stored as the CLI printed it; the key stays masked
+    assert (ex.errors[0].status, normalize.classify(ex.errors)) == (401, Cause.blocked_auth)
+
+
+def test_codex_unexpected_status_403_is_blocked_auth(tmp_path):  # R-23: 403 is an auth block too
+    message = "unexpected status 403 Forbidden: Incorrect API key provided: sk-****"
+    ex = _codex_task_complete(tmp_path, message)
+    assert ex.errors[0].message == message
+    assert (ex.errors[0].status, normalize.classify(ex.errors)) == (403, Cause.blocked_auth)
+
+
+def test_codex_unexpected_status_404_stays_model_unavailable(tmp_path):  # R-23: any other status stays model_unavailable
+    message = "unexpected status 404 Not Found: model missing sk-****"
+    ex = _codex_task_complete(tmp_path, message)
+    assert ex.errors[0].message == message
+    assert (ex.errors[0].status, normalize.classify(ex.errors)) == (404, Cause.model_unavailable)
+
+
+def test_codex_unexpected_status_429_stays_provider(tmp_path):  # R-23: 429 stays provider
+    message = "unexpected status 429 Too Many Requests: rate limit sk-****"
+    ex = _codex_task_complete(tmp_path, message)
+    assert ex.errors[0].message == message
+    assert (ex.errors[0].status, normalize.classify(ex.errors)) == (429, Cause.provider)
+
+
+def test_a_codex_status_field_wins_over_unexpected_status_text(tmp_path):
+    """A JSON status field is the status. The text is stored as printed, including a masked key."""
+    message = ('{"status": 400, "error": {"type": "invalid_request_error", "message": '
+               '"unexpected status 401 Unauthorized: sk-****"}}')
+    ex = _codex_task_complete(tmp_path, message)
+    assert ex.errors[0].message == message
+    assert (ex.errors[0].status, ex.errors[0].error_type, normalize.classify(ex.errors)) == (
+        400, "invalid_request_error", Cause.model_unavailable)
+
+
+def test_unexpected_status_text_is_a_status_for_every_reader(tmp_path):
+    """Claude and Copilot records have no status field either; the same phrase fills ProviderError.status."""
+    message = "unexpected status 401 Unauthorized: Incorrect API key provided: sk-****"
+    claude = tmp_path / "claude.jsonl"
+    claude.write_text(json.dumps({"type": "assistant", "isApiErrorMessage": True, "message": {"content": message}}) + "\n",
+                      encoding="utf-8")
+    claude_ex = claude_code.read(claude)
+    assert claude_ex.errors[0].message == message
+    assert (claude_ex.errors[0].status, normalize.classify(claude_ex.errors)) == (401, Cause.blocked_auth)
+    copilot_record = tmp_path / "events.jsonl"
+    copilot_record.write_text(json.dumps({"type": "session.error", "data": {"message": message}}) + "\n", encoding="utf-8")
+    copilot_ex = copilot.read(copilot_record)
+    assert copilot_ex.errors[0].message == message
+    assert (copilot_ex.errors[0].status, normalize.classify(copilot_ex.errors)) == (401, Cause.blocked_auth)
+
+
 # classification (design: failure taxonomy; W3) -------------------------------------------------
 
 @pytest.mark.parametrize("status, etype, cause", [
     (429, "rate_limit_error", Cause.provider), (529, "overloaded_error", Cause.provider),
     (500, "api_error", Cause.provider), (408, "timeout", Cause.provider), (None, "overloaded_error", Cause.provider),
     (404, "model_not_found", Cause.model_unavailable), (400, "invalid_request_error", Cause.model_unavailable),
+    (401, "api_error", Cause.blocked_auth), (403, "api_error", Cause.blocked_auth),  # status decides before the type
 ])
 def test_error_classification(status, etype, cause):
     assert normalize.classify([claude_code.ProviderError(1, status, etype, "")]) is cause

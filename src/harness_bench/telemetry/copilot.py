@@ -56,6 +56,7 @@ from harness_bench.telemetry import (
     as_str,
     is_count,
     rows,
+    unexpected_status,
 )
 
 __all__ = ["ProviderError", "read"]
@@ -122,8 +123,8 @@ def read(path: Path) -> Extraction:
             if data.get("success") is not True:
                 hook_failures += 1
         elif kind == "session.error":
-            ex.errors.append(ProviderError(n, None, as_str(data.get("errorType")) or "unknown",
-                                           (as_str(data.get("message")) or "")[:300]))
+            raw = as_str(data.get("message")) or ""  # no status field; `unexpected status NNN` in the text is the status
+            ex.errors.append(ProviderError(n, unexpected_status(raw), as_str(data.get("errorType")) or "unknown", raw[:300]))
         elif kind == "session.usage_checkpoint":
             advertised, listed = [], False  # listed: some model carries a tools list, even an empty one (R-63 c1)
             for state in as_list(data.get("promptCacheBreakState")):

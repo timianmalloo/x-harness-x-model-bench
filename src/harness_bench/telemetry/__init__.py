@@ -13,6 +13,7 @@ absent is listed in `Extraction.missing` as HB-TEL-001: NOT_RECORDED, never a si
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -148,6 +149,16 @@ def as_int(value) -> int:
 
 def as_status(value) -> int | None:
     return value if type(value) is int else None
+
+
+# Codex prints `unexpected status 401 Unauthorized: ...` with no status field (smoke-1). The digits are the status.
+_UNEXPECTED_STATUS = re.compile(r"unexpected status (\d{3})\b")
+
+
+def unexpected_status(message: str) -> int | None:
+    """The HTTP status in `unexpected status NNN`, or None when that phrase is absent."""
+    found = _UNEXPECTED_STATUS.search(message)
+    return int(found.group(1)) if found else None
 
 
 def as_str(value) -> str | None:
