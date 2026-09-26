@@ -551,5 +551,19 @@
   "find": "out[\"dotnet-stryker\"] = _version(probe, root) if probe is not None else NOT_RECORDED",
   "replace": "out[\"dotnet-stryker\"] = NOT_RECORDED",
   "tests": ["tests/test_grade_runner.py::test_tool_versions_records_dotnet_stryker_from_the_nuget_cache_product_version"]
+ },
+ {
+  "name": "R-76: the allowance forgives every verify error whatever its tuple",
+  "file": "tools/check_regrade.py",
+  "find": "        same = (entry.get(\"run\"), entry.get(\"code\"), entry.get(\"cell\"), entry.get(\"path\")) == got\n",
+  "replace": "        same = True\n",
+  "tests": ["tests/test_check_regrade.py::test_the_same_tuple_with_a_different_run_cell_or_path_is_a_failure"]
+ },
+ {
+  "name": "R-76: an allowance path outside build output is accepted",
+  "file": "tools/check_regrade.py",
+  "find": "        if segment not in BUILD_OUTPUT:\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_check_regrade.py::test_an_allowance_entry_outside_build_output_fails_at_load"]
  }
 ]

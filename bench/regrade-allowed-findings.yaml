@@ -1,0 +1,22 @@
+# Known verify errors the wave-3 byte-identity gate (tools/check_regrade.py criterion 7) notes instead of failing on.
+# Ruling R-76 (DR-GATE-7). Leader-owned and append-only: an entry is removed only in the commit that takes its run out
+# of the gate-run set. Each path's first segment under ws/ must be build output that no grader reads
+# (harness_bench.grade._changes.BUILD_OUTPUT); any other path fails the gate at load. `bench verify` forgives nothing.
+schema: bench-regrade-allowed-findings/1
+findings:
+  - run: row15-d1-1
+    code: HB-LED-005
+    cell: 35af195cfe821dca
+    path: ws/.git/index
+    ruling: R-76
+    class: GATE-RUN-A
+    recorded: "2026-09-25"
+    register: "docs/lessons/defect-classes.md GATE-RUN-A, instance 2026-09-25 01:25 PDT (.git/index changed after archiving; original bytes not recoverable)"
+  - run: row15-d1-1
+    code: HB-LED-005
+    cell: c3d40fa1377ba0dc
+    path: ws/.git/index
+    ruling: R-76
+    class: GATE-RUN-A
+    recorded: "2026-09-25"
+    register: "docs/lessons/defect-classes.md GATE-RUN-A, instance 2026-09-25 01:25 PDT (.git/index changed after archiving; original bytes not recoverable)"

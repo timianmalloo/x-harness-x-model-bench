@@ -369,6 +369,7 @@ summary: >-
   - Every batch gate runs `bench verify` on both gate runs; a new finding blocks the push.
   - Every brief says to run no build, restore or git command under `runs/`.
   - Tried and reverted: an OS-level deny of write on the archive folders (`icacls /deny (W,D,DC)`) also broke reads (`PermissionError` in `bench verify`).
+  - An unrecoverable finding is pinned by tuple under a ruling; the gate fails on any other (R-76: `bench/regrade-allowed-findings.yaml`, the two `ws/.git/index` tuples of `row15-d1-1`, valid only for a path under build output no grader reads; `tests/test_check_regrade.py` proves a junk `.git/index` leaves the pre-turn commit and file-hash map unchanged). `bench verify` itself still reports both.
 - **Status:** `partially-controlled` (a check and a rule, not a prevention); the upgrade is an in-process guard that refuses a `procs.run` whose cwd is under a gate run.
 
 ---
