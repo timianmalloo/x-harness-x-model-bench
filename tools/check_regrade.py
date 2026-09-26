@@ -142,8 +142,10 @@ def _allowed_note(run: str, finding: views.Finding, entries: list[dict]) -> str 
     matched = _ARCHIVED_FILE.fullmatch(finding.message)
     if matched is None or not entries:
         return None
+    got = (run, finding.code, matched.group("cell"), matched.group("path"))
     for entry in entries:
-        if entry.get("ruling"):
+        same = (entry.get("run"), entry.get("code"), entry.get("cell"), entry.get("path")) == got
+        if same and entry.get("ruling"):
             return f"verify error allowed ({entry['ruling']}): {finding.code} {finding.message}"
     return None
 
