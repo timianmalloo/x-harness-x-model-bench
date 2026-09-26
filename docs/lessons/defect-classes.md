@@ -43,7 +43,8 @@ summary: >-
   - `2026-09-23` model v2 — `archive_live` made vacuous by the kill → record fix; `ignore_orphans` vacuous (replaced by `NoLaunchBesideOrphan`).
   - `2026-09-23` model v1/v2 — a guard reading a history variable (`prompts = 0`) hid `relaunch_prompted` twice.
   - `2026-09-23` model v1 — two guards for one invariant masked `exceed_parallelism`.
-- **Sweep:** all 22 variants re-run after the isolation change; every one is rejected by its own target.
+  - `2026-09-25` R-75 mutation seed (Grok worker; caught by the Leader at the join) — the red-baseline seed's always-failing test never called `Compute`, so it covered no mutant and could not show whether Stryker kills with an initially failing test; its name check compared `killedBy` test **ids** with a test **name**, so it could not fail either. Fixed: the failing test calls `Compute`, the seed asserts at least one `Survived` and no `Killed`, and killer ids are mapped to names through `testFiles`. The general shape: a seed must assert its own precondition (here, coverage) or it proves nothing.
+- **Sweep:** all 22 variants re-run after the isolation change; every one is rejected by its own target. 2026-09-25: the other `not in str(...)` absence checks in `tests/` (`test_egress.py:283`, `test_report.py:300`) compare text with text and can fail.
 - **Control:** `tools/check_models.py` checks each safety variant against its target invariant alone (`only_invariant`) and each liveness variant against its target property alone (`only_property`), asserting the target's name in TLC's output. `tests/test_check_models.py::test_every_checked_property_has_a_seeded_variant` (observed failing when a variant was removed, 2026-09-23) and `test_variant_config_checks_only_its_target`. Guards never read history variables (stated in the model design).
 - **Status:** `controlled`
 
@@ -408,6 +409,14 @@ summary: >-
 - **Sweep:** `model_map` is the only per-role parameter in `bench-task/1` (`config.py`). `auxiliary_models` is already per harness (`profiles.py`). No other task field names a model.
 - **Control:** keys are `<role>@<vendor>`, and the vendor is a profile fact (`bench/profiles/*.yaml` `vendor:`). `config.model_map_problems` refuses a bare key, an undeclared vendor, a missing role for any declared vendor, and an auxiliary-model value (from draft on). `plan.resolved_model_map` is the one resolver, and `tests/test_model_map.py` asserts that no second `@` parser exists. `bench plan` refuses a scenario-6 cell whose every role equals its pin. Mutants: `tests/mutations/scenario6.json`.
 - **Status:** `partially-controlled`. The check that a harness of the vendor serves the value is not built, because no committed per-harness served list exists (R-73 c1).
+
+### SPIKE-A: a grader precondition adopted from a spike whose fixture lacked the real task's shape (new test project vs. edited vendored suite)
+- **Signature:** a grader refuses the run on a precondition taken from a spike. The spike's fixture was a new test project. The frozen task edits a vendored suite whose baseline is already red. The precondition then fails on every cell of that task, before the cell's own change is measured. Sibling of MOD-A: the check looks verified, and it fails for a reason other than the one the metric is about.
+- **Why it survives:** the spike exited the way the design wanted, on a tree that did not have the task's shape. The flag was copied into the grader as if that exit had been measured on the task.
+- **Instances:** `2026-09-25`, DR-MUT-1 (R-75). `--break-on-initial-test-failure` came from the c6a spike (`docs/notes/spike-gr-code-stryker.md:93`), a new project `D1.HiddenTests` with no vendored test. D1 edits `AiDe.Core.Tests` in a vendored subset with no `AiDe.sln` and no `docs/`, so 74–75 tests are red before any mutant. With the flag, every real D1 cell was NA `mutation run failed: 1`. On D1 gate cell `c3d40fa1377ba0dc`, Stryker 4.16.0 without the flag logged 75 failing tests, exited 0, and scored 0.8095 twice.
+- **Sweep:** at the join, the other D1 graders that run the vendored tree (`build_and_suite_clean`, `static_analysis_delta`) are checked for the same green-baseline belief.
+- **Control:** every grader spike names the frozen task tree it ran on, or the design's `simplify:` names the task that reaches its ceiling. `mutation_score`'s `simplify:` now names D1 (R-75). `tests/test_grade_mutation.py::test_stryker_config_json_pinned_timeout_and_command_args` asserts the flag is absent. The seeded red baseline is `test_d1_reference_plus_seed_or_no_compute_one_always_failing_scores_zero`.
+- **Status:** `observed`
 
 ---
 

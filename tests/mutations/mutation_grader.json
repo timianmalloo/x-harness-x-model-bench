@@ -96,5 +96,19 @@
     "find": "GRADERS[\"mutation\"] = mutation.grade_cell  # GR-CODE c6\n",
     "replace": "",
     "tests": ["tests/test_grade_mutation.py::test_mutation_is_registered_in_runner_graders"]
+  },
+  {
+    "name": "R-75: break-on-initial-test-failure re-added to the Stryker argv",
+    "file": "src/harness_bench/grade/mutation.py",
+    "find": "            \"--skip-version-check\",\n            \"--config-file\",\n",
+    "replace": "            \"--skip-version-check\",\n            \"--break-on-initial-test-failure\",\n            \"--config-file\",\n",
+    "tests": ["tests/test_grade_mutation.py::test_stryker_config_json_pinned_timeout_and_command_args"]
+  },
+  {
+    "name": "R-75: initial_failing_tests absent line recorded as 0",
+    "file": "src/harness_bench/grade/mutation.py",
+    "find": "        return \"not recorded\"\n",
+    "replace": "        return \"0\"\n",
+    "tests": ["tests/test_grade_mutation.py::test_initial_failing_tests_not_recorded_when_the_line_is_absent"]
   }
 ]
