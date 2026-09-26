@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-26T15:44:18Z",
+  "generated": "2026-09-26T17:39:16Z",
   "audit": [
     {
       "actor": null,
@@ -33886,6 +33886,447 @@ window.AUDIT_DATA = {
             "sha256": "f91e76444043925f59861a477597c2b429e76ca06276c2dd00f4639e6d1474c2",
             "status": "resolved",
             "token": "tests/slow_ring.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/*.json"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3FCSDB3G78HHY9XWDMY848J",
+      "shortname": "Goal: the report discloses two rulings before the smoke report is printe…",
+      "datetime": "2026-09-26T17:39:12Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: the report discloses two rulings before the smoke report is printed: R-76 condition 2 (the gate's criterion-7 allowance) and R-75 conditions 4 and 6 (the D1 red baseline beside every D1 mutation_score), red first. Read docs/notes/rulings.md R-75 and R-76 first.\nMeasured (Leader, 2026-09-25/26): each D1 grading of mutation_score writes the line \"initial_failing_tests: <n>\" (or \"initial_failing_tests: not recorded\") into the cell's mutation.log, the path in the score's evidence (relative to the run dir); on the six row15-d1-1 cells n was 74 on every run, and 75 on one earlier diagnostic run, so the D1 baseline is 74-75 with a flake band of 1. bench/regrade-allowed-findings.yaml (R-76) holds two entries, run row15-d1-1, code HB-LED-005, cells 35af195cfe821dca and c3d40fa1377ba0dc, path ws/.git/index.\nDone when: A new Leader-owned file bench/task-baselines.yaml (schema bench-task-baselines/1) records D1: initial_failing_tests low 74, high 75, flake_band 1, source \"row15-d1-1, Leader 2026-09-25/26 (R-75 c4)\", note \"vendored subset; AiDe.sln and docs/ absent\"; The report header (the header rows built in src/harness_bench/report, the same place as \"Probe versions\") gains a row \"Gate allowance\" whose value is built from bench/regrade-allowed-findings.yaml, e.g. \"row15-d1-1 criterion 7 - 2 verify errors allowed (R-76, GATE-RUN-A; ws/.git/index of 35af..., c3d4...; not read by any grader)\", and \"none\" when the file is absent or empty; The report header gains a row \"D1 baseline red tests\" = \"74-75 (vendored subset; AiDe.sln and docs/ absent)\" from bench/task-baselines.yaml, shown only when the run has a D1 cell; Every D1 mutation_score value in the report (CLI table and HTML) carries its cell's initial_failing_tests beside it, read from the log at the score's evidence path, \"not recorded\" when the line or log is absent; a cell whose count is above high + flake_band is shown \"red tests added\" instead of the number (R-75 c6), never the bare score; Tests red first on synthetic run dirs (no real runs/ file, no model call): each row present and exact; \"none\" with no allowance; the baseline row absent with no D1 cell; a count of 74 shown beside the score; a count of 77 shown as \"red tests added\"; an absent log shown \"not recorded\"; A test earns its place by a failure only it catches: parametrize where cases share a shape; tests/mutations (the file covering the report module you change) gains named mutants for: the allowance row always \"none\", the flake band ignored, the \"red tests added\" branch removed; each killed; the exactly-once find control stays green; uv run pytest -q -p no:cacheprovider on the touched test files passes (do not run the whole suite: the Leader's gate is running); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: tools/check_regrade.py; the mutation grader; any file under runs/; running bench report on a real run (the Leader does); any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: docs/notes/rulings.md R-75, R-76; src/harness_bench/report/{__init__,judges,cli_table,html}.py; src/harness_bench/grade/mutation.py (the log line); bench/regrade-allowed-findings.yaml; tests/test_report*.py; tests/mutations/*.json. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3FCSGME70N1B3B9HSC8FT6R",
+      "shortname": "compile-Goal: the report discloses two rulings before the smoke report is printe…",
+      "datetime": "2026-09-26T17:39:16Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: the report discloses two rulings before the smoke report is printed: R-76 condition 2 (the gate's criterion-7 allowance) and R-75 conditions 4 and 6 (the D1 red baseline beside every D1 mutation_score), red first. Read docs/notes/rulings.md R-75 and R-76 first. Measured (Leader, 2026-09-25/26): each D1 grading of mutation_score writes the line \"initial_failing_tests: <n>\" (or \"initial_failing_tests: not recorded\") into the cell's mutation.log, the path in the score's evidence (relative to the run dir); on the six row15-d1-1 cells n was 74 on every run, and 75 on one earlier diagnostic run, so the D1 baseline is 74-75 with a flake band of 1. bench/regrade-allowed-findings.yaml (R-76) holds two entries, run row15-d1-1, code HB-LED-005, cells 35af195cfe821dca and c3d40fa1377ba0dc, path ws/.git/index.\nDone when: A new Leader-owned file bench/task-baselines.yaml (schema bench-task-baselines/1) records D1: initial_failing_tests low 74, high 75, flake_band 1, source \"row15-d1-1, Leader 2026-09-25/26 (R-75 c4)\", note \"vendored subset; AiDe.sln and docs/ absent\"; The report header (the header rows built in src/harness_bench/report, the same place as \"Probe versions\") gains a row \"Gate allowance\" whose value is built from bench/regrade-allowed-findings.yaml, e.g. \"row15-d1-1 criterion 7 - 2 verify errors allowed (R-76, GATE-RUN-A; ws/.git/index of 35af..., c3d4...; not read by any grader)\", and \"none\" when the file is absent or empty; The report header gains a row \"D1 baseline red tests\" = \"74-75 (vendored subset; AiDe.sln and docs/ absent)\" from bench/task-baselines.yaml, shown only when the run has a D1 cell; Every D1 mutation_score value in the report (CLI table and HTML) carries its cell's initial_failing_tests beside it, read from the log at the score's evidence path, \"not recorded\" when the line or log is absent; a cell whose count is above high + flake_band is shown \"red tests added\" instead of the number (R-75 c6), never the bare score; Tests red first on synthetic run dirs (no real runs/ file, no model call): each row present and exact; \"none\" with no allowance; the baseline row absent with no D1 cell; a count of 74 shown beside the score; a count of 77 shown as \"red tests added\"; an absent log shown \"not recorded\"; A test earns its place by a failure only it catches: parametrize where cases share a shape; tests/mutations (the file covering the report module you change) gains named mutants for: the allowance row always \"none\", the flake band ignored, the \"red tests added\" branch removed; each killed; the exactly-once find control stays green; uv run pytest -q -p no:cacheprovider on the touched test files passes (do not run the whole suite: the Leader's gate is running); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: tools/check_regrade.py; the mutation grader; any file under runs/; running bench report on a real run (the Leader does); any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/notes/rulings.md R-75, R-76; src/harness_bench/report/{__init__,judges,cli_table,html}.py; src/harness_bench/grade/mutation.py (the log line); bench/regrade-allowed-findings.yaml; tests/test_report*.py; tests/mutations/*.json. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: A new Leader-owned file bench/task-baselines.yaml (schema bench-task-baselines/1) records D1: initial_failing_tests low 74, high 75, flake_band 1, source \"row15-d1-1, Leader 2026-09-25/26 (R-75 c4)\", note \"vendored subset | phrase: A new Leader-owned file bench/task-baselines.yaml (schema bench-task-baselines/1) records D1: initial_failing_tests low 74, high 75, flake_band 1, source \"row15-d1-1, Leader 2026-09-25/26 (R-75 c4)\", note \"vendored subset |\n| done_when: AiDe.sln and docs/ absent\" | phrase: AiDe.sln and docs/ absent\" |\n| done_when: The report header (the header rows built in src/harness_bench/report, the same place as \"Probe versions\") gains a row \"Gate allowance\" whose value is built from bench/regrade-allowed-findings.yaml, e.g. \"row15-d1-1 criterion 7 - 2 verify errors allowed (R-76, GATE-RUN-A | phrase: The report header (the header rows built in src/harness_bench/report, the same place as \"Probe versions\") gains a row \"Gate allowance\" whose value is built from bench/regrade-allowed-findings.yaml, e.g. \"row15-d1-1 criterion 7 - 2 verify errors allowed (R-76, GATE-RUN-A |\n| done_when: ws/.git/index of 35af..., c3d4... | phrase: ws/.git/index of 35af..., c3d4... |\n| done_when: not read by any grader)\", and \"none\" when the file is absent or empty | phrase: not read by any grader)\", and \"none\" when the file is absent or empty |\n| done_when: The report header gains a row \"D1 baseline red tests\" = \"74-75 (vendored subset | phrase: The report header gains a row \"D1 baseline red tests\" = \"74-75 (vendored subset |\n| done_when: AiDe.sln and docs/ absent)\" from bench/task-baselines.yaml, shown only when the run has a D1 cell | phrase: AiDe.sln and docs/ absent)\" from bench/task-baselines.yaml, shown only when the run has a D1 cell |\n| done_when: Every D1 mutation_score value in the report (CLI table and HTML) carries its cell's initial_failing_tests beside it, read from the log at the score's evidence path, \"not recorded\" when the line or log is absent | phrase: Every D1 mutation_score value in the report (CLI table and HTML) carries its cell's initial_failing_tests beside it, read from the log at the score's evidence path, \"not recorded\" when the line or log is absent |\n| done_when: a cell whose count is above high + flake_band is shown \"red tests added\" instead of the number (R-75 c6), never the bare score | phrase: a cell whose count is above high + flake_band is shown \"red tests added\" instead of the number (R-75 c6), never the bare score |\n| done_when: Tests red first on synthetic run dirs (no real runs/ file, no model call): each row present and exact | phrase: Tests red first on synthetic run dirs (no real runs/ file, no model call): each row present and exact |\n| done_when: \"none\" with no allowance | phrase: \"none\" with no allowance |\n| done_when: the baseline row absent with no D1 cell | phrase: the baseline row absent with no D1 cell |\n| done_when: a count of 74 shown beside the score | phrase: a count of 74 shown beside the score |\n| done_when: a count of 77 shown as \"red tests added\" | phrase: a count of 77 shown as \"red tests added\" |\n| done_when: an absent log shown \"not recorded\" | phrase: an absent log shown \"not recorded\" |\n| done_when: A test earns its place by a failure only it catches: parametrize where cases share a shape | phrase: A test earns its place by a failure only it catches: parametrize where cases share a shape |\n| done_when: tests/mutations (the file covering the report module you change) gains named mutants for: the allowance row always \"none\", the flake band ignored, the \"red tests added\" branch removed | phrase: tests/mutations (the file covering the report module you change) gains named mutants for: the allowance row always \"none\", the flake band ignored, the \"red tests added\" branch removed |\n| done_when: each killed | phrase: each killed |\n| done_when: the exactly-once find control stays green | phrase: the exactly-once find control stays green |\n| done_when: uv run pytest -q -p no:cacheprovider on the touched test files passes (do not run the whole suite: the Leader's gate is running) | phrase: uv run pytest -q -p no:cacheprovider on the touched test files passes (do not run the whole suite: the Leader's gate is running) |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: tools/check_regrade.py | phrase: tools/check_regrade.py |\n| not_in_scope: the mutation grader | phrase: the mutation grader |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: running bench report on a real run (the Leader does) | phrase: running bench report on a real run (the Leader does) |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- 2026-09-25/26: unresolved (not found)\n- bench/regrade-allowed-findings.yaml: bench/regrade-allowed-findings.yaml sha256 6741aafe7e13b42a04a71e5ca91491c84ce8e288c5688dbc5e695eb418f0168a\n- ws/.git/index: unresolved (not found)\n- bench/task-baselines.yaml: unresolved (not found)\n- bench-task-baselines/1: unresolved (not found)\n- docs/: unresolved (not found)\n- src/harness_bench/report: unresolved (not found)\n- runs/: unresolved (not found)\n- tests/mutations: unresolved (not found)\n- tools/check_regrade.py: tools/check_regrade.py sha256 55687826ee14578285a7d04979de455c451e5e1bcedd5a3f2e0616547edefb9b\n- src/harness_bench/report/{__init__,judges,cli_table,html}.py: unresolved (not found)\n- src/harness_bench/grade/mutation.py: src/harness_bench/grade/mutation.py sha256 927f8a85eb43c56a6dd0a0d85c044b14a192fba0343fc22fb8bbed3c6f6c54c1\n- tests/test_report*.py: unresolved (not found; nearest: tests/test_report.py)\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3FCSDB3G78HHY9XWDMY848J\nraw sha256: 36be3cd13557b3cd9d37e8076d782e37eff0343699b9fe868e0079ddccf9163f\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3FCSDB3G78HHY9XWDMY848J for claude-code v1: 27 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A new Leader-owned file bench/task-baselines.yaml (schema bench-task-baselines/1) records D1: initial_failing_tests low 74, high 75, flake_band 1, source \"row15-d1-1, Leader 2026-09-25/26 (R-75 c4)\", note \"vendored subset",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A new Leader-owned file bench/task-baselines.yaml (schema bench-task-baselines/1) records D1: initial_failing_tests low 74, high 75, flake_band 1, source \"row15-d1-1, Leader 2026-09-25/26 (R-75 c4)\", note \"vendored subset"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "AiDe.sln and docs/ absent\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "AiDe.sln and docs/ absent\""
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The report header (the header rows built in src/harness_bench/report, the same place as \"Probe versions\") gains a row \"Gate allowance\" whose value is built from bench/regrade-allowed-findings.yaml, e.g. \"row15-d1-1 criterion 7 - 2 verify errors allowed (R-76, GATE-RUN-A",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The report header (the header rows built in src/harness_bench/report, the same place as \"Probe versions\") gains a row \"Gate allowance\" whose value is built from bench/regrade-allowed-findings.yaml, e.g. \"row15-d1-1 criterion 7 - 2 verify errors allowed (R-76, GATE-RUN-A"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "ws/.git/index of 35af..., c3d4...",
+            "trace": {
+              "kind": "phrase",
+              "ref": "ws/.git/index of 35af..., c3d4..."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "not read by any grader)\", and \"none\" when the file is absent or empty",
+            "trace": {
+              "kind": "phrase",
+              "ref": "not read by any grader)\", and \"none\" when the file is absent or empty"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The report header gains a row \"D1 baseline red tests\" = \"74-75 (vendored subset",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The report header gains a row \"D1 baseline red tests\" = \"74-75 (vendored subset"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "AiDe.sln and docs/ absent)\" from bench/task-baselines.yaml, shown only when the run has a D1 cell",
+            "trace": {
+              "kind": "phrase",
+              "ref": "AiDe.sln and docs/ absent)\" from bench/task-baselines.yaml, shown only when the run has a D1 cell"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Every D1 mutation_score value in the report (CLI table and HTML) carries its cell's initial_failing_tests beside it, read from the log at the score's evidence path, \"not recorded\" when the line or log is absent",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Every D1 mutation_score value in the report (CLI table and HTML) carries its cell's initial_failing_tests beside it, read from the log at the score's evidence path, \"not recorded\" when the line or log is absent"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a cell whose count is above high + flake_band is shown \"red tests added\" instead of the number (R-75 c6), never the bare score",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a cell whose count is above high + flake_band is shown \"red tests added\" instead of the number (R-75 c6), never the bare score"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Tests red first on synthetic run dirs (no real runs/ file, no model call): each row present and exact",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Tests red first on synthetic run dirs (no real runs/ file, no model call): each row present and exact"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "\"none\" with no allowance",
+            "trace": {
+              "kind": "phrase",
+              "ref": "\"none\" with no allowance"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the baseline row absent with no D1 cell",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the baseline row absent with no D1 cell"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a count of 74 shown beside the score",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a count of 74 shown beside the score"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a count of 77 shown as \"red tests added\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a count of 77 shown as \"red tests added\""
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "an absent log shown \"not recorded\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "an absent log shown \"not recorded\""
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A test earns its place by a failure only it catches: parametrize where cases share a shape",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A test earns its place by a failure only it catches: parametrize where cases share a shape"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations (the file covering the report module you change) gains named mutants for: the allowance row always \"none\", the flake band ignored, the \"red tests added\" branch removed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations (the file covering the report module you change) gains named mutants for: the allowance row always \"none\", the flake band ignored, the \"red tests added\" branch removed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "each killed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "each killed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the exactly-once find control stays green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the exactly-once find control stays green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider on the touched test files passes (do not run the whole suite: the Leader's gate is running)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider on the touched test files passes (do not run the whole suite: the Leader's gate is running)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "tools/check_regrade.py",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tools/check_regrade.py"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the mutation grader",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the mutation grader"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "running bench report on a real run (the Leader does)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "running bench report on a real run (the Leader does)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "A new Leader-owned file bench/task-baselines.yaml (schema bench-task-baselines/1) records D1: initial_failing_tests low 74, high 75, flake_band 1, source \"row15-d1-1, Leader 2026-09-25/26 (R-75 c4)\", note \"vendored subset",
+            "AiDe.sln and docs/ absent\"",
+            "The report header (the header rows built in src/harness_bench/report, the same place as \"Probe versions\") gains a row \"Gate allowance\" whose value is built from bench/regrade-allowed-findings.yaml, e.g. \"row15-d1-1 criterion 7 - 2 verify errors allowed (R-76, GATE-RUN-A",
+            "ws/.git/index of 35af..., c3d4...",
+            "not read by any grader)\", and \"none\" when the file is absent or empty",
+            "The report header gains a row \"D1 baseline red tests\" = \"74-75 (vendored subset",
+            "AiDe.sln and docs/ absent)\" from bench/task-baselines.yaml, shown only when the run has a D1 cell",
+            "Every D1 mutation_score value in the report (CLI table and HTML) carries its cell's initial_failing_tests beside it, read from the log at the score's evidence path, \"not recorded\" when the line or log is absent",
+            "a cell whose count is above high + flake_band is shown \"red tests added\" instead of the number (R-75 c6), never the bare score",
+            "Tests red first on synthetic run dirs (no real runs/ file, no model call): each row present and exact",
+            "\"none\" with no allowance",
+            "the baseline row absent with no D1 cell",
+            "a count of 74 shown beside the score",
+            "a count of 77 shown as \"red tests added\"",
+            "an absent log shown \"not recorded\"",
+            "A test earns its place by a failure only it catches: parametrize where cases share a shape",
+            "tests/mutations (the file covering the report module you change) gains named mutants for: the allowance row always \"none\", the flake band ignored, the \"red tests added\" branch removed",
+            "each killed",
+            "the exactly-once find control stays green",
+            "uv run pytest -q -p no:cacheprovider on the touched test files passes (do not run the whole suite: the Leader's gate is running)",
+            "uv run ruff check src tests tools is clean",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "the report discloses two rulings before the smoke report is printed: R-76 condition 2 (the gate's criterion-7 allowance) and R-75 conditions 4 and 6 (the D1 red baseline beside every D1 mutation_score), red first. Read docs/notes/rulings.md R-75 and R-76 first. Measured (Leader, 2026-09-25/26): each D1 grading of mutation_score writes the line \"initial_failing_tests: <n>\" (or \"initial_failing_tests: not recorded\") into the cell's mutation.log, the path in the score's evidence (relative to the run dir); on the six row15-d1-1 cells n was 74 on every run, and 75 on one earlier diagnostic run, so the D1 baseline is 74-75 with a flake band of 1. bench/regrade-allowed-findings.yaml (R-76) holds two entries, run row15-d1-1, code HB-LED-005, cells 35af195cfe821dca and c3d40fa1377ba0dc, path ws/.git/index.",
+          "main_line_budget": "one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/notes/rulings.md R-75, R-76; src/harness_bench/report/{__init__,judges,cli_table,html}.py; src/harness_bench/grade/mutation.py (the log line); bench/regrade-allowed-findings.yaml; tests/test_report*.py; tests/mutations/*.json. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "tools/check_regrade.py",
+            "the mutation grader",
+            "any file under runs/",
+            "running bench report on a real run (the Leader does)",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.006,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3FCSDB3G78HHY9XWDMY848J",
+        "raw_sha256": "36be3cd13557b3cd9d37e8076d782e37eff0343699b9fe868e0079ddccf9163f",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "2026-09-25/26"
+          },
+          {
+            "nearest": null,
+            "path": "bench/regrade-allowed-findings.yaml",
+            "reason": null,
+            "sha256": "6741aafe7e13b42a04a71e5ca91491c84ce8e288c5688dbc5e695eb418f0168a",
+            "status": "resolved",
+            "token": "bench/regrade-allowed-findings.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ws/.git/index"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/task-baselines.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench-task-baselines/1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/report"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations"
+          },
+          {
+            "nearest": null,
+            "path": "tools/check_regrade.py",
+            "reason": null,
+            "sha256": "55687826ee14578285a7d04979de455c451e5e1bcedd5a3f2e0616547edefb9b",
+            "status": "resolved",
+            "token": "tools/check_regrade.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/report/{__init__,judges,cli_table,html}.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/mutation.py",
+            "reason": null,
+            "sha256": "927f8a85eb43c56a6dd0a0d85c044b14a192fba0343fc22fb8bbed3c6f6c54c1",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/mutation.py"
+          },
+          {
+            "nearest": "tests/test_report.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_report*.py"
           },
           {
             "nearest": null,
