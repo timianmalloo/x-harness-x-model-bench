@@ -1191,7 +1191,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "0a74387b936d4539e8ae271e631e300cc4d912b82e8fbe779b6943676df8f4f3"
+      "sourceSha256": "1f1525ac8419fc25e47fc8932592d0a2c8981a92190e880a6ed6c664abe12598"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -1770,7 +1770,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "151addd640b2790cda33bf3bb5e51902a29b2fa5189e58cde104c42113120a26"
+      "sourceSha256": "3eedbc39dc31e4640a27fc65f946e33e88ec6519c081090ff53559b0f478200d"
     },
     {
       "id": "coordination-phase1-finish-run",
@@ -1824,7 +1824,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "0e827faf0e4f398a06c9897dba9323cbe71ba4835fd20cf0f4ad3adcf4ae7406"
+      "sourceSha256": "5fcdd4bd2c07ba0d3eba6c4b417882b0eb1c43174cf6580acaea1e8c75d062ef"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -2837,5 +2837,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "dfc71a21d0ad587a98daf3e00c7dd41472d2fafd1ab23b4087989ca3ecd52d1f"
+  "graphSha256": "3b484b0beae0c9e6d24f2d0af5f9c1817eda33267c3a71d44b05bcf035d5e392"
 };
