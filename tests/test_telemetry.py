@@ -155,6 +155,13 @@ def test_codex_unexpected_status_404_stays_model_unavailable(tmp_path):  # R-23:
     assert (ex.errors[0].status, normalize.classify(ex.errors)) == (404, Cause.model_unavailable)
 
 
+def test_codex_unexpected_status_429_stays_provider(tmp_path):  # R-23: 429 stays provider
+    message = "unexpected status 429 Too Many Requests: rate limit sk-****"
+    ex = _codex_task_complete(tmp_path, message)
+    assert ex.errors[0].message == message
+    assert (ex.errors[0].status, normalize.classify(ex.errors)) == (429, Cause.provider)
+
+
 # classification (design: failure taxonomy; W3) -------------------------------------------------
 
 @pytest.mark.parametrize("status, etype, cause", [
