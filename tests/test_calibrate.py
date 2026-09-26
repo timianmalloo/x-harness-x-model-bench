@@ -231,7 +231,7 @@ def _rubric(root: Path) -> None:
 
 def _template(monkeypatch) -> None:
     from harness_bench.gateway import request
-    monkeypatch.setattr(request, "TEMPLATE_VERSION", "judge-request/2")
+    monkeypatch.setattr(request, "TEMPLATE_VERSION", "judge-request/3")
 
 
 def _schema(monkeypatch) -> None:

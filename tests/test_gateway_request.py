@@ -1,4 +1,4 @@
-"""The judge request `judge-request/1` (design phase3-gateway-judges sections 7.1, 7.2; T-GW-01, 02, 06, 33).
+"""The judge request `judge-request/2` (design phase3-gateway-judges sections 7.1, 7.2; T-GW-01, 02, 06, 33).
 
 Offline and pure: no backend, no file outside tmp_path. Artifacts are synthetic bytes written here.
 """
@@ -47,6 +47,21 @@ def test_t_gw_02_data_cannot_close_its_fence():
     assert request.render("P.", "1. One.\n", 1, ARTIFACTS, ()).escaped == ()
 
 
+# The answer instruction. Measured (smoke-1, 2026-09-25): judges added "sum" or "total" beside "items".
+EXACTLY_ONE_KEY = (
+    'The answer is one JSON object with exactly one key, "items", and no other key '
+    "(no total, sum or score summary)."
+)
+
+
+def test_the_rendered_request_says_the_answer_is_one_object_with_exactly_the_items_key():
+    """The rendered request states the verdict-set shape: one object, the key "items", and no other key."""
+    rendered = request.render("Preamble.", "1. Item one.\n2. Item two.\n", 2, ARTIFACTS, ())
+    assert EXACTLY_ONE_KEY in rendered.text
+    # section 7.2 order unchanged: the sentence stays in the answer instruction, after the artifact
+    assert rendered.text.index("<<<END DATA ") < rendered.text.index(EXACTLY_ONE_KEY)
+
+
 def test_t_gw_06_each_file_is_utf8_and_at_most_65536_bytes():
     assert request.BOUND == 65_536
     assert request.bound_problem((("a.md", b"a" * 65_536), ("b.py", b""))) is None
@@ -64,7 +79,7 @@ def test_t_gw_33_the_rendered_request_matches_the_committed_golden_file():
     rendered = request.render("No mechanical oracle applies: a design note's quality is judged against the rubric.",
                               "1. The note names the data structure and says why.\n"
                               "2. The note states the cost of each operation.\n", 2, GOLDEN_ARTIFACTS, scrub.FAMILY_WORDS)
-    assert request.TEMPLATE_VERSION == "judge-request/1"
+    assert request.TEMPLATE_VERSION == "judge-request/2"
     assert rendered.nonce == "8d816628c35b"
     assert rendered.text == GOLDEN.read_text(encoding="utf-8")
     # R-64 c1: preamble, then rubric, then the artifact; the oracle slot is the rubric, never a reference file.

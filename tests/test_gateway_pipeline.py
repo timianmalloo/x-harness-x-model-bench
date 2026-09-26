@@ -10,7 +10,7 @@ from secrets import token_hex
 
 from harness_bench import egress, errors
 from harness_bench.gateway import backend as gw_backend
-from harness_bench.gateway import pipeline, request, scrub
+from harness_bench.gateway import pipeline, request, schema, scrub
 
 SESSION = "00000000-0000-4000-8000-000000000001"
 JUDGE = pipeline.Judge(model="judge-model-a", invocation_sha256="c" * 64, allowed_models=("judge-model-a",),
@@ -210,6 +210,14 @@ def test_t_gw_30_every_path_maps_to_exactly_one_outcome_and_code(tmp_path, monke
     # one registry (review w3-gwi-1 A2): the pipeline's codes are exactly errors.RUN_CODES's HB-GW subset
     assert pipeline.CODES == {c: t for c, t in errors.RUN_CODES.items() if c.startswith("HB-GW-")}
     assert set(pipeline.CODES) == {f"HB-GW-{n:03d}" for n in range(1, 12)}
+
+
+def test_an_answer_with_an_extra_top_level_total_is_refused_hb_gw_002(tmp_path):
+    """The schema stays strict (additionalProperties false). A total beside items is HB-GW-002."""
+    answer = {**GOOD, "total": 12}
+    assert schema.validate(answer, INPUTS.items) == ["$: unexpected key 'total'"]
+    result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path), _replay(INPUTS, answer, tmp_path))
+    assert (result.outcome, result.code, result.verdicts) == ("failed", "HB-GW-002", None)
 
 
 def test_t_gw_30_a_recorded_result_carries_the_validated_verdicts(tmp_path):
