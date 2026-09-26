@@ -12,6 +12,7 @@ The seven area composites, cost of pass and per-scenario rows are later phases (
 from __future__ import annotations
 
 import io
+from pathlib import Path
 
 from rich import box
 from rich.console import Console
@@ -22,7 +23,7 @@ from harness_bench import report, views
 NOT_GRADED_EXIT = 4
 
 
-def render(view: views.RunView, plain: bool) -> tuple[str, int]:
+def render(view: views.RunView, plain: bool, run_dir: Path | None = None, root: Path | None = None) -> tuple[str, int]:
     rid = view.run_id
     if view.grading_id is None:
         return f"Run {rid} is not graded yet. Run bench grade {rid}.\n", NOT_GRADED_EXIT
@@ -37,6 +38,8 @@ def render(view: views.RunView, plain: bool) -> tuple[str, int]:
                       report.tokens(r.tokens), report.seconds(r.wall_ms), report.usd(r.cost_usd))
     buf = io.StringIO()
     console = Console(file=buf, width=250, color_system=None if plain else "auto", legacy_windows=False, highlight=False)
+    for label, value in report.disclosure_rows(root, view.plan):  # same rows as the HTML header, beside Probe versions
+        console.print(f"{label}: {value}", markup=False)
     console.print(table)
     not_valid = [c for c in view.cells if c.validity.startswith("invalid") or c.validity == "not recorded"]
     if not_valid:
@@ -52,4 +55,7 @@ def render(view: views.RunView, plain: bool) -> tuple[str, int]:
         console.print(f"{report.N5_FLAG}: see {report.N5_EVIDENCE}")
     if report.has_claude_code_cell(view.plan):
         console.print(f"{report.R36_FLAG}: see {report.R36_EVIDENCE}")
+    labels = {c.cell_id: c.label for c in view.cells}
+    for cell_id, text in report.d1_mutation_values(root, run_dir, view).items():
+        console.print(f"{labels[cell_id]}: mutation_score {text}", markup=False)
     return buf.getvalue(), 0

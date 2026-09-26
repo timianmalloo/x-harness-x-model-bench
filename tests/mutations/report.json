@@ -153,5 +153,26 @@
   "find": "    if report.has_codex_cell(view.plan):\n        console.print(f\"{report.N5_FLAG}: see {report.N5_EVIDENCE}\")\n",
   "replace": "",
   "tests": ["tests/test_report.py::test_the_cli_table_prints_the_flag_as_ascii_after_the_table_when_a_codex_cell_is_present"]
+ },
+ {
+  "name": "the allowance row always none",
+  "file": "src/harness_bench/report/__init__.py",
+  "find": "    return _format_gate_allowance(findings)\n",
+  "replace": "    return \"none\"\n",
+  "tests": ["tests/test_report_disclosure.py::test_gate_allowance_quotes_the_committed_allowance"]
+ },
+ {
+  "name": "the flake band ignored",
+  "file": "src/harness_bench/report/__init__.py",
+  "find": "        limit = high + band\n",
+  "replace": "        limit = high\n",
+  "tests": ["tests/test_report_disclosure.py::test_d1_mutation_score_carries_its_initial_failing_tests"]
+ },
+ {
+  "name": "the red tests added branch removed",
+  "file": "src/harness_bench/report/__init__.py",
+  "find": "        if n > limit:\n            return \"red tests added\"\n",
+  "replace": "",
+  "tests": ["tests/test_report_disclosure.py::test_d1_mutation_score_carries_its_initial_failing_tests"]
  }
 ]

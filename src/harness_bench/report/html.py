@@ -158,7 +158,7 @@ def _scenario6_facts(view: views.RunView) -> list[tuple[str, str | None]]:
 
 
 def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | None = None,
-            judging: list[tuple[str, str | None]] | None = None) -> str:
+            judging: list[tuple[str, str | None]] | None = None, root: Path | None = None) -> str:
     plan = view.plan
     planned = ", ".join(views.build_label(h, str(b.get("version", ""))) for h, b in sorted((plan.get("builds") or {}).items()))
     facts = [("Run", view.run_id), ("State", "complete" if view.completed else "incomplete"),
@@ -171,7 +171,8 @@ def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | N
              ("Context window", _context_window_fact(view.cells, tags)),
              *_claude_code_permission_fact(view.cells, modes or {}),
              ("Price list hash", (plan.get("price_list_hash") or "")[:12]), *_scenario6_facts(view),
-             *(judging or [])]  # the judge block (design section 12): every value, rationales too, through _e
+             *(judging or []),  # Probe versions is the last judge-block row (report/judges.py)
+             *report.disclosure_rows(root, plan)]  # R-76 gate allowance; R-75 c4 D1 baseline when the run has a D1 cell
     if report.has_codex_cell(plan):
         facts.append((report.N5_FLAG, f"see {report.N5_EVIDENCE}"))
     if report.has_claude_code_cell(plan):
@@ -222,10 +223,14 @@ def _evidence(c: views.CellView, archive_present: bool) -> str:
     return _e(f"This copy doesn't include the run archive. Evidence path: {pointer}.")
 
 
-def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str]) -> str:
+def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str], run_dir: Path | None = None,
+          root: Path | None = None) -> str:
     if not view.cells:
         return '<section id="runs"><h2>Cells</h2><p>No cells in this run.</p></section>'
-    headers = [("Cell", False), ("Outcome", False), ("Validity", False), ("pass@1", True), ("Partial credit", True), ("Tokens", True),
+    show_mutation = report.has_d1_cell(view.plan)
+    mutation = report.d1_mutation_values(root, run_dir, view) if show_mutation else {}
+    headers = [("Cell", False), ("Outcome", False), ("Validity", False), ("pass@1", True), ("Partial credit", True),
+               *((("mutation_score", False),) if show_mutation else ()), ("Tokens", True),
                ("Wall", True), ("Tool time", True), ("Model time", True), ("Idle", True), ("Cost", True), ("Context window", False),
                ("Warnings", False), ("Evidence", False)]
     na = views.Measure(None, "not graded")
@@ -234,6 +239,7 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str]) -> s
              (_e(c.outcome + (f" ({c.cause}, {c.code})" if c.code else "")), False),
              (_e(c.validity + (f" {c.validity_code}" if c.validity_code else "")), False),
              (_e(report.rate(c.scores.get("pass_at_1", na))), True), (_e(report.rate(c.scores.get("partial_credit", na))), True),
+             *([(_e(mutation.get(c.cell_id, "")), False)] if show_mutation else []),
              (_e(report.cell_tokens(c.tokens, c.tokens_reason)), True), (_e(report.seconds(c.wall_ms)), True),
              (_e(report.millis(c.tool_ms)), True), (_e(report.millis(c.model_ms)), True), (_e(report.millis(c.idle_ms)), True),
              (_e(report.usd(c.scores.get("cost_usd", na))), True), (_e(report.context_window(c.harness, tags.get(c.cell_id))), False),
@@ -251,7 +257,7 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
     return ("<!doctype html>\n"
             f'<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
             f"<title>harness-bench run {_e(view.run_id)}</title><style>{STYLE}</style></head>"
-            f"<body><main>{_header(view, tags, _permission_modes(run_dir), judging)}{_validity(view)}{_leaderboard(view)}{_runs(view, archive_present, tags)}"
+            f"<body><main>{_header(view, tags, _permission_modes(run_dir), judging, root)}{_validity(view)}{_leaderboard(view)}{_runs(view, archive_present, tags, run_dir, root)}"
             f"</main></body></html>\n")
 
 
