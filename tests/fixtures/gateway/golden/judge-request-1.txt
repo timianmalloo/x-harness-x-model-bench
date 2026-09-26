@@ -23,3 +23,4 @@ def push(q, x):
 
 Answer with one JSON object and nothing else, with one entry for each rubric item from 1 to 2, in this shape:
 {"items": [{"item": 1, "score": 0, "rationale": "..."}]}
+The answer is one JSON object with exactly one key, "items", and no other key (no total, sum or score summary).

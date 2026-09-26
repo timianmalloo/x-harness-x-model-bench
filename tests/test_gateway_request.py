@@ -1,4 +1,4 @@
-"""The judge request `judge-request/1` (design phase3-gateway-judges sections 7.1, 7.2; T-GW-01, 02, 06, 33).
+"""The judge request `judge-request/2` (design phase3-gateway-judges sections 7.1, 7.2; T-GW-01, 02, 06, 33).
 
 Offline and pure: no backend, no file outside tmp_path. Artifacts are synthetic bytes written here.
 """
@@ -79,7 +79,7 @@ def test_t_gw_33_the_rendered_request_matches_the_committed_golden_file():
     rendered = request.render("No mechanical oracle applies: a design note's quality is judged against the rubric.",
                               "1. The note names the data structure and says why.\n"
                               "2. The note states the cost of each operation.\n", 2, GOLDEN_ARTIFACTS, scrub.FAMILY_WORDS)
-    assert request.TEMPLATE_VERSION == "judge-request/1"
+    assert request.TEMPLATE_VERSION == "judge-request/2"
     assert rendered.nonce == "8d816628c35b"
     assert rendered.text == GOLDEN.read_text(encoding="utf-8")
     # R-64 c1: preamble, then rubric, then the artifact; the oracle slot is the rubric, never a reference file.

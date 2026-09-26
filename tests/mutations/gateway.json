@@ -733,5 +733,14 @@
   "tests": [
    "tests/test_gateway_headless.py::test_a_copilot_record_that_breaks_the_qualified_shape_fails_the_call"
   ]
+ },
+ {
+  "name": "the exactly-one-key sentence removed",
+  "file": "src/harness_bench/gateway/request.py",
+  "find": "The answer is one JSON object with exactly one key, \"items\", and no other key (no total, sum or score summary).",
+  "replace": "",
+  "tests": [
+   "tests/test_gateway_request.py::test_the_rendered_request_says_the_answer_is_one_object_with_exactly_the_items_key"
+  ]
  }
 ]
