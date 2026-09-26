@@ -11,10 +11,10 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
-from archived_runs import ROOT
+from archived_runs import ROOT, gate_runs_root
 from test_grade_correctness import d1_cell, git, tree_digest
 
-from harness_bench import config
+from harness_bench import config, plan, views
 from harness_bench.archive import make_writable
 from harness_bench.grade import CellInput, Score, mutation, runner
 from harness_bench.grade.runner import applicable
@@ -317,4 +317,53 @@ def test_d1_reference_plus_new_test_project_with_no_compute_scores_zero(tmp_path
     assert tree_digest(folder) == before, "grading wrote under the archive"
     assert out[METRIC].value == Decimal("0.0000")
     assert out[METRIC].reason is None
+
+
+# The 6 row15-d1-1 cells graded through mutation_score (design: phase3-graders.md, section Mutation).
+# 35af195cfe821dca wrote no tests; the other five are characterization values (initial testrun failed
+# under Stryker on the pre-existing test suite; graded twice and the two runs are equal).
+GATE_D1_MUTATION: dict[str, tuple[str | None, str | None]] = {
+    "2535962f830d7718": (None, "mutation run failed: 1"),
+    "35af195cfe821dca": (None, "no tests written"),
+    "3ff04431d3b5ac27": (None, "mutation run failed: 1"),
+    "4a6250261f80ded4": (None, "mutation run failed: 1"),
+    "c3d40fa1377ba0dc": (None, "mutation run failed: 1"),
+    "caa8ca38b1a929a8": (None, "mutation run failed: 1"),
+}
+
+
+@pytest.mark.slow
+def test_row15_d1_cells_graded_twice_give_characterization_values_and_leave_archives_unchanged(tmp_path):
+    gate_root = gate_runs_root()
+    run = gate_root / "row15-d1-1"
+    if not (run / "plan.json").is_file():
+        pytest.skip("gate run row15-d1-1 is not on this host (set HB_GATE_RUNS to the runs folder)")
+    attempts = {e["cell_id"]: e["archive_attempt"] for e in views.rows(run, "events") if e["kind"] == "cell.archived"}
+    cells = {c["cell_id"]: c for c in plan.load_confirmed(run)["cells"]}
+
+    for cid in sorted(cells.keys()):
+        attempt = attempts[cid]
+        folder = run / "archive" / cid / f"attempt-{attempt}"
+        before = tree_digest(folder)
+
+        out1 = mutation.grade_cell(
+            mutation_input(tmp_path, folder, cells[cid], tmp_path / "grading" / cid / "run_1")
+        )
+        assert tree_digest(folder) == before, f"grading wrote under the archive of {cid}"
+        score1 = encode(out1[METRIC])
+
+        if cid == "35af195cfe821dca":
+            assert score1 == (None, "no tests written")
+            assert score1 == GATE_D1_MUTATION[cid]
+            continue
+
+        out2 = mutation.grade_cell(
+            mutation_input(tmp_path, folder, cells[cid], tmp_path / "grading" / cid / "run_2")
+        )
+        assert tree_digest(folder) == before, f"grading wrote under the archive of {cid}"
+        score2 = encode(out2[METRIC])
+
+        assert score1 == score2, f"Cell {cid} repeated runs produced different scores: {score1} vs {score2}"
+        assert score1 == GATE_D1_MUTATION[cid]
+
 
