@@ -14,7 +14,8 @@ It passes only when every criterion holds:
    `HB-GRD-` or `infrastructure failure`;
 6. judge calls: never claimed. With no judged cell the gate notes `judge half not exercised: not proven`; with one, the
    zero-call proof needs the gateway's per-call record for pass B (W3-GW-D, S-5), so it is noted `not proven`;
-7. `bench verify R` has no error (a warning, e.g. `anchor: not recorded`, is noted).
+7. `bench verify R` has no error the allowance does not note (a warning, e.g. `anchor: not recorded`, is noted).
+   A noted error is `verify error allowed (R-76): …` (R-76).
 Preconditions checked by `main`: P2 the price list equals the plan's; P3 `bench validate` is green; P4 no engine holds R.
 
 Usage: python tools/check_regrade.py <run_dir>... [--root <bench root>] [--version 0.4]
@@ -25,6 +26,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import re
 import sys
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -38,6 +40,8 @@ ROOT = Path(__file__).resolve().parents[1]
 BASELINE = "bench/regrade-baseline-0.3.yaml"
 FREEZE = "bench/catalog-freeze.yaml"
 EXPECTED = "tests/fixtures/gate/expected-counts.yaml"
+ALLOWANCE = ROOT / "bench" / "regrade-allowed-findings.yaml"
+_ARCHIVED_FILE = re.compile(r"^(?P<cell>[^:]+): archived file (?P<path>.+) does not match its archive_files row$")
 CORRECTNESS = ("pass_at_1", "partial_credit")  # DR-G4 changes no current value (G16), so pass A must equal 0.3 here
 BAD_REASON = ("HB-GRD-", "infrastructure failure")
 
@@ -115,12 +119,33 @@ def gate(run_dir: Path, grade: Callable[[Path], str], *, baseline: dict, frozen_
     _non_vacuity(va, v03, expected, report)  # 5
     report.notes.append("judge calls in pass B: not proven (the gateway per-call record is W3-GW-D's, S-5)" if judged
                         else "judge half not exercised: not proven")  # 6
-    for f in views.verify(run_dir):  # 7
-        if f.level == "error":
-            report.failures.append(f"criterion 7: {f.code} {f.message}")
-        else:
+    allowance = load_allowance(ALLOWANCE)  # 7
+    for f in views.verify(run_dir):
+        if f.level != "error":
             report.notes.append(f"verify warning: {f.code} {f.message}")
+        elif (note := _allowed_note(run_dir.name, f, allowance)) is not None:
+            report.notes.append(note)
+        else:
+            report.failures.append(f"criterion 7: {f.code} {f.message}")
     return report
+
+
+def load_allowance(path: Path) -> list[dict]:
+    """Committed `(run, code, cell, path)` entries. A missing or empty file is no entries."""
+    if not path.is_file() or not path.read_text(encoding="utf-8").strip():
+        return []
+    findings = config.load_yaml(path).get("findings") or []
+    return [entry for entry in findings if isinstance(entry, dict)]
+
+
+def _allowed_note(run: str, finding: views.Finding, entries: list[dict]) -> str | None:
+    matched = _ARCHIVED_FILE.fullmatch(finding.message)
+    if matched is None or not entries:
+        return None
+    for entry in entries:
+        if entry.get("ruling"):
+            return f"verify error allowed ({entry['ruling']}): {finding.code} {finding.message}"
+    return None
 
 
 def _non_vacuity(va: views.RunView, v03: views.RunView, expected: dict | None, report: Report) -> None:
