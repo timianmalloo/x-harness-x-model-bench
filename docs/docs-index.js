@@ -985,7 +985,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "81f2e456754782b2340bbb75d09250870c53b60ea4d39d34e80294eb4dc75b62"
+      "sourceSha256": "3d69ca1bc51b03548430e76e152891eb2c8f6b6a14eb8845602e7e6b53ccf664"
     },
     {
       "id": "review-w1-acp-codex",
@@ -1191,7 +1191,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b661068eb5c06bd9ce40c50dad476400d47fa7179c63062a90acd79e44abb258"
+      "sourceSha256": "0a74387b936d4539e8ae271e631e300cc4d912b82e8fbe779b6943676df8f4f3"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -1670,7 +1670,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ea4db9cd170dcaf00bf7f28ce0119db61a05b879c263d8547648c275a31fe0f4"
+      "sourceSha256": "781b074191484c347832686c2e39e20217e1f7ebd46e7287c73860fc9e267b18"
     },
     {
       "id": "design-run-lifecycle-model",
@@ -1824,7 +1824,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "e40a3b0fb03e6a7a97f7dd9e027798c7bc69fcd25147ebbc3d347a83d8f6f495"
+      "sourceSha256": "0e827faf0e4f398a06c9897dba9323cbe71ba4835fd20cf0f4ad3adcf4ae7406"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -2807,6 +2807,13 @@ window.DOCS_INDEX = {
       "artifactId": "coordination-phase1-finish"
     },
     {
+      "id": "surface-case-study",
+      "path": "docs/case-study.html",
+      "title": "From Specification to Implementation: An AI-Forward Case Study",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact."
+    },
+    {
       "id": "surface-proposals-harness-bench-report-mockup",
       "path": "docs/proposals/harness-bench-report-mockup.html",
       "title": "harness-bench · run 2026-09-23 (mockup)",
@@ -2830,5 +2837,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "fd9c6458e4a8bc8abec6bc0848602f773bf33ef9809aaf9594e675ca0fd9909c"
+  "graphSha256": "dfc71a21d0ad587a98daf3e00c7dd41472d2fafd1ab23b4087989ca3ecd52d1f"
 };

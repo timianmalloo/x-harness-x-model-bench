@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>From Specification to Implementation: An AI-Forward Case Study</title>
+<style>
+  :root {
+    --bg-base: #080c14;
+    --bg-surface: #0e1626;
+    --bg-card: #141f36;
+    --bg-card-hover: #1b2a47;
+    --border: #203152;
+    --border-subtle: rgba(255, 255, 255, 0.07);
+    --border-accent: #38bdf8;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-cyan: #38bdf8;
+    --accent-emerald: #34d399;
+    --accent-purple: #a78bfa;
+    --accent-amber: #fbbf24;
+    --accent-rose: #f43f5e;
+    --accent-indigo: #818cf8;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, "Courier New", monospace;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg-base: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-card: #f1f5f9;
+      --bg-card-hover: #e2e8f0;
+      --border: #cbd5e1;
+      --border-subtle: rgba(0, 0, 0, 0.06);
+      --border-accent: #0284c7;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --accent-cyan: #0284c7;
+      --accent-emerald: #059669;
+      --accent-purple: #7c3aed;
+      --accent-amber: #d97706;
+      --accent-rose: #e11d48;
+      --accent-indigo: #4f46e5;
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Layout */
+  .app-container {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  aside.sidebar {
+    width: 290px;
+    background: var(--bg-surface);
+    border-right: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    flex-shrink: 0;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text-primary);
+  }
+  .brand-badge {
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    color: #000;
+    font-weight: 800;
+    font-size: 11px;
+    padding: 3px 7px;
+    border-radius: 5px;
+    letter-spacing: 0.05em;
+  }
+  .brand-title {
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+  }
+
+  .nav-group-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 700;
+    margin-bottom: 8px;
+    padding-left: 10px;
+  }
+  .nav-menu {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .nav-item a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+  }
+  .nav-item a:hover {
+    background: var(--bg-card);
+    color: var(--text-primary);
+  }
+  .nav-item a.active {
+    background: rgba(56, 189, 248, 0.12);
+    color: var(--accent-cyan);
+    font-weight: 600;
+    border-left: 3px solid var(--accent-cyan);
+  }
+
+  /* Main content */
+  main.main-content {
+    flex: 1;
+    max-width: 1080px;
+    padding: 48px 56px;
+    margin: 0 auto;
+  }
+
+  /* Hero Banner */
+  .hero {
+    margin-bottom: 48px;
+    padding-bottom: 36px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-tagline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    color: var(--accent-cyan);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-size: 38px;
+    font-weight: 800;
+    line-height: 1.18;
+    letter-spacing: -0.025em;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #ffffff 40%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  @media (prefers-color-scheme: light) {
+    .hero h1 {
+      background: linear-gradient(135deg, #0f172a 40%, #475569 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  }
+  .hero p.lead {
+    font-size: 18px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 860px;
+  }
+  .hero-meta {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .hero-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-accent);
+  }
+  .stat-val {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    line-height: 1.1;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .stat-unit {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+  .stat-lbl {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  /* Section Styling */
+  section.doc-section {
+    margin-bottom: 64px;
+    scroll-margin-top: 40px;
+  }
+  .section-header {
+    margin-bottom: 24px;
+  }
+  .section-tag {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+    margin-bottom: 6px;
+  }
+  h2.section-title {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    margin-bottom: 10px;
+  }
+  p.section-desc {
+    font-size: 15px;
+    color: var(--text-secondary);
+    max-width: 820px;
+  }
+
+  /* Cards & Callouts */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .badge {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .badge-cyan { background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); border: 1px solid rgba(56, 189, 248, 0.3); }
+  .badge-emerald { background: rgba(52, 211, 153, 0.15); color: var(--accent-emerald); border: 1px solid rgba(52, 211, 153, 0.3); }
+  .badge-purple { background: rgba(167, 139, 250, 0.15); color: var(--accent-purple); border: 1px solid rgba(167, 139, 250, 0.3); }
+  .badge-amber { background: rgba(251, 191, 36, 0.15); color: var(--accent-amber); border: 1px solid rgba(251, 191, 36, 0.3); }
+  .badge-rose { background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); border: 1px solid rgba(244, 63, 94, 0.3); }
+
+  /* Callout Quote Boxes */
+  .callout-quote {
+    background: rgba(56, 189, 248, 0.05);
+    border-left: 3px solid var(--accent-cyan);
+    padding: 16px 20px;
+    border-radius: 0 10px 10px 0;
+    margin: 16px 0;
+    font-style: normal;
+  }
+  .callout-quote p {
+    font-size: 14.5px;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin-bottom: 6px;
+  }
+  .callout-quote .quote-author {
+    font-size: 12px;
+    color: var(--accent-cyan);
+    font-weight: 600;
+  }
+
+  .callout-warning {
+    background: rgba(251, 191, 36, 0.06);
+    border-left: 3px solid var(--accent-amber);
+    padding: 16px 20px;
+    border-radius: 0 10px 10px 0;
+    margin: 16px 0;
+  }
+
+  /* Timeline & Stepper */
+  .timeline {
+    position: relative;
+    padding-left: 32px;
+    margin: 28px 0;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    background: var(--border);
+  }
+  .timeline-node {
+    position: relative;
+    margin-bottom: 36px;
+  }
+  .timeline-node:last-child {
+    margin-bottom: 0;
+  }
+  .timeline-marker {
+    position: absolute;
+    left: -32px;
+    top: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--bg-surface);
+    border: 2px solid var(--accent-cyan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent-cyan);
+  }
+  .timeline-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .timeline-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .timeline-date {
+    font-size: 12px;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+  }
+
+  /* Prompt Box */
+  .prompt-box {
+    background: #090e1a;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin: 12px 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: #e2e8f0;
+    position: relative;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .prompt-box-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+    letter-spacing: 0.05em;
+  }
+  .copy-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: var(--text-secondary);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition: all 0.15s;
+  }
+  .copy-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+  }
+
+  /* Tables */
+  .table-responsive {
+    overflow-x: auto;
+    margin: 16px 0;
+  }
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    text-align: left;
+  }
+  table.data-table th {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-secondary);
+    font-weight: 600;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  table.data-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+  }
+  table.data-table tr:hover td {
+    background: rgba(255, 255, 255, 0.015);
+  }
+
+  /* Comparison Side by Side */
+  .diff-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .diff-col {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .diff-col.deprecated {
+    border-top: 3px solid var(--accent-rose);
+  }
+  .diff-col.adopted {
+    border-top: 3px solid var(--accent-emerald);
+  }
+  .diff-col-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Code block */
+  code {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+  }
+
+  /* Grid of Principles */
+  .tenets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 18px;
+    margin: 20px 0;
+  }
+  .tenet-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .tenet-num {
+    font-size: 32px;
+    font-weight: 900;
+    color: rgba(56, 189, 248, 0.12);
+    position: absolute;
+    right: 16px;
+    top: 12px;
+    line-height: 1;
+    font-family: var(--font-mono);
+  }
+  .tenet-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+  .tenet-body {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+
+  /* Filter buttons */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--accent-cyan);
+    color: #000;
+    border-color: var(--accent-cyan);
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .app-container { flex-direction: column; }
+    aside.sidebar { width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border); }
+    main.main-content { padding: 32px 20px; }
+    .diff-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <a href="#" class="brand">
+      <span class="brand-badge">CASE STUDY</span>
+      <span class="brand-title">x-harness-x-model-bench</span>
+    </a>
+
+    <div class="nav-section">
+      <div class="nav-group-title">Navigation</div>
+      <ul class="nav-menu">
+        <li class="nav-item"><a href="#executive-summary" class="active">Executive Summary</a></li>
+        <li class="nav-item"><a href="#paradigm-shift">The Core Paradigm</a></li>
+        <li class="nav-item"><a href="#chronological-journey">The Journey: 6 Acts</a></li>
+        <li class="nav-item"><a href="#the-great-pivot">The Great Pivot (ADR-0013)</a></li>
+        <li class="nav-item"><a href="#multi-agent-coordination">Multi-Harness Governance</a></li>
+        <li class="nav-item"><a href="#the-rigor-engine">The Rigor Engine & TDD</a></li>
+        <li class="nav-item"><a href="#continuous-improvement">Defect-to-Control Machine</a></li>
+        <li class="nav-item"><a href="#practitioner-playbook">The 6 Core Tenets</a></li>
+        <li class="nav-item"><a href="#prompt-explorer">Interactive Prompt Explorer</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-section" style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border);">
+      <div style="font-size: 11px; color: var(--text-muted);">
+        <strong>Project:</strong> x-harness-x-model-bench<br />
+        <strong>Pack:</strong> AI-Forward (rev 95)<br />
+        <strong>Author:</strong> @timianmalloo
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    
+    <!-- Hero Header -->
+    <header class="hero">
+      <div class="hero-tagline">Autonomous Systems Engineering in Practice</div>
+      <h1>From Specification to Implementation:<br />An AI-Forward Case Study</h1>
+      <p class="lead">
+        How a complete, enterprise-grade cross-harness benchmarking engine was conceived, formally specified, architecturally proven, and built in 3 days across Claude Code, Codex, Grok, and Antigravity with zero test regressions.
+      </p>
+      <div class="hero-meta">
+        <span><strong>Timeline:</strong> Sept 23 – 26, 2026 (72 hours)</span>
+        <span>&bull;</span>
+        <span><strong>Framework:</strong> AI-Forward Pack + Agent Knowledge Pack</span>
+        <span>&bull;</span>
+        <span><strong>Scale:</strong> 1,766 Tests &bull; 36,000+ Lines of Code &bull; 64 Sessions</span>
+      </div>
+    </header>
+
+    <!-- Key Stats Scorecard -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-val">3 <span class="stat-unit">days</span></div>
+        <div class="stat-lbl">Wall Clock from Inception to Feature Complete</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">1,766 <span class="stat-unit">tests</span></div>
+        <div class="stat-lbl">100% Offline Pytest Suite (0 Flakes)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">2.1 : 1</div>
+        <div class="stat-lbl">Test-to-Source Line Ratio (23.7k vs 11.3k)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">4 <span class="stat-unit">harnesses</span></div>
+        <div class="stat-lbl">Claude Code, Codex, Grok, Antigravity</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">75 <span class="stat-unit">rulings</span></div>
+        <div class="stat-lbl">Append-Only Owner Decisions (R-1 to R-75)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">22 <span class="stat-unit">variants</span></div>
+        <div class="stat-lbl">TLA+ Formal Model Checked (77M States)</div>
+      </div>
+    </section>
+
+    <!-- Section 1: Executive Summary -->
+    <section id="executive-summary" class="doc-section">
+      <div class="section-header">
+        <div class="section-tag">Context & Objectives</div>
+        <h2 class="section-title">The Project Intent: Cutting Through Benchmark Anecdotes</h2>
+        <p class="section-desc">
+          Why <code>x-harness-x-model-bench</code> was conceived and what makes its construction methodology unique.
+        </p>
+      </div>
+
+      <div class="card">
+        <p style="margin-bottom: 14px;">
+          In the rapidly evolving landscape of AI-assisted software engineering, decisions about coding agents have historically been driven by anecdote, vibes, and surface-level marketing claims. Developers and tech leaders frequently debate:
+        </p>
+        <ul style="padding-left: 20px; margin-bottom: 14px; color: var(--text-secondary);">
+          <li><em>"Does Claude Code outperform Codex CLI, or is it just the underlying model?"</em></li>
+          <li><em>"Does an instruction pack like AI-Forward improve architectural rigor, or does it merely burn context tokens?"</em></li>
+          <li><em>"How do agent harnesses behave when handling ambiguous requirements, multi-agent delegation, or formal verification?"</em></li>
+        </ul>
+        <p style="margin-bottom: 14px;">
+          To answer these questions empirically, <strong>x-harness-x-model-bench</strong> was created. It executes a factorial matrix across <code>harness &times; model &times; pack</code>:
+        </p>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Comparison</th>
+                <th>Held Fixed</th>
+                <th>Varied</th>
+                <th>Scientific Question</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Harness Effect</strong></td>
+                <td>Model (e.g. GPT-6 Sol)</td>
+                <td>Harness (Codex CLI vs Copilot CLI)</td>
+                <td>How much of agent success is due to the CLI scaffolding vs the model?</td>
+              </tr>
+              <tr>
+                <td><strong>Model Effect</strong></td>
+                <td>Harness Family</td>
+                <td>Model (Opus 5.5 vs Sonnet 5 vs GPT-6 Sol)</td>
+                <td>What capability tier is required for each lifecycle scenario?</td>
+              </tr>
+              <tr>
+                <td><strong>Pack Effect</strong></td>
+                <td>Harness + Model</td>
+                <td>AI-Forward Pack (ON vs OFF)</td>
+                <td>Does systematic engineering discipline tangibly prevent defects?</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          <strong>The Meta-Achievement:</strong> The benchmark itself was developed by dogfooding the very discipline under test. The author operated as Chief Architect and System Controller, orchestrating an AI-Forward multi-agent organisation across 64 sessions to take the system from a raw proposal document to an airtight, cryptographically verified, fully tested codebase.
+        </p>
+      </div>
+    </section>
+
+    <!-- Section 2: The Core Paradigm -->
+    <section id="paradigm-shift" class="doc-section">
+      <div class="section-header">
+        <div class="section-tag">Philosophy & Mindset</div>
+        <h2 class="section-title">The Paradigm Shift: From Chat Prompting to Agentic Systems Engineering</h2>
+        <p class="section-desc">
+          How professional AI-forward coding departs fundamentally from conversational code generation.
+        </p>
+      </div>
+
+      <div class="diff-grid">
+        <div class="diff-col deprecated">
+          <div class="diff-col-title">
+            <span>Conversational AI Coding (The "Vibes" Trap)</span>
+            <span class="badge badge-rose">Fragile</span>
+          </div>
+          <ul style="padding-left: 18px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.7;">
+            <li>Single, unstructured chat conversations that degrade over time.</li>
+            <li>Prompts that jump straight into writing implementation code.</li>
+            <li>Relying on LLM memory and "plausible" assertions without checking.</li>
+            <li>Blindly accepting bloated architectural patterns suggested by the model.</li>
+            <li>Testing done by eyeballing output or asking the same LLM "did you test this?".</li>
+            <li>Bugs treated as random glitches, patched locally without structural prevention.</li>
+          </ul>
+        </div>
+        <div class="diff-col adopted">
+          <div class="diff-col-title">
+            <span>AI-Forward Systems Engineering</span>
+            <span class="badge badge-emerald">Deterministic</span>
+          </div>
+          <ul style="padding-left: 18px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.7;">
+            <li><strong>Strict Layering:</strong> Spec &rarr; Architecture &rarr; Slices &rarr; Proof &rarr; Code.</li>
+            <li><strong>Autonomous Seats:</strong> Human sets intent; Owner rules on invariants; Coordinator executes graphs; Workers build.</li>
+            <li><strong>No Guessing Protocol (NG1–NG11):</strong> Spikes before contracts; marked assumptions; zero unverified claims.</li>
+            <li><strong>The Human Simplicity Filter:</strong> Ruthlessly challenging model over-engineering (e.g. the ADR-0013 container drop).</li>
+            <li><strong>Hard Verification Floors:</strong> 100% Red-First TDD, cosmic-ray/Stryker mutation testing, TLA+ formal models.</li>
+            <li><strong>Defect-Class Institutionalization:</strong> Every bug produces an automated gate or hook so the shape never recurs.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout-quote">
+        <p>
+          "Autonomy is latitude in the <em>how</em>, never the <em>what</em>. A question is not a licence to author a change, and a gap found en route is a finding, never a new goal."
+        </p>
+        <div class="quote-author">&mdash; AI-Forward Communication &amp; Task Discipline (CT19)</div>
+      </div>
+    </section>
+
+    <!-- Section 3: The Chronological Journey -->
+    <section id="chronological-journey" class="doc-section">
+      <div class="section-header">
+        <div class="section-tag">Trajectory</div>
+        <h2 class="section-title">The Journey in 6 Acts: From Spec to Working Skeleton</h2>
+        <p class="section-desc">
+          How human intent steered the AI through each formal phase of development, as captured in the durable audit log.
+        </p>
+      </div>
+
+      <div class="timeline">
+        
+        <!-- Act 1 -->
+        <div class="timeline-node">
+          <div class="timeline-marker">1</div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="timeline-title">Act I: Grounding &amp; Scaffolding (Inception)</span>
+              <span class="timeline-date">2026-09-23 17:37 UTC &bull; Skill: addpacktorepo</span>
+            </div>
+            <p style="font-size: 14px; margin-bottom: 8px;">
+              The journey opened not with a request to write code, but with grounding in foundational artifacts: a markdown proposal and a visual HTML report mockup.
+            </p>
+            <div class="prompt-box">
+              <div class="prompt-box-header">
+                <span>Human Prompt (Audit ID #1 &amp; #3)</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.textContent)">Copy</button>
+              </div>
+<code>consider the following files: harness-bench-mockup.html; Cross-Harness Benchmarking Proposal (ai-forward).md. these form the basis for a proposal for a cross-harness benchmarking tool. create a new public repo, x-harness-x-model-bench under c:\projects and in my tim.ian.malloo github account and apply my ai-forward pack to it. ground yourself in the benchmarking proposal and mockup and build out the scaffolding for us to spec and implement the benchmarking workflow and skills in this new repo.
+
+also... consider how this: https://explainx.ai/blog/boris-cherny-opus-5-5-lean-tla-formal-verification-sdk-2026 could influence how we think of benchmarking and grading. update the proposal and any seed content before i switch to a session in the repo.</code>
+            </div>
+            <p style="font-size: 13.5px; color: var(--text-secondary);">
+              <strong>Strategic Takeaway:</strong> The user anchored the AI in existing intent documents and immediately introduced state-of-the-art research (Boris Cherny's formal verification post) to upgrade the benchmark's grading ladder to include formal oracles (Lean 4 and TLA+) before scaffolding began.
+            </p>
+          </div>
+        </div>
+
+        <!-- Act 2 -->
+        <div class="timeline-node">
+          <div class="timeline-marker">2</div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="timeline-title">Act II: The 3-Layer Formal Specification</span>
+              <span class="timeline-date">2026-09-23 18:22 UTC &bull; Skill: /specify</span>
+            </div>
+            <p style="font-size: 14px; margin-bottom: 8px;">
+              Rather than jumping into architecture, the user enforced the first strict gate: producing an exhaustive, testable specification across Functional, UX, and UI dimensions.
+            </p>
+            <div class="prompt-box">
+              <div class="prompt-box-header">
+                <span>Human Prompt (Audit ID #5)</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.textContent)">Copy</button>
+              </div>
+<code>three things: commit and push (you dont need a PR); stay here and continue to work; /specify use the spikes and the proposal and mockup to do the full specification, provide in md and html</code>
+            </div>
+            <p style="font-size: 13.5px; color: var(--text-secondary);">
+              <strong>Deliverable:</strong> <code>docs/specs/harness-bench.md</code> and <code>.html</code>. Delivered 52 concrete User Stories (US-1 to US-52) with Gherkin-style acceptance criteria, explicit non-goals (NG1–NG10), domain bounded contexts, and the definition of the 24-task Bill of Materials across 7 lifecycle scenarios.
+            </p>
+          </div>
+        </div>
+
+        <!-- Act 3 -->
+        <div class="timeline-node">
+          <div class="timeline-marker">3</div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="timeline-title">Act III: Architecture, Formal TLA+ Modeling &amp; The Spikes</span>
+              <span class="timeline-date">2026-09-23 20:45 UTC &bull; Skill: /define-architecture</span>
+            </div>
+            <p style="font-size: 14px; margin-bottom: 8px;">
+              The architecture was underpinned by empirical spikes (R1, R2, R11) to measure real tool behaviors, paired with formal TLA+ modeling of the execution lifecycle.
+            </p>
+            <div class="prompt-box">
+              <div class="prompt-box-header">
+                <span>Human Prompt (Audit ID #6)</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.textContent)">Copy</button>
+              </div>
+<code>run the R1, R2 and R11 spikes then /define-architecture</code>
+            </div>
+            <p style="font-size: 13.5px; color: var(--text-secondary);">
+              <strong>Formal Verification:</strong> Authored <code>models/run_lifecycle.tla</code>. Model-checked with TLC over <strong>77,212,448 states</strong> to mathematically prove safety and liveness: no cell launched beside an orphan, strict write-ahead intent barriers, and guaranteed shutdown bounds.
+            </p>
+          </div>
+        </div>
+
+        <!-- Act 4 -->
+        <div class="timeline-node">
+          <div class="timeline-marker">4</div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="timeline-title">Act IV: The Pivotal Operator Intervention (ADR-0013)</span>
+              <span class="timeline-date">2026-09-23 23:02 UTC &bull; Change Log ID #5</span>
+            </div>
+            <p style="font-size: 14px; margin-bottom: 8px;">
+              The defining moment of the project: the LLM proposed an elaborate, heavy Docker-in-Docker container isolation architecture (ADR-0001..0011). The human stepped in and challenged the fundamental assumption.
+            </p>
+            <div class="prompt-box">
+              <div class="prompt-box-header">
+                <span>Human Prompt (Change Log #5 / ADR-0013)</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.textContent)">Copy</button>
+              </div>
+<code>lets step back - why do we actually even need docker and containers ... we dont need extra isolation so what is the driver? / again i think the security and isolation constraints are excessive / if an agent benchmark is operating in its own worktree thats all we are looking for</code>
+            </div>
+            <p style="font-size: 13.5px; color: var(--text-secondary);">
+              <strong>The Breakthrough:</strong> ADR-0013 superseded ADR-0001 for authored tasks. Containers, Docker Desktop, cell proxies, and network bridges were completely scrapped. In their place: native Windows processes isolated in dedicated local git clones (<code>git clone --local</code>) and bounded by <strong>Windows Job Objects</strong> for instant kill confirmation and peak memory tracking.
+            </p>
+          </div>
+        </div>
+
+        <!-- Act 5 -->
+        <div class="timeline-node">
+          <div class="timeline-marker">5</div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="timeline-title">Act V: Slicing the Walking Skeleton</span>
+              <span class="timeline-date">2026-09-23 23:45 UTC &bull; Skill: /design-slice</span>
+            </div>
+            <p style="font-size: 14px; margin-bottom: 8px;">
+              Designing Phase 1: the vertical walking skeleton connecting every layer from CLI invocation to rendered report.
+            </p>
+            <div class="prompt-box">
+              <div class="prompt-box-header">
+                <span>Human Prompt (Audit ID #7)</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.textContent)">Copy</button>
+              </div>
+<code>C:/Program Files/Git/design-slice phase 1, starting with the lifecycle model</code>
+            </div>
+            <p style="font-size: 13.5px; color: var(--text-secondary);">
+              <strong>Deliverable:</strong> <code>docs/design/phase1-walking-skeleton.md</code>. Defined the hash-chained JSON Lines run ledger, the bench-owned ACP adapter driver, and the end-to-end integration proof with real models.
+            </p>
+          </div>
+        </div>
+
+        <!-- Act 6 -->
+        <div class="timeline-node">
+          <div class="timeline-marker">6</div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span class="timeline-title">Act VI: Multi-Harness Coordination &amp; Execution</span>
+              <span class="timeline-date">2026-09-24 &ndash; 2026-09-26 &bull; Skills: /compile, /prepare-for-coordination, /execute-with-coordination</span>
+            </div>
+            <p style="font-size: 14px; margin-bottom: 8px;">
+              Decomposing the remaining 31 backlog items into an optimized parallel execution graph across worktrees and agent seats.
+            </p>
+            <div class="prompt-box">
+              <div class="prompt-box-header">
+                <span>Human Prompt (Audit ID #9 &amp; #27)</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.textContent)">Copy</button>
+              </div>
+<code>/prepare-for-coordination analyze where we are and how we can build a parallel execution plan that allows us to get this done quickly and efficiently but with full rigor - use grok, and agy for sub agent tasks - use the Owner (fable), Coordinator (opus 5.5), Sub.Agent (right model for the right job and delegate to instances of grok and agy) have this ready with a plan so we can run the execute-with-coordination skill next
+
+/compile then /prepare-for-coordination then /execute-with-coordination --launch  # Finish harness-bench end to end: all 31 outstanding to-dos</code>
+            </div>
+            <p style="font-size: 13.5px; color: var(--text-secondary);">
+              <strong>Outcome:</strong> Orchestrated 12 parallel tracks in Phase 1 (T1–T12) and 3 rolling waves (W1, W2, W3). Finished all 31 tasks with red-first TDD verification, cross-vendor reviews, and zero unhandled merge conflicts.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 4: The Great Pivot (ADR-0013) -->
+    <section id="the-great-pivot" class="doc-section">
+      <div class="section-header">
+        <div class="section-tag">Architectural Mastery</div>
+        <h2 class="section-title">The Great Pivot: Slashing Accidental Complexity</h2>
+        <p class="section-desc">
+          How the human operator saved weeks of maintenance by challenging model-driven over-engineering.
+        </p>
+      </div>
+
+      <div class="card">
+        <p style="margin-bottom: 16px;">
+          When asked to design an isolated benchmarking environment, AI agents initially defaulted to standard enterprise "best practice": wrap everything in Linux Docker containers, configure virtual networking, set up egress proxies, and route credentials through sidecar containers.
+        </p>
+        <p style="margin-bottom: 16px;">
+          In Prompt #5, the user intervened: <strong>"lets step back - why do we actually even need docker and containers? Our current coordination model allows us to spawn CLI instances without that. We don't need extra isolation."</strong>
+        </p>
+
+        <div class="diff-grid">
+          <div class="diff-col deprecated">
+            <div class="diff-col-title">
+              <span>ADR-0001: The Container Maze</span>
+              <span class="badge badge-rose">Rejected</span>
+            </div>
+            <ul style="padding-left: 18px; font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+              <li>Docker Desktop &amp; WSL2 mandatory on host.</li>
+              <li>WSL2 memory leaks causing exit 137 OOM kills.</li>
+              <li>Bind-mount filesystem latency degrading Python runs.</li>
+              <li>Docker socket isolation &amp; egress proxy configuration.</li>
+              <li>Windows credential store inaccessible; GitHub Copilot required a dedicated personal access token.</li>
+              <li>Clock skew between host and virtual machine.</li>
+            </ul>
+          </div>
+          <div class="diff-col adopted">
+            <div class="diff-col-title">
+              <span>ADR-0013: Native Cells + Job Objects</span>
+              <span class="badge badge-emerald">Adopted</span>
+            </div>
+            <ul style="padding-left: 18px; font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+              <li><strong>Zero Docker dependencies:</strong> Runs natively on Windows workstation.</li>
+              <li><strong>Windows Job Objects:</strong> Instant process tree shutdown (active procs 2 &rarr; 0), peak memory tracking, and crash safety.</li>
+              <li><strong>Local Git Clones (<code>git clone --local</code>):</strong> Hardlinked objects for instant cloning, but totally decoupled refs and stashes.</li>
+              <li><strong>Native Credential Integration:</strong> Copilot uses Windows Credential Manager; zero tokens needed.</li>
+              <li><strong>Measurement Validity Preserved:</strong> Per-cell config homes, pinned CLI builds, and clean ancestor paths.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout-quote" style="border-left-color: var(--accent-emerald);">
+          <p>
+            <strong>Why not <code>git worktree</code>?</strong> The user originally suggested worktrees, but the architectural review caught a critical measurement leak: worktrees share git refs, configs, and stashes. An agent's commits in a <code>pack=on</code> branch would be visible in <code>git log --all</code> of a <code>pack=off</code> cell! The decision pivoted to <code>git clone --local</code> with the origin remote removed: instant file copying with absolute ref isolation.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 5: Multi-Harness Coordination -->
+    <section id="multi-agent-coordination" class="doc-section">
+      <div class="section-header">
+        <div class="section-tag">Orchestration</div>
+        <h2 class="section-title">The Multi-Harness Governance Model: 4 Seats, Cross-Vendor Review</h2>
+        <p class="section-desc">
+          How heterogeneous LLMs (Anthropic, OpenAI, xAI, Google) worked together without hallucinations or self-grading.
+        </p>
+      </div>
+
+      <div class="card">
+        <p style="margin-bottom: 16px;">
+          Rather than letting a single LLM wander through the codebase, the project established a formal organizational structure governed by <strong>Owner Rulings (R-1 through R-75)</strong>:
+        </p>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Seat</th>
+                <th>Assigned Agent</th>
+                <th>Model</th>
+                <th>Responsibilities &amp; Governance</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Owner Seat</strong></td>
+                <td>Claude Code Persona</td>
+                <td>Fable 5.1</td>
+                <td>Holds final policy authority. Authorizes architectural deviations, resolves ambiguous disputes, issues rulings into <code>rulings.md</code>.</td>
+              </tr>
+              <tr>
+                <td><strong>Leader / Coordinator</strong></td>
+                <td>Claude Code Session</td>
+                <td>Opus 5.5</td>
+                <td>Maintains the coordination graph, dispatches tasks, manages worktrees, conducts pre-merge gates, and verifies red-first commits.</td>
+              </tr>
+              <tr>
+                <td><strong>Complex Worker</strong></td>
+                <td>Codex CLI</td>
+                <td>GPT-6 Sol</td>
+                <td>High-complexity implementation slices (e.g. Copilot profile integration, multi-agent delegation qualification).</td>
+              </tr>
+              <tr>
+                <td><strong>Fast Worker</strong></td>
+                <td>Grok Build / CLI</td>
+                <td>Grok 4.7</td>
+                <td>Tool hardening, process isolation fixes, unit test suites, task authoring (e.g. ProjDevBench C1).</td>
+              </tr>
+              <tr>
+                <td><strong>Specialized Worker</strong></td>
+                <td>Antigravity (Agy)</td>
+                <td>Gemini 3.8 Flash High</td>
+                <td>Fast verification slices, mutation checks, and isolated tool validation.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 style="font-size: 16px; margin: 20px 0 10px; color: var(--accent-cyan);">The Cross-Vendor Adversarial Review Rule</h3>
+        <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px;">
+          A core failure mode in AI coding is <em>sycophancy</em>: an LLM reviewing its own code almost always approves it. To break this, the AI-Forward coordination layer enforced a mandatory cross-vendor review protocol at every join:
+        </p>
+        <ul style="padding-left: 20px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.7;">
+          <li><strong>Codex Author &rarr; Claude Reviewer:</strong> Code authored by Codex (GPT-6 Sol) had its test failures and PRs reviewed by Claude Code (Opus 5.5).</li>
+          <li><strong>Grok Author &rarr; Codex/Claude Reviewer:</strong> Work authored by Grok was reviewed by Codex or Claude.</li>
+          <li><strong>The Test Architect Veto:</strong> A dedicated Test Architect persona (Claude Opus 5.5 / Fable) held an absolute veto. If an author could not prove a test was red before green, or failed to kill seeded mutants, the join was immediately blocked.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Section 6: The Rigor Engine -->
+    <section id="the-rigor-engine" class="doc-section">
+      <div class="section-header">
+        <div class="section-tag">Verification</div>
+        <h2 class="section-title">The Rigor Engine: Red-First TDD, Mutation Testing &amp; Proof Packs</h2>
+        <p class="section-desc">
+          How mathematical proof and automated mutation testing eliminated regression bugs across 1,766 tests.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--text-primary);">1. Non-Negotiable Red-First TDD</h3>
+        <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 14px;">
+          In this repository, an agent is never permitted to commit code and tests together. Every single bug fix and feature followed an immutable commit pair:
+        </p>
+        <ol style="padding-left: 20px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 20px;">
+          <li><strong>RED Commit:</strong> The agent writes the test only. The coordinator checks out the commit in a separate throwaway worktree and verifies that the test fails on <code>main</code> for the exact expected reason.</li>
+          <li><strong>GREEN Commit:</strong> The agent writes the minimal implementation in <code>src/</code>. The test suite passes.</li>
+          <li><strong>Join Re-verification:</strong> The Leader re-executes the red commit and green commit to guarantee that no tests pass vacuously.</li>
+        </ol>
+
+        <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--text-primary);">2. Mutation Testing (Cosmic-Ray &amp; Stryker.NET)</h3>
+        <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 14px;">
+          Code coverage is a vanity metric; a suite can have 100% line coverage while asserting nothing. To enforce real semantic rigor:
+        </p>
+        <ul style="padding-left: 20px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 20px;">
+          <li>Every major track created a mutation file (e.g. <code>tests/mutations/engine.json</code>, <code>copilot.json</code>, <code>driver.json</code>).</li>
+          <li>Cosmic-ray (Python) and Stryker.NET (C#) automatically mutated operators (inverting booleans, altering boundary checks, deleting calls).</li>
+          <li>Reviewers injected 3 custom mutants into each PR. If any mutant survived, the join failed.</li>
+        </ul>
+
+        <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--text-primary);">3. Formal Proof Packs (<code>docs/proof/phase1.md</code> &amp; <code>phase2.md</code>)</h3>
+        <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 14px;">
+          Releases did not end with a generic "looks good to me" PR description. Each milestone produced a formal <strong>Proof Pack</strong>:
+        </p>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Claim</th>
+                <th>Confidence</th>
+                <th>Verified Evidence</th>
+                <th>Residual Risk</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Walking Skeleton E2E</td>
+                <td><span class="badge badge-emerald">Verified</span></td>
+                <td>Real 4-cell E2E run (Claude Code &amp; Codex, pack on/off); 4 outcomes valid; prompt hashes byte-identical.</td>
+                <td>Single repetition per combo (n=1); model non-determinism.</td>
+              </tr>
+              <tr>
+                <td>Red-First Closure</td>
+                <td><span class="badge badge-emerald">Verified</span></td>
+                <td>Every finding across T1–T12 has cited red commit SHA verified failing on clean baseline.</td>
+                <td>None; all SHAs re-executed in throwaway worktrees.</td>
+              </tr>
+              <tr>
+                <td>Codex Skill Leak (N5)</td>
+                <td><span class="badge badge-amber">Flagged</span></td>
+                <td>Codex 0.156 loads host skills from USERPROFILE; disclosed in report header and xfail(strict).</td>
+                <td>Codex-vs-Claude comparisons carry disclosed confound until Codex patch.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 7: Continuous Improvement -->
+    <section id="continuous-improvement" class="doc-section">
+      <div class="section-header">
+        <div class="section-tag">Defect Prevention</div>
+        <h2 class="section-title">The Defect-to-Control Machine: Lessons Turned into Code</h2>
+        <p class="section-desc">
+          "A lesson recorded as prose is a memoir; it only counts once it is a test, a gate, or a hook."
+        </p>
+      </div>
+
+      <div class="card">
+        <p style="margin-bottom: 16px;">
+          Under the AI-Forward doctrine (CI1–CI12), when an error, bad assumption, or flakiness occurred, the team was prohibited from merely patching the one file. They executed: <strong>Class &rarr; Sweep &rarr; Derive &rarr; Prevent</strong>.
+        </p>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Defect Class</th>
+                <th>Real Incident Observed</th>
+                <th>Root Cause</th>
+                <th>Permanent Machine Control Built</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>EDIT-B</strong><br /><small>Heredoc corruption</small></td>
+                <td>Bash heredoc generated Python scripts with corrupted <code>\n</code> and escaped backslashes.</td>
+                <td>Nested string generation in shells drops backslashes silently.</td>
+                <td>Built <code>tools/heredoc_guard.py</code>: A <code>PreToolUse</code> hook in <code>.claude/settings.json</code> that hard-blocks any heredoc fed to Python (exit code 2).</td>
+              </tr>
+              <tr>
+                <td><strong>MOD-A</strong><br /><small>Vacuous model tests</small></td>
+                <td>Seeded TLA+ model bug variants showed "violated", but were failing due to unrelated invariants.</td>
+                <td>TLC model checker stops on first violation, masking invariant independence.</td>
+                <td>Built <code>tools/check_models.py</code>: Automatically tests each seeded variant against its isolated target invariant alone.</td>
+              </tr>
+              <tr>
+                <td><strong>CONC-A</strong><br /><small>Check-then-act race</small></td>
+                <td>Two parallel cells checked if a destination folder existed; both saw no and crashed on Windows <code>os.replace</code>.</td>
+                <td>Non-atomic directory replacement on Windows filesystems.</td>
+                <td>Refactored into <code>workspace._land</code>: Atomic directory creation with transient retry and barrier synchronization.</td>
+              </tr>
+              <tr>
+                <td><strong>TOOL-A</strong><br /><small>Stale bytecode in mutations</small></td>
+                <td>Mutation testing restored source code, but Python's cached <code>.pyc</code> had identical mtime, causing false kills.</td>
+                <td>Python bytecode caching ignores sub-second restores of identical byte lengths.</td>
+                <td>Enforced <code>PYTHONDONTWRITEBYTECODE=1</code> and built byte-exact clean checks in <code>mutate_check.py</code>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 8: Practitioner Playbook -->
+    <section id="practitioner-playbook" class="doc-section">
+      <div class="section-header">
+        <div class="section-tag">Playbook</div>
+        <h2 class="section-title">The 6 Core Tenets: How to Apply This Approach</h2>
+        <p class="section-desc">
+          Actionable engineering principles for teams building complex systems with AI coding agents.
+        </p>
+      </div>
+
+      <div class="tenets-grid">
+        <div class="tenet-card">
+          <div class="tenet-num">01</div>
+          <div class="tenet-title">Ground in Real Artifacts First</div>
+          <div class="tenet-body">
+            Never start an agent session with an empty prompt asking for an application. Provide a visual mockup (HTML), a problem proposal, or an API schema. Concrete artifacts constrain the solution space and prevent hallucinated architectures.
+          </div>
+        </div>
+
+        <div class="tenet-card">
+          <div class="tenet-num">02</div>
+          <div class="tenet-title">Specify Before You Architect</div>
+          <div class="tenet-body">
+            Enforce a 3-layer specification (Functional, UX, UI) with testable acceptance criteria before writing a single line of architecture. If an agent cannot state the exact Gherkin Given/When/Then criteria, it does not know what to build.
+          </div>
+        </div>
+
+        <div class="tenet-card">
+          <div class="tenet-num">03</div>
+          <div class="tenet-title">Spike Before You Contract</div>
+          <div class="tenet-body">
+            Never assume an API, SDK, or tool behaves as documented. Run an empirical spike: write a 20-line scratch script, run it against the real system, observe the exit codes and logs, and label the finding Verified.
+          </div>
+        </div>
+
+        <div class="tenet-card">
+          <div class="tenet-num">04</div>
+          <div class="tenet-title">Challenge Architectural Bloat</div>
+          <div class="tenet-body">
+            LLMs tend to generate over-engineered architectures (e.g. unnecessary microservices, containers, or distributed queues). The human's highest-value role is stepping back and asking: <em>"Why do we actually need this complexity?"</em>
+          </div>
+        </div>
+
+        <div class="tenet-card">
+          <div class="tenet-num">05</div>
+          <div class="tenet-title">Never Let an LLM Grade Itself</div>
+          <div class="tenet-body">
+            Separate authoring from review. Use cross-vendor adversarial reviewers (Codex writes, Claude reviews) and automated mechanical oracles (Red-First tests, mutation testing, formal checkers) with veto power over PR merges.
+          </div>
+        </div>
+
+        <div class="tenet-card">
+          <div class="tenet-num">06</div>
+          <div class="tenet-title">Institutionalize Every Bug</div>
+          <div class="tenet-body">
+            Never fix a defect in isolation. Identify its failure class, sweep the codebase for siblings, and construct an automated hook or gate that fails immediately if the pattern ever recurs. Turn lessons into code, not memoirs.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 9: Interactive Prompt Explorer -->
+    <section id="prompt-explorer" class="doc-section">
+      <div class="section-header">
+        <div class="section-tag">Interactive Archive</div>
+        <h2 class="section-title">Interactive Prompt Explorer</h2>
+        <p class="section-desc">
+          Search and examine the key steering prompts that drove the system from inception to production.
+        </p>
+      </div>
+
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterPrompts('all', this)">All Key Prompts</button>
+        <button class="filter-btn" onclick="filterPrompts('spec', this)">Specification</button>
+        <button class="filter-btn" onclick="filterPrompts('arch', this)">Architecture &amp; Pivots</button>
+        <button class="filter-btn" onclick="filterPrompts('coord', this)">Coordination</button>
+        <button class="filter-btn" onclick="filterPrompts('rigor', this)">Rigor &amp; Graders</button>
+      </div>
+
+      <div id="prompts-list">
+
+        <!-- Card 1 -->
+        <div class="card prompt-card" data-category="spec">
+          <div class="card-header">
+            <span class="card-title">Prompt #1: Grounding &amp; Pack Bootstrap</span>
+            <span class="badge badge-cyan">Skill: addpacktorepo</span>
+          </div>
+          <p style="font-size: 13.5px; color: var(--text-secondary); margin-bottom: 8px;">
+            <strong>Intent:</strong> Grounding the repository in concrete proposal and UI mockup files before creating scaffolding.
+          </p>
+          <div class="prompt-box">
+            <div class="prompt-box-header">
+              <span>Prompt Text</span>
+              <button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.textContent)">Copy</button>
+            </div>
+<code>consider the following files: harness-bench-mockup.html; Cross-Harness Benchmarking Proposal (ai-forward).md. these form the basis for a proposal for a cross-harness benchmarking tool. create a new public repo, x-harness-x-model-bench under c:\projects and in my tim.ian.malloo github account and apply my ai-forward pack to it. ground yourself in the benchmarking proposal and mockup and build out the scaffolding for us to spec and implement the benchmarking workflow and skills in this new repo</code>
+          </div>
+          <p style="font-size: 13px; color: var(--accent-emerald);">
+            &check; <strong>System Action:</strong> Scaffolds repository with AI-Forward Pack v92; maps out 24-task BOM structure; connects proposal context.
+          </p>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="card prompt-card" data-category="spec">
+          <div class="card-header">
+            <span class="card-title">Prompt #5: The Unambiguous Specification Gate</span>
+            <span class="badge badge-purple">Skill: /specify</span>
+          </div>
+          <p style="font-size: 13.5px; color: var(--text-secondary); margin-bottom: 8px;">
+            <strong>Intent:</strong> Mandate a full 3-layer specification before writing code.
+          </p>
+          <div class="prompt-box">
+            <div class="prompt-box-header">
+              <span>Prompt Text</span>
+              <button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.textContent)">Copy</button>
+            </div>
+<code>three things: commit and push (you dont need a PR); stay here and contiue to work; /specify use the spikes and the proposal and mockup to do the full specification, provide in md and html</code>
+          </div>
+          <p style="font-size: 13px; color: var(--accent-emerald);">
+            &check; <strong>System Action:</strong> Generates <code>docs/specs/harness-bench.md</code> and <code>.html</code> with 52 User Stories, Gherkin acceptance criteria, and non-goals.
+          </p>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="card prompt-card" data-category="arch">
+          <div class="card-header">
+            <span class="card-title">Change Log #5: The Container Elimination Ruling (ADR-0013)</span>
+            <span class="badge badge-amber">Architectural Pivot</span>
+          </div>
+          <p style="font-size: 13.5px; color: var(--text-secondary); margin-bottom: 8px;">
+            <strong>Intent:</strong> Question and eliminate unnecessary container and Docker virtualization overhead.
+          </p>
+          <div class="prompt-box">
+            <div class="prompt-box-header">
+              <span>Prompt Text</span>
+              <button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.textContent)">Copy</button>
+            </div>
+<code>lets step back - why do we actually even need docker and containers ... we dont need extra isolation so what is the driver? / again i think the security and isolation constraints are excessive / if an agent benchmark is operating in its own worktree thats all we are looking for</code>
+          </div>
+          <p style="font-size: 13px; color: var(--accent-emerald);">
+            &check; <strong>System Action:</strong> Enacts ADR-0013; drops Docker, proxies, and images; adopts Windows Job Objects + local git clones (<code>git clone --local</code>).
+          </p>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="card prompt-card" data-category="coord">
+          <div class="card-header">
+            <span class="card-title">Prompt #9: Orchestrating the Multi-Harness Team</span>
+            <span class="badge badge-cyan">Skill: /prepare-for-coordination</span>
+          </div>
+          <p style="font-size: 13.5px; color: var(--text-secondary); margin-bottom: 8px;">
+            <strong>Intent:</strong> Setting up the 4-seat governance model and parallel worktree dispatch.
+          </p>
+          <div class="prompt-box">
+            <div class="prompt-box-header">
+              <span>Prompt Text</span>
+              <button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.textContent)">Copy</button>
+            </div>
+<code>/prepare-for-coordination analyze where we are and how we can build a parallel execution plan that allows us to get this done quickly and efficiently but with full rigor - use grok, and agy for sub agent tasks - use the Owner (fable), Coordinator (opus 5.5), Sub.Agent (right model for the right job and delegate to instances of grok and agy) have this ready with a plan so we can run the execute-with-coordination skill next</code>
+          </div>
+          <p style="font-size: 13px; color: var(--accent-emerald);">
+            &check; <strong>System Action:</strong> Produces <code>docs/coordination/coordination-phase1-finish.md</code>; allocates 12 tracks (T1–T12) with explicit file ownership.
+          </p>
+        </div>
+
+        <!-- Card 5 -->
+        <div class="card prompt-card" data-category="coord">
+          <div class="card-header">
+            <span class="card-title">Prompt #27: The End-to-End Coordination Compile &amp; Launch</span>
+            <span class="badge badge-purple">Skills: /compile + /execute-with-coordination</span>
+          </div>
+          <p style="font-size: 13.5px; color: var(--text-secondary); margin-bottom: 8px;">
+            <strong>Intent:</strong> Launching rolling waves across all 31 outstanding implementation to-dos.
+          </p>
+          <div class="prompt-box">
+            <div class="prompt-box-header">
+              <span>Prompt Text</span>
+              <button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.textContent)">Copy</button>
+            </div>
+<code>/compile then /prepare-for-coordination then /execute-with-coordination --launch
+
+# Finish harness-bench end to end: all 31 outstanding to-dos
+Goal: take harness-bench from the finished phase-1 walking skeleton to the full design (phases 2-5 in docs/architecture.md Delivery phasing), closing all 31 outstanding to-dos below. Do it in dependency-ordered waves, across a mixed-harness team, at the best throughput the rigor floors allow.</code>
+          </div>
+          <p style="font-size: 13px; color: var(--accent-emerald);">
+            &check; <strong>System Action:</strong> Executes Waves 1, 2, and 3 across Codex, Grok, Agy, and Claude; completes all to-dos with zero regressions.
+          </p>
+        </div>
+
+        <!-- Card 6 -->
+        <div class="card prompt-card" data-category="rigor">
+          <div class="card-header">
+            <span class="card-title">Ruling R-75: Stryker.NET Mutation Grader Calibration</span>
+            <span class="badge badge-emerald">Owner Ruling</span>
+          </div>
+          <p style="font-size: 13.5px; color: var(--text-secondary); margin-bottom: 8px;">
+            <strong>Intent:</strong> Resolving mutation testing pre-conditions on vendored test suites.
+          </p>
+          <div class="prompt-box">
+            <div class="prompt-box-header">
+              <span>Ruling Summary (R-75)</span>
+              <button class="copy-btn" onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.textContent)">Copy</button>
+            </div>
+<code>The break-on-initial-test-failure flag is removed from Stryker argv. Tests that are red on the unmutated grading copy do not make the metric NA. A red baseline is recorded per cell (not fatal); the initial failing count is parsed from Stryker logs; and a seeded fixture proves that an initially failing test that calls Compute kills nothing.</code>
+          </div>
+          <p style="font-size: 13px; color: var(--accent-emerald);">
+            &check; <strong>System Action:</strong> Verified via <code>test_grade_mutation.py</code>; ensures mutation scoring remains fair even on complex real-world suites.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-muted); display: flex; justify-content: space-between; flex-wrap: gap; align-items: center;">
+      <div>
+        Built with the <strong>AI-Forward Pack</strong> &bull; Case Study for <code>x-harness-x-model-bench</code>
+      </div>
+      <div>
+        <a href="#executive-summary" style="color: var(--accent-cyan); text-decoration: none;">Back to top &uarr;</a>
+      </div>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  function filterPrompts(category, btn) {
+    const buttons = document.querySelectorAll('.filter-btn');
+    buttons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const cards = document.querySelectorAll('.prompt-card');
+    cards.forEach(card => {
+      if (category === 'all' || card.getAttribute('data-category') === category) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  // Smooth scroll highlighting for navigation
+  document.addEventListener('DOMContentLoaded', () => {
+    const links = document.querySelectorAll('.nav-item a');
+    const sections = document.querySelectorAll('section.doc-section');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop - 80;
+        if (pageYOffset >= sectionTop) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      links.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + current) {
+          link.classList.add('active');
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>
