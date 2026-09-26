@@ -362,7 +362,7 @@ Cell ids: D1 cells are from `runs/row15-d1-1`, A1 cells from `runs/a1-capture-1`
   - `35af…` → `no tests written` (exact: its working copy has no census test file, G16).
   - The other 5 D1 cells each added one Projections file and a test file: characterization values, graded **twice** in the slow ring, and the two must be equal.
   - **Seeded:** D1 reference plus a test that never calls `Compute` → `0.0000` exact (every mutant NoCoverage). The seed test sits in a **new** test project, so that no vendored test can cover the reference file (TA re-review 5).
-  - **Seeded (R-75):** D1 reference plus a new test project with one test that always fails and tests that never call `Compute` → exit 0, `initial_failing_tests: 1`, `0.0000` exact, and the failing test's name in no `killedBy`. One failing test out of two hits Stryker 4.16.0's bail `Initial testrun has more than 50% failing tests` (exit 1), so the project holds a second test that never calls `Compute`.
+  - **Seeded (R-75):** D1 reference plus a new test project with one test that calls `Compute` and always fails, and tests that never call `Compute` → exit 0, `initial_failing_tests: 1`, `0.0000` exact, at least one `Survived` and no `Killed` mutant (the failing test covers them and kills none), and the failing test's name in no `killedBy`. One failing test out of two hits Stryker 4.16.0's bail `Initial testrun has more than 50% failing tests` (exit 1), so the project holds a second test that never calls `Compute`.
 
 ### Rigor: grader `rigor`, owned by W3-GR-CODE (D1)
 
