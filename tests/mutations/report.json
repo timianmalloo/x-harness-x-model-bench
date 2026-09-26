@@ -164,15 +164,29 @@
  {
   "name": "the flake band ignored",
   "file": "src/harness_bench/report/__init__.py",
-  "find": "        limit = high + band\n",
-  "replace": "        limit = high\n",
-  "tests": ["tests/test_report_disclosure.py::test_d1_mutation_score_carries_its_initial_failing_tests"]
+  "find": "    if baseline is not None and n > baseline + _FLAKE_BAND:\n",
+  "replace": "    if baseline is not None and n > baseline:\n",
+  "tests": ["tests/test_report_disclosure.py::test_d1_baseline_is_derived_from_this_runs_stryker_cells"]
  },
  {
   "name": "the red tests added branch removed",
   "file": "src/harness_bench/report/__init__.py",
-  "find": "        if n > limit:\n            return \"red tests added\"\n",
+  "find": "    if baseline is not None and n > baseline + _FLAKE_BAND:\n        return \"red tests added\"\n",
   "replace": "",
-  "tests": ["tests/test_report_disclosure.py::test_d1_mutation_score_carries_its_initial_failing_tests"]
+  "tests": ["tests/test_report_disclosure.py::test_d1_baseline_is_derived_from_this_runs_stryker_cells"]
+ },
+ {
+  "name": "the minimum replaced by the maximum",
+  "file": "src/harness_bench/report/__init__.py",
+  "find": "    baseline = min(counts) if derived else None\n",
+  "replace": "    baseline = max(counts) if derived else None\n",
+  "tests": ["tests/test_report_disclosure.py::test_d1_baseline_is_derived_from_this_runs_stryker_cells"]
+ },
+ {
+  "name": "the fewer-than-two guard removed",
+  "file": "src/harness_bench/report/__init__.py",
+  "find": "    if n < 2:  # fewer than two Stryker cells: not derived, never 0 and never a task constant (R-77 item 1)\n        return f\"not derived ({n} {'cell' if n == 1 else 'cells'})\"\n",
+  "replace": "",
+  "tests": ["tests/test_report_disclosure.py::test_d1_baseline_is_derived_from_this_runs_stryker_cells"]
  }
 ]

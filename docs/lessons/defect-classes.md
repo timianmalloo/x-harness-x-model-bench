@@ -25,7 +25,7 @@ summary: >-
 3. Climb the control ladder (CI6) and record the highest rung that actually holds: *make it impossible* > *automated control* > *always-loaded instruction* > *knowledge doc* > *register entry only*.
 4. A control is not a control until it has been **observed failing** on the un-fixed code.
 
-**Status counts:** controlled 7 · partially-controlled 5 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled.
+**Status counts:** controlled 7 · partially-controlled 5 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`.
 **Recurrence since last review:**
 - 4 instances of MOD-A in one session; the control was built after the fourth.
 - 2026-09-23: EDIT-B recurred once after registration, and its hook control was then built.
@@ -431,6 +431,14 @@ summary: >-
 - **Instances:** `2026-09-25`, DR-MUT-1 (R-75). `--break-on-initial-test-failure` came from the c6a spike (`docs/notes/spike-gr-code-stryker.md:93`), a new project `D1.HiddenTests` with no vendored test. D1 edits `AiDe.Core.Tests` in a vendored subset with no `AiDe.sln` and no `docs/`, so 74–75 tests are red before any mutant. With the flag, every real D1 cell was NA `mutation run failed: 1`. On D1 gate cell `c3d40fa1377ba0dc`, Stryker 4.16.0 without the flag logged 75 failing tests, exited 0, and scored 0.8095 twice.
 - **Sweep:** at the join, the other D1 graders that run the vendored tree (`build_and_suite_clean`, `static_analysis_delta`) are checked for the same green-baseline belief.
 - **Control:** every grader spike names the frozen task tree it ran on, or the design's `simplify:` names the task that reaches its ceiling. `mutation_score`'s `simplify:` now names D1 (R-75). `tests/test_grade_mutation.py::test_stryker_config_json_pinned_timeout_and_command_args` asserts the flag is absent. The seeded red baseline is `test_d1_reference_plus_seed_or_no_compute_one_always_failing_scores_zero`.
+- **Status:** `observed`
+
+### ENV-A: a baseline recorded as a constant of the artifact version when it is a property of the environment that produced it
+- **Signature:** a measured floor is written once against the task (or artifact) version and then read back as if every later run shared it. The quantity is constant within a run and moves between runs of the same version, so the stored number is a property of the environment that produced the run it was copied from.
+- **Why it survives:** the first runs agree, so the number looks like a task fact. A later run that lands elsewhere still prints the stored band, and a reader cannot see that the band and the cells name different environments.
+- **Instances:** `2026-09-26`, DR-MUT-2 (R-77). `bench/task-baselines.yaml` recorded D1 `initial_failing_tests` 74–75 from `row15-d1-1`. The same D1 task version and pack pin measured 69 on every Stryker cell of `smoke-1` and 74 on every Stryker cell of `row15-d1-1`. The report header printed `D1 baseline red tests: 74-75` on `smoke-1`.
+- **Sweep:** R-75 c5's sweep of `build_and_suite_clean` and `static_analysis_delta` is re-run for stored-baseline shapes.
+- **Control:** every disclosed baseline names the run it was derived from and fails closed to `not derived`. The report derives the D1 red baseline as the minimum `initial_failing_tests` over that run's own Stryker cells (R-77); fewer than two such cells read `not derived` and no cell is flagged. `tests/test_report_disclosure.py` (synthetic run dirs): `69,69,69,71` flags one cell and prints the spread; `69` alone is `not derived (1 cell)` and not checked; five equal `74`s have no flag and no spread; a root that still holds `bench/task-baselines.yaml` with other numbers does not change the output. The file is deleted and no code reads it.
 - **Status:** `observed`
 
 ---

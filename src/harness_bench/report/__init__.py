@@ -7,7 +7,6 @@ measured reads `NA (<reason>)`, never 0, 0% or $0 (US-27). Numbers carry their u
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
 
@@ -131,39 +130,35 @@ def gate_allowance(root: Path | None) -> str:
     return _format_gate_allowance(findings)
 
 
-@dataclass(frozen=True)
-class _Baseline:
-    low: int
-    high: int
-    flake_band: int
-    note: str
-
-
-def _d1_baseline(root: Path | None) -> _Baseline | None:
-    if root is None:
-        return None
-    band = ((_load_yaml(root / "bench" / "task-baselines.yaml").get("tasks") or {}).get("D1") or {}).get(
-        "initial_failing_tests") or {}
-    try:
-        return _Baseline(int(band["low"]), int(band["high"]), int(band["flake_band"]), str(band["note"]))
-    except (KeyError, TypeError, ValueError):
-        return None
+# R-77 item 3. The run's minimum is the baseline only if some Stryker cell added no red test.
+# assume: at least one Stryker cell in the run added no red test; confirmed by the TRX diff of Conditions 4; if false, the flag under-reports by the smallest added count, never over-reports.
+_FLAKE_BAND = 1  # R-75 c6, unchanged: a cell above the run's minimum by more than this is flagged
 
 
 def has_d1_cell(plan: dict) -> bool:
     return any(c.get("task") == "D1" for c in plan.get("cells", []))
 
 
-def disclosure_rows(root: Path | None, plan: dict) -> list[tuple[str, str]]:
+def d1_baseline_text(run_dir: Path | None, view) -> str:
+    """The header value: min-max over the run's own Stryker cells, or not derived when fewer than two."""
+    counts = _d1_failing_counts(run_dir, view)
+    n = len(counts)
+    if n < 2:  # fewer than two Stryker cells: not derived, never 0 and never a task constant (R-77 item 1)
+        return f"not derived ({n} {'cell' if n == 1 else 'cells'})"
+    low, high = min(counts), max(counts)
+    text = f"{low}-{high} over {n} cells (derived from this run, R-77)"
+    spread = high - low
+    if spread > _FLAKE_BAND:
+        text += f" - baseline unstable within run (spread {spread})"
+    return text
+
+
+def disclosure_rows(root: Path | None, plan: dict, run_dir: Path | None = None, view=None) -> list[tuple[str, str]]:
     """Header rows: the gate allowance always, the D1 red baseline only when the run has a D1 cell."""
     rows = [("Gate allowance", gate_allowance(root))]
-    if not has_d1_cell(plan):
+    if not has_d1_cell(plan) or view is None:
         return rows
-    base = _d1_baseline(root)
-    if base is None:
-        rows.append(("D1 baseline red tests", "not recorded"))
-    else:
-        rows.append(("D1 baseline red tests", f"{base.low}-{base.high} ({base.note})"))
+    rows.append(("D1 baseline red tests", d1_baseline_text(run_dir, view)))
     return rows
 
 
@@ -181,30 +176,50 @@ def initial_failing_tests(run_dir: Path | None, evidence: str | None) -> str:
     return match.group(1).strip()
 
 
-def mutation_score_text(measure: Measure, failing: str, high: int | None, band: int | None) -> str:
-    """The score with its failing-test count beside it. Above high + flake_band the score is not shown."""
+def _d1_failing_counts(run_dir: Path | None, view) -> list[int]:
+    """initial_failing_tests of this run's D1 cells whose mutation_score has a value. NA cells are excluded."""
+    tasks = {c.get("cell_id"): c.get("task") for c in view.plan.get("cells", [])}
+    counts = []
+    for cell in view.cells:
+        measure = cell.scores.get("mutation_score")
+        if tasks.get(cell.cell_id) != "D1" or measure is None or measure.value is None:
+            continue
+        try:
+            counts.append(int(initial_failing_tests(run_dir, cell.evidence.get("mutation_score"))))
+        except (TypeError, ValueError):
+            continue
+    return counts
+
+
+def mutation_score_text(measure: Measure, failing: str, baseline: int | None, derived: bool) -> str:
+    """The score with its failing-test count. Above the run's minimum + flake band the score is not shown.
+
+    With fewer than two Stryker cells the baseline is not derived and no cell is flagged (``not checked``).
+    """
     score = na(measure) if measure.value is None else f"{Decimal(measure.value):.4f}"
     try:
         n = int(failing)
     except (TypeError, ValueError):
-        return f"{score} ({failing})"
-    if high is not None and band is not None:
-        limit = high + band
-        if n > limit:
-            return "red tests added"
+        suffix = "" if derived else " - not checked"
+        return f"{score} ({failing}){suffix}"
+    if not derived:
+        return f"{score} ({n}) - not checked"
+    if baseline is not None and n > baseline + _FLAKE_BAND:
+        return "red tests added"
     return f"{score} ({n})"
 
 
 def d1_mutation_values(root: Path | None, run_dir: Path | None, view) -> dict[str, str]:
-    """cell_id -> the D1 mutation_score as the report shows it."""
-    base = _d1_baseline(root)
+    """cell_id -> the D1 mutation_score as the report shows it. ``root`` is unused: the baseline is the run's."""
+    del root
+    counts = _d1_failing_counts(run_dir, view)
+    derived = len(counts) >= 2
+    baseline = min(counts) if derived else None
     tasks = {c.get("cell_id"): c.get("task") for c in view.plan.get("cells", [])}
-    high = base.high if base else None
-    band = base.flake_band if base else None
     out = {}
     for cell in view.cells:
         if tasks.get(cell.cell_id) != "D1" or "mutation_score" not in cell.scores:
             continue
         failing = initial_failing_tests(run_dir, cell.evidence.get("mutation_score"))
-        out[cell.cell_id] = mutation_score_text(cell.scores["mutation_score"], failing, high, band)
+        out[cell.cell_id] = mutation_score_text(cell.scores["mutation_score"], failing, baseline, derived)
     return out
