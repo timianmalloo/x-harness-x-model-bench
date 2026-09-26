@@ -185,6 +185,13 @@ def test_the_same_tuple_with_a_different_run_cell_or_path_is_a_failure(gate_run,
     assert report.notes == [JUDGE_NOTE]
 
 
+def test_an_allowance_entry_outside_build_output_fails_at_load(gate_run, tmp_path, monkeypatch):
+    entry = _allowance_entry(gate_run[1].name, path="ws/src/Program.cs")
+    monkeypatch.setattr(check_regrade, "ALLOWANCE", _write_allowance(tmp_path, [entry]), raising=False)
+    report = run_gate(gate_run)
+    assert report.failures == ["criterion 7: allowance names a graded path"]
+
+
 def test_an_empty_allowance_passes(gate_run, tmp_path, monkeypatch):
     path = _write_allowance(tmp_path, [])
     monkeypatch.setattr(check_regrade, "ALLOWANCE", path, raising=False)
