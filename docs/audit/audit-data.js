@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-26T19:30:40Z",
+  "generated": "2026-09-26T19:49:46Z",
   "audit": [
     {
       "actor": null,
@@ -34699,6 +34699,37 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3FM8F11MQ3MKCQG1G4AD25P",
+      "shortname": "worker-grok-muta",
+      "datetime": "2026-09-26T19:49:46Z",
+      "session": "worker-grok-muta",
+      "prompt": "python docs/ai-forward-pack/scripts/audit-log.py start --session worker-grok-muta --skill coordination-worker\nGoal: prevent defect class MUT-A: a process stopped between applying and restoring a mutation in tools/mutate_check.py leaves the mutant in the source; make that leftover detectable and undoable, red first.\nDone when: sidecar at <git-dir>/mutate-applied.json (git rev-parse --git-dir) with path, sha256, original bytes base64, removed only after restore; --restore; nothing to restore; refuse exit 2 naming the file and --restore; --check-clean exit 1/0; tests red first on a tmp git repo; docs MUT-A controlled; mutants for sidecar never written and refusal skipped, each killed; exactly-once find stays green; pytest tests/test_mutate_check.py; ruff clean; commit each red and each green. No push.",
+      "summary": "MUT-A is controlled. mutate_check writes <git-dir>/mutate-applied.json before the mutant bytes and removes it only after the original bytes are written back. --restore, refusal (exit 2), and --check-clean are in place. Red ba2ea6f, green 8d8df3f, docs and killed mutants c3e4aa5. uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py: 36 passed. Both mutants killed. ruff check src tests tools: clean. Sidecar absent after the kill run.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "tools/mutate_check.py",
+        "tests/test_mutate_check.py",
+        "tests/mutations/mutate_check.json",
+        "docs/lessons/defect-classes.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-09-26T19:31:00Z",
+      "duration_seconds": 1126.0,
+      "git": {
+        "sha": "c3e4aa527e32c3b9e1505441895238f509537618",
+        "short": "c3e4aa527",
+        "branch": "w3-muta",
+        "pushed": null
+      }
     }
   ],
   "changes": [

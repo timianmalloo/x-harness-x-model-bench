@@ -3,6 +3,8 @@
 A collection error, a timeout, or a failure of some other test is not evidence that the guard is tested.
 """
 
+import base64
+import hashlib
 import importlib.util
 import json
 import os
@@ -293,3 +295,168 @@ def test_every_mutation_find_text_occurs_exactly_once_in_its_target_file():
     stale = [(jf, name, tfile, n) for jf, name, tfile, n in _find_text_occurrences() if n != 1]
     assert not stale, "stale or ambiguous mutation finds (file, mutant, target, occurrences):\n" + "\n".join(
         f"  {jf}: {name!r} in {tfile} occurs {n} time(s)" for jf, name, tfile, n in stale)
+
+
+# --- MUT-A: a kill between apply and restore leaves the mutant in the tree -------------------
+#
+# try/finally does not run when the process tree is killed. KeyboardInterrupt would still run it,
+# so these tests call the apply half and stop, which is the kill. Every repo here is git init'd
+# under tmp_path. Nothing touches the checkout this suite was launched from.
+
+
+def _git_env() -> dict[str, str]:
+    return {k: v for k, v in os.environ.items() if k not in {"GIT_DIR", "GIT_WORK_TREE"}}
+
+
+def _git_init(path: Path) -> Path:
+    path.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["git", "init"], cwd=path, check=True, capture_output=True, env=_git_env())
+    return path
+
+
+def _sidecar_of(repo: Path) -> Path:
+    """The sidecar path the contract names: `<git rev-parse --git-dir>/mutate-applied.json`."""
+    result = subprocess.run(
+        ["git", "rev-parse", "--git-dir"],
+        cwd=repo, check=True, capture_output=True, text=True, encoding="utf-8", env=_git_env(),
+    )
+    git_dir = Path(result.stdout.strip())
+    if not git_dir.is_absolute():
+        git_dir = repo / git_dir
+    return git_dir / "mutate-applied.json"
+
+
+def _plant_sidecar(repo: Path, rel: str, original: bytes) -> Path:
+    path = _sidecar_of(repo)
+    path.write_text(json.dumps({
+        "file": rel,
+        "sha256": hashlib.sha256(original).hexdigest(),
+        "original_b64": base64.b64encode(original).decode("ascii"),
+    }), encoding="utf-8")
+    return path
+
+
+def test_an_interrupted_apply_leaves_a_sidecar_and_restore_returns_the_original_bytes(tmp_path, monkeypatch, capsys):
+    """Sidecar before the mutant bytes, in this worktree's git dir; --restore writes the original back."""
+    env = _git_env()
+    main_repo = _git_init(tmp_path / "main")
+    original = b"X = 1\n"
+    (main_repo / "m.py").write_bytes(original)
+    subprocess.run(["git", "add", "m.py"], cwd=main_repo, check=True, capture_output=True, env=env)
+    subprocess.run(
+        ["git", "-c", "user.email=muta@example.com", "-c", "user.name=muta", "commit", "-m", "init"],
+        cwd=main_repo, check=True, capture_output=True, env=env,
+    )
+    worktree = tmp_path / "wt"
+    subprocess.run(
+        ["git", "worktree", "add", "--detach", str(worktree), "HEAD"],
+        cwd=main_repo, check=True, capture_output=True, env=env,
+    )
+    monkeypatch.setattr(mutate_check, "ROOT", worktree)
+    target = worktree / "m.py"
+    mutated = b"X = 2\n"
+    real_write = Path.write_bytes
+
+    def write_bytes(self, data):
+        if Path(self) == target and data == mutated:
+            side = _sidecar_of(worktree)
+            assert side.is_file()
+            record = json.loads(side.read_text(encoding="utf-8"))
+            assert record["file"] == "m.py"
+            assert record["sha256"] == hashlib.sha256(original).hexdigest()
+            assert base64.b64decode(record["original_b64"]) == original
+            assert not (main_repo / ".git" / "mutate-applied.json").exists()
+        if Path(self) == target and data == original:
+            assert _sidecar_of(worktree).is_file()
+        return real_write(self, data)
+
+    monkeypatch.setattr(Path, "write_bytes", write_bytes)
+    try:
+        mutate_check.apply_mutation("m.py", original, mutated)
+        side = _sidecar_of(worktree)
+        assert target.read_bytes() == mutated
+        assert side.is_file()
+        rc = mutate_check.main(["--restore"])
+        out = capsys.readouterr().out
+        assert rc == 0
+        assert target.read_bytes() == original
+        assert not side.exists()
+        assert "restored" in out
+        assert "m.py" in out
+    finally:
+        subprocess.run(
+            ["git", "worktree", "remove", "--force", str(worktree)],
+            cwd=main_repo, capture_output=True, env=env, check=False,
+        )
+
+
+def test_restore_removes_a_sidecar_when_the_file_already_matches(tmp_path, monkeypatch, capsys):
+    repo = _git_init(tmp_path / "repo")
+    original = b"X = 1\n"
+    (repo / "m.py").write_bytes(original)
+    monkeypatch.setattr(mutate_check, "ROOT", repo)
+    side = _plant_sidecar(repo, "m.py", original)
+    rc = mutate_check.main(["--restore"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert not side.exists()
+    assert (repo / "m.py").read_bytes() == original
+    assert "m.py" in out
+
+
+def test_restore_with_no_sidecar_says_nothing_to_restore(tmp_path, monkeypatch, capsys):
+    repo = _git_init(tmp_path / "repo")
+    monkeypatch.setattr(mutate_check, "ROOT", repo)
+    rc = mutate_check.main(["--restore"])
+    assert rc == 0
+    assert "nothing to restore" in capsys.readouterr().out
+
+
+def test_a_normal_run_leaves_no_sidecar(tmp_path, monkeypatch):
+    repo = _git_init(tmp_path / "repo")
+    (repo / "m.py").write_bytes(b"X = 1\n")
+    (repo / "test_m.py").write_bytes(b"import m\n\n\ndef test_x():\n    assert m.X == 1\n")
+    spec = repo / "spec.json"
+    spec.write_text(json.dumps([{"name": "one", "file": "m.py", "find": "X = 1", "replace": "X = 2",
+                                 "tests": ["test_m.py::test_x"]}]), encoding="utf-8")
+    monkeypatch.setattr(mutate_check, "ROOT", repo)
+    assert mutate_check.main([str(spec)]) == 0
+    assert (repo / "m.py").read_bytes() == b"X = 1\n"
+    assert not _sidecar_of(repo).exists()
+
+
+def test_a_run_refuses_to_start_while_a_sidecar_exists(tmp_path, monkeypatch, capsys):
+    repo = _git_init(tmp_path / "repo")
+    original = b"X = 1\n"
+    mutated = b"X = 2\n"
+    (repo / "m.py").write_bytes(mutated)
+    (repo / "test_m.py").write_bytes(b"import m\n\n\ndef test_x():\n    assert m.X == 1\n")
+    spec = repo / "spec.json"
+    spec.write_text(json.dumps([{"name": "one", "file": "m.py", "find": "X = 1", "replace": "X = 9",
+                                 "tests": ["test_m.py::test_x"]}]), encoding="utf-8")
+    monkeypatch.setattr(mutate_check, "ROOT", repo)
+    side = _plant_sidecar(repo, "m.py", original)
+    rc = mutate_check.main([str(spec)])
+    out = capsys.readouterr().out
+    assert rc == 2
+    assert "m.py" in out
+    assert "--restore" in out
+    assert (repo / "m.py").read_bytes() == mutated
+    assert side.is_file()
+
+
+@pytest.mark.parametrize(("recorded_file", "expected_rc"), [
+    (None, 0),
+    ("m.py", 1),
+])
+def test_check_clean_exits_1_naming_the_file_only_when_a_sidecar_exists(
+        tmp_path, monkeypatch, capsys, recorded_file, expected_rc):
+    repo = _git_init(tmp_path / "repo")
+    monkeypatch.setattr(mutate_check, "ROOT", repo)
+    if recorded_file is not None:
+        _plant_sidecar(repo, recorded_file, b"X = 1\n")
+    rc = mutate_check.main(["--check-clean"])
+    out = capsys.readouterr().out
+    assert rc == expected_rc
+    if recorded_file is not None:
+        assert recorded_file in out

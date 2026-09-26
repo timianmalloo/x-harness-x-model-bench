@@ -10,7 +10,14 @@ No bytecode is ever written from a mutant (TOOL-A): pytest runs with PYTHONDONTW
 mutant restored within its own mtime second stays what `import` loads (the .pyc's mtime and size still match), so later
 runs test the mutant while `git status` is clean.
 
+Before applying a mutation the tool writes `<git-dir>/mutate-applied.json` (git dir from
+`git rev-parse --git-dir`, so each worktree has its own) holding the file path, the sha256 of the
+original bytes, and those bytes in base64. The sidecar is removed only after the original bytes
+are written back. A kill between the two leaves it, and `--restore` puts the file back.
+
 Usage: python tools/mutate_check.py <mutations.json>
+       python tools/mutate_check.py --restore
+       python tools/mutate_check.py --check-clean
 
 TOOL-B, cosmic-ray mode: python tools/mutate_check.py --cosmic-ray <module-tests.json> [<dump.jsonl>|-]
 re-derives each kill in a `cosmic-ray dump <session.sqlite>` transcript (a file, or `-`/omitted for
@@ -25,6 +32,8 @@ directory prefix covering every module under it, as "src/harness_bench/grade" co
 {"src/harness_bench/ledger.py": ["tests/test_ledger.py", "tests/test_verify.py"]}.
 """
 
+import base64
+import hashlib
 import json
 import os
 import re
@@ -164,9 +173,120 @@ def _main_cosmic_ray(argv: list[str]) -> int:
     return 1 if overstated else 0
 
 
+def _git_dir() -> Path | None:
+    """Git dir of the checkout ROOT is in. None when this checkout is not a git worktree."""
+    env = {k: v for k, v in os.environ.items() if k not in {"GIT_DIR", "GIT_WORK_TREE"}}
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--git-dir"],
+            cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
+            check=False, env=env,
+        )
+    except OSError:
+        return None
+    if result.returncode != 0:
+        return None
+    raw = result.stdout.strip()
+    if not raw:
+        return None
+    path = Path(raw)
+    if not path.is_absolute():
+        path = ROOT / path
+    return path
+
+
+def _sidecar_path() -> Path | None:
+    git_dir = _git_dir()
+    if git_dir is None:
+        return None
+    return git_dir / "mutate-applied.json"
+
+
+def _read_sidecar() -> dict | None:
+    path = _sidecar_path()
+    if path is None or not path.is_file():
+        return None
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _write_sidecar(rel: str, original: bytes) -> None:
+    path = _sidecar_path()
+    if path is None:
+        return
+    payload = {
+        "file": rel,
+        "sha256": hashlib.sha256(original).hexdigest(),
+        "original_b64": base64.b64encode(original).decode("ascii"),
+    }
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+
+def _remove_sidecar() -> None:
+    path = _sidecar_path()
+    if path is not None and path.is_file():
+        path.unlink()
+
+
+def apply_mutation(rel: str, original: bytes, mutated: bytes) -> None:
+    """Record the original bytes, then write the mutant. A kill after this returns leaves both."""
+    _write_sidecar(rel, original)
+    (ROOT / rel).write_bytes(mutated)
+
+
+def _restore_original(rel: str, original: bytes) -> None:
+    """Write the original bytes back, and only then remove the sidecar."""
+    (ROOT / rel).write_bytes(original)
+    _remove_sidecar()
+
+
+def _refuse_if_sidecar() -> int | None:
+    record = _read_sidecar()
+    if record is None:
+        return None
+    print(
+        f"refusing to start: {record['file']} still has an applied mutation; "
+        "run python tools/mutate_check.py --restore",
+        flush=True,
+    )
+    return 2
+
+
+def _cmd_restore() -> int:
+    path = _sidecar_path()
+    if path is None or not path.is_file():
+        print("nothing to restore", flush=True)
+        return 0
+    record = json.loads(path.read_text(encoding="utf-8"))
+    original = base64.b64decode(record["original_b64"])
+    target = ROOT / record["file"]
+    current = target.read_bytes() if target.is_file() else None
+    if current != original:
+        target.write_bytes(original)
+        print(f"restored {record['file']}", flush=True)
+    else:
+        print(f"{record['file']} already matched the recorded original", flush=True)
+    path.unlink()
+    return 0
+
+
+def _cmd_check_clean() -> int:
+    record = _read_sidecar()
+    if record is None:
+        return 0
+    print(record["file"], flush=True)
+    return 1
+
+
 def main(argv: list[str]) -> int:
+    if argv and argv[0] == "--restore":
+        return _cmd_restore()
+    if argv and argv[0] == "--check-clean":
+        return _cmd_check_clean()
     if argv and argv[0] == "--cosmic-ray":
         return _main_cosmic_ray(argv[1:])
+    refused = _refuse_if_sidecar()
+    if refused is not None:
+        return refused
     spec = json.loads(Path(argv[0]).read_text(encoding="utf-8"))
     survivors = 0
     for m in spec:
@@ -177,20 +297,24 @@ def main(argv: list[str]) -> int:
             print(f"SKIP     {m['name']}: text not found", flush=True)
             survivors += 1
             continue
+        mutated = text.replace(m["find"], m["replace"], 1).encode("utf-8")
         try:
-            path.write_bytes(text.replace(m["find"], m["replace"], 1).encode("utf-8"))
+            apply_mutation(m["file"], original, mutated)
             try:
-                result = subprocess.run([sys.executable, "-m", "pytest", "-q", "-rf", "-p", "no:cacheprovider", *m["tests"]],
-                                        cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                                        check=False, timeout=m.get("timeout", 180),
-                                        env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"})
+                # --color=no: FORCE_COLOR paints the FAILED line, and the kill regex then sees no result.
+                result = subprocess.run(
+                    [sys.executable, "-m", "pytest", "-q", "--color=no", "-rf", "-p", "no:cacheprovider", *m["tests"]],
+                    cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                    check=False, timeout=m.get("timeout", 180),
+                    env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
+                )
                 outcome = verdict(result.returncode, result.stdout + result.stderr, m["tests"])
             except subprocess.TimeoutExpired:
                 outcome = "timeout"
             print(f"{outcome:<8} {m['name']}", flush=True)
             survivors += 0 if outcome == "killed" else 1
         finally:
-            path.write_bytes(original)
+            _restore_original(m["file"], original)
     print(f"{survivors} not killed" if survivors else "every mutation killed", flush=True)
     return 1 if survivors else 0
 
