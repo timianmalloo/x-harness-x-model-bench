@@ -342,6 +342,52 @@ def test_d1_reference_plus_new_test_project_with_no_compute_scores_zero(tmp_path
     assert out[METRIC].reason is None
 
 
+RED_TEST_PROJ = "tests/D1.RedBaselineTests/D1.RedBaselineTests.csproj"
+RED_TEST_CODE = "tests/D1.RedBaselineTests/RedBaselineTest.cs"
+RED_TEST_CODE_CONTENT = (
+    "namespace D1.RedBaselineTests;\n\n"
+    "public class RedBaselineTest\n"
+    "{\n"
+    "    [Fact]\n"
+    "    public void AlwaysFails()\n"
+    "    {\n"
+    "        Assert.True(false);\n"
+    "    }\n\n"
+    "    [Fact]\n"
+    "    public void DoesNotCallCompute()\n"
+    "    {\n"
+    "        Assert.True(true);\n"
+    "    }\n"
+    "}\n"
+)
+
+
+@pytest.mark.slow
+def test_d1_reference_plus_seed_one_always_failing_test_and_one_no_compute_scores_zero(tmp_path):
+    folder, cell = d1_cell(
+        tmp_path,
+        {
+            PROJECTION: REFERENCE,
+            RED_TEST_PROJ: NEW_TEST_PROJ_CONTENT,
+            RED_TEST_CODE: RED_TEST_CODE_CONTENT,
+        },
+    )
+    before = tree_digest(folder)
+    out_dir = tmp_path / "grading" / "c1" / "mutation"
+    out = mutation.grade_cell(mutation_input(tmp_path, folder, cell, out_dir))
+    assert tree_digest(folder) == before, "grading wrote under the archive"
+    assert out[METRIC].value == Decimal("0.0000")
+    assert out[METRIC].reason is None
+    log = (out_dir / "mutation.log").read_text(encoding="utf-8")
+    assert "\nexit 0\n" in log
+    assert "initial_failing_tests: 1\n" in log
+    report = json.loads((out_dir / "mutation-report.json").read_text(encoding="utf-8"))
+    for file_entry in report.get("files", {}).values():
+        for mutant in file_entry.get("mutants", []):
+            for killer in mutant.get("killedBy") or []:
+                assert "AlwaysFails" not in str(killer)
+
+
 # The 6 row15-d1-1 cells graded through mutation_score (design: phase3-graders.md, section Mutation).
 # 35af195cfe821dca wrote no tests; the other five are characterization values (initial testrun failed
 # under Stryker on the pre-existing test suite; graded twice and the two runs are equal).
