@@ -6,9 +6,9 @@
 - totals: per model, from the profile's authoritative source. `acp_turn` for Claude Code (its record
   misses the final and auxiliary calls, Verified 2026-09-23); `native_record` for Codex (its adapter
   reports only the last call).
-- classify: provider errors to a cause. 408, 429, 5xx and overload are `failed (provider)`
-  (infrastructure); any other 4xx is `failed (model unavailable)` (benchmark: the plan pinned a model
-  the account cannot serve) (probe W3).
+- classify: provider errors to a cause. 401 and 403 are `blocked (auth)`; 408, 429, 5xx and overload
+  are `failed (provider)` (infrastructure); any other status is `failed (model unavailable)` (benchmark:
+  the plan pinned a model the account cannot serve) (probe W3, R-23).
 - base_model_id / context_window_tag (R-32): Claude Code suffixes a served model id with the
   context window it ran (`claude-opus-5-5[1m]`); the API model id carries no such suffix. Model
   identity (`served_models`, per-model `totals`) is the base id; the tag itself is disclosed
@@ -112,11 +112,16 @@ def record_unreadable(ex: Extraction) -> str | None:
 
 def classify(errors: list[ProviderError]) -> Cause | None:
     """One classifier for the native record and the driver's prompt errors (R-23). A status is evidence and decides
-    first: 408, 429 or 5xx is provider, any other status is model_unavailable; only without a status does the error
-    type decide (a provider type is provider)."""
+    first: 401 or 403 is blocked_auth; 408, 429 or 5xx is provider; any other status is model_unavailable. Only
+    without a status does the error type decide (a provider type is provider). The record message stays where the
+    reader stored it."""
     if not errors:
         return None
     for e in errors:
+        if e.status == 401:
+            return Cause.blocked_auth
+        if e.status == 403:
+            return Cause.blocked_auth
         if e.status is not None:
             provider = e.status in (408, 429) or e.status >= 500
         else:

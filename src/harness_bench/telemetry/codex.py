@@ -11,7 +11,8 @@
 - Code-mode MCP calls also appear as `event_msg` `item_completed` / `McpToolCall` items. Their
   server and tool fields form one server-qualified, out-of-profile tool row.
 - An error is `event_msg`/`task_complete` with `error.message`, which embeds a JSON body with `status`
-  and `error.type` (probe W3).
+  and `error.type` (probe W3). When that body has no status field, `unexpected status NNN` in the text
+  is the status. The message stored on the row is the CLI text, unchanged.
 - The first user message that is not tagged system context (`<environment_context>` and the like) is
   the prompt (US-10). A pack-on cell's first user message also carries a harness-injected AGENTS.md
   block shaped `# AGENTS.md instructions for <cwd>\n\n<INSTRUCTIONS>\n...\n</INSTRUCTIONS>`; that block
@@ -34,6 +35,7 @@ from harness_bench.telemetry import (
     as_status,
     as_str,
     rows,
+    unexpected_status,
 )
 
 CALL_TYPES = ("custom_tool_call", "function_call", "local_shell_call")
@@ -64,13 +66,18 @@ def _tool_class(name: str) -> str:
 
 
 def _parse_error(message: str) -> tuple[int | None, str]:
+    """Status from a JSON body. With no status field, `unexpected status NNN` in the text is the status."""
+    status, etype = None, "unknown"
     try:
         body = json.loads(message)
     except (ValueError, RecursionError):
-        return None, "unknown"
-    body = as_dict(body)
-    etype = as_str(as_dict(body.get("error")).get("type")) or as_str(body.get("type")) or "unknown"
-    return as_status(body.get("status")), etype
+        body = None
+    if isinstance(body, dict):
+        etype = as_str(as_dict(body.get("error")).get("type")) or as_str(body.get("type")) or "unknown"
+        status = as_status(body.get("status"))
+    if status is None:
+        status = unexpected_status(message)
+    return status, etype
 
 
 def read(path: Path) -> Extraction:
