@@ -43,7 +43,8 @@ summary: >-
   - `2026-09-23` model v2 — `archive_live` made vacuous by the kill → record fix; `ignore_orphans` vacuous (replaced by `NoLaunchBesideOrphan`).
   - `2026-09-23` model v1/v2 — a guard reading a history variable (`prompts = 0`) hid `relaunch_prompted` twice.
   - `2026-09-23` model v1 — two guards for one invariant masked `exceed_parallelism`.
-- **Sweep:** all 22 variants re-run after the isolation change; every one is rejected by its own target.
+  - `2026-09-25` R-75 mutation seed (Grok worker; caught by the Leader at the join) — the red-baseline seed's always-failing test never called `Compute`, so it covered no mutant and could not show whether Stryker kills with an initially failing test; its name check compared `killedBy` test **ids** with a test **name**, so it could not fail either. Fixed: the failing test calls `Compute`, the seed asserts at least one `Survived` and no `Killed`, and killer ids are mapped to names through `testFiles`. The general shape: a seed must assert its own precondition (here, coverage) or it proves nothing.
+- **Sweep:** all 22 variants re-run after the isolation change; every one is rejected by its own target. 2026-09-25: the other `not in str(...)` absence checks in `tests/` (`test_egress.py:283`, `test_report.py:300`) compare text with text and can fail.
 - **Control:** `tools/check_models.py` checks each safety variant against its target invariant alone (`only_invariant`) and each liveness variant against its target property alone (`only_property`), asserting the target's name in TLC's output. `tests/test_check_models.py::test_every_checked_property_has_a_seeded_variant` (observed failing when a variant was removed, 2026-09-23) and `test_variant_config_checks_only_its_target`. Guards never read history variables (stated in the model design).
 - **Status:** `controlled`
 
