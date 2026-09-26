@@ -354,7 +354,9 @@ RED_TEST_CODE_CONTENT = (
     "    [Fact]\n"
     "    public void AlwaysFails()\n"
     "    {\n"
-    "        Assert.True(false);\n"
+    "        var result = AiDe.Core.Projections.EvidenceCensusProjection.Compute(\n"
+    "            new List<AiDe.Core.Facts.EvidenceAssertion>(), new AiDe.Core.Projections.EvidenceCensusQuery(), \"rev\");\n"
+    "        Assert.Null(result);\n"
     "    }\n\n"
     "    [Fact]\n"
     "    public void DoesNotCallCompute()\n"
@@ -390,10 +392,14 @@ def test_d1_reference_plus_seed_or_no_compute_one_always_failing_scores_zero(tmp
     assert "\nexit 0\n" in log
     assert "initial_failing_tests: 1\n" in log
     report = json.loads((out_dir / "mutation-report.json").read_text(encoding="utf-8"))
-    for file_entry in report.get("files", {}).values():
-        for mutant in file_entry.get("mutants", []):
-            for killer in mutant.get("killedBy") or []:
-                assert "AlwaysFails" not in str(killer)
+    names = {t["id"]: t["name"] for f in report.get("testFiles", {}).values() for t in f.get("tests", [])}
+    mutants = [m for f in report["files"].values() for m in f["mutants"]]
+    # AlwaysFails calls Compute, so it covers the reference's mutants and fails with or without them: a mutant it
+    # covers is Survived when Stryker ignores an initially failing test, and would be Killed if it did not (R-75 c3).
+    assert sum(m["status"] == "Survived" for m in mutants) >= 1, "the failing test covered no mutant: the seed proves nothing"
+    assert sum(m["status"] == "Killed" for m in mutants) == 0
+    killers = {names.get(k, k) for m in mutants for k in m.get("killedBy") or []}
+    assert not any("AlwaysFails" in k for k in killers)
 
 
 # The 6 row15-d1-1 cells graded through mutation_score (design: phase3-graders.md, section Mutation).

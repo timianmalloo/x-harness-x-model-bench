@@ -351,17 +351,18 @@ Cell ids: D1 cells are from `runs/row15-d1-1`, A1 cells from `runs/a1-capture-1`
 
 **`mutation_score`**
 - Kind and class: score · non-additive (scale 4).
-- Definition: pinned Stryker.NET, in a grading copy. Its version is on `grading.started`, and its timeout settings are pinned in the tool config (F8).
+- Definition: pinned Stryker.NET, in a grading copy, invoked without `--break-on-initial-test-failure` (R-75; `docs/notes/spike-gr-code-stryker.md:93`). Tests red on the unmutated grading copy are recorded as `initial_failing_tests` and the score is still read from `mutation-report.json`. Its version is on `grading.started`, and its timeout settings are pinned in the tool config (F8).
   - Mutate the non-test `.cs` files the cell **added or changed** relative to the pre-turn tree.
   - Test with the test projects the cell added or changed.
   - Score = (killed + timeout) ÷ (killed + timeout + survived + no coverage).
-  - `simplify:` pre-existing tests in a changed test project also count. Ceiling: a task that edits vendored tests.
+  - `simplify:` pre-existing tests in a changed test project also count. Ceiling reached by D1 (R-75): the score counts kills by vendored tests in the changed project. Upgrade at `0.5`: attribute kills to tests in the files the cell added or changed, from the report's `killedBy` and test locations, if a comparison reads `mutation_score` as the cell's own test quality. A cell whose own new tests are all red is scored as is in `0.4`, disclosed under this `simplify:`. The NA `cell tests fail before mutation` is not built: detecting it needs the failing test names, which 4.16.0 prints only under the removed flag, so the detector would be a second Stryker run per cell. Its evidence in `0.4` is the per-cell `initial_failing_tests` count beside the score, and the D1 baseline count recorded once per task. Upgrade trigger: any graded cell whose `initial_failing_tests` exceeds the task baseline by more than the flake band (1), or the `0.5` attribution above, whichever comes first; then the NA is defined and red-first on that cell.
 - Rung: tests.
 - NA reasons: `no tests written` (US-29 c2); `no non-test source changed`; `no mutants generated`; `mutation tool not available`; `mutation run failed: <exit code>`.
 - Fixtures:
   - `35af…` → `no tests written` (exact: its working copy has no census test file, G16).
   - The other 5 D1 cells each added one Projections file and a test file: characterization values, graded **twice** in the slow ring, and the two must be equal.
   - **Seeded:** D1 reference plus a test that never calls `Compute` → `0.0000` exact (every mutant NoCoverage). The seed test sits in a **new** test project, so that no vendored test can cover the reference file (TA re-review 5).
+  - **Seeded (R-75):** D1 reference plus a new test project with one test that always fails and tests that never call `Compute` → exit 0, `initial_failing_tests: 1`, `0.0000` exact, and the failing test's name in no `killedBy`. One failing test out of two hits Stryker 4.16.0's bail `Initial testrun has more than 50% failing tests` (exit 1), so the project holds a second test that never calls `Compute`.
 
 ### Rigor: grader `rigor`, owned by W3-GR-CODE (D1)
 
