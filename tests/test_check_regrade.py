@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import yaml
 from archived_runs import ROOT, make_root
 
 from harness_bench import config, views
@@ -126,3 +127,41 @@ def test_the_committed_expected_counts_name_both_gate_runs_and_every_applicable_
         metrics = {m for ms in runner.applicable(catalog, graders).values() for m in ms}
         assert set(runs[run]["counts"]) == metrics, run
         assert all(n is None or 0 <= n <= cells for n in runs[run]["counts"].values()), run
+
+
+# --- R-76: criterion 7's pinned allowance of exact (run, code, cell, path) verify errors ---------------------------
+
+_CELL = "35af195cfe821dca"
+_PATH = "ws/.git/index"
+_CODE = "HB-LED-005"
+
+
+def _finding_message(cell: str, path: str) -> str:
+    return f"{cell}: archived file {path} does not match its archive_files row"
+
+
+def _allowance_entry(run: str, cell: str = _CELL, path: str = _PATH, code: str = _CODE) -> dict:
+    return {"run": run, "code": code, "cell": cell, "path": path, "ruling": "R-76", "class": "GATE-RUN-A",
+            "recorded": "2026-09-25",
+            "register": "docs/lessons/defect-classes.md GATE-RUN-A: .git/index of cells 35af… and c3d4… (2026-09-25)"}
+
+
+def _write_allowance(directory: Path, entries: list[dict]) -> Path:
+    path = directory / "regrade-allowed-findings.yaml"
+    path.write_text(yaml.safe_dump({"findings": entries}, sort_keys=False), encoding="utf-8")
+    return path
+
+
+def _verify_returns(monkeypatch, findings):
+    monkeypatch.setattr(views, "verify", lambda _run_dir: findings)
+
+
+def test_an_allowed_verify_tuple_is_a_note_not_a_failure(gate_run, tmp_path, monkeypatch):
+    run = gate_run[1].name
+    message = _finding_message(_CELL, _PATH)
+    monkeypatch.setattr(check_regrade, "ALLOWANCE", _write_allowance(tmp_path, [_allowance_entry(run)]), raising=False)
+    _verify_returns(monkeypatch, [views.Finding(_CODE, "error", message)])
+    report = run_gate(gate_run)
+    note = f"verify error allowed (R-76): {_CODE} {message}"
+    assert report.failures == []
+    assert report.notes == [JUDGE_NOTE, note]
