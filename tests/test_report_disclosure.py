@@ -169,6 +169,7 @@ def _derived(low: int, high: int, n: int) -> str:
 
 @pytest.mark.parametrize(("counts", "header", "flags"), [
     ([69, 69, 69, 71], _derived(69, 71, 4), {3: "red tests added"}),
+    ([69, 70, 71], _derived(69, 71, 3), {1: "0.8095 (70)", 2: "red tests added"}),
     ([69], "not derived (1 cell)", {0: "0.8095 (69) - not checked"}),
     ([74, 74, 74, 74, 74], _derived(74, 74, 5), {}),
 ])
