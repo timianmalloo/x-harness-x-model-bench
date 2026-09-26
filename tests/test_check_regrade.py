@@ -165,3 +165,12 @@ def test_an_allowed_verify_tuple_is_a_note_not_a_failure(gate_run, tmp_path, mon
     note = f"verify error allowed (R-76): {_CODE} {message}"
     assert report.failures == []
     assert report.notes == [JUDGE_NOTE, note]
+
+
+def test_an_empty_allowance_passes(gate_run, tmp_path, monkeypatch):
+    path = _write_allowance(tmp_path, [])
+    monkeypatch.setattr(check_regrade, "ALLOWANCE", path, raising=False)
+    loaded = getattr(check_regrade, "load_allowance", lambda _p: None)(path)
+    assert loaded == []
+    report = run_gate(gate_run)
+    assert (report.failures, report.notes) == ([], [JUDGE_NOTE])
