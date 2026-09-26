@@ -47,6 +47,21 @@ def test_t_gw_02_data_cannot_close_its_fence():
     assert request.render("P.", "1. One.\n", 1, ARTIFACTS, ()).escaped == ()
 
 
+# The answer instruction. Measured (smoke-1, 2026-09-25): judges added "sum" or "total" beside "items".
+EXACTLY_ONE_KEY = (
+    'The answer is one JSON object with exactly one key, "items", and no other key '
+    "(no total, sum or score summary)."
+)
+
+
+def test_the_rendered_request_says_the_answer_is_one_object_with_exactly_the_items_key():
+    """The rendered request states the verdict-set shape: one object, the key "items", and no other key."""
+    rendered = request.render("Preamble.", "1. Item one.\n2. Item two.\n", 2, ARTIFACTS, ())
+    assert EXACTLY_ONE_KEY in rendered.text
+    # section 7.2 order unchanged: the sentence stays in the answer instruction, after the artifact
+    assert rendered.text.index("<<<END DATA ") < rendered.text.index(EXACTLY_ONE_KEY)
+
+
 def test_t_gw_06_each_file_is_utf8_and_at_most_65536_bytes():
     assert request.BOUND == 65_536
     assert request.bound_problem((("a.md", b"a" * 65_536), ("b.py", b""))) is None
