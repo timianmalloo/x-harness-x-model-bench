@@ -326,6 +326,20 @@ summary: >-
 - **Control:** at every hand-back, the Leader runs `coord mail read` and `coord request list` before it reviews the result, and rules on or closes each open request. For now this is a Leader procedure. The upgrade trigger is a second instance: the join gate would then refuse while a request from that worker is open.
 - **Status:** `observed` (Leader procedure)
 
+### COORD-C: a keeper loop that keeps running after the duty it keeps has lapsed
+- **Signature:** a background loop renews a lease, a lock or a heartbeat and prints the result of each attempt. The lease lapses (sleep, standby, a missed tick) and every later attempt prints a refusal, but the loop keeps running, so nothing ends and no one is told. The first consumer to need the lease fails later, for a reason far from its cause.
+- **Instances:** `2026-09-25/26`: the Leader's `coord leader renew` loop ran through about 10.9 h of Modern Standby. The designation expired (`expired 42766 s ago`), and the loop printed `a lapsed designation is not renewed` on each tick for hours. The next dispatch (`w3-r76`) was blocked `RUN-LEADER` before the worker started. The runner's leader check is what caught it.
+- **Sweep:** the Leader's other long-lived background loops this session are wait-until loops that exit on their condition; none renews anything.
+- **Control:** the renew loop exits non-zero on the first refusal (`lapsed|expired|error` in its output), so the harness notifies the Leader at once; the runner's `RUN-LEADER` check stays the backstop. For now this is a Leader procedure (the loop is a scratch command). Upgrade trigger: a second instance, then `coord leader renew --watch` exits non-zero on a lapse by design.
+- **Status:** `observed` (Leader procedure)
+
+### MUT-A: a worker stopped at its deadline in the middle of a mutation check leaves a mutant applied in the source
+- **Signature:** `tools/mutate_check.py` applies one mutation to a source file, runs the named tests, and restores the file. A worker killed at its deadline between apply and restore leaves the mutant in the working tree. The worker's uncommitted diff then mixes real changes with the mutant. A Leader who commits the leftovers without reading them commits a planted bug, and the tests that would kill it are the same ones that just ran.
+- **Instances:** `2026-09-26` R-75 slice (Grok): `mutation.py` held the mutant `"not recorded"` → `"0"`. `2026-09-26` report-disclosure slice (Grok): `html.py`'s leaderboard held a mutant that dropped `flag_if_codex`. The Leader found both by reading the diff (the first) and by a failing test (the second), before commit.
+- **Sweep:** every Leader-committed leftover this session was read before commit: R-75, R-76 and report-disclosure. The two above are the only instances.
+- **Control:** at a deadline hand-back the Leader reads every uncommitted source hunk, and runs the touched test files before committing. For now this is a Leader procedure. The prevention is queued as a slice: `mutate_check` writes a sidecar record of the applied mutation before applying and removes it after restoring; `mutate_check --restore` undoes a leftover; the join refuses while a sidecar exists.
+- **Status:** `observed` (Leader procedure; control queued)
+
 ### TEST-A: a whole-output substring check that later output satisfies
 - **Signature:** a test asserts that a common phrase appears anywhere in a rendered page or CLI output (`"not recorded" in doc`), and it means one specific element. A later feature prints the same phrase elsewhere. The element can then break, and the test still passes.
 - **Why it survives:** the test was correct when it was written. The feature that makes it vacuous changes another part of the page and touches no test. Only a mutant of the original element shows the test has stopped proving anything.
