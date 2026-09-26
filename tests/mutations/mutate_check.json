@@ -1,0 +1,16 @@
+[
+  {
+    "name": "the sidecar is never written",
+    "file": "tools/mutate_check.py",
+    "find": "    path.write_text(json.dumps(payload), encoding=\"utf-8\")\n",
+    "replace": "    return\n",
+    "tests": ["tests/test_mutate_check.py::test_an_interrupted_apply_leaves_a_sidecar_and_restore_returns_the_original_bytes"]
+  },
+  {
+    "name": "the refusal is skipped",
+    "file": "tools/mutate_check.py",
+    "find": "    refused = _refuse_if_sidecar()\n",
+    "replace": "    refused = None\n",
+    "tests": ["tests/test_mutate_check.py::test_a_run_refuses_to_start_while_a_sidecar_exists"]
+  }
+]
