@@ -93,6 +93,8 @@ The run command, cwd = the copy, is:
 dotnet exec %USERPROFILE%\.nuget\packages\dotnet-stryker\4.16.0\tools\net8.0\any\Stryker.CLI.dll --skip-version-check --break-on-initial-test-failure --config-file stryker-config.json
 ```
 
+This fixture was a new project `D1.HiddenTests` with no vendored test, so it did not cover a red vendored baseline (R-75).
+
 `--skip-version-check` is set so the CLI does not look for a newer Stryker online.
 
 `dotnet --version` with cwd = the copy exited 0 and printed `10.0.303`.
