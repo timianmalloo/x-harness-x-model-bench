@@ -960,6 +960,38 @@ window.DOCS_INDEX = {
       "sourceSha256": "a103726bb5135533cce4b4d88bf681913174e64ef089bf55dc558ea0f8c15434"
     },
     {
+      "id": "note-d1-vendored-red-baseline",
+      "path": "docs/notes/d1-vendored-red-baseline.md",
+      "title": "D1 vendored red baseline - dotnet test fails the same 72 layout-bound tests on both runs' cells; the 69/74/75 Stryker counts are the Stryker session's",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-10",
+      "reviewSuggested": [],
+      "summary": "R-77 condition 4. The vendored AiDe.Core.Tests suite, run with dotnet test in grading-copy-shaped copies of one row15-d1-1 cell and one smoke-1 cell, twice each, fails the same 72 tests in all four runs, every one of them a missing-repository-layout failure. The cells add no red test. The run-to-run difference in Stryker's initial_failing_tests (69, 74, 75) is not reproduced by dotnet test, so it belongs to Stryker's own test session.",
+      "tags": [
+        "grading",
+        "dotnet",
+        "stryker",
+        "mutation",
+        "r-75",
+        "r-77"
+      ],
+      "links": [
+        {
+          "to": "design-phase3-graders",
+          "rel": "relates-to"
+        },
+        {
+          "to": "note-spike-gr-code-stryker",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "a20275fb1cb9f401401fef6e679e6b5299b834f4e3fd0ae4ca0a21dbe90f7fbf"
+    },
+    {
       "id": "note-spike-gr-code-stryker",
       "path": "docs/notes/spike-gr-code-stryker.md",
       "title": "Spike GR-CODE c6a - cached Stryker.NET 4.16.0 runs offline on D1; --version does not print the pin",
@@ -1191,7 +1223,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "1f1525ac8419fc25e47fc8932592d0a2c8981a92190e880a6ed6c664abe12598"
+      "sourceSha256": "19dbffa9a7249886033a25b1299779d63d205e4c3ef4ae4d2d0e82301609baef"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -1670,7 +1702,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "781b074191484c347832686c2e39e20217e1f7ebd46e7287c73860fc9e267b18"
+      "sourceSha256": "544b1cad5a82ff64b5e1ef998fd28b0cf116461e07d0f676d36c2bba35c08875"
     },
     {
       "id": "design-run-lifecycle-model",
@@ -1824,7 +1856,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5fcdd4bd2c07ba0d3eba6c4b417882b0eb1c43174cf6580acaea1e8c75d062ef"
+      "sourceSha256": "9ec35059cd4a37c8b17665e70ed1b0d85e3eeca2a772a968c0a3e99b0e17e8b2"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -2837,5 +2869,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "3b484b0beae0c9e6d24f2d0af5f9c1817eda33267c3a71d44b05bcf035d5e392"
+  "graphSha256": "a57a28dbeb3307e21caef72fba45242ae63b49d9e49a20ac90dc978f9ef9a574"
 };
