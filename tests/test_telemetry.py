@@ -126,6 +126,21 @@ def test_codex_task_complete_error_is_a_provider_error_row():  # probe W3
     assert ex.model_calls == []
 
 
+def _codex_task_complete(tmp_path, message: str):
+    """A placeholder rollout: task_complete carries only error text, no status field. The key is the masked `sk-****`."""
+    record = tmp_path / "rollout.jsonl"
+    row = {"type": "event_msg", "payload": {"type": "task_complete", "error": {"message": message}}}
+    record.write_text(json.dumps(row) + "\n", encoding="utf-8")
+    return codex.read(record)
+
+
+def test_codex_unexpected_status_401_is_blocked_auth(tmp_path):  # R-23: 401 in the CLI text is an auth block
+    message = "unexpected status 401 Unauthorized: Incorrect API key provided: sk-****"
+    ex = _codex_task_complete(tmp_path, message)
+    assert ex.errors[0].message == message  # stored as the CLI printed it; the key stays masked
+    assert (ex.errors[0].status, normalize.classify(ex.errors)) == (401, Cause.blocked_auth)
+
+
 # classification (design: failure taxonomy; W3) -------------------------------------------------
 
 @pytest.mark.parametrize("status, etype, cause", [
