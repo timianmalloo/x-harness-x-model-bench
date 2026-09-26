@@ -325,7 +325,7 @@ NEW_TEST_CODE_CONTENT = (
 
 
 @pytest.mark.slow
-def test_d1_reference_plus_new_test_project_with_no_compute_scores_zero(tmp_path):
+def test_d1_reference_plus_new_test_project_seed_or_no_compute_scores_zero(tmp_path):
     folder, cell = d1_cell(
         tmp_path,
         {
@@ -344,6 +344,9 @@ def test_d1_reference_plus_new_test_project_with_no_compute_scores_zero(tmp_path
 
 RED_TEST_PROJ = "tests/D1.RedBaselineTests/D1.RedBaselineTests.csproj"
 RED_TEST_CODE = "tests/D1.RedBaselineTests/RedBaselineTest.cs"
+# Stryker 4.16.0 exits 1 when at least half the initial tests fail
+# ("Initial testrun has more than 50% failing tests"). One failing test out of two hits that bail,
+# so the project also holds a second test that never calls Compute. The red count stays 1.
 RED_TEST_CODE_CONTENT = (
     "namespace D1.RedBaselineTests;\n\n"
     "public class RedBaselineTest\n"
@@ -357,13 +360,18 @@ RED_TEST_CODE_CONTENT = (
     "    public void DoesNotCallCompute()\n"
     "    {\n"
     "        Assert.True(true);\n"
+    "    }\n\n"
+    "    [Fact]\n"
+    "    public void AlsoDoesNotCallCompute()\n"
+    "    {\n"
+    "        Assert.True(true);\n"
     "    }\n"
     "}\n"
 )
 
 
 @pytest.mark.slow
-def test_d1_reference_plus_seed_one_always_failing_test_and_one_no_compute_scores_zero(tmp_path):
+def test_d1_reference_plus_seed_or_no_compute_one_always_failing_scores_zero(tmp_path):
     folder, cell = d1_cell(
         tmp_path,
         {
