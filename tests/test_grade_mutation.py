@@ -403,15 +403,15 @@ def test_d1_reference_plus_seed_or_no_compute_one_always_failing_scores_zero(tmp
 
 
 # The 6 row15-d1-1 cells graded through mutation_score (design: phase3-graders.md, section Mutation).
-# 35af195cfe821dca wrote no tests; the other five are characterization values (initial testrun failed
-# under Stryker on the pre-existing test suite; graded twice and the two runs are equal).
+# 35af195cfe821dca wrote no tests; the other five are characterization values under R-75 (Stryker runs over the red
+# vendored baseline, initial_failing_tests 74 on each cell and run; graded twice by the Leader 2026-09-25, equal).
 GATE_D1_MUTATION: dict[str, tuple[str | None, str | None]] = {
-    "2535962f830d7718": (None, "mutation run failed: 1"),
+    "2535962f830d7718": ("0.9286", None),
     "35af195cfe821dca": (None, "no tests written"),
-    "3ff04431d3b5ac27": (None, "mutation run failed: 1"),
-    "4a6250261f80ded4": (None, "mutation run failed: 1"),
-    "c3d40fa1377ba0dc": (None, "mutation run failed: 1"),
-    "caa8ca38b1a929a8": (None, "mutation run failed: 1"),
+    "3ff04431d3b5ac27": ("0.9286", None),
+    "4a6250261f80ded4": ("0.9286", None),
+    "c3d40fa1377ba0dc": ("0.8095", None),
+    "caa8ca38b1a929a8": ("0.9286", None),
 }
 
 
