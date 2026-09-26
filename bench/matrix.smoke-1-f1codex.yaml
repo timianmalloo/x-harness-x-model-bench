@@ -1,0 +1,11 @@
+# The F1-only Codex re-run that joins smoke-1 (R-74 c5's shape: a later F1-only run on the same pins joins the smoke
+# result; the operator's go-ahead 2026-09-26). smoke-1's two F1 codex-sol cells ended invalid: a 401 mid-run, recorded
+# HB-CELL-116 before the auth classifier fix (R-23 amendment, aab55d7..aa0430a). Same pins as smoke-1: gpt-6-sol,
+# pack revision 95 through --pack-source.
+schema: bench-matrix/1
+run_id: smoke-1-f1codex
+bom: { file: bench/bom.yaml, subset: [F1] }
+repetitions: 1
+packs: ["on", "off"]
+combos:
+  - { id: codex-sol, harness: codex, model: gpt-6-sol }

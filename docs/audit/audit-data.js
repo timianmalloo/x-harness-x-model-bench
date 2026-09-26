@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-26T20:46:03Z",
+  "generated": "2026-09-26T20:56:55Z",
   "audit": [
     {
       "actor": null,
@@ -35138,6 +35138,347 @@ window.AUDIT_DATA = {
             "sha256": null,
             "status": "unresolved",
             "token": "src/harness_bench/report/{cli_table,html}.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3FR3B6ZV8622CWGZHA5P52P",
+      "shortname": "Goal: find which vendored D1 tests fail on an unmutated tree and whether…",
+      "datetime": "2026-09-26T20:56:52Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: find which vendored D1 tests fail on an unmutated tree and whether that set moves between runs (ruling R-77 condition 4; docs/notes/rulings.md, read R-75 and R-77 first); write the finding to docs/notes/, measurement only.\nMeasured (Leader, 2026-09-26): Stryker.NET reported initial_failing_tests 69 on every Stryker cell of runs/smoke-1 and 74 on every one of runs/row15-d1-1 (one earlier diagnostic run 75); same D1 task version hash and pack pin. R-77 item 3 carries: \"assume: at least one Stryker cell in the run added no red test; confirmed by the TRX diff of Conditions 4\".\nDone when: For two archived D1 cells, one from each run (runs/row15-d1-1 cell c3d40fa1377ba0dc and one runs/smoke-1 D1 cell whose mutation_score has a value; read plan.json and events to find it and its archive attempt), the vendored AiDe.Core.Tests suite is run with `dotnet test tests/AiDe.Core.Tests/AiDe.Core.Tests.csproj --logger \"trx;LogFileName=<name>.trx\" -v:q` in a COPY of the cell's ws/ made under the worker's own tree or %TEMP% (copy with the .git, bin, obj, TestResults folders excluded; never build, restore or run git under runs/), each cell twice (4 runs), with NUGET_PACKAGES set to %USERPROFILE%\\.nuget\\packages; the failing test names of each run are extracted from the TRX (outcome Failed) and diffed; docs/notes/d1-vendored-red-baseline.md (with the frontmatter shape of the other docs/notes files) records: the command, each run's failed count and duration, the names that fail in every run, the names that differ between runs or cells with their failure message's first line, and a one-paragraph conclusion: whether the difference is environment/timing (same names flap) or cell content (a cell's own change breaks tests), which confirms or refutes R-77's assume: either way (Verified only for what was observed; anything else labelled Inferred); The helper that parses TRX is a small script under the worker's scratch area or tools/ only if it earns a test; no product code changes; uv run ruff check src tests tools is clean; Commit the note.\nNot in scope: changing any grader, the report, or the task; any file under runs/ written; a third pair of runs (R-77 caps it); any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit the note as soon as it is written.\n\nGrounding: docs/notes/rulings.md R-75, R-77; docs/notes/spike-gr-code-stryker.md (the dotnet environment that works: NUGET_PACKAGES, the grading-copy shape); src/harness_bench/grade/_changes.py (BUILD_OUTPUT, grading_copy); runs/*/plan.json and events (read only). Use python, not python3 (Windows). A full vendored-suite run takes about 2 minutes.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3FR3DW91EXSABK49YJXEXF6",
+      "shortname": "compile-Goal: find which vendored D1 tests fail on an unmutated tree and whether…",
+      "datetime": "2026-09-26T20:56:55Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: find which vendored D1 tests fail on an unmutated tree and whether that set moves between runs (ruling R-77 condition 4; docs/notes/rulings.md, read R-75 and R-77 first); write the finding to docs/notes/, measurement only. Measured (Leader, 2026-09-26): Stryker.NET reported initial_failing_tests 69 on every Stryker cell of runs/smoke-1 and 74 on every one of runs/row15-d1-1 (one earlier diagnostic run 75); same D1 task version hash and pack pin. R-77 item 3 carries: \"assume: at least one Stryker cell in the run added no red test; confirmed by the TRX diff of Conditions 4\".\nDone when: For two archived D1 cells, one from each run (runs/row15-d1-1 cell c3d40fa1377ba0dc and one runs/smoke-1 D1 cell whose mutation_score has a value; read plan.json and events to find it and its archive attempt), the vendored AiDe.Core.Tests suite is run with `dotnet test tests/AiDe.Core.Tests/AiDe.Core.Tests.csproj --logger \"trx; LogFileName=<name>.trx\" -v:q` in a COPY of the cell's ws/ made under the worker's own tree or %TEMP% (copy with the .git, bin, obj, TestResults folders excluded; never build, restore or run git under runs/), each cell twice (4 runs), with NUGET_PACKAGES set to %USERPROFILE%\\.nuget\\packages; the failing test names of each run are extracted from the TRX (outcome Failed) and diffed; docs/notes/d1-vendored-red-baseline.md (with the frontmatter shape of the other docs/notes files) records: the command, each run's failed count and duration, the names that fail in every run, the names that differ between runs or cells with their failure message's first line, and a one-paragraph conclusion: whether the difference is environment/timing (same names flap) or cell content (a cell's own change breaks tests), which confirms or refutes R-77's assume: either way (Verified only for what was observed; anything else labelled Inferred); The helper that parses TRX is a small script under the worker's scratch area or tools/ only if it earns a test; no product code changes; uv run ruff check src tests tools is clean; Commit the note.\nNot in scope: changing any grader, the report, or the task; any file under runs/ written; a third pair of runs (R-77 caps it); any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit the note as soon as it is written.\nGrounding: docs/notes/rulings.md R-75, R-77; docs/notes/spike-gr-code-stryker.md (the dotnet environment that works: NUGET_PACKAGES, the grading-copy shape); src/harness_bench/grade/_changes.py (BUILD_OUTPUT, grading_copy); runs/*/plan.json and events (read only). Use python, not python3 (Windows). A full vendored-suite run takes about 2 minutes.\nTrace\n| clause | trace |\n|---|---|\n| done_when: For two archived D1 cells, one from each run (runs/row15-d1-1 cell c3d40fa1377ba0dc and one runs/smoke-1 D1 cell whose mutation_score has a value | phrase: For two archived D1 cells, one from each run (runs/row15-d1-1 cell c3d40fa1377ba0dc and one runs/smoke-1 D1 cell whose mutation_score has a value |\n| done_when: read plan.json and events to find it and its archive attempt), the vendored AiDe.Core.Tests suite is run with `dotnet test tests/AiDe.Core.Tests/AiDe.Core.Tests.csproj --logger \"trx | phrase: read plan.json and events to find it and its archive attempt), the vendored AiDe.Core.Tests suite is run with `dotnet test tests/AiDe.Core.Tests/AiDe.Core.Tests.csproj --logger \"trx |\n| done_when: LogFileName=<name>.trx\" -v:q` in a COPY of the cell's ws/ made under the worker's own tree or %TEMP% (copy with the .git, bin, obj, TestResults folders excluded | phrase: LogFileName=<name>.trx\" -v:q` in a COPY of the cell's ws/ made under the worker's own tree or %TEMP% (copy with the .git, bin, obj, TestResults folders excluded |\n| done_when: never build, restore or run git under runs/), each cell twice (4 runs), with NUGET_PACKAGES set to %USERPROFILE%\\.nuget\\packages | phrase: never build, restore or run git under runs/), each cell twice (4 runs), with NUGET_PACKAGES set to %USERPROFILE%\\.nuget\\packages |\n| done_when: the failing test names of each run are extracted from the TRX (outcome Failed) and diffed | phrase: the failing test names of each run are extracted from the TRX (outcome Failed) and diffed |\n| done_when: docs/notes/d1-vendored-red-baseline.md (with the frontmatter shape of the other docs/notes files) records: the command, each run's failed count and duration, the names that fail in every run, the names that differ between runs or cells with their failure message's first line, and a one-paragraph conclusion: whether the difference is environment/timing (same names flap) or cell content (a cell's own change breaks tests), which confirms or refutes R-77's assume: either way (Verified only for what was observed | phrase: docs/notes/d1-vendored-red-baseline.md (with the frontmatter shape of the other docs/notes files) records: the command, each run's failed count and duration, the names that fail in every run, the names that differ between runs or cells with their failure message's first line, and a one-paragraph conclusion: whether the difference is environment/timing (same names flap) or cell content (a cell's own change breaks tests), which confirms or refutes R-77's assume: either way (Verified only for what was observed |\n| done_when: anything else labelled Inferred) | phrase: anything else labelled Inferred) |\n| done_when: The helper that parses TRX is a small script under the worker's scratch area or tools/ only if it earns a test | phrase: The helper that parses TRX is a small script under the worker's scratch area or tools/ only if it earns a test |\n| done_when: no product code changes | phrase: no product code changes |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit the note. | phrase: Commit the note. |\n| not_in_scope: changing any grader, the report, or the task | phrase: changing any grader, the report, or the task |\n| not_in_scope: any file under runs/ written | phrase: any file under runs/ written |\n| not_in_scope: a third pair of runs (R-77 caps it) | phrase: a third pair of runs (R-77 caps it) |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- dotnet test tests/AiDe.Core.Tests/AiDe.Core.Tests.csproj --logger \"trx;LogFileName=<name>.trx\" -v:q: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- docs/notes/: unresolved (not found)\n- runs/smoke-1: unresolved (not found)\n- runs/row15-d1-1: unresolved (not found)\n- plan.json: unresolved (ambiguous: 13 matches)\n- tests/AiDe.Core.Tests/AiDe.Core.Tests.csproj: unresolved (ambiguous: 17 matches)\n- ws/: unresolved (not found)\n- runs/: unresolved (not found)\n- docs/notes/d1-vendored-red-baseline.md: unresolved (not found)\n- docs/notes: unresolved (not found)\n- environment/timing: unresolved (not found)\n- tools/: unresolved (not found)\n- docs/notes/spike-gr-code-stryker.md: docs/notes/spike-gr-code-stryker.md sha256 3d69ca1bc51b03548430e76e152891eb2c8f6b6a14eb8845602e7e6b53ccf664\n- src/harness_bench/grade/_changes.py: src/harness_bench/grade/_changes.py sha256 fa807c157301e4bb7c27f215bef6c8fabd0b14852f2830492361ad02bda67ff2\n- runs/*/plan.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3FR3B6ZV8622CWGZHA5P52P\nraw sha256: 7cfc46a7074606f668a69ffffcb2e50a4f87b1f7454f141e0a23ff88429012e8\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3FR3B6ZV8622CWGZHA5P52P for claude-code v1: 15 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "For two archived D1 cells, one from each run (runs/row15-d1-1 cell c3d40fa1377ba0dc and one runs/smoke-1 D1 cell whose mutation_score has a value",
+            "trace": {
+              "kind": "phrase",
+              "ref": "For two archived D1 cells, one from each run (runs/row15-d1-1 cell c3d40fa1377ba0dc and one runs/smoke-1 D1 cell whose mutation_score has a value"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "read plan.json and events to find it and its archive attempt), the vendored AiDe.Core.Tests suite is run with `dotnet test tests/AiDe.Core.Tests/AiDe.Core.Tests.csproj --logger \"trx",
+            "trace": {
+              "kind": "phrase",
+              "ref": "read plan.json and events to find it and its archive attempt), the vendored AiDe.Core.Tests suite is run with `dotnet test tests/AiDe.Core.Tests/AiDe.Core.Tests.csproj --logger \"trx"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "LogFileName=<name>.trx\" -v:q` in a COPY of the cell's ws/ made under the worker's own tree or %TEMP% (copy with the .git, bin, obj, TestResults folders excluded",
+            "trace": {
+              "kind": "phrase",
+              "ref": "LogFileName=<name>.trx\" -v:q` in a COPY of the cell's ws/ made under the worker's own tree or %TEMP% (copy with the .git, bin, obj, TestResults folders excluded"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "never build, restore or run git under runs/), each cell twice (4 runs), with NUGET_PACKAGES set to %USERPROFILE%\\.nuget\\packages",
+            "trace": {
+              "kind": "phrase",
+              "ref": "never build, restore or run git under runs/), each cell twice (4 runs), with NUGET_PACKAGES set to %USERPROFILE%\\.nuget\\packages"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the failing test names of each run are extracted from the TRX (outcome Failed) and diffed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the failing test names of each run are extracted from the TRX (outcome Failed) and diffed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "docs/notes/d1-vendored-red-baseline.md (with the frontmatter shape of the other docs/notes files) records: the command, each run's failed count and duration, the names that fail in every run, the names that differ between runs or cells with their failure message's first line, and a one-paragraph conclusion: whether the difference is environment/timing (same names flap) or cell content (a cell's own change breaks tests), which confirms or refutes R-77's assume: either way (Verified only for what was observed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "docs/notes/d1-vendored-red-baseline.md (with the frontmatter shape of the other docs/notes files) records: the command, each run's failed count and duration, the names that fail in every run, the names that differ between runs or cells with their failure message's first line, and a one-paragraph conclusion: whether the difference is environment/timing (same names flap) or cell content (a cell's own change breaks tests), which confirms or refutes R-77's assume: either way (Verified only for what was observed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "anything else labelled Inferred)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "anything else labelled Inferred)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The helper that parses TRX is a small script under the worker's scratch area or tools/ only if it earns a test",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The helper that parses TRX is a small script under the worker's scratch area or tools/ only if it earns a test"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "no product code changes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "no product code changes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit the note.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit the note."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "changing any grader, the report, or the task",
+            "trace": {
+              "kind": "phrase",
+              "ref": "changing any grader, the report, or the task"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/ written",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/ written"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "a third pair of runs (R-77 caps it)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a third pair of runs (R-77 caps it)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "For two archived D1 cells, one from each run (runs/row15-d1-1 cell c3d40fa1377ba0dc and one runs/smoke-1 D1 cell whose mutation_score has a value",
+            "read plan.json and events to find it and its archive attempt), the vendored AiDe.Core.Tests suite is run with `dotnet test tests/AiDe.Core.Tests/AiDe.Core.Tests.csproj --logger \"trx",
+            "LogFileName=<name>.trx\" -v:q` in a COPY of the cell's ws/ made under the worker's own tree or %TEMP% (copy with the .git, bin, obj, TestResults folders excluded",
+            "never build, restore or run git under runs/), each cell twice (4 runs), with NUGET_PACKAGES set to %USERPROFILE%\\.nuget\\packages",
+            "the failing test names of each run are extracted from the TRX (outcome Failed) and diffed",
+            "docs/notes/d1-vendored-red-baseline.md (with the frontmatter shape of the other docs/notes files) records: the command, each run's failed count and duration, the names that fail in every run, the names that differ between runs or cells with their failure message's first line, and a one-paragraph conclusion: whether the difference is environment/timing (same names flap) or cell content (a cell's own change breaks tests), which confirms or refutes R-77's assume: either way (Verified only for what was observed",
+            "anything else labelled Inferred)",
+            "The helper that parses TRX is a small script under the worker's scratch area or tools/ only if it earns a test",
+            "no product code changes",
+            "uv run ruff check src tests tools is clean",
+            "Commit the note."
+          ],
+          "fan_out_cap": 0,
+          "goal": "find which vendored D1 tests fail on an unmutated tree and whether that set moves between runs (ruling R-77 condition 4; docs/notes/rulings.md, read R-75 and R-77 first); write the finding to docs/notes/, measurement only. Measured (Leader, 2026-09-26): Stryker.NET reported initial_failing_tests 69 on every Stryker cell of runs/smoke-1 and 74 on every one of runs/row15-d1-1 (one earlier diagnostic run 75); same D1 task version hash and pack pin. R-77 item 3 carries: \"assume: at least one Stryker cell in the run added no red test; confirmed by the TRX diff of Conditions 4\".",
+          "main_line_budget": "one slice of at most 18 minutes; commit the note as soon as it is written.\nGrounding: docs/notes/rulings.md R-75, R-77; docs/notes/spike-gr-code-stryker.md (the dotnet environment that works: NUGET_PACKAGES, the grading-copy shape); src/harness_bench/grade/_changes.py (BUILD_OUTPUT, grading_copy); runs/*/plan.json and events (read only). Use python, not python3 (Windows). A full vendored-suite run takes about 2 minutes.",
+          "not_in_scope": [
+            "changing any grader, the report, or the task",
+            "any file under runs/ written",
+            "a third pair of runs (R-77 caps it)",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.006,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3FR3B6ZV8622CWGZHA5P52P",
+        "raw_sha256": "7cfc46a7074606f668a69ffffcb2e50a4f87b1f7454f141e0a23ff88429012e8",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "dotnet test tests/AiDe.Core.Tests/AiDe.Core.Tests.csproj --logger \"trx;LogFileName=<name>.trx\" -v:q"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/smoke-1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/row15-d1-1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 13 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 17 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/AiDe.Core.Tests/AiDe.Core.Tests.csproj"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ws/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/d1-vendored-red-baseline.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "environment/timing"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/spike-gr-code-stryker.md",
+            "reason": null,
+            "sha256": "3d69ca1bc51b03548430e76e152891eb2c8f6b6a14eb8845602e7e6b53ccf664",
+            "status": "resolved",
+            "token": "docs/notes/spike-gr-code-stryker.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/_changes.py",
+            "reason": null,
+            "sha256": "fa807c157301e4bb7c27f215bef6c8fabd0b14852f2830492361ad02bda67ff2",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/_changes.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/*/plan.json"
           }
         ],
         "schema": "compiled-prompt/1",
