@@ -1,0 +1,7 @@
+schema: bench-catalog-freeze/1
+versions:
+  '0.4':
+    catalog_hash: 286a0daa74f5453fae9460c4a4a42a6365e5975c417e0cc9ac639601d83692ec
+    golden:
+      c44dd2b-no-heads: 55bd1375b3fffa5c6315b466c0bfa11fa3af7dad5347f0a4a8fd8db6e93b8929
+      heads: 55bd1375b3fffa5c6315b466c0bfa11fa3af7dad5347f0a4a8fd8db6e93b8929

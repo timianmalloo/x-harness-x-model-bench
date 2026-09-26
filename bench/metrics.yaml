@@ -8,7 +8,7 @@
 # check > trace conformance > tests > judge). J metrics cover only what no rung above can measure.
 # Changing a definition, weight or rubric bumps `version` (historical scores must not move silently).
 schema: bench-metrics/1
-version: "0.4.dev"   # 0.4.dev: kind, asked_unmatched, scope_creep_files; a probe until the Leader freezes 0.4 (R-59); 0.3: decimal scales for non-integer values (ADR-0006: no floats in the ledger); 0.2: formal metrics and protocol conformance
+version: "0.4"   # 0.4: the wave-3 graders (frozen by the Leader 2026-09-25, R-59 c3; bench/catalog-freeze.yaml; a change after this is 0.5); 0.4.dev: kind, asked_unmatched, scope_creep_files; 0.3: decimal scales for non-integer values (ADR-0006: no floats in the ledger); 0.2: formal metrics and protocol conformance
 # scale: a non-integer value is stored as a decimal string with this many places.
 # kind: score (one row per cell per grading pass, for each task whose graders name its grader) |
 #       derived (computed above the cell or in views; never a score row, DM7).
