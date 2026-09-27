@@ -25,3 +25,38 @@ def test_the_base_fixture_leaves_zero_folders(own_base, base):
     locked.write_bytes(b"readonly-git-object")
     locked.chmod(stat.S_IREAD)
     assert base.is_dir()
+
+
+def test_base_teardown_tolerates_concurrent_sibling_folder_creation(monkeypatch, tmp_path):
+    import sys
+    import threading
+    from pathlib import Path
+
+    conftest = sys.modules["conftest"]
+
+    shared = tmp_path / "bench-test-shared"
+    shared.mkdir()
+    monkeypatch.setattr(conftest, "CLEAN_PARENT", shared)
+
+    gen = conftest.base.__wrapped__()
+    root = next(gen)
+    assert root.is_dir()
+
+    sibling = shared / "concurrent-worker-cell"
+    orig_iterdir = Path.iterdir
+
+    def hook_iterdir(self):
+        it = orig_iterdir(self)
+        if self == shared:
+            items = list(it)
+            t = threading.Thread(target=sibling.mkdir)
+            t.start()
+            t.join()
+            return iter(items)
+        return it
+
+    monkeypatch.setattr(Path, "iterdir", hook_iterdir)
+    next(gen, None)
+    assert sibling.is_dir()
+    assert not root.exists()
+
