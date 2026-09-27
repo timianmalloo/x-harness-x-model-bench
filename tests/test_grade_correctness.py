@@ -20,7 +20,6 @@ from pathlib import Path
 
 import pytest
 from archived_runs import ROOT, gate_runs_root
-from conftest import CLEAN_PARENT
 
 from harness_bench import archive, config, plan, views
 from harness_bench.grade import CellInput, Score, correctness
@@ -136,14 +135,10 @@ def _build_d1_cache() -> None:
     if _D1_CACHE_ROOT is not None and _D1_CACHE_ROOT.exists():
         return
 
-    try:
-        CLEAN_PARENT.mkdir(parents=True, exist_ok=True)
-        cache_parent = CLEAN_PARENT
-    except OSError:
-        cache_parent = Path(tempfile.gettempdir()) / "bench-test"
-        cache_parent.mkdir(parents=True, exist_ok=True)
-
-    root = cache_parent / f"d1-cache-{uuid.uuid4().hex}"
+    # No cell is launched from these trees, so the clean-parent rule (conftest.CLEAN_PARENT, HB-PRE-002) does not apply;
+    # d1_cell built under tmp_path before the cache. Importing from conftest also resolves to tests/e2e/conftest.py in
+    # the full suite.
+    root = Path(tempfile.gettempdir()) / "bench-test" / f"d1-cache-{uuid.uuid4().hex}"
     root.mkdir(parents=True, exist_ok=True)
     _D1_CACHE_ROOT = root
 
