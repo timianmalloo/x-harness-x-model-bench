@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 from archived_runs import ROOT, gate_runs_root
-from test_grade_correctness import d1_cell, tree_digest
+from test_grade_correctness import d1_cell, stat_snapshot, tree_digest
 
 from harness_bench import config, plan, procs, views
 from harness_bench.archive import make_writable
@@ -39,11 +39,11 @@ def drift_input(run_dir: Path, archive: Path, cell: dict, out_dir: Path, timeout
                      metrics=applicable(CATALOG, ["drift"])["drift"], allow_model_calls=False, extraction=None, prices=None)
 
 
-def grade_d1(tmp_path: Path, folder: Path, cell: dict) -> dict[str, tuple]:
+def grade_d1(tmp_path: Path, folder: Path, cell: dict, check=stat_snapshot) -> dict[str, tuple]:
     """Every drift Score of the cell as (value, reason); the archive's bytes must not move (F9)."""
-    before = tree_digest(folder)
+    before = check(folder)  # one default-ring test per grader passes tree_digest (Test Architect, Rank 2b)
     out = drift.grade_cell(drift_input(tmp_path / "run", folder, cell, tmp_path / "run" / "grading" / "g" / "c1" / "drift"))
-    assert tree_digest(folder) == before, "grading wrote under the archive"
+    assert check(folder) == before, "grading wrote under the archive"
     return {m: encode(s) for m, s in out.items()}
 
 
@@ -53,7 +53,8 @@ MCP = "src/AiDe.Mcp/ServerContext.cs"
 
 
 def test_a_3_line_edit_outside_the_blast_radius_is_scope_creep_3_in_1_file(tmp_path):  # design: Seeded
-    got = grade_d1(tmp_path, *d1_cell(tmp_path, {MCP: lambda text: "// one\n// two\n// three\n" + text}))
+    got = grade_d1(tmp_path, *d1_cell(tmp_path, {MCP: lambda text: "// one\n// two\n// three\n" + text}),
+                   check=tree_digest)  # content digest (F9)
     assert {m: got.get(m) for m in MEASURED} == \
         {"scope_creep": (3, None), "scope_creep_files": (1, None), "convention_drift": ("0.00", None)}
 

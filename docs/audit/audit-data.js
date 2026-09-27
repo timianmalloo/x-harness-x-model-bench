@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-27T22:20:10Z",
+  "generated": "2026-09-27T22:31:21Z",
   "audit": [
     {
       "actor": null,
@@ -38811,6 +38811,36 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3JFX26S8RMDN1VRCNDV9VWS",
+      "shortname": "ciopt6-rank-2b",
+      "datetime": "2026-09-27T22:31:21Z",
+      "session": "worker-grok-ciopt6",
+      "prompt": "CI-OPT slice 6, Rank 2b (docs/notes/ci-opt-proposal.md, Test Architect review): grader unit tests check archive immutability with a stat snapshot {relpath: (size, mtime_ns)} instead of two full content digests, while the content tree_digest stays in the six gate-marked tests and in exactly one archive-unchanged test per grader. Test-only, red first: a fake grader writing a .pyc under the archive, and a same-size rewrite failing through mtime_ns, committed failing before the helper exists. A structural test asserts no module under src/harness_bench/grade/ references os.utime, os.utime( or utime. Summed time of the six grader test files before and after in the commit message. No src/ changes, no gate-test body edits, no push.",
+      "summary": "CI-OPT slice 6 (Rank 2b), test-only. stat_snapshot beside tree_digest returns {relpath: (size, mtime_ns)}; synthetic d1_cell/c1_cell before/after checks use it. Content tree_digest stays in the six gate tests and one archive-unchanged test per grader (architecture test_the_d1_gate_cells_conform_and_the_archive_is_unchanged, drift test_the_d1_gate_cells_have_no_scope_creep_and_the_archive_is_unchanged, mutation test_row15_d1_cells_graded_twice_give_characterization_values_and_leave_archives_unchanged, rigor test_the_d1_gate_cells_static_analysis_delta_and_archive_unchanged, correctness test_build_and_suite_clean_compiles_a_python_copy). Red e9c2371 committed failing (NameError) before the helper; green e54b205. Six files: 303.81s before (166 passed), 200.54s after (169 passed, 14 deselected). collect-only exit 0; ruff check src tests tools clean. No src/ change, no push.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": "grok",
+      "actor": null,
+      "artifacts": [
+        "tests/test_grade_correctness.py",
+        "tests/test_grade_architecture.py",
+        "tests/test_grade_drift.py",
+        "tests/test_grade_mutation.py",
+        "tests/test_grade_rigor.py"
+      ],
+      "tags": [
+        "ci-opt",
+        "rank-2b"
+      ],
+      "outcome": "success",
+      "compiled": false,
+      "done_when": "uv run pytest -q -p no:cacheprovider on the six grader files passes (169 passed, 14 deselected, 200.54s); collect-only exits 0; ruff check src tests tools is clean; red and green each committed (e9c2371, e54b205).",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-09-27T22:20:38Z",
+      "duration_seconds": 643.0
     }
   ],
   "changes": [

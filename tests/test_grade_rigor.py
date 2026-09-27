@@ -14,7 +14,14 @@ from pathlib import Path
 
 import pytest
 from archived_runs import ROOT, gate_runs_root
-from test_grade_correctness import BROKEN, d1_cell, done, git, tree_digest
+from test_grade_correctness import (
+    BROKEN,
+    d1_cell,
+    done,
+    git,
+    stat_snapshot,
+    tree_digest,
+)
 
 from harness_bench import config, plan, views
 from harness_bench.archive import make_writable
@@ -69,13 +76,13 @@ def rigor_input(run_dir: Path, archive: Path, cell: dict, out_dir: Path, timeout
     )
 
 
-def grade_d1(tmp_path: Path, folder: Path, cell: dict, timeout: int = 900) -> dict[str, tuple]:
+def grade_d1(tmp_path: Path, folder: Path, cell: dict, timeout: int = 900, check=stat_snapshot) -> dict[str, tuple]:
     """Every rigor Score of the cell as (value, reason); the archive's bytes must not move (F9)."""
-    before = tree_digest(folder)
+    before = check(folder)  # one default-ring test per grader passes tree_digest (Test Architect, Rank 2b)
     out = rigor.grade_cell(
         rigor_input(tmp_path / "run", folder, cell, tmp_path / "run" / "grading" / "g" / "c1" / "rigor", timeout=timeout)
     )
-    assert tree_digest(folder) == before, "grading wrote under the archive"
+    assert check(folder) == before, "grading wrote under the archive"
     return {m: encode(s) for m, s in out.items()}
 
 
@@ -152,7 +159,7 @@ NA_BY_DESIGN = {
 def test_rigor_na_by_design_metrics_give_the_designs_reasons_verbatim(tmp_path, monkeypatch):
     folder, cell = d1_cell(tmp_path, {})
     fake_dotnet(monkeypatch, done(0, "10.0.303"), done(0, ""))
-    got = grade_d1(tmp_path, folder, cell)
+    got = grade_d1(tmp_path, folder, cell, check=tree_digest)  # content digest (F9)
     assert {m: got[m] for m in NA_BY_DESIGN} == {m: (None, reason) for m, reason in NA_BY_DESIGN.items()}
 
 
