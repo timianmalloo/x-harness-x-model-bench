@@ -362,7 +362,7 @@ D1_GATE = {  # cp = copilot-sol, cx = codex-sol, cc = cc-opus; on/off = the pack
 }
 
 
-@pytest.mark.slow
+@pytest.mark.gate
 def test_the_d1_gate_cells_static_analysis_delta_and_archive_unchanged(tmp_path):
     run = GATE_RUNS / "row15-d1-1"
     if not (run / "plan.json").is_file():

@@ -61,7 +61,7 @@ def pytest_runtest_setup(item):
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_protocol(item, nextitem):
-    if item.get_closest_marker("slow") is None:
+    if item.get_closest_marker("slow") is None and item.get_closest_marker("gate") is None:
         real_run = procs.run
 
         @functools.wraps(real_run)  # keeps procs.run's signature for tests that inspect it
