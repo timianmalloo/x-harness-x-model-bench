@@ -59,6 +59,76 @@ def test_a_named_file_matches_any_test_in_it():
     assert mutate_check.verdict(1, output, ["tests/test_views.py"]) == "survived"
 
 
+# --- a named killer runs whatever its marker; a skip or deselect is "not run" ----------------
+#
+# pyproject addopts is `-m 'not credentials and not slow'`. pytest prepends addopts and `-m` is
+# store, so the later `-m` wins, and an empty markexpr does not deselect (pytest 9.1.1
+# `_pytest/mark/__init__.py:deselect_by_mark`; a named `@pytest.mark.slow` test is
+# "1 deselected" exit 5 under that addopts, and runs under `-m ""`). A killer that still does
+# not execute — skipped, or deselected by an option `-m` does not clear — is "not run".
+
+
+def _killer_spec(tmp_path, test_source: str, pyproject: str | None = None) -> Path:
+    (tmp_path / "m.py").write_bytes(b"X = 1\n")
+    (tmp_path / "test_m.py").write_text(test_source, encoding="utf-8")
+    if pyproject is not None:
+        (tmp_path / "pyproject.toml").write_text(pyproject, encoding="utf-8")
+    spec = tmp_path / "spec.json"
+    spec.write_text(json.dumps([{
+        "name": "cap", "file": "m.py", "find": "X = 1", "replace": "X = 2",
+        "tests": ["test_m.py::test_x"],
+    }]), encoding="utf-8")
+    return spec
+
+
+def test_a_named_test_with_a_deselected_marker_still_runs_and_is_killed(tmp_path, monkeypatch, capsys):
+    """The marker filter in addopts must not hide a killer. This fails while the named test is deselected."""
+    spec = _killer_spec(
+        tmp_path,
+        "import pytest\nimport m\n\n@pytest.mark.slow\ndef test_x():\n    assert m.X == 1\n",
+        "[tool.pytest.ini_options]\naddopts = \"-m 'not slow'\"\nmarkers = [\"slow: slow\"]\n",
+    )
+    monkeypatch.setattr(mutate_check, "ROOT", tmp_path)
+    rc = mutate_check.main([str(spec)])
+    out = capsys.readouterr().out
+    assert rc == 0, out
+    assert out.splitlines()[0].startswith("killed")
+    assert (tmp_path / "m.py").read_bytes() == b"X = 1\n"
+
+
+def test_a_named_test_that_skips_is_not_run(tmp_path, monkeypatch, capsys):
+    """A skip is not a kill and not an error. The pytest reason line is part of the outcome."""
+    spec = _killer_spec(
+        tmp_path,
+        "import pytest\nimport m\n\ndef test_x():\n    pytest.skip('killer not exercised')\n    assert m.X == 1\n",
+    )
+    monkeypatch.setattr(mutate_check, "ROOT", tmp_path)
+    rc = mutate_check.main([str(spec)])
+    out = capsys.readouterr().out
+    assert rc == 1, out
+    assert out.splitlines()[0].startswith("not run")
+    assert "killer not exercised" in out
+    assert "1 not killed" in out
+    assert (tmp_path / "m.py").read_bytes() == b"X = 1\n"
+
+
+def test_a_named_test_deselected_by_something_other_than_the_marker_is_not_run(tmp_path, monkeypatch, capsys):
+    """`--deselect` is not cleared by `-m ""`. Exit 5 with every test deselected is "not run", not "error"."""
+    spec = _killer_spec(
+        tmp_path,
+        "import m\n\ndef test_x():\n    assert m.X == 1\n",
+        "[tool.pytest.ini_options]\naddopts = \"--deselect=test_m.py::test_x\"\n",
+    )
+    monkeypatch.setattr(mutate_check, "ROOT", tmp_path)
+    rc = mutate_check.main([str(spec)])
+    out = capsys.readouterr().out
+    assert rc == 1, out
+    assert out.splitlines()[0].startswith("not run")
+    assert "deselected" in out
+    assert "1 not killed" in out
+    assert (tmp_path / "m.py").read_bytes() == b"X = 1\n"
+
+
 def test_a_same_size_mutation_leaves_no_stale_bytecode(tmp_path, monkeypatch):
     """TOOL-A (found by T10): a mutant compiled to .pyc, restored in the same mtime second with the same size, is
     still what `import` loads, so the next run tests the mutant while `git status` is clean. The race is made

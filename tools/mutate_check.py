@@ -3,8 +3,9 @@
 Each mutation is (file, exact text, replacement, named tests). The file is restored byte for byte afterwards, even
 on error. A mutation is **killed** only when pytest exits 1 and one of its named tests (a node id, or a test file
 meaning any test in it) is among the failures. A failure of some other test, a collection error, or a timeout is
-not evidence that this guard is tested, so it is reported as survived, error or timeout. Exit 0 only if every
-mutation is killed.
+not evidence that this guard is tested, so it is reported as survived, error or timeout. A named test that was
+skipped or deselected did not run: that is "not run" (never a kill, never an error), counted as not killed,
+with pytest's reason line. Exit 0 only if every mutation is killed.
 
 No bytecode is ever written from a mutant (TOOL-A): pytest runs with PYTHONDONTWRITEBYTECODE=1. Otherwise a same-size
 mutant restored within its own mtime second stays what `import` loads (the .pyc's mtime and size still match), so later
@@ -46,6 +47,9 @@ ROOT = Path(__file__).resolve().parents[1]
 # a node id, with its parametrize case id whole: a case id may hold spaces ("[answer and timeout in one tick]")
 FAILED = re.compile(r"^FAILED ([^\s\[]+(?:\[[^\]\n]*\])?)", re.MULTILINE)
 SUMMARY = re.compile(r"\b\d+ (?:passed|failed|errors?|skipped|deselected|xfailed|xpassed|warnings?)\b|\bno tests ran\b")
+# The last summary line wins: pytest prints it once, after any `FAILED` / `SKIPPED` detail.
+_STAT = re.compile(r"\b(\d+) (passed|failed|skipped|deselected|errors?|xfailed|xpassed)\b")
+_SKIP_REASON = re.compile(r"^SKIPPED \[\d+\] .+$", re.MULTILINE)
 
 
 def _matched_failure(output: str, named: list[str]) -> str | None:
@@ -64,16 +68,58 @@ def _ran_to_completion(output: str) -> bool:
     return bool(FAILED.search(output) or SUMMARY.search(output))
 
 
+def _summary_counts(output: str) -> dict[str, int]:
+    """Counts from pytest's final summary line (`1 failed, 2 passed, 3 skipped in 0.1s`)."""
+    counts: dict[str, int] = {}
+    for line in output.splitlines():
+        found = _STAT.findall(line)
+        if not found:
+            continue
+        counts = {}
+        for raw, kind in found:
+            key = "error" if kind.startswith("error") else kind
+            counts[key] = counts.get(key, 0) + int(raw)
+    return counts
+
+
+def _every_named_test_skipped_or_deselected(output: str) -> bool:
+    """True when the run's own summary shows skips and/or deselections and nothing that executed.
+
+    The pytest command names only this mutation's tests, so those counts are the named tests.
+    """
+    counts = _summary_counts(output)
+    executed = sum(counts.get(key, 0) for key in ("passed", "failed", "error", "xfailed", "xpassed"))
+    held_back = counts.get("skipped", 0) + counts.get("deselected", 0)
+    return executed == 0 and held_back > 0
+
+
+def _pytest_reason(output: str) -> str:
+    """Pytest's own reason line: each `SKIPPED [n] path:line: reason`, else the deselect summary."""
+    skipped = _SKIP_REASON.findall(output)
+    if skipped:
+        return "\n".join(skipped)
+    for line in reversed(output.splitlines()):
+        stripped = line.strip()
+        if "deselected" in stripped or stripped.startswith("no tests ran"):
+            return stripped
+    return ""
+
+
 def verdict(returncode: int | None, output: str, named: list[str]) -> str:
-    """killed | survived | error | timeout, from one pytest run of the named tests."""
+    """killed | survived | not run | error | timeout, from one pytest run of the named tests.
+
+    not run: every named test was skipped or deselected. That is not a kill and not an error.
+    """
     if returncode is None:
         return "timeout"
     if not _ran_to_completion(output):
         return "error"
-    if returncode not in (0, 1):
-        return "error"
     if returncode == 1 and _matched_failure(output, named) is not None:
         return "killed"
+    if _every_named_test_skipped_or_deselected(output):
+        return "not run"
+    if returncode not in (0, 1):
+        return "error"
     return "survived"
 
 
@@ -300,18 +346,29 @@ def main(argv: list[str]) -> int:
         mutated = text.replace(m["find"], m["replace"], 1).encode("utf-8")
         try:
             apply_mutation(m["file"], original, mutated)
+            output = ""
             try:
                 # --color=no: FORCE_COLOR paints the FAILED line, and the kill regex then sees no result.
+                # `-m ""` replaces addopts' `-m` (pytest prepends addopts; `-m` is store, so the last one
+                # wins). An empty markexpr does not deselect, so a named slow killer runs. `-rfs` keeps
+                # the FAILED line and adds pytest's SKIPPED reason line. The caller's environment is the
+                # child's, so HB_REQUIRE_DOTNET=1 makes a missing dotnet fail that killer instead of skipping.
                 result = subprocess.run(
-                    [sys.executable, "-m", "pytest", "-q", "--color=no", "-rf", "-p", "no:cacheprovider", *m["tests"]],
+                    [sys.executable, "-m", "pytest", "-q", "--color=no", "-rfs", "-m", "",
+                     "-p", "no:cacheprovider", *m["tests"]],
                     cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
                     check=False, timeout=m.get("timeout", 180),
                     env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
                 )
-                outcome = verdict(result.returncode, result.stdout + result.stderr, m["tests"])
+                output = result.stdout + result.stderr
+                outcome = verdict(result.returncode, output, m["tests"])
             except subprocess.TimeoutExpired:
                 outcome = "timeout"
             print(f"{outcome:<8} {m['name']}", flush=True)
+            if outcome == "not run":
+                reason = _pytest_reason(output)
+                if reason:
+                    print(reason, flush=True)
             survivors += 0 if outcome == "killed" else 1
         finally:
             _restore_original(m["file"], original)
