@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-27T23:08:21Z",
+  "generated": "2026-09-27T23:10:06Z",
   "audit": [
     {
       "actor": null,
@@ -39191,6 +39191,437 @@ window.AUDIT_DATA = {
             "sha256": "8bc770ae835b53b7351f6108ccd6c270f4821b1d301805ec2a5d8e3f27f5fa86",
             "status": "resolved",
             "token": "tests/e2e/conftest.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3JJ3892Y78VZB2C9BFV8PAB",
+      "shortname": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordinati…",
+      "datetime": "2026-09-27T23:09:41Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only.\nMeasured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).\nDone when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible); the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0); the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases; the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label; the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog); where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable; the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee; the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed); the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named; the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document; any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved; docs-graph derive and validate pass; Commit the document.\nNot in scope: implementing anything; the full report's UI (row 20, a separate ui-design pass); the full grid (wave 5); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\n\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside your worktree; never call EnterWorktree.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3JJ3WF2W7TAQQRFCM5JGN97",
+      "shortname": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordinati…",
+      "datetime": "2026-09-27T23:10:02Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only.\nMeasured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).\nDone when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible); the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0); the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases; the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label; the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog); where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable; the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee; the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed); the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named; the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document; any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved; docs-graph derive and validate pass; Commit the document.\nNot in scope: implementing anything; the full report's UI (row 20, a separate ui-design pass); the full grid (wave 5); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\n\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-stats-design (use absolute paths or cd into it in each shell command).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3JJ40PZ4PAPDTMXCWSMNGJR",
+      "shortname": "compile-Goal: the detailed design for wave 4 row 19, statistics (docs/coordinati…",
+      "datetime": "2026-09-27T23:10:06Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only. Measured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).\nDone when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible); the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0); the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases; the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label; the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog); where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable; the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee; the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed); the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named; the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document; any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved; docs-graph derive and validate pass; Commit the document.\nNot in scope: implementing anything; the full report's UI (row 20, a separate ui-design pass); the full grid (wave 5); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-stats-design (use absolute paths or cd into it in each shell command).\nTrace\n| clause | trace |\n|---|---|\n| done_when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible) | phrase: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible) |\n| done_when: the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0) | phrase: the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0) |\n| done_when: the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases | phrase: the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases |\n| done_when: the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label | phrase: the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label |\n| done_when: the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog) | phrase: the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog) |\n| done_when: where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable | phrase: where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable |\n| done_when: the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee | phrase: the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee |\n| done_when: the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed) | phrase: the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed) |\n| done_when: the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named | phrase: the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named |\n| done_when: the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document | phrase: the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document |\n| done_when: any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved | phrase: any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved |\n| done_when: docs-graph derive and validate pass | phrase: docs-graph derive and validate pass |\n| done_when: Commit the document. | phrase: Commit the document. |\n| not_in_scope: implementing anything | phrase: implementing anything |\n| not_in_scope: the full report's UI (row 20, a separate ui-design pass) | phrase: the full report's UI (row 20, a separate ui-design pass) |\n| not_in_scope: the full grid (wave 5) | phrase: the full grid (wave 5) |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- bench report: unresolved (not found)\n- 2=: unresolved (not found)\n- no detectable effect: unresolved (not found)\n- not computed: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 a65f5281ebb860ff8e60ef204880b97f5869747d3ff91460400da058b05982a1\n- .claude/skills/design-slice/SKILL.md: unresolved (not found)\n- reference/flow.md: unresolved (ambiguous: 465 matches)\n- bench/catalog-freeze.yaml: bench/catalog-freeze.yaml sha256 9a5166340d36c84a54b92137459b1275a1a2d194e0722f770110625d08763078\n- src/harness_bench/report/: unresolved (not found)\n- src/harness_bench/views.py: src/harness_bench/views.py sha256 ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094\n- docs/design/phase4-statistics.md: unresolved (not found)\n- runs/: unresolved (not found)\n- docs/design/phase3-graders.md: docs/design/phase3-graders.md sha256 544b1cad5a82ff64b5e1ef998fd28b0cf116461e07d0f676d36c2bba35c08875\n- phase3-cost.md: docs/design/phase3-cost.md sha256 e3758a322c4c304094423a3dcbb878e9e27b6da53cfc143d58e6c917801e3674\n- bench/metrics.yaml: bench/metrics.yaml sha256 df5499d1c0bda69ae874f2de41cfd09188f8e8568123fc67bad23fa20c31725d\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- probe/current: unresolved (not found)\n- docs/lessons/defect-classes.md: unresolved (ambiguous: 5 matches)\n- .claude/knowledge/domain-and-data-modelling.md: unresolved (not found)\n- .claude/knowledge/testing-strategy.md: unresolved (not found)\n- C:/Projects/x-harness-x-model-bench-w4-stats-design: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JJ3WF2W7TAQQRFCM5JGN97\nraw sha256: 8a1419cbdc35f3040cfa064dd955f00ccbcb3978a299ad915726e73f6ef768b4\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3JJ3WF2W7TAQQRFCM5JGN97 for claude-code v1: 18 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable",
+            "trace": {
+              "kind": "phrase",
+              "ref": "where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "docs-graph derive and validate pass",
+            "trace": {
+              "kind": "phrase",
+              "ref": "docs-graph derive and validate pass"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit the document.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit the document."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "implementing anything",
+            "trace": {
+              "kind": "phrase",
+              "ref": "implementing anything"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the full report's UI (row 20, a separate ui-design pass)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the full report's UI (row 20, a separate ui-design pass)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the full grid (wave 5)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the full grid (wave 5)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens",
+          "done_when": [
+            "docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible)",
+            "the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0)",
+            "the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases",
+            "the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label",
+            "the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog)",
+            "where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable",
+            "the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee",
+            "the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed)",
+            "the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named",
+            "the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document",
+            "any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved",
+            "docs-graph derive and validate pass",
+            "Commit the document."
+          ],
+          "fan_out_cap": 0,
+          "goal": "the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only. Measured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).",
+          "main_line_budget": "one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-stats-design (use absolute paths or cd into it in each shell command).",
+          "not_in_scope": [
+            "implementing anything",
+            "the full report's UI (row 20, a separate ui-design pass)",
+            "the full grid (wave 5)",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.006,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3JJ3WF2W7TAQQRFCM5JGN97",
+        "raw_sha256": "8a1419cbdc35f3040cfa064dd955f00ccbcb3978a299ad915726e73f6ef768b4",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench report"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "2="
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "no detectable effect"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "not computed"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench.md",
+            "reason": null,
+            "sha256": "a65f5281ebb860ff8e60ef204880b97f5869747d3ff91460400da058b05982a1",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-finish-harness-bench.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".claude/skills/design-slice/SKILL.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 465 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "reference/flow.md"
+          },
+          {
+            "nearest": null,
+            "path": "bench/catalog-freeze.yaml",
+            "reason": null,
+            "sha256": "9a5166340d36c84a54b92137459b1275a1a2d194e0722f770110625d08763078",
+            "status": "resolved",
+            "token": "bench/catalog-freeze.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/report/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/views.py",
+            "reason": null,
+            "sha256": "ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842",
+            "status": "resolved",
+            "token": "src/harness_bench/views.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/specs/harness-bench.md",
+            "reason": null,
+            "sha256": "7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094",
+            "status": "resolved",
+            "token": "docs/specs/harness-bench.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/design/phase4-statistics.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase3-graders.md",
+            "reason": null,
+            "sha256": "544b1cad5a82ff64b5e1ef998fd28b0cf116461e07d0f676d36c2bba35c08875",
+            "status": "resolved",
+            "token": "docs/design/phase3-graders.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase3-cost.md",
+            "reason": null,
+            "sha256": "e3758a322c4c304094423a3dcbb878e9e27b6da53cfc143d58e6c917801e3674",
+            "status": "resolved",
+            "token": "phase3-cost.md"
+          },
+          {
+            "nearest": null,
+            "path": "bench/metrics.yaml",
+            "reason": null,
+            "sha256": "df5499d1c0bda69ae874f2de41cfd09188f8e8568123fc67bad23fa20c31725d",
+            "status": "resolved",
+            "token": "bench/metrics.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "probe/current"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 5 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".claude/knowledge/domain-and-data-modelling.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".claude/knowledge/testing-strategy.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/x-harness-x-model-bench-w4-stats-design"
           }
         ],
         "schema": "compiled-prompt/1",
