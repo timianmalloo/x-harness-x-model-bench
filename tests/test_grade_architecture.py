@@ -108,20 +108,26 @@ def test_every_platform_and_own_layer_form_conforms_and_using_statements_are_not
     assert projection(tmp_path, head) == ("1.0000", None)
 
 
-@pytest.mark.parametrize("head", [
-    "using AiDe.CoreX;\n",  # a name that only starts with the layer's name
-    "using Systemic;\n",
-    "using static Newtonsoft.Json.JsonConvert;\n",
-    "using J = Newtonsoft.Json;\n",
-    "using N = Newtonsoft.Json.Linq.JEnumerable<int>;\n",
-    "global using Newtonsoft.Json;\n",
-    "using global::Newtonsoft.Json;\n",
-    "using System; using Newtonsoft.Json;\n",  # the second directive on a line
-    "namespace A {using Newtonsoft.Json;}\n",  # a directive inside a namespace block
-    "﻿using Newtonsoft.Json;\n",  # the first line after a UTF-8 BOM
+@pytest.mark.parametrize(("head", "breaks"), [
+    ("using AiDe.CoreX;\n", ["AiDe.CoreX"]),  # a name that only starts with the layer's name
+    ("using Systemic;\n", ["Systemic"]),
+    ("using static Newtonsoft.Json.JsonConvert;\n", ["Newtonsoft.Json.JsonConvert"]),
+    ("using J = Newtonsoft.Json;\n", ["Newtonsoft.Json"]),
+    ("using N = Newtonsoft.Json.Linq.JEnumerable<int>;\n", ["Newtonsoft.Json.Linq.JEnumerable"]),
+    ("global using Newtonsoft.Json;\n", ["Newtonsoft.Json"]),
+    ("using global::Newtonsoft.Json;\n", ["Newtonsoft.Json"]),
+    ("using System; using Newtonsoft.Json;\n", ["Newtonsoft.Json"]),  # the second directive on a line
+    ("namespace A {using Newtonsoft.Json;}\n", ["Newtonsoft.Json"]),  # a directive inside a namespace block
+    ("\ufeffusing Newtonsoft.Json;\n", ["Newtonsoft.Json"]),  # the first line after a UTF-8 BOM
 ])
-def test_a_using_outside_system_and_aide_core_breaks_the_rule(tmp_path, head):
-    assert projection(tmp_path, head) == ("0.0000", None)
+def test_a_using_outside_system_and_aide_core_breaks_the_rule(tmp_path, head, breaks):
+    rel = "Projection.cs"
+    target = tmp_path / rel
+    if head.startswith("\ufeff"):
+        target.write_bytes(head.encode("utf-8"))  # BOM bytes; utf-8-sig handling is under test
+    else:
+        target.write_text(head, encoding="utf-8", newline="")
+    assert architecture._cs_breaks(tmp_path, rel) == breaks
 
 
 def test_a_projections_file_that_is_not_utf8_is_read_not_raised(tmp_path):  # cp1252 bytes in a comment
