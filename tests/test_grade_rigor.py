@@ -149,12 +149,11 @@ NA_BY_DESIGN = {
 }
 
 
-@pytest.mark.parametrize(("metric", "reason"), list(NA_BY_DESIGN.items()))
-def test_rigor_na_by_design_metrics_give_the_designs_reasons_verbatim(tmp_path, monkeypatch, metric, reason):
+def test_rigor_na_by_design_metrics_give_the_designs_reasons_verbatim(tmp_path, monkeypatch):
     folder, cell = d1_cell(tmp_path, {})
     fake_dotnet(monkeypatch, done(0, "10.0.303"), done(0, ""))
     got = grade_d1(tmp_path, folder, cell)
-    assert got.get(metric) == (None, reason)
+    assert {m: got[m] for m in NA_BY_DESIGN} == {m: (None, reason) for m, reason in NA_BY_DESIGN.items()}
 
 
 # --- shared NA reasons ---------------------------------------------------------------------------------------------
