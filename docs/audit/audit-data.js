@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-27T23:10:06Z",
+  "generated": "2026-09-27T23:45:18Z",
   "audit": [
     {
       "actor": null,
@@ -38462,34 +38462,23 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M3JF8GXNK05ZTSJ5MZGPN3EX",
-      "shortname": "Goal: CI-OPT slice 6, the Test Architect's approved Rank 2b (docs/notes/…",
-      "datetime": "2026-09-27T22:20:08Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: CI-OPT slice 6, the Test Architect's approved Rank 2b (docs/notes/ci-opt-proposal.md, section \"Test Architect review\"; read it first): grader unit tests check archive immutability with a cheap stat snapshot instead of two full content digests, while the content tree_digest stays where it proves F9; test-only, red first.\nMeasured (proposal section 1, cProfile): tests/test_grade_correctness.py::tree_digest takes about 2.5 s per grader unit test (it reads and hashes ~1,122 files twice, before and after grading) in roughly 70 default-ring grader tests.\nDone when: a helper (beside tree_digest in tests/test_grade_correctness.py) returns a stat snapshot {relpath: (size, mtime_ns)} over every file under the folder, including the path set, so an added, deleted, resized or re-written file changes it; the grader unit tests that today call tree_digest before and after grading on a synthetic d1_cell/c1_cell fixture use the snapshot instead; the content tree_digest stays unchanged in the six `gate`-marked tests and in exactly one \"archive unchanged\" test per grader (architecture, drift, mutation, rigor, correctness: name each kept test in the commit message); a structural test asserts no module under src/harness_bench/grade/ references os.utime, os.utime( or utime (a grader that restores mtimes could hide a write from the snapshot); red first: a test where a fake grader writes a .pyc file under the archive folder makes the snapshot comparison fail (and one that rewrites a file with the same size fails through mtime_ns), committed failing before the helper exists; the summed time of the six grader test files before and after (uv run pytest -q -p no:cacheprovider --durations=0 tests/test_grade_architecture.py tests/test_grade_drift.py tests/test_grade_mutation.py tests/test_grade_rigor.py tests/test_grade_correctness.py tests/test_report_disclosure.py) is in the commit message; a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider on those six files passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: src/ changes; the gate-marked tests' bodies; tools/gate_stamp.py; ci.yml; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: docs/notes/ci-opt-proposal.md (Test Architect review, Rank 2b); tests/test_grade_correctness.py (tree_digest, d1_cell); the six test files above (grep tree_digest); src/harness_bench/grade/. Use python, not python3 (Windows).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
+      "datetime": "2026-09-27T22:20:08Z",
+      "id": "al-01M3JF8GXNK05ZTSJ5MZGPN3EX",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: CI-OPT slice 6, the Test Architect's approved Rank 2b (docs/notes/ci-opt-proposal.md, section \"Test Architect review\"; read it first): grader unit tests check archive immutability with a cheap stat snapshot instead of two full content digests, while the content tree_digest stays where it proves F9; test-only, red first.\nMeasured (proposal section 1, cProfile): tests/test_grade_correctness.py::tree_digest takes about 2.5 s per grader unit test (it reads and hashes ~1,122 files twice, before and after grading) in roughly 70 default-ring grader tests.\nDone when: a helper (beside tree_digest in tests/test_grade_correctness.py) returns a stat snapshot {relpath: (size, mtime_ns)} over every file under the folder, including the path set, so an added, deleted, resized or re-written file changes it; the grader unit tests that today call tree_digest before and after grading on a synthetic d1_cell/c1_cell fixture use the snapshot instead; the content tree_digest stays unchanged in the six `gate`-marked tests and in exactly one \"archive unchanged\" test per grader (architecture, drift, mutation, rigor, correctness: name each kept test in the commit message); a structural test asserts no module under src/harness_bench/grade/ references os.utime, os.utime( or utime (a grader that restores mtimes could hide a write from the snapshot); red first: a test where a fake grader writes a .pyc file under the archive folder makes the snapshot comparison fail (and one that rewrites a file with the same size fails through mtime_ns), committed failing before the helper exists; the summed time of the six grader test files before and after (uv run pytest -q -p no:cacheprovider --durations=0 tests/test_grade_architecture.py tests/test_grade_drift.py tests/test_grade_mutation.py tests/test_grade_rigor.py tests/test_grade_correctness.py tests/test_report_disclosure.py) is in the commit message; a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider on those six files passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: src/ changes; the gate-marked tests' bodies; tools/gate_stamp.py; ci.yml; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: docs/notes/ci-opt-proposal.md (Test Architect review, Rank 2b); tests/test_grade_correctness.py (tree_digest, d1_cell); the six test files above (grep tree_digest); src/harness_bench/grade/. Use python, not python3 (Windows).",
+      "session": "prompt-compile",
+      "shortname": "Goal: CI-OPT slice 6, the Test Architect's approved Rank 2b (docs/notes/…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M3JF8K6D82FKJFGYXMABHKP1",
-      "shortname": "compile-Goal: CI-OPT slice 6, the Test Architect's approved Rank 2b (docs/notes/…",
-      "datetime": "2026-09-27T22:20:10Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: CI-OPT slice 6, the Test Architect's approved Rank 2b (docs/notes/ci-opt-proposal.md, section \"Test Architect review\"; read it first): grader unit tests check archive immutability with a cheap stat snapshot instead of two full content digests, while the content tree_digest stays where it proves F9; test-only, red first. Measured (proposal section 1, cProfile): tests/test_grade_correctness.py::tree_digest takes about 2.5 s per grader unit test (it reads and hashes ~1,122 files twice, before and after grading) in roughly 70 default-ring grader tests.\nDone when: a helper (beside tree_digest in tests/test_grade_correctness.py) returns a stat snapshot {relpath: (size, mtime_ns)} over every file under the folder, including the path set, so an added, deleted, resized or re-written file changes it; the grader unit tests that today call tree_digest before and after grading on a synthetic d1_cell/c1_cell fixture use the snapshot instead; the content tree_digest stays unchanged in the six `gate`-marked tests and in exactly one \"archive unchanged\" test per grader (architecture, drift, mutation, rigor, correctness: name each kept test in the commit message); a structural test asserts no module under src/harness_bench/grade/ references os.utime, os.utime( or utime (a grader that restores mtimes could hide a write from the snapshot); red first: a test where a fake grader writes a .pyc file under the archive folder makes the snapshot comparison fail (and one that rewrites a file with the same size fails through mtime_ns), committed failing before the helper exists; the summed time of the six grader test files before and after (uv run pytest -q -p no:cacheprovider --durations=0 tests/test_grade_architecture.py tests/test_grade_drift.py tests/test_grade_mutation.py tests/test_grade_rigor.py tests/test_grade_correctness.py tests/test_report_disclosure.py) is in the commit message; a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider on those six files passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: src/ changes; the gate-marked tests' bodies; tools/gate_stamp.py; ci.yml; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/notes/ci-opt-proposal.md (Test Architect review, Rank 2b); tests/test_grade_correctness.py (tree_digest, d1_cell); the six test files above (grep tree_digest); src/harness_bench/grade/. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: a helper (beside tree_digest in tests/test_grade_correctness.py) returns a stat snapshot {relpath: (size, mtime_ns)} over every file under the folder, including the path set, so an added, deleted, resized or re-written file changes it | phrase: a helper (beside tree_digest in tests/test_grade_correctness.py) returns a stat snapshot {relpath: (size, mtime_ns)} over every file under the folder, including the path set, so an added, deleted, resized or re-written file changes it |\n| done_when: the grader unit tests that today call tree_digest before and after grading on a synthetic d1_cell/c1_cell fixture use the snapshot instead | phrase: the grader unit tests that today call tree_digest before and after grading on a synthetic d1_cell/c1_cell fixture use the snapshot instead |\n| done_when: the content tree_digest stays unchanged in the six `gate`-marked tests and in exactly one \"archive unchanged\" test per grader (architecture, drift, mutation, rigor, correctness: name each kept test in the commit message) | phrase: the content tree_digest stays unchanged in the six `gate`-marked tests and in exactly one \"archive unchanged\" test per grader (architecture, drift, mutation, rigor, correctness: name each kept test in the commit message) |\n| done_when: a structural test asserts no module under src/harness_bench/grade/ references os.utime, os.utime( or utime (a grader that restores mtimes could hide a write from the snapshot) | phrase: a structural test asserts no module under src/harness_bench/grade/ references os.utime, os.utime( or utime (a grader that restores mtimes could hide a write from the snapshot) |\n| done_when: red first: a test where a fake grader writes a .pyc file under the archive folder makes the snapshot comparison fail (and one that rewrites a file with the same size fails through mtime_ns), committed failing before the helper exists | phrase: red first: a test where a fake grader writes a .pyc file under the archive folder makes the snapshot comparison fail (and one that rewrites a file with the same size fails through mtime_ns), committed failing before the helper exists |\n| done_when: the summed time of the six grader test files before and after (uv run pytest -q -p no:cacheprovider --durations=0 tests/test_grade_architecture.py tests/test_grade_drift.py tests/test_grade_mutation.py tests/test_grade_rigor.py tests/test_grade_correctness.py tests/test_report_disclosure.py) is in the commit message | phrase: the summed time of the six grader test files before and after (uv run pytest -q -p no:cacheprovider --durations=0 tests/test_grade_architecture.py tests/test_grade_drift.py tests/test_grade_mutation.py tests/test_grade_rigor.py tests/test_grade_correctness.py tests/test_report_disclosure.py) is in the commit message |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider on those six files passes | phrase: uv run pytest -q -p no:cacheprovider on those six files passes |\n| done_when: uv run pytest -q -p no:cacheprovider --collect-only exits 0 | phrase: uv run pytest -q -p no:cacheprovider --collect-only exits 0 |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: src/ changes | phrase: src/ changes |\n| not_in_scope: the gate-marked tests' bodies | phrase: the gate-marked tests' bodies |\n| not_in_scope: tools/gate_stamp.py | phrase: tools/gate_stamp.py |\n| not_in_scope: ci.yml | phrase: ci.yml |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- gate: unresolved (not found)\n- docs/notes/ci-opt-proposal.md: docs/notes/ci-opt-proposal.md sha256 504798dd9aa76405b4e60d06494e842a041b2dbad57685bf3f9a556f4e167699\n- tests/test_grade_correctness.py::tree_digest: unresolved (not found)\n- tests/test_grade_correctness.py: tests/test_grade_correctness.py sha256 aebfbce8703c7846bed50de5d99209e5fa5feea2800d940789a996d1366242f9\n- d1_cell/c1_cell: unresolved (not found)\n- src/harness_bench/grade/: unresolved (not found)\n- tests/test_grade_architecture.py: tests/test_grade_architecture.py sha256 3492cff928e0daac134d402ae091ad063e12ed47fa906b9380fc8d30fd4b99b0\n- tests/test_grade_drift.py: tests/test_grade_drift.py sha256 6cae5aa76fb32a531e3882629d880285a28b1b5e6f0eae36235c0c8eaab7398b\n- tests/test_grade_mutation.py: tests/test_grade_mutation.py sha256 da24a107e1bd7ea8c072a3a30235b2cc3cb1ab2e1e7c2cf2780a633b543563e8\n- tests/test_grade_rigor.py: tests/test_grade_rigor.py sha256 8bcc1e4c03542cfabccc96b368dff8f1ea019f74c7663f49b6ebb1820aa5fdb4\n- tests/test_report_disclosure.py: tests/test_report_disclosure.py sha256 99a535654b5aba5d01e4bf7dcc4debab259b831f706ebc72845880db13710621\n- src/: unresolved (not found)\n- tools/gate_stamp.py: tools/gate_stamp.py sha256 ea4c3d07dd74700604dd0683a3e3d0df3d99024feac76243482099908966ded0\n- ci.yml: .github/workflows/ci.yml sha256 e5f28279fdb98c7f21bdf4c392174fc157224cf77f944018fbd601ace4477a7a\n- runs/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JF8GXNK05ZTSJ5MZGPN3EX\nraw sha256: 5eff178d383e6d4e534fa9949b10d4d2b3e091dd5c905751d95133bf7bdf0b77\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3JF8GXNK05ZTSJ5MZGPN3EX for claude-code v1: 17 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -38809,19 +38798,21 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
+      "datetime": "2026-09-27T22:20:10Z",
+      "dispatchable": true,
+      "id": "al-01M3JF8K6D82FKJFGYXMABHKP1",
+      "kind": "compilation",
       "mode": "pass-through",
-      "dispatchable": true
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: CI-OPT slice 6, the Test Architect's approved Rank 2b (docs/notes/ci-opt-proposal.md, section \"Test Architect review\"; read it first): grader unit tests check archive immutability with a cheap stat snapshot instead of two full content digests, while the content tree_digest stays where it proves F9; test-only, red first. Measured (proposal section 1, cProfile): tests/test_grade_correctness.py::tree_digest takes about 2.5 s per grader unit test (it reads and hashes ~1,122 files twice, before and after grading) in roughly 70 default-ring grader tests.\nDone when: a helper (beside tree_digest in tests/test_grade_correctness.py) returns a stat snapshot {relpath: (size, mtime_ns)} over every file under the folder, including the path set, so an added, deleted, resized or re-written file changes it; the grader unit tests that today call tree_digest before and after grading on a synthetic d1_cell/c1_cell fixture use the snapshot instead; the content tree_digest stays unchanged in the six `gate`-marked tests and in exactly one \"archive unchanged\" test per grader (architecture, drift, mutation, rigor, correctness: name each kept test in the commit message); a structural test asserts no module under src/harness_bench/grade/ references os.utime, os.utime( or utime (a grader that restores mtimes could hide a write from the snapshot); red first: a test where a fake grader writes a .pyc file under the archive folder makes the snapshot comparison fail (and one that rewrites a file with the same size fails through mtime_ns), committed failing before the helper exists; the summed time of the six grader test files before and after (uv run pytest -q -p no:cacheprovider --durations=0 tests/test_grade_architecture.py tests/test_grade_drift.py tests/test_grade_mutation.py tests/test_grade_rigor.py tests/test_grade_correctness.py tests/test_report_disclosure.py) is in the commit message; a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider on those six files passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: src/ changes; the gate-marked tests' bodies; tools/gate_stamp.py; ci.yml; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/notes/ci-opt-proposal.md (Test Architect review, Rank 2b); tests/test_grade_correctness.py (tree_digest, d1_cell); the six test files above (grep tree_digest); src/harness_bench/grade/. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: a helper (beside tree_digest in tests/test_grade_correctness.py) returns a stat snapshot {relpath: (size, mtime_ns)} over every file under the folder, including the path set, so an added, deleted, resized or re-written file changes it | phrase: a helper (beside tree_digest in tests/test_grade_correctness.py) returns a stat snapshot {relpath: (size, mtime_ns)} over every file under the folder, including the path set, so an added, deleted, resized or re-written file changes it |\n| done_when: the grader unit tests that today call tree_digest before and after grading on a synthetic d1_cell/c1_cell fixture use the snapshot instead | phrase: the grader unit tests that today call tree_digest before and after grading on a synthetic d1_cell/c1_cell fixture use the snapshot instead |\n| done_when: the content tree_digest stays unchanged in the six `gate`-marked tests and in exactly one \"archive unchanged\" test per grader (architecture, drift, mutation, rigor, correctness: name each kept test in the commit message) | phrase: the content tree_digest stays unchanged in the six `gate`-marked tests and in exactly one \"archive unchanged\" test per grader (architecture, drift, mutation, rigor, correctness: name each kept test in the commit message) |\n| done_when: a structural test asserts no module under src/harness_bench/grade/ references os.utime, os.utime( or utime (a grader that restores mtimes could hide a write from the snapshot) | phrase: a structural test asserts no module under src/harness_bench/grade/ references os.utime, os.utime( or utime (a grader that restores mtimes could hide a write from the snapshot) |\n| done_when: red first: a test where a fake grader writes a .pyc file under the archive folder makes the snapshot comparison fail (and one that rewrites a file with the same size fails through mtime_ns), committed failing before the helper exists | phrase: red first: a test where a fake grader writes a .pyc file under the archive folder makes the snapshot comparison fail (and one that rewrites a file with the same size fails through mtime_ns), committed failing before the helper exists |\n| done_when: the summed time of the six grader test files before and after (uv run pytest -q -p no:cacheprovider --durations=0 tests/test_grade_architecture.py tests/test_grade_drift.py tests/test_grade_mutation.py tests/test_grade_rigor.py tests/test_grade_correctness.py tests/test_report_disclosure.py) is in the commit message | phrase: the summed time of the six grader test files before and after (uv run pytest -q -p no:cacheprovider --durations=0 tests/test_grade_architecture.py tests/test_grade_drift.py tests/test_grade_mutation.py tests/test_grade_rigor.py tests/test_grade_correctness.py tests/test_report_disclosure.py) is in the commit message |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider on those six files passes | phrase: uv run pytest -q -p no:cacheprovider on those six files passes |\n| done_when: uv run pytest -q -p no:cacheprovider --collect-only exits 0 | phrase: uv run pytest -q -p no:cacheprovider --collect-only exits 0 |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: src/ changes | phrase: src/ changes |\n| not_in_scope: the gate-marked tests' bodies | phrase: the gate-marked tests' bodies |\n| not_in_scope: tools/gate_stamp.py | phrase: tools/gate_stamp.py |\n| not_in_scope: ci.yml | phrase: ci.yml |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- gate: unresolved (not found)\n- docs/notes/ci-opt-proposal.md: docs/notes/ci-opt-proposal.md sha256 504798dd9aa76405b4e60d06494e842a041b2dbad57685bf3f9a556f4e167699\n- tests/test_grade_correctness.py::tree_digest: unresolved (not found)\n- tests/test_grade_correctness.py: tests/test_grade_correctness.py sha256 aebfbce8703c7846bed50de5d99209e5fa5feea2800d940789a996d1366242f9\n- d1_cell/c1_cell: unresolved (not found)\n- src/harness_bench/grade/: unresolved (not found)\n- tests/test_grade_architecture.py: tests/test_grade_architecture.py sha256 3492cff928e0daac134d402ae091ad063e12ed47fa906b9380fc8d30fd4b99b0\n- tests/test_grade_drift.py: tests/test_grade_drift.py sha256 6cae5aa76fb32a531e3882629d880285a28b1b5e6f0eae36235c0c8eaab7398b\n- tests/test_grade_mutation.py: tests/test_grade_mutation.py sha256 da24a107e1bd7ea8c072a3a30235b2cc3cb1ab2e1e7c2cf2780a633b543563e8\n- tests/test_grade_rigor.py: tests/test_grade_rigor.py sha256 8bcc1e4c03542cfabccc96b368dff8f1ea019f74c7663f49b6ebb1820aa5fdb4\n- tests/test_report_disclosure.py: tests/test_report_disclosure.py sha256 99a535654b5aba5d01e4bf7dcc4debab259b831f706ebc72845880db13710621\n- src/: unresolved (not found)\n- tools/gate_stamp.py: tools/gate_stamp.py sha256 ea4c3d07dd74700604dd0683a3e3d0df3d99024feac76243482099908966ded0\n- ci.yml: .github/workflows/ci.yml sha256 e5f28279fdb98c7f21bdf4c392174fc157224cf77f944018fbd601ace4477a7a\n- runs/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JF8GXNK05ZTSJ5MZGPN3EX\nraw sha256: 5eff178d383e6d4e534fa9949b10d4d2b3e091dd5c905751d95133bf7bdf0b77\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: CI-OPT slice 6, the Test Architect's approved Rank 2b (docs/notes/…",
+      "skill": null,
+      "summary": "compiled al-01M3JF8GXNK05ZTSJ5MZGPN3EX for claude-code v1: 17 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
     },
     {
-      "id": "al-01M3JFX26S8RMDN1VRCNDV9VWS",
-      "shortname": "ciopt6-rank-2b",
-      "datetime": "2026-09-27T22:31:21Z",
-      "session": "worker-grok-ciopt6",
-      "prompt": "CI-OPT slice 6, Rank 2b (docs/notes/ci-opt-proposal.md, Test Architect review): grader unit tests check archive immutability with a stat snapshot {relpath: (size, mtime_ns)} instead of two full content digests, while the content tree_digest stays in the six gate-marked tests and in exactly one archive-unchanged test per grader. Test-only, red first: a fake grader writing a .pyc under the archive, and a same-size rewrite failing through mtime_ns, committed failing before the helper exists. A structural test asserts no module under src/harness_bench/grade/ references os.utime, os.utime( or utime. Summed time of the six grader test files before and after in the commit message. No src/ changes, no gate-test body edits, no push.",
-      "summary": "CI-OPT slice 6 (Rank 2b), test-only. stat_snapshot beside tree_digest returns {relpath: (size, mtime_ns)}; synthetic d1_cell/c1_cell before/after checks use it. Content tree_digest stays in the six gate tests and one archive-unchanged test per grader (architecture test_the_d1_gate_cells_conform_and_the_archive_is_unchanged, drift test_the_d1_gate_cells_have_no_scope_creep_and_the_archive_is_unchanged, mutation test_row15_d1_cells_graded_twice_give_characterization_values_and_leave_archives_unchanged, rigor test_the_d1_gate_cells_static_analysis_delta_and_archive_unchanged, correctness test_build_and_suite_clean_compiles_a_python_copy). Red e9c2371 committed failing (NameError) before the helper; green e54b205. Six files: 303.81s before (166 passed), 200.54s after (169 passed, 14 deselected). collect-only exit 0; ruff check src tests tools clean. No src/ change, no push.",
-      "kind": "skill",
-      "skill": "coordination-worker",
-      "tool": "grok",
       "actor": null,
       "artifacts": [
         "tests/test_grade_correctness.py",
@@ -38830,47 +38821,45 @@ window.AUDIT_DATA = {
         "tests/test_grade_mutation.py",
         "tests/test_grade_rigor.py"
       ],
+      "compiled": false,
+      "datetime": "2026-09-27T22:31:21Z",
+      "done_when": "uv run pytest -q -p no:cacheprovider on the six grader files passes (169 passed, 14 deselected, 200.54s); collect-only exits 0; ruff check src tests tools is clean; red and green each committed (e9c2371, e54b205).",
+      "duration_seconds": 643.0,
+      "fan_out": 0,
+      "id": "al-01M3JFX26S8RMDN1VRCNDV9VWS",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "CI-OPT slice 6, Rank 2b (docs/notes/ci-opt-proposal.md, Test Architect review): grader unit tests check archive immutability with a stat snapshot {relpath: (size, mtime_ns)} instead of two full content digests, while the content tree_digest stays in the six gate-marked tests and in exactly one archive-unchanged test per grader. Test-only, red first: a fake grader writing a .pyc under the archive, and a same-size rewrite failing through mtime_ns, committed failing before the helper exists. A structural test asserts no module under src/harness_bench/grade/ references os.utime, os.utime( or utime. Summed time of the six grader test files before and after in the commit message. No src/ changes, no gate-test body edits, no push.",
+      "session": "worker-grok-ciopt6",
+      "shortname": "ciopt6-rank-2b",
+      "skill": "coordination-worker",
+      "started_at": "2026-09-27T22:20:38Z",
+      "summary": "CI-OPT slice 6 (Rank 2b), test-only. stat_snapshot beside tree_digest returns {relpath: (size, mtime_ns)}; synthetic d1_cell/c1_cell before/after checks use it. Content tree_digest stays in the six gate tests and one archive-unchanged test per grader (architecture test_the_d1_gate_cells_conform_and_the_archive_is_unchanged, drift test_the_d1_gate_cells_have_no_scope_creep_and_the_archive_is_unchanged, mutation test_row15_d1_cells_graded_twice_give_characterization_values_and_leave_archives_unchanged, rigor test_the_d1_gate_cells_static_analysis_delta_and_archive_unchanged, correctness test_build_and_suite_clean_compiles_a_python_copy). Red e9c2371 committed failing (NameError) before the helper; green e54b205. Six files: 303.81s before (166 passed), 200.54s after (169 passed, 14 deselected). collect-only exit 0; ruff check src tests tools clean. No src/ change, no push.",
       "tags": [
         "ci-opt",
         "rank-2b"
       ],
-      "outcome": "success",
-      "compiled": false,
-      "done_when": "uv run pytest -q -p no:cacheprovider on the six grader files passes (169 passed, 14 deselected, 200.54s); collect-only exits 0; ruff check src tests tools is clean; red and green each committed (e9c2371, e54b205).",
       "tier": "T1",
-      "fan_out": 0,
-      "started_at": "2026-09-27T22:20:38Z",
-      "duration_seconds": 643.0
+      "tool": "grok"
     },
     {
-      "id": "al-01M3JJ0PTA9WBYBCGXW21MY1FR",
-      "shortname": "Goal: CI-OPT slice 7: a measured pytest-xdist trial for the default ring…",
+      "actor": null,
+      "artifacts": [],
       "datetime": "2026-09-27T23:08:18Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: CI-OPT slice 7: a measured pytest-xdist trial for the default ring, with the Security Architect's conditions met first (docs/notes/ci-opt-proposal.md, Test Architect review \"Missed by the proposal\"; the security conditions are below), so the Leader can decide on CI from numbers; red first where a race is fixed.\nMeasured (Leader, 2026-09-27): the default ring runs 1798 tests in 684 s locally serial; the CI test job takes 13.4 min on windows-latest. Security review (claude-sonnet-5, 2026-09-27): pytest-xdist and execnet are pytest-dev projects, MIT, maintained; APPROVE WITH CONDITIONS: (1) `uv add --dev pytest-xdist` with the hash-pinned uv.lock committed (CI runs `uv sync --locked`); (2) tests/conftest.py's `base` fixture: every worker shares CLEAN_PARENT (C:/Projects/bench-test), and its teardown's `root.parent.rmdir()` after an unlocked emptiness check sits outside the try/except, so parallel workers race on it (an unhandled OSError in teardown); fix before any -n > 1; (3) tests/test_profiles.py around line 450 names a folder with int(time.time()), collision-prone under workers: use uuid4 like `base`.\nDone when: pytest-xdist is a dev dependency in pyproject.toml's [dependency-groups].dev with uv.lock updated by uv (do not hand-edit the lock) and `uv sync --locked` passing; the `base` teardown race is fixed (drop the cosmetic empty-parent rmdir, or make it tolerate a concurrent writer inside the same error handling that reports, never swallows, per CLN-A), shown red first by a test that runs the teardown while another thread creates a sibling folder under the shared parent; test_profiles uses uuid4 for that folder; the default ring is measured serial and with -n 4 and -n auto, twice each, on this machine (uv run pytest -q -p no:cacheprovider [-n N] with the default marker selection), wall time and pass/fail/error counts recorded in docs/notes/ci-opt-proposal.md under a new section \"xdist trial (measured)\"; every test that fails or errors only under -n is listed there with its cause, and each is fixed (an order or shared-state dependency is a defect to fix, not a reason to serialise) or, if the fix is outside this slice's budget, marked in the note with the reason and a follow-up line; no CI file change (the Leader measures CI and decides); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: .github/workflows/ci.yml; the slow or gate rings; a Defender exclusion (the Leader tries it on CI); any file under runs/; writing to the operator's real ~/.codex, ~/.claude or ~/.copilot; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each step immediately.\n\nGrounding: pyproject.toml; uv.lock; tests/conftest.py (CLEAN_PARENT, base); tests/e2e/conftest.py; tests/test_profiles.py (around line 450); docs/notes/ci-opt-proposal.md. Use python, not python3 (Windows).",
-      "summary": "raw prompt logged for compilation",
+      "id": "al-01M3JJ0PTA9WBYBCGXW21MY1FR",
       "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: CI-OPT slice 7: a measured pytest-xdist trial for the default ring, with the Security Architect's conditions met first (docs/notes/ci-opt-proposal.md, Test Architect review \"Missed by the proposal\"; the security conditions are below), so the Leader can decide on CI from numbers; red first where a race is fixed.\nMeasured (Leader, 2026-09-27): the default ring runs 1798 tests in 684 s locally serial; the CI test job takes 13.4 min on windows-latest. Security review (claude-sonnet-5, 2026-09-27): pytest-xdist and execnet are pytest-dev projects, MIT, maintained; APPROVE WITH CONDITIONS: (1) `uv add --dev pytest-xdist` with the hash-pinned uv.lock committed (CI runs `uv sync --locked`); (2) tests/conftest.py's `base` fixture: every worker shares CLEAN_PARENT (C:/Projects/bench-test), and its teardown's `root.parent.rmdir()` after an unlocked emptiness check sits outside the try/except, so parallel workers race on it (an unhandled OSError in teardown); fix before any -n > 1; (3) tests/test_profiles.py around line 450 names a folder with int(time.time()), collision-prone under workers: use uuid4 like `base`.\nDone when: pytest-xdist is a dev dependency in pyproject.toml's [dependency-groups].dev with uv.lock updated by uv (do not hand-edit the lock) and `uv sync --locked` passing; the `base` teardown race is fixed (drop the cosmetic empty-parent rmdir, or make it tolerate a concurrent writer inside the same error handling that reports, never swallows, per CLN-A), shown red first by a test that runs the teardown while another thread creates a sibling folder under the shared parent; test_profiles uses uuid4 for that folder; the default ring is measured serial and with -n 4 and -n auto, twice each, on this machine (uv run pytest -q -p no:cacheprovider [-n N] with the default marker selection), wall time and pass/fail/error counts recorded in docs/notes/ci-opt-proposal.md under a new section \"xdist trial (measured)\"; every test that fails or errors only under -n is listed there with its cause, and each is fixed (an order or shared-state dependency is a defect to fix, not a reason to serialise) or, if the fix is outside this slice's budget, marked in the note with the reason and a follow-up line; no CI file change (the Leader measures CI and decides); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: .github/workflows/ci.yml; the slow or gate rings; a Defender exclusion (the Leader tries it on CI); any file under runs/; writing to the operator's real ~/.codex, ~/.claude or ~/.copilot; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each step immediately.\n\nGrounding: pyproject.toml; uv.lock; tests/conftest.py (CLEAN_PARENT, base); tests/e2e/conftest.py; tests/test_profiles.py (around line 450); docs/notes/ci-opt-proposal.md. Use python, not python3 (Windows).",
+      "session": "prompt-compile",
+      "shortname": "Goal: CI-OPT slice 7: a measured pytest-xdist trial for the default ring…",
       "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
+      "summary": "raw prompt logged for compilation",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M3JJ0TJVJNDCV53DWG95M75F",
-      "shortname": "compile-Goal: CI-OPT slice 7: a measured pytest-xdist trial for the default ring…",
-      "datetime": "2026-09-27T23:08:21Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: CI-OPT slice 7: a measured pytest-xdist trial for the default ring, with the Security Architect's conditions met first (docs/notes/ci-opt-proposal.md, Test Architect review \"Missed by the proposal\"; the security conditions are below), so the Leader can decide on CI from numbers; red first where a race is fixed. Measured (Leader, 2026-09-27): the default ring runs 1798 tests in 684 s locally serial; the CI test job takes 13.4 min on windows-latest. Security review (claude-sonnet-5, 2026-09-27): pytest-xdist and execnet are pytest-dev projects, MIT, maintained; APPROVE WITH CONDITIONS: (1) `uv add --dev pytest-xdist` with the hash-pinned uv.lock committed (CI runs `uv sync --locked`); (2) tests/conftest.py's `base` fixture: every worker shares CLEAN_PARENT (C:/Projects/bench-test), and its teardown's `root.parent.rmdir()` after an unlocked emptiness check sits outside the try/except, so parallel workers race on it (an unhandled OSError in teardown); fix before any -n > 1; (3) tests/test_profiles.py around line 450 names a folder with int(time.time()), collision-prone under workers: use uuid4 like `base`.\nDone when: pytest-xdist is a dev dependency in pyproject.toml's [dependency-groups].dev with uv.lock updated by uv (do not hand-edit the lock) and `uv sync --locked` passing; the `base` teardown race is fixed (drop the cosmetic empty-parent rmdir, or make it tolerate a concurrent writer inside the same error handling that reports, never swallows, per CLN-A), shown red first by a test that runs the teardown while another thread creates a sibling folder under the shared parent; test_profiles uses uuid4 for that folder; the default ring is measured serial and with -n 4 and -n auto, twice each, on this machine (uv run pytest -q -p no:cacheprovider [-n N] with the default marker selection), wall time and pass/fail/error counts recorded in docs/notes/ci-opt-proposal.md under a new section \"xdist trial (measured)\"; every test that fails or errors only under -n is listed there with its cause, and each is fixed (an order or shared-state dependency is a defect to fix, not a reason to serialise) or, if the fix is outside this slice's budget, marked in the note with the reason and a follow-up line; no CI file change (the Leader measures CI and decides); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: .github/workflows/ci.yml; the slow or gate rings; a Defender exclusion (the Leader tries it on CI); any file under runs/; writing to the operator's real ~/.codex, ~/.claude or ~/.copilot; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each step immediately.\nGrounding: pyproject.toml; uv.lock; tests/conftest.py (CLEAN_PARENT, base); tests/e2e/conftest.py; tests/test_profiles.py (around line 450); docs/notes/ci-opt-proposal.md. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: pytest-xdist is a dev dependency in pyproject.toml's [dependency-groups].dev with uv.lock updated by uv (do not hand-edit the lock) and `uv sync --locked` passing | phrase: pytest-xdist is a dev dependency in pyproject.toml's [dependency-groups].dev with uv.lock updated by uv (do not hand-edit the lock) and `uv sync --locked` passing |\n| done_when: the `base` teardown race is fixed (drop the cosmetic empty-parent rmdir, or make it tolerate a concurrent writer inside the same error handling that reports, never swallows, per CLN-A), shown red first by a test that runs the teardown while another thread creates a sibling folder under the shared parent | phrase: the `base` teardown race is fixed (drop the cosmetic empty-parent rmdir, or make it tolerate a concurrent writer inside the same error handling that reports, never swallows, per CLN-A), shown red first by a test that runs the teardown while another thread creates a sibling folder under the shared parent |\n| done_when: test_profiles uses uuid4 for that folder | phrase: test_profiles uses uuid4 for that folder |\n| done_when: the default ring is measured serial and with -n 4 and -n auto, twice each, on this machine (uv run pytest -q -p no:cacheprovider [-n N] with the default marker selection), wall time and pass/fail/error counts recorded in docs/notes/ci-opt-proposal.md under a new section \"xdist trial (measured)\" | phrase: the default ring is measured serial and with -n 4 and -n auto, twice each, on this machine (uv run pytest -q -p no:cacheprovider [-n N] with the default marker selection), wall time and pass/fail/error counts recorded in docs/notes/ci-opt-proposal.md under a new section \"xdist trial (measured)\" |\n| done_when: every test that fails or errors only under -n is listed there with its cause, and each is fixed (an order or shared-state dependency is a defect to fix, not a reason to serialise) or, if the fix is outside this slice's budget, marked in the note with the reason and a follow-up line | phrase: every test that fails or errors only under -n is listed there with its cause, and each is fixed (an order or shared-state dependency is a defect to fix, not a reason to serialise) or, if the fix is outside this slice's budget, marked in the note with the reason and a follow-up line |\n| done_when: no CI file change (the Leader measures CI and decides) | phrase: no CI file change (the Leader measures CI and decides) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider --collect-only exits 0 | phrase: uv run pytest -q -p no:cacheprovider --collect-only exits 0 |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: .github/workflows/ci.yml | phrase: .github/workflows/ci.yml |\n| not_in_scope: the slow or gate rings | phrase: the slow or gate rings |\n| not_in_scope: a Defender exclusion (the Leader tries it on CI) | phrase: a Defender exclusion (the Leader tries it on CI) |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: writing to the operator's real ~/.codex, ~/.claude or ~/.copilot | phrase: writing to the operator's real ~/.codex, ~/.claude or ~/.copilot |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- uv add --dev pytest-xdist: unresolved (not found)\n- uv sync --locked: unresolved (not found)\n- base: unresolved (not found)\n- root.parent.rmdir: unresolved (not found)\n- docs/notes/ci-opt-proposal.md: docs/notes/ci-opt-proposal.md sha256 504798dd9aa76405b4e60d06494e842a041b2dbad57685bf3f9a556f4e167699\n- tests/conftest.py's: unresolved (not found)\n- C:/Projects/bench-test: unresolved (outside repo)\n- try/except: unresolved (not found)\n- tests/test_profiles.py: tests/test_profiles.py sha256 078b376b22d792be20c137aab32d2d493948483483afec46fa8543044b2c15c8\n- pass/fail/error: unresolved (not found)\n- .github/workflows/ci.yml: unresolved (not found; nearest: .github/workflows/ci.yml)\n- runs/: unresolved (not found)\n- ~/.codex: unresolved (not found)\n- ~/.claude: unresolved (not found)\n- ~/.copilot: unresolved (not found)\n- tests/conftest.py: tests/conftest.py sha256 3b8a64073dde0861a6aa7faab52afcf6cf0cf2cd9a693309f7d18da7c04a82a7\n- tests/e2e/conftest.py: tests/e2e/conftest.py sha256 8bc770ae835b53b7351f6108ccd6c270f4821b1d301805ec2a5d8e3f27f5fa86\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JJ0PTA9WBYBCGXW21MY1FR\nraw sha256: 57e368f67e2468afa76362150d33d23336fe8aca80556a17ac196f759250f5b7\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3JJ0PTA9WBYBCGXW21MY1FR for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -39197,53 +39186,53 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3JJ3892Y78VZB2C9BFV8PAB",
-      "shortname": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordinati…",
-      "datetime": "2026-09-27T23:09:41Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only.\nMeasured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).\nDone when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible); the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0); the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases; the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label; the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog); where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable; the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee; the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed); the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named; the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document; any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved; docs-graph derive and validate pass; Commit the document.\nNot in scope: implementing anything; the full report's UI (row 20, a separate ui-design pass); the full grid (wave 5); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\n\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside your worktree; never call EnterWorktree.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3JJ3WF2W7TAQQRFCM5JGN97",
-      "shortname": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordinati…",
-      "datetime": "2026-09-27T23:10:02Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only.\nMeasured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).\nDone when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible); the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0); the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases; the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label; the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog); where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable; the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee; the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed); the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named; the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document; any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved; docs-graph derive and validate pass; Commit the document.\nNot in scope: implementing anything; the full report's UI (row 20, a separate ui-design pass); the full grid (wave 5); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\n\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-stats-design (use absolute paths or cd into it in each shell command).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3JJ40PZ4PAPDTMXCWSMNGJR",
-      "shortname": "compile-Goal: the detailed design for wave 4 row 19, statistics (docs/coordinati…",
-      "datetime": "2026-09-27T23:10:06Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only. Measured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).\nDone when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible); the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0); the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases; the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label; the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog); where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable; the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee; the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed); the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named; the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document; any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved; docs-graph derive and validate pass; Commit the document.\nNot in scope: implementing anything; the full report's UI (row 20, a separate ui-design pass); the full grid (wave 5); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-stats-design (use absolute paths or cd into it in each shell command).\nTrace\n| clause | trace |\n|---|---|\n| done_when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible) | phrase: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible) |\n| done_when: the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0) | phrase: the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0) |\n| done_when: the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases | phrase: the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases |\n| done_when: the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label | phrase: the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label |\n| done_when: the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog) | phrase: the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog) |\n| done_when: where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable | phrase: where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable |\n| done_when: the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee | phrase: the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee |\n| done_when: the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed) | phrase: the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed) |\n| done_when: the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named | phrase: the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named |\n| done_when: the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document | phrase: the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document |\n| done_when: any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved | phrase: any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved |\n| done_when: docs-graph derive and validate pass | phrase: docs-graph derive and validate pass |\n| done_when: Commit the document. | phrase: Commit the document. |\n| not_in_scope: implementing anything | phrase: implementing anything |\n| not_in_scope: the full report's UI (row 20, a separate ui-design pass) | phrase: the full report's UI (row 20, a separate ui-design pass) |\n| not_in_scope: the full grid (wave 5) | phrase: the full grid (wave 5) |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- bench report: unresolved (not found)\n- 2=: unresolved (not found)\n- no detectable effect: unresolved (not found)\n- not computed: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 a65f5281ebb860ff8e60ef204880b97f5869747d3ff91460400da058b05982a1\n- .claude/skills/design-slice/SKILL.md: unresolved (not found)\n- reference/flow.md: unresolved (ambiguous: 465 matches)\n- bench/catalog-freeze.yaml: bench/catalog-freeze.yaml sha256 9a5166340d36c84a54b92137459b1275a1a2d194e0722f770110625d08763078\n- src/harness_bench/report/: unresolved (not found)\n- src/harness_bench/views.py: src/harness_bench/views.py sha256 ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094\n- docs/design/phase4-statistics.md: unresolved (not found)\n- runs/: unresolved (not found)\n- docs/design/phase3-graders.md: docs/design/phase3-graders.md sha256 544b1cad5a82ff64b5e1ef998fd28b0cf116461e07d0f676d36c2bba35c08875\n- phase3-cost.md: docs/design/phase3-cost.md sha256 e3758a322c4c304094423a3dcbb878e9e27b6da53cfc143d58e6c917801e3674\n- bench/metrics.yaml: bench/metrics.yaml sha256 df5499d1c0bda69ae874f2de41cfd09188f8e8568123fc67bad23fa20c31725d\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- probe/current: unresolved (not found)\n- docs/lessons/defect-classes.md: unresolved (ambiguous: 5 matches)\n- .claude/knowledge/domain-and-data-modelling.md: unresolved (not found)\n- .claude/knowledge/testing-strategy.md: unresolved (not found)\n- C:/Projects/x-harness-x-model-bench-w4-stats-design: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JJ3WF2W7TAQQRFCM5JGN97\nraw sha256: 8a1419cbdc35f3040cfa064dd955f00ccbcb3978a299ad915726e73f6ef768b4\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3JJ3WF2W7TAQQRFCM5JGN97 for claude-code v1: 18 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-27T23:08:21Z",
+      "dispatchable": true,
+      "id": "al-01M3JJ0TJVJNDCV53DWG95M75F",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: CI-OPT slice 7: a measured pytest-xdist trial for the default ring, with the Security Architect's conditions met first (docs/notes/ci-opt-proposal.md, Test Architect review \"Missed by the proposal\"; the security conditions are below), so the Leader can decide on CI from numbers; red first where a race is fixed. Measured (Leader, 2026-09-27): the default ring runs 1798 tests in 684 s locally serial; the CI test job takes 13.4 min on windows-latest. Security review (claude-sonnet-5, 2026-09-27): pytest-xdist and execnet are pytest-dev projects, MIT, maintained; APPROVE WITH CONDITIONS: (1) `uv add --dev pytest-xdist` with the hash-pinned uv.lock committed (CI runs `uv sync --locked`); (2) tests/conftest.py's `base` fixture: every worker shares CLEAN_PARENT (C:/Projects/bench-test), and its teardown's `root.parent.rmdir()` after an unlocked emptiness check sits outside the try/except, so parallel workers race on it (an unhandled OSError in teardown); fix before any -n > 1; (3) tests/test_profiles.py around line 450 names a folder with int(time.time()), collision-prone under workers: use uuid4 like `base`.\nDone when: pytest-xdist is a dev dependency in pyproject.toml's [dependency-groups].dev with uv.lock updated by uv (do not hand-edit the lock) and `uv sync --locked` passing; the `base` teardown race is fixed (drop the cosmetic empty-parent rmdir, or make it tolerate a concurrent writer inside the same error handling that reports, never swallows, per CLN-A), shown red first by a test that runs the teardown while another thread creates a sibling folder under the shared parent; test_profiles uses uuid4 for that folder; the default ring is measured serial and with -n 4 and -n auto, twice each, on this machine (uv run pytest -q -p no:cacheprovider [-n N] with the default marker selection), wall time and pass/fail/error counts recorded in docs/notes/ci-opt-proposal.md under a new section \"xdist trial (measured)\"; every test that fails or errors only under -n is listed there with its cause, and each is fixed (an order or shared-state dependency is a defect to fix, not a reason to serialise) or, if the fix is outside this slice's budget, marked in the note with the reason and a follow-up line; no CI file change (the Leader measures CI and decides); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: .github/workflows/ci.yml; the slow or gate rings; a Defender exclusion (the Leader tries it on CI); any file under runs/; writing to the operator's real ~/.codex, ~/.claude or ~/.copilot; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each step immediately.\nGrounding: pyproject.toml; uv.lock; tests/conftest.py (CLEAN_PARENT, base); tests/e2e/conftest.py; tests/test_profiles.py (around line 450); docs/notes/ci-opt-proposal.md. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: pytest-xdist is a dev dependency in pyproject.toml's [dependency-groups].dev with uv.lock updated by uv (do not hand-edit the lock) and `uv sync --locked` passing | phrase: pytest-xdist is a dev dependency in pyproject.toml's [dependency-groups].dev with uv.lock updated by uv (do not hand-edit the lock) and `uv sync --locked` passing |\n| done_when: the `base` teardown race is fixed (drop the cosmetic empty-parent rmdir, or make it tolerate a concurrent writer inside the same error handling that reports, never swallows, per CLN-A), shown red first by a test that runs the teardown while another thread creates a sibling folder under the shared parent | phrase: the `base` teardown race is fixed (drop the cosmetic empty-parent rmdir, or make it tolerate a concurrent writer inside the same error handling that reports, never swallows, per CLN-A), shown red first by a test that runs the teardown while another thread creates a sibling folder under the shared parent |\n| done_when: test_profiles uses uuid4 for that folder | phrase: test_profiles uses uuid4 for that folder |\n| done_when: the default ring is measured serial and with -n 4 and -n auto, twice each, on this machine (uv run pytest -q -p no:cacheprovider [-n N] with the default marker selection), wall time and pass/fail/error counts recorded in docs/notes/ci-opt-proposal.md under a new section \"xdist trial (measured)\" | phrase: the default ring is measured serial and with -n 4 and -n auto, twice each, on this machine (uv run pytest -q -p no:cacheprovider [-n N] with the default marker selection), wall time and pass/fail/error counts recorded in docs/notes/ci-opt-proposal.md under a new section \"xdist trial (measured)\" |\n| done_when: every test that fails or errors only under -n is listed there with its cause, and each is fixed (an order or shared-state dependency is a defect to fix, not a reason to serialise) or, if the fix is outside this slice's budget, marked in the note with the reason and a follow-up line | phrase: every test that fails or errors only under -n is listed there with its cause, and each is fixed (an order or shared-state dependency is a defect to fix, not a reason to serialise) or, if the fix is outside this slice's budget, marked in the note with the reason and a follow-up line |\n| done_when: no CI file change (the Leader measures CI and decides) | phrase: no CI file change (the Leader measures CI and decides) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider --collect-only exits 0 | phrase: uv run pytest -q -p no:cacheprovider --collect-only exits 0 |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: .github/workflows/ci.yml | phrase: .github/workflows/ci.yml |\n| not_in_scope: the slow or gate rings | phrase: the slow or gate rings |\n| not_in_scope: a Defender exclusion (the Leader tries it on CI) | phrase: a Defender exclusion (the Leader tries it on CI) |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: writing to the operator's real ~/.codex, ~/.claude or ~/.copilot | phrase: writing to the operator's real ~/.codex, ~/.claude or ~/.copilot |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- uv add --dev pytest-xdist: unresolved (not found)\n- uv sync --locked: unresolved (not found)\n- base: unresolved (not found)\n- root.parent.rmdir: unresolved (not found)\n- docs/notes/ci-opt-proposal.md: docs/notes/ci-opt-proposal.md sha256 504798dd9aa76405b4e60d06494e842a041b2dbad57685bf3f9a556f4e167699\n- tests/conftest.py's: unresolved (not found)\n- C:/Projects/bench-test: unresolved (outside repo)\n- try/except: unresolved (not found)\n- tests/test_profiles.py: tests/test_profiles.py sha256 078b376b22d792be20c137aab32d2d493948483483afec46fa8543044b2c15c8\n- pass/fail/error: unresolved (not found)\n- .github/workflows/ci.yml: unresolved (not found; nearest: .github/workflows/ci.yml)\n- runs/: unresolved (not found)\n- ~/.codex: unresolved (not found)\n- ~/.claude: unresolved (not found)\n- ~/.copilot: unresolved (not found)\n- tests/conftest.py: tests/conftest.py sha256 3b8a64073dde0861a6aa7faab52afcf6cf0cf2cd9a693309f7d18da7c04a82a7\n- tests/e2e/conftest.py: tests/e2e/conftest.py sha256 8bc770ae835b53b7351f6108ccd6c270f4821b1d301805ec2a5d8e3f27f5fa86\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JJ0PTA9WBYBCGXW21MY1FR\nraw sha256: 57e368f67e2468afa76362150d33d23336fe8aca80556a17ac196f759250f5b7\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: CI-OPT slice 7: a measured pytest-xdist trial for the default ring…",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3JJ0PTA9WBYBCGXW21MY1FR for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-27T23:09:41Z",
+      "id": "al-01M3JJ3892Y78VZB2C9BFV8PAB",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only.\nMeasured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).\nDone when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible); the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0); the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases; the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label; the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog); where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable; the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee; the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed); the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named; the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document; any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved; docs-graph derive and validate pass; Commit the document.\nNot in scope: implementing anything; the full report's UI (row 20, a separate ui-design pass); the full grid (wave 5); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\n\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside your worktree; never call EnterWorktree.",
+      "session": "prompt-compile",
+      "shortname": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordinati…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-09-27T23:10:02Z",
+      "id": "al-01M3JJ3WF2W7TAQQRFCM5JGN97",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only.\nMeasured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).\nDone when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible); the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0); the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases; the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label; the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog); where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable; the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee; the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed); the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named; the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document; any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved; docs-graph derive and validate pass; Commit the document.\nNot in scope: implementing anything; the full report's UI (row 20, a separate ui-design pass); the full grid (wave 5); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\n\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-stats-design (use absolute paths or cd into it in each shell command).",
+      "session": "prompt-compile",
+      "shortname": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordinati…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -39628,6 +39617,379 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
+      "datetime": "2026-09-27T23:10:06Z",
+      "dispatchable": true,
+      "id": "al-01M3JJ40PZ4PAPDTMXCWSMNGJR",
+      "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only. Measured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).\nDone when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible); the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0); the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases; the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label; the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog); where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable; the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee; the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed); the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named; the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document; any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved; docs-graph derive and validate pass; Commit the document.\nNot in scope: implementing anything; the full report's UI (row 20, a separate ui-design pass); the full grid (wave 5); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-stats-design (use absolute paths or cd into it in each shell command).\nTrace\n| clause | trace |\n|---|---|\n| done_when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible) | phrase: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible) |\n| done_when: the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0) | phrase: the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0) |\n| done_when: the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases | phrase: the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases |\n| done_when: the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label | phrase: the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label |\n| done_when: the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog) | phrase: the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog) |\n| done_when: where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable | phrase: where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable |\n| done_when: the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee | phrase: the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee |\n| done_when: the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed) | phrase: the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed) |\n| done_when: the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named | phrase: the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named |\n| done_when: the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document | phrase: the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document |\n| done_when: any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved | phrase: any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved |\n| done_when: docs-graph derive and validate pass | phrase: docs-graph derive and validate pass |\n| done_when: Commit the document. | phrase: Commit the document. |\n| not_in_scope: implementing anything | phrase: implementing anything |\n| not_in_scope: the full report's UI (row 20, a separate ui-design pass) | phrase: the full report's UI (row 20, a separate ui-design pass) |\n| not_in_scope: the full grid (wave 5) | phrase: the full grid (wave 5) |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- bench report: unresolved (not found)\n- 2=: unresolved (not found)\n- no detectable effect: unresolved (not found)\n- not computed: unresolved (not found)\n- docs/coordination/coordination-finish-harness-bench.md: docs/coordination/coordination-finish-harness-bench.md sha256 a65f5281ebb860ff8e60ef204880b97f5869747d3ff91460400da058b05982a1\n- .claude/skills/design-slice/SKILL.md: unresolved (not found)\n- reference/flow.md: unresolved (ambiguous: 465 matches)\n- bench/catalog-freeze.yaml: bench/catalog-freeze.yaml sha256 9a5166340d36c84a54b92137459b1275a1a2d194e0722f770110625d08763078\n- src/harness_bench/report/: unresolved (not found)\n- src/harness_bench/views.py: src/harness_bench/views.py sha256 ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094\n- docs/design/phase4-statistics.md: unresolved (not found)\n- runs/: unresolved (not found)\n- docs/design/phase3-graders.md: docs/design/phase3-graders.md sha256 544b1cad5a82ff64b5e1ef998fd28b0cf116461e07d0f676d36c2bba35c08875\n- phase3-cost.md: docs/design/phase3-cost.md sha256 e3758a322c4c304094423a3dcbb878e9e27b6da53cfc143d58e6c917801e3674\n- bench/metrics.yaml: bench/metrics.yaml sha256 df5499d1c0bda69ae874f2de41cfd09188f8e8568123fc67bad23fa20c31725d\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- probe/current: unresolved (not found)\n- docs/lessons/defect-classes.md: unresolved (ambiguous: 5 matches)\n- .claude/knowledge/domain-and-data-modelling.md: unresolved (not found)\n- .claude/knowledge/testing-strategy.md: unresolved (not found)\n- C:/Projects/x-harness-x-model-bench-w4-stats-design: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JJ3WF2W7TAQQRFCM5JGN97\nraw sha256: 8a1419cbdc35f3040cfa064dd955f00ccbcb3978a299ad915726e73f6ef768b4\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: the detailed design for wave 4 row 19, statistics (docs/coordinati…",
+      "skill": null,
+      "summary": "compiled al-01M3JJ3WF2W7TAQQRFCM5JGN97 for claude-code v1: 18 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/phase4-statistics.md"
+      ],
+      "compiled_from": "al-01M3JJ40PZ4PAPDTMXCWSMNGJR",
+      "datetime": "2026-09-27T23:43:49Z",
+      "done_when": "docs/design/phase4-statistics.md committed with data model, bootstrap, ranking, pack effect, comparison, surfaces, contracts, test plan, slices, gate record, DR-S-n; derive and validate pass",
+      "git": {
+        "branch": "w4-stats-design",
+        "pushed": null,
+        "sha": "30af0a5087d4c51083fec2cd1ab3f120bb9a8fa0",
+        "short": "30af0a508"
+      },
+      "goal": "detailed design for wave 4 row 19 statistics, ready for red-first slices",
+      "id": "al-01M3JM1RGF4FSBZ8ERN6TMWZ7S",
+      "kind": "skill",
+      "outcome": "success",
+      "persona_yield": [
+        {
+          "accepted": 29,
+          "persona": "test-architect",
+          "raised": 29
+        },
+        {
+          "accepted": 1,
+          "persona": "simplifier",
+          "raised": 6
+        },
+        {
+          "accepted": 1,
+          "persona": "patterns-expert",
+          "raised": 4
+        }
+      ],
+      "prompt": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only.\nMeasured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).\nDone when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible); the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0); the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases; the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label; the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog); where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable; the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee; the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed); the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named; the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document; any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved; docs-graph derive and validate pass; Commit the document.\nNot in scope: implementing anything; the full report's UI (row 20, a separate ui-design pass); the full grid (wave 5); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\n\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-stats-design (use absolute paths or cd into it in each shell command).",
+      "session": "w4-stats-design",
+      "shortname": "design-slice-phase4-statistics",
+      "skill": "design-slice",
+      "summary": "Row 19 design: composites (anchors, gated = pass@1 x overall), two-stage percentile bootstrap (95%, >=2000, keyed seed), component-tier ranking with the pass@1 gate merge, pack effect (E1-E3 excluded), run comparison; 7 slices; DR-S-1..6 open; Test Architect cleared at round 4 with 3 conditions",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M3JM4C3QVX4B6MPSYR9BM6ME",
+      "shortname": "Goal: implement slice S1 of docs/design/phase4-statistics.md, the bootst…",
+      "datetime": "2026-09-27T23:45:15Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: implement slice S1 of docs/design/phase4-statistics.md, the bootstrap core in src/harness_bench/stats.py, exactly as the design specifies it (read the whole document first: the data model, the bootstrap procedure, the RNG discipline, the contracts for Params, Obs, Interval, interval and the keyed streams, the test plan T-S1..S6 and T-S8, the mutants for stats.json, and the implementation-slices table row S1), red first.\nMeasured (design author, 2026-09-27, Appendix A): stdlib Decimal is fast enough (0.024 s per interval at 24 tasks x 3 reps x 2,000 resamples); the two-stage percentile bootstrap covers 0.97 at 6 tasks x 3 reps. S1 depends on no open decision request (the design's R4).\nDone when: every S1 deliverable in the design's slice table exists (stats.py with the contracted names and signatures, tests/test_stats.py, tests/mutations/stats.json, the golden fixture the design names) and T-S1 is committed red first, failing on an assertion, then green; T-S1..S6 and T-S8 pass with T-S8's exact count pinned as a characterization (label it so in the test, per the Test Architect's condition); every mutant the design lists for stats.json is present and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message); property tests use hypothesis (already a dev dependency) where the design says so; any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently; nothing outside S1's listed files changes (no views, board, composites, report or CLI change); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_stats.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S2-S7; the catalog; decision requests DR-S-1..6 (open with the Owner); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-statistics.md (all of it, S1 row at about line 757, T-S1 at about line 630); src/harness_bench/ (package layout, Decimal conventions in views.py); tests/mutations/*.json (format); tools/mutate_check.py. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3JM4F4MDJCGTSDR98JFWTQA",
+      "shortname": "compile-Goal: implement slice S1 of docs/design/phase4-statistics.md, the bootst…",
+      "datetime": "2026-09-27T23:45:18Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement slice S1 of docs/design/phase4-statistics.md, the bootstrap core in src/harness_bench/stats.py, exactly as the design specifies it (read the whole document first: the data model, the bootstrap procedure, the RNG discipline, the contracts for Params, Obs, Interval, interval and the keyed streams, the test plan T-S1..S6 and T-S8, the mutants for stats.json, and the implementation-slices table row S1), red first. Measured (design author, 2026-09-27, Appendix A): stdlib Decimal is fast enough (0.024 s per interval at 24 tasks x 3 reps x 2,000 resamples); the two-stage percentile bootstrap covers 0.97 at 6 tasks x 3 reps. S1 depends on no open decision request (the design's R4).\nDone when: every S1 deliverable in the design's slice table exists (stats.py with the contracted names and signatures, tests/test_stats.py, tests/mutations/stats.json, the golden fixture the design names) and T-S1 is committed red first, failing on an assertion, then green; T-S1..S6 and T-S8 pass with T-S8's exact count pinned as a characterization (label it so in the test, per the Test Architect's condition); every mutant the design lists for stats.json is present and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message); property tests use hypothesis (already a dev dependency) where the design says so; any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently; nothing outside S1's listed files changes (no views, board, composites, report or CLI change); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_stats.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S2-S7; the catalog; decision requests DR-S-1..6 (open with the Owner); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (all of it, S1 row at about line 757, T-S1 at about line 630); src/harness_bench/ (package layout, Decimal conventions in views.py); tests/mutations/*.json (format); tools/mutate_check.py. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: every S1 deliverable in the design's slice table exists (stats.py with the contracted names and signatures, tests/test_stats.py, tests/mutations/stats.json, the golden fixture the design names) and T-S1 is committed red first, failing on an assertion, then green | phrase: every S1 deliverable in the design's slice table exists (stats.py with the contracted names and signatures, tests/test_stats.py, tests/mutations/stats.json, the golden fixture the design names) and T-S1 is committed red first, failing on an assertion, then green |\n| done_when: T-S1..S6 and T-S8 pass with T-S8's exact count pinned as a characterization (label it so in the test, per the Test Architect's condition) | phrase: T-S1..S6 and T-S8 pass with T-S8's exact count pinned as a characterization (label it so in the test, per the Test Architect's condition) |\n| done_when: every mutant the design lists for stats.json is present and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message) | phrase: every mutant the design lists for stats.json is present and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message) |\n| done_when: property tests use hypothesis (already a dev dependency) where the design says so | phrase: property tests use hypothesis (already a dev dependency) where the design says so |\n| done_when: any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently | phrase: any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently |\n| done_when: nothing outside S1's listed files changes (no views, board, composites, report or CLI change) | phrase: nothing outside S1's listed files changes (no views, board, composites, report or CLI change) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider tests/test_stats.py passes | phrase: uv run pytest -q -p no:cacheprovider tests/test_stats.py passes |\n| done_when: uv run pytest -q -p no:cacheprovider --collect-only exits 0 | phrase: uv run pytest -q -p no:cacheprovider --collect-only exits 0 |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: slices S2-S7 | phrase: slices S2-S7 |\n| not_in_scope: the catalog | phrase: the catalog |\n| not_in_scope: decision requests DR-S-1..6 (open with the Owner) | phrase: decision requests DR-S-1..6 (open with the Owner) |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- assume: unresolved (not found)\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd\n- src/harness_bench/stats.py: unresolved (not found; nearest: src/harness_bench/status.py)\n- stats.json: unresolved (not found; nearest: tests/mutations/status.json)\n- stats.py: unresolved (not found; nearest: src/harness_bench/status.py)\n- tests/test_stats.py: unresolved (not found; nearest: tests/test_status.py)\n- tests/mutations/stats.json: unresolved (not found; nearest: tests/mutations/status.json)\n- tools/mutate_check.py: tools/mutate_check.py sha256 51f6617b7cadab4595f40bc4250b39001ec8b66b06b7c740565d49cbe1418ba2\n- runs/: unresolved (not found)\n- src/harness_bench/: unresolved (not found)\n- views.py: src/harness_bench/views.py sha256 ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JM4C3QVX4B6MPSYR9BM6ME\nraw sha256: f1b1ec2d8deff06418489194c7d16138f90f81573e1e83eac3a4555fb837cef5\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3JM4C3QVX4B6MPSYR9BM6ME for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "every S1 deliverable in the design's slice table exists (stats.py with the contracted names and signatures, tests/test_stats.py, tests/mutations/stats.json, the golden fixture the design names) and T-S1 is committed red first, failing on an assertion, then green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "every S1 deliverable in the design's slice table exists (stats.py with the contracted names and signatures, tests/test_stats.py, tests/mutations/stats.json, the golden fixture the design names) and T-S1 is committed red first, failing on an assertion, then green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "T-S1..S6 and T-S8 pass with T-S8's exact count pinned as a characterization (label it so in the test, per the Test Architect's condition)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "T-S1..S6 and T-S8 pass with T-S8's exact count pinned as a characterization (label it so in the test, per the Test Architect's condition)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "every mutant the design lists for stats.json is present and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "every mutant the design lists for stats.json is present and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "property tests use hypothesis (already a dev dependency) where the design says so",
+            "trace": {
+              "kind": "phrase",
+              "ref": "property tests use hypothesis (already a dev dependency) where the design says so"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "nothing outside S1's listed files changes (no views, board, composites, report or CLI change)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "nothing outside S1's listed files changes (no views, board, composites, report or CLI change)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider tests/test_stats.py passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider tests/test_stats.py passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider --collect-only exits 0",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider --collect-only exits 0"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "slices S2-S7",
+            "trace": {
+              "kind": "phrase",
+              "ref": "slices S2-S7"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the catalog",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the catalog"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "decision requests DR-S-1..6 (open with the Owner)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "decision requests DR-S-1..6 (open with the Owner)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "every S1 deliverable in the design's slice table exists (stats.py with the contracted names and signatures, tests/test_stats.py, tests/mutations/stats.json, the golden fixture the design names) and T-S1 is committed red first, failing on an assertion, then green",
+            "T-S1..S6 and T-S8 pass with T-S8's exact count pinned as a characterization (label it so in the test, per the Test Architect's condition)",
+            "every mutant the design lists for stats.json is present and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message)",
+            "property tests use hypothesis (already a dev dependency) where the design says so",
+            "any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently",
+            "nothing outside S1's listed files changes (no views, board, composites, report or CLI change)",
+            "a test earns its place by a failure only it catches",
+            "uv run pytest -q -p no:cacheprovider tests/test_stats.py passes",
+            "uv run pytest -q -p no:cacheprovider --collect-only exits 0",
+            "uv run ruff check src tests tools is clean",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "implement slice S1 of docs/design/phase4-statistics.md, the bootstrap core in src/harness_bench/stats.py, exactly as the design specifies it (read the whole document first: the data model, the bootstrap procedure, the RNG discipline, the contracts for Params, Obs, Interval, interval and the keyed streams, the test plan T-S1..S6 and T-S8, the mutants for stats.json, and the implementation-slices table row S1), red first. Measured (design author, 2026-09-27, Appendix A): stdlib Decimal is fast enough (0.024 s per interval at 24 tasks x 3 reps x 2,000 resamples); the two-stage percentile bootstrap covers 0.97 at 6 tasks x 3 reps. S1 depends on no open decision request (the design's R4).",
+          "main_line_budget": "one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (all of it, S1 row at about line 757, T-S1 at about line 630); src/harness_bench/ (package layout, Decimal conventions in views.py); tests/mutations/*.json (format); tools/mutate_check.py. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "slices S2-S7",
+            "the catalog",
+            "decision requests DR-S-1..6 (open with the Owner)",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.006,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3JM4C3QVX4B6MPSYR9BM6ME",
+        "raw_sha256": "f1b1ec2d8deff06418489194c7d16138f90f81573e1e83eac3a4555fb837cef5",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "assume"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase4-statistics.md",
+            "reason": null,
+            "sha256": "2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd",
+            "status": "resolved",
+            "token": "docs/design/phase4-statistics.md"
+          },
+          {
+            "nearest": "src/harness_bench/status.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/stats.py"
+          },
+          {
+            "nearest": "tests/mutations/status.json",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stats.json"
+          },
+          {
+            "nearest": "src/harness_bench/status.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stats.py"
+          },
+          {
+            "nearest": "tests/test_status.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_stats.py"
+          },
+          {
+            "nearest": "tests/mutations/status.json",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/stats.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "51f6617b7cadab4595f40bc4250b39001ec8b66b06b7c740565d49cbe1418ba2",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/views.py",
+            "reason": null,
+            "sha256": "ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842",
+            "status": "resolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/*.json"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
       "mode": "pass-through",
       "dispatchable": true
     }
@@ -39994,6 +40356,30 @@ window.AUDIT_DATA = {
       "summary": "Row-17 design (docs/design/phase3-gateway-judges.md, revision 3) and spike GW-H (docs/notes/spike-gw-headless.md, tests/fixtures/gateway/gw-headless-results.json) from five Leader-run probe turns.\n\nMeasured:\n- Claude Code 2.1.282 serves claude-fable-5-1 with 0 tool events in text mode. --json-schema adds a StructuredOutput tool call.\n- Codex 0.156.0 serves gpt-6-sol but keeps its code-mode exec tool, which the model called once per turn; it failed closed.\n- Claude adds the account e-mail. Codex adds the operator's ~/.agents/skills root (user name, home path).\n- The OpenAI account is at 99% of its weekly limit until 2026-09-29T20:03Z.\n\nDesign decisions:\n- The Anthropic judge is Fable, text output. Codex is qualified: false and never spawned (DR-GW-1).\n- Call folders sit under the cells root, checked by check_cells_root. The request goes on stdin.\n- The key hashes request, schema, model and invocation_sha256. The store is write-once via os.link. A hit needs a matching storing row inside the known roots.\n- verdict_uses gets outcome (5 values) plus code. Calibration uses a set-checked label invariant and its own calibration ledger.\n- CLI-added context is detected at report time (DR-GW-5).\n\nGate: Patterns, Simplifier, Test Architect, Security and Data & Persistence, all opus, Adversary mode. Round 1 had three vetoes and one soft block. In round 2 all five cleared, four with conditions, which are applied. Five Owner decision requests: DR-GW-1 to DR-GW-5.",
       "tags": [],
       "title": "Row-17 gateway: Fable judge (text), Codex judge not qualified (DR-GW-1), cells-root call folders, stdin, request+invocation key, verified-provenance write-once store, verdict_uses outcome+code"
+    },
+    {
+      "id": "cl-01M3JM1RR2C0VJZYHT4ZJQPFFP",
+      "datetime": "2026-09-27T23:43:50Z",
+      "session": "w4-stats-design",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "Row 19 statistics design: two-stage percentile bootstrap, component-tier ranking with pass@1 gate, derived-only",
+      "prompt": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only.\nMeasured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).\nDone when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible); the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0); the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases; the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label; the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog); where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable; the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee; the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed); the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named; the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document; any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved; docs-graph derive and validate pass; Commit the document.\nNot in scope: implementing anything; the full report's UI (row 20, a separate ui-design pass); the full grid (wave 5); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\n\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-stats-design (use absolute paths or cd into it in each shell command).",
+      "summary": "docs/design/phase4-statistics.md: normalisation by catalog anchors, gated composite, bootstrap over tasks then repetitions, ranking tiers from interval overlap merged by pass@1 dominance, pack effect and comparison via one paired-delta function; nothing stored",
+      "rationale": "Measured: 0.024 s per interval (stdlib Decimal suffices); two-stage covers 0.97 at 6x3 vs cluster-only 0.88, so the conservative method serves US-36's refuse-to-separate aim; count-based ranks break US-36 (i) on non-transitive overlap",
+      "artifacts": [
+        "docs/design/phase4-statistics.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "3d06948",
+        "after": "30af0a5087d4c51083fec2cd1ab3f120bb9a8fa0",
+        "branch": "w4-stats-design",
+        "pushed": null,
+        "commits": [
+          "30af0a5 design(stats): phase-4 statistics first draft - composites, two-stage percentile bootstrap, ranking with ties, pack effect, run comparison; DR-S-1..6 open"
+        ]
+      }
     }
   ],
   "messages": [
