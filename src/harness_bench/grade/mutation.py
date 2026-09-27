@@ -28,6 +28,7 @@ from harness_bench.profiles import CELL_ENV
 
 METRIC = "mutation_score"
 SCALE = Decimal("0.0001")
+STRYKER_VERSION = "4.16.0"
 NO_WORKING_COPY = "no working copy in the archive"
 NO_TESTS_WRITTEN = "no tests written"
 NO_SOURCE_CHANGED = "no non-test source changed"
@@ -55,6 +56,7 @@ __all__ = [
     "NO_TESTS_WRITTEN",
     "NO_WORKING_COPY",
     "SCALE",
+    "STRYKER_VERSION",
     "TEST_PROJECT_MARKER",
     "TOOL_NOT_AVAILABLE",
     "find_stryker_dll",
@@ -74,7 +76,7 @@ def find_stryker_dll() -> Path | None:
     except RuntimeError:
         pass
     for base in candidates:
-        dll = base / "dotnet-stryker" / "4.16.0" / "tools" / "net8.0" / "any" / "Stryker.CLI.dll"
+        dll = base / "dotnet-stryker" / STRYKER_VERSION / "tools" / "net8.0" / "any" / "Stryker.CLI.dll"
         if dll.is_file():
             return dll
     return None

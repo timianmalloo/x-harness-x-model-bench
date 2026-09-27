@@ -435,7 +435,7 @@ GATE_D1_MUTATION: dict[str, tuple[str | None, str | None]] = {
 }
 
 
-@pytest.mark.slow
+@pytest.mark.gate
 def test_row15_d1_cells_graded_twice_give_characterization_values_and_leave_archives_unchanged(tmp_path):
     gate_root = gate_runs_root()
     run = gate_root / "row15-d1-1"

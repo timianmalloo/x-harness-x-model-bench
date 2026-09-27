@@ -27,7 +27,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --locked
       - run: uv run bench validate
-      - run: uv run pytest -q -m "not credentials and not slow and not workstation"
+      - run: uv run pytest -q -m "not credentials and not slow and not workstation and not gate"
       - run: uv run python docs/ai-forward-pack/scripts/docs-graph.py validate
 
   models:

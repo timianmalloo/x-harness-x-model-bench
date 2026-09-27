@@ -291,7 +291,7 @@ D1_GATE = {  # cp = copilot-sol, cx = codex-sol, cc = cc-opus; on/off = the pack
 }
 
 
-@pytest.mark.slow
+@pytest.mark.gate
 def test_the_d1_gate_cells_conform_and_the_archive_is_unchanged(tmp_path):
     run = GATE_RUNS / "row15-d1-1"
     if not (run / "plan.json").is_file():
