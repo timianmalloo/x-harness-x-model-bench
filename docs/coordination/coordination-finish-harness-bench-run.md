@@ -170,3 +170,17 @@ Every Codex track ran on Claude under R-4: the OpenAI allowance is out until 202
 - c6b-3 slow tests alone: 2 passed in 1548 s (25.8 min); the D1 characterization grades 6 cells twice through Stryker.NET, and each Stryker run first executes the 2681 vendored `AiDe.Core.Tests` tests (about 2 min, from the Stryker log).
 - A red re-run at a join re-runs the whole touched test file in a fresh tree: 93–107 s for `test_grade_mutation.py`.
 - Inferred, to be measured: the twice-equal characterizations are a one-time determinism proof paid on every slow ring (#1); the join re-runs whole files where the red's own tests would do (#3).
+
+**CI-OPT progress (2026-09-27; plan and Test Architect review in `docs/notes/ci-opt-proposal.md`):**
+
+| Measure | Before | Now | What moved it |
+| --- | --- | --- | --- |
+| CI `test` job | red on 91 pushes; 24–32 min | green; 13.4 min (run 36354105591) | four environment causes fixed (GATE-C); gate tests out of the continuous rings; slices 1, 3, 5 |
+| Default ring (local) | 1215 s (20.3 min), 1792 tests | 684 s (11.4 min), 1798 tests | gate tests moved; 10 `using` cases and 4 rigor cases as direct tests (120 s → 3.5 s); D1 fixture cache; pre-turn digest cache |
+| Slow ring (local) | 5674 s (94.6 min) | about 10 min (Inferred: the 84 min of frozen-run proofs now sit in the `gate` ring) | `gate` marker plus digest stamp: the proofs re-run only when grader inputs change (`tools/gate_stamp.py --renew`) |
+
+- #1 one-time vs continuous: done for the frozen-run proofs (`gate` ring, stamp). Residual: shared modules outside `grade/` are not in the digest.
+- #2 slow ring: done as above; Rank 3 (filtering the regression seed) is blocked by the Test Architect (it would make the claim a tautology).
+- #3 waste: found and closed a mutation-control hole (slow-ring killers were never run by `mutate_check`); the engine-order flake fixed at its cause.
+- #4 consolidation: only where the kill evidence proves it (Rank 4 and the rigor-NA group); Rank 5 waits for per-parametrization mutants (the killer names in the register are not a kill matrix).
+- Next: Rank 2b (stat snapshot, running); a measured Defender-exclusion and `pytest-xdist` trial on the CI runner; lower `timeout-minutes` to 30 after three green runs under 22 min.

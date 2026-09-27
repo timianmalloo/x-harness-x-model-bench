@@ -111,7 +111,7 @@ def write_stamp(path: Path, digest: str) -> None:
         "schema: bench-gate-stamp/1\n"
         f"digest: {digest}\n"
     )
-    path.write_text(body, encoding="utf-8")
+    path.write_text(body, encoding="utf-8", newline="\n")  # LF on every OS (.gitattributes eol=lf)
 
 
 def renew(root: Path | None = None) -> int:
