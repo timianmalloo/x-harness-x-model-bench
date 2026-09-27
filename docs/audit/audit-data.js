@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-27T23:08:21Z",
+  "generated": "2026-09-27T23:56:11Z",
   "audit": [
     {
       "actor": null,
@@ -39199,6 +39199,36 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3JMRCQYK274N1T2P5J9NN00",
+      "shortname": "ci-opt-slice-7-xdist-trial",
+      "datetime": "2026-09-27T23:56:11Z",
+      "session": "worker-agy-xdist",
+      "prompt": "CI-OPT slice 7: measured pytest-xdist trial for the default ring",
+      "summary": "CI-OPT slice 7: pytest-xdist trial for default ring with Security Architect conditions met (pytest-xdist pinned, base fixture teardown race test+fix, test_profiles uuid4), default ring benchmarked serial vs -n 4 vs -n auto (2 runs each), documented in docs/notes/ci-opt-proposal.md",
+      "kind": "manual",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-27T23:08:39Z",
+      "duration_seconds": 2852.0,
+      "git": {
+        "sha": "fb1c703c13f1e684f72fbf838f0af231982d632b",
+        "short": "fb1c703c1",
+        "branch": "w3-xdist",
+        "pushed": null
+      }
     }
   ],
   "changes": [
