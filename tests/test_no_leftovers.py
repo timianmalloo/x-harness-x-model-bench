@@ -25,3 +25,50 @@ def test_the_base_fixture_leaves_zero_folders(own_base, base):
     locked.write_bytes(b"readonly-git-object")
     locked.chmod(stat.S_IREAD)
     assert base.is_dir()
+
+
+def test_base_teardown_tolerates_concurrent_sibling_folder_creation(monkeypatch, tmp_path):
+    import importlib.util
+    import sys
+    import threading
+    from pathlib import Path
+
+    conftest_path = Path(__file__).resolve().parent / "conftest.py"
+    if str(conftest_path.parent) not in sys.path:
+        sys.path.insert(0, str(conftest_path.parent))
+    spec = importlib.util.spec_from_file_location("root_conftest", conftest_path)
+    assert spec is not None and spec.loader is not None
+    conftest = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(conftest)
+
+    shared = tmp_path / "bench-test-shared"
+    shared.mkdir()
+    monkeypatch.setattr(conftest, "CLEAN_PARENT", shared)
+
+    gen = conftest.base.__wrapped__()
+    root = next(gen)
+    assert root.is_dir()
+
+    sibling = shared / "concurrent-worker-cell"
+    t = threading.Thread(target=sibling.mkdir)
+    orig_iterdir = Path.iterdir
+
+    def hook_iterdir(self):
+        it = orig_iterdir(self)
+        if self == shared:
+            items = list(it)
+            t.start()
+            t.join()
+            return iter(items)
+        return it
+
+    monkeypatch.setattr(Path, "iterdir", hook_iterdir)
+    try:
+        next(gen, None)
+    finally:
+        if not sibling.exists() and not t.is_alive():
+            t.start()
+            t.join()
+    assert sibling.is_dir()
+    assert not root.exists()
+

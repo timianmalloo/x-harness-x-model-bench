@@ -4,8 +4,8 @@ import importlib.util
 import json
 import shutil
 import subprocess
-import time
 import tomllib
+import uuid
 from pathlib import Path
 
 import pytest
@@ -447,7 +447,7 @@ def test_unknown_harness_is_refused():
 @pytest.mark.credentials
 @pytest.mark.parametrize("harness, model", [("claude-code", "claude-sonnet-5"), ("codex", "gpt-6-sol")])
 def test_real_handshake_with_the_pinned_build(harness, model, tmp_path):
-    base = Path("C:/Projects/bench-test") / f"hs-{harness}-{int(time.time())}"
+    base = Path("C:/Projects/bench-test") / f"hs-{harness}-{uuid.uuid4().hex}"
     ws, home = base / "ws", base / "home"
     ws.mkdir(parents=True)
     p = profiles.load(ROOT, harness)
