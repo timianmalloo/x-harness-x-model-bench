@@ -30,8 +30,6 @@ def base():
         shutil.rmtree(root, onexc=archive.make_writable)
     except OSError:  # a file this test process still holds open; tools/clean_bench_test.py removes it later
         pass
-    if root.parent.exists() and not any(root.parent.iterdir()):
-        root.parent.rmdir()
 
 
 

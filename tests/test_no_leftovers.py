@@ -43,20 +43,25 @@ def test_base_teardown_tolerates_concurrent_sibling_folder_creation(monkeypatch,
     assert root.is_dir()
 
     sibling = shared / "concurrent-worker-cell"
+    t = threading.Thread(target=sibling.mkdir)
     orig_iterdir = Path.iterdir
 
     def hook_iterdir(self):
         it = orig_iterdir(self)
         if self == shared:
             items = list(it)
-            t = threading.Thread(target=sibling.mkdir)
             t.start()
             t.join()
             return iter(items)
         return it
 
     monkeypatch.setattr(Path, "iterdir", hook_iterdir)
-    next(gen, None)
+    try:
+        next(gen, None)
+    finally:
+        if not sibling.exists() and not t.is_alive():
+            t.start()
+            t.join()
     assert sibling.is_dir()
     assert not root.exists()
 
