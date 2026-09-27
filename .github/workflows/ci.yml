@@ -16,9 +16,9 @@ jobs:
     # logins and real model calls, so they run on the workstation only.
     if: github.event_name != 'schedule'
     runs-on: windows-latest
-    # simplify: 60 until CI-OPT's first slice (a session-cached D1 base tree) lands. 75 grader tests that each build a D1
-    # working copy take 63% of the local ring and most of CI's; the 8 mutation fast tests stopped short-circuiting on
-    # 2026-09-27 and pushed the ring past 30 min (run 36333804592). Upgrade trigger: that slice merged, then back to 30.
+    # simplify: 60 while the ring runs 24-32 min on this runner (runs 36335756793, 36337439499). 75 grader tests take 63%
+    # of the local ring; CI-OPT slice 1 measured that a D1 fixture costs 1.5 s and the rest is the graders' own work, so
+    # the cut comes from a later CI-OPT slice. Upgrade trigger: three consecutive green runs under 22 min, then 30.
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
