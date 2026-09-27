@@ -504,6 +504,7 @@ def test_cmd_plan_passes_configured_tools_and_cells_roots_to_probe(monkeypatch, 
 
 
 @pytest.mark.native
+@pytest.mark.workstation
 def test_pinned_copilot_instruction_list_repeats_for_both_real_working_copies(base):
     tools_dir = ROOT / ".tools" / "harness"
     if not tools_dir.exists():  # a coordination worktree shares the installed build in the primary checkout

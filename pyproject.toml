@@ -30,6 +30,10 @@ packages = ["src/harness_bench"]
 testpaths = ["tests"]
 # Real model cells (the `credentials` marker) run only on an explicit opt-in: `-m ""` or `-m credentials` (SUITE-A).
 # The `slow` ring (real dotnet graders) runs on the grading host: `HB_REQUIRE_DOTNET=1 python -m pytest -m slow` (V-4).
-# A command-line -m replaces this one, so .github/workflows/ci.yml excludes `slow` in its own -m as well.
+# A command-line -m replaces this one, so .github/workflows/ci.yml excludes `slow` and `workstation` in its own -m as well.
+# `workstation` stays in the local run: the marker is not a skip, and a missing harness build or sibling checkout fails loudly.
 addopts = "-m 'not credentials and not slow'"
-markers = ["slow: the dotnet graders' fixtures; the Leader's pre-freeze ring on the grading host (HB_REQUIRE_DOTNET=1)"]
+markers = [
+    "slow: the dotnet graders' fixtures; the Leader's pre-freeze ring on the grading host (HB_REQUIRE_DOTNET=1)",
+    "workstation: needs the installed harness builds and sibling checkouts",
+]
