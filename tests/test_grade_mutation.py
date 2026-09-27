@@ -6,6 +6,7 @@ Fast tests only (fake Stryker, conftest fails any unmarked test that starts dotn
 from __future__ import annotations
 
 import json
+import os
 import shutil
 from decimal import Decimal
 from pathlib import Path
@@ -74,6 +75,23 @@ def grade_d1(tmp_path: Path, folder: Path, cell: dict, timeout: int = 900) -> di
     return {m: encode(s) for m, s in out.items()}
 
 
+@pytest.fixture
+def stryker_lookups_unavailable(monkeypatch, tmp_path):
+    """The host that CI is: no Stryker in the NuGet cache, and no dotnet on PATH.
+
+    find_stryker_dll reads NUGET_PACKAGES before USERPROFILE and Path.home, and grade_cell
+    refuses to start when that dll is missing or shutil.which("dotnet") is None. An empty
+    cache plus a PATH with no dotnet is the failure these eight tests used to hit for real.
+    """
+    empty = tmp_path / "empty-nuget"
+    empty.mkdir()
+    monkeypatch.setenv("NUGET_PACKAGES", str(empty))
+    # git stays: d1_cell builds the archive with it. Only dotnet is removed, which is the lookup under test.
+    kept = [entry for entry in os.environ.get("PATH", "").split(os.pathsep) if "dotnet" not in entry.lower()]
+    monkeypatch.setenv("PATH", os.pathsep.join(kept))
+    return empty
+
+
 def fake_stryker(monkeypatch, returncode: int = 0, report_content: str | None = None,
                  timed_out: bool = False, stdout: str = "", stderr: str = "",
                  configs: list[dict] | None = None) -> list[list[str]]:
@@ -106,7 +124,7 @@ def fake_stryker(monkeypatch, returncode: int = 0, report_content: str | None = 
 # --- Red 1: exact score calculation from report fixture -------------------------------------------------------------
 
 
-def test_mutation_score_computed_from_stryker_report_fixture(tmp_path, monkeypatch):
+def test_mutation_score_computed_from_stryker_report_fixture(tmp_path, monkeypatch, stryker_lookups_unavailable):
     folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
     fake_stryker(monkeypatch, returncode=0, report_content=REPORT_FIXTURE)
     inp = mutation_input(tmp_path / "run", folder, cell, tmp_path / "run" / "grading" / "g" / "c1" / "mutation")
@@ -117,7 +135,7 @@ def test_mutation_score_computed_from_stryker_report_fixture(tmp_path, monkeypat
     assert score.evidence == "grading/g/c1/mutation/mutation.log"
 
 
-def test_mutation_score_with_timeout_and_no_coverage(tmp_path, monkeypatch):
+def test_mutation_score_with_timeout_and_no_coverage(tmp_path, monkeypatch, stryker_lookups_unavailable):
     folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
     report = {
         "schemaVersion": "2",
@@ -157,7 +175,7 @@ def test_no_non_test_source_changed_is_na(tmp_path):
     assert got.get(METRIC) == (None, "no non-test source changed")
 
 
-def test_no_mutants_generated_is_na(tmp_path, monkeypatch):
+def test_no_mutants_generated_is_na(tmp_path, monkeypatch, stryker_lookups_unavailable):
     folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
     empty_report = '{"schemaVersion": "2", "thresholds": {}, "files": {}}'
     fake_stryker(monkeypatch, returncode=0, report_content=empty_report)
@@ -172,7 +190,7 @@ def test_mutation_tool_not_available_is_na(tmp_path, monkeypatch):
     assert got.get(METRIC) == (None, "mutation tool not available")
 
 
-def test_mutation_run_failed_is_na(tmp_path, monkeypatch):
+def test_mutation_run_failed_is_na(tmp_path, monkeypatch, stryker_lookups_unavailable):
     folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
     fake_stryker(monkeypatch, returncode=1, stderr="Stryker failed to analyze project")
     got = grade_d1(tmp_path, folder, cell)
@@ -196,7 +214,7 @@ def test_no_builder_commit_is_na(tmp_path):
     assert got.get(METRIC) == (None, "pre-turn commit not found in the working copy")
 
 
-def test_mutation_timeout_is_na(tmp_path, monkeypatch):
+def test_mutation_timeout_is_na(tmp_path, monkeypatch, stryker_lookups_unavailable):
     folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
     fake_stryker(monkeypatch, timed_out=True)
     got = grade_d1(tmp_path, folder, cell, timeout=60)
@@ -206,7 +224,7 @@ def test_mutation_timeout_is_na(tmp_path, monkeypatch):
 # --- Red 4: stryker config, runner registration and metric filter ---------------------------------------------------
 
 
-def test_stryker_config_json_pinned_timeout_and_command_args(tmp_path, monkeypatch):
+def test_stryker_config_json_pinned_timeout_and_command_args(tmp_path, monkeypatch, stryker_lookups_unavailable):
     folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
     configs = []
     seen_calls = fake_stryker(monkeypatch, returncode=0, report_content=REPORT_FIXTURE, configs=configs)
@@ -227,7 +245,7 @@ def test_stryker_config_json_pinned_timeout_and_command_args(tmp_path, monkeypat
     assert configs[0]["stryker-config"]["project"] == "AiDe.Core.csproj"
 
 
-def test_initial_failing_tests_parsed_from_stryker_warning(tmp_path, monkeypatch):
+def test_initial_failing_tests_parsed_from_stryker_warning(tmp_path, monkeypatch, stryker_lookups_unavailable):
     folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
     stdout = "[12:00:00 WRN] 75 tests are failing. Stryker will continue but outcome will be impacted.\n"
     fake_stryker(monkeypatch, returncode=0, report_content=REPORT_FIXTURE, stdout=stdout)
@@ -239,7 +257,7 @@ def test_initial_failing_tests_parsed_from_stryker_warning(tmp_path, monkeypatch
     assert "initial_failing_tests: 75\n" in log
 
 
-def test_initial_failing_tests_not_recorded_when_the_line_is_absent(tmp_path, monkeypatch):
+def test_initial_failing_tests_not_recorded_when_the_line_is_absent(tmp_path, monkeypatch, stryker_lookups_unavailable):
     folder, cell = d1_cell(tmp_path, {PROJECTION: REFERENCE, TEST_FILE: TEST_CODE})
     fake_stryker(monkeypatch, returncode=0, report_content=REPORT_FIXTURE, stdout="The final mutation score is 85.71 %\n")
     out_dir = tmp_path / "run" / "grading" / "g" / "c1" / "mutation"
