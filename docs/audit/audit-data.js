@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-27T22:31:21Z",
+  "generated": "2026-09-27T23:08:21Z",
   "audit": [
     {
       "actor": null,
@@ -38841,6 +38841,364 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-09-27T22:20:38Z",
       "duration_seconds": 643.0
+    },
+    {
+      "id": "al-01M3JJ0PTA9WBYBCGXW21MY1FR",
+      "shortname": "Goal: CI-OPT slice 7: a measured pytest-xdist trial for the default ring…",
+      "datetime": "2026-09-27T23:08:18Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: CI-OPT slice 7: a measured pytest-xdist trial for the default ring, with the Security Architect's conditions met first (docs/notes/ci-opt-proposal.md, Test Architect review \"Missed by the proposal\"; the security conditions are below), so the Leader can decide on CI from numbers; red first where a race is fixed.\nMeasured (Leader, 2026-09-27): the default ring runs 1798 tests in 684 s locally serial; the CI test job takes 13.4 min on windows-latest. Security review (claude-sonnet-5, 2026-09-27): pytest-xdist and execnet are pytest-dev projects, MIT, maintained; APPROVE WITH CONDITIONS: (1) `uv add --dev pytest-xdist` with the hash-pinned uv.lock committed (CI runs `uv sync --locked`); (2) tests/conftest.py's `base` fixture: every worker shares CLEAN_PARENT (C:/Projects/bench-test), and its teardown's `root.parent.rmdir()` after an unlocked emptiness check sits outside the try/except, so parallel workers race on it (an unhandled OSError in teardown); fix before any -n > 1; (3) tests/test_profiles.py around line 450 names a folder with int(time.time()), collision-prone under workers: use uuid4 like `base`.\nDone when: pytest-xdist is a dev dependency in pyproject.toml's [dependency-groups].dev with uv.lock updated by uv (do not hand-edit the lock) and `uv sync --locked` passing; the `base` teardown race is fixed (drop the cosmetic empty-parent rmdir, or make it tolerate a concurrent writer inside the same error handling that reports, never swallows, per CLN-A), shown red first by a test that runs the teardown while another thread creates a sibling folder under the shared parent; test_profiles uses uuid4 for that folder; the default ring is measured serial and with -n 4 and -n auto, twice each, on this machine (uv run pytest -q -p no:cacheprovider [-n N] with the default marker selection), wall time and pass/fail/error counts recorded in docs/notes/ci-opt-proposal.md under a new section \"xdist trial (measured)\"; every test that fails or errors only under -n is listed there with its cause, and each is fixed (an order or shared-state dependency is a defect to fix, not a reason to serialise) or, if the fix is outside this slice's budget, marked in the note with the reason and a follow-up line; no CI file change (the Leader measures CI and decides); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: .github/workflows/ci.yml; the slow or gate rings; a Defender exclusion (the Leader tries it on CI); any file under runs/; writing to the operator's real ~/.codex, ~/.claude or ~/.copilot; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each step immediately.\n\nGrounding: pyproject.toml; uv.lock; tests/conftest.py (CLEAN_PARENT, base); tests/e2e/conftest.py; tests/test_profiles.py (around line 450); docs/notes/ci-opt-proposal.md. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3JJ0TJVJNDCV53DWG95M75F",
+      "shortname": "compile-Goal: CI-OPT slice 7: a measured pytest-xdist trial for the default ring…",
+      "datetime": "2026-09-27T23:08:21Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: CI-OPT slice 7: a measured pytest-xdist trial for the default ring, with the Security Architect's conditions met first (docs/notes/ci-opt-proposal.md, Test Architect review \"Missed by the proposal\"; the security conditions are below), so the Leader can decide on CI from numbers; red first where a race is fixed. Measured (Leader, 2026-09-27): the default ring runs 1798 tests in 684 s locally serial; the CI test job takes 13.4 min on windows-latest. Security review (claude-sonnet-5, 2026-09-27): pytest-xdist and execnet are pytest-dev projects, MIT, maintained; APPROVE WITH CONDITIONS: (1) `uv add --dev pytest-xdist` with the hash-pinned uv.lock committed (CI runs `uv sync --locked`); (2) tests/conftest.py's `base` fixture: every worker shares CLEAN_PARENT (C:/Projects/bench-test), and its teardown's `root.parent.rmdir()` after an unlocked emptiness check sits outside the try/except, so parallel workers race on it (an unhandled OSError in teardown); fix before any -n > 1; (3) tests/test_profiles.py around line 450 names a folder with int(time.time()), collision-prone under workers: use uuid4 like `base`.\nDone when: pytest-xdist is a dev dependency in pyproject.toml's [dependency-groups].dev with uv.lock updated by uv (do not hand-edit the lock) and `uv sync --locked` passing; the `base` teardown race is fixed (drop the cosmetic empty-parent rmdir, or make it tolerate a concurrent writer inside the same error handling that reports, never swallows, per CLN-A), shown red first by a test that runs the teardown while another thread creates a sibling folder under the shared parent; test_profiles uses uuid4 for that folder; the default ring is measured serial and with -n 4 and -n auto, twice each, on this machine (uv run pytest -q -p no:cacheprovider [-n N] with the default marker selection), wall time and pass/fail/error counts recorded in docs/notes/ci-opt-proposal.md under a new section \"xdist trial (measured)\"; every test that fails or errors only under -n is listed there with its cause, and each is fixed (an order or shared-state dependency is a defect to fix, not a reason to serialise) or, if the fix is outside this slice's budget, marked in the note with the reason and a follow-up line; no CI file change (the Leader measures CI and decides); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: .github/workflows/ci.yml; the slow or gate rings; a Defender exclusion (the Leader tries it on CI); any file under runs/; writing to the operator's real ~/.codex, ~/.claude or ~/.copilot; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each step immediately.\nGrounding: pyproject.toml; uv.lock; tests/conftest.py (CLEAN_PARENT, base); tests/e2e/conftest.py; tests/test_profiles.py (around line 450); docs/notes/ci-opt-proposal.md. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: pytest-xdist is a dev dependency in pyproject.toml's [dependency-groups].dev with uv.lock updated by uv (do not hand-edit the lock) and `uv sync --locked` passing | phrase: pytest-xdist is a dev dependency in pyproject.toml's [dependency-groups].dev with uv.lock updated by uv (do not hand-edit the lock) and `uv sync --locked` passing |\n| done_when: the `base` teardown race is fixed (drop the cosmetic empty-parent rmdir, or make it tolerate a concurrent writer inside the same error handling that reports, never swallows, per CLN-A), shown red first by a test that runs the teardown while another thread creates a sibling folder under the shared parent | phrase: the `base` teardown race is fixed (drop the cosmetic empty-parent rmdir, or make it tolerate a concurrent writer inside the same error handling that reports, never swallows, per CLN-A), shown red first by a test that runs the teardown while another thread creates a sibling folder under the shared parent |\n| done_when: test_profiles uses uuid4 for that folder | phrase: test_profiles uses uuid4 for that folder |\n| done_when: the default ring is measured serial and with -n 4 and -n auto, twice each, on this machine (uv run pytest -q -p no:cacheprovider [-n N] with the default marker selection), wall time and pass/fail/error counts recorded in docs/notes/ci-opt-proposal.md under a new section \"xdist trial (measured)\" | phrase: the default ring is measured serial and with -n 4 and -n auto, twice each, on this machine (uv run pytest -q -p no:cacheprovider [-n N] with the default marker selection), wall time and pass/fail/error counts recorded in docs/notes/ci-opt-proposal.md under a new section \"xdist trial (measured)\" |\n| done_when: every test that fails or errors only under -n is listed there with its cause, and each is fixed (an order or shared-state dependency is a defect to fix, not a reason to serialise) or, if the fix is outside this slice's budget, marked in the note with the reason and a follow-up line | phrase: every test that fails or errors only under -n is listed there with its cause, and each is fixed (an order or shared-state dependency is a defect to fix, not a reason to serialise) or, if the fix is outside this slice's budget, marked in the note with the reason and a follow-up line |\n| done_when: no CI file change (the Leader measures CI and decides) | phrase: no CI file change (the Leader measures CI and decides) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider --collect-only exits 0 | phrase: uv run pytest -q -p no:cacheprovider --collect-only exits 0 |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: .github/workflows/ci.yml | phrase: .github/workflows/ci.yml |\n| not_in_scope: the slow or gate rings | phrase: the slow or gate rings |\n| not_in_scope: a Defender exclusion (the Leader tries it on CI) | phrase: a Defender exclusion (the Leader tries it on CI) |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: writing to the operator's real ~/.codex, ~/.claude or ~/.copilot | phrase: writing to the operator's real ~/.codex, ~/.claude or ~/.copilot |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- uv add --dev pytest-xdist: unresolved (not found)\n- uv sync --locked: unresolved (not found)\n- base: unresolved (not found)\n- root.parent.rmdir: unresolved (not found)\n- docs/notes/ci-opt-proposal.md: docs/notes/ci-opt-proposal.md sha256 504798dd9aa76405b4e60d06494e842a041b2dbad57685bf3f9a556f4e167699\n- tests/conftest.py's: unresolved (not found)\n- C:/Projects/bench-test: unresolved (outside repo)\n- try/except: unresolved (not found)\n- tests/test_profiles.py: tests/test_profiles.py sha256 078b376b22d792be20c137aab32d2d493948483483afec46fa8543044b2c15c8\n- pass/fail/error: unresolved (not found)\n- .github/workflows/ci.yml: unresolved (not found; nearest: .github/workflows/ci.yml)\n- runs/: unresolved (not found)\n- ~/.codex: unresolved (not found)\n- ~/.claude: unresolved (not found)\n- ~/.copilot: unresolved (not found)\n- tests/conftest.py: tests/conftest.py sha256 3b8a64073dde0861a6aa7faab52afcf6cf0cf2cd9a693309f7d18da7c04a82a7\n- tests/e2e/conftest.py: tests/e2e/conftest.py sha256 8bc770ae835b53b7351f6108ccd6c270f4821b1d301805ec2a5d8e3f27f5fa86\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JJ0PTA9WBYBCGXW21MY1FR\nraw sha256: 57e368f67e2468afa76362150d33d23336fe8aca80556a17ac196f759250f5b7\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3JJ0PTA9WBYBCGXW21MY1FR for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "pytest-xdist is a dev dependency in pyproject.toml's [dependency-groups].dev with uv.lock updated by uv (do not hand-edit the lock) and `uv sync --locked` passing",
+            "trace": {
+              "kind": "phrase",
+              "ref": "pytest-xdist is a dev dependency in pyproject.toml's [dependency-groups].dev with uv.lock updated by uv (do not hand-edit the lock) and `uv sync --locked` passing"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the `base` teardown race is fixed (drop the cosmetic empty-parent rmdir, or make it tolerate a concurrent writer inside the same error handling that reports, never swallows, per CLN-A), shown red first by a test that runs the teardown while another thread creates a sibling folder under the shared parent",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the `base` teardown race is fixed (drop the cosmetic empty-parent rmdir, or make it tolerate a concurrent writer inside the same error handling that reports, never swallows, per CLN-A), shown red first by a test that runs the teardown while another thread creates a sibling folder under the shared parent"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "test_profiles uses uuid4 for that folder",
+            "trace": {
+              "kind": "phrase",
+              "ref": "test_profiles uses uuid4 for that folder"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the default ring is measured serial and with -n 4 and -n auto, twice each, on this machine (uv run pytest -q -p no:cacheprovider [-n N] with the default marker selection), wall time and pass/fail/error counts recorded in docs/notes/ci-opt-proposal.md under a new section \"xdist trial (measured)\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the default ring is measured serial and with -n 4 and -n auto, twice each, on this machine (uv run pytest -q -p no:cacheprovider [-n N] with the default marker selection), wall time and pass/fail/error counts recorded in docs/notes/ci-opt-proposal.md under a new section \"xdist trial (measured)\""
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "every test that fails or errors only under -n is listed there with its cause, and each is fixed (an order or shared-state dependency is a defect to fix, not a reason to serialise) or, if the fix is outside this slice's budget, marked in the note with the reason and a follow-up line",
+            "trace": {
+              "kind": "phrase",
+              "ref": "every test that fails or errors only under -n is listed there with its cause, and each is fixed (an order or shared-state dependency is a defect to fix, not a reason to serialise) or, if the fix is outside this slice's budget, marked in the note with the reason and a follow-up line"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "no CI file change (the Leader measures CI and decides)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "no CI file change (the Leader measures CI and decides)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider --collect-only exits 0",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider --collect-only exits 0"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": ".github/workflows/ci.yml",
+            "trace": {
+              "kind": "phrase",
+              "ref": ".github/workflows/ci.yml"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the slow or gate rings",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the slow or gate rings"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "a Defender exclusion (the Leader tries it on CI)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a Defender exclusion (the Leader tries it on CI)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "writing to the operator's real ~/.codex, ~/.claude or ~/.copilot",
+            "trace": {
+              "kind": "phrase",
+              "ref": "writing to the operator's real ~/.codex, ~/.claude or ~/.copilot"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "pytest-xdist is a dev dependency in pyproject.toml's [dependency-groups].dev with uv.lock updated by uv (do not hand-edit the lock) and `uv sync --locked` passing",
+            "the `base` teardown race is fixed (drop the cosmetic empty-parent rmdir, or make it tolerate a concurrent writer inside the same error handling that reports, never swallows, per CLN-A), shown red first by a test that runs the teardown while another thread creates a sibling folder under the shared parent",
+            "test_profiles uses uuid4 for that folder",
+            "the default ring is measured serial and with -n 4 and -n auto, twice each, on this machine (uv run pytest -q -p no:cacheprovider [-n N] with the default marker selection), wall time and pass/fail/error counts recorded in docs/notes/ci-opt-proposal.md under a new section \"xdist trial (measured)\"",
+            "every test that fails or errors only under -n is listed there with its cause, and each is fixed (an order or shared-state dependency is a defect to fix, not a reason to serialise) or, if the fix is outside this slice's budget, marked in the note with the reason and a follow-up line",
+            "no CI file change (the Leader measures CI and decides)",
+            "a test earns its place by a failure only it catches",
+            "uv run pytest -q -p no:cacheprovider --collect-only exits 0",
+            "uv run ruff check src tests tools is clean",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "CI-OPT slice 7: a measured pytest-xdist trial for the default ring, with the Security Architect's conditions met first (docs/notes/ci-opt-proposal.md, Test Architect review \"Missed by the proposal\"; the security conditions are below), so the Leader can decide on CI from numbers; red first where a race is fixed. Measured (Leader, 2026-09-27): the default ring runs 1798 tests in 684 s locally serial; the CI test job takes 13.4 min on windows-latest. Security review (claude-sonnet-5, 2026-09-27): pytest-xdist and execnet are pytest-dev projects, MIT, maintained; APPROVE WITH CONDITIONS: (1) `uv add --dev pytest-xdist` with the hash-pinned uv.lock committed (CI runs `uv sync --locked`); (2) tests/conftest.py's `base` fixture: every worker shares CLEAN_PARENT (C:/Projects/bench-test), and its teardown's `root.parent.rmdir()` after an unlocked emptiness check sits outside the try/except, so parallel workers race on it (an unhandled OSError in teardown); fix before any -n > 1; (3) tests/test_profiles.py around line 450 names a folder with int(time.time()), collision-prone under workers: use uuid4 like `base`.",
+          "main_line_budget": "one slice of at most 50 minutes; commit each step immediately.\nGrounding: pyproject.toml; uv.lock; tests/conftest.py (CLEAN_PARENT, base); tests/e2e/conftest.py; tests/test_profiles.py (around line 450); docs/notes/ci-opt-proposal.md. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            ".github/workflows/ci.yml",
+            "the slow or gate rings",
+            "a Defender exclusion (the Leader tries it on CI)",
+            "any file under runs/",
+            "writing to the operator's real ~/.codex, ~/.claude or ~/.copilot",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.006,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3JJ0PTA9WBYBCGXW21MY1FR",
+        "raw_sha256": "57e368f67e2468afa76362150d33d23336fe8aca80556a17ac196f759250f5b7",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv add --dev pytest-xdist"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv sync --locked"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "base"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "root.parent.rmdir"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/ci-opt-proposal.md",
+            "reason": null,
+            "sha256": "504798dd9aa76405b4e60d06494e842a041b2dbad57685bf3f9a556f4e167699",
+            "status": "resolved",
+            "token": "docs/notes/ci-opt-proposal.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/conftest.py's"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/bench-test"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "try/except"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_profiles.py",
+            "reason": null,
+            "sha256": "078b376b22d792be20c137aab32d2d493948483483afec46fa8543044b2c15c8",
+            "status": "resolved",
+            "token": "tests/test_profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pass/fail/error"
+          },
+          {
+            "nearest": ".github/workflows/ci.yml",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".github/workflows/ci.yml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "~/.codex"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "~/.claude"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "~/.copilot"
+          },
+          {
+            "nearest": null,
+            "path": "tests/conftest.py",
+            "reason": null,
+            "sha256": "3b8a64073dde0861a6aa7faab52afcf6cf0cf2cd9a693309f7d18da7c04a82a7",
+            "status": "resolved",
+            "token": "tests/conftest.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/e2e/conftest.py",
+            "reason": null,
+            "sha256": "8bc770ae835b53b7351f6108ccd6c270f4821b1d301805ec2a5d8e3f27f5fa86",
+            "status": "resolved",
+            "token": "tests/e2e/conftest.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
     }
   ],
   "changes": [
