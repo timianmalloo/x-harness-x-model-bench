@@ -1828,7 +1828,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3eedbc39dc31e4640a27fc65f946e33e88ec6519c081090ff53559b0f478200d"
+      "sourceSha256": "33c51968ea560ff572c8b99674c1e4eb60dccd23df3cad5d52fda84f3819b454"
     },
     {
       "id": "coordination-phase1-finish-run",
@@ -2895,5 +2895,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "707b0546edbd9c79e036fe4ed27ca2a480b583fc7220614371d74f16a5428014"
+  "graphSha256": "6ac665fbca37b1f5ff5c5489c4e34accf1d54200b7a50b6afdefacc24fa3d4a9"
 };
