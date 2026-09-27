@@ -28,11 +28,18 @@ def test_the_base_fixture_leaves_zero_folders(own_base, base):
 
 
 def test_base_teardown_tolerates_concurrent_sibling_folder_creation(monkeypatch, tmp_path):
+    import importlib.util
     import sys
     import threading
     from pathlib import Path
 
-    conftest = sys.modules["conftest"]
+    conftest_path = Path(__file__).resolve().parent / "conftest.py"
+    if str(conftest_path.parent) not in sys.path:
+        sys.path.insert(0, str(conftest_path.parent))
+    spec = importlib.util.spec_from_file_location("root_conftest", conftest_path)
+    assert spec is not None and spec.loader is not None
+    conftest = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(conftest)
 
     shared = tmp_path / "bench-test-shared"
     shared.mkdir()
