@@ -218,8 +218,8 @@ def test_both_selectors_exclude_the_slow_ring():  # TA re-review 1: a command-li
     assert any(m.startswith("workstation:") for m in ini["markers"])  # CI has no harness builds or sibling checkouts
     assert any(m.startswith("gate:") for m in ini["markers"])
     ci = [line.strip() for line in (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8").splitlines()]
-    assert [line for line in ci if "pytest" in line] == [
-        '- run: uv run pytest -q -m "not credentials and not slow and not workstation and not gate"']
+    assert [line for line in ci if "pytest" in line and line.startswith("- run:")] == [
+        '- run: uv run pytest -q -n auto -m "not credentials and not slow and not workstation and not gate"']
 
 
 @pytest.mark.parametrize(("env", "which", "outcome"), [
