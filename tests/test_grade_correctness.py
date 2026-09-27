@@ -14,6 +14,7 @@ import os
 import shutil
 import sys
 import tempfile
+import time
 import uuid
 from decimal import Decimal
 from pathlib import Path
@@ -39,6 +40,34 @@ def encode(score) -> tuple:
 def tree_digest(folder: Path) -> dict[str, str]:
     return {p.relative_to(folder).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
             for p in sorted(folder.rglob("*")) if p.is_file()}
+
+
+def test_a_pyc_a_fake_grader_writes_under_the_archive_changes_the_stat_snapshot(tmp_path):
+    """F9 on a synthetic fixture is the path set plus each file's (size, mtime_ns). A .pyc is a new path."""
+    folder = tmp_path / "archive"
+    (folder / "ws").mkdir(parents=True)
+    (folder / "ws" / "a.cs").write_text("class A {}\n", encoding="utf-8")
+    before = stat_snapshot(folder)
+
+    def fake_grader():
+        (folder / "ws" / "__pycache__").mkdir()
+        (folder / "ws" / "__pycache__" / "a.cpython-312.pyc").write_bytes(b"\x00pyc")
+
+    fake_grader()
+    assert stat_snapshot(folder) != before, "a .pyc written under the archive must change the snapshot"
+
+
+def test_rewriting_a_file_with_the_same_size_changes_the_snapshot_through_mtime_ns(tmp_path):
+    """Same byte count is not the same file: the rewrite moves mtime_ns while size stays put."""
+    folder = tmp_path / "archive"
+    target = folder / "ws" / "a.cs"
+    target.parent.mkdir(parents=True)
+    target.write_bytes(b"class A {}\n")
+    before = stat_snapshot(folder)
+    time.sleep(0.01)  # a same-tick rewrite can share mtime_ns; the snapshot must still see a later write
+    target.write_bytes(b"class B {}\n")  # 11 bytes, same as before
+    assert target.stat().st_size == before["ws/a.cs"][0]
+    assert stat_snapshot(folder) != before, "a same-size rewrite must change the snapshot through mtime_ns"
 
 
 def cell_input(run_dir: Path, archive: Path, cell: dict, out_dir: Path, timeout: int = 900) -> CellInput:
