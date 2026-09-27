@@ -983,7 +983,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "504798dd9aa76405b4e60d06494e842a041b2dbad57685bf3f9a556f4e167699"
+      "sourceSha256": "5ef416d018179c6637ba358a9fe1787d392f2211b744f725440b8b73b1e43c1d"
     },
     {
       "id": "note-d1-vendored-red-baseline",
@@ -2895,5 +2895,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "6ac665fbca37b1f5ff5c5489c4e34accf1d54200b7a50b6afdefacc24fa3d4a9"
+  "graphSha256": "e3c1229f9dc510e74ed567f85b2732b31999536e9268a699ddad88aef22d0058"
 };
