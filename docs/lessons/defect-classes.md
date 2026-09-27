@@ -449,6 +449,23 @@ summary: >-
 - **Control:** the pack source is a Leader-owned standalone clone checked out at the pinned commit (`C:/Projects/hb-pack-rev95`, `git clone` of the local ai-forward plus `checkout --detach df3baf2`), so no other session's cleanup reaches it and nothing is written into the ai-forward repository. For now this is a Leader procedure. Upgrade trigger: a second instance, then `bench plan` refuses a `--pack-source` that is a linked worktree of another repository.
 - **Status:** `observed` (Leader procedure)
 
+### GATE-C: remote CI red while every local gate is green, and no step reads CI after a push
+- **Signature:** the Leader's batch gates run on the workstation and pass. CI runs on a different machine (another Python, no harness builds, no NuGet cache, a shallow checkout). CI fails on every push, and nothing in the push procedure reads its result, so main stays red and every later push adds to the pile.
+- **Instances:** `2026-09-24` 22:53 to `2026-09-27`: the last green push was `4ef11d2`; 91 pushes after it failed the `test` job. Found on 2026-09-27 by CI-OPT's baseline read of `gh run list`, not by any gate. The causes were all environment differences:
+  - eight mutation fast tests reached the real Stryker and dotnet lookups;
+  - a workstation-only test (installed Copilot build, sibling `ai-forward`) had no marker;
+  - CI ran CPython 3.12.10 (Unicode 15.0) against the workstation's 3.14.6 (Unicode 16.0), and the matcher version hashes the Unicode version by design;
+  - a history-reading test met the default shallow checkout.
+  After those fixes the job hit its 30-minute cap (the D1-tree-building grader tests are slow on the CI runner). The Leader then pushed a follow-up without the local default ring, and a selector-pinning test failed CI once more (a GATE-B instance in the same episode). The next run exposed an intermittent engine-order test (1 in 25 locally under load).
+- **Sweep:** the `models` job was green throughout. The nightly `schedule` run skips the `test` job, so it was never a signal for it.
+- **Control:** every push goes through `push_and_watch`: push, find the CI run for exactly the pushed commit, `gh run watch --exit-status`, and exit non-zero unless that run's conclusion is `success`. A red run blocks the next push. The run's failed test names are printed at once. The environment gap is closed at the source:
+  - `.python-version` pins 3.14;
+  - `fetch-depth: 0`;
+  - a `workstation` marker, excluded in CI's `-m` and pinned by `test_both_selectors_exclude_the_slow_ring`;
+  - the mutation fast tests patch the tool lookups.
+  For now `push_and_watch` is a Leader script. Upgrade trigger: a second instance, then the batch gate script refuses to start while the newest `main` CI run is red.
+- **Status:** `partially-controlled`
+
 ---
 
 ## Inherited classes (seeded from the pack)

@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-27T16:29:15Z",
+  "generated": "2026-09-27T18:09:23Z",
   "audit": [
     {
       "actor": null,
@@ -35869,6 +35869,667 @@ window.AUDIT_DATA = {
         "branch": "w3-cigreen",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M3J0X87YNY9N97Q71ZHQB6K5",
+      "shortname": "Goal: find and fix why tests/test_engine.py::test_resolution_order_throu…",
+      "datetime": "2026-09-27T18:09:19Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: find and fix why tests/test_engine.py::test_resolution_order_through_the_loop[timeout then stop] launches one cell instead of two about 1 time in 25 (the test says \"each ordering is forced by the tick, never by a sleep\"), deciding by the design, not by loosening the assertion; red first.\nMeasured (Leader, 2026-09-27): CI run 36337439499 (commit 372f5b3) failed on it: assert len(cell.launch_intent) == 2, got 1; the previous CI run on nearly the same code passed. Locally it failed 1 of 25 repeated runs while the machine was loaded (log: C:/Projects/flake-fail-24.log; the failing run had a single launch_intent, for the blocked cell only). The case's script: when the blocked cell's outcome exists, on one tick advance the clock past the decision timeout (expiry applies the default \"continue\"), on the next tick write the stop file. Expected: D1 \"default applied (timeout)\", control.applied [\"applied\"], 2 launches, exit 3.\nDone when: The design's tick order (docs/design/phase2-stop-decisions.md section 6.2, and the engine's on_tick / launch path in src/harness_bench/engine.py) is read and the cause named in the commit message with a file:line: either (a) the engine defers the launch that \"continue\" permits to something not forced by the tick (a thread, a workspace build, a timer), so a stop on the very next tick can overtake it, which is an engine ordering defect if the design says the resolved decision's launch happens within the tick; or (b) the test's script assumes a launch within one tick that the design does not promise, so the script must wait on the observable event (the second cell's launch_intent) instead of the next tick; the fix follows the design, and the test keeps its assertion (2 launches for \"timeout then stop\"); a deterministic red first: force the slow path (e.g. a launcher or workspace build that yields, or a patched clock/tick) so the wrong order happens every time, commit it failing, then fix; after the fix, the case passes 50 of 50 repeated runs (uv run pytest -q -p no:cacheprovider \"tests/test_engine.py::test_resolution_order_through_the_loop\" repeated in a shell loop; report the count); the other four LOOP_ORDERS cases still pass; if (a), the lifecycle model (tools/check_models.py --quick) still passes; a test earns its place by a failure only it catches: the deterministic red replaces reliance on chance, no duplicate; uv run pytest -q -p no:cacheprovider tests/test_engine.py passes; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: any other engine behaviour; ci.yml; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: tests/test_engine.py (LOOP_ORDERS, LOOP_EXPECTED, _decision_run, _decision_plan, test_resolution_order_through_the_loop); src/harness_bench/engine.py (on_tick, decision expiry, launch); docs/design/phase2-stop-decisions.md 6.2; C:/Projects/flake-fail-24.log. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3J0XABAMH49NV9BZ2CJE5GN",
+      "shortname": "compile-Goal: find and fix why tests/test_engine.py::test_resolution_order_throu…",
+      "datetime": "2026-09-27T18:09:21Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: find and fix why tests/test_engine.py::test_resolution_order_through_the_loop[timeout then stop] launches one cell instead of two about 1 time in 25 (the test says \"each ordering is forced by the tick, never by a sleep\"), deciding by the design, not by loosening the assertion; red first. Measured (Leader, 2026-09-27): CI run 36337439499 (commit 372f5b3) failed on it: assert len(cell.launch_intent) == 2, got 1; the previous CI run on nearly the same code passed. Locally it failed 1 of 25 repeated runs while the machine was loaded (log: C:/Projects/flake-fail-24.log; the failing run had a single launch_intent, for the blocked cell only). The case's script: when the blocked cell's outcome exists, on one tick advance the clock past the decision timeout (expiry applies the default \"continue\"), on the next tick write the stop file. Expected: D1 \"default applied (timeout)\", control.applied [\"applied\"], 2 launches, exit 3.\nDone when: The design's tick order (docs/design/phase2-stop-decisions.md section 6.2, and the engine's on_tick / launch path in src/harness_bench/engine.py) is read and the cause named in the commit message with a file:line: either (a) the engine defers the launch that \"continue\" permits to something not forced by the tick (a thread, a workspace build, a timer), so a stop on the very next tick can overtake it, which is an engine ordering defect if the design says the resolved decision's launch happens within the tick; or (b) the test's script assumes a launch within one tick that the design does not promise, so the script must wait on the observable event (the second cell's launch_intent) instead of the next tick; the fix follows the design, and the test keeps its assertion (2 launches for \"timeout then stop\"); a deterministic red first: force the slow path (e.g. a launcher or workspace build that yields, or a patched clock/tick) so the wrong order happens every time, commit it failing, then fix; after the fix, the case passes 50 of 50 repeated runs (uv run pytest -q -p no:cacheprovider \"tests/test_engine.py::test_resolution_order_through_the_loop\" repeated in a shell loop; report the count); the other four LOOP_ORDERS cases still pass; if (a), the lifecycle model (tools/check_models.py --quick) still passes; a test earns its place by a failure only it catches: the deterministic red replaces reliance on chance, no duplicate; uv run pytest -q -p no:cacheprovider tests/test_engine.py passes; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: any other engine behaviour; ci.yml; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: tests/test_engine.py (LOOP_ORDERS, LOOP_EXPECTED, _decision_run, _decision_plan, test_resolution_order_through_the_loop); src/harness_bench/engine.py (on_tick, decision expiry, launch); docs/design/phase2-stop-decisions.md 6.2; C:/Projects/flake-fail-24.log. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: The design's tick order (docs/design/phase2-stop-decisions.md section 6.2, and the engine's on_tick / launch path in src/harness_bench/engine.py) is read and the cause named in the commit message with a file:line: either (a) the engine defers the launch that \"continue\" permits to something not forced by the tick (a thread, a workspace build, a timer), so a stop on the very next tick can overtake it, which is an engine ordering defect if the design says the resolved decision's launch happens within the tick | phrase: The design's tick order (docs/design/phase2-stop-decisions.md section 6.2, and the engine's on_tick / launch path in src/harness_bench/engine.py) is read and the cause named in the commit message with a file:line: either (a) the engine defers the launch that \"continue\" permits to something not forced by the tick (a thread, a workspace build, a timer), so a stop on the very next tick can overtake it, which is an engine ordering defect if the design says the resolved decision's launch happens within the tick |\n| done_when: or (b) the test's script assumes a launch within one tick that the design does not promise, so the script must wait on the observable event (the second cell's launch_intent) instead of the next tick | phrase: or (b) the test's script assumes a launch within one tick that the design does not promise, so the script must wait on the observable event (the second cell's launch_intent) instead of the next tick |\n| done_when: the fix follows the design, and the test keeps its assertion (2 launches for \"timeout then stop\") | phrase: the fix follows the design, and the test keeps its assertion (2 launches for \"timeout then stop\") |\n| done_when: a deterministic red first: force the slow path (e.g. a launcher or workspace build that yields, or a patched clock/tick) so the wrong order happens every time, commit it failing, then fix | phrase: a deterministic red first: force the slow path (e.g. a launcher or workspace build that yields, or a patched clock/tick) so the wrong order happens every time, commit it failing, then fix |\n| done_when: after the fix, the case passes 50 of 50 repeated runs (uv run pytest -q -p no:cacheprovider \"tests/test_engine.py::test_resolution_order_through_the_loop\" repeated in a shell loop | phrase: after the fix, the case passes 50 of 50 repeated runs (uv run pytest -q -p no:cacheprovider \"tests/test_engine.py::test_resolution_order_through_the_loop\" repeated in a shell loop |\n| done_when: report the count) | phrase: report the count) |\n| done_when: the other four LOOP_ORDERS cases still pass | phrase: the other four LOOP_ORDERS cases still pass |\n| done_when: if (a), the lifecycle model (tools/check_models.py --quick) still passes | phrase: if (a), the lifecycle model (tools/check_models.py --quick) still passes |\n| done_when: a test earns its place by a failure only it catches: the deterministic red replaces reliance on chance, no duplicate | phrase: a test earns its place by a failure only it catches: the deterministic red replaces reliance on chance, no duplicate |\n| done_when: uv run pytest -q -p no:cacheprovider tests/test_engine.py passes | phrase: uv run pytest -q -p no:cacheprovider tests/test_engine.py passes |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: any other engine behaviour | phrase: any other engine behaviour |\n| not_in_scope: ci.yml | phrase: ci.yml |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- tests/test_engine.py::test_resolution_order_through_the_loop[timeout: unresolved (not found)\n- C:/Projects/flake-fail-24.log: unresolved (outside repo)\n- docs/design/phase2-stop-decisions.md: docs/design/phase2-stop-decisions.md sha256 3dbc40e3d87e76548cf8bda92266fefc77892f87086a180ae5a9572d91b287b7\n- /: unresolved (outside repo)\n- src/harness_bench/engine.py: src/harness_bench/engine.py sha256 b9b6924fcf9f64f8120001c5426764c67d74e05588aa1f15220c867c9459eca4\n- clock/tick: unresolved (not found)\n- tests/test_engine.py::test_resolution_order_through_the_loop: unresolved (not found)\n- tools/check_models.py: tools/check_models.py sha256 4cfd675c95ac4cb4b73415977909479a1507c78a433ef5aed5878f1fb8d150b3\n- tests/test_engine.py: tests/test_engine.py sha256 2252c4cf884c0980e9bf44f1d989c872b6958a3d638abe066cd2e109f7273142\n- ci.yml: .github/workflows/ci.yml sha256 82a8a39eb78eb5c020d76bd9e11357af9f426deb5e1d8392915f11d611c2aad5\n- runs/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3J0X87YNY9N97Q71ZHQB6K5\nraw sha256: 56e362386c910e41be7929dd3b09a2f22d2ea8d2265f6d60338b25a131e72b01\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3J0X87YNY9N97Q71ZHQB6K5 for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "The design's tick order (docs/design/phase2-stop-decisions.md section 6.2, and the engine's on_tick / launch path in src/harness_bench/engine.py) is read and the cause named in the commit message with a file:line: either (a) the engine defers the launch that \"continue\" permits to something not forced by the tick (a thread, a workspace build, a timer), so a stop on the very next tick can overtake it, which is an engine ordering defect if the design says the resolved decision's launch happens within the tick",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The design's tick order (docs/design/phase2-stop-decisions.md section 6.2, and the engine's on_tick / launch path in src/harness_bench/engine.py) is read and the cause named in the commit message with a file:line: either (a) the engine defers the launch that \"continue\" permits to something not forced by the tick (a thread, a workspace build, a timer), so a stop on the very next tick can overtake it, which is an engine ordering defect if the design says the resolved decision's launch happens within the tick"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "or (b) the test's script assumes a launch within one tick that the design does not promise, so the script must wait on the observable event (the second cell's launch_intent) instead of the next tick",
+            "trace": {
+              "kind": "phrase",
+              "ref": "or (b) the test's script assumes a launch within one tick that the design does not promise, so the script must wait on the observable event (the second cell's launch_intent) instead of the next tick"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the fix follows the design, and the test keeps its assertion (2 launches for \"timeout then stop\")",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the fix follows the design, and the test keeps its assertion (2 launches for \"timeout then stop\")"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a deterministic red first: force the slow path (e.g. a launcher or workspace build that yields, or a patched clock/tick) so the wrong order happens every time, commit it failing, then fix",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a deterministic red first: force the slow path (e.g. a launcher or workspace build that yields, or a patched clock/tick) so the wrong order happens every time, commit it failing, then fix"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "after the fix, the case passes 50 of 50 repeated runs (uv run pytest -q -p no:cacheprovider \"tests/test_engine.py::test_resolution_order_through_the_loop\" repeated in a shell loop",
+            "trace": {
+              "kind": "phrase",
+              "ref": "after the fix, the case passes 50 of 50 repeated runs (uv run pytest -q -p no:cacheprovider \"tests/test_engine.py::test_resolution_order_through_the_loop\" repeated in a shell loop"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "report the count)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "report the count)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the other four LOOP_ORDERS cases still pass",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the other four LOOP_ORDERS cases still pass"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "if (a), the lifecycle model (tools/check_models.py --quick) still passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "if (a), the lifecycle model (tools/check_models.py --quick) still passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches: the deterministic red replaces reliance on chance, no duplicate",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches: the deterministic red replaces reliance on chance, no duplicate"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider tests/test_engine.py passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider tests/test_engine.py passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any other engine behaviour",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any other engine behaviour"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "ci.yml",
+            "trace": {
+              "kind": "phrase",
+              "ref": "ci.yml"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "The design's tick order (docs/design/phase2-stop-decisions.md section 6.2, and the engine's on_tick / launch path in src/harness_bench/engine.py) is read and the cause named in the commit message with a file:line: either (a) the engine defers the launch that \"continue\" permits to something not forced by the tick (a thread, a workspace build, a timer), so a stop on the very next tick can overtake it, which is an engine ordering defect if the design says the resolved decision's launch happens within the tick",
+            "or (b) the test's script assumes a launch within one tick that the design does not promise, so the script must wait on the observable event (the second cell's launch_intent) instead of the next tick",
+            "the fix follows the design, and the test keeps its assertion (2 launches for \"timeout then stop\")",
+            "a deterministic red first: force the slow path (e.g. a launcher or workspace build that yields, or a patched clock/tick) so the wrong order happens every time, commit it failing, then fix",
+            "after the fix, the case passes 50 of 50 repeated runs (uv run pytest -q -p no:cacheprovider \"tests/test_engine.py::test_resolution_order_through_the_loop\" repeated in a shell loop",
+            "report the count)",
+            "the other four LOOP_ORDERS cases still pass",
+            "if (a), the lifecycle model (tools/check_models.py --quick) still passes",
+            "a test earns its place by a failure only it catches: the deterministic red replaces reliance on chance, no duplicate",
+            "uv run pytest -q -p no:cacheprovider tests/test_engine.py passes",
+            "uv run ruff check src tests tools is clean",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "find and fix why tests/test_engine.py::test_resolution_order_through_the_loop[timeout then stop] launches one cell instead of two about 1 time in 25 (the test says \"each ordering is forced by the tick, never by a sleep\"), deciding by the design, not by loosening the assertion; red first. Measured (Leader, 2026-09-27): CI run 36337439499 (commit 372f5b3) failed on it: assert len(cell.launch_intent) == 2, got 1; the previous CI run on nearly the same code passed. Locally it failed 1 of 25 repeated runs while the machine was loaded (log: C:/Projects/flake-fail-24.log; the failing run had a single launch_intent, for the blocked cell only). The case's script: when the blocked cell's outcome exists, on one tick advance the clock past the decision timeout (expiry applies the default \"continue\"), on the next tick write the stop file. Expected: D1 \"default applied (timeout)\", control.applied [\"applied\"], 2 launches, exit 3.",
+          "main_line_budget": "one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: tests/test_engine.py (LOOP_ORDERS, LOOP_EXPECTED, _decision_run, _decision_plan, test_resolution_order_through_the_loop); src/harness_bench/engine.py (on_tick, decision expiry, launch); docs/design/phase2-stop-decisions.md 6.2; C:/Projects/flake-fail-24.log. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "any other engine behaviour",
+            "ci.yml",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.006,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3J0X87YNY9N97Q71ZHQB6K5",
+        "raw_sha256": "56e362386c910e41be7929dd3b09a2f22d2ea8d2265f6d60338b25a131e72b01",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_engine.py::test_resolution_order_through_the_loop[timeout"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/flake-fail-24.log"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase2-stop-decisions.md",
+            "reason": null,
+            "sha256": "3dbc40e3d87e76548cf8bda92266fefc77892f87086a180ae5a9572d91b287b7",
+            "status": "resolved",
+            "token": "docs/design/phase2-stop-decisions.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/engine.py",
+            "reason": null,
+            "sha256": "b9b6924fcf9f64f8120001c5426764c67d74e05588aa1f15220c867c9459eca4",
+            "status": "resolved",
+            "token": "src/harness_bench/engine.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "clock/tick"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_engine.py::test_resolution_order_through_the_loop"
+          },
+          {
+            "nearest": null,
+            "path": "tools/check_models.py",
+            "reason": null,
+            "sha256": "4cfd675c95ac4cb4b73415977909479a1507c78a433ef5aed5878f1fb8d150b3",
+            "status": "resolved",
+            "token": "tools/check_models.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_engine.py",
+            "reason": null,
+            "sha256": "2252c4cf884c0980e9bf44f1d989c872b6958a3d638abe066cd2e109f7273142",
+            "status": "resolved",
+            "token": "tests/test_engine.py"
+          },
+          {
+            "nearest": null,
+            "path": ".github/workflows/ci.yml",
+            "reason": null,
+            "sha256": "82a8a39eb78eb5c020d76bd9e11357af9f426deb5e1d8392915f11d611c2aad5",
+            "status": "resolved",
+            "token": "ci.yml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3J0XAKWSD81NDN9G64G491M",
+      "shortname": "Goal: CI-OPT slice 1 (backlog CI-OPT in docs/coordination/coordination-f…",
+      "datetime": "2026-09-27T18:09:21Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: CI-OPT slice 1 (backlog CI-OPT in docs/coordination/coordination-finish-harness-bench-run.md): cut the cost of building a D1 working copy in tests, the largest cost in both rings, without changing what any test proves; measure before and after.\nMeasured (Leader, 2026-09-27, JUnit profile C:/Projects/ci-opt-profile/default.xml of the default ring on 7be0860): 1792 tests, 1215 s summed; the 75 tests of 5 s or more take 763 s (63%); nearly all are grader tests that call tests/test_grade_correctness.py::d1_cell, which copies tasks/D1/workspace, then git init, add -A and commit (and a second commit for the pack stand-in), about 9-11 s per call locally and much slower on the CI runner (CI's test job needs about 24 min, most of it in these tests). Users: test_grade_architecture (293 s, 24 slow tests), test_grade_drift (205 s, 15), test_grade_mutation (129 s, 13), test_grade_rigor (79 s, 9), test_grade_correctness (71 s, 6), test_report_disclosure. The two largest single tests re-grade the frozen gate run row15-d1-1 in the default ring: test_grade_architecture::test_the_d1_gate_cells_conform_and_the_archive_is_unchanged (57 s) and test_grade_drift::test_the_d1_gate_cells_have_no_scope_creep_and_the_archive_is_unchanged (55 s).\nDone when: First measure and record in the commit message how a d1_cell call's time splits between the workspace copy, git add -A and git commit (e.g. with time.perf_counter around each step on one call); then d1_cell builds the D1 base repository (and the pack stand-in commit) once per test session in a session-scoped cache and gives each test its own independent copy of that repository with the same commits, files and bytes (a test may still mutate its copy freely; no test sees another's changes); the result of every existing d1_cell caller is unchanged (same assertions, no assertion loosened, no test deleted); a test pins that two d1_cell copies in one session are independent (a change in one is absent in the other) and that each copy's HEAD tree equals the fresh build's; the two gate-run tests named above move to the slow ring (@pytest.mark.slow) because their input is a frozen run whose bytes do not change between pushes (a one-time proof re-paid on every push), unless they need dotnet-free execution the slow ring cannot give (it can: the slow ring runs on the grading host); the default ring's summed time of the d1_cell users drops, measured with the same profile command (uv run pytest -q -p no:cacheprovider --durations=0 --junitxml=<file> tests/test_grade_architecture.py tests/test_grade_drift.py tests/test_grade_mutation.py tests/test_grade_rigor.py tests/test_grade_correctness.py tests/test_report_disclosure.py) before and after, both numbers in the commit message; A test earns its place by a failure only it catches: add only the independence/equality pin; uv run pytest -q -p no:cacheprovider on those six files passes; uv run ruff check src tests tools is clean; Commit each step immediately.\nNot in scope: grader code under src/; the slow ring's Stryker tests; consolidating or deleting tests (a later CI-OPT slice, by kill matrix); ci.yml (the Leader lowers the cap after this lands); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each step immediately.\n\nGrounding: tests/test_grade_correctness.py (d1_cell, git, tree_digest); tests/conftest.py (fixture conventions, slow marker); the six test files above; tasks/D1/workspace (read only). Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3J0XCWV6QDMSXM3YBG2X5A2",
+      "shortname": "compile-Goal: CI-OPT slice 1 (backlog CI-OPT in docs/coordination/coordination-f…",
+      "datetime": "2026-09-27T18:09:23Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: CI-OPT slice 1 (backlog CI-OPT in docs/coordination/coordination-finish-harness-bench-run.md): cut the cost of building a D1 working copy in tests, the largest cost in both rings, without changing what any test proves; measure before and after. Measured (Leader, 2026-09-27, JUnit profile C:/Projects/ci-opt-profile/default.xml of the default ring on 7be0860): 1792 tests, 1215 s summed; the 75 tests of 5 s or more take 763 s (63%); nearly all are grader tests that call tests/test_grade_correctness.py::d1_cell, which copies tasks/D1/workspace, then git init, add -A and commit (and a second commit for the pack stand-in), about 9-11 s per call locally and much slower on the CI runner (CI's test job needs about 24 min, most of it in these tests). Users: test_grade_architecture (293 s, 24 slow tests), test_grade_drift (205 s, 15), test_grade_mutation (129 s, 13), test_grade_rigor (79 s, 9), test_grade_correctness (71 s, 6), test_report_disclosure. The two largest single tests re-grade the frozen gate run row15-d1-1 in the default ring: test_grade_architecture::test_the_d1_gate_cells_conform_and_the_archive_is_unchanged (57 s) and test_grade_drift::test_the_d1_gate_cells_have_no_scope_creep_and_the_archive_is_unchanged (55 s).\nDone when: First measure and record in the commit message how a d1_cell call's time splits between the workspace copy, git add -A and git commit (e.g. with time.perf_counter around each step on one call); then d1_cell builds the D1 base repository (and the pack stand-in commit) once per test session in a session-scoped cache and gives each test its own independent copy of that repository with the same commits, files and bytes (a test may still mutate its copy freely; no test sees another's changes); the result of every existing d1_cell caller is unchanged (same assertions, no assertion loosened, no test deleted); a test pins that two d1_cell copies in one session are independent (a change in one is absent in the other) and that each copy's HEAD tree equals the fresh build's; the two gate-run tests named above move to the slow ring (@pytest.mark.slow) because their input is a frozen run whose bytes do not change between pushes (a one-time proof re-paid on every push), unless they need dotnet-free execution the slow ring cannot give (it can: the slow ring runs on the grading host); the default ring's summed time of the d1_cell users drops, measured with the same profile command (uv run pytest -q -p no:cacheprovider --durations=0 --junitxml=<file> tests/test_grade_architecture.py tests/test_grade_drift.py tests/test_grade_mutation.py tests/test_grade_rigor.py tests/test_grade_correctness.py tests/test_report_disclosure.py) before and after, both numbers in the commit message; A test earns its place by a failure only it catches: add only the independence/equality pin; uv run pytest -q -p no:cacheprovider on those six files passes; uv run ruff check src tests tools is clean; Commit each step immediately.\nNot in scope: grader code under src/; the slow ring's Stryker tests; consolidating or deleting tests (a later CI-OPT slice, by kill matrix); ci.yml (the Leader lowers the cap after this lands); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each step immediately.\nGrounding: tests/test_grade_correctness.py (d1_cell, git, tree_digest); tests/conftest.py (fixture conventions, slow marker); the six test files above; tasks/D1/workspace (read only). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: First measure and record in the commit message how a d1_cell call's time splits between the workspace copy, git add -A and git commit (e.g. with time.perf_counter around each step on one call) | phrase: First measure and record in the commit message how a d1_cell call's time splits between the workspace copy, git add -A and git commit (e.g. with time.perf_counter around each step on one call) |\n| done_when: then d1_cell builds the D1 base repository (and the pack stand-in commit) once per test session in a session-scoped cache and gives each test its own independent copy of that repository with the same commits, files and bytes (a test may still mutate its copy freely | phrase: then d1_cell builds the D1 base repository (and the pack stand-in commit) once per test session in a session-scoped cache and gives each test its own independent copy of that repository with the same commits, files and bytes (a test may still mutate its copy freely |\n| done_when: no test sees another's changes) | phrase: no test sees another's changes) |\n| done_when: the result of every existing d1_cell caller is unchanged (same assertions, no assertion loosened, no test deleted) | phrase: the result of every existing d1_cell caller is unchanged (same assertions, no assertion loosened, no test deleted) |\n| done_when: a test pins that two d1_cell copies in one session are independent (a change in one is absent in the other) and that each copy's HEAD tree equals the fresh build's | phrase: a test pins that two d1_cell copies in one session are independent (a change in one is absent in the other) and that each copy's HEAD tree equals the fresh build's |\n| done_when: the two gate-run tests named above move to the slow ring (@pytest.mark.slow) because their input is a frozen run whose bytes do not change between pushes (a one-time proof re-paid on every push), unless they need dotnet-free execution the slow ring cannot give (it can: the slow ring runs on the grading host) | phrase: the two gate-run tests named above move to the slow ring (@pytest.mark.slow) because their input is a frozen run whose bytes do not change between pushes (a one-time proof re-paid on every push), unless they need dotnet-free execution the slow ring cannot give (it can: the slow ring runs on the grading host) |\n| done_when: the default ring's summed time of the d1_cell users drops, measured with the same profile command (uv run pytest -q -p no:cacheprovider --durations=0 --junitxml=<file> tests/test_grade_architecture.py tests/test_grade_drift.py tests/test_grade_mutation.py tests/test_grade_rigor.py tests/test_grade_correctness.py tests/test_report_disclosure.py) before and after, both numbers in the commit message | phrase: the default ring's summed time of the d1_cell users drops, measured with the same profile command (uv run pytest -q -p no:cacheprovider --durations=0 --junitxml=<file> tests/test_grade_architecture.py tests/test_grade_drift.py tests/test_grade_mutation.py tests/test_grade_rigor.py tests/test_grade_correctness.py tests/test_report_disclosure.py) before and after, both numbers in the commit message |\n| done_when: A test earns its place by a failure only it catches: add only the independence/equality pin | phrase: A test earns its place by a failure only it catches: add only the independence/equality pin |\n| done_when: uv run pytest -q -p no:cacheprovider on those six files passes | phrase: uv run pytest -q -p no:cacheprovider on those six files passes |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each step immediately. | phrase: Commit each step immediately. |\n| not_in_scope: grader code under src/ | phrase: grader code under src/ |\n| not_in_scope: the slow ring's Stryker tests | phrase: the slow ring's Stryker tests |\n| not_in_scope: consolidating or deleting tests (a later CI-OPT slice, by kill matrix) | phrase: consolidating or deleting tests (a later CI-OPT slice, by kill matrix) |\n| not_in_scope: ci.yml (the Leader lowers the cap after this lands) | phrase: ci.yml (the Leader lowers the cap after this lands) |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- docs/coordination/coordination-finish-harness-bench-run.md: docs/coordination/coordination-finish-harness-bench-run.md sha256 3eedbc39dc31e4640a27fc65f946e33e88ec6519c081090ff53559b0f478200d\n- C:/Projects/ci-opt-profile/default.xml: unresolved (outside repo)\n- tests/test_grade_correctness.py::d1_cell: unresolved (not found)\n- tasks/D1/workspace: unresolved (not found)\n- tests/test_grade_architecture.py: tests/test_grade_architecture.py sha256 aed1d910074e42f686c0414260fd67ff92ad4c5cd7e644bbed145045d39e27d9\n- tests/test_grade_drift.py: tests/test_grade_drift.py sha256 9d60304e20e02c4098d8fe382306464e4d18f964a870a9de02e348c3085bc298\n- tests/test_grade_mutation.py: tests/test_grade_mutation.py sha256 ae717d57b8d6444dd46a3fdd40c525584e3b663b0269bafad9c39424be5160e6\n- tests/test_grade_rigor.py: tests/test_grade_rigor.py sha256 66c1814151662531e240ef0988231d542a7a6359d520aff957689aaf42dca21c\n- tests/test_grade_correctness.py: tests/test_grade_correctness.py sha256 d0f9b8c3508486bea0ca7a8d4793efe0aa3de7b9f4b5d61e53629e291ac8f2ce\n- tests/test_report_disclosure.py: tests/test_report_disclosure.py sha256 99a535654b5aba5d01e4bf7dcc4debab259b831f706ebc72845880db13710621\n- independence/equality: unresolved (not found)\n- src/: unresolved (not found)\n- ci.yml: .github/workflows/ci.yml sha256 82a8a39eb78eb5c020d76bd9e11357af9f426deb5e1d8392915f11d611c2aad5\n- runs/: unresolved (not found)\n- tests/conftest.py: tests/conftest.py sha256 6867b33aca95c901d1f9cdd64028f84abbe75f3d1323008b4d982830568ccc54\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3J0XAKWSD81NDN9G64G491M\nraw sha256: 068a3a2b41338376e0062b8d686abed4c00f9238260d1d8e2dab4ecd9cd8dbcc\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3J0XAKWSD81NDN9G64G491M for claude-code v1: 17 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "First measure and record in the commit message how a d1_cell call's time splits between the workspace copy, git add -A and git commit (e.g. with time.perf_counter around each step on one call)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "First measure and record in the commit message how a d1_cell call's time splits between the workspace copy, git add -A and git commit (e.g. with time.perf_counter around each step on one call)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "then d1_cell builds the D1 base repository (and the pack stand-in commit) once per test session in a session-scoped cache and gives each test its own independent copy of that repository with the same commits, files and bytes (a test may still mutate its copy freely",
+            "trace": {
+              "kind": "phrase",
+              "ref": "then d1_cell builds the D1 base repository (and the pack stand-in commit) once per test session in a session-scoped cache and gives each test its own independent copy of that repository with the same commits, files and bytes (a test may still mutate its copy freely"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "no test sees another's changes)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "no test sees another's changes)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the result of every existing d1_cell caller is unchanged (same assertions, no assertion loosened, no test deleted)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the result of every existing d1_cell caller is unchanged (same assertions, no assertion loosened, no test deleted)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test pins that two d1_cell copies in one session are independent (a change in one is absent in the other) and that each copy's HEAD tree equals the fresh build's",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test pins that two d1_cell copies in one session are independent (a change in one is absent in the other) and that each copy's HEAD tree equals the fresh build's"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the two gate-run tests named above move to the slow ring (@pytest.mark.slow) because their input is a frozen run whose bytes do not change between pushes (a one-time proof re-paid on every push), unless they need dotnet-free execution the slow ring cannot give (it can: the slow ring runs on the grading host)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the two gate-run tests named above move to the slow ring (@pytest.mark.slow) because their input is a frozen run whose bytes do not change between pushes (a one-time proof re-paid on every push), unless they need dotnet-free execution the slow ring cannot give (it can: the slow ring runs on the grading host)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the default ring's summed time of the d1_cell users drops, measured with the same profile command (uv run pytest -q -p no:cacheprovider --durations=0 --junitxml=<file> tests/test_grade_architecture.py tests/test_grade_drift.py tests/test_grade_mutation.py tests/test_grade_rigor.py tests/test_grade_correctness.py tests/test_report_disclosure.py) before and after, both numbers in the commit message",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the default ring's summed time of the d1_cell users drops, measured with the same profile command (uv run pytest -q -p no:cacheprovider --durations=0 --junitxml=<file> tests/test_grade_architecture.py tests/test_grade_drift.py tests/test_grade_mutation.py tests/test_grade_rigor.py tests/test_grade_correctness.py tests/test_report_disclosure.py) before and after, both numbers in the commit message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A test earns its place by a failure only it catches: add only the independence/equality pin",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A test earns its place by a failure only it catches: add only the independence/equality pin"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider on those six files passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider on those six files passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each step immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each step immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "grader code under src/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "grader code under src/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the slow ring's Stryker tests",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the slow ring's Stryker tests"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "consolidating or deleting tests (a later CI-OPT slice, by kill matrix)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "consolidating or deleting tests (a later CI-OPT slice, by kill matrix)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "ci.yml (the Leader lowers the cap after this lands)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "ci.yml (the Leader lowers the cap after this lands)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "First measure and record in the commit message how a d1_cell call's time splits between the workspace copy, git add -A and git commit (e.g. with time.perf_counter around each step on one call)",
+            "then d1_cell builds the D1 base repository (and the pack stand-in commit) once per test session in a session-scoped cache and gives each test its own independent copy of that repository with the same commits, files and bytes (a test may still mutate its copy freely",
+            "no test sees another's changes)",
+            "the result of every existing d1_cell caller is unchanged (same assertions, no assertion loosened, no test deleted)",
+            "a test pins that two d1_cell copies in one session are independent (a change in one is absent in the other) and that each copy's HEAD tree equals the fresh build's",
+            "the two gate-run tests named above move to the slow ring (@pytest.mark.slow) because their input is a frozen run whose bytes do not change between pushes (a one-time proof re-paid on every push), unless they need dotnet-free execution the slow ring cannot give (it can: the slow ring runs on the grading host)",
+            "the default ring's summed time of the d1_cell users drops, measured with the same profile command (uv run pytest -q -p no:cacheprovider --durations=0 --junitxml=<file> tests/test_grade_architecture.py tests/test_grade_drift.py tests/test_grade_mutation.py tests/test_grade_rigor.py tests/test_grade_correctness.py tests/test_report_disclosure.py) before and after, both numbers in the commit message",
+            "A test earns its place by a failure only it catches: add only the independence/equality pin",
+            "uv run pytest -q -p no:cacheprovider on those six files passes",
+            "uv run ruff check src tests tools is clean",
+            "Commit each step immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "CI-OPT slice 1 (backlog CI-OPT in docs/coordination/coordination-finish-harness-bench-run.md): cut the cost of building a D1 working copy in tests, the largest cost in both rings, without changing what any test proves; measure before and after. Measured (Leader, 2026-09-27, JUnit profile C:/Projects/ci-opt-profile/default.xml of the default ring on 7be0860): 1792 tests, 1215 s summed; the 75 tests of 5 s or more take 763 s (63%); nearly all are grader tests that call tests/test_grade_correctness.py::d1_cell, which copies tasks/D1/workspace, then git init, add -A and commit (and a second commit for the pack stand-in), about 9-11 s per call locally and much slower on the CI runner (CI's test job needs about 24 min, most of it in these tests). Users: test_grade_architecture (293 s, 24 slow tests), test_grade_drift (205 s, 15), test_grade_mutation (129 s, 13), test_grade_rigor (79 s, 9), test_grade_correctness (71 s, 6), test_report_disclosure. The two largest single tests re-grade the frozen gate run row15-d1-1 in the default ring: test_grade_architecture::test_the_d1_gate_cells_conform_and_the_archive_is_unchanged (57 s) and test_grade_drift::test_the_d1_gate_cells_have_no_scope_creep_and_the_archive_is_unchanged (55 s).",
+          "main_line_budget": "one slice of at most 18 minutes; commit each step immediately.\nGrounding: tests/test_grade_correctness.py (d1_cell, git, tree_digest); tests/conftest.py (fixture conventions, slow marker); the six test files above; tasks/D1/workspace (read only). Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "grader code under src/",
+            "the slow ring's Stryker tests",
+            "consolidating or deleting tests (a later CI-OPT slice, by kill matrix)",
+            "ci.yml (the Leader lowers the cap after this lands)",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.006,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3J0XAKWSD81NDN9G64G491M",
+        "raw_sha256": "068a3a2b41338376e0062b8d686abed4c00f9238260d1d8e2dab4ecd9cd8dbcc",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish-harness-bench-run.md",
+            "reason": null,
+            "sha256": "3eedbc39dc31e4640a27fc65f946e33e88ec6519c081090ff53559b0f478200d",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-finish-harness-bench-run.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/ci-opt-profile/default.xml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_grade_correctness.py::d1_cell"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/D1/workspace"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_architecture.py",
+            "reason": null,
+            "sha256": "aed1d910074e42f686c0414260fd67ff92ad4c5cd7e644bbed145045d39e27d9",
+            "status": "resolved",
+            "token": "tests/test_grade_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_drift.py",
+            "reason": null,
+            "sha256": "9d60304e20e02c4098d8fe382306464e4d18f964a870a9de02e348c3085bc298",
+            "status": "resolved",
+            "token": "tests/test_grade_drift.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_mutation.py",
+            "reason": null,
+            "sha256": "ae717d57b8d6444dd46a3fdd40c525584e3b663b0269bafad9c39424be5160e6",
+            "status": "resolved",
+            "token": "tests/test_grade_mutation.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_rigor.py",
+            "reason": null,
+            "sha256": "66c1814151662531e240ef0988231d542a7a6359d520aff957689aaf42dca21c",
+            "status": "resolved",
+            "token": "tests/test_grade_rigor.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_correctness.py",
+            "reason": null,
+            "sha256": "d0f9b8c3508486bea0ca7a8d4793efe0aa3de7b9f4b5d61e53629e291ac8f2ce",
+            "status": "resolved",
+            "token": "tests/test_grade_correctness.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_report_disclosure.py",
+            "reason": null,
+            "sha256": "99a535654b5aba5d01e4bf7dcc4debab259b831f706ebc72845880db13710621",
+            "status": "resolved",
+            "token": "tests/test_report_disclosure.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "independence/equality"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          },
+          {
+            "nearest": null,
+            "path": ".github/workflows/ci.yml",
+            "reason": null,
+            "sha256": "82a8a39eb78eb5c020d76bd9e11357af9f426deb5e1d8392915f11d611c2aad5",
+            "status": "resolved",
+            "token": "ci.yml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": "tests/conftest.py",
+            "reason": null,
+            "sha256": "6867b33aca95c901d1f9cdd64028f84abbe75f3d1323008b4d982830568ccc54",
+            "status": "resolved",
+            "token": "tests/conftest.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
     }
   ],
   "changes": [
