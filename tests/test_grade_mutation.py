@@ -66,12 +66,12 @@ def mutation_input(run_dir: Path, archive: Path, cell: dict, out_dir: Path, time
     )
 
 
-def grade_d1(tmp_path: Path, folder: Path, cell: dict, timeout: int = 900) -> dict[str, tuple]:
-    before = stat_snapshot(folder)
+def grade_d1(tmp_path: Path, folder: Path, cell: dict, timeout: int = 900, check=stat_snapshot) -> dict[str, tuple]:
+    before = check(folder)  # one default-ring test per grader passes tree_digest (Test Architect, Rank 2b)
     out = mutation.grade_cell(
         mutation_input(tmp_path / "run", folder, cell, tmp_path / "run" / "grading" / "g" / "c1" / "mutation", timeout=timeout)
     )
-    assert stat_snapshot(folder) == before, "grading wrote under the archive"
+    assert check(folder) == before, "grading wrote under the archive"
     return {m: encode(s) for m, s in out.items()}
 
 
@@ -163,7 +163,7 @@ def test_mutation_score_with_timeout_and_no_coverage(tmp_path, monkeypatch, stry
 
 
 def test_no_tests_written_when_only_source_changed_is_na(tmp_path):
-    got = grade_d1(tmp_path, *d1_cell(tmp_path, {PROJECTION: REFERENCE}))
+    got = grade_d1(tmp_path, *d1_cell(tmp_path, {PROJECTION: REFERENCE}), check=tree_digest)  # content digest (F9)
     assert got.get(METRIC) == (None, "no tests written")
 
 

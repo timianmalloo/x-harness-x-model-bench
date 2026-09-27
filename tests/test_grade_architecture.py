@@ -61,12 +61,12 @@ def arch_input(run_dir: Path, archive: Path, cell: dict, out_dir: Path, timeout:
                      extraction=None, prices=None)
 
 
-def grade(tmp_path: Path, folder: Path, cell: dict) -> tuple:
+def grade(tmp_path: Path, folder: Path, cell: dict, check=stat_snapshot) -> tuple:
     """architecture_conformance as (value, reason); the archive's bytes must not move (F9)."""
-    before = stat_snapshot(folder)
+    before = check(folder)  # one default-ring test per grader passes tree_digest (Test Architect, Rank 2b)
     out = architecture.grade_cell(arch_input(tmp_path / "run", folder, cell,
                                              tmp_path / "run" / "grading" / "g" / "c1" / "architecture"))
-    assert stat_snapshot(folder) == before, "grading wrote under the archive"
+    assert check(folder) == before, "grading wrote under the archive"
     return encode(out[METRIC])
 
 
@@ -91,7 +91,7 @@ def test_the_d1_reference_plus_using_newtonsoft_json_is_0(tmp_path):  # design: 
 
 
 def test_the_d1_reference_is_1(tmp_path):  # its only using is AiDe.Core.Facts
-    assert grade(tmp_path, *d1_cell(tmp_path, D1_REFERENCE)) == ("1.0000", None)
+    assert grade(tmp_path, *d1_cell(tmp_path, D1_REFERENCE), check=tree_digest) == ("1.0000", None)  # content digest (F9)
 
 
 def projection(tmp_path: Path, head: str) -> tuple:
