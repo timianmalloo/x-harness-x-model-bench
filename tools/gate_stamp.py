@@ -54,7 +54,7 @@ def compute_digest(root: Path | None = None) -> str:
         if "__pycache__" not in p.parts and p.is_file()
     )
     for p in grade_files:
-        rel = p.relative_to(repo_root).as_posix().encode("utf-8")
+        rel = p.relative_to(repo_root).as_posix().encode()
         content = p.read_bytes().replace(b"\r\n", b"\n")
         h.update(rel + b"\0")
         h.update(content + b"\0")
@@ -68,7 +68,7 @@ def compute_digest(root: Path | None = None) -> str:
         from harness_bench.plan import task_version_hash
     d1_hash = task_version_hash(repo_root / "tasks" / "D1")
     h.update(b"tasks/D1:task_version_hash\0")
-    h.update(d1_hash.encode("utf-8") + b"\0")
+    h.update(d1_hash.encode() + b"\0")
 
     # 3. bench/metrics.yaml
     metrics_path = repo_root / "bench" / "metrics.yaml"
@@ -88,7 +88,7 @@ def compute_digest(root: Path | None = None) -> str:
     mutation_py = repo_root / "src" / "harness_bench" / "grade" / "mutation.py"
     stryker_ver = extract_stryker_version(mutation_py)
 
-    tools_line = f"dotnet:{dotnet_ver}\nstryker:{stryker_ver}\n".encode("utf-8")
+    tools_line = f"dotnet:{dotnet_ver}\nstryker:{stryker_ver}\n".encode()
     h.update(b"pinned_tool_versions\0")
     h.update(tools_line + b"\0")
 
