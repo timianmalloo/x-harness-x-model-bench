@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-27T18:09:23Z",
+  "generated": "2026-09-27T18:29:13Z",
   "audit": [
     {
       "actor": null,
@@ -36530,6 +36530,36 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3J21PR4QQSNPNGYF5HSJ8GP",
+      "shortname": "flake-timeout-then-stop",
+      "datetime": "2026-09-27T18:29:13Z",
+      "session": "worker-grok-flake",
+      "prompt": "Find and fix the timeout-then-stop flake in test_resolution_order_through_the_loop: one launch instead of two. Decide by design 6.2. Red first, then fix. Keep the 2-launch assertion.",
+      "summary": "Cause (a): engine.py:400 counted len(self.active), and the reap at engine.py:403 runs after the launch gate. The slot ends when the process is confirmed gone (engine.py:16), before _archive (engine.py:791). A worker still archiving held parallelism, so design 6.2 step 8 missed the continue launch and the next tick's stop overtook it. Red 8b13f5d stalls that archive and fails with 1 launch_intent. Green f666869 counts only cells with no outcome. test_resolution_order_through_the_loop passed 50 of 50. The other four LOOP_ORDERS cases passed inside that run. uv run pytest -q -p no:cacheprovider tests/test_engine.py: 179 passed. uv run ruff check src tests tools: clean. python tools/check_models.py --quick: all model checks passed (22/22 variants).",
+      "kind": "manual",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-27T18:10:13Z",
+      "duration_seconds": 1140.0,
+      "git": {
+        "sha": "f666869f7cd56362d027515119bbcd74f5e4e658",
+        "short": "f666869f7",
+        "branch": "w3-flake",
+        "pushed": null
+      }
     }
   ],
   "changes": [

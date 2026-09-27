@@ -2047,13 +2047,30 @@ LOOP_EXPECTED = {  # case -> (decision.resolved rows, control.applied effects, c
 
 
 @pytest.mark.parametrize("case", sorted(LOOP_ORDERS))
-def test_resolution_order_through_the_loop(base, case):  # R10-4, engine: the tick order of design 6.2 (TA M3)
+def test_resolution_order_through_the_loop(base, case, monkeypatch):  # R10-4, engine: the tick order of design 6.2 (TA M3)
     p, launcher = _decision_plan([("fake", "A", AUTH), ("fake", "A", {})], parallelism=1)
     blocked = p["cells"][0]["cell_id"]
     steps = list(LOOP_ORDERS[case])
+    # The continue launch is step 8 of the expiry tick (design 6.2), and the slot is free once the
+    # process is gone (engine.py module doc), which is before archive. Holding the worker inside
+    # _archive makes a stop on the next tick win every time if the slot is the thread instead.
+    in_archive = threading.Event()
+    release = threading.Event()
+    if case == "timeout then stop":
+        archive = engine.Engine._archive
+
+        def stall_archive(self, cell, cell_dir, launcher):
+            if cell["cell_id"] == blocked:
+                in_archive.set()
+                release.wait(40)
+            return archive(self, cell, cell_dir, launcher)
+
+        monkeypatch.setattr(engine.Engine, "_archive", stall_archive)
 
     def script(eng, offset, run_dir):
         if blocked in eng.outcomes and steps:
+            if case == "timeout then stop" and steps[0][0] == "timeout" and not in_archive.is_set():
+                return  # this tick does not count until the slow archive has the worker
             for step in steps.pop(0):
                 if step == "timeout":
                     offset[0] += JUMP
@@ -2061,8 +2078,13 @@ def test_resolution_order_through_the_loop(base, case):  # R10-4, engine: the ti
                     _stop_file(run_dir)
                 else:
                     _answer_file(run_dir, "D1", "continue")
+        if eng.run_stopped:
+            release.set()
 
-    _, events, summary = _decision_run(base, (p, launcher), script)
+    try:
+        _, events, summary = _decision_run(base, (p, launcher), script)
+    finally:
+        release.set()
     resolved, effects, launched = LOOP_EXPECTED[case]
     assert _resolutions(events) == resolved  # exactly one terminal state per decision
     assert [e["effect"] for e in _kind(events, "control.applied")] == effects
