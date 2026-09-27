@@ -401,3 +401,48 @@ All analysis scripts are committed under `tools/ci_opt/` and conform to reposito
 
 ### Linter Verification
 Verified via `uv run ruff check src tests tools`: clean, 0 warnings, 0 errors.
+
+---
+
+## Test Architect review (2026-09-27, Adversary Mode, claude-fable-5-1)
+
+**Verdict:** PASS WITH CONDITIONS as a plan. Ranks 3 and 5 are blocked as written. The veto clears per item only when that item's named red observation is in its merge.
+
+- **Rank 1: approve with conditions.** "Zero loss" is false (Verified).
+  - `check_regrade` criterion 5 pins counts, and criterion 2 pins identity within one run.
+  - The exact gate values live only in `GATE_D1_MUTATION`, the `D1_GATE` tables (rigor, architecture, drift) and `GATE_C2`.
+  - The home for these tests is a `gate` pytest marker, excluded from `slow`, with the tests kept unchanged, plus a digest stamp:
+    - `tests/fixtures/gate/gate-stamp.yaml` holds a sha256 over `src/harness_bench/grade/**/*.py`, the D1 task version hash, `bench/metrics.yaml`, the pinned tool versions and `bench/regrade-baseline-0.3.yaml`.
+    - A fast default-ring test asserts that the current digest equals the stamp.
+    - `tools/gate_stamp.py --renew` writes the stamp only after `pytest -m gate` exits 0.
+  - Red first: one changed byte in `architecture.py` fails the stamp test. A renew without the ring is impossible by construction.
+  - The gate tests skip on CI (`runs/` is git-ignored), so the saving is the Leader's slow ring (84 min), not CI minutes.
+- **Rank 2: approve with conditions.**
+  - **2b, test-only:** unit tests replace the two `tree_digest` calls with a stat snapshot `{relpath: (size, mtime_ns)}` including the path set.
+    - The content `tree_digest` stays in the six gate tests and in one "archive unchanged" test per grader.
+    - A structural test asserts that no grader module uses `os.utime`.
+    - Red first: a grader that writes a `.pyc` under the archive fails the snapshot.
+  - **2a, product:** the pre-turn digest cache is keyed by `git rev-parse <commit>^{tree}` plus the digest algorithm tag, and is process-scoped and bounded.
+    - A differential test shows cached equals uncached on CRLF, BOM, symlink and binary fixtures.
+    - An isolation test shows two cells with different tree shas never share an entry, and kills the mutant "drop the tree sha from the key".
+- **Rank 3: blocked.** Filtering `dotnet test` to one method makes "exactly 1 regression" true by construction and needs a product seam. The full-suite differential is the only proof of "exactly 1, and no collateral". It is not CI-billable.
+- **Rank 4: approve with conditions.**
+  - The 10 `using` heads stay as parametrizations of a unit test over one `.cs` file (the BOM case via `write_bytes`) that calls `architecture._cs_breaks`.
+  - `test_the_d1_reference_plus_using_newtonsoft_json_is_0` stays as the integration path.
+  - The 8 mutants in `architecture_grader.json` are re-pointed, and all must be killed. Nothing is deleted.
+- **Rank 5: blocked as written.** Section 3 comes from the killer names in the register, not from a kill matrix. It can prioritise where to author mutants; it cannot justify deleting anything.
+  - A group is approved only when each parametrization has a mutant that only it kills, a `mutate_check` run without the candidate leaves the survivor set unchanged, and the group's boundary set is listed.
+  - Approved now: the rigor N/A group becomes one grade plus a dict equality over all four `NA_BY_DESIGN` keys.
+- **Missed by the proposal:**
+  - Defender real-time scanning on `windows-latest`, with I/O at about 2 ms per open. A temp-dir exclusion as a CI step is to be measured once and kept only if it moves the number.
+  - A measured `pytest-xdist` trial: `-n 4` on an I/O-bound ring. An order-dependent test under xdist is a defect to fix.
+  - After the cuts, lower `timeout-minutes` from 60 to 30.
+- **Order:**
+  1. Rank 4 plus the rigor-N/A consolidation.
+  2. 2b.
+  3. The Defender and xdist trials, measured.
+  4. 2a.
+  5. Rank 1 (can run in parallel with steps 1–4).
+  6. Rank 5 per group, mutants first.
+  Rank 3 is never done.
+- **Residual risk:** the stamp catches grader-source drift but not a silent change in the archived runs themselves; that is covered by `check_regrade` criterion 7 at freeze only.
