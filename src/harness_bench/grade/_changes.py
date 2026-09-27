@@ -29,8 +29,46 @@ NOT_FOUND = "pre-turn commit not found in the working copy"
 PACK_SUBJECT = re.compile(r"ai-forward pack revision \d+")  # workspace.install_pack's message
 BUILD_OUTPUT = frozenset({".git", "bin", "obj", "TestResults", "__pycache__"})  # never part of a tree, on either side
 CHUNK = 1 << 20
+DIGEST_ALGORITHM = "sha256"
+CACHE_CAPACITY = 32
 
-__all__ = ["BUILD_OUTPUT", "NOT_FOUND", "change_set", "grading_copy", "pre_turn_commit", "pre_turn_tree"]
+_PRE_TURN_CACHE: dict[tuple[str, str, frozenset[str]], dict[str, str]] = {}
+
+__all__ = [
+    "BUILD_OUTPUT",
+    "CACHE_CAPACITY",
+    "DIGEST_ALGORITHM",
+    "NOT_FOUND",
+    "change_set",
+    "clear_pre_turn_cache",
+    "grading_copy",
+    "pre_turn_commit",
+    "pre_turn_tree",
+    "tree_id",
+]
+
+
+class PreTurnPath(type(Path())):
+    """A Path carrying its git tree object ID for pre-turn digest cache keying."""
+
+    tree_id: str | None = None
+
+
+def clear_pre_turn_cache() -> None:
+    """Clear the process-scoped pre-turn digest cache."""
+    _PRE_TURN_CACHE.clear()
+
+
+def tree_id(ws: Path, commit: str, timeout: float) -> str | None:
+    """The git tree object ID of `commit` (from `git rev-parse <commit>^{tree}`), or None when unreadable."""
+    try:
+        done = gitsafe.git(["rev-parse", f"{commit}^{{tree}}"], cwd=ws, timeout=timeout, check=False)
+        if done.timed_out or done.returncode != 0:
+            return None
+        tid = done.stdout.strip()
+        return tid if tid else None
+    except (gitsafe.GitError, OSError):
+        return None
 
 
 def pre_turn_commit(ws: Path, cell: Mapping, timeout: float) -> str | None:
@@ -54,13 +92,16 @@ def pre_turn_commit(ws: Path, cell: Mapping, timeout: float) -> str | None:
 def pre_turn_tree(ws: Path, commit: str, dest: Path, timeout: float) -> Iterator[Path]:
     """`commit`'s tree at `dest` (from `git archive`, extracted with the tarfile data filter), removed on exit."""
     tar = dest.with_name(dest.name + ".tar")
+    tid = tree_id(ws, commit, timeout)
     try:
         dest.mkdir(parents=True)
         gitsafe.git(["archive", "--format=tar", "-o", str(tar), commit], cwd=ws, timeout=timeout)
         with tarfile.open(tar) as t:
             t.extractall(dest, filter="data")
         tar.unlink()
-        yield dest
+        p = PreTurnPath(dest)
+        p.tree_id = tid
+        yield p
     finally:
         tar.unlink(missing_ok=True)
         if dest.exists():
@@ -107,10 +148,35 @@ def _digest(path: Path) -> str:
     return h.hexdigest()
 
 
-def change_set(before: Path, after: Path) -> dict[str, str]:
+def _pre_turn_digests(before: Path, tid: str | None, bypass_cache: bool) -> dict[str, str]:
+    if bypass_cache or tid is None:
+        old_files = _files(before)
+        return {p: _digest(path) for p, path in old_files.items()}
+    key = (tid, DIGEST_ALGORITHM, BUILD_OUTPUT)
+    cached = _PRE_TURN_CACHE.get(key)
+    if cached is not None:
+        return cached
+    old_files = _files(before)
+    digests = {p: _digest(path) for p, path in old_files.items()}
+    if len(_PRE_TURN_CACHE) >= CACHE_CAPACITY:
+        _PRE_TURN_CACHE.pop(next(iter(_PRE_TURN_CACHE)))
+    _PRE_TURN_CACHE[key] = digests
+    return digests
+
+
+def change_set(
+    before: Path,
+    after: Path,
+    *,
+    tree_id: str | None = None,
+    bypass_cache: bool = False,
+) -> dict[str, str]:
     """path -> added | changed | deleted, from the pre-turn tree `before` to the cell's tree `after`, sorted by path."""
-    old, new = _files(before), _files(after)
-    out = {p: "added" for p in new.keys() - old.keys()}
-    out.update({p: "deleted" for p in old.keys() - new.keys()})
-    out.update({p: "changed" for p in old.keys() & new.keys() if _digest(old[p]) != _digest(new[p])})
+    tid = tree_id if tree_id is not None else getattr(before, "tree_id", None)
+    old_digests = _pre_turn_digests(before, tid, bypass_cache)
+    new = _files(after)
+    old_keys = old_digests.keys()
+    out = {p: "added" for p in new.keys() - old_keys}
+    out.update({p: "deleted" for p in old_keys - new.keys()})
+    out.update({p: "changed" for p in old_keys & new.keys() if old_digests[p] != _digest(new[p])})
     return dict(sorted(out.items()))

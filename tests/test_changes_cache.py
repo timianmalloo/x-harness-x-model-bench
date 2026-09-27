@@ -136,6 +136,23 @@ def test_isolation_different_tree_ids_never_share_entry(tmp_path: Path) -> None:
         f"expected {{'file.txt': 'changed'}} for tree2, got {res2} (isolation failure)"
     )
 
+    # When tree id is unreadable, it does not cache (falls back to computing)
+    tree_u1 = tmp_path / "tree_u1"
+    tree_u1.mkdir()
+    (tree_u1 / "file.txt").write_text("v1", encoding="utf-8")
+
+    res_u1 = _changes.change_set(tree_u1, work, tree_id=None)
+    assert res_u1 == {}
+
+    tree_u2 = tmp_path / "tree_u2"
+    tree_u2.mkdir()
+    (tree_u2 / "file.txt").write_text("v2", encoding="utf-8")
+
+    res_u2 = _changes.change_set(tree_u2, work, tree_id=None)
+    assert res_u2 == {"file.txt": "changed"}, (
+        f"expected {{'file.txt': 'changed'}} for unreadable tree2, got {res_u2}"
+    )
+
 
 def test_isolation_same_tree_id_at_different_path_shares_entry(tmp_path: Path) -> None:
     """(b) Isolation: the same tree id at a different path shares the cached entry."""

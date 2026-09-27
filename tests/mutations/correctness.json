@@ -180,6 +180,20 @@
     "tests": ["tests/test_grade_correctness.py::test_the_pack_on_base_is_the_pack_commit_so_the_pack_is_not_a_change"]
   },
   {
+    "name": "the tree id dropped from the key",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "    key = (tid, DIGEST_ALGORITHM, BUILD_OUTPUT)",
+    "replace": "    key = (DIGEST_ALGORITHM, BUILD_OUTPUT)",
+    "tests": ["tests/test_changes_cache.py::test_isolation_different_tree_ids_never_share_entry"]
+  },
+  {
+    "name": "the cache used when the tree id is unreadable",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "    if bypass_cache or tid is None:",
+    "replace": "    if bypass_cache:",
+    "tests": ["tests/test_changes_cache.py::test_isolation_different_tree_ids_never_share_entry"]
+  },
+  {
     "name": "GR-CODE c2: every csproj is a public test project (the Test.Sdk marker ignored)",
     "file": "src/harness_bench/grade/correctness.py",
     "find": "for p in ws.rglob(\"*.csproj\") if TEST_SDK.search(p.read_text(encoding=\"utf-8\")))",
