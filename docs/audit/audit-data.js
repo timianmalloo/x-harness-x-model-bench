@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-27T18:09:23Z",
+  "generated": "2026-09-27T18:42:33Z",
   "audit": [
     {
       "actor": null,
@@ -36530,6 +36530,35 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3J2T3RQ8XH58MKBQVTM6KW9",
+      "shortname": "ci-opt-slice-1",
+      "datetime": "2026-09-27T18:42:33Z",
+      "session": "worker-agy-ciopt1",
+      "prompt": "CI-OPT slice 1: cut the cost of building a D1 working copy in tests, the largest cost in both rings, without changing what any test proves; measure before and after.",
+      "summary": "CI-OPT slice 1: session-scoped cache for D1 base repo in d1_cell, moved frozen gate-run tests to slow ring; default ring time on 6 test suites dropped from 760.70s to 600.12s (-160.58s)",
+      "kind": "manual",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-27T18:10:09Z",
+      "duration_seconds": 1944.0,
+      "git": {
+        "sha": "dcf5d7aa7fedf52efd2658c57c44e1e97db6c7d5",
+        "short": "dcf5d7aa7",
+        "branch": "w3-ciopt1",
+        "pushed": null
+      }
     }
   ],
   "changes": [
