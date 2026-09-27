@@ -141,6 +141,15 @@ def test_renew_refuses_when_tests_do_not_run_or_fail(tmp_path, monkeypatch):
     assert ret == 1
     assert not stamp_file.exists()
 
+    # Case 3b: some gate tests passed and one skipped (e.g. HB_GATE_RUNS unset for a run): a skip proved nothing
+    def fake_run_partly_skipped(*args, **kwargs):
+        return subprocess.CompletedProcess(args=args, returncode=0, stdout="5 passed, 1 skipped in 9.0s", stderr="")
+
+    monkeypatch.setattr(subprocess, "run", fake_run_partly_skipped)
+    ret = gate_stamp.renew(root)
+    assert ret == 1
+    assert not stamp_file.exists()
+
     # Case 4: pytest exit code 0 and tests passed
     def fake_run_passed(*args, **kwargs):
         return subprocess.CompletedProcess(args=args, returncode=0, stdout="6 passed in 10.0s", stderr="")

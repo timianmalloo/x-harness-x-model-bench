@@ -142,6 +142,10 @@ def renew(root: Path | None = None) -> int:
         sys.stderr.write("Refusing to write stamp: 0 tests passed (at least one test must run and pass).\n")
         sys.stderr.write(output)
         return 1
+    if re.search(r"\b\d+ skipped\b", output):  # a skipped gate test proved nothing (e.g. HB_GATE_RUNS unset)
+        sys.stderr.write("Refusing to write stamp: a gate test was skipped; every gate test must run and pass.\n")
+        sys.stderr.write(output)
+        return 1
 
     digest = compute_digest(repo_root)
     target = stamp_path(repo_root)
