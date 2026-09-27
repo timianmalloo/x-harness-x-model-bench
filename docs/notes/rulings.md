@@ -1035,3 +1035,53 @@ Append only. One entry per ruling. Newest last.
   4. **Bounded follow-up (c):** one `dotnet test` of the vendored D1 suite in a grading copy with a TRX logger, twice (one under load, one idle), failing-test names diffed; the diff is written to `docs/notes/` and closes item 3's `assume:` either way. Cap: one worker, one deadline; a third run needs a ruling.
   5. **Class, not instance (CI):** `docs/lessons/defect-classes.md` gains "a baseline recorded as a constant of the artifact version when it is a property of the environment that produced it"; the control is that every disclosed baseline names the run it was derived from and fails closed to `not derived` (Conditions 1's fixtures). R-75 c5's sweep of `build_and_suite_clean` and `static_analysis_delta` is re-run for stored-baseline shapes.
   6. **Audit:** the commit cites R-77 and DR-MUT-2; R-75's text is not edited — this ruling amends it by reference.
+
+## R-78 · 2026-09-27 · Owner seat (Fable) · DR-S-1..6: every recommended default (a) is granted; anchors and weight corrections are catalog `0.5` content; statistics get their own export and golden; the seed is a recorded constant; E1–E3 are excluded from every pack-effect analysis
+
+- **Ruling:**
+  - **DR-S-1: (a).** Catalog `0.5` adds `anchor: [worst, best]` (raw units) to every metric with `kind: score` and `weight > 0`.
+    - Under a catalog with no anchors, the composites are NA with the design's reason (`no normalisation anchor for <metric> in catalog <v>`), and the **primary measure is `pass_at_1` for the whole run**.
+    - The header carries one line: `primary measure: pass@1 (catalog 0.4 has no normalisation anchors)`.
+    - (c) is refused: spec `:212` says the anchors are catalog content, so an implicit range is a guess the catalog does not hold.
+    - Rows stay ranked: the `0.4` smoke rank is a real result, not a placeholder.
+  - **DR-S-2: (a).** `gated = pass_at_1 × overall` per cell, where `overall` is the unweighted mean of the non-NA area composites, with the design's three NA/0 cases (`:185-188`).
+    - **Amendment:** `0.5` sets `pass_at_1` to `weight: 0`. It is the gate factor, and leaving it inside the correctness area counts the same quantity twice in one product. The design records this as a Decision.
+    - The correctness area is then `partial_credit`, `build_and_suite_clean`, `mutation_score`, `regression_count`, `behavioural_equivalence`, `formal_checks_clean` and `bugs_confirmed`.
+  - **DR-S-3: (a).** Cell composites read `kind: score` only. `0.5` sets `pass_hat_k`, `cost_of_pass`, `tokens_per_solved` and `wall_clock_split` to `weight: 0`. (b) is refused: it breaks the tasks × repetitions resampling unit and the R-19 per-task obligation.
+  - **DR-S-4: (a).** The leaderboard leaves `views.export`, and `board.export` owns the statistics bytes and their own golden.
+    - The change lands in the `0.5.dev` window (G3), and the Leader re-pins at the `0.5` freeze.
+    - `views.export` under `0.4` keeps guarding scores; condition 4 makes the one-time equality explicit.
+  - **DR-S-5: (a).** One named constant each: `stats.DEFAULT_SEED` and `stats.DEFAULT_RESAMPLES = 2000`, overridable by `--seed` and `--resamples`.
+    - `seed`, `resamples` and `METHOD` are recorded in `board.export`, the CLI header and the HTML header (G12: one `disclosure_rows` source).
+    - `bench report` refuses `--resamples < 2000` as invalid input. US-36 `:508` is an acceptance criterion, and G13 measured 0.024 s per interval at 2,000, so speed is no reason to go under.
+    - The library function itself accepts any `B ≥ 1` for tests. No plan field.
+  - **DR-S-6: (a).** US-52's comparison applies the same `CONTAMINATION_PRONE` exclusion and prints the same statement (`Excluded as contamination-prone: …` / `none in this run`): one constant, one reader path, one string.
+- **Reasoning:**
+  - Every default is the smallest option that keeps the spec's words true:
+    - Anchors live in the catalog (`:212`), so they arrive with a version, not with code.
+    - The seed is a stored input (`:255`), and the smallest store is a recorded constant.
+    - `views.export` is the US-4 guard on scores under a catalog version. Statistics code is not catalog content; coupling the two makes every bootstrap fix look like a silent score move, the very defect US-4 detects.
+  - DR-S-2's amendment and DR-S-3 share one principle: the catalog states what the code does, and the code enforces it (CI6: a weight the code ignores is a memoir).
+  - The `0.4` smoke result stays honest under DR-S-1(a). Its rank is on pass@1, as the header says, and the `0.5` re-grade is pure and cached (US-26), so nothing is thrown away.
+  - E1–E3 are `stub` today (G20), so DR-S-6 costs the smoke run one line: `none in this run`.
+  - R4 closes: S4–S7 may dispatch.
+- **Conditions:**
+  1. **`0.5.dev` must contain:**
+     - `version: "0.5.dev"`;
+     - `anchor: [worst, best]` on every `kind: score, weight > 0` metric, each with a one-clause `note` giving the anchor's source: a spec value, a measured range or a stated convention, never unmarked;
+     - `weight: 0` on `pass_at_1` and on the four DR-S-3 metrics;
+     - no other change to metric ids, kinds, `better`, `grader` or `scale`.
+  2. `config.validate_metrics` (G7 accepts unknown keys today) gains three refusals, red first: a weighted `kind: score` metric without an anchor; `worst == best`; and an anchor whose direction contradicts `better`. A `kind: derived` metric with `weight > 0` is also refused. S4 owns these as a seam to `config.py`.
+  3. Every header names the primary measure: `pass@1` while the current pass's catalog has no anchors, `gated` otherwise. It is a run-level property, never per row (design `:270-271`; T-U1..U3 pin the string).
+  4. Before `board.export` lands, the Leader records in the run record that the `0.4` golden `heads.export`, minus its `leaderboard` key, is byte-equal to `views.export` of the `0.4` fixture after the change. This is one check, done once; the scores stay guarded under `0.4` without a second golden.
+  5. **Freeze `0.5` only when** all of these hold:
+     - S4–S7 have joined;
+     - the `board.export` and `views.export` goldens are pinned for the fixtures graded under `0.5`;
+     - the frozen-fixture check is green;
+     - `smoke-1` has a current pass under `0.5` whose header reads `primary measure: gated`;
+     - the four `weight: 0` corrections and every anchor are in;
+     - `bench/catalog-freeze.yaml` holds the `0.5` hash and both goldens.
+     A change after that freeze is `0.6` (R-59 c3's rule).
+  6. `stats.CONTAMINATION_PRONE` is the only source of the exclusion. T-M1..M3 include one case where run B holds an `E*` task and the comparison section names it under the same statement as US-37's.
+  7. `--resamples < 2000` in `bench report` exits invalid-input with a named code in the `HB-STA` family. The design's error table gains that row before S6 closes.
+  8. The smoke run's rank under `0.4` is reported as a pass@1 rank in any operator-facing summary. The AI summary (US-42) may not describe it as a composite rank.
