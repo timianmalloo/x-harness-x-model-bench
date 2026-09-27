@@ -7,15 +7,20 @@
   and with `HB_REQUIRE_DOTNET=1` they fail instead (the design's slow-ring rule).
 """
 
+import atexit
 import dataclasses
 import hashlib
 import os
 import shutil
+import sys
+import tempfile
+import uuid
 from decimal import Decimal
 from pathlib import Path
 
 import pytest
 from archived_runs import ROOT, gate_runs_root
+from conftest import CLEAN_PARENT
 
 from harness_bench import archive, config, plan, views
 from harness_bench.grade import CellInput, Score, correctness
@@ -122,21 +127,59 @@ def without_member(text: str) -> str:
     return text[:text.index("    public static StringComparison ForThisFileSystem")].rstrip() + "\n}\n"
 
 
+_D1_CACHE_ROOT: Path | None = None
+_D1_CACHE: dict[bool, Path] = {}
+
+
+def _build_d1_cache() -> None:
+    global _D1_CACHE_ROOT
+    if _D1_CACHE_ROOT is not None and _D1_CACHE_ROOT.exists():
+        return
+
+    try:
+        CLEAN_PARENT.mkdir(parents=True, exist_ok=True)
+        cache_parent = CLEAN_PARENT
+    except OSError:
+        cache_parent = Path(tempfile.gettempdir()) / "bench-test"
+        cache_parent.mkdir(parents=True, exist_ok=True)
+
+    root = cache_parent / f"d1-cache-{uuid.uuid4().hex}"
+    root.mkdir(parents=True, exist_ok=True)
+    _D1_CACHE_ROOT = root
+
+    def cleanup():  # CLN-A: a cleanup failure is said, never swallowed
+        try:
+            shutil.rmtree(root, onexc=archive.make_writable)
+        except OSError as exc:
+            print(f"d1 cache not removed: {root}: {exc}", file=sys.stderr)
+
+    atexit.register(cleanup)
+
+    base_ws = root / "base"
+    shutil.copytree(D1 / "workspace", base_ws)
+    git(base_ws, "init", "-q", "-b", "main")
+    git(base_ws, "add", "-A")
+    git(base_ws, "commit", "-q", "-m", f"D1 base ({D1_VERSION[:12]})")
+    _D1_CACHE[False] = base_ws
+
+    pack_ws = root / "pack"
+    shutil.copytree(base_ws, pack_ws)
+    (pack_ws / ".editorconfig").write_text("root = true\n", encoding="utf-8")
+    (pack_ws / "docs" / "pack").mkdir(parents=True)
+    (pack_ws / "docs" / "pack" / "stand-in.md").write_text("pack stand-in\n", encoding="utf-8")
+    git(pack_ws, "add", "-A")
+    git(pack_ws, "commit", "-q", "-m", "ai-forward pack revision 95")
+    _D1_CACHE[True] = pack_ws
+
+
 def d1_cell(tmp_path: Path, overlay: dict, pack: bool = False, commit: str | None = None) -> tuple[Path, dict]:
     """(archive folder, plan cell): the base commit, the pack stand-in commit when `pack`, then `overlay`
     (path -> text, or a function of the current text), uncommitted unless `commit` names a commit message."""
+    _build_d1_cache()
     folder = tmp_path / "run" / "archive" / "c1" / "attempt-1"
     ws = folder / "ws"
-    shutil.copytree(D1 / "workspace", ws)
-    git(ws, "init", "-q", "-b", "main")
-    git(ws, "add", "-A")
-    git(ws, "commit", "-q", "-m", f"D1 base ({D1_VERSION[:12]})")
-    if pack:  # stand-in files outside the blast radius, and no pack material (design: Fixtures)
-        (ws / ".editorconfig").write_text("root = true\n", encoding="utf-8")
-        (ws / "docs" / "pack").mkdir(parents=True)
-        (ws / "docs" / "pack" / "stand-in.md").write_text("pack stand-in\n", encoding="utf-8")
-        git(ws, "add", "-A")
-        git(ws, "commit", "-q", "-m", "ai-forward pack revision 95")
+    ws.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(_D1_CACHE[pack], ws)
     for rel, text in overlay.items():
         path = ws / rel
         if callable(text):
@@ -148,6 +191,53 @@ def d1_cell(tmp_path: Path, overlay: dict, pack: bool = False, commit: str | Non
         git(ws, "commit", "-q", "-m", commit)
     cell = {"cell_id": "c1", "task": "D1", "task_version": D1_VERSION, "pack": "on" if pack else "off"}
     return folder, cell
+
+
+def test_d1_cell_copies_are_independent_and_equal_fresh_build(tmp_path):
+    # Fresh build of D1 base workspace without cache
+    fresh_base = tmp_path / "fresh_base"
+    shutil.copytree(D1 / "workspace", fresh_base)
+    git(fresh_base, "init", "-q", "-b", "main")
+    git(fresh_base, "add", "-A")
+    git(fresh_base, "commit", "-q", "-m", f"D1 base ({D1_VERSION[:12]})")
+    fresh_base_tree = git(fresh_base, "rev-parse", "HEAD^{tree}")
+
+    # Fresh build of pack workspace without cache
+    fresh_pack = tmp_path / "fresh_pack"
+    shutil.copytree(fresh_base, fresh_pack)
+    (fresh_pack / ".editorconfig").write_text("root = true\n", encoding="utf-8")
+    (fresh_pack / "docs" / "pack").mkdir(parents=True)
+    (fresh_pack / "docs" / "pack" / "stand-in.md").write_text("pack stand-in\n", encoding="utf-8")
+    git(fresh_pack, "add", "-A")
+    git(fresh_pack, "commit", "-q", "-m", "ai-forward pack revision 95")
+    fresh_pack_tree = git(fresh_pack, "rev-parse", "HEAD^{tree}")
+
+    # First d1_cell copy in session
+    folder1, cell1 = d1_cell(tmp_path / "cell1", {})
+    ws1 = folder1 / "ws"
+    assert cell1["task"] == "D1" and cell1["pack"] == "off"
+    assert git(ws1, "rev-parse", "HEAD^{tree}") == fresh_base_tree
+
+    # Mutate copy 1: create a new file and commit it
+    (ws1 / "probe_independent.txt").write_text("mutation probe\n", encoding="utf-8")
+    git(ws1, "add", "-A")
+    git(ws1, "commit", "-q", "-m", "probe commit")
+
+    # Second d1_cell copy in same session
+    folder2, cell2 = d1_cell(tmp_path / "cell2", {})
+    ws2 = folder2 / "ws"
+
+    # Independence: mutation in copy 1 is absent in copy 2
+    assert not (ws2 / "probe_independent.txt").exists()
+    assert git(ws2, "rev-parse", "HEAD") != git(ws1, "rev-parse", "HEAD")
+    assert git(ws2, "rev-parse", "HEAD^{tree}") == fresh_base_tree
+    assert cell2 == cell1
+
+    # Pack copy: HEAD tree equals fresh pack build's
+    folder_pack, cell_pack = d1_cell(tmp_path / "cell_pack", {}, pack=True)
+    ws_pack = folder_pack / "ws"
+    assert cell_pack["pack"] == "on"
+    assert git(ws_pack, "rev-parse", "HEAD^{tree}") == fresh_pack_tree
 
 
 def grade_d1(tmp_path: Path, folder: Path, cell: dict) -> dict[str, tuple]:
