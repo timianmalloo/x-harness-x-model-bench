@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-27T19:45:42Z",
+  "generated": "2026-09-27T20:03:02Z",
   "audit": [
     {
       "actor": null,
@@ -37650,6 +37650,40 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3J7DFEGG3NAH13DDG1N31AR",
+      "shortname": "ciopt5-pre-turn-digest-cache",
+      "datetime": "2026-09-27T20:03:02Z",
+      "session": "worker-agy-ciopt5",
+      "prompt": "CI-OPT slice 5, the Test Architect's approved Rank 2a: a pre-turn digest cache inside src/harness_bench/grade/_changes.py so that grading many cells of one task does not re-hash the same pre-turn tree, keyed by content, never by path; red first.",
+      "summary": "Cached pre-turn tree digests by content in _changes.py. Added differential & isolation tests in test_changes_cache.py. Added and killed 2 mutants in correctness.json. Grader test duration improved from 30.76s to 26.90s. Regrade and all grader tests pass.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "CI-OPT slice 5 (Rank 2a): Pre-turn digest cache in _changes.py",
+      "done_when": "Pre-turn cache keyed by (tree_id, alg, BUILD_OUTPUT); differential and isolation tests red first; mutants killed; all grader tests pass",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-27T19:46:06Z",
+      "duration_seconds": 1016.0,
+      "git": {
+        "sha": "9d76ada252b3cf7b20a943dba0f9da10a00665ce",
+        "short": "9d76ada25",
+        "branch": "w3-ciopt5",
+        "pushed": null
+      }
     }
   ],
   "changes": [
