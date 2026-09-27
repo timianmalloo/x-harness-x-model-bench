@@ -79,9 +79,8 @@ def grade_d1(tmp_path: Path, folder: Path, cell: dict, timeout: int = 900) -> di
 def stryker_lookups_unavailable(monkeypatch, tmp_path):
     """The host that CI is: no Stryker in the NuGet cache, and no dotnet on PATH.
 
-    find_stryker_dll reads NUGET_PACKAGES before USERPROFILE and Path.home, and grade_cell
-    refuses to start when that dll is missing or shutil.which("dotnet") is None. An empty
-    cache plus a PATH with no dotnet is the failure these eight tests used to hit for real.
+    The fake Stryker run below stands in for both lookups, so these eight tests score
+    from the fixture report instead of stopping at "mutation tool not available".
     """
     empty = tmp_path / "empty-nuget"
     empty.mkdir()
@@ -89,6 +88,9 @@ def stryker_lookups_unavailable(monkeypatch, tmp_path):
     # git stays: d1_cell builds the archive with it. Only dotnet is removed, which is the lookup under test.
     kept = [entry for entry in os.environ.get("PATH", "").split(os.pathsep) if "dotnet" not in entry.lower()]
     monkeypatch.setenv("PATH", os.pathsep.join(kept))
+    pinned = empty / "dotnet-stryker" / "4.16.0" / "tools" / "net8.0" / "any" / "Stryker.CLI.dll"
+    monkeypatch.setattr(mutation, "find_stryker_dll", lambda: pinned)
+    monkeypatch.setattr(mutation.shutil, "which", lambda cmd: "dotnet" if cmd == "dotnet" else shutil.which(cmd))
     return empty
 
 
