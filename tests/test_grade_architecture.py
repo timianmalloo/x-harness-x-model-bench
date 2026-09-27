@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 from archived_runs import ROOT
-from test_grade_correctness import d1_cell, git, tree_digest
+from test_grade_correctness import d1_cell, git, stat_snapshot, tree_digest
 
 from harness_bench import config, plan, procs, views
 from harness_bench.archive import make_writable
@@ -63,10 +63,10 @@ def arch_input(run_dir: Path, archive: Path, cell: dict, out_dir: Path, timeout:
 
 def grade(tmp_path: Path, folder: Path, cell: dict) -> tuple:
     """architecture_conformance as (value, reason); the archive's bytes must not move (F9)."""
-    before = tree_digest(folder)
+    before = stat_snapshot(folder)
     out = architecture.grade_cell(arch_input(tmp_path / "run", folder, cell,
                                              tmp_path / "run" / "grading" / "g" / "c1" / "architecture"))
-    assert tree_digest(folder) == before, "grading wrote under the archive"
+    assert stat_snapshot(folder) == before, "grading wrote under the archive"
     return encode(out[METRIC])
 
 

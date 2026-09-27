@@ -14,7 +14,14 @@ from pathlib import Path
 
 import pytest
 from archived_runs import ROOT, gate_runs_root
-from test_grade_correctness import BROKEN, d1_cell, done, git, tree_digest
+from test_grade_correctness import (
+    BROKEN,
+    d1_cell,
+    done,
+    git,
+    stat_snapshot,
+    tree_digest,
+)
 
 from harness_bench import config, plan, views
 from harness_bench.archive import make_writable
@@ -71,11 +78,11 @@ def rigor_input(run_dir: Path, archive: Path, cell: dict, out_dir: Path, timeout
 
 def grade_d1(tmp_path: Path, folder: Path, cell: dict, timeout: int = 900) -> dict[str, tuple]:
     """Every rigor Score of the cell as (value, reason); the archive's bytes must not move (F9)."""
-    before = tree_digest(folder)
+    before = stat_snapshot(folder)
     out = rigor.grade_cell(
         rigor_input(tmp_path / "run", folder, cell, tmp_path / "run" / "grading" / "g" / "c1" / "rigor", timeout=timeout)
     )
-    assert tree_digest(folder) == before, "grading wrote under the archive"
+    assert stat_snapshot(folder) == before, "grading wrote under the archive"
     return {m: encode(s) for m, s in out.items()}
 
 

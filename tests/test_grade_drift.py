@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 from archived_runs import ROOT, gate_runs_root
-from test_grade_correctness import d1_cell, tree_digest
+from test_grade_correctness import d1_cell, stat_snapshot, tree_digest
 
 from harness_bench import config, plan, procs, views
 from harness_bench.archive import make_writable
@@ -41,9 +41,9 @@ def drift_input(run_dir: Path, archive: Path, cell: dict, out_dir: Path, timeout
 
 def grade_d1(tmp_path: Path, folder: Path, cell: dict) -> dict[str, tuple]:
     """Every drift Score of the cell as (value, reason); the archive's bytes must not move (F9)."""
-    before = tree_digest(folder)
+    before = stat_snapshot(folder)
     out = drift.grade_cell(drift_input(tmp_path / "run", folder, cell, tmp_path / "run" / "grading" / "g" / "c1" / "drift"))
-    assert tree_digest(folder) == before, "grading wrote under the archive"
+    assert stat_snapshot(folder) == before, "grading wrote under the archive"
     return {m: encode(s) for m, s in out.items()}
 
 

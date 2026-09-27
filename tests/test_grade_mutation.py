@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 from archived_runs import ROOT, gate_runs_root
-from test_grade_correctness import d1_cell, git, tree_digest
+from test_grade_correctness import d1_cell, git, stat_snapshot, tree_digest
 
 from harness_bench import config, plan, views
 from harness_bench.archive import make_writable
@@ -67,11 +67,11 @@ def mutation_input(run_dir: Path, archive: Path, cell: dict, out_dir: Path, time
 
 
 def grade_d1(tmp_path: Path, folder: Path, cell: dict, timeout: int = 900) -> dict[str, tuple]:
-    before = tree_digest(folder)
+    before = stat_snapshot(folder)
     out = mutation.grade_cell(
         mutation_input(tmp_path / "run", folder, cell, tmp_path / "run" / "grading" / "g" / "c1" / "mutation", timeout=timeout)
     )
-    assert tree_digest(folder) == before, "grading wrote under the archive"
+    assert stat_snapshot(folder) == before, "grading wrote under the archive"
     return {m: encode(s) for m, s in out.items()}
 
 
@@ -354,10 +354,10 @@ def test_d1_reference_plus_new_test_project_seed_or_no_compute_scores_zero(tmp_p
             NEW_TEST_CODE: NEW_TEST_CODE_CONTENT,
         },
     )
-    before = tree_digest(folder)
+    before = stat_snapshot(folder)
     inp = mutation_input(tmp_path, folder, cell, tmp_path / "grading" / "c1" / "mutation")
     out = mutation.grade_cell(inp)
-    assert tree_digest(folder) == before, "grading wrote under the archive"
+    assert stat_snapshot(folder) == before, "grading wrote under the archive"
     assert out[METRIC].value == Decimal("0.0000")
     assert out[METRIC].reason is None
 
@@ -402,10 +402,10 @@ def test_d1_reference_plus_seed_or_no_compute_one_always_failing_scores_zero(tmp
             RED_TEST_CODE: RED_TEST_CODE_CONTENT,
         },
     )
-    before = tree_digest(folder)
+    before = stat_snapshot(folder)
     out_dir = tmp_path / "grading" / "c1" / "mutation"
     out = mutation.grade_cell(mutation_input(tmp_path, folder, cell, out_dir))
-    assert tree_digest(folder) == before, "grading wrote under the archive"
+    assert stat_snapshot(folder) == before, "grading wrote under the archive"
     assert out[METRIC].value == Decimal("0.0000")
     assert out[METRIC].reason is None
     log = (out_dir / "mutation.log").read_text(encoding="utf-8")

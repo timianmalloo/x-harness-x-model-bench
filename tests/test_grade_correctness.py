@@ -7,6 +7,7 @@
   and with `HB_REQUIRE_DOTNET=1` they fail instead (the design's slow-ring rule).
 """
 
+import ast
 import atexit
 import dataclasses
 import hashlib
@@ -42,6 +43,15 @@ def tree_digest(folder: Path) -> dict[str, str]:
             for p in sorted(folder.rglob("*")) if p.is_file()}
 
 
+def stat_snapshot(folder: Path) -> dict[str, tuple[int, int]]:
+    """{relpath: (size, mtime_ns)} over every file under the folder, including the path set.
+
+    An added, deleted, resized or re-written file changes it. Cheap enough for a synthetic
+    fixture; the content digest that proves F9 on a real archive stays tree_digest."""
+    return {p.relative_to(folder).as_posix(): (p.stat().st_size, p.stat().st_mtime_ns)
+            for p in sorted(folder.rglob("*")) if p.is_file()}
+
+
 def test_a_pyc_a_fake_grader_writes_under_the_archive_changes_the_stat_snapshot(tmp_path):
     """F9 on a synthetic fixture is the path set plus each file's (size, mtime_ns). A .pyc is a new path."""
     folder = tmp_path / "archive"
@@ -68,6 +78,23 @@ def test_rewriting_a_file_with_the_same_size_changes_the_snapshot_through_mtime_
     target.write_bytes(b"class B {}\n")  # 11 bytes, same as before
     assert target.stat().st_size == before["ws/a.cs"][0]
     assert stat_snapshot(folder) != before, "a same-size rewrite must change the snapshot through mtime_ns"
+
+
+def test_no_grader_module_references_utime():
+    """A grader that restores mtimes (os.utime, os.utime() or a bare utime) could hide a write from the snapshot.
+
+    Matched on the AST, so a string or a comment that merely names the ban does not trip it: a real
+    `os.utime(` call is an Attribute `utime`, and `from os import utime` is a Name `utime`."""
+    grade = ROOT / "src" / "harness_bench" / "grade"
+    offenders = []
+    for path in sorted(grade.rglob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Name) and node.id == "utime":
+                offenders.append(f"{path.relative_to(ROOT).as_posix()}:{node.lineno}: utime")
+            elif isinstance(node, ast.Attribute) and node.attr == "utime":
+                offenders.append(f"{path.relative_to(ROOT).as_posix()}:{node.lineno}: os.utime")
+    assert offenders == []
 
 
 def cell_input(run_dir: Path, archive: Path, cell: dict, out_dir: Path, timeout: int = 900) -> CellInput:
@@ -266,9 +293,9 @@ def test_d1_cell_copies_are_independent_and_equal_fresh_build(tmp_path):
 
 def grade_d1(tmp_path: Path, folder: Path, cell: dict) -> dict[str, tuple]:
     """Every correctness Score of the cell as the runner writes it; the archive's bytes must not move (F9)."""
-    before = tree_digest(folder)
+    before = stat_snapshot(folder)
     out = correctness.grade_cell(cell_input(tmp_path / "run", folder, cell, tmp_path / "run" / "grading" / "g" / "c1" / "correctness"))
-    assert tree_digest(folder) == before, "grading wrote under the archive"
+    assert stat_snapshot(folder) == before, "grading wrote under the archive"
     return {m: encode(s) for m, s in out.items()}
 
 
@@ -329,14 +356,14 @@ def changes_of(tmp_path: Path, folder: Path, cell: dict) -> tuple[str | None, di
     from harness_bench.grade import _changes
 
     ws, out = folder / "ws", tmp_path / "out"
-    before = tree_digest(folder)
+    before = stat_snapshot(folder)
     commit = _changes.pre_turn_commit(ws, cell, 120)
     changed = None
     if commit is not None:
         with _changes.pre_turn_tree(ws, commit, out / "pre-turn", 120) as base, _changes.grading_copy(ws, out / "copy") as copy:
             changed = _changes.change_set(base, copy)
         assert not (out / "pre-turn").exists() and not (out / "copy").exists(), "a disposable tree was left behind"
-    assert tree_digest(folder) == before, "reading the changes wrote under the archive"
+    assert stat_snapshot(folder) == before, "reading the changes wrote under the archive"
     return commit, changed
 
 
