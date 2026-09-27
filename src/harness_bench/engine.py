@@ -397,9 +397,14 @@ class Engine:
                         self._kill_all("host_suspended")
                     if not self.stopped and min(_free_bytes(self.cfg.cells_root), _free_bytes(run_dir)) < self.params["disk_floor_bytes"]:
                         self._stop_launching("HB-RUN-004", "free space below the floor")
-                    while pending and not self.stopped and not self.broken and len(self.active) < self.params["parallelism"] \
+                    # The slot ends when the process is confirmed gone (module doc), which is before the
+                    # outcome. A worker still archiving stays in active so the loop drains it, and does
+                    # not keep the slot: design 6.2 step 8 launches in this tick once the decision is closed.
+                    held = sum(cid not in self.outcomes for cid in self.active)
+                    while pending and not self.stopped and not self.broken and held < self.params["parallelism"] \
                             and not self.decisions.any_open:  # launching pauses while a decision is open (US-15)
                         self._launch(pending.pop(0))
+                        held += 1
                 for cell_id, a in list(self.active.items()):
                     if not a.thread.is_alive():
                         self.active.pop(cell_id)
