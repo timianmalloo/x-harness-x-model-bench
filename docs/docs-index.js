@@ -1731,6 +1731,68 @@ window.DOCS_INDEX = {
       "sourceSha256": "544b1cad5a82ff64b5e1ef998fd28b0cf116461e07d0f676d36c2bba35c08875"
     },
     {
+      "id": "design-phase4-statistics",
+      "path": "docs/design/phase4-statistics.md",
+      "title": "Design: statistics — composites, bootstrap intervals, ranking with ties, pack effect and run comparison (phase 4, wave 4 row 19)",
+      "type": "design",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 4 · statistics and full report (wave 4: row 19)",
+      "reviewBy": "2027-03-27",
+      "reviewSuggested": [],
+      "summary": "Row 19 (S-08f composites + S-11 statistics): normalisation by catalog anchors and the correctness-gated composite at the cell grain; a two-stage (tasks, then repetitions) percentile bootstrap, 95%, at least 2,000 resamples, keyed per quantity from a recorded seed so the same results and seed give identical intervals; ranking where overlapping intervals share a tier and a pass@1 interval entirely below another can never rank above it (US-36, C1); the pack effect on minus off per area and combo with E1-E3 excluded and `no detectable effect` when the interval touches zero (US-37); the two-run comparison with its refusal rule (US-52). Everything is derived at read time; nothing new is stored. Six decision requests (DR-S-1..6) carry recommended defaults.",
+      "tags": [
+        "benchmark",
+        "statistics",
+        "bootstrap",
+        "ranking",
+        "pack-effect",
+        "composites",
+        "normalisation",
+        "determinism"
+      ],
+      "links": [
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-phase3-graders",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-phase3-cost",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-phase3-gateway-judges",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        },
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        },
+        {
+          "to": "proposal-cross-harness-benchmarking",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd"
+    },
+    {
       "id": "design-run-lifecycle-model",
       "path": "docs/design/run-lifecycle-model.md",
       "title": "Design: run lifecycle model (models/run_lifecycle.tla)",
@@ -2895,5 +2957,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "6ac665fbca37b1f5ff5c5489c4e34accf1d54200b7a50b6afdefacc24fa3d4a9"
+  "graphSha256": "334cccfbffcf56793f997f1ff37bb93005f264baa000190fbcca79bdee43086f"
 };

@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-27T23:08:21Z",
+  "generated": "2026-09-27T23:43:50Z",
   "audit": [
     {
       "actor": null,
@@ -39199,6 +39199,50 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3JM1RGF4FSBZ8ERN6TMWZ7S",
+      "shortname": "design-slice-phase4-statistics",
+      "datetime": "2026-09-27T23:43:49Z",
+      "session": "w4-stats-design",
+      "prompt": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only.\nMeasured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).\nDone when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible); the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0); the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases; the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label; the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog); where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable; the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee; the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed); the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named; the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document; any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved; docs-graph derive and validate pass; Commit the document.\nNot in scope: implementing anything; the full report's UI (row 20, a separate ui-design pass); the full grid (wave 5); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\n\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-stats-design (use absolute paths or cd into it in each shell command).",
+      "summary": "Row 19 design: composites (anchors, gated = pass@1 x overall), two-stage percentile bootstrap (95%, >=2000, keyed seed), component-tier ranking with the pass@1 gate merge, pack effect (E1-E3 excluded), run comparison; 7 slices; DR-S-1..6 open; Test Architect cleared at round 4 with 3 conditions",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/phase4-statistics.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled_from": "al-01M3JJ40PZ4PAPDTMXCWSMNGJR",
+      "goal": "detailed design for wave 4 row 19 statistics, ready for red-first slices",
+      "done_when": "docs/design/phase4-statistics.md committed with data model, bootstrap, ranking, pack effect, comparison, surfaces, contracts, test plan, slices, gate record, DR-S-n; derive and validate pass",
+      "tier": "T2",
+      "persona_yield": [
+        {
+          "persona": "test-architect",
+          "raised": 29,
+          "accepted": 29
+        },
+        {
+          "persona": "simplifier",
+          "raised": 6,
+          "accepted": 1
+        },
+        {
+          "persona": "patterns-expert",
+          "raised": 4,
+          "accepted": 1
+        }
+      ],
+      "git": {
+        "sha": "30af0a5087d4c51083fec2cd1ab3f120bb9a8fa0",
+        "short": "30af0a508",
+        "branch": "w4-stats-design",
+        "pushed": null
+      }
     }
   ],
   "changes": [
@@ -39563,6 +39607,30 @@ window.AUDIT_DATA = {
       "summary": "Row-17 design (docs/design/phase3-gateway-judges.md, revision 3) and spike GW-H (docs/notes/spike-gw-headless.md, tests/fixtures/gateway/gw-headless-results.json) from five Leader-run probe turns.\n\nMeasured:\n- Claude Code 2.1.282 serves claude-fable-5-1 with 0 tool events in text mode. --json-schema adds a StructuredOutput tool call.\n- Codex 0.156.0 serves gpt-6-sol but keeps its code-mode exec tool, which the model called once per turn; it failed closed.\n- Claude adds the account e-mail. Codex adds the operator's ~/.agents/skills root (user name, home path).\n- The OpenAI account is at 99% of its weekly limit until 2026-09-29T20:03Z.\n\nDesign decisions:\n- The Anthropic judge is Fable, text output. Codex is qualified: false and never spawned (DR-GW-1).\n- Call folders sit under the cells root, checked by check_cells_root. The request goes on stdin.\n- The key hashes request, schema, model and invocation_sha256. The store is write-once via os.link. A hit needs a matching storing row inside the known roots.\n- verdict_uses gets outcome (5 values) plus code. Calibration uses a set-checked label invariant and its own calibration ledger.\n- CLI-added context is detected at report time (DR-GW-5).\n\nGate: Patterns, Simplifier, Test Architect, Security and Data & Persistence, all opus, Adversary mode. Round 1 had three vetoes and one soft block. In round 2 all five cleared, four with conditions, which are applied. Five Owner decision requests: DR-GW-1 to DR-GW-5.",
       "tags": [],
       "title": "Row-17 gateway: Fable judge (text), Codex judge not qualified (DR-GW-1), cells-root call folders, stdin, request+invocation key, verified-provenance write-once store, verdict_uses outcome+code"
+    },
+    {
+      "id": "cl-01M3JM1RR2C0VJZYHT4ZJQPFFP",
+      "datetime": "2026-09-27T23:43:50Z",
+      "session": "w4-stats-design",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "Row 19 statistics design: two-stage percentile bootstrap, component-tier ranking with pass@1 gate, derived-only",
+      "prompt": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only.\nMeasured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).\nDone when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible); the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0); the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases; the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label; the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog); where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable; the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee; the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed); the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named; the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document; any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved; docs-graph derive and validate pass; Commit the document.\nNot in scope: implementing anything; the full report's UI (row 20, a separate ui-design pass); the full grid (wave 5); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\n\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-stats-design (use absolute paths or cd into it in each shell command).",
+      "summary": "docs/design/phase4-statistics.md: normalisation by catalog anchors, gated composite, bootstrap over tasks then repetitions, ranking tiers from interval overlap merged by pass@1 dominance, pack effect and comparison via one paired-delta function; nothing stored",
+      "rationale": "Measured: 0.024 s per interval (stdlib Decimal suffices); two-stage covers 0.97 at 6x3 vs cluster-only 0.88, so the conservative method serves US-36's refuse-to-separate aim; count-based ranks break US-36 (i) on non-transitive overlap",
+      "artifacts": [
+        "docs/design/phase4-statistics.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "3d06948",
+        "after": "30af0a5087d4c51083fec2cd1ab3f120bb9a8fa0",
+        "branch": "w4-stats-design",
+        "pushed": null,
+        "commits": [
+          "30af0a5 design(stats): phase-4 statistics first draft - composites, two-stage percentile bootstrap, ranking with ties, pack effect, run comparison; DR-S-1..6 open"
+        ]
+      }
     }
   ],
   "messages": [

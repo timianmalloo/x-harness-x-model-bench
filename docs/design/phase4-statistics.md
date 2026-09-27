@@ -202,8 +202,8 @@ valid cells whose `pass_at_1` is recorded.
 
 A recorded failure makes pass^k 0 even with repetitions missing, and a recorded pass makes pass@k 1: a
 known outcome is never withheld, and an unknown one is never assumed. With `K = 1`, both equal pass@1. The
-row value is the task-balanced mean over tasks with a value. Its interval uses the same bootstrap, with one
-observation per task.
+row value is the task-balanced mean over tasks with a value, a point with no interval: the report shows pass^k
+without one (spec `:933`), so none is computed (Gate record, Simplifier S2).
 
 ## The bootstrap (defined precisely)
 
@@ -279,9 +279,12 @@ default makes the primary measure `pass_at_1` for the whole run, never per row, 
 2. **Tiers from overlap.** Sort `S` by primary `lo` ascending (ties: `hi`, then row id). Sweep: a row whose `lo`
    is at most the running maximum `hi` joins the current tier, else it starts a new one. The tiers are the
    connected components of the overlap graph. They are totally ordered. Order them best first.
-3. **The gate.** Repeat until nothing changes: for any rows `X`, `Y` in `S` with `below(pass@1(X), pass@1(Y))`
-   and `tier(X)` before `tier(Y)`, merge every tier from `tier(X)` through `tier(Y)` into one. Each merge removes
-   at least one tier, so the loop ends after at most `|S| − 1` merges (the termination variant).
+3. **The gate.** One pass over every ordered pair `(X, Y)` in `S` (sorted by row id): if
+   `below(pass@1(X), pass@1(Y))` and `tier(X)` is **currently** before `tier(Y)`, merge every tier from `tier(X)`
+   through `tier(Y)` into one. One pass suffices: a merge only coarsens tiers, so it never creates a new
+   violation, and a pair checked earlier stays satisfied (Test Architect note, Gate record round 2). The loop is
+   bounded by the number of pairs (the termination variant). A row whose pass@1 interval is not computed takes
+   part in no gate check (T-R16).
 4. **Rank numbers** (competition ranking). A tier's rank is 1 + the number of rows in the tiers before it. A
    tier with more than one row prints `<rank>=`.
 5. **Display order.** By tier, then primary point descending, then combo, then pack. Then the unranked rows by
@@ -360,13 +363,13 @@ it computes is visible and testable. It adds no chart.
 
 | Surface | Row 19 change | Text when not computable |
 | --- | --- | --- |
-| Header rows (`report.disclosure_rows`, CLI + HTML, G12) | one row: `statistics: percentile bootstrap, 95%, <B> resamples, seed <s>, resampled by task then repetition; ranked on <correctness-gated composite \| pass@1 (catalog <v> has no normalisation anchors)>` | — |
+| Header rows (`report.disclosure_rows`, CLI + HTML, G12) | one row: `statistics: percentile bootstrap, 95%, <B> resamples, seed <s>, resampled by task then repetition, Python <major.minor> random stream; ranked on <correctness-gated composite \| pass@1 (catalog <v> has no normalisation anchors)>` | — |
 | CLI leaderboard (`report/cli_table.py`) | columns `Rank`, `Combo`, `Pack`, `Valid`, `pass@1`, `pass@1 95%`, `Gated`, `Gated 95%`, then the existing `Tokens/cell`, `Wall/cell`, `Cost/cell`. The `Interval` column is removed | `-` for an unranked row, and a footnote `<combo> <pack>: not ranked: <reason>`; an interval cell prints its reason, e.g. `interval not computed (n < 2)`; an NA point prints `NA (<reason>)` (`report.na`) |
 | CLI pack-effect table (new, after the leaderboard) | one row per combo × measure: delta, `[lo, hi]`, label | the state lines of section Pack effect |
 | HTML `#leaderboard` (`report/html.py`) | the same columns; each interval cell carries `data-interval-lo` / `data-interval-hi` (UIA-5) | as the CLI; the attributes are omitted when not computed, never set to 0 |
 | HTML `#pack-effect` (new section, a table only) | as the CLI table, with `data-interval-*` | as the CLI |
 | HTML `#comparison` (with `--baseline` only) | per combo × pack × measure, B − A | the refusal replaces the section: `Runs not comparable: <each difference>` |
-| Canonical statistics export (`board.export`) | all of the above, plus the method string, seed and resample count | reasons as strings; bounds `null`, never 0 |
+| Canonical statistics export (`board.export`) | all of the above, plus the method string, seed and resample count (not the Python version: bytes must not move with the environment when no number moves) | reasons as strings; bounds `null`, never 0 |
 | `views.export` | loses the `leaderboard` key (DR-S-4) | — |
 
 Number format: rates (`pass_at_1`, pass@k, pass^k) with 2 decimals, `[0.33, 0.83]`; composites and area deltas
@@ -437,7 +440,7 @@ def gated(scores: Mapping[str, Measure], cat: Catalog) -> Measure: ...
 class BoardRow:
     combo: str; pack: str; harness: str; model: str
     n_cells: int; n_valid: int
-    pass_at_1: Interval; gated: Interval; pass_at_k: Interval; pass_hat_k: Interval
+    pass_at_1: Interval; gated: Interval; pass_at_k: Measure; pass_hat_k: Measure   # points only (spec :933)
     rank: str; rank_reason: str | None
     tokens: Measure; wall_ms: Measure; cost_usd: Measure     # moved verbatim from views._row
 
@@ -483,13 +486,18 @@ the same run ledger (current pass), the same catalog bytes, the same `s` and `B`
 - output quantised to 4 decimals with `ROUND_HALF_UP` at the export edge, as strings;
 - `ledger.canonical` for the bytes.
 
-The export records `METHOD`, `seed` and `resamples`, so a reader knows which rule produced a number.
+The export records `METHOD`, `seed` and `resamples`. The header row also names the Python `major.minor` that
+produced the random stream (class ENV-A: the stream is a property of the environment, so it is recorded, not
+assumed constant). That field is kept **out of the export bytes**, so a CI Python bump that moves no number
+moves no golden (Test Architect round 3, finding 2). A bump that does move the stream fails T-S4 and T-B3,
+which is the intended signal.
 
 `assume:` CPython's `random.Random(int).random()` sequence is stable across Python versions (G16, recalled from
 the docs, not opened). **Confirm:** the golden stream test (T-S4) pins the first draws and one full interval;
 it runs on every commit in CI's Python. **Breaks if false:** after a Python upgrade the same seed gives different
-intervals and T-S4 fails loudly. The published numbers stay reproducible on the recorded Python. The remedy is a
-stdlib-free counter-based stream (sha256 of `seed|key|i`), which already needs no `random` at all.
+intervals and T-S4 fails loudly. The published numbers stay reproducible on the recorded Python (the header row
+names it). The remedy is a counter-based stream built on `hashlib` (sha256 of `seed|key|i`), which needs
+no `random` at all.
 
 ## Change-surface list (E7)
 
@@ -526,6 +534,12 @@ values.
 Rejected: **BCa** (bias-corrected and accelerated). Its acceleration needs a jackknife over tasks, which is
 unstable at n = 6 and has no stable analogue for the two-stage design; upgrade trigger in R1. **A flat cell
 bootstrap**: it ignores the task clustering. At k = 1 it equals the task stage, but at k = 3 it is too narrow.
+**The cluster-only bootstrap** (resample tasks, keep each task's repetitions whole): measured on the same seeds
+(Appendix A), it covers 0.85–0.88 at 6 tasks × 3 reps against the two-stage design's 0.97, and 0.92–0.96 at
+24 × 3 against 0.98–0.99. It is nearer nominal at the full grid but under-covers at the sizes this benchmark
+runs. The spec's aim is to refuse separations the data cannot support, so the conservative two-stage design is
+kept. Upgrade trigger: T-S8 shows two-stage coverage above 0.99 at the full grid (it is too wide to separate
+anything real). Then switch to cluster-only for grids of at least 24 tasks.
 **Stratified-by-task with tasks fixed**: at k = 1 every stratum has one value, so every interval has zero width
 (G20: the smoke run is k = 1). **Ranking by "1 + rows strictly better"**: it breaks US-36 (i) (section Ranking).
 **numpy**: not needed (G13).
@@ -544,7 +558,7 @@ bootstrap**: it ignores the task clustering. At k = 1 it equals the task stage, 
 | # | Mode (from a design choice) | Disposition | Test |
 | --- | --- | --- | --- |
 | F1 | n < 2 tasks: a degenerate interval would look certain | **prevent**: `interval not computed (n < 2)` | T-S1 |
-| F2 | every valid cell NA for a measure | **prevent**: point NA with the reason; never 0 | T-S1, T-C1 |
+| F2 | every valid cell NA for a measure; an NA or invalid cell entering as 0 | **prevent**: `board` filters before `stats`; point NA with the reason; never 0 | T-B8, T-S1, T-C1 |
 | F3 | unequal repetitions per task (some NA) | **prevent**: the task-balanced mean; tasks weigh equally | T-S2 |
 | F4 | the pass was graded under another catalog than the loaded one | **detect**: every normalised score NA, reason names both versions and hashes | T-C3 |
 | F5 | two passes of one run mixed (R-19) | **prevent**: one `RunView` is one pass (G9); `--baseline` on the same run raises `HB-STA-001` | T-B4 |
@@ -558,7 +572,7 @@ bootstrap**: it ignores the task clustering. At k = 1 it equals the task stage, 
 | F13 | `--resamples` huge (a slow report) or < 2,000 | **prevent**: bounds 2,000–100,000, `HB-USR-002` | T-S6 |
 | F14 | an anchor with `worst == best` (division by zero) or its direction against `better` | **prevent**: `bench validate` refuses | T-C4 |
 | F15 | a raw value outside its anchors | **mitigate**: clamp to 0 or 100 (monotone, bounded) | T-C2 |
-| F16 | the rank and the pass@1 row defined twice (views and board) | **prevent**: `views.leaderboard`/`Row` deleted in the same slice; a structural test forbids `leaderboard` in `views.py` | T-B6 |
+| F16 | the rank and the pass@1 row defined twice (views and board) | **prevent**: `views.leaderboard`/`Row` deleted in the same slice; an `ast` test forbids the symbols in `views.py` | T-B6, T-B9 |
 | F17 | an export golden moved by statistics code while the catalog did not change (US-4 false alarm) | **prevent**: statistics leave `views.export` (DR-S-4); `board.export` has its own golden | T-B3 |
 | F18 | a pack-on arm has an area the pack-off arm cannot have (P-source metrics) | **detect**: `not computed (no <area> score in pack=off)` | T-P4 |
 | F19 | full-grid cost | **accept**: about 130 intervals × 0.024 s ≈ 3 s (G13, Inferred for the count) | timing line |
@@ -615,58 +629,110 @@ Triggers (`.claude/knowledge/testing-strategy.md` §3) and their directives:
 `stats` (`tests/test_stats.py`):
 - **T-S1** (red first for S1): `interval` returns `interval not computed (n < 2)` for 1 task, and a point NA for 0 tasks. Never a zero-width interval, never 0.
 - **T-S2**: the task-balanced point on an unbalanced fixture. Exact: 3 tasks with 1, 2 and 3 reps.
-- **T-S3** (hypothesis), over generated observation sets:
+- **T-S3** (hypothesis, over generated observation sets). The generator must produce unbalanced repetition counts; The unbalanced branch is counted: A counter incremented in the property body is asserted `> 0` after the decorated function returns (the test calls the `@given` function, then asserts), and one deterministic `@example` takes the branch. Properties:
   - the same seed and key give an identical `Interval`;
   - shuffling the input gives the same interval;
   - adding another quantity does not move this one;
   - `min(values) ≤ lo ≤ hi ≤ max(values)`;
-  - constant data gives `lo == hi == value`;
-  - excluding NA equals removing those cells, and differs from treating them as 0 whenever that changes the mean (US-27's form).
+  - constant data gives `lo == hi == value`.
 
-  A `hypothesis` `assume` is not used to discard most inputs, so the corpus cannot be empty (class GATE-A). Each property also has one example test.
-- **T-S4** (D6, golden): the first 5 draws of `rng(20260927, "k")` and one full `Interval` over a committed 6-task fixture, pinned as exact strings.
+  A `hypothesis` `assume` is not used to discard most inputs, so the corpus cannot be empty (class GATE-A). Each property also has one example test. NA handling is not tested here: `Obs.value` admits no NA, so the filter lives in `board` and is tested by T-B8.
+- **T-S4** (D6, golden): the first 5 draws of `rng(20260927, "k")` and one full `Interval` over a committed 6-task fixture, pinned as exact strings **in the test source**.
 - **T-S5**: set `getcontext().prec = 5` and compute. The bytes are unchanged.
-- **T-S6**: `Params` refuses resamples 1999 and 100001 and a negative seed with `HB-USR-002`, and accepts 2000.
-- **T-S7** (paired): swapping arms gives `(−hi, −lo)` exactly (hypothesis); tasks in one arm only are listed; `no_detectable_effect` is true for `lo == 0`, false for `lo > 0`, and None when not computed.
-- **T-S8** (calibration, `slow` ring): the coverage spike of Appendix A as a test, with fixed seeds, at 24 × 3 and p = 0.5. Coverage must be at least 0.90 over 200 trials. It guards a method change that would silently narrow the interval.
+- **T-S6**: `Params` refuses resamples 1999 and 100001, seed −1 and seed `2**63`, each with `HB-USR-002`. It accepts 2000, 100000 and `2**63 − 1`.
+- **T-S7** (paired):
+  - swapping arms gives `(−hi, −lo)` exactly (hypothesis);
+  - tasks in one arm only are listed;
+  - paired `n < 2` gives `interval not computed (n < 2)`;
+  - `no_detectable_effect`: `(lo=−1, hi=0)` → True, `(lo=0, hi=2)` → True, `(lo=1, hi=2)` → False, `(lo=−3, hi=−1)` → False, not computed → None.
+- **T-S8** (calibration, `slow` ring): the Appendix A coverage simulation at **6 tasks × 3 reps, p = 0.5**, 200 trials with fixed seeds.
+  - It asserts coverage ≥ 0.93. The two-stage design measured 0.973 and the rejected cluster-only variant 0.883, so the threshold separates them.
+  - It also asserts the **exact covered count**, pinned when S1 first runs it. With fixed seeds, any change to the quantile rule or the draw order fails the test.
 - **T-K** (pass@k, pass^k): the table in section pass@k, one example per cell of the table, including `K − len(R)` missing with a recorded failure → pass^k 0.
 
 `rank` (`tests/test_stats.py`):
 - **T-R1..R11**: exact fixtures for K1–K11. **T-R3** (all overlap → `1=`) is S2's red-first test.
-- **T-R12** (hypothesis), over random interval pairs:
+- **T-R12** (hypothesis), over random interval sets. Rank strings are compared numerically after stripping `=`. Properties:
   - (i) any two overlapping rows hold equal ranks;
   - (ii) `below(pass@1(X), pass@1(Y))` ⇒ `rank(X) ≥ rank(Y)`;
   - ranks are competition ranks;
-  - with no gate conflict, the tiers equal the overlap components (the gate never merges without cause).
+  - with no gate conflict, the tiers equal the overlap components.
+- **T-R13** (hypothesis, a second strategy): it constructs X, Y with `below(pass@1(X), pass@1(Y))` and X's composite interval entirely above Y's. It adds random other rows, asserts (ii), and counts the gate-conflict branch (A counter incremented in the property body is asserted `> 0` after the decorated function returns (the test calls the `@given` function, then asserts), and one deterministic `@example` takes the branch.), so clause (ii) is never vacuous.
+- **T-R14** (K12): composites disjoint and `X.pass@1.hi == Y.pass@1.lo` (touching, not below) → ranks `1`, `2`. It kills a `below` written as `<=`.
+- **T-R15** (K13): four rows giving `1`, `2=`, `2=`, `4`, the spec's own `2=` example.
+- **T-R16**: X is ranked with its pass@1 interval not computed; Y's composite interval is entirely below X's; Y's pass@1 interval is entirely above every other row's. The ranks are `1` (X) and `2` (Y), with no merge: a row without a pass@1 interval takes part in the tiers and in no gate check.
 
 `composites` (`tests/test_composites.py`):
-- **T-C1** (red first for S4): the spec's US-27 property, verbatim. composite(S) with m NA equals composite(S without m), weights renormalised; setting m to 0 instead gives a different value wherever the two differ.
-- **T-C2** (hypothesis): normalisation is monotone in `better`'s direction and bounded to 0–100.
+- **T-C1** (red first for S4; **hypothesis**, as spec `:442` requires "a property test over generated score sets"). It generates score sets with at least 2 metrics of weight > 0, and m's normalised value is non-zero in most draws. It asserts that composite(S) with m NA equals composite(S without m), weights renormalised. Where that differs from the composite with m's normalised score set to 0, setting m to 0 gives a different result. The zero-differs branch is counted: A counter incremented in the property body is asserted `> 0` after the decorated function returns (the test calls the `@given` function, then asserts), and one deterministic `@example` takes the branch. One example test is kept.
+- **T-C2** (hypothesis): normalisation is monotone in `better`'s direction and bounded to 0–100. The strategy draws raw values on an interval strictly containing the anchors (`worst − span .. best + span`), and asserts `N == 0` beyond `worst` and `N == 100` beyond `best`, so the clamp mutant dies.
 - **T-C3**: a pass whose `catalog_hash` differs from the loaded one → NA with both versions named.
 - **T-C4**: `bench validate` refuses `worst == best`, and refuses a direction that disagrees with `better`.
-- **T-C5**: the gated composite's three rows; `pass_at_1 = 0` gives 0 even when `overall` is NA.
+- **T-C5**: the gated composite.
+  - The three rows of its rule: `pass_at_1 = 0` gives 0 even when `overall` is NA.
+  - `overall` is NA only when all seven areas are NA: six NA and one present gives that one area's value.
 
-`board` (`tests/test_board.py`):
-- **T-B1** (red first for S5, D4): `build` on the committed ledger fixture through `views.load`, with the leaderboard's pass@1 points equal to today's `views._row` values.
-- **T-B2**: the header row text (method, resamples, seed, unit, primary).
-- **T-B3** (D6): the `board.export` golden with a pinned sha256.
-- **T-B4**: `compare` on the same run → `HB-STA-001`.
-- **T-B5**: `compare` with combos, BOM version and catalog version all different → one `HB-STA-002` naming all three.
-- **T-B6** (D3): no `leaderboard` symbol in `views.py`.
-- **T-B7**: the timing line.
+`board` (`tests/test_board.py`). **Board fixtures are produced by the real pipeline, never by editing rows.** The committed `tests/fixtures/ledger/heads` run holds one task (X1) and one pack arm (Verified), so every interval on it is `n < 2`. Editing rows in a copy breaks the hash chain (HB-LED-002), and `ledger.py` has no public append or seal function. The fixtures come from a shared builder, `tests/stats_fixtures.py::stats_run(root, tmp_path, *, tasks, reps, arms, outcomes)`, which generalises `tests/test_views.py::_copilot_run` (the real writer, sealed segments, one graded pass). It covers at least 6 tasks including E1 and E2, `matrix.repetitions = 3`, both pack arms, and per-(task, rep, arm) pass/fail outcomes. Every board test reads its run through the real `views.load`: this is the D7 fidelity pairing. T-B1 alone stays on `heads` (points only; one task is enough).
+- **T-B1** (red first for S5, D4): `build` on the committed fixture. Its pass@1 points equal **named constants** taken from `tests/fixtures/catalog/0.4/heads.export` (pinned in the test before S5 deletes `views._row`).
+- **T-B2**: the header row text (method, resamples, seed, unit, primary, Python version).
+- **T-B3** (D6): the `board.export` golden.
+  - It is built by `stats_run` with fixed inputs and S4's committed **test** catalog with anchors, never from the live `bench/metrics.yaml`. The export holds no run timestamp or grading id, so the build's own identifiers do not reach the bytes.
+  - Its sha256 is pinned in the test source, outside the US-4 goldens tree, so the `.dev` exemption cannot reach it.
+  - A comment states that the digest changes only with `METHOD` or the fixture.
+- **T-B6** (D3, `ast`): `views.py` defines none of `leaderboard`, `Row`, `_row`, `_mean`. `views.export(fixture)` has no `leaderboard` key.
+- **T-B7**: the timing line is printed by the CLI, parseable, and absent from the HTML.
+- **T-B8** (US-27 at the row layer): a `stats_run` build. One valid cell's `pass_at_1` is NA, produced by the grader path that records NA (a missing hidden-test result), with its reason `r`. One cell is invalid, through the validity path `_copilot_run` already exercises. Asserts:
+  - `n_valid`;
+  - the row interval equals `stats.interval` over the remaining cells only, and differs from the interval with the NA cell as 0;
+  - the footnote is exactly `1 of <n_valid> valid cells NA: r`.
+- **T-B9** (D3, `ast` import graph): `stats` imports only stdlib and `harness_bench.errors`; `views` imports none of `stats`, `composites`, `board`; `board` reaches `grade` only through `composites.load_catalog`.
 
 Pack effect (`tests/test_board.py`):
-- **T-P1**: `on − off` sign on a fixture where the pack helps;
-- **T-P2**: `no detectable effect` on a fixture crossing zero;
-- **T-P3**: E1–E3 excluded and stated, including `none in this run`;
+- **T-P1**: `on − off` sign on a fixture where the pack helps.
+- **T-P2**: `no detectable effect` on a fixture crossing zero.
+- **T-P3**: on a fixture holding E1 and E2 cells, the pack effect **equals** `paired_delta` over the arms with E1–E3 removed by hand, and **differs** from the unfiltered value. The exclusion line is asserted in the pack-effect section only. A second fixture with none present prints `none in this run`.
 - **T-P4**: the one-setting and missing-arm states with the spec's copy.
 
 Report (`tests/test_report.py`):
-- **T-U1** (red first for S6): the CLI prints the columns and the header row;
-- **T-U2**: the HTML intervals carry `data-interval-lo`/`-hi`, and the attributes are absent when not computed;
+- **T-U1** (red first for S6): the CLI prints the columns and the header row.
+- **T-U2**: the HTML intervals carry `data-interval-lo`/`-hi`, and the attributes are absent when not computed.
 - **T-U3**: the existing combo-flag tests stay green.
 
-Comparison: **T-M1** (red first for S7) is the refusal naming each difference, end to end through the CLI exit code. **T-M2** is a shared pack revision labelled `a replication`.
+Comparison (`tests/test_board.py`, `tests/test_report.py`):
+- **T-M1** (red first for S7): the refusal naming each difference, end to end through the CLI exit code. The HTML section reads `Runs not comparable: <each difference>`.
+- **T-M2**: a shared pack revision labelled `a replication`.
+- **T-M3** (US-52 criterion 1): run A is a `stats_run` build; run B is a **second build** with one (task, rep) outcome flipped from pass to fail in one (combo, pack). No row is edited. `compare(base=A, view=B)` gives:
+  - that row's delta point exactly `−1/n` (task-balanced), with `lo` and `hi` present;
+  - the label from `stats.no_detectable_effect`;
+  - the one-run task list.
+
+  `compare(base=B, view=A)` gives the negated point.
+- **T-B4**: `compare` on the same run → `HB-STA-001`.
+- **T-B5** (parametrised, one `HB-STA-002` naming all of them): combos, BOM version and catalog version differ; a run not graded; a task version differs.
+
+**Named mutants** (D1; each must be killed by the test named, and the slice's mutation file lists exactly these at least):
+
+| File | Mutant | Killed by |
+| --- | --- | --- |
+| `stats.json` | the n < 2 guard deleted | T-S1 |
+| `stats.json` | `j = B × 25 // 1000` off by one (`+1`) | T-S4 |
+| `stats.json` | the seed left out of the key | T-S3 (key isolation), T-S4 |
+| `stats.json` | `localcontext` removed | T-S5 |
+| `stats.json` | a bound of `Params` loosened | T-S6 |
+| `stats.json` | `no_detectable_effect` as `lo <= 0` | T-S7 (`−3, −1`) |
+| `stats.json` | `below` as `<=` | T-R14 |
+| `stats.json` | the gate merges only X and Y | T-R8 (K8) |
+| `stats.json` | the tier sweep uses `<` instead of `≤` | T-R5 (K5) |
+| `stats.json` | pass^k returns NA when a failure is recorded with reps missing | T-K |
+| `composites.json` | the clamp removed | T-C2 |
+| `composites.json` | NA metric's weight kept in the denominator | T-C1 |
+| `composites.json` | `gated` NA when `pass_at_1 = 0` and `overall` NA | T-C5 |
+| `board.json` | an NA cell enters as 0 | T-B8 |
+| `board.json` | an invalid cell enters | T-B8 |
+| `board.json` | the E1–E3 filter dropped (line kept) | T-P3 |
+| `board.json` | the HB-STA-001 check dropped | T-B4 |
+| `board.json` | one HB-STA-002 precondition dropped (each, parametrised) | T-B5 |
+| `board.json` | `base` and `view` swapped in `compare` | T-M3 |
+| `board.json` | seed or resamples left out of the export | T-B3 |
 
 ## Seams
 
@@ -678,6 +744,7 @@ Comparison: **T-M1** (red first for S7) is the refusal naming each difference, e
 | Z-4 | row 19 → `config.py` owner | the anchor validation | S4 |
 | Z-5 | row 19 → Leader | grant the `views.py` hunks (delete `leaderboard`, `Row`, `_row`, `_mean`; drop `leaderboard` from `export`) and the moved test lines in `tests/test_views.py` / `tests/test_report.py` | S5 |
 | Z-6 | row 19 → row 20 | US-38 stability, cost-of-pass, tokens per solved, charts and summaries read `board.export` / `Board`; no re-derivation | row 20's design |
+| Z-7 | row 19 → Leader | add the `documents` link from `docs/security/threat-model.md` and `docs/security/privacy-review.md` to this design and refresh the rollups (`docs-graph.py rollup`); those files are outside this track's owned path (the same seam as `phase3-graders.md`'s SEC row) | at the join |
 
 ## Slice plan (dependency order)
 
@@ -687,13 +754,13 @@ model per slice (R-33).
 
 | Slice | Owns | Depends on | Red-first test | Exit evidence |
 | --- | --- | --- | --- | --- |
-| **S1** bootstrap core | `stats.py` (`Params`, `Obs`, `Interval`, `interval`, the stream), `tests/test_stats.py`, `tests/mutations/stats.json`, the golden fixture | this design | T-S1 | T-S1..S6, T-S8 green; mutants killed |
-| **S2** ranking | `stats.rank`; its tests | S1 (`Interval`) | T-R3 | T-R1..R12 green |
+| **S1** bootstrap core | `stats.py` (`Params`, `Obs`, `Interval`, `interval`, the stream), `tests/test_stats.py`, `tests/mutations/stats.json`, the golden fixture | this design | T-S1 | T-S1..S6, T-S8 green (T-S8's exact count pinned); the named `stats.json` mutants killed |
+| **S2** ranking | `stats.rank`; its tests | S1 (`Interval`) | T-R3 | T-R1..R16 green |
 | **S3** paired delta, pass@k | `stats.paired_delta`, `no_detectable_effect`, `pass_k`, `CONTAMINATION_PRONE` | S1 | T-S7 (the antisymmetry example) | T-S7, T-K green |
 | **S4** composites | `composites.py`, `tests/test_composites.py`, `tests/mutations/composites.json`; delete `grade/normalize_scores.py`; Z-4 | DR-S-1..3 ruled; a test catalog with anchors (no dependency on the Leader's edit) | T-C1 | T-C1..C5 green |
-| **S5** board projection | `board.py`, `tests/test_board.py`, `tests/mutations/board.json`; Z-2, Z-5 | S1–S4; Z-1 at `0.5.dev` (the US-4 exemption, G3) | T-B1 | T-B1..B7, T-P1..P4 green; `views.export` without `leaderboard` |
+| **S5** board projection | `board.py`, `tests/stats_fixtures.py` (the `stats_run` builder, written first), `tests/test_board.py`, `tests/mutations/board.json`; Z-2, Z-5 | S1–S4; Z-1 at `0.5.dev` (the US-4 exemption, G3) | T-B1 | T-B1..B3, T-B6..B9, T-P1..P4 green; the named `board.json` mutants killed; `views.export` without `leaderboard` |
 | **S6** report wiring | `report/cli_table.py`, `report/html.py`, `report/__init__.py` (the header row); Z-3 flags | S5 | T-U1 | T-U1..U3 green; `bench report smoke-1` read by the Leader |
-| **S7** comparison | `board.compare`, the `#comparison` section, `--baseline` | S5, S6 | T-M1 | T-M1, T-M2, T-B4, T-B5 green |
+| **S7** comparison | `board.compare`, the `#comparison` section, `--baseline` | S5, S6 | T-M1 | T-M1..M3, T-B4, T-B5 green |
 
 S1 and S4 have no dependency on each other and can run in parallel. S2 and S3 each need only S1.
 The critical path is S1 → S2 → S5 → S6 → S7 (S4 joins at S5).
@@ -736,7 +803,83 @@ The critical path is S1 → S2 → S5 → S6 → S7 (S4 joins at S5).
 
 ## Gate record
 
-(Filled at Stage 4; see below.)
+**Round 1 — Patterns Expert ⇄ Simplifier** (run inline by the author, Stage 4; the author's own review, so it
+clears nothing by itself). Each pattern had to survive both.
+
+| # | Lens | Finding | Disposition |
+| --- | --- | --- | --- |
+| P1 | Patterns | Name the interval. Percentile or BCa? BCa has better coverage for skewed statistics | Percentile kept. BCa's jackknife acceleration is unstable at n = 6 and has no clean two-stage form; BCa remains R1's upgrade path |
+| P2 | Patterns | The textbook for clustered data is the cluster (top-stage-only) bootstrap; two-stage double-counts repetition variance | **Measured, not argued** (Appendix A). Cluster-only under-covers at 6 × 3 (0.85–0.88); two-stage holds 0.97. Kept two-stage, with an upgrade trigger for the full grid (section Patterns) |
+| P3 | Patterns | Count-based ranking ("1 + rows better") is the common leaderboard idiom | Rejected with a counterexample (section Ranking): it breaks US-36 (i) and, with two criteria, (ii) |
+| P4 | Patterns | Name the RNG discipline | Keyed per-quantity streams, draw order in the contract, golden-pinned (T-S4) |
+| S1 | Simplifier | Three new modules; fold `composites` into `board`? | Kept. `composites` carries the US-27 property and the S-08f semantics, testable without a `RunView`; `board` is the projection. Each module has one reason to change |
+| S2 | Simplifier | Intervals for pass@k and pass^k: nothing shows them (spec `:933` shows `pass^k` with no ±) | **Accepted.** Points only; the contract changed |
+| S3 | Simplifier | The pack effect adds `pass_at_1` beyond the spec's "each area" | Kept, with a reason. Under DR-S-1's default every area is NA until catalog `0.5`, and pass@1 is the gate measure (C1). Without it the smoke pack effect would show nothing |
+| S4 | Simplifier | The comparison's task-version check (precondition 5) is implied by the BOM invariant | Kept. This session did not check where the BOM invariant is enforced, and pairing across runs is only valid on equal task versions. It costs one comparison |
+| S5 | Simplifier | Separate arm streams keyed by label add machinery | Kept. The streams make the delta independent of which arm is the reference, and the exact antisymmetry test (T-S7) depends on it. The cost is a few lines |
+| S6 | Simplifier | `MAX_RESAMPLES` for a single-operator tool | Kept. It is one bound, it prevents F13, and it costs nothing |
+
+Verdict round 1: **Patterns: pass. Simplifier: pass** after S2. No soft veto stands.
+
+**Round 2 — Test Architect (hard veto)**. An independent seat: a subagent on `claude-fable-5-1`, read-only, on
+the draft at `30af0a5` plus round 1. **Verdict: BLOCK (3 Blockers, 7 Majors, 9 Minors).** It found no
+counterexample to the ranking algorithm. Every finding was applied as stated:
+
+| # | Sev. | Finding | Applied |
+| --- | --- | --- | --- |
+| 1 | Blocker | US-52 criterion 1 (a successful comparison's direction, interval, label) had no falsifying test; swapping `base`/`view` passed | T-M3 added; mutant "base and view swapped" named |
+| 2 | Blocker | The NA/invalid cell filter lives in `board`, but only `stats` was tested (`Obs` admits no NA) | T-B8 added (exact footnote, n_valid, differs-from-0); F2 re-pointed; two `board.json` mutants |
+| 3 | Blocker | T-S8 at 24 × 3 with ≥ 0.90 stays green under the rejected cluster-only method (measured 0.960) | T-S8 moved to 6 × 3, p = 0.5, ≥ 0.93 (0.973 vs 0.883), plus the exact covered count pinned |
+| 4 | Major | `no_detectable_effect` as `lo <= 0` survived | T-S7 adds `(−3, −1)` → False and `(−1, 0)` → True |
+| 5 | Major | Spec `:442` requires a property test for US-27; T-C1 was an example and could be vacuous | T-C1 made `@given` with an asserted `hypothesis.event` |
+| 6 | Major | "All mutants killed" over unnamed mutants is green on an empty list (GATE-A) | The named-mutant table added (20 mutants, each with its killing test) |
+| 7 | Major | T-P3 passable by printing the exclusion line while keeping E1–E3 (TEST-A) | T-P3 asserts equality with a hand-filtered delta and inequality with the unfiltered one |
+| 8 | Major | T-B1 compared with `views._row`, which S5 deletes | T-B1 pins named constants from `heads.export` |
+| 9 | Major | T-B3's golden could be regenerated under the `.dev` exemption, or move with the live catalog | T-B3 uses the committed test catalog; digest pinned in the test source, outside the US-4 tree |
+| 10 | Minor | T-R12 may never generate a gate conflict | T-R13, a constructive strategy with an asserted event |
+| 11 | Minor | `below` strictness untested | T-R14 (K12, touching pass@1 intervals) |
+| 12 | Minor | No fixture yields the spec's `2=` | T-R15 (K13: `1`, `2=`, `2=`, `4`) |
+| 13 | Minor | The `2**63` seed bound untested | T-S6 extended |
+| 14 | Minor | Preconditions 1 and 5 and the HTML refusal untested | T-B5 parametrisation and T-M1's HTML assertion extended |
+| 15 | Minor | T-B4/T-B5 test S7's `compare` but sat in S5's exit | Moved to S7's exit |
+| 16 | Minor | The D3 test had no id; T-B6 grepped a substring | T-B9 (`ast` import graph); T-B6 by `ast` over the four symbols and the export key |
+| 17 | Minor | Paired n < 2, a ranked row without a pass@1 interval, and "overall NA only when all seven NA" untested | Added to T-S7, T-R16, T-C5 |
+| 18 | Minor | D7: hand-built RunViews not paired with the real `views.load` shape | Every board fixture is built from `tests/fixtures/ledger/heads` through `views.load`, then mutated as a ledger |
+| 19 | Minor | ENV-A: the Python version is not recorded | Recorded in the header row (round 3 moved it out of the export) |
+| note | — | The gate loop needs only one pass (a merge never separates rows) | Step 3 rewritten as one pass, with the reason |
+
+**Round 3 — Test Architect re-review** (same seat) of the round-2 fixes. It found the 19 fixes sufficient, but
+**BLOCK** on one new Blocker. All round-3 findings were applied:
+
+| # | Sev. | Finding | Applied |
+| --- | --- | --- | --- |
+| 1 | Blocker | The board fixtures were infeasible: `heads` holds one task (X1) and pack off only (**re-verified by the author**: 2 cells). Edited rows break the hash chain, and `ledger.py` has no public append/seal | The shared real-pipeline builder `tests/stats_fixtures.py::stats_run` (generalises `_copilot_run`); T-M3's run B is a second build; T-B8's NA and invalid cells come from the grader and validity paths; T-B1 alone stays on `heads` |
+| 2 | Major | The Python version in `board.export` made T-B3's digest move on a Python bump with no numeric change | Kept in the header row only, out of the export bytes |
+| 3 | Minor | T-C2 could not kill the clamp mutant | Raw values drawn beyond the anchors; asserts `N == 0` / `100` there |
+| 4 | Minor | "`hypothesis.event` asserted" is not a Hypothesis API | A branch counter asserted `> 0` after the `@given` function returns, plus a deterministic `@example` |
+| 5 | Nit | T-R16 gave the outcome, not the construction | The construction stated; ranks `1`, `2`, no merge |
+
+**Round 4 — Test Architect** (same seat, re-read after the author saved finding 2). **Verdict: CLEARS THE VETO
+at the design gate — PASS WITH CONDITIONS.** Fixes 1–5 were verified present and sufficient, and nothing
+vacuous was introduced. The conditions are carried to the slice Proof Packs and do not reopen the design:
+1. **(Major if missing)** Each slice's Proof Pack shows its named red-first test observed red before the slice
+   (T-S1, T-R3, T-S7, T-C1, T-B1, T-U1, T-M1). It also shows every named mutant in the table above killed. An
+   empty or partial mutation file is GATE-A and re-blocks at the join.
+2. **(Minor)** T-S8's exact covered count and T-B3's digest are characterisations pinned on first green. The
+   Proof Pack labels them so (D6). Red is carried by the ≥ 0.93 threshold and by the mutants that hit the export.
+3. **(Minor)** `tests/stats_fixtures.py` is in S5's Owns column, so no slice hand-builds a `RunView` while it
+   waits. **Applied** (Slice plan).
+
+**Gate summary.**
+
+| Seat | Verdict |
+| --- | --- |
+| Patterns Expert | pass |
+| Simplifier | pass, after S2 |
+| Test Architect (hard veto) | cleared at round 4, with conditions 1–3 |
+
+Security and Distributed Systems: no trigger. There is no trust-boundary change beyond the STRIDE table's
+transfers, and no async or messaging. Residual risk: R1, R3, R5 (section Flagged risks).
 
 ## Status and next action
 
@@ -766,3 +909,7 @@ turns the second into a test).
 
 Resampling at both stages over-covers when there are repetitions (0.97–0.99), which errs toward "cannot
 separate". The 6 × 1 high-rate cell is the all-pass degenerate case (R1).
+
+The rejected cluster-only variant (tasks resampled, repetitions kept whole), measured with the same seeds and
+trials at k = 3: 6 × 3 gives 0.883 (width 0.47) and 0.853 (0.35); 24 × 3 gives 0.960 (0.27) and 0.920 (0.21). At k = 1
+the two variants are the same procedure.
