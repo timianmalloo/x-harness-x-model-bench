@@ -960,6 +960,32 @@ window.DOCS_INDEX = {
       "sourceSha256": "a103726bb5135533cce4b4d88bf681913174e64ef089bf55dc558ea0f8c15434"
     },
     {
+      "id": "note-20260927-ci-opt-proposal",
+      "path": "docs/notes/ci-opt-proposal.md",
+      "title": "CI-OPT: Proposal to separate one-time proofs from continuous checks and reduce grader test cost",
+      "type": "decision-note",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "CI Optimization",
+      "reviewBy": "2027-03-27",
+      "reviewSuggested": [],
+      "summary": "CI-OPT slice 2 measured analysis and optimization proposal: separates one-time proofs from continuous checks, profiles where slow grader tests spend time (identifying file hashing and redundant archive digests as the dominant 70%+ bottleneck), analyzes mutation redundancy (identifying 693 unreferenced ceremony tests and 106 duplicate killer groups), and presents a ranked remediation roadmap saving ~84 minutes in the slow ring and ~9-11 minutes in the default ring (cutting CI spend in half) with zero loss of coverage.",
+      "tags": [
+        "decision-note",
+        "testing",
+        "ci-opt",
+        "test-efficiency"
+      ],
+      "links": [
+        {
+          "to": "coordination-finish-harness-bench-run",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "61ca0eb5a25f63be6568f068315b38d1ee7b22330be60a6b03afc1c1c7e8e98c"
+    },
+    {
       "id": "note-d1-vendored-red-baseline",
       "path": "docs/notes/d1-vendored-red-baseline.md",
       "title": "D1 vendored red baseline - dotnet test fails the same 72 layout-bound tests on both runs' cells; the 69/74/75 Stryker counts are the Stryker session's",
@@ -2869,5 +2895,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "b4a41cd03a567f3f41e1dbf3d9b2653da0c7e9bdc9c9d0d58d1a6dfd54881f39"
+  "graphSha256": "1baa22257a3b5a221b8eab8a37ecffe4269199321093936be787b0a768fdcc58"
 };
