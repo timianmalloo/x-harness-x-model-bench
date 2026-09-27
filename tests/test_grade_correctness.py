@@ -12,6 +12,7 @@ import dataclasses
 import hashlib
 import os
 import shutil
+import sys
 import tempfile
 import uuid
 from decimal import Decimal
@@ -146,17 +147,11 @@ def _build_d1_cache() -> None:
     root.mkdir(parents=True, exist_ok=True)
     _D1_CACHE_ROOT = root
 
-    def cleanup():
-        if root.exists():
-            try:
-                shutil.rmtree(root, onexc=archive.make_writable)
-            except OSError:
-                pass
-            if root.parent.exists() and not any(root.parent.iterdir()):
-                try:
-                    root.parent.rmdir()
-                except OSError:
-                    pass
+    def cleanup():  # CLN-A: a cleanup failure is said, never swallowed
+        try:
+            shutil.rmtree(root, onexc=archive.make_writable)
+        except OSError as exc:
+            print(f"d1 cache not removed: {root}: {exc}", file=sys.stderr)
 
     atexit.register(cleanup)
 
