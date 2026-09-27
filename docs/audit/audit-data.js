@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-27T20:03:02Z",
+  "generated": "2026-09-27T20:30:46Z",
   "audit": [
     {
       "actor": null,
@@ -37682,6 +37682,36 @@ window.AUDIT_DATA = {
         "sha": "9d76ada252b3cf7b20a943dba0f9da10a00665ce",
         "short": "9d76ada25",
         "branch": "w3-ciopt5",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M3J9086NZQ2G1M3H09T84WH3",
+      "shortname": "ci-opt-slice-4-gate-stamp",
+      "datetime": "2026-09-27T20:30:45Z",
+      "session": "worker-agy-ciopt4",
+      "prompt": "CI-OPT slice 4, the Test Architect's approved Rank 1: the six frozen gate-run tests move from the slow ring to a gate ring guarded by an input-digest stamp",
+      "summary": "CI-OPT slice 4: moved six frozen gate-run tests from slow ring to gate marker, updated pyproject addopts and ci.yml exclusions, implemented tools/gate_stamp.py with deterministic digest over grader sources, task D1, metrics, baseline, and pinned tool versions, added tests/test_gate_stamp.py default-ring stamp check and sensitivity tests under TDD (red-green); verified stamp matches current digest.",
+      "kind": "manual",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-27T20:15:13Z",
+      "duration_seconds": 932.0,
+      "git": {
+        "sha": "afc021cc9107993616b7bf53fe3f3c84c846ccfc",
+        "short": "afc021cc9",
+        "branch": "w3-ciopt4",
         "pushed": null
       }
     }
