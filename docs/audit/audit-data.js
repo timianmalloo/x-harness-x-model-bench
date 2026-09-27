@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-26T20:56:55Z",
+  "generated": "2026-09-27T16:16:04Z",
   "audit": [
     {
       "actor": null,
@@ -35479,6 +35479,356 @@ window.AUDIT_DATA = {
             "sha256": null,
             "status": "unresolved",
             "token": "runs/*/plan.json"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3HTDRX16XHF3MNYKFPQAHYF",
+      "shortname": "Goal: make CI green again (.github/workflows/ci.yml job \"test\" has faile…",
+      "datetime": "2026-09-27T16:16:00Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: make CI green again (.github/workflows/ci.yml job \"test\" has failed on every push since 4ef11d2, 2026-09-24 22:53; 91 red pushes), by fixing the four measured causes, red first where a local red is possible.\nMeasured (Leader, 2026-09-27, CI run 36273750154 on 7be0860; logs in C:/Projects/ci-opt-profile/ci-fail-latest.log): 16 failed, 1766 passed. Causes: (1) tests/test_grade_mutation.py fast tests (test_mutation_score_computed_from_stryker_report_fixture, test_mutation_score_with_timeout_and_no_coverage, test_no_mutants_generated_is_na, test_mutation_run_failed_is_na, test_mutation_timeout_is_na, test_stryker_config_json_pinned_timeout_and_command_args, test_initial_failing_tests_parsed_from_stryker_warning, test_initial_failing_tests_not_recorded_when_the_line_is_absent) fake Stryker's run but still reach mutation.find_stryker_dll() and shutil.which(\"dotnet\"), so on a host without the Stryker NuGet cache or dotnet they get \"mutation tool not available\"; (2) tests/test_plan.py::test_pinned_copilot_instruction_list_repeats_for_both_real_working_copies needs the installed Copilot build (.tools/harness) and a sibling ai-forward checkout (ROOT.parent / \"ai-forward\"), which CI does not have: HB-CELL-114 cannot start git (win32 error 267); (3) CI runs CPython 3.12.10 (Unicode 15.1) while the workstation runs 3.14.6 (Unicode 16.0.0); scripted_user/matcher.py MATCHER_VERSION = \"t0-c8b7e628d0c7\" hashes unicodedata.unidata_version by design (test_t39_3a_matcher_version_moves_with_the_unicode_data), so on 3.12 the version is t0-6fa7c16cb9aa and five scripted-user tests fail; the repo has no .python-version; (4) tests/test_scripted_user.py::test_t39_2_no_commit_touches_matcher_and_heldout reads git history, and actions/checkout@v4 defaults to fetch-depth 1, so the single commit looks like it touches the matcher.\nDone when: (1) the eight mutation fast tests monkeypatch find_stryker_dll and the dotnet lookup (one shared fixture, not eight copies), shown red first by running them with the lookups forced to fail (e.g. a fixture parameter or monkeypatch that removes dotnet from PATH and points the NuGet root at an empty folder) and green after; (2) the Copilot pinned-instruction test runs only where its inputs exist: it is marked with a new marker \"workstation\" (registered in tests/conftest.py like \"native\", described as needing the installed harness builds and sibling checkouts), CI's pytest -m excludes it (\"not credentials and not slow and not workstation\"), and pyproject's addopts keeps running it locally; the marker is not a skip: on the workstation it still runs and fails loudly; (3) a .python-version file pins 3.14 (the workstation's minor version), CI uses it (astral-sh/setup-uv plus uv sync resolve it; check the setup-uv docs in the action's README if unsure, do not guess), and requires-python in pyproject.toml is left as is unless uv refuses; (4) ci.yml's checkout step sets fetch-depth: 0 for the test job; Verify locally: uv run --python 3.12 pytest -q -p no:cacheprovider tests/test_scripted_user.py -k t39_3a shows the version mismatch (the cause), and the default interpreter passes; the eight mutation tests pass with the lookups forced to fail; uv run pytest -q -p no:cacheprovider tests/test_grade_mutation.py tests/test_plan.py tests/test_scripted_user.py passes; A test earns its place by a failure only it catches: no new test beyond the forced-lookup check; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: pushing (the Leader pushes and watches CI); changing MATCHER_VERSION or the matcher; the models job; any file under runs/.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: .github/workflows/ci.yml; pyproject.toml [tool.pytest.ini_options]; tests/conftest.py (markers, pytest_collection_modifyitems); tests/test_grade_mutation.py; src/harness_bench/grade/mutation.py (find_stryker_dll, the dotnet check); tests/test_plan.py around line 506; src/harness_bench/scripted_user/matcher.py; tests/test_scripted_user.py. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3HTDWEA621811BAEFMBVNG7",
+      "shortname": "compile-Goal: make CI green again (.github/workflows/ci.yml job \"test\" has faile…",
+      "datetime": "2026-09-27T16:16:04Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: make CI green again (.github/workflows/ci.yml job \"test\" has failed on every push since 4ef11d2, 2026-09-24 22:53; 91 red pushes), by fixing the four measured causes, red first where a local red is possible. Measured (Leader, 2026-09-27, CI run 36273750154 on 7be0860; logs in C:/Projects/ci-opt-profile/ci-fail-latest.log): 16 failed, 1766 passed. Causes: (1) tests/test_grade_mutation.py fast tests (test_mutation_score_computed_from_stryker_report_fixture, test_mutation_score_with_timeout_and_no_coverage, test_no_mutants_generated_is_na, test_mutation_run_failed_is_na, test_mutation_timeout_is_na, test_stryker_config_json_pinned_timeout_and_command_args, test_initial_failing_tests_parsed_from_stryker_warning, test_initial_failing_tests_not_recorded_when_the_line_is_absent) fake Stryker's run but still reach mutation.find_stryker_dll() and shutil.which(\"dotnet\"), so on a host without the Stryker NuGet cache or dotnet they get \"mutation tool not available\"; (2) tests/test_plan.py::test_pinned_copilot_instruction_list_repeats_for_both_real_working_copies needs the installed Copilot build (.tools/harness) and a sibling ai-forward checkout (ROOT.parent / \"ai-forward\"), which CI does not have: HB-CELL-114 cannot start git (win32 error 267); (3) CI runs CPython 3.12.10 (Unicode 15.1) while the workstation runs 3.14.6 (Unicode 16.0.0); scripted_user/matcher.py MATCHER_VERSION = \"t0-c8b7e628d0c7\" hashes unicodedata.unidata_version by design (test_t39_3a_matcher_version_moves_with_the_unicode_data), so on 3.12 the version is t0-6fa7c16cb9aa and five scripted-user tests fail; the repo has no .python-version; (4) tests/test_scripted_user.py::test_t39_2_no_commit_touches_matcher_and_heldout reads git history, and actions/checkout@v4 defaults to fetch-depth 1, so the single commit looks like it touches the matcher.\nDone when: (1) the eight mutation fast tests monkeypatch find_stryker_dll and the dotnet lookup (one shared fixture, not eight copies), shown red first by running them with the lookups forced to fail (e.g. a fixture parameter or monkeypatch that removes dotnet from PATH and points the NuGet root at an empty folder) and green after; (2) the Copilot pinned-instruction test runs only where its inputs exist: it is marked with a new marker \"workstation\" (registered in tests/conftest.py like \"native\", described as needing the installed harness builds and sibling checkouts), CI's pytest -m excludes it (\"not credentials and not slow and not workstation\"), and pyproject's addopts keeps running it locally; the marker is not a skip: on the workstation it still runs and fails loudly; (3) a .python-version file pins 3.14 (the workstation's minor version), CI uses it (astral-sh/setup-uv plus uv sync resolve it; check the setup-uv docs in the action's README if unsure, do not guess), and requires-python in pyproject.toml is left as is unless uv refuses; (4) ci.yml's checkout step sets fetch-depth: 0 for the test job; Verify locally: uv run --python 3.12 pytest -q -p no:cacheprovider tests/test_scripted_user.py -k t39_3a shows the version mismatch (the cause), and the default interpreter passes; the eight mutation tests pass with the lookups forced to fail; uv run pytest -q -p no:cacheprovider tests/test_grade_mutation.py tests/test_plan.py tests/test_scripted_user.py passes; A test earns its place by a failure only it catches: no new test beyond the forced-lookup check; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: pushing (the Leader pushes and watches CI); changing MATCHER_VERSION or the matcher; the models job; any file under runs/.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: .github/workflows/ci.yml; pyproject.toml [tool.pytest.ini_options]; tests/conftest.py (markers, pytest_collection_modifyitems); tests/test_grade_mutation.py; src/harness_bench/grade/mutation.py (find_stryker_dll, the dotnet check); tests/test_plan.py around line 506; src/harness_bench/scripted_user/matcher.py; tests/test_scripted_user.py. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: (1) the eight mutation fast tests monkeypatch find_stryker_dll and the dotnet lookup (one shared fixture, not eight copies), shown red first by running them with the lookups forced to fail (e.g. a fixture parameter or monkeypatch that removes dotnet from PATH and points the NuGet root at an empty folder) and green after | phrase: (1) the eight mutation fast tests monkeypatch find_stryker_dll and the dotnet lookup (one shared fixture, not eight copies), shown red first by running them with the lookups forced to fail (e.g. a fixture parameter or monkeypatch that removes dotnet from PATH and points the NuGet root at an empty folder) and green after |\n| done_when: (2) the Copilot pinned-instruction test runs only where its inputs exist: it is marked with a new marker \"workstation\" (registered in tests/conftest.py like \"native\", described as needing the installed harness builds and sibling checkouts), CI's pytest -m excludes it (\"not credentials and not slow and not workstation\"), and pyproject's addopts keeps running it locally | phrase: (2) the Copilot pinned-instruction test runs only where its inputs exist: it is marked with a new marker \"workstation\" (registered in tests/conftest.py like \"native\", described as needing the installed harness builds and sibling checkouts), CI's pytest -m excludes it (\"not credentials and not slow and not workstation\"), and pyproject's addopts keeps running it locally |\n| done_when: the marker is not a skip: on the workstation it still runs and fails loudly | phrase: the marker is not a skip: on the workstation it still runs and fails loudly |\n| done_when: (3) a .python-version file pins 3.14 (the workstation's minor version), CI uses it (astral-sh/setup-uv plus uv sync resolve it | phrase: (3) a .python-version file pins 3.14 (the workstation's minor version), CI uses it (astral-sh/setup-uv plus uv sync resolve it |\n| done_when: check the setup-uv docs in the action's README if unsure, do not guess), and requires-python in pyproject.toml is left as is unless uv refuses | phrase: check the setup-uv docs in the action's README if unsure, do not guess), and requires-python in pyproject.toml is left as is unless uv refuses |\n| done_when: (4) ci.yml's checkout step sets fetch-depth: 0 for the test job | phrase: (4) ci.yml's checkout step sets fetch-depth: 0 for the test job |\n| done_when: Verify locally: uv run --python 3.12 pytest -q -p no:cacheprovider tests/test_scripted_user.py -k t39_3a shows the version mismatch (the cause), and the default interpreter passes | phrase: Verify locally: uv run --python 3.12 pytest -q -p no:cacheprovider tests/test_scripted_user.py -k t39_3a shows the version mismatch (the cause), and the default interpreter passes |\n| done_when: the eight mutation tests pass with the lookups forced to fail | phrase: the eight mutation tests pass with the lookups forced to fail |\n| done_when: uv run pytest -q -p no:cacheprovider tests/test_grade_mutation.py tests/test_plan.py tests/test_scripted_user.py passes | phrase: uv run pytest -q -p no:cacheprovider tests/test_grade_mutation.py tests/test_plan.py tests/test_scripted_user.py passes |\n| done_when: A test earns its place by a failure only it catches: no new test beyond the forced-lookup check | phrase: A test earns its place by a failure only it catches: no new test beyond the forced-lookup check |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: pushing (the Leader pushes and watches CI) | phrase: pushing (the Leader pushes and watches CI) |\n| not_in_scope: changing MATCHER_VERSION or the matcher | phrase: changing MATCHER_VERSION or the matcher |\n| not_in_scope: the models job | phrase: the models job |\n| not_in_scope: any file under runs/. | phrase: any file under runs/. |\nReferences\n- .github/workflows/ci.yml: unresolved (not found; nearest: .github/workflows/ci.yml)\n- C:/Projects/ci-opt-profile/ci-fail-latest.log: unresolved (outside repo)\n- tests/test_grade_mutation.py: tests/test_grade_mutation.py sha256 4239883b3788c003074d39c775ba1914c2bf94ae4bb72bf30accdd10f22f215e\n- tests/test_plan.py::test_pinned_copilot_instruction_list_repeats_for_both_real_working_copies: unresolved (not found)\n- .tools/harness: unresolved (not found)\n- /: unresolved (outside repo)\n- scripted_user/matcher.py: src/harness_bench/scripted_user/matcher.py sha256 9bc33ec1ea2f25a096b5d027d81c3b3c4f1e97380792c26e72b4be43a7dc479a\n- tests/test_scripted_user.py::test_t39_2_no_commit_touches_matcher_and_heldout: unresolved (not found)\n- actions/checkout@v4: unresolved (not found)\n- tests/conftest.py: tests/conftest.py sha256 6867b33aca95c901d1f9cdd64028f84abbe75f3d1323008b4d982830568ccc54\n- astral-sh/setup-uv: unresolved (not found)\n- tests/test_scripted_user.py: tests/test_scripted_user.py sha256 8da386b15335ca009e7ee0082654a915bfe3d2806c30bee5f2e53df1e80a7cfb\n- tests/test_plan.py: tests/test_plan.py sha256 91f6332bfb038ab4f9e3e94204c1914a8fca20674cc2bc9cc238ae617784359f\n- runs/: unresolved (not found)\n- src/harness_bench/grade/mutation.py: src/harness_bench/grade/mutation.py sha256 927f8a85eb43c56a6dd0a0d85c044b14a192fba0343fc22fb8bbed3c6f6c54c1\n- src/harness_bench/scripted_user/matcher.py: src/harness_bench/scripted_user/matcher.py sha256 9bc33ec1ea2f25a096b5d027d81c3b3c4f1e97380792c26e72b4be43a7dc479a\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3HTDRX16XHF3MNYKFPQAHYF\nraw sha256: 84f0035f7ba5f7857f6f96f7351323c717123682f5830523098c1576166e1fff\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3HTDRX16XHF3MNYKFPQAHYF for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "(1) the eight mutation fast tests monkeypatch find_stryker_dll and the dotnet lookup (one shared fixture, not eight copies), shown red first by running them with the lookups forced to fail (e.g. a fixture parameter or monkeypatch that removes dotnet from PATH and points the NuGet root at an empty folder) and green after",
+            "trace": {
+              "kind": "phrase",
+              "ref": "(1) the eight mutation fast tests monkeypatch find_stryker_dll and the dotnet lookup (one shared fixture, not eight copies), shown red first by running them with the lookups forced to fail (e.g. a fixture parameter or monkeypatch that removes dotnet from PATH and points the NuGet root at an empty folder) and green after"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "(2) the Copilot pinned-instruction test runs only where its inputs exist: it is marked with a new marker \"workstation\" (registered in tests/conftest.py like \"native\", described as needing the installed harness builds and sibling checkouts), CI's pytest -m excludes it (\"not credentials and not slow and not workstation\"), and pyproject's addopts keeps running it locally",
+            "trace": {
+              "kind": "phrase",
+              "ref": "(2) the Copilot pinned-instruction test runs only where its inputs exist: it is marked with a new marker \"workstation\" (registered in tests/conftest.py like \"native\", described as needing the installed harness builds and sibling checkouts), CI's pytest -m excludes it (\"not credentials and not slow and not workstation\"), and pyproject's addopts keeps running it locally"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the marker is not a skip: on the workstation it still runs and fails loudly",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the marker is not a skip: on the workstation it still runs and fails loudly"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "(3) a .python-version file pins 3.14 (the workstation's minor version), CI uses it (astral-sh/setup-uv plus uv sync resolve it",
+            "trace": {
+              "kind": "phrase",
+              "ref": "(3) a .python-version file pins 3.14 (the workstation's minor version), CI uses it (astral-sh/setup-uv plus uv sync resolve it"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "check the setup-uv docs in the action's README if unsure, do not guess), and requires-python in pyproject.toml is left as is unless uv refuses",
+            "trace": {
+              "kind": "phrase",
+              "ref": "check the setup-uv docs in the action's README if unsure, do not guess), and requires-python in pyproject.toml is left as is unless uv refuses"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "(4) ci.yml's checkout step sets fetch-depth: 0 for the test job",
+            "trace": {
+              "kind": "phrase",
+              "ref": "(4) ci.yml's checkout step sets fetch-depth: 0 for the test job"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Verify locally: uv run --python 3.12 pytest -q -p no:cacheprovider tests/test_scripted_user.py -k t39_3a shows the version mismatch (the cause), and the default interpreter passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Verify locally: uv run --python 3.12 pytest -q -p no:cacheprovider tests/test_scripted_user.py -k t39_3a shows the version mismatch (the cause), and the default interpreter passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the eight mutation tests pass with the lookups forced to fail",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the eight mutation tests pass with the lookups forced to fail"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider tests/test_grade_mutation.py tests/test_plan.py tests/test_scripted_user.py passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider tests/test_grade_mutation.py tests/test_plan.py tests/test_scripted_user.py passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A test earns its place by a failure only it catches: no new test beyond the forced-lookup check",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A test earns its place by a failure only it catches: no new test beyond the forced-lookup check"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "pushing (the Leader pushes and watches CI)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "pushing (the Leader pushes and watches CI)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "changing MATCHER_VERSION or the matcher",
+            "trace": {
+              "kind": "phrase",
+              "ref": "changing MATCHER_VERSION or the matcher"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the models job",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the models job"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "(1) the eight mutation fast tests monkeypatch find_stryker_dll and the dotnet lookup (one shared fixture, not eight copies), shown red first by running them with the lookups forced to fail (e.g. a fixture parameter or monkeypatch that removes dotnet from PATH and points the NuGet root at an empty folder) and green after",
+            "(2) the Copilot pinned-instruction test runs only where its inputs exist: it is marked with a new marker \"workstation\" (registered in tests/conftest.py like \"native\", described as needing the installed harness builds and sibling checkouts), CI's pytest -m excludes it (\"not credentials and not slow and not workstation\"), and pyproject's addopts keeps running it locally",
+            "the marker is not a skip: on the workstation it still runs and fails loudly",
+            "(3) a .python-version file pins 3.14 (the workstation's minor version), CI uses it (astral-sh/setup-uv plus uv sync resolve it",
+            "check the setup-uv docs in the action's README if unsure, do not guess), and requires-python in pyproject.toml is left as is unless uv refuses",
+            "(4) ci.yml's checkout step sets fetch-depth: 0 for the test job",
+            "Verify locally: uv run --python 3.12 pytest -q -p no:cacheprovider tests/test_scripted_user.py -k t39_3a shows the version mismatch (the cause), and the default interpreter passes",
+            "the eight mutation tests pass with the lookups forced to fail",
+            "uv run pytest -q -p no:cacheprovider tests/test_grade_mutation.py tests/test_plan.py tests/test_scripted_user.py passes",
+            "A test earns its place by a failure only it catches: no new test beyond the forced-lookup check",
+            "uv run ruff check src tests tools is clean",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "make CI green again (.github/workflows/ci.yml job \"test\" has failed on every push since 4ef11d2, 2026-09-24 22:53; 91 red pushes), by fixing the four measured causes, red first where a local red is possible. Measured (Leader, 2026-09-27, CI run 36273750154 on 7be0860; logs in C:/Projects/ci-opt-profile/ci-fail-latest.log): 16 failed, 1766 passed. Causes: (1) tests/test_grade_mutation.py fast tests (test_mutation_score_computed_from_stryker_report_fixture, test_mutation_score_with_timeout_and_no_coverage, test_no_mutants_generated_is_na, test_mutation_run_failed_is_na, test_mutation_timeout_is_na, test_stryker_config_json_pinned_timeout_and_command_args, test_initial_failing_tests_parsed_from_stryker_warning, test_initial_failing_tests_not_recorded_when_the_line_is_absent) fake Stryker's run but still reach mutation.find_stryker_dll() and shutil.which(\"dotnet\"), so on a host without the Stryker NuGet cache or dotnet they get \"mutation tool not available\"; (2) tests/test_plan.py::test_pinned_copilot_instruction_list_repeats_for_both_real_working_copies needs the installed Copilot build (.tools/harness) and a sibling ai-forward checkout (ROOT.parent / \"ai-forward\"), which CI does not have: HB-CELL-114 cannot start git (win32 error 267); (3) CI runs CPython 3.12.10 (Unicode 15.1) while the workstation runs 3.14.6 (Unicode 16.0.0); scripted_user/matcher.py MATCHER_VERSION = \"t0-c8b7e628d0c7\" hashes unicodedata.unidata_version by design (test_t39_3a_matcher_version_moves_with_the_unicode_data), so on 3.12 the version is t0-6fa7c16cb9aa and five scripted-user tests fail; the repo has no .python-version; (4) tests/test_scripted_user.py::test_t39_2_no_commit_touches_matcher_and_heldout reads git history, and actions/checkout@v4 defaults to fetch-depth 1, so the single commit looks like it touches the matcher.",
+          "main_line_budget": "one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: .github/workflows/ci.yml; pyproject.toml [tool.pytest.ini_options]; tests/conftest.py (markers, pytest_collection_modifyitems); tests/test_grade_mutation.py; src/harness_bench/grade/mutation.py (find_stryker_dll, the dotnet check); tests/test_plan.py around line 506; src/harness_bench/scripted_user/matcher.py; tests/test_scripted_user.py. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "pushing (the Leader pushes and watches CI)",
+            "changing MATCHER_VERSION or the matcher",
+            "the models job",
+            "any file under runs/."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.006,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3HTDRX16XHF3MNYKFPQAHYF",
+        "raw_sha256": "84f0035f7ba5f7857f6f96f7351323c717123682f5830523098c1576166e1fff",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": ".github/workflows/ci.yml",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".github/workflows/ci.yml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/ci-opt-profile/ci-fail-latest.log"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_mutation.py",
+            "reason": null,
+            "sha256": "4239883b3788c003074d39c775ba1914c2bf94ae4bb72bf30accdd10f22f215e",
+            "status": "resolved",
+            "token": "tests/test_grade_mutation.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_plan.py::test_pinned_copilot_instruction_list_repeats_for_both_real_working_copies"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".tools/harness"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/scripted_user/matcher.py",
+            "reason": null,
+            "sha256": "9bc33ec1ea2f25a096b5d027d81c3b3c4f1e97380792c26e72b4be43a7dc479a",
+            "status": "resolved",
+            "token": "scripted_user/matcher.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_scripted_user.py::test_t39_2_no_commit_touches_matcher_and_heldout"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "actions/checkout@v4"
+          },
+          {
+            "nearest": null,
+            "path": "tests/conftest.py",
+            "reason": null,
+            "sha256": "6867b33aca95c901d1f9cdd64028f84abbe75f3d1323008b4d982830568ccc54",
+            "status": "resolved",
+            "token": "tests/conftest.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "astral-sh/setup-uv"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_scripted_user.py",
+            "reason": null,
+            "sha256": "8da386b15335ca009e7ee0082654a915bfe3d2806c30bee5f2e53df1e80a7cfb",
+            "status": "resolved",
+            "token": "tests/test_scripted_user.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_plan.py",
+            "reason": null,
+            "sha256": "91f6332bfb038ab4f9e3e94204c1914a8fca20674cc2bc9cc238ae617784359f",
+            "status": "resolved",
+            "token": "tests/test_plan.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/mutation.py",
+            "reason": null,
+            "sha256": "927f8a85eb43c56a6dd0a0d85c044b14a192fba0343fc22fb8bbed3c6f6c54c1",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/mutation.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/scripted_user/matcher.py",
+            "reason": null,
+            "sha256": "9bc33ec1ea2f25a096b5d027d81c3b3c4f1e97380792c26e72b4be43a7dc479a",
+            "status": "resolved",
+            "token": "src/harness_bench/scripted_user/matcher.py"
           }
         ],
         "schema": "compiled-prompt/1",
