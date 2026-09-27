@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-27T16:16:04Z",
+  "generated": "2026-09-27T16:29:15Z",
   "audit": [
     {
       "actor": null,
@@ -35837,6 +35837,38 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3HV6121J15H4DHCXZNVBZ9C",
+      "shortname": "ci-green-four-causes",
+      "datetime": "2026-09-27T16:29:15Z",
+      "session": "worker-grok-cigreen",
+      "prompt": "CI green: mutation lookups, workstation marker, Python 3.14 pin, fetch-depth 0",
+      "summary": "Fixed the four measured CI test failures. Eight mutation fast tests share one fixture that empties the NuGet cache and drops dotnet from PATH, then monkeypatches find_stryker_dll and shutil.which; red was mutation tool not available (9e6188f), green is 4bb1c66. The Copilot pinned-instruction test is marked workstation (not a skip); CI pytest -m excludes it and local addopts still run it. .python-version pins 3.14 for setup-uv plus uv sync; requires-python stays >=3.12. The test job checkout is fetch-depth 0 (70271f5). 3.12 shows t0-6fa7c16cb9aa vs t0-c8b7e628d0c7; default 3.14 passes t39_3a. The three modules pass 151 (3 slow deselected). ruff check src tests tools is clean. Not pushed.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "done_when": "eight mutation tests green under forced lookups; workstation marker; .python-version 3.14; fetch-depth 0; local verification; ruff clean; red and green committed",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-27T16:16:35Z",
+      "duration_seconds": 760.0,
+      "git": {
+        "sha": "70271f57a50960b3baa4ec07c4bf98689d3f12b9",
+        "short": "70271f57a",
+        "branch": "w3-cigreen",
+        "pushed": null
+      }
     }
   ],
   "changes": [

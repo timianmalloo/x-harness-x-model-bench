@@ -44,10 +44,6 @@ def require_dotnet() -> None:
 def pytest_configure(config):
     config.addinivalue_line("markers", "native: needs Windows Job Objects and real processes")
     config.addinivalue_line("markers", "credentials: needs the operator's harness logins (real model calls)")
-    config.addinivalue_line(
-        "markers",
-        "workstation: needs the installed harness builds and sibling checkouts",
-    )
 
 
 def pytest_collection_modifyitems(config, items):
