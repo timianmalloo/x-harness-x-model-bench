@@ -1,65 +1,65 @@
 {
-  "run_id": "e2e-1790255669",
-  "plan_s": 0.4069842000026256,
-  "run_s": 147.72673720000603,
+  "run_id": "e2e-phase1-1790540490",
+  "plan_s": 0.576373899995815,
+  "run_s": 73.45831499999622,
   "X1.cc-sonnet.pack-on.r1": {
     "outcome": "completed",
-    "wall_ms": 18116,
+    "wall_ms": 21193,
     "tokens": {
       "claude-haiku-4-5-20251001": {
         "uncached_input": 929,
         "cache_read": 0,
         "cache_write": 0,
-        "output": 13
+        "output": 12
       },
       "claude-sonnet-5": {
-        "uncached_input": 12,
-        "cache_read": 288617,
-        "cache_write": 30769,
-        "output": 977
+        "uncached_input": 10,
+        "cache_read": 226850,
+        "cache_write": 28150,
+        "output": 1429
       }
     },
     "pass_at_1": 1
   },
   "X1.codex-sol.pack-on.r1": {
     "outcome": "completed",
-    "wall_ms": 142156,
+    "wall_ms": 51298,
     "tokens": {
       "gpt-6-sol": {
-        "uncached_input": 32168,
-        "cache_read": 529664,
+        "uncached_input": 22080,
+        "cache_read": 194048,
         "cache_write": 0,
-        "output": 3971
+        "output": 1535
       }
     },
     "pass_at_1": 1
   },
   "X1.cc-sonnet.pack-off.r1": {
     "outcome": "completed",
-    "wall_ms": 12569,
+    "wall_ms": 15618,
     "tokens": {
       "claude-haiku-4-5-20251001": {
         "uncached_input": 929,
         "cache_read": 0,
         "cache_write": 0,
-        "output": 13
+        "output": 15
       },
       "claude-sonnet-5": {
-        "uncached_input": 12,
-        "cache_read": 203361,
-        "cache_write": 13711,
-        "output": 929
+        "uncached_input": 16,
+        "cache_read": 274309,
+        "cache_write": 13607,
+        "output": 1405
       }
     },
     "pass_at_1": 1
   },
   "X1.codex-sol.pack-off.r1": {
     "outcome": "completed",
-    "wall_ms": 29516,
+    "wall_ms": 27603,
     "tokens": {
       "gpt-6-sol": {
-        "uncached_input": 5115,
-        "cache_read": 73088,
+        "uncached_input": 16278,
+        "cache_read": 43264,
         "cache_write": 0,
         "output": 812
       }
