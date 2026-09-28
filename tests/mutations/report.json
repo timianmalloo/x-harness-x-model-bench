@@ -37,8 +37,8 @@
  {
   "name": "header cells without scope",
   "file": "src/harness_bench/report/html.py",
-  "find": "    headers = [(\"Rank\", False), (\"Combo\", False), (\"Pack\", False), (\"Gated\", True), (\"Gated 95%\", False),\n               (\"pass@1\", True), (\"pass@1 95%\", False), (\"pass^k\", True), (\"Cost per pass\", True),\n               (\"Tokens per solved\", True), (\"Wall per cell\", True), (\"Valid cells\", True)]\n    head_row = html_builder.el(\"tr\", None, *(\n        html_builder.el(\"th\", {\"scope\": \"col\", \"class\": \"num\"} if num else {\"scope\": \"col\"}, h) for h, num in headers))",
-  "replace": "    headers = [(\"Rank\", False), (\"Combo\", False), (\"Pack\", False), (\"Gated\", True), (\"Gated 95%\", False),\n               (\"pass@1\", True), (\"pass@1 95%\", False), (\"pass^k\", True), (\"Cost per pass\", True),\n               (\"Tokens per solved\", True), (\"Wall per cell\", True), (\"Valid cells\", True)]\n    head_row = html_builder.el(\"tr\", None, *(\n        html_builder.el(\"th\", {\"class\": \"num\"} if num else {}, h) for h, num in headers))",
+  "find": "        head_cells.append(html_builder.el(\"th\", {\"scope\": \"col\", \"class\": \"num\"} if num else {\"scope\": \"col\"}, label))",
+  "replace": "        head_cells.append(html_builder.el(\"th\", {\"class\": \"num\"} if num else {}, label))",
   "tests": ["tests/test_report.py::test_the_page_is_structurally_accessible"]
  },
  {
@@ -185,8 +185,8 @@
  {
   "name": "the leaderboard combo cell never flags a codex row",
   "file": "src/harness_bench/report/html.py",
-  "find": "combo_text = report.flag_if_claude_code(report.flag_if_codex(r.combo, r.harness), r.harness)",
-  "replace": "combo_text = report.flag_if_claude_code(r.combo, r.harness)",
+  "find": "    return report.flag_if_claude_code(report.flag_if_codex(combo, harness), harness)\n",
+  "replace": "    return report.flag_if_claude_code(combo, harness)\n",
   "tests": ["tests/test_report.py::test_the_leaderboard_and_cells_table_flag_only_the_codex_rows"]
  },
  {
@@ -338,5 +338,19 @@
   "find": "panels.append(_whisker_panel(f\"{tid}-p1\", cap_id, \"pass@1, as a share of tasks\", p1_rows, 1.0, is_comparison))",
   "replace": "panels.append(_whisker_panel(f\"{tid}-p1\", cap_id, \"pass@1, as a share of tasks\", p1_rows, 100.0, is_comparison))",
   "tests": ["tests/test_report.py::test_pack_effect_units_get_separate_panels"]
+ },
+ {
+  "name": "the CSP script hash is not the shipped report.js bytes",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    script_text = SCRIPT_PATH.read_text(encoding=\"utf-8\")\n",
+  "replace": "    script_text = SCRIPT_PATH.read_text(encoding=\"utf-8\") + \" \"\n",
+  "tests": ["tests/test_report.py::test_csp_script_hash_pins_the_shipped_report_js"]
+ },
+ {
+  "name": "the legend never refuses hiding the last visible combo",
+  "file": "src/harness_bench/report/assets/report.js",
+  "find": "      if (pressed.length === 1 && pressed[0] === btn) {",
+  "replace": "      if (false) {",
+  "tests": ["tests/test_report_browser.py::test_keyboard_path"]
  }
 ]

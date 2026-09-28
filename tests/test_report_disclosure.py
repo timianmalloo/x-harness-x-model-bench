@@ -40,7 +40,7 @@ def _column(doc: str, header: str) -> list[str] | None:
     headers = re.findall(r'<th scope="col"[^>]*>([^<]*)</th>', runs.group(0))
     if header not in headers:
         return None
-    body = re.search(r"<tbody>(.*?)</tbody>", runs.group(0), re.DOTALL).group(1)
+    body = re.search(r"<tbody[^>]*>(.*?)</tbody>", runs.group(0), re.DOTALL).group(1)
     index = headers.index(header)
     # R3: a Runs row now carries `id="cell-<id>"` (the cell card's anchor); tolerate any `<tr>` attributes.
     return [re.findall(r"<td[^>]*>(.*?)</td>", row)[index] for row in re.findall(r"<tr[^>]*>(.*?)</tr>", body)]

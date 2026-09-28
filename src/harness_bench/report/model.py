@@ -38,10 +38,12 @@ class ReportModel:
     sections: tuple[Section, ...]
 
 
-def page(model: ReportModel, style: str, script: str | None = None) -> str:
+def page(model: ReportModel, style: str, script: str | None = None, bar: Html | None = None) -> str:
     """The full page (design section 6): the shell, the sticky index/jump-link nav right after the
     header, then the rest of `model.sections` in order. `script` is `None` until R4 wires `report.js`
-    in; the CSP's `script-src` is `'none'` until then (`html_builder.csp_meta`)."""
+    in; the CSP's `script-src` is `'none'` until then (`html_builder.csp_meta`). `bar` (R4) is the
+    sticky control bar -- combo legend, pack switch, filter reasons -- rendered by `html.py` from the
+    board data and inserted right after the nav, so it stays a shell concern here (no board import)."""
     nav = html_builder.el(
         "nav", {"aria-label": "Sections"},
         *(html_builder.el("a", {"href": f"#{s.id}"}, s.title) for s in model.sections if s.id != "header"),
@@ -52,6 +54,14 @@ def page(model: ReportModel, style: str, script: str | None = None) -> str:
         body_children.append(section.body)
         if section.id == "header":
             body_children.append(nav)
-    body = html_builder.el("body", None, html_builder.el("main", None, *body_children))
+            if bar is not None:
+                body_children.append(bar)
+    main = html_builder.el("main", None, *body_children)
+    body_top = [main]
+    if script is not None:
+        # `trusted()`: this is our own vendored report.js, never agent-derived text (UIA-15's escaping
+        # guarantee is about the latter); raw so its bytes match the CSP's sha256 exactly (design section 5).
+        body_top.append(html_builder.el("script", None, html_builder.trusted(script)))
+    body = html_builder.el("body", None, *body_top)
     doc = html_builder.el("html", {"lang": "en"}, head, body)
     return f"<!doctype html>\n{doc}\n"

@@ -1,0 +1,8 @@
+axe-core 4.13.0 (MPL-2.0), vendored for the browser ring's accessibility checks (design phase4-report.md
+section 12, UIA-2; ruling R-81 DR-R-9).
+
+Source: https://registry.npmjs.org/axe-core/-/axe-core-4.13.0.tgz
+File:   axe.min.js (extracted from the npm tarball's package/axe.min.js, unmodified)
+sha256: c24f097bd2f451d4f933e8bc7d8d539f8672a2ebcb5cc9f9f3eec8ca9470a0c1
+
+Licence: LICENSE (Mozilla Public License, version 2.0), beside this file.
