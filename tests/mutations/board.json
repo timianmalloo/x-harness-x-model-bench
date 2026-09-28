@@ -72,8 +72,8 @@
   {
     "name": "F-1: pack effect area branch dropped",
     "file": "src/harness_bench/board.py",
-    "find": "                        if (score is None or score.value is None) and m != \"pass_at_1\":\n                            all_scores = _composite_inputs(c.scores, cat, view.catalog_version)\n                            score, _ = compute_area(all_scores, m, cat)",
-    "replace": "                        if False:\n                            all_scores = _composite_inputs(c.scores, cat, view.catalog_version)\n                            score, _ = compute_area(all_scores, m, cat)",
+    "find": "                    if c.pack == \"off\" and c.validity == \"valid\":\n                        score = c.scores.get(m)\n                        if (score is None or score.value is None) and m != \"pass_at_1\":\n                            all_scores = _composite_inputs(c.scores, cat, view.catalog_version)\n                            score, _ = compute_area(all_scores, m, cat)",
+    "replace": "                    if c.pack == \"off\" and c.validity == \"valid\":\n                        score = c.scores.get(m)\n                        if False:\n                            all_scores = _composite_inputs(c.scores, cat, view.catalog_version)\n                            score, _ = compute_area(all_scores, m, cat)",
     "tests": ["tests/test_board.py::test_pack_effect_area_delta_is_computed_with_anchors"]
   },
   {
