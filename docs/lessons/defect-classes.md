@@ -25,7 +25,7 @@ summary: >-
 3. Climb the control ladder (CI6) and record the highest rung that actually holds: *make it impossible* > *automated control* > *always-loaded instruction* > *knowledge doc* > *register entry only*.
 4. A control is not a control until it has been **observed failing** on the un-fixed code.
 
-**Status counts:** controlled 7 · partially-controlled 5 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`.
+**Status counts:** controlled 8 · partially-controlled 5 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`.
 **Recurrence since last review:**
 - 4 instances of MOD-A in one session; the control was built after the fourth.
 - 2026-09-23: EDIT-B recurred once after registration, and its hook control was then built.
@@ -499,6 +499,14 @@ summary: >-
   - the mutation fast tests patch the tool lookups.
   For now `push_and_watch` is a Leader script. Upgrade trigger: a second instance, then the batch gate script refuses to start while the newest `main` CI run is red.
 - **Status:** `partially-controlled`
+
+### RSN-A: code diverging from its own design's reason text
+- **Signature:** code generates a reason string or status message that paraphrases, abbreviates, or subtly departs from the exact string specified in its design or spec document.
+- **Why it survives:** unit tests assert substring containment (`"not computed"` or `f"no {area}"`) or write their own expectations from memory rather than asserting the literal design string, allowing the implementation to diverge without breaking tests.
+- **Instances:** `2026-09-28`, wave-4 R0 (defect F-1, R-81 DR-R-7 / c4). In `src/harness_bench/board.py`, the one-arm pack effect reason was omitted or diverged from `docs/design/phase4-statistics.md:336`, which specified the exact text `not computed (no <area> score in pack=<arm>)`. Caught during R0 design review (Test Architect / Leader).
+- **Sweep:** checked reason strings across `board.py`, `composites.py`, and `views.py` against `docs/design/phase4-statistics.md` and `docs/design/phase4-report.md`.
+- **Control:** an automated unit test asserting that the one-arm reason equals the literal `not computed (no <area> score in pack=<arm>)` (`tests/test_board.py::test_pack_effect_area_one_arm_negative_reason`), backed by a named mutant in `tests/mutations/board.json` verifying the exact literal cannot mutate without detection.
+- **Status:** `controlled`
 
 ---
 

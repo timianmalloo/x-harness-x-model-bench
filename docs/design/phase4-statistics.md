@@ -678,7 +678,7 @@ Triggers (`.claude/knowledge/testing-strategy.md` §3) and their directives:
 - **T-B3** (D6): the `board.export` golden.
   - It is built by `stats_run` with fixed inputs and S4's committed **test** catalog with anchors, never from the live `bench/metrics.yaml`. The export holds no run timestamp or grading id, so the build's own identifiers do not reach the bytes.
   - Its sha256 is pinned in the test source, outside the US-4 goldens tree, so the `.dev` exemption cannot reach it.
-  - A comment states that the digest changes only with `METHOD` or the fixture.
+  - A comment states that the digest changes only with `METHOD`, `EXPORT_VERSION` or the fixture.
 - **T-B6** (D3, `ast`): `views.py` defines none of `leaderboard`, `Row`, `_row`, `_mean`. `views.export(fixture)` has no `leaderboard` key.
 - **T-B7**: the timing line is printed by the CLI, parseable, and absent from the HTML.
 - **T-B8** (US-27 at the row layer): a `stats_run` build. One valid cell's `pass_at_1` is NA, produced by the grader path that records NA (a missing hidden-test result), with its reason `r`. One cell is invalid, through the validity path `_copilot_run` already exercises. Asserts:
