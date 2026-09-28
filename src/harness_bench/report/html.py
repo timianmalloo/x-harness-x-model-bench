@@ -256,7 +256,11 @@ def _validity(view: views.RunView) -> str:
 # `_table()` still uses for the sections R5 owns (pack effect, comparison, unchanged this slice).
 
 _UNIT = {"pass_at_1": "pass rate, 0-1", "gated": "correctness-gated composite, 0-100",
-        "partial_credit": "partial credit, 0-1", "cost_usd": "USD", "mutation_score": "mutation score, 0-1"}
+        "partial_credit": "partial credit, 0-1", "cost_usd": "USD", "mutation_score": "mutation score, 0-1",
+        "pass_hat_k": "pass^k rate, 0-1", "cost_of_pass": "USD per passing cell",
+        "tokens_per_solved": "tokens per solved task, integer", "wall_ms": "wall clock, seconds",
+        "tokens": "tokens, integer", "tool_ms": "tool time, milliseconds", "model_ms": "model time, milliseconds",
+        "idle_ms": "idle time, milliseconds"}
 _METRIC_LABEL = {"pass_at_1": "pass@1", "gated": "gated", "partial_credit": "partial credit",
                  "cost_usd": "cost", "mutation_score": "mutation_score"}
 
@@ -301,13 +305,12 @@ def _interval_mark(iv, decimals: int) -> str:
     text otherwise -- never `0` for missing. The cardinality floor (`ivmark`) is the shared marker class."""
     if iv.lo is not None and iv.hi is not None:
         text = html_builder.el("span", None, f"[{iv.lo:.{decimals}f}, {iv.hi:.{decimals}f}]")
-        point = iv.point if iv.point is not None else iv.lo
-        bar = html_builder.el(
-            "svg", {"class": "ivbar ivmark", "width": "64", "height": "12", "viewBox": "0 0 64 12",
+        svg_attrs = {"class": "ivbar ivmark", "width": "64", "height": "12", "viewBox": "0 0 64 12",
                     "aria-hidden": "true", "data-interval-lo": f"{iv.lo:.{decimals}f}",
-                    "data-interval-hi": f"{iv.hi:.{decimals}f}", "data-interval-point": f"{point:.{decimals}f}"},
-            html_builder.el("line", {"x1": "4", "x2": "60", "y1": "6", "y2": "6"}),
-        )
+                    "data-interval-hi": f"{iv.hi:.{decimals}f}"}
+        if iv.point is not None:  # never invent a point from lo when none was computed (Leader R3 join note)
+            svg_attrs["data-interval-point"] = f"{iv.point:.{decimals}f}"
+        bar = html_builder.el("svg", svg_attrs, html_builder.el("line", {"x1": "4", "x2": "60", "y1": "6", "y2": "6"}))
         return html_builder.trusted(text + bar)
     return html_builder.el("span", {"class": "ivbar-reason ivmark"}, iv.reason or "interval not computed")
 
@@ -327,6 +330,32 @@ def _lb_measure_cells(iv, metric: str, decimals: int, catalog_version: str | Non
     return point_td, interval_td
 
 
+def _lb_measure_ev_cell(measure, metric: str, formatter, catalog_version: str | None) -> str:
+    """A leaderboard `Measure` column (pass^k, cost-of-pass, tokens per solved, wall per cell) as an
+    evidence-trigger button (design section 6 row 3: every displayed score is `.ev`). The cross-link is
+    `#runs`, the same board-row-aggregate `assume:` `_lb_measure_cells` documents above."""
+    na = measure.value is None
+    text = formatter(measure)
+    evidence = html_builder.el("a", {"href": "#runs"}, "Show cells")
+    return html_builder.el("td", {"class": "num"}, html_builder.trusted(
+        _ev(text, na, _UNIT.get(metric, ""), catalog_version, evidence, None)))
+
+
+def _rank_cell(r: board.BoardRow) -> str:
+    """Design section 6 row 3: a tied rank shows `1=`, with `(intervals overlap)` on focus. Chosen shape:
+    the rank cell's own `ev` popover (button.ev holding the rank text, a hidden popover holding the design's
+    exact tie copy) -- the same on-focus-reveal pattern every other score uses here, not the generic
+    value/unit/catalog-version shape (a tie has no raw value to disclose). An untied rank or the unranked
+    mark ("—") is plain text: there is nothing to reveal."""
+    if not r.rank:
+        return html_builder.el("td", None, "—")
+    if r.rank.endswith("="):
+        btn = html_builder.el("button", {"class": "ev", "type": "button"}, r.rank)
+        pop = html_builder.el("span", {"class": "popover", "hidden": True}, "(intervals overlap)")
+        return html_builder.el("td", None, html_builder.trusted(btn + pop))
+    return html_builder.el("td", None, r.rank)
+
+
 def _measure_label(board_obj: board.Board) -> str:
     return "correctness-gated composite" if board_obj.primary == "gated" else "pass@1"
 
@@ -338,27 +367,35 @@ def _leaderboard(view: views.RunView, board_obj: board.Board) -> str:
             html_builder.el("p", None, f"No cell completed in this run. Run bench status {view.run_id} to see why."),
         )
     caption = f"Ranked on {_measure_label(board_obj)}. Rows that share a rank cannot be separated by this data."
-    headers = [("Rank", False), ("Combo", False), ("Pack", False), ("Valid cells", True), ("pass@1", True), ("pass@1 95%", False),
-               ("Gated", True), ("Gated 95%", False), ("Tokens per cell", True), ("Wall per cell", True), ("Cost per cell", True)]
+    # Design section 6 row 3's order: rank · combo · pack · gated ± interval · pass@1 ± interval · pass^k ·
+    # cost-of-pass · tokens per solved · wall per cell · valid cells (Leader R3 join note).
+    headers = [("Rank", False), ("Combo", False), ("Pack", False), ("Gated", True), ("Gated 95%", False),
+               ("pass@1", True), ("pass@1 95%", False), ("pass^k", True), ("Cost per pass", True),
+               ("Tokens per solved", True), ("Wall per cell", True), ("Valid cells", True)]
     head_row = html_builder.el("tr", None, *(
         html_builder.el("th", {"scope": "col", "class": "num"} if num else {"scope": "col"}, h) for h, num in headers))
+    frontier_by_key = {(fr.combo, fr.pack): fr for fr in board_obj.frontier}
+    no_solved = stats.Measure(None, "not recorded")
 
     body_rows = []
     for r in board_obj.rows:
         combo_text = report.flag_if_claude_code(report.flag_if_codex(r.combo, r.harness), r.harness)
-        p1_td, p1_iv_td = _lb_measure_cells(r.pass_at_1, "pass_at_1", 2, view.catalog_version)
         g_td, g_iv_td = _lb_measure_cells(r.gated, "gated", 1, view.catalog_version)
+        p1_td, p1_iv_td = _lb_measure_cells(r.pass_at_1, "pass_at_1", 2, view.catalog_version)
+        tokens_per_solved = frontier_by_key.get((r.combo, r.pack))
+        tokens_per_solved = tokens_per_solved.tokens_per_solved if tokens_per_solved is not None else no_solved
         body_rows.append(html_builder.el(
             "tr", None,
-            html_builder.el("td", None, r.rank or "—"),
+            _rank_cell(r),
             html_builder.el("td", None, combo_text),
             html_builder.el("td", None, r.pack),
-            html_builder.el("td", {"class": "num"}, f"{r.n_valid}/{r.n_cells} cells"),
-            html_builder.trusted(p1_td), html_builder.trusted(p1_iv_td),
             html_builder.trusted(g_td), html_builder.trusted(g_iv_td),
-            html_builder.el("td", {"class": "num"}, report.tokens(r.tokens)),
-            html_builder.el("td", {"class": "num"}, report.seconds(r.wall_ms)),
-            html_builder.el("td", {"class": "num"}, report.usd(r.cost_usd)),
+            html_builder.trusted(p1_td), html_builder.trusted(p1_iv_td),
+            html_builder.trusted(_lb_measure_ev_cell(r.pass_hat_k, "pass_hat_k", report.rate, view.catalog_version)),
+            html_builder.trusted(_lb_measure_ev_cell(r.cost_of_pass, "cost_of_pass", report.usd, view.catalog_version)),
+            html_builder.trusted(_lb_measure_ev_cell(tokens_per_solved, "tokens_per_solved", report.tokens, view.catalog_version)),
+            html_builder.trusted(_lb_measure_ev_cell(r.wall_ms, "wall_ms", report.seconds, view.catalog_version)),
+            html_builder.el("td", {"class": "num"}, f"{r.n_valid}/{r.n_cells} cells"),
         ))
     table = html_builder.el(
         "table", None,
@@ -454,6 +491,16 @@ def _cell_card(c: views.CellView, archive_present: bool, catalog_version: str | 
     return html_builder.el("details", None, *children)
 
 
+def _runs_ev_td(text: str, na: bool, metric: str, c: views.CellView, archive_present: bool,
+                catalog_version: str | None) -> str:
+    """A Runs numeric cell as an evidence-trigger button (design section 6 preamble: every number is an
+    evidence trigger -- not only the cell card's own copies). `_evidence_content` reads `none` for a
+    telemetry fact (tokens/wall/tool/model/idle) that carries no per-metric evidence pointer."""
+    evidence = _evidence_content(c, metric, archive_present)
+    return html_builder.el("td", {"class": "num"}, html_builder.trusted(
+        _ev(text, na, _UNIT.get(metric, ""), catalog_version, evidence, c.cell_id)))
+
+
 def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str], run_dir: Path | None = None,
           root: Path | None = None, catalog_version: str | None = None) -> str:
     if not view.cells:
@@ -473,22 +520,25 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str], run_
     for c in view.cells:
         label_text = report.flag_if_claude_code(report.flag_if_codex(
             c.label + (f" · {COORDINATION_BANNER}" if c.scenario == 6 else ""), c.harness), c.harness)
+        p1_m = c.scores.get("pass_at_1", na)
+        pc_m = c.scores.get("partial_credit", na)
+        cost_m = c.scores.get("cost_usd", na)
         row_cells = [
             html_builder.el("td", None, label_text),
             html_builder.el("td", None, c.outcome + (f" ({c.cause}, {c.code})" if c.code else "")),
             html_builder.el("td", None, c.validity + (f" {c.validity_code}" if c.validity_code else "")),
-            html_builder.el("td", {"class": "num"}, report.rate(c.scores.get("pass_at_1", na))),
-            html_builder.el("td", {"class": "num"}, report.rate(c.scores.get("partial_credit", na))),
+            _runs_ev_td(report.rate(p1_m), p1_m.value is None, "pass_at_1", c, archive_present, catalog_version),
+            _runs_ev_td(report.rate(pc_m), pc_m.value is None, "partial_credit", c, archive_present, catalog_version),
         ]
         if show_mutation:
             row_cells.append(html_builder.el("td", None, mutation.get(c.cell_id, "")))
         row_cells += [
-            html_builder.el("td", {"class": "num"}, report.cell_tokens(c.tokens, c.tokens_reason)),
-            html_builder.el("td", {"class": "num"}, report.seconds(c.wall_ms)),
-            html_builder.el("td", {"class": "num"}, report.millis(c.tool_ms)),
-            html_builder.el("td", {"class": "num"}, report.millis(c.model_ms)),
-            html_builder.el("td", {"class": "num"}, report.millis(c.idle_ms)),
-            html_builder.el("td", {"class": "num"}, report.usd(c.scores.get("cost_usd", na))),
+            _runs_ev_td(report.cell_tokens(c.tokens, c.tokens_reason), not c.tokens, "tokens", c, archive_present, catalog_version),
+            _runs_ev_td(report.seconds(c.wall_ms), c.wall_ms.value is None, "wall_ms", c, archive_present, catalog_version),
+            _runs_ev_td(report.millis(c.tool_ms), c.tool_ms.value is None, "tool_ms", c, archive_present, catalog_version),
+            _runs_ev_td(report.millis(c.model_ms), c.model_ms.value is None, "model_ms", c, archive_present, catalog_version),
+            _runs_ev_td(report.millis(c.idle_ms), c.idle_ms.value is None, "idle_ms", c, archive_present, catalog_version),
+            _runs_ev_td(report.usd(cost_m), cost_m.value is None, "cost_usd", c, archive_present, catalog_version),
             html_builder.el("td", None, report.context_window(c.harness, tags.get(c.cell_id))),
             html_builder.el("td", None, ", ".join(w.code for w in c.warnings) or "none"),
             html_builder.el("td", None, _evidence_content(c, "pass_at_1", archive_present)),

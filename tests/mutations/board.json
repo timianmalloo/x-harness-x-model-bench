@@ -96,5 +96,19 @@
     "find": "    packs = {combo: sorted(p for c2, p in groups if c2 == combo) for combo in combos}\n",
     "replace": "    packs = {combo: [\"off\", \"on\"] for combo in combos}\n",
     "tests": ["tests/test_board.py::test_projections_carry_only_the_arms_the_run_has"]
+  },
+  {
+    "name": "cost-of-pass divides by every valid cell, not only the passing ones",
+    "file": "src/harness_bench/board.py",
+    "find": "                total_cost = sum((Decimal(str(c.scores[\"cost_usd\"].value)) for c in valid_cells), Decimal(0))\n                cost_of_pass = Measure(total_cost / Decimal(len(passing)))",
+    "replace": "                total_cost = sum((Decimal(str(c.scores[\"cost_usd\"].value)) for c in valid_cells), Decimal(0))\n                cost_of_pass = Measure(total_cost / Decimal(len(valid_cells)))",
+    "tests": ["tests/test_board.py::test_board_cost_of_pass"]
+  },
+  {
+    "name": "cost-of-pass never reports the no-passing-cell reason",
+    "file": "src/harness_bench/board.py",
+    "find": "            if not passing:\n                cost_of_pass = Measure(None, \"no passing cell\")",
+    "replace": "            if not passing:\n                cost_of_pass = Measure(None, \"not recorded\")",
+    "tests": ["tests/test_board.py::test_board_cost_of_pass"]
   }
 ]

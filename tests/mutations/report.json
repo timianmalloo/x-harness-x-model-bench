@@ -37,8 +37,8 @@
  {
   "name": "header cells without scope",
   "file": "src/harness_bench/report/html.py",
-  "find": "    headers = [(\"Rank\", False), (\"Combo\", False), (\"Pack\", False), (\"Valid cells\", True), (\"pass@1\", True), (\"pass@1 95%\", False),\n               (\"Gated\", True), (\"Gated 95%\", False), (\"Tokens per cell\", True), (\"Wall per cell\", True), (\"Cost per cell\", True)]\n    head_row = html_builder.el(\"tr\", None, *(\n        html_builder.el(\"th\", {\"scope\": \"col\", \"class\": \"num\"} if num else {\"scope\": \"col\"}, h) for h, num in headers))",
-  "replace": "    headers = [(\"Rank\", False), (\"Combo\", False), (\"Pack\", False), (\"Valid cells\", True), (\"pass@1\", True), (\"pass@1 95%\", False),\n               (\"Gated\", True), (\"Gated 95%\", False), (\"Tokens per cell\", True), (\"Wall per cell\", True), (\"Cost per cell\", True)]\n    head_row = html_builder.el(\"tr\", None, *(\n        html_builder.el(\"th\", {\"class\": \"num\"} if num else {}, h) for h, num in headers))",
+  "find": "    headers = [(\"Rank\", False), (\"Combo\", False), (\"Pack\", False), (\"Gated\", True), (\"Gated 95%\", False),\n               (\"pass@1\", True), (\"pass@1 95%\", False), (\"pass^k\", True), (\"Cost per pass\", True),\n               (\"Tokens per solved\", True), (\"Wall per cell\", True), (\"Valid cells\", True)]\n    head_row = html_builder.el(\"tr\", None, *(\n        html_builder.el(\"th\", {\"scope\": \"col\", \"class\": \"num\"} if num else {\"scope\": \"col\"}, h) for h, num in headers))",
+  "replace": "    headers = [(\"Rank\", False), (\"Combo\", False), (\"Pack\", False), (\"Gated\", True), (\"Gated 95%\", False),\n               (\"pass@1\", True), (\"pass@1 95%\", False), (\"pass^k\", True), (\"Cost per pass\", True),\n               (\"Tokens per solved\", True), (\"Wall per cell\", True), (\"Valid cells\", True)]\n    head_row = html_builder.el(\"tr\", None, *(\n        html_builder.el(\"th\", {\"class\": \"num\"} if num else {}, h) for h, num in headers))",
   "tests": ["tests/test_report.py::test_the_page_is_structurally_accessible"]
  },
  {
