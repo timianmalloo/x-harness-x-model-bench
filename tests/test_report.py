@@ -16,6 +16,7 @@ from stats_fixtures import stats_run
 
 from harness_bench import board, ledger, stats, views
 from harness_bench.errors import BenchError
+from harness_bench.grade import cost as grade_cost
 from harness_bench.grade import judge as grade_judge
 from harness_bench.grade import runner
 from harness_bench.report import (
@@ -1939,15 +1940,36 @@ def test_context_growth_empty_run_draws_no_axes_uxa8():
     assert "<svg" not in section
 
 
-def test_context_growth_has_no_turn_level_producer_today():
-    """The real projection (report/context_growth.py's assume:): `turn_usage` is one whole-attempt
-    sum per (cell, model), never one row per turn, so `build()` against a real graded view always
-    reads every task as 'No turns recorded', never a fabricated trajectory."""
+def test_context_growth_copilot_cell_reads_session_totals_reason():
+    """One of the two NA rules (design phase4-report.md section 4): a Copilot cell's native record
+    is the last shutdown's session total per model, never per call, so `build()` reads
+    `grade/cost.py`'s own `SESSION_TOTALS` reason constant (DM7: one definition, not a second copy of
+    the text) -- never the generic 'no turns recorded' placeholder, which is for a task with no
+    model_calls rows at all."""
     view = _state_view("valid", None)
     result = context_growth.build(view)
     assert len(result.tasks) == 1
     task = result.tasks[0]
-    assert task.task == "X1" and task.series == () and task.reason == "No turns recorded for X1."
+    assert task.task == "X1" and task.series == () and task.reason == grade_cost.SESSION_TOTALS
+
+
+def test_context_growth_series_follows_model_calls_in_ordinal_order(root, tmp_path):
+    """R6c: the series is the cell's own `model_calls` rows' context size (uncached_input +
+    cache_read + cache_write, `grade/cost.py`'s `_context_growth` formula), in native_ordinal order.
+    The real X1/codex fixture (`tests/fixtures/native/codex/ok.jsonl`) records three calls whose
+    context size grows monotonically (14920, 15372, 15596), so the series equals those sizes in
+    order and flags no compaction."""
+    run_dir, view = _graded(root, tmp_path, {"a": GOOD})
+    result = context_growth.build(view, run_dir)
+    task = next(t for t in result.tasks if t.task == "X1")
+    assert task.reason is None
+    assert len(task.series) == 1
+    s = task.series[0]
+    assert s.combo == "c" and s.pack == "off"
+    assert s.turns == (1, 2, 3)
+    assert s.median == (14920, 15372, 15596)
+    assert s.lo == s.median and s.hi == s.median  # a single repetition: no band
+    assert s.compactions == ()  # monotonically increasing
 
 
 def test_cli_table_prints_scenario_headline_line_uia11():
