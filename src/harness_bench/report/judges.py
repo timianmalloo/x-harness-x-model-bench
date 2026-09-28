@@ -14,6 +14,8 @@ calibration ledger and `bench/gateway.yaml`; nothing here is stored (DM7). A val
   It needs the operator's identifiers, which the report reads at run time (never committed, R-42).
 - **Verdict split by cell vendor** (R-58 c2): mean (Claude verdict - GPT verdict) per cell vendor, with n; the cell
   vendor is the cell harness profile's `vendor:` (R-73 item 1), never a model-id prefix. Disclosed, never a gate.
+- **Injection patterns** (section 10.3, US-46 c2): each (cell, judged metric) of the pass whose archived artifacts
+  match `views.injection_patterns`, with the patterns version; `none` when no artifact matches. Never changes a score.
 - **Probe versions** (section 12, R-59 DR-4): a pass whose `grading.started` `catalog_version` ends in `.dev`
   (`views._is_probe`, the one definition) reads `probe pass`. The version is the view's, which is that event's.
 - Rationales are untrusted text: `disagreement_text` returns them raw and the report renders every value through
@@ -207,6 +209,43 @@ def _spend_row(stipulation: Mapping, calls_path: Path) -> str:
     return " · ".join(parts)
 
 
+def _artifact_text(run_dir: Path, cell_id: str, path: str) -> str:
+    """The archived artifact of the cell's last attempt, as the judge read it ("" when the cell did not write it).
+    assume: the pass graded the cell's highest-numbered attempt. Confirm: runner._grade_cell's `attempt` for a cell
+    with a retry. Breaks: the flag reads an attempt the judge never saw (the flag only; no score reads it)."""
+    attempts = sorted((run_dir / "archive" / cell_id).glob("attempt-*"), key=lambda p: int(p.name.split("-")[1]))
+    file = attempts[-1] / "ws" / path if attempts else None
+    return file.read_bytes().decode("utf-8", errors="replace") if file is not None and file.is_file() else ""
+
+
+def injection_items(root: Path | None, run_dir: Path | None, view: views.RunView) -> list[tuple[str, str, tuple]]:
+    """US-46 c2 (section 10.3): (cell_id, metric, pattern names) for each (cell, judged metric) of the view's pass whose
+    archived artifacts carry an injection pattern, derived now and never stored. The artifacts are the catalog
+    entry's `artifact:` paths.
+    assume: the catalog file names the same `artifact:` paths as at grading. Confirm: the pass's catalog_version
+    equals the file's. Breaks: a changed path flags a file the judge did not read (the flag only)."""
+    if root is None or run_dir is None or view.grading_id is None:
+        return []
+    judged = {(r["cell_id"], r["item_id"].rsplit("#", 1)[0]) for r in views.rows(run_dir, "verdict_uses")
+              if r["grading_id"] == view.grading_id}
+    if not judged:
+        return []
+    catalog = {m["id"]: m for a in config.load_yaml(root / "bench" / "metrics.yaml")["areas"].values()
+               for m in a["metrics"]}
+    out = []
+    for cell, metric in sorted(judged):
+        text = "\n".join(_artifact_text(run_dir, cell, p) for p in (catalog.get(metric) or {}).get("artifact") or [])
+        found = views.injection_patterns(text, views.INJECTION_PATTERNS_VERSION)
+        if found:
+            out.append((cell, metric, found))
+    return out
+
+
+def injection_row(items: list[tuple[str, str, tuple]], labels: Mapping[str, str]) -> str:
+    body = "; ".join(f"{labels.get(c, c)} {m}: {', '.join(p)}" for c, m, p in items) or "none"
+    return f"{body} (patterns {views.INJECTION_PATTERNS_VERSION})"
+
+
 def facts(root: Path | None, run_dir: Path | None, view: views.RunView,
           operator: egress.Operator | None = None) -> list[tuple[str, str | None]]:
     """The judge block's rows for the view's current pass; none when the pass looked up no judge verdict."""
@@ -247,6 +286,8 @@ def facts(root: Path | None, run_dir: Path | None, view: views.RunView,
                     "not recorded: no item judged by both judges"))
     else:
         out += [("Agreement on this run", SECOND), ("Verdict split by cell vendor", SECOND)]
+    out.append(("Injection patterns", injection_row(injection_items(root, run_dir, view),
+                                                    {c.cell_id: c.label for c in view.cells})))
     out.append(("Judge spend", _spend_row(stipulation, run_dir / "model_calls" / f"{gid}.jsonl")))
     # section 12: from grading.started's catalog_version (the view's), never the catalog file as it stands now
     out.append(("Probe versions", "probe pass" if views._is_probe(view.catalog_version) else view.catalog_version))

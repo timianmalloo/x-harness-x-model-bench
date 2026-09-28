@@ -5,15 +5,18 @@
 - Sections with stable ids: `header`, `validity`, `leaderboard`, `runs`. Tables have a caption and scoped
   header cells; each scroll container is a focusable, labelled region. Numbers are right-aligned tabular
   figures with units. NA reads `NA (<reason>)`, never 0.
-- Before the file is written, the page is scanned for credential shapes (HB-SEC-001): a match refuses the
-  write and names only the count, never the value.
+- Before the file is written, publication egress (US-47 c3) runs each section through `egress.check`: a hit
+  replaces that section with `withheld: sensitive content`, and `report-record.json` lists it. Then the page is
+  scanned for credential shapes (HB-SEC-001): a match refuses the write and names only the count, never the value.
 - The kiviats, frontiers, heatmap, pack effect and summaries of the mockup are later phases (Spec S-10).
 """
 
 from __future__ import annotations
 
 import html as _html
+import json
 import re
+from collections.abc import Sequence
 from pathlib import Path
 
 from harness_bench import (
@@ -37,6 +40,10 @@ SECRET_SHAPES = (
     re.compile(r"\bgh[pousr]_[A-Za-z0-9]{30,}"),  # GitHub tokens
     re.compile(r"\beyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}"),  # JWTs (OAuth access tokens)
 )
+PUBLICATION = "report"  # the egress destination id of report publication (US-47 c3)
+RECORD = "report-record.json"  # beside report.html: what the report withheld (US-47 c3) and flagged (US-46 c2)
+# One rendered section. Sections never nest, and every value is escaped by `_e`, so "</section>" is only a tag.
+_SECTION = re.compile(r'<section id="([a-z0-9-]+)">.*?</section>', re.DOTALL)
 
 STYLE = """
 :root{color-scheme: light;
@@ -449,14 +456,47 @@ def scan(text: str, credential_values: set[str] = frozenset()) -> int:
     return found
 
 
+def _publish(doc: str, operator: egress.Operator | None, secrets: set[str], canaries: Sequence[str]) -> tuple[str, dict]:
+    """US-47 c3: every section through `egress.check` (destination `report`). A withheld section is replaced by
+    `withheld: sensitive content`; a hit outside every section writes nothing (HB-SEC-001). Returns the page to publish
+    and the record: each section's verdict record (digest and class names, never content) and the withheld ids."""
+    if operator is None:  # the scan needs the operator's identifiers (read at run time, R-42)
+        return doc, {"egress": judges.NO_OPERATOR, "sections": [], "withheld": []}
+    sections: list[dict] = []
+
+    def one(m: re.Match) -> str:
+        verdict = egress.check(m.group(0), destination=PUBLICATION, operator=operator, secrets=sorted(secrets),
+                               canaries=canaries)
+        sections.append({"section": m.group(1), **verdict.record()})
+        return f'<section id="{m.group(1)}"><p>{egress.WITHHELD}</p></section>' if verdict.withheld else m.group(0)
+
+    published = _SECTION.sub(one, doc)
+    if egress.check(_SECTION.sub("", doc), destination=PUBLICATION, operator=operator, secrets=sorted(secrets),
+                    canaries=canaries).withheld:
+        raise BenchError("HB-SEC-001", f"the page outside its sections is {egress.WITHHELD}; nothing was written")
+    return published, {"egress": "scanned", "sections": sections,
+                       "withheld": [s["section"] for s in sections if s["classes"]]}
+
+
 def write(run_dir: Path, view: views.RunView, credential_values: set[str] = frozenset(), root: Path | None = None,
           operator: egress.Operator | None = None, board_obj: board.Board | None = None,
-          params: stats.Params | None = None, comparison_obj: board.Comparison | str | None = None) -> Path:
+          params: stats.Params | None = None, comparison_obj: board.Comparison | str | None = None,
+          canaries: Sequence[str] = ()) -> Path:
+    """report.html, after publication egress (`_publish`) and the credential scan (HB-SEC-001), and beside it the run
+    record of what the report withheld and flagged (`RECORD`).
+    assume: a report-time file beside report.html is the run record US-47 c3 and US-46 c2 name. Confirm: the Leader's
+    ruling on EGRESS s2. Breaks: if it must be a ledger fact (the design's `egress_events`), this record moves there
+    with an ADR-0006 amendment; its content stays the same."""
     doc = render(view, archive_present=(run_dir / "archive").is_dir(), run_dir=run_dir, root=root, operator=operator,
                  board_obj=board_obj, params=params, comparison_obj=comparison_obj)
-    found = scan(doc, credential_values)
+    published, record = _publish(doc, operator, set(credential_values), canaries)
+    found = scan(published, credential_values)
     if found:
         raise BenchError("HB-SEC-001", f"{found} credential-shaped string(s) in the report; nothing was written")
+    record["injection"] = {"patterns_version": views.INJECTION_PATTERNS_VERSION,
+                           "items": [{"cell_id": c, "metric": m, "patterns": list(p)}
+                                     for c, m, p in judges.injection_items(root, run_dir, view)]}
     path = run_dir / "report.html"
-    path.write_text(doc, encoding="utf-8", newline="\n")
+    path.write_text(published, encoding="utf-8", newline="\n")
+    (run_dir / RECORD).write_text(json.dumps(record, indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     return path
