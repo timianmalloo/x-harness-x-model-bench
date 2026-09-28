@@ -672,3 +672,86 @@ def test_tu3_cli_resamples_and_seed(root, tmp_path, capsys):
     assert "2500 resamples" in doc
     assert "seed 12345" in doc
 
+
+# --- S7 run comparison (T-M1..M3) ------------------------------------------------------------------
+
+
+def test_tm1_comparison_refusal_end_to_end_cli_and_html(root, tmp_path, capsys):
+    """T-M1 (red first for S7): the refusal naming each difference, end to end through the CLI exit code.
+
+    The HTML section reads `Runs not comparable: <each difference>`.
+    """
+    from harness_bench import cli
+
+    # Run A has combo c1, Run B has combo c2
+    stats_run(root, tmp_path, run_id="r-tm1-a", tasks=("A1",), reps=1, arms=("off",), combos=["c1"])
+    run_b = stats_run(root, tmp_path, run_id="r-tm1-b", tasks=("A1",), reps=1, arms=("off",), combos=["c2"])
+
+    # 1. CLI end-to-end: bench report r-tm1-b --baseline r-tm1-a
+    exit_code = cli.main([
+        "--root", str(root),
+        "--runs", str(tmp_path / "runs"),
+        "report", "r-tm1-b",
+        "--baseline", "r-tm1-a",
+    ])
+    assert exit_code == cli.INVALID
+    captured = capsys.readouterr()
+    assert "HB-STA-002" in captured.err
+    assert "combos differ: only in A: c1; only in B: c2" in captured.err
+
+    # 2. HTML section: reads `Runs not comparable: <each difference>`
+    view_b = views.load(run_b)
+    doc = html.render(
+        view_b,
+        archive_present=True,
+        run_dir=run_b,
+        root=root,
+        comparison_obj="combos differ: only in A: c1; only in B: c2",
+    )
+    assert '<section id="comparison">' in doc
+    assert "Runs not comparable: combos differ: only in A: c1; only in B: c2" in doc
+
+
+def test_tm2_shared_pack_revision_labelled_a_replication(root, tmp_path, capsys):
+    """T-M2: a shared pack revision is allowed and labelled `a replication` in CLI and HTML."""
+    from harness_bench import cli
+
+    outcomes_a = {
+        ("A1", 1, "off"): 1,
+        ("B1", 1, "off"): 1,
+    }
+    outcomes_b = {
+        ("A1", 1, "off"): 1,
+        ("B1", 1, "off"): 0,
+    }
+    stats_run(
+        root, tmp_path, run_id="r-tm2-a", tasks=("A1", "B1"), reps=1, arms=("off",), combos=["c1"],
+        outcomes=outcomes_a, pack_revision="95",
+    )
+    stats_run(
+        root, tmp_path, run_id="r-tm2-b", tasks=("A1", "B1"), reps=1, arms=("off",), combos=["c1"],
+        outcomes=outcomes_b, pack_revision="95",
+    )
+
+    exit_code = cli.main([
+        "--root", str(root),
+        "--runs", str(tmp_path / "runs"),
+        "report", "r-tm2-b",
+        "--baseline", "r-tm2-a",
+    ])
+    assert exit_code == cli.OK
+    captured = capsys.readouterr()
+    assert "same pack revision (95): a replication" in captured.out
+    assert "Excluded as contamination-prone: none in this run" in captured.out
+    assert "Comparison:" in captured.out
+
+    html_file = tmp_path / "runs" / "r-tm2-b" / "report.html"
+    assert html_file.is_file()
+    doc = html_file.read_text(encoding="utf-8")
+    assert '<section id="comparison">' in doc
+    assert "same pack revision (95): a replication" in doc
+    assert "Excluded as contamination-prone: none in this run" in doc
+    assert "data-interval-lo=" in doc
+
+
+

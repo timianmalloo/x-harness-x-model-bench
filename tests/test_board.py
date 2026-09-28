@@ -171,7 +171,7 @@ def test_tb5_compare_preconditions_parametrised(tmp_path, diff_kind):
         view_b = views.load(run_b)
     elif diff_kind == "catalog_version":
         run_b = stats_run(root, tmp_path, run_id="r-b", tasks=("A1",), reps=1, arms=("off",), combos=["c"])
-        view_b = views.load(run_b, "0.3")
+        view_b = dataclasses.replace(views.load(run_b), catalog_version="0.3")
     elif diff_kind == "task_version":
         run_b = stats_run(root, tmp_path, run_id="r-b", tasks=("A1",), reps=1, arms=("off",), combos=["c"])
         view_b = views.load(run_b)
@@ -192,6 +192,34 @@ def test_tb5_compare_preconditions_parametrised(tmp_path, diff_kind):
     with pytest.raises(BenchError) as exc_info:
         board.compare(view_a, view_b, TEST_CATALOG)
     assert exc_info.value.code == "HB-STA-002"
+    msg = exc_info.value.message
+    if diff_kind == "not_graded":
+        assert "run r-b is not graded" in msg
+    elif diff_kind == "combos":
+        assert "combos differ:" in msg and "only in A: c" in msg and "only in B: other" in msg
+    elif diff_kind == "bom_version":
+        assert "BOM version differs: A 0.4, B 0.5" in msg
+    elif diff_kind == "catalog_version":
+        assert f"catalog version differs: A {view_a.catalog_version}, B {view_b.catalog_version}" in msg
+    elif diff_kind == "task_version":
+        assert "task version of A1 differs" in msg
+
+
+def test_tb5_multiple_preconditions_all_named(tmp_path):
+    """When multiple preconditions fail, all differences are named together in the HB-STA-002 refusal."""
+    root = make_root(tmp_path)
+    run_a = stats_run(root, tmp_path, run_id="r-a", tasks=("A1",), reps=1, arms=("off",), combos=["c"], bom_version="0.4")
+    run_b = stats_run(root, tmp_path, run_id="r-b", tasks=("A1",), reps=1, arms=("off",), combos=["other"], bom_version="0.5")
+    view_a = views.load(run_a)
+    view_b = dataclasses.replace(views.load(run_b), catalog_version="0.3")
+
+    with pytest.raises(BenchError) as exc_info:
+        board.compare(view_a, view_b, TEST_CATALOG)
+    assert exc_info.value.code == "HB-STA-002"
+    msg = exc_info.value.message
+    assert "combos differ:" in msg
+    assert "BOM version differs: A 0.4, B 0.5" in msg
+    assert f"catalog version differs: A {view_a.catalog_version}, B {view_b.catalog_version}" in msg
 
 
 def test_tb6_views_defines_no_leaderboard_and_export_has_no_leaderboard_key():
@@ -490,6 +518,7 @@ def test_tm3_comparison_direction_and_negation(tmp_path):
     with one (task, rep) outcome flipped from pass to fail in one (combo, pack).
     compare(base=A, view=B) gives that row's delta point exactly -1/n.
     compare(base=B, view=A) gives the negated point.
+    Run B holds an E* task (E1) and the comparison names it under the same statement as pack effect (R-78 c6).
     """
     root = make_root(tmp_path)
     outcomes_a = {
@@ -509,12 +538,14 @@ def test_tm3_comparison_direction_and_negation(tmp_path):
     outcomes_b = {
         ("A1", 1, "off"): 1,
         ("B1", 1, "off"): 0,
+        ("E1", 1, "off"): 1,
+        ("C1", 1, "off"): 1,
     }
     run_b = stats_run(
         root,
         tmp_path,
         run_id="r-b",
-        tasks=("A1", "B1"),
+        tasks=("A1", "B1", "E1", "C1"),
         reps=1,
         arms=("off", "on"),
         combos=["c"],
@@ -526,10 +557,70 @@ def test_tm3_comparison_direction_and_negation(tmp_path):
     cat = Catalog(version="0.4", hash="h", metrics={}, areas={}, has_anchors=False)
 
     comp_ab = board.compare(base=view_a, view=view_b, cat=cat)
+    # E1 is excluded as contamination-prone and named under the same statement as pack effect (R-78 c6)
+    assert comp_ab.excluded_tasks == ("E1",)
+    assert comp_ab.exclusion_line == "Excluded as contamination-prone: E1"
+    # Unshared tasks named
+    assert "C1" in comp_ab.unshared_tasks
+    assert "E1" in comp_ab.unshared_tasks
+
     row_ab = next(r for r in comp_ab.rows if r.combo == "c" and r.pack == "off" and r.measure == "pass_at_1")
+    # delta point exactly -1/n over shared clean tasks A1, B1 (n = 2) -> -0.5
     assert row_ab.delta.point == Decimal("-0.5")
+    assert row_ab.delta.lo is not None and row_ab.delta.hi is not None
+    assert row_ab.label == "no detectable effect"
 
     comp_ba = board.compare(base=view_b, view=view_a, cat=cat)
     row_ba = next(r for r in comp_ba.rows if r.combo == "c" and r.pack == "off" and r.measure == "pass_at_1")
     assert row_ba.delta.point == Decimal("0.5")
     assert row_ab.delta.point == -row_ba.delta.point
+
+
+def test_ver_a_comparison_composite_delta_refused_when_pass_catalog_differs_from_loaded(tmp_path):
+    """VER-A: composite delta is computed only when both runs' current passes are of the loaded catalog's
+    version; otherwise the area rows are NA with the reason, and pass@1 deltas are still computed.
+    """
+    import yaml
+    root = make_root(tmp_path)
+    m_path = root / "bench" / "metrics.yaml"
+    cat_data = yaml.safe_load(m_path.read_text(encoding="utf-8"))
+    cat_data["version"] = "0.4"
+    m_path.write_text(yaml.dump(cat_data), encoding="utf-8")
+
+    run_a = stats_run(root, tmp_path, run_id="r-ver-a", tasks=("A1", "B1"), reps=1, arms=("off", "on"), combos=["c"])
+    run_b = stats_run(root, tmp_path, run_id="r-ver-b", tasks=("A1", "B1"), reps=1, arms=("off", "on"), combos=["c"])
+    view_a = views.load(run_a)
+    view_b = views.load(run_b)
+    assert view_a.catalog_version == "0.4"
+    assert view_b.catalog_version == "0.4"
+
+    # Loaded catalog has anchors, but version is "0.5.test" != "0.4"
+    cat_anchored = Catalog(
+        version="0.5.test",
+        hash="test-cat-hash",
+        metrics={
+            "partial_credit": {"id": "partial_credit", "kind": "score", "weight": 1, "anchor": [0, 1], "better": "higher"},
+            "pass_at_1": {"id": "pass_at_1", "kind": "score", "weight": 0, "better": "higher"},
+        },
+        areas={"correctness": ("partial_credit", "pass_at_1")},
+        has_anchors=True,
+    )
+    comp_diff = board.compare(base=view_a, view=view_b, cat=cat_anchored)
+
+    p1_row = next(r for r in comp_diff.rows if r.measure == "pass_at_1")
+    assert p1_row.delta.point is not None  # pass@1 delta is still computed
+
+    area_rows = [r for r in comp_diff.rows if r.measure != "pass_at_1"]
+    assert len(area_rows) > 0
+    for ar in area_rows:
+        assert ar.delta.point is None
+        assert ar.delta.reason == "no normalisation anchors for catalog 0.4"
+        assert ar.label is None
+
+    # When loaded catalog version matches both runs' pass catalog version and has anchors:
+    cat_04 = dataclasses.replace(cat_anchored, version="0.4")
+    comp_same = board.compare(base=view_a, view=view_b, cat=cat_04)
+    same_area_rows = [r for r in comp_same.rows if r.measure != "pass_at_1"]
+    assert len(same_area_rows) > 0
+    for ar in same_area_rows:
+        assert ar.delta.point is not None

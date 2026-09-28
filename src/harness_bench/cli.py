@@ -295,13 +295,36 @@ def cmd_report(args) -> int:
             params_kw["resamples"] = resamples
         params = stats.Params(**params_kw)
     board_obj = None
+    cat = None
+    if (root / "bench" / "metrics.yaml").is_file():
+        try:
+            cat = composites.load_catalog(root)
+        except (BenchError, OSError):
+            cat = None
+    if cat is None:
+        cat = composites.Catalog(
+            version=getattr(view, "catalog_version", None) or "0.4",
+            hash="",
+            metrics={},
+            areas={},
+            has_anchors=False,
+        )
+
     if view.grading_id is not None:
-        cat = composites.load_catalog(root)
         board_obj = board.build(view, cat, params=params)
-    text, code = cli_table.render(view, plain=_plain(), run_dir=run_dir, root=root, board_obj=board_obj, params=params)
+
+    baseline = getattr(args, "baseline", None)
+    comp_obj = None
+    if baseline is not None:
+        base_run_dir = Path(args.runs) / baseline
+        status.require_known(base_run_dir)
+        base_view = views.load(base_run_dir)
+        comp_obj = board.compare(base=base_view, view=view, cat=cat, params=params)
+
+    text, code = cli_table.render(view, plain=_plain(), run_dir=run_dir, root=root, board_obj=board_obj, params=params, comparison_obj=comp_obj)
     if code == OK:
         # html.write's credential scan must run before a label reaches the terminal (residual 5).
-        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator(), board_obj=board_obj, params=params)
+        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator(), board_obj=board_obj, params=params, comparison_obj=comp_obj)
         print(text, end="")
         print(f"report: {report_path}")
     else:
@@ -379,6 +402,7 @@ def build_parser() -> argparse.ArgumentParser:
         if name == "report":
             sp.add_argument("--seed", type=int, default=None, help="bootstrap seed (default: 20260927)")
             sp.add_argument("--resamples", type=int, default=None, help="bootstrap resamples (minimum: 2000)")
+            sp.add_argument("--baseline", default=None, help="baseline run id for comparison")
         if name == "status":
             sp.add_argument("--json", action="store_true", help="bench-status/1 on stdout")
         if name == "grade":

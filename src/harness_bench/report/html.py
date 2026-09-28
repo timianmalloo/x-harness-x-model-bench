@@ -336,9 +336,80 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str], run_
     return f'<section id="runs"><h2>Cells</h2>{_table("runs", "Every cell of the run", headers, rows)}</section>'
 
 
+def _comparison(comparison_obj: board.Comparison | str | None) -> str:
+    if comparison_obj is None:
+        return ""
+    if isinstance(comparison_obj, str):
+        diff_text = comparison_obj
+        if not diff_text.startswith("Runs not comparable:"):
+            diff_text = f"Runs not comparable: {diff_text}"
+        return f'<section id="comparison"><h2>Comparison</h2><p>{_e(diff_text)}</p></section>'
+
+    excl = f"<p>{_e(comparison_obj.exclusion_line)}</p>"
+    rep = (
+        f"<p>same pack revision ({_e(comparison_obj.same_pack_revision)}): a replication</p>"
+        if comparison_obj.same_pack_revision
+        else ""
+    )
+    unshared = (
+        f"<p>Tasks in one run only: {_e(', '.join(sorted(comparison_obj.unshared_tasks)))}</p>"
+        if comparison_obj.unshared_tasks
+        else ""
+    )
+    if comparison_obj.rows:
+        headers = [
+            ("Combo", False),
+            ("Pack", False),
+            ("Measure", False),
+            ("Delta", True),
+            ("95% Interval", False),
+            ("Label", False),
+        ]
+        rows = []
+        for cr in comparison_obj.rows:
+            is_p1 = cr.measure == "pass_at_1"
+            if cr.delta.point is not None:
+                delta_str = f"{cr.delta.point:+.2f}" if is_p1 else f"{cr.delta.point:+.1f}"
+            else:
+                delta_str = cr.delta.reason or "NA"
+            if cr.delta.lo is not None and cr.delta.hi is not None:
+                iv_attr = (
+                    f' data-interval-lo="{cr.delta.lo:.2f}" data-interval-hi="{cr.delta.hi:.2f}"'
+                    if is_p1
+                    else f' data-interval-lo="{cr.delta.lo:.1f}" data-interval-hi="{cr.delta.hi:.1f}"'
+                )
+                iv_str = (
+                    f"[{cr.delta.lo:.2f}, {cr.delta.hi:.2f}]"
+                    if is_p1
+                    else f"[{cr.delta.lo:.1f}, {cr.delta.hi:.1f}]"
+                )
+            else:
+                iv_attr = ""
+                iv_str = _e(cr.delta.reason or "interval not computed")
+            label_str = _e(cr.label or "")
+            row = [
+                (_e(cr.combo), False),
+                (_e(cr.pack), False),
+                (_e(cr.measure), False),
+                (_e(delta_str), True, iv_attr),
+                (iv_str, False, iv_attr),
+                (label_str, False),
+            ]
+            rows.append(row)
+        body = _table(
+            "comparison",
+            f"Comparison: {comparison_obj.view_run_id} vs baseline {comparison_obj.base_run_id}",
+            headers,
+            rows,
+        )
+    else:
+        body = "<p>No comparison data.</p>"
+    return f'<section id="comparison"><h2>Comparison</h2>{excl}{rep}{unshared}{body}</section>'
+
+
 def render(view: views.RunView, archive_present: bool, run_dir: Path | None = None, root: Path | None = None,
            operator: egress.Operator | None = None, board_obj: board.Board | None = None,
-           params: stats.Params | None = None) -> str:
+           params: stats.Params | None = None, comparison_obj: board.Comparison | str | None = None) -> str:
     """The page; `root` (the bench root) adds the judge block for a pass that looked up judge verdicts, and
     `operator` (read at run time, never committed) lets it name the classes each judge CLI added."""
     tags = _context_window_tags(run_dir)  # R-32: read from events, not from views.py (ruling R-32 condition 3)
@@ -365,7 +436,7 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
     return ("<!doctype html>\n"
             f'<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
             f"<title>harness-bench run {_e(view.run_id)}</title><style>{STYLE}</style></head>"
-            f"<body><main>{_header(view, tags, _permission_modes(run_dir), judging, root, run_dir, board_obj=board_obj, params=params)}{_validity(view)}{_leaderboard(view, board_obj)}{_pack_effect(board_obj)}{_runs(view, archive_present, tags, run_dir, root)}"
+            f"<body><main>{_header(view, tags, _permission_modes(run_dir), judging, root, run_dir, board_obj=board_obj, params=params)}{_validity(view)}{_leaderboard(view, board_obj)}{_pack_effect(board_obj)}{_runs(view, archive_present, tags, run_dir, root)}{_comparison(comparison_obj)}"
             f"</main></body></html>\n")
 
 
@@ -380,9 +451,9 @@ def scan(text: str, credential_values: set[str] = frozenset()) -> int:
 
 def write(run_dir: Path, view: views.RunView, credential_values: set[str] = frozenset(), root: Path | None = None,
           operator: egress.Operator | None = None, board_obj: board.Board | None = None,
-          params: stats.Params | None = None) -> Path:
+          params: stats.Params | None = None, comparison_obj: board.Comparison | str | None = None) -> Path:
     doc = render(view, archive_present=(run_dir / "archive").is_dir(), run_dir=run_dir, root=root, operator=operator,
-                 board_obj=board_obj, params=params)
+                 board_obj=board_obj, params=params, comparison_obj=comparison_obj)
     found = scan(doc, credential_values)
     if found:
         raise BenchError("HB-SEC-001", f"{found} credential-shaped string(s) in the report; nothing was written")

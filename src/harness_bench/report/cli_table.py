@@ -31,6 +31,7 @@ def render(
     root: Path | None = None,
     board_obj: board.Board | None = None,
     params: stats.Params | None = None,
+    comparison_obj: board.Comparison | None = None,
 ) -> tuple[str, int]:
     rid = view.run_id
     if view.grading_id is None:
@@ -133,6 +134,30 @@ def render(
             label_str = pr.label or ""
             pe_table.add_row(pr.combo, pr.measure, delta_str, iv_str, label_str)
         console.print(pe_table)
+
+    if comparison_obj is not None:
+        console.print(comparison_obj.exclusion_line, markup=False)
+        if comparison_obj.same_pack_revision is not None:
+            console.print(f"same pack revision ({comparison_obj.same_pack_revision}): a replication", markup=False)
+        if comparison_obj.unshared_tasks:
+            console.print(f"Tasks in one run only: {', '.join(sorted(comparison_obj.unshared_tasks))}", markup=False)
+        if comparison_obj.rows:
+            comp_table = Table(box=box_style, title=f"Comparison: {comparison_obj.view_run_id} vs baseline {comparison_obj.base_run_id}")
+            for name, right in (("Combo", False), ("Pack", False), ("Measure", False), ("Delta", True), ("95% Interval", False), ("Label", False)):
+                comp_table.add_column(name, justify="right" if right else "left", no_wrap=True, overflow="fold")
+            for cr in comparison_obj.rows:
+                is_p1 = cr.measure == "pass_at_1"
+                if cr.delta.point is not None:
+                    delta_str = f"{cr.delta.point:+.2f}" if is_p1 else f"{cr.delta.point:+.1f}"
+                else:
+                    delta_str = cr.delta.reason or "NA"
+                if cr.delta.lo is not None and cr.delta.hi is not None:
+                    iv_str = f"[{cr.delta.lo:.2f}, {cr.delta.hi:.2f}]" if is_p1 else f"[{cr.delta.lo:.1f}, {cr.delta.hi:.1f}]"
+                else:
+                    iv_str = cr.delta.reason or "interval not computed"
+                label_str = cr.label or ""
+                comp_table.add_row(cr.combo, cr.pack, cr.measure, delta_str, iv_str, label_str)
+            console.print(comp_table)
 
     not_valid = [c for c in view.cells if c.validity.startswith("invalid") or c.validity == "not recorded"]
     if not_valid:

@@ -13,6 +13,7 @@ from typing import Any
 
 from harness_bench import ledger
 from harness_bench.composites import Catalog
+from harness_bench.composites import area as compute_area
 from harness_bench.composites import gated as compute_gated
 from harness_bench.composites import normalise as compute_normalise
 from harness_bench.errors import BenchError
@@ -102,6 +103,13 @@ class Comparison:
     excluded_tasks: tuple[str, ...]
     unshared_tasks: tuple[str, ...]
     rows: list[ComparisonRow]
+    same_pack_revision: str | None = None
+
+    @property
+    def exclusion_line(self) -> str:
+        if self.excluded_tasks:
+            return f"Excluded as contamination-prone: {', '.join(sorted(self.excluded_tasks))}"
+        return "Excluded as contamination-prone: none in this run"
 
 
 @dataclass
@@ -509,6 +517,18 @@ def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = 
     unshared_tasks = tuple(sorted(set(base_task_vers) ^ set(view_task_vers)))
     excluded_tasks = tuple(t for t in all_tasks if t in CONTAMINATION_PRONE)
 
+    base_rev = (base.plan or {}).get("pack", {}).get("revision")
+    view_rev = (view.plan or {}).get("pack", {}).get("revision")
+    same_pack_revision = base_rev if base_rev is not None and base_rev == view_rev else None
+
+    # VER-A rule (R-78 c3 / design): area composite deltas computed only when both runs' current
+    # passes are of the loaded catalog's version; otherwise area rows are NA with the reason,
+    # and pass@1 deltas are still computed.
+    if base.catalog_version != cat.version or not cat.has_anchors:
+        no_anchors: str | None = f"no normalisation anchors for catalog {base.catalog_version}"
+    else:
+        no_anchors = None
+
     combos = sorted({c.get("id") for c in base.plan.get("matrix", {}).get("combos", []) if c.get("id")})
     packs = ("off", "on")
     measures = ["pass_at_1", *cat.areas]
@@ -518,6 +538,19 @@ def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = 
     for combo in combos:
         for pack in packs:
             for m in measures:
+                if m != "pass_at_1" and no_anchors is not None:
+                    delta_iv = Interval(point=None, lo=None, hi=None, n=0, reason=no_anchors)
+                    comp_rows.append(
+                        ComparisonRow(
+                            combo=combo,
+                            pack=pack,
+                            measure=m,
+                            delta=delta_iv,
+                            label=None,
+                        )
+                    )
+                    continue
+
                 base_cells = [
                     c for c in base.cells
                     if c.combo == combo
@@ -536,6 +569,13 @@ def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = 
                 obs_a: list[Obs] = []
                 for c in base_cells:
                     score = c.scores.get(m)
+                    if (score is None or score.value is None) and m != "pass_at_1":
+                        norm_scores = {
+                            mid: compute_normalise(mid, s, cat, base.catalog_version, cat.hash)
+                            for mid, s in c.scores.items()
+                        }
+                        all_scores = {**c.scores, **norm_scores}
+                        score, _ = compute_area(all_scores, m, cat)
                     if score is not None and score.value is not None:
                         t, r, _ = _cell_task_rep(c.cell_id, base_plan_by_id)
                         obs_a.append(Obs(task=t, rep=r, value=Decimal(str(score.value))))
@@ -543,6 +583,13 @@ def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = 
                 obs_b: list[Obs] = []
                 for c in view_cells:
                     score = c.scores.get(m)
+                    if (score is None or score.value is None) and m != "pass_at_1":
+                        norm_scores = {
+                            mid: compute_normalise(mid, s, cat, view.catalog_version, cat.hash)
+                            for mid, s in c.scores.items()
+                        }
+                        all_scores = {**c.scores, **norm_scores}
+                        score, _ = compute_area(all_scores, m, cat)
                     if score is not None and score.value is not None:
                         t, r, _ = _cell_task_rep(c.cell_id, view_plan_by_id)
                         obs_b.append(Obs(task=t, rep=r, value=Decimal(str(score.value))))
@@ -567,6 +614,7 @@ def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = 
         excluded_tasks=excluded_tasks,
         unshared_tasks=unshared_tasks,
         rows=comp_rows,
+        same_pack_revision=same_pack_revision,
     )
 
 
