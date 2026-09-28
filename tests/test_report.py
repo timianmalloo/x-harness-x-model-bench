@@ -1235,3 +1235,359 @@ def test_pack_effect_units_get_separate_panels():
         "-- it collapsed onto the area panel's 0-100 scale"
     )
 
+
+def test_chart_equals_table():
+    """UIA-13 (design s12, s15): each chart's marks carry data-combo (and data-pack where mark
+    is per pack) with the legend token and data-interval-* or data-value attributes equal to its table's cells,
+    tested for both Cost frontier and Areas."""
+    view = _state_view("valid", None)
+    frontier_rows = [
+        board.FrontierRow(
+            combo="c1",
+            pack="on",
+            pass_at_1=stats.Interval(point=Decimal("0.80"), lo=Decimal("0.40"), hi=Decimal("1.00"), n=6, reason=None),
+            cost_per_task=stats.Measure(Decimal("1.25"), reason=None),
+            tokens_per_solved=stats.Measure(Decimal(50000), reason=None),
+            wall_per_task=stats.Measure(Decimal(120000), reason=None),
+        ),
+        board.FrontierRow(
+            combo="c1",
+            pack="off",
+            pass_at_1=stats.Interval(point=Decimal("0.60"), lo=Decimal("0.20"), hi=Decimal("0.90"), n=6, reason=None),
+            cost_per_task=stats.Measure(Decimal("0.75"), reason=None),
+            tokens_per_solved=stats.Measure(Decimal(30000), reason=None),
+            wall_per_task=stats.Measure(Decimal(80000), reason=None),
+        ),
+    ]
+    areas_rows = [
+        board.AreaRow(
+            combo="c1",
+            pack="on",
+            area="correctness",
+            interval=stats.Interval(point=Decimal("85.0"), lo=Decimal("70.0"), hi=Decimal("95.0"), n=6, reason=None),
+        ),
+        board.AreaRow(
+            combo="c1",
+            pack="off",
+            area="correctness",
+            interval=stats.Interval(point=Decimal("75.0"), lo=Decimal("60.0"), hi=Decimal("90.0"), n=6, reason=None),
+        ),
+        board.AreaRow(
+            combo="c1",
+            pack="on",
+            area="rigor",
+            interval=stats.Interval(point=Decimal("65.0"), lo=Decimal("50.0"), hi=Decimal("80.0"), n=6, reason=None),
+        ),
+        board.AreaRow(
+            combo="c1",
+            pack="off",
+            area="rigor",
+            interval=stats.Interval(point=Decimal("55.0"), lo=Decimal("40.0"), hi=Decimal("70.0"), n=6, reason=None),
+        ),
+    ]
+    board_obj = board.Board(
+        run_id="r1",
+        catalog_version="0.5",
+        params=stats.Params(),
+        primary="gated",
+        primary_reason=None,
+        rows=[
+            board.BoardRow(
+                combo="c1",
+                harness="h",
+                model="m",
+                pack="on",
+                rank="1",
+                rank_reason=None,
+                n_valid=6,
+                n_cells=6,
+                gated=stats.Interval(point=Decimal("80.0"), lo=Decimal("60.0"), hi=Decimal("95.0"), n=6, reason=None),
+                pass_at_1=stats.Interval(point=Decimal("0.80"), lo=Decimal("0.40"), hi=Decimal("1.00"), n=6, reason=None),
+                pass_at_k=stats.Measure(Decimal("0.80")),
+                pass_hat_k=stats.Measure(Decimal("0.80")),
+                tokens=stats.Measure(Decimal(50000)),
+                wall_ms=stats.Measure(Decimal(120000)),
+                cost_usd=stats.Measure(Decimal("1.25")),
+                cost_of_pass=stats.Measure(Decimal("1.56")),
+            ),
+            board.BoardRow(
+                combo="c1",
+                harness="h",
+                model="m",
+                pack="off",
+                rank="2",
+                rank_reason=None,
+                n_valid=6,
+                n_cells=6,
+                gated=stats.Interval(point=Decimal("70.0"), lo=Decimal("50.0"), hi=Decimal("85.0"), n=6, reason=None),
+                pass_at_1=stats.Interval(point=Decimal("0.60"), lo=Decimal("0.20"), hi=Decimal("0.90"), n=6, reason=None),
+                pass_at_k=stats.Measure(Decimal("0.60")),
+                pass_hat_k=stats.Measure(Decimal("0.60")),
+                tokens=stats.Measure(Decimal(30000)),
+                wall_ms=stats.Measure(Decimal(80000)),
+                cost_usd=stats.Measure(Decimal("0.75")),
+                cost_of_pass=stats.Measure(Decimal("1.25")),
+            ),
+        ],
+        pack_effect=board.PackEffect(status=None, excluded_tasks=(), rows=[]),
+        frontier=frontier_rows,
+        areas=areas_rows,
+    )
+    doc = html.render(view, archive_present=True, board_obj=board_obj)
+
+    # 1. Cost frontier chart vs table
+    cf_match = re.search(r'<section id="cost-frontier".*?</section>', doc, re.DOTALL)
+    assert cf_match is not None, "cost-frontier section not found"
+    cf_sec = cf_match.group(0)
+
+    # Check chart marks and whisker lines have data-combo and data-pack
+    cf_whiskers = re.findall(
+        r'<line[^>]*class="[^"]*\bwhisk\b[^"]*"[^>]*data-combo="([^"]+)"[^>]*data-pack="([^"]+)"[^>]*data-interval-lo="([^"]+)"[^>]*data-interval-hi="([^"]+)"',
+        cf_sec,
+    )
+    assert len(cf_whiskers) >= 2, "whisker marks with data-combo and data-pack must be present in cost-frontier"
+    cf_table_rows = re.findall(
+        r'<tr[^>]*data-combo="([^"]+)"[^>]*data-pack="([^"]+)"',
+        cf_sec,
+    )
+    assert len(cf_table_rows) >= 2, "cost-frontier table rows must carry data-combo and data-pack"
+
+    # 2. Areas radar chart vs table
+    ar_match = re.search(r'<section id="areas".*?</section>', doc, re.DOTALL)
+    assert ar_match is not None, "areas section not found"
+    ar_sec = ar_match.group(0)
+
+    ar_marks = re.findall(
+        r'<circle[^>]*data-combo="([^"]+)"[^>]*data-pack="([^"]+)"[^>]*data-area="([^"]+)"[^>]*data-value="([^"]+)"',
+        ar_sec,
+    )
+    assert len(ar_marks) >= 4, "area marks must carry data-combo, data-pack, data-area and data-value"
+    ar_table_cells = re.findall(
+        r'<td[^>]*data-area="([^"]+)"[^>]*data-value="([^"]+)"',
+        ar_sec,
+    )
+    assert len(ar_table_cells) >= 4, "area table cells must carry data-area and data-value"
+    for _, _, m_a, m_val in ar_marks:
+        assert (m_a, m_val) in ar_table_cells
+
+
+def test_empty_run_draws_no_axes(root, tmp_path):
+    """UXA-8 (design s12, s15): an empty run renders the header, banner and the empty copy,
+    and no svg with axes in either cost-frontier or areas section."""
+    _, view = _graded(root, tmp_path, {"a": GOOD}, outcomes={"a": {"outcome": "failed", "cause": "spawn", "code": "HB-CELL-114"}})
+    doc = html.render(view, archive_present=True)
+
+    # 1. Header and banner rendered
+    assert '<section id="header">' in doc
+    assert '<section id="validity">' in doc
+
+    # 2. cost-frontier section rendered with empty copy and no svg with axes
+    cf_match = re.search(r'<section id="cost-frontier".*?</section>', doc, re.DOTALL)
+    assert cf_match is not None, "cost-frontier section must be present"
+    cf_sec = cf_match.group(0)
+    assert "No completed cells to plot." in cf_sec
+    assert "<svg" not in cf_sec
+
+    # 3. areas section rendered with empty copy and no svg with axes
+    ar_match = re.search(r'<section id="areas".*?</section>', doc, re.DOTALL)
+    assert ar_match is not None, "areas section must be present"
+    ar_sec = ar_match.group(0)
+    assert "No completed cells to plot." in ar_sec
+    assert "<svg" not in ar_sec
+
+
+def test_cost_frontier_all_cost_na_renders_sentence_and_no_axes():
+    """Design s6 row 5: all cost NA (smoke-1): the cost panel shows 'Cost not recorded for any combo:
+    no price list entry for <models>.' with no axes; the other two panels still draw."""
+    view = _state_view("valid", None)
+    frontier_rows = [
+        board.FrontierRow(
+            combo="c1",
+            pack="on",
+            pass_at_1=stats.Interval(point=Decimal("0.80"), lo=Decimal("0.40"), hi=Decimal("1.00"), n=6, reason=None),
+            cost_per_task=stats.Measure(None, reason="no price list entry for gpt-6-sol"),
+            tokens_per_solved=stats.Measure(Decimal(50000), reason=None),
+            wall_per_task=stats.Measure(Decimal(120000), reason=None),
+        ),
+    ]
+    board_obj = board.Board(
+        run_id="r1",
+        catalog_version="0.5",
+        params=stats.Params(),
+        primary="gated",
+        primary_reason=None,
+        rows=[
+            board.BoardRow(
+                combo="c1",
+                harness="h",
+                model="m",
+                pack="on",
+                rank="1",
+                rank_reason=None,
+                n_valid=6,
+                n_cells=6,
+                gated=stats.Interval(point=Decimal("80.0"), lo=Decimal("60.0"), hi=Decimal("95.0"), n=6, reason=None),
+                pass_at_1=stats.Interval(point=Decimal("0.80"), lo=Decimal("0.40"), hi=Decimal("1.00"), n=6, reason=None),
+                pass_at_k=stats.Measure(Decimal("0.80")),
+                pass_hat_k=stats.Measure(Decimal("0.80")),
+                tokens=stats.Measure(Decimal(50000)),
+                wall_ms=stats.Measure(Decimal(120000)),
+                cost_usd=stats.Measure(None, reason="no price list entry for gpt-6-sol"),
+                cost_of_pass=stats.Measure(None, reason="no price list entry for gpt-6-sol"),
+            ),
+        ],
+        pack_effect=board.PackEffect(status=None, excluded_tasks=(), rows=[]),
+        frontier=frontier_rows,
+        areas=[],
+    )
+    doc = html.render(view, archive_present=True, board_obj=board_obj)
+    cf_match = re.search(r'<section id="cost-frontier".*?</section>', doc, re.DOTALL)
+    assert cf_match is not None, "cost-frontier section must be present"
+    cf_sec = cf_match.group(0)
+
+    assert "Cost not recorded for any combo: no price list entry for gpt-6-sol." in cf_sec
+    # The cost figure must have no svg axes, while tokens and wall figures do have svg
+    cost_fig = re.search(r'<figure[^>]*>.*?Cost not recorded.*?</figure>', cf_sec, re.DOTALL)
+    assert cost_fig is not None
+    assert "<svg" not in cost_fig.group(0)
+    assert "<svg" in cf_sec  # other panels still draw
+
+
+def test_areas_radar_na_axis_drawn_hollow_with_na_tick():
+    """Design s6 row 6: an area NA: the axis is drawn hollow with an NA tick; all NA:
+    'No area composites for this run: <reason>.'"""
+    view = _state_view("valid", None)
+    # Case 1: one area NA, one area valid
+    areas_rows = [
+        board.AreaRow(
+            combo="c1",
+            pack="on",
+            area="correctness",
+            interval=stats.Interval(point=Decimal("85.0"), lo=Decimal("70.0"), hi=Decimal("95.0"), n=6, reason=None),
+        ),
+        board.AreaRow(
+            combo="c1",
+            pack="on",
+            area="cost",
+            interval=stats.Interval(point=None, lo=None, hi=None, n=0, reason="not computed"),
+        ),
+    ]
+    board_obj = board.Board(
+        run_id="r1",
+        catalog_version="0.5",
+        params=stats.Params(),
+        primary="gated",
+        primary_reason=None,
+        rows=[
+            board.BoardRow(
+                combo="c1",
+                harness="h",
+                model="m",
+                pack="on",
+                rank="1",
+                rank_reason=None,
+                n_valid=6,
+                n_cells=6,
+                gated=stats.Interval(point=Decimal("80.0"), lo=Decimal("60.0"), hi=Decimal("95.0"), n=6, reason=None),
+                pass_at_1=stats.Interval(point=Decimal("0.80"), lo=Decimal("0.40"), hi=Decimal("1.00"), n=6, reason=None),
+                pass_at_k=stats.Measure(Decimal("0.80")),
+                pass_hat_k=stats.Measure(Decimal("0.80")),
+                tokens=stats.Measure(Decimal(50000)),
+                wall_ms=stats.Measure(Decimal(120000)),
+                cost_usd=stats.Measure(Decimal("1.25")),
+                cost_of_pass=stats.Measure(Decimal("1.56")),
+            ),
+        ],
+        pack_effect=board.PackEffect(status=None, excluded_tasks=(), rows=[]),
+        frontier=[],
+        areas=areas_rows,
+    )
+    doc = html.render(view, archive_present=True, board_obj=board_obj)
+    ar_match = re.search(r'<section id="areas".*?</section>', doc, re.DOTALL)
+    assert ar_match is not None, "areas section must be present"
+    ar_sec = ar_match.group(0)
+
+    # NA axis is drawn hollow with an NA tick
+    assert re.search(r'<line[^>]*class="[^"]*\bna\b[^"]*\bhollow\b[^"]*"', ar_sec) is not None
+    assert re.search(r'<text[^>]*class="[^"]*\bna\b[^"]*"[^>]*>.*?NA.*?</text>', ar_sec) is not None
+
+    # Case 2: all NA
+    all_na_areas = [
+        board.AreaRow(
+            combo="c1",
+            pack="on",
+            area="correctness",
+            interval=stats.Interval(point=None, lo=None, hi=None, n=0, reason="no normalisation anchors for catalog 0.4"),
+        ),
+    ]
+    board_all_na = board.Board(
+        run_id="r1",
+        catalog_version="0.4",
+        params=stats.Params(),
+        primary="pass_at_1",
+        primary_reason="no normalisation anchors",
+        rows=board_obj.rows,
+        pack_effect=board_obj.pack_effect,
+        frontier=[],
+        areas=all_na_areas,
+    )
+    doc_na = html.render(view, archive_present=True, board_obj=board_all_na)
+    ar_na_match = re.search(r'<section id="areas".*?</section>', doc_na, re.DOTALL)
+    assert ar_na_match is not None
+    assert "No area composites for this run: no normalisation anchors for catalog 0.4." in ar_na_match.group(0)
+    assert "<svg" not in ar_na_match.group(0)
+
+
+def test_cli_table_prints_ascii_area_headline_line():
+    """UIA-11: report/cli_table.py prints an ASCII area headline line per (combo, pack) that
+    passes the plain-output rules."""
+    view = _state_view("valid", None)
+    areas_rows = [
+        board.AreaRow(
+            combo="c1",
+            pack="on",
+            area="correctness",
+            interval=stats.Interval(point=Decimal("85.0"), lo=Decimal("70.0"), hi=Decimal("95.0"), n=6, reason=None),
+        ),
+        board.AreaRow(
+            combo="c1",
+            pack="on",
+            area="cost",
+            interval=stats.Interval(point=None, lo=None, hi=None, n=0, reason="no price list entry"),
+        ),
+    ]
+    board_obj = board.Board(
+        run_id="r1",
+        catalog_version="0.5",
+        params=stats.Params(),
+        primary="gated",
+        primary_reason=None,
+        rows=[
+            board.BoardRow(
+                combo="c1",
+                harness="h",
+                model="m",
+                pack="on",
+                rank="1",
+                rank_reason=None,
+                n_valid=6,
+                n_cells=6,
+                gated=stats.Interval(point=Decimal("80.0"), lo=Decimal("60.0"), hi=Decimal("95.0"), n=6, reason=None),
+                pass_at_1=stats.Interval(point=Decimal("0.80"), lo=Decimal("0.40"), hi=Decimal("1.00"), n=6, reason=None),
+                pass_at_k=stats.Measure(Decimal("0.80")),
+                pass_hat_k=stats.Measure(Decimal("0.80")),
+                tokens=stats.Measure(Decimal(50000)),
+                wall_ms=stats.Measure(Decimal(120000)),
+                cost_usd=stats.Measure(Decimal("1.25")),
+                cost_of_pass=stats.Measure(Decimal("1.56")),
+            ),
+        ],
+        pack_effect=board.PackEffect(status=None, excluded_tasks=(), rows=[]),
+        frontier=[],
+        areas=areas_rows,
+    )
+    out, code = cli_table.render(view, plain=True, board_obj=board_obj)
+    assert code == 0
+    assert out.isascii()
+    assert "Areas (c1 on): correctness 85.0, cost NA (no price list entry)" in out
+
