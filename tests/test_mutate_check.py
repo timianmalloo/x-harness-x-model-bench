@@ -715,6 +715,6 @@ def test_every_named_test_in_the_mutation_sets_exists():
                 func = re.split(r"[\[:]", name)[0]
                 if not source.is_file() or (func and not re.search(
                         rf"^\s*(async\s+)?def {re.escape(func)}\b|^class {re.escape(func)}\b",
-                        source.read_text(encoding="utf-8"), re.M)):
+                        source.read_text(encoding="utf-8"), re.MULTILINE)):
                     stale.append(f"{spec.name}: {m['name']} -> {node}")
     assert stale == []
