@@ -202,3 +202,61 @@ def test_each_rubrics_value_must_name_an_existing_file(tmp_path):
     path.write_text(text.replace(old, "rubrics: { C1: missing.md }"), encoding="utf-8")
     assert _rubric_problems(root) == [(f"bench/metrics.yaml: {area}.adr_quality: rubrics C1 names bench/rubrics/missing.md, "
                                        "which does not exist")]
+
+
+# --- metric anchor and weight validations (R-78 condition 2, R-79 DR-C1; seam Z-4) -----------------
+
+
+def test_weighted_score_metric_without_anchor_is_refused():
+    metrics = config.load_yaml(ROOT / "bench" / "metrics.yaml")
+    m = next(m for a in metrics["areas"].values() for m in a["metrics"] if m.get("kind") == "score" and m.get("weight", 0) > 0 and "anchor" in m)
+    del m["anchor"]
+    p = config.Problems()
+    config.validate_metrics(metrics, p, config.grader_modules(ROOT), root=ROOT)
+    assert any("weighted kind: score metric has no anchor" in i for i in p.items)
+
+
+def test_anchor_worst_equals_best_is_refused():
+    metrics = config.load_yaml(ROOT / "bench" / "metrics.yaml")
+    m = next(m for a in metrics["areas"].values() for m in a["metrics"] if "anchor" in m)
+    m["anchor"] = [1.0, 1.0]
+    p = config.Problems()
+    config.validate_metrics(metrics, p, config.grader_modules(ROOT), root=ROOT)
+    assert any("anchor worst == best" in i for i in p.items)
+
+
+def test_anchor_direction_contradicting_better_is_refused():
+    metrics = config.load_yaml(ROOT / "bench" / "metrics.yaml")
+    m = next(m for a in metrics["areas"].values() for m in a["metrics"] if m.get("better") == "higher" and "anchor" in m)
+    m["anchor"] = [10.0, 0.0]
+    p = config.Problems()
+    config.validate_metrics(metrics, p, config.grader_modules(ROOT), root=ROOT)
+    assert any("anchor direction contradicts better" in i for i in p.items)
+
+
+def test_derived_metric_with_positive_weight_is_refused():
+    metrics = config.load_yaml(ROOT / "bench" / "metrics.yaml")
+    m = next(m for a in metrics["areas"].values() for m in a["metrics"] if m.get("kind") == "derived")
+    m["weight"] = 1
+    p = config.Problems()
+    config.validate_metrics(metrics, p, config.grader_modules(ROOT), root=ROOT)
+    assert any("kind: derived metric cannot have weight > 0" in i for i in p.items)
+
+
+def test_judged_metric_with_rubric_and_wrong_anchor_span_is_refused():
+    metrics = config.load_yaml(ROOT / "bench" / "metrics.yaml")
+    m = next(m for a in metrics["areas"].values() for m in a["metrics"] if m.get("grader") == "judge" and m.get("rubrics"))
+    m["anchor"] = [0.0, 10.0]  # adr_quality has 7 items, so span must be 14
+    p = config.Problems()
+    config.validate_metrics(metrics, p, config.grader_modules(ROOT), root=ROOT)
+    assert any("|best - worst| != 2 x rubric item count" in i for i in p.items)
+
+
+def test_better_lower_judged_rubric_must_define_2_as_worst_per_item_is_refused():
+    metrics = config.load_yaml(ROOT / "bench" / "metrics.yaml")
+    m = next(m for a in metrics["areas"].values() for m in a["metrics"] if m.get("grader") == "judge" and m.get("rubrics"))
+    m["better"] = "lower"
+    m["anchor"] = [28.0, 14.0]  # span is 14 (2 x 7), but worst is 28, not 2 x 7
+    p = config.Problems()
+    config.validate_metrics(metrics, p, config.grader_modules(ROOT), root=ROOT)
+    assert any("a better: lower judged rubric must define 2 as worst per item" in i for i in p.items)
