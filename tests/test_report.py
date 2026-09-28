@@ -1235,3 +1235,178 @@ def test_pack_effect_units_get_separate_panels():
         "-- it collapsed onto the area panel's 0-100 scale"
     )
 
+
+def _legend_board_row(combo: str) -> board.BoardRow:
+    """A leaderboard row whose only job is to put `combo` on the legend. `_combo_index` reads
+    `board.rows` in first-appearance order; the pack-effect rows alone never mint a cN token."""
+    na_iv = stats.Interval(point=None, lo=None, hi=None, n=0, reason="not recorded")
+    na = stats.Measure(None, "not recorded")
+    return board.BoardRow(
+        combo=combo, pack="on", harness="copilot", model="gpt-6-sol",
+        n_cells=2, n_valid=2, pass_at_1=na_iv, gated=na_iv,
+        pass_at_k=na, pass_hat_k=na, rank="1", rank_reason=None,
+        tokens=na, wall_ms=na, cost_usd=na, cost_of_pass=na,
+    )
+
+
+def _attr(attrs: str, name: str) -> str | None:
+    found = re.search(rf'\b{name}="([^"]*)"', attrs)
+    return found.group(1) if found else None
+
+
+def _mark_groups(section: str) -> list[dict[str, str]]:
+    """Each whisker mark group in document order: the row label, its whisker line, its dot.
+
+    Axis and tick `<text>`/`<line>` elements are not marks of a combo (design section 6: hiding a
+    combo hides its rows and marks, not the shared zero)."""
+    pattern = re.compile(
+        r'<text\b([^>]*)>([^<]*)</text>|<line\b([^/>]*)/>|<circle\b([^/>]*)/>'
+    )
+    groups: list[dict[str, str]] = []
+    current: dict[str, str] | None = None
+    for match in pattern.finditer(section):
+        if match.group(1) is not None:
+            attrs, body = match.group(1), match.group(2)
+            if _attr(attrs, "x") != "4":
+                continue
+            assert current is None, f"row label {body!r} started before the previous mark closed"
+            current = {"label_attrs": attrs, "label": body}
+        elif match.group(3) is not None:
+            attrs = match.group(3)
+            if "whisk" not in (_attr(attrs, "class") or ""):
+                continue
+            assert current is not None and "line_attrs" not in current
+            current["line_attrs"] = attrs
+        else:
+            attrs = match.group(4) or ""
+            assert current is not None and "line_attrs" in current and "dot_attrs" not in current
+            current["dot_attrs"] = attrs
+            groups.append(current)
+            current = None
+    assert current is None, "a mark group closed without its dot"
+    return groups
+
+
+def test_pack_effect_marks_and_rows_carry_the_legend_combo_token():
+    """Design section 6: unless a section says otherwise, it follows the combo legend.
+
+    Pack effect is the on-minus-off difference, so the pack switch does not hide it (the disabled
+    reason lives in report.js). Every whisker mark (the line, its dot and its row label) and every
+    delta-table row carries that combo's `_combo_index` token and never `data-pack`. Comparison rows are one
+    pack arm, so the same mark group and each table row carry `data-combo` and `data-pack`.
+    Combo names are not the tokens: stamping `data-combo` with the combo's own name cannot pass.
+    """
+    alpha, beta = "alpha", "beta"
+    view = _state_view("valid", None)
+    pe_rows = [
+        board.PackEffectRow(
+            combo=alpha, measure="pass_at_1",
+            delta=stats.Interval(point=Decimal("0.20"), lo=Decimal("0.05"), hi=Decimal("0.35"), n=4, reason=None),
+            label=None,
+        ),
+        board.PackEffectRow(
+            combo=beta, measure="pass_at_1",
+            delta=stats.Interval(point=Decimal("-0.10"), lo=Decimal("-0.30"), hi=Decimal("-0.02"), n=4, reason=None),
+            label=None,
+        ),
+        board.PackEffectRow(
+            combo=alpha, measure="correctness",
+            delta=stats.Interval(point=Decimal("8.0"), lo=Decimal("1.0"), hi=Decimal("15.0"), n=4, reason=None),
+            label=None,
+        ),
+        board.PackEffectRow(
+            combo=beta, measure="gated",
+            delta=stats.Interval(point=None, lo=None, hi=None, n=0, reason="not computed (no area score in pack=off)"),
+            label=None,
+        ),
+    ]
+    comp_rows = [
+        board.ComparisonRow(
+            combo=alpha, pack="on", measure="pass_at_1",
+            delta=stats.Interval(point=Decimal("0.10"), lo=Decimal("0.02"), hi=Decimal("0.18"), n=4, reason=None),
+            label=None,
+        ),
+        board.ComparisonRow(
+            combo=beta, pack="off", measure="gated",
+            delta=stats.Interval(point=Decimal("-4.0"), lo=Decimal("-9.0"), hi=Decimal("-1.0"), n=4, reason=None),
+            label=None,
+        ),
+    ]
+    board_obj = board.Board(
+        run_id="r1", catalog_version="0.5", params=stats.Params(),
+        primary="gated", primary_reason=None,
+        rows=[_legend_board_row(alpha), _legend_board_row(beta)],
+        pack_effect=board.PackEffect(status=None, excluded_tasks=(), rows=pe_rows),
+    )
+    comparison = board.Comparison(
+        base_run_id="r0", view_run_id="r1", excluded_tasks=(), unshared_tasks=(),
+        rows=comp_rows, same_pack_revision=None,
+    )
+    doc = html.render(view, archive_present=True, board_obj=board_obj, comparison_obj=comparison)
+    combo_ix = html._combo_index(board_obj)
+    assert combo_ix == {alpha: "c1", beta: "c2"}
+    legend = re.search(r'id="legend"(.*?)</div>', doc, re.DOTALL)
+    assert legend is not None
+    for combo, token in combo_ix.items():
+        assert re.search(rf'data-combo="{token}"[^>]*>{combo}</button>', legend.group(1)), (
+            f"legend button for {combo} is not {token}"
+        )
+
+    pe = re.search(r'<section id="pack-effect".*?</section>', doc, re.DOTALL)
+    assert pe is not None
+    pe_sec = pe.group(0)
+    groups = _mark_groups(pe_sec)
+    assert len(groups) == 3, "two pass@1 marks and one area mark; the uncomputed row has no mark"
+    for group in groups:
+        combo = group["label"].split(" ", 1)[0]
+        token = combo_ix[combo]
+        for part in ("label_attrs", "line_attrs", "dot_attrs"):
+            got = _attr(group[part], "data-combo")
+            assert got == token, (
+                f"pack-effect {part} for {combo!r} ({group['label']!r}) has data-combo {got!r}, "
+                f"legend token is {token!r}"
+            )
+            assert _attr(group[part], "data-pack") is None, (
+                f"pack-effect {part} for {combo!r} carries data-pack; a pack effect is both settings"
+            )
+    assert "data-pack=" not in pe_sec
+
+    tbody = re.search(r"<tbody>(.*?)</tbody>", pe_sec, re.DOTALL)
+    assert tbody is not None
+    body_rows = re.findall(r"<tr\b([^>]*)>(.*?)</tr>", tbody.group(1), re.DOTALL)
+    assert len(body_rows) == 4  # the uncomputed beta row is still a table row
+    for attrs, inner in body_rows:
+        combo = re.search(r"<td>([^<]*)</td>", inner).group(1)
+        got = _attr(attrs, "data-combo")
+        assert got == combo_ix[combo], (
+            f"pack-effect table row for {combo!r} has data-combo {got!r}, legend token is {combo_ix[combo]!r}"
+        )
+        assert _attr(attrs, "data-pack") is None
+
+    comp = re.search(r'<section id="comparison".*?</section>', doc, re.DOTALL)
+    assert comp is not None
+    comp_sec = comp.group(0)
+    comp_groups = _mark_groups(comp_sec)
+    assert len(comp_groups) == 2
+    for group in comp_groups:
+        combo, pack = group["label"].split(" ", 2)[:2]
+        token = combo_ix[combo]
+        for part in ("label_attrs", "line_attrs", "dot_attrs"):
+            got = _attr(group[part], "data-combo")
+            assert got == token, (
+                f"comparison {part} for {combo!r} has data-combo {got!r}, legend token is {token!r}"
+            )
+            assert _attr(group[part], "data-pack") == pack, (
+                f"comparison {part} for {combo!r} has data-pack {_attr(group[part], 'data-pack')!r}, "
+                f"row pack is {pack!r}"
+            )
+    comp_body = re.search(r"<tbody>(.*?)</tbody>", comp_sec, re.DOTALL)
+    assert comp_body is not None
+    comp_rows_html = re.findall(r"<tr\b([^>]*)>(.*?)</tr>", comp_body.group(1), re.DOTALL)
+    assert len(comp_rows_html) == 2
+    for attrs, inner in comp_rows_html:
+        cells = re.findall(r"<td[^>]*>([^<]*)</td>", inner)
+        combo, pack = cells[0], cells[1]
+        assert _attr(attrs, "data-combo") == combo_ix[combo]
+        assert _attr(attrs, "data-pack") == pack
+
