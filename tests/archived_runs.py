@@ -118,7 +118,8 @@ def set_prices(root: Path, entries: list[dict]) -> str:
 def make_run(root: Path, tmp_path: Path, cells: dict[str, str | None], harness: str = "codex", archived: set[str] | None = None,
              timeout: int = 900, turn_usage: list[dict] | None = None, outcomes: dict[str, dict] | None = None,
              model: str = CODEX_MODEL, combos: dict[str, str] | None = None, unstarted: tuple[str, ...] = (),
-             context_window_tag: dict[str, str] | None = None, native_record: Path | None = None) -> Path:
+             context_window_tag: dict[str, str] | None = None, native_record: Path | None = None,
+             run_completed_mono_ns: int | None = None) -> Path:
     """An archived run: one cell per entry of `cells` (cell_id -> slug.py source, or None for no working copy).
 
     `outcomes` overrides a cell's `cell.outcome` fields (default: completed); `combos` names each cell's combo;
@@ -126,6 +127,8 @@ def make_run(root: Path, tmp_path: Path, cells: dict[str, str | None], harness: 
     `attempt.process_ended.context_window_tag` (R-32; default None, as engine.py records for an untagged cell);
     `native_record` overrides the default fixture copied to each archived cell's native record path
     (`_DEFAULT_RECORD[harness]`, Codex when `harness` names none), for a test that needs a mutated record.
+    `run_completed_mono_ns` appends a `run.completed` event at this `mono_ns` (paired with `run.started`'s own
+    `mono_ns` 0, R2's run-level wall clock); default None adds no `run.completed` event, as before.
     """
     run_dir = tmp_path / "runs" / "r1"
     run_dir.mkdir(parents=True)
@@ -143,7 +146,7 @@ def make_run(root: Path, tmp_path: Path, cells: dict[str, str | None], harness: 
     archived = set(cells) if archived is None else archived
     with ledger.SegmentWriter.create(run_dir / "events", "engine-1") as ev, \
             ledger.SegmentWriter.create(run_dir / "archive_files", "engine-1") as af:
-        ev.append({"kind": "run.started", "run_id": "r1"})
+        ev.append({"kind": "run.started", "run_id": "r1", "mono_ns": 0})
         for cid, source in cells.items():
             for kind in ("cell.launch_intent", "cell.workspace_built"):
                 ev.append({"kind": kind, "cell_id": cid})
@@ -170,6 +173,9 @@ def make_run(root: Path, tmp_path: Path, cells: dict[str, str | None], harness: 
                 af.append({"kind": "archive_file", "run_id": "r1", "cell_id": cid, **row})
             ev.append({"kind": "cell.archived", "cell_id": cid, "archive_attempt": 1, "archive_hash": archive.archive_hash(rows)})
             ev.append({"kind": "cell.workspace_deleted", "cell_id": cid})
+        if run_completed_mono_ns is not None:
+            ev.append({"kind": "run.completed", "run_id": "r1", "mono_ns": run_completed_mono_ns,
+                       "segment_heads": {}, "cells_ended": len(cells)})
     if turn_usage is not None:
         with ledger.SegmentWriter.create(run_dir / "turn_usage", "engine-1") as tu:
             for row in turn_usage:
