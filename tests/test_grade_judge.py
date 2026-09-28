@@ -326,10 +326,12 @@ def test_no_view_counts_verdict_uses_rows_as_calls():
 
     Reviewed: `report/judges.py` `facts` (slice 5) reads the pass's rows to join the two judges' verdicts per item
     (`agreement` counts items, which is the rows' grain) and counts judge spend by native session in `model_calls`,
-    never by rows."""
+    never by rows.
+    Reviewed: `report/judges.py` `injection_items` (EGRESS s2, US-46 c2) reads the pass's rows only for the distinct
+    (cell, metric) pairs whose artifacts it scans; it counts nothing."""
     src = ROOT / "src" / "harness_bench"
     writers = {"grade/judge.py", "gateway/store.py"}
-    reviewed = {("report/judges.py", "facts")}
+    reviewed = {("report/judges.py", "facts"), ("report/judges.py", "injection_items")}
     found = []
     for path in sorted(src.rglob("*.py")):
         rel = path.relative_to(src).as_posix()

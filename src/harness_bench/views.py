@@ -30,6 +30,7 @@ Rules, each defined once here:
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field, fields
 from datetime import datetime
 from decimal import Decimal
@@ -274,6 +275,26 @@ def judge_calls(uses: list[dict]) -> dict[tuple[str, str | None], int]:
         call = (r["grading_id"], r["cell_id"], r["item_id"].rsplit("#", 1)[0], r["judge_or_matcher"])
         calls.setdefault((r["outcome"], r["code"]), set()).add(call)
     return {k: len(v) for k, v in sorted(calls.items(), key=lambda kv: (kv[0][0], kv[0][1] or ""))}
+
+
+# US-46 c2 (design phase3-gateway-judges section 10.3): instruction-shaped text in an artifact a judge reads. A flag
+# is derived at report time and never stored (DM7); it never changes a score. A new pattern is a new version.
+INJECTION_PATTERNS_VERSION = "1"
+_INJECTION_PATTERNS = {"1": (
+    ("ignore_instructions", re.compile(r"\b(?:ignore|disregard|forget|override)\b[^.\n]{0,40}?"
+                                       r"\b(?:rubric|instructions?|prompt|rules|guidelines)\b", re.IGNORECASE)),
+    ("score_directive", re.compile(r"\b(?:score|grade|rate|award)\b[^.\n]{0,20}?"
+                                   r"(?:\b10\b|\b\d+\s*/\s*\d+\b|\bfull marks\b|\bperfect\b|\bmaximum\b)", re.IGNORECASE)),
+    ("role_override", re.compile(r"\b(?:you are now|new instructions|system prompt)\b", re.IGNORECASE)),
+)}
+
+
+def injection_patterns(text: str, patterns_version: str) -> tuple[str, ...]:
+    """The names of the injection patterns of `patterns_version` found in `text`, in pattern order. An unknown
+    version raises, so a flag is never read as clean under patterns it was not computed with."""
+    if patterns_version not in _INJECTION_PATTERNS:
+        raise ValueError(f"unknown injection patterns version {patterns_version!r}")
+    return tuple(name for name, pattern in _INJECTION_PATTERNS[patterns_version] if pattern.search(text))
 
 
 def _idle(wall: Measure, model: Measure, tool: Measure) -> Measure:
