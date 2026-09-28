@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-28T04:04:16Z",
+  "generated": "2026-09-28T04:50:49Z",
   "audit": [
     {
       "actor": null,
@@ -43414,6 +43414,32 @@ window.AUDIT_DATA = {
         "sha": "75a5d31c571943e4ad43b54f6a73fc45d16b5ca1",
         "short": "75a5d31c5",
         "branch": "w4-s6",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M3K5KWQ2K007SC6BR60ATY40",
+      "shortname": "slice-s7-comparison",
+      "datetime": "2026-09-28T04:50:49Z",
+      "session": "worker-agy-s7",
+      "prompt": "implement slice S7 of docs/design/phase4-statistics.md",
+      "summary": "Completed slice S7: board.compare, #comparison section in CLI table and HTML, bench report --baseline, red-first T-M1..M3, T-B4, T-B5, VER-A rule, and all 9 board mutations killed",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-09-28T04:24:42Z",
+      "duration_seconds": 1567.0,
+      "git": {
+        "sha": "0c0879599ef75b01018b6f267f02af3d5219e023",
+        "short": "0c0879599",
+        "branch": "w4-s7",
         "pushed": null
       }
     }
