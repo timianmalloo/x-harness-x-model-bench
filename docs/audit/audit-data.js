@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-28T21:36:54Z",
+  "generated": "2026-09-28T21:41:56Z",
   "audit": [
     {
       "actor": null,
@@ -49189,6 +49189,1306 @@ window.AUDIT_DATA = {
             "sha256": "5c99a1933b5cdd4895bf27c7cc3380ca511ad5e9f2b9dfd4a6e74e3c8d8a5f0c",
             "status": "resolved",
             "token": "tests/test_report.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3MZES32C46BSQPGP2CTBV30",
+      "shortname": "Goal: implement the first half of report slice R6 of docs/design/phase4-…",
+      "datetime": "2026-09-28T21:41:39Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: implement the first half of report slice R6 of docs/design/phase4-report.md (section 15, the R6 row): the Cost frontier and the Areas radars, each an inline SVG chart with its table alternative, plus the CLI table's area headline line (UIA-11), built on report/html_builder.el and red first.\nMeasured (Leader, 2026-09-28, main 3463b9b): R0-R5 are merged; board.build gives Board.frontier (per (combo, pack): pass@1 interval, cost_per_task, tokens_per_solved, wall_per_task, each a Measure with null-for-missing) and Board.areas (per (combo, pack, area): an Interval, reason when not computed); report/html.py renders header, validity, the control bar (<section id=\"controls\">, R4), leaderboard, pack effect (R5 whisker panels with data-interval-* marks and a delta table), runs and comparison, and every section is built on el(); render() passes `_combo_index(board_obj)` (the c1..c8 legend token) to the sections that follow the legend, and R4's CSS hides `[data-combo=\"cN\"]` and `[data-pack=...]`; the design's section 6 rows 5 (Cost frontier: three small scatter plots of pass@1 against cost per task, tokens per solved and wall, x and y whiskers, a Pareto step line, a table below; all cost NA as in smoke-1: a sentence in place of empty axes) and 6 (Areas: seven radars as small multiples, one per combo, fixed axis order from the catalog, 0-100, pack on solid and pack off dashed, a spread band when k >= 2, a table; an NA area axis is drawn hollow with an NA tick; all NA: `No area composites for this run: <reason>.`), section 3 (the categorical tokens --c1..--c8 and the chart rules), section 4 (the projections), and section 12 (UIA-5, UIA-11, UIA-13 chart equals table, UXA-8 empty run draws no axes) give the content, states and tests; a parallel slice R6b owns the Scenarios heatmap and Context growth and adds its own section functions.\nDone when: new section functions render Cost frontier (section id cost-frontier) and Areas (section id areas) in the design's section order, each chart's marks carrying data-combo (and data-pack where the mark is per pack) with the legend token and data-interval-* or data-value attributes equal to its table's cells, each with its table alternative, every state of section 6 rows 5 and 6; report/cli_table.py prints an ASCII area headline line per (combo, pack) that passes the plain-output rules (UIA-11); test_chart_equals_table (UIA-13, for both charts) and test_empty_run_draws_no_axes (UXA-8: an empty run renders the header, banner and the empty copy, and no svg with axes in either section) are each committed red first, failing on an assertion (not an import or collection error), then green; the smoke-1-shaped all-cost-NA state renders the sentence and no empty axes; named mutants for the NA-axis branch and the all-cost-NA branch in tests/mutations/report.json, each killed; uv run python tools/mutate_check.py --touched main reads every mutation killed; uv run pytest -q -p no:cacheprovider -n auto passes; uv run pytest -q -p no:cacheprovider -m browser passes; uv run ruff check src tests tools is clean (run it before each commit); a test earns its place by a failure only it catches; Commit each red and each green immediately.\nNot in scope: the Scenarios heatmap and Context growth (R6b); summaries (R7); report.js changes beyond none (the legend and pack switch already hide by attribute); board.py (any export change needs EXPORT_VERSION and a Leader-written board_exports row: stop and report if one is needed); any dependency; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-report.md (sections 3, 4, 6 rows 5 and 6, 9, 12, 13, 14 row 8); docs/design/mockups/phase4-report.html (the frontier and radar markup); src/harness_bench/board.py (FrontierRow, AreaRow, Measure, Interval); src/harness_bench/report/{html,html_builder,model,cli_table}.py; tests/test_report.py; tests/mutations/report.json. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3MZEWSPZPFMK5F0PZ887SH4",
+      "shortname": "compile-Goal: implement the first half of report slice R6 of docs/design/phase4-…",
+      "datetime": "2026-09-28T21:41:43Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement the first half of report slice R6 of docs/design/phase4-report.md (section 15, the R6 row): the Cost frontier and the Areas radars, each an inline SVG chart with its table alternative, plus the CLI table's area headline line (UIA-11), built on report/html_builder.el and red first. Measured (Leader, 2026-09-28, main 3463b9b): R0-R5 are merged; board.build gives Board.frontier (per (combo, pack): pass@1 interval, cost_per_task, tokens_per_solved, wall_per_task, each a Measure with null-for-missing) and Board.areas (per (combo, pack, area): an Interval, reason when not computed); report/html.py renders header, validity, the control bar (<section id=\"controls\">, R4), leaderboard, pack effect (R5 whisker panels with data-interval-* marks and a delta table), runs and comparison, and every section is built on el(); render() passes `_combo_index(board_obj)` (the c1..c8 legend token) to the sections that follow the legend, and R4's CSS hides `[data-combo=\"cN\"]` and `[data-pack=...]`; the design's section 6 rows 5 (Cost frontier: three small scatter plots of pass@1 against cost per task, tokens per solved and wall, x and y whiskers, a Pareto step line, a table below; all cost NA as in smoke-1: a sentence in place of empty axes) and 6 (Areas: seven radars as small multiples, one per combo, fixed axis order from the catalog, 0-100, pack on solid and pack off dashed, a spread band when k >= 2, a table; an NA area axis is drawn hollow with an NA tick; all NA: `No area composites for this run: <reason>.`), section 3 (the categorical tokens --c1..--c8 and the chart rules), section 4 (the projections), and section 12 (UIA-5, UIA-11, UIA-13 chart equals table, UXA-8 empty run draws no axes) give the content, states and tests; a parallel slice R6b owns the Scenarios heatmap and Context growth and adds its own section functions.\nDone when: new section functions render Cost frontier (section id cost-frontier) and Areas (section id areas) in the design's section order, each chart's marks carrying data-combo (and data-pack where the mark is per pack) with the legend token and data-interval-* or data-value attributes equal to its table's cells, each with its table alternative, every state of section 6 rows 5 and 6; report/cli_table.py prints an ASCII area headline line per (combo, pack) that passes the plain-output rules (UIA-11); test_chart_equals_table (UIA-13, for both charts) and test_empty_run_draws_no_axes (UXA-8: an empty run renders the header, banner and the empty copy, and no svg with axes in either section) are each committed red first, failing on an assertion (not an import or collection error), then green; the smoke-1-shaped all-cost-NA state renders the sentence and no empty axes; named mutants for the NA-axis branch and the all-cost-NA branch in tests/mutations/report.json, each killed; uv run python tools/mutate_check.py --touched main reads every mutation killed; uv run pytest -q -p no:cacheprovider -n auto passes; uv run pytest -q -p no:cacheprovider -m browser passes; uv run ruff check src tests tools is clean (run it before each commit); a test earns its place by a failure only it catches; Commit each red and each green immediately.\nNot in scope: the Scenarios heatmap and Context growth (R6b); summaries (R7); report.js changes beyond none (the legend and pack switch already hide by attribute); board.py (any export change needs EXPORT_VERSION and a Leader-written board_exports row: stop and report if one is needed); any dependency; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-report.md (sections 3, 4, 6 rows 5 and 6, 9, 12, 13, 14 row 8); docs/design/mockups/phase4-report.html (the frontier and radar markup); src/harness_bench/board.py (FrontierRow, AreaRow, Measure, Interval); src/harness_bench/report/{html,html_builder,model,cli_table}.py; tests/test_report.py; tests/mutations/report.json. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: new section functions render Cost frontier (section id cost-frontier) and Areas (section id areas) in the design's section order, each chart's marks carrying data-combo (and data-pack where the mark is per pack) with the legend token and data-interval-* or data-value attributes equal to its table's cells, each with its table alternative, every state of section 6 rows 5 and 6 | phrase: new section functions render Cost frontier (section id cost-frontier) and Areas (section id areas) in the design's section order, each chart's marks carrying data-combo (and data-pack where the mark is per pack) with the legend token and data-interval-* or data-value attributes equal to its table's cells, each with its table alternative, every state of section 6 rows 5 and 6 |\n| done_when: report/cli_table.py prints an ASCII area headline line per (combo, pack) that passes the plain-output rules (UIA-11) | phrase: report/cli_table.py prints an ASCII area headline line per (combo, pack) that passes the plain-output rules (UIA-11) |\n| done_when: test_chart_equals_table (UIA-13, for both charts) and test_empty_run_draws_no_axes (UXA-8: an empty run renders the header, banner and the empty copy, and no svg with axes in either section) are each committed red first, failing on an assertion (not an import or collection error), then green | phrase: test_chart_equals_table (UIA-13, for both charts) and test_empty_run_draws_no_axes (UXA-8: an empty run renders the header, banner and the empty copy, and no svg with axes in either section) are each committed red first, failing on an assertion (not an import or collection error), then green |\n| done_when: the smoke-1-shaped all-cost-NA state renders the sentence and no empty axes | phrase: the smoke-1-shaped all-cost-NA state renders the sentence and no empty axes |\n| done_when: named mutants for the NA-axis branch and the all-cost-NA branch in tests/mutations/report.json, each killed | phrase: named mutants for the NA-axis branch and the all-cost-NA branch in tests/mutations/report.json, each killed |\n| done_when: uv run python tools/mutate_check.py --touched main reads every mutation killed | phrase: uv run python tools/mutate_check.py --touched main reads every mutation killed |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes | phrase: uv run pytest -q -p no:cacheprovider -n auto passes |\n| done_when: uv run pytest -q -p no:cacheprovider -m browser passes | phrase: uv run pytest -q -p no:cacheprovider -m browser passes |\n| done_when: uv run ruff check src tests tools is clean (run it before each commit) | phrase: uv run ruff check src tests tools is clean (run it before each commit) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: the Scenarios heatmap and Context growth (R6b) | phrase: the Scenarios heatmap and Context growth (R6b) |\n| not_in_scope: summaries (R7) | phrase: summaries (R7) |\n| not_in_scope: report.js changes beyond none (the legend and pack switch already hide by attribute) | phrase: report.js changes beyond none (the legend and pack switch already hide by attribute) |\n| not_in_scope: board.py (any export change needs EXPORT_VERSION and a Leader-written board_exports row: stop and report if one is needed) | phrase: board.py (any export change needs EXPORT_VERSION and a Leader-written board_exports row: stop and report if one is needed) |\n| not_in_scope: any dependency | phrase: any dependency |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- _combo_index(board_obj: unresolved (not found)\n- data-combo=\"cN: unresolved (not found)\n- data-pack=: unresolved (not found)\n- No area composites for this run: <reason: unresolved (not found)\n- docs/design/phase4-report.md: docs/design/phase4-report.md sha256 01d38b34f80229ea604d98d88f144d5e36865e71a67d97616bea7c4ce8eea470\n- report/html_builder.el: unresolved (not found; nearest: src/harness_bench/report/html_builder.py)\n- report/html.py: src/harness_bench/report/html.py sha256 11372ec79ef143eac80cc366a5bde01aa1093ecdcb43ee039b0d1099b4641740\n- report/cli_table.py: src/harness_bench/report/cli_table.py sha256 ab791ba1ebaab93675fad825530e0915524b7d107bd1dcebb4b865322e17a4ba\n- tests/mutations/report.json: tests/mutations/report.json sha256 5ace29fc177dd7cb943d2c8c27b54da6ff4ca761513abc871eac6f9d3cdb307b\n- tools/mutate_check.py: tools/mutate_check.py sha256 d376e98dfc678013d439ff6bb229042d1e3830d9f78fbdda331dfcaba42e8811\n- report.js: src/harness_bench/report/assets/report.js sha256 4cb4a723bc08e456d6ddb506e309381d1205339767c4281bab50221e4123583b\n- board.py: src/harness_bench/board.py sha256 0ebe33e2361e4024102cde09ce369285997aa7804166aadbad3204b0c33aac8f\n- runs/: unresolved (not found)\n- docs/design/mockups/phase4-report.html: docs/design/mockups/phase4-report.html sha256 030de33b610812f1c1db034699a4811fe9b0ee2cf7a54dfad09d6c1a3e4f36bc\n- src/harness_bench/board.py: src/harness_bench/board.py sha256 0ebe33e2361e4024102cde09ce369285997aa7804166aadbad3204b0c33aac8f\n- src/harness_bench/report/{html,html_builder,model,cli_table}.py: unresolved (not found)\n- tests/test_report.py: tests/test_report.py sha256 5c99a1933b5cdd4895bf27c7cc3380ca511ad5e9f2b9dfd4a6e74e3c8d8a5f0c\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3MZES32C46BSQPGP2CTBV30\nraw sha256: 19d67ceaa0c315d4f7258ae557940ab6cc6e59fccdc81ded066d009adc29f521\ncompiler model: claude-opus-5-5\nengine seconds: 0.007\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3MZES32C46BSQPGP2CTBV30 for claude-code v1: 18 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "new section functions render Cost frontier (section id cost-frontier) and Areas (section id areas) in the design's section order, each chart's marks carrying data-combo (and data-pack where the mark is per pack) with the legend token and data-interval-* or data-value attributes equal to its table's cells, each with its table alternative, every state of section 6 rows 5 and 6",
+            "trace": {
+              "kind": "phrase",
+              "ref": "new section functions render Cost frontier (section id cost-frontier) and Areas (section id areas) in the design's section order, each chart's marks carrying data-combo (and data-pack where the mark is per pack) with the legend token and data-interval-* or data-value attributes equal to its table's cells, each with its table alternative, every state of section 6 rows 5 and 6"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "report/cli_table.py prints an ASCII area headline line per (combo, pack) that passes the plain-output rules (UIA-11)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "report/cli_table.py prints an ASCII area headline line per (combo, pack) that passes the plain-output rules (UIA-11)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "test_chart_equals_table (UIA-13, for both charts) and test_empty_run_draws_no_axes (UXA-8: an empty run renders the header, banner and the empty copy, and no svg with axes in either section) are each committed red first, failing on an assertion (not an import or collection error), then green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "test_chart_equals_table (UIA-13, for both charts) and test_empty_run_draws_no_axes (UXA-8: an empty run renders the header, banner and the empty copy, and no svg with axes in either section) are each committed red first, failing on an assertion (not an import or collection error), then green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the smoke-1-shaped all-cost-NA state renders the sentence and no empty axes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the smoke-1-shaped all-cost-NA state renders the sentence and no empty axes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "named mutants for the NA-axis branch and the all-cost-NA branch in tests/mutations/report.json, each killed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "named mutants for the NA-axis branch and the all-cost-NA branch in tests/mutations/report.json, each killed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run python tools/mutate_check.py --touched main reads every mutation killed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run python tools/mutate_check.py --touched main reads every mutation killed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider -n auto passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider -n auto passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider -m browser passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider -m browser passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean (run it before each commit)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean (run it before each commit)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the Scenarios heatmap and Context growth (R6b)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the Scenarios heatmap and Context growth (R6b)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "summaries (R7)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "summaries (R7)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "report.js changes beyond none (the legend and pack switch already hide by attribute)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "report.js changes beyond none (the legend and pack switch already hide by attribute)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "board.py (any export change needs EXPORT_VERSION and a Leader-written board_exports row: stop and report if one is needed)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "board.py (any export change needs EXPORT_VERSION and a Leader-written board_exports row: stop and report if one is needed)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any dependency",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any dependency"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "new section functions render Cost frontier (section id cost-frontier) and Areas (section id areas) in the design's section order, each chart's marks carrying data-combo (and data-pack where the mark is per pack) with the legend token and data-interval-* or data-value attributes equal to its table's cells, each with its table alternative, every state of section 6 rows 5 and 6",
+            "report/cli_table.py prints an ASCII area headline line per (combo, pack) that passes the plain-output rules (UIA-11)",
+            "test_chart_equals_table (UIA-13, for both charts) and test_empty_run_draws_no_axes (UXA-8: an empty run renders the header, banner and the empty copy, and no svg with axes in either section) are each committed red first, failing on an assertion (not an import or collection error), then green",
+            "the smoke-1-shaped all-cost-NA state renders the sentence and no empty axes",
+            "named mutants for the NA-axis branch and the all-cost-NA branch in tests/mutations/report.json, each killed",
+            "uv run python tools/mutate_check.py --touched main reads every mutation killed",
+            "uv run pytest -q -p no:cacheprovider -n auto passes",
+            "uv run pytest -q -p no:cacheprovider -m browser passes",
+            "uv run ruff check src tests tools is clean (run it before each commit)",
+            "a test earns its place by a failure only it catches",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "implement the first half of report slice R6 of docs/design/phase4-report.md (section 15, the R6 row): the Cost frontier and the Areas radars, each an inline SVG chart with its table alternative, plus the CLI table's area headline line (UIA-11), built on report/html_builder.el and red first. Measured (Leader, 2026-09-28, main 3463b9b): R0-R5 are merged; board.build gives Board.frontier (per (combo, pack): pass@1 interval, cost_per_task, tokens_per_solved, wall_per_task, each a Measure with null-for-missing) and Board.areas (per (combo, pack, area): an Interval, reason when not computed); report/html.py renders header, validity, the control bar (<section id=\"controls\">, R4), leaderboard, pack effect (R5 whisker panels with data-interval-* marks and a delta table), runs and comparison, and every section is built on el(); render() passes `_combo_index(board_obj)` (the c1..c8 legend token) to the sections that follow the legend, and R4's CSS hides `[data-combo=\"cN\"]` and `[data-pack=...]`; the design's section 6 rows 5 (Cost frontier: three small scatter plots of pass@1 against cost per task, tokens per solved and wall, x and y whiskers, a Pareto step line, a table below; all cost NA as in smoke-1: a sentence in place of empty axes) and 6 (Areas: seven radars as small multiples, one per combo, fixed axis order from the catalog, 0-100, pack on solid and pack off dashed, a spread band when k >= 2, a table; an NA area axis is drawn hollow with an NA tick; all NA: `No area composites for this run: <reason>.`), section 3 (the categorical tokens --c1..--c8 and the chart rules), section 4 (the projections), and section 12 (UIA-5, UIA-11, UIA-13 chart equals table, UXA-8 empty run draws no axes) give the content, states and tests; a parallel slice R6b owns the Scenarios heatmap and Context growth and adds its own section functions.",
+          "main_line_budget": "one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-report.md (sections 3, 4, 6 rows 5 and 6, 9, 12, 13, 14 row 8); docs/design/mockups/phase4-report.html (the frontier and radar markup); src/harness_bench/board.py (FrontierRow, AreaRow, Measure, Interval); src/harness_bench/report/{html,html_builder,model,cli_table}.py; tests/test_report.py; tests/mutations/report.json. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "the Scenarios heatmap and Context growth (R6b)",
+            "summaries (R7)",
+            "report.js changes beyond none (the legend and pack switch already hide by attribute)",
+            "board.py (any export change needs EXPORT_VERSION and a Leader-written board_exports row: stop and report if one is needed)",
+            "any dependency",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.007,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3MZES32C46BSQPGP2CTBV30",
+        "raw_sha256": "19d67ceaa0c315d4f7258ae557940ab6cc6e59fccdc81ded066d009adc29f521",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_combo_index(board_obj"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "data-combo=\"cN"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "data-pack="
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "No area composites for this run: <reason"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase4-report.md",
+            "reason": null,
+            "sha256": "01d38b34f80229ea604d98d88f144d5e36865e71a67d97616bea7c4ce8eea470",
+            "status": "resolved",
+            "token": "docs/design/phase4-report.md"
+          },
+          {
+            "nearest": "src/harness_bench/report/html_builder.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/html_builder.el"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/html.py",
+            "reason": null,
+            "sha256": "11372ec79ef143eac80cc366a5bde01aa1093ecdcb43ee039b0d1099b4641740",
+            "status": "resolved",
+            "token": "report/html.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/cli_table.py",
+            "reason": null,
+            "sha256": "ab791ba1ebaab93675fad825530e0915524b7d107bd1dcebb4b865322e17a4ba",
+            "status": "resolved",
+            "token": "report/cli_table.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/report.json",
+            "reason": null,
+            "sha256": "5ace29fc177dd7cb943d2c8c27b54da6ff4ca761513abc871eac6f9d3cdb307b",
+            "status": "resolved",
+            "token": "tests/mutations/report.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "d376e98dfc678013d439ff6bb229042d1e3830d9f78fbdda331dfcaba42e8811",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/assets/report.js",
+            "reason": null,
+            "sha256": "4cb4a723bc08e456d6ddb506e309381d1205339767c4281bab50221e4123583b",
+            "status": "resolved",
+            "token": "report.js"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/board.py",
+            "reason": null,
+            "sha256": "0ebe33e2361e4024102cde09ce369285997aa7804166aadbad3204b0c33aac8f",
+            "status": "resolved",
+            "token": "board.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/mockups/phase4-report.html",
+            "reason": null,
+            "sha256": "030de33b610812f1c1db034699a4811fe9b0ee2cf7a54dfad09d6c1a3e4f36bc",
+            "status": "resolved",
+            "token": "docs/design/mockups/phase4-report.html"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/board.py",
+            "reason": null,
+            "sha256": "0ebe33e2361e4024102cde09ce369285997aa7804166aadbad3204b0c33aac8f",
+            "status": "resolved",
+            "token": "src/harness_bench/board.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/report/{html,html_builder,model,cli_table}.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_report.py",
+            "reason": null,
+            "sha256": "5c99a1933b5cdd4895bf27c7cc3380ca511ad5e9f2b9dfd4a6e74e3c8d8a5f0c",
+            "status": "resolved",
+            "token": "tests/test_report.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3MZEX5JCC10AB2WKDASAHQA",
+      "shortname": "Goal: implement the second half of report slice R6 of docs/design/phase4…",
+      "datetime": "2026-09-28T21:41:43Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: implement the second half of report slice R6 of docs/design/phase4-report.md (section 15, the R6 row): the Scenarios heatmap and the Context growth chart, each with its table alternative, the report-only ContextGrowth projection, and the CLI table's scenario headline line (UIA-11), built on report/html_builder.el and red first.\nMeasured (Leader, 2026-09-28, main 3463b9b): R0-R5 are merged; board.build gives Board.scenarios (per (combo, pack, scenario): gated Interval and pass@1 Interval, reason `no cells in this scenario` when empty); the design's section 4 defines ContextGrowth as a report-only projection (grain: combo, pack, task, turn index; median prompt tokens over repetitions, min and max band, a compaction flag; source: turn_usage rows ordered by turn), which no code builds yet; report/html.py builds every section on el(), render() passes `_combo_index(board_obj)` (the c1..c8 legend token) to the sections that follow the legend, and R4's CSS hides `[data-combo=\"cN\"]` and `[data-pack=...]`; the STYLE heat tokens --heat-0..9 are the ten viridis stops (verified) and --on-heat-dark/--on-heat-light are the heatmap text inks (R-81 DR-R-1: whichever contrasts more with the fill); the design's section 6 rows 7 (Scenarios: a heatmap of combos x scenarios, each cell the composite, [lo, hi] and a pass@1 line, a legend `0 … 100, correctness-gated composite`; no cells: `—` plus `no cells in this scenario`; NA: hatched plus `not recorded`) and 8 (Context growth: a task selector, then a line per combo, median over repetitions with a min-max band, compaction marked), section 12 (UIA-5, UIA-11, UIA-13 chart equals table, UXA-8 empty run draws no axes) give the content, states and tests; the task selector's behaviour belongs to report.js (R4 owns it: render all tasks' series in the DOM with the first task visible, and mark what the selector would switch with data attributes, adding no script change); a parallel slice R6a owns Cost frontier and Areas and adds its own section functions.\nDone when: a report-only context-growth projection (in report/, not board.py) reads the turn-level usage the views expose (find the producer of turn_usage and cite it; if the views expose no per-turn usage, render the section's not-recorded state with an inline assume: naming what would supply it, and report that instead of inventing a source); new section functions render Scenarios (section id scenarios) and Context growth (section id context-growth) in the design's section order, the heatmap cell fill chosen from --heat-0..9 by the composite and its text ink by the DR-R-1 rule, each chart's marks carrying data-combo (and data-pack where per pack) with the legend token and data-interval-* or data-value attributes equal to its table's cells, every state of section 6 rows 7 and 8; report/cli_table.py prints an ASCII scenario headline line per (combo, pack, scenario) that passes the plain-output rules (UIA-11); test_chart_equals_table for both charts (UIA-13) and test_empty_run_draws_no_axes for both sections (UXA-8), plus a test that the heatmap text ink meets 4.5:1 on its fill for every stop, are each committed red first, failing on an assertion (not an import or collection error), then green; named mutants for the no-cells branch, the ink choice and the compaction mark in tests/mutations/report.json, each killed; uv run python tools/mutate_check.py --touched main reads every mutation killed; uv run pytest -q -p no:cacheprovider -n auto passes; uv run pytest -q -p no:cacheprovider -m browser passes; uv run ruff check src tests tools is clean (run it before each commit); a test earns its place by a failure only it catches; Commit each red and each green immediately.\nNot in scope: Cost frontier and Areas (R6a); summaries (R7); report.js changes; board.py and board.export (any change needs EXPORT_VERSION and a Leader-written board_exports row: stop and report if one is needed); any dependency; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-report.md (sections 3, 4, 6 rows 7 and 8, 9, 12, 13, 16 DR-R-1); docs/design/mockups/phase4-report.html (the heatmap and context-growth markup); docs/notes/rulings.md R-81 DR-R-1; src/harness_bench/board.py (ScenarioRow); src/harness_bench/views.py and src/harness_bench/telemetry/ (per-turn usage); src/harness_bench/report/{html,html_builder,model,cli_table}.py; tests/test_report.py; tests/mutations/report.json. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-r6b (use absolute paths or cd into it in each shell command).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3MZF2P2KAX3FW2RJB4CA1D7",
+      "shortname": "compile-Goal: implement the second half of report slice R6 of docs/design/phase4…",
+      "datetime": "2026-09-28T21:41:49Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement the second half of report slice R6 of docs/design/phase4-report.md (section 15, the R6 row): the Scenarios heatmap and the Context growth chart, each with its table alternative, the report-only ContextGrowth projection, and the CLI table's scenario headline line (UIA-11), built on report/html_builder.el and red first. Measured (Leader, 2026-09-28, main 3463b9b): R0-R5 are merged; board.build gives Board.scenarios (per (combo, pack, scenario): gated Interval and pass@1 Interval, reason `no cells in this scenario` when empty); the design's section 4 defines ContextGrowth as a report-only projection (grain: combo, pack, task, turn index; median prompt tokens over repetitions, min and max band, a compaction flag; source: turn_usage rows ordered by turn), which no code builds yet; report/html.py builds every section on el(), render() passes `_combo_index(board_obj)` (the c1..c8 legend token) to the sections that follow the legend, and R4's CSS hides `[data-combo=\"cN\"]` and `[data-pack=...]`; the STYLE heat tokens --heat-0..9 are the ten viridis stops (verified) and --on-heat-dark/--on-heat-light are the heatmap text inks (R-81 DR-R-1: whichever contrasts more with the fill); the design's section 6 rows 7 (Scenarios: a heatmap of combos x scenarios, each cell the composite, [lo, hi] and a pass@1 line, a legend `0 … 100, correctness-gated composite`; no cells: `—` plus `no cells in this scenario`; NA: hatched plus `not recorded`) and 8 (Context growth: a task selector, then a line per combo, median over repetitions with a min-max band, compaction marked), section 12 (UIA-5, UIA-11, UIA-13 chart equals table, UXA-8 empty run draws no axes) give the content, states and tests; the task selector's behaviour belongs to report.js (R4 owns it: render all tasks' series in the DOM with the first task visible, and mark what the selector would switch with data attributes, adding no script change); a parallel slice R6a owns Cost frontier and Areas and adds its own section functions.\nDone when: a report-only context-growth projection (in report/, not board.py) reads the turn-level usage the views expose (find the producer of turn_usage and cite it; if the views expose no per-turn usage, render the section's not-recorded state with an inline assume: naming what would supply it, and report that instead of inventing a source); new section functions render Scenarios (section id scenarios) and Context growth (section id context-growth) in the design's section order, the heatmap cell fill chosen from --heat-0..9 by the composite and its text ink by the DR-R-1 rule, each chart's marks carrying data-combo (and data-pack where per pack) with the legend token and data-interval-* or data-value attributes equal to its table's cells, every state of section 6 rows 7 and 8; report/cli_table.py prints an ASCII scenario headline line per (combo, pack, scenario) that passes the plain-output rules (UIA-11); test_chart_equals_table for both charts (UIA-13) and test_empty_run_draws_no_axes for both sections (UXA-8), plus a test that the heatmap text ink meets 4.5:1 on its fill for every stop, are each committed red first, failing on an assertion (not an import or collection error), then green; named mutants for the no-cells branch, the ink choice and the compaction mark in tests/mutations/report.json, each killed; uv run python tools/mutate_check.py --touched main reads every mutation killed; uv run pytest -q -p no:cacheprovider -n auto passes; uv run pytest -q -p no:cacheprovider -m browser passes; uv run ruff check src tests tools is clean (run it before each commit); a test earns its place by a failure only it catches; Commit each red and each green immediately.\nNot in scope: Cost frontier and Areas (R6a); summaries (R7); report.js changes; board.py and board.export (any change needs EXPORT_VERSION and a Leader-written board_exports row: stop and report if one is needed); any dependency; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-report.md (sections 3, 4, 6 rows 7 and 8, 9, 12, 13, 16 DR-R-1); docs/design/mockups/phase4-report.html (the heatmap and context-growth markup); docs/notes/rulings.md R-81 DR-R-1; src/harness_bench/board.py (ScenarioRow); src/harness_bench/views.py and src/harness_bench/telemetry/ (per-turn usage); src/harness_bench/report/{html,html_builder,model,cli_table}.py; tests/test_report.py; tests/mutations/report.json. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-r6b (use absolute paths or cd into it in each shell command).\nTrace\n| clause | trace |\n|---|---|\n| done_when: a report-only context-growth projection (in report/, not board.py) reads the turn-level usage the views expose (find the producer of turn_usage and cite it | phrase: a report-only context-growth projection (in report/, not board.py) reads the turn-level usage the views expose (find the producer of turn_usage and cite it |\n| done_when: if the views expose no per-turn usage, render the section's not-recorded state with an inline assume: naming what would supply it, and report that instead of inventing a source) | phrase: if the views expose no per-turn usage, render the section's not-recorded state with an inline assume: naming what would supply it, and report that instead of inventing a source) |\n| done_when: new section functions render Scenarios (section id scenarios) and Context growth (section id context-growth) in the design's section order, the heatmap cell fill chosen from --heat-0..9 by the composite and its text ink by the DR-R-1 rule, each chart's marks carrying data-combo (and data-pack where per pack) with the legend token and data-interval-* or data-value attributes equal to its table's cells, every state of section 6 rows 7 and 8 | phrase: new section functions render Scenarios (section id scenarios) and Context growth (section id context-growth) in the design's section order, the heatmap cell fill chosen from --heat-0..9 by the composite and its text ink by the DR-R-1 rule, each chart's marks carrying data-combo (and data-pack where per pack) with the legend token and data-interval-* or data-value attributes equal to its table's cells, every state of section 6 rows 7 and 8 |\n| done_when: report/cli_table.py prints an ASCII scenario headline line per (combo, pack, scenario) that passes the plain-output rules (UIA-11) | phrase: report/cli_table.py prints an ASCII scenario headline line per (combo, pack, scenario) that passes the plain-output rules (UIA-11) |\n| done_when: test_chart_equals_table for both charts (UIA-13) and test_empty_run_draws_no_axes for both sections (UXA-8), plus a test that the heatmap text ink meets 4.5:1 on its fill for every stop, are each committed red first, failing on an assertion (not an import or collection error), then green | phrase: test_chart_equals_table for both charts (UIA-13) and test_empty_run_draws_no_axes for both sections (UXA-8), plus a test that the heatmap text ink meets 4.5:1 on its fill for every stop, are each committed red first, failing on an assertion (not an import or collection error), then green |\n| done_when: named mutants for the no-cells branch, the ink choice and the compaction mark in tests/mutations/report.json, each killed | phrase: named mutants for the no-cells branch, the ink choice and the compaction mark in tests/mutations/report.json, each killed |\n| done_when: uv run python tools/mutate_check.py --touched main reads every mutation killed | phrase: uv run python tools/mutate_check.py --touched main reads every mutation killed |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes | phrase: uv run pytest -q -p no:cacheprovider -n auto passes |\n| done_when: uv run pytest -q -p no:cacheprovider -m browser passes | phrase: uv run pytest -q -p no:cacheprovider -m browser passes |\n| done_when: uv run ruff check src tests tools is clean (run it before each commit) | phrase: uv run ruff check src tests tools is clean (run it before each commit) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: Cost frontier and Areas (R6a) | phrase: Cost frontier and Areas (R6a) |\n| not_in_scope: summaries (R7) | phrase: summaries (R7) |\n| not_in_scope: report.js changes | phrase: report.js changes |\n| not_in_scope: board.py and board.export (any change needs EXPORT_VERSION and a Leader-written board_exports row: stop and report if one is needed) | phrase: board.py and board.export (any change needs EXPORT_VERSION and a Leader-written board_exports row: stop and report if one is needed) |\n| not_in_scope: any dependency | phrase: any dependency |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- no cells in this scenario: unresolved (not found)\n- _combo_index(board_obj: unresolved (not found)\n- data-combo=\"cN: unresolved (not found)\n- data-pack=: unresolved (not found)\n- 0 … 100, correctness-gated composite: unresolved (not found)\n- —: unresolved (not found)\n- not recorded: unresolved (not found)\n- docs/design/phase4-report.md: docs/design/phase4-report.md sha256 01d38b34f80229ea604d98d88f144d5e36865e71a67d97616bea7c4ce8eea470\n- report/html_builder.el: unresolved (not found; nearest: src/harness_bench/report/html_builder.py)\n- report/html.py: src/harness_bench/report/html.py sha256 11372ec79ef143eac80cc366a5bde01aa1093ecdcb43ee039b0d1099b4641740\n- --on-heat-dark/--on-heat-light: unresolved (not found)\n- report.js: src/harness_bench/report/assets/report.js sha256 4cb4a723bc08e456d6ddb506e309381d1205339767c4281bab50221e4123583b\n- report/: unresolved (not found)\n- board.py: src/harness_bench/board.py sha256 0ebe33e2361e4024102cde09ce369285997aa7804166aadbad3204b0c33aac8f\n- report/cli_table.py: src/harness_bench/report/cli_table.py sha256 ab791ba1ebaab93675fad825530e0915524b7d107bd1dcebb4b865322e17a4ba\n- tests/mutations/report.json: tests/mutations/report.json sha256 5ace29fc177dd7cb943d2c8c27b54da6ff4ca761513abc871eac6f9d3cdb307b\n- tools/mutate_check.py: tools/mutate_check.py sha256 d376e98dfc678013d439ff6bb229042d1e3830d9f78fbdda331dfcaba42e8811\n- runs/: unresolved (not found)\n- docs/design/mockups/phase4-report.html: docs/design/mockups/phase4-report.html sha256 030de33b610812f1c1db034699a4811fe9b0ee2cf7a54dfad09d6c1a3e4f36bc\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- src/harness_bench/board.py: src/harness_bench/board.py sha256 0ebe33e2361e4024102cde09ce369285997aa7804166aadbad3204b0c33aac8f\n- src/harness_bench/views.py: src/harness_bench/views.py sha256 c4f239880cf61eb0ca9fc0b4808913451e55c437b4943ac433e9f9a511341b93\n- src/harness_bench/telemetry/: unresolved (not found)\n- src/harness_bench/report/{html,html_builder,model,cli_table}.py: unresolved (not found)\n- tests/test_report.py: tests/test_report.py sha256 5c99a1933b5cdd4895bf27c7cc3380ca511ad5e9f2b9dfd4a6e74e3c8d8a5f0c\n- C:/Projects/x-harness-x-model-bench-w4-r6b: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3MZEX5JCC10AB2WKDASAHQA\nraw sha256: b1bdfc87e36ae3c7113c8ae762820fed01b00578b02889964d4e36fae8c1a379\ncompiler model: claude-opus-5-5\nengine seconds: 0.007\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3MZEX5JCC10AB2WKDASAHQA for claude-code v1: 19 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "a report-only context-growth projection (in report/, not board.py) reads the turn-level usage the views expose (find the producer of turn_usage and cite it",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a report-only context-growth projection (in report/, not board.py) reads the turn-level usage the views expose (find the producer of turn_usage and cite it"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "if the views expose no per-turn usage, render the section's not-recorded state with an inline assume: naming what would supply it, and report that instead of inventing a source)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "if the views expose no per-turn usage, render the section's not-recorded state with an inline assume: naming what would supply it, and report that instead of inventing a source)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "new section functions render Scenarios (section id scenarios) and Context growth (section id context-growth) in the design's section order, the heatmap cell fill chosen from --heat-0..9 by the composite and its text ink by the DR-R-1 rule, each chart's marks carrying data-combo (and data-pack where per pack) with the legend token and data-interval-* or data-value attributes equal to its table's cells, every state of section 6 rows 7 and 8",
+            "trace": {
+              "kind": "phrase",
+              "ref": "new section functions render Scenarios (section id scenarios) and Context growth (section id context-growth) in the design's section order, the heatmap cell fill chosen from --heat-0..9 by the composite and its text ink by the DR-R-1 rule, each chart's marks carrying data-combo (and data-pack where per pack) with the legend token and data-interval-* or data-value attributes equal to its table's cells, every state of section 6 rows 7 and 8"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "report/cli_table.py prints an ASCII scenario headline line per (combo, pack, scenario) that passes the plain-output rules (UIA-11)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "report/cli_table.py prints an ASCII scenario headline line per (combo, pack, scenario) that passes the plain-output rules (UIA-11)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "test_chart_equals_table for both charts (UIA-13) and test_empty_run_draws_no_axes for both sections (UXA-8), plus a test that the heatmap text ink meets 4.5:1 on its fill for every stop, are each committed red first, failing on an assertion (not an import or collection error), then green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "test_chart_equals_table for both charts (UIA-13) and test_empty_run_draws_no_axes for both sections (UXA-8), plus a test that the heatmap text ink meets 4.5:1 on its fill for every stop, are each committed red first, failing on an assertion (not an import or collection error), then green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "named mutants for the no-cells branch, the ink choice and the compaction mark in tests/mutations/report.json, each killed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "named mutants for the no-cells branch, the ink choice and the compaction mark in tests/mutations/report.json, each killed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run python tools/mutate_check.py --touched main reads every mutation killed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run python tools/mutate_check.py --touched main reads every mutation killed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider -n auto passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider -n auto passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider -m browser passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider -m browser passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean (run it before each commit)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean (run it before each commit)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Cost frontier and Areas (R6a)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Cost frontier and Areas (R6a)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "summaries (R7)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "summaries (R7)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "report.js changes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "report.js changes"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "board.py and board.export (any change needs EXPORT_VERSION and a Leader-written board_exports row: stop and report if one is needed)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "board.py and board.export (any change needs EXPORT_VERSION and a Leader-written board_exports row: stop and report if one is needed)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any dependency",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any dependency"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "a report-only context-growth projection (in report/, not board.py) reads the turn-level usage the views expose (find the producer of turn_usage and cite it",
+            "if the views expose no per-turn usage, render the section's not-recorded state with an inline assume: naming what would supply it, and report that instead of inventing a source)",
+            "new section functions render Scenarios (section id scenarios) and Context growth (section id context-growth) in the design's section order, the heatmap cell fill chosen from --heat-0..9 by the composite and its text ink by the DR-R-1 rule, each chart's marks carrying data-combo (and data-pack where per pack) with the legend token and data-interval-* or data-value attributes equal to its table's cells, every state of section 6 rows 7 and 8",
+            "report/cli_table.py prints an ASCII scenario headline line per (combo, pack, scenario) that passes the plain-output rules (UIA-11)",
+            "test_chart_equals_table for both charts (UIA-13) and test_empty_run_draws_no_axes for both sections (UXA-8), plus a test that the heatmap text ink meets 4.5:1 on its fill for every stop, are each committed red first, failing on an assertion (not an import or collection error), then green",
+            "named mutants for the no-cells branch, the ink choice and the compaction mark in tests/mutations/report.json, each killed",
+            "uv run python tools/mutate_check.py --touched main reads every mutation killed",
+            "uv run pytest -q -p no:cacheprovider -n auto passes",
+            "uv run pytest -q -p no:cacheprovider -m browser passes",
+            "uv run ruff check src tests tools is clean (run it before each commit)",
+            "a test earns its place by a failure only it catches",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "implement the second half of report slice R6 of docs/design/phase4-report.md (section 15, the R6 row): the Scenarios heatmap and the Context growth chart, each with its table alternative, the report-only ContextGrowth projection, and the CLI table's scenario headline line (UIA-11), built on report/html_builder.el and red first. Measured (Leader, 2026-09-28, main 3463b9b): R0-R5 are merged; board.build gives Board.scenarios (per (combo, pack, scenario): gated Interval and pass@1 Interval, reason `no cells in this scenario` when empty); the design's section 4 defines ContextGrowth as a report-only projection (grain: combo, pack, task, turn index; median prompt tokens over repetitions, min and max band, a compaction flag; source: turn_usage rows ordered by turn), which no code builds yet; report/html.py builds every section on el(), render() passes `_combo_index(board_obj)` (the c1..c8 legend token) to the sections that follow the legend, and R4's CSS hides `[data-combo=\"cN\"]` and `[data-pack=...]`; the STYLE heat tokens --heat-0..9 are the ten viridis stops (verified) and --on-heat-dark/--on-heat-light are the heatmap text inks (R-81 DR-R-1: whichever contrasts more with the fill); the design's section 6 rows 7 (Scenarios: a heatmap of combos x scenarios, each cell the composite, [lo, hi] and a pass@1 line, a legend `0 … 100, correctness-gated composite`; no cells: `—` plus `no cells in this scenario`; NA: hatched plus `not recorded`) and 8 (Context growth: a task selector, then a line per combo, median over repetitions with a min-max band, compaction marked), section 12 (UIA-5, UIA-11, UIA-13 chart equals table, UXA-8 empty run draws no axes) give the content, states and tests; the task selector's behaviour belongs to report.js (R4 owns it: render all tasks' series in the DOM with the first task visible, and mark what the selector would switch with data attributes, adding no script change); a parallel slice R6a owns Cost frontier and Areas and adds its own section functions.",
+          "main_line_budget": "one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-report.md (sections 3, 4, 6 rows 7 and 8, 9, 12, 13, 16 DR-R-1); docs/design/mockups/phase4-report.html (the heatmap and context-growth markup); docs/notes/rulings.md R-81 DR-R-1; src/harness_bench/board.py (ScenarioRow); src/harness_bench/views.py and src/harness_bench/telemetry/ (per-turn usage); src/harness_bench/report/{html,html_builder,model,cli_table}.py; tests/test_report.py; tests/mutations/report.json. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-r6b (use absolute paths or cd into it in each shell command).",
+          "not_in_scope": [
+            "Cost frontier and Areas (R6a)",
+            "summaries (R7)",
+            "report.js changes",
+            "board.py and board.export (any change needs EXPORT_VERSION and a Leader-written board_exports row: stop and report if one is needed)",
+            "any dependency",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.007,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3MZEX5JCC10AB2WKDASAHQA",
+        "raw_sha256": "b1bdfc87e36ae3c7113c8ae762820fed01b00578b02889964d4e36fae8c1a379",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "no cells in this scenario"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_combo_index(board_obj"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "data-combo=\"cN"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "data-pack="
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "0 … 100, correctness-gated composite"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "—"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "not recorded"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase4-report.md",
+            "reason": null,
+            "sha256": "01d38b34f80229ea604d98d88f144d5e36865e71a67d97616bea7c4ce8eea470",
+            "status": "resolved",
+            "token": "docs/design/phase4-report.md"
+          },
+          {
+            "nearest": "src/harness_bench/report/html_builder.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/html_builder.el"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/html.py",
+            "reason": null,
+            "sha256": "11372ec79ef143eac80cc366a5bde01aa1093ecdcb43ee039b0d1099b4641740",
+            "status": "resolved",
+            "token": "report/html.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--on-heat-dark/--on-heat-light"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/assets/report.js",
+            "reason": null,
+            "sha256": "4cb4a723bc08e456d6ddb506e309381d1205339767c4281bab50221e4123583b",
+            "status": "resolved",
+            "token": "report.js"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/board.py",
+            "reason": null,
+            "sha256": "0ebe33e2361e4024102cde09ce369285997aa7804166aadbad3204b0c33aac8f",
+            "status": "resolved",
+            "token": "board.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/cli_table.py",
+            "reason": null,
+            "sha256": "ab791ba1ebaab93675fad825530e0915524b7d107bd1dcebb4b865322e17a4ba",
+            "status": "resolved",
+            "token": "report/cli_table.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/report.json",
+            "reason": null,
+            "sha256": "5ace29fc177dd7cb943d2c8c27b54da6ff4ca761513abc871eac6f9d3cdb307b",
+            "status": "resolved",
+            "token": "tests/mutations/report.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "d376e98dfc678013d439ff6bb229042d1e3830d9f78fbdda331dfcaba42e8811",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/mockups/phase4-report.html",
+            "reason": null,
+            "sha256": "030de33b610812f1c1db034699a4811fe9b0ee2cf7a54dfad09d6c1a3e4f36bc",
+            "status": "resolved",
+            "token": "docs/design/mockups/phase4-report.html"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/board.py",
+            "reason": null,
+            "sha256": "0ebe33e2361e4024102cde09ce369285997aa7804166aadbad3204b0c33aac8f",
+            "status": "resolved",
+            "token": "src/harness_bench/board.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/views.py",
+            "reason": null,
+            "sha256": "c4f239880cf61eb0ca9fc0b4808913451e55c437b4943ac433e9f9a511341b93",
+            "status": "resolved",
+            "token": "src/harness_bench/views.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/telemetry/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/report/{html,html_builder,model,cli_table}.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_report.py",
+            "reason": null,
+            "sha256": "5c99a1933b5cdd4895bf27c7cc3380ca511ad5e9f2b9dfd4a6e74e3c8d8a5f0c",
+            "status": "resolved",
+            "token": "tests/test_report.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/x-harness-x-model-bench-w4-r6b"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3MZF3DE3T3GRMHJKWY3PH75",
+      "shortname": "Goal: implement report slice R7 of docs/design/phase4-report.md (section…",
+      "datetime": "2026-09-28T21:41:50Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: implement report slice R7 of docs/design/phase4-report.md (section 15, the R7 row): the AI summaries offline, meaning the manifest, the summary-request/1 template, the summary-claims.v1.json schema, the pure claim check, the append-only summary_records fact, the Summaries section's states, and bench report --summaries with the gateway's ReplayBackend only, red first.\nMeasured (Leader, 2026-09-28, main 3463b9b): R0-R5 are merged; egress s1-s3 and the gateway (pipeline, request rendering with nonce fences, schema validation, ReplayBackend) are built; board.export(board) is the canonical statistics export (EXPORT_VERSION 3); the design's section 4 defines the one stored fact summary_records (grain, columns, outcome enum, append-only history rule, invariants: a rewrite fails and a published row with a failing claim cannot be constructed), section 8 defines the inputs, the seven-step call path (no new path to a model), the claim check (shape, resolution, numbers with their exempt list and displayed precision, the zero rule, suggestions), the manifest check that recomputes hashes from the captured payload, the rendering and the seven states S-NONE to S-PUB with their exact copy, and the sequencing (R7 needs no live model call and no EGRESS s2; S-PUB is reachable only through claim_check); section 12 lists the tests and the summary-state fixtures (S-WAIT, S-REFUSED, S-WITHHELD, S-NOTPUB, stale-summary, live-run); ruling R-81 DR-R-4 (sampling: per combo, the pack=on cells whose pass@1 differs from their paired pack=off cell, at most 2 per combo, chosen by cell id, up to 8,000 characters each, each excerpt through egress.check), DR-R-5 (bench report --summaries is the only trigger and refuses while any run is live; plain bench report makes no model call), DR-R-6 (egress per excerpt and per summary; a hit withholds that item as `withheld: sensitive content`) and conditions 3 and 5 (the manifest records the sampling rule's name, the chosen cell ids and each excerpt's length; the live-run refusal exits with a named HB- code added to the design's error table; each withheld excerpt is a row in report-record.json and counts in the header's withheld total) bind; summary_records is a new durable fact, so the Data & Persistence Architect holds the veto on it.\nDone when: report/summaries.py, gateway/schemas/summary-claims.v1.json and the summary-request/1 template exist and follow section 8; summary_records is written only through ledger as an append-only fact with the section 4 columns, and its two invariant tests pass (a rewrite fails; a published row with a failing claim cannot be constructed); the Summaries section (section id summaries) renders all seven states with the section 8 copy verbatim and a published summary's claims with their citations built on html_builder.el; bench report --summaries uses the ReplayBackend only, refuses while any run is live with a named HB- code added to the design's error table, and plain bench report makes no model call; the named tests test_zero_rule_matrix (5 cases), test_number_precision_table, test_manifest_recomputed_from_captured_payload with its two mutation refusals, and test_summaries_refuse_while_run_live (fixture live-run) are each committed red first, failing on an assertion (not an import or collection error), then green; the DR-R-4 sampling, the per-excerpt egress and the report-record rows of R-81 c5 are covered; the Data & Persistence Architect persona (a subagent on claude-sonnet-5 using .claude/agents/data-persistence-architect.md) reviews the summary_records fact before your final commit and its verdict is quoted in that commit's message; named mutants for the zero rule, the number check, the manifest check and the live-run refusal in tests/mutations (a new summaries.json or report.json), each killed; uv run python tools/mutate_check.py --touched main reads every mutation killed; uv run pytest -q -p no:cacheprovider -n auto passes; uv run ruff check src tests tools is clean (run it before each commit); a test earns its place by a failure only it catches; Commit each red and each green immediately.\nNot in scope: any live model call, the Headless backend and EGRESS s2 (R8); the report's other sections (R6a and R6b run in parallel and add Cost frontier, Areas, Scenarios and Context growth: add only the summaries section function and its place in render()); report.js; board.py and board.export; any dependency; any file under runs/; any push. A classifier refusal ends the slice: report the refused message verbatim and do not work around it.\nTier: T2\nFan-out cap: 1\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 75 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-report.md (sections 4, 8, 9, 10, 12, 13, 16); docs/notes/rulings.md R-81 and R-80; docs/design/phase3-gateway-judges.md (the gateway pipeline, fences, schemas, ReplayBackend); src/harness_bench/gateway/{pipeline,request,backend,schema}.py; src/harness_bench/egress.py; src/harness_bench/ledger.py; src/harness_bench/cli.py (cmd_report, the judge-call live-run refusal it mirrors); src/harness_bench/report/{html,html_builder}.py; tests/test_gateway*.py; tests/test_report.py. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-r7 (use absolute paths or cd into it in each shell command).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3MZF9XP9RSYGRYJAMDF8FY5",
+      "shortname": "compile-Goal: implement report slice R7 of docs/design/phase4-report.md (section…",
+      "datetime": "2026-09-28T21:41:56Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement report slice R7 of docs/design/phase4-report.md (section 15, the R7 row): the AI summaries offline, meaning the manifest, the summary-request/1 template, the summary-claims.v1.json schema, the pure claim check, the append-only summary_records fact, the Summaries section's states, and bench report --summaries with the gateway's ReplayBackend only, red first. Measured (Leader, 2026-09-28, main 3463b9b): R0-R5 are merged; egress s1-s3 and the gateway (pipeline, request rendering with nonce fences, schema validation, ReplayBackend) are built; board.export(board) is the canonical statistics export (EXPORT_VERSION 3); the design's section 4 defines the one stored fact summary_records (grain, columns, outcome enum, append-only history rule, invariants: a rewrite fails and a published row with a failing claim cannot be constructed), section 8 defines the inputs, the seven-step call path (no new path to a model), the claim check (shape, resolution, numbers with their exempt list and displayed precision, the zero rule, suggestions), the manifest check that recomputes hashes from the captured payload, the rendering and the seven states S-NONE to S-PUB with their exact copy, and the sequencing (R7 needs no live model call and no EGRESS s2; S-PUB is reachable only through claim_check); section 12 lists the tests and the summary-state fixtures (S-WAIT, S-REFUSED, S-WITHHELD, S-NOTPUB, stale-summary, live-run); ruling R-81 DR-R-4 (sampling: per combo, the pack=on cells whose pass@1 differs from their paired pack=off cell, at most 2 per combo, chosen by cell id, up to 8,000 characters each, each excerpt through egress.check), DR-R-5 (bench report --summaries is the only trigger and refuses while any run is live; plain bench report makes no model call), DR-R-6 (egress per excerpt and per summary; a hit withholds that item as `withheld: sensitive content`) and conditions 3 and 5 (the manifest records the sampling rule's name, the chosen cell ids and each excerpt's length; the live-run refusal exits with a named HB- code added to the design's error table; each withheld excerpt is a row in report-record.json and counts in the header's withheld total) bind; summary_records is a new durable fact, so the Data & Persistence Architect holds the veto on it.\nDone when: report/summaries.py, gateway/schemas/summary-claims.v1.json and the summary-request/1 template exist and follow section 8; summary_records is written only through ledger as an append-only fact with the section 4 columns, and its two invariant tests pass (a rewrite fails; a published row with a failing claim cannot be constructed); the Summaries section (section id summaries) renders all seven states with the section 8 copy verbatim and a published summary's claims with their citations built on html_builder.el; bench report --summaries uses the ReplayBackend only, refuses while any run is live with a named HB- code added to the design's error table, and plain bench report makes no model call; the named tests test_zero_rule_matrix (5 cases), test_number_precision_table, test_manifest_recomputed_from_captured_payload with its two mutation refusals, and test_summaries_refuse_while_run_live (fixture live-run) are each committed red first, failing on an assertion (not an import or collection error), then green; the DR-R-4 sampling, the per-excerpt egress and the report-record rows of R-81 c5 are covered; the Data & Persistence Architect persona (a subagent on claude-sonnet-5 using .claude/agents/data-persistence-architect.md) reviews the summary_records fact before your final commit and its verdict is quoted in that commit's message; named mutants for the zero rule, the number check, the manifest check and the live-run refusal in tests/mutations (a new summaries.json or report.json), each killed; uv run python tools/mutate_check.py --touched main reads every mutation killed; uv run pytest -q -p no:cacheprovider -n auto passes; uv run ruff check src tests tools is clean (run it before each commit); a test earns its place by a failure only it catches; Commit each red and each green immediately.\nNot in scope: any live model call, the Headless backend and EGRESS s2 (R8); the report's other sections (R6a and R6b run in parallel and add Cost frontier, Areas, Scenarios and Context growth: add only the summaries section function and its place in render()); report.js; board.py and board.export; any dependency; any file under runs/; any push. A classifier refusal ends the slice: report the refused message verbatim and do not work around it.\nTier: T2\nFan-out cap: 1\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 75 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-report.md (sections 4, 8, 9, 10, 12, 13, 16); docs/notes/rulings.md R-81 and R-80; docs/design/phase3-gateway-judges.md (the gateway pipeline, fences, schemas, ReplayBackend); src/harness_bench/gateway/{pipeline,request,backend,schema}.py; src/harness_bench/egress.py; src/harness_bench/ledger.py; src/harness_bench/cli.py (cmd_report, the judge-call live-run refusal it mirrors); src/harness_bench/report/{html,html_builder}.py; tests/test_gateway*.py; tests/test_report.py. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-r7 (use absolute paths or cd into it in each shell command).\nTrace\n| clause | trace |\n|---|---|\n| done_when: report/summaries.py, gateway/schemas/summary-claims.v1.json and the summary-request/1 template exist and follow section 8 | phrase: report/summaries.py, gateway/schemas/summary-claims.v1.json and the summary-request/1 template exist and follow section 8 |\n| done_when: summary_records is written only through ledger as an append-only fact with the section 4 columns, and its two invariant tests pass (a rewrite fails | phrase: summary_records is written only through ledger as an append-only fact with the section 4 columns, and its two invariant tests pass (a rewrite fails |\n| done_when: a published row with a failing claim cannot be constructed) | phrase: a published row with a failing claim cannot be constructed) |\n| done_when: the Summaries section (section id summaries) renders all seven states with the section 8 copy verbatim and a published summary's claims with their citations built on html_builder.el | phrase: the Summaries section (section id summaries) renders all seven states with the section 8 copy verbatim and a published summary's claims with their citations built on html_builder.el |\n| done_when: bench report --summaries uses the ReplayBackend only, refuses while any run is live with a named HB- code added to the design's error table, and plain bench report makes no model call | phrase: bench report --summaries uses the ReplayBackend only, refuses while any run is live with a named HB- code added to the design's error table, and plain bench report makes no model call |\n| done_when: the named tests test_zero_rule_matrix (5 cases), test_number_precision_table, test_manifest_recomputed_from_captured_payload with its two mutation refusals, and test_summaries_refuse_while_run_live (fixture live-run) are each committed red first, failing on an assertion (not an import or collection error), then green | phrase: the named tests test_zero_rule_matrix (5 cases), test_number_precision_table, test_manifest_recomputed_from_captured_payload with its two mutation refusals, and test_summaries_refuse_while_run_live (fixture live-run) are each committed red first, failing on an assertion (not an import or collection error), then green |\n| done_when: the DR-R-4 sampling, the per-excerpt egress and the report-record rows of R-81 c5 are covered | phrase: the DR-R-4 sampling, the per-excerpt egress and the report-record rows of R-81 c5 are covered |\n| done_when: the Data & Persistence Architect persona (a subagent on claude-sonnet-5 using .claude/agents/data-persistence-architect.md) reviews the summary_records fact before your final commit and its verdict is quoted in that commit's message | phrase: the Data & Persistence Architect persona (a subagent on claude-sonnet-5 using .claude/agents/data-persistence-architect.md) reviews the summary_records fact before your final commit and its verdict is quoted in that commit's message |\n| done_when: named mutants for the zero rule, the number check, the manifest check and the live-run refusal in tests/mutations (a new summaries.json or report.json), each killed | phrase: named mutants for the zero rule, the number check, the manifest check and the live-run refusal in tests/mutations (a new summaries.json or report.json), each killed |\n| done_when: uv run python tools/mutate_check.py --touched main reads every mutation killed | phrase: uv run python tools/mutate_check.py --touched main reads every mutation killed |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes | phrase: uv run pytest -q -p no:cacheprovider -n auto passes |\n| done_when: uv run ruff check src tests tools is clean (run it before each commit) | phrase: uv run ruff check src tests tools is clean (run it before each commit) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: any live model call, the Headless backend and EGRESS s2 (R8) | phrase: any live model call, the Headless backend and EGRESS s2 (R8) |\n| not_in_scope: the report's other sections (R6a and R6b run in parallel and add Cost frontier, Areas, Scenarios and Context growth: add only the summaries section function and its place in render()) | phrase: the report's other sections (R6a and R6b run in parallel and add Cost frontier, Areas, Scenarios and Context growth: add only the summaries section function and its place in render()) |\n| not_in_scope: report.js | phrase: report.js |\n| not_in_scope: board.py and board.export | phrase: board.py and board.export |\n| not_in_scope: any dependency | phrase: any dependency |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. A classifier refusal ends the slice: report the refused message verbatim and do not work around it. | phrase: any push. A classifier refusal ends the slice: report the refused message verbatim and do not work around it. |\nReferences\n- withheld: sensitive content: unresolved (not found)\n- docs/design/phase4-report.md: docs/design/phase4-report.md sha256 01d38b34f80229ea604d98d88f144d5e36865e71a67d97616bea7c4ce8eea470\n- summary-request/1: unresolved (not found)\n- summary-claims.v1.json: unresolved (not found)\n- report-record.json: unresolved (not found)\n- report/summaries.py: unresolved (not found)\n- gateway/schemas/summary-claims.v1.json: unresolved (not found)\n- .claude/agents/data-persistence-architect.md: unresolved (not found)\n- tests/mutations: unresolved (not found)\n- summaries.json: unresolved (not found)\n- report.json: tests/mutations/report.json sha256 5ace29fc177dd7cb943d2c8c27b54da6ff4ca761513abc871eac6f9d3cdb307b\n- tools/mutate_check.py: tools/mutate_check.py sha256 d376e98dfc678013d439ff6bb229042d1e3830d9f78fbdda331dfcaba42e8811\n- report.js: src/harness_bench/report/assets/report.js sha256 4cb4a723bc08e456d6ddb506e309381d1205339767c4281bab50221e4123583b\n- board.py: src/harness_bench/board.py sha256 0ebe33e2361e4024102cde09ce369285997aa7804166aadbad3204b0c33aac8f\n- runs/: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- docs/design/phase3-gateway-judges.md: docs/design/phase3-gateway-judges.md sha256 11cfe403eba38db6ea0020b2c8226338dc714ac519f78a904b363634626795b7\n- src/harness_bench/gateway/{pipeline,request,backend,schema}.py: unresolved (not found)\n- src/harness_bench/egress.py: src/harness_bench/egress.py sha256 9cd7656c187be779464fa21e50ef52396d1c867610be781aab18828b1d54772a\n- src/harness_bench/ledger.py: src/harness_bench/ledger.py sha256 809188c4a0d27385369bfa175ffd7444dc92d4f4da1801692bea0cc538e0df50\n- src/harness_bench/cli.py: src/harness_bench/cli.py sha256 45cc0be739a3e63713a813c1bebd59cb501e26609c0f63269bec43e304222234\n- src/harness_bench/report/{html,html_builder}.py: unresolved (not found)\n- tests/test_gateway*.py: unresolved (not found)\n- tests/test_report.py: tests/test_report.py sha256 5c99a1933b5cdd4895bf27c7cc3380ca511ad5e9f2b9dfd4a6e74e3c8d8a5f0c\n- C:/Projects/x-harness-x-model-bench-w4-r7: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3MZF3DE3T3GRMHJKWY3PH75\nraw sha256: 2160f6f7ebd834a2172ba0f9c7b6d4db2557c388f448de542b6715ddef191b54\ncompiler model: claude-opus-5-5\nengine seconds: 0.008\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3MZF3DE3T3GRMHJKWY3PH75 for claude-code v1: 21 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "report/summaries.py, gateway/schemas/summary-claims.v1.json and the summary-request/1 template exist and follow section 8",
+            "trace": {
+              "kind": "phrase",
+              "ref": "report/summaries.py, gateway/schemas/summary-claims.v1.json and the summary-request/1 template exist and follow section 8"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "summary_records is written only through ledger as an append-only fact with the section 4 columns, and its two invariant tests pass (a rewrite fails",
+            "trace": {
+              "kind": "phrase",
+              "ref": "summary_records is written only through ledger as an append-only fact with the section 4 columns, and its two invariant tests pass (a rewrite fails"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a published row with a failing claim cannot be constructed)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a published row with a failing claim cannot be constructed)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the Summaries section (section id summaries) renders all seven states with the section 8 copy verbatim and a published summary's claims with their citations built on html_builder.el",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the Summaries section (section id summaries) renders all seven states with the section 8 copy verbatim and a published summary's claims with their citations built on html_builder.el"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "bench report --summaries uses the ReplayBackend only, refuses while any run is live with a named HB- code added to the design's error table, and plain bench report makes no model call",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench report --summaries uses the ReplayBackend only, refuses while any run is live with a named HB- code added to the design's error table, and plain bench report makes no model call"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the named tests test_zero_rule_matrix (5 cases), test_number_precision_table, test_manifest_recomputed_from_captured_payload with its two mutation refusals, and test_summaries_refuse_while_run_live (fixture live-run) are each committed red first, failing on an assertion (not an import or collection error), then green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the named tests test_zero_rule_matrix (5 cases), test_number_precision_table, test_manifest_recomputed_from_captured_payload with its two mutation refusals, and test_summaries_refuse_while_run_live (fixture live-run) are each committed red first, failing on an assertion (not an import or collection error), then green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the DR-R-4 sampling, the per-excerpt egress and the report-record rows of R-81 c5 are covered",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the DR-R-4 sampling, the per-excerpt egress and the report-record rows of R-81 c5 are covered"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the Data & Persistence Architect persona (a subagent on claude-sonnet-5 using .claude/agents/data-persistence-architect.md) reviews the summary_records fact before your final commit and its verdict is quoted in that commit's message",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the Data & Persistence Architect persona (a subagent on claude-sonnet-5 using .claude/agents/data-persistence-architect.md) reviews the summary_records fact before your final commit and its verdict is quoted in that commit's message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "named mutants for the zero rule, the number check, the manifest check and the live-run refusal in tests/mutations (a new summaries.json or report.json), each killed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "named mutants for the zero rule, the number check, the manifest check and the live-run refusal in tests/mutations (a new summaries.json or report.json), each killed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run python tools/mutate_check.py --touched main reads every mutation killed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run python tools/mutate_check.py --touched main reads every mutation killed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider -n auto passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider -n auto passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean (run it before each commit)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean (run it before each commit)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any live model call, the Headless backend and EGRESS s2 (R8)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any live model call, the Headless backend and EGRESS s2 (R8)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the report's other sections (R6a and R6b run in parallel and add Cost frontier, Areas, Scenarios and Context growth: add only the summaries section function and its place in render())",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the report's other sections (R6a and R6b run in parallel and add Cost frontier, Areas, Scenarios and Context growth: add only the summaries section function and its place in render())"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "report.js",
+            "trace": {
+              "kind": "phrase",
+              "ref": "report.js"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "board.py and board.export",
+            "trace": {
+              "kind": "phrase",
+              "ref": "board.py and board.export"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any dependency",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any dependency"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push. A classifier refusal ends the slice: report the refused message verbatim and do not work around it.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push. A classifier refusal ends the slice: report the refused message verbatim and do not work around it."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "report/summaries.py, gateway/schemas/summary-claims.v1.json and the summary-request/1 template exist and follow section 8",
+            "summary_records is written only through ledger as an append-only fact with the section 4 columns, and its two invariant tests pass (a rewrite fails",
+            "a published row with a failing claim cannot be constructed)",
+            "the Summaries section (section id summaries) renders all seven states with the section 8 copy verbatim and a published summary's claims with their citations built on html_builder.el",
+            "bench report --summaries uses the ReplayBackend only, refuses while any run is live with a named HB- code added to the design's error table, and plain bench report makes no model call",
+            "the named tests test_zero_rule_matrix (5 cases), test_number_precision_table, test_manifest_recomputed_from_captured_payload with its two mutation refusals, and test_summaries_refuse_while_run_live (fixture live-run) are each committed red first, failing on an assertion (not an import or collection error), then green",
+            "the DR-R-4 sampling, the per-excerpt egress and the report-record rows of R-81 c5 are covered",
+            "the Data & Persistence Architect persona (a subagent on claude-sonnet-5 using .claude/agents/data-persistence-architect.md) reviews the summary_records fact before your final commit and its verdict is quoted in that commit's message",
+            "named mutants for the zero rule, the number check, the manifest check and the live-run refusal in tests/mutations (a new summaries.json or report.json), each killed",
+            "uv run python tools/mutate_check.py --touched main reads every mutation killed",
+            "uv run pytest -q -p no:cacheprovider -n auto passes",
+            "uv run ruff check src tests tools is clean (run it before each commit)",
+            "a test earns its place by a failure only it catches",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 1,
+          "goal": "implement report slice R7 of docs/design/phase4-report.md (section 15, the R7 row): the AI summaries offline, meaning the manifest, the summary-request/1 template, the summary-claims.v1.json schema, the pure claim check, the append-only summary_records fact, the Summaries section's states, and bench report --summaries with the gateway's ReplayBackend only, red first. Measured (Leader, 2026-09-28, main 3463b9b): R0-R5 are merged; egress s1-s3 and the gateway (pipeline, request rendering with nonce fences, schema validation, ReplayBackend) are built; board.export(board) is the canonical statistics export (EXPORT_VERSION 3); the design's section 4 defines the one stored fact summary_records (grain, columns, outcome enum, append-only history rule, invariants: a rewrite fails and a published row with a failing claim cannot be constructed), section 8 defines the inputs, the seven-step call path (no new path to a model), the claim check (shape, resolution, numbers with their exempt list and displayed precision, the zero rule, suggestions), the manifest check that recomputes hashes from the captured payload, the rendering and the seven states S-NONE to S-PUB with their exact copy, and the sequencing (R7 needs no live model call and no EGRESS s2; S-PUB is reachable only through claim_check); section 12 lists the tests and the summary-state fixtures (S-WAIT, S-REFUSED, S-WITHHELD, S-NOTPUB, stale-summary, live-run); ruling R-81 DR-R-4 (sampling: per combo, the pack=on cells whose pass@1 differs from their paired pack=off cell, at most 2 per combo, chosen by cell id, up to 8,000 characters each, each excerpt through egress.check), DR-R-5 (bench report --summaries is the only trigger and refuses while any run is live; plain bench report makes no model call), DR-R-6 (egress per excerpt and per summary; a hit withholds that item as `withheld: sensitive content`) and conditions 3 and 5 (the manifest records the sampling rule's name, the chosen cell ids and each excerpt's length; the live-run refusal exits with a named HB- code added to the design's error table; each withheld excerpt is a row in report-record.json and counts in the header's withheld total) bind; summary_records is a new durable fact, so the Data & Persistence Architect holds the veto on it.",
+          "main_line_budget": "one slice of at most 75 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-report.md (sections 4, 8, 9, 10, 12, 13, 16); docs/notes/rulings.md R-81 and R-80; docs/design/phase3-gateway-judges.md (the gateway pipeline, fences, schemas, ReplayBackend); src/harness_bench/gateway/{pipeline,request,backend,schema}.py; src/harness_bench/egress.py; src/harness_bench/ledger.py; src/harness_bench/cli.py (cmd_report, the judge-call live-run refusal it mirrors); src/harness_bench/report/{html,html_builder}.py; tests/test_gateway*.py; tests/test_report.py. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-r7 (use absolute paths or cd into it in each shell command).",
+          "not_in_scope": [
+            "any live model call, the Headless backend and EGRESS s2 (R8)",
+            "the report's other sections (R6a and R6b run in parallel and add Cost frontier, Areas, Scenarios and Context growth: add only the summaries section function and its place in render())",
+            "report.js",
+            "board.py and board.export",
+            "any dependency",
+            "any file under runs/",
+            "any push. A classifier refusal ends the slice: report the refused message verbatim and do not work around it."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.008,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3MZF3DE3T3GRMHJKWY3PH75",
+        "raw_sha256": "2160f6f7ebd834a2172ba0f9c7b6d4db2557c388f448de542b6715ddef191b54",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "withheld: sensitive content"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase4-report.md",
+            "reason": null,
+            "sha256": "01d38b34f80229ea604d98d88f144d5e36865e71a67d97616bea7c4ce8eea470",
+            "status": "resolved",
+            "token": "docs/design/phase4-report.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "summary-request/1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "summary-claims.v1.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report-record.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/summaries.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gateway/schemas/summary-claims.v1.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".claude/agents/data-persistence-architect.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "summaries.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/report.json",
+            "reason": null,
+            "sha256": "5ace29fc177dd7cb943d2c8c27b54da6ff4ca761513abc871eac6f9d3cdb307b",
+            "status": "resolved",
+            "token": "report.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "d376e98dfc678013d439ff6bb229042d1e3830d9f78fbdda331dfcaba42e8811",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/assets/report.js",
+            "reason": null,
+            "sha256": "4cb4a723bc08e456d6ddb506e309381d1205339767c4281bab50221e4123583b",
+            "status": "resolved",
+            "token": "report.js"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/board.py",
+            "reason": null,
+            "sha256": "0ebe33e2361e4024102cde09ce369285997aa7804166aadbad3204b0c33aac8f",
+            "status": "resolved",
+            "token": "board.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase3-gateway-judges.md",
+            "reason": null,
+            "sha256": "11cfe403eba38db6ea0020b2c8226338dc714ac519f78a904b363634626795b7",
+            "status": "resolved",
+            "token": "docs/design/phase3-gateway-judges.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/gateway/{pipeline,request,backend,schema}.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/egress.py",
+            "reason": null,
+            "sha256": "9cd7656c187be779464fa21e50ef52396d1c867610be781aab18828b1d54772a",
+            "status": "resolved",
+            "token": "src/harness_bench/egress.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/ledger.py",
+            "reason": null,
+            "sha256": "809188c4a0d27385369bfa175ffd7444dc92d4f4da1801692bea0cc538e0df50",
+            "status": "resolved",
+            "token": "src/harness_bench/ledger.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "45cc0be739a3e63713a813c1bebd59cb501e26609c0f63269bec43e304222234",
+            "status": "resolved",
+            "token": "src/harness_bench/cli.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/report/{html,html_builder}.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_gateway*.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_report.py",
+            "reason": null,
+            "sha256": "5c99a1933b5cdd4895bf27c7cc3380ca511ad5e9f2b9dfd4a6e74e3c8d8a5f0c",
+            "status": "resolved",
+            "token": "tests/test_report.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/x-harness-x-model-bench-w4-r7"
           }
         ],
         "schema": "compiled-prompt/1",
