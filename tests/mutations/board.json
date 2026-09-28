@@ -61,5 +61,12 @@
     "find": "    if base.catalog_version != cat.version or not cat.has_anchors:\n        no_anchors: str | None = f\"no normalisation anchors for catalog {base.catalog_version}\"\n    else:\n        no_anchors = None",
     "replace": "    no_anchors = None",
     "tests": ["tests/test_board.py::test_ver_a_comparison_composite_delta_refused_when_pass_catalog_differs_from_loaded"]
+  },
+  {
+    "name": "every metric normalised, so an anchorless pass_at_1 overwrites the raw gate factor with NA",
+    "file": "src/harness_bench/board.py",
+    "find": "for mid, s in scores.items() if (cat.metrics.get(mid) or {}).get(\"anchor\") is not None}",
+    "replace": "for mid, s in scores.items()}",
+    "tests": ["tests/test_board.py::test_the_gated_composite_computes_under_the_real_catalog_where_pass_at_1_has_no_anchor"]
   }
 ]

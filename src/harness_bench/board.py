@@ -134,6 +134,15 @@ def _cell_task_rep(cell_id: str, plan_by_id: Mapping[str, dict]) -> tuple[str, i
     return str(rec.get("task", "X1")), int(rec.get("rep", 1)), str(rec.get("task_version", ""))
 
 
+def _composite_inputs(scores, cat: Catalog, catalog_version: str) -> dict:
+    """A cell's composite inputs: its raw scores, with each metric that carries an anchor replaced by its normalised
+    value. A metric with no anchor keeps its raw value: pass_at_1 is the gate factor at weight 0 (R-78 DR-S-2
+    amended) and gated() reads it raw; a normalised NA must never overwrite it."""
+    normalised = {mid: compute_normalise(mid, s, cat, catalog_version, cat.hash)
+                  for mid, s in scores.items() if (cat.metrics.get(mid) or {}).get("anchor") is not None}
+    return {**scores, **normalised}
+
+
 def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
     """Build the statistics projection for one pass of a run."""
     if params is None:
@@ -200,11 +209,7 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
         if primary == "gated":  # anchors apply only to a pass of the loaded catalog's version (R-78 c3)
             for c in valid_cells:
                 t, r, _ = _cell_task_rep(c.cell_id, plan_by_id)
-                norm_scores = {
-                    mid: compute_normalise(mid, s, cat, view.catalog_version, cat.hash)
-                    for mid, s in c.scores.items()
-                }
-                all_scores = {**c.scores, **norm_scores}
+                all_scores = _composite_inputs(c.scores, cat, view.catalog_version)
                 gated_score = compute_gated(all_scores, cat)
                 if gated_score.value is not None:
                     obs_gated.append(Obs(task=t, rep=r, value=Decimal(str(gated_score.value))))
@@ -570,11 +575,7 @@ def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = 
                 for c in base_cells:
                     score = c.scores.get(m)
                     if (score is None or score.value is None) and m != "pass_at_1":
-                        norm_scores = {
-                            mid: compute_normalise(mid, s, cat, base.catalog_version, cat.hash)
-                            for mid, s in c.scores.items()
-                        }
-                        all_scores = {**c.scores, **norm_scores}
+                        all_scores = _composite_inputs(c.scores, cat, base.catalog_version)
                         score, _ = compute_area(all_scores, m, cat)
                     if score is not None and score.value is not None:
                         t, r, _ = _cell_task_rep(c.cell_id, base_plan_by_id)
@@ -584,11 +585,7 @@ def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = 
                 for c in view_cells:
                     score = c.scores.get(m)
                     if (score is None or score.value is None) and m != "pass_at_1":
-                        norm_scores = {
-                            mid: compute_normalise(mid, s, cat, view.catalog_version, cat.hash)
-                            for mid, s in c.scores.items()
-                        }
-                        all_scores = {**c.scores, **norm_scores}
+                        all_scores = _composite_inputs(c.scores, cat, view.catalog_version)
                         score, _ = compute_area(all_scores, m, cat)
                     if score is not None and score.value is not None:
                         t, r, _ = _cell_task_rep(c.cell_id, view_plan_by_id)
