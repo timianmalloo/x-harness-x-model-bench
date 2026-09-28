@@ -31,6 +31,7 @@ PRICE_KEYS = {"uncached_input": "input", "cache_read": "cache_read", "cache_writ
 # The closed NA-reason vocabulary this module writes (US-27: never 0).
 NO_USAGE = "no usage recorded"  # matches views.py's own tokens_reason wording for the same fact
 ACP_MISSES_CALLS = "the native record misses calls (token source acp_turn)"  # matches views._model_time's reason
+SESSION_TOTALS = "the native record gives session totals per model, not per call"  # Copilot's last shutdown, per model
 NO_MODEL_CALL_TIME = "no model call time recorded"
 NO_INPUT_TOKENS = "no input tokens recorded"
 NO_CACHE_ACTIVITY = "no cache activity recorded"
@@ -151,12 +152,18 @@ def _cache_write_amplification(totals: dict[str, dict[str, int]]) -> Score:
     return Score(_percent(write, read), None)
 
 
-def _context_growth(totals: dict[str, dict[str, int]], source: str, model_calls: tuple) -> Score:
+def _context_growth(totals: dict[str, dict[str, int]], source: str, model_calls: tuple, harness: str) -> Score:
     """Peak per-call context size (uncached_input + cache_read + cache_write of one call), the largest single
     prompt this cell sent. NA for acp_turn: a peak (max) is not resilient to the calls that record misses (G1) --
-    unlike a sum, one missing call silently understates it, so it is never reported as measured."""
+    unlike a sum, one missing call silently understates it, so it is never reported as measured. NA for Copilot
+    (`harness`): its reader emits one session total per model of the last shutdown, so a max of those rows is not
+    a per-call peak. The cell harness is that grain. `plan.profile_record` freezes `usage_source`, and Copilot
+    and Codex both freeze `native_record`, so a profile key archived plans lack cannot tell them apart (a missing
+    key would have to default to per-call, which is false for Copilot)."""
     if source == "acp_turn":
         return Score(None, ACP_MISSES_CALLS)
+    if harness == "copilot":
+        return Score(None, SESSION_TOTALS)
     peak = max(c["uncached_input"] + c["cache_read"] + c["cache_write"] for c in model_calls)
     return Score(peak, None)
 
@@ -176,6 +183,6 @@ def grade_cell(inp: CellInput) -> dict[str, Score]:
         "output_tokens_per_turn": scored(_output_tokens_per_turn, totals, inp.model_calls),
         "cache_hit_ratio": scored(_cache_hit_ratio, totals),
         "cache_write_amplification": scored(_cache_write_amplification, totals),
-        "context_growth": scored(_context_growth, totals, source, inp.model_calls),
+        "context_growth": scored(_context_growth, totals, source, inp.model_calls, inp.cell["harness"]),
         "compactions": Score(None, NO_COMPACTION_SIGNAL),
     }

@@ -9,10 +9,11 @@ from pathlib import Path
 from harness_bench import config
 from harness_bench.grade import CellInput, Score
 from harness_bench.grade.cost import grade_cell
-from harness_bench.telemetry import Extraction, MissingField, ModelCall
-from harness_bench.telemetry.normalize import TurnUsage
+from harness_bench.telemetry import Extraction, MissingField, ModelCall, copilot
+from harness_bench.telemetry.normalize import TurnUsage, model_call_rows
 
-PLAN = {"profiles": {"codex": {"usage_source": "native_record"}, "claude-code": {"usage_source": "acp_turn"}},
+PLAN = {"profiles": {"codex": {"usage_source": "native_record"}, "claude-code": {"usage_source": "acp_turn"},
+                     "copilot": {"usage_source": "native_record"}},
         "created_at": "2026-09-20T00:00:00"}
 NEW = ("tokens_per_minute", "output_tokens_per_turn", "cache_hit_ratio", "cache_write_amplification", "context_growth")
 
@@ -166,6 +167,16 @@ def test_context_growth_is_na_for_an_acp_turn_harness():
     ex = Extraction(model_calls=[call(uncached_input=900, output=10)])
     scores = grade_cell(ci(harness="claude-code", extraction=ex, turn_usage=[TurnUsage("m", 900, 0, 0, 10, 0)]))
     assert scores["context_growth"] == Score(None, "the native record misses calls (token source acp_turn)")
+
+
+def test_context_growth_is_na_for_a_copilot_session_aggregate():
+    """The off fixture is one shutdown row per model (requests 5): 15 + 46801 + 12170 is the session total,
+    not a call. Copilot's frozen profile is usage_source native_record, the same value Codex freezes."""
+    record = next((Path(__file__).resolve().parent / "fixtures" / "native" / "copilot" / "off").rglob("events.jsonl"))
+    ex = copilot.read(record)
+    rows = model_call_rows("r", "c", ex.session_id or "", ex, "x")
+    scores = grade_cell(ci(harness="copilot", extraction=ex, model_calls=rows))
+    assert scores["context_growth"] == Score(None, "the native record gives session totals per model, not per call")
 
 
 def test_cache_percentages_keep_four_places_at_real_cache_rates():
