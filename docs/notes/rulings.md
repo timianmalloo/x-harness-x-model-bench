@@ -1112,3 +1112,35 @@ Append only. One entry per ruling. Newest last.
 - **Findings for the Leader (not catalog changes):**
   - A smoke-1 `context_growth` single-call peak of 2.48M tokens exceeds any served context window. `cost.py:161` sums uncached + cache_read + cache_write per call; the grader needs a check (Inferred).
   - Judged metrics other than `adr_quality` carry no `scale` while `judge.py:50` writes scale-1 decimals. `scale` is frozen by R-78 condition 1, so this is recorded for 0.6.
+
+## R-80 · 2026-09-28 · Owner seat (Fable) · DR-EG-1..3: (a) report-record.json is the publication record and `egress_events` is retired; the canary source is one production constant set; the operator's email is optional, username and home are OS facts, and the section scan always runs
+
+- **Ruling:**
+  1. **DR-EG-1: (a).** `report-record.json` beside `report.html` is the record of the publication scan: a derived artifact of `bench report`, regenerated with the report, never a ledger fact.
+     - Judge-call withholdings are already ledger facts and need nothing new. A hit is `verdict_uses` outcome `failed`, code `HB-GW-009` (`gateway/pipeline.py:168`, Verified), and the score is null with the reason `judge <model>: failed HB-GW-009` (`grade/judge.py:200`, Verified).
+     - ADR-0006's `egress_events` row is a declared fact with no writer (no `src/` file names it, Verified). Amend ADR-0006 to retire the row and to state the two records that stand in its place: on the judge side, `verdict_uses.outcome/code` plus `model_calls` principal `gateway`; on the publication side, `report-record.json`.
+     - No migration: no row was ever written. The `assume:` in `html.write` closes on this ruling.
+  2. **DR-EG-2: finding first — no production canary exists.**
+     - The US-13 canaries are test values: Copilot's deterministic class strings in `tests/e2e/test_us13_canary.py` (`HB-US13-*`). The Claude Code and Codex controls copy the operator's *real* user files, which are not enumerable values; the operator-identifier classes cover them.
+     - US-48 is withdrawn for authored tasks (ADR-0013); its Harbor canaries are phase 2.
+     - **The source the scan must read is one production constant set, `egress.CANARIES`**, holding the US-13 class strings. The test module imports it (one definition, DM7).
+     - `_judge_calls` and `cmd_report` pass it unconditionally, so `scanned` always names `canary`.
+     - There is no per-run generated canary and no plan or ledger field for one. Nothing plants a canary in a production cell, and a stored value would be a second copy of a test fixture.
+  3. **DR-EG-3: (c), with the email optional and disclosed.**
+     - `Operator.email` becomes `str | None`. Username and home come from the OS, as `cli.py:236` already does.
+     - Without `BENCH_OPERATOR_EMAIL`, `bench report` still runs every other class. `scanned` omits `email`, the record's `egress` reads `partial: email not supplied`, and the report header's egress row says the same.
+     - `bench grade --allow-model-calls` keeps its hard refusal (`HB-USR-002`): a judge payload leaves the machine, whereas a report is a local file until the operator publishes it.
+- **Reasoning:**
+  - One quantity, one definition. A judge withholding already has a durable, hash-chained home with a closed enum and a reason on the score. A second `egress_events` row would be the drift ADR-0006 rejected (DM7). A report spans up to two runs and is rebuilt on every `bench report`, so its scan record belongs beside the artifact it describes, bound by digest.
+  - A caller-supplied canary list with no production caller is a scan that never runs while its class name suggests it might. A constant set costs nothing and makes `scanned` honest.
+  - **Finding, larger than DR-EG-3 states:** with `operator is None`, `_publish` returns the page unscanned (`report/html.py:463-464`, Verified). There is no section scan at all, no credential values and no canaries; only the HB-SEC-001 shape pass follows. Option (a) as it stands would keep that gap. Under (c) the section scan always runs, and `Verdict.scanned` keeps R-60 c4's invariant that a clean result never reads like "not scanned".
+- **Conditions:**
+  1. `report-record.json` gains `report_sha256`, the digest of the written `report.html`, so the pair is bound. The report header names the record path and the withheld count. Red first: a test reading the record's digest against the file.
+  2. The ADR-0006 amendment is reviewed by the Data & Persistence Architect before merge. `docs/design/phase3-gateway-judges.md:324`, `:335`, `:733` and `:962` follow it in the same change.
+  3. DR-EG-2, red first:
+     - `_judge_calls(...)` returns `Calls.canaries == egress.CANARIES`;
+     - `bench report` on a fixture run yields a record where every section's `scanned` contains `canary`.
+     Both fail today, because both call sites pass `()` (`cli.py:249`, `:325`, Verified). The record's `canaries` field names the set's version and `us48: not planted (Harbor, phase 2)`.
+  4. DR-EG-3, red first: `bench report` without the environment variable yields per-section verdicts, `scanned` without `email`, and `egress: partial: email not supplied`. The `operator is None` early return in `_publish` is deleted. `Operator.__post_init__` requires a non-empty username and home; the email is non-empty or `None`.
+  5. Mutants for each new branch join `tests/mutations/egress.json`. The Leader stamps the gate with a real run.
+  6. No live test is required for this ruling; US-46 c2 and US-47 c3 stand as run today.
