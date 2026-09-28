@@ -788,3 +788,12 @@ def test_board_frontier_projection(tmp_path):
     assert fr_exp["cost_per_task"]["value"] is None
     assert "have no cost" in fr_exp["cost_per_task"]["reason"]
     assert fr_exp["wall_per_task"]["value"] is not None
+
+
+def test_projections_carry_only_the_arms_the_run_has(tmp_path):
+    """An off-only run has no pack=on area, scenario or frontier row: a row for an unplanned arm reads as a missing result."""
+    root = make_root(tmp_path)
+    run_dir = stats_run(root, tmp_path, run_id="r-one-arm", tasks=("A1", "B1"), reps=2, arms=("off",), combos=["c"])
+    b = board.build(views.load(run_dir), composites.load_catalog(root))
+    assert b.frontier and b.areas
+    assert {r.pack for r in (*b.areas, *b.scenarios, *b.frontier)} == {"off"}
