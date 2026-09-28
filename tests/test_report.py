@@ -712,3 +712,46 @@ def test_tm1_comparison_refusal_end_to_end_cli_and_html(root, tmp_path, capsys):
     assert "Runs not comparable: combos differ: only in A: c1; only in B: c2" in doc
 
 
+def test_tm2_shared_pack_revision_labelled_a_replication(root, tmp_path, capsys):
+    """T-M2: a shared pack revision is allowed and labelled `a replication` in CLI and HTML."""
+    from harness_bench import cli
+
+    outcomes_a = {
+        ("A1", 1, "off"): 1,
+        ("B1", 1, "off"): 1,
+    }
+    outcomes_b = {
+        ("A1", 1, "off"): 1,
+        ("B1", 1, "off"): 0,
+    }
+    run_a = stats_run(
+        root, tmp_path, run_id="r-tm2-a", tasks=("A1", "B1"), reps=1, arms=("off",), combos=["c1"],
+        outcomes=outcomes_a, pack_revision="95",
+    )
+    run_b = stats_run(
+        root, tmp_path, run_id="r-tm2-b", tasks=("A1", "B1"), reps=1, arms=("off",), combos=["c1"],
+        outcomes=outcomes_b, pack_revision="95",
+    )
+
+    exit_code = cli.main([
+        "--root", str(root),
+        "--runs", str(tmp_path / "runs"),
+        "report", "r-tm2-b",
+        "--baseline", "r-tm2-a",
+    ])
+    assert exit_code == cli.OK
+    captured = capsys.readouterr()
+    assert "same pack revision (95): a replication" in captured.out
+    assert "Excluded as contamination-prone: none in this run" in captured.out
+    assert "Comparison:" in captured.out
+
+    html_file = tmp_path / "runs" / "r-tm2-b" / "report.html"
+    assert html_file.is_file()
+    doc = html_file.read_text(encoding="utf-8")
+    assert '<section id="comparison">' in doc
+    assert "same pack revision (95): a replication" in doc
+    assert "Excluded as contamination-prone: none in this run" in doc
+    assert "data-interval-lo=" in doc
+
+
+

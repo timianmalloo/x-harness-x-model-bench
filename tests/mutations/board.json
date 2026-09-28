@@ -54,5 +54,12 @@
     "find": "    if view.catalog_version != cat.version:\n",
     "replace": "    if False:\n",
     "tests": ["tests/test_board.py::test_anchors_of_another_catalog_version_never_make_the_primary_gated"]
+  },
+  {
+    "name": "another catalog version's anchors compute comparison composite delta (VER-A)",
+    "file": "src/harness_bench/board.py",
+    "find": "    if base.catalog_version != cat.version or not cat.has_anchors:\n        no_anchors: str | None = f\"no normalisation anchors for catalog {base.catalog_version}\"\n    else:\n        no_anchors = None",
+    "replace": "    no_anchors = None",
+    "tests": ["tests/test_board.py::test_ver_a_comparison_composite_delta_refused_when_pass_catalog_differs_from_loaded"]
   }
 ]
