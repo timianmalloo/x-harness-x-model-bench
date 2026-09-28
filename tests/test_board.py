@@ -12,7 +12,7 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
-from archived_runs import make_root
+from archived_runs import CODEX_MODEL, make_root, set_prices
 from stats_fixtures import stats_run
 from test_composites import TEST_CATALOG
 
@@ -121,8 +121,9 @@ def test_tb3_board_export_golden(tmp_path):
     b = board.build(view, dataclasses.replace(TEST_CATALOG, version=view.catalog_version))
     exp = board.export(b)
 
-    # The digest changes only with METHOD, EXPORT_VERSION or the fixture.
-    assert hashlib.sha256(exp).hexdigest() == "c4d3505e6f727f14b9c341a61d58f7459f36a2db54e8b5580f92e8fbc4497257"
+    # The digest changes only with METHOD, EXPORT_VERSION or the fixture. R3 join note: EXPORT_VERSION 2 -> 3
+    # (BoardRow.cost_of_pass added, R-81 c2).
+    assert hashlib.sha256(exp).hexdigest() == "284c364d9f19ca8af9bef6c7864d4e3eaa8ca31c0849ac157dfaa4a61a437b11"
 
     payload = json.loads(exp)
     assert payload["export_version"] == board.EXPORT_VERSION
@@ -787,6 +788,49 @@ def test_board_frontier_projection(tmp_path):
     assert fr_exp["cost_per_task"]["value"] is None
     assert "have no cost" in fr_exp["cost_per_task"]["reason"]
     assert fr_exp["wall_per_task"]["value"] is not None
+
+
+def test_board_cost_of_pass(tmp_path):
+    """BoardRow.cost_of_pass (Leader R3 join note; docs/specs/harness-bench.md:526, :933 name it, undefined):
+    the total cost of the row's valid cells divided by the count of its valid cells whose pass_at_1 is 1. NA
+    with the frontier's "have no cost" reason (reused verbatim) or "no passing cell". Null-for-missing on
+    export."""
+    root = make_root(tmp_path)
+
+    # (1) no price list: the same "have no cost" reason cost_usd already carries.
+    run_dir = stats_run(root, tmp_path, run_id="r-nocost", tasks=("A1",), reps=1, arms=("off",), combos=["c"],
+                        outcomes={("A1", 1, "off"): 1})
+    b = board.build(views.load(run_dir), composites.load_catalog(root))
+    row = b.rows[0]
+    assert row.cost_usd.value is None
+    assert row.cost_of_pass.value is None
+    assert "have no cost" in row.cost_of_pass.reason
+
+    # (2) priced, nothing passes: "no passing cell" (cost_usd still computes -- its mean needs no passing cell).
+    set_prices(root, [{"model": CODEX_MODEL, "effective": "2026-09-01", "source": "s", "input": "1.25",
+                       "output": 10, "cache_read": "0.125", "cache_write": 0}])
+    run_dir2 = stats_run(root, tmp_path, run_id="r-nopass", tasks=("A1",), reps=1, arms=("off",), combos=["c"],
+                         outcomes={("A1", 1, "off"): 0})
+    b2 = board.build(views.load(run_dir2), composites.load_catalog(root))
+    row2 = b2.rows[0]
+    assert row2.cost_usd.value is not None
+    assert row2.cost_of_pass.value is None
+    assert row2.cost_of_pass.reason == "no passing cell"
+
+    # (3) priced, two valid cells, one passes: total cost (mean * 2 valid cells) / 1 passing cell.
+    run_dir3 = stats_run(root, tmp_path, run_id="r-pass", tasks=("A1", "B1"), reps=1, arms=("off",), combos=["c"],
+                         outcomes={("A1", 1, "off"): 1, ("B1", 1, "off"): 0})
+    b3 = board.build(views.load(run_dir3), composites.load_catalog(root))
+    row3 = b3.rows[0]
+    assert row3.n_valid == 2
+    assert row3.cost_usd.value is not None
+    assert row3.cost_of_pass.value == row3.cost_usd.value * 2
+
+    exp = board.export(b3)
+    payload = json.loads(exp)
+    row3_exp = next(r for r in payload["rows"] if r["combo"] == "c")
+    assert row3_exp["cost_of_pass"]["value"] is not None
+    assert abs(Decimal(row3_exp["cost_of_pass"]["value"]) - row3.cost_of_pass.value) < Decimal("0.0001")
 
 
 def test_projections_carry_only_the_arms_the_run_has(tmp_path):

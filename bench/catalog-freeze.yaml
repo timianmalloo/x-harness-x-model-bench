@@ -24,3 +24,8 @@ board_exports:
     golden:
       c44dd2b-no-heads: 7d0aaf24325ca44792b9bd20966a969be3d71b8ef8b296f9099618b6214d71b5
       heads: 7d0aaf24325ca44792b9bd20966a969be3d71b8ef8b296f9099618b6214d71b5
+  '3':
+    catalog: '0.5'
+    golden:
+      c44dd2b-no-heads: c4b36b1f333d7c2ed3afedfd1fc3825a3f0de3803aad3871305314d5b1746c84
+      heads: c4b36b1f333d7c2ed3afedfd1fc3825a3f0de3803aad3871305314d5b1746c84

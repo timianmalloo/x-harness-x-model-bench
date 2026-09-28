@@ -249,8 +249,8 @@
  {
   "name": "HTML: a cell with no warning reads empty, not none",
   "file": "src/harness_bench/report/html.py",
-  "find": "             (_e(\", \".join(w.code for w in c.warnings) or \"none\"), False),\n",
-  "replace": "             (_e(\", \".join(w.code for w in c.warnings)), False),\n",
+  "find": "            html_builder.el(\"td\", None, \", \".join(w.code for w in c.warnings) or \"none\"),\n",
+  "replace": "            html_builder.el(\"td\", None, \", \".join(w.code for w in c.warnings)),\n",
   "tests": [
    "tests/test_report.py::test_the_html_cells_table_reads_none_for_a_cell_without_warnings"
   ]

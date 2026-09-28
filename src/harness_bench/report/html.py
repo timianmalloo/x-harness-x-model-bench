@@ -497,56 +497,174 @@ def _validity(view: views.RunView) -> html_builder.Html:
     return html_builder.el("section", {"id": "validity"}, html_builder.el("h2", None, "Validity"), *body_elements)
 
 
+# R3 (design section 15, 6 row 3, 7): leaderboard interval bars, the evidence popover, and the Runs cell
+# card, built on `html_builder.el` (escape by construction) rather than the `_e()`-in-f-string pattern
+# `_table()` still uses for the sections R5 owns (pack effect, comparison, unchanged this slice).
+
+_UNIT = {"pass_at_1": "pass rate, 0-1", "gated": "correctness-gated composite, 0-100",
+        "partial_credit": "partial credit, 0-1", "cost_usd": "USD", "mutation_score": "mutation score, 0-1",
+        "pass_hat_k": "pass^k rate, 0-1", "cost_of_pass": "USD per passing cell",
+        "tokens_per_solved": "tokens per solved task, integer", "wall_ms": "wall clock, seconds",
+        "tokens": "tokens, integer", "tool_ms": "tool time, milliseconds", "model_ms": "model time, milliseconds",
+        "idle_ms": "idle time, milliseconds"}
+_METRIC_LABEL = {"pass_at_1": "pass@1", "gated": "gated", "partial_credit": "partial credit",
+                 "cost_usd": "cost", "mutation_score": "mutation_score"}
+
+
+def _popover(value_text: str, unit: str, catalog_version: str | None, evidence_content, cell_id: str | None) -> str:
+    """Section 7's popover fields (raw value, unit, catalog version, evidence), plus an in-page link to the
+    cell's own row when one exists. `hidden` until R4 wires the open/close behaviour (markup only, R3)."""
+    fields = html_builder.el(
+        "dl", {"class": "popover-fields"},
+        html_builder.el("dt", None, "Value"), html_builder.el("dd", None, value_text),
+        html_builder.el("dt", None, "Unit"), html_builder.el("dd", None, unit),
+        html_builder.el("dt", None, "Catalog version"), html_builder.el("dd", None, catalog_version or "not recorded"),
+        html_builder.el("dt", None, "Evidence"), html_builder.el("dd", None, evidence_content),
+    )
+    children = [fields]
+    if cell_id:
+        children.append(html_builder.el("a", {"href": f"#cell-{cell_id}"}, "Show cell"))
+    return html_builder.el("span", {"class": "popover", "hidden": True}, *children)
+
+
+def _ev(value_text: str, na: bool, unit: str, catalog_version: str | None, evidence_content, cell_id: str | None) -> str:
+    """One evidence trigger (design section 7): a `button.ev` holding the formatted value, with its popover
+    as an adjacent, still-hidden sibling (R4 wires open/close; R3 ships the markup)."""
+    btn = html_builder.el("button", {"class": "ev na" if na else "ev", "type": "button"}, value_text)
+    pop = _popover(value_text, unit, catalog_version, evidence_content, cell_id)
+    return html_builder.trusted(btn + pop)
+
+
+def _evidence_content(c: views.CellView, metric: str, archive_present: bool):
+    """US-41: `<code>` evidence pointer with the archive, the exact section 9 copy without it, `none`
+    without a pointer. Returns `Html` or a plain `str` -- either is a safe child of `html_builder.el`."""
+    pointer = c.evidence.get(metric)
+    if not pointer:
+        return "none"
+    if archive_present:
+        return html_builder.el("code", None, pointer)
+    return f"This copy doesn't include the run archive. Evidence path: {pointer}."
+
+
+def _interval_mark(iv, decimals: int) -> str:
+    """UIA-5: one element per (row, measure), carrying `data-interval-lo/hi` when computed or the reason
+    text otherwise -- never `0` for missing. The cardinality floor (`ivmark`) is the shared marker class."""
+    if iv.lo is not None and iv.hi is not None:
+        text = html_builder.el("span", None, f"[{iv.lo:.{decimals}f}, {iv.hi:.{decimals}f}]")
+        svg_attrs = {"class": "ivbar ivmark", "width": "64", "height": "12", "viewBox": "0 0 64 12",
+                    "aria-hidden": "true", "data-interval-lo": f"{iv.lo:.{decimals}f}",
+                    "data-interval-hi": f"{iv.hi:.{decimals}f}"}
+        if iv.point is not None:  # never invent a point from lo when none was computed (Leader R3 join note)
+            svg_attrs["data-interval-point"] = f"{iv.point:.{decimals}f}"
+        bar = html_builder.el("svg", svg_attrs, html_builder.el("line", {"x1": "4", "x2": "60", "y1": "6", "y2": "6"}))
+        return html_builder.trusted(text + bar)
+    return html_builder.el("span", {"class": "ivbar-reason ivmark"}, iv.reason or "interval not computed")
+
+
+def _lb_measure_cells(iv, metric: str, decimals: int, catalog_version: str | None) -> tuple[str, str]:
+    """The point cell (an evidence-trigger button; DR-R aggregates have no single cell evidence pointer, so
+    its popover's cross-link is `#runs` -- `assume:` a board row's evidence is "the cells behind it", not
+    one pointer; confirmed by R4 wiring that link to filter Runs on this row's combo/pack; if false, the
+    link is merely inert until R4, no regression, since script-src stays 'none' until then) and the
+    interval-or-reason cell (UIA-5)."""
+    na = iv.point is None
+    text = f"{iv.point:.{decimals}f}" if not na else (f"NA ({iv.reason})" if iv.reason else "NA")
+    evidence = html_builder.el("a", {"href": "#runs"}, "Show cells")
+    point_td = html_builder.el("td", {"class": "num"}, html_builder.trusted(
+        _ev(text, na, _UNIT.get(metric, ""), catalog_version, evidence, None)))
+    interval_td = html_builder.el("td", None, html_builder.trusted(_interval_mark(iv, decimals)))
+    return point_td, interval_td
+
+
+def _lb_measure_ev_cell(measure, metric: str, formatter, catalog_version: str | None) -> str:
+    """A leaderboard `Measure` column (pass^k, cost-of-pass, tokens per solved, wall per cell) as an
+    evidence-trigger button (design section 6 row 3: every displayed score is `.ev`). The cross-link is
+    `#runs`, the same board-row-aggregate `assume:` `_lb_measure_cells` documents above."""
+    na = measure.value is None
+    text = formatter(measure)
+    evidence = html_builder.el("a", {"href": "#runs"}, "Show cells")
+    return html_builder.el("td", {"class": "num"}, html_builder.trusted(
+        _ev(text, na, _UNIT.get(metric, ""), catalog_version, evidence, None)))
+
+
+def _rank_cell(r: board.BoardRow) -> str:
+    """Design section 6 row 3: a tied rank shows `1=`, with `(intervals overlap)` on focus. Chosen shape:
+    the rank cell's own `ev` popover (button.ev holding the rank text, a hidden popover holding the design's
+    exact tie copy) -- the same on-focus-reveal pattern every other score uses here, not the generic
+    value/unit/catalog-version shape (a tie has no raw value to disclose). An untied rank or the unranked
+    mark ("—") is plain text: there is nothing to reveal."""
+    if not r.rank:
+        return html_builder.el("td", None, "—")
+    if r.rank.endswith("="):
+        btn = html_builder.el("button", {"class": "ev", "type": "button"}, r.rank)
+        pop = html_builder.el("span", {"class": "popover", "hidden": True}, "(intervals overlap)")
+        return html_builder.el("td", None, html_builder.trusted(btn + pop))
+    return html_builder.el("td", None, r.rank)
+
+
+def _measure_label(board_obj: board.Board) -> str:
+    return "correctness-gated composite" if board_obj.primary == "gated" else "pass@1"
+
+
 def _leaderboard(view: views.RunView, board_obj: board.Board) -> str:
     if not any(c.outcome == "completed" for c in view.cells):
-        return (f'<section id="leaderboard"><h2>Leaderboard</h2><p>No cell completed in this run. '
-                f"Run bench status {_e(view.run_id)} to see why.</p></section>")
-    headers = [("Rank", False), ("Combo", False), ("Pack", False), ("Valid cells", True), ("pass@1", True), ("pass@1 95%", False),
-               ("Gated", True), ("Gated 95%", False), ("Tokens per cell", True), ("Wall per cell", True), ("Cost per cell", True)]
-    rows = []
+        return html_builder.el(
+            "section", {"id": "leaderboard"}, html_builder.el("h2", None, "Leaderboard"),
+            html_builder.el("p", None, f"No cell completed in this run. Run bench status {view.run_id} to see why."),
+        )
+    caption = f"Ranked on {_measure_label(board_obj)}. Rows that share a rank cannot be separated by this data."
+    # Design section 6 row 3's order: rank · combo · pack · gated ± interval · pass@1 ± interval · pass^k ·
+    # cost-of-pass · tokens per solved · wall per cell · valid cells (Leader R3 join note).
+    headers = [("Rank", False), ("Combo", False), ("Pack", False), ("Gated", True), ("Gated 95%", False),
+               ("pass@1", True), ("pass@1 95%", False), ("pass^k", True), ("Cost per pass", True),
+               ("Tokens per solved", True), ("Wall per cell", True), ("Valid cells", True)]
+    head_row = html_builder.el("tr", None, *(
+        html_builder.el("th", {"scope": "col", "class": "num"} if num else {"scope": "col"}, h) for h, num in headers))
+    frontier_by_key = {(fr.combo, fr.pack): fr for fr in board_obj.frontier}
+    no_solved = stats.Measure(None, "not recorded")
+
+    body_rows = []
     for r in board_obj.rows:
-        p1_pt = f"{r.pass_at_1.point:.2f}" if r.pass_at_1.point is not None else f"NA ({r.pass_at_1.reason})"
-        if r.pass_at_1.lo is not None and r.pass_at_1.hi is not None:
-            p1_attr = f' data-interval-lo="{r.pass_at_1.lo:.2f}" data-interval-hi="{r.pass_at_1.hi:.2f}"'
-            p1_iv = f"[{r.pass_at_1.lo:.2f}, {r.pass_at_1.hi:.2f}]"
-        else:
-            p1_attr = ""
-            p1_iv = _e(r.pass_at_1.reason or "interval not computed")
+        combo_text = report.flag_if_claude_code(report.flag_if_codex(r.combo, r.harness), r.harness)
+        g_td, g_iv_td = _lb_measure_cells(r.gated, "gated", 1, view.catalog_version)
+        p1_td, p1_iv_td = _lb_measure_cells(r.pass_at_1, "pass_at_1", 2, view.catalog_version)
+        tokens_per_solved = frontier_by_key.get((r.combo, r.pack))
+        tokens_per_solved = tokens_per_solved.tokens_per_solved if tokens_per_solved is not None else no_solved
+        body_rows.append(html_builder.el(
+            "tr", None,
+            _rank_cell(r),
+            html_builder.el("td", None, combo_text),
+            html_builder.el("td", None, r.pack),
+            html_builder.trusted(g_td), html_builder.trusted(g_iv_td),
+            html_builder.trusted(p1_td), html_builder.trusted(p1_iv_td),
+            html_builder.trusted(_lb_measure_ev_cell(r.pass_hat_k, "pass_hat_k", report.rate, view.catalog_version)),
+            html_builder.trusted(_lb_measure_ev_cell(r.cost_of_pass, "cost_of_pass", report.usd, view.catalog_version)),
+            html_builder.trusted(_lb_measure_ev_cell(tokens_per_solved, "tokens_per_solved", report.tokens, view.catalog_version)),
+            html_builder.trusted(_lb_measure_ev_cell(r.wall_ms, "wall_ms", report.seconds, view.catalog_version)),
+            html_builder.el("td", {"class": "num"}, f"{r.n_valid}/{r.n_cells} cells"),
+        ))
+    table = html_builder.el(
+        "table", None,
+        html_builder.el("caption", {"id": "leaderboard-caption"}, caption),
+        html_builder.el("thead", None, head_row),
+        html_builder.el("tbody", None, *body_rows),
+    )
+    region = html_builder.el(
+        "div", {"class": "region", "role": "region", "tabindex": "0", "aria-labelledby": "leaderboard-caption"}, table)
 
-        gated_pt = f"{r.gated.point:.1f}" if r.gated.point is not None else f"NA ({r.gated.reason})"
-        if r.gated.lo is not None and r.gated.hi is not None:
-            gated_attr = f' data-interval-lo="{r.gated.lo:.1f}" data-interval-hi="{r.gated.hi:.1f}"'
-            gated_iv = f"[{r.gated.lo:.1f}, {r.gated.hi:.1f}]"
-        else:
-            gated_attr = ""
-            gated_iv = _e(r.gated.reason or "interval not computed")
-
-        combo_cell = (_e(report.flag_if_claude_code(report.flag_if_codex(r.combo, r.harness), r.harness)), False)
-
-        row = [
-            (_e(r.rank or "unranked"), False),
-            combo_cell,
-            (_e(r.pack), False),
-            (f"{r.n_valid}/{r.n_cells} cells", True),
-            (_e(p1_pt), True, p1_attr),
-            (p1_iv, False, p1_attr),
-            (_e(gated_pt), True, gated_attr),
-            (gated_iv, False, gated_attr),
-            (_e(report.tokens(r.tokens)), True),
-            (_e(report.seconds(r.wall_ms)), True),
-            (_e(report.usd(r.cost_usd)), True),
-        ]
-        rows.append(row)
-
-    table_html = _table("leaderboard", "One row per combo and pack", headers, rows)
-    footnotes = []
+    parts = [html_builder.el("h2", None, "Leaderboard")]
+    ranked_all_tied = bool(board_obj.rows) and all(r.rank in ("1", "1=") for r in board_obj.rows)  # section 9 copy
+    if ranked_all_tied:
+        parts.append(html_builder.el(
+            "p", None, f"All {len(board_obj.rows)} rows share rank 1: their intervals overlap, "
+                       "so this run cannot separate them."))
+    parts.append(region)
     for r in board_obj.rows:
-        if not r.rank and r.rank_reason:
-            footnotes.append(f"<p>{_e(r.combo)} {_e(r.pack)}: {_e(r.rank_reason)}</p>")  # rank_reason carries "not ranked: "
+        if not r.rank and r.rank_reason:  # unranked row: the design's "—" mark plus this footnote
+            parts.append(html_builder.el("p", None, f"{r.combo} {r.pack}: {r.rank_reason}"))
         if r.footnote:
-            footnotes.append(f"<p>{_e(r.combo)} {_e(r.pack)}: {_e(r.footnote)}</p>")
-    fn_html = "".join(footnotes)
-    return f'<section id="leaderboard"><h2>Leaderboard</h2>{table_html}{fn_html}</section>'
+            parts.append(html_builder.el("p", None, f"{r.combo} {r.pack}: {r.footnote}"))
+    return html_builder.el("section", {"id": "leaderboard"}, *parts)
 
 
 def _pack_effect(board_obj: board.Board) -> str:
@@ -584,38 +702,105 @@ def _pack_effect(board_obj: board.Board) -> str:
     return f'<section id="pack-effect"><h2>Pack effect</h2>{excl}{body}</section>'
 
 
-def _evidence(c: views.CellView, archive_present: bool) -> str:
-    pointer = c.evidence.get("pass_at_1")
-    if not pointer:
-        return "none"
-    if archive_present:
-        return f"<code>{_e(pointer)}</code>"
-    return _e(f"This copy doesn't include the run archive. Evidence path: {pointer}.")
+def _cell_card(c: views.CellView, archive_present: bool, catalog_version: str | None) -> str:
+    """Design section 6 row 10: the inline `<details>` cell card -- fields, scores with evidence, and the
+    cause for invalid/blocked/failed/stopped/withheld. The one place section 10's STRIDE row names for
+    agent-derived text (a warning's message here stands in for the clarifying-question/judge-rationale/test-
+    output text R7-R9 add): built on `el()`, so it is inert by construction (UIA-15), never `trusted()`."""
+    fields = [("Combo", c.combo), ("Harness", c.harness), ("Model", c.model), ("Outcome", c.outcome),
+              ("Validity", c.validity + (f" {c.validity_code}" if c.validity_code else ""))]
+    if c.cause:
+        fields.append(("Cause", c.cause + (f" ({c.code})" if c.code else "")))
+    dl_children: list = []
+    for k, v in fields:
+        dl_children += [html_builder.el("dt", None, k), html_builder.el("dd", None, v)]
+    dl = html_builder.el("dl", {"class": "cell-fields"}, *dl_children)
+
+    score_items = []
+    for metric in ("pass_at_1", "partial_credit", "cost_usd", "mutation_score"):
+        measure = c.scores.get(metric)
+        if measure is None:
+            continue
+        na = measure.value is None
+        text = report.usd(measure) if metric == "cost_usd" else report.rate(measure)
+        evidence = _evidence_content(c, metric, archive_present)
+        score_items.append(html_builder.el(
+            "li", None, html_builder.el("span", {"class": "small"}, f"{_METRIC_LABEL.get(metric, metric)}: "),
+            html_builder.trusted(_ev(text, na, _UNIT.get(metric, ""), catalog_version, evidence, c.cell_id))))
+    scores_block = (html_builder.el("ul", {"class": "cell-scores"}, *score_items) if score_items
+                    else html_builder.el("p", {"class": "small"}, "No scores recorded."))
+
+    children = [html_builder.el("summary", None, "Cell card"), dl, scores_block]
+    if c.warnings:  # section 10 STRIDE row: a warning's message is agent-derived-shaped text, escaped by el()
+        children.append(html_builder.el("ul", {"class": "cell-warnings"},
+                                        *(html_builder.el("li", None, f"{w.code} {w.message}") for w in c.warnings)))
+    return html_builder.el("details", None, *children)
+
+
+def _runs_ev_td(text: str, na: bool, metric: str, c: views.CellView, archive_present: bool,
+                catalog_version: str | None) -> str:
+    """A Runs numeric cell as an evidence-trigger button (design section 6 preamble: every number is an
+    evidence trigger -- not only the cell card's own copies). `_evidence_content` reads `none` for a
+    telemetry fact (tokens/wall/tool/model/idle) that carries no per-metric evidence pointer."""
+    evidence = _evidence_content(c, metric, archive_present)
+    return html_builder.el("td", {"class": "num"}, html_builder.trusted(
+        _ev(text, na, _UNIT.get(metric, ""), catalog_version, evidence, c.cell_id)))
 
 
 def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str], run_dir: Path | None = None,
-          root: Path | None = None) -> str:
+          root: Path | None = None, catalog_version: str | None = None) -> str:
     if not view.cells:
-        return '<section id="runs"><h2>Runs</h2><p>No cells in this run.</p></section>'
+        return html_builder.el("section", {"id": "runs"}, html_builder.el("h2", None, "Runs"),
+                               html_builder.el("p", None, "No cells in this run."))
     show_mutation = report.has_d1_cell(view.plan)
     mutation = report.d1_mutation_values(root, run_dir, view) if show_mutation else {}
     headers = [("Cell", False), ("Outcome", False), ("Validity", False), ("pass@1", True), ("Partial credit", True),
                *((("mutation_score", False),) if show_mutation else ()), ("Tokens", True),
                ("Wall", True), ("Tool time", True), ("Model time", True), ("Idle", True), ("Cost", True), ("Context window", False),
-               ("Warnings", False), ("Evidence", False)]
+               ("Warnings", False), ("Evidence", False), ("Cell card", False)]
+    head_row = html_builder.el("tr", None, *(
+        html_builder.el("th", {"scope": "col", "class": "num"} if num else {"scope": "col"}, h) for h, num in headers))
     na = views.Measure(None, "not graded")
-    rows = [[(_e(report.flag_if_claude_code(report.flag_if_codex(
-                c.label + (f" · {COORDINATION_BANNER}" if c.scenario == 6 else ""), c.harness), c.harness)), False),
-             (_e(c.outcome + (f" ({c.cause}, {c.code})" if c.code else "")), False),
-             (_e(c.validity + (f" {c.validity_code}" if c.validity_code else "")), False),
-             (_e(report.rate(c.scores.get("pass_at_1", na))), True), (_e(report.rate(c.scores.get("partial_credit", na))), True),
-             *([(_e(mutation.get(c.cell_id, "")), False)] if show_mutation else []),
-             (_e(report.cell_tokens(c.tokens, c.tokens_reason)), True), (_e(report.seconds(c.wall_ms)), True),
-             (_e(report.millis(c.tool_ms)), True), (_e(report.millis(c.model_ms)), True), (_e(report.millis(c.idle_ms)), True),
-             (_e(report.usd(c.scores.get("cost_usd", na))), True), (_e(report.context_window(c.harness, tags.get(c.cell_id))), False),
-             (_e(", ".join(w.code for w in c.warnings) or "none"), False),
-             (_evidence(c, archive_present), False)] for c in view.cells]
-    return f'<section id="runs"><h2>Runs</h2>{_table("runs", "Every cell of the run", headers, rows)}</section>'
+
+    body_rows = []
+    for c in view.cells:
+        label_text = report.flag_if_claude_code(report.flag_if_codex(
+            c.label + (f" · {COORDINATION_BANNER}" if c.scenario == 6 else ""), c.harness), c.harness)
+        p1_m = c.scores.get("pass_at_1", na)
+        pc_m = c.scores.get("partial_credit", na)
+        cost_m = c.scores.get("cost_usd", na)
+        row_cells = [
+            html_builder.el("td", None, label_text),
+            html_builder.el("td", None, c.outcome + (f" ({c.cause}, {c.code})" if c.code else "")),
+            html_builder.el("td", None, c.validity + (f" {c.validity_code}" if c.validity_code else "")),
+            _runs_ev_td(report.rate(p1_m), p1_m.value is None, "pass_at_1", c, archive_present, catalog_version),
+            _runs_ev_td(report.rate(pc_m), pc_m.value is None, "partial_credit", c, archive_present, catalog_version),
+        ]
+        if show_mutation:
+            row_cells.append(html_builder.el("td", None, mutation.get(c.cell_id, "")))
+        row_cells += [
+            _runs_ev_td(report.cell_tokens(c.tokens, c.tokens_reason), not c.tokens, "tokens", c, archive_present, catalog_version),
+            _runs_ev_td(report.seconds(c.wall_ms), c.wall_ms.value is None, "wall_ms", c, archive_present, catalog_version),
+            _runs_ev_td(report.millis(c.tool_ms), c.tool_ms.value is None, "tool_ms", c, archive_present, catalog_version),
+            _runs_ev_td(report.millis(c.model_ms), c.model_ms.value is None, "model_ms", c, archive_present, catalog_version),
+            _runs_ev_td(report.millis(c.idle_ms), c.idle_ms.value is None, "idle_ms", c, archive_present, catalog_version),
+            _runs_ev_td(report.usd(cost_m), cost_m.value is None, "cost_usd", c, archive_present, catalog_version),
+            html_builder.el("td", None, report.context_window(c.harness, tags.get(c.cell_id))),
+            html_builder.el("td", None, ", ".join(w.code for w in c.warnings) or "none"),
+            html_builder.el("td", None, _evidence_content(c, "pass_at_1", archive_present)),
+            html_builder.el("td", None, _cell_card(c, archive_present, catalog_version)),
+        ]
+        body_rows.append(html_builder.el("tr", {"id": f"cell-{c.cell_id}"}, *row_cells))
+
+    table = html_builder.el(
+        "table", None,
+        html_builder.el("caption", {"id": "runs-caption"}, "Every cell of the run"),
+        html_builder.el("thead", None, head_row),
+        html_builder.el("tbody", None, *body_rows),
+    )
+    region = html_builder.el(
+        "div", {"class": "region", "role": "region", "tabindex": "0", "aria-labelledby": "runs-caption"}, table)
+    return html_builder.el("section", {"id": "runs"}, html_builder.el("h2", None, "Runs"), region)
 
 
 def _comparison(comparison_obj: board.Comparison | str | None) -> str:
@@ -716,20 +901,17 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
         board_obj = board.build(view, cat, params=params)
 
     # R1: the shell (head, CSP, nav/jump-links, section order) goes through html_builder + model
-    # (design section 5); R2-R9 retire trusted() marking section by section as each renderer moves onto `el()` directly.
-    header_el = _header(view, tags, _permission_modes(run_dir), judging, root, run_dir, board_obj=board_obj, params=params)
-    validity_el = _validity(view)
+    # (design section 5); header, validity (R2), leaderboard and runs (R3) are built on `html_builder.el` end to
+    # end, so they are already `Html`; pack effect and comparison stay `trusted()`-marked here until R5.
     comparison_html = _comparison(comparison_obj)
     sections = [
-        model.Section("header", "Run header", header_el),
-        model.Section("validity", "Validity", validity_el),
+        model.Section("header", "Run header",
+                      _header(view, tags, _permission_modes(run_dir), judging, root, run_dir, board_obj=board_obj, params=params)),
+        model.Section("validity", "Validity", _validity(view)),
+        model.Section("leaderboard", "Leaderboard", _leaderboard(view, board_obj)),
+        model.Section("pack-effect", "Pack effect", html_builder.trusted(_pack_effect(board_obj))),
+        model.Section("runs", "Runs", _runs(view, archive_present, tags, run_dir, root, catalog_version=view.catalog_version)),
     ]
-    for sid, title, body in (
-        ("leaderboard", "Leaderboard", _leaderboard(view, board_obj)),
-        ("pack-effect", "Pack effect", _pack_effect(board_obj)),
-        ("runs", "Runs", _runs(view, archive_present, tags, run_dir, root)),
-    ):
-        sections.append(model.Section(sid, title, html_builder.trusted(body)))
     if comparison_html:
         sections.append(model.Section("comparison", "Comparison", html_builder.trusted(comparison_html)))
     return model.page(model.ReportModel(run_id=view.run_id, sections=tuple(sections)), style=STYLE)

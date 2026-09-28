@@ -12,8 +12,9 @@ from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 
 # Any change of METHOD, an export key, an encoding (precision, null for missing)
-# or a row or column addition bumps EXPORT_VERSION (R-81 c2).
-EXPORT_VERSION: int = 2
+# or a row or column addition bumps EXPORT_VERSION (R-81 c2). R3 join note: BoardRow.cost_of_pass
+# added (a row-shape change) -> 2 -> 3.
+EXPORT_VERSION: int = 3
 
 from harness_bench import ledger
 from harness_bench.composites import Catalog
@@ -58,6 +59,7 @@ class BoardRow:
     tokens: Measure
     wall_ms: Measure
     cost_usd: Measure
+    cost_of_pass: Measure
     footnote: str | None = None
 
     @property
@@ -302,6 +304,25 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
         tokens_m = Measure(_mean([Decimal(u) for u in used])) if used else Measure(None, "no valid cell with usage")
         wall_m = Measure(_mean([Decimal(w) for w in walls])) if walls else Measure(None, "no valid cell with wall time")
 
+        # Cost-of-pass (Leader R3 join note; docs/specs/harness-bench.md:526, :933 name it, without defining
+        # it). assume: the total cost of the row's valid cells, divided by the count of its valid cells whose
+        # pass_at_1 is 1 -- a per-passing-cell rate, unlike frontier's tokens_per_solved (a per-solved-task
+        # mean, phase4-statistics Z-6); confirmed by: a spec amendment naming the divisor explicitly; if
+        # false, this is the wrong denominator and cost-of-pass reads too low or too high by that ratio until
+        # corrected -- NA and its reasons are unaffected either way.
+        if not valid_cells:
+            cost_of_pass = Measure(None, "no valid cell")
+        elif no_cost:
+            cost_reason = no_cost[0].scores.get("cost_usd", Measure(None, "not graded")).reason
+            cost_of_pass = Measure(None, f"{len(no_cost)} of {len(valid_cells)} valid cells have no cost: {cost_reason}")
+        else:
+            passing = [c for c in valid_cells if c.scores.get("pass_at_1", Measure(None)).value == 1]
+            if not passing:
+                cost_of_pass = Measure(None, "no passing cell")
+            else:
+                total_cost = sum((Decimal(str(c.scores["cost_usd"].value)) for c in valid_cells), Decimal(0))
+                cost_of_pass = Measure(total_cost / Decimal(len(passing)))
+
         primary_iv = iv_p1 if primary == "pass_at_1" else iv_gated
         rank_inputs[(combo, pack)] = (primary_iv, iv_p1)
 
@@ -321,6 +342,7 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
             tokens=tokens_m,
             wall_ms=wall_m,
             cost_usd=cost,
+            cost_of_pass=cost_of_pass,
             footnote=footnote,
         )
         rows_dict[(combo, pack)] = row
@@ -860,6 +882,7 @@ def export(board: Board, comparison: Comparison | None = None) -> bytes:
             "tokens": _enc_measure(r.tokens),
             "wall_ms": _enc_measure(r.wall_ms),
             "cost_usd": _enc_measure(r.cost_usd),
+            "cost_of_pass": _enc_measure(r.cost_of_pass),
             "footnote": r.footnote,
         }
         for r in board.rows
