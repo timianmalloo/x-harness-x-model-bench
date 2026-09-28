@@ -170,12 +170,13 @@ def test_the_run_record_binds_to_the_written_report_by_digest_and_the_header_nam
         f"scanned; {withheld} of {total} sections withheld; record report-record.json"
 
 
-def _bench_report(capsys, monkeypatch, tmp_path: Path, combos: dict[str, str] | None = None) -> tuple[Path, str]:
+def _bench_report(capsys, monkeypatch, tmp_path: Path, combos: dict[str, str] | None = None,
+                  username: str | None = None) -> tuple[Path, str]:
     """`bench grade` then `bench report` on a fixture run through cli.main, with a synthetic OS login: `~` is an
     empty folder under tmp_path and the user name is random (R-42). Returns the run folder and the page."""
     monkeypatch.setenv("USERPROFILE", str(tmp_path / "fake-home"))
     monkeypatch.setenv("HOME", str(tmp_path / "fake-home"))
-    monkeypatch.setenv("LOGNAME", f"u{token_hex(5)}")  # getpass.getuser() reads LOGNAME first
+    monkeypatch.setenv("LOGNAME", username or f"u{token_hex(5)}")  # getpass.getuser() reads LOGNAME first
     root = judged_root(tmp_path)
     run_dir = make_run(root, tmp_path, {"a": GOOD}, combos=combos or {"a": "combo-placeholder"})
     for command in ("grade", "report"):
@@ -193,11 +194,32 @@ def test_bench_report_scans_every_section_for_the_production_canary_set(capsys, 
     assert record["canaries"] == {"version": egress.CANARIES_VERSION, "us48": "not planted (Harbor, phase 2)"}
 
 
-def test_without_the_operators_identifiers_the_publication_scan_is_not_recorded(tmp_path):
+def test_without_an_operator_the_section_scan_still_runs_on_the_os_login(tmp_path, monkeypatch):
+    # R-80 c4: the operator-None early return is gone; username and home are OS facts, the email is simply absent.
+    monkeypatch.setenv("LOGNAME", f"u{token_hex(5)}")
+    monkeypatch.setenv("USERPROFILE", str(tmp_path / "fake-home"))
+    monkeypatch.setenv("HOME", str(tmp_path / "fake-home"))
     root = judged_root(tmp_path)
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     runner.run_pass(run_dir, root)
     html.write(run_dir, views.load(run_dir), set(), root=root)
     record = _record(run_dir)
-    assert record["egress"] == "not recorded: the operator's identifiers were not supplied"
-    assert record["sections"] == [] and record["withheld"] == []
+    assert record["egress"] == "partial: email not supplied"
+    assert record["sections"] and all(s["scanned"] == ["token_shape", "username", "home_path"]
+                                      for s in record["sections"])
+
+
+def test_bench_report_without_the_email_scans_every_other_class_and_says_partial(capsys, monkeypatch, tmp_path):
+    # R-80 c4 (DR-EG-3): the email is optional and disclosed; the OS user name is still withheld.
+    monkeypatch.delenv("BENCH_OPERATOR_EMAIL", raising=False)
+    username = f"u{token_hex(5)}"
+    run_dir, page = _bench_report(capsys, monkeypatch, tmp_path, combos={"a": username}, username=username)
+    record = _record(run_dir)
+    assert record["egress"] == "partial: email not supplied"
+    sections = {s["section"]: s for s in record["sections"]}
+    assert {"header", "validity", "leaderboard", "runs"} <= set(sections)
+    assert all("email" not in s["scanned"] and {"username", "home_path", "canary"} <= set(s["scanned"])
+               for s in sections.values())
+    assert record["withheld"] and all(sections[s]["classes"] == ["username"] for s in record["withheld"])
+    assert username not in page
+    assert _dd(page, "Publication egress").startswith("partial: email not supplied; ")

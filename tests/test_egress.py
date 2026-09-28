@@ -259,6 +259,13 @@ def test_the_operator_refuses_an_empty_identifier(name, blank):
         _operator(**{name: blank})
 
 
+def test_an_operator_without_an_email_scans_every_other_class_and_never_names_email():
+    # R-80 c4 (DR-EG-3): the email is optional; its absence is disclosed by `scanned`, never read as "clean".
+    operator = _operator(email=None)
+    assert egress.check(PAYLOAD, destination=DEST, operator=operator).scanned == ("token_shape", "username", "home_path")
+    assert egress.check(_plant(operator.username), destination=DEST, operator=operator).classes == ("username",)
+
+
 def test_the_operator_is_required():
     with pytest.raises(TypeError):
         egress.check(PAYLOAD, destination=DEST)  # type: ignore[call-arg]
