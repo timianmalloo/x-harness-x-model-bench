@@ -197,7 +197,7 @@ def test_the_header_and_drill_down_disclose_a_tagged_cells_context_window(root, 
     header = re.search(r'<section id="header".*?</section>', doc, re.DOTALL).group(0)
     assert "<dt>Context window</dt><dd>Claude Code cells ran with the 1M context window</dd>" in header
     runs = re.search(r'<section id="runs".*?</section>', doc, re.DOTALL).group(0)
-    row = next(r for r in re.findall(r"<tr>.*?</tr>", runs, re.DOTALL) if "cc-opus" in r)
+    row = next(r for r in re.findall(r"<tr[^>]*>.*?</tr>", runs, re.DOTALL) if "cc-opus" in r)
     assert "<td>Claude Code cells ran with the 1M context window</td>" in row
 
 
@@ -207,7 +207,7 @@ def test_the_header_and_drill_down_read_not_recorded_without_a_tag(root, tmp_pat
     header = re.search(r'<section id="header".*?</section>', doc, re.DOTALL).group(0)
     assert "<dt>Context window</dt><dd>not recorded</dd>" in header
     runs = re.search(r'<section id="runs".*?</section>', doc, re.DOTALL).group(0)
-    row = next(r for r in re.findall(r"<tr>.*?</tr>", runs, re.DOTALL) if "codex-sol" in r)
+    row = next(r for r in re.findall(r"<tr[^>]*>.*?</tr>", runs, re.DOTALL) if "codex-sol" in r)
     assert "<td>not recorded</td>" in row
 
 
@@ -389,7 +389,7 @@ def test_the_leaderboard_and_cells_table_flag_only_the_codex_rows():
     board = re.search(r'<section id="leaderboard".*?</section>', doc, re.DOTALL).group(0)
     runs = re.search(r'<section id="runs".*?</section>', doc, re.DOTALL).group(0)
     for section in (board, runs):
-        rows = re.findall(r"<tr>.*?</tr>", section, re.DOTALL)
+        rows = re.findall(r"<tr[^>]*>.*?</tr>", section, re.DOTALL)
         codex_row = next(r for r in rows if "codex-sol" in r)
         cc_row = next(r for r in rows if "cc-sonnet" in r)
         assert N5_FLAG in codex_row
@@ -428,7 +428,7 @@ def test_the_leaderboard_and_cells_table_flag_only_the_claude_code_rows():
     board = re.search(r'<section id="leaderboard".*?</section>', doc, re.DOTALL).group(0)
     runs = re.search(r'<section id="runs".*?</section>', doc, re.DOTALL).group(0)
     for section in (board, runs):
-        rows = re.findall(r"<tr>.*?</tr>", section, re.DOTALL)
+        rows = re.findall(r"<tr[^>]*>.*?</tr>", section, re.DOTALL)
         codex_row = next(r for r in rows if "codex-sol" in r)
         cc_row = next(r for r in rows if "cc-sonnet" in r)
         assert R36_FLAG in cc_row
@@ -480,7 +480,7 @@ def test_the_html_validity_section_counts_and_lists_each_wave_two_state(validity
 def _cells_column(doc: str, header: str) -> list[str]:
     runs = re.search(r'<section id="runs".*?</section>', doc, re.DOTALL).group(0)
     headers = re.findall(r'<th scope="col"[^>]*>([^<]*)</th>', runs)
-    rows = re.findall(r"<tr>(.*?)</tr>", re.search(r"<tbody>(.*?)</tbody>", runs, re.DOTALL).group(1))
+    rows = re.findall(r"<tr[^>]*>(.*?)</tr>", re.search(r"<tbody>(.*?)</tbody>", runs, re.DOTALL).group(1))
     return [re.findall(r"<td[^>]*>(.*?)</td>", row)[headers.index(header)] for row in rows]
 
 
@@ -540,6 +540,62 @@ def test_the_html_cells_table_reads_none_for_a_cell_without_warnings():
     headers = re.findall(r'<th scope="col"[^>]*>([^<]*)</th>', runs)
     cells = re.findall(r"<td[^>]*>(.*?)</td>", re.search(r"<tbody>(.*?)</tbody>", runs, re.DOTALL).group(1))
     assert cells[headers.index("Warnings")] == "none" and '<ul id="validity-warnings">' not in doc
+
+
+# --- R3 (design section 15, 6 row 3/10, 7, 10): leaderboard interval bars, the evidence popover, and the
+# Runs cell card, built on `html_builder.el` (UIA-15) ----------------------------------------------------
+
+INJECTED_WARNING = views.Finding("HB-VAL-009", "warning",
+                                 '<script>alert(1)</script><img src=x onerror="alert(1)">')
+
+
+def test_injection_fixture_renders_inert():
+    """UIA-15: the injection fixture's `<script>` and `onerror` reach the report only inside the cell
+    card (design section 10's STRIDE row), as inert text -- never a real `<script>` element (the CSP's
+    `script-src` stays `'none'` until R4 anyway, but escaping is the first-line control, section 5)."""
+    view = _state_view("valid", None, [INJECTED_WARNING])
+    doc = html.render(view, archive_present=True)
+    assert "<script>" not in doc and "<script " not in doc  # no real script element anywhere in the page
+    cell_id = view.cells[0].cell_id
+    match = re.search(rf'<tr id="cell-{re.escape(cell_id)}">.*?</tr>', doc, re.DOTALL)
+    assert match is not None, "no row carries id=\"cell-<id>\" (design section 15 R3)"
+    row = match.group(0)
+    assert "&lt;script&gt;alert(1)&lt;/script&gt;" in row
+    assert "onerror" in row and "<img" not in row
+
+
+def test_every_interval_element_has_bounds_or_reason(root, tmp_path):
+    """UIA-5, with the design section 12 cardinality floor: the count of interval-or-reason elements in
+    the DOM equals the count the leaderboard's own rows demand (two per row: pass@1 and gated), and that
+    count is never zero -- so an absent element can never satisfy this test."""
+    _, view = _graded(root, tmp_path, {"a": GOOD, "b": GOOD}, combos={"a": "c1", "b": "c2"})
+    doc = html.render(view, archive_present=True)
+    section = re.search(r'<section id="leaderboard".*?</section>', doc, re.DOTALL).group(0)
+    row_count = len(re.findall(r"<tr>.*?</tr>",
+                               re.search(r"<tbody>(.*?)</tbody>", section, re.DOTALL).group(1), re.DOTALL))
+    marks = re.findall(
+        r'<svg[^>]*class="[^"]*\bivmark\b[^"]*"[^>]*>.*?</svg>|<span[^>]*class="[^"]*\bivmark\b[^"]*"[^>]*>[^<]*</span>',
+        section, re.DOTALL)
+    assert row_count > 0
+    assert len(marks) == 2 * row_count  # the cardinality floor: never satisfied by zero elements
+    for mark in marks:
+        if mark.startswith("<svg"):
+            assert 'data-interval-lo="' in mark and 'data-interval-hi="' in mark
+        else:
+            text = re.search(r">([^<]*)</span>", mark)
+            assert text is not None and text.group(1).strip() != "", mark  # the reason, never blank
+
+
+def test_archive_absent_copy(root, tmp_path):
+    """US-41, TEST-A-safe: the exact section 9 copy is scoped to the cell's own row (its evidence column
+    and its cell card), not a whole-page substring another part of the page could also satisfy."""
+    _, view = _graded(root, tmp_path, {"a": GOOD})
+    doc = html.render(view, archive_present=False)
+    cell_id = view.cells[0].cell_id
+    match = re.search(rf'<tr id="cell-{re.escape(cell_id)}">.*?</tr>', doc, re.DOTALL)
+    assert match is not None, "no row carries id=\"cell-<id>\" (design section 15 R3)"
+    row = match.group(0)
+    assert "This copy doesn&#x27;t include the run archive. Evidence path: grading/" in row
 
 
 def test_the_canonical_export_carries_a_build_mismatch():  # R-47 c2

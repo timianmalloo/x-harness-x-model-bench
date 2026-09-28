@@ -42,7 +42,8 @@ def _column(doc: str, header: str) -> list[str] | None:
         return None
     body = re.search(r"<tbody>(.*?)</tbody>", runs.group(0), re.DOTALL).group(1)
     index = headers.index(header)
-    return [re.findall(r"<td[^>]*>(.*?)</td>", row)[index] for row in re.findall(r"<tr>(.*?)</tr>", body)]
+    # R3: a Runs row now carries `id="cell-<id>"` (the cell card's anchor); tolerate any `<tr>` attributes.
+    return [re.findall(r"<td[^>]*>(.*?)</td>", row)[index] for row in re.findall(r"<tr[^>]*>(.*?)</tr>", body)]
 
 
 def _cli(view: views.RunView, run_dir: Path, root: Path) -> str:
