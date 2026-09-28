@@ -699,3 +699,22 @@ def test_touched_refuses_to_start_while_a_sidecar_exists(tmp_path, monkeypatch, 
     assert "src/mod.py" in out
     assert "--restore" in out
     assert (repo / "src" / "mod.py").read_bytes() == b"X = 9\n"
+
+
+def test_every_named_test_in_the_mutation_sets_exists():
+    """MUT-B: a renamed test leaves its mutant naming nothing; mutate_check then reports `error`, and only
+    when that set is re-run. Checked here on every push instead, by the test's def (a parametrised id's base name)."""
+    import re
+    root = Path(__file__).resolve().parents[1]
+    stale = []
+    for spec in sorted((root / "tests" / "mutations").glob("*.json")):
+        for m in json.loads(spec.read_text(encoding="utf-8")):
+            for node in m.get("tests", []):
+                path, _, name = node.partition("::")
+                source = root / path
+                func = re.split(r"[\[:]", name)[0]
+                if not source.is_file() or (func and not re.search(
+                        rf"^\s*(async\s+)?def {re.escape(func)}\b|^class {re.escape(func)}\b",
+                        source.read_text(encoding="utf-8"), re.M)):
+                    stale.append(f"{spec.name}: {m['name']} -> {node}")
+    assert stale == []
