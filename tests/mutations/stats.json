@@ -36,5 +36,26 @@
   "find": "MIN_RESAMPLES <= self.resamples <= MAX_RESAMPLES",
   "replace": "self.resamples <= MAX_RESAMPLES",
   "tests": ["tests/test_stats.py::test_ts6_params_refuses_out_of_range"]
+ },
+ {
+  "name": "below as <=",
+  "file": "src/harness_bench/stats.py",
+  "find": "return a.hi < b.lo",
+  "replace": "return a.hi <= b.lo",
+  "tests": ["tests/test_stats.py::test_tr14_k12_touching_pass_at_1_is_not_below"]
+ },
+ {
+  "name": "the gate merges only X and Y",
+  "file": "src/harness_bench/stats.py",
+  "find": "    merged = [*tiers[ix], *[row for tier in between for row in tier], *tiers[iy]]\n    return [*head, merged, *tail]\n",
+  "replace": "    merged = [*tiers[ix], *tiers[iy]]\n    return [*head, merged, *between, *tail]\n",
+  "tests": ["tests/test_stats.py::test_tr8_k8_gate_merges_the_middle_tier"]
+ },
+ {
+  "name": "the tier sweep uses < instead of \u2264",
+  "file": "src/harness_bench/stats.py",
+  "find": "lo <= running_hi",
+  "replace": "lo < running_hi",
+  "tests": ["tests/test_stats.py::test_tr5_k5_touching_intervals_tie"]
  }
 ]
