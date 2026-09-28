@@ -129,13 +129,19 @@ turns to 50% window"; those are not built here and are left to a future slice).
 the cell's model-call rows -- the biggest prompt this cell ever sent in one call.
 
 **NA reasons:** the shared totals reason; else `"the native record misses calls (token source acp_turn)"` when
-`source == "acp_turn"`. **Decision, and why this is stricter than `output_tokens_per_turn`:** a peak is a `max`,
+`source == "acp_turn"`; else `"the native record gives session totals per model, not per call"` when the cell's
+harness is Copilot. **Decision, and why acp_turn is stricter than `output_tokens_per_turn`:** a peak is a `max`,
 not a sum or a count. A sum or a count under-reports gracefully when an entry is missing (it is simply smaller
 than the truth, and the existing `calls_per_cell` measure already accepts that risk, G5). A `max` computed over
 an incomplete set can silently and arbitrarily understate the true peak whenever the single largest call happens
 to be one of the calls the acp_turn record misses -- there is no way to tell, from the visible calls alone,
 whether the true peak was captured. So this metric follows `tokens_per_minute`'s stricter, `_model_time`-style
-gate rather than `calls_per_cell`'s looser one.
+gate rather than `calls_per_cell`'s looser one. **Decision, Copilot:** the reader writes one row per model of
+the last `session.shutdown` `modelMetrics`, a session total, so the max of those rows is the largest model's
+session total, not the largest call. Codex keeps the peak: its native record is one row per call. The grain is
+the cell harness, which every archived plan already carries. A profile field cannot say it for those plans:
+`plan.profile_record` freezes `usage_source` (Copilot and Codex are both `native_record`) and no grain key, and
+a key those plans lack would have to default to per-call, which is false for Copilot.
 
 ### compactions (checked, not assumed; additive, an integer count)
 

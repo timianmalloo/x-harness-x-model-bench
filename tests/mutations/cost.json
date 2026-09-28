@@ -101,10 +101,19 @@
  {
   "name": "context_growth's peak taken from an acp_turn record's partial calls",
   "file": "src/harness_bench/grade/cost.py",
-  "find": "    if source == \"acp_turn\":\n        return Score(None, ACP_MISSES_CALLS)\n    peak = max(c[\"uncached_input\"] + c[\"cache_read\"] + c[\"cache_write\"] for c in model_calls)\n",
-  "replace": "    if False:\n        return Score(None, ACP_MISSES_CALLS)\n    peak = max(c[\"uncached_input\"] + c[\"cache_read\"] + c[\"cache_write\"] for c in model_calls)\n",
+  "find": "    if source == \"acp_turn\":\n        return Score(None, ACP_MISSES_CALLS)\n    if harness == \"copilot\":\n        return Score(None, SESSION_TOTALS)\n    peak = max(c[\"uncached_input\"] + c[\"cache_read\"] + c[\"cache_write\"] for c in model_calls)\n",
+  "replace": "    if False:\n        return Score(None, ACP_MISSES_CALLS)\n    if harness == \"copilot\":\n        return Score(None, SESSION_TOTALS)\n    peak = max(c[\"uncached_input\"] + c[\"cache_read\"] + c[\"cache_write\"] for c in model_calls)\n",
   "tests": [
    "tests/test_grade_cost.py::test_context_growth_is_na_for_an_acp_turn_harness"
+  ]
+ },
+ {
+  "name": "context_growth's peak taken from a session-total native record",
+  "file": "src/harness_bench/grade/cost.py",
+  "find": "    if harness == \"copilot\":\n        return Score(None, SESSION_TOTALS)\n    peak = max(c[\"uncached_input\"] + c[\"cache_read\"] + c[\"cache_write\"] for c in model_calls)\n",
+  "replace": "    if False:\n        return Score(None, SESSION_TOTALS)\n    peak = max(c[\"uncached_input\"] + c[\"cache_read\"] + c[\"cache_write\"] for c in model_calls)\n",
+  "tests": [
+   "tests/test_grade_cost.py::test_context_growth_is_na_for_a_copilot_session_aggregate"
   ]
  },
  {
