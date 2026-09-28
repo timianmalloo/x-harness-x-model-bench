@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-28T00:04:47Z",
+  "generated": "2026-09-28T00:26:22Z",
   "audit": [
     {
       "actor": null,
@@ -40737,6 +40737,716 @@ window.AUDIT_DATA = {
             "sha256": null,
             "status": "unresolved",
             "token": "tests/mutations/*.json"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3JPFEXR0PKKXA4DBP6JFC0Q",
+      "shortname": "Goal: implement slice S3 of docs/design/phase4-statistics.md: `stats.pai…",
+      "datetime": "2026-09-28T00:26:15Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: implement slice S3 of docs/design/phase4-statistics.md: `stats.paired_delta`, `no_detectable_effect`, `pass_k` and `CONTAMINATION_PRONE` in src/harness_bench/stats.py (S1 and S2 are merged: build on Interval and the keyed streams), exactly as the design specifies it (read the whole document first: the data model, the bootstrap procedure, the RNG discipline, the paired-delta and pack-effect sections, the E1-E3 exclusion (ruling R-78 DR-S-6 and condition 6: stats.CONTAMINATION_PRONE is the only source), pass@k and pass^k as points only (the Simplifier cut S2), the test plan T-S7 and T-K, the stats.json mutants for no_detectable_effect and pass^k, and the implementation-slices table row S3), red first.\nMeasured (design author, 2026-09-27, Appendix A): stdlib Decimal is fast enough (0.024 s per interval at 24 tasks x 3 reps x 2,000 resamples); the two-stage percentile bootstrap covers 0.97 at 6 tasks x 3 reps. S1 is merged on main (stats.py, tests/test_stats.py, tests/mutations/stats.json); ruling R-78 closed every decision request; S3 depends only on S1.\nDone when: the four names exist with the contracted signatures; T-S7 (the antisymmetry example) is committed red first, failing on an assertion, then green; T-S7 and T-K pass; the S3 mutants the design lists are added to tests/mutations/stats.json and killed by PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/stats.json (the variable avoids a known crash printing non-cp1252 mutant names, fixed separately; record the output lines in the commit message); property tests use hypothesis (already a dev dependency) where the design says so; any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently; nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_stats.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S4-S7; the catalog; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-statistics.md (all of it; T-S7 near line 643; the S3 row near line 759); src/harness_bench/stats.py (S1); src/harness_bench/ (package layout, Decimal conventions in views.py); tests/mutations/*.json (format); tools/mutate_check.py. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3JPFJ0AGPAGM5WKP2ZEZ0EK",
+      "shortname": "compile-Goal: implement slice S3 of docs/design/phase4-statistics.md: `stats.pai…",
+      "datetime": "2026-09-28T00:26:19Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement slice S3 of docs/design/phase4-statistics.md: `stats.paired_delta`, `no_detectable_effect`, `pass_k` and `CONTAMINATION_PRONE` in src/harness_bench/stats.py (S1 and S2 are merged: build on Interval and the keyed streams), exactly as the design specifies it (read the whole document first: the data model, the bootstrap procedure, the RNG discipline, the paired-delta and pack-effect sections, the E1-E3 exclusion (ruling R-78 DR-S-6 and condition 6: stats.CONTAMINATION_PRONE is the only source), pass@k and pass^k as points only (the Simplifier cut S2), the test plan T-S7 and T-K, the stats.json mutants for no_detectable_effect and pass^k, and the implementation-slices table row S3), red first. Measured (design author, 2026-09-27, Appendix A): stdlib Decimal is fast enough (0.024 s per interval at 24 tasks x 3 reps x 2,000 resamples); the two-stage percentile bootstrap covers 0.97 at 6 tasks x 3 reps. S1 is merged on main (stats.py, tests/test_stats.py, tests/mutations/stats.json); ruling R-78 closed every decision request; S3 depends only on S1.\nDone when: the four names exist with the contracted signatures; T-S7 (the antisymmetry example) is committed red first, failing on an assertion, then green; T-S7 and T-K pass; the S3 mutants the design lists are added to tests/mutations/stats.json and killed by PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/stats.json (the variable avoids a known crash printing non-cp1252 mutant names, fixed separately; record the output lines in the commit message); property tests use hypothesis (already a dev dependency) where the design says so; any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently; nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_stats.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S4-S7; the catalog; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (all of it; T-S7 near line 643; the S3 row near line 759); src/harness_bench/stats.py (S1); src/harness_bench/ (package layout, Decimal conventions in views.py); tests/mutations/*.json (format); tools/mutate_check.py. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: the four names exist with the contracted signatures | phrase: the four names exist with the contracted signatures |\n| done_when: T-S7 (the antisymmetry example) is committed red first, failing on an assertion, then green | phrase: T-S7 (the antisymmetry example) is committed red first, failing on an assertion, then green |\n| done_when: T-S7 and T-K pass | phrase: T-S7 and T-K pass |\n| done_when: the S3 mutants the design lists are added to tests/mutations/stats.json and killed by PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/stats.json (the variable avoids a known crash printing non-cp1252 mutant names, fixed separately | phrase: the S3 mutants the design lists are added to tests/mutations/stats.json and killed by PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/stats.json (the variable avoids a known crash printing non-cp1252 mutant names, fixed separately |\n| done_when: record the output lines in the commit message) | phrase: record the output lines in the commit message) |\n| done_when: property tests use hypothesis (already a dev dependency) where the design says so | phrase: property tests use hypothesis (already a dev dependency) where the design says so |\n| done_when: any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently | phrase: any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently |\n| done_when: nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change) | phrase: nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider tests/test_stats.py passes | phrase: uv run pytest -q -p no:cacheprovider tests/test_stats.py passes |\n| done_when: uv run pytest -q -p no:cacheprovider --collect-only exits 0 | phrase: uv run pytest -q -p no:cacheprovider --collect-only exits 0 |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: slices S4-S7 | phrase: slices S4-S7 |\n| not_in_scope: the catalog | phrase: the catalog |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- stats.paired_delta: unresolved (not found)\n- no_detectable_effect: unresolved (not found)\n- pass_k: unresolved (not found)\n- CONTAMINATION_PRONE: unresolved (not found)\n- assume: unresolved (not found)\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd\n- src/harness_bench/stats.py: src/harness_bench/stats.py sha256 45782a968fc3e1ac47671b51fbebefaac787fbb85073c06b63192b7801531a8d\n- stats.json: tests/mutations/stats.json sha256 f2919fb3d53a49b0a3587521af527569696f9beb6cbee0bebaf6a6e506860d3a\n- stats.py: src/harness_bench/stats.py sha256 45782a968fc3e1ac47671b51fbebefaac787fbb85073c06b63192b7801531a8d\n- tests/test_stats.py: tests/test_stats.py sha256 69d1f7cc80a27bc96e4975a5d303f2157829c56131a8830b899f8334a1580403\n- tests/mutations/stats.json: tests/mutations/stats.json sha256 f2919fb3d53a49b0a3587521af527569696f9beb6cbee0bebaf6a6e506860d3a\n- tools/mutate_check.py: tools/mutate_check.py sha256 51f6617b7cadab4595f40bc4250b39001ec8b66b06b7c740565d49cbe1418ba2\n- runs/: unresolved (not found)\n- src/harness_bench/: unresolved (not found)\n- views.py: src/harness_bench/views.py sha256 ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JPFEXR0PKKXA4DBP6JFC0Q\nraw sha256: d657ccc2f2962e7b7db30a492c21ad6541ed3f1998a42e7128b255ce16d364fb\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3JPFEXR0PKKXA4DBP6JFC0Q for claude-code v1: 17 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "the four names exist with the contracted signatures",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the four names exist with the contracted signatures"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "T-S7 (the antisymmetry example) is committed red first, failing on an assertion, then green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "T-S7 (the antisymmetry example) is committed red first, failing on an assertion, then green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "T-S7 and T-K pass",
+            "trace": {
+              "kind": "phrase",
+              "ref": "T-S7 and T-K pass"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the S3 mutants the design lists are added to tests/mutations/stats.json and killed by PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/stats.json (the variable avoids a known crash printing non-cp1252 mutant names, fixed separately",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the S3 mutants the design lists are added to tests/mutations/stats.json and killed by PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/stats.json (the variable avoids a known crash printing non-cp1252 mutant names, fixed separately"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "record the output lines in the commit message)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "record the output lines in the commit message)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "property tests use hypothesis (already a dev dependency) where the design says so",
+            "trace": {
+              "kind": "phrase",
+              "ref": "property tests use hypothesis (already a dev dependency) where the design says so"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider tests/test_stats.py passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider tests/test_stats.py passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider --collect-only exits 0",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider --collect-only exits 0"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "slices S4-S7",
+            "trace": {
+              "kind": "phrase",
+              "ref": "slices S4-S7"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the catalog",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the catalog"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "the four names exist with the contracted signatures",
+            "T-S7 (the antisymmetry example) is committed red first, failing on an assertion, then green",
+            "T-S7 and T-K pass",
+            "the S3 mutants the design lists are added to tests/mutations/stats.json and killed by PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/stats.json (the variable avoids a known crash printing non-cp1252 mutant names, fixed separately",
+            "record the output lines in the commit message)",
+            "property tests use hypothesis (already a dev dependency) where the design says so",
+            "any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently",
+            "nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change)",
+            "a test earns its place by a failure only it catches",
+            "uv run pytest -q -p no:cacheprovider tests/test_stats.py passes",
+            "uv run pytest -q -p no:cacheprovider --collect-only exits 0",
+            "uv run ruff check src tests tools is clean",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "implement slice S3 of docs/design/phase4-statistics.md: `stats.paired_delta`, `no_detectable_effect`, `pass_k` and `CONTAMINATION_PRONE` in src/harness_bench/stats.py (S1 and S2 are merged: build on Interval and the keyed streams), exactly as the design specifies it (read the whole document first: the data model, the bootstrap procedure, the RNG discipline, the paired-delta and pack-effect sections, the E1-E3 exclusion (ruling R-78 DR-S-6 and condition 6: stats.CONTAMINATION_PRONE is the only source), pass@k and pass^k as points only (the Simplifier cut S2), the test plan T-S7 and T-K, the stats.json mutants for no_detectable_effect and pass^k, and the implementation-slices table row S3), red first. Measured (design author, 2026-09-27, Appendix A): stdlib Decimal is fast enough (0.024 s per interval at 24 tasks x 3 reps x 2,000 resamples); the two-stage percentile bootstrap covers 0.97 at 6 tasks x 3 reps. S1 is merged on main (stats.py, tests/test_stats.py, tests/mutations/stats.json); ruling R-78 closed every decision request; S3 depends only on S1.",
+          "main_line_budget": "one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (all of it; T-S7 near line 643; the S3 row near line 759); src/harness_bench/stats.py (S1); src/harness_bench/ (package layout, Decimal conventions in views.py); tests/mutations/*.json (format); tools/mutate_check.py. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "slices S4-S7",
+            "the catalog",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.006,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3JPFEXR0PKKXA4DBP6JFC0Q",
+        "raw_sha256": "d657ccc2f2962e7b7db30a492c21ad6541ed3f1998a42e7128b255ce16d364fb",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stats.paired_delta"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "no_detectable_effect"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pass_k"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "CONTAMINATION_PRONE"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "assume"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase4-statistics.md",
+            "reason": null,
+            "sha256": "2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd",
+            "status": "resolved",
+            "token": "docs/design/phase4-statistics.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/stats.py",
+            "reason": null,
+            "sha256": "45782a968fc3e1ac47671b51fbebefaac787fbb85073c06b63192b7801531a8d",
+            "status": "resolved",
+            "token": "src/harness_bench/stats.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/stats.json",
+            "reason": null,
+            "sha256": "f2919fb3d53a49b0a3587521af527569696f9beb6cbee0bebaf6a6e506860d3a",
+            "status": "resolved",
+            "token": "stats.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/stats.py",
+            "reason": null,
+            "sha256": "45782a968fc3e1ac47671b51fbebefaac787fbb85073c06b63192b7801531a8d",
+            "status": "resolved",
+            "token": "stats.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_stats.py",
+            "reason": null,
+            "sha256": "69d1f7cc80a27bc96e4975a5d303f2157829c56131a8830b899f8334a1580403",
+            "status": "resolved",
+            "token": "tests/test_stats.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/stats.json",
+            "reason": null,
+            "sha256": "f2919fb3d53a49b0a3587521af527569696f9beb6cbee0bebaf6a6e506860d3a",
+            "status": "resolved",
+            "token": "tests/mutations/stats.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "51f6617b7cadab4595f40bc4250b39001ec8b66b06b7c740565d49cbe1418ba2",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/views.py",
+            "reason": null,
+            "sha256": "ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842",
+            "status": "resolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/*.json"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3JPFJ8QA4WSZ2DP37DEAYHK",
+      "shortname": "Goal: two measured robustness defects, each fixed at its cause, red firs…",
+      "datetime": "2026-09-28T00:26:19Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: two measured robustness defects, each fixed at its cause, red first: (1) tools/mutate_check.py crashes while printing its own verdict line when stdout's encoding cannot represent a character in a mutant's name; (2) tests/test_driver.py's `_tapped_turn` helper arms a timer whose callback can use a Job Object handle after the cell closed it.\nMeasured (Leader, 2026-09-27): (1) `uv run python tools/mutate_check.py tests/mutations/stats.json > file` on Windows raised `UnicodeEncodeError: 'charmap' codec can't encode character '≤'` (the mutant named \"the tier sweep uses < instead of ≤\"); the file was restored (the check-clean sidecar was absent) but the run exited 1 and reported nothing for the remaining mutants; with PYTHONIOENCODING=utf-8 every mutant was killed. This is defect class OUT-A in docs/lessons/defect-classes.md (a measurement reported as a failure because printing it failed). (2) CI-OPT slice 7 (docs/notes/ci-opt-proposal.md, \"xdist trial (measured)\", finding 3): under pytest -n auto, tests/test_driver.py::test_the_fidelity_check_fails_on_a_seeded_unpaired_type intermittently emits PytestUnhandledThreadExceptionWarning ([WinError 6] The handle is invalid): `_tapped_turn` arms threading.Timer(4, lambda: cell.terminate_and_confirm(timeout=10)), and when the turn completes near 4 s, `finally: cell.close()` closes the Job handle while the timer callback calls cell.job.active().\nDone when: (1) mutate_check writes its output so that no character in a mutant name, a test id or pytest's output can make it crash on any console or redirected encoding (e.g. reconfigure stdout and stderr to UTF-8 with a replacement error handler at startup; read the docs for TextIOWrapper.reconfigure, do not guess), shown red first by a test in tests/test_mutate_check.py that runs main() with stdout wrapped in a cp1252 stream and a mutant whose name holds '≤', failing on the UnicodeEncodeError, then green; the verdict and exit code are unchanged; (2) `_tapped_turn` cancels the timer and waits for it to finish (timer.cancel() then timer.join()) before cell.close(), or the callback tolerates a closed cell, whichever the helper's structure makes smallest; the cause is shown red first deterministically (e.g. a test that makes the turn end just as the timer fires, or that closes the cell then fires the callback) failing on the unhandled thread exception (pytest's -W error::pytest.PytestUnhandledThreadExceptionWarning makes it a failure), then green; the fidelity test passes 30 of 30 repeated runs under uv run pytest -n auto (report the count); docs/lessons/defect-classes.md OUT-A gains this instance and the control; a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py tests/test_driver.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: the stats module; other driver behaviour; ci.yml; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\n\nGrounding: tools/mutate_check.py (main, print calls); tests/test_mutate_check.py; tests/test_driver.py (_tapped_turn, test_the_fidelity_check_fails_on_a_seeded_unpaired_type); src/harness_bench/ (the cell and job classes the helper uses; read their close and terminate_and_confirm); docs/lessons/defect-classes.md (OUT-A); docs/notes/ci-opt-proposal.md (xdist trial). Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3JPFNDAN2MJVA3BHNQTPT20",
+      "shortname": "compile-Goal: two measured robustness defects, each fixed at its cause, red firs…",
+      "datetime": "2026-09-28T00:26:22Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: two measured robustness defects, each fixed at its cause, red first: (1) tools/mutate_check.py crashes while printing its own verdict line when stdout's encoding cannot represent a character in a mutant's name; (2) tests/test_driver.py's `_tapped_turn` helper arms a timer whose callback can use a Job Object handle after the cell closed it. Measured (Leader, 2026-09-27): (1) `uv run python tools/mutate_check.py tests/mutations/stats.json > file` on Windows raised `UnicodeEncodeError: 'charmap' codec can't encode character '≤'` (the mutant named \"the tier sweep uses < instead of ≤\"); the file was restored (the check-clean sidecar was absent) but the run exited 1 and reported nothing for the remaining mutants; with PYTHONIOENCODING=utf-8 every mutant was killed. This is defect class OUT-A in docs/lessons/defect-classes.md (a measurement reported as a failure because printing it failed). (2) CI-OPT slice 7 (docs/notes/ci-opt-proposal.md, \"xdist trial (measured)\", finding 3): under pytest -n auto, tests/test_driver.py::test_the_fidelity_check_fails_on_a_seeded_unpaired_type intermittently emits PytestUnhandledThreadExceptionWarning ([WinError 6] The handle is invalid): `_tapped_turn` arms threading.Timer(4, lambda: cell.terminate_and_confirm(timeout=10)), and when the turn completes near 4 s, `finally: cell.close()` closes the Job handle while the timer callback calls cell.job.active().\nDone when: (1) mutate_check writes its output so that no character in a mutant name, a test id or pytest's output can make it crash on any console or redirected encoding (e.g. reconfigure stdout and stderr to UTF-8 with a replacement error handler at startup; read the docs for TextIOWrapper.reconfigure, do not guess), shown red first by a test in tests/test_mutate_check.py that runs main() with stdout wrapped in a cp1252 stream and a mutant whose name holds '≤', failing on the UnicodeEncodeError, then green; the verdict and exit code are unchanged; (2) `_tapped_turn` cancels the timer and waits for it to finish (timer.cancel() then timer.join()) before cell.close(), or the callback tolerates a closed cell, whichever the helper's structure makes smallest; the cause is shown red first deterministically (e.g. a test that makes the turn end just as the timer fires, or that closes the cell then fires the callback) failing on the unhandled thread exception (pytest's -W error::pytest.PytestUnhandledThreadExceptionWarning makes it a failure), then green; the fidelity test passes 30 of 30 repeated runs under uv run pytest -n auto (report the count); docs/lessons/defect-classes.md OUT-A gains this instance and the control; a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py tests/test_driver.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: the stats module; other driver behaviour; ci.yml; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: tools/mutate_check.py (main, print calls); tests/test_mutate_check.py; tests/test_driver.py (_tapped_turn, test_the_fidelity_check_fails_on_a_seeded_unpaired_type); src/harness_bench/ (the cell and job classes the helper uses; read their close and terminate_and_confirm); docs/lessons/defect-classes.md (OUT-A); docs/notes/ci-opt-proposal.md (xdist trial). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: (1) mutate_check writes its output so that no character in a mutant name, a test id or pytest's output can make it crash on any console or redirected encoding (e.g. reconfigure stdout and stderr to UTF-8 with a replacement error handler at startup | phrase: (1) mutate_check writes its output so that no character in a mutant name, a test id or pytest's output can make it crash on any console or redirected encoding (e.g. reconfigure stdout and stderr to UTF-8 with a replacement error handler at startup |\n| done_when: read the docs for TextIOWrapper.reconfigure, do not guess), shown red first by a test in tests/test_mutate_check.py that runs main() with stdout wrapped in a cp1252 stream and a mutant whose name holds '≤', failing on the UnicodeEncodeError, then green | phrase: read the docs for TextIOWrapper.reconfigure, do not guess), shown red first by a test in tests/test_mutate_check.py that runs main() with stdout wrapped in a cp1252 stream and a mutant whose name holds '≤', failing on the UnicodeEncodeError, then green |\n| done_when: the verdict and exit code are unchanged | phrase: the verdict and exit code are unchanged |\n| done_when: (2) `_tapped_turn` cancels the timer and waits for it to finish (timer.cancel() then timer.join()) before cell.close(), or the callback tolerates a closed cell, whichever the helper's structure makes smallest | phrase: (2) `_tapped_turn` cancels the timer and waits for it to finish (timer.cancel() then timer.join()) before cell.close(), or the callback tolerates a closed cell, whichever the helper's structure makes smallest |\n| done_when: the cause is shown red first deterministically (e.g. a test that makes the turn end just as the timer fires, or that closes the cell then fires the callback) failing on the unhandled thread exception (pytest's -W error::pytest.PytestUnhandledThreadExceptionWarning makes it a failure), then green | phrase: the cause is shown red first deterministically (e.g. a test that makes the turn end just as the timer fires, or that closes the cell then fires the callback) failing on the unhandled thread exception (pytest's -W error::pytest.PytestUnhandledThreadExceptionWarning makes it a failure), then green |\n| done_when: the fidelity test passes 30 of 30 repeated runs under uv run pytest -n auto (report the count) | phrase: the fidelity test passes 30 of 30 repeated runs under uv run pytest -n auto (report the count) |\n| done_when: docs/lessons/defect-classes.md OUT-A gains this instance and the control | phrase: docs/lessons/defect-classes.md OUT-A gains this instance and the control |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py tests/test_driver.py passes | phrase: uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py tests/test_driver.py passes |\n| done_when: uv run pytest -q -p no:cacheprovider --collect-only exits 0 | phrase: uv run pytest -q -p no:cacheprovider --collect-only exits 0 |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: the stats module | phrase: the stats module |\n| not_in_scope: other driver behaviour | phrase: other driver behaviour |\n| not_in_scope: ci.yml | phrase: ci.yml |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- _tapped_turn: unresolved (not found)\n- uv run python tools/mutate_check.py tests/mutations/stats.json > file: unresolved (not found)\n- UnicodeEncodeError: 'charmap' codec can't encode character '≤: unresolved (not found)\n- finally: cell.close: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 51f6617b7cadab4595f40bc4250b39001ec8b66b06b7c740565d49cbe1418ba2\n- tests/test_driver.py's: unresolved (not found; nearest: tests/test_driver.py)\n- tests/mutations/stats.json: tests/mutations/stats.json sha256 f2919fb3d53a49b0a3587521af527569696f9beb6cbee0bebaf6a6e506860d3a\n- docs/lessons/defect-classes.md: unresolved (ambiguous: 5 matches)\n- docs/notes/ci-opt-proposal.md: docs/notes/ci-opt-proposal.md sha256 5ef416d018179c6637ba358a9fe1787d392f2211b744f725440b8b73b1e43c1d\n- tests/test_driver.py::test_the_fidelity_check_fails_on_a_seeded_unpaired_type: unresolved (not found)\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 c948d7b60273aff8f7ba3c99546b66f7d651e2a5914aea27d48159c473a10616\n- tests/test_driver.py: tests/test_driver.py sha256 e961dc8f914eadf82518c3d24b612eeb68a5e47663c3b9c04a12677006070fc0\n- ci.yml: .github/workflows/ci.yml sha256 0637d5db818c6de1556ecd0456a31776c30432d02bab43d72dfaee4b39ba615e\n- runs/: unresolved (not found)\n- src/harness_bench/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JPFJ8QA4WSZ2DP37DEAYHK\nraw sha256: 778ec54bee9594ca10f677f1f63b0fe2dbebb43184227bf26ff676ab91f4a277\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3JPFJ8QA4WSZ2DP37DEAYHK for claude-code v1: 17 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "(1) mutate_check writes its output so that no character in a mutant name, a test id or pytest's output can make it crash on any console or redirected encoding (e.g. reconfigure stdout and stderr to UTF-8 with a replacement error handler at startup",
+            "trace": {
+              "kind": "phrase",
+              "ref": "(1) mutate_check writes its output so that no character in a mutant name, a test id or pytest's output can make it crash on any console or redirected encoding (e.g. reconfigure stdout and stderr to UTF-8 with a replacement error handler at startup"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "read the docs for TextIOWrapper.reconfigure, do not guess), shown red first by a test in tests/test_mutate_check.py that runs main() with stdout wrapped in a cp1252 stream and a mutant whose name holds '≤', failing on the UnicodeEncodeError, then green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "read the docs for TextIOWrapper.reconfigure, do not guess), shown red first by a test in tests/test_mutate_check.py that runs main() with stdout wrapped in a cp1252 stream and a mutant whose name holds '≤', failing on the UnicodeEncodeError, then green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the verdict and exit code are unchanged",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the verdict and exit code are unchanged"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "(2) `_tapped_turn` cancels the timer and waits for it to finish (timer.cancel() then timer.join()) before cell.close(), or the callback tolerates a closed cell, whichever the helper's structure makes smallest",
+            "trace": {
+              "kind": "phrase",
+              "ref": "(2) `_tapped_turn` cancels the timer and waits for it to finish (timer.cancel() then timer.join()) before cell.close(), or the callback tolerates a closed cell, whichever the helper's structure makes smallest"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the cause is shown red first deterministically (e.g. a test that makes the turn end just as the timer fires, or that closes the cell then fires the callback) failing on the unhandled thread exception (pytest's -W error::pytest.PytestUnhandledThreadExceptionWarning makes it a failure), then green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the cause is shown red first deterministically (e.g. a test that makes the turn end just as the timer fires, or that closes the cell then fires the callback) failing on the unhandled thread exception (pytest's -W error::pytest.PytestUnhandledThreadExceptionWarning makes it a failure), then green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the fidelity test passes 30 of 30 repeated runs under uv run pytest -n auto (report the count)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the fidelity test passes 30 of 30 repeated runs under uv run pytest -n auto (report the count)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "docs/lessons/defect-classes.md OUT-A gains this instance and the control",
+            "trace": {
+              "kind": "phrase",
+              "ref": "docs/lessons/defect-classes.md OUT-A gains this instance and the control"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py tests/test_driver.py passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py tests/test_driver.py passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider --collect-only exits 0",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider --collect-only exits 0"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the stats module",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the stats module"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "other driver behaviour",
+            "trace": {
+              "kind": "phrase",
+              "ref": "other driver behaviour"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "ci.yml",
+            "trace": {
+              "kind": "phrase",
+              "ref": "ci.yml"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "(1) mutate_check writes its output so that no character in a mutant name, a test id or pytest's output can make it crash on any console or redirected encoding (e.g. reconfigure stdout and stderr to UTF-8 with a replacement error handler at startup",
+            "read the docs for TextIOWrapper.reconfigure, do not guess), shown red first by a test in tests/test_mutate_check.py that runs main() with stdout wrapped in a cp1252 stream and a mutant whose name holds '≤', failing on the UnicodeEncodeError, then green",
+            "the verdict and exit code are unchanged",
+            "(2) `_tapped_turn` cancels the timer and waits for it to finish (timer.cancel() then timer.join()) before cell.close(), or the callback tolerates a closed cell, whichever the helper's structure makes smallest",
+            "the cause is shown red first deterministically (e.g. a test that makes the turn end just as the timer fires, or that closes the cell then fires the callback) failing on the unhandled thread exception (pytest's -W error::pytest.PytestUnhandledThreadExceptionWarning makes it a failure), then green",
+            "the fidelity test passes 30 of 30 repeated runs under uv run pytest -n auto (report the count)",
+            "docs/lessons/defect-classes.md OUT-A gains this instance and the control",
+            "a test earns its place by a failure only it catches",
+            "uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py tests/test_driver.py passes",
+            "uv run pytest -q -p no:cacheprovider --collect-only exits 0",
+            "uv run ruff check src tests tools is clean",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "two measured robustness defects, each fixed at its cause, red first: (1) tools/mutate_check.py crashes while printing its own verdict line when stdout's encoding cannot represent a character in a mutant's name; (2) tests/test_driver.py's `_tapped_turn` helper arms a timer whose callback can use a Job Object handle after the cell closed it. Measured (Leader, 2026-09-27): (1) `uv run python tools/mutate_check.py tests/mutations/stats.json > file` on Windows raised `UnicodeEncodeError: 'charmap' codec can't encode character '≤'` (the mutant named \"the tier sweep uses < instead of ≤\"); the file was restored (the check-clean sidecar was absent) but the run exited 1 and reported nothing for the remaining mutants; with PYTHONIOENCODING=utf-8 every mutant was killed. This is defect class OUT-A in docs/lessons/defect-classes.md (a measurement reported as a failure because printing it failed). (2) CI-OPT slice 7 (docs/notes/ci-opt-proposal.md, \"xdist trial (measured)\", finding 3): under pytest -n auto, tests/test_driver.py::test_the_fidelity_check_fails_on_a_seeded_unpaired_type intermittently emits PytestUnhandledThreadExceptionWarning ([WinError 6] The handle is invalid): `_tapped_turn` arms threading.Timer(4, lambda: cell.terminate_and_confirm(timeout=10)), and when the turn completes near 4 s, `finally: cell.close()` closes the Job handle while the timer callback calls cell.job.active().",
+          "main_line_budget": "one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: tools/mutate_check.py (main, print calls); tests/test_mutate_check.py; tests/test_driver.py (_tapped_turn, test_the_fidelity_check_fails_on_a_seeded_unpaired_type); src/harness_bench/ (the cell and job classes the helper uses; read their close and terminate_and_confirm); docs/lessons/defect-classes.md (OUT-A); docs/notes/ci-opt-proposal.md (xdist trial). Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "the stats module",
+            "other driver behaviour",
+            "ci.yml",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.006,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3JPFJ8QA4WSZ2DP37DEAYHK",
+        "raw_sha256": "778ec54bee9594ca10f677f1f63b0fe2dbebb43184227bf26ff676ab91f4a277",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_tapped_turn"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run python tools/mutate_check.py tests/mutations/stats.json > file"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "UnicodeEncodeError: 'charmap' codec can't encode character '≤"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "finally: cell.close"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "51f6617b7cadab4595f40bc4250b39001ec8b66b06b7c740565d49cbe1418ba2",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": "tests/test_driver.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_driver.py's"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/stats.json",
+            "reason": null,
+            "sha256": "f2919fb3d53a49b0a3587521af527569696f9beb6cbee0bebaf6a6e506860d3a",
+            "status": "resolved",
+            "token": "tests/mutations/stats.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 5 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/ci-opt-proposal.md",
+            "reason": null,
+            "sha256": "5ef416d018179c6637ba358a9fe1787d392f2211b744f725440b8b73b1e43c1d",
+            "status": "resolved",
+            "token": "docs/notes/ci-opt-proposal.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_driver.py::test_the_fidelity_check_fails_on_a_seeded_unpaired_type"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "c948d7b60273aff8f7ba3c99546b66f7d651e2a5914aea27d48159c473a10616",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_driver.py",
+            "reason": null,
+            "sha256": "e961dc8f914eadf82518c3d24b612eeb68a5e47663c3b9c04a12677006070fc0",
+            "status": "resolved",
+            "token": "tests/test_driver.py"
+          },
+          {
+            "nearest": null,
+            "path": ".github/workflows/ci.yml",
+            "reason": null,
+            "sha256": "0637d5db818c6de1556ecd0456a31776c30432d02bab43d72dfaee4b39ba615e",
+            "status": "resolved",
+            "token": "ci.yml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/"
           }
         ],
         "schema": "compiled-prompt/1",
