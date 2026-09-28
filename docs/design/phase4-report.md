@@ -168,7 +168,7 @@ missing):
 | `Board.areas` | (combo, pack, area) of the current pass | area composite point + 95% interval (non-additive) | `composites.area` per valid cell, then `stats.interval` keyed `area|<a>|<combo>|<pack>` |
 | `Board.scenarios` | (combo, pack, scenario) | gated composite + interval (non-additive); pass@1 + interval (non-additive rate) | valid cells grouped by the plan's frozen scenario |
 | `Board.frontier` | (combo, pack) | pass@1 interval (x-axis partner); cost per task, tokens per solved task, wall per task (means: non-additive; each derived from additive per-cell sums) | board rows + per-cell usage |
-| `ContextGrowth` (report-only) | (combo, pack, task, turn index) | median prompt tokens over repetitions (non-additive), min and max band; compaction flag | `turn_usage` rows, ordered by turn |
+| `ContextGrowth` (report-only) | (combo, pack, task, turn index) | median prompt tokens over repetitions (non-additive), min and max band; compaction flag | the cell's current-extraction `model_calls` rows, ordered by native_ordinal (NA `acp_turn` source: the native record misses calls; NA Copilot: the native record gives session totals per model, not per call) |
 | Pack effect (fix F-1) | (combo, measure) | on − off delta + interval (non-additive) | as today, but area measures via `composites.area` (as `compare()` does) |
 
 **The one stored fact: `summary_records`** (append-only, in the run's facts folder, written through `ledger`).
