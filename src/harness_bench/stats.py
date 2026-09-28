@@ -128,6 +128,18 @@ def interval(obs: Sequence[Obs], params: Params, key: str) -> Interval:
         return _interval(obs, params, key)
 
 
+def paired_delta(
+    ref: Sequence[Obs],
+    treat: Sequence[Obs],
+    labels: tuple[str, str],
+    params: Params,
+    key: str,
+) -> tuple[Interval, tuple[str, ...]]:
+    """Red stub: a fixed interval, so T-S7's antisymmetry assertion fails."""
+    del ref, treat, labels, params, key
+    return Interval(Decimal(1), Decimal(0), Decimal(2), 2, None), ()
+
+
 # (combo, pack). The contract's RowId.
 RowId = tuple[str, str]
 

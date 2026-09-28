@@ -15,7 +15,7 @@ from hypothesis import example, given, settings
 from hypothesis import strategies as st
 
 from harness_bench.errors import BenchError
-from harness_bench.stats import Interval, Obs, Params, interval, rank, rng
+from harness_bench.stats import Interval, Obs, Params, interval, paired_delta, rank, rng
 
 # assume: T-S4 says "a committed 6-task fixture" and names no path. This is that fixture.
 # Confirm: replace this path if the Owner names a different one.
@@ -716,6 +716,38 @@ def test_tr15_k13_competition_ranks_print_the_spec_tie():
     assert result[("B", "off")][0] == "2="
     assert result[("C", "off")][0] == "2="
     assert result[("D", "off")][0] == "4"
+
+
+def test_ts7_swapping_arms_negates_the_interval():
+    """T-S7: swapping the arms gives exactly (−hi, −lo).
+
+    The arms are not mirrors, and one task sits in each arm only. The interval
+    is not symmetric about zero, so (−hi, −lo) is a different pair from (lo, hi).
+    """
+    ref = [
+        Obs("A", 1, Decimal(0)),
+        Obs("B", 1, Decimal(1)),
+        Obs("B", 2, Decimal(1)),
+        Obs("C", 1, Decimal(10)),
+    ]
+    treat = [
+        Obs("A", 1, Decimal(10)),
+        Obs("A", 2, Decimal(10)),
+        Obs("A", 3, Decimal(10)),
+        Obs("B", 1, Decimal(4)),
+        Obs("D", 1, Decimal(9)),
+    ]
+    params = Params()
+    forward, only_forward = paired_delta(ref, treat, ("off", "on"), params, "pack")
+    backward, only_backward = paired_delta(treat, ref, ("on", "off"), params, "pack")
+    assert forward.lo is not None and forward.hi is not None
+    assert forward.lo != -forward.hi
+    assert backward.lo == -forward.hi
+    assert backward.hi == -forward.lo
+    assert backward.point == -forward.point
+    assert forward.point == Decimal(13) / Decimal(2)
+    assert only_forward == ("C", "D")
+    assert only_backward == ("C", "D")
 
 
 def test_tr16_uncomputed_pass_at_1_is_not_a_gate_check():
