@@ -16,10 +16,9 @@ jobs:
     # logins and real model calls, so they run on the workstation only.
     if: github.event_name != 'schedule'
     runs-on: windows-latest
-    # simplify: 60 while the ring runs 24-32 min on this runner (runs 36335756793, 36337439499). 75 grader tests take 63%
-    # of the local ring; CI-OPT slice 1 measured that a D1 fixture costs 1.5 s and the rest is the graders' own work, so
-    # the cut comes from a later CI-OPT slice. Upgrade trigger: three consecutive green runs under 22 min, then 30.
-    timeout-minutes: 60
+    # 30 again (was 60 while the ring ran 24-32 min): three consecutive green test jobs under 22 min after CI-OPT
+    # (13.4, 16.7 and 8.8 min; runs 36354105591, 36356656002, 36360514246 - the last with pytest -n auto).
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
