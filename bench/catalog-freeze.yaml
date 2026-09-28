@@ -13,3 +13,14 @@ versions:
     board_golden:
       c44dd2b-no-heads: 0f745f0e2708fe2cb8c0a421c2e6c4421f472b266babc2ec2663d597c06b0c97
       heads: 0f745f0e2708fe2cb8c0a421c2e6c4421f472b266babc2ec2663d597c06b0c97
+board_exports:
+  '1':
+    catalog: '0.5'
+    golden:
+      c44dd2b-no-heads: 0f745f0e2708fe2cb8c0a421c2e6c4421f472b266babc2ec2663d597c06b0c97
+      heads: 0f745f0e2708fe2cb8c0a421c2e6c4421f472b266babc2ec2663d597c06b0c97
+  '2':
+    catalog: '0.5'
+    golden:
+      c44dd2b-no-heads: 7d0aaf24325ca44792b9bd20966a969be3d71b8ef8b296f9099618b6214d71b5
+      heads: 7d0aaf24325ca44792b9bd20966a969be3d71b8ef8b296f9099618b6214d71b5

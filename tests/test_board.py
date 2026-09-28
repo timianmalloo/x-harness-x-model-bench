@@ -78,7 +78,7 @@ def test_tb2_header_row_text():
     py_ver = f"{sys.version_info.major}.{sys.version_info.minor}"
     hdr_p1 = board.header_row(board_p1)
     assert hdr_p1 == (
-        f"statistics: {METHOD}, 2000 resamples, seed 20260927, "
+        f"statistics: {METHOD}, export version {board.EXPORT_VERSION}, 2000 resamples, seed 20260927, "
         f"resampled by task then repetition, Python {py_ver} random stream; "
         f"ranked on pass@1 (catalog 0.4 has no normalisation anchors)"
     )
@@ -95,7 +95,7 @@ def test_tb2_header_row_text():
     )
     hdr_gated = board.header_row(board_gated)
     assert hdr_gated == (
-        f"statistics: {METHOD}, 2000 resamples, seed 20260927, "
+        f"statistics: {METHOD}, export version {board.EXPORT_VERSION}, 2000 resamples, seed 20260927, "
         f"resampled by task then repetition, Python {py_ver} random stream; "
         f"ranked on correctness-gated composite"
     )
@@ -121,10 +121,11 @@ def test_tb3_board_export_golden(tmp_path):
     b = board.build(view, dataclasses.replace(TEST_CATALOG, version=view.catalog_version))
     exp = board.export(b)
 
-    # The digest changes only with METHOD or the fixture.
-    assert hashlib.sha256(exp).hexdigest() == "f693c2327a3aa706ad518fd6fce32c09775312ee54987202d3047889b7073445"
+    # The digest changes only with METHOD, EXPORT_VERSION or the fixture.
+    assert hashlib.sha256(exp).hexdigest() == "c4d3505e6f727f14b9c341a61d58f7459f36a2db54e8b5580f92e8fbc4497257"
 
     payload = json.loads(exp)
+    assert payload["export_version"] == board.EXPORT_VERSION
     assert payload["seed"] == 20260927
     assert payload["resamples"] == 2000
     assert payload["method"] == METHOD
@@ -526,6 +527,58 @@ def test_tp4_pack_effect_states(tmp_path):
     assert d_rows[0].reason == "Pack effect needs both settings."
 
 
+def test_pack_effect_area_delta_is_computed_with_anchors(tmp_path):
+    """F-1: pack effect's area rows are computed with composites.area on anchored inputs."""
+    root = make_root(tmp_path)
+    run_dir = stats_run(
+        root,
+        tmp_path,
+        run_id="r-pe-anchors",
+        tasks=("A1", "B1"),
+        reps=2,
+        arms=("off", "on"),
+        combos=["c"],
+    )
+    view = views.load(run_dir)
+    cat = composites.load_catalog(root)
+    b = board.build(view, cat)
+    corr_row = next((r for r in b.pack_effect.rows if r.measure == "correctness"), None)
+    assert corr_row is not None
+    assert corr_row.delta.point is not None
+
+
+def test_pack_effect_area_one_arm_negative_reason(tmp_path):
+    """R-81 c4: negative one-arm area reason equals literal 'not computed (no <area> score in pack=<arm>)'."""
+    root = make_root(tmp_path)
+    run_dir = stats_run(
+        root,
+        tmp_path,
+        run_id="r-pe-onearm",
+        tasks=("A1", "B1"),
+        reps=2,
+        arms=("off", "on"),
+        combos=["c"],
+    )
+    view = views.load(run_dir)
+    cat = composites.load_catalog(root)
+
+    # 1. pack=off has no area scores
+    cells_no_off = [dataclasses.replace(c, scores={}) if c.pack == "off" else c for c in view.cells]
+    b_no_off = board.build(dataclasses.replace(view, cells=cells_no_off), cat)
+    corr_off = next((r for r in b_no_off.pack_effect.rows if r.measure == "correctness"), None)
+    assert corr_off is not None
+    assert corr_off.reason == "not computed (no correctness score in pack=off)"
+    assert corr_off.delta.reason == "not computed (no correctness score in pack=off)"
+
+    # 2. pack=on has no area scores
+    cells_no_on = [dataclasses.replace(c, scores={}) if c.pack == "on" else c for c in view.cells]
+    b_no_on = board.build(dataclasses.replace(view, cells=cells_no_on), cat)
+    corr_on = next((r for r in b_no_on.pack_effect.rows if r.measure == "correctness"), None)
+    assert corr_on is not None
+    assert corr_on.reason == "not computed (no correctness score in pack=on)"
+    assert corr_on.delta.reason == "not computed (no correctness score in pack=on)"
+
+
 def test_tm3_comparison_direction_and_negation(tmp_path):
     """T-M3 (US-52 criterion 1): run A is a stats_run build; run B is a second build
     with one (task, rep) outcome flipped from pass to fail in one (combo, pack).
@@ -637,3 +690,109 @@ def test_ver_a_comparison_composite_delta_refused_when_pass_catalog_differs_from
     assert len(same_area_rows) > 0
     for ar in same_area_rows:
         assert ar.delta.point is not None
+
+
+def test_board_areas_projection(tmp_path):
+    """Board.areas projection carries (combo, pack, area) intervals and exports null-for-missing."""
+    root = make_root(tmp_path)
+    run_dir = stats_run(
+        root, tmp_path, run_id="r-areas", tasks=("A1", "B1"), reps=2, arms=("off", "on"), combos=["c"]
+    )
+    view = views.load(run_dir)
+    cat = composites.load_catalog(root)
+    b = board.build(view, cat)
+    assert len(b.areas) > 0
+    corr = next(a for a in b.areas if a.combo == "c" and a.pack == "off" and a.area == "correctness")
+    assert corr.interval.point is not None
+
+    # Check export payload carries areas with null for missing point/bounds when not computed
+    exp = board.export(b)
+    payload = json.loads(exp)
+    assert "areas" in payload
+    row = next(r for r in payload["areas"] if r["combo"] == "c" and r["pack"] == "off" and r["area"] == "correctness")
+    assert row["interval"]["point"] is not None
+
+    # Test with unanchored catalog (primary != gated): reason is preserved and points are null
+    cat_unanchored = dataclasses.replace(cat, has_anchors=False)
+    b_un = board.build(view, cat_unanchored)
+    exp_un = board.export(b_un)
+    payload_un = json.loads(exp_un)
+    row_un = next(
+        r for r in payload_un["areas"] if r["combo"] == "c" and r["pack"] == "off" and r["area"] == "correctness"
+    )
+    assert row_un["interval"]["point"] is None
+    assert row_un["interval"]["lo"] is None
+    assert row_un["interval"]["hi"] is None
+    assert "no normalisation anchors" in row_un["interval"]["reason"]
+
+
+def test_board_scenarios_projection(tmp_path):
+    """Board.scenarios projection groups by plan frozen scenario and exports null-for-missing."""
+    root = make_root(tmp_path)
+    run_dir = stats_run(
+        root, tmp_path, run_id="r-scen", tasks=("A1", "B1"), reps=2, arms=("off", "on"), combos=["c"]
+    )
+    view = views.load(run_dir)
+    view = dataclasses.replace(view, cells=[dataclasses.replace(c, scenario=5) for c in view.cells])
+    cat = composites.load_catalog(root)
+    b = board.build(view, cat)
+    # A1, B1 have scenario 5
+    scen_rows = [s for s in b.scenarios if s.scenario == 5]
+    assert len(scen_rows) == 2  # (c, off) and (c, on)
+    sr = next(s for s in scen_rows if s.pack == "off")
+    assert sr.pass_at_1.point is not None
+    assert sr.gated.point is not None
+
+    exp = board.export(b)
+    payload = json.loads(exp)
+    assert "scenarios" in payload
+    r = next(r for r in payload["scenarios"] if r["scenario"] == 5 and r["pack"] == "off")
+    assert r["pass_at_1"]["point"] is not None
+    assert r["gated"]["point"] is not None
+
+    # Unanchored catalog: gated composite is null-for-missing
+    cat_un = dataclasses.replace(cat, has_anchors=False)
+    b_un = board.build(view, cat_un)
+    payload_un = json.loads(board.export(b_un))
+    r_un = next(r for r in payload_un["scenarios"] if r["scenario"] == 5 and r["pack"] == "off")
+    assert r_un["gated"]["point"] is None
+    assert r_un["gated"]["lo"] is None
+    assert r_un["gated"]["hi"] is None
+    assert "no normalisation anchors" in r_un["gated"]["reason"]
+
+
+def test_board_frontier_projection(tmp_path):
+    """Board.frontier projection computes cost, tokens, and wall per task with null-for-missing."""
+    root = make_root(tmp_path)
+    run_dir = stats_run(
+        root, tmp_path, run_id="r-front", tasks=("A1", "B1"), reps=2, arms=("off", "on"), combos=["c"]
+    )
+    view = views.load(run_dir)
+    cat = composites.load_catalog(root)
+    b = board.build(view, cat)
+    assert len(b.frontier) == 2  # off and on
+    fr = next(f for f in b.frontier if f.pack == "off")
+    assert fr.pass_at_1.point is not None
+    # In stats_run with make_root, price list has empty entries, so cost_usd is NA (null for missing)
+    assert fr.cost_per_task.value is None
+    assert "have no cost" in fr.cost_per_task.reason
+    assert fr.tokens_per_solved.value is not None or fr.tokens_per_solved.reason is not None
+    assert fr.wall_per_task.value is not None
+
+    exp = board.export(b)
+    payload = json.loads(exp)
+    assert "frontier" in payload
+    fr_exp = next(r for r in payload["frontier"] if r["pack"] == "off")
+    assert fr_exp["pass_at_1"]["point"] is not None
+    assert fr_exp["cost_per_task"]["value"] is None
+    assert "have no cost" in fr_exp["cost_per_task"]["reason"]
+    assert fr_exp["wall_per_task"]["value"] is not None
+
+
+def test_projections_carry_only_the_arms_the_run_has(tmp_path):
+    """An off-only run has no pack=on area, scenario or frontier row: a row for an unplanned arm reads as a missing result."""
+    root = make_root(tmp_path)
+    run_dir = stats_run(root, tmp_path, run_id="r-one-arm", tasks=("A1", "B1"), reps=2, arms=("off",), combos=["c"])
+    b = board.build(views.load(run_dir), composites.load_catalog(root))
+    assert b.frontier and b.areas
+    assert {r.pack for r in (*b.areas, *b.scenarios, *b.frontier)} == {"off"}

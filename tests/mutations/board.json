@@ -44,8 +44,8 @@
   {
     "name": "seed or resamples left out of the export",
     "file": "src/harness_bench/board.py",
-    "find": "    payload: dict[str, Any] = {\n        \"method\": METHOD,\n        \"seed\": board.params.seed,\n        \"resamples\": board.params.resamples,",
-    "replace": "    payload: dict[str, Any] = {\n        \"method\": METHOD,",
+    "find": "    payload: dict[str, Any] = {\n        \"method\": METHOD,\n        \"export_version\": EXPORT_VERSION,\n        \"seed\": board.params.seed,\n        \"resamples\": board.params.resamples,",
+    "replace": "    payload: dict[str, Any] = {\n        \"method\": METHOD,\n        \"export_version\": EXPORT_VERSION,",
     "tests": ["tests/test_board.py::test_tb3_board_export_golden"]
   },
   {
@@ -68,5 +68,33 @@
     "find": "for mid, s in scores.items() if (cat.metrics.get(mid) or {}).get(\"anchor\") is not None}",
     "replace": "for mid, s in scores.items()}",
     "tests": ["tests/test_board.py::test_the_gated_composite_computes_under_the_real_catalog_where_pass_at_1_has_no_anchor"]
+  },
+  {
+    "name": "F-1: pack effect area branch dropped",
+    "file": "src/harness_bench/board.py",
+    "find": "                    if c.pack == \"off\" and c.validity == \"valid\":\n                        score = c.scores.get(m)\n                        if (score is None or score.value is None) and m != \"pass_at_1\":\n                            all_scores = _composite_inputs(c.scores, cat, view.catalog_version)\n                            score, _ = compute_area(all_scores, m, cat)",
+    "replace": "                    if c.pack == \"off\" and c.validity == \"valid\":\n                        score = c.scores.get(m)\n                        if False:\n                            all_scores = _composite_inputs(c.scores, cat, view.catalog_version)\n                            score, _ = compute_area(all_scores, m, cat)",
+    "tests": ["tests/test_board.py::test_pack_effect_area_delta_is_computed_with_anchors"]
+  },
+  {
+    "name": "one-arm area reason diverges from design text",
+    "file": "src/harness_bench/board.py",
+    "find": "                    reason = f\"not computed (no {m} score in pack=off)\"",
+    "replace": "                    reason = f\"not computed (no score in pack=off)\"",
+    "tests": ["tests/test_board.py::test_pack_effect_area_one_arm_negative_reason"]
+  },
+  {
+    "name": "export_version key omitted from export payload",
+    "file": "src/harness_bench/board.py",
+    "find": "        \"export_version\": EXPORT_VERSION,\n",
+    "replace": "",
+    "tests": ["tests/test_board.py::test_tb3_board_export_golden"]
+  },
+  {
+    "name": "projections emit both arms whatever the run planned",
+    "file": "src/harness_bench/board.py",
+    "find": "    packs = {combo: sorted(p for c2, p in groups if c2 == combo) for combo in combos}\n",
+    "replace": "    packs = {combo: [\"off\", \"on\"] for combo in combos}\n",
+    "tests": ["tests/test_board.py::test_projections_carry_only_the_arms_the_run_has"]
   }
 ]

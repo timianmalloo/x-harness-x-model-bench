@@ -74,7 +74,8 @@ def _board_stem(path: Path) -> str | None:
 
 
 def us4_problems(root: Path, golden: Path, freeze: dict, base: dict, export: Callable[[str], bytes],
-                 board_export: Callable[[str], bytes] | None = None) -> list[str]:
+                 board_export: Callable[[str], bytes] | None = None,
+                 board_golden: Path | None = None) -> list[str]:
     """Checks (a)-(e) for `root`'s current catalog, views and board goldens; [] when the control passes.
 
     A freeze entry with no `board_golden` key was written before boards existed (0.4). That version skips the board
@@ -82,6 +83,16 @@ def us4_problems(root: Path, golden: Path, freeze: dict, base: dict, export: Cal
     """
     versions, was = freeze.get("versions") or {}, base.get("versions") or {}
     problems = [f"(e) {FREEZE} entry {v!r} was changed or removed since the merge base" for v in sorted(was) if versions.get(v) != was[v]]
+
+    board_exports, was_b = freeze.get("board_exports") or {}, base.get("board_exports") or {}
+    for n in sorted(was_b):
+        if board_exports.get(n) != was_b[n]:
+            problems.append(f"(e) {FREEZE} board_exports entry {n!r} was changed or removed since the merge base")
+
+    if ("0.5" in versions and "board_golden" in versions["0.5"] and "1" in board_exports
+            and board_exports["1"].get("golden") != versions["0.5"].get("board_golden")):
+        problems.append(f"(e) board_exports['1'].golden != versions['0.5'].board_golden in {FREEZE}")
+
     version = str(config.load_yaml(root / "bench" / "metrics.yaml")["version"])
     if version.endswith(".dev"):
         print(PROBE)
@@ -104,22 +115,42 @@ def us4_problems(root: Path, golden: Path, freeze: dict, base: dict, export: Cal
             problems.append(f"(a) {f.stem}: no committed fixture of that name")
         elif export(f.stem) != f.read_bytes():
             problems.append(f"(a) {f.stem}: the export differs from its golden file (a score or reason moved without a bump)")
+
+    if pinned is not None and "board_golden" in pinned:
+        board_files = sorted((golden / version).glob("*.board.export"))
+        if not board_files:
+            problems.append(f"(d) no board golden for {version} (a freeze after board.export needs a board golden)")
+        board_digests = {stem: hashlib.sha256(p.read_bytes()).hexdigest() for p in board_files if (stem := _board_stem(p))}
+        if board_digests != (pinned.get("board_golden") or {}):
+            problems.append(f"(c) board goldens for {version} differ from the digests pinned in {FREEZE}")
+
     if pinned is not None and "board_golden" not in pinned:
         print(BOARD_EXEMPT)
         return sorted(problems)
-    board_files = sorted((golden / version).glob("*.board.export"))
-    if pinned is not None and not board_files:
-        problems.append(f"(d) no board golden for {version} (a freeze after board.export needs a board golden)")
-    board_digests = {stem: hashlib.sha256(p.read_bytes()).hexdigest() for p in board_files if (stem := _board_stem(p))}
-    if pinned is not None and board_digests != (pinned.get("board_golden") or {}):
-        problems.append(f"(c) board goldens for {version} differ from the digests pinned in {FREEZE}")
-    for p in board_files:
-        stem = _board_stem(p)
-        if stem not in FIXTURES:
-            problems.append(f"(a) {stem}: no committed fixture of that name")
-        elif board_export is not None and board_export(stem) != p.read_bytes():
-            problems.append(f"(a) {stem}: the board export differs from its golden file "
-                            "(a statistic moved without a bump)")
+
+    if board_golden is None:
+        board_golden = golden.parent / "board"
+    N = str(getattr(board, "EXPORT_VERSION", 1))
+
+    if N not in board_exports:
+        problems.append(f"(d) no board_exports entry for export version {N} in {FREEZE}")
+    elif board_exports[N].get("catalog") != version:
+        problems.append(f"(d) board_exports[{N}] catalog {board_exports[N].get('catalog')!r} != {version!r} (board export catalog must match released version)")
+    else:
+        b_files = sorted((board_golden / N).glob("*.board.export"))
+        if not b_files:
+            problems.append(f"(d) no board golden for export version {N} (a freeze needs a board golden)")
+        b_digests = {stem: hashlib.sha256(p.read_bytes()).hexdigest() for p in b_files if (stem := _board_stem(p))}
+        if b_digests != (board_exports[N].get("golden") or {}):
+            problems.append(f"(c) board goldens for export version {N} differ from the digests pinned in {FREEZE}")
+        for p in b_files:
+            stem = _board_stem(p)
+            if stem not in FIXTURES:
+                problems.append(f"(a) {stem}: no committed fixture of that name")
+            elif board_export is not None and board_export(stem) != p.read_bytes():
+                problems.append(f"(a) {stem}: the board export differs from its golden file "
+                                "(a statistic moved without a bump)")
+
     return sorted(problems)
 
 
@@ -171,6 +202,9 @@ def frozen(tmp_path):
     set_catalog_version(root, "9.1")
     golden = tmp_path / "golden"
     (golden / "9.1").mkdir(parents=True)
+    N = str(getattr(board, "EXPORT_VERSION", 1))
+    board_golden = tmp_path / "board" / N
+    board_golden.mkdir(parents=True)
     pins, board_pins = {}, {}
     for name in FIXTURES:
         data = graded_export(root, name, tmp_path / "freeze")
@@ -178,10 +212,13 @@ def frozen(tmp_path):
         pins[name] = hashlib.sha256(data).hexdigest()
         board_data = graded_board_export(root, name, tmp_path / "freeze-board")
         (golden / "9.1" / f"{name}.board.export").write_bytes(board_data)
+        (board_golden / f"{name}.board.export").write_bytes(board_data)
         board_pins[name] = hashlib.sha256(board_data).hexdigest()
     freeze = {"schema": "bench-catalog-freeze/1",
               "versions": {"9.0": {"catalog_hash": "0" * 64, "golden": {}},
-                           "9.1": {"catalog_hash": runner.catalog_hash(root), "golden": pins, "board_golden": board_pins}}}
+                           "9.1": {"catalog_hash": runner.catalog_hash(root), "golden": pins, "board_golden": board_pins}},
+              "board_exports": {"1": {"catalog": "0.5", "golden": board_pins},
+                                N: {"catalog": "9.1", "golden": board_pins}}}
     return root, golden, freeze
 
 
@@ -258,9 +295,10 @@ def test_a_released_version_with_no_freeze_entry_is_red_through_b(frozen, tmp_pa
 
 def test_an_edited_or_removed_freeze_entry_is_red_through_e(frozen, tmp_path):
     _, _, base = frozen
-    edited = {"versions": {**base["versions"], "9.0": {"catalog_hash": "1" * 64, "golden": {}}}}
-    removed = {"versions": {"9.1": base["versions"]["9.1"]}}
-    appended = {"versions": {**base["versions"], "9.2": {"catalog_hash": "2" * 64, "golden": {}}}}
+    b_exp = base.get("board_exports", {})
+    edited = {"versions": {**base["versions"], "9.0": {"catalog_hash": "1" * 64, "golden": {}}}, "board_exports": b_exp}
+    removed = {"versions": {"9.1": base["versions"]["9.1"]}, "board_exports": b_exp}
+    appended = {"versions": {**base["versions"], "9.2": {"catalog_hash": "2" * 64, "golden": {}}}, "board_exports": b_exp}
     assert problems(frozen, tmp_path, base=base, freeze=edited) == [f"(e) {FREEZE} entry '9.0' was changed or removed since the merge base"]
     assert problems(frozen, tmp_path, base=base, freeze=removed) == [f"(e) {FREEZE} entry '9.0' was changed or removed since the merge base"]
     assert problems(frozen, tmp_path, base=base, freeze=appended) == []  # append-only: a new version is fine
@@ -288,7 +326,6 @@ def test_board_digests_that_differ_from_the_pins_are_red_through_c(frozen, tmp_p
     path = golden / "9.1" / "heads.board.export"
     path.write_bytes(path.read_bytes() + b" ")
     assert problems(frozen, tmp_path) == [
-        "(a) heads: the board export differs from its golden file (a statistic moved without a bump)",
         f"(c) board goldens for 9.1 differ from the digests pinned in {FREEZE}"]
 
 
@@ -304,11 +341,95 @@ def test_a_released_version_frozen_with_no_board_golden_is_red_through_d(frozen,
 def test_an_edited_board_golden_pin_is_red_through_e(frozen, tmp_path):
     """(e) covers board_golden on its own: the views pin and the hash stay, and only that map changes."""
     _, _, pinned = frozen
-    base = {"versions": {v: dict(entry) for v, entry in pinned["versions"].items()}}
-    edited = {"versions": {v: dict(entry) for v, entry in base["versions"].items()}}
+    b_exp = pinned.get("board_exports", {})
+    base = {"versions": {v: dict(entry) for v, entry in pinned["versions"].items()}, "board_exports": b_exp}
+    edited = {"versions": {v: dict(entry) for v, entry in base["versions"].items()}, "board_exports": b_exp}
     edited["versions"]["9.0"] = {**edited["versions"]["9.0"], "board_golden": {"heads": "b" * 64}}
     assert problems(frozen, tmp_path, base=base, freeze=edited) == [
         f"(e) {FREEZE} entry '9.0' was changed or removed since the merge base"]
+
+
+def test_board_export_differing_under_current_export_version_is_red_through_a(frozen, tmp_path):
+    """(a) a board export differing from its golden under the current EXPORT_VERSION fails."""
+    _, golden, _ = frozen
+    N = str(getattr(board, "EXPORT_VERSION", 1))
+    path = golden.parent / "board" / N / "heads.board.export"
+    path.write_bytes(path.read_bytes() + b" ")
+    assert problems(frozen, tmp_path) == [
+        "(a) heads: the board export differs from its golden file (a statistic moved without a bump)",
+        f"(c) board goldens for export version {N} differ from the digests pinned in {FREEZE}",
+    ]
+
+
+def test_board_export_golden_digests_differing_from_board_exports_pin_is_red_through_c(frozen, tmp_path):
+    """(c) golden digests must equal board_exports[N].golden."""
+    _, _, freeze = frozen
+    N = str(getattr(board, "EXPORT_VERSION", 1))
+    freeze["board_exports"][N]["golden"] = {name: "0" * 64 for name in FIXTURES}
+    assert problems(frozen, tmp_path) == [
+        f"(c) board goldens for export version {N} differ from the digests pinned in {FREEZE}",
+    ]
+
+
+def test_absent_board_exports_entry_or_catalog_mismatch_is_red_through_d(frozen, tmp_path):
+    """(d) fails when board_exports[N] is absent or its catalog is not the released version."""
+    _, _, freeze = frozen
+    N = str(getattr(board, "EXPORT_VERSION", 1))
+    # absent entry
+    del freeze["board_exports"][N]
+    assert problems(frozen, tmp_path) == [
+        f"(d) no board_exports entry for export version {N} in {FREEZE}",
+    ]
+    # catalog mismatch
+    freeze["board_exports"][N] = {"catalog": "9.9", "golden": {}}
+    assert problems(frozen, tmp_path) == [
+        f"(d) board_exports[{N}] catalog '9.9' != '9.1' (board export catalog must match released version)",
+    ]
+
+
+def test_board_exports_append_only_and_v1_equals_v05_golden_is_red_through_e(frozen, tmp_path):
+    """(e) board_exports entries are append-only against the merge base, and board_exports['1'].golden must equal versions['0.5'].board_golden."""
+    _, _, pinned = frozen
+    N = str(getattr(board, "EXPORT_VERSION", 1))
+    base = {
+        "versions": dict(pinned["versions"]),
+        "board_exports": {
+            "0": {"catalog": "9.0", "golden": {"heads": "0" * 64}},
+            "1": dict(pinned["board_exports"]["1"]),
+            N: dict(pinned["board_exports"][N]),
+        },
+    }
+    # entry '0' changed
+    edited = {
+        "versions": dict(base["versions"]),
+        "board_exports": {
+            "0": {"catalog": "9.0", "golden": {"heads": "1" * 64}},
+            "1": dict(pinned["board_exports"]["1"]),
+            N: dict(pinned["board_exports"][N]),
+        },
+    }
+    assert problems(frozen, tmp_path, base=base, freeze=edited) == [
+        f"(e) {FREEZE} board_exports entry '0' was changed or removed since the merge base",
+    ]
+    # entry '0' removed
+    removed = {
+        "versions": dict(base["versions"]),
+        "board_exports": {
+            "1": dict(pinned["board_exports"]["1"]),
+            N: dict(pinned["board_exports"][N]),
+        },
+    }
+    assert problems(frozen, tmp_path, base=base, freeze=removed) == [
+        f"(e) {FREEZE} board_exports entry '0' was changed or removed since the merge base",
+    ]
+    # board_exports['1'].golden != versions['0.5'].board_golden
+    mismatch = {
+        "versions": {**base["versions"], "0.5": {"catalog_hash": "a" * 64, "golden": {}, "board_golden": {"heads": "diff" * 8}}},
+        "board_exports": dict(base["board_exports"]),
+    }
+    assert problems(frozen, tmp_path, base=mismatch, freeze=mismatch) == [
+        f"(e) board_exports['1'].golden != versions['0.5'].board_golden in {FREEZE}",
+    ]
 
 
 def test_a_version_frozen_before_boards_is_exempt_and_says_so(frozen, tmp_path, capsys):

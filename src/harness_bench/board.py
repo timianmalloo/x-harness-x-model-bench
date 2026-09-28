@@ -7,9 +7,13 @@ from __future__ import annotations
 
 import sys
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
+
+# Any change of METHOD, an export key, an encoding (precision, null for missing)
+# or a row or column addition bumps EXPORT_VERSION (R-81 c2).
+EXPORT_VERSION: int = 2
 
 from harness_bench import ledger
 from harness_bench.composites import Catalog
@@ -113,6 +117,33 @@ class Comparison:
 
 
 @dataclass
+class AreaRow:
+    combo: str
+    pack: str
+    area: str
+    interval: Interval
+
+
+@dataclass
+class ScenarioRow:
+    combo: str
+    pack: str
+    scenario: int
+    gated: Interval
+    pass_at_1: Interval
+
+
+@dataclass
+class FrontierRow:
+    combo: str
+    pack: str
+    pass_at_1: Interval
+    cost_per_task: Measure
+    tokens_per_solved: Measure
+    wall_per_task: Measure
+
+
+@dataclass
 class Board:
     run_id: str
     catalog_version: str | None
@@ -121,6 +152,9 @@ class Board:
     primary_reason: str | None
     rows: list[BoardRow]
     pack_effect: PackEffect
+    areas: list[AreaRow] = field(default_factory=list)
+    scenarios: list[ScenarioRow] = field(default_factory=list)
+    frontier: list[FrontierRow] = field(default_factory=list)
 
 
 def _mean(values: Sequence[Decimal]) -> Decimal:
@@ -299,6 +333,156 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
         r.rank = rk
         r.rank_reason = rk_reason
         ordered_rows.append(r)
+    combos = sorted({c.combo for c in view.cells})
+    # Only the arms the run has: a row for an unplanned arm would read as a missing result.
+    packs = {combo: sorted(p for c2, p in groups if c2 == combo) for combo in combos}
+
+    # Areas projection
+    areas_list: list[AreaRow] = []
+    for combo in combos:
+        for pack in packs[combo]:
+            combo_cells = [c for c in view.cells if c.combo == combo and c.pack == pack]
+            valid_cells = [c for c in combo_cells if c.validity == "valid"]
+            for a in cat.areas:
+                if primary != "gated":
+                    na_reason = no_anchor_cell
+                    iv = Interval(point=None, lo=None, hi=None, n=0, reason=na_reason)
+                else:
+                    obs_area: list[Obs] = []
+                    for c in valid_cells:
+                        all_scores = _composite_inputs(c.scores, cat, view.catalog_version)
+                        sc, _ = compute_area(all_scores, a, cat)
+                        if sc is not None and sc.value is not None:
+                            t, r, _ = _cell_task_rep(c.cell_id, plan_by_id)
+                            obs_area.append(Obs(task=t, rep=r, value=Decimal(str(sc.value))))
+                    key = f"area|{a}|{combo}|{pack}"
+                    iv = interval(obs_area, params, key=key)
+                areas_list.append(AreaRow(combo=combo, pack=pack, area=a, interval=iv))
+
+    # Scenarios projection
+    scenarios_list: list[ScenarioRow] = []
+    scenarios = sorted({c.scenario for c in view.cells if c.scenario is not None})
+    if not scenarios and view.plan and "tasks" in view.plan:
+        scenarios = sorted(
+            {t_data.get("scenario") for t_data in view.plan["tasks"].values() if t_data.get("scenario") is not None}
+        )
+    for combo in combos:
+        for pack in packs[combo]:
+            combo_cells = [c for c in view.cells if c.combo == combo and c.pack == pack]
+            valid_cells = [c for c in combo_cells if c.validity == "valid"]
+            for sc in scenarios:
+                scen_cells = [c for c in valid_cells if c.scenario == sc]
+                if not scen_cells:
+                    iv_p1 = Interval(point=None, lo=None, hi=None, n=0, reason="no cells in this scenario")
+                    iv_gated = Interval(point=None, lo=None, hi=None, n=0, reason="no cells in this scenario")
+                else:
+                    obs_p1 = [
+                        Obs(
+                            _cell_task_rep(c.cell_id, plan_by_id)[0],
+                            _cell_task_rep(c.cell_id, plan_by_id)[1],
+                            Decimal(str(c.scores["pass_at_1"].value)),
+                        )
+                        for c in scen_cells
+                        if c.scores.get("pass_at_1", Measure(None)).value is not None
+                    ]
+                    key_p1 = f"scenario|{sc}|pass_at_1|{combo}|{pack}"
+                    iv_p1 = interval(obs_p1, params, key_p1)
+
+                    if primary != "gated":
+                        iv_gated = Interval(point=None, lo=None, hi=None, n=0, reason=no_anchor_cell)
+                    else:
+                        obs_gated = []
+                        for c in scen_cells:
+                            all_scores = _composite_inputs(c.scores, cat, view.catalog_version)
+                            gated_score = compute_gated(all_scores, cat)
+                            if gated_score.value is not None:
+                                t, r, _ = _cell_task_rep(c.cell_id, plan_by_id)
+                                obs_gated.append(Obs(task=t, rep=r, value=Decimal(str(gated_score.value))))
+                        key_gated = f"scenario|{sc}|gated|{combo}|{pack}"
+                        iv_gated = interval(obs_gated, params, key_gated)
+                scenarios_list.append(ScenarioRow(combo=combo, pack=pack, scenario=sc, gated=iv_gated, pass_at_1=iv_p1))
+
+    # Frontier projection
+    frontier_list: list[FrontierRow] = []
+    for combo in combos:
+        for pack in packs[combo]:
+            combo_cells = [c for c in view.cells if c.combo == combo and c.pack == pack]
+            valid_cells = [c for c in combo_cells if c.validity == "valid"]
+            r_lb = rows_dict.get((combo, pack))
+            p1_iv = r_lb.pass_at_1 if r_lb is not None else Interval(point=None, lo=None, hi=None, n=0, reason="no cells")
+
+            if not valid_cells:
+                cost_m = Measure(None, "no valid cell")
+                wall_m = Measure(None, "no valid cell")
+                tokens_m = Measure(None, "no valid cell")
+            else:
+                # 1. cost per task
+                no_cost = [c for c in valid_cells if c.scores.get("cost_usd", Measure(None, "not graded")).value is None]
+                if no_cost:
+                    reason = no_cost[0].scores.get("cost_usd", Measure(None, "not graded")).reason
+                    cost_m = Measure(None, f"{len(no_cost)} of {len(valid_cells)} valid cells have no cost: {reason}")
+                else:
+                    tasks_for_c = sorted({_cell_task_rep(c.cell_id, plan_by_id)[0] for c in valid_cells})
+                    task_costs = [
+                        sum(
+                            Decimal(str(c.scores["cost_usd"].value))
+                            for c in valid_cells
+                            if _cell_task_rep(c.cell_id, plan_by_id)[0] == t
+                        )
+                        for t in tasks_for_c
+                    ]
+                    cost_m = Measure(_mean(task_costs)) if task_costs else Measure(None, "no valid cell")
+
+                # 2. wall per task
+                walls = [c for c in valid_cells if c.wall_ms.value is not None]
+                if not walls:
+                    wall_m = Measure(None, "no valid cell with wall time")
+                else:
+                    tasks_for_w = sorted({_cell_task_rep(c.cell_id, plan_by_id)[0] for c in walls})
+                    task_walls = [
+                        sum(
+                            Decimal(str(c.wall_ms.value))
+                            for c in walls
+                            if _cell_task_rep(c.cell_id, plan_by_id)[0] == t
+                        )
+                        for t in tasks_for_w
+                    ]
+                    wall_m = Measure(_mean(task_walls)) if task_walls else Measure(None, "no valid cell with wall time")
+
+                # 3. tokens per solved task
+                all_tasks = sorted({_cell_task_rep(c.cell_id, plan_by_id)[0] for c in valid_cells})
+                solved_tasks = [
+                    t
+                    for t in all_tasks
+                    if any(
+                        c.scores.get("pass_at_1", Measure(0)).value == 1
+                        for c in valid_cells
+                        if _cell_task_rep(c.cell_id, plan_by_id)[0] == t
+                    )
+                ]
+                if not solved_tasks:
+                    tokens_m = Measure(None, "no solved tasks")
+                else:
+                    task_tokens = [
+                        sum(
+                            sum(sum(b.values()) for b in c.tokens.values())
+                            for c in valid_cells
+                            if _cell_task_rep(c.cell_id, plan_by_id)[0] == t and c.tokens
+                        )
+                        for t in solved_tasks
+                    ]
+                    tokens_m = Measure(_mean([Decimal(tok) for tok in task_tokens]))
+
+            frontier_list.append(
+                FrontierRow(
+                    combo=combo,
+                    pack=pack,
+                    pass_at_1=p1_iv,
+                    cost_per_task=cost_m,
+                    tokens_per_solved=tokens_m,
+                    wall_per_task=wall_m,
+                )
+            )
 
     # Pack effect
     pack_effect = _build_pack_effect(view, cat, params, plan_by_id, no_anchor_cell if primary != "gated" else None)
@@ -311,6 +495,9 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
         primary_reason=primary_reason,
         rows=ordered_rows,
         pack_effect=pack_effect,
+        areas=areas_list,
+        scenarios=scenarios_list,
+        frontier=frontier_list,
     )
 
 
@@ -392,11 +579,11 @@ def _build_pack_effect(
                 # Area score
                 off_obs = []
                 for c in clean_cells:
-                    if (
-                        c.pack == "off"
-                        and c.validity == "valid"
-                    ):
+                    if c.pack == "off" and c.validity == "valid":
                         score = c.scores.get(m)
+                        if (score is None or score.value is None) and m != "pass_at_1":
+                            all_scores = _composite_inputs(c.scores, cat, view.catalog_version)
+                            score, _ = compute_area(all_scores, m, cat)
                         if score is not None and score.value is not None:
                             off_obs.append(
                                 Obs(
@@ -407,11 +594,11 @@ def _build_pack_effect(
                             )
                 on_obs = []
                 for c in clean_cells:
-                    if (
-                        c.pack == "on"
-                        and c.validity == "valid"
-                    ):
+                    if c.pack == "on" and c.validity == "valid":
                         score = c.scores.get(m)
+                        if (score is None or score.value is None) and m != "pass_at_1":
+                            all_scores = _composite_inputs(c.scores, cat, view.catalog_version)
+                            score, _ = compute_area(all_scores, m, cat)
                         if score is not None and score.value is not None:
                             on_obs.append(
                                 Obs(
@@ -420,6 +607,17 @@ def _build_pack_effect(
                                     Decimal(str(score.value)),
                                 )
                             )
+
+                if not off_obs:
+                    reason = f"not computed (no {m} score in pack=off)"
+                    delta_iv = Interval(point=None, lo=None, hi=None, n=0, reason=reason)
+                    pe_rows.append(PackEffectRow(combo=combo, measure=m, delta=delta_iv, label=None, reason=reason))
+                    continue
+                if not on_obs:
+                    reason = f"not computed (no {m} score in pack=on)"
+                    delta_iv = Interval(point=None, lo=None, hi=None, n=0, reason=reason)
+                    pe_rows.append(PackEffectRow(combo=combo, measure=m, delta=delta_iv, label=None, reason=reason))
+                    continue
 
             key = f"{m}|{combo}"
             delta_iv, _ = paired_delta(ref=off_obs, treat=on_obs, labels=("off", "on"), params=params, key=key)
@@ -439,14 +637,14 @@ def _build_pack_effect(
 
 
 def header_row(board: Board) -> str:
-    """Format disclosure line according to R-78 condition 3."""
+    """Format disclosure line according to R-78 condition 3, R-81 DR-R-10."""
     py_ver = f"{sys.version_info.major}.{sys.version_info.minor}"
     if board.primary == "pass_at_1":
         ranked_on = f"pass@1 ({board.primary_reason})"
     else:
         ranked_on = "correctness-gated composite"
     return (
-        f"statistics: {METHOD}, {board.params.resamples} resamples, "
+        f"statistics: {METHOD}, export version {EXPORT_VERSION}, {board.params.resamples} resamples, "
         f"seed {board.params.seed}, resampled by task then repetition, "
         f"Python {py_ver} random stream; ranked on {ranked_on}"
     )
@@ -682,8 +880,42 @@ def export(board: Board, comparison: Comparison | None = None) -> bytes:
         ],
     }
 
+    areas_data = [
+        {
+            "combo": ar.combo,
+            "pack": ar.pack,
+            "area": ar.area,
+            "interval": _enc_interval(ar.interval),
+        }
+        for ar in board.areas
+    ]
+
+    scenarios_data = [
+        {
+            "combo": sr.combo,
+            "pack": sr.pack,
+            "scenario": sr.scenario,
+            "gated": _enc_interval(sr.gated),
+            "pass_at_1": _enc_interval(sr.pass_at_1),
+        }
+        for sr in board.scenarios
+    ]
+
+    frontier_data = [
+        {
+            "combo": fr.combo,
+            "pack": fr.pack,
+            "pass_at_1": _enc_interval(fr.pass_at_1),
+            "cost_per_task": _enc_measure(fr.cost_per_task),
+            "tokens_per_solved": _enc_measure(fr.tokens_per_solved),
+            "wall_per_task": _enc_measure(fr.wall_per_task),
+        }
+        for fr in board.frontier
+    ]
+
     payload: dict[str, Any] = {
         "method": METHOD,
+        "export_version": EXPORT_VERSION,
         "seed": board.params.seed,
         "resamples": board.params.resamples,
         "run_id": board.run_id,
@@ -692,6 +924,9 @@ def export(board: Board, comparison: Comparison | None = None) -> bytes:
         "primary_reason": board.primary_reason,
         "rows": rows_data,
         "pack_effect": pack_effect_data,
+        "areas": areas_data,
+        "scenarios": scenarios_data,
+        "frontier": frontier_data,
     }
 
     if comparison is not None:
