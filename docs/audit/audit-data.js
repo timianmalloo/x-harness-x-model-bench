@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-28T04:24:23Z",
+  "generated": "2026-09-28T04:55:38Z",
   "audit": [
     {
       "actor": null,
@@ -41904,34 +41904,23 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M3JQNYWK1ZKYVF2NZHQCJDJE",
-      "shortname": "Goal: implement slice S4 of docs/design/phase4-statistics.md, composites…",
-      "datetime": "2026-09-28T00:47:17Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: implement slice S4 of docs/design/phase4-statistics.md, composites: src/harness_bench/composites.py, its tests and mutants, deleting grade/normalize_scores.py, plus the config.py seam Z-4 with the validation refusals that rulings R-78 condition 2 and R-79 DR-C1 require, red first.\nMeasured (Leader, 2026-09-27): catalog 0.5.dev is merged on main (bench/metrics.yaml): every kind: score, weight > 0 metric has anchor: [worst, best] and anchor_note; the catalog comment states normalisation t = (x - worst) / (best - worst), N = 100 * clamp(t, 0, 1); pass_at_1 and four derived metrics have weight 0. grade/normalize_scores.py is a 4-line stub. S1-S3 (stats.py) are merged. Rulings R-78 (DR-S-1..6) and R-79 (anchors, DR-C1) are in docs/notes/rulings.md.\nDone when: every S4 deliverable in the design's slice table (row S4, about line 760) exists: composites.py with the contracted names and signatures (normalise, area composite, overall, gated per DR-S-2 as amended by R-78: pass_at_1 is the gate factor at weight 0; cell composites read kind: score only per DR-S-3), tests/test_composites.py, tests/mutations/composites.json, grade/normalize_scores.py deleted with no remaining importer; T-C1 (the hypothesis property the design describes near line 666, with its counted zero-differs branch and deterministic @example) is committed red first, failing on an assertion, then green; T-C1..C5 pass; the tests use a test catalog with anchors (the design says S4 does not depend on the Leader's catalog edit), and one extra test loads the real bench/metrics.yaml and asserts every kind: score, weight > 0 metric normalises without error; config.validate_metrics gains, red first, the refusals of R-78 condition 2 (a weighted kind: score metric without an anchor; worst == best; an anchor whose direction contradicts better; a kind: derived metric with weight > 0) and R-79 DR-C1 (a judged metric whose |best - worst| != 2 x the rubric item count whenever a rubrics: entry exists; a better: lower judged rubric must define 2 as worst per item: read R-79 item 4 for the exact wording and how the rubric item count is found), each with its own error message; `uv run bench validate` still exits 0 on the real catalog; every mutant the design lists for composites.json, plus one per new refusal, is killed (PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/composites.json and the file covering config.py; record the output lines); the design's Test Architect conditions hold (characterizations labelled as such); nothing outside S4's listed files and the config.py seam changes (no views, board, report or CLI); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews the stamp; report it); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S5-S7; bench/metrics.yaml content; the gate stamp; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-statistics.md (Normalisation and Composites sections near lines 150-190; T-C1..C5 near line 666; the S4 row near line 760; the seams table for Z-4); docs/notes/rulings.md R-78 and R-79; bench/metrics.yaml; src/harness_bench/config.py (validate_metrics); src/harness_bench/grade/normalize_scores.py; src/harness_bench/grade/judge.py (how judged metrics sum rubric items); bench/rubrics/; tests/test_config.py; tests/mutations/*.json. Use python, not python3 (Windows).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
+      "datetime": "2026-09-28T00:47:17Z",
+      "id": "al-01M3JQNYWK1ZKYVF2NZHQCJDJE",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: implement slice S4 of docs/design/phase4-statistics.md, composites: src/harness_bench/composites.py, its tests and mutants, deleting grade/normalize_scores.py, plus the config.py seam Z-4 with the validation refusals that rulings R-78 condition 2 and R-79 DR-C1 require, red first.\nMeasured (Leader, 2026-09-27): catalog 0.5.dev is merged on main (bench/metrics.yaml): every kind: score, weight > 0 metric has anchor: [worst, best] and anchor_note; the catalog comment states normalisation t = (x - worst) / (best - worst), N = 100 * clamp(t, 0, 1); pass_at_1 and four derived metrics have weight 0. grade/normalize_scores.py is a 4-line stub. S1-S3 (stats.py) are merged. Rulings R-78 (DR-S-1..6) and R-79 (anchors, DR-C1) are in docs/notes/rulings.md.\nDone when: every S4 deliverable in the design's slice table (row S4, about line 760) exists: composites.py with the contracted names and signatures (normalise, area composite, overall, gated per DR-S-2 as amended by R-78: pass_at_1 is the gate factor at weight 0; cell composites read kind: score only per DR-S-3), tests/test_composites.py, tests/mutations/composites.json, grade/normalize_scores.py deleted with no remaining importer; T-C1 (the hypothesis property the design describes near line 666, with its counted zero-differs branch and deterministic @example) is committed red first, failing on an assertion, then green; T-C1..C5 pass; the tests use a test catalog with anchors (the design says S4 does not depend on the Leader's catalog edit), and one extra test loads the real bench/metrics.yaml and asserts every kind: score, weight > 0 metric normalises without error; config.validate_metrics gains, red first, the refusals of R-78 condition 2 (a weighted kind: score metric without an anchor; worst == best; an anchor whose direction contradicts better; a kind: derived metric with weight > 0) and R-79 DR-C1 (a judged metric whose |best - worst| != 2 x the rubric item count whenever a rubrics: entry exists; a better: lower judged rubric must define 2 as worst per item: read R-79 item 4 for the exact wording and how the rubric item count is found), each with its own error message; `uv run bench validate` still exits 0 on the real catalog; every mutant the design lists for composites.json, plus one per new refusal, is killed (PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/composites.json and the file covering config.py; record the output lines); the design's Test Architect conditions hold (characterizations labelled as such); nothing outside S4's listed files and the config.py seam changes (no views, board, report or CLI); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews the stamp; report it); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S5-S7; bench/metrics.yaml content; the gate stamp; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-statistics.md (Normalisation and Composites sections near lines 150-190; T-C1..C5 near line 666; the S4 row near line 760; the seams table for Z-4); docs/notes/rulings.md R-78 and R-79; bench/metrics.yaml; src/harness_bench/config.py (validate_metrics); src/harness_bench/grade/normalize_scores.py; src/harness_bench/grade/judge.py (how judged metrics sum rubric items); bench/rubrics/; tests/test_config.py; tests/mutations/*.json. Use python, not python3 (Windows).",
+      "session": "prompt-compile",
+      "shortname": "Goal: implement slice S4 of docs/design/phase4-statistics.md, composites…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M3JQP2Q89GBZYXRMC6XBSX1Y",
-      "shortname": "compile-Goal: implement slice S4 of docs/design/phase4-statistics.md, composites…",
-      "datetime": "2026-09-28T00:47:21Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement slice S4 of docs/design/phase4-statistics.md, composites: src/harness_bench/composites.py, its tests and mutants, deleting grade/normalize_scores.py, plus the config.py seam Z-4 with the validation refusals that rulings R-78 condition 2 and R-79 DR-C1 require, red first. Measured (Leader, 2026-09-27): catalog 0.5.dev is merged on main (bench/metrics.yaml): every kind: score, weight > 0 metric has anchor: [worst, best] and anchor_note; the catalog comment states normalisation t = (x - worst) / (best - worst), N = 100 * clamp(t, 0, 1); pass_at_1 and four derived metrics have weight 0. grade/normalize_scores.py is a 4-line stub. S1-S3 (stats.py) are merged. Rulings R-78 (DR-S-1..6) and R-79 (anchors, DR-C1) are in docs/notes/rulings.md.\nDone when: every S4 deliverable in the design's slice table (row S4, about line 760) exists: composites.py with the contracted names and signatures (normalise, area composite, overall, gated per DR-S-2 as amended by R-78: pass_at_1 is the gate factor at weight 0; cell composites read kind: score only per DR-S-3), tests/test_composites.py, tests/mutations/composites.json, grade/normalize_scores.py deleted with no remaining importer; T-C1 (the hypothesis property the design describes near line 666, with its counted zero-differs branch and deterministic @example) is committed red first, failing on an assertion, then green; T-C1..C5 pass; the tests use a test catalog with anchors (the design says S4 does not depend on the Leader's catalog edit), and one extra test loads the real bench/metrics.yaml and asserts every kind: score, weight > 0 metric normalises without error; config.validate_metrics gains, red first, the refusals of R-78 condition 2 (a weighted kind: score metric without an anchor; worst == best; an anchor whose direction contradicts better; a kind: derived metric with weight > 0) and R-79 DR-C1 (a judged metric whose |best - worst| != 2 x the rubric item count whenever a rubrics: entry exists; a better: lower judged rubric must define 2 as worst per item: read R-79 item 4 for the exact wording and how the rubric item count is found), each with its own error message; `uv run bench validate` still exits 0 on the real catalog; every mutant the design lists for composites.json, plus one per new refusal, is killed (PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/composites.json and the file covering config.py; record the output lines); the design's Test Architect conditions hold (characterizations labelled as such); nothing outside S4's listed files and the config.py seam changes (no views, board, report or CLI); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews the stamp; report it); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S5-S7; bench/metrics.yaml content; the gate stamp; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (Normalisation and Composites sections near lines 150-190; T-C1..C5 near line 666; the S4 row near line 760; the seams table for Z-4); docs/notes/rulings.md R-78 and R-79; bench/metrics.yaml; src/harness_bench/config.py (validate_metrics); src/harness_bench/grade/normalize_scores.py; src/harness_bench/grade/judge.py (how judged metrics sum rubric items); bench/rubrics/; tests/test_config.py; tests/mutations/*.json. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: every S4 deliverable in the design's slice table (row S4, about line 760) exists: composites.py with the contracted names and signatures (normalise, area composite, overall, gated per DR-S-2 as amended by R-78: pass_at_1 is the gate factor at weight 0 | phrase: every S4 deliverable in the design's slice table (row S4, about line 760) exists: composites.py with the contracted names and signatures (normalise, area composite, overall, gated per DR-S-2 as amended by R-78: pass_at_1 is the gate factor at weight 0 |\n| done_when: cell composites read kind: score only per DR-S-3), tests/test_composites.py, tests/mutations/composites.json, grade/normalize_scores.py deleted with no remaining importer | phrase: cell composites read kind: score only per DR-S-3), tests/test_composites.py, tests/mutations/composites.json, grade/normalize_scores.py deleted with no remaining importer |\n| done_when: T-C1 (the hypothesis property the design describes near line 666, with its counted zero-differs branch and deterministic @example) is committed red first, failing on an assertion, then green | phrase: T-C1 (the hypothesis property the design describes near line 666, with its counted zero-differs branch and deterministic @example) is committed red first, failing on an assertion, then green |\n| done_when: T-C1..C5 pass | phrase: T-C1..C5 pass |\n| done_when: the tests use a test catalog with anchors (the design says S4 does not depend on the Leader's catalog edit), and one extra test loads the real bench/metrics.yaml and asserts every kind: score, weight > 0 metric normalises without error | phrase: the tests use a test catalog with anchors (the design says S4 does not depend on the Leader's catalog edit), and one extra test loads the real bench/metrics.yaml and asserts every kind: score, weight > 0 metric normalises without error |\n| done_when: config.validate_metrics gains, red first, the refusals of R-78 condition 2 (a weighted kind: score metric without an anchor | phrase: config.validate_metrics gains, red first, the refusals of R-78 condition 2 (a weighted kind: score metric without an anchor |\n| done_when: worst == best | phrase: worst == best |\n| done_when: an anchor whose direction contradicts better | phrase: an anchor whose direction contradicts better |\n| done_when: a kind: derived metric with weight > 0) and R-79 DR-C1 (a judged metric whose |best - worst| != 2 x the rubric item count whenever a rubrics: entry exists | phrase: a kind: derived metric with weight > 0) and R-79 DR-C1 (a judged metric whose |best - worst| != 2 x the rubric item count whenever a rubrics: entry exists |\n| done_when: a better: lower judged rubric must define 2 as worst per item: read R-79 item 4 for the exact wording and how the rubric item count is found), each with its own error message | phrase: a better: lower judged rubric must define 2 as worst per item: read R-79 item 4 for the exact wording and how the rubric item count is found), each with its own error message |\n| done_when: `uv run bench validate` still exits 0 on the real catalog | phrase: `uv run bench validate` still exits 0 on the real catalog |\n| done_when: every mutant the design lists for composites.json, plus one per new refusal, is killed (PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/composites.json and the file covering config.py | phrase: every mutant the design lists for composites.json, plus one per new refusal, is killed (PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/composites.json and the file covering config.py |\n| done_when: record the output lines) | phrase: record the output lines) |\n| done_when: the design's Test Architect conditions hold (characterizations labelled as such) | phrase: the design's Test Architect conditions hold (characterizations labelled as such) |\n| done_when: nothing outside S4's listed files and the config.py seam changes (no views, board, report or CLI) | phrase: nothing outside S4's listed files and the config.py seam changes (no views, board, report or CLI) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews the stamp | phrase: uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews the stamp |\n| done_when: report it) | phrase: report it) |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: slices S5-S7 | phrase: slices S5-S7 |\n| not_in_scope: bench/metrics.yaml content | phrase: bench/metrics.yaml content |\n| not_in_scope: the gate stamp | phrase: the gate stamp |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- uv run bench validate: unresolved (not found)\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd\n- src/harness_bench/composites.py: unresolved (not found)\n- grade/normalize_scores.py: src/harness_bench/grade/normalize_scores.py sha256 5e2e1d847d38f3ce941a882ed89bd45e66c7cef0b759398c5f2a9614d9eb14c9\n- config.py: src/harness_bench/config.py sha256 24f729beef17064e342ca591276a62bd43a9e19dbab742badfe503d6607ca0a9\n- bench/metrics.yaml: bench/metrics.yaml sha256 83cde14c910c669dc054481ae066c89201b2fa895983fe1e0793c980d0040e89\n- /: unresolved (outside repo)\n- stats.py: src/harness_bench/stats.py sha256 c4b05430bd544d9079c4afc9e058e40320a992dfc9804ba6e394abf2ddbc4e83\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- composites.py: unresolved (not found)\n- tests/test_composites.py: unresolved (not found)\n- tests/mutations/composites.json: unresolved (not found)\n- composites.json: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 df1e8be368ac77ce67eba3a3f761cddd85af8a623e025ba9efb9669a1aa22ff7\n- tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp: unresolved (not found)\n- runs/: unresolved (not found)\n- src/harness_bench/config.py: src/harness_bench/config.py sha256 24f729beef17064e342ca591276a62bd43a9e19dbab742badfe503d6607ca0a9\n- src/harness_bench/grade/normalize_scores.py: src/harness_bench/grade/normalize_scores.py sha256 5e2e1d847d38f3ce941a882ed89bd45e66c7cef0b759398c5f2a9614d9eb14c9\n- src/harness_bench/grade/judge.py: src/harness_bench/grade/judge.py sha256 5385e91ac333bd4745049101abc5d416d028589aa3f6451a968186e11b4ea121\n- bench/rubrics/: unresolved (not found)\n- tests/test_config.py: tests/test_config.py sha256 0585e6d7548af94045bddc2d12aa2919f4b695d2f87f129e7406e68bc9125691\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JQNYWK1ZKYVF2NZHQCJDJE\nraw sha256: 39c52630bab0007fc7892ac6b329fcf11ca95d24e86b515a532ba4ebc15b93d2\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3JQNYWK1ZKYVF2NZHQCJDJE for claude-code v1: 25 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -42379,70 +42368,70 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3JRGV3R5MXKRYRNCQBEXRGZ",
-      "shortname": "s4-composites",
-      "datetime": "2026-09-28T01:01:58Z",
-      "session": "worker-agy-s4",
-      "prompt": "implement slice S4 of docs/design/phase4-statistics.md, composites: src/harness_bench/composites.py, its tests and mutants, deleting grade/normalize_scores.py, plus the config.py seam Z-4 with the validation refusals that rulings R-78 condition 2 and R-79 DR-C1 require, red first.",
-      "summary": "Implement S4 composites (normalise, area composite, overall, correctness-gated), test suite T-C1..C5, 3 mutants in composites.json, delete normalize_scores.py stub, and add 6 validation refusals to config.validate_metrics (Z-4 seam) with 6 mutants in validate.json, all killed red-first.",
-      "kind": "skill",
-      "skill": "coordination-worker",
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success",
-      "compiled": false,
-      "goal": "implement slice S4 of docs/design/phase4-statistics.md, composites: src/harness_bench/composites.py, its tests and mutants, deleting grade/normalize_scores.py, plus the config.py seam Z-4 with the validation refusals that rulings R-78 condition 2 and R-79 DR-C1 require, red first.",
-      "done_when": "every S4 deliverable in the design's slice table (row S4, about line 760) exists: composites.py with the contracted names and signatures, tests/test_composites.py, tests/mutations/composites.json, grade/normalize_scores.py deleted with no remaining importer; T-C1 committed red first, failing on an assertion, then green; T-C1..C5 pass; config.validate_metrics gains, red first, the refusals of R-78 condition 2 and R-79 DR-C1, each with its own error message; uv run bench validate still exits 0; every mutant in composites.json and validate.json killed; uv run ruff check clean; uv run pytest passes except test_current_grader_inputs_match_gate_stamp.",
-      "tier": "T1",
-      "fan_out": 0,
-      "signals": {
-        "verification_executed": true,
-        "acceptance_met": true
-      },
-      "started_at": "2026-09-28T00:47:38Z",
-      "duration_seconds": 860.0,
-      "git": {
-        "sha": "0eb77e682f36ec1d6bd0e3d5bd0df2624fc58a7c",
-        "short": "0eb77e682",
-        "branch": "w4-s4",
-        "pushed": null
-      }
-    },
-    {
-      "id": "al-01M3JRP924C82Z2JWY1NXXXPCC",
-      "shortname": "Goal: implement slice S5 of docs/design/phase4-statistics.md, the board …",
-      "datetime": "2026-09-28T01:04:56Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: implement slice S5 of docs/design/phase4-statistics.md, the board projection: src/harness_bench/board.py, tests/stats_fixtures.py (the stats_run builder, written first), tests/test_board.py, tests/mutations/board.json, and the seams Z-2 (errors.py: HB-STA-001/002) and Z-5 (the views.py hunks: the leaderboard leaves views.export per R-78 DR-S-4), red first.\nMeasured (Leader, 2026-09-27): S1-S4 are merged on main (stats.py: bootstrap, rank, paired delta, pass_k, CONTAMINATION_PRONE; composites.py; config refusals); bench/metrics.yaml is catalog 0.5.dev with anchors (so a .dev catalog is a probe and the US-4 control exempts it, G3); tests/fixtures/catalog/0.4/heads.export pins the 0.4 export including its leaderboard key; rulings R-78 (DR-S-1..6 and conditions 1-8) and R-79 are in docs/notes/rulings.md.\nDone when: every S5 deliverable in the design's slice table (row S5, about line 761) exists; tests/stats_fixtures.py is committed first; T-B1 (build on the committed fixture: its pass@1 points equal named constants taken from tests/fixtures/catalog/0.4/heads.export, pinned in the test BEFORE views._row is deleted) is committed red first, failing on an assertion, then green; T-B1..B3, T-B6..B9 and T-P1..P4 pass; board.export owns the statistics bytes and records seed, resamples and METHOD (R-78 DR-S-5); the header's primary-measure line follows R-78 condition 3 (pass@1 while the current pass's catalog has no anchors, gated otherwise, one run-level line); views.export no longer carries the leaderboard key and nothing else in its bytes changes (the Leader then checks R-78 condition 4 by hand: say in the report which command reproduces the 0.4 fixture's export after your change); HB-STA-001/002 are in errors.py with the design's messages; every mutant the design lists for board.json is present and killed (uv run python tools/mutate_check.py tests/mutations/board.json; record the output lines); nothing outside S5's listed files and the Z-2/Z-5 seams changes (no report or CLI wiring: that is S6); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews it; report it) and any golden test the design says S5 re-pins (name each in the report with the reason); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: S6 (report wiring, --seed/--resamples flags) and S7 (comparison); freezing 0.5 or re-pinning its goldens (the Leader, R-78 condition 5); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-statistics.md (the board sections, the seams table Z-1..Z-7, T-B1..B9 and T-P1..P4 near line 675, the S5 row near line 761); docs/notes/rulings.md R-78; src/harness_bench/views.py (leaderboard, _row, export); src/harness_bench/stats.py; src/harness_bench/composites.py; src/harness_bench/errors.py; tests/fixtures/catalog/0.4/; tests/test_catalog_version.py (the US-4 control); tests/mutations/*.json. Use python, not python3 (Windows).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3JRPC9GGTEX27PWC7V68YMC",
-      "shortname": "compile-Goal: implement slice S5 of docs/design/phase4-statistics.md, the board …",
-      "datetime": "2026-09-28T01:04:59Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement slice S5 of docs/design/phase4-statistics.md, the board projection: src/harness_bench/board.py, tests/stats_fixtures.py (the stats_run builder, written first), tests/test_board.py, tests/mutations/board.json, and the seams Z-2 (errors.py: HB-STA-001/002) and Z-5 (the views.py hunks: the leaderboard leaves views.export per R-78 DR-S-4), red first. Measured (Leader, 2026-09-27): S1-S4 are merged on main (stats.py: bootstrap, rank, paired delta, pass_k, CONTAMINATION_PRONE; composites.py; config refusals); bench/metrics.yaml is catalog 0.5.dev with anchors (so a .dev catalog is a probe and the US-4 control exempts it, G3); tests/fixtures/catalog/0.4/heads.export pins the 0.4 export including its leaderboard key; rulings R-78 (DR-S-1..6 and conditions 1-8) and R-79 are in docs/notes/rulings.md.\nDone when: every S5 deliverable in the design's slice table (row S5, about line 761) exists; tests/stats_fixtures.py is committed first; T-B1 (build on the committed fixture: its pass@1 points equal named constants taken from tests/fixtures/catalog/0.4/heads.export, pinned in the test BEFORE views._row is deleted) is committed red first, failing on an assertion, then green; T-B1..B3, T-B6..B9 and T-P1..P4 pass; board.export owns the statistics bytes and records seed, resamples and METHOD (R-78 DR-S-5); the header's primary-measure line follows R-78 condition 3 (pass@1 while the current pass's catalog has no anchors, gated otherwise, one run-level line); views.export no longer carries the leaderboard key and nothing else in its bytes changes (the Leader then checks R-78 condition 4 by hand: say in the report which command reproduces the 0.4 fixture's export after your change); HB-STA-001/002 are in errors.py with the design's messages; every mutant the design lists for board.json is present and killed (uv run python tools/mutate_check.py tests/mutations/board.json; record the output lines); nothing outside S5's listed files and the Z-2/Z-5 seams changes (no report or CLI wiring: that is S6); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews it; report it) and any golden test the design says S5 re-pins (name each in the report with the reason); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: S6 (report wiring, --seed/--resamples flags) and S7 (comparison); freezing 0.5 or re-pinning its goldens (the Leader, R-78 condition 5); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (the board sections, the seams table Z-1..Z-7, T-B1..B9 and T-P1..P4 near line 675, the S5 row near line 761); docs/notes/rulings.md R-78; src/harness_bench/views.py (leaderboard, _row, export); src/harness_bench/stats.py; src/harness_bench/composites.py; src/harness_bench/errors.py; tests/fixtures/catalog/0.4/; tests/test_catalog_version.py (the US-4 control); tests/mutations/*.json. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: every S5 deliverable in the design's slice table (row S5, about line 761) exists | phrase: every S5 deliverable in the design's slice table (row S5, about line 761) exists |\n| done_when: tests/stats_fixtures.py is committed first | phrase: tests/stats_fixtures.py is committed first |\n| done_when: T-B1 (build on the committed fixture: its pass@1 points equal named constants taken from tests/fixtures/catalog/0.4/heads.export, pinned in the test BEFORE views._row is deleted) is committed red first, failing on an assertion, then green | phrase: T-B1 (build on the committed fixture: its pass@1 points equal named constants taken from tests/fixtures/catalog/0.4/heads.export, pinned in the test BEFORE views._row is deleted) is committed red first, failing on an assertion, then green |\n| done_when: T-B1..B3, T-B6..B9 and T-P1..P4 pass | phrase: T-B1..B3, T-B6..B9 and T-P1..P4 pass |\n| done_when: board.export owns the statistics bytes and records seed, resamples and METHOD (R-78 DR-S-5) | phrase: board.export owns the statistics bytes and records seed, resamples and METHOD (R-78 DR-S-5) |\n| done_when: the header's primary-measure line follows R-78 condition 3 (pass@1 while the current pass's catalog has no anchors, gated otherwise, one run-level line) | phrase: the header's primary-measure line follows R-78 condition 3 (pass@1 while the current pass's catalog has no anchors, gated otherwise, one run-level line) |\n| done_when: views.export no longer carries the leaderboard key and nothing else in its bytes changes (the Leader then checks R-78 condition 4 by hand: say in the report which command reproduces the 0.4 fixture's export after your change) | phrase: views.export no longer carries the leaderboard key and nothing else in its bytes changes (the Leader then checks R-78 condition 4 by hand: say in the report which command reproduces the 0.4 fixture's export after your change) |\n| done_when: HB-STA-001/002 are in errors.py with the design's messages | phrase: HB-STA-001/002 are in errors.py with the design's messages |\n| done_when: every mutant the design lists for board.json is present and killed (uv run python tools/mutate_check.py tests/mutations/board.json | phrase: every mutant the design lists for board.json is present and killed (uv run python tools/mutate_check.py tests/mutations/board.json |\n| done_when: record the output lines) | phrase: record the output lines) |\n| done_when: nothing outside S5's listed files and the Z-2/Z-5 seams changes (no report or CLI wiring: that is S6) | phrase: nothing outside S5's listed files and the Z-2/Z-5 seams changes (no report or CLI wiring: that is S6) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews it | phrase: uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews it |\n| done_when: report it) and any golden test the design says S5 re-pins (name each in the report with the reason) | phrase: report it) and any golden test the design says S5 re-pins (name each in the report with the reason) |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: S6 (report wiring, --seed/--resamples flags) and S7 (comparison) | phrase: S6 (report wiring, --seed/--resamples flags) and S7 (comparison) |\n| not_in_scope: freezing 0.5 or re-pinning its goldens (the Leader, R-78 condition 5) | phrase: freezing 0.5 or re-pinning its goldens (the Leader, R-78 condition 5) |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd\n- src/harness_bench/board.py: unresolved (not found)\n- tests/stats_fixtures.py: unresolved (not found)\n- tests/test_board.py: unresolved (not found)\n- tests/mutations/board.json: unresolved (not found)\n- errors.py: src/harness_bench/errors.py sha256 1b117deb2172662741123cb2984a3fa7dd87e19a4a01606651d530fd8c3dcb21\n- HB-STA-001/002: unresolved (not found)\n- views.py: src/harness_bench/views.py sha256 ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842\n- stats.py: src/harness_bench/stats.py sha256 c4b05430bd544d9079c4afc9e058e40320a992dfc9804ba6e394abf2ddbc4e83\n- composites.py: src/harness_bench/composites.py sha256 4d0296c8b87ae82c814605aa603bc711da6b1a705f308563aba20d575911a5a8\n- bench/metrics.yaml: bench/metrics.yaml sha256 83cde14c910c669dc054481ae066c89201b2fa895983fe1e0793c980d0040e89\n- tests/fixtures/catalog/0.4/heads.export: tests/fixtures/catalog/0.4/heads.export sha256 55bd1375b3fffa5c6315b466c0bfa11fa3af7dad5347f0a4a8fd8db6e93b8929\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- board.json: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 df1e8be368ac77ce67eba3a3f761cddd85af8a623e025ba9efb9669a1aa22ff7\n- Z-2/Z-5: unresolved (not found)\n- tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp: unresolved (not found)\n- --seed/--resamples: unresolved (not found)\n- runs/: unresolved (not found)\n- src/harness_bench/views.py: src/harness_bench/views.py sha256 ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842\n- src/harness_bench/stats.py: src/harness_bench/stats.py sha256 c4b05430bd544d9079c4afc9e058e40320a992dfc9804ba6e394abf2ddbc4e83\n- src/harness_bench/composites.py: src/harness_bench/composites.py sha256 4d0296c8b87ae82c814605aa603bc711da6b1a705f308563aba20d575911a5a8\n- src/harness_bench/errors.py: src/harness_bench/errors.py sha256 1b117deb2172662741123cb2984a3fa7dd87e19a4a01606651d530fd8c3dcb21\n- tests/fixtures/catalog/0.4/: unresolved (not found)\n- tests/test_catalog_version.py: tests/test_catalog_version.py sha256 3f2947ee088588f4a524af945b1acb5b7cdc782a0546051c83c2783721ab0294\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JRP924C82Z2JWY1NXXXPCC\nraw sha256: e2b1723c6995417a833db7e631ba0486805cd7d4ac59856781c1231c3bc88b17\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3JRP924C82Z2JWY1NXXXPCC for claude-code v1: 20 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-28T00:47:21Z",
+      "dispatchable": true,
+      "id": "al-01M3JQP2Q89GBZYXRMC6XBSX1Y",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement slice S4 of docs/design/phase4-statistics.md, composites: src/harness_bench/composites.py, its tests and mutants, deleting grade/normalize_scores.py, plus the config.py seam Z-4 with the validation refusals that rulings R-78 condition 2 and R-79 DR-C1 require, red first. Measured (Leader, 2026-09-27): catalog 0.5.dev is merged on main (bench/metrics.yaml): every kind: score, weight > 0 metric has anchor: [worst, best] and anchor_note; the catalog comment states normalisation t = (x - worst) / (best - worst), N = 100 * clamp(t, 0, 1); pass_at_1 and four derived metrics have weight 0. grade/normalize_scores.py is a 4-line stub. S1-S3 (stats.py) are merged. Rulings R-78 (DR-S-1..6) and R-79 (anchors, DR-C1) are in docs/notes/rulings.md.\nDone when: every S4 deliverable in the design's slice table (row S4, about line 760) exists: composites.py with the contracted names and signatures (normalise, area composite, overall, gated per DR-S-2 as amended by R-78: pass_at_1 is the gate factor at weight 0; cell composites read kind: score only per DR-S-3), tests/test_composites.py, tests/mutations/composites.json, grade/normalize_scores.py deleted with no remaining importer; T-C1 (the hypothesis property the design describes near line 666, with its counted zero-differs branch and deterministic @example) is committed red first, failing on an assertion, then green; T-C1..C5 pass; the tests use a test catalog with anchors (the design says S4 does not depend on the Leader's catalog edit), and one extra test loads the real bench/metrics.yaml and asserts every kind: score, weight > 0 metric normalises without error; config.validate_metrics gains, red first, the refusals of R-78 condition 2 (a weighted kind: score metric without an anchor; worst == best; an anchor whose direction contradicts better; a kind: derived metric with weight > 0) and R-79 DR-C1 (a judged metric whose |best - worst| != 2 x the rubric item count whenever a rubrics: entry exists; a better: lower judged rubric must define 2 as worst per item: read R-79 item 4 for the exact wording and how the rubric item count is found), each with its own error message; `uv run bench validate` still exits 0 on the real catalog; every mutant the design lists for composites.json, plus one per new refusal, is killed (PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/composites.json and the file covering config.py; record the output lines); the design's Test Architect conditions hold (characterizations labelled as such); nothing outside S4's listed files and the config.py seam changes (no views, board, report or CLI); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews the stamp; report it); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S5-S7; bench/metrics.yaml content; the gate stamp; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (Normalisation and Composites sections near lines 150-190; T-C1..C5 near line 666; the S4 row near line 760; the seams table for Z-4); docs/notes/rulings.md R-78 and R-79; bench/metrics.yaml; src/harness_bench/config.py (validate_metrics); src/harness_bench/grade/normalize_scores.py; src/harness_bench/grade/judge.py (how judged metrics sum rubric items); bench/rubrics/; tests/test_config.py; tests/mutations/*.json. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: every S4 deliverable in the design's slice table (row S4, about line 760) exists: composites.py with the contracted names and signatures (normalise, area composite, overall, gated per DR-S-2 as amended by R-78: pass_at_1 is the gate factor at weight 0 | phrase: every S4 deliverable in the design's slice table (row S4, about line 760) exists: composites.py with the contracted names and signatures (normalise, area composite, overall, gated per DR-S-2 as amended by R-78: pass_at_1 is the gate factor at weight 0 |\n| done_when: cell composites read kind: score only per DR-S-3), tests/test_composites.py, tests/mutations/composites.json, grade/normalize_scores.py deleted with no remaining importer | phrase: cell composites read kind: score only per DR-S-3), tests/test_composites.py, tests/mutations/composites.json, grade/normalize_scores.py deleted with no remaining importer |\n| done_when: T-C1 (the hypothesis property the design describes near line 666, with its counted zero-differs branch and deterministic @example) is committed red first, failing on an assertion, then green | phrase: T-C1 (the hypothesis property the design describes near line 666, with its counted zero-differs branch and deterministic @example) is committed red first, failing on an assertion, then green |\n| done_when: T-C1..C5 pass | phrase: T-C1..C5 pass |\n| done_when: the tests use a test catalog with anchors (the design says S4 does not depend on the Leader's catalog edit), and one extra test loads the real bench/metrics.yaml and asserts every kind: score, weight > 0 metric normalises without error | phrase: the tests use a test catalog with anchors (the design says S4 does not depend on the Leader's catalog edit), and one extra test loads the real bench/metrics.yaml and asserts every kind: score, weight > 0 metric normalises without error |\n| done_when: config.validate_metrics gains, red first, the refusals of R-78 condition 2 (a weighted kind: score metric without an anchor | phrase: config.validate_metrics gains, red first, the refusals of R-78 condition 2 (a weighted kind: score metric without an anchor |\n| done_when: worst == best | phrase: worst == best |\n| done_when: an anchor whose direction contradicts better | phrase: an anchor whose direction contradicts better |\n| done_when: a kind: derived metric with weight > 0) and R-79 DR-C1 (a judged metric whose |best - worst| != 2 x the rubric item count whenever a rubrics: entry exists | phrase: a kind: derived metric with weight > 0) and R-79 DR-C1 (a judged metric whose |best - worst| != 2 x the rubric item count whenever a rubrics: entry exists |\n| done_when: a better: lower judged rubric must define 2 as worst per item: read R-79 item 4 for the exact wording and how the rubric item count is found), each with its own error message | phrase: a better: lower judged rubric must define 2 as worst per item: read R-79 item 4 for the exact wording and how the rubric item count is found), each with its own error message |\n| done_when: `uv run bench validate` still exits 0 on the real catalog | phrase: `uv run bench validate` still exits 0 on the real catalog |\n| done_when: every mutant the design lists for composites.json, plus one per new refusal, is killed (PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/composites.json and the file covering config.py | phrase: every mutant the design lists for composites.json, plus one per new refusal, is killed (PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/composites.json and the file covering config.py |\n| done_when: record the output lines) | phrase: record the output lines) |\n| done_when: the design's Test Architect conditions hold (characterizations labelled as such) | phrase: the design's Test Architect conditions hold (characterizations labelled as such) |\n| done_when: nothing outside S4's listed files and the config.py seam changes (no views, board, report or CLI) | phrase: nothing outside S4's listed files and the config.py seam changes (no views, board, report or CLI) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews the stamp | phrase: uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews the stamp |\n| done_when: report it) | phrase: report it) |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: slices S5-S7 | phrase: slices S5-S7 |\n| not_in_scope: bench/metrics.yaml content | phrase: bench/metrics.yaml content |\n| not_in_scope: the gate stamp | phrase: the gate stamp |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- uv run bench validate: unresolved (not found)\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd\n- src/harness_bench/composites.py: unresolved (not found)\n- grade/normalize_scores.py: src/harness_bench/grade/normalize_scores.py sha256 5e2e1d847d38f3ce941a882ed89bd45e66c7cef0b759398c5f2a9614d9eb14c9\n- config.py: src/harness_bench/config.py sha256 24f729beef17064e342ca591276a62bd43a9e19dbab742badfe503d6607ca0a9\n- bench/metrics.yaml: bench/metrics.yaml sha256 83cde14c910c669dc054481ae066c89201b2fa895983fe1e0793c980d0040e89\n- /: unresolved (outside repo)\n- stats.py: src/harness_bench/stats.py sha256 c4b05430bd544d9079c4afc9e058e40320a992dfc9804ba6e394abf2ddbc4e83\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- composites.py: unresolved (not found)\n- tests/test_composites.py: unresolved (not found)\n- tests/mutations/composites.json: unresolved (not found)\n- composites.json: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 df1e8be368ac77ce67eba3a3f761cddd85af8a623e025ba9efb9669a1aa22ff7\n- tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp: unresolved (not found)\n- runs/: unresolved (not found)\n- src/harness_bench/config.py: src/harness_bench/config.py sha256 24f729beef17064e342ca591276a62bd43a9e19dbab742badfe503d6607ca0a9\n- src/harness_bench/grade/normalize_scores.py: src/harness_bench/grade/normalize_scores.py sha256 5e2e1d847d38f3ce941a882ed89bd45e66c7cef0b759398c5f2a9614d9eb14c9\n- src/harness_bench/grade/judge.py: src/harness_bench/grade/judge.py sha256 5385e91ac333bd4745049101abc5d416d028589aa3f6451a968186e11b4ea121\n- bench/rubrics/: unresolved (not found)\n- tests/test_config.py: tests/test_config.py sha256 0585e6d7548af94045bddc2d12aa2919f4b695d2f87f129e7406e68bc9125691\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JQNYWK1ZKYVF2NZHQCJDJE\nraw sha256: 39c52630bab0007fc7892ac6b329fcf11ca95d24e86b515a532ba4ebc15b93d2\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: implement slice S4 of docs/design/phase4-statistics.md, composites…",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3JQNYWK1ZKYVF2NZHQCJDJE for claude-code v1: 25 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "compiled": false,
+      "datetime": "2026-09-28T01:01:58Z",
+      "done_when": "every S4 deliverable in the design's slice table (row S4, about line 760) exists: composites.py with the contracted names and signatures, tests/test_composites.py, tests/mutations/composites.json, grade/normalize_scores.py deleted with no remaining importer; T-C1 committed red first, failing on an assertion, then green; T-C1..C5 pass; config.validate_metrics gains, red first, the refusals of R-78 condition 2 and R-79 DR-C1, each with its own error message; uv run bench validate still exits 0; every mutant in composites.json and validate.json killed; uv run ruff check clean; uv run pytest passes except test_current_grader_inputs_match_gate_stamp.",
+      "duration_seconds": 860.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w4-s4",
+        "pushed": null,
+        "sha": "0eb77e682f36ec1d6bd0e3d5bd0df2624fc58a7c",
+        "short": "0eb77e682"
+      },
+      "goal": "implement slice S4 of docs/design/phase4-statistics.md, composites: src/harness_bench/composites.py, its tests and mutants, deleting grade/normalize_scores.py, plus the config.py seam Z-4 with the validation refusals that rulings R-78 condition 2 and R-79 DR-C1 require, red first.",
+      "id": "al-01M3JRGV3R5MXKRYRNCQBEXRGZ",
+      "kind": "skill",
       "outcome": "success",
+      "prompt": "implement slice S4 of docs/design/phase4-statistics.md, composites: src/harness_bench/composites.py, its tests and mutants, deleting grade/normalize_scores.py, plus the config.py seam Z-4 with the validation refusals that rulings R-78 condition 2 and R-79 DR-C1 require, red first.",
+      "session": "worker-agy-s4",
+      "shortname": "s4-composites",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true
+      },
+      "skill": "coordination-worker",
+      "started_at": "2026-09-28T00:47:38Z",
+      "summary": "Implement S4 composites (normalise, area composite, overall, correctness-gated), test suite T-C1..C5, 3 mutants in composites.json, delete normalize_scores.py stub, and add 6 validation refusals to config.validate_metrics (Z-4 seam) with 6 mutants in validate.json, all killed red-first.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-09-28T01:04:56Z",
+      "id": "al-01M3JRP924C82Z2JWY1NXXXPCC",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: implement slice S5 of docs/design/phase4-statistics.md, the board projection: src/harness_bench/board.py, tests/stats_fixtures.py (the stats_run builder, written first), tests/test_board.py, tests/mutations/board.json, and the seams Z-2 (errors.py: HB-STA-001/002) and Z-5 (the views.py hunks: the leaderboard leaves views.export per R-78 DR-S-4), red first.\nMeasured (Leader, 2026-09-27): S1-S4 are merged on main (stats.py: bootstrap, rank, paired delta, pass_k, CONTAMINATION_PRONE; composites.py; config refusals); bench/metrics.yaml is catalog 0.5.dev with anchors (so a .dev catalog is a probe and the US-4 control exempts it, G3); tests/fixtures/catalog/0.4/heads.export pins the 0.4 export including its leaderboard key; rulings R-78 (DR-S-1..6 and conditions 1-8) and R-79 are in docs/notes/rulings.md.\nDone when: every S5 deliverable in the design's slice table (row S5, about line 761) exists; tests/stats_fixtures.py is committed first; T-B1 (build on the committed fixture: its pass@1 points equal named constants taken from tests/fixtures/catalog/0.4/heads.export, pinned in the test BEFORE views._row is deleted) is committed red first, failing on an assertion, then green; T-B1..B3, T-B6..B9 and T-P1..P4 pass; board.export owns the statistics bytes and records seed, resamples and METHOD (R-78 DR-S-5); the header's primary-measure line follows R-78 condition 3 (pass@1 while the current pass's catalog has no anchors, gated otherwise, one run-level line); views.export no longer carries the leaderboard key and nothing else in its bytes changes (the Leader then checks R-78 condition 4 by hand: say in the report which command reproduces the 0.4 fixture's export after your change); HB-STA-001/002 are in errors.py with the design's messages; every mutant the design lists for board.json is present and killed (uv run python tools/mutate_check.py tests/mutations/board.json; record the output lines); nothing outside S5's listed files and the Z-2/Z-5 seams changes (no report or CLI wiring: that is S6); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews it; report it) and any golden test the design says S5 re-pins (name each in the report with the reason); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: S6 (report wiring, --seed/--resamples flags) and S7 (comparison); freezing 0.5 or re-pinning its goldens (the Leader, R-78 condition 5); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-statistics.md (the board sections, the seams table Z-1..Z-7, T-B1..B9 and T-P1..P4 near line 675, the S5 row near line 761); docs/notes/rulings.md R-78; src/harness_bench/views.py (leaderboard, _row, export); src/harness_bench/stats.py; src/harness_bench/composites.py; src/harness_bench/errors.py; tests/fixtures/catalog/0.4/; tests/test_catalog_version.py (the US-4 control); tests/mutations/*.json. Use python, not python3 (Windows).",
+      "session": "prompt-compile",
+      "shortname": "Goal: implement slice S5 of docs/design/phase4-statistics.md, the board …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -42877,71 +42866,71 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3JTY94ZKW6775T322W0HZGP",
-      "shortname": "s5-board",
-      "datetime": "2026-09-28T01:44:15Z",
-      "session": "worker-agy-s5",
-      "prompt": "implement slice S5 of docs/design/phase4-statistics.md, the board projection",
-      "summary": "Implement slice S5 of docs/design/phase4-statistics.md (the board projection, Z-2, Z-5)",
-      "kind": "manual",
-      "skill": "coordination-worker",
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success",
-      "compiled_from": "al-01M3JRPC9GGTEX27PWC7V68YMC",
-      "goal": "implement slice S5 of docs/design/phase4-statistics.md, the board projection: src/harness_bench/board.py, tests/stats_fixtures.py, tests/test_board.py, tests/mutations/board.json, and the seams Z-2 (errors.py: HB-STA-001/002) and Z-5 (the views.py hunks: the leaderboard leaves views.export per R-78 DR-S-4), red first.",
-      "done_when": "every S5 deliverable in the design's slice table exists; tests/stats_fixtures.py committed first; T-B1 committed red first then green; T-B1..B3, T-B6..B9, T-P1..P4 pass; board.export owns statistics bytes; views.export no longer carries leaderboard key; HB-STA-001/002 in errors.py; all board.json mutants killed; clean ruff",
-      "tier": "T1",
-      "fan_out": 0,
-      "signals": {
-        "verification_path": true,
-        "verification_executed": true,
-        "acceptance_met": true
-      },
-      "started_at": "2026-09-28T01:05:20Z",
-      "duration_seconds": 2335.0,
-      "git": {
-        "sha": "4056010aceafa8543689ac8987c68fa053d42df6",
-        "short": "4056010ac",
-        "branch": "w4-s5",
-        "pushed": null
-      }
-    },
-    {
-      "id": "al-01M3JVM4XAZQD5YF2PY40VTKJ3",
-      "shortname": "Goal: implement slice S6 of docs/design/phase4-statistics.md, report wir…",
-      "datetime": "2026-09-28T01:56:12Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: implement slice S6 of docs/design/phase4-statistics.md, report wiring: report/cli_table.py, report/html.py and report/__init__.py read the board (board.py) for the leaderboard, the pack effect and the header rows, and bench report gains --seed/--resamples (seam Z-3 in cli.py); board.py's legacy row adapter (lines ~677-720, which reproduces the old views leaderboard so the report kept working until this slice) is deleted so one definition of each quantity remains; red first.\nMeasured (Leader, 2026-09-27): S1-S5 are merged (stats.py, composites.py, board.py with board.export; views.export has no leaderboard); board.py holds two definitions of the leaderboard rows: the board projection (lines ~150-245) and the legacy row adapter (~677-720), and tests/mutations/views.json's four leaderboard mutants now point at the adapter; rulings R-78 conditions 3, 7 and 8 bind this slice: every header names the primary measure as one run-level line (pass@1 while the current pass's catalog has no anchors, gated otherwise); `bench report --resamples` below 2000 exits invalid input with a named HB-STA code and the design's error table gains that row; the smoke run's rank under 0.4 is described as a pass@1 rank.\nDone when: every S6 deliverable in the design's slice table (row S6, about line 762) exists; T-U1 is committed red first, failing on an assertion, then green; T-U1..U3 pass; the CLI table and the HTML report show the board's rows (rank with ties, pass@1 or gated with its interval, the primary-measure line, seed, resamples and METHOD in the header, the pack effect with `no detectable effect` where the interval touches zero, and the E1-E3 exclusion statement or `none in this run`); --seed and --resamples reach board and are recorded; --resamples < 2000 exits invalid input with the HB-STA code R-78 c7 names (add the design's error-table row); the legacy row adapter is deleted and nothing imports it; the four views.json leaderboard mutants are re-pointed to the one remaining definition (or removed where a board.json or stats.json mutant already kills the same change: say which) and every mutant in views.json, board.json and stats.json is killed (uv run python tools/mutate_check.py on each; record the output lines); the design's text-width and copy rules for the report are followed (read the report sections of docs/specs/harness-bench.md around lines 755-770 and 930-941 for the leaderboard and pack-effect layout); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring, not only the touched files: grep for every test that reads the CLI table or report HTML and keep them green); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: S7 (comparison, --baseline); freezing 0.5 or re-pinning goldens (the Leader); the full report's other sections (row 20, a later ui-design pass); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-statistics.md (the report sections, T-U1..U3, the S6 row near line 762, the error table, seam Z-3); docs/notes/rulings.md R-78; src/harness_bench/board.py; src/harness_bench/report/{__init__,cli_table,html}.py; src/harness_bench/cli.py (cmd_report); src/harness_bench/errors.py; tests/test_report*.py, tests/test_board.py, tests/test_views.py (the leaderboard tests); tests/mutations/{views,board,stats}.json; docs/specs/harness-bench.md (report layout). Use python, not python3 (Windows).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3JVM9M7W0Z7YZS6ERQ4EKQ6",
-      "shortname": "compile-Goal: implement slice S6 of docs/design/phase4-statistics.md, report wir…",
-      "datetime": "2026-09-28T01:56:17Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement slice S6 of docs/design/phase4-statistics.md, report wiring: report/cli_table.py, report/html.py and report/__init__.py read the board (board.py) for the leaderboard, the pack effect and the header rows, and bench report gains --seed/--resamples (seam Z-3 in cli.py); board.py's legacy row adapter (lines ~677-720, which reproduces the old views leaderboard so the report kept working until this slice) is deleted so one definition of each quantity remains; red first. Measured (Leader, 2026-09-27): S1-S5 are merged (stats.py, composites.py, board.py with board.export; views.export has no leaderboard); board.py holds two definitions of the leaderboard rows: the board projection (lines ~150-245) and the legacy row adapter (~677-720), and tests/mutations/views.json's four leaderboard mutants now point at the adapter; rulings R-78 conditions 3, 7 and 8 bind this slice: every header names the primary measure as one run-level line (pass@1 while the current pass's catalog has no anchors, gated otherwise); `bench report --resamples` below 2000 exits invalid input with a named HB-STA code and the design's error table gains that row; the smoke run's rank under 0.4 is described as a pass@1 rank.\nDone when: every S6 deliverable in the design's slice table (row S6, about line 762) exists; T-U1 is committed red first, failing on an assertion, then green; T-U1..U3 pass; the CLI table and the HTML report show the board's rows (rank with ties, pass@1 or gated with its interval, the primary-measure line, seed, resamples and METHOD in the header, the pack effect with `no detectable effect` where the interval touches zero, and the E1-E3 exclusion statement or `none in this run`); --seed and --resamples reach board and are recorded; --resamples < 2000 exits invalid input with the HB-STA code R-78 c7 names (add the design's error-table row); the legacy row adapter is deleted and nothing imports it; the four views.json leaderboard mutants are re-pointed to the one remaining definition (or removed where a board.json or stats.json mutant already kills the same change: say which) and every mutant in views.json, board.json and stats.json is killed (uv run python tools/mutate_check.py on each; record the output lines); the design's text-width and copy rules for the report are followed (read the report sections of docs/specs/harness-bench.md around lines 755-770 and 930-941 for the leaderboard and pack-effect layout); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring, not only the touched files: grep for every test that reads the CLI table or report HTML and keep them green); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: S7 (comparison, --baseline); freezing 0.5 or re-pinning goldens (the Leader); the full report's other sections (row 20, a later ui-design pass); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (the report sections, T-U1..U3, the S6 row near line 762, the error table, seam Z-3); docs/notes/rulings.md R-78; src/harness_bench/board.py; src/harness_bench/report/{__init__,cli_table,html}.py; src/harness_bench/cli.py (cmd_report); src/harness_bench/errors.py; tests/test_report*.py, tests/test_board.py, tests/test_views.py (the leaderboard tests); tests/mutations/{views,board,stats}.json; docs/specs/harness-bench.md (report layout). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: every S6 deliverable in the design's slice table (row S6, about line 762) exists | phrase: every S6 deliverable in the design's slice table (row S6, about line 762) exists |\n| done_when: T-U1 is committed red first, failing on an assertion, then green | phrase: T-U1 is committed red first, failing on an assertion, then green |\n| done_when: T-U1..U3 pass | phrase: T-U1..U3 pass |\n| done_when: the CLI table and the HTML report show the board's rows (rank with ties, pass@1 or gated with its interval, the primary-measure line, seed, resamples and METHOD in the header, the pack effect with `no detectable effect` where the interval touches zero, and the E1-E3 exclusion statement or `none in this run`) | phrase: the CLI table and the HTML report show the board's rows (rank with ties, pass@1 or gated with its interval, the primary-measure line, seed, resamples and METHOD in the header, the pack effect with `no detectable effect` where the interval touches zero, and the E1-E3 exclusion statement or `none in this run`) |\n| done_when: --seed and --resamples reach board and are recorded | phrase: --seed and --resamples reach board and are recorded |\n| done_when: --resamples < 2000 exits invalid input with the HB-STA code R-78 c7 names (add the design's error-table row) | phrase: --resamples < 2000 exits invalid input with the HB-STA code R-78 c7 names (add the design's error-table row) |\n| done_when: the legacy row adapter is deleted and nothing imports it | phrase: the legacy row adapter is deleted and nothing imports it |\n| done_when: the four views.json leaderboard mutants are re-pointed to the one remaining definition (or removed where a board.json or stats.json mutant already kills the same change: say which) and every mutant in views.json, board.json and stats.json is killed (uv run python tools/mutate_check.py on each | phrase: the four views.json leaderboard mutants are re-pointed to the one remaining definition (or removed where a board.json or stats.json mutant already kills the same change: say which) and every mutant in views.json, board.json and stats.json is killed (uv run python tools/mutate_check.py on each |\n| done_when: record the output lines) | phrase: record the output lines) |\n| done_when: the design's text-width and copy rules for the report are followed (read the report sections of docs/specs/harness-bench.md around lines 755-770 and 930-941 for the leaderboard and pack-effect layout) | phrase: the design's text-width and copy rules for the report are followed (read the report sections of docs/specs/harness-bench.md around lines 755-770 and 930-941 for the leaderboard and pack-effect layout) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring, not only the touched files: grep for every test that reads the CLI table or report HTML and keep them green) | phrase: uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring, not only the touched files: grep for every test that reads the CLI table or report HTML and keep them green) |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: S7 (comparison, --baseline) | phrase: S7 (comparison, --baseline) |\n| not_in_scope: freezing 0.5 or re-pinning goldens (the Leader) | phrase: freezing 0.5 or re-pinning goldens (the Leader) |\n| not_in_scope: the full report's other sections (row 20, a later ui-design pass) | phrase: the full report's other sections (row 20, a later ui-design pass) |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- bench report --resamples: unresolved (not found)\n- no detectable effect: unresolved (not found)\n- none in this run: unresolved (not found)\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd\n- report/cli_table.py: src/harness_bench/report/cli_table.py sha256 9eaed64c6806d60621101008055ad87c02067af8f9385c39914445048ea4fed0\n- report/html.py: src/harness_bench/report/html.py sha256 e39a6fc525ff6d9e0de161a40b25875ae659549a261530ba05f256ecdd93e73a\n- report/__init__.py: src/harness_bench/report/__init__.py sha256 3f50441008ff615cff981faf89b97956c72bfb3c6a3e3698be1fa77710498d8f\n- board.py: src/harness_bench/board.py sha256 bf45c19016c929fa90a7b79165b32e5acbb47bc57fc523c74f3674a4918385de\n- --seed/--resamples: unresolved (not found)\n- cli.py: src/harness_bench/cli.py sha256 dedfd57e6bb86f27edc83cbd57f51084be318dafee87f907a93d249bb74664c6\n- stats.py: src/harness_bench/stats.py sha256 c4b05430bd544d9079c4afc9e058e40320a992dfc9804ba6e394abf2ddbc4e83\n- composites.py: src/harness_bench/composites.py sha256 4d0296c8b87ae82c814605aa603bc711da6b1a705f308563aba20d575911a5a8\n- tests/mutations/views.json's: unresolved (not found; nearest: tests/mutations/views.json)\n- views.json: tests/mutations/views.json sha256 3cc245e14de422de40e91e050d2c542d084d2cd4ef4600cc710392682eafd921\n- board.json: tests/mutations/board.json sha256 fa0cf27c37d33c013949e1683ec6f1bd608ffdee767b5513c344a0fa35bbe27f\n- stats.json: tests/mutations/stats.json sha256 4899c6ab80e8695f7aa75c96e4f8945109f70d5592b50b96ff7448cd522371c8\n- tools/mutate_check.py: tools/mutate_check.py sha256 df1e8be368ac77ce67eba3a3f761cddd85af8a623e025ba9efb9669a1aa22ff7\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094\n- runs/: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- src/harness_bench/board.py: src/harness_bench/board.py sha256 bf45c19016c929fa90a7b79165b32e5acbb47bc57fc523c74f3674a4918385de\n- src/harness_bench/report/{__init__,cli_table,html}.py: unresolved (not found)\n- src/harness_bench/cli.py: src/harness_bench/cli.py sha256 dedfd57e6bb86f27edc83cbd57f51084be318dafee87f907a93d249bb74664c6\n- src/harness_bench/errors.py: src/harness_bench/errors.py sha256 e835ba24a2cdb1eb4e1e99ae8c8f8bc2fedcd47634b4c7bfe8ad1e11fb29f243\n- tests/test_report*.py: unresolved (not found; nearest: tests/test_report.py)\n- tests/test_board.py: tests/test_board.py sha256 4d091e9bd39d1716e61f6ab48222a92dddbcd020d26e95dff1a40bfcf43d3404\n- tests/test_views.py: tests/test_views.py sha256 ef8e36d78bf91cb5f006311aad6c308b3e79a4415aacbc15b8a07766a3e951ef\n- tests/mutations/{views,board,stats}.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JVM4XAZQD5YF2PY40VTKJ3\nraw sha256: a0a1af6ac574785eeafd65895f4d70a0c0ac4ce2ceaf3259cdcaea55b612ffd2\ncompiler model: claude-opus-5-5\nengine seconds: 0.007\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3JVM4XAZQD5YF2PY40VTKJ3 for claude-code v1: 19 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-28T01:04:59Z",
+      "dispatchable": true,
+      "id": "al-01M3JRPC9GGTEX27PWC7V68YMC",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement slice S5 of docs/design/phase4-statistics.md, the board projection: src/harness_bench/board.py, tests/stats_fixtures.py (the stats_run builder, written first), tests/test_board.py, tests/mutations/board.json, and the seams Z-2 (errors.py: HB-STA-001/002) and Z-5 (the views.py hunks: the leaderboard leaves views.export per R-78 DR-S-4), red first. Measured (Leader, 2026-09-27): S1-S4 are merged on main (stats.py: bootstrap, rank, paired delta, pass_k, CONTAMINATION_PRONE; composites.py; config refusals); bench/metrics.yaml is catalog 0.5.dev with anchors (so a .dev catalog is a probe and the US-4 control exempts it, G3); tests/fixtures/catalog/0.4/heads.export pins the 0.4 export including its leaderboard key; rulings R-78 (DR-S-1..6 and conditions 1-8) and R-79 are in docs/notes/rulings.md.\nDone when: every S5 deliverable in the design's slice table (row S5, about line 761) exists; tests/stats_fixtures.py is committed first; T-B1 (build on the committed fixture: its pass@1 points equal named constants taken from tests/fixtures/catalog/0.4/heads.export, pinned in the test BEFORE views._row is deleted) is committed red first, failing on an assertion, then green; T-B1..B3, T-B6..B9 and T-P1..P4 pass; board.export owns the statistics bytes and records seed, resamples and METHOD (R-78 DR-S-5); the header's primary-measure line follows R-78 condition 3 (pass@1 while the current pass's catalog has no anchors, gated otherwise, one run-level line); views.export no longer carries the leaderboard key and nothing else in its bytes changes (the Leader then checks R-78 condition 4 by hand: say in the report which command reproduces the 0.4 fixture's export after your change); HB-STA-001/002 are in errors.py with the design's messages; every mutant the design lists for board.json is present and killed (uv run python tools/mutate_check.py tests/mutations/board.json; record the output lines); nothing outside S5's listed files and the Z-2/Z-5 seams changes (no report or CLI wiring: that is S6); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews it; report it) and any golden test the design says S5 re-pins (name each in the report with the reason); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: S6 (report wiring, --seed/--resamples flags) and S7 (comparison); freezing 0.5 or re-pinning its goldens (the Leader, R-78 condition 5); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (the board sections, the seams table Z-1..Z-7, T-B1..B9 and T-P1..P4 near line 675, the S5 row near line 761); docs/notes/rulings.md R-78; src/harness_bench/views.py (leaderboard, _row, export); src/harness_bench/stats.py; src/harness_bench/composites.py; src/harness_bench/errors.py; tests/fixtures/catalog/0.4/; tests/test_catalog_version.py (the US-4 control); tests/mutations/*.json. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: every S5 deliverable in the design's slice table (row S5, about line 761) exists | phrase: every S5 deliverable in the design's slice table (row S5, about line 761) exists |\n| done_when: tests/stats_fixtures.py is committed first | phrase: tests/stats_fixtures.py is committed first |\n| done_when: T-B1 (build on the committed fixture: its pass@1 points equal named constants taken from tests/fixtures/catalog/0.4/heads.export, pinned in the test BEFORE views._row is deleted) is committed red first, failing on an assertion, then green | phrase: T-B1 (build on the committed fixture: its pass@1 points equal named constants taken from tests/fixtures/catalog/0.4/heads.export, pinned in the test BEFORE views._row is deleted) is committed red first, failing on an assertion, then green |\n| done_when: T-B1..B3, T-B6..B9 and T-P1..P4 pass | phrase: T-B1..B3, T-B6..B9 and T-P1..P4 pass |\n| done_when: board.export owns the statistics bytes and records seed, resamples and METHOD (R-78 DR-S-5) | phrase: board.export owns the statistics bytes and records seed, resamples and METHOD (R-78 DR-S-5) |\n| done_when: the header's primary-measure line follows R-78 condition 3 (pass@1 while the current pass's catalog has no anchors, gated otherwise, one run-level line) | phrase: the header's primary-measure line follows R-78 condition 3 (pass@1 while the current pass's catalog has no anchors, gated otherwise, one run-level line) |\n| done_when: views.export no longer carries the leaderboard key and nothing else in its bytes changes (the Leader then checks R-78 condition 4 by hand: say in the report which command reproduces the 0.4 fixture's export after your change) | phrase: views.export no longer carries the leaderboard key and nothing else in its bytes changes (the Leader then checks R-78 condition 4 by hand: say in the report which command reproduces the 0.4 fixture's export after your change) |\n| done_when: HB-STA-001/002 are in errors.py with the design's messages | phrase: HB-STA-001/002 are in errors.py with the design's messages |\n| done_when: every mutant the design lists for board.json is present and killed (uv run python tools/mutate_check.py tests/mutations/board.json | phrase: every mutant the design lists for board.json is present and killed (uv run python tools/mutate_check.py tests/mutations/board.json |\n| done_when: record the output lines) | phrase: record the output lines) |\n| done_when: nothing outside S5's listed files and the Z-2/Z-5 seams changes (no report or CLI wiring: that is S6) | phrase: nothing outside S5's listed files and the Z-2/Z-5 seams changes (no report or CLI wiring: that is S6) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews it | phrase: uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews it |\n| done_when: report it) and any golden test the design says S5 re-pins (name each in the report with the reason) | phrase: report it) and any golden test the design says S5 re-pins (name each in the report with the reason) |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: S6 (report wiring, --seed/--resamples flags) and S7 (comparison) | phrase: S6 (report wiring, --seed/--resamples flags) and S7 (comparison) |\n| not_in_scope: freezing 0.5 or re-pinning its goldens (the Leader, R-78 condition 5) | phrase: freezing 0.5 or re-pinning its goldens (the Leader, R-78 condition 5) |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd\n- src/harness_bench/board.py: unresolved (not found)\n- tests/stats_fixtures.py: unresolved (not found)\n- tests/test_board.py: unresolved (not found)\n- tests/mutations/board.json: unresolved (not found)\n- errors.py: src/harness_bench/errors.py sha256 1b117deb2172662741123cb2984a3fa7dd87e19a4a01606651d530fd8c3dcb21\n- HB-STA-001/002: unresolved (not found)\n- views.py: src/harness_bench/views.py sha256 ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842\n- stats.py: src/harness_bench/stats.py sha256 c4b05430bd544d9079c4afc9e058e40320a992dfc9804ba6e394abf2ddbc4e83\n- composites.py: src/harness_bench/composites.py sha256 4d0296c8b87ae82c814605aa603bc711da6b1a705f308563aba20d575911a5a8\n- bench/metrics.yaml: bench/metrics.yaml sha256 83cde14c910c669dc054481ae066c89201b2fa895983fe1e0793c980d0040e89\n- tests/fixtures/catalog/0.4/heads.export: tests/fixtures/catalog/0.4/heads.export sha256 55bd1375b3fffa5c6315b466c0bfa11fa3af7dad5347f0a4a8fd8db6e93b8929\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- board.json: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 df1e8be368ac77ce67eba3a3f761cddd85af8a623e025ba9efb9669a1aa22ff7\n- Z-2/Z-5: unresolved (not found)\n- tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp: unresolved (not found)\n- --seed/--resamples: unresolved (not found)\n- runs/: unresolved (not found)\n- src/harness_bench/views.py: src/harness_bench/views.py sha256 ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842\n- src/harness_bench/stats.py: src/harness_bench/stats.py sha256 c4b05430bd544d9079c4afc9e058e40320a992dfc9804ba6e394abf2ddbc4e83\n- src/harness_bench/composites.py: src/harness_bench/composites.py sha256 4d0296c8b87ae82c814605aa603bc711da6b1a705f308563aba20d575911a5a8\n- src/harness_bench/errors.py: src/harness_bench/errors.py sha256 1b117deb2172662741123cb2984a3fa7dd87e19a4a01606651d530fd8c3dcb21\n- tests/fixtures/catalog/0.4/: unresolved (not found)\n- tests/test_catalog_version.py: tests/test_catalog_version.py sha256 3f2947ee088588f4a524af945b1acb5b7cdc782a0546051c83c2783721ab0294\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JRP924C82Z2JWY1NXXXPCC\nraw sha256: e2b1723c6995417a833db7e631ba0486805cd7d4ac59856781c1231c3bc88b17\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: implement slice S5 of docs/design/phase4-statistics.md, the board …",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3JRP924C82Z2JWY1NXXXPCC for claude-code v1: 20 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "compiled_from": "al-01M3JRPC9GGTEX27PWC7V68YMC",
+      "datetime": "2026-09-28T01:44:15Z",
+      "done_when": "every S5 deliverable in the design's slice table exists; tests/stats_fixtures.py committed first; T-B1 committed red first then green; T-B1..B3, T-B6..B9, T-P1..P4 pass; board.export owns statistics bytes; views.export no longer carries leaderboard key; HB-STA-001/002 in errors.py; all board.json mutants killed; clean ruff",
+      "duration_seconds": 2335.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w4-s5",
+        "pushed": null,
+        "sha": "4056010aceafa8543689ac8987c68fa053d42df6",
+        "short": "4056010ac"
+      },
+      "goal": "implement slice S5 of docs/design/phase4-statistics.md, the board projection: src/harness_bench/board.py, tests/stats_fixtures.py, tests/test_board.py, tests/mutations/board.json, and the seams Z-2 (errors.py: HB-STA-001/002) and Z-5 (the views.py hunks: the leaderboard leaves views.export per R-78 DR-S-4), red first.",
+      "id": "al-01M3JTY94ZKW6775T322W0HZGP",
+      "kind": "manual",
       "outcome": "success",
+      "prompt": "implement slice S5 of docs/design/phase4-statistics.md, the board projection",
+      "session": "worker-agy-s5",
+      "shortname": "s5-board",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "coordination-worker",
+      "started_at": "2026-09-28T01:05:20Z",
+      "summary": "Implement slice S5 of docs/design/phase4-statistics.md (the board projection, Z-2, Z-5)",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-09-28T01:56:12Z",
+      "id": "al-01M3JVM4XAZQD5YF2PY40VTKJ3",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: implement slice S6 of docs/design/phase4-statistics.md, report wiring: report/cli_table.py, report/html.py and report/__init__.py read the board (board.py) for the leaderboard, the pack effect and the header rows, and bench report gains --seed/--resamples (seam Z-3 in cli.py); board.py's legacy row adapter (lines ~677-720, which reproduces the old views leaderboard so the report kept working until this slice) is deleted so one definition of each quantity remains; red first.\nMeasured (Leader, 2026-09-27): S1-S5 are merged (stats.py, composites.py, board.py with board.export; views.export has no leaderboard); board.py holds two definitions of the leaderboard rows: the board projection (lines ~150-245) and the legacy row adapter (~677-720), and tests/mutations/views.json's four leaderboard mutants now point at the adapter; rulings R-78 conditions 3, 7 and 8 bind this slice: every header names the primary measure as one run-level line (pass@1 while the current pass's catalog has no anchors, gated otherwise); `bench report --resamples` below 2000 exits invalid input with a named HB-STA code and the design's error table gains that row; the smoke run's rank under 0.4 is described as a pass@1 rank.\nDone when: every S6 deliverable in the design's slice table (row S6, about line 762) exists; T-U1 is committed red first, failing on an assertion, then green; T-U1..U3 pass; the CLI table and the HTML report show the board's rows (rank with ties, pass@1 or gated with its interval, the primary-measure line, seed, resamples and METHOD in the header, the pack effect with `no detectable effect` where the interval touches zero, and the E1-E3 exclusion statement or `none in this run`); --seed and --resamples reach board and are recorded; --resamples < 2000 exits invalid input with the HB-STA code R-78 c7 names (add the design's error-table row); the legacy row adapter is deleted and nothing imports it; the four views.json leaderboard mutants are re-pointed to the one remaining definition (or removed where a board.json or stats.json mutant already kills the same change: say which) and every mutant in views.json, board.json and stats.json is killed (uv run python tools/mutate_check.py on each; record the output lines); the design's text-width and copy rules for the report are followed (read the report sections of docs/specs/harness-bench.md around lines 755-770 and 930-941 for the leaderboard and pack-effect layout); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring, not only the touched files: grep for every test that reads the CLI table or report HTML and keep them green); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: S7 (comparison, --baseline); freezing 0.5 or re-pinning goldens (the Leader); the full report's other sections (row 20, a later ui-design pass); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-statistics.md (the report sections, T-U1..U3, the S6 row near line 762, the error table, seam Z-3); docs/notes/rulings.md R-78; src/harness_bench/board.py; src/harness_bench/report/{__init__,cli_table,html}.py; src/harness_bench/cli.py (cmd_report); src/harness_bench/errors.py; tests/test_report*.py, tests/test_board.py, tests/test_views.py (the leaderboard tests); tests/mutations/{views,board,stats}.json; docs/specs/harness-bench.md (report layout). Use python, not python3 (Windows).",
+      "session": "prompt-compile",
+      "shortname": "Goal: implement slice S6 of docs/design/phase4-statistics.md, report wir…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -43383,69 +43372,69 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3K2YMKQRQ2GDQSJD9N4YBDW",
-      "shortname": "slice S6 report wiring",
-      "datetime": "2026-09-28T04:04:16Z",
-      "session": "worker-agy-s6",
-      "prompt": "implement slice S6 of docs/design/phase4-statistics.md, report wiring",
-      "summary": "Implemented slice S6: report/cli_table.py, report/html.py, and report/__init__.py read board.py for leaderboard and pack effect; bench report gains --seed/--resamples with validation (HB-STA-003); deleted legacy row adapter and __getattr__; updated mutants and verified all killed.",
-      "kind": "manual",
-      "skill": "coordination-worker",
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success",
-      "tier": "T1",
-      "fan_out": 0,
-      "signals": {
-        "verification_path": true,
-        "verification_executed": true,
-        "acceptance_met": true,
-        "regression": false
-      },
-      "started_at": "2026-09-28T03:18:53Z",
-      "duration_seconds": 2723.0,
-      "git": {
-        "sha": "75a5d31c571943e4ad43b54f6a73fc45d16b5ca1",
-        "short": "75a5d31c5",
-        "branch": "w4-s6",
-        "pushed": null
-      }
-    },
-    {
-      "id": "al-01M3K43C0KN7JV5QB6S7SN1PNV",
-      "shortname": "Goal: implement slice S7 of docs/design/phase4-statistics.md, the run co…",
-      "datetime": "2026-09-28T04:24:19Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: implement slice S7 of docs/design/phase4-statistics.md, the run comparison: board.compare, the #comparison section in the report (CLI and HTML), and `bench report <run> --baseline <run>`, red first.\nMeasured (Leader, 2026-09-27): S1-S6 are merged (stats.py, composites.py, board.py with board.build and board.export, the report reading the board, --seed/--resamples). At the S6 join the Leader found a defect of class VER-A (docs/lessons/defect-classes.md): board.build applied the workstation's catalog 0.5.dev anchors to a pass graded under 0.4; it now uses anchors only when the loaded catalog's version equals the current pass's (the primary measure is pass@1 otherwise, and composite values are NA \"no normalisation anchors for catalog <version>\"). Rulings R-78 DR-S-6 and condition 6 bind the comparison: stats.CONTAMINATION_PRONE is the only source of the E1-E3 exclusion and the comparison prints the same statement as the pack effect (`Excluded as contamination-prone: ...` / `none in this run`).\nDone when: every S7 deliverable in the design's slice table (row S7, about line 763) exists; T-M1 is committed red first, failing on an assertion, then green; T-M1..M3, T-B4 and T-B5 pass; T-M1..M3 include one case where run B holds an E* task and the comparison names it under the same statement as the pack effect (R-78 c6); the comparison's preconditions follow the design (same combos, BOM version and catalog version; task versions equal; each violated precondition is a named HB-STA-002 refusal, not a silent partial comparison); the VER-A rule holds for both runs: a composite delta is computed only when both runs' current passes are of the loaded catalog's version, otherwise the area rows are NA with the reason, and pass@1 deltas are still computed; a test pins that rule; `bench report <run> --baseline <run>` renders the #comparison section (B - A per area and combo with intervals, `no detectable effect` where the interval touches zero) in the CLI table and the HTML, and the Leader will read it on two real runs; every mutant the design lists for S7 is added (board.json) and killed (uv run python tools/mutate_check.py tests/mutations/board.json; record the output lines); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: freezing 0.5 or re-pinning goldens (the Leader, R-78 condition 5); the full report's other sections (row 20); any file under runs/ written; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-statistics.md (the comparison section, T-M1..M3, T-B4, T-B5, the S7 row near line 763, the error table); docs/notes/rulings.md R-78; docs/lessons/defect-classes.md VER-A; src/harness_bench/board.py (build, compare if a stub exists, export); src/harness_bench/stats.py (paired_delta, CONTAMINATION_PRONE); src/harness_bench/report/{__init__,cli_table,html}.py; src/harness_bench/cli.py (cmd_report); tests/test_board.py; tests/stats_fixtures.py; tests/mutations/board.json; docs/specs/harness-bench.md (the comparison, around line 520 and the layout near 941). Use python, not python3 (Windows).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3K43FNVCJA5HWG32H7JRMP3",
-      "shortname": "compile-Goal: implement slice S7 of docs/design/phase4-statistics.md, the run co…",
-      "datetime": "2026-09-28T04:24:23Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement slice S7 of docs/design/phase4-statistics.md, the run comparison: board.compare, the #comparison section in the report (CLI and HTML), and `bench report <run> --baseline <run>`, red first. Measured (Leader, 2026-09-27): S1-S6 are merged (stats.py, composites.py, board.py with board.build and board.export, the report reading the board, --seed/--resamples). At the S6 join the Leader found a defect of class VER-A (docs/lessons/defect-classes.md): board.build applied the workstation's catalog 0.5.dev anchors to a pass graded under 0.4; it now uses anchors only when the loaded catalog's version equals the current pass's (the primary measure is pass@1 otherwise, and composite values are NA \"no normalisation anchors for catalog <version>\"). Rulings R-78 DR-S-6 and condition 6 bind the comparison: stats.CONTAMINATION_PRONE is the only source of the E1-E3 exclusion and the comparison prints the same statement as the pack effect (`Excluded as contamination-prone: ...` / `none in this run`).\nDone when: every S7 deliverable in the design's slice table (row S7, about line 763) exists; T-M1 is committed red first, failing on an assertion, then green; T-M1..M3, T-B4 and T-B5 pass; T-M1..M3 include one case where run B holds an E* task and the comparison names it under the same statement as the pack effect (R-78 c6); the comparison's preconditions follow the design (same combos, BOM version and catalog version; task versions equal; each violated precondition is a named HB-STA-002 refusal, not a silent partial comparison); the VER-A rule holds for both runs: a composite delta is computed only when both runs' current passes are of the loaded catalog's version, otherwise the area rows are NA with the reason, and pass@1 deltas are still computed; a test pins that rule; `bench report <run> --baseline <run>` renders the #comparison section (B - A per area and combo with intervals, `no detectable effect` where the interval touches zero) in the CLI table and the HTML, and the Leader will read it on two real runs; every mutant the design lists for S7 is added (board.json) and killed (uv run python tools/mutate_check.py tests/mutations/board.json; record the output lines); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: freezing 0.5 or re-pinning goldens (the Leader, R-78 condition 5); the full report's other sections (row 20); any file under runs/ written; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (the comparison section, T-M1..M3, T-B4, T-B5, the S7 row near line 763, the error table); docs/notes/rulings.md R-78; docs/lessons/defect-classes.md VER-A; src/harness_bench/board.py (build, compare if a stub exists, export); src/harness_bench/stats.py (paired_delta, CONTAMINATION_PRONE); src/harness_bench/report/{__init__,cli_table,html}.py; src/harness_bench/cli.py (cmd_report); tests/test_board.py; tests/stats_fixtures.py; tests/mutations/board.json; docs/specs/harness-bench.md (the comparison, around line 520 and the layout near 941). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: every S7 deliverable in the design's slice table (row S7, about line 763) exists | phrase: every S7 deliverable in the design's slice table (row S7, about line 763) exists |\n| done_when: T-M1 is committed red first, failing on an assertion, then green | phrase: T-M1 is committed red first, failing on an assertion, then green |\n| done_when: T-M1..M3, T-B4 and T-B5 pass | phrase: T-M1..M3, T-B4 and T-B5 pass |\n| done_when: T-M1..M3 include one case where run B holds an E* task and the comparison names it under the same statement as the pack effect (R-78 c6) | phrase: T-M1..M3 include one case where run B holds an E* task and the comparison names it under the same statement as the pack effect (R-78 c6) |\n| done_when: the comparison's preconditions follow the design (same combos, BOM version and catalog version | phrase: the comparison's preconditions follow the design (same combos, BOM version and catalog version |\n| done_when: task versions equal | phrase: task versions equal |\n| done_when: each violated precondition is a named HB-STA-002 refusal, not a silent partial comparison) | phrase: each violated precondition is a named HB-STA-002 refusal, not a silent partial comparison) |\n| done_when: the VER-A rule holds for both runs: a composite delta is computed only when both runs' current passes are of the loaded catalog's version, otherwise the area rows are NA with the reason, and pass@1 deltas are still computed | phrase: the VER-A rule holds for both runs: a composite delta is computed only when both runs' current passes are of the loaded catalog's version, otherwise the area rows are NA with the reason, and pass@1 deltas are still computed |\n| done_when: a test pins that rule | phrase: a test pins that rule |\n| done_when: `bench report <run> --baseline <run>` renders the #comparison section (B - A per area and combo with intervals, `no detectable effect` where the interval touches zero) in the CLI table and the HTML, and the Leader will read it on two real runs | phrase: `bench report <run> --baseline <run>` renders the #comparison section (B - A per area and combo with intervals, `no detectable effect` where the interval touches zero) in the CLI table and the HTML, and the Leader will read it on two real runs |\n| done_when: every mutant the design lists for S7 is added (board.json) and killed (uv run python tools/mutate_check.py tests/mutations/board.json | phrase: every mutant the design lists for S7 is added (board.json) and killed (uv run python tools/mutate_check.py tests/mutations/board.json |\n| done_when: record the output lines) | phrase: record the output lines) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring) | phrase: uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring) |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: freezing 0.5 or re-pinning goldens (the Leader, R-78 condition 5) | phrase: freezing 0.5 or re-pinning goldens (the Leader, R-78 condition 5) |\n| not_in_scope: the full report's other sections (row 20) | phrase: the full report's other sections (row 20) |\n| not_in_scope: any file under runs/ written | phrase: any file under runs/ written |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- bench report <run> --baseline <run: unresolved (not found)\n- Excluded as contamination-prone: : unresolved (not found)\n- none in this run: unresolved (not found)\n- no detectable effect: unresolved (not found)\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 f1287f87dcd98736870f8601dd4ba57ddb9501b0aea99ab8b9784e4434c94140\n- stats.py: src/harness_bench/stats.py sha256 c4b05430bd544d9079c4afc9e058e40320a992dfc9804ba6e394abf2ddbc4e83\n- composites.py: src/harness_bench/composites.py sha256 4d0296c8b87ae82c814605aa603bc711da6b1a705f308563aba20d575911a5a8\n- board.py: src/harness_bench/board.py sha256 c3fa7ad8413defae7e344d404727050b0f64c81c84451902236cff5c39cbf459\n- --seed/--resamples: unresolved (not found)\n- docs/lessons/defect-classes.md: unresolved (ambiguous: 5 matches)\n- /: unresolved (outside repo)\n- board.json: tests/mutations/board.json sha256 5ffaa58ad4768972c5a0b460d404595b4439058ed7208d3e2079348d5b45341d\n- tools/mutate_check.py: tools/mutate_check.py sha256 df1e8be368ac77ce67eba3a3f761cddd85af8a623e025ba9efb9669a1aa22ff7\n- tests/mutations/board.json: tests/mutations/board.json sha256 5ffaa58ad4768972c5a0b460d404595b4439058ed7208d3e2079348d5b45341d\n- runs/: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- src/harness_bench/board.py: src/harness_bench/board.py sha256 c3fa7ad8413defae7e344d404727050b0f64c81c84451902236cff5c39cbf459\n- src/harness_bench/stats.py: src/harness_bench/stats.py sha256 c4b05430bd544d9079c4afc9e058e40320a992dfc9804ba6e394abf2ddbc4e83\n- src/harness_bench/report/{__init__,cli_table,html}.py: unresolved (not found)\n- src/harness_bench/cli.py: src/harness_bench/cli.py sha256 332c513dbe526785cc438fc97da1b3bfb5cd64431e4ce403a60822e22326a0cc\n- tests/test_board.py: tests/test_board.py sha256 8d76c6cb4e5bfba110aa315241f4bceb99e985abeda385403d9a8a4eb3bcaaa0\n- tests/stats_fixtures.py: tests/stats_fixtures.py sha256 ebaff5104059ce4edbc985ee12d04830b11544365495cb7f0eb06156fb139287\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3K43C0KN7JV5QB6S7SN1PNV\nraw sha256: 9f493af70951a69796d6f216a76c03ba847ae99609dd82a4f2dc20829c2ee282\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3K43C0KN7JV5QB6S7SN1PNV for claude-code v1: 20 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-28T01:56:17Z",
+      "dispatchable": true,
+      "id": "al-01M3JVM9M7W0Z7YZS6ERQ4EKQ6",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement slice S6 of docs/design/phase4-statistics.md, report wiring: report/cli_table.py, report/html.py and report/__init__.py read the board (board.py) for the leaderboard, the pack effect and the header rows, and bench report gains --seed/--resamples (seam Z-3 in cli.py); board.py's legacy row adapter (lines ~677-720, which reproduces the old views leaderboard so the report kept working until this slice) is deleted so one definition of each quantity remains; red first. Measured (Leader, 2026-09-27): S1-S5 are merged (stats.py, composites.py, board.py with board.export; views.export has no leaderboard); board.py holds two definitions of the leaderboard rows: the board projection (lines ~150-245) and the legacy row adapter (~677-720), and tests/mutations/views.json's four leaderboard mutants now point at the adapter; rulings R-78 conditions 3, 7 and 8 bind this slice: every header names the primary measure as one run-level line (pass@1 while the current pass's catalog has no anchors, gated otherwise); `bench report --resamples` below 2000 exits invalid input with a named HB-STA code and the design's error table gains that row; the smoke run's rank under 0.4 is described as a pass@1 rank.\nDone when: every S6 deliverable in the design's slice table (row S6, about line 762) exists; T-U1 is committed red first, failing on an assertion, then green; T-U1..U3 pass; the CLI table and the HTML report show the board's rows (rank with ties, pass@1 or gated with its interval, the primary-measure line, seed, resamples and METHOD in the header, the pack effect with `no detectable effect` where the interval touches zero, and the E1-E3 exclusion statement or `none in this run`); --seed and --resamples reach board and are recorded; --resamples < 2000 exits invalid input with the HB-STA code R-78 c7 names (add the design's error-table row); the legacy row adapter is deleted and nothing imports it; the four views.json leaderboard mutants are re-pointed to the one remaining definition (or removed where a board.json or stats.json mutant already kills the same change: say which) and every mutant in views.json, board.json and stats.json is killed (uv run python tools/mutate_check.py on each; record the output lines); the design's text-width and copy rules for the report are followed (read the report sections of docs/specs/harness-bench.md around lines 755-770 and 930-941 for the leaderboard and pack-effect layout); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring, not only the touched files: grep for every test that reads the CLI table or report HTML and keep them green); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: S7 (comparison, --baseline); freezing 0.5 or re-pinning goldens (the Leader); the full report's other sections (row 20, a later ui-design pass); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (the report sections, T-U1..U3, the S6 row near line 762, the error table, seam Z-3); docs/notes/rulings.md R-78; src/harness_bench/board.py; src/harness_bench/report/{__init__,cli_table,html}.py; src/harness_bench/cli.py (cmd_report); src/harness_bench/errors.py; tests/test_report*.py, tests/test_board.py, tests/test_views.py (the leaderboard tests); tests/mutations/{views,board,stats}.json; docs/specs/harness-bench.md (report layout). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: every S6 deliverable in the design's slice table (row S6, about line 762) exists | phrase: every S6 deliverable in the design's slice table (row S6, about line 762) exists |\n| done_when: T-U1 is committed red first, failing on an assertion, then green | phrase: T-U1 is committed red first, failing on an assertion, then green |\n| done_when: T-U1..U3 pass | phrase: T-U1..U3 pass |\n| done_when: the CLI table and the HTML report show the board's rows (rank with ties, pass@1 or gated with its interval, the primary-measure line, seed, resamples and METHOD in the header, the pack effect with `no detectable effect` where the interval touches zero, and the E1-E3 exclusion statement or `none in this run`) | phrase: the CLI table and the HTML report show the board's rows (rank with ties, pass@1 or gated with its interval, the primary-measure line, seed, resamples and METHOD in the header, the pack effect with `no detectable effect` where the interval touches zero, and the E1-E3 exclusion statement or `none in this run`) |\n| done_when: --seed and --resamples reach board and are recorded | phrase: --seed and --resamples reach board and are recorded |\n| done_when: --resamples < 2000 exits invalid input with the HB-STA code R-78 c7 names (add the design's error-table row) | phrase: --resamples < 2000 exits invalid input with the HB-STA code R-78 c7 names (add the design's error-table row) |\n| done_when: the legacy row adapter is deleted and nothing imports it | phrase: the legacy row adapter is deleted and nothing imports it |\n| done_when: the four views.json leaderboard mutants are re-pointed to the one remaining definition (or removed where a board.json or stats.json mutant already kills the same change: say which) and every mutant in views.json, board.json and stats.json is killed (uv run python tools/mutate_check.py on each | phrase: the four views.json leaderboard mutants are re-pointed to the one remaining definition (or removed where a board.json or stats.json mutant already kills the same change: say which) and every mutant in views.json, board.json and stats.json is killed (uv run python tools/mutate_check.py on each |\n| done_when: record the output lines) | phrase: record the output lines) |\n| done_when: the design's text-width and copy rules for the report are followed (read the report sections of docs/specs/harness-bench.md around lines 755-770 and 930-941 for the leaderboard and pack-effect layout) | phrase: the design's text-width and copy rules for the report are followed (read the report sections of docs/specs/harness-bench.md around lines 755-770 and 930-941 for the leaderboard and pack-effect layout) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring, not only the touched files: grep for every test that reads the CLI table or report HTML and keep them green) | phrase: uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring, not only the touched files: grep for every test that reads the CLI table or report HTML and keep them green) |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: S7 (comparison, --baseline) | phrase: S7 (comparison, --baseline) |\n| not_in_scope: freezing 0.5 or re-pinning goldens (the Leader) | phrase: freezing 0.5 or re-pinning goldens (the Leader) |\n| not_in_scope: the full report's other sections (row 20, a later ui-design pass) | phrase: the full report's other sections (row 20, a later ui-design pass) |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- bench report --resamples: unresolved (not found)\n- no detectable effect: unresolved (not found)\n- none in this run: unresolved (not found)\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd\n- report/cli_table.py: src/harness_bench/report/cli_table.py sha256 9eaed64c6806d60621101008055ad87c02067af8f9385c39914445048ea4fed0\n- report/html.py: src/harness_bench/report/html.py sha256 e39a6fc525ff6d9e0de161a40b25875ae659549a261530ba05f256ecdd93e73a\n- report/__init__.py: src/harness_bench/report/__init__.py sha256 3f50441008ff615cff981faf89b97956c72bfb3c6a3e3698be1fa77710498d8f\n- board.py: src/harness_bench/board.py sha256 bf45c19016c929fa90a7b79165b32e5acbb47bc57fc523c74f3674a4918385de\n- --seed/--resamples: unresolved (not found)\n- cli.py: src/harness_bench/cli.py sha256 dedfd57e6bb86f27edc83cbd57f51084be318dafee87f907a93d249bb74664c6\n- stats.py: src/harness_bench/stats.py sha256 c4b05430bd544d9079c4afc9e058e40320a992dfc9804ba6e394abf2ddbc4e83\n- composites.py: src/harness_bench/composites.py sha256 4d0296c8b87ae82c814605aa603bc711da6b1a705f308563aba20d575911a5a8\n- tests/mutations/views.json's: unresolved (not found; nearest: tests/mutations/views.json)\n- views.json: tests/mutations/views.json sha256 3cc245e14de422de40e91e050d2c542d084d2cd4ef4600cc710392682eafd921\n- board.json: tests/mutations/board.json sha256 fa0cf27c37d33c013949e1683ec6f1bd608ffdee767b5513c344a0fa35bbe27f\n- stats.json: tests/mutations/stats.json sha256 4899c6ab80e8695f7aa75c96e4f8945109f70d5592b50b96ff7448cd522371c8\n- tools/mutate_check.py: tools/mutate_check.py sha256 df1e8be368ac77ce67eba3a3f761cddd85af8a623e025ba9efb9669a1aa22ff7\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094\n- runs/: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- src/harness_bench/board.py: src/harness_bench/board.py sha256 bf45c19016c929fa90a7b79165b32e5acbb47bc57fc523c74f3674a4918385de\n- src/harness_bench/report/{__init__,cli_table,html}.py: unresolved (not found)\n- src/harness_bench/cli.py: src/harness_bench/cli.py sha256 dedfd57e6bb86f27edc83cbd57f51084be318dafee87f907a93d249bb74664c6\n- src/harness_bench/errors.py: src/harness_bench/errors.py sha256 e835ba24a2cdb1eb4e1e99ae8c8f8bc2fedcd47634b4c7bfe8ad1e11fb29f243\n- tests/test_report*.py: unresolved (not found; nearest: tests/test_report.py)\n- tests/test_board.py: tests/test_board.py sha256 4d091e9bd39d1716e61f6ab48222a92dddbcd020d26e95dff1a40bfcf43d3404\n- tests/test_views.py: tests/test_views.py sha256 ef8e36d78bf91cb5f006311aad6c308b3e79a4415aacbc15b8a07766a3e951ef\n- tests/mutations/{views,board,stats}.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JVM4XAZQD5YF2PY40VTKJ3\nraw sha256: a0a1af6ac574785eeafd65895f4d70a0c0ac4ce2ceaf3259cdcaea55b612ffd2\ncompiler model: claude-opus-5-5\nengine seconds: 0.007\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: implement slice S6 of docs/design/phase4-statistics.md, report wir…",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3JVM4XAZQD5YF2PY40VTKJ3 for claude-code v1: 19 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-28T04:04:16Z",
+      "duration_seconds": 2723.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w4-s6",
+        "pushed": null,
+        "sha": "75a5d31c571943e4ad43b54f6a73fc45d16b5ca1",
+        "short": "75a5d31c5"
+      },
+      "id": "al-01M3K2YMKQRQ2GDQSJD9N4YBDW",
+      "kind": "manual",
       "outcome": "success",
+      "prompt": "implement slice S6 of docs/design/phase4-statistics.md, report wiring",
+      "session": "worker-agy-s6",
+      "shortname": "slice S6 report wiring",
+      "signals": {
+        "acceptance_met": true,
+        "regression": false,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "coordination-worker",
+      "started_at": "2026-09-28T03:18:53Z",
+      "summary": "Implemented slice S6: report/cli_table.py, report/html.py, and report/__init__.py read board.py for leaderboard and pack effect; bench report gains --seed/--resamples with validation (HB-STA-003); deleted legacy row adapter and __getattr__; updated mutants and verified all killed.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-09-28T04:24:19Z",
+      "id": "al-01M3K43C0KN7JV5QB6S7SN1PNV",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: implement slice S7 of docs/design/phase4-statistics.md, the run comparison: board.compare, the #comparison section in the report (CLI and HTML), and `bench report <run> --baseline <run>`, red first.\nMeasured (Leader, 2026-09-27): S1-S6 are merged (stats.py, composites.py, board.py with board.build and board.export, the report reading the board, --seed/--resamples). At the S6 join the Leader found a defect of class VER-A (docs/lessons/defect-classes.md): board.build applied the workstation's catalog 0.5.dev anchors to a pass graded under 0.4; it now uses anchors only when the loaded catalog's version equals the current pass's (the primary measure is pass@1 otherwise, and composite values are NA \"no normalisation anchors for catalog <version>\"). Rulings R-78 DR-S-6 and condition 6 bind the comparison: stats.CONTAMINATION_PRONE is the only source of the E1-E3 exclusion and the comparison prints the same statement as the pack effect (`Excluded as contamination-prone: ...` / `none in this run`).\nDone when: every S7 deliverable in the design's slice table (row S7, about line 763) exists; T-M1 is committed red first, failing on an assertion, then green; T-M1..M3, T-B4 and T-B5 pass; T-M1..M3 include one case where run B holds an E* task and the comparison names it under the same statement as the pack effect (R-78 c6); the comparison's preconditions follow the design (same combos, BOM version and catalog version; task versions equal; each violated precondition is a named HB-STA-002 refusal, not a silent partial comparison); the VER-A rule holds for both runs: a composite delta is computed only when both runs' current passes are of the loaded catalog's version, otherwise the area rows are NA with the reason, and pass@1 deltas are still computed; a test pins that rule; `bench report <run> --baseline <run>` renders the #comparison section (B - A per area and combo with intervals, `no detectable effect` where the interval touches zero) in the CLI table and the HTML, and the Leader will read it on two real runs; every mutant the design lists for S7 is added (board.json) and killed (uv run python tools/mutate_check.py tests/mutations/board.json; record the output lines); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: freezing 0.5 or re-pinning goldens (the Leader, R-78 condition 5); the full report's other sections (row 20); any file under runs/ written; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-statistics.md (the comparison section, T-M1..M3, T-B4, T-B5, the S7 row near line 763, the error table); docs/notes/rulings.md R-78; docs/lessons/defect-classes.md VER-A; src/harness_bench/board.py (build, compare if a stub exists, export); src/harness_bench/stats.py (paired_delta, CONTAMINATION_PRONE); src/harness_bench/report/{__init__,cli_table,html}.py; src/harness_bench/cli.py (cmd_report); tests/test_board.py; tests/stats_fixtures.py; tests/mutations/board.json; docs/specs/harness-bench.md (the comparison, around line 520 and the layout near 941). Use python, not python3 (Windows).",
+      "session": "prompt-compile",
+      "shortname": "Goal: implement slice S7 of docs/design/phase4-statistics.md, the run co…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -43850,6 +43839,417 @@ window.AUDIT_DATA = {
             "sha256": "7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094",
             "status": "resolved",
             "token": "docs/specs/harness-bench.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-09-28T04:24:23Z",
+      "dispatchable": true,
+      "id": "al-01M3K43FNVCJA5HWG32H7JRMP3",
+      "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement slice S7 of docs/design/phase4-statistics.md, the run comparison: board.compare, the #comparison section in the report (CLI and HTML), and `bench report <run> --baseline <run>`, red first. Measured (Leader, 2026-09-27): S1-S6 are merged (stats.py, composites.py, board.py with board.build and board.export, the report reading the board, --seed/--resamples). At the S6 join the Leader found a defect of class VER-A (docs/lessons/defect-classes.md): board.build applied the workstation's catalog 0.5.dev anchors to a pass graded under 0.4; it now uses anchors only when the loaded catalog's version equals the current pass's (the primary measure is pass@1 otherwise, and composite values are NA \"no normalisation anchors for catalog <version>\"). Rulings R-78 DR-S-6 and condition 6 bind the comparison: stats.CONTAMINATION_PRONE is the only source of the E1-E3 exclusion and the comparison prints the same statement as the pack effect (`Excluded as contamination-prone: ...` / `none in this run`).\nDone when: every S7 deliverable in the design's slice table (row S7, about line 763) exists; T-M1 is committed red first, failing on an assertion, then green; T-M1..M3, T-B4 and T-B5 pass; T-M1..M3 include one case where run B holds an E* task and the comparison names it under the same statement as the pack effect (R-78 c6); the comparison's preconditions follow the design (same combos, BOM version and catalog version; task versions equal; each violated precondition is a named HB-STA-002 refusal, not a silent partial comparison); the VER-A rule holds for both runs: a composite delta is computed only when both runs' current passes are of the loaded catalog's version, otherwise the area rows are NA with the reason, and pass@1 deltas are still computed; a test pins that rule; `bench report <run> --baseline <run>` renders the #comparison section (B - A per area and combo with intervals, `no detectable effect` where the interval touches zero) in the CLI table and the HTML, and the Leader will read it on two real runs; every mutant the design lists for S7 is added (board.json) and killed (uv run python tools/mutate_check.py tests/mutations/board.json; record the output lines); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: freezing 0.5 or re-pinning goldens (the Leader, R-78 condition 5); the full report's other sections (row 20); any file under runs/ written; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (the comparison section, T-M1..M3, T-B4, T-B5, the S7 row near line 763, the error table); docs/notes/rulings.md R-78; docs/lessons/defect-classes.md VER-A; src/harness_bench/board.py (build, compare if a stub exists, export); src/harness_bench/stats.py (paired_delta, CONTAMINATION_PRONE); src/harness_bench/report/{__init__,cli_table,html}.py; src/harness_bench/cli.py (cmd_report); tests/test_board.py; tests/stats_fixtures.py; tests/mutations/board.json; docs/specs/harness-bench.md (the comparison, around line 520 and the layout near 941). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: every S7 deliverable in the design's slice table (row S7, about line 763) exists | phrase: every S7 deliverable in the design's slice table (row S7, about line 763) exists |\n| done_when: T-M1 is committed red first, failing on an assertion, then green | phrase: T-M1 is committed red first, failing on an assertion, then green |\n| done_when: T-M1..M3, T-B4 and T-B5 pass | phrase: T-M1..M3, T-B4 and T-B5 pass |\n| done_when: T-M1..M3 include one case where run B holds an E* task and the comparison names it under the same statement as the pack effect (R-78 c6) | phrase: T-M1..M3 include one case where run B holds an E* task and the comparison names it under the same statement as the pack effect (R-78 c6) |\n| done_when: the comparison's preconditions follow the design (same combos, BOM version and catalog version | phrase: the comparison's preconditions follow the design (same combos, BOM version and catalog version |\n| done_when: task versions equal | phrase: task versions equal |\n| done_when: each violated precondition is a named HB-STA-002 refusal, not a silent partial comparison) | phrase: each violated precondition is a named HB-STA-002 refusal, not a silent partial comparison) |\n| done_when: the VER-A rule holds for both runs: a composite delta is computed only when both runs' current passes are of the loaded catalog's version, otherwise the area rows are NA with the reason, and pass@1 deltas are still computed | phrase: the VER-A rule holds for both runs: a composite delta is computed only when both runs' current passes are of the loaded catalog's version, otherwise the area rows are NA with the reason, and pass@1 deltas are still computed |\n| done_when: a test pins that rule | phrase: a test pins that rule |\n| done_when: `bench report <run> --baseline <run>` renders the #comparison section (B - A per area and combo with intervals, `no detectable effect` where the interval touches zero) in the CLI table and the HTML, and the Leader will read it on two real runs | phrase: `bench report <run> --baseline <run>` renders the #comparison section (B - A per area and combo with intervals, `no detectable effect` where the interval touches zero) in the CLI table and the HTML, and the Leader will read it on two real runs |\n| done_when: every mutant the design lists for S7 is added (board.json) and killed (uv run python tools/mutate_check.py tests/mutations/board.json | phrase: every mutant the design lists for S7 is added (board.json) and killed (uv run python tools/mutate_check.py tests/mutations/board.json |\n| done_when: record the output lines) | phrase: record the output lines) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring) | phrase: uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring) |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: freezing 0.5 or re-pinning goldens (the Leader, R-78 condition 5) | phrase: freezing 0.5 or re-pinning goldens (the Leader, R-78 condition 5) |\n| not_in_scope: the full report's other sections (row 20) | phrase: the full report's other sections (row 20) |\n| not_in_scope: any file under runs/ written | phrase: any file under runs/ written |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- bench report <run> --baseline <run: unresolved (not found)\n- Excluded as contamination-prone: : unresolved (not found)\n- none in this run: unresolved (not found)\n- no detectable effect: unresolved (not found)\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 f1287f87dcd98736870f8601dd4ba57ddb9501b0aea99ab8b9784e4434c94140\n- stats.py: src/harness_bench/stats.py sha256 c4b05430bd544d9079c4afc9e058e40320a992dfc9804ba6e394abf2ddbc4e83\n- composites.py: src/harness_bench/composites.py sha256 4d0296c8b87ae82c814605aa603bc711da6b1a705f308563aba20d575911a5a8\n- board.py: src/harness_bench/board.py sha256 c3fa7ad8413defae7e344d404727050b0f64c81c84451902236cff5c39cbf459\n- --seed/--resamples: unresolved (not found)\n- docs/lessons/defect-classes.md: unresolved (ambiguous: 5 matches)\n- /: unresolved (outside repo)\n- board.json: tests/mutations/board.json sha256 5ffaa58ad4768972c5a0b460d404595b4439058ed7208d3e2079348d5b45341d\n- tools/mutate_check.py: tools/mutate_check.py sha256 df1e8be368ac77ce67eba3a3f761cddd85af8a623e025ba9efb9669a1aa22ff7\n- tests/mutations/board.json: tests/mutations/board.json sha256 5ffaa58ad4768972c5a0b460d404595b4439058ed7208d3e2079348d5b45341d\n- runs/: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- src/harness_bench/board.py: src/harness_bench/board.py sha256 c3fa7ad8413defae7e344d404727050b0f64c81c84451902236cff5c39cbf459\n- src/harness_bench/stats.py: src/harness_bench/stats.py sha256 c4b05430bd544d9079c4afc9e058e40320a992dfc9804ba6e394abf2ddbc4e83\n- src/harness_bench/report/{__init__,cli_table,html}.py: unresolved (not found)\n- src/harness_bench/cli.py: src/harness_bench/cli.py sha256 332c513dbe526785cc438fc97da1b3bfb5cd64431e4ce403a60822e22326a0cc\n- tests/test_board.py: tests/test_board.py sha256 8d76c6cb4e5bfba110aa315241f4bceb99e985abeda385403d9a8a4eb3bcaaa0\n- tests/stats_fixtures.py: tests/stats_fixtures.py sha256 ebaff5104059ce4edbc985ee12d04830b11544365495cb7f0eb06156fb139287\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3K43C0KN7JV5QB6S7SN1PNV\nraw sha256: 9f493af70951a69796d6f216a76c03ba847ae99609dd82a4f2dc20829c2ee282\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: implement slice S7 of docs/design/phase4-statistics.md, the run co…",
+      "skill": null,
+      "summary": "compiled al-01M3K43C0KN7JV5QB6S7SN1PNV for claude-code v1: 20 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-09-28T04:50:49Z",
+      "duration_seconds": 1567.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w4-s7",
+        "pushed": null,
+        "sha": "0c0879599ef75b01018b6f267f02af3d5219e023",
+        "short": "0c0879599"
+      },
+      "id": "al-01M3K5KWQ2K007SC6BR60ATY40",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "implement slice S7 of docs/design/phase4-statistics.md",
+      "session": "worker-agy-s7",
+      "shortname": "slice-s7-comparison",
+      "skill": "coordination-worker",
+      "started_at": "2026-09-28T04:24:42Z",
+      "summary": "Completed slice S7: board.compare, #comparison section in CLI table and HTML, bench report --baseline, red-first T-M1..M3, T-B4, T-B5, VER-A rule, and all 9 board mutations killed",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "id": "al-01M3K5WJSF6TGEW46K57YCRVTZ",
+      "shortname": "Goal: extend the US-4 catalog control (tests/test_catalog_version.py) to…",
+      "datetime": "2026-09-28T04:55:34Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: extend the US-4 catalog control (tests/test_catalog_version.py) to board.export goldens, and commit a reproducible freeze tool, so the Leader can freeze catalog 0.5 as ruling R-78 condition 5 requires (\"bench/catalog-freeze.yaml holds the 0.5 hash and both goldens\"); red first; no freeze performed.\nMeasured (Leader, 2026-09-27): bench/catalog-freeze.yaml (schema bench-catalog-freeze/1) holds, per version, catalog_hash and golden: {fixture_name: sha256 of tests/fixtures/catalog/<version>/<fixture>.export}, the views.export bytes of the two X1 fixtures (c44dd2b-no-heads, heads); us4_problems() checks (a)-(e) for views.export only; S5 moved the leaderboard and statistics into board.export (src/harness_bench/board.py build and export), which no catalog control pins; the Leader froze 0.4 with a scratch script that is not in the repo (it built the goldens with test_catalog_version.graded_export and wrote the freeze entry).\nDone when: us4_problems() also checks, for a released (non-.dev) version, a board golden per fixture: tests/fixtures/catalog/<version>/<fixture>.board.export equal to board.export(board.build(view, catalog of that version)) with the default seed and resamples, and bench/catalog-freeze.yaml's entry for that version carries `board_golden: {fixture: sha256}` pinned like `golden`; a version whose freeze entry has no board_golden (0.4, frozen before boards existed) is exempt from the board check and the control prints \"board golden: not pinned (frozen before board.export)\" so the exemption is visible, never silent; checks (a)-(d) gain their board counterparts (a board export that differs; digests that differ from the pins; a released version frozen after this change with no board golden) and check (e) (append-only per version) covers board_golden; red first: each new violation fails the control on the `frozen` fixture's 9.1 catalog (extend that fixture to pin board goldens); tools/freeze_catalog.py (with a one-line docstring and --help) writes, for the catalog's current released version: the views and board goldens of both fixtures (each graded twice and refused if the two differ), and the freeze entry with catalog_hash, golden and board_golden; it refuses a .dev version, an already-frozen version (append-only), and a working tree whose bench/metrics.yaml is uncommitted; its behaviour is tested on a tmp root (never the real repo files); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: performing the 0.5 freeze or editing bench/catalog-freeze.yaml, bench/metrics.yaml or tests/fixtures/catalog/ in the repo (the Leader runs the tool); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: tests/test_catalog_version.py (us4_problems, graded_export, the frozen fixture); tests/archived_runs.py (make_root, set_catalog_version); bench/catalog-freeze.yaml; tests/fixtures/catalog/0.4/; src/harness_bench/board.py (build, export); src/harness_bench/composites.py (load_catalog); src/harness_bench/grade/runner.py (catalog_hash); docs/notes/rulings.md R-59 and R-78. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3K5WPHN21299XEKGKMV1G2T",
+      "shortname": "compile-Goal: extend the US-4 catalog control (tests/test_catalog_version.py) to…",
+      "datetime": "2026-09-28T04:55:38Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: extend the US-4 catalog control (tests/test_catalog_version.py) to board.export goldens, and commit a reproducible freeze tool, so the Leader can freeze catalog 0.5 as ruling R-78 condition 5 requires (\"bench/catalog-freeze.yaml holds the 0.5 hash and both goldens\"); red first; no freeze performed. Measured (Leader, 2026-09-27): bench/catalog-freeze.yaml (schema bench-catalog-freeze/1) holds, per version, catalog_hash and golden: {fixture_name: sha256 of tests/fixtures/catalog/<version>/<fixture>.export}, the views.export bytes of the two X1 fixtures (c44dd2b-no-heads, heads); us4_problems() checks (a)-(e) for views.export only; S5 moved the leaderboard and statistics into board.export (src/harness_bench/board.py build and export), which no catalog control pins; the Leader froze 0.4 with a scratch script that is not in the repo (it built the goldens with test_catalog_version.graded_export and wrote the freeze entry).\nDone when: us4_problems() also checks, for a released (non-.dev) version, a board golden per fixture: tests/fixtures/catalog/<version>/<fixture>.board.export equal to board.export(board.build(view, catalog of that version)) with the default seed and resamples, and bench/catalog-freeze.yaml's entry for that version carries `board_golden: {fixture: sha256}` pinned like `golden`; a version whose freeze entry has no board_golden (0.4, frozen before boards existed) is exempt from the board check and the control prints \"board golden: not pinned (frozen before board.export)\" so the exemption is visible, never silent; checks (a)-(d) gain their board counterparts (a board export that differs; digests that differ from the pins; a released version frozen after this change with no board golden) and check (e) (append-only per version) covers board_golden; red first: each new violation fails the control on the `frozen` fixture's 9.1 catalog (extend that fixture to pin board goldens); tools/freeze_catalog.py (with a one-line docstring and --help) writes, for the catalog's current released version: the views and board goldens of both fixtures (each graded twice and refused if the two differ), and the freeze entry with catalog_hash, golden and board_golden; it refuses a .dev version, an already-frozen version (append-only), and a working tree whose bench/metrics.yaml is uncommitted; its behaviour is tested on a tmp root (never the real repo files); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: performing the 0.5 freeze or editing bench/catalog-freeze.yaml, bench/metrics.yaml or tests/fixtures/catalog/ in the repo (the Leader runs the tool); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: tests/test_catalog_version.py (us4_problems, graded_export, the frozen fixture); tests/archived_runs.py (make_root, set_catalog_version); bench/catalog-freeze.yaml; tests/fixtures/catalog/0.4/; src/harness_bench/board.py (build, export); src/harness_bench/composites.py (load_catalog); src/harness_bench/grade/runner.py (catalog_hash); docs/notes/rulings.md R-59 and R-78. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: us4_problems() also checks, for a released (non-.dev) version, a board golden per fixture: tests/fixtures/catalog/<version>/<fixture>.board.export equal to board.export(board.build(view, catalog of that version)) with the default seed and resamples, and bench/catalog-freeze.yaml's entry for that version carries `board_golden: {fixture: sha256}` pinned like `golden` | phrase: us4_problems() also checks, for a released (non-.dev) version, a board golden per fixture: tests/fixtures/catalog/<version>/<fixture>.board.export equal to board.export(board.build(view, catalog of that version)) with the default seed and resamples, and bench/catalog-freeze.yaml's entry for that version carries `board_golden: {fixture: sha256}` pinned like `golden` |\n| done_when: a version whose freeze entry has no board_golden (0.4, frozen before boards existed) is exempt from the board check and the control prints \"board golden: not pinned (frozen before board.export)\" so the exemption is visible, never silent | phrase: a version whose freeze entry has no board_golden (0.4, frozen before boards existed) is exempt from the board check and the control prints \"board golden: not pinned (frozen before board.export)\" so the exemption is visible, never silent |\n| done_when: checks (a)-(d) gain their board counterparts (a board export that differs | phrase: checks (a)-(d) gain their board counterparts (a board export that differs |\n| done_when: digests that differ from the pins | phrase: digests that differ from the pins |\n| done_when: a released version frozen after this change with no board golden) and check (e) (append-only per version) covers board_golden | phrase: a released version frozen after this change with no board golden) and check (e) (append-only per version) covers board_golden |\n| done_when: red first: each new violation fails the control on the `frozen` fixture's 9.1 catalog (extend that fixture to pin board goldens) | phrase: red first: each new violation fails the control on the `frozen` fixture's 9.1 catalog (extend that fixture to pin board goldens) |\n| done_when: tools/freeze_catalog.py (with a one-line docstring and --help) writes, for the catalog's current released version: the views and board goldens of both fixtures (each graded twice and refused if the two differ), and the freeze entry with catalog_hash, golden and board_golden | phrase: tools/freeze_catalog.py (with a one-line docstring and --help) writes, for the catalog's current released version: the views and board goldens of both fixtures (each graded twice and refused if the two differ), and the freeze entry with catalog_hash, golden and board_golden |\n| done_when: it refuses a .dev version, an already-frozen version (append-only), and a working tree whose bench/metrics.yaml is uncommitted | phrase: it refuses a .dev version, an already-frozen version (append-only), and a working tree whose bench/metrics.yaml is uncommitted |\n| done_when: its behaviour is tested on a tmp root (never the real repo files) | phrase: its behaviour is tested on a tmp root (never the real repo files) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes | phrase: uv run pytest -q -p no:cacheprovider -n auto passes |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: performing the 0.5 freeze or editing bench/catalog-freeze.yaml, bench/metrics.yaml or tests/fixtures/catalog/ in the repo (the Leader runs the tool) | phrase: performing the 0.5 freeze or editing bench/catalog-freeze.yaml, bench/metrics.yaml or tests/fixtures/catalog/ in the repo (the Leader runs the tool) |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- board_golden: {fixture: sha256}: unresolved (not found)\n- golden: unresolved (not found)\n- frozen: unresolved (not found)\n- tests/test_catalog_version.py: tests/test_catalog_version.py sha256 3f2947ee088588f4a524af945b1acb5b7cdc782a0546051c83c2783721ab0294\n- bench/catalog-freeze.yaml: bench/catalog-freeze.yaml sha256 9a5166340d36c84a54b92137459b1275a1a2d194e0722f770110625d08763078\n- bench-catalog-freeze/1: unresolved (not found)\n- tests/fixtures/catalog/<version>/<fixture>.export}: unresolved (not found)\n- src/harness_bench/board.py: src/harness_bench/board.py sha256 c000089defc6c63d6d968054b3f01e66d1ad91dccd9e1d2a252b5f347c9d1c8d\n- tests/fixtures/catalog/<version>/<fixture>.board.export: unresolved (not found)\n- bench/catalog-freeze.yaml's: unresolved (not found; nearest: bench/catalog-freeze.yaml)\n- tools/freeze_catalog.py: unresolved (not found)\n- bench/metrics.yaml: bench/metrics.yaml sha256 198e31c007b4706838308547a37baf5feb0535b7972c9f9294d0da2014c2a2cf\n- tests/fixtures/catalog/: unresolved (not found)\n- runs/: unresolved (not found)\n- tests/archived_runs.py: tests/archived_runs.py sha256 a18faad1b4f2eee79b76642748408dca0ebff1fdbdb0776a5bed357e7a3cb842\n- tests/fixtures/catalog/0.4/: unresolved (not found)\n- src/harness_bench/composites.py: src/harness_bench/composites.py sha256 4d0296c8b87ae82c814605aa603bc711da6b1a705f308563aba20d575911a5a8\n- src/harness_bench/grade/runner.py: src/harness_bench/grade/runner.py sha256 07a23ac32eff003eac0a1b19b9b1f376b42383693581a008ff22e8578b35efcb\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3K5WJSF6TGEW46K57YCRVTZ\nraw sha256: 6bfb4e2628d18d16a4f8dd85e0a13d568c224540b34f0d41dbfe8d4ccd82c190\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3K5WJSF6TGEW46K57YCRVTZ for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "us4_problems() also checks, for a released (non-.dev) version, a board golden per fixture: tests/fixtures/catalog/<version>/<fixture>.board.export equal to board.export(board.build(view, catalog of that version)) with the default seed and resamples, and bench/catalog-freeze.yaml's entry for that version carries `board_golden: {fixture: sha256}` pinned like `golden`",
+            "trace": {
+              "kind": "phrase",
+              "ref": "us4_problems() also checks, for a released (non-.dev) version, a board golden per fixture: tests/fixtures/catalog/<version>/<fixture>.board.export equal to board.export(board.build(view, catalog of that version)) with the default seed and resamples, and bench/catalog-freeze.yaml's entry for that version carries `board_golden: {fixture: sha256}` pinned like `golden`"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a version whose freeze entry has no board_golden (0.4, frozen before boards existed) is exempt from the board check and the control prints \"board golden: not pinned (frozen before board.export)\" so the exemption is visible, never silent",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a version whose freeze entry has no board_golden (0.4, frozen before boards existed) is exempt from the board check and the control prints \"board golden: not pinned (frozen before board.export)\" so the exemption is visible, never silent"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "checks (a)-(d) gain their board counterparts (a board export that differs",
+            "trace": {
+              "kind": "phrase",
+              "ref": "checks (a)-(d) gain their board counterparts (a board export that differs"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "digests that differ from the pins",
+            "trace": {
+              "kind": "phrase",
+              "ref": "digests that differ from the pins"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a released version frozen after this change with no board golden) and check (e) (append-only per version) covers board_golden",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a released version frozen after this change with no board golden) and check (e) (append-only per version) covers board_golden"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "red first: each new violation fails the control on the `frozen` fixture's 9.1 catalog (extend that fixture to pin board goldens)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "red first: each new violation fails the control on the `frozen` fixture's 9.1 catalog (extend that fixture to pin board goldens)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tools/freeze_catalog.py (with a one-line docstring and --help) writes, for the catalog's current released version: the views and board goldens of both fixtures (each graded twice and refused if the two differ), and the freeze entry with catalog_hash, golden and board_golden",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tools/freeze_catalog.py (with a one-line docstring and --help) writes, for the catalog's current released version: the views and board goldens of both fixtures (each graded twice and refused if the two differ), and the freeze entry with catalog_hash, golden and board_golden"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "it refuses a .dev version, an already-frozen version (append-only), and a working tree whose bench/metrics.yaml is uncommitted",
+            "trace": {
+              "kind": "phrase",
+              "ref": "it refuses a .dev version, an already-frozen version (append-only), and a working tree whose bench/metrics.yaml is uncommitted"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "its behaviour is tested on a tmp root (never the real repo files)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "its behaviour is tested on a tmp root (never the real repo files)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider -n auto passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider -n auto passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "performing the 0.5 freeze or editing bench/catalog-freeze.yaml, bench/metrics.yaml or tests/fixtures/catalog/ in the repo (the Leader runs the tool)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "performing the 0.5 freeze or editing bench/catalog-freeze.yaml, bench/metrics.yaml or tests/fixtures/catalog/ in the repo (the Leader runs the tool)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "us4_problems() also checks, for a released (non-.dev) version, a board golden per fixture: tests/fixtures/catalog/<version>/<fixture>.board.export equal to board.export(board.build(view, catalog of that version)) with the default seed and resamples, and bench/catalog-freeze.yaml's entry for that version carries `board_golden: {fixture: sha256}` pinned like `golden`",
+            "a version whose freeze entry has no board_golden (0.4, frozen before boards existed) is exempt from the board check and the control prints \"board golden: not pinned (frozen before board.export)\" so the exemption is visible, never silent",
+            "checks (a)-(d) gain their board counterparts (a board export that differs",
+            "digests that differ from the pins",
+            "a released version frozen after this change with no board golden) and check (e) (append-only per version) covers board_golden",
+            "red first: each new violation fails the control on the `frozen` fixture's 9.1 catalog (extend that fixture to pin board goldens)",
+            "tools/freeze_catalog.py (with a one-line docstring and --help) writes, for the catalog's current released version: the views and board goldens of both fixtures (each graded twice and refused if the two differ), and the freeze entry with catalog_hash, golden and board_golden",
+            "it refuses a .dev version, an already-frozen version (append-only), and a working tree whose bench/metrics.yaml is uncommitted",
+            "its behaviour is tested on a tmp root (never the real repo files)",
+            "a test earns its place by a failure only it catches",
+            "uv run pytest -q -p no:cacheprovider -n auto passes",
+            "uv run ruff check src tests tools is clean",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "extend the US-4 catalog control (tests/test_catalog_version.py) to board.export goldens, and commit a reproducible freeze tool, so the Leader can freeze catalog 0.5 as ruling R-78 condition 5 requires (\"bench/catalog-freeze.yaml holds the 0.5 hash and both goldens\"); red first; no freeze performed. Measured (Leader, 2026-09-27): bench/catalog-freeze.yaml (schema bench-catalog-freeze/1) holds, per version, catalog_hash and golden: {fixture_name: sha256 of tests/fixtures/catalog/<version>/<fixture>.export}, the views.export bytes of the two X1 fixtures (c44dd2b-no-heads, heads); us4_problems() checks (a)-(e) for views.export only; S5 moved the leaderboard and statistics into board.export (src/harness_bench/board.py build and export), which no catalog control pins; the Leader froze 0.4 with a scratch script that is not in the repo (it built the goldens with test_catalog_version.graded_export and wrote the freeze entry).",
+          "main_line_budget": "one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: tests/test_catalog_version.py (us4_problems, graded_export, the frozen fixture); tests/archived_runs.py (make_root, set_catalog_version); bench/catalog-freeze.yaml; tests/fixtures/catalog/0.4/; src/harness_bench/board.py (build, export); src/harness_bench/composites.py (load_catalog); src/harness_bench/grade/runner.py (catalog_hash); docs/notes/rulings.md R-59 and R-78. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "performing the 0.5 freeze or editing bench/catalog-freeze.yaml, bench/metrics.yaml or tests/fixtures/catalog/ in the repo (the Leader runs the tool)",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.006,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3K5WJSF6TGEW46K57YCRVTZ",
+        "raw_sha256": "6bfb4e2628d18d16a4f8dd85e0a13d568c224540b34f0d41dbfe8d4ccd82c190",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "board_golden: {fixture: sha256}"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "golden"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "frozen"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_catalog_version.py",
+            "reason": null,
+            "sha256": "3f2947ee088588f4a524af945b1acb5b7cdc782a0546051c83c2783721ab0294",
+            "status": "resolved",
+            "token": "tests/test_catalog_version.py"
+          },
+          {
+            "nearest": null,
+            "path": "bench/catalog-freeze.yaml",
+            "reason": null,
+            "sha256": "9a5166340d36c84a54b92137459b1275a1a2d194e0722f770110625d08763078",
+            "status": "resolved",
+            "token": "bench/catalog-freeze.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench-catalog-freeze/1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/catalog/<version>/<fixture>.export}"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/board.py",
+            "reason": null,
+            "sha256": "c000089defc6c63d6d968054b3f01e66d1ad91dccd9e1d2a252b5f347c9d1c8d",
+            "status": "resolved",
+            "token": "src/harness_bench/board.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/catalog/<version>/<fixture>.board.export"
+          },
+          {
+            "nearest": "bench/catalog-freeze.yaml",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/catalog-freeze.yaml's"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/freeze_catalog.py"
+          },
+          {
+            "nearest": null,
+            "path": "bench/metrics.yaml",
+            "reason": null,
+            "sha256": "198e31c007b4706838308547a37baf5feb0535b7972c9f9294d0da2014c2a2cf",
+            "status": "resolved",
+            "token": "bench/metrics.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/catalog/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": "tests/archived_runs.py",
+            "reason": null,
+            "sha256": "a18faad1b4f2eee79b76642748408dca0ebff1fdbdb0776a5bed357e7a3cb842",
+            "status": "resolved",
+            "token": "tests/archived_runs.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/catalog/0.4/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/composites.py",
+            "reason": null,
+            "sha256": "4d0296c8b87ae82c814605aa603bc711da6b1a705f308563aba20d575911a5a8",
+            "status": "resolved",
+            "token": "src/harness_bench/composites.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "07a23ac32eff003eac0a1b19b9b1f376b42383693581a008ff22e8578b35efcb",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/runner.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
           }
         ],
         "schema": "compiled-prompt/1",
