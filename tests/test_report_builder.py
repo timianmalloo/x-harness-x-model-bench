@@ -148,6 +148,7 @@ def test_page_shell_has_a_section_index_with_jump_links(tmp_path, page):
     for section_id in ("validity", "leaderboard", "pack-effect", "runs"):
         assert f'<a href="#{section_id}">' in nav
     assert 'href="#header"' not in nav  # header is the page's own <h1>, not a jump target
+    assert '<a href="#runs">Runs</a>' in nav and '<section id="runs"><h2>Runs</h2>' in doc  # R-81 DR-R-8
 
 
 def test_page_shell_section_order_matches_the_ia(tmp_path, page):
