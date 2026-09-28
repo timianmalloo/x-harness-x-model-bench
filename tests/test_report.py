@@ -959,5 +959,5 @@ def test_the_header_names_the_bom_the_plan_froze(root, tmp_path):
     _, view = _graded(root, tmp_path, {"a": GOOD})
     view.plan["bom_version"] = "0.3"
     view.plan["matrix"] = {"bom": {"file": "bench/bom.yaml", "subset": ["X1", "A1"]}}
-    summary = re.search(r'<section id="header">.*?<p class="muted">(.*?)</p>', html.render(view, archive_present=True), re.S)
+    summary = re.search(r'<section id="header">.*?<p class="muted">(.*?)</p>', html.render(view, archive_present=True), re.DOTALL)
     assert "BOM 0.3 (X1, A1) · " in summary.group(1)

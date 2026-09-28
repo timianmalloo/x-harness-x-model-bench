@@ -250,8 +250,12 @@ def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | N
         facts.append((report.R36_FLAG, f"see {report.R36_EVIDENCE}"))
 
     status_str = "Complete" if view.completed else "Incomplete"
-    bom_val = plan.get("bom")
-    bom_str = f"BOM {bom_val}" if bom_val else "BOM not recorded"
+    # The plan freezes the BOM as `bom_version` plus the matrix's `bom.subset` (a task-id list, or smoke / full).
+    subset = ((plan.get("matrix") or {}).get("bom") or {}).get("subset")
+    subset_str = ", ".join(subset) if isinstance(subset, list) else subset
+    bom_str = f"BOM {plan['bom_version']}" if plan.get("bom_version") else "BOM not recorded"
+    if plan.get("bom_version") and subset_str:
+        bom_str += f" ({subset_str})"
     cat_str = f"catalog {view.catalog_version}" if view.catalog_version else "catalog not recorded"
     pack_rev = (plan.get("pack") or {}).get("revision")
     pack_str = f"pack ai-forward revision {pack_rev}" if pack_rev is not None else "pack revision not recorded"
