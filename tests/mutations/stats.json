@@ -57,5 +57,19 @@
   "find": "lo <= running_hi",
   "replace": "lo < running_hi",
   "tests": ["tests/test_stats.py::test_tr5_k5_touching_intervals_tie"]
+ },
+ {
+  "name": "no_detectable_effect as lo <= 0",
+  "file": "src/harness_bench/stats.py",
+  "find": "return iv.lo <= 0 <= iv.hi",
+  "replace": "return iv.lo <= 0",
+  "tests": ["tests/test_stats.py::test_ts7_no_detectable_effect"]
+ },
+ {
+  "name": "pass^k returns NA when a failure is recorded with reps missing",
+  "file": "src/harness_bench/stats.py",
+  "find": "elif any_failed:",
+  "replace": "elif any_failed and recorded == planned:",
+  "tests": ["tests/test_stats.py::test_tk_pass_k_and_pass_hat_k"]
  }
 ]
