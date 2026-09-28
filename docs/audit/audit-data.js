@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-28T00:31:41Z",
+  "generated": "2026-09-28T00:47:21Z",
   "audit": [
     {
       "actor": null,
@@ -40024,34 +40024,23 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M3JMVH98D4ACM369VCG85TPR",
-      "shortname": "Goal: draft catalog 0.5.dev in bench/metrics.yaml exactly as ruling R-78…",
-      "datetime": "2026-09-27T23:57:54Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: draft catalog 0.5.dev in bench/metrics.yaml exactly as ruling R-78 condition 1 requires (docs/notes/rulings.md, last entry; read it and docs/design/phase4-statistics.md sections Normalisation and Composites first), with every anchor sourced, for the Owner seat's review; catalog content only.\nMeasured (Leader, 2026-09-27): bench/metrics.yaml is version \"0.4\" (frozen in bench/catalog-freeze.yaml; a change after the freeze is a new version, R-59 c3); it has about 54 metrics with kind: score and weight > 0 and no `anchor` field; runs/smoke-1 (36 cells, graded on 0.4) and runs/row15-d1-1 hold measured values for many metrics (read-only: use `uv run bench report <run>` output, views.load in a script, or runs/<run>/scores/*.jsonl; never write under runs/).\nDone when: bench/metrics.yaml says version \"0.5.dev\" with its comment updated (what 0.5 adds: anchors, the R-78 weight corrections); every metric with kind: score and weight > 0 gains `anchor: [worst, best]` in the metric's raw units and scale, with direction consistent with its `better` field (worst is the bad end), worst != best, and a one-clause `anchor_note` naming its source, exactly one of: `spec <file>:<line>` (a value the spec or design states), `measured <run> <min>..<max>` (the observed range in a named run, widened by a stated rule you apply uniformly), or `convention: <rule>` (e.g. a ratio is [0, 1], a count's worst is a stated cap with the reason); no anchor is unmarked or guessed without a stated source; pass_at_1 and the four metrics pass_hat_k, cost_of_pass, tokens_per_solved, wall_clock_split get weight: 0 (R-78 DR-S-2 amendment and DR-S-3) with a note citing R-78; no other change to metric ids, kinds, better, grader or scale; a table in docs/notes/catalog-0.5-anchors.md (frontmatter in the shape of docs/notes/*.md, status proposed) lists every anchored metric: id, better, anchor, source, and for measured anchors the observed values, so the Owner can review them in one place; the US-4 control stays green (a .dev version is a probe: uv run pytest -q -p no:cacheprovider tests/test_catalog_version.py passes and prints probe: exempt); config loading still works (uv run bench validate exits 0); uv run pytest -q -p no:cacheprovider -n auto passes; uv run ruff check src tests tools is clean; Commit each step immediately.\nNot in scope: config.validate_metrics refusals (slice S4 owns them); composites or any code; freezing 0.5 (the Leader, after R-78 condition 5); any file under runs/ written; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each step immediately.\n\nGrounding: docs/notes/rulings.md R-78 and R-59; docs/design/phase4-statistics.md (Normalisation, Composites, the anchors row of its contracts table); bench/metrics.yaml; docs/specs/harness-bench.md (:212 normalisation, and each metric's definition where the spec states a range); docs/design/phase3-graders.md and phase3-cost.md (metric definitions); runs/smoke-1 and runs/row15-d1-1 (read only). Use python, not python3 (Windows).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
+      "datetime": "2026-09-27T23:57:54Z",
+      "id": "al-01M3JMVH98D4ACM369VCG85TPR",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: draft catalog 0.5.dev in bench/metrics.yaml exactly as ruling R-78 condition 1 requires (docs/notes/rulings.md, last entry; read it and docs/design/phase4-statistics.md sections Normalisation and Composites first), with every anchor sourced, for the Owner seat's review; catalog content only.\nMeasured (Leader, 2026-09-27): bench/metrics.yaml is version \"0.4\" (frozen in bench/catalog-freeze.yaml; a change after the freeze is a new version, R-59 c3); it has about 54 metrics with kind: score and weight > 0 and no `anchor` field; runs/smoke-1 (36 cells, graded on 0.4) and runs/row15-d1-1 hold measured values for many metrics (read-only: use `uv run bench report <run>` output, views.load in a script, or runs/<run>/scores/*.jsonl; never write under runs/).\nDone when: bench/metrics.yaml says version \"0.5.dev\" with its comment updated (what 0.5 adds: anchors, the R-78 weight corrections); every metric with kind: score and weight > 0 gains `anchor: [worst, best]` in the metric's raw units and scale, with direction consistent with its `better` field (worst is the bad end), worst != best, and a one-clause `anchor_note` naming its source, exactly one of: `spec <file>:<line>` (a value the spec or design states), `measured <run> <min>..<max>` (the observed range in a named run, widened by a stated rule you apply uniformly), or `convention: <rule>` (e.g. a ratio is [0, 1], a count's worst is a stated cap with the reason); no anchor is unmarked or guessed without a stated source; pass_at_1 and the four metrics pass_hat_k, cost_of_pass, tokens_per_solved, wall_clock_split get weight: 0 (R-78 DR-S-2 amendment and DR-S-3) with a note citing R-78; no other change to metric ids, kinds, better, grader or scale; a table in docs/notes/catalog-0.5-anchors.md (frontmatter in the shape of docs/notes/*.md, status proposed) lists every anchored metric: id, better, anchor, source, and for measured anchors the observed values, so the Owner can review them in one place; the US-4 control stays green (a .dev version is a probe: uv run pytest -q -p no:cacheprovider tests/test_catalog_version.py passes and prints probe: exempt); config loading still works (uv run bench validate exits 0); uv run pytest -q -p no:cacheprovider -n auto passes; uv run ruff check src tests tools is clean; Commit each step immediately.\nNot in scope: config.validate_metrics refusals (slice S4 owns them); composites or any code; freezing 0.5 (the Leader, after R-78 condition 5); any file under runs/ written; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each step immediately.\n\nGrounding: docs/notes/rulings.md R-78 and R-59; docs/design/phase4-statistics.md (Normalisation, Composites, the anchors row of its contracts table); bench/metrics.yaml; docs/specs/harness-bench.md (:212 normalisation, and each metric's definition where the spec states a range); docs/design/phase3-graders.md and phase3-cost.md (metric definitions); runs/smoke-1 and runs/row15-d1-1 (read only). Use python, not python3 (Windows).",
+      "session": "prompt-compile",
+      "shortname": "Goal: draft catalog 0.5.dev in bench/metrics.yaml exactly as ruling R-78…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M3JMVWNXWZBWVG0Z15YT8X35",
-      "shortname": "compile-Goal: draft catalog 0.5.dev in bench/metrics.yaml exactly as ruling R-78…",
-      "datetime": "2026-09-27T23:58:06Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: draft catalog 0.5.dev in bench/metrics.yaml exactly as ruling R-78 condition 1 requires (docs/notes/rulings.md, last entry; read it and docs/design/phase4-statistics.md sections Normalisation and Composites first), with every anchor sourced, for the Owner seat's review; catalog content only. Measured (Leader, 2026-09-27): bench/metrics.yaml is version \"0.4\" (frozen in bench/catalog-freeze.yaml; a change after the freeze is a new version, R-59 c3); it has about 54 metrics with kind: score and weight > 0 and no `anchor` field; runs/smoke-1 (36 cells, graded on 0.4) and runs/row15-d1-1 hold measured values for many metrics (read-only: use `uv run bench report <run>` output, views.load in a script, or runs/<run>/scores/*.jsonl; never write under runs/).\nDone when: bench/metrics.yaml says version \"0.5.dev\" with its comment updated (what 0.5 adds: anchors, the R-78 weight corrections); every metric with kind: score and weight > 0 gains `anchor: [worst, best]` in the metric's raw units and scale, with direction consistent with its `better` field (worst is the bad end), worst != best, and a one-clause `anchor_note` naming its source, exactly one of: `spec <file>:<line>` (a value the spec or design states), `measured <run> <min>..<max>` (the observed range in a named run, widened by a stated rule you apply uniformly), or `convention: <rule>` (e.g. a ratio is [0, 1], a count's worst is a stated cap with the reason); no anchor is unmarked or guessed without a stated source; pass_at_1 and the four metrics pass_hat_k, cost_of_pass, tokens_per_solved, wall_clock_split get weight: 0 (R-78 DR-S-2 amendment and DR-S-3) with a note citing R-78; no other change to metric ids, kinds, better, grader or scale; a table in docs/notes/catalog-0.5-anchors.md (frontmatter in the shape of docs/notes/*.md, status proposed) lists every anchored metric: id, better, anchor, source, and for measured anchors the observed values, so the Owner can review them in one place; the US-4 control stays green (a .dev version is a probe: uv run pytest -q -p no:cacheprovider tests/test_catalog_version.py passes and prints probe: exempt); config loading still works (uv run bench validate exits 0); uv run pytest -q -p no:cacheprovider -n auto passes; uv run ruff check src tests tools is clean; Commit each step immediately.\nNot in scope: config.validate_metrics refusals (slice S4 owns them); composites or any code; freezing 0.5 (the Leader, after R-78 condition 5); any file under runs/ written; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each step immediately.\nGrounding: docs/notes/rulings.md R-78 and R-59; docs/design/phase4-statistics.md (Normalisation, Composites, the anchors row of its contracts table); bench/metrics.yaml; docs/specs/harness-bench.md (:212 normalisation, and each metric's definition where the spec states a range); docs/design/phase3-graders.md and phase3-cost.md (metric definitions); runs/smoke-1 and runs/row15-d1-1 (read only). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: bench/metrics.yaml says version \"0.5.dev\" with its comment updated (what 0.5 adds: anchors, the R-78 weight corrections) | phrase: bench/metrics.yaml says version \"0.5.dev\" with its comment updated (what 0.5 adds: anchors, the R-78 weight corrections) |\n| done_when: every metric with kind: score and weight > 0 gains `anchor: [worst, best]` in the metric's raw units and scale, with direction consistent with its `better` field (worst is the bad end), worst != best, and a one-clause `anchor_note` naming its source, exactly one of: `spec <file>:<line>` (a value the spec or design states), `measured <run> <min>..<max>` (the observed range in a named run, widened by a stated rule you apply uniformly), or `convention: <rule>` (e.g. a ratio is [0, 1], a count's worst is a stated cap with the reason) | phrase: every metric with kind: score and weight > 0 gains `anchor: [worst, best]` in the metric's raw units and scale, with direction consistent with its `better` field (worst is the bad end), worst != best, and a one-clause `anchor_note` naming its source, exactly one of: `spec <file>:<line>` (a value the spec or design states), `measured <run> <min>..<max>` (the observed range in a named run, widened by a stated rule you apply uniformly), or `convention: <rule>` (e.g. a ratio is [0, 1], a count's worst is a stated cap with the reason) |\n| done_when: no anchor is unmarked or guessed without a stated source | phrase: no anchor is unmarked or guessed without a stated source |\n| done_when: pass_at_1 and the four metrics pass_hat_k, cost_of_pass, tokens_per_solved, wall_clock_split get weight: 0 (R-78 DR-S-2 amendment and DR-S-3) with a note citing R-78 | phrase: pass_at_1 and the four metrics pass_hat_k, cost_of_pass, tokens_per_solved, wall_clock_split get weight: 0 (R-78 DR-S-2 amendment and DR-S-3) with a note citing R-78 |\n| done_when: no other change to metric ids, kinds, better, grader or scale | phrase: no other change to metric ids, kinds, better, grader or scale |\n| done_when: a table in docs/notes/catalog-0.5-anchors.md (frontmatter in the shape of docs/notes/*.md, status proposed) lists every anchored metric: id, better, anchor, source, and for measured anchors the observed values, so the Owner can review them in one place | phrase: a table in docs/notes/catalog-0.5-anchors.md (frontmatter in the shape of docs/notes/*.md, status proposed) lists every anchored metric: id, better, anchor, source, and for measured anchors the observed values, so the Owner can review them in one place |\n| done_when: the US-4 control stays green (a .dev version is a probe: uv run pytest -q -p no:cacheprovider tests/test_catalog_version.py passes and prints probe: exempt) | phrase: the US-4 control stays green (a .dev version is a probe: uv run pytest -q -p no:cacheprovider tests/test_catalog_version.py passes and prints probe: exempt) |\n| done_when: config loading still works (uv run bench validate exits 0) | phrase: config loading still works (uv run bench validate exits 0) |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes | phrase: uv run pytest -q -p no:cacheprovider -n auto passes |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each step immediately. | phrase: Commit each step immediately. |\n| not_in_scope: config.validate_metrics refusals (slice S4 owns them) | phrase: config.validate_metrics refusals (slice S4 owns them) |\n| not_in_scope: composites or any code | phrase: composites or any code |\n| not_in_scope: freezing 0.5 (the Leader, after R-78 condition 5) | phrase: freezing 0.5 (the Leader, after R-78 condition 5) |\n| not_in_scope: any file under runs/ written | phrase: any file under runs/ written |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- anchor: unresolved (not found)\n- uv run bench report <run: unresolved (not found)\n- anchor: [worst, best: unresolved (not found)\n- better: unresolved (not found)\n- anchor_note: unresolved (not found)\n- spec <file>:<line: unresolved (not found)\n- measured <run> <min>..<max: unresolved (not found)\n- convention: <rule: unresolved (not found)\n- bench/metrics.yaml: bench/metrics.yaml sha256 df5499d1c0bda69ae874f2de41cfd09188f8e8568123fc67bad23fa20c31725d\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd\n- bench/catalog-freeze.yaml: bench/catalog-freeze.yaml sha256 9a5166340d36c84a54b92137459b1275a1a2d194e0722f770110625d08763078\n- runs/smoke-1: unresolved (not found)\n- runs/row15-d1-1: unresolved (not found)\n- runs/<run>/scores/*.jsonl: unresolved (not found)\n- runs/: unresolved (not found)\n- docs/notes/catalog-0.5-anchors.md: unresolved (not found)\n- docs/notes/*.md: unresolved (not found)\n- tests/test_catalog_version.py: tests/test_catalog_version.py sha256 3f2947ee088588f4a524af945b1acb5b7cdc782a0546051c83c2783721ab0294\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094\n- docs/design/phase3-graders.md: docs/design/phase3-graders.md sha256 544b1cad5a82ff64b5e1ef998fd28b0cf116461e07d0f676d36c2bba35c08875\n- phase3-cost.md: docs/design/phase3-cost.md sha256 e3758a322c4c304094423a3dcbb878e9e27b6da53cfc143d58e6c917801e3674\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JMVH98D4ACM369VCG85TPR\nraw sha256: 5e7758809db7eb3ae80b1634fa91dc7659b458eadb80674d3e545068760178c6\ncompiler model: claude-opus-5-5\nengine seconds: 0.007\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3JMVH98D4ACM369VCG85TPR for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -40418,38 +40407,38 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3JN82TC9ARFSA1DSCWPDZXP",
-      "shortname": "Goal: implement slice S2 of docs/design/phase4-statistics.md, the rankin…",
-      "datetime": "2026-09-28T00:04:45Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: implement slice S2 of docs/design/phase4-statistics.md, the ranking `stats.rank` in src/harness_bench/stats.py (S1, the bootstrap core, is merged: build on its Interval), exactly as the design specifies it (read the whole document first: the data model, the bootstrap procedure, the RNG discipline, the Ranking section with its K1-K16 cases and the counterexample to count-based ranking, the contract for stats.rank, the test plan T-R1..R16, the stats.json mutants for no_detectable_effect, below, the gate merge and the tier sweep, and the implementation-slices table row S2), red first.\nMeasured (design author, 2026-09-27, Appendix A): stdlib Decimal is fast enough (0.024 s per interval at 24 tasks x 3 reps x 2,000 resamples); the two-stage percentile bootstrap covers 0.97 at 6 tasks x 3 reps. S1 is merged on main (stats.py, tests/test_stats.py, tests/mutations/stats.json); ruling R-78 closed every decision request; S2 depends only on S1.\nDone when: stats.rank exists with the contracted signature and T-R3 (all intervals overlap gives `1=` for every row) is committed red first, failing on an assertion, then green; T-R1..R16 pass as exact fixtures of the design's K cases; the S2 mutants the design lists are added to tests/mutations/stats.json and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message); property tests use hypothesis (already a dev dependency) where the design says so; any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently; nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_stats.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S3-S7; the catalog; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-statistics.md (all of it; the Ranking section; T-R1..R16 near line 654; the S2 row near line 758); src/harness_bench/stats.py (S1); src/harness_bench/ (package layout, Decimal conventions in views.py); tests/mutations/*.json (format); tools/mutate_check.py. Use python, not python3 (Windows).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3JN8509Z5S42ND4A44607VE",
-      "shortname": "compile-Goal: implement slice S2 of docs/design/phase4-statistics.md, the rankin…",
-      "datetime": "2026-09-28T00:04:47Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement slice S2 of docs/design/phase4-statistics.md, the ranking `stats.rank` in src/harness_bench/stats.py (S1, the bootstrap core, is merged: build on its Interval), exactly as the design specifies it (read the whole document first: the data model, the bootstrap procedure, the RNG discipline, the Ranking section with its K1-K16 cases and the counterexample to count-based ranking, the contract for stats.rank, the test plan T-R1..R16, the stats.json mutants for no_detectable_effect, below, the gate merge and the tier sweep, and the implementation-slices table row S2), red first. Measured (design author, 2026-09-27, Appendix A): stdlib Decimal is fast enough (0.024 s per interval at 24 tasks x 3 reps x 2,000 resamples); the two-stage percentile bootstrap covers 0.97 at 6 tasks x 3 reps. S1 is merged on main (stats.py, tests/test_stats.py, tests/mutations/stats.json); ruling R-78 closed every decision request; S2 depends only on S1.\nDone when: stats.rank exists with the contracted signature and T-R3 (all intervals overlap gives `1=` for every row) is committed red first, failing on an assertion, then green; T-R1..R16 pass as exact fixtures of the design's K cases; the S2 mutants the design lists are added to tests/mutations/stats.json and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message); property tests use hypothesis (already a dev dependency) where the design says so; any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently; nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_stats.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S3-S7; the catalog; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (all of it; the Ranking section; T-R1..R16 near line 654; the S2 row near line 758); src/harness_bench/stats.py (S1); src/harness_bench/ (package layout, Decimal conventions in views.py); tests/mutations/*.json (format); tools/mutate_check.py. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: stats.rank exists with the contracted signature and T-R3 (all intervals overlap gives `1=` for every row) is committed red first, failing on an assertion, then green | phrase: stats.rank exists with the contracted signature and T-R3 (all intervals overlap gives `1=` for every row) is committed red first, failing on an assertion, then green |\n| done_when: T-R1..R16 pass as exact fixtures of the design's K cases | phrase: T-R1..R16 pass as exact fixtures of the design's K cases |\n| done_when: the S2 mutants the design lists are added to tests/mutations/stats.json and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message) | phrase: the S2 mutants the design lists are added to tests/mutations/stats.json and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message) |\n| done_when: property tests use hypothesis (already a dev dependency) where the design says so | phrase: property tests use hypothesis (already a dev dependency) where the design says so |\n| done_when: any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently | phrase: any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently |\n| done_when: nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change) | phrase: nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider tests/test_stats.py passes | phrase: uv run pytest -q -p no:cacheprovider tests/test_stats.py passes |\n| done_when: uv run pytest -q -p no:cacheprovider --collect-only exits 0 | phrase: uv run pytest -q -p no:cacheprovider --collect-only exits 0 |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: slices S3-S7 | phrase: slices S3-S7 |\n| not_in_scope: the catalog | phrase: the catalog |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- stats.rank: unresolved (not found)\n- 1=: unresolved (not found)\n- assume: unresolved (not found)\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd\n- src/harness_bench/stats.py: src/harness_bench/stats.py sha256 31c752c687c20f18c5f55a38730d13c7f3ebd2065d7b81e5ea90328143b2a4fe\n- stats.json: tests/mutations/stats.json sha256 dd6cff27f73a63e64474755e07b41bd3ec82a84666a79e43d0801aa9a3b977af\n- stats.py: src/harness_bench/stats.py sha256 31c752c687c20f18c5f55a38730d13c7f3ebd2065d7b81e5ea90328143b2a4fe\n- tests/test_stats.py: tests/test_stats.py sha256 4fcca39ae35828cf94210e1143fe41d79cabdac03723f79acf1cee4781f6a1df\n- tests/mutations/stats.json: tests/mutations/stats.json sha256 dd6cff27f73a63e64474755e07b41bd3ec82a84666a79e43d0801aa9a3b977af\n- tools/mutate_check.py: tools/mutate_check.py sha256 51f6617b7cadab4595f40bc4250b39001ec8b66b06b7c740565d49cbe1418ba2\n- runs/: unresolved (not found)\n- src/harness_bench/: unresolved (not found)\n- views.py: src/harness_bench/views.py sha256 ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JN82TC9ARFSA1DSCWPDZXP\nraw sha256: 5cb8c0ceccfe70b2ea8dd34324ed8d821a5bc36f6b1cf604ece5e6de3fffa6e7\ncompiler model: claude-opus-5-5\nengine seconds: 0.007\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3JN82TC9ARFSA1DSCWPDZXP for claude-code v1: 15 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-27T23:58:06Z",
+      "dispatchable": true,
+      "id": "al-01M3JMVWNXWZBWVG0Z15YT8X35",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: draft catalog 0.5.dev in bench/metrics.yaml exactly as ruling R-78 condition 1 requires (docs/notes/rulings.md, last entry; read it and docs/design/phase4-statistics.md sections Normalisation and Composites first), with every anchor sourced, for the Owner seat's review; catalog content only. Measured (Leader, 2026-09-27): bench/metrics.yaml is version \"0.4\" (frozen in bench/catalog-freeze.yaml; a change after the freeze is a new version, R-59 c3); it has about 54 metrics with kind: score and weight > 0 and no `anchor` field; runs/smoke-1 (36 cells, graded on 0.4) and runs/row15-d1-1 hold measured values for many metrics (read-only: use `uv run bench report <run>` output, views.load in a script, or runs/<run>/scores/*.jsonl; never write under runs/).\nDone when: bench/metrics.yaml says version \"0.5.dev\" with its comment updated (what 0.5 adds: anchors, the R-78 weight corrections); every metric with kind: score and weight > 0 gains `anchor: [worst, best]` in the metric's raw units and scale, with direction consistent with its `better` field (worst is the bad end), worst != best, and a one-clause `anchor_note` naming its source, exactly one of: `spec <file>:<line>` (a value the spec or design states), `measured <run> <min>..<max>` (the observed range in a named run, widened by a stated rule you apply uniformly), or `convention: <rule>` (e.g. a ratio is [0, 1], a count's worst is a stated cap with the reason); no anchor is unmarked or guessed without a stated source; pass_at_1 and the four metrics pass_hat_k, cost_of_pass, tokens_per_solved, wall_clock_split get weight: 0 (R-78 DR-S-2 amendment and DR-S-3) with a note citing R-78; no other change to metric ids, kinds, better, grader or scale; a table in docs/notes/catalog-0.5-anchors.md (frontmatter in the shape of docs/notes/*.md, status proposed) lists every anchored metric: id, better, anchor, source, and for measured anchors the observed values, so the Owner can review them in one place; the US-4 control stays green (a .dev version is a probe: uv run pytest -q -p no:cacheprovider tests/test_catalog_version.py passes and prints probe: exempt); config loading still works (uv run bench validate exits 0); uv run pytest -q -p no:cacheprovider -n auto passes; uv run ruff check src tests tools is clean; Commit each step immediately.\nNot in scope: config.validate_metrics refusals (slice S4 owns them); composites or any code; freezing 0.5 (the Leader, after R-78 condition 5); any file under runs/ written; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each step immediately.\nGrounding: docs/notes/rulings.md R-78 and R-59; docs/design/phase4-statistics.md (Normalisation, Composites, the anchors row of its contracts table); bench/metrics.yaml; docs/specs/harness-bench.md (:212 normalisation, and each metric's definition where the spec states a range); docs/design/phase3-graders.md and phase3-cost.md (metric definitions); runs/smoke-1 and runs/row15-d1-1 (read only). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: bench/metrics.yaml says version \"0.5.dev\" with its comment updated (what 0.5 adds: anchors, the R-78 weight corrections) | phrase: bench/metrics.yaml says version \"0.5.dev\" with its comment updated (what 0.5 adds: anchors, the R-78 weight corrections) |\n| done_when: every metric with kind: score and weight > 0 gains `anchor: [worst, best]` in the metric's raw units and scale, with direction consistent with its `better` field (worst is the bad end), worst != best, and a one-clause `anchor_note` naming its source, exactly one of: `spec <file>:<line>` (a value the spec or design states), `measured <run> <min>..<max>` (the observed range in a named run, widened by a stated rule you apply uniformly), or `convention: <rule>` (e.g. a ratio is [0, 1], a count's worst is a stated cap with the reason) | phrase: every metric with kind: score and weight > 0 gains `anchor: [worst, best]` in the metric's raw units and scale, with direction consistent with its `better` field (worst is the bad end), worst != best, and a one-clause `anchor_note` naming its source, exactly one of: `spec <file>:<line>` (a value the spec or design states), `measured <run> <min>..<max>` (the observed range in a named run, widened by a stated rule you apply uniformly), or `convention: <rule>` (e.g. a ratio is [0, 1], a count's worst is a stated cap with the reason) |\n| done_when: no anchor is unmarked or guessed without a stated source | phrase: no anchor is unmarked or guessed without a stated source |\n| done_when: pass_at_1 and the four metrics pass_hat_k, cost_of_pass, tokens_per_solved, wall_clock_split get weight: 0 (R-78 DR-S-2 amendment and DR-S-3) with a note citing R-78 | phrase: pass_at_1 and the four metrics pass_hat_k, cost_of_pass, tokens_per_solved, wall_clock_split get weight: 0 (R-78 DR-S-2 amendment and DR-S-3) with a note citing R-78 |\n| done_when: no other change to metric ids, kinds, better, grader or scale | phrase: no other change to metric ids, kinds, better, grader or scale |\n| done_when: a table in docs/notes/catalog-0.5-anchors.md (frontmatter in the shape of docs/notes/*.md, status proposed) lists every anchored metric: id, better, anchor, source, and for measured anchors the observed values, so the Owner can review them in one place | phrase: a table in docs/notes/catalog-0.5-anchors.md (frontmatter in the shape of docs/notes/*.md, status proposed) lists every anchored metric: id, better, anchor, source, and for measured anchors the observed values, so the Owner can review them in one place |\n| done_when: the US-4 control stays green (a .dev version is a probe: uv run pytest -q -p no:cacheprovider tests/test_catalog_version.py passes and prints probe: exempt) | phrase: the US-4 control stays green (a .dev version is a probe: uv run pytest -q -p no:cacheprovider tests/test_catalog_version.py passes and prints probe: exempt) |\n| done_when: config loading still works (uv run bench validate exits 0) | phrase: config loading still works (uv run bench validate exits 0) |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes | phrase: uv run pytest -q -p no:cacheprovider -n auto passes |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each step immediately. | phrase: Commit each step immediately. |\n| not_in_scope: config.validate_metrics refusals (slice S4 owns them) | phrase: config.validate_metrics refusals (slice S4 owns them) |\n| not_in_scope: composites or any code | phrase: composites or any code |\n| not_in_scope: freezing 0.5 (the Leader, after R-78 condition 5) | phrase: freezing 0.5 (the Leader, after R-78 condition 5) |\n| not_in_scope: any file under runs/ written | phrase: any file under runs/ written |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- anchor: unresolved (not found)\n- uv run bench report <run: unresolved (not found)\n- anchor: [worst, best: unresolved (not found)\n- better: unresolved (not found)\n- anchor_note: unresolved (not found)\n- spec <file>:<line: unresolved (not found)\n- measured <run> <min>..<max: unresolved (not found)\n- convention: <rule: unresolved (not found)\n- bench/metrics.yaml: bench/metrics.yaml sha256 df5499d1c0bda69ae874f2de41cfd09188f8e8568123fc67bad23fa20c31725d\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd\n- bench/catalog-freeze.yaml: bench/catalog-freeze.yaml sha256 9a5166340d36c84a54b92137459b1275a1a2d194e0722f770110625d08763078\n- runs/smoke-1: unresolved (not found)\n- runs/row15-d1-1: unresolved (not found)\n- runs/<run>/scores/*.jsonl: unresolved (not found)\n- runs/: unresolved (not found)\n- docs/notes/catalog-0.5-anchors.md: unresolved (not found)\n- docs/notes/*.md: unresolved (not found)\n- tests/test_catalog_version.py: tests/test_catalog_version.py sha256 3f2947ee088588f4a524af945b1acb5b7cdc782a0546051c83c2783721ab0294\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094\n- docs/design/phase3-graders.md: docs/design/phase3-graders.md sha256 544b1cad5a82ff64b5e1ef998fd28b0cf116461e07d0f676d36c2bba35c08875\n- phase3-cost.md: docs/design/phase3-cost.md sha256 e3758a322c4c304094423a3dcbb878e9e27b6da53cfc143d58e6c917801e3674\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JMVH98D4ACM369VCG85TPR\nraw sha256: 5e7758809db7eb3ae80b1634fa91dc7659b458eadb80674d3e545068760178c6\ncompiler model: claude-opus-5-5\nengine seconds: 0.007\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: draft catalog 0.5.dev in bench/metrics.yaml exactly as ruling R-78…",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3JMVH98D4ACM369VCG85TPR for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-28T00:04:45Z",
+      "id": "al-01M3JN82TC9ARFSA1DSCWPDZXP",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: implement slice S2 of docs/design/phase4-statistics.md, the ranking `stats.rank` in src/harness_bench/stats.py (S1, the bootstrap core, is merged: build on its Interval), exactly as the design specifies it (read the whole document first: the data model, the bootstrap procedure, the RNG discipline, the Ranking section with its K1-K16 cases and the counterexample to count-based ranking, the contract for stats.rank, the test plan T-R1..R16, the stats.json mutants for no_detectable_effect, below, the gate merge and the tier sweep, and the implementation-slices table row S2), red first.\nMeasured (design author, 2026-09-27, Appendix A): stdlib Decimal is fast enough (0.024 s per interval at 24 tasks x 3 reps x 2,000 resamples); the two-stage percentile bootstrap covers 0.97 at 6 tasks x 3 reps. S1 is merged on main (stats.py, tests/test_stats.py, tests/mutations/stats.json); ruling R-78 closed every decision request; S2 depends only on S1.\nDone when: stats.rank exists with the contracted signature and T-R3 (all intervals overlap gives `1=` for every row) is committed red first, failing on an assertion, then green; T-R1..R16 pass as exact fixtures of the design's K cases; the S2 mutants the design lists are added to tests/mutations/stats.json and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message); property tests use hypothesis (already a dev dependency) where the design says so; any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently; nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_stats.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S3-S7; the catalog; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-statistics.md (all of it; the Ranking section; T-R1..R16 near line 654; the S2 row near line 758); src/harness_bench/stats.py (S1); src/harness_bench/ (package layout, Decimal conventions in views.py); tests/mutations/*.json (format); tools/mutate_check.py. Use python, not python3 (Windows).",
+      "session": "prompt-compile",
+      "shortname": "Goal: implement slice S2 of docs/design/phase4-statistics.md, the rankin…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -40743,38 +40732,38 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3JPFEXR0PKKXA4DBP6JFC0Q",
-      "shortname": "Goal: implement slice S3 of docs/design/phase4-statistics.md: `stats.pai…",
-      "datetime": "2026-09-28T00:26:15Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: implement slice S3 of docs/design/phase4-statistics.md: `stats.paired_delta`, `no_detectable_effect`, `pass_k` and `CONTAMINATION_PRONE` in src/harness_bench/stats.py (S1 and S2 are merged: build on Interval and the keyed streams), exactly as the design specifies it (read the whole document first: the data model, the bootstrap procedure, the RNG discipline, the paired-delta and pack-effect sections, the E1-E3 exclusion (ruling R-78 DR-S-6 and condition 6: stats.CONTAMINATION_PRONE is the only source), pass@k and pass^k as points only (the Simplifier cut S2), the test plan T-S7 and T-K, the stats.json mutants for no_detectable_effect and pass^k, and the implementation-slices table row S3), red first.\nMeasured (design author, 2026-09-27, Appendix A): stdlib Decimal is fast enough (0.024 s per interval at 24 tasks x 3 reps x 2,000 resamples); the two-stage percentile bootstrap covers 0.97 at 6 tasks x 3 reps. S1 is merged on main (stats.py, tests/test_stats.py, tests/mutations/stats.json); ruling R-78 closed every decision request; S3 depends only on S1.\nDone when: the four names exist with the contracted signatures; T-S7 (the antisymmetry example) is committed red first, failing on an assertion, then green; T-S7 and T-K pass; the S3 mutants the design lists are added to tests/mutations/stats.json and killed by PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/stats.json (the variable avoids a known crash printing non-cp1252 mutant names, fixed separately; record the output lines in the commit message); property tests use hypothesis (already a dev dependency) where the design says so; any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently; nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_stats.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S4-S7; the catalog; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-statistics.md (all of it; T-S7 near line 643; the S3 row near line 759); src/harness_bench/stats.py (S1); src/harness_bench/ (package layout, Decimal conventions in views.py); tests/mutations/*.json (format); tools/mutate_check.py. Use python, not python3 (Windows).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3JPFJ0AGPAGM5WKP2ZEZ0EK",
-      "shortname": "compile-Goal: implement slice S3 of docs/design/phase4-statistics.md: `stats.pai…",
-      "datetime": "2026-09-28T00:26:19Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement slice S3 of docs/design/phase4-statistics.md: `stats.paired_delta`, `no_detectable_effect`, `pass_k` and `CONTAMINATION_PRONE` in src/harness_bench/stats.py (S1 and S2 are merged: build on Interval and the keyed streams), exactly as the design specifies it (read the whole document first: the data model, the bootstrap procedure, the RNG discipline, the paired-delta and pack-effect sections, the E1-E3 exclusion (ruling R-78 DR-S-6 and condition 6: stats.CONTAMINATION_PRONE is the only source), pass@k and pass^k as points only (the Simplifier cut S2), the test plan T-S7 and T-K, the stats.json mutants for no_detectable_effect and pass^k, and the implementation-slices table row S3), red first. Measured (design author, 2026-09-27, Appendix A): stdlib Decimal is fast enough (0.024 s per interval at 24 tasks x 3 reps x 2,000 resamples); the two-stage percentile bootstrap covers 0.97 at 6 tasks x 3 reps. S1 is merged on main (stats.py, tests/test_stats.py, tests/mutations/stats.json); ruling R-78 closed every decision request; S3 depends only on S1.\nDone when: the four names exist with the contracted signatures; T-S7 (the antisymmetry example) is committed red first, failing on an assertion, then green; T-S7 and T-K pass; the S3 mutants the design lists are added to tests/mutations/stats.json and killed by PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/stats.json (the variable avoids a known crash printing non-cp1252 mutant names, fixed separately; record the output lines in the commit message); property tests use hypothesis (already a dev dependency) where the design says so; any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently; nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_stats.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S4-S7; the catalog; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (all of it; T-S7 near line 643; the S3 row near line 759); src/harness_bench/stats.py (S1); src/harness_bench/ (package layout, Decimal conventions in views.py); tests/mutations/*.json (format); tools/mutate_check.py. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: the four names exist with the contracted signatures | phrase: the four names exist with the contracted signatures |\n| done_when: T-S7 (the antisymmetry example) is committed red first, failing on an assertion, then green | phrase: T-S7 (the antisymmetry example) is committed red first, failing on an assertion, then green |\n| done_when: T-S7 and T-K pass | phrase: T-S7 and T-K pass |\n| done_when: the S3 mutants the design lists are added to tests/mutations/stats.json and killed by PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/stats.json (the variable avoids a known crash printing non-cp1252 mutant names, fixed separately | phrase: the S3 mutants the design lists are added to tests/mutations/stats.json and killed by PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/stats.json (the variable avoids a known crash printing non-cp1252 mutant names, fixed separately |\n| done_when: record the output lines in the commit message) | phrase: record the output lines in the commit message) |\n| done_when: property tests use hypothesis (already a dev dependency) where the design says so | phrase: property tests use hypothesis (already a dev dependency) where the design says so |\n| done_when: any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently | phrase: any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently |\n| done_when: nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change) | phrase: nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider tests/test_stats.py passes | phrase: uv run pytest -q -p no:cacheprovider tests/test_stats.py passes |\n| done_when: uv run pytest -q -p no:cacheprovider --collect-only exits 0 | phrase: uv run pytest -q -p no:cacheprovider --collect-only exits 0 |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: slices S4-S7 | phrase: slices S4-S7 |\n| not_in_scope: the catalog | phrase: the catalog |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- stats.paired_delta: unresolved (not found)\n- no_detectable_effect: unresolved (not found)\n- pass_k: unresolved (not found)\n- CONTAMINATION_PRONE: unresolved (not found)\n- assume: unresolved (not found)\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd\n- src/harness_bench/stats.py: src/harness_bench/stats.py sha256 45782a968fc3e1ac47671b51fbebefaac787fbb85073c06b63192b7801531a8d\n- stats.json: tests/mutations/stats.json sha256 f2919fb3d53a49b0a3587521af527569696f9beb6cbee0bebaf6a6e506860d3a\n- stats.py: src/harness_bench/stats.py sha256 45782a968fc3e1ac47671b51fbebefaac787fbb85073c06b63192b7801531a8d\n- tests/test_stats.py: tests/test_stats.py sha256 69d1f7cc80a27bc96e4975a5d303f2157829c56131a8830b899f8334a1580403\n- tests/mutations/stats.json: tests/mutations/stats.json sha256 f2919fb3d53a49b0a3587521af527569696f9beb6cbee0bebaf6a6e506860d3a\n- tools/mutate_check.py: tools/mutate_check.py sha256 51f6617b7cadab4595f40bc4250b39001ec8b66b06b7c740565d49cbe1418ba2\n- runs/: unresolved (not found)\n- src/harness_bench/: unresolved (not found)\n- views.py: src/harness_bench/views.py sha256 ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JPFEXR0PKKXA4DBP6JFC0Q\nraw sha256: d657ccc2f2962e7b7db30a492c21ad6541ed3f1998a42e7128b255ce16d364fb\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3JPFEXR0PKKXA4DBP6JFC0Q for claude-code v1: 17 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-28T00:04:47Z",
+      "dispatchable": true,
+      "id": "al-01M3JN8509Z5S42ND4A44607VE",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement slice S2 of docs/design/phase4-statistics.md, the ranking `stats.rank` in src/harness_bench/stats.py (S1, the bootstrap core, is merged: build on its Interval), exactly as the design specifies it (read the whole document first: the data model, the bootstrap procedure, the RNG discipline, the Ranking section with its K1-K16 cases and the counterexample to count-based ranking, the contract for stats.rank, the test plan T-R1..R16, the stats.json mutants for no_detectable_effect, below, the gate merge and the tier sweep, and the implementation-slices table row S2), red first. Measured (design author, 2026-09-27, Appendix A): stdlib Decimal is fast enough (0.024 s per interval at 24 tasks x 3 reps x 2,000 resamples); the two-stage percentile bootstrap covers 0.97 at 6 tasks x 3 reps. S1 is merged on main (stats.py, tests/test_stats.py, tests/mutations/stats.json); ruling R-78 closed every decision request; S2 depends only on S1.\nDone when: stats.rank exists with the contracted signature and T-R3 (all intervals overlap gives `1=` for every row) is committed red first, failing on an assertion, then green; T-R1..R16 pass as exact fixtures of the design's K cases; the S2 mutants the design lists are added to tests/mutations/stats.json and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message); property tests use hypothesis (already a dev dependency) where the design says so; any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently; nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_stats.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S3-S7; the catalog; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (all of it; the Ranking section; T-R1..R16 near line 654; the S2 row near line 758); src/harness_bench/stats.py (S1); src/harness_bench/ (package layout, Decimal conventions in views.py); tests/mutations/*.json (format); tools/mutate_check.py. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: stats.rank exists with the contracted signature and T-R3 (all intervals overlap gives `1=` for every row) is committed red first, failing on an assertion, then green | phrase: stats.rank exists with the contracted signature and T-R3 (all intervals overlap gives `1=` for every row) is committed red first, failing on an assertion, then green |\n| done_when: T-R1..R16 pass as exact fixtures of the design's K cases | phrase: T-R1..R16 pass as exact fixtures of the design's K cases |\n| done_when: the S2 mutants the design lists are added to tests/mutations/stats.json and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message) | phrase: the S2 mutants the design lists are added to tests/mutations/stats.json and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message) |\n| done_when: property tests use hypothesis (already a dev dependency) where the design says so | phrase: property tests use hypothesis (already a dev dependency) where the design says so |\n| done_when: any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently | phrase: any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently |\n| done_when: nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change) | phrase: nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider tests/test_stats.py passes | phrase: uv run pytest -q -p no:cacheprovider tests/test_stats.py passes |\n| done_when: uv run pytest -q -p no:cacheprovider --collect-only exits 0 | phrase: uv run pytest -q -p no:cacheprovider --collect-only exits 0 |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: slices S3-S7 | phrase: slices S3-S7 |\n| not_in_scope: the catalog | phrase: the catalog |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- stats.rank: unresolved (not found)\n- 1=: unresolved (not found)\n- assume: unresolved (not found)\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd\n- src/harness_bench/stats.py: src/harness_bench/stats.py sha256 31c752c687c20f18c5f55a38730d13c7f3ebd2065d7b81e5ea90328143b2a4fe\n- stats.json: tests/mutations/stats.json sha256 dd6cff27f73a63e64474755e07b41bd3ec82a84666a79e43d0801aa9a3b977af\n- stats.py: src/harness_bench/stats.py sha256 31c752c687c20f18c5f55a38730d13c7f3ebd2065d7b81e5ea90328143b2a4fe\n- tests/test_stats.py: tests/test_stats.py sha256 4fcca39ae35828cf94210e1143fe41d79cabdac03723f79acf1cee4781f6a1df\n- tests/mutations/stats.json: tests/mutations/stats.json sha256 dd6cff27f73a63e64474755e07b41bd3ec82a84666a79e43d0801aa9a3b977af\n- tools/mutate_check.py: tools/mutate_check.py sha256 51f6617b7cadab4595f40bc4250b39001ec8b66b06b7c740565d49cbe1418ba2\n- runs/: unresolved (not found)\n- src/harness_bench/: unresolved (not found)\n- views.py: src/harness_bench/views.py sha256 ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JN82TC9ARFSA1DSCWPDZXP\nraw sha256: 5cb8c0ceccfe70b2ea8dd34324ed8d821a5bc36f6b1cf604ece5e6de3fffa6e7\ncompiler model: claude-opus-5-5\nengine seconds: 0.007\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: implement slice S2 of docs/design/phase4-statistics.md, the rankin…",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3JN82TC9ARFSA1DSCWPDZXP for claude-code v1: 15 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-28T00:26:15Z",
+      "id": "al-01M3JPFEXR0PKKXA4DBP6JFC0Q",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: implement slice S3 of docs/design/phase4-statistics.md: `stats.paired_delta`, `no_detectable_effect`, `pass_k` and `CONTAMINATION_PRONE` in src/harness_bench/stats.py (S1 and S2 are merged: build on Interval and the keyed streams), exactly as the design specifies it (read the whole document first: the data model, the bootstrap procedure, the RNG discipline, the paired-delta and pack-effect sections, the E1-E3 exclusion (ruling R-78 DR-S-6 and condition 6: stats.CONTAMINATION_PRONE is the only source), pass@k and pass^k as points only (the Simplifier cut S2), the test plan T-S7 and T-K, the stats.json mutants for no_detectable_effect and pass^k, and the implementation-slices table row S3), red first.\nMeasured (design author, 2026-09-27, Appendix A): stdlib Decimal is fast enough (0.024 s per interval at 24 tasks x 3 reps x 2,000 resamples); the two-stage percentile bootstrap covers 0.97 at 6 tasks x 3 reps. S1 is merged on main (stats.py, tests/test_stats.py, tests/mutations/stats.json); ruling R-78 closed every decision request; S3 depends only on S1.\nDone when: the four names exist with the contracted signatures; T-S7 (the antisymmetry example) is committed red first, failing on an assertion, then green; T-S7 and T-K pass; the S3 mutants the design lists are added to tests/mutations/stats.json and killed by PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/stats.json (the variable avoids a known crash printing non-cp1252 mutant names, fixed separately; record the output lines in the commit message); property tests use hypothesis (already a dev dependency) where the design says so; any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently; nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_stats.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S4-S7; the catalog; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-statistics.md (all of it; T-S7 near line 643; the S3 row near line 759); src/harness_bench/stats.py (S1); src/harness_bench/ (package layout, Decimal conventions in views.py); tests/mutations/*.json (format); tools/mutate_check.py. Use python, not python3 (Windows).",
+      "session": "prompt-compile",
+      "shortname": "Goal: implement slice S3 of docs/design/phase4-statistics.md: `stats.pai…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -41102,38 +41091,38 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3JPFJ8QA4WSZ2DP37DEAYHK",
-      "shortname": "Goal: two measured robustness defects, each fixed at its cause, red firs…",
       "datetime": "2026-09-28T00:26:19Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: two measured robustness defects, each fixed at its cause, red first: (1) tools/mutate_check.py crashes while printing its own verdict line when stdout's encoding cannot represent a character in a mutant's name; (2) tests/test_driver.py's `_tapped_turn` helper arms a timer whose callback can use a Job Object handle after the cell closed it.\nMeasured (Leader, 2026-09-27): (1) `uv run python tools/mutate_check.py tests/mutations/stats.json > file` on Windows raised `UnicodeEncodeError: 'charmap' codec can't encode character '≤'` (the mutant named \"the tier sweep uses < instead of ≤\"); the file was restored (the check-clean sidecar was absent) but the run exited 1 and reported nothing for the remaining mutants; with PYTHONIOENCODING=utf-8 every mutant was killed. This is defect class OUT-A in docs/lessons/defect-classes.md (a measurement reported as a failure because printing it failed). (2) CI-OPT slice 7 (docs/notes/ci-opt-proposal.md, \"xdist trial (measured)\", finding 3): under pytest -n auto, tests/test_driver.py::test_the_fidelity_check_fails_on_a_seeded_unpaired_type intermittently emits PytestUnhandledThreadExceptionWarning ([WinError 6] The handle is invalid): `_tapped_turn` arms threading.Timer(4, lambda: cell.terminate_and_confirm(timeout=10)), and when the turn completes near 4 s, `finally: cell.close()` closes the Job handle while the timer callback calls cell.job.active().\nDone when: (1) mutate_check writes its output so that no character in a mutant name, a test id or pytest's output can make it crash on any console or redirected encoding (e.g. reconfigure stdout and stderr to UTF-8 with a replacement error handler at startup; read the docs for TextIOWrapper.reconfigure, do not guess), shown red first by a test in tests/test_mutate_check.py that runs main() with stdout wrapped in a cp1252 stream and a mutant whose name holds '≤', failing on the UnicodeEncodeError, then green; the verdict and exit code are unchanged; (2) `_tapped_turn` cancels the timer and waits for it to finish (timer.cancel() then timer.join()) before cell.close(), or the callback tolerates a closed cell, whichever the helper's structure makes smallest; the cause is shown red first deterministically (e.g. a test that makes the turn end just as the timer fires, or that closes the cell then fires the callback) failing on the unhandled thread exception (pytest's -W error::pytest.PytestUnhandledThreadExceptionWarning makes it a failure), then green; the fidelity test passes 30 of 30 repeated runs under uv run pytest -n auto (report the count); docs/lessons/defect-classes.md OUT-A gains this instance and the control; a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py tests/test_driver.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: the stats module; other driver behaviour; ci.yml; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\n\nGrounding: tools/mutate_check.py (main, print calls); tests/test_mutate_check.py; tests/test_driver.py (_tapped_turn, test_the_fidelity_check_fails_on_a_seeded_unpaired_type); src/harness_bench/ (the cell and job classes the helper uses; read their close and terminate_and_confirm); docs/lessons/defect-classes.md (OUT-A); docs/notes/ci-opt-proposal.md (xdist trial). Use python, not python3 (Windows).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
+      "dispatchable": true,
+      "id": "al-01M3JPFJ0AGPAGM5WKP2ZEZ0EK",
+      "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement slice S3 of docs/design/phase4-statistics.md: `stats.paired_delta`, `no_detectable_effect`, `pass_k` and `CONTAMINATION_PRONE` in src/harness_bench/stats.py (S1 and S2 are merged: build on Interval and the keyed streams), exactly as the design specifies it (read the whole document first: the data model, the bootstrap procedure, the RNG discipline, the paired-delta and pack-effect sections, the E1-E3 exclusion (ruling R-78 DR-S-6 and condition 6: stats.CONTAMINATION_PRONE is the only source), pass@k and pass^k as points only (the Simplifier cut S2), the test plan T-S7 and T-K, the stats.json mutants for no_detectable_effect and pass^k, and the implementation-slices table row S3), red first. Measured (design author, 2026-09-27, Appendix A): stdlib Decimal is fast enough (0.024 s per interval at 24 tasks x 3 reps x 2,000 resamples); the two-stage percentile bootstrap covers 0.97 at 6 tasks x 3 reps. S1 is merged on main (stats.py, tests/test_stats.py, tests/mutations/stats.json); ruling R-78 closed every decision request; S3 depends only on S1.\nDone when: the four names exist with the contracted signatures; T-S7 (the antisymmetry example) is committed red first, failing on an assertion, then green; T-S7 and T-K pass; the S3 mutants the design lists are added to tests/mutations/stats.json and killed by PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/stats.json (the variable avoids a known crash printing non-cp1252 mutant names, fixed separately; record the output lines in the commit message); property tests use hypothesis (already a dev dependency) where the design says so; any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently; nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_stats.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S4-S7; the catalog; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (all of it; T-S7 near line 643; the S3 row near line 759); src/harness_bench/stats.py (S1); src/harness_bench/ (package layout, Decimal conventions in views.py); tests/mutations/*.json (format); tools/mutate_check.py. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: the four names exist with the contracted signatures | phrase: the four names exist with the contracted signatures |\n| done_when: T-S7 (the antisymmetry example) is committed red first, failing on an assertion, then green | phrase: T-S7 (the antisymmetry example) is committed red first, failing on an assertion, then green |\n| done_when: T-S7 and T-K pass | phrase: T-S7 and T-K pass |\n| done_when: the S3 mutants the design lists are added to tests/mutations/stats.json and killed by PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/stats.json (the variable avoids a known crash printing non-cp1252 mutant names, fixed separately | phrase: the S3 mutants the design lists are added to tests/mutations/stats.json and killed by PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/stats.json (the variable avoids a known crash printing non-cp1252 mutant names, fixed separately |\n| done_when: record the output lines in the commit message) | phrase: record the output lines in the commit message) |\n| done_when: property tests use hypothesis (already a dev dependency) where the design says so | phrase: property tests use hypothesis (already a dev dependency) where the design says so |\n| done_when: any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently | phrase: any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently |\n| done_when: nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change) | phrase: nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider tests/test_stats.py passes | phrase: uv run pytest -q -p no:cacheprovider tests/test_stats.py passes |\n| done_when: uv run pytest -q -p no:cacheprovider --collect-only exits 0 | phrase: uv run pytest -q -p no:cacheprovider --collect-only exits 0 |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: slices S4-S7 | phrase: slices S4-S7 |\n| not_in_scope: the catalog | phrase: the catalog |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- stats.paired_delta: unresolved (not found)\n- no_detectable_effect: unresolved (not found)\n- pass_k: unresolved (not found)\n- CONTAMINATION_PRONE: unresolved (not found)\n- assume: unresolved (not found)\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd\n- src/harness_bench/stats.py: src/harness_bench/stats.py sha256 45782a968fc3e1ac47671b51fbebefaac787fbb85073c06b63192b7801531a8d\n- stats.json: tests/mutations/stats.json sha256 f2919fb3d53a49b0a3587521af527569696f9beb6cbee0bebaf6a6e506860d3a\n- stats.py: src/harness_bench/stats.py sha256 45782a968fc3e1ac47671b51fbebefaac787fbb85073c06b63192b7801531a8d\n- tests/test_stats.py: tests/test_stats.py sha256 69d1f7cc80a27bc96e4975a5d303f2157829c56131a8830b899f8334a1580403\n- tests/mutations/stats.json: tests/mutations/stats.json sha256 f2919fb3d53a49b0a3587521af527569696f9beb6cbee0bebaf6a6e506860d3a\n- tools/mutate_check.py: tools/mutate_check.py sha256 51f6617b7cadab4595f40bc4250b39001ec8b66b06b7c740565d49cbe1418ba2\n- runs/: unresolved (not found)\n- src/harness_bench/: unresolved (not found)\n- views.py: src/harness_bench/views.py sha256 ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JPFEXR0PKKXA4DBP6JFC0Q\nraw sha256: d657ccc2f2962e7b7db30a492c21ad6541ed3f1998a42e7128b255ce16d364fb\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: implement slice S3 of docs/design/phase4-statistics.md: `stats.pai…",
       "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
+      "summary": "compiled al-01M3JPFEXR0PKKXA4DBP6JFC0Q for claude-code v1: 17 clauses, 0 assumptions, 0 decision requests",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M3JPFNDAN2MJVA3BHNQTPT20",
-      "shortname": "compile-Goal: two measured robustness defects, each fixed at its cause, red firs…",
-      "datetime": "2026-09-28T00:26:22Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: two measured robustness defects, each fixed at its cause, red first: (1) tools/mutate_check.py crashes while printing its own verdict line when stdout's encoding cannot represent a character in a mutant's name; (2) tests/test_driver.py's `_tapped_turn` helper arms a timer whose callback can use a Job Object handle after the cell closed it. Measured (Leader, 2026-09-27): (1) `uv run python tools/mutate_check.py tests/mutations/stats.json > file` on Windows raised `UnicodeEncodeError: 'charmap' codec can't encode character '≤'` (the mutant named \"the tier sweep uses < instead of ≤\"); the file was restored (the check-clean sidecar was absent) but the run exited 1 and reported nothing for the remaining mutants; with PYTHONIOENCODING=utf-8 every mutant was killed. This is defect class OUT-A in docs/lessons/defect-classes.md (a measurement reported as a failure because printing it failed). (2) CI-OPT slice 7 (docs/notes/ci-opt-proposal.md, \"xdist trial (measured)\", finding 3): under pytest -n auto, tests/test_driver.py::test_the_fidelity_check_fails_on_a_seeded_unpaired_type intermittently emits PytestUnhandledThreadExceptionWarning ([WinError 6] The handle is invalid): `_tapped_turn` arms threading.Timer(4, lambda: cell.terminate_and_confirm(timeout=10)), and when the turn completes near 4 s, `finally: cell.close()` closes the Job handle while the timer callback calls cell.job.active().\nDone when: (1) mutate_check writes its output so that no character in a mutant name, a test id or pytest's output can make it crash on any console or redirected encoding (e.g. reconfigure stdout and stderr to UTF-8 with a replacement error handler at startup; read the docs for TextIOWrapper.reconfigure, do not guess), shown red first by a test in tests/test_mutate_check.py that runs main() with stdout wrapped in a cp1252 stream and a mutant whose name holds '≤', failing on the UnicodeEncodeError, then green; the verdict and exit code are unchanged; (2) `_tapped_turn` cancels the timer and waits for it to finish (timer.cancel() then timer.join()) before cell.close(), or the callback tolerates a closed cell, whichever the helper's structure makes smallest; the cause is shown red first deterministically (e.g. a test that makes the turn end just as the timer fires, or that closes the cell then fires the callback) failing on the unhandled thread exception (pytest's -W error::pytest.PytestUnhandledThreadExceptionWarning makes it a failure), then green; the fidelity test passes 30 of 30 repeated runs under uv run pytest -n auto (report the count); docs/lessons/defect-classes.md OUT-A gains this instance and the control; a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py tests/test_driver.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: the stats module; other driver behaviour; ci.yml; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: tools/mutate_check.py (main, print calls); tests/test_mutate_check.py; tests/test_driver.py (_tapped_turn, test_the_fidelity_check_fails_on_a_seeded_unpaired_type); src/harness_bench/ (the cell and job classes the helper uses; read their close and terminate_and_confirm); docs/lessons/defect-classes.md (OUT-A); docs/notes/ci-opt-proposal.md (xdist trial). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: (1) mutate_check writes its output so that no character in a mutant name, a test id or pytest's output can make it crash on any console or redirected encoding (e.g. reconfigure stdout and stderr to UTF-8 with a replacement error handler at startup | phrase: (1) mutate_check writes its output so that no character in a mutant name, a test id or pytest's output can make it crash on any console or redirected encoding (e.g. reconfigure stdout and stderr to UTF-8 with a replacement error handler at startup |\n| done_when: read the docs for TextIOWrapper.reconfigure, do not guess), shown red first by a test in tests/test_mutate_check.py that runs main() with stdout wrapped in a cp1252 stream and a mutant whose name holds '≤', failing on the UnicodeEncodeError, then green | phrase: read the docs for TextIOWrapper.reconfigure, do not guess), shown red first by a test in tests/test_mutate_check.py that runs main() with stdout wrapped in a cp1252 stream and a mutant whose name holds '≤', failing on the UnicodeEncodeError, then green |\n| done_when: the verdict and exit code are unchanged | phrase: the verdict and exit code are unchanged |\n| done_when: (2) `_tapped_turn` cancels the timer and waits for it to finish (timer.cancel() then timer.join()) before cell.close(), or the callback tolerates a closed cell, whichever the helper's structure makes smallest | phrase: (2) `_tapped_turn` cancels the timer and waits for it to finish (timer.cancel() then timer.join()) before cell.close(), or the callback tolerates a closed cell, whichever the helper's structure makes smallest |\n| done_when: the cause is shown red first deterministically (e.g. a test that makes the turn end just as the timer fires, or that closes the cell then fires the callback) failing on the unhandled thread exception (pytest's -W error::pytest.PytestUnhandledThreadExceptionWarning makes it a failure), then green | phrase: the cause is shown red first deterministically (e.g. a test that makes the turn end just as the timer fires, or that closes the cell then fires the callback) failing on the unhandled thread exception (pytest's -W error::pytest.PytestUnhandledThreadExceptionWarning makes it a failure), then green |\n| done_when: the fidelity test passes 30 of 30 repeated runs under uv run pytest -n auto (report the count) | phrase: the fidelity test passes 30 of 30 repeated runs under uv run pytest -n auto (report the count) |\n| done_when: docs/lessons/defect-classes.md OUT-A gains this instance and the control | phrase: docs/lessons/defect-classes.md OUT-A gains this instance and the control |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py tests/test_driver.py passes | phrase: uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py tests/test_driver.py passes |\n| done_when: uv run pytest -q -p no:cacheprovider --collect-only exits 0 | phrase: uv run pytest -q -p no:cacheprovider --collect-only exits 0 |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: the stats module | phrase: the stats module |\n| not_in_scope: other driver behaviour | phrase: other driver behaviour |\n| not_in_scope: ci.yml | phrase: ci.yml |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- _tapped_turn: unresolved (not found)\n- uv run python tools/mutate_check.py tests/mutations/stats.json > file: unresolved (not found)\n- UnicodeEncodeError: 'charmap' codec can't encode character '≤: unresolved (not found)\n- finally: cell.close: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 51f6617b7cadab4595f40bc4250b39001ec8b66b06b7c740565d49cbe1418ba2\n- tests/test_driver.py's: unresolved (not found; nearest: tests/test_driver.py)\n- tests/mutations/stats.json: tests/mutations/stats.json sha256 f2919fb3d53a49b0a3587521af527569696f9beb6cbee0bebaf6a6e506860d3a\n- docs/lessons/defect-classes.md: unresolved (ambiguous: 5 matches)\n- docs/notes/ci-opt-proposal.md: docs/notes/ci-opt-proposal.md sha256 5ef416d018179c6637ba358a9fe1787d392f2211b744f725440b8b73b1e43c1d\n- tests/test_driver.py::test_the_fidelity_check_fails_on_a_seeded_unpaired_type: unresolved (not found)\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 c948d7b60273aff8f7ba3c99546b66f7d651e2a5914aea27d48159c473a10616\n- tests/test_driver.py: tests/test_driver.py sha256 e961dc8f914eadf82518c3d24b612eeb68a5e47663c3b9c04a12677006070fc0\n- ci.yml: .github/workflows/ci.yml sha256 0637d5db818c6de1556ecd0456a31776c30432d02bab43d72dfaee4b39ba615e\n- runs/: unresolved (not found)\n- src/harness_bench/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JPFJ8QA4WSZ2DP37DEAYHK\nraw sha256: 778ec54bee9594ca10f677f1f63b0fe2dbebb43184227bf26ff676ab91f4a277\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3JPFJ8QA4WSZ2DP37DEAYHK for claude-code v1: 17 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-28T00:26:19Z",
+      "id": "al-01M3JPFJ8QA4WSZ2DP37DEAYHK",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: two measured robustness defects, each fixed at its cause, red first: (1) tools/mutate_check.py crashes while printing its own verdict line when stdout's encoding cannot represent a character in a mutant's name; (2) tests/test_driver.py's `_tapped_turn` helper arms a timer whose callback can use a Job Object handle after the cell closed it.\nMeasured (Leader, 2026-09-27): (1) `uv run python tools/mutate_check.py tests/mutations/stats.json > file` on Windows raised `UnicodeEncodeError: 'charmap' codec can't encode character '≤'` (the mutant named \"the tier sweep uses < instead of ≤\"); the file was restored (the check-clean sidecar was absent) but the run exited 1 and reported nothing for the remaining mutants; with PYTHONIOENCODING=utf-8 every mutant was killed. This is defect class OUT-A in docs/lessons/defect-classes.md (a measurement reported as a failure because printing it failed). (2) CI-OPT slice 7 (docs/notes/ci-opt-proposal.md, \"xdist trial (measured)\", finding 3): under pytest -n auto, tests/test_driver.py::test_the_fidelity_check_fails_on_a_seeded_unpaired_type intermittently emits PytestUnhandledThreadExceptionWarning ([WinError 6] The handle is invalid): `_tapped_turn` arms threading.Timer(4, lambda: cell.terminate_and_confirm(timeout=10)), and when the turn completes near 4 s, `finally: cell.close()` closes the Job handle while the timer callback calls cell.job.active().\nDone when: (1) mutate_check writes its output so that no character in a mutant name, a test id or pytest's output can make it crash on any console or redirected encoding (e.g. reconfigure stdout and stderr to UTF-8 with a replacement error handler at startup; read the docs for TextIOWrapper.reconfigure, do not guess), shown red first by a test in tests/test_mutate_check.py that runs main() with stdout wrapped in a cp1252 stream and a mutant whose name holds '≤', failing on the UnicodeEncodeError, then green; the verdict and exit code are unchanged; (2) `_tapped_turn` cancels the timer and waits for it to finish (timer.cancel() then timer.join()) before cell.close(), or the callback tolerates a closed cell, whichever the helper's structure makes smallest; the cause is shown red first deterministically (e.g. a test that makes the turn end just as the timer fires, or that closes the cell then fires the callback) failing on the unhandled thread exception (pytest's -W error::pytest.PytestUnhandledThreadExceptionWarning makes it a failure), then green; the fidelity test passes 30 of 30 repeated runs under uv run pytest -n auto (report the count); docs/lessons/defect-classes.md OUT-A gains this instance and the control; a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py tests/test_driver.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: the stats module; other driver behaviour; ci.yml; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\n\nGrounding: tools/mutate_check.py (main, print calls); tests/test_mutate_check.py; tests/test_driver.py (_tapped_turn, test_the_fidelity_check_fails_on_a_seeded_unpaired_type); src/harness_bench/ (the cell and job classes the helper uses; read their close and terminate_and_confirm); docs/lessons/defect-classes.md (OUT-A); docs/notes/ci-opt-proposal.md (xdist trial). Use python, not python3 (Windows).",
+      "session": "prompt-compile",
+      "shortname": "Goal: two measured robustness defects, each fixed at its cause, red firs…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -41453,38 +41442,38 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3JPS9BQPG4BCVF7NPFC2TDN",
-      "shortname": "Goal: context_growth (src/harness_bench/grade/cost.py _context_growth: \"…",
-      "datetime": "2026-09-28T00:31:37Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: context_growth (src/harness_bench/grade/cost.py _context_growth: \"peak per-call context size\") must not report a session aggregate as a per-call peak; on a record with no per-call grain it is NA with a stated reason, red first.\nMeasured (Leader, 2026-09-27; ruling R-79 findings): in runs/smoke-1 every Copilot cell's context_growth is its session's cache total, not a call: F1.copilot-sol.pack-on 2,483,260 (4 model_call rows), C1 1,815,969, B1 1,601,102, D1 1,570,801 (2 rows each), each row (uncached_input ~50, cache_read ~1.5M, cache_write ~110k). The Copilot reader writes one ModelCall per model key of the last session.shutdown modelMetrics (src/harness_bench/telemetry/copilot.py, module docstring line ~11), a session aggregate by construction. bench/profiles/copilot.yaml says usage_source: native_record, the same value as Codex, whose native record is per call (bench/profiles/codex.yaml: \"complete per call\"). _context_growth already returns NA for usage_source acp_turn (ACP_MISSES_CALLS).\nDone when: _context_growth returns NA with a reason that names the cause (e.g. \"the native record gives session totals per model, not per call\") for Copilot's record, and keeps its value for per-call records (Codex) and its NA for acp_turn (Claude Code); the grain is decided from data the grader already reads, choosing the smallest correct option and stating why in the commit message: either a field on the rows the Copilot reader emits, or a profile field, or another source you find; the choice must work for already-archived runs whose plan.json froze the profiles as they were (a profile field those plans lack must default to per-call only if that is true for them, so prefer a source that is correct for old runs too; do not guess: check how the plan freezes profiles in src/harness_bench/plan.py); red first: a Copilot cell fixture (the existing Copilot telemetry fixtures under tests/fixtures/native/copilot, or a synthetic CellInput) gives the aggregate today and NA after; docs/design/phase3-cost.md's context_growth section states the new NA reason; tests/mutations (the file covering cost.py) gains a named mutant that removes the new NA branch, killed; a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (grade/ sources are gate-stamp inputs: the Leader renews the stamp with a real gate run; say so in the report); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: the other cost metrics (their ratios over totals are correct for aggregates); bench/metrics.yaml; re-grading any run (the Leader re-grades under catalog 0.5); any file under runs/ written; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: src/harness_bench/grade/cost.py (_context_growth, grade_cell, ACP_MISSES_CALLS); src/harness_bench/telemetry/copilot.py (model_calls from modelMetrics); src/harness_bench/telemetry/__init__.py (ModelCall); src/harness_bench/plan.py (how profiles are frozen); bench/profiles/*.yaml; tests/test_grade_cost*.py or the cost grader's tests; tests/mutations/*.json; docs/design/phase3-cost.md. Use python, not python3 (Windows).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3JPSCEZF5VJXP63RNZZZTBZ",
-      "shortname": "compile-Goal: context_growth (src/harness_bench/grade/cost.py _context_growth: \"…",
-      "datetime": "2026-09-28T00:31:41Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: context_growth (src/harness_bench/grade/cost.py _context_growth: \"peak per-call context size\") must not report a session aggregate as a per-call peak; on a record with no per-call grain it is NA with a stated reason, red first. Measured (Leader, 2026-09-27; ruling R-79 findings): in runs/smoke-1 every Copilot cell's context_growth is its session's cache total, not a call: F1.copilot-sol.pack-on 2,483,260 (4 model_call rows), C1 1,815,969, B1 1,601,102, D1 1,570,801 (2 rows each), each row (uncached_input ~50, cache_read ~1.5M, cache_write ~110k). The Copilot reader writes one ModelCall per model key of the last session.shutdown modelMetrics (src/harness_bench/telemetry/copilot.py, module docstring line ~11), a session aggregate by construction. bench/profiles/copilot.yaml says usage_source: native_record, the same value as Codex, whose native record is per call (bench/profiles/codex.yaml: \"complete per call\"). _context_growth already returns NA for usage_source acp_turn (ACP_MISSES_CALLS).\nDone when: _context_growth returns NA with a reason that names the cause (e.g. \"the native record gives session totals per model, not per call\") for Copilot's record, and keeps its value for per-call records (Codex) and its NA for acp_turn (Claude Code); the grain is decided from data the grader already reads, choosing the smallest correct option and stating why in the commit message: either a field on the rows the Copilot reader emits, or a profile field, or another source you find; the choice must work for already-archived runs whose plan.json froze the profiles as they were (a profile field those plans lack must default to per-call only if that is true for them, so prefer a source that is correct for old runs too; do not guess: check how the plan freezes profiles in src/harness_bench/plan.py); red first: a Copilot cell fixture (the existing Copilot telemetry fixtures under tests/fixtures/native/copilot, or a synthetic CellInput) gives the aggregate today and NA after; docs/design/phase3-cost.md's context_growth section states the new NA reason; tests/mutations (the file covering cost.py) gains a named mutant that removes the new NA branch, killed; a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (grade/ sources are gate-stamp inputs: the Leader renews the stamp with a real gate run; say so in the report); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: the other cost metrics (their ratios over totals are correct for aggregates); bench/metrics.yaml; re-grading any run (the Leader re-grades under catalog 0.5); any file under runs/ written; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: src/harness_bench/grade/cost.py (_context_growth, grade_cell, ACP_MISSES_CALLS); src/harness_bench/telemetry/copilot.py (model_calls from modelMetrics); src/harness_bench/telemetry/__init__.py (ModelCall); src/harness_bench/plan.py (how profiles are frozen); bench/profiles/*.yaml; tests/test_grade_cost*.py or the cost grader's tests; tests/mutations/*.json; docs/design/phase3-cost.md. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: _context_growth returns NA with a reason that names the cause (e.g. \"the native record gives session totals per model, not per call\") for Copilot's record, and keeps its value for per-call records (Codex) and its NA for acp_turn (Claude Code) | phrase: _context_growth returns NA with a reason that names the cause (e.g. \"the native record gives session totals per model, not per call\") for Copilot's record, and keeps its value for per-call records (Codex) and its NA for acp_turn (Claude Code) |\n| done_when: the grain is decided from data the grader already reads, choosing the smallest correct option and stating why in the commit message: either a field on the rows the Copilot reader emits, or a profile field, or another source you find | phrase: the grain is decided from data the grader already reads, choosing the smallest correct option and stating why in the commit message: either a field on the rows the Copilot reader emits, or a profile field, or another source you find |\n| done_when: the choice must work for already-archived runs whose plan.json froze the profiles as they were (a profile field those plans lack must default to per-call only if that is true for them, so prefer a source that is correct for old runs too | phrase: the choice must work for already-archived runs whose plan.json froze the profiles as they were (a profile field those plans lack must default to per-call only if that is true for them, so prefer a source that is correct for old runs too |\n| done_when: do not guess: check how the plan freezes profiles in src/harness_bench/plan.py) | phrase: do not guess: check how the plan freezes profiles in src/harness_bench/plan.py) |\n| done_when: red first: a Copilot cell fixture (the existing Copilot telemetry fixtures under tests/fixtures/native/copilot, or a synthetic CellInput) gives the aggregate today and NA after | phrase: red first: a Copilot cell fixture (the existing Copilot telemetry fixtures under tests/fixtures/native/copilot, or a synthetic CellInput) gives the aggregate today and NA after |\n| done_when: docs/design/phase3-cost.md's context_growth section states the new NA reason | phrase: docs/design/phase3-cost.md's context_growth section states the new NA reason |\n| done_when: tests/mutations (the file covering cost.py) gains a named mutant that removes the new NA branch, killed | phrase: tests/mutations (the file covering cost.py) gains a named mutant that removes the new NA branch, killed |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (grade/ sources are gate-stamp inputs: the Leader renews the stamp with a real gate run | phrase: uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (grade/ sources are gate-stamp inputs: the Leader renews the stamp with a real gate run |\n| done_when: say so in the report) | phrase: say so in the report) |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: the other cost metrics (their ratios over totals are correct for aggregates) | phrase: the other cost metrics (their ratios over totals are correct for aggregates) |\n| not_in_scope: bench/metrics.yaml | phrase: bench/metrics.yaml |\n| not_in_scope: re-grading any run (the Leader re-grades under catalog 0.5) | phrase: re-grading any run (the Leader re-grades under catalog 0.5) |\n| not_in_scope: any file under runs/ written | phrase: any file under runs/ written |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- src/harness_bench/grade/cost.py: src/harness_bench/grade/cost.py sha256 5a81614721ccefd955a73c27819d0792255aba9c1f4452d06b4fcf7cf13ca30d\n- runs/smoke-1: unresolved (not found)\n- src/harness_bench/telemetry/copilot.py: src/harness_bench/telemetry/copilot.py sha256 b4c9ac8c8e567bdcb5df070db6caa8c6bcaf59e44cf9691fe3ef8836060d9c9d\n- bench/profiles/copilot.yaml: bench/profiles/copilot.yaml sha256 73de001eec468b024fae52e9e2c08628a78ebdde5786caf4e7c7efefddcf48cd\n- bench/profiles/codex.yaml: bench/profiles/codex.yaml sha256 c687428a3731bed20dd84409a31c5954a3d1df3e0eb1d4aa0be0ed2df36599d8\n- plan.json: unresolved (ambiguous: 14 matches)\n- src/harness_bench/plan.py: src/harness_bench/plan.py sha256 8e71e964670966e078c057e4ad005acdba065923befbe80edf1e47f43035d820\n- tests/fixtures/native/copilot: unresolved (not found)\n- docs/design/phase3-cost.md's: unresolved (not found; nearest: docs/design/phase3-cost.md)\n- tests/mutations: unresolved (not found)\n- cost.py: src/harness_bench/grade/cost.py sha256 5a81614721ccefd955a73c27819d0792255aba9c1f4452d06b4fcf7cf13ca30d\n- tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp: unresolved (not found)\n- grade/: unresolved (not found)\n- bench/metrics.yaml: bench/metrics.yaml sha256 df5499d1c0bda69ae874f2de41cfd09188f8e8568123fc67bad23fa20c31725d\n- runs/: unresolved (not found)\n- src/harness_bench/telemetry/__init__.py: src/harness_bench/telemetry/__init__.py sha256 fe73b5948d2d4d9c9478995caa236c62bba202d781f5ca832c627bce2a25acfe\n- bench/profiles/*.yaml: unresolved (not found)\n- tests/test_grade_cost*.py: unresolved (not found; nearest: tests/test_grade_cost.py)\n- tests/mutations/*.json: unresolved (not found)\n- docs/design/phase3-cost.md: docs/design/phase3-cost.md sha256 e3758a322c4c304094423a3dcbb878e9e27b6da53cfc143d58e6c917801e3674\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JPS9BQPG4BCVF7NPFC2TDN\nraw sha256: 3262eb8ac58976d30af4032acacff85f1fe52ea6e43d7d74f6b45863ee33c428\ncompiler model: claude-opus-5-5\nengine seconds: 0.007\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3JPS9BQPG4BCVF7NPFC2TDN for claude-code v1: 17 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-28T00:26:22Z",
+      "dispatchable": true,
+      "id": "al-01M3JPFNDAN2MJVA3BHNQTPT20",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: two measured robustness defects, each fixed at its cause, red first: (1) tools/mutate_check.py crashes while printing its own verdict line when stdout's encoding cannot represent a character in a mutant's name; (2) tests/test_driver.py's `_tapped_turn` helper arms a timer whose callback can use a Job Object handle after the cell closed it. Measured (Leader, 2026-09-27): (1) `uv run python tools/mutate_check.py tests/mutations/stats.json > file` on Windows raised `UnicodeEncodeError: 'charmap' codec can't encode character '≤'` (the mutant named \"the tier sweep uses < instead of ≤\"); the file was restored (the check-clean sidecar was absent) but the run exited 1 and reported nothing for the remaining mutants; with PYTHONIOENCODING=utf-8 every mutant was killed. This is defect class OUT-A in docs/lessons/defect-classes.md (a measurement reported as a failure because printing it failed). (2) CI-OPT slice 7 (docs/notes/ci-opt-proposal.md, \"xdist trial (measured)\", finding 3): under pytest -n auto, tests/test_driver.py::test_the_fidelity_check_fails_on_a_seeded_unpaired_type intermittently emits PytestUnhandledThreadExceptionWarning ([WinError 6] The handle is invalid): `_tapped_turn` arms threading.Timer(4, lambda: cell.terminate_and_confirm(timeout=10)), and when the turn completes near 4 s, `finally: cell.close()` closes the Job handle while the timer callback calls cell.job.active().\nDone when: (1) mutate_check writes its output so that no character in a mutant name, a test id or pytest's output can make it crash on any console or redirected encoding (e.g. reconfigure stdout and stderr to UTF-8 with a replacement error handler at startup; read the docs for TextIOWrapper.reconfigure, do not guess), shown red first by a test in tests/test_mutate_check.py that runs main() with stdout wrapped in a cp1252 stream and a mutant whose name holds '≤', failing on the UnicodeEncodeError, then green; the verdict and exit code are unchanged; (2) `_tapped_turn` cancels the timer and waits for it to finish (timer.cancel() then timer.join()) before cell.close(), or the callback tolerates a closed cell, whichever the helper's structure makes smallest; the cause is shown red first deterministically (e.g. a test that makes the turn end just as the timer fires, or that closes the cell then fires the callback) failing on the unhandled thread exception (pytest's -W error::pytest.PytestUnhandledThreadExceptionWarning makes it a failure), then green; the fidelity test passes 30 of 30 repeated runs under uv run pytest -n auto (report the count); docs/lessons/defect-classes.md OUT-A gains this instance and the control; a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py tests/test_driver.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: the stats module; other driver behaviour; ci.yml; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: tools/mutate_check.py (main, print calls); tests/test_mutate_check.py; tests/test_driver.py (_tapped_turn, test_the_fidelity_check_fails_on_a_seeded_unpaired_type); src/harness_bench/ (the cell and job classes the helper uses; read their close and terminate_and_confirm); docs/lessons/defect-classes.md (OUT-A); docs/notes/ci-opt-proposal.md (xdist trial). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: (1) mutate_check writes its output so that no character in a mutant name, a test id or pytest's output can make it crash on any console or redirected encoding (e.g. reconfigure stdout and stderr to UTF-8 with a replacement error handler at startup | phrase: (1) mutate_check writes its output so that no character in a mutant name, a test id or pytest's output can make it crash on any console or redirected encoding (e.g. reconfigure stdout and stderr to UTF-8 with a replacement error handler at startup |\n| done_when: read the docs for TextIOWrapper.reconfigure, do not guess), shown red first by a test in tests/test_mutate_check.py that runs main() with stdout wrapped in a cp1252 stream and a mutant whose name holds '≤', failing on the UnicodeEncodeError, then green | phrase: read the docs for TextIOWrapper.reconfigure, do not guess), shown red first by a test in tests/test_mutate_check.py that runs main() with stdout wrapped in a cp1252 stream and a mutant whose name holds '≤', failing on the UnicodeEncodeError, then green |\n| done_when: the verdict and exit code are unchanged | phrase: the verdict and exit code are unchanged |\n| done_when: (2) `_tapped_turn` cancels the timer and waits for it to finish (timer.cancel() then timer.join()) before cell.close(), or the callback tolerates a closed cell, whichever the helper's structure makes smallest | phrase: (2) `_tapped_turn` cancels the timer and waits for it to finish (timer.cancel() then timer.join()) before cell.close(), or the callback tolerates a closed cell, whichever the helper's structure makes smallest |\n| done_when: the cause is shown red first deterministically (e.g. a test that makes the turn end just as the timer fires, or that closes the cell then fires the callback) failing on the unhandled thread exception (pytest's -W error::pytest.PytestUnhandledThreadExceptionWarning makes it a failure), then green | phrase: the cause is shown red first deterministically (e.g. a test that makes the turn end just as the timer fires, or that closes the cell then fires the callback) failing on the unhandled thread exception (pytest's -W error::pytest.PytestUnhandledThreadExceptionWarning makes it a failure), then green |\n| done_when: the fidelity test passes 30 of 30 repeated runs under uv run pytest -n auto (report the count) | phrase: the fidelity test passes 30 of 30 repeated runs under uv run pytest -n auto (report the count) |\n| done_when: docs/lessons/defect-classes.md OUT-A gains this instance and the control | phrase: docs/lessons/defect-classes.md OUT-A gains this instance and the control |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py tests/test_driver.py passes | phrase: uv run pytest -q -p no:cacheprovider tests/test_mutate_check.py tests/test_driver.py passes |\n| done_when: uv run pytest -q -p no:cacheprovider --collect-only exits 0 | phrase: uv run pytest -q -p no:cacheprovider --collect-only exits 0 |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: the stats module | phrase: the stats module |\n| not_in_scope: other driver behaviour | phrase: other driver behaviour |\n| not_in_scope: ci.yml | phrase: ci.yml |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- _tapped_turn: unresolved (not found)\n- uv run python tools/mutate_check.py tests/mutations/stats.json > file: unresolved (not found)\n- UnicodeEncodeError: 'charmap' codec can't encode character '≤: unresolved (not found)\n- finally: cell.close: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 51f6617b7cadab4595f40bc4250b39001ec8b66b06b7c740565d49cbe1418ba2\n- tests/test_driver.py's: unresolved (not found; nearest: tests/test_driver.py)\n- tests/mutations/stats.json: tests/mutations/stats.json sha256 f2919fb3d53a49b0a3587521af527569696f9beb6cbee0bebaf6a6e506860d3a\n- docs/lessons/defect-classes.md: unresolved (ambiguous: 5 matches)\n- docs/notes/ci-opt-proposal.md: docs/notes/ci-opt-proposal.md sha256 5ef416d018179c6637ba358a9fe1787d392f2211b744f725440b8b73b1e43c1d\n- tests/test_driver.py::test_the_fidelity_check_fails_on_a_seeded_unpaired_type: unresolved (not found)\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 c948d7b60273aff8f7ba3c99546b66f7d651e2a5914aea27d48159c473a10616\n- tests/test_driver.py: tests/test_driver.py sha256 e961dc8f914eadf82518c3d24b612eeb68a5e47663c3b9c04a12677006070fc0\n- ci.yml: .github/workflows/ci.yml sha256 0637d5db818c6de1556ecd0456a31776c30432d02bab43d72dfaee4b39ba615e\n- runs/: unresolved (not found)\n- src/harness_bench/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JPFJ8QA4WSZ2DP37DEAYHK\nraw sha256: 778ec54bee9594ca10f677f1f63b0fe2dbebb43184227bf26ff676ab91f4a277\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: two measured robustness defects, each fixed at its cause, red firs…",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3JPFJ8QA4WSZ2DP37DEAYHK for claude-code v1: 17 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-28T00:31:37Z",
+      "id": "al-01M3JPS9BQPG4BCVF7NPFC2TDN",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: context_growth (src/harness_bench/grade/cost.py _context_growth: \"peak per-call context size\") must not report a session aggregate as a per-call peak; on a record with no per-call grain it is NA with a stated reason, red first.\nMeasured (Leader, 2026-09-27; ruling R-79 findings): in runs/smoke-1 every Copilot cell's context_growth is its session's cache total, not a call: F1.copilot-sol.pack-on 2,483,260 (4 model_call rows), C1 1,815,969, B1 1,601,102, D1 1,570,801 (2 rows each), each row (uncached_input ~50, cache_read ~1.5M, cache_write ~110k). The Copilot reader writes one ModelCall per model key of the last session.shutdown modelMetrics (src/harness_bench/telemetry/copilot.py, module docstring line ~11), a session aggregate by construction. bench/profiles/copilot.yaml says usage_source: native_record, the same value as Codex, whose native record is per call (bench/profiles/codex.yaml: \"complete per call\"). _context_growth already returns NA for usage_source acp_turn (ACP_MISSES_CALLS).\nDone when: _context_growth returns NA with a reason that names the cause (e.g. \"the native record gives session totals per model, not per call\") for Copilot's record, and keeps its value for per-call records (Codex) and its NA for acp_turn (Claude Code); the grain is decided from data the grader already reads, choosing the smallest correct option and stating why in the commit message: either a field on the rows the Copilot reader emits, or a profile field, or another source you find; the choice must work for already-archived runs whose plan.json froze the profiles as they were (a profile field those plans lack must default to per-call only if that is true for them, so prefer a source that is correct for old runs too; do not guess: check how the plan freezes profiles in src/harness_bench/plan.py); red first: a Copilot cell fixture (the existing Copilot telemetry fixtures under tests/fixtures/native/copilot, or a synthetic CellInput) gives the aggregate today and NA after; docs/design/phase3-cost.md's context_growth section states the new NA reason; tests/mutations (the file covering cost.py) gains a named mutant that removes the new NA branch, killed; a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (grade/ sources are gate-stamp inputs: the Leader renews the stamp with a real gate run; say so in the report); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: the other cost metrics (their ratios over totals are correct for aggregates); bench/metrics.yaml; re-grading any run (the Leader re-grades under catalog 0.5); any file under runs/ written; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: src/harness_bench/grade/cost.py (_context_growth, grade_cell, ACP_MISSES_CALLS); src/harness_bench/telemetry/copilot.py (model_calls from modelMetrics); src/harness_bench/telemetry/__init__.py (ModelCall); src/harness_bench/plan.py (how profiles are frozen); bench/profiles/*.yaml; tests/test_grade_cost*.py or the cost grader's tests; tests/mutations/*.json; docs/design/phase3-cost.md. Use python, not python3 (Windows).",
+      "session": "prompt-compile",
+      "shortname": "Goal: context_growth (src/harness_bench/grade/cost.py _context_growth: \"…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -41838,6 +41827,552 @@ window.AUDIT_DATA = {
             "sha256": "e3758a322c4c304094423a3dcbb878e9e27b6da53cfc143d58e6c917801e3674",
             "status": "resolved",
             "token": "docs/design/phase3-cost.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-09-28T00:31:41Z",
+      "dispatchable": true,
+      "id": "al-01M3JPSCEZF5VJXP63RNZZZTBZ",
+      "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: context_growth (src/harness_bench/grade/cost.py _context_growth: \"peak per-call context size\") must not report a session aggregate as a per-call peak; on a record with no per-call grain it is NA with a stated reason, red first. Measured (Leader, 2026-09-27; ruling R-79 findings): in runs/smoke-1 every Copilot cell's context_growth is its session's cache total, not a call: F1.copilot-sol.pack-on 2,483,260 (4 model_call rows), C1 1,815,969, B1 1,601,102, D1 1,570,801 (2 rows each), each row (uncached_input ~50, cache_read ~1.5M, cache_write ~110k). The Copilot reader writes one ModelCall per model key of the last session.shutdown modelMetrics (src/harness_bench/telemetry/copilot.py, module docstring line ~11), a session aggregate by construction. bench/profiles/copilot.yaml says usage_source: native_record, the same value as Codex, whose native record is per call (bench/profiles/codex.yaml: \"complete per call\"). _context_growth already returns NA for usage_source acp_turn (ACP_MISSES_CALLS).\nDone when: _context_growth returns NA with a reason that names the cause (e.g. \"the native record gives session totals per model, not per call\") for Copilot's record, and keeps its value for per-call records (Codex) and its NA for acp_turn (Claude Code); the grain is decided from data the grader already reads, choosing the smallest correct option and stating why in the commit message: either a field on the rows the Copilot reader emits, or a profile field, or another source you find; the choice must work for already-archived runs whose plan.json froze the profiles as they were (a profile field those plans lack must default to per-call only if that is true for them, so prefer a source that is correct for old runs too; do not guess: check how the plan freezes profiles in src/harness_bench/plan.py); red first: a Copilot cell fixture (the existing Copilot telemetry fixtures under tests/fixtures/native/copilot, or a synthetic CellInput) gives the aggregate today and NA after; docs/design/phase3-cost.md's context_growth section states the new NA reason; tests/mutations (the file covering cost.py) gains a named mutant that removes the new NA branch, killed; a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (grade/ sources are gate-stamp inputs: the Leader renews the stamp with a real gate run; say so in the report); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: the other cost metrics (their ratios over totals are correct for aggregates); bench/metrics.yaml; re-grading any run (the Leader re-grades under catalog 0.5); any file under runs/ written; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: src/harness_bench/grade/cost.py (_context_growth, grade_cell, ACP_MISSES_CALLS); src/harness_bench/telemetry/copilot.py (model_calls from modelMetrics); src/harness_bench/telemetry/__init__.py (ModelCall); src/harness_bench/plan.py (how profiles are frozen); bench/profiles/*.yaml; tests/test_grade_cost*.py or the cost grader's tests; tests/mutations/*.json; docs/design/phase3-cost.md. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: _context_growth returns NA with a reason that names the cause (e.g. \"the native record gives session totals per model, not per call\") for Copilot's record, and keeps its value for per-call records (Codex) and its NA for acp_turn (Claude Code) | phrase: _context_growth returns NA with a reason that names the cause (e.g. \"the native record gives session totals per model, not per call\") for Copilot's record, and keeps its value for per-call records (Codex) and its NA for acp_turn (Claude Code) |\n| done_when: the grain is decided from data the grader already reads, choosing the smallest correct option and stating why in the commit message: either a field on the rows the Copilot reader emits, or a profile field, or another source you find | phrase: the grain is decided from data the grader already reads, choosing the smallest correct option and stating why in the commit message: either a field on the rows the Copilot reader emits, or a profile field, or another source you find |\n| done_when: the choice must work for already-archived runs whose plan.json froze the profiles as they were (a profile field those plans lack must default to per-call only if that is true for them, so prefer a source that is correct for old runs too | phrase: the choice must work for already-archived runs whose plan.json froze the profiles as they were (a profile field those plans lack must default to per-call only if that is true for them, so prefer a source that is correct for old runs too |\n| done_when: do not guess: check how the plan freezes profiles in src/harness_bench/plan.py) | phrase: do not guess: check how the plan freezes profiles in src/harness_bench/plan.py) |\n| done_when: red first: a Copilot cell fixture (the existing Copilot telemetry fixtures under tests/fixtures/native/copilot, or a synthetic CellInput) gives the aggregate today and NA after | phrase: red first: a Copilot cell fixture (the existing Copilot telemetry fixtures under tests/fixtures/native/copilot, or a synthetic CellInput) gives the aggregate today and NA after |\n| done_when: docs/design/phase3-cost.md's context_growth section states the new NA reason | phrase: docs/design/phase3-cost.md's context_growth section states the new NA reason |\n| done_when: tests/mutations (the file covering cost.py) gains a named mutant that removes the new NA branch, killed | phrase: tests/mutations (the file covering cost.py) gains a named mutant that removes the new NA branch, killed |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (grade/ sources are gate-stamp inputs: the Leader renews the stamp with a real gate run | phrase: uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (grade/ sources are gate-stamp inputs: the Leader renews the stamp with a real gate run |\n| done_when: say so in the report) | phrase: say so in the report) |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: the other cost metrics (their ratios over totals are correct for aggregates) | phrase: the other cost metrics (their ratios over totals are correct for aggregates) |\n| not_in_scope: bench/metrics.yaml | phrase: bench/metrics.yaml |\n| not_in_scope: re-grading any run (the Leader re-grades under catalog 0.5) | phrase: re-grading any run (the Leader re-grades under catalog 0.5) |\n| not_in_scope: any file under runs/ written | phrase: any file under runs/ written |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- src/harness_bench/grade/cost.py: src/harness_bench/grade/cost.py sha256 5a81614721ccefd955a73c27819d0792255aba9c1f4452d06b4fcf7cf13ca30d\n- runs/smoke-1: unresolved (not found)\n- src/harness_bench/telemetry/copilot.py: src/harness_bench/telemetry/copilot.py sha256 b4c9ac8c8e567bdcb5df070db6caa8c6bcaf59e44cf9691fe3ef8836060d9c9d\n- bench/profiles/copilot.yaml: bench/profiles/copilot.yaml sha256 73de001eec468b024fae52e9e2c08628a78ebdde5786caf4e7c7efefddcf48cd\n- bench/profiles/codex.yaml: bench/profiles/codex.yaml sha256 c687428a3731bed20dd84409a31c5954a3d1df3e0eb1d4aa0be0ed2df36599d8\n- plan.json: unresolved (ambiguous: 14 matches)\n- src/harness_bench/plan.py: src/harness_bench/plan.py sha256 8e71e964670966e078c057e4ad005acdba065923befbe80edf1e47f43035d820\n- tests/fixtures/native/copilot: unresolved (not found)\n- docs/design/phase3-cost.md's: unresolved (not found; nearest: docs/design/phase3-cost.md)\n- tests/mutations: unresolved (not found)\n- cost.py: src/harness_bench/grade/cost.py sha256 5a81614721ccefd955a73c27819d0792255aba9c1f4452d06b4fcf7cf13ca30d\n- tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp: unresolved (not found)\n- grade/: unresolved (not found)\n- bench/metrics.yaml: bench/metrics.yaml sha256 df5499d1c0bda69ae874f2de41cfd09188f8e8568123fc67bad23fa20c31725d\n- runs/: unresolved (not found)\n- src/harness_bench/telemetry/__init__.py: src/harness_bench/telemetry/__init__.py sha256 fe73b5948d2d4d9c9478995caa236c62bba202d781f5ca832c627bce2a25acfe\n- bench/profiles/*.yaml: unresolved (not found)\n- tests/test_grade_cost*.py: unresolved (not found; nearest: tests/test_grade_cost.py)\n- tests/mutations/*.json: unresolved (not found)\n- docs/design/phase3-cost.md: docs/design/phase3-cost.md sha256 e3758a322c4c304094423a3dcbb878e9e27b6da53cfc143d58e6c917801e3674\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JPS9BQPG4BCVF7NPFC2TDN\nraw sha256: 3262eb8ac58976d30af4032acacff85f1fe52ea6e43d7d74f6b45863ee33c428\ncompiler model: claude-opus-5-5\nengine seconds: 0.007\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: context_growth (src/harness_bench/grade/cost.py _context_growth: \"…",
+      "skill": null,
+      "summary": "compiled al-01M3JPS9BQPG4BCVF7NPFC2TDN for claude-code v1: 17 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-09-28T00:36:23Z",
+      "done_when": "(1) mutate_check stdout/stderr reconfigured to UTF-8 with replacement error handler, red first then green; (2) _tapped_turn cancels and joins timer before cell.close(), red first then green; 30/30 fidelity runs pass under pytest -n auto; OUT-A registered in defect-classes.md; ruff clean; full collect passes.",
+      "duration_seconds": 578.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w4-robust",
+        "pushed": null,
+        "sha": "f55a74f1e5bbc1d1195fbc9d4c6dc22180c0b7a8",
+        "short": "f55a74f1e"
+      },
+      "goal": "two measured robustness defects, each fixed at its cause, red first: (1) tools/mutate_check.py crashes while printing its own verdict line when stdout's encoding cannot represent a character in a mutant's name; (2) tests/test_driver.py's _tapped_turn helper arms a timer whose callback can use a Job Object handle after the cell closed it.",
+      "id": "al-01M3JQ20NNGDGEAWTGSXT8NVQR",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "robustness fixes: mutate_check stdout encoding crash and driver _tapped_turn Job handle race",
+      "session": "worker-agy-robust",
+      "shortname": "robustness-fixes",
+      "signals": {
+        "acceptance_met": true,
+        "regression": false,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "coordination-worker",
+      "started_at": "2026-09-28T00:26:45Z",
+      "summary": "Fixed mutate_check stdout encoding crash (OUT-A) and driver _tapped_turn Job handle race, red first.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-09-28T00:22:53Z",
+      "duration_seconds": 1128.0,
+      "git": {
+        "branch": "w4-cat05",
+        "pushed": null,
+        "sha": "6f61db84bd799fb37a8667463b80d9f25c989b2f",
+        "short": "6f61db84b"
+      },
+      "id": "al-01M3JP99QXB4W0X26YTW9B13G1",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "draft catalog 0.5.dev in bench/metrics.yaml exactly as ruling R-78 condition 1 requires",
+      "session": "worker-agy-cat05",
+      "shortname": "draft-catalog-0.5.dev",
+      "skill": "coordination-worker",
+      "started_at": "2026-09-28T00:04:05Z",
+      "summary": "Drafted catalog 0.5.dev in bench/metrics.yaml with normalisation anchors for 49 score metrics and R-78 weight corrections; recorded anchor source table in docs/notes/catalog-0.5-anchors.md",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "id": "al-01M3JQNYWK1ZKYVF2NZHQCJDJE",
+      "shortname": "Goal: implement slice S4 of docs/design/phase4-statistics.md, composites…",
+      "datetime": "2026-09-28T00:47:17Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: implement slice S4 of docs/design/phase4-statistics.md, composites: src/harness_bench/composites.py, its tests and mutants, deleting grade/normalize_scores.py, plus the config.py seam Z-4 with the validation refusals that rulings R-78 condition 2 and R-79 DR-C1 require, red first.\nMeasured (Leader, 2026-09-27): catalog 0.5.dev is merged on main (bench/metrics.yaml): every kind: score, weight > 0 metric has anchor: [worst, best] and anchor_note; the catalog comment states normalisation t = (x - worst) / (best - worst), N = 100 * clamp(t, 0, 1); pass_at_1 and four derived metrics have weight 0. grade/normalize_scores.py is a 4-line stub. S1-S3 (stats.py) are merged. Rulings R-78 (DR-S-1..6) and R-79 (anchors, DR-C1) are in docs/notes/rulings.md.\nDone when: every S4 deliverable in the design's slice table (row S4, about line 760) exists: composites.py with the contracted names and signatures (normalise, area composite, overall, gated per DR-S-2 as amended by R-78: pass_at_1 is the gate factor at weight 0; cell composites read kind: score only per DR-S-3), tests/test_composites.py, tests/mutations/composites.json, grade/normalize_scores.py deleted with no remaining importer; T-C1 (the hypothesis property the design describes near line 666, with its counted zero-differs branch and deterministic @example) is committed red first, failing on an assertion, then green; T-C1..C5 pass; the tests use a test catalog with anchors (the design says S4 does not depend on the Leader's catalog edit), and one extra test loads the real bench/metrics.yaml and asserts every kind: score, weight > 0 metric normalises without error; config.validate_metrics gains, red first, the refusals of R-78 condition 2 (a weighted kind: score metric without an anchor; worst == best; an anchor whose direction contradicts better; a kind: derived metric with weight > 0) and R-79 DR-C1 (a judged metric whose |best - worst| != 2 x the rubric item count whenever a rubrics: entry exists; a better: lower judged rubric must define 2 as worst per item: read R-79 item 4 for the exact wording and how the rubric item count is found), each with its own error message; `uv run bench validate` still exits 0 on the real catalog; every mutant the design lists for composites.json, plus one per new refusal, is killed (PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/composites.json and the file covering config.py; record the output lines); the design's Test Architect conditions hold (characterizations labelled as such); nothing outside S4's listed files and the config.py seam changes (no views, board, report or CLI); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews the stamp; report it); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S5-S7; bench/metrics.yaml content; the gate stamp; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-statistics.md (Normalisation and Composites sections near lines 150-190; T-C1..C5 near line 666; the S4 row near line 760; the seams table for Z-4); docs/notes/rulings.md R-78 and R-79; bench/metrics.yaml; src/harness_bench/config.py (validate_metrics); src/harness_bench/grade/normalize_scores.py; src/harness_bench/grade/judge.py (how judged metrics sum rubric items); bench/rubrics/; tests/test_config.py; tests/mutations/*.json. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3JQP2Q89GBZYXRMC6XBSX1Y",
+      "shortname": "compile-Goal: implement slice S4 of docs/design/phase4-statistics.md, composites…",
+      "datetime": "2026-09-28T00:47:21Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement slice S4 of docs/design/phase4-statistics.md, composites: src/harness_bench/composites.py, its tests and mutants, deleting grade/normalize_scores.py, plus the config.py seam Z-4 with the validation refusals that rulings R-78 condition 2 and R-79 DR-C1 require, red first. Measured (Leader, 2026-09-27): catalog 0.5.dev is merged on main (bench/metrics.yaml): every kind: score, weight > 0 metric has anchor: [worst, best] and anchor_note; the catalog comment states normalisation t = (x - worst) / (best - worst), N = 100 * clamp(t, 0, 1); pass_at_1 and four derived metrics have weight 0. grade/normalize_scores.py is a 4-line stub. S1-S3 (stats.py) are merged. Rulings R-78 (DR-S-1..6) and R-79 (anchors, DR-C1) are in docs/notes/rulings.md.\nDone when: every S4 deliverable in the design's slice table (row S4, about line 760) exists: composites.py with the contracted names and signatures (normalise, area composite, overall, gated per DR-S-2 as amended by R-78: pass_at_1 is the gate factor at weight 0; cell composites read kind: score only per DR-S-3), tests/test_composites.py, tests/mutations/composites.json, grade/normalize_scores.py deleted with no remaining importer; T-C1 (the hypothesis property the design describes near line 666, with its counted zero-differs branch and deterministic @example) is committed red first, failing on an assertion, then green; T-C1..C5 pass; the tests use a test catalog with anchors (the design says S4 does not depend on the Leader's catalog edit), and one extra test loads the real bench/metrics.yaml and asserts every kind: score, weight > 0 metric normalises without error; config.validate_metrics gains, red first, the refusals of R-78 condition 2 (a weighted kind: score metric without an anchor; worst == best; an anchor whose direction contradicts better; a kind: derived metric with weight > 0) and R-79 DR-C1 (a judged metric whose |best - worst| != 2 x the rubric item count whenever a rubrics: entry exists; a better: lower judged rubric must define 2 as worst per item: read R-79 item 4 for the exact wording and how the rubric item count is found), each with its own error message; `uv run bench validate` still exits 0 on the real catalog; every mutant the design lists for composites.json, plus one per new refusal, is killed (PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/composites.json and the file covering config.py; record the output lines); the design's Test Architect conditions hold (characterizations labelled as such); nothing outside S4's listed files and the config.py seam changes (no views, board, report or CLI); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews the stamp; report it); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S5-S7; bench/metrics.yaml content; the gate stamp; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (Normalisation and Composites sections near lines 150-190; T-C1..C5 near line 666; the S4 row near line 760; the seams table for Z-4); docs/notes/rulings.md R-78 and R-79; bench/metrics.yaml; src/harness_bench/config.py (validate_metrics); src/harness_bench/grade/normalize_scores.py; src/harness_bench/grade/judge.py (how judged metrics sum rubric items); bench/rubrics/; tests/test_config.py; tests/mutations/*.json. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: every S4 deliverable in the design's slice table (row S4, about line 760) exists: composites.py with the contracted names and signatures (normalise, area composite, overall, gated per DR-S-2 as amended by R-78: pass_at_1 is the gate factor at weight 0 | phrase: every S4 deliverable in the design's slice table (row S4, about line 760) exists: composites.py with the contracted names and signatures (normalise, area composite, overall, gated per DR-S-2 as amended by R-78: pass_at_1 is the gate factor at weight 0 |\n| done_when: cell composites read kind: score only per DR-S-3), tests/test_composites.py, tests/mutations/composites.json, grade/normalize_scores.py deleted with no remaining importer | phrase: cell composites read kind: score only per DR-S-3), tests/test_composites.py, tests/mutations/composites.json, grade/normalize_scores.py deleted with no remaining importer |\n| done_when: T-C1 (the hypothesis property the design describes near line 666, with its counted zero-differs branch and deterministic @example) is committed red first, failing on an assertion, then green | phrase: T-C1 (the hypothesis property the design describes near line 666, with its counted zero-differs branch and deterministic @example) is committed red first, failing on an assertion, then green |\n| done_when: T-C1..C5 pass | phrase: T-C1..C5 pass |\n| done_when: the tests use a test catalog with anchors (the design says S4 does not depend on the Leader's catalog edit), and one extra test loads the real bench/metrics.yaml and asserts every kind: score, weight > 0 metric normalises without error | phrase: the tests use a test catalog with anchors (the design says S4 does not depend on the Leader's catalog edit), and one extra test loads the real bench/metrics.yaml and asserts every kind: score, weight > 0 metric normalises without error |\n| done_when: config.validate_metrics gains, red first, the refusals of R-78 condition 2 (a weighted kind: score metric without an anchor | phrase: config.validate_metrics gains, red first, the refusals of R-78 condition 2 (a weighted kind: score metric without an anchor |\n| done_when: worst == best | phrase: worst == best |\n| done_when: an anchor whose direction contradicts better | phrase: an anchor whose direction contradicts better |\n| done_when: a kind: derived metric with weight > 0) and R-79 DR-C1 (a judged metric whose |best - worst| != 2 x the rubric item count whenever a rubrics: entry exists | phrase: a kind: derived metric with weight > 0) and R-79 DR-C1 (a judged metric whose |best - worst| != 2 x the rubric item count whenever a rubrics: entry exists |\n| done_when: a better: lower judged rubric must define 2 as worst per item: read R-79 item 4 for the exact wording and how the rubric item count is found), each with its own error message | phrase: a better: lower judged rubric must define 2 as worst per item: read R-79 item 4 for the exact wording and how the rubric item count is found), each with its own error message |\n| done_when: `uv run bench validate` still exits 0 on the real catalog | phrase: `uv run bench validate` still exits 0 on the real catalog |\n| done_when: every mutant the design lists for composites.json, plus one per new refusal, is killed (PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/composites.json and the file covering config.py | phrase: every mutant the design lists for composites.json, plus one per new refusal, is killed (PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/composites.json and the file covering config.py |\n| done_when: record the output lines) | phrase: record the output lines) |\n| done_when: the design's Test Architect conditions hold (characterizations labelled as such) | phrase: the design's Test Architect conditions hold (characterizations labelled as such) |\n| done_when: nothing outside S4's listed files and the config.py seam changes (no views, board, report or CLI) | phrase: nothing outside S4's listed files and the config.py seam changes (no views, board, report or CLI) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews the stamp | phrase: uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews the stamp |\n| done_when: report it) | phrase: report it) |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: slices S5-S7 | phrase: slices S5-S7 |\n| not_in_scope: bench/metrics.yaml content | phrase: bench/metrics.yaml content |\n| not_in_scope: the gate stamp | phrase: the gate stamp |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- uv run bench validate: unresolved (not found)\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd\n- src/harness_bench/composites.py: unresolved (not found)\n- grade/normalize_scores.py: src/harness_bench/grade/normalize_scores.py sha256 5e2e1d847d38f3ce941a882ed89bd45e66c7cef0b759398c5f2a9614d9eb14c9\n- config.py: src/harness_bench/config.py sha256 24f729beef17064e342ca591276a62bd43a9e19dbab742badfe503d6607ca0a9\n- bench/metrics.yaml: bench/metrics.yaml sha256 83cde14c910c669dc054481ae066c89201b2fa895983fe1e0793c980d0040e89\n- /: unresolved (outside repo)\n- stats.py: src/harness_bench/stats.py sha256 c4b05430bd544d9079c4afc9e058e40320a992dfc9804ba6e394abf2ddbc4e83\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- composites.py: unresolved (not found)\n- tests/test_composites.py: unresolved (not found)\n- tests/mutations/composites.json: unresolved (not found)\n- composites.json: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 df1e8be368ac77ce67eba3a3f761cddd85af8a623e025ba9efb9669a1aa22ff7\n- tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp: unresolved (not found)\n- runs/: unresolved (not found)\n- src/harness_bench/config.py: src/harness_bench/config.py sha256 24f729beef17064e342ca591276a62bd43a9e19dbab742badfe503d6607ca0a9\n- src/harness_bench/grade/normalize_scores.py: src/harness_bench/grade/normalize_scores.py sha256 5e2e1d847d38f3ce941a882ed89bd45e66c7cef0b759398c5f2a9614d9eb14c9\n- src/harness_bench/grade/judge.py: src/harness_bench/grade/judge.py sha256 5385e91ac333bd4745049101abc5d416d028589aa3f6451a968186e11b4ea121\n- bench/rubrics/: unresolved (not found)\n- tests/test_config.py: tests/test_config.py sha256 0585e6d7548af94045bddc2d12aa2919f4b695d2f87f129e7406e68bc9125691\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JQNYWK1ZKYVF2NZHQCJDJE\nraw sha256: 39c52630bab0007fc7892ac6b329fcf11ca95d24e86b515a532ba4ebc15b93d2\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3JQNYWK1ZKYVF2NZHQCJDJE for claude-code v1: 25 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "every S4 deliverable in the design's slice table (row S4, about line 760) exists: composites.py with the contracted names and signatures (normalise, area composite, overall, gated per DR-S-2 as amended by R-78: pass_at_1 is the gate factor at weight 0",
+            "trace": {
+              "kind": "phrase",
+              "ref": "every S4 deliverable in the design's slice table (row S4, about line 760) exists: composites.py with the contracted names and signatures (normalise, area composite, overall, gated per DR-S-2 as amended by R-78: pass_at_1 is the gate factor at weight 0"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "cell composites read kind: score only per DR-S-3), tests/test_composites.py, tests/mutations/composites.json, grade/normalize_scores.py deleted with no remaining importer",
+            "trace": {
+              "kind": "phrase",
+              "ref": "cell composites read kind: score only per DR-S-3), tests/test_composites.py, tests/mutations/composites.json, grade/normalize_scores.py deleted with no remaining importer"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "T-C1 (the hypothesis property the design describes near line 666, with its counted zero-differs branch and deterministic @example) is committed red first, failing on an assertion, then green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "T-C1 (the hypothesis property the design describes near line 666, with its counted zero-differs branch and deterministic @example) is committed red first, failing on an assertion, then green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "T-C1..C5 pass",
+            "trace": {
+              "kind": "phrase",
+              "ref": "T-C1..C5 pass"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the tests use a test catalog with anchors (the design says S4 does not depend on the Leader's catalog edit), and one extra test loads the real bench/metrics.yaml and asserts every kind: score, weight > 0 metric normalises without error",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the tests use a test catalog with anchors (the design says S4 does not depend on the Leader's catalog edit), and one extra test loads the real bench/metrics.yaml and asserts every kind: score, weight > 0 metric normalises without error"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "config.validate_metrics gains, red first, the refusals of R-78 condition 2 (a weighted kind: score metric without an anchor",
+            "trace": {
+              "kind": "phrase",
+              "ref": "config.validate_metrics gains, red first, the refusals of R-78 condition 2 (a weighted kind: score metric without an anchor"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "worst == best",
+            "trace": {
+              "kind": "phrase",
+              "ref": "worst == best"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "an anchor whose direction contradicts better",
+            "trace": {
+              "kind": "phrase",
+              "ref": "an anchor whose direction contradicts better"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a kind: derived metric with weight > 0) and R-79 DR-C1 (a judged metric whose |best - worst| != 2 x the rubric item count whenever a rubrics: entry exists",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a kind: derived metric with weight > 0) and R-79 DR-C1 (a judged metric whose |best - worst| != 2 x the rubric item count whenever a rubrics: entry exists"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a better: lower judged rubric must define 2 as worst per item: read R-79 item 4 for the exact wording and how the rubric item count is found), each with its own error message",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a better: lower judged rubric must define 2 as worst per item: read R-79 item 4 for the exact wording and how the rubric item count is found), each with its own error message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`uv run bench validate` still exits 0 on the real catalog",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`uv run bench validate` still exits 0 on the real catalog"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "every mutant the design lists for composites.json, plus one per new refusal, is killed (PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/composites.json and the file covering config.py",
+            "trace": {
+              "kind": "phrase",
+              "ref": "every mutant the design lists for composites.json, plus one per new refusal, is killed (PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/composites.json and the file covering config.py"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "record the output lines)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "record the output lines)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the design's Test Architect conditions hold (characterizations labelled as such)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the design's Test Architect conditions hold (characterizations labelled as such)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "nothing outside S4's listed files and the config.py seam changes (no views, board, report or CLI)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "nothing outside S4's listed files and the config.py seam changes (no views, board, report or CLI)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews the stamp",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews the stamp"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "report it)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "report it)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "slices S5-S7",
+            "trace": {
+              "kind": "phrase",
+              "ref": "slices S5-S7"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench/metrics.yaml content",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/metrics.yaml content"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the gate stamp",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the gate stamp"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "every S4 deliverable in the design's slice table (row S4, about line 760) exists: composites.py with the contracted names and signatures (normalise, area composite, overall, gated per DR-S-2 as amended by R-78: pass_at_1 is the gate factor at weight 0",
+            "cell composites read kind: score only per DR-S-3), tests/test_composites.py, tests/mutations/composites.json, grade/normalize_scores.py deleted with no remaining importer",
+            "T-C1 (the hypothesis property the design describes near line 666, with its counted zero-differs branch and deterministic @example) is committed red first, failing on an assertion, then green",
+            "T-C1..C5 pass",
+            "the tests use a test catalog with anchors (the design says S4 does not depend on the Leader's catalog edit), and one extra test loads the real bench/metrics.yaml and asserts every kind: score, weight > 0 metric normalises without error",
+            "config.validate_metrics gains, red first, the refusals of R-78 condition 2 (a weighted kind: score metric without an anchor",
+            "worst == best",
+            "an anchor whose direction contradicts better",
+            "a kind: derived metric with weight > 0) and R-79 DR-C1 (a judged metric whose |best - worst| != 2 x the rubric item count whenever a rubrics: entry exists",
+            "a better: lower judged rubric must define 2 as worst per item: read R-79 item 4 for the exact wording and how the rubric item count is found), each with its own error message",
+            "`uv run bench validate` still exits 0 on the real catalog",
+            "every mutant the design lists for composites.json, plus one per new refusal, is killed (PYTHONIOENCODING=utf-8 uv run python tools/mutate_check.py tests/mutations/composites.json and the file covering config.py",
+            "record the output lines)",
+            "the design's Test Architect conditions hold (characterizations labelled as such)",
+            "nothing outside S4's listed files and the config.py seam changes (no views, board, report or CLI)",
+            "a test earns its place by a failure only it catches",
+            "uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (stale until the Leader renews the stamp",
+            "report it)",
+            "uv run ruff check src tests tools is clean",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "implement slice S4 of docs/design/phase4-statistics.md, composites: src/harness_bench/composites.py, its tests and mutants, deleting grade/normalize_scores.py, plus the config.py seam Z-4 with the validation refusals that rulings R-78 condition 2 and R-79 DR-C1 require, red first. Measured (Leader, 2026-09-27): catalog 0.5.dev is merged on main (bench/metrics.yaml): every kind: score, weight > 0 metric has anchor: [worst, best] and anchor_note; the catalog comment states normalisation t = (x - worst) / (best - worst), N = 100 * clamp(t, 0, 1); pass_at_1 and four derived metrics have weight 0. grade/normalize_scores.py is a 4-line stub. S1-S3 (stats.py) are merged. Rulings R-78 (DR-S-1..6) and R-79 (anchors, DR-C1) are in docs/notes/rulings.md.",
+          "main_line_budget": "one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (Normalisation and Composites sections near lines 150-190; T-C1..C5 near line 666; the S4 row near line 760; the seams table for Z-4); docs/notes/rulings.md R-78 and R-79; bench/metrics.yaml; src/harness_bench/config.py (validate_metrics); src/harness_bench/grade/normalize_scores.py; src/harness_bench/grade/judge.py (how judged metrics sum rubric items); bench/rubrics/; tests/test_config.py; tests/mutations/*.json. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "slices S5-S7",
+            "bench/metrics.yaml content",
+            "the gate stamp",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.006,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3JQNYWK1ZKYVF2NZHQCJDJE",
+        "raw_sha256": "39c52630bab0007fc7892ac6b329fcf11ca95d24e86b515a532ba4ebc15b93d2",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run bench validate"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase4-statistics.md",
+            "reason": null,
+            "sha256": "2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd",
+            "status": "resolved",
+            "token": "docs/design/phase4-statistics.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/composites.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/normalize_scores.py",
+            "reason": null,
+            "sha256": "5e2e1d847d38f3ce941a882ed89bd45e66c7cef0b759398c5f2a9614d9eb14c9",
+            "status": "resolved",
+            "token": "grade/normalize_scores.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "24f729beef17064e342ca591276a62bd43a9e19dbab742badfe503d6607ca0a9",
+            "status": "resolved",
+            "token": "config.py"
+          },
+          {
+            "nearest": null,
+            "path": "bench/metrics.yaml",
+            "reason": null,
+            "sha256": "83cde14c910c669dc054481ae066c89201b2fa895983fe1e0793c980d0040e89",
+            "status": "resolved",
+            "token": "bench/metrics.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/stats.py",
+            "reason": null,
+            "sha256": "c4b05430bd544d9079c4afc9e058e40320a992dfc9804ba6e394abf2ddbc4e83",
+            "status": "resolved",
+            "token": "stats.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "composites.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_composites.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/composites.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "composites.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "df1e8be368ac77ce67eba3a3f761cddd85af8a623e025ba9efb9669a1aa22ff7",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "24f729beef17064e342ca591276a62bd43a9e19dbab742badfe503d6607ca0a9",
+            "status": "resolved",
+            "token": "src/harness_bench/config.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/normalize_scores.py",
+            "reason": null,
+            "sha256": "5e2e1d847d38f3ce941a882ed89bd45e66c7cef0b759398c5f2a9614d9eb14c9",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/normalize_scores.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/judge.py",
+            "reason": null,
+            "sha256": "5385e91ac333bd4745049101abc5d416d028589aa3f6451a968186e11b4ea121",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/judge.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/rubrics/"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_config.py",
+            "reason": null,
+            "sha256": "0585e6d7548af94045bddc2d12aa2919f4b695d2f87f129e7406e68bc9125691",
+            "status": "resolved",
+            "token": "tests/test_config.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/*.json"
           }
         ],
         "schema": "compiled-prompt/1",
