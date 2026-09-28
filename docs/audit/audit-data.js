@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-28T18:06:44Z",
+  "generated": "2026-09-28T18:51:06Z",
   "audit": [
     {
       "actor": null,
@@ -46488,6 +46488,44 @@ window.AUDIT_DATA = {
       "summary": "Implement report slice R0 under R-81: fix defect F-1 (pack effect computes area composites with anchored inputs), introduce board.EXPORT_VERSION=2, add areas/scenarios/frontier projections to board, add US-4 export version controls and fixtures/board/1/ and /2/ goldens, register defect class RSN-A, kill mutants. Cites R-81 and amended R-78 c5: a catalog-content change after the freeze is 0.6; a statistics-code change is EXPORT_VERSION + 1, and both are visible in the bytes.",
       "tags": [],
       "tool": null
+    },
+    {
+      "id": "al-01M3MNPFC71Y3JRE34EV8H6DA0",
+      "shortname": "time-a-cancel-phase",
+      "datetime": "2026-09-28T18:51:05Z",
+      "session": "worker-grok-df",
+      "prompt": "Make the driver's cancel-timing tests in tests/test_driver.py deterministic under uv run pytest -n auto, by triggering the cancel on an observed state of the fake agent instead of a wall-clock threading.Timer. The sweep is the timers that kill after a hang, cancel during the prompt, cancel during the handshake, and end hang modes in _tapped_turn. Prove the prompt-phase test red under a forced delay longer than the old timer, then green on the phase wait. Name the class in docs/lessons/defect-classes.md. No driver behaviour change, no other test files, no push. Commit each red and each green.",
+      "summary": "TIME-A. Red 454d869: test_cancel_sends_session_cancel_during_the_prompt with handshake_delay=2 and Timer(0.4) failed assert stop_reason == cancelled (stop_reason None, prompt_sent false). Green 0d6fcf1: cancel or kill when .fake-prompt.txt exists, or when initialize is written while handshake_delay holds the fake; hang_handshake has an assume because it writes no file and handshake_timeout ends that phase. uv run pytest -q -p no:cacheprovider -n auto tests/test_driver.py passed three times (65 each). Full suite 1951 passed. ruff check src tests tools clean. No push.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "tests/test_driver.py",
+        "docs/lessons/defect-classes.md"
+      ],
+      "tags": [
+        "TIME-A"
+      ],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Make tests/test_driver.py cancel-timing tests deterministic under pytest -n auto by arming cancel from an observed fake-agent phase instead of threading.Timer.",
+      "done_when": "Cancel-timing tests arm from an observed fake phase or an assume; the prompt-phase test was red on Timer(0.4) with handshake_delay=2 and green on the phase wait; TIME-A is named; test_driver.py passed three times under -n auto; the default suite passed; ruff check src tests tools is clean; red and green are committed; nothing pushed.",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-28T18:33:23Z",
+      "duration_seconds": 1062.0,
+      "git": {
+        "sha": "0d6fcf1ff05303f523d4eff28eafedea4e178a46",
+        "short": "0d6fcf1ff",
+        "branch": "w4-df",
+        "pushed": null
+      }
     }
   ],
   "changes": [
