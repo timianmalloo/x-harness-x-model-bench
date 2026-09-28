@@ -310,5 +310,12 @@
   "find": "html_builder.el(\"li\", None, f\"{w.code} {w.message}\") for w in c.warnings)",
   "replace": "html_builder.trusted(f\"<li>{w.code} {w.message}</li>\") for w in c.warnings)",
   "tests": ["tests/test_report.py::test_injection_fixture_renders_inert"]
+ },
+ {
+  "name": "the header reads a bom key no plan has",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    bom_str = f\"BOM {plan['bom_version']}\" if plan.get(\"bom_version\") else \"BOM not recorded\"\n",
+  "replace": "    bom_str = f\"BOM {plan['bom']}\" if plan.get(\"bom\") else \"BOM not recorded\"\n",
+  "tests": ["tests/test_report.py::test_the_header_names_the_bom_the_plan_froze"]
  }
 ]
