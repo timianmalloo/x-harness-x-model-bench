@@ -804,6 +804,7 @@ def _whisker_panel(
     rows: list,
     limit: float,
     is_comparison: bool,
+    combo_ix: dict[str, str],
 ) -> html_builder.Html:
     """One unit's dot-and-whisker panel on its own shared zero line (design s6 rows 4 and 11:
     'the marks of one measure family share a zero' -- not a scale shared across incomparable
@@ -883,16 +884,23 @@ def _whisker_panel(
         else:
             label_text = f"{r.combo} {r.measure}" if r.measure != "pass_at_1" else r.combo
 
-        svg_children.append(
-            html_builder.el("text", {
-                "x": "4",
-                "y": str(y + 4),
-            }, label_text)
-        )
+        # `data-combo` is this combo's legend token (c1..c8 from the map `render` passed in).
+        # Comparison marks also carry `data-pack`. Pack effect is the difference of the two
+        # settings, so its marks do not: the pack switch disables itself instead of hiding them.
+        mark_attrs: dict[str, object] = {}
+        token = combo_ix.get(r.combo)
+        if token is not None:
+            mark_attrs["data-combo"] = token
+        if is_comparison and hasattr(r, "pack"):
+            mark_attrs["data-pack"] = r.pack
+
+        label_attrs: dict[str, object] = {"x": "4", "y": str(y + 4)}
+        label_attrs.update(mark_attrs)
+        svg_children.append(html_builder.el("text", label_attrs, label_text))
 
         x1 = round(x(min(r.delta.lo, r.delta.hi)), 1)
         x2 = round(x(max(r.delta.lo, r.delta.hi)), 1)
-        whisker = html_builder.el("line", {
+        whisker_attrs: dict[str, object] = {
             "x1": str(x1),
             "x2": str(x2),
             "y1": str(y),
@@ -901,8 +909,9 @@ def _whisker_panel(
             "data-interval-lo": lo_str,
             "data-interval-hi": hi_str,
             "data-interval-point": pt_str,
-        })
-        dot = html_builder.el("circle", {
+        }
+        whisker_attrs.update(mark_attrs)
+        dot_attrs: dict[str, object] = {
             "cx": str(round(x(r.delta.point), 1)),
             "cy": str(y),
             "r": "5",
@@ -910,8 +919,12 @@ def _whisker_panel(
             "data-interval-lo": lo_str,
             "data-interval-hi": hi_str,
             "data-interval-point": pt_str,
-        })
-        svg_children.extend([whisker, dot])
+        }
+        dot_attrs.update(mark_attrs)
+        svg_children.extend([
+            html_builder.el("line", whisker_attrs),
+            html_builder.el("circle", dot_attrs),
+        ])
 
     return html_builder.el("svg", {
         "id": f"{panel_id}-svg",
@@ -927,6 +940,7 @@ def _whisker_chart(
     tid: str,
     title: str,
     rows: Sequence[board.PackEffectRow | board.ComparisonRow],
+    combo_ix: dict[str, str],
     is_comparison: bool = False,
 ) -> html_builder.Html | None:
     computed_rows = [
@@ -945,14 +959,14 @@ def _whisker_chart(
     cap_id = f"{tid}-cap"
     panels: list[html_builder.Html] = []
     if p1_rows:
-        panels.append(_whisker_panel(f"{tid}-p1", cap_id, "pass@1, as a share of tasks", p1_rows, 1.0, is_comparison))
+        panels.append(_whisker_panel(f"{tid}-p1", cap_id, "pass@1, as a share of tasks", p1_rows, 1.0, is_comparison, combo_ix))
     if point_rows:
         max_val = max(
             max(abs(float(r.delta.lo)), abs(float(r.delta.hi)), abs(float(r.delta.point)))
             for r in point_rows
         )
         limit = max(100.0, max_val)
-        panels.append(_whisker_panel(f"{tid}-pts", cap_id, "composite and area, 0-100 points", point_rows, limit, is_comparison))
+        panels.append(_whisker_panel(f"{tid}-pts", cap_id, "composite and area, 0-100 points", point_rows, limit, is_comparison, combo_ix))
 
     caption = html_builder.el("figcaption", {"id": cap_id}, title)
     return html_builder.el("figure", None, html_builder.el("div", {"class": "chart-panels"}, *panels), caption)
@@ -963,6 +977,7 @@ def _delta_table(
     caption_id: str,
     caption_text: str,
     has_pack: bool,
+    combo_ix: dict[str, str],
 ) -> html_builder.Html:
     """The pack effect and comparison table alternatives share every column but Pack (design
     section 5 names this duplication as the thing the model/builder split removes); `has_pack`
@@ -1014,7 +1029,13 @@ def _delta_table(
         _, label_str = _mark_class_and_label(r.delta, r.label)
         row_cells.append(html_builder.el("td", None, label_str))
 
-        tr_list.append(html_builder.el("tr", None, *row_cells))
+        row_attrs: dict[str, object] = {}
+        row_token = combo_ix.get(r.combo)
+        if row_token is not None:
+            row_attrs["data-combo"] = row_token
+        if has_pack:
+            row_attrs["data-pack"] = r.pack
+        tr_list.append(html_builder.el("tr", row_attrs, *row_cells))
 
     table = html_builder.el(
         "table", None,
@@ -1030,11 +1051,11 @@ def _delta_table(
     return html_builder.el("details", None, html_builder.el("summary", None, "Table"), region)
 
 
-def _pack_effect_table(rows: list[board.PackEffectRow]) -> html_builder.Html:
-    return _delta_table(rows, "pack-effect-caption", "Pack effect per combo and area", has_pack=False)
+def _pack_effect_table(rows: list[board.PackEffectRow], combo_ix: dict[str, str]) -> html_builder.Html:
+    return _delta_table(rows, "pack-effect-caption", "Pack effect per combo and area", has_pack=False, combo_ix=combo_ix)
 
 
-def _pack_effect(board_obj: board.Board) -> html_builder.Html:
+def _pack_effect(board_obj: board.Board, combo_ix: dict[str, str]) -> html_builder.Html:
     pe = board_obj.pack_effect
     excl = html_builder.el("p", None, pe.exclusion_line)
     if pe.status is not None:
@@ -1044,8 +1065,8 @@ def _pack_effect(board_obj: board.Board) -> html_builder.Html:
         body = html_builder.el("p", None, "No pack effect data.")
         return html_builder.el("section", {"id": "pack-effect"}, html_builder.el("h2", None, "Pack effect"), excl, body)
 
-    chart = _whisker_chart("pack-effect", "Pack effect per combo and area on a shared zero line", pe.rows)
-    table = _pack_effect_table(pe.rows)
+    chart = _whisker_chart("pack-effect", "Pack effect per combo and area on a shared zero line", pe.rows, combo_ix)
+    table = _pack_effect_table(pe.rows, combo_ix)
     children = [html_builder.el("h2", None, "Pack effect"), excl]
     if chart is not None:
         children.append(chart)
@@ -1197,12 +1218,12 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str], run_
                            no_match, region)
 
 
-def _comparison_table(comparison_obj: board.Comparison) -> html_builder.Html:
+def _comparison_table(comparison_obj: board.Comparison, combo_ix: dict[str, str]) -> html_builder.Html:
     caption_text = f"Comparison: {comparison_obj.view_run_id} vs baseline {comparison_obj.base_run_id}"
-    return _delta_table(comparison_obj.rows, "comparison-caption", caption_text, has_pack=True)
+    return _delta_table(comparison_obj.rows, "comparison-caption", caption_text, has_pack=True, combo_ix=combo_ix)
 
 
-def _comparison(comparison_obj: board.Comparison | str | None) -> html_builder.Html | None:
+def _comparison(comparison_obj: board.Comparison | str | None, combo_ix: dict[str, str]) -> html_builder.Html | None:
     if comparison_obj is None:
         return None
     if isinstance(comparison_obj, str):
@@ -1227,11 +1248,12 @@ def _comparison(comparison_obj: board.Comparison | str | None) -> html_builder.H
             "comparison",
             f"Comparison: {comparison_obj.view_run_id} vs baseline {comparison_obj.base_run_id} on a shared zero line",
             comparison_obj.rows,
+            combo_ix,
             is_comparison=True,
         )
         if chart is not None:
             elements.append(chart)
-        elements.append(_comparison_table(comparison_obj))
+        elements.append(_comparison_table(comparison_obj, combo_ix))
     else:
         elements.append(html_builder.el("p", None, "No comparison data."))
 
@@ -1267,14 +1289,16 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
     # R1: the shell (head, CSP, nav/jump-links, section order) goes through html_builder + model
     # (design section 5); header, validity (R2), leaderboard, runs (R3), pack effect and comparison (R5)
     # are built on `html_builder.el` end to end, so no section is trusted()-marked at the seam.
-    comparison_sec = _comparison(comparison_obj)
-    combo_ix = _combo_index(board_obj)  # R4: the legend's c1..c8 token, shared by the leaderboard and Runs rows
+    # One c1..c8 map (design section 6). Pack effect and comparison receive it; they do not
+    # build a second one. The leaderboard reads the same function on this board.
+    combo_ix = _combo_index(board_obj)
+    comparison_sec = _comparison(comparison_obj, combo_ix)
     sections = [
         model.Section("header", "Run header",
                       _header(view, tags, _permission_modes(run_dir), judging, root, run_dir, board_obj=board_obj, params=params)),
         model.Section("validity", "Validity", _validity(view)),
         model.Section("leaderboard", "Leaderboard", _leaderboard(view, board_obj)),
-        model.Section("pack-effect", "Pack effect", _pack_effect(board_obj)),
+        model.Section("pack-effect", "Pack effect", _pack_effect(board_obj, combo_ix)),
         model.Section("runs", "Runs", _runs(view, archive_present, tags, run_dir, root,
                                             catalog_version=view.catalog_version, combo_ix=combo_ix)),
     ]
