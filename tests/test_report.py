@@ -15,6 +15,7 @@ from stats_fixtures import stats_run
 
 from harness_bench import ledger, stats, views
 from harness_bench.errors import BenchError
+from harness_bench.grade import judge as grade_judge
 from harness_bench.grade import runner
 from harness_bench.report import cli_table, credentials, html
 
@@ -756,6 +757,141 @@ def test_tm2_shared_pack_revision_labelled_a_replication(root, tmp_path, capsys)
     assert "same pack revision (95): a replication" in doc
     assert "Excluded as contamination-prone: none in this run" in doc
     assert "data-interval-lo=" in doc
+
+
+# --- R2 (design phase4-report.md s15, US-43, US-51) ---------------------------------------------------
+
+
+def test_about_defines_six_terms(root, tmp_path):
+    """R2 (design phase4-report.md s15, US-51, s6 row 1a, s9): About this run names pack revision and defines six terms."""
+    _, view = _graded(root, tmp_path, {"a": GOOD})
+    view.plan["pack"] = {"revision": 95, "commit": "a" * 40}
+    doc = html.render(view, archive_present=True)
+    assert "<summary>About this run</summary>" in doc
+    assert "This run tests the pack <strong>ai-forward revision 95</strong>." in doc
+    assert "<dt>combo</dt><dd>A combo is one harness, at one build, driving one model.</dd>" in doc
+    assert "<dt>pack on / pack off</dt><dd>Pack on runs the task with the AI-Forward Pack installed in the workspace; pack off runs the same task without it.</dd>" in doc
+    assert "<dt>correctness-gated composite</dt><dd>The correctness-gated composite is the mean of the area scores (0-100) a cell recorded, set to 0 when its hidden tests fail.</dd>" in doc
+    assert "<dt>pass@1 / pass^k</dt><dd>pass@1 is the share of cells whose hidden tests pass; pass^k is the share of tasks passed in all k repetitions.</dd>" in doc
+    assert "<dt>interval</dt><dd>An interval is the 95% bootstrap range of a value over tasks and repetitions; overlapping intervals mean the data cannot tell the values apart.</dd>" in doc
+    assert "<dt>not recorded</dt><dd>Not recorded means the value could not be measured, and it is never counted as 0.</dd>" in doc
+
+
+def make_many_classes_run(root: Path, tmp_path: Path) -> tuple[Path, views.RunView]:
+    """Fixture run with 6 exclusion classes each from a real producer (design section 12 row many-classes):
+    NA costs (the empty price list, on every cell here), invalid (c1), timed out (c3), stopped (c4), withheld
+    (c5, a genuine HB-GW-009 score reason, ruling R-80 c1) and disagreeing judges (c6, grade_judge.DISAGREE
+    verbatim). "not applicable" and "low-confidence matchers" have no producer anywhere in this codebase (R2),
+    so no fixture can drive them active; c7 stays a plain valid cell.
+    """
+    cells = {f"c{i}": GOOD for i in range(1, 8)}
+    combos = {f"c{i}": f"combo{i}" for i in range(1, 8)}
+    outcomes = {
+        "c1": {"outcome": "failed", "cause": "provider", "code": "HB-CELL-108"},
+        "c3": {"outcome": "timed_out", "cause": "timed_out", "code": "HB-CELL-301"},
+        "c4": {"outcome": "stopped"},
+        "c5": {"outcome": "failed", "cause": "unclassified"},
+    }
+    run_dir = make_run(root, tmp_path, cells, combos=combos, outcomes=outcomes)
+    runner.run_pass(run_dir, root)
+    view = views.load(run_dir)
+    # c5's judge call was withheld (gateway/pipeline.py:168, grade/judge.py's item_score:186-200); c6's judges
+    # disagreed (judge.py:47 DISAGREE, verbatim -- the one constant, never a hand-typed copy of its text).
+    c5 = next(c for c in view.cells if c.cell_id == "c5")
+    c5.scores["adr_quality"] = views.Measure(None, "judge gpt-5: failed HB-GW-009")  # gateway/pipeline.py:168
+    c6 = next(c for c in view.cells if c.cell_id == "c6")
+    c6.scores["adr_quality"] = views.Measure(None, grade_judge.DISAGREE)
+    return run_dir, view
+
+
+def test_validity_banner_counts_each_exclusion_class(root, tmp_path):
+    """R2 (design phase4-report.md s15, US-43, US-43 no source, s6 row 2):
+    validity banner counts each exclusion class, links to runs, handles unrecorded source,
+    one-line all-valid form, and the first 5 plus and <k> more form on many-classes.
+    """
+    # 1. All-valid form
+    _, view_valid = _graded(root, tmp_path / "valid", {"a": GOOD})
+    doc_valid = html.render(view_valid, archive_present=True)
+    assert "All 1 cells completed and are valid." in doc_valid
+
+    # 2. Incomplete run form: the 2 never-started cells also count in the exclusion-class summary
+    # (outcome "not started", views.py:507) -- not only the separate incomplete-run sentence above.
+    run_dir_inc = make_run(root, tmp_path / "inc", {"a": GOOD}, unstarted=("b", "c"))
+    view_inc = views.load(run_dir_inc)
+    view_inc.completed = False
+    doc_inc = html.render(view_inc, archive_present=True)
+    assert "The run is incomplete. 2 cells never started." in doc_inc
+    assert "2 stopped / skipped / never started" in doc_inc
+
+    # 3. Class with no source reads not recorded (never 0)
+    run_dir_partial = make_run(root, tmp_path / "partial", {"a": GOOD, "b": GOOD},
+                               outcomes={"b": {"outcome": "failed", "cause": "provider", "code": "HB-CELL-108"}})
+    runner.run_pass(run_dir_partial, root)
+    view_partial = views.load(run_dir_partial)
+    doc_partial = html.render(view_partial, archive_present=True)
+    banner_partial = re.search(r'<section id="validity".*?</section>', doc_partial, re.DOTALL).group(0)
+    assert "low-confidence matchers: not recorded" in banner_partial
+    assert "0 low-confidence matchers" not in banner_partial
+    # no cell was judged in this run: disagreeing judges is unmeasured too, never a bare 0 (the fixed bug)
+    assert "disagreeing judges: not recorded" in banner_partial
+    assert "0 disagreeing judges" not in banner_partial
+
+    # 4. many-classes fixture run with 6 exclusion classes driving the "and <k> more" form
+    _, view_many = make_many_classes_run(root, tmp_path / "many")
+    doc_many = html.render(view_many, archive_present=True)
+    banner_many = re.search(r'<section id="validity".*?</section>', doc_many, re.DOTALL).group(0)
+    assert "and 1 more" in banner_many
+    assert '<a href="#runs">' in banner_many
+    assert "1 withheld" in banner_many  # c5's genuine HB-GW-009 score, not the old cause/code guess
+
+
+def test_invalid_count_never_conflates_a_failed_outcome_with_an_invalid_cell(root, tmp_path):
+    """R2 fix (design s6 row 2): the bug added `outcome == "failed"` to the invalid count, so an agent- or
+    harness-attributed failure -- never scored against a harness are only infrastructure/benchmark causes,
+    Cause.invalidates, errors.py:34-38 -- was wrongly counted as invalid even though its own validity stays
+    "valid"."""
+    _, view = _graded(root, tmp_path, {"a": GOOD, "b": GOOD, "c": GOOD},
+                      outcomes={"b": {"outcome": "failed", "cause": "blocked_permission", "code": "HB-CELL-201"},
+                                "c": {"outcome": "failed", "cause": "provider", "code": "HB-CELL-108"}})
+    b = next(x for x in view.cells if x.cell_id == "b")
+    assert b.outcome == "failed" and b.validity == "valid"  # ground: a failed outcome that stays valid exists
+    banner = re.search(r'<section id="validity".*?</section>', html.render(view, archive_present=True), re.DOTALL).group(0)
+    assert "1 invalid" in banner  # only c (infrastructure); b's failed-but-valid outcome is never counted
+
+
+def test_judge_spend_says_so_when_no_judging_ran(root, tmp_path):
+    """R2 fix: the header's Spend line names judges with judges.py's own NO_CALL wording ("no call in this
+    pass") when judging never ran (judges.facts returns [] with no run_dir, judges.py:253), never the old
+    invented "0 calls"."""
+    _, view = _graded(root, tmp_path, {"a": GOOD})
+    doc = html.render(view, archive_present=True)  # no run_dir: judges.facts finds no pass
+    spend = re.search(r"<dt>Spend</dt><dd>([^<]*)</dd>", doc).group(1)
+    assert "judges no call in this pass" in spend
+    assert "judges 0 calls" not in spend
+
+
+def test_header_wall_clock_is_run_level_not_a_cell_sum(root, tmp_path):
+    """R2 fix (design s6 row 1): cells run in parallel, so summing their wall_ms is not the run's wall clock.
+    The header now reads run.started/run.completed's own mono_ns (engine.py:382,:425; both stamped,
+    ledger.py:70), and keeps the old per-cell sum under its own honest label."""
+    run_dir = make_run(root, tmp_path, {"a": GOOD, "b": GOOD}, run_completed_mono_ns=5_000_000_000)
+    view = views.load(run_dir)
+    doc = html.render(view, archive_present=True, run_dir=run_dir)
+    wall = re.search(r"<dt>Wall clock</dt><dd>([^<]*)</dd>", doc).group(1)
+    cell_time = re.search(r"<dt>Cell time \(sum\)</dt><dd>([^<]*)</dd>", doc).group(1)
+    assert wall == "5.0 s"  # (5_000_000_000 - 0) ns, the run's own span
+    assert cell_time == "60.0 s"  # 2 cells x this fixture's 30s each (mono_ns 1e9..31e9 per cell)
+    assert wall != cell_time
+
+
+def test_header_wall_clock_not_recorded_with_no_run_completed_event(root, tmp_path):
+    """A run with no run.completed event (still running, or a ledger from before it was stamped) reads not
+    recorded -- never a plausible number (IO)."""
+    _, view = _graded(root, tmp_path, {"a": GOOD})
+    doc = html.render(view, archive_present=True)  # no run_dir passed: the same "no source" path
+    assert re.search(r"<dt>Wall clock</dt><dd>not recorded</dd>", doc)
+
+
 
 
 
