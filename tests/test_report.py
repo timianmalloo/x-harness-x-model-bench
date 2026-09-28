@@ -7,13 +7,14 @@ T-SEC-report (a planted token is found and the report is refused).
 
 import json
 import re
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
 from archived_runs import GOOD, STUB, make_root, make_run
 from stats_fixtures import stats_run
 
-from harness_bench import ledger, stats, views
+from harness_bench import board, ledger, stats, views
 from harness_bench.errors import BenchError
 from harness_bench.grade import judge as grade_judge
 from harness_bench.grade import runner
@@ -961,3 +962,100 @@ def test_the_header_names_the_bom_the_plan_froze(root, tmp_path):
     view.plan["matrix"] = {"bom": {"file": "bench/bom.yaml", "subset": ["X1", "A1"]}}
     summary = re.search(r'<section id="header">.*?<p class="muted">(.*?)</p>', html.render(view, archive_present=True), re.DOTALL)
     assert "BOM 0.3 (X1, A1) · " in summary.group(1)
+
+
+# --- R5 (design phase4-report.md s15, s6 rows 4 and 11, s3, s12 UIA-5, UIA-6, UIA-13) -----------------
+
+
+def test_crossing_zero_uses_neutral_mark_and_label():
+    """R5 (design s15, s6 row 4): a delta whose interval crosses 0 draws the --ink-2 mark and
+    the exact label 'no detectable effect (interval crosses 0)'; a positive delta takes --div-pos
+    and a negative delta takes --div-neg."""
+    view = _state_view("valid", None)
+    pe_rows = [
+        board.PackEffectRow(
+            combo="c1",
+            measure="pass_at_1",
+            delta=stats.Interval(point=Decimal("0.05"), lo=Decimal("-0.10"), hi=Decimal("0.20"), n=6, reason=None),
+            label=None,
+        ),
+        board.PackEffectRow(
+            combo="c2",
+            measure="pass_at_1",
+            delta=stats.Interval(point=Decimal("0.25"), lo=Decimal("0.10"), hi=Decimal("0.40"), n=6, reason=None),
+            label=None,
+        ),
+        board.PackEffectRow(
+            combo="c3",
+            measure="pass_at_1",
+            delta=stats.Interval(point=Decimal("-0.25"), lo=Decimal("-0.40"), hi=Decimal("-0.10"), n=6, reason=None),
+            label=None,
+        ),
+    ]
+    board_obj = board.Board(
+        run_id="r1",
+        catalog_version="0.5",
+        params=stats.Params(),
+        primary="gated",
+        primary_reason=None,
+        rows=[],
+        pack_effect=board.PackEffect(status=None, excluded_tasks=(), rows=pe_rows),
+    )
+    doc = html.render(view, archive_present=True, board_obj=board_obj)
+    pe_match = re.search(r'<section id="pack-effect".*?</section>', doc, re.DOTALL)
+    assert pe_match is not None
+    pe_section = pe_match.group(0)
+
+    # 1. The SVG chart must be present and contain inline marks
+    assert "<svg" in pe_section
+
+    # 2. Check the neutral mark and label for the crossing-zero row (c1)
+    # Class .nde references --ink-2 in STYLE
+    assert 'class="nde"' in pe_section or 'class="nde whisk"' in pe_section
+    assert "no detectable effect (interval crosses 0)" in pe_section
+
+    # 3. Check that positive delta takes --div-pos (.pos) and negative takes --div-neg (.neg)
+    assert 'class="pos"' in pe_section or 'class="pos whisk"' in pe_section
+    assert 'class="neg"' in pe_section or 'class="neg whisk"' in pe_section
+
+    # 4. Token mapping in STYLE: .nde uses var(--ink-2), .pos uses var(--div-pos), .neg uses var(--div-neg)
+    assert re.search(r"\.nde\s*\{[^}]*var\(--ink-2\)", html.STYLE)
+    assert re.search(r"\.pos\s*\{[^}]*var\(--div-pos\)", html.STYLE)
+    assert re.search(r"\.neg\s*\{[^}]*var\(--div-neg\)", html.STYLE)
+
+
+def test_uia6_palette_source_scan():
+    """UIA-6 (design s12, s3): heatmap tokens equal the published ten viridis stops,
+    the diverging tokens are the PuOr ends of section 3, and no jet, rainbow or red-green pair
+    appears in report/ source."""
+    # 1. Viridis 10 stops
+    expected_viridis = [
+        "#440154", "#482878", "#3e4989", "#31688e", "#26828e",
+        "#1f9e89", "#35b779", "#6ece58", "#b5de2b", "#fde725",
+    ]
+    heat_tokens = [re.search(rf"--heat-{i}:\s*(#[0-9a-fA-F]{{6}})", html.STYLE) for i in range(10)]
+    assert all(h is not None for h in heat_tokens), "all 10 heat tokens must be defined"
+    actual_viridis = [h.group(1).lower() for h in heat_tokens]
+    assert actual_viridis == [c.lower() for c in expected_viridis]
+
+    # 2. Diverging tokens (PuOr ends of section 3)
+    # Light mode
+    light_pos = re.search(r"--div-pos:\s*(#[0-9a-fA-F]{6})", html.STYLE).group(1).lower()
+    light_neg = re.search(r"--div-neg:\s*(#[0-9a-fA-F]{6})", html.STYLE).group(1).lower()
+    assert light_pos == "#5e3c99"
+    assert light_neg == "#b35806"
+    # Dark mode
+    dark_pos = re.search(r"@media \(prefers-color-scheme: dark\).*?--div-pos:\s*(#[0-9a-fA-F]{6})", html.STYLE, re.DOTALL).group(1).lower()
+    dark_neg = re.search(r"@media \(prefers-color-scheme: dark\).*?--div-neg:\s*(#[0-9a-fA-F]{6})", html.STYLE, re.DOTALL).group(1).lower()
+    assert dark_pos == "#b2abd2"
+    assert dark_neg == "#fdb863"
+
+    # 3. Source scan: no jet, rainbow, or red-green pairs in report/ source
+    import harness_bench.report as report_pkg
+    report_dir = Path(report_pkg.__file__).parent
+    for py_file in sorted(report_dir.glob("*.py")):
+        text = py_file.read_text(encoding="utf-8")
+        assert not re.search(r"\bjet\b", text, re.IGNORECASE), f"forbidden 'jet' in {py_file.name}"
+        assert not re.search(r"\brainbow\b", text, re.IGNORECASE), f"forbidden 'rainbow' in {py_file.name}"
+        assert not re.search(r"\bred[-_ ]green\b|\bgreen[-_ ]red\b", text, re.IGNORECASE), f"forbidden red-green pair in {py_file.name}"
+
