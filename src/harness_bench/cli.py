@@ -22,6 +22,8 @@ from rich.table import Table
 
 from harness_bench import (
     archive,
+    board,
+    composites,
     config,
     egress,
     engine,
@@ -29,6 +31,7 @@ from harness_bench import (
     plan,
     preflight,
     profiles,
+    stats,
     status,
     tools,
     views,
@@ -279,10 +282,26 @@ def cmd_report(args) -> int:
     run_dir = _run_dir(args)
     root = Path(args.root)
     view = views.load(run_dir)
-    text, code = cli_table.render(view, plain=_plain(), run_dir=run_dir, root=root)
+    resamples = getattr(args, "resamples", None)
+    seed = getattr(args, "seed", None)
+    if resamples is not None and resamples < 2000:
+        raise BenchError("HB-STA-003", f"--resamples below 2000 refused ({resamples} < 2000, US-36, R-78 condition 7)")
+    params = None
+    if seed is not None or resamples is not None:
+        params_kw = {}
+        if seed is not None:
+            params_kw["seed"] = seed
+        if resamples is not None:
+            params_kw["resamples"] = resamples
+        params = stats.Params(**params_kw)
+    board_obj = None
+    if view.grading_id is not None:
+        cat = composites.load_catalog(root)
+        board_obj = board.build(view, cat, params=params)
+    text, code = cli_table.render(view, plain=_plain(), run_dir=run_dir, root=root, board_obj=board_obj, params=params)
     if code == OK:
         # html.write's credential scan must run before a label reaches the terminal (residual 5).
-        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator())
+        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator(), board_obj=board_obj, params=params)
         print(text, end="")
         print(f"report: {report_path}")
     else:
@@ -357,6 +376,9 @@ def build_parser() -> argparse.ArgumentParser:
                        ("verify", "check every ledger segment and archive"), ("teardown", "remove the run's archived cell folders")):
         sp = sub.add_parser(name, help=text)
         sp.add_argument("run_id")
+        if name == "report":
+            sp.add_argument("--seed", type=int, default=None, help="bootstrap seed (default: 20260927)")
+            sp.add_argument("--resamples", type=int, default=None, help="bootstrap resamples (minimum: 2000)")
         if name == "status":
             sp.add_argument("--json", action="store_true", help="bench-status/1 on stdout")
         if name == "grade":

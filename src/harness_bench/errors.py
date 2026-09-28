@@ -94,9 +94,10 @@ RUN_CODES: dict[str, str] = {
     "HB-GW-011": "judge build changed",
     # design section 11 as amended by R-72 item 4: checked only when the labels file exists, all or none
     "HB-CAL-001": "labels do not match the manifest",
-    # phase 4 statistics (design phase4-statistics section Seams Z-2)
+    # phase 4 statistics (design phase4-statistics section Seams Z-2; R-78 condition 7)
     "HB-STA-001": "statistics input spans more than one grading pass of one run",
     "HB-STA-002": "runs not comparable: every difference named",
+    "HB-STA-003": "--resamples below 2000 in bench report (US-36, R-78 condition 7)",
 }
 
 _ALL_CODES = set(RUN_CODES) | {c.code for c in Cause}

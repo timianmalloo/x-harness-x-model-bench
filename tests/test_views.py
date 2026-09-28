@@ -6,9 +6,7 @@ Runs are built with the shared archived-run builder and graded for real, then pr
 import hashlib
 import json
 import shutil
-from decimal import Decimal
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 from archived_runs import (
@@ -23,7 +21,16 @@ from archived_runs import (
     set_prices,
 )
 
-from harness_bench import archive, config, ledger, profiles, views
+from harness_bench import (
+    archive,
+    board,
+    composites,
+    config,
+    ledger,
+    profiles,
+    stats,
+    views,
+)
 from harness_bench import plan as plan_mod
 from harness_bench.errors import BenchError
 from harness_bench.grade import cost, runner
@@ -1302,28 +1309,6 @@ def test_an_executed_build_needs_both_a_harness_and_a_version():
     assert views._header(started)["executed_builds"] is None
 
 
-def _fake_cell(combo: str, **fields) -> SimpleNamespace:
-    base = {"combo": combo, "pack": "off", "harness": "codex", "model": CODEX_MODEL, "validity": "valid", "scores": {},
-            "tokens": None, "wall_ms": views.Measure(None, "x")}
-    return SimpleNamespace(**{**base, **fields})
-
-
-def test_a_row_averages_wall_time_names_the_first_missing_cost_and_needs_two_cells_for_no_interval():
-    cells = [_fake_cell("c", wall_ms=views.Measure(ms), scores={"cost_usd": views.Measure(None, f"reason {i}")})
-             for i, ms in enumerate((100, 200, 600))]
-    row = views._row(SimpleNamespace(grading_id="grade-1"), cells)
-    assert row.wall_ms == views.Measure(Decimal(300))
-    assert row.cost_usd == views.Measure(None, "3 of 3 valid cells have no cost: reason 0")
-    assert row.interval == "interval not computed (statistics are phase 4)"
-
-
-def test_a_zero_pass_rate_sorts_after_every_positive_one():
-    cells = [_fake_cell("a-zero", scores={"pass_at_1": views.Measure(0)}),
-             _fake_cell("b-half", scores={"pass_at_1": views.Measure(Decimal("0.5"))})]
-    rows = views.leaderboard(SimpleNamespace(grading_id="grade-1", cells=cells))
-    assert [(r.combo, r.rank) for r in rows] == [("b-half", "1"), ("a-zero", "2")]
-
-
 def test_a_finding_is_a_frozen_value():
     from dataclasses import FrozenInstanceError
 
@@ -1370,54 +1355,17 @@ def test_the_cost_score_equals_a_fresh_derivation(root, tmp_path):  # a stored c
     assert a.scores["cost_usd"] == views.Measure(f"{fresh:.6f}")
 
 
-# --- leaderboard (US-39 skeleton; correctness-gated, ties) -----------------------------------------
-
-
-def test_the_leaderboard_ranks_by_pass_rate_and_shows_ties(root, tmp_path):
-    run_dir = make_run(root, tmp_path, {"a": GOOD, "b": STUB, "c": GOOD},
-                       combos={"a": "good", "b": "stub", "c": "also-good"})
-    runner.run_pass(run_dir, root)
-    rows = views.leaderboard(views.load(run_dir))
-    assert [(r.combo, r.rank, r.pass_at_1) for r in rows] == [
-        ("also-good", "1=", views.Measure(Decimal(1))), ("good", "1=", views.Measure(Decimal(1))),
-        ("stub", "3", views.Measure(Decimal(0)))]
-    assert rows[0].interval == "interval not computed (n < 2)"
-
-
-def test_an_invalid_cell_never_counts_toward_its_combo(root, tmp_path):
-    run_dir = make_run(root, tmp_path, {"a": GOOD}, outcomes={"a": {"outcome": "failed", "cause": "provider", "code": "HB-CELL-108"}})
-    runner.run_pass(run_dir, root)
-    (row,) = views.leaderboard(views.load(run_dir))
-    assert (row.n_cells, row.n_valid, row.rank) == (1, 0, "")
-    assert row.pass_at_1 == views.Measure(None, "no valid graded cell")
-
-
-def test_an_unranked_combo_sorts_last_and_two_valid_cells_still_get_no_interval(root, tmp_path):
-    run_dir = make_run(root, tmp_path, {"a1": GOOD, "a2": GOOD, "b1": GOOD}, combos={"a1": "a-two", "a2": "a-two", "b1": "b-bad"},
-                       outcomes={"b1": {"outcome": "failed", "cause": "provider", "code": "HB-CELL-108"}})
-    runner.run_pass(run_dir, root)
-    rows = views.leaderboard(views.load(run_dir))
-    assert [(r.combo, r.rank) for r in rows] == [("a-two", "1"), ("b-bad", "")]
-    assert rows[0].interval == "interval not computed (statistics are phase 4)"
+# --- cost NA propagation in board row (mutant target) -----------------------------------------
 
 
 def test_cost_is_na_for_a_combo_when_any_valid_cell_has_no_cost(root, tmp_path):
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     runner.run_pass(run_dir, root)
-    (row,) = views.leaderboard(views.load(run_dir))
-    assert row.cost_usd == views.Measure(None, f"1 of 1 valid cells have no cost: no price list entry for {CODEX_MODEL}")
-
-
-# --- canonical export (the byte-identical re-grade, US-26) -----------------------------------------
-
-
-def test_a_higher_pass_rate_sorts_first_whatever_the_combo_name(root, tmp_path):
-    run_dir = make_run(root, tmp_path, {"a1": GOOD, "a2": STUB, "b1": GOOD},
-                       combos={"a1": "a-half", "a2": "a-half", "b1": "b-full"})
-    runner.run_pass(run_dir, root)
-    rows = views.leaderboard(views.load(run_dir))
-    assert [(r.combo, r.rank, r.pass_at_1) for r in rows] == [("b-full", "1", views.Measure(Decimal(1))),
-                                                              ("a-half", "2", views.Measure(Decimal("0.5")))]
+    view = views.load(run_dir)
+    cat = composites.Catalog(version="0.4", hash="h", metrics={}, areas={}, has_anchors=False)
+    b = board.build(view, cat)
+    (row,) = b.rows
+    assert row.cost_usd == stats.Measure(None, f"1 of 1 valid cells have no cost: no price list entry for {CODEX_MODEL}")
 
 
 def test_a_regrade_gives_a_byte_identical_canonical_export(root, tmp_path):

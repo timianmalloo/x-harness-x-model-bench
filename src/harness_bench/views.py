@@ -554,22 +554,6 @@ def export(view: RunView) -> bytes:
     return ledger.canonical({"run_id": view.run_id, "catalog_version": view.catalog_version, "cells": cells})
 
 
-def __getattr__(name: str):
-    if name in ("leaderboard", "Row", "_row", "_mean"):
-        import importlib
-
-        mod = importlib.import_module("harness_bench.board")
-        if name == "leaderboard":
-            return mod._legacy_leaderboard
-        if name == "Row":
-            return mod.Row
-        if name == "_row":
-            return mod._legacy_row
-        if name == "_mean":
-            return mod._mean
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-
-
 @dataclass(frozen=True)
 class Finding:
     code: str

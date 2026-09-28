@@ -467,6 +467,7 @@ def export(board: Board, comparison: Comparison | None = None) -> bytes: ...  # 
 | --- | --- | --- |
 | `HB-STA-001` | statistics input spans more than one grading pass of one run (R-19); e.g. `--baseline` names the run itself | `board.compare` |
 | `HB-STA-002` | runs not comparable: every difference named | `board.compare` |
+| `HB-STA-003` | `--resamples` below 2,000 in `bench report` (US-36, R-78 condition 7) | `cli.cmd_report` |
 | `HB-USR-002` (existing) | `--seed` or `--resamples` out of range | `stats.Params` |
 
 **CLI** (a seam to `cli.py`'s owner): `bench report <run_id> [--seed N] [--resamples B] [--baseline <run_id>]`.

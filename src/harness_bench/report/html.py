@@ -16,7 +16,16 @@ import html as _html
 import re
 from pathlib import Path
 
-from harness_bench import egress, profiles, report, views
+from harness_bench import (
+    board,
+    composites,
+    config,
+    egress,
+    profiles,
+    report,
+    stats,
+    views,
+)
 from harness_bench.errors import BenchError
 from harness_bench.plan import resolved_model_map
 from harness_bench.report import judges
@@ -60,9 +69,13 @@ def _fact(value) -> str:
     return _e(value) if value not in (None, "") else "not recorded"
 
 
-def _table(tid: str, caption: str, headers: list[tuple[str, bool]], rows: list[list[tuple[str, bool]]]) -> str:
+def _table(tid: str, caption: str, headers: list[tuple[str, bool]], rows: list[list[tuple]]) -> str:
     head = "".join(f'<th scope="col"{" class=\"num\"" if num else ""}>{_e(h)}</th>' for h, num in headers)
-    body = "".join("<tr>" + "".join(f'<td class="num">{v}</td>' if num else f"<td>{v}</td>" for v, num in row) + "</tr>"
+    body = "".join("<tr>" + "".join(
+        (f'<td class="num"{cell[2]}>{cell[0]}</td>' if cell[1] else f'<td{cell[2]}>{cell[0]}</td>')
+        if len(cell) > 2 else
+        (f'<td class="num">{cell[0]}</td>' if cell[1] else f'<td>{cell[0]}</td>')
+        for cell in row) + "</tr>"
                    for row in rows)
     return (f'<div class="region" role="region" tabindex="0" aria-labelledby="{tid}-caption">'
             f'<table><caption id="{tid}-caption">{_e(caption)}</caption><thead><tr>{head}</tr></thead>'
@@ -159,7 +172,8 @@ def _scenario6_facts(view: views.RunView) -> list[tuple[str, str | None]]:
 
 def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | None = None,
             judging: list[tuple[str, str | None]] | None = None, root: Path | None = None,
-            run_dir: Path | None = None) -> str:
+            run_dir: Path | None = None, board_obj: board.Board | None = None,
+            params: stats.Params | None = None) -> str:
     plan = view.plan
     planned = ", ".join(views.build_label(h, str(b.get("version", ""))) for h, b in sorted((plan.get("builds") or {}).items()))
     facts = [("Run", view.run_id), ("State", "complete" if view.completed else "incomplete"),
@@ -173,7 +187,7 @@ def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | N
              *_claude_code_permission_fact(view.cells, modes or {}),
              ("Price list hash", (plan.get("price_list_hash") or "")[:12]), *_scenario6_facts(view),
              *(judging or []),  # Probe versions is the last judge-block row (report/judges.py)
-             *report.disclosure_rows(root, plan, run_dir, view)]  # R-76 gate allowance; R-77 D1 baseline from this run
+             *report.disclosure_rows(root, plan, run_dir, view, board_obj=board_obj, params=params)]  # R-76 gate allowance; R-77 D1 baseline from this run
     if report.has_codex_cell(plan):
         facts.append((report.N5_FLAG, f"see {report.N5_EVIDENCE}"))
     if report.has_claude_code_cell(plan):
@@ -201,18 +215,91 @@ def _validity(view: views.RunView) -> str:
     return f'<section id="validity"><h2>Validity</h2>{body}</section>'
 
 
-def _leaderboard(view: views.RunView) -> str:
+def _leaderboard(view: views.RunView, board_obj: board.Board) -> str:
     if not any(c.outcome == "completed" for c in view.cells):
         return (f'<section id="leaderboard"><h2>Leaderboard</h2><p>No cell completed in this run. '
                 f"Run bench status {_e(view.run_id)} to see why.</p></section>")
-    headers = [("Rank", False), ("Combo", False), ("Pack", False), ("Valid cells", True), ("pass@1", True), ("Interval", False),
-               ("Tokens per cell", True), ("Wall per cell", True), ("Cost per cell", True)]
-    rows = [[(_e(r.rank or "unranked"), False),
-             (_e(report.flag_if_claude_code(report.flag_if_codex(r.combo, r.harness), r.harness)), False), (_e(r.pack), False),
-             (f"{r.n_valid}/{r.n_cells} cells", True),
-             (_e(report.rate(r.pass_at_1)), True), (_e(r.interval), False), (_e(report.tokens(r.tokens)), True),
-             (_e(report.seconds(r.wall_ms)), True), (_e(report.usd(r.cost_usd)), True)] for r in views.leaderboard(view)]
-    return f'<section id="leaderboard"><h2>Leaderboard</h2>{_table("leaderboard", "One row per combo and pack", headers, rows)}</section>'
+    headers = [("Rank", False), ("Combo", False), ("Pack", False), ("Valid cells", True), ("pass@1", True), ("pass@1 95%", False),
+               ("Gated", True), ("Gated 95%", False), ("Tokens per cell", True), ("Wall per cell", True), ("Cost per cell", True)]
+    rows = []
+    for r in board_obj.rows:
+        p1_pt = f"{r.pass_at_1.point:.2f}" if r.pass_at_1.point is not None else f"NA ({r.pass_at_1.reason})"
+        if r.pass_at_1.lo is not None and r.pass_at_1.hi is not None:
+            p1_attr = f' data-interval-lo="{r.pass_at_1.lo:.2f}" data-interval-hi="{r.pass_at_1.hi:.2f}"'
+            p1_iv = f"[{r.pass_at_1.lo:.2f}, {r.pass_at_1.hi:.2f}]"
+        else:
+            p1_attr = ""
+            p1_iv = _e(r.pass_at_1.reason or "interval not computed")
+
+        gated_pt = f"{r.gated.point:.1f}" if r.gated.point is not None else f"NA ({r.gated.reason})"
+        if r.gated.lo is not None and r.gated.hi is not None:
+            gated_attr = f' data-interval-lo="{r.gated.lo:.1f}" data-interval-hi="{r.gated.hi:.1f}"'
+            gated_iv = f"[{r.gated.lo:.1f}, {r.gated.hi:.1f}]"
+        else:
+            gated_attr = ""
+            gated_iv = _e(r.gated.reason or "interval not computed")
+
+        combo_cell = (_e(report.flag_if_claude_code(report.flag_if_codex(r.combo, r.harness), r.harness)), False)
+
+        row = [
+            (_e(r.rank or "unranked"), False),
+            combo_cell,
+            (_e(r.pack), False),
+            (f"{r.n_valid}/{r.n_cells} cells", True),
+            (_e(p1_pt), True, p1_attr),
+            (p1_iv, False, p1_attr),
+            (_e(gated_pt), True, gated_attr),
+            (gated_iv, False, gated_attr),
+            (_e(report.tokens(r.tokens)), True),
+            (_e(report.seconds(r.wall_ms)), True),
+            (_e(report.usd(r.cost_usd)), True),
+        ]
+        rows.append(row)
+
+    table_html = _table("leaderboard", "One row per combo and pack", headers, rows)
+    footnotes = []
+    for r in board_obj.rows:
+        if not r.rank and r.rank_reason:
+            footnotes.append(f"<p>{_e(r.combo)} {_e(r.pack)}: {_e(r.rank_reason)}</p>")  # rank_reason carries "not ranked: "
+        if r.footnote:
+            footnotes.append(f"<p>{_e(r.combo)} {_e(r.pack)}: {_e(r.footnote)}</p>")
+    fn_html = "".join(footnotes)
+    return f'<section id="leaderboard"><h2>Leaderboard</h2>{table_html}{fn_html}</section>'
+
+
+def _pack_effect(board_obj: board.Board) -> str:
+    pe = board_obj.pack_effect
+    excl = f"<p>{_e(pe.exclusion_line)}</p>"
+    if pe.status is not None:
+        body = f"<p>{_e(pe.status)}</p>"
+    elif pe.rows:
+        headers = [("Combo", False), ("Measure", False), ("Delta", True), ("95% Interval", False), ("Label", False)]
+        rows = []
+        for pr in pe.rows:
+            is_p1 = pr.measure == "pass_at_1"
+            if pr.delta.point is not None:
+                delta_str = f"{pr.delta.point:+.2f}" if is_p1 else f"{pr.delta.point:+.1f}"
+            else:
+                delta_str = pr.reason or "NA"
+            if pr.delta.lo is not None and pr.delta.hi is not None:
+                iv_attr = f' data-interval-lo="{pr.delta.lo:.2f}" data-interval-hi="{pr.delta.hi:.2f}"' if is_p1 else f' data-interval-lo="{pr.delta.lo:.1f}" data-interval-hi="{pr.delta.hi:.1f}"'
+                iv_str = f"[{pr.delta.lo:.2f}, {pr.delta.hi:.2f}]" if is_p1 else f"[{pr.delta.lo:.1f}, {pr.delta.hi:.1f}]"
+            else:
+                iv_attr = ""
+                iv_str = _e(pr.reason or pr.delta.reason or "interval not computed")
+            label_str = _e(pr.label or "")
+            row = [
+                (_e(pr.combo), False),
+                (_e(pr.measure), False),
+                (_e(delta_str), True, iv_attr),
+                (iv_str, False, iv_attr),
+                (label_str, False),
+            ]
+            rows.append(row)
+        body = _table("pack-effect", "Pack effect per combo and area", headers, rows)
+    else:
+        body = "<p>No pack effect data.</p>"
+    return f'<section id="pack-effect"><h2>Pack effect</h2>{excl}{body}</section>'
 
 
 def _evidence(c: views.CellView, archive_present: bool) -> str:
@@ -250,15 +337,35 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str], run_
 
 
 def render(view: views.RunView, archive_present: bool, run_dir: Path | None = None, root: Path | None = None,
-           operator: egress.Operator | None = None) -> str:
+           operator: egress.Operator | None = None, board_obj: board.Board | None = None,
+           params: stats.Params | None = None) -> str:
     """The page; `root` (the bench root) adds the judge block for a pass that looked up judge verdicts, and
     `operator` (read at run time, never committed) lets it name the classes each judge CLI added."""
     tags = _context_window_tags(run_dir)  # R-32: read from events, not from views.py (ruling R-32 condition 3)
     judging = judges.facts(root, run_dir, view, operator)
+
+    if board_obj is None:
+        r = root if root is not None else (config.repo_root() if (config.repo_root() / "bench" / "metrics.yaml").is_file() else None)
+        cat = None
+        if r is not None and (r / "bench" / "metrics.yaml").is_file():
+            try:
+                cat = composites.load_catalog(r)
+            except (BenchError, OSError, KeyError, ValueError):
+                cat = None
+        if cat is None:
+            cat = composites.Catalog(
+                version=getattr(view, "catalog_version", None) or "0.4",
+                hash="",
+                metrics={},
+                areas={},
+                has_anchors=False,
+            )
+        board_obj = board.build(view, cat, params=params)
+
     return ("<!doctype html>\n"
             f'<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
             f"<title>harness-bench run {_e(view.run_id)}</title><style>{STYLE}</style></head>"
-            f"<body><main>{_header(view, tags, _permission_modes(run_dir), judging, root, run_dir)}{_validity(view)}{_leaderboard(view)}{_runs(view, archive_present, tags, run_dir, root)}"
+            f"<body><main>{_header(view, tags, _permission_modes(run_dir), judging, root, run_dir, board_obj=board_obj, params=params)}{_validity(view)}{_leaderboard(view, board_obj)}{_pack_effect(board_obj)}{_runs(view, archive_present, tags, run_dir, root)}"
             f"</main></body></html>\n")
 
 
@@ -272,8 +379,10 @@ def scan(text: str, credential_values: set[str] = frozenset()) -> int:
 
 
 def write(run_dir: Path, view: views.RunView, credential_values: set[str] = frozenset(), root: Path | None = None,
-          operator: egress.Operator | None = None) -> Path:
-    doc = render(view, archive_present=(run_dir / "archive").is_dir(), run_dir=run_dir, root=root, operator=operator)
+          operator: egress.Operator | None = None, board_obj: board.Board | None = None,
+          params: stats.Params | None = None) -> Path:
+    doc = render(view, archive_present=(run_dir / "archive").is_dir(), run_dir=run_dir, root=root, operator=operator,
+                 board_obj=board_obj, params=params)
     found = scan(doc, credential_values)
     if found:
         raise BenchError("HB-SEC-001", f"{found} credential-shaped string(s) in the report; nothing was written")
