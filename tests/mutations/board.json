@@ -89,5 +89,12 @@
     "find": "        \"export_version\": EXPORT_VERSION,\n",
     "replace": "",
     "tests": ["tests/test_board.py::test_tb3_board_export_golden"]
+  },
+  {
+    "name": "projections emit both arms whatever the run planned",
+    "file": "src/harness_bench/board.py",
+    "find": "    packs = {combo: sorted(p for c2, p in groups if c2 == combo) for combo in combos}\n",
+    "replace": "    packs = {combo: [\"off\", \"on\"] for combo in combos}\n",
+    "tests": ["tests/test_board.py::test_projections_carry_only_the_arms_the_run_has"]
   }
 ]
