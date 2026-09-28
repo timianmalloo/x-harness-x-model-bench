@@ -1,4 +1,4 @@
-"""PreToolUse hook (Bash): block two command shapes that fail silently (CT27).
+"""PreToolUse hook (Bash): block three command shapes that fail silently or destroy work (CT27, CLN-C).
 
 EDIT-B: a heredoc fed to a Python interpreter. A replacement script inside a heredoc corrupts the escapes in
 the text it writes: `\\n` arrives as a line break, `\\\\` as one backslash. The damage shows only when the file
@@ -7,6 +7,10 @@ is parsed later. Write the program to a file and run it, or change code with the
 E2E-E: a gate (pytest, ruff, mutate_check, conductor-join, run-verify-gates) piped into another command. The
 pipe's status is the last command's, so a failing gate reads as green. Read the gate's status on its own line,
 or set `pipefail`.
+
+CLN-C: `git worktree remove --force` / `-f` and `git branch -D`. The forced forms remove what the plain command
+refuses (a dirty tree, an unmerged branch). Three instances by the Leader (2026-09-25, 09-25, 09-27) triggered this
+hook. Remove plainly after naming the tree's untracked files, or use the holding scripts.
 
 Reads the hook payload (JSON) on stdin. Exit 2 blocks the call and shows stderr to the agent; any other
 input, including a payload that does not parse, passes (exit 0), so the guard never blocks by accident.
@@ -26,19 +30,30 @@ HEREDOC = (
 GATE = r"(?:\bpytest\b|\bruff\s+check\b|\b(?:mutate_check|conductor-join|run-verify-gates)\.py\b)"
 PIPED_GATE = re.compile(rf"(?:^|[\s;&(/\\]){GATE}[^\n;&|]*(?<!\|)\|(?!\|)")  # uv run pytest -q | tail -1
 QUOTED = re.compile(r"'[^']*'|\"(?:[^\"\\]|\\.)*\"")  # a quoted argument: a | inside it is data, not a pipe
+GIT = r"\bgit(?:\s+-C\s+\S+)?"
+FORCED_REMOVAL = (
+    re.compile(rf"{GIT}\s+worktree\s+remove\b[^\n;&|]*\s(?:--force|-f)\b"),  # git worktree remove --force <tree>
+    re.compile(rf"{GIT}\s+branch\s+(?:[^\n;&|]*\s)?-D\b"),  # git branch -D <branch>
+)
 MESSAGES = {
     "heredoc": ("EDIT-B / CT27: a heredoc into Python corrupts escapes in the text it writes. "
                 "Change code with the Edit tool, or write the program to a file (scratchpad) and run it."),
     "pipe": ("E2E-E / CT27: a gate piped into another command reports that command's exit status, not the gate's. "
              "Redirect the gate to a log and read `$?` on its own line, or add `set -o pipefail`."),
+    "force": ("CLN-C: a forced worktree or branch removal destroys what the plain command would refuse. Name the "
+              "tree's untracked files and remove it plainly, or use the holding scripts (cleanup_merged.sh, "
+              "coord worktree cleanup --remove)."),
 }
 
 
 def verdict(command: str) -> str | None:
     if any(shape.search(command) for shape in HEREDOC):
         return "heredoc"
-    if "pipefail" not in command and PIPED_GATE.search(QUOTED.sub("''", command)):
+    unquoted = QUOTED.sub("''", command)
+    if "pipefail" not in command and PIPED_GATE.search(unquoted):
         return "pipe"
+    if any(shape.search(unquoted) for shape in FORCED_REMOVAL):
+        return "force"
     return None
 
 
