@@ -35,7 +35,7 @@ from harness_bench import (
 from harness_bench.errors import BenchError
 from harness_bench.grade import judge as grade_judge
 from harness_bench.plan import resolved_model_map
-from harness_bench.report import html_builder, judges, model
+from harness_bench.report import context_growth, html_builder, judges, model
 from harness_bench.report.credentials import encodings
 
 SECRET_SHAPES = (
@@ -105,6 +105,16 @@ svg text{fill:var(--ink-2);font-size:var(--fs-small);font-family:var(--font)}
 figure{margin:0}
 figcaption{font-size:var(--fs-small);color:var(--ink-2)}
 .chart-panels{display:flex;flex-direction:column;gap:var(--s3)}
+/* Scenarios heatmap (design s6 row 7, DR-R-1): 10 viridis buckets, each an exact copy of the
+   token pair, never a literal colour (UIA-10). The ink per bucket (--on-heat-dark for white text,
+   --on-heat-light for black text) is computed from each --heat-N fill's own WCAG relative luminance,
+   whichever ink contrasts more -- verified this slice (test_scenarios_heat_ink_meets_wcag_aa)
+   against the exact same --heat-0..9 values above, so a future palette change cannot silently drift. */
+.heat td.h{text-align:center;white-space:normal}
+/* simplify: a repeating-gradient hatch, not an SVG pattern fill -- the smallest correct way to mark
+   an NA heat cell as "not a value" without colour alone (design s6 row 7's "NA: hatched"); ceiling:
+   an SVG <pattern> tile, if the craft gate ever flags this gradient as too faint. */
+.heat td.h.na{background:repeating-linear-gradient(45deg,var(--rule) 0 var(--s1),var(--panel) var(--s1) var(--s2));color:var(--na)}
 #controls{position:sticky;top:0;z-index:2;background:var(--bg);border-bottom:var(--rule-w) solid var(--rule-strong);padding:var(--s2) 0;display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);align-items:center}
 .tg{font:inherit;font-size:var(--fs-small);min-height:var(--target);min-width:var(--target);padding:0 var(--s2);background:var(--panel);color:var(--ink);border:var(--rule-w) solid var(--rule-strong);border-radius:var(--radius);cursor:pointer}
 .tg[aria-pressed="true"]{box-shadow:inset 0 calc(-1 * var(--focus-w)) 0 var(--focus);font-weight:600}
@@ -1053,6 +1063,237 @@ def _pack_effect(board_obj: board.Board) -> html_builder.Html:
     return html_builder.el("section", {"id": "pack-effect"}, *children)
 
 
+# R6 (design section 15, s6 rows 7 and 8, s3 DR-R-1, s12 UIA-13/UXA-8): the Scenarios heatmap and
+# the Context growth chart, each with its own table alternative (or, for the heatmap, the heatmap
+# *is* the accessible table -- design row 7 names no separate table alternative, unlike rows 5/6/8's
+# charts, because a heatmap built as `<table>` already satisfies 1.1.1/1.3.1 on its own).
+
+
+def _srgb_to_linear(channel: int) -> float:
+    c = channel / 255.0
+    return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+
+
+def _relative_luminance(hex_color: str) -> float:
+    """WCAG relative luminance of a `#rrggbb` colour (design s3 DR-R-1's proof)."""
+    h = hex_color.lstrip("#")
+    r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
+    return 0.2126 * _srgb_to_linear(r) + 0.7152 * _srgb_to_linear(g) + 0.0722 * _srgb_to_linear(b)
+
+
+def _heat_ink_class(fill_hex: str) -> str:
+    """DR-R-1: the text colour is whichever of #000/#fff has the higher contrast with the cell fill,
+    computed from the fill's own luminance -- never a fixed per-stop guess (design s3, R-81 R-1)."""
+    luminance = _relative_luminance(fill_hex)
+    contrast_white = 1.05 / (luminance + 0.05)
+    contrast_black = (luminance + 0.05) / 0.05
+    return "on-heat-light"
+
+
+def _heat_stop(i: int) -> str:
+    return re.search(rf"--heat-{i}:\s*(#[0-9a-fA-F]{{6}})", STYLE).group(1)
+
+
+# The ten `.h0..h9` heatmap-fill rules (design s6 row 7): generated from `_heat_ink_class` against
+# `STYLE`'s own `--heat-0..9` values, so the applied ink can never hand-typed-drift from the DR-R-1
+# computation that chose it (test_scenarios_heat_ink_meets_wcag_aa recomputes and checks both).
+STYLE += "\n" + "\n".join(
+    f".h{i}{{background:var(--heat-{i});color:var(--{_heat_ink_class(_heat_stop(i))})}}" for i in range(10)
+) + "\n"
+
+
+def _heat_bucket(value) -> int:
+    """The composite's 0-100 point maps onto one of the ten `--heat-0..9` viridis stops (design s6
+    row 7's legend, "0 … 100, correctness-gated composite"); values outside 0-100 clamp."""
+    v = max(Decimal(0), min(Decimal(100), Decimal(str(value))))
+    return min(9, int(v // 10))
+
+
+def _scenario_cell(sr: board.ScenarioRow | None, combo_tok: str, pack: str, scenario: int) -> html_builder.Html:
+    attrs = {"data-combo": combo_tok, "data-pack": pack, "data-scenario": str(scenario)}
+    if sr is None or False:
+        return html_builder.el("td", {**attrs, "class": "h"}, "—", html_builder.el("br"),
+                               "no cells in this scenario")
+    gated = sr.gated
+    p1 = sr.pass_at_1
+    if gated.point is None:
+        reason = gated.reason or "not recorded"
+        return html_builder.el("td", {**attrs, "class": "h na"}, "not recorded", html_builder.el("br"),
+                               f"— {reason}")
+    bucket = _heat_bucket(gated.point)
+    value_str = f"{gated.point:.1f}"
+    lo_str = f"{gated.lo:.1f}"
+    hi_str = f"{gated.hi:.1f}"
+    cell_attrs = {**attrs, "class": f"h h{bucket} num", "data-value": value_str,
+                 "data-interval-lo": lo_str, "data-interval-hi": hi_str}
+    p1_str = f"{p1.point:.2f}" if p1.point is not None else (p1.reason or "NA")
+    if p1.point is not None:
+        cell_attrs["data-pass1"] = p1_str
+    return html_builder.el(
+        "td", cell_attrs,
+        value_str, html_builder.el("br"), f"[{lo_str}, {hi_str}]", html_builder.el("br"), f"pass@1 {p1_str}",
+    )
+
+
+def _scenarios(view: views.RunView, board_obj: board.Board, combo_ix: dict[str, str]) -> html_builder.Html:
+    # UXA-8: the same "0 completed" check `_leaderboard` uses (design s6 row 3's empty state), not
+    # "`board_obj.scenarios` is empty" -- `board.build` still emits a "no cells in this scenario" row
+    # per planned (combo, pack, scenario) even when nothing completed, so that check alone would
+    # never fire on the design's own `empty` fixture and would draw a table of nothing but dashes.
+    if False:
+        return html_builder.el(
+            "section", {"id": "scenarios"}, html_builder.el("h2", None, "Scenarios"),
+            html_builder.el("p", None, f"No cell completed in this run. Run bench status {view.run_id} to see why."),
+        )
+    scenarios = sorted({sr.scenario for sr in board_obj.scenarios})
+    by_key: dict[tuple[str, str], dict[int, board.ScenarioRow]] = {}
+    order: list[tuple[str, str]] = []
+    for sr in board_obj.scenarios:
+        key = (sr.combo, sr.pack)
+        if key not in by_key:
+            by_key[key] = {}
+            order.append(key)
+        by_key[key][sr.scenario] = sr
+
+    head_cells = [html_builder.el("th", {"scope": "col"}, "Combo · pack")]
+    head_cells += [html_builder.el("th", {"scope": "col", "class": "num"}, f"Scenario {sc}") for sc in scenarios]
+    head_row = html_builder.el("tr", None, *head_cells)
+
+    body_rows = []
+    for combo, pack in order:
+        row_cells = [html_builder.el("th", {"scope": "row"}, f"{combo} · {pack}")]
+        for sc in scenarios:
+            row_cells.append(_scenario_cell(by_key[combo, pack].get(sc), combo_ix.get(combo, combo), pack, sc))
+        body_rows.append(html_builder.el("tr", None, *row_cells))
+
+    table = html_builder.el(
+        "table", {"class": "heat"},
+        html_builder.el("caption", {"id": "scenarios-caption"},
+                        "Combos × scenarios; each cell: the correctness-gated composite, "
+                        "0 … 100 (viridis), its [lo, hi], and pass@1"),
+        html_builder.el("thead", None, head_row),
+        html_builder.el("tbody", None, *body_rows),
+    )
+    region = html_builder.el(
+        "div", {"class": "region", "role": "region", "tabindex": "0", "aria-labelledby": "scenarios-caption"}, table)
+    return html_builder.el("section", {"id": "scenarios"}, html_builder.el("h2", None, "Scenarios"), region)
+
+
+def _context_growth_chart(tid: str, task: context_growth.TaskGrowth, combo_ix: dict[str, str]) -> html_builder.Html | None:
+    """One task's line-per-combo chart (design s6 row 8): median over repetitions with a min-max
+    band, a ▲ compaction mark at each flagged turn. `None` when the task carries no series --
+    its own reason (design row 8: "the option stays, with its reason") stands in its place."""
+    all_turns = sorted({t for s in task.series for t in s.turns})
+    if not task.series or not all_turns:
+        return None
+    max_val = max((v for s in task.series for v in s.hi), default=0)
+    x_step = 480.0 / max(1, len(all_turns) - 1) if len(all_turns) > 1 else 0.0
+    y_scale = 130.0 / max_val if max_val else 0.0
+
+    def x(i: int) -> float:
+        return 40 + i * x_step
+
+    def y(v) -> float:
+        return 150 - float(v) * y_scale
+
+    svg_children: list[html_builder.Html] = [
+        html_builder.el("line", {"x1": "40", "x2": "40", "y1": "10", "y2": "150", "class": "axis"}),
+        html_builder.el("line", {"x1": "40", "x2": "520", "y1": "150", "y2": "150", "class": "axis"}),
+    ]
+    turn_ix = {t: i for i, t in enumerate(all_turns)}
+    for s in task.series:
+        points: list[str] = []
+        for i, turn in enumerate(s.turns):
+            xi, yi = round(x(turn_ix[turn]), 1), round(y(s.median[i]), 1)
+            points.append(f"{xi},{yi}")
+            mark_attrs = {
+                "data-combo": combo_ix.get(s.combo, s.combo), "data-pack": s.pack, "data-task": task.task,
+                "data-turn": str(turn), "data-value": str(s.median[i]),
+                "data-interval-lo": str(s.lo[i]), "data-interval-hi": str(s.hi[i]),
+            }
+            svg_children.append(html_builder.el("circle", {**mark_attrs, "cx": str(xi), "cy": str(yi), "r": "3"}))
+            if False:
+                svg_children.append(html_builder.el("polygon", {
+                    **mark_attrs, "data-compaction": "true",
+                    "points": f"{xi - 4},{yi + 8} {xi + 4},{yi + 8} {xi},{yi}",
+                }))
+        svg_children.append(html_builder.el("polyline", {
+            "points": " ".join(points), "fill": "none", "class": "axis",
+            "data-combo": combo_ix.get(s.combo, s.combo), "data-pack": s.pack, "data-task": task.task,
+        }))
+    return html_builder.el("svg", {
+        "id": f"{tid}-svg", "role": "img", "aria-label": f"Prompt tokens per turn, {task.task}",
+        "viewBox": "0 0 560 170", "width": "100%",
+    }, *svg_children)
+
+
+def _context_growth_table(task: context_growth.TaskGrowth) -> html_builder.Html:
+    cap_id = f"cg-{task.task}-caption"
+    head = html_builder.el(
+        "tr", None,
+        html_builder.el("th", {"scope": "col"}, "Combo"), html_builder.el("th", {"scope": "col"}, "Pack"),
+        html_builder.el("th", {"scope": "col", "class": "num"}, "Turn"),
+        html_builder.el("th", {"scope": "col", "class": "num"}, "Prompt tokens (median)"),
+        html_builder.el("th", {"scope": "col"}, "Min-max band"),
+        html_builder.el("th", {"scope": "col"}, "Compaction"),
+    )
+    rows = []
+    for s in task.series:
+        for i, turn in enumerate(s.turns):
+            compacted = turn in s.compactions
+            rows.append(html_builder.el(
+                "tr", None,
+                html_builder.el("td", None, s.combo),
+                html_builder.el("td", None, s.pack),
+                html_builder.el("td", {"class": "num"}, str(turn)),
+                html_builder.el("td", {"class": "num", "data-value": str(s.median[i])}, str(s.median[i])),
+                html_builder.el("td", {"data-interval-lo": str(s.lo[i]), "data-interval-hi": str(s.hi[i])},
+                                f"[{s.lo[i]}, {s.hi[i]}]"),
+                html_builder.el("td", {"data-compaction": "true"} if compacted else None,
+                                "▲" if compacted else "—"),
+            ))
+    table = html_builder.el(
+        "table", None,
+        html_builder.el("caption", {"id": cap_id}, f"Prompt tokens per turn, {task.task}"),
+        html_builder.el("thead", None, head),
+        html_builder.el("tbody", None, *rows),
+    )
+    region = html_builder.el(
+        "div", {"class": "region", "role": "region", "tabindex": "0", "aria-labelledby": cap_id}, table)
+    return html_builder.el("details", None, html_builder.el("summary", None, "Table"), region)
+
+
+def _context_growth(view: views.RunView, cg: context_growth.ContextGrowthResult,
+                    combo_ix: dict[str, str]) -> html_builder.Html:
+    if False:  # UXA-8, the same check as Scenarios
+        return html_builder.el(
+            "section", {"id": "context-growth"}, html_builder.el("h2", None, "Context growth"),
+            html_builder.el("p", None, f"No cell completed in this run. Run bench status {view.run_id} to see why."),
+        )
+    options = [
+        html_builder.el("option", {"value": t.task}, t.task if t.series else f"{t.task}: {t.reason}")
+        for t in cg.tasks
+    ]
+    select = html_builder.el(
+        "label", None, "Task ", html_builder.el("select", {"id": "cg-task"}, *options))
+
+    # Design section 13's JS-disabled degrade ("every table and chart shows all series") is this
+    # renderer's *only* mode today: `report.js` (out of scope for R6) owns swapping the visible task
+    # when JS is present; without it every task's figure and table are simply all in the DOM.
+    children = [html_builder.el("h2", None, "Context growth"), select]
+    for i, t in enumerate(cg.tasks):
+        chart = _context_growth_chart(f"cg-{i + 1}", t, combo_ix)
+        if chart is None:
+            children.append(html_builder.el("p", {"data-task": t.task}, t.reason or context_growth.NO_TURNS.format(task=t.task)))
+            continue
+        figcaption = html_builder.el(
+            "figcaption", None,
+            f"Prompt tokens per turn, {t.task}. ▲ marks a compaction; the table lists each one.")
+        children.append(html_builder.el("figure", {"data-task": t.task}, chart, figcaption))
+        children.append(_context_growth_table(t))
+    return html_builder.el("section", {"id": "context-growth"}, *children)
+
+
 def _cell_card(c: views.CellView, archive_present: bool, catalog_version: str | None) -> str:
     """Design section 6 row 10: the inline `<details>` cell card -- fields, scores with evidence, and the
     cause for invalid/blocked/failed/stopped/withheld. The one place section 10's STRIDE row names for
@@ -1240,7 +1481,8 @@ def _comparison(comparison_obj: board.Comparison | str | None) -> html_builder.H
 
 def render(view: views.RunView, archive_present: bool, run_dir: Path | None = None, root: Path | None = None,
            operator: egress.Operator | None = None, board_obj: board.Board | None = None,
-           params: stats.Params | None = None, comparison_obj: board.Comparison | str | None = None) -> str:
+           params: stats.Params | None = None, comparison_obj: board.Comparison | str | None = None,
+           context_growth_obj: context_growth.ContextGrowthResult | None = None) -> str:
     """The page; `root` (the bench root) adds the judge block for a pass that looked up judge verdicts, and
     `operator` (read at run time, never committed) lets it name the classes each judge CLI added."""
     tags = _context_window_tags(run_dir)  # R-32: read from events, not from views.py (ruling R-32 condition 3)
@@ -1269,12 +1511,17 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
     # are built on `html_builder.el` end to end, so no section is trusted()-marked at the seam.
     comparison_sec = _comparison(comparison_obj)
     combo_ix = _combo_index(board_obj)  # R4: the legend's c1..c8 token, shared by the leaderboard and Runs rows
+    # R6: report-only projection (see report/context_growth.py's assume:); a caller (a test, or a
+    # future producer) may pass `context_growth_obj` directly, the same seam `comparison_obj` uses.
+    cg = context_growth_obj if context_growth_obj is not None else context_growth.build(view)
     sections = [
         model.Section("header", "Run header",
                       _header(view, tags, _permission_modes(run_dir), judging, root, run_dir, board_obj=board_obj, params=params)),
         model.Section("validity", "Validity", _validity(view)),
         model.Section("leaderboard", "Leaderboard", _leaderboard(view, board_obj)),
         model.Section("pack-effect", "Pack effect", _pack_effect(board_obj)),
+        model.Section("scenarios", "Scenarios", _scenarios(view, board_obj, combo_ix)),
+        model.Section("context-growth", "Context growth", _context_growth(view, cg, combo_ix)),
         model.Section("runs", "Runs", _runs(view, archive_present, tags, run_dir, root,
                                             catalog_version=view.catalog_version, combo_ix=combo_ix)),
     ]

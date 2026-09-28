@@ -4,9 +4,11 @@ One row per combo x pack from `board.py`. `plain` (NO_COLOR or redirected stdout
 with no colour; NA and invalid marks are text. States, in order:
 - not graded: `Run <id> is not graded yet. Run bench grade <id>.` (exit 4);
 - no completed cell: `No cell completed in run <id>. Run bench status <id> to see why.`;
-- otherwise the table, then the invalid and the "not recorded" cells with their validity and code (R-15, R-27),
-  then each view warning with its code (R-24/R-26 c5, R-28), each list only when it has a line.
-The seven area composites, cost of pass and per-scenario rows are later phases (Spec S-10).
+- otherwise the table, the pack-effect table, then one ASCII headline line per (combo, pack,
+  scenario) (design s6 row 7, R6), then the invalid and the "not recorded" cells with their validity
+  and code (R-15, R-27), then each view warning with its code (R-24/R-26 c5, R-28), each list only
+  when it has a line.
+The seven area composites are a later phase (Spec S-10).
 """
 
 from __future__ import annotations
@@ -134,6 +136,18 @@ def render(
             label_str = pr.label or ""
             pe_table.add_row(pr.combo, pr.measure, delta_str, iv_str, label_str)
         console.print(pe_table)
+
+    # R6 (design s6 row 7, s12 UIA-11): one ASCII headline line per (combo, pack, scenario) --
+    # the plain-output rule, so this reads with NO_COLOR=1 and a redirected stdout the same as the
+    # rest of the table (`console.print(..., markup=False)`, the same call every other CLI row uses).
+    for sr in board_obj.scenarios:
+        gated, p1 = sr.gated, sr.pass_at_1
+        if gated.point is not None:
+            p1_str = f"pass@1 {p1.point:.2f}" if p1.point is not None else f"pass@1 {p1.reason or 'NA'}"
+            line = f"{sr.combo} {sr.pack} scenario {sr.scenario}: {gated.point:.1f} [{gated.lo:.1f}, {gated.hi:.1f}] {p1_str}"
+        else:
+            line = f"{sr.combo} {sr.pack} scenario {sr.scenario}: {gated.reason or 'NA'}"
+        console.print(line, markup=False)
 
     if comparison_obj is not None:
         console.print(comparison_obj.exclusion_line, markup=False)
