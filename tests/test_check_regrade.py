@@ -32,14 +32,14 @@ JUDGE_NOTE = "judge half not exercised: not proven"
 @pytest.fixture
 def gate_run(tmp_path):
     """(root, run_dir, baseline, expected): the 0.3 baseline and the expected counts are measured on this fixture."""
-    root = make_root(tmp_path)  # catalog label 0.4: a released version, as at the gate
+    root = make_root(tmp_path)  # a released version (the .dev suffix stripped), as at the gate
     run_dir = tmp_path / "runs" / "heads"
     shutil.copytree(MINI_RUN, run_dir)
     baseline = {"runs": {"heads": {"export_sha256": hashlib.sha256(views.export(views.load(run_dir, "0.3"))).hexdigest()}}}
     calibration = tmp_path / "calibration" / "heads"
     shutil.copytree(MINI_RUN, calibration)
     runner.run_pass(calibration, root)
-    view = views.load(calibration, "0.4")
+    view = views.load(calibration, config.load_yaml(root / "bench" / "metrics.yaml")["version"])
     counts = {m: sum(1 for c in view.cells if m in c.scores and c.scores[m].value is not None) for m in view.cells[0].scores}
     assert (counts["pass_at_1"], counts["partial_credit"], counts["cost_usd"]) == (2, 2, 0)  # a: 1, b: 0; no price entry
     return root, run_dir, baseline, {"counts": counts}
@@ -47,7 +47,8 @@ def gate_run(tmp_path):
 
 def run_gate(gate_run, grade=None, **over):
     root, run_dir, baseline, expected = gate_run
-    args = {"baseline": baseline, "frozen_hash": runner.catalog_hash(root), "expected": expected, "version": "0.4", **over}
+    release = config.load_yaml(root / "bench" / "metrics.yaml")["version"]
+    args = {"baseline": baseline, "frozen_hash": runner.catalog_hash(root), "expected": expected, "version": release, **over}
     return check_regrade.gate(run_dir, grade or (lambda d: runner.run_pass(d, root).grading_id), **args)
 
 
