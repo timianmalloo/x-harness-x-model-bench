@@ -1176,7 +1176,7 @@ def _cost_frontier_panel(
     # Whiskers and markers
     for r, val, val_raw, p1 in valid_points:
         cx = round(x_scale(val), 1)
-        combo_token = combo_ix.get(r.combo, "c1")
+        combo_token = combo_ix[r.combo]  # every board combo has a legend token; a miss is a defect, never c1
         p1_pt_str = f"{p1:.2f}"
         lo_str = f"{r.pass_at_1.lo:.2f}" if r.pass_at_1.lo is not None else None
         hi_str = f"{r.pass_at_1.hi:.2f}" if r.pass_at_1.hi is not None else None
@@ -1285,7 +1285,7 @@ def _cost_frontier(view: views.RunView, board_obj: board.Board, combo_ix: dict[s
 
     tr_list = []
     for r in board_obj.frontier:
-        combo_token = combo_ix.get(r.combo, "c1")
+        combo_token = combo_ix[r.combo]  # every board combo has a legend token; a miss is a defect, never c1
         cells = [html_builder.el("td", None, r.combo), html_builder.el("td", None, r.pack)]
 
         # pass@1
@@ -1363,6 +1363,13 @@ def _areas(view: views.RunView, board_obj: board.Board, combo_ix: dict[str, str]
             html_builder.el("p", {"class": "na"}, f"No area composites for this run: {reason}."),
         )
 
+    def _radar_label_pos(ex: float, ey: float) -> dict[str, str]:
+        """The full area name just outside its axis end, anchored away from the centre (110, 100)."""
+        anchor = "middle" if abs(ex - 110.0) < 8 else ("start" if ex > 110 else "end")
+        dx = 0.0 if anchor == "middle" else (4.0 if anchor == "start" else -4.0)
+        dy = 12.0 if ey > 100 else -4.0
+        return {"x": f"{ex + dx:.1f}", "y": f"{ey + dy:.1f}", "text-anchor": anchor}
+
     catalog_areas: list[str] = []
     for ar in board_obj.areas:
         if ar.area not in catalog_areas:
@@ -1377,7 +1384,7 @@ def _areas(view: views.RunView, board_obj: board.Board, combo_ix: dict[str, str]
 
     radars: list[html_builder.Html] = []
     for combo in combos:
-        combo_token = combo_ix.get(combo, "c1")
+        combo_token = combo_ix[combo]  # every board combo has a legend token; a miss is a defect, never c1
         combo_rows = [ar for ar in board_obj.areas if ar.combo == combo]
         svg_children: list[html_builder.Html] = []
 
@@ -1398,21 +1405,13 @@ def _areas(view: views.RunView, board_obj: board.Board, combo_ix: dict[str, str]
                     "x1": "110", "y1": "100", "x2": f"{ex:.1f}", "y2": f"{ey:.1f}",
                     "class": "grid na hollow", "stroke-dasharray": "4 3",
                 }))
-                label_x = ex + (12 if ex > 110 else -36)
-                label_y = ey + (12 if ey > 100 else -2)
-                svg_children.append(html_builder.el("text", {
-                    "x": f"{label_x:.1f}", "y": f"{label_y:.1f}", "class": "na",
-                }, f"{area[:5]} NA"))
+                svg_children.append(html_builder.el("text", {**_radar_label_pos(ex, ey), "class": "na"}, f"{area} NA"))
             else:
                 svg_children.append(html_builder.el("line", {
                     "x1": "110", "y1": "100", "x2": f"{ex:.1f}", "y2": f"{ey:.1f}",
                     "class": "grid",
                 }))
-                label_x = ex + (4 if ex > 110 else -28)
-                label_y = ey + (10 if ey > 100 else -2)
-                svg_children.append(html_builder.el("text", {
-                    "x": f"{label_x:.1f}", "y": f"{label_y:.1f}",
-                }, area[:5]))
+                svg_children.append(html_builder.el("text", _radar_label_pos(ex, ey), area))
 
         # Polygons per pack arm
         for arm in ("on", "off"):
@@ -1468,7 +1467,7 @@ def _areas(view: views.RunView, board_obj: board.Board, combo_ix: dict[str, str]
                     svg_children.append(html_builder.el("circle", mark_attrs))
 
         svg = html_builder.el("svg", {
-            "viewBox": "0 0 220 200",
+            "viewBox": "-70 0 360 200",  # 70-unit margins either side hold the full area names
             "role": "img",
             "aria-label": f"{combo} areas",
             "width": "100%",
@@ -1492,7 +1491,7 @@ def _areas(view: views.RunView, board_obj: board.Board, combo_ix: dict[str, str]
             combos_packs.append(key)
 
     for combo, pack in combos_packs:
-        combo_token = combo_ix.get(combo, "c1")
+        combo_token = combo_ix[combo]  # every board combo has a legend token; a miss is a defect, never c1
         arm_rows = {ar.area: ar for ar in board_obj.areas if ar.combo == combo and ar.pack == pack}
         row_cells = [html_builder.el("td", None, combo), html_builder.el("td", None, pack)]
         for area in catalog_areas:
