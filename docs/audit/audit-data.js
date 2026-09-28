@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-28T16:54:15Z",
+  "generated": "2026-09-28T17:47:49Z",
   "audit": [
     {
       "actor": null,
@@ -46115,6 +46115,30 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3MJ2KGGVTGYYA6B5FY5S5KD",
+      "shortname": "report-slice-r0",
+      "datetime": "2026-09-28T17:47:49Z",
+      "session": "worker-agy-r0",
+      "prompt": "implement report slice R0 under ruling R-81",
+      "summary": "Implement report slice R0 under R-81: fix defect F-1 (pack effect computes area composites with anchored inputs), introduce board.EXPORT_VERSION=2, add areas/scenarios/frontier projections to board, add US-4 export version controls and fixtures/board/1/ and /2/ goldens, register defect class RSN-A, kill mutants. Cites R-81 and amended R-78 c5: a catalog-content change after the freeze is 0.6; a statistics-code change is EXPORT_VERSION + 1, and both are visible in the bytes.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "started_at": "2026-09-28T16:54:34Z",
+      "duration_seconds": 3195.0,
+      "git": {
+        "sha": "29ae369b57549d316fbd46a3c9d3e75474464d26",
+        "short": "29ae369b5",
+        "branch": "w4-r0",
+        "pushed": null
+      }
     }
   ],
   "changes": [
