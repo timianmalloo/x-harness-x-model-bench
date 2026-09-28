@@ -18,7 +18,13 @@ from harness_bench import board, ledger, stats, views
 from harness_bench.errors import BenchError
 from harness_bench.grade import judge as grade_judge
 from harness_bench.grade import runner
-from harness_bench.report import cli_table, credentials, html, html_builder
+from harness_bench.report import (
+    cli_table,
+    context_growth,
+    credentials,
+    html,
+    html_builder,
+)
 
 
 @pytest.fixture
@@ -1767,4 +1773,202 @@ def test_cli_table_prints_ascii_area_headline_line():
     assert code == 0
     assert out.isascii()
     assert "Areas (c1 on): correctness 85.0, cost NA (no price list entry)" in out
+
+# --- R6 (design phase4-report.md s15, s6 rows 7 and 8, s3 DR-R-1, s12 UIA-11, UIA-13, UXA-8) --------
+
+
+def _scenario_board(rows, run_id="r1"):
+    return board.Board(
+        run_id=run_id, catalog_version="0.5", params=stats.Params(), primary="gated", primary_reason=None,
+        rows=[], pack_effect=board.PackEffect(status=None, excluded_tasks=(), rows=[]), scenarios=rows,
+    )
+
+
+def _tag(text: str, name: str) -> str | None:
+    m = re.search(rf'{name}="([^"]*)"', text)
+    return m.group(1) if m else None
+
+
+def test_scenarios_chart_equals_table_uia13():
+    """UIA-13: the heatmap cell IS both the chart and the accessible table (design s6 row 7 names no
+    separate table alternative for it, unlike rows 5/6/8's SVG charts) -- so this proves the printed
+    composite, [lo, hi] and pass@1 line equal the same cell's own data-* attributes."""
+    view = _state_view("valid", None)
+    rows = [
+        board.ScenarioRow(
+            combo="c1", pack="on", scenario=1,
+            gated=stats.Interval(point=Decimal("31.0"), lo=Decimal("5.0"), hi=Decimal("66.0"), n=6, reason=None),
+            pass_at_1=stats.Interval(point=Decimal("0.72"), lo=Decimal("0.40"), hi=Decimal("0.95"), n=6, reason=None),
+        ),
+    ]
+    doc = html.render(view, archive_present=True, board_obj=_scenario_board(rows))
+    section = re.search(r'<section id="scenarios".*?</section>', doc, re.DOTALL).group(0)
+
+    td = re.search(r'<td[^>]*data-scenario="1"[^>]*>.*?</td>', section, re.DOTALL).group(0)
+    value, lo, hi, pass1 = _tag(td, "data-value"), _tag(td, "data-interval-lo"), _tag(td, "data-interval-hi"), _tag(td, "data-pass1")
+    text = re.search(r">(.*?)</td>$", td, re.DOTALL).group(1)
+    assert (value, lo, hi, pass1) == ("31.0", "5.0", "66.0", "0.72")
+    assert value in text and f"[{lo}, {hi}]" in text and f"pass@1 {pass1}" in text
+    assert 'class="h h3 num"' in td  # bucket 3 (30-39.9) carries the viridis fill class
+
+
+def test_scenarios_no_cells_and_na_states():
+    """Design s6 row 7's two non-computed states: 'no cells in this scenario' (an em dash, no heat
+    fill) and NA (hatched, 'not recorded -- <reason>'), never confused with a real composite."""
+    view = _state_view("valid", None)
+    rows = [
+        board.ScenarioRow(
+            combo="c1", pack="on", scenario=1,
+            gated=stats.Interval(point=None, lo=None, hi=None, n=0, reason="no cells in this scenario"),
+            pass_at_1=stats.Interval(point=None, lo=None, hi=None, n=0, reason="no cells in this scenario"),
+        ),
+        board.ScenarioRow(
+            combo="c1", pack="on", scenario=2,
+            gated=stats.Interval(point=None, lo=None, hi=None, n=0, reason="no normalisation anchors for catalog 0.4"),
+            pass_at_1=stats.Interval(point=Decimal("0.5"), lo=Decimal("0.1"), hi=Decimal("0.9"), n=6, reason=None),
+        ),
+    ]
+    doc = html.render(view, archive_present=True, board_obj=_scenario_board(rows))
+    section = re.search(r'<section id="scenarios".*?</section>', doc, re.DOTALL).group(0)
+
+    no_cells_td = re.search(r'<td[^>]*data-scenario="1"[^>]*>.*?</td>', section, re.DOTALL).group(0)
+    assert 'class="h"' in no_cells_td and "—" in no_cells_td and "no cells in this scenario" in no_cells_td
+    assert "data-value" not in no_cells_td
+
+    na_td = re.search(r'<td[^>]*data-scenario="2"[^>]*>.*?</td>', section, re.DOTALL).group(0)
+    assert 'class="h na"' in na_td
+    assert "not recorded" in na_td and "no normalisation anchors for catalog 0.4" in na_td
+    assert "data-value" not in na_td
+
+
+def test_scenarios_heat_ink_meets_wcag_aa():
+    """Design s3 DR-R-1 / R-81 R-1: the heatmap text ink is whichever of #000/#fff has the higher
+    contrast with the cell fill, proven >= 4.5:1 on every one of the ten viridis stops -- recomputed
+    here independently from the exact colours in html.STYLE, never a copy of html.py's own table."""
+    def luminance(hexcolor: str) -> float:
+        def lin(c: int) -> float:
+            c = c / 255.0
+            return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+        h = hexcolor.lstrip("#")
+        r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
+        return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+
+    ink_hex = {
+        "on-heat-dark": re.search(r"--on-heat-dark:\s*(#[0-9a-fA-F]{6})", html.STYLE).group(1),
+        "on-heat-light": re.search(r"--on-heat-light:\s*(#[0-9a-fA-F]{6})", html.STYLE).group(1),
+    }
+    for i in range(10):
+        fill = re.search(rf"--heat-{i}:\s*(#[0-9a-fA-F]{{6}})", html.STYLE).group(1)
+        rule = re.search(rf"\.h{i}\{{background:var\(--heat-{i}\);color:var\(--(on-heat-\w+)\)\}}", html.STYLE)
+        assert rule is not None, f"no .h{i} rule in STYLE"
+        applied = rule.group(1)
+
+        fill_l = luminance(fill)
+        c_white = 1.05 / (fill_l + 0.05)
+        c_black = (fill_l + 0.05) / 0.05
+        expected = "on-heat-dark" if c_white >= c_black else "on-heat-light"
+        assert applied == expected, f"h{i} uses {applied}, the higher-contrast ink is {expected}"
+
+        applied_l = luminance(ink_hex[applied])
+        lighter, darker = (fill_l, applied_l) if fill_l > applied_l else (applied_l, fill_l)
+        contrast = (lighter + 0.05) / (darker + 0.05)
+        assert contrast >= 4.5, f"h{i} ink/fill contrast {contrast:.2f} < 4.5"
+
+
+def test_scenarios_empty_run_draws_no_axes_uxa8():
+    """UXA-8, synthetic branch: an injected empty `board_obj.scenarios` (the defensive arm `_runs`'s
+    own 'no cells in this run' branch mirrors) shows the empty copy and no heatmap table at all."""
+    view = _state_view("valid", None)
+    doc = html.render(view, archive_present=True, board_obj=_scenario_board([]))
+    section = re.search(r'<section id="scenarios".*?</section>', doc, re.DOTALL).group(0)
+    assert "No cell completed in this run. Run bench status r1 to see why." in section
+    assert '<table class="heat"' not in section
+
+
+def test_scenarios_zero_completed_cells_draws_no_heat_table(root, tmp_path):
+    """UXA-8, the design's own `empty` fixture (0 completed): `board.build` still emits a 'no cells
+    in this scenario' row per planned (combo, pack, scenario) -- so the check that matters is '0
+    completed', not 'scenarios list is empty', and the section must still show the empty copy, not a
+    heatmap table full of nothing but dashes."""
+    _, view = _graded(root, tmp_path, {"a": GOOD}, outcomes={"a": {"outcome": "failed", "cause": "spawn", "code": "HB-CELL-114"}})
+    doc = html.render(view, archive_present=True)
+    section = re.search(r'<section id="scenarios".*?</section>', doc, re.DOTALL).group(0)
+    assert "No cell completed in this run. Run bench status r1 to see why." in section
+    assert '<table class="heat"' not in section
+
+
+def _cg_series(**kw) -> context_growth.TaskSeries:
+    return context_growth.TaskSeries(combo="c1", pack="on", **kw)
+
+
+def test_context_growth_chart_equals_table_uia13():
+    """UIA-13: every mark's data-value/data-interval-lo/hi (plus the compaction mark) equal its
+    table row's cells, per (combo, pack, turn)."""
+    view = _state_view("valid", None)
+    series = (_cg_series(turns=(1, 2, 3), median=(1000, 4000, 9000), lo=(900, 3500, 8000), hi=(1100, 4500, 9800), compactions=(3,)),)
+    cg = context_growth.ContextGrowthResult(tasks=(context_growth.TaskGrowth(task="X1", series=series),))
+    doc = html.render(view, archive_present=True, context_growth_obj=cg)
+    section = re.search(r'<section id="context-growth".*?</section>', doc, re.DOTALL).group(0)
+
+    chart_marks = sorted(re.findall(
+        r'<circle[^>]*data-turn="(\d+)"[^>]*data-value="(\d+)"[^>]*data-interval-lo="(\d+)"[^>]*data-interval-hi="(\d+)"',
+        section,
+    ))
+    assert len(chart_marks) == 3
+    table_rows = sorted(re.findall(
+        r'<td class="num">(\d+)</td><td class="num" data-value="(\d+)">\d+</td>'
+        r'<td data-interval-lo="(\d+)" data-interval-hi="(\d+)">',
+        section,
+    ))
+    assert len(table_rows) == 3
+    assert chart_marks == table_rows
+
+    assert re.search(r'<polygon[^>]*data-turn="3"[^>]*data-compaction="true"', section) is not None
+    assert re.search(r'<circle[^>]*data-turn="1"[^>]*', section) and "data-compaction" not in re.search(
+        r'<circle[^>]*data-turn="1"[^>]*/>', section).group(0)
+    assert "▲" in section  # the table's own compaction mark text (design s6 row 8)
+
+
+def test_context_growth_empty_run_draws_no_axes_uxa8():
+    """UXA-8: an empty `ContextGrowthResult` (no task carries turns -- today's real state, see
+    report/context_growth.py's assume:) shows the empty copy and no `<svg>` chart at all."""
+    view = _state_view("valid", None)
+    doc = html.render(view, archive_present=True, context_growth_obj=context_growth.ContextGrowthResult(tasks=()))
+    section = re.search(r'<section id="context-growth".*?</section>', doc, re.DOTALL).group(0)
+    assert "No cell completed in this run. Run bench status r1 to see why." in section
+    assert "<svg" not in section
+
+
+def test_context_growth_has_no_turn_level_producer_today():
+    """The real projection (report/context_growth.py's assume:): `turn_usage` is one whole-attempt
+    sum per (cell, model), never one row per turn, so `build()` against a real graded view always
+    reads every task as 'No turns recorded', never a fabricated trajectory."""
+    view = _state_view("valid", None)
+    result = context_growth.build(view)
+    assert len(result.tasks) == 1
+    task = result.tasks[0]
+    assert task.task == "X1" and task.series == () and task.reason == "No turns recorded for X1."
+
+
+def test_cli_table_prints_scenario_headline_line_uia11():
+    """UIA-11 (design s6 row 7): one ASCII headline line per (combo, pack, scenario), computed
+    (no colour), NA and 'no cells' read as text -- the same plain-output rule the rest of the CLI
+    table follows."""
+    view = _state_view("valid", None)
+    board_obj = _scenario_board([
+        board.ScenarioRow(
+            combo="cop-sol", pack="off", scenario=1,
+            gated=stats.Interval(point=Decimal("55.2"), lo=Decimal("20.1"), hi=Decimal("88.0"), n=6, reason=None),
+            pass_at_1=stats.Interval(point=Decimal("0.67"), lo=Decimal("0.33"), hi=Decimal("1.00"), n=6, reason=None),
+        ),
+        board.ScenarioRow(
+            combo="cop-sol", pack="off", scenario=6,
+            gated=stats.Interval(point=None, lo=None, hi=None, n=0, reason="no cells in this scenario"),
+            pass_at_1=stats.Interval(point=None, lo=None, hi=None, n=0, reason="no cells in this scenario"),
+        ),
+    ])
+    out, _ = cli_table.render(view, plain=True, board_obj=board_obj)
+    assert out.isascii()
+    assert "cop-sol off scenario 1: 55.2 [20.1, 88.0] pass@1 0.67" in out
+    assert "cop-sol off scenario 6: no cells in this scenario" in out
 

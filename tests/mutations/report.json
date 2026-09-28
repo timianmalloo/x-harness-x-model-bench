@@ -373,5 +373,26 @@
   "find": "            area_rows = [ar for ar in combo_rows if ar.area == area]\n            is_na = all(ar.interval.point is None for ar in area_rows)\n            if is_na:\n",
   "replace": "            area_rows = [ar for ar in combo_rows if ar.area == area]\n            is_na = all(ar.interval.point is None for ar in area_rows)\n            if False:\n",
   "tests": ["tests/test_report.py::test_areas_radar_na_axis_drawn_hollow_with_na_tick"]
+ },
+ {
+  "name": "the no-cells branch: a scenario with no cells reads NA, not the 'no cells' state",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    if sr is None or (sr.gated.point is None and sr.gated.reason == \"no cells in this scenario\"):",
+  "replace": "    if sr is None or False:",
+  "tests": ["tests/test_report.py::test_scenarios_no_cells_and_na_states"]
+ },
+ {
+  "name": "the ink choice: the heatmap always uses the light-fill ink, never the higher-contrast one",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    return \"on-heat-dark\" if contrast_white >= contrast_black else \"on-heat-light\"",
+  "replace": "    return \"on-heat-light\"",
+  "tests": ["tests/test_report.py::test_scenarios_heat_ink_meets_wcag_aa"]
+ },
+ {
+  "name": "the compaction mark: context growth never draws the compaction mark",
+  "file": "src/harness_bench/report/html.py",
+  "find": "            if turn in s.compactions:",
+  "replace": "            if False:",
+  "tests": ["tests/test_report.py::test_context_growth_chart_equals_table_uia13"]
  }
 ]
