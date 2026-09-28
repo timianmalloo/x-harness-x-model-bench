@@ -66,7 +66,7 @@ def test_offline_zero_requests(browser_page):
     ids = page.eval_on_selector_all("main > section[id]", "els => els.map(e => e.id)")
     # "controls" (R4 join review): the control bar's own publication-scan unit (US-47 c3) -- chrome,
     # not one of the report's eleven IA sections, but still a real <section> in the DOM.
-    assert set(ids) == {"header", "controls", "validity", "leaderboard", "pack-effect", "runs"}
+    assert set(ids) == {"header", "controls", "validity", "leaderboard", "pack-effect", "cost-frontier", "areas", "runs"}
 
 
 def test_keyboard_path(browser_page):

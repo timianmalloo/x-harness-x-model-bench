@@ -145,7 +145,7 @@ def test_page_shell_csp_is_first_head_child(tmp_path, page):
 def test_page_shell_has_a_section_index_with_jump_links(tmp_path, page):
     doc = page(tmp_path)
     nav = re.search(r'<nav aria-label="Sections">(.*?)</nav>', doc, re.DOTALL).group(1)
-    for section_id in ("validity", "leaderboard", "pack-effect", "runs"):
+    for section_id in ("validity", "leaderboard", "pack-effect", "cost-frontier", "areas", "runs"):
         assert f'<a href="#{section_id}">' in nav
     assert 'href="#header"' not in nav  # header is the page's own <h1>, not a jump target
     # R4 join review: the control bar is its own <section id="controls"> now (a publication-scan unit,
@@ -160,7 +160,7 @@ def test_page_shell_section_order_matches_the_ia(tmp_path, page):
     # "controls" (R4 join review) sits right after "header": a real <section> for the publication scan
     # (US-47 c3), inserted right after the nav like the sticky bar design section 6 asks for, but it is
     # not part of the report's eleven-section IA (US-40 c2) and carries no nav entry (test above).
-    assert ids == ["header", "controls", "validity", "leaderboard", "pack-effect", "runs"]  # no --baseline
+    assert ids == ["header", "controls", "validity", "leaderboard", "pack-effect", "cost-frontier", "areas", "runs"]  # no --baseline
 
 
 def test_dark_theme_tokens_only_change_under_prefers_color_scheme_media_query(tmp_path, page):  # DR-R-3

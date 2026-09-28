@@ -352,5 +352,19 @@
   "find": "      if (pressed.length === 1 && pressed[0] === btn) {",
   "replace": "      if (false) {",
   "tests": ["tests/test_report_browser.py::test_keyboard_path"]
+ },
+ {
+  "name": "the all-cost-NA branch",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    all_cost_na = all(r.cost_per_task.value is None for r in board_obj.frontier)\n    if all_cost_na:\n",
+  "replace": "    all_cost_na = all(r.cost_per_task.value is None for r in board_obj.frontier)\n    if False:\n",
+  "tests": ["tests/test_report.py::test_cost_frontier_all_cost_na_renders_sentence_and_no_axes"]
+ },
+ {
+  "name": "the NA-axis branch",
+  "file": "src/harness_bench/report/html.py",
+  "find": "            area_rows = [ar for ar in combo_rows if ar.area == area]\n            is_na = all(ar.interval.point is None for ar in area_rows)\n            if is_na:\n",
+  "replace": "            area_rows = [ar for ar in combo_rows if ar.area == area]\n            is_na = all(ar.interval.point is None for ar in area_rows)\n            if False:\n",
+  "tests": ["tests/test_report.py::test_areas_radar_na_axis_drawn_hollow_with_na_tick"]
  }
 ]
