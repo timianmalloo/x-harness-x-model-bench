@@ -2040,7 +2040,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "e4c8df6edbb040557a61a307106e10592ca6a39f4a0b91c0dee1a55338d824a5"
+      "sourceSha256": "10865c00e62a6109eebe9c73ab0fbcceddf74c48aa828fba1c4e2b08bcf11461"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -3060,5 +3060,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "f5633719d4875e1e779aa950c12570c7e6987d462075a09a49e6884966756744"
+  "graphSha256": "7295b9c3ac858b9598b81b512d040bb5a52483943a35211cae833fc90fb697ae"
 };

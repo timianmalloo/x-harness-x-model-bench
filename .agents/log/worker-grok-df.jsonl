@@ -1,1 +1,2 @@
 {"agent": "worker-grok-df", "at": 1790620381.026242, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-grok-df", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w4-df"}
+{"agent": "worker-grok-df", "at": 1790621906.2646272, "kind": "session-end", "path": "-", "seq": 2, "session": "worker-grok-df", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w4-df"}
