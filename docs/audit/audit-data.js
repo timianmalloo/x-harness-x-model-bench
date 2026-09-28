@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-28T03:16:43Z",
+  "generated": "2026-09-28T04:04:16Z",
   "audit": [
     {
       "actor": null,
@@ -43385,6 +43385,37 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3K2YMKQRQ2GDQSJD9N4YBDW",
+      "shortname": "slice S6 report wiring",
+      "datetime": "2026-09-28T04:04:16Z",
+      "session": "worker-agy-s6",
+      "prompt": "implement slice S6 of docs/design/phase4-statistics.md, report wiring",
+      "summary": "Implemented slice S6: report/cli_table.py, report/html.py, and report/__init__.py read board.py for leaderboard and pack effect; bench report gains --seed/--resamples with validation (HB-STA-003); deleted legacy row adapter and __getattr__; updated mutants and verified all killed.",
+      "kind": "manual",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-28T03:18:53Z",
+      "duration_seconds": 2723.0,
+      "git": {
+        "sha": "75a5d31c571943e4ad43b54f6a73fc45d16b5ca1",
+        "short": "75a5d31c5",
+        "branch": "w4-s6",
+        "pushed": null
+      }
     }
   ],
   "changes": [
