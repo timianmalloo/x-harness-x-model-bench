@@ -7,11 +7,14 @@ measured reads `NA (<reason>)`, never 0, 0% or $0 (US-27). Numbers carry their u
 from __future__ import annotations
 
 import re
+import sys
 from decimal import Decimal
 from pathlib import Path
 
 import yaml
 
+from harness_bench import config
+from harness_bench.errors import BenchError
 from harness_bench.views import Measure
 
 # N5 (ruling R-5, Coordinator seam request): Codex 0.156 cells reach the operator's own skill roots
@@ -153,12 +156,60 @@ def d1_baseline_text(run_dir: Path | None, view) -> str:
     return text
 
 
-def disclosure_rows(root: Path | None, plan: dict, run_dir: Path | None = None, view=None) -> list[tuple[str, str]]:
-    """Header rows: the gate allowance always, the D1 red baseline only when the run has a D1 cell."""
+def disclosure_rows(
+    root: Path | None,
+    plan: dict,
+    run_dir: Path | None = None,
+    view=None,
+    board_obj=None,
+    params=None,
+) -> list[tuple[str, str]]:
+    """Header rows: gate allowance, D1 red baseline if D1, primary measure and statistics."""
     rows = [("Gate allowance", gate_allowance(root))]
-    if not has_d1_cell(plan) or view is None:
-        return rows
-    rows.append(("D1 baseline red tests", d1_baseline_text(run_dir, view)))
+    if has_d1_cell(plan) and view is not None:
+        rows.append(("D1 baseline red tests", d1_baseline_text(run_dir, view)))
+
+    if board_obj is None and view is not None and getattr(view, "grading_id", None) is not None:
+        from harness_bench import board, composites
+
+        r = root if root is not None else (config.repo_root() if (config.repo_root() / "bench" / "metrics.yaml").is_file() else None)
+        cat = None
+        if r is not None and (r / "bench" / "metrics.yaml").is_file():
+            try:
+                cat = composites.load_catalog(r)
+            except (BenchError, OSError, KeyError, ValueError):
+                cat = None
+        if cat is None:
+            cat = composites.Catalog(
+                version=getattr(view, "catalog_version", None) or "0.4",
+                hash="",
+                metrics={},
+                areas={},
+                has_anchors=False,
+            )
+        try:
+            board_obj = board.build(view, cat, params=params)
+        except (BenchError, OSError, KeyError, ValueError):
+            board_obj = None
+
+    if board_obj is not None:
+        from harness_bench.stats import METHOD
+
+        if board_obj.primary == "pass_at_1":
+            primary_text = f"pass@1 ({board_obj.primary_reason})" if board_obj.primary_reason else "pass@1"
+            ranked_on = primary_text
+        else:
+            primary_text = "gated"
+            ranked_on = "correctness-gated composite"
+        py_ver = f"{sys.version_info.major}.{sys.version_info.minor}"
+        stat_text = (
+            f"{METHOD}, {board_obj.params.resamples} resamples, "
+            f"seed {board_obj.params.seed}, resampled by task then repetition, "
+            f"Python {py_ver} random stream; ranked on {ranked_on}"
+        )
+        rows.append(("primary measure", primary_text))
+        rows.append(("statistics", stat_text))
+
     return rows
 
 

@@ -1,6 +1,6 @@
 """`bench report <run_id>`: the CLI leaderboard (design: CLI states; T-CLI-plain, T-CLI-states).
 
-One row per combo x pack from `views.leaderboard`. `plain` (NO_COLOR or redirected stdout) gives ASCII
+One row per combo x pack from `board.py`. `plain` (NO_COLOR or redirected stdout) gives ASCII
 with no colour; NA and invalid marks are text. States, in order:
 - not graded: `Run <id> is not graded yet. Run bench grade <id>.` (exit 4);
 - no completed cell: `No cell completed in run <id>. Run bench status <id> to see why.`;
@@ -18,29 +18,122 @@ from rich import box
 from rich.console import Console
 from rich.table import Table
 
-from harness_bench import report, views
+from harness_bench import board, composites, config, report, stats, views
+from harness_bench.errors import BenchError
 
 NOT_GRADED_EXIT = 4
 
 
-def render(view: views.RunView, plain: bool, run_dir: Path | None = None, root: Path | None = None) -> tuple[str, int]:
+def render(
+    view: views.RunView,
+    plain: bool,
+    run_dir: Path | None = None,
+    root: Path | None = None,
+    board_obj: board.Board | None = None,
+    params: stats.Params | None = None,
+) -> tuple[str, int]:
     rid = view.run_id
     if view.grading_id is None:
         return f"Run {rid} is not graded yet. Run bench grade {rid}.\n", NOT_GRADED_EXIT
     if not any(c.outcome == "completed" for c in view.cells):
         return f"No cell completed in run {rid}. Run bench status {rid} to see why.\n", 0
-    table = Table(box=box.ASCII if plain else box.SIMPLE_HEAVY, title=f"Run {rid} (catalog {view.catalog_version})")
-    for name, right in (("Rank", False), ("Combo", False), ("Pack", False), ("Valid", True), ("pass@1", True), ("Interval", False),
-                        ("Tokens/cell", True), ("Wall/cell", True), ("Cost/cell", True)):
+
+    if board_obj is None:
+        r = root if root is not None else (config.repo_root() if (config.repo_root() / "bench" / "metrics.yaml").is_file() else None)
+        cat = None
+        if r is not None and (r / "bench" / "metrics.yaml").is_file():
+            try:
+                cat = composites.load_catalog(r)
+            except (BenchError, OSError, KeyError, ValueError):
+                cat = None
+        if cat is None:
+            cat = composites.Catalog(
+                version=view.catalog_version or "0.4",
+                hash="",
+                metrics={},
+                areas={},
+                has_anchors=False,
+            )
+        board_obj = board.build(view, cat, params=params)
+
+    box_style = box.ASCII if plain else box.SIMPLE_HEAVY
+    table = Table(box=box_style, title=f"Run {rid} (catalog {view.catalog_version})")
+    for name, right in (
+        ("Rank", False),
+        ("Combo", False),
+        ("Pack", False),
+        ("Valid", True),
+        ("pass@1", True),
+        ("pass@1 95%", False),
+        ("Gated", True),
+        ("Gated 95%", False),
+        ("Tokens/cell", True),
+        ("Wall/cell", True),
+        ("Cost/cell", True),
+    ):
         table.add_column(name, justify="right" if right else "left", no_wrap=True, overflow="fold")
-    for r in views.leaderboard(view):
-        table.add_row(r.rank or "-", r.combo, r.pack, f"{r.n_valid}/{r.n_cells}", report.rate(r.pass_at_1), r.interval,
-                      report.tokens(r.tokens), report.seconds(r.wall_ms), report.usd(r.cost_usd))
+
+    for r in board_obj.rows:
+        p1_pt = f"{r.pass_at_1.point:.2f}" if r.pass_at_1.point is not None else f"NA ({r.pass_at_1.reason})"
+        if r.pass_at_1.lo is not None and r.pass_at_1.hi is not None:
+            p1_iv = f"[{r.pass_at_1.lo:.2f}, {r.pass_at_1.hi:.2f}]"
+        else:
+            p1_iv = r.pass_at_1.reason or "interval not computed"
+
+        gated_pt = f"{r.gated.point:.1f}" if r.gated.point is not None else f"NA ({r.gated.reason})"
+        if r.gated.lo is not None and r.gated.hi is not None:
+            gated_iv = f"[{r.gated.lo:.1f}, {r.gated.hi:.1f}]"
+        else:
+            gated_iv = r.gated.reason or "interval not computed"
+
+        table.add_row(
+            r.rank or "-",
+            report.flag_if_claude_code(report.flag_if_codex(r.combo, r.harness), r.harness),
+            r.pack,
+            f"{r.n_valid}/{r.n_cells}",
+            p1_pt,
+            p1_iv,
+            gated_pt,
+            gated_iv,
+            report.tokens(r.tokens),
+            report.seconds(r.wall_ms),
+            report.usd(r.cost_usd),
+        )
+
     buf = io.StringIO()
-    console = Console(file=buf, width=250, color_system=None if plain else "auto", legacy_windows=False, highlight=False)
-    for label, value in report.disclosure_rows(root, view.plan, run_dir, view):  # same rows as the HTML header
+    console = Console(file=buf, width=400, color_system=None if plain else "auto", legacy_windows=False, highlight=False)
+    for label, value in report.disclosure_rows(root, view.plan, run_dir, view, board_obj=board_obj, params=params):  # same rows as the HTML header
         console.print(f"{label}: {value}", markup=False)
     console.print(table)
+
+    for r in board_obj.rows:
+        if not r.rank and r.rank_reason:
+            console.print(f"{r.combo} {r.pack}: not ranked: {r.rank_reason}", markup=False)
+        if r.footnote:
+            console.print(f"{r.combo} {r.pack}: {r.footnote}", markup=False)
+
+    pe = board_obj.pack_effect
+    console.print(pe.exclusion_line, markup=False)
+    if pe.status is not None:
+        console.print(pe.status, markup=False)
+    elif pe.rows:
+        pe_table = Table(box=box_style, title="Pack effect")
+        for name, right in (("Combo", False), ("Measure", False), ("Delta", True), ("95% Interval", False), ("Label", False)):
+            pe_table.add_column(name, justify="right" if right else "left", no_wrap=True, overflow="fold")
+        for pr in pe.rows:
+            is_p1 = pr.measure == "pass_at_1"
+            if pr.delta.point is not None:
+                delta_str = f"{pr.delta.point:+.2f}" if is_p1 else f"{pr.delta.point:+.1f}"
+            else:
+                delta_str = pr.reason or "NA"
+            if pr.delta.lo is not None and pr.delta.hi is not None:
+                iv_str = f"[{pr.delta.lo:.2f}, {pr.delta.hi:.2f}]" if is_p1 else f"[{pr.delta.lo:.1f}, {pr.delta.hi:.1f}]"
+            else:
+                iv_str = pr.reason or pr.delta.reason or "interval not computed"
+            label_str = pr.label or ""
+            pe_table.add_row(pr.combo, pr.measure, delta_str, iv_str, label_str)
+        console.print(pe_table)
+
     not_valid = [c for c in view.cells if c.validity.startswith("invalid") or c.validity == "not recorded"]
     if not_valid:
         console.print("Cells that are not valid:")

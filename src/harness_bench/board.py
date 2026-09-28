@@ -34,7 +34,6 @@ from harness_bench.stats import (
 
 DEFAULT_RESAMPLES: int = MIN_RESAMPLES
 from harness_bench.views import CellView, RunView
-from harness_bench.views import Measure as ViewsMeasure
 
 
 @dataclass
@@ -140,8 +139,8 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
         primary = "gated"
         primary_reason = None
 
-    plan_cells = view.plan.get("cells", [])
-    plan_by_id = {c["cell_id"]: c for c in plan_cells}
+    plan_cells = (view.plan or {}).get("cells", [])
+    plan_by_id = {c["cell_id"]: c for c in plan_cells if isinstance(c, dict) and "cell_id" in c}
     planned_k = int(view.plan.get("matrix", {}).get("repetitions", 1))
 
     # Group cells by (combo, pack)
@@ -656,66 +655,3 @@ def export(board: Board, comparison: Comparison | None = None) -> bytes:
 
     return ledger.canonical(payload)
 
-
-@dataclass
-class Row:
-    combo: str
-    pack: str
-    harness: str
-    model: str
-    n_cells: int
-    n_valid: int
-    pass_at_1: ViewsMeasure
-    rank: str  # "1", "2=", or "" when unranked
-    interval: str
-    tokens: ViewsMeasure  # mean total tokens per valid cell
-    wall_ms: ViewsMeasure  # mean per valid cell
-    cost_usd: ViewsMeasure  # mean per valid cell
-
-
-def _legacy_row(view: RunView, cells: list[CellView]) -> Row:
-    valid = [c for c in cells if c.validity == "valid"]
-    passes = [c.scores["pass_at_1"].value for c in valid if c.scores.get("pass_at_1", ViewsMeasure(None)).value is not None]
-    if passes:
-        pass_at_1 = ViewsMeasure(_mean([Decimal(str(p)) for p in passes]))
-    else:
-        pass_at_1 = ViewsMeasure(None, "not graded" if view.grading_id is None else "no valid graded cell")
-    used = [sum(sum(b.values()) for b in c.tokens.values()) for c in valid if c.tokens]
-    walls = [c.wall_ms.value for c in valid if c.wall_ms.value is not None]
-    no_cost = [c for c in valid if c.scores.get("cost_usd", ViewsMeasure(None, "not graded")).value is None]
-    if not valid:
-        cost = ViewsMeasure(None, "no valid cell")
-    elif no_cost:
-        reason = no_cost[0].scores.get("cost_usd", ViewsMeasure(None, "not graded")).reason
-        cost = ViewsMeasure(None, f"{len(no_cost)} of {len(valid)} valid cells have no cost: {reason}")
-    else:
-        cost = ViewsMeasure(_mean([Decimal(str(c.scores["cost_usd"].value)) for c in valid]))
-    first = cells[0]
-    return Row(
-        first.combo,
-        first.pack,
-        first.harness,
-        first.model,
-        len(cells),
-        len(valid),
-        pass_at_1,
-        "",
-        "interval not computed (n < 2)" if len(valid) < 2 else "interval not computed (statistics are phase 4)",
-        ViewsMeasure(_mean([Decimal(u) for u in used])) if used else ViewsMeasure(None, "no valid cell with usage"),
-        ViewsMeasure(_mean([Decimal(w) for w in walls])) if walls else ViewsMeasure(None, "no valid cell with wall time"),
-        cost,
-    )
-
-
-def _legacy_leaderboard(view: RunView) -> list[Row]:
-    """Compatibility adapter for legacy callers in report before S6."""
-    groups: dict[tuple[str, str], list[CellView]] = {}
-    for c in view.cells:
-        groups.setdefault((c.combo, c.pack), []).append(c)
-    out = [_legacy_row(view, cells) for cells in groups.values()]
-    ranked = [r.pass_at_1.value for r in out if r.pass_at_1.value is not None]
-    for r in out:
-        v = r.pass_at_1.value
-        if v is not None:
-            r.rank = str(1 + sum(1 for o in ranked if o > v)) + ("=" if ranked.count(v) > 1 else "")
-    return sorted(out, key=lambda r: (r.pass_at_1.value is None, -(r.pass_at_1.value or 0), r.combo, r.pack))
