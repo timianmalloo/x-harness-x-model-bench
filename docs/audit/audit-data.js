@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-28T00:26:22Z",
+  "generated": "2026-09-28T00:36:23Z",
   "audit": [
     {
       "actor": null,
@@ -41455,6 +41455,39 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3JQ20NNGDGEAWTGSXT8NVQR",
+      "shortname": "robustness-fixes",
+      "datetime": "2026-09-28T00:36:23Z",
+      "session": "worker-agy-robust",
+      "prompt": "robustness fixes: mutate_check stdout encoding crash and driver _tapped_turn Job handle race",
+      "summary": "Fixed mutate_check stdout encoding crash (OUT-A) and driver _tapped_turn Job handle race, red first.",
+      "kind": "manual",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "goal": "two measured robustness defects, each fixed at its cause, red first: (1) tools/mutate_check.py crashes while printing its own verdict line when stdout's encoding cannot represent a character in a mutant's name; (2) tests/test_driver.py's _tapped_turn helper arms a timer whose callback can use a Job Object handle after the cell closed it.",
+      "done_when": "(1) mutate_check stdout/stderr reconfigured to UTF-8 with replacement error handler, red first then green; (2) _tapped_turn cancels and joins timer before cell.close(), red first then green; 30/30 fidelity runs pass under pytest -n auto; OUT-A registered in defect-classes.md; ruff clean; full collect passes.",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-28T00:26:45Z",
+      "duration_seconds": 578.0,
+      "git": {
+        "sha": "f55a74f1e5bbc1d1195fbc9d4c6dc22180c0b7a8",
+        "short": "f55a74f1e",
+        "branch": "w4-robust",
+        "pushed": null
+      }
     }
   ],
   "changes": [
