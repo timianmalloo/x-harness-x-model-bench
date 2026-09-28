@@ -2097,9 +2097,10 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
     comparison_sec = _comparison(comparison_obj, combo_ix)
     cost_frontier_sec = _cost_frontier(view, board_obj, combo_ix)
     areas_sec = _areas(view, board_obj, combo_ix)
-    # R6: report-only projection (see report/context_growth.py's assume:); a caller (a test, or a
-    # future producer) may pass `context_growth_obj` directly, the same seam `comparison_obj` uses.
-    cg = context_growth_obj if context_growth_obj is not None else context_growth.build(view)
+    # R6: report-only projection, built from the cell's own model_calls rows (report/context_growth.py's
+    # module docstring); a caller (a test, or a future producer) may pass `context_growth_obj` directly,
+    # the same seam `comparison_obj` uses.
+    cg = context_growth_obj if context_growth_obj is not None else context_growth.build(view, run_dir)
     sections = [
         model.Section("header", "Run header",
                       _header(view, tags, _permission_modes(run_dir), judging, root, run_dir, board_obj=board_obj, params=params)),

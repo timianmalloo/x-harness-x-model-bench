@@ -394,5 +394,19 @@
   "find": "            if turn in s.compactions:",
   "replace": "            if False:",
   "tests": ["tests/test_report.py::test_context_growth_chart_equals_table_uia13"]
+ },
+ {
+  "name": "context growth: the per-call series is not ordered by native_ordinal",
+  "file": "src/harness_bench/report/context_growth.py",
+  "find": "    return sorted(rows, key=lambda r: r[\"native_ordinal\"])",
+  "replace": "    return sorted(rows, key=lambda r: -r[\"native_ordinal\"])",
+  "tests": ["tests/test_report.py::test_context_growth_series_follows_model_calls_in_ordinal_order"]
+ },
+ {
+  "name": "context growth: the compaction rule flags a rise, not a drop",
+  "file": "src/harness_bench/report/context_growth.py",
+  "find": "    compactions = tuple(turns[i] for i in range(1, n) if median[i] < median[i - 1])",
+  "replace": "    compactions = tuple(turns[i] for i in range(1, n) if median[i] > median[i - 1])",
+  "tests": ["tests/test_report.py::test_context_growth_series_follows_model_calls_in_ordinal_order"]
  }
 ]
