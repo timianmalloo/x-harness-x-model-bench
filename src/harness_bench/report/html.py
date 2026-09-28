@@ -260,7 +260,7 @@ def _leaderboard(view: views.RunView, board_obj: board.Board) -> str:
     footnotes = []
     for r in board_obj.rows:
         if not r.rank and r.rank_reason:
-            footnotes.append(f"<p>{_e(r.combo)} {_e(r.pack)}: not ranked: {_e(r.rank_reason)}</p>")
+            footnotes.append(f"<p>{_e(r.combo)} {_e(r.pack)}: {_e(r.rank_reason)}</p>")  # rank_reason carries "not ranked: "
         if r.footnote:
             footnotes.append(f"<p>{_e(r.combo)} {_e(r.pack)}: {_e(r.footnote)}</p>")
     fn_html = "".join(footnotes)

@@ -108,7 +108,7 @@ def render(
 
     for r in board_obj.rows:
         if not r.rank and r.rank_reason:
-            console.print(f"{r.combo} {r.pack}: not ranked: {r.rank_reason}", markup=False)
+            console.print(f"{r.combo} {r.pack}: {r.rank_reason}", markup=False)  # rank_reason starts "not ranked: " (stats.rank)
         if r.footnote:
             console.print(f"{r.combo} {r.pack}: {r.footnote}", markup=False)
 

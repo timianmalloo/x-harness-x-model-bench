@@ -131,13 +131,20 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
     if params is None:
         params = Params(seed=DEFAULT_SEED, resamples=DEFAULT_RESAMPLES)
 
-    # Primary measure determination (DR-S-1 / R-78 condition 3)
-    if not cat.has_anchors:
+    # Primary measure determination (DR-S-1 / R-78 condition 3): the CURRENT PASS's catalog decides. A loaded catalog
+    # of another version says nothing about the anchors the pass was graded under, so it never makes the primary gated.
+    if view.catalog_version != cat.version:
+        primary = "pass_at_1"
+        primary_reason = (f"the current pass is catalog {view.catalog_version}; anchors are read only from that "
+                          f"version (loaded: {cat.version})")
+    elif not cat.has_anchors:
         primary = "pass_at_1"
         primary_reason = f"catalog {cat.version} has no normalisation anchors"
     else:
         primary = "gated"
         primary_reason = None
+    # the short per-cell form of the cause; the header's primary-measure line carries the full reason (US-27)
+    no_anchor_cell = f"no normalisation anchors for catalog {view.catalog_version}"
 
     plan_cells = (view.plan or {}).get("cells", [])
     plan_by_id = {c["cell_id"]: c for c in plan_cells if isinstance(c, dict) and "cell_id" in c}
@@ -182,7 +189,7 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
 
         # Gated composite
         obs_gated: list[Obs] = []
-        if cat.has_anchors:
+        if primary == "gated":  # anchors apply only to a pass of the loaded catalog's version (R-78 c3)
             for c in valid_cells:
                 t, r, _ = _cell_task_rep(c.cell_id, plan_by_id)
                 norm_scores = {
@@ -201,7 +208,7 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
                 lo=None,
                 hi=None,
                 n=0,
-                reason=f"catalog {cat.version} has no normalisation anchors",
+                reason=no_anchor_cell,
             )
 
         # pass@k and pass^k per task
@@ -281,7 +288,7 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
         ordered_rows.append(r)
 
     # Pack effect
-    pack_effect = _build_pack_effect(view, cat, params, plan_by_id)
+    pack_effect = _build_pack_effect(view, cat, params, plan_by_id, no_anchor_cell if primary != "gated" else None)
 
     return Board(
         run_id=view.run_id,
@@ -299,7 +306,10 @@ def _build_pack_effect(
     cat: Catalog,
     params: Params,
     plan_by_id: Mapping[str, dict],
+    no_anchors: str | None = None,
 ) -> PackEffect:
+    """`no_anchors` is the primary measure's reason when anchors do not apply to this pass (R-78 c3); area rows are
+    then NA with that reason, never a composite computed from another catalog version's anchors."""
     pack_settings = sorted({c.pack for c in view.cells})
     tasks_in_run = sorted({_cell_task_rep(c.cell_id, plan_by_id)[0] for c in view.cells})
     excluded_tasks = tuple(t for t in tasks_in_run if t in CONTAMINATION_PRONE)
@@ -338,6 +348,10 @@ def _build_pack_effect(
         ]
 
         for m in measures:
+            if m != "pass_at_1" and no_anchors is not None:
+                na = Interval(None, None, None, 0, no_anchors)
+                pe_rows.append(PackEffectRow(combo=combo, measure=m, delta=na, label=None, reason=no_anchors))
+                continue
             if m == "pass_at_1":
                 off_obs = [
                     Obs(

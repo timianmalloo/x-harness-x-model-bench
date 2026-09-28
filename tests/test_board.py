@@ -117,7 +117,8 @@ def test_tb3_board_export_golden(tmp_path):
         combos=["c"],
     )
     view = views.load(run_dir)
-    b = board.build(view, TEST_CATALOG)
+    # the pass's own catalog version: anchors of another version never make the primary gated (R-78 c3)
+    b = board.build(view, dataclasses.replace(TEST_CATALOG, version=view.catalog_version))
     exp = board.export(b)
 
     # The digest changes only with METHOD or the fixture.
@@ -243,6 +244,10 @@ def test_anchors_of_another_catalog_version_never_make_the_primary_gated():
     b = board.build(view, other)
     assert b.primary == "pass_at_1"
     assert view.catalog_version in b.primary_reason and other.version in b.primary_reason
+    # the disclosure names that cause, never "no valid cell with a value" (a composite of the other version's anchors)
+    cell_reason = f"no normalisation anchors for catalog {view.catalog_version}"
+    assert b.rows and all(r.gated.point is None and r.gated.reason == cell_reason for r in b.rows)
+    assert all(pr.reason == cell_reason for pr in b.pack_effect.rows if pr.measure != "pass_at_1")
 
 
 def test_tb8_na_and_invalid_cells(tmp_path):
