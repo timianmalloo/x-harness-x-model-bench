@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-28T00:47:21Z",
+  "generated": "2026-09-28T01:01:58Z",
   "audit": [
     {
       "actor": null,
@@ -42381,6 +42381,38 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3JRGV3R5MXKRYRNCQBEXRGZ",
+      "shortname": "s4-composites",
+      "datetime": "2026-09-28T01:01:58Z",
+      "session": "worker-agy-s4",
+      "prompt": "implement slice S4 of docs/design/phase4-statistics.md, composites: src/harness_bench/composites.py, its tests and mutants, deleting grade/normalize_scores.py, plus the config.py seam Z-4 with the validation refusals that rulings R-78 condition 2 and R-79 DR-C1 require, red first.",
+      "summary": "Implement S4 composites (normalise, area composite, overall, correctness-gated), test suite T-C1..C5, 3 mutants in composites.json, delete normalize_scores.py stub, and add 6 validation refusals to config.validate_metrics (Z-4 seam) with 6 mutants in validate.json, all killed red-first.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "implement slice S4 of docs/design/phase4-statistics.md, composites: src/harness_bench/composites.py, its tests and mutants, deleting grade/normalize_scores.py, plus the config.py seam Z-4 with the validation refusals that rulings R-78 condition 2 and R-79 DR-C1 require, red first.",
+      "done_when": "every S4 deliverable in the design's slice table (row S4, about line 760) exists: composites.py with the contracted names and signatures, tests/test_composites.py, tests/mutations/composites.json, grade/normalize_scores.py deleted with no remaining importer; T-C1 committed red first, failing on an assertion, then green; T-C1..C5 pass; config.validate_metrics gains, red first, the refusals of R-78 condition 2 and R-79 DR-C1, each with its own error message; uv run bench validate still exits 0; every mutant in composites.json and validate.json killed; uv run ruff check clean; uv run pytest passes except test_current_grader_inputs_match_gate_stamp.",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-28T00:47:38Z",
+      "duration_seconds": 860.0,
+      "git": {
+        "sha": "0eb77e682f36ec1d6bd0e3d5bd0df2624fc58a7c",
+        "short": "0eb77e682",
+        "branch": "w4-s4",
+        "pushed": null
+      }
     }
   ],
   "changes": [
