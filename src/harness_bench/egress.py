@@ -80,7 +80,8 @@ class Verdict:
     scanned: tuple[str, ...] = ()
 
     def record(self) -> dict:
-        """The ledger shape: the destination id, the digest and the class names; never the payload."""
+        """The shape of a section's entry in report-record.json: the destination id, the digest, the class names and
+        what was scanned; never the payload (ADR-0006 Amendment 4: never a ledger fact)."""
         return {"destination": self.destination, "payload_sha256": self.payload_sha256, "classes": self.classes,
                 "scanned": self.scanned}
 

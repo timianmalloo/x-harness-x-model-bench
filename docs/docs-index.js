@@ -375,7 +375,7 @@ window.DOCS_INDEX = {
       "phase": "all phases",
       "reviewBy": "2027-09-23",
       "reviewSuggested": [],
-      "summary": "The durable record is a set of append-only, hash-chained JSON Lines facts per run with declared grains (lifecycle events, model calls, tool calls, archive files, grading passes, scores, verdict uses, egress events), immutable content-addressed dimensions, and one shared content-addressed verdict cache. Current states, costs, composites and statistics are derived projections computed in memory; no results database is persisted.",
+      "summary": "The durable record is a set of append-only, hash-chained JSON Lines facts per run with declared grains (lifecycle events, model calls, tool calls, archive files, grading passes, scores and verdict uses), immutable content-addressed dimensions, and one shared content-addressed verdict cache. The declared egress events fact is retired (Amendment 4, R-80): judge sends live in verdict uses and model calls, and the publication scan in report-record.json beside the report. Current states, costs, composites and statistics are derived projections computed in memory; no results database is persisted.",
       "tags": [
         "benchmark",
         "data-model",
@@ -393,7 +393,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "93475c5bc0a9e4c35068c5f1666df5078040223ebd7128d7a5bd60a9400cb511"
+      "sourceSha256": "3a1df533db69b892fcabeaa32a62f94e1aafe232790be4fab6e1d3636750b08d"
     },
     {
       "id": "adr-0007-run-engine",
@@ -676,10 +676,10 @@ window.DOCS_INDEX = {
         {
           "kind": "flowchart",
           "title": "Component map & boundaries",
-          "mermaid": "flowchart TB\n  subgraph Session[\"Coordinator session (Claude Code, /start-benchmark)\"]\n    SK[start-benchmark skill: compile, confirm, relay, audit-log entries]\n  end\n  subgraph Host[\"bench (Python, T0) on the Windows host\"]\n    CLI[bench CLI: validate, plan, run, status, stop, grade, report, verify, teardown]\n    ENG[Run engine: single writer, lifecycle = run_lifecycle.tla]\n    WSB[Workspace builder]\n    TLS[Tools folder: pinned harness builds]\n    PRF[(Harness profiles: build, mode, pin, home seeding, reader)]\n    DRV[ACP cell driver]\n    ARC[Archiver: no link following, exact-value credential scan]\n    TEL[Telemetry: readers + normaliser]\n    GRD[Grade orchestrator]\n    GW[Model gateway: tool-less]\n    EG[Egress gate]\n    VIEWS[Pure-Python projections]\n    REP[Report: CLI + HTML + summaries]\n  end\n  subgraph Store[\"runs/<run_id>/ + cache/\"]\n    LED[(hash-chained facts: events, model_calls, tool_calls, archive_files, scores, verdict_uses, egress_events)]\n    ARCH[(cell archives)]\n    CTL[(control/: stop, decision answers)]\n    VC[(shared verdict cache)]\n  end\n  subgraph Cells[\"bench-cells/<run>/<cell> (native, one Job Object each)\"]\n    CELL[Cell: own working copy + own harness home]\n    GC[Grading working copy: archive + hidden tests]\n  end\n  SK -->|bench plan / run / status --json| CLI\n  SK -->|decision answers| CTL\n  CLI --> ENG\n  ENG --> WSB & DRV & ARC\n  PRF --> TLS & DRV & TEL\n  DRV -->|spawn into Job Object, ACP stdio| CELL\n  CTL --> ENG\n  ENG --> LED\n  ARC --> ARCH\n  ARCH --> TEL --> LED\n  ARCH --> GRD --> GC\n  GRD --> LED\n  GRD --> GW\n  GW --> VC\n  GW --> EG\n  LED --> VIEWS --> REP\n  REP --> GW\n  REP --> EG"
+          "mermaid": "flowchart TB\n  subgraph Session[\"Coordinator session (Claude Code, /start-benchmark)\"]\n    SK[start-benchmark skill: compile, confirm, relay, audit-log entries]\n  end\n  subgraph Host[\"bench (Python, T0) on the Windows host\"]\n    CLI[bench CLI: validate, plan, run, status, stop, grade, report, verify, teardown]\n    ENG[Run engine: single writer, lifecycle = run_lifecycle.tla]\n    WSB[Workspace builder]\n    TLS[Tools folder: pinned harness builds]\n    PRF[(Harness profiles: build, mode, pin, home seeding, reader)]\n    DRV[ACP cell driver]\n    ARC[Archiver: no link following, exact-value credential scan]\n    TEL[Telemetry: readers + normaliser]\n    GRD[Grade orchestrator]\n    GW[Model gateway: tool-less]\n    EG[Egress gate]\n    VIEWS[Pure-Python projections]\n    REP[Report: CLI + HTML + summaries]\n  end\n  subgraph Store[\"runs/<run_id>/ + cache/\"]\n    LED[(hash-chained facts: events, model_calls, tool_calls, archive_files, scores, verdict_uses)]\n    ARCH[(cell archives)]\n    CTL[(control/: stop, decision answers)]\n    VC[(shared verdict cache)]\n  end\n  subgraph Cells[\"bench-cells/<run>/<cell> (native, one Job Object each)\"]\n    CELL[Cell: own working copy + own harness home]\n    GC[Grading working copy: archive + hidden tests]\n  end\n  SK -->|bench plan / run / status --json| CLI\n  SK -->|decision answers| CTL\n  CLI --> ENG\n  ENG --> WSB & DRV & ARC\n  PRF --> TLS & DRV & TEL\n  DRV -->|spawn into Job Object, ACP stdio| CELL\n  CTL --> ENG\n  ENG --> LED\n  ARC --> ARCH\n  ARCH --> TEL --> LED\n  ARCH --> GRD --> GC\n  GRD --> LED\n  GRD --> GW\n  GW --> VC\n  GW --> EG\n  LED --> VIEWS --> REP\n  REP --> GW\n  REP --> EG"
         }
       ],
-      "sourceSha256": "3818fd2d2aab1026085f985ce30b198952054a67b41518fd26edf40ce4c12272"
+      "sourceSha256": "64743fcc8298b7a1631ee0b45cefb6bca52ffeba2ad1e44509c0c8b08d227e0b"
     },
     {
       "id": "mutation-record-phase1",
@@ -1282,7 +1282,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "c40fb1d4dd4c7f18b94f7f61a7f0609858663907534ea8bea9462895d6820c93"
+      "sourceSha256": "d2889b273626c8fedda246e6c0f3b9f97fa11523ed4f477e26e7bbeb34fff260"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -1681,7 +1681,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "fe413bac2ff308f8577d477fa5ae4f75b38adc4a44b35c9ef5186c89a94f6d90"
+      "sourceSha256": "11cfe403eba38db6ea0020b2c8226338dc714ac519f78a904b363634626795b7"
     },
     {
       "id": "design-phase3-graders",
@@ -3060,5 +3060,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "4c3501f945087abcdd4daf87d64cbd8920f698831edf96cc39b3bccb1f7bcb56"
+  "graphSha256": "e099d3842237f042091c864bc6983b0566a15949a45fbf74096e1a576ee291e7"
 };

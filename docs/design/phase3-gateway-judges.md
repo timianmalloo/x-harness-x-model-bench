@@ -317,12 +317,13 @@ judges:
 ### 7.4 Egress (US-47, ADR-0005:36-41, ADR-0012:71,:85)
 
 - The rendered request passes W3-EGRESS's `egress.check(request, destination=<judge model id>,
-  operator=Operator(email, username, home), secrets=<host credential values>, canaries=<US-13/US-48 canaries>)`
-  (branch `w3-egress` at `3517324`, `egress.py:86`).
+  operator=Operator.from_os(email), secrets=<host credential values>, canaries=egress.CANARIES)` (R-80 DR-EG-2:
+  the one production canary set, the US-13 class strings; US-48's Harbor canaries are phase 2).
   - The backend is reached only through `Verdict.release(backend)`, which returns `None` for a withheld payload.
   - A hit is `failed` with `HB-GW-009 withheld: sensitive content`, and nothing is sent.
-  - The `egress_events` row holds the payload hash, destination and classes. The secret values are read at run time
-    and never logged or written (`egress.py:79`, `:90`).
+  - The record of it is the `verdict_uses` row (`outcome` `failed`, `code` `HB-GW-009`) and the score's null reason;
+    a sent request's usage is `model_calls` principal `gateway` (ADR-0006 Amendment 4, R-80: `egress_events` is
+    retired). The secret values are read at run time and never logged or written.
 - **Identifiers the CLI adds after `release`** (Verified, spike GW-H results 4 and 5):
   - **Claude:** a `session_context` attachment with the account e-mail, and a `credential_org` attachment. Both were
     present on both measured text-mode turns (the gateway's mode) and empty on the one native-mode turn. Inferred:
@@ -332,8 +333,8 @@ judges:
 - **Detection is derived, not stored:** a report-time function, `views.cli_context_classes(record,
   request, answer)`, runs over each archived judge record.
   - It works by subtraction: every string in the record except the gateway's own request and answer spans.
-  - It reports `Verdict.classes` only. It is never written to `egress_events`: that fact holds send decisions, and
-    this text was already sent.
+  - It reports `Verdict.classes` only, and is never stored: this text was already sent, so there is no send
+    decision to record (ADR-0006 Amendment 4).
   - A record that cannot be parsed reads `not recorded`, never "none" (IO).
   - The header discloses the classes per judge. The race-loser's record is archived too, so no call is missed.
   - What to do about a hit is DR-GW-5.
@@ -730,7 +731,7 @@ The bench's telemetry is its ledger (ADR-0006; ADR-0008).
 | How many judge calls, and how did each end? | `views.judge_calls` over `verdict_uses` (`outcome`, `code`) |
 | Tokens and time per call | `model_calls` principal `gateway` |
 | Which model answered? | entry `served_models`; `model_calls.model` |
-| What was sent, and was it withheld? | `egress_events` (hash, destination, classes) |
+| What was sent, and was it withheld? | judge side: `verdict_uses` (`outcome`, `code` `HB-GW-009`) and `model_calls` principal `gateway`; publication side: `report-record.json` (per-section hash, destination, classes, `scanned`; `report_sha256`) (ADR-0006 Amendment 4) |
 | What did each CLI add? | `views.cli_context_classes` over the archived records |
 | Was the request blinded? | `HB-GW-004` rows; entry `components.scrub_version` |
 | Why is a judged score missing? | the `scores` reason; the item's `(outcome, code)` |
@@ -959,7 +960,7 @@ applies every finding below · re-check owed.`
 | Patterns 1: key misses the system prompt and argv | accepted: `invocation_sha256` |
 | Patterns 2: probe and production drift | accepted: one builder definition; the probe imports it at s2 |
 | Patterns 3: Windows-only rename | accepted: `os.link` |
-| Patterns 4: `egress.check` used as a detector | accepted: classes only; never an `egress_events` row |
+| Patterns 4: `egress.check` used as a detector | accepted: classes only; never stored (`egress_events` retired, ADR-0006 Amendment 4) |
 | Patterns 5: circuit breaker | accepted: per judge per pass on rate or quota errors (§8.3); justified by the measured 99 % limit |
 | Patterns 6: Self-Consistency misnamed | accepted: PoLL (§23); ADR-0009 follow-up |
 | Patterns 7: "content-addressed" misnamed | accepted: request-keyed memo store |

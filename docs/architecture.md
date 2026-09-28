@@ -94,7 +94,7 @@ flowchart TB
     REP[Report: CLI + HTML + summaries]
   end
   subgraph Store["runs/<run_id>/ + cache/"]
-    LED[(hash-chained facts: events, model_calls, tool_calls, archive_files, scores, verdict_uses, egress_events)]
+    LED[(hash-chained facts: events, model_calls, tool_calls, archive_files, scores, verdict_uses)]
     ARCH[(cell archives)]
     CTL[(control/: stop, decision answers)]
     VC[(shared verdict cache)]
