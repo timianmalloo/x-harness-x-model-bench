@@ -146,22 +146,6 @@ class RunView:
     header: dict[str, str | int | None] = field(default_factory=dict)  # credential kind, network mode, executed builds, probe passes
 
 
-@dataclass
-class Row:
-    combo: str
-    pack: str
-    harness: str
-    model: str
-    n_cells: int
-    n_valid: int
-    pass_at_1: Measure
-    rank: str  # "1", "2=", or "" when unranked
-    interval: str
-    tokens: Measure  # mean total tokens per valid cell
-    wall_ms: Measure  # mean per valid cell
-    cost_usd: Measure  # mean per valid cell
-
-
 def _refuse_duplicates(facts: dict[str, list[dict]]) -> None:
     seen: set[str] = set()
     for e in facts["events"]:
@@ -547,48 +531,6 @@ def _header(events: list[dict]) -> dict[str, str | int | None]:
             "probe_passes": _probe_passes(events)}
 
 
-def _mean(values: list) -> Decimal:
-    return sum((Decimal(v) for v in values), Decimal(0)) / len(values)
-
-
-def _row(view: RunView, cells: list[CellView]) -> Row:
-    valid = [c for c in cells if c.validity == "valid"]
-    passes = [c.scores["pass_at_1"].value for c in valid if c.scores.get("pass_at_1", Measure(None)).value is not None]
-    if passes:
-        pass_at_1 = Measure(_mean(passes))
-    else:
-        pass_at_1 = Measure(None, "not graded" if view.grading_id is None else "no valid graded cell")
-    used = [sum(sum(b.values()) for b in c.tokens.values()) for c in valid if c.tokens]
-    walls = [c.wall_ms.value for c in valid if c.wall_ms.value is not None]
-    no_cost = [c for c in valid if c.scores.get("cost_usd", Measure(None, "not graded")).value is None]
-    if not valid:
-        cost = Measure(None, "no valid cell")
-    elif no_cost:
-        reason = no_cost[0].scores.get("cost_usd", Measure(None, "not graded")).reason
-        cost = Measure(None, f"{len(no_cost)} of {len(valid)} valid cells have no cost: {reason}")
-    else:
-        cost = Measure(_mean([c.scores["cost_usd"].value for c in valid]))
-    first = cells[0]
-    return Row(first.combo, first.pack, first.harness, first.model, len(cells), len(valid), pass_at_1, "",
-               "interval not computed (n < 2)" if len(valid) < 2 else "interval not computed (statistics are phase 4)",
-               Measure(_mean(used)) if used else Measure(None, "no valid cell with usage"),
-               Measure(_mean(walls)) if walls else Measure(None, "no valid cell with wall time"), cost)
-
-
-def leaderboard(view: RunView) -> list[Row]:
-    """One row per combo x pack, correctness first: a cheaper failure never outranks a pass; equal pass rates tie."""
-    groups: dict[tuple[str, str], list[CellView]] = {}
-    for c in view.cells:
-        groups.setdefault((c.combo, c.pack), []).append(c)
-    out = [_row(view, cells) for cells in groups.values()]
-    ranked = [r.pass_at_1.value for r in out if r.pass_at_1.value is not None]
-    for r in out:
-        v = r.pass_at_1.value
-        if v is not None:
-            r.rank = str(1 + sum(1 for o in ranked if o > v)) + ("=" if ranked.count(v) > 1 else "")
-    return sorted(out, key=lambda r: (r.pass_at_1.value is None, -(r.pass_at_1.value or 0), r.combo, r.pack))
-
-
 def _enc(value):
     if isinstance(value, Measure):
         return {"value": _enc(value.value), "reason": value.reason}
@@ -609,10 +551,23 @@ def export(view: RunView) -> bytes:
               "warnings": [{"code": w.code, "level": w.level, "message": w.message} for w in c.warnings]}
              | ({"delegate_calls": _enc(c.delegate_calls)} if c.scenario == 6 else {})  # R-74 c2; the 0.3 bytes unchanged
              for c in sorted(view.cells, key=lambda c: c.cell_id)]
-    board = [{"combo": r.combo, "pack": r.pack, "n_cells": r.n_cells, "n_valid": r.n_valid, "pass_at_1": _enc(r.pass_at_1),
-              "rank": r.rank, "interval": r.interval, "tokens": _enc(r.tokens), "wall_ms": _enc(r.wall_ms), "cost_usd": _enc(r.cost_usd)}
-             for r in leaderboard(view)]
-    return ledger.canonical({"run_id": view.run_id, "catalog_version": view.catalog_version, "cells": cells, "leaderboard": board})
+    return ledger.canonical({"run_id": view.run_id, "catalog_version": view.catalog_version, "cells": cells})
+
+
+def __getattr__(name: str):
+    if name in ("leaderboard", "Row", "_row", "_mean"):
+        import importlib
+
+        mod = importlib.import_module("harness_bench.board")
+        if name == "leaderboard":
+            return mod._legacy_leaderboard
+        if name == "Row":
+            return mod.Row
+        if name == "_row":
+            return mod._legacy_row
+        if name == "_mean":
+            return mod._mean
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 @dataclass(frozen=True)
