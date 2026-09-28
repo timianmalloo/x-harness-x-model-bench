@@ -8,6 +8,7 @@ and the operator's identifiers are random synthetic strings (R-42). The stipulat
 `fixtures/gateway/gateway.yaml`: bench/gateway.yaml waits for the Leader's measured turn (R-70).
 """
 
+import argparse
 import ast
 import dataclasses
 import json
@@ -612,3 +613,12 @@ def test_bench_grade_allow_model_calls_needs_the_operators_email_for_egress(caps
     code, out, err = bench(capsys, root, tmp_path, "grade", "r1", "--allow-model-calls")
     assert (code, out, err) == (1, "", ("HB-USR-002: set BENCH_OPERATOR_EMAIL to the operator's e-mail: egress scans "
                                         "every judge request for it (supplied at run time, never committed, R-42)\n"))
+
+
+def test_the_judge_call_environment_scans_for_the_production_canary_set(tmp_path, monkeypatch, no_real_home):
+    # R-80 c3 (DR-EG-2): the one production canary set reaches every judge request, so `scanned` names `canary`.
+    monkeypatch.setenv("BENCH_OPERATOR_EMAIL", f"op-{token_hex(6)}@example.invalid")
+    monkeypatch.setattr(tools, "resolve", lambda tools_dir: {})  # no pinned CLI is installed under tmp_path
+    root = judged_root(tmp_path)
+    args = argparse.Namespace(cells_root=str(tmp_path / "cells"), tools_dir=str(tmp_path / "tools"))
+    assert cli._judge_calls(args, root).canaries == egress.CANARIES

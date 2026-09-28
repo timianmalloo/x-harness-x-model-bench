@@ -13,6 +13,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import html as _html
 import json
 import re
@@ -42,8 +43,10 @@ SECRET_SHAPES = (
 )
 PUBLICATION = "report"  # the egress destination id of report publication (US-47 c3)
 RECORD = "report-record.json"  # beside report.html: what the report withheld (US-47 c3) and flagged (US-46 c2)
+PARTIAL = "partial: email not supplied"  # the publication scan without BENCH_OPERATOR_EMAIL (R-80 DR-EG-3)
 # One rendered section. Sections never nest, and every value is escaped by `_e`, so "</section>" is only a tag.
 _SECTION = re.compile(r'<section id="([a-z0-9-]+)">.*?</section>', re.DOTALL)
+_HEADER_END = re.compile(r'(<section id="header">.*?)(</section>)', re.DOTALL)  # where the egress row goes (R-80 c1)
 
 STYLE = """
 :root{color-scheme: light;
@@ -456,12 +459,11 @@ def scan(text: str, credential_values: set[str] = frozenset()) -> int:
     return found
 
 
-def _publish(doc: str, operator: egress.Operator | None, secrets: set[str], canaries: Sequence[str]) -> tuple[str, dict]:
-    """US-47 c3: every section through `egress.check` (destination `report`). A withheld section is replaced by
-    `withheld: sensitive content`; a hit outside every section writes nothing (HB-SEC-001). Returns the page to publish
-    and the record: each section's verdict record (digest and class names, never content) and the withheld ids."""
-    if operator is None:  # the scan needs the operator's identifiers (read at run time, R-42)
-        return doc, {"egress": judges.NO_OPERATOR, "sections": [], "withheld": []}
+def _publish(doc: str, operator: egress.Operator, secrets: set[str], canaries: Sequence[str]) -> tuple[str, dict]:
+    """US-47 c3: every section through `egress.check` (destination `report`), always (R-80 c4). A withheld section is
+    replaced by `withheld: sensitive content`; a hit outside every section writes nothing (HB-SEC-001). Returns the page
+    to publish and the record: each section's verdict record (digest and class names, never content), the withheld
+    ids, and `egress` (`scanned`, or `partial: email not supplied` when the operator gave no email)."""
     sections: list[dict] = []
 
     def one(m: re.Match) -> str:
@@ -474,8 +476,16 @@ def _publish(doc: str, operator: egress.Operator | None, secrets: set[str], cana
     if egress.check(_SECTION.sub("", doc), destination=PUBLICATION, operator=operator, secrets=sorted(secrets),
                     canaries=canaries).withheld:
         raise BenchError("HB-SEC-001", f"the page outside its sections is {egress.WITHHELD}; nothing was written")
-    return published, {"egress": "scanned", "sections": sections,
+    return published, {"egress": "scanned" if operator.email is not None else PARTIAL, "sections": sections,
                        "withheld": [s["section"] for s in sections if s["classes"]]}
+
+
+def _egress_row(record: dict) -> str:
+    """R-80 c1: the header's publication-egress row names the scan status, the withheld count and the record. It is
+    added after the section scan and holds only bench-authored text (a status, two counts, a file name); the
+    HB-SEC-001 shape pass still reads it."""
+    text = f"{record['egress']}; {len(record['withheld'])} of {len(record['sections'])} sections withheld; record {RECORD}"
+    return f"<dl><dt>Publication egress</dt><dd>{_e(text)}</dd></dl>"
 
 
 def write(run_dir: Path, view: views.RunView, credential_values: set[str] = frozenset(), root: Path | None = None,
@@ -483,20 +493,28 @@ def write(run_dir: Path, view: views.RunView, credential_values: set[str] = froz
           params: stats.Params | None = None, comparison_obj: board.Comparison | str | None = None,
           canaries: Sequence[str] = ()) -> Path:
     """report.html, after publication egress (`_publish`) and the credential scan (HB-SEC-001), and beside it the run
-    record of what the report withheld and flagged (`RECORD`).
-    assume: a report-time file beside report.html is the run record US-47 c3 and US-46 c2 name. Confirm: the Leader's
-    ruling on EGRESS s2. Breaks: if it must be a ledger fact (the design's `egress_events`), this record moves there
-    with an ADR-0006 amendment; its content stays the same."""
+    record of what the report withheld and flagged (`RECORD`). The record is the publication record, a derived
+    artifact regenerated with the report and never a ledger fact (R-80 DR-EG-1, ADR-0006 amendment); `report_sha256`
+    binds it to the report.html written beside it (R-80 c1). Without an `operator`, this login's user name and home are
+    scanned and the email is not (R-80 c4)."""
+    operator = operator if operator is not None else egress.Operator.from_os()
     doc = render(view, archive_present=(run_dir / "archive").is_dir(), run_dir=run_dir, root=root, operator=operator,
                  board_obj=board_obj, params=params, comparison_obj=comparison_obj)
-    published, record = _publish(doc, operator, set(credential_values), canaries)
-    found = scan(published, credential_values)
+    # The rendered page, before any section is withheld: a credential refuses the whole write, never only its section,
+    # so `bench report` never prints a table that carries it either (residual 5; R-80 c4 made the section scan run).
+    found = scan(doc, credential_values)
     if found:
         raise BenchError("HB-SEC-001", f"{found} credential-shaped string(s) in the report; nothing was written")
+    published, record = _publish(doc, operator, set(credential_values), canaries)
+    # R-80 c3: the set scanned for, by version; a caller that left the production set out reads "not scanned".
+    record["canaries"] = {"version": egress.CANARIES_VERSION if set(egress.CANARIES) <= set(canaries) else "not scanned",
+                          "us48": egress.CANARIES_US48}
     record["injection"] = {"patterns_version": views.INJECTION_PATTERNS_VERSION,
                            "items": [{"cell_id": c, "metric": m, "patterns": list(p)}
                                      for c, m, p in judges.injection_items(root, run_dir, view)]}
+    published = _HEADER_END.sub(lambda m: m.group(1) + _egress_row(record) + m.group(2), published, count=1)
     path = run_dir / "report.html"
     path.write_text(published, encoding="utf-8", newline="\n")
+    record["report_sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
     (run_dir / RECORD).write_text(json.dumps(record, indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     return path

@@ -184,8 +184,8 @@
  {
   "name": "the CLI-added context is scanned with no operator identifiers",
   "file": "src/harness_bench/report/judges.py",
-  "find": "    if operator is None:\n        return NO_OPERATOR",
-  "replace": "    if False:\n        return NO_OPERATOR",
+  "find": "    if operator is None or operator.email is None:",
+  "replace": "    if False:",
   "tests": ["tests/test_report_judges.py::test_t_gw_29_without_the_operators_identifiers_the_cli_context_is_not_recorded_and_no_pass_no_block"]
  },
  {

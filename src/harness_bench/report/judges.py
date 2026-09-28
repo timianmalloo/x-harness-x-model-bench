@@ -169,7 +169,7 @@ def _judges_row(stipulation: Mapping, uses: list[dict], entries: _Entries) -> st
 
 def _context_row(stipulation: Mapping, uses: list[dict], entries: _Entries, archive: Path,
                  operator: egress.Operator | None) -> str:
-    if operator is None:
+    if operator is None or operator.email is None:  # a partial scan here would read like "none added" (R-60 c4)
         return NO_OPERATOR
     parts = []
     for j in stipulation["judges"]:

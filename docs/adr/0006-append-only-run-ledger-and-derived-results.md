@@ -12,8 +12,10 @@ links:
 review-by: "2027-09-23"
 summary: >-
   The durable record is a set of append-only, hash-chained JSON Lines facts per run with declared
-  grains (lifecycle events, model calls, tool calls, archive files, grading passes, scores, verdict uses,
-  egress events), immutable content-addressed dimensions, and one shared content-addressed verdict cache.
+  grains (lifecycle events, model calls, tool calls, archive files, grading passes, scores and verdict
+  uses), immutable content-addressed dimensions, and one shared content-addressed verdict cache. The
+  declared egress events fact is retired (Amendment 4, R-80): judge sends live in verdict uses and model
+  calls, and the publication scan in report-record.json beside the report.
   Current states, costs, composites and statistics are derived projections computed in memory; no
   results database is persisted.
 ---
@@ -24,6 +26,7 @@ summary: >-
 - **Amended (2026-09-24, ruling R-26; design `design-phase2-copilot-profile` section 3):** the `model_calls` grain is re-declared as one native usage report per model, with an additive `requests` count and `model` in the key; `tool_calls` gains `outcome_code` (ruling R-27). See "Amendment 1" under Facts and their grains.
 - **Amended (2026-09-25, ruling R-15 Q6):** `model_calls` gains `total_nano_aiu`, Copilot's native AI-unit measure (`modelMetrics.<model>.totalNanoAiu`) stored verbatim as an additive column, null (never 0) when the native record does not carry it. See "Amendment 2" under Facts and their grains.
 - **Amended (2026-09-25, R-58 c1 and c6; design `phase3-gateway-judges` sections 4.1, 4.2 and 9.1; W3-GW-I slice 3):** `verdict_uses` gets its grain, key, closed `outcome` enum, `code`, placement in the grading pass's own sealed segment and its `heads` entry; `model_calls` rows with principal `gateway` are the judge calls' usage. See "Amendment 3" under Facts and their grains.
+- **Amended (2026-09-28, ruling R-80 DR-EG-1):** `egress_events` is retired; it was declared and never written. Judge sends are `verdict_uses` (`outcome`, `code`) plus `model_calls` principal `gateway`; the publication scan is `report-record.json`, a derived artifact beside `report.html`. See "Amendment 4" under Facts and their grains.
 - **Date:** 2026-09-23 (revised after council round 1)
 - **Deciders:** @timianmalloo; authored by Claude Code with the Data & Persistence Architect lens
 - **Context spec/architecture:** `docs/specs/harness-bench.md` (conceptual model; US-4, US-17–US-19, US-22–US-27, US-47, US-52)
@@ -70,7 +73,7 @@ The domain standard defaults to dimensions plus append-only facts (DM5), with an
 | `archive_files` | file or link in one archive attempt of one cell | `(run_id, cell_id, archive_attempt, path)` | size (additive); sha256; kind (file or link, never followed) | archiver, through the engine thread |
 | `scores` | value of one metric for one cell in one grading pass | `(run_id, grading_id, cell_id, metric_id)` | value (non-additive); NULL with a reason when NOT_RECORDED; the `archive_attempt` graded and the `extraction_id` read (references by identity; the archive hash is not repeated) | grade process |
 | `verdict_uses` | lookup of one judge's verdict (or one matcher's match) on one rubric item for one cell, by one grading pass; a failed lookup too (Amendment 3; was "use of a cached verdict or match") | `(run_id, grading_id, cell_id, item_id, judge_or_matcher)`; `item_id` is `<metric_id>#<n>` | `outcome` (closed enum: `hit`, `stored`, `race_lost`, `not_allowed`, `failed`) and `code` (the HB code of a `failed` row, null otherwise); `cache_key` and `entry_sha256` (set for `hit`, `stored`, `race_lost`; null otherwise). Non-additive; "cache hit" is derived (`outcome == "hit"`), not a column (Amendment 3) | grade process (`grade/judge.py`, into the pass's own sealed segment) |
-| `egress_events` | scan-and-send attempt | `(scope_id, seq)`, where the scope is a run or a report (a report over two runs publishes once) | payload hash; destination; purpose; result: sent, withheld or quarantined | egress gate |
+| ~~`egress_events`~~ | retired by Amendment 4 (R-80): never written | none | none | none |
 
 A grading pass is an entity in `events` (`grading.started` / `grading.completed`), carrying `grading_id`, catalog version and grader build hash. The **current score** of a cell for a catalog version is the value from the latest completed grading pass for that catalog version: the greatest `recorded_at` on `grading.completed`, tie-broken by `grading_id`. This rule is defined once, in the projection. A re-grade (after a judge outage or a grader fix) is a new grading pass. Nothing is overwritten.
 
@@ -122,6 +125,19 @@ A grading pass is an entity in `events` (`grading.started` / `grading.completed`
 - **`model_calls`, principal `gateway`.** One row is one model's usage in one native usage report of a judge CLI, read by one extraction (Amendment 1's grain, unchanged). `principal` is `gateway`; `cell_id` is null, because judge spend is overhead (US-17). The source is the call's own native record, archived into the pass at `grading/<grading_id>/gateway/<call_id>/record.jsonl`. `stored` and `race_lost` rows came from a call, so that call's rows are written; `hit`, `not_allowed` and a `failed` row before the spawn made no call and write none. A warm second pass writes none (R-58 c6).
 - **Writers and readers.** Writer: the grading pass (`bench grade`, or `bench grade --allow-model-calls`), through `grade/judge.py`. Readers: synthesis (design section 10), the calibration and agreement projections, `views.judge_calls`, and `bench verify`.
 - **Migration.** Additive; no backfill. No ledger holds a `verdict_uses` row before this amendment; a pass without the segment reads as "judged metrics not graded". No rewrite, and no rollback is needed.
+
+**Amendment 4 (2026-09-28, ruling R-80 DR-EG-1; design `phase3-gateway-judges` sections 7.4 and 21).** `egress_events` is retired. Two existing records stand in its place, one per side of egress.
+- **Why.** The row was a declared fact with no writer: no file under `src/`, `tests/` or `tools/` names it (Verified, `grep -rln egress_events src tests tools` returns nothing at this amendment). Each half of what it was meant to hold already has a home. A third record of the same decision would be a second definition that drifts (DM7).
+- **Judge side: ledger facts, unchanged.**
+  - A withheld judge request is a `verdict_uses` row with `outcome` `failed` and `code` `HB-GW-009` (Amendment 3; `gateway/pipeline.py`). Its score is null with the reason `judge <model>: failed HB-GW-009` (`grade/judge.py`). Nothing was sent, so there is no `model_calls` row.
+  - A sent request is a `stored` or `race_lost` row, and its usage is `model_calls` with principal `gateway` (Amendment 3).
+  - Not stored, accepted by R-80: the class names and the sha256 of a withheld judge request. The fact records that the request was withheld and by which step (`HB-GW-009`), which is what `views.judge_calls` and the report read. The retired row planned to hold the classes; no reader was ever designed for them.
+- **Publication side: `report-record.json`, a derived artifact, not a fact.**
+  - It sits beside `report.html` in the viewed run's folder. `bench report` writes it with the report and rewrites it on every run, like the report itself. It is never a ledger fact: no hash chain, no segment, no `heads` entry, and `bench verify` does not read it.
+  - Grain: one file is exactly one publication of one `report.html`. `report_sha256` is the sha256 of that written file, so the pair is bound; a record whose digest differs from the file beside it describes another publication.
+  - Content: `egress` (`scanned`, or `partial: email not supplied` when `BENCH_OPERATOR_EMAIL` is not set); `sections`, one per page section (section id, destination `report`, `payload_sha256`, `classes`, `scanned`), never section content; `withheld` (the section ids replaced by `withheld: sensitive content`); `canaries` (the production canary set's `version`, and `us48: not planted (Harbor, phase 2)`); `injection` (US-46 c2); `report_sha256`. The report header's "Publication egress" row names the status, the withheld count and the record's file name.
+  - History rule: none kept. A report spans up to two runs and is rebuilt on each `bench report`, so its scan record belongs to the artifact it describes, not to either run's ledger. Rebuilding it reads the same facts; only the operator's run-time identifiers and host credential values can change the result.
+- **Migration.** None. No ledger holds an `egress_events` row, so there is nothing to backfill, rewrite or roll back. The `assume:` in `report/html.py` `write` closes on this amendment.
 
 **Extractions are written once.** A grading pass writes `model_calls` and `tool_calls` for a cell only if no completed pass already holds that cell's `extraction_id`; it checks this under `grade.lock`. A re-grade with the same normaliser build therefore reuses the existing rows, and its scores name that `extraction_id`. A normaliser fix gives a new `extraction_id` and new rows beside the old. **The current extraction** of a cell, for a catalog version, is the one named by its current scores for that version, so totals never sum two extractions.
 
