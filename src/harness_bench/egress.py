@@ -34,6 +34,13 @@ from harness_bench.report import html as report_html
 from harness_bench.report.credentials import encodings
 
 WITHHELD = "withheld: sensitive content"
+# The one production canary set (R-80 DR-EG-2): the US-13 Copilot class strings the isolation test plants
+# (tests/e2e/test_us13_canary.py imports them from here, DM7). Every judge request and every report section is scanned
+# for them. US-48's Harbor canaries are phase 2 (ADR-0013), so nothing plants one in a production cell.
+CANARIES = ("HB-US13-COPILOT-INSTRUCTION", "hb-us13-copilot-skill", "hb-us13-agents-skill", "hb-us13-claude-skill",
+            "HB-US13-COPILOT-HOOK")
+CANARIES_VERSION = "us13-1"  # bump when CANARIES changes, so a record names the set it was scanned for
+CANARIES_US48 = "not planted (Harbor, phase 2)"
 DESTINATION = re.compile(r"[a-z][a-z0-9._-]{0,31}(?::[a-z0-9._-]{1,31})?")
 CLASSES = ("credential", "token_shape", "token_prefix", "email", "username", "home_path", "canary", "unscannable")
 # Shapes the report's scan (report/html.py SECRET_SHAPES) does not yet name (D&P Major 2).

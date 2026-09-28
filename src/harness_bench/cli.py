@@ -247,7 +247,7 @@ def _judge_calls(args, root: Path) -> judge.Calls:
     return judge.Calls(cells_root=Path(args.cells_root), builds=tools.resolve(Path(args.tools_dir)),
                        profiles={h: profiles.load(root, h) for h in profiles.HARNESSES},
                        operator=egress.Operator(email=email, username=getpass.getuser(), home=str(Path.home())),
-                       secrets=tuple(sorted(report_credentials.host_values(root))))
+                       secrets=tuple(sorted(report_credentials.host_values(root))), canaries=egress.CANARIES)
 
 
 def cmd_grade(args) -> int:
@@ -324,7 +324,8 @@ def cmd_report(args) -> int:
     text, code = cli_table.render(view, plain=_plain(), run_dir=run_dir, root=root, board_obj=board_obj, params=params, comparison_obj=comp_obj)
     if code == OK:
         # html.write's credential scan must run before a label reaches the terminal (residual 5).
-        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator(), board_obj=board_obj, params=params, comparison_obj=comp_obj)
+        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator(), board_obj=board_obj, params=params, comparison_obj=comp_obj,
+                                 canaries=egress.CANARIES)
         print(text, end="")
         print(f"report: {report_path}")
     else:

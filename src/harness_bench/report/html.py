@@ -502,6 +502,9 @@ def write(run_dir: Path, view: views.RunView, credential_values: set[str] = froz
     found = scan(published, credential_values)
     if found:
         raise BenchError("HB-SEC-001", f"{found} credential-shaped string(s) in the report; nothing was written")
+    # R-80 c3: the set scanned for, by version; a caller that left the production set out reads "not scanned".
+    record["canaries"] = {"version": egress.CANARIES_VERSION if set(egress.CANARIES) <= set(canaries) else "not scanned",
+                          "us48": egress.CANARIES_US48}
     record["injection"] = {"patterns_version": views.INJECTION_PATTERNS_VERSION,
                            "items": [{"cell_id": c, "metric": m, "patterns": list(p)}
                                      for c, m, p in judges.injection_items(root, run_dir, view)]}

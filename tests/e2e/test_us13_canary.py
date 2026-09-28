@@ -21,7 +21,7 @@ from pathlib import Path
 
 import pytest
 
-from harness_bench import driver, procs, profiles, tools
+from harness_bench import driver, egress, procs, profiles, tools
 from harness_bench.telemetry import Extraction
 from harness_bench.telemetry import rows as native_rows
 
@@ -32,11 +32,8 @@ PROMPT = ("List the name of every skill available to you, one per line. Then quo
           "instruction file you were given, at user or project level. Write NONE for a part you have nothing for. "
           "Do not run any tool and do not read any file.")
 MODELS = {"claude-code": "claude-sonnet-5", "codex": "gpt-6-sol", "copilot": "gpt-6-sol"}
-COPILOT_INSTRUCTION = "HB-US13-COPILOT-INSTRUCTION"
-COPILOT_SKILL = "hb-us13-copilot-skill"
-COPILOT_AGENTS_SKILL = "hb-us13-agents-skill"
-COPILOT_CLAUDE_SKILL = "hb-us13-claude-skill"
-COPILOT_HOOK = "HB-US13-COPILOT-HOOK"
+# The class strings are the one production canary set egress scans for (R-80 DR-EG-2, one definition).
+COPILOT_INSTRUCTION, COPILOT_SKILL, COPILOT_AGENTS_SKILL, COPILOT_CLAUDE_SKILL, COPILOT_HOOK = egress.CANARIES
 COPILOT_HOOK_FILE = "us13-hook-marker.txt"
 # Same class strings the Claude/Codex branch uses for a user skills root outside the harness home (below, _user_config).
 AGENTS_SKILL_CLASS = "skill (~/.agents/skills, via USERPROFILE)"
