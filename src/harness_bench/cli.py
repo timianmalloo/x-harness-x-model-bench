@@ -299,7 +299,7 @@ def cmd_report(args) -> int:
     if (root / "bench" / "metrics.yaml").is_file():
         try:
             cat = composites.load_catalog(root)
-        except Exception:
+        except (BenchError, OSError):
             cat = None
     if cat is None:
         cat = composites.Catalog(

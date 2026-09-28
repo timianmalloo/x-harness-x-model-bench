@@ -684,7 +684,7 @@ def test_tm1_comparison_refusal_end_to_end_cli_and_html(root, tmp_path, capsys):
     from harness_bench import cli
 
     # Run A has combo c1, Run B has combo c2
-    run_a = stats_run(root, tmp_path, run_id="r-tm1-a", tasks=("A1",), reps=1, arms=("off",), combos=["c1"])
+    stats_run(root, tmp_path, run_id="r-tm1-a", tasks=("A1",), reps=1, arms=("off",), combos=["c1"])
     run_b = stats_run(root, tmp_path, run_id="r-tm1-b", tasks=("A1",), reps=1, arms=("off",), combos=["c2"])
 
     # 1. CLI end-to-end: bench report r-tm1-b --baseline r-tm1-a
@@ -724,11 +724,11 @@ def test_tm2_shared_pack_revision_labelled_a_replication(root, tmp_path, capsys)
         ("A1", 1, "off"): 1,
         ("B1", 1, "off"): 0,
     }
-    run_a = stats_run(
+    stats_run(
         root, tmp_path, run_id="r-tm2-a", tasks=("A1", "B1"), reps=1, arms=("off",), combos=["c1"],
         outcomes=outcomes_a, pack_revision="95",
     )
-    run_b = stats_run(
+    stats_run(
         root, tmp_path, run_id="r-tm2-b", tasks=("A1", "B1"), reps=1, arms=("off",), combos=["c1"],
         outcomes=outcomes_b, pack_revision="95",
     )
