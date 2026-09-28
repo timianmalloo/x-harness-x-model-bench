@@ -355,6 +355,14 @@ summary: >-
 - **Control:** the join re-runs the mutation sets of the modules a track touched: `python tools/mutate_check.py --touched <base>` selects every set in `tests/mutations/` whose mutant `file`, or the path part of a named test, is in `git diff --name-only <base>...HEAD`, prints each selected set, and runs it as the single-set mode does (exit 1 when any mutant is not killed; `no mutation set touched` and exit 0 when none is; `--list` prints the paths and runs nothing). A vacuous assertion shows up as a surviving mutant once that set is re-run. Tests that check one element assert on that element's markup, not on the whole page. The selection rule is `touched_sets`, tested with no git call, and the mutant "the test-path part dropped" in `tests/mutations/mutate_check.json` is killed.
 - **Status:** `controlled`
 
+### MUT-B: a mutant that names a test renamed away
+- **Signature:** a mutation set's `tests` entry names a test id whose function was later renamed or deleted. pytest then errors on the missing node, and `mutate_check` reports `error`, not `killed`. The mutant guards nothing.
+- **Why it survives:** the rename touches only the test file. Its join re-runs the sets the slice edited, and the test file's own suite passes. The `error` line appears only when someone re-runs that set.
+- **Instances:** `2026-09-28`, the R3 join (the Leader): `validity.json`'s "US-11: the task's model_map is ignored" named `test_a_model_the_task_model_map_names_is_valid`. R-73 c2 had renamed it to `..._for_the_cells_vendor_is_valid`. The first `mutate_check --touched main` run (TEST-A's new control) showed the `error`. The mutant was retargeted, and it is killed.
+- **Sweep:** every named test id in `tests/mutations/*.json` against its file's `def` or `class` (2026-09-28): no other stale id.
+- **Control:** `tests/test_mutate_check.py::test_every_named_test_in_the_mutation_sets_exists`, in the default ring. It was observed red on the stale id, then green. `--touched` also selects a set when a named test's file changes.
+- **Status:** `controlled`
+
 ### OUT-A: a saved measurement reported as a failure because printing it failed
 - **Signature:** a tool saves its result file and then prints the same result to stdout. The text holds a character the console cannot encode: a Windows pipe defaults to cp1252, and model text carries `−` or emoji. The print raises, and the exit status turns non-zero. The caller reads the exit code as the measurement, although the saved file says the opposite.
 - **Why it survives:** offline tests use ASCII fixtures, and an interactive terminal is often UTF-8. Only a real model's text on a redirected Windows pipe hits it. The saved file is correct, so nothing that reads the file fails.

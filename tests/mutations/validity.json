@@ -135,7 +135,7 @@
   "find": " and m not in mapped for m in served):\n",
   "replace": " for m in served):\n",
   "tests": [
-   "tests/test_views.py::test_a_model_the_task_model_map_names_is_valid"
+   "tests/test_views.py::test_a_model_the_task_model_map_names_for_the_cells_vendor_is_valid"
   ]
  },
  {
