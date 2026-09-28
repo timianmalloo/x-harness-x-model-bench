@@ -178,6 +178,10 @@ def test_t_gw_29_without_the_operators_identifiers_the_cli_context_is_not_record
     root, run_dir, _ = judged_run(tmp_path, base)
     page = html.render(views.load(run_dir), False, run_dir, root=root)
     assert _dd(page, "CLI-added context") == "not recorded: the operator's identifiers were not supplied"
+    # R-80 c4: an operator without an email (bench report's default) is a partial scan, never "none added".
+    no_email = egress.Operator(email=None, username=PLACEHOLDER.username, home=PLACEHOLDER.home)
+    page = html.render(views.load(run_dir), False, run_dir, root=root, operator=no_email)
+    assert _dd(page, "CLI-added context") == "not recorded: the operator's identifiers were not supplied"
     other = make_run(root, tmp_path / "other", {"a": GOOD}, combos={"a": "combo-placeholder"})
     runner.run_pass(other, root, judge.IN_RUN)  # a graded pass that looked up no judge verdict (section 6)
     assert views.load(other).grading_id is not None

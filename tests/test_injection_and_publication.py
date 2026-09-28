@@ -191,6 +191,7 @@ def test_bench_report_scans_every_section_for_the_production_canary_set(capsys, 
     run_dir, _ = _bench_report(capsys, monkeypatch, tmp_path)
     record = _record(run_dir)
     assert record["sections"] and all("canary" in s["scanned"] for s in record["sections"])
+    assert record["egress"] == "scanned"  # the email from BENCH_OPERATOR_EMAIL reached the scan
     assert record["canaries"] == {"version": egress.CANARIES_VERSION, "us48": "not planted (Harbor, phase 2)"}
 
 
@@ -207,6 +208,7 @@ def test_without_an_operator_the_section_scan_still_runs_on_the_os_login(tmp_pat
     assert record["egress"] == "partial: email not supplied"
     assert record["sections"] and all(s["scanned"] == ["token_shape", "username", "home_path"]
                                       for s in record["sections"])
+    assert record["canaries"]["version"] == "not scanned"  # this caller left the production set out
 
 
 def test_bench_report_without_the_email_scans_every_other_class_and_says_partial(capsys, monkeypatch, tmp_path):

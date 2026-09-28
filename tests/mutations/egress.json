@@ -531,5 +531,153 @@
   "tests": [
    "tests/test_injection_and_publication.py::test_a_hit_outside_every_section_writes_nothing"
   ]
+ },
+ {
+  "name": "R-80 c1: the record's report_sha256 is not the written file's",
+  "file": "src/harness_bench/report/html.py",
+  "find": "record[\"report_sha256\"] = hashlib.sha256(path.read_bytes()).hexdigest()",
+  "replace": "record[\"report_sha256\"] = hashlib.sha256(b\"\").hexdigest()",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_the_run_record_binds_to_the_written_report_by_digest_and_the_header_names_it"
+  ]
+ },
+ {
+  "name": "R-80 c1: the header carries no publication-egress row",
+  "file": "src/harness_bench/report/html.py",
+  "find": "published = _HEADER_END.sub(lambda m: m.group(1) + _egress_row(record) + m.group(2), published, count=1)",
+  "replace": "published = published",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_the_run_record_binds_to_the_written_report_by_digest_and_the_header_names_it",
+   "tests/test_injection_and_publication.py::test_bench_report_without_the_email_scans_every_other_class_and_says_partial"
+  ]
+ },
+ {
+  "name": "R-80 c1: the header's withheld count reads 0",
+  "file": "src/harness_bench/report/html.py",
+  "find": "{len(record['withheld'])} of",
+  "replace": "{0} of",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_the_run_record_binds_to_the_written_report_by_digest_and_the_header_names_it"
+  ]
+ },
+ {
+  "name": "R-80 c3: _judge_calls drops the production canaries",
+  "file": "src/harness_bench/cli.py",
+  "find": "secrets=tuple(sorted(report_credentials.host_values(root))), canaries=egress.CANARIES)",
+  "replace": "secrets=tuple(sorted(report_credentials.host_values(root))), canaries=())",
+  "tests": [
+   "tests/test_grade_judge.py::test_the_judge_call_environment_scans_for_the_production_canary_set"
+  ]
+ },
+ {
+  "name": "R-80 c3: cmd_report drops the production canaries",
+  "file": "src/harness_bench/cli.py",
+  "find": "comparison_obj=comp_obj, canaries=egress.CANARIES)",
+  "replace": "comparison_obj=comp_obj, canaries=())",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_bench_report_scans_every_section_for_the_production_canary_set"
+  ]
+ },
+ {
+  "name": "R-80 c3: the record claims the canary set it was not scanned for",
+  "file": "src/harness_bench/report/html.py",
+  "find": "egress.CANARIES_VERSION if set(egress.CANARIES) <= set(canaries) else \"not scanned\"",
+  "replace": "egress.CANARIES_VERSION",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_without_an_operator_the_section_scan_still_runs_on_the_os_login"
+  ]
+ },
+ {
+  "name": "R-80 c3: the record drops the us48 disclosure",
+  "file": "src/harness_bench/report/html.py",
+  "find": "\"us48\": egress.CANARIES_US48}",
+  "replace": "\"us48\": None}",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_bench_report_scans_every_section_for_the_production_canary_set"
+  ]
+ },
+ {
+  "name": "R-80 c4: an operator without an email reads as scanned",
+  "file": "src/harness_bench/report/html.py",
+  "find": "\"egress\": \"scanned\" if operator.email is not None else PARTIAL,",
+  "replace": "\"egress\": \"scanned\",",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_without_an_operator_the_section_scan_still_runs_on_the_os_login",
+   "tests/test_injection_and_publication.py::test_bench_report_without_the_email_scans_every_other_class_and_says_partial"
+  ]
+ },
+ {
+  "name": "R-80 c4: the email class runs without an email",
+  "file": "src/harness_bench/egress.py",
+  "find": "(lambda: _anycase(views, operator.email)) if operator.email is not None else None",
+  "replace": "(lambda: _anycase(views, operator.email or '')) if True else None",
+  "tests": [
+   "tests/test_egress.py::test_an_operator_without_an_email_scans_every_other_class_and_never_names_email"
+  ]
+ },
+ {
+  "name": "R-80 c4: the operator accepts a blank email",
+  "file": "src/harness_bench/egress.py",
+  "find": "or (self.email is not None and not self.email.strip())",
+  "replace": "or False",
+  "tests": [
+   "tests/test_egress.py::test_the_operator_refuses_an_empty_identifier"
+  ]
+ },
+ {
+  "name": "R-80 c4: the OS operator's user name is not this login's",
+  "file": "src/harness_bench/egress.py",
+  "find": "username=getpass.getuser()",
+  "replace": "username='placeholder-user'",
+  "tests": [
+   "tests/test_egress.py::test_the_os_operator_reads_this_logins_user_name_and_home",
+   "tests/test_injection_and_publication.py::test_bench_report_without_the_email_scans_every_other_class_and_says_partial"
+  ]
+ },
+ {
+  "name": "R-80 c4: the OS operator's home is not this login's",
+  "file": "src/harness_bench/egress.py",
+  "find": "home=str(Path.home())",
+  "replace": "home='/placeholder-home'",
+  "tests": [
+   "tests/test_egress.py::test_the_os_operator_reads_this_logins_user_name_and_home"
+  ]
+ },
+ {
+  "name": "R-80 c4: bench report ignores BENCH_OPERATOR_EMAIL",
+  "file": "src/harness_bench/cli.py",
+  "find": "egress.Operator.from_os(os.environ.get(\"BENCH_OPERATOR_EMAIL\", \"\").strip() or None)",
+  "replace": "egress.Operator.from_os(None)",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_bench_report_scans_every_section_for_the_production_canary_set"
+  ]
+ },
+ {
+  "name": "R-80 c4: html.write without an operator skips the scan",
+  "file": "src/harness_bench/report/html.py",
+  "find": "operator = operator if operator is not None else egress.Operator.from_os()",
+  "replace": "operator = operator if operator is not None else egress.Operator.from_os('op@example.invalid')",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_without_an_operator_the_section_scan_still_runs_on_the_os_login"
+  ]
+ },
+ {
+  "name": "R-80 c4: the CLI-added-context row scans without an email",
+  "file": "src/harness_bench/report/judges.py",
+  "find": "if operator is None or operator.email is None:",
+  "replace": "if operator is None:",
+  "tests": [
+   "tests/test_report_judges.py::test_t_gw_29_without_the_operators_identifiers_the_cli_context_is_not_recorded_and_no_pass_no_block"
+  ]
+ },
+ {
+  "name": "R-80 c4: a credential in a section is only withheld, not refused",
+  "file": "src/harness_bench/report/html.py",
+  "find": "found = scan(doc, credential_values)",
+  "replace": "found = scan(_SECTION.sub(\"\", doc), credential_values)",
+  "tests": [
+   "tests/test_report.py::test_a_planted_credential_is_found_and_the_report_refused",
+   "tests/test_cli.py::test_report_does_not_print_a_label_before_the_credential_scan"
+  ]
  }
 ]

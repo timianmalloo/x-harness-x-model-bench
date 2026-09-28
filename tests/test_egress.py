@@ -266,6 +266,16 @@ def test_an_operator_without_an_email_scans_every_other_class_and_never_names_em
     assert egress.check(_plant(operator.username), destination=DEST, operator=operator).classes == ("username",)
 
 
+def test_the_os_operator_reads_this_logins_user_name_and_home(monkeypatch, tmp_path):
+    # R-80 c4 (DR-EG-3): username and home are OS facts; only the email comes from the caller.
+    username, home = f"u{token_hex(5)}", tmp_path / "fake-home"
+    monkeypatch.setenv("LOGNAME", username)  # getpass.getuser() reads LOGNAME first
+    monkeypatch.setenv("USERPROFILE", str(home))
+    monkeypatch.setenv("HOME", str(home))
+    operator = egress.Operator.from_os()
+    assert (operator.email, operator.username, operator.home) == (None, username, str(home))
+
+
 def test_the_operator_is_required():
     with pytest.raises(TypeError):
         egress.check(PAYLOAD, destination=DEST)  # type: ignore[call-arg]
