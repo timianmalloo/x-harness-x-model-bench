@@ -56,9 +56,8 @@ _SECTION = re.compile(r'<section id="([a-z0-9-]+)">.*?</section>', re.DOTALL)
 _HEADER_END = re.compile(r'(<section id="header">.*?)(</section>)', re.DOTALL)  # where the egress row goes (R-80 c1)
 
 # R1 / R5 (design section 3, DR-R-3): both themes in one style block, dark under `prefers-color-scheme`
-# only -- no toggle, no stored preference. `--heat-0..9` are the published ten-stop viridis sampling
-# (van der Walt & Smith 2015; matplotlib.colormaps['viridis'] sampled at 10 stops, retiring R1's
-# linear-RGB interpolation assume:).
+# only -- no toggle, no stored preference.
+# `--heat-0..9`: verified by the Leader, 2026-09-28, matplotlib 3.11.2, viridis sampled at i/9 (retires R1's linear-RGB interpolation assume:).
 STYLE = """
 :root{color-scheme: light dark;
   --bg:#f3f5f7; --panel:#ffffff; --ink:#18212b; --ink-2:#4b5563; --ink-3:#7a8491; --rule:#d9dee5;
@@ -104,6 +103,7 @@ code,.small{font-size:var(--fs-small)}
 svg text{fill:var(--ink-2);font-size:var(--fs-small);font-family:var(--font)}
 figure{margin:0}
 figcaption{font-size:var(--fs-small);color:var(--ink-2)}
+.chart-panels{display:flex;flex-direction:column;gap:var(--s3)}
 """
 
 
@@ -670,32 +670,22 @@ def _mark_class_and_label(delta: stats.Interval, raw_label: str | None = None) -
     return cls, raw_label or ""
 
 
-def _whisker_chart(
-    tid: str,
-    title: str,
-    rows: Sequence[board.PackEffectRow | board.ComparisonRow],
-    is_comparison: bool = False,
-) -> html_builder.Html | None:
-    computed_rows = [
-        r for r in rows
-        if r.delta.lo is not None and r.delta.hi is not None and r.delta.point is not None
-    ]
-    if not computed_rows:
-        return None
-
-    max_val = max(
-        max(abs(float(r.delta.lo)), abs(float(r.delta.hi)), abs(float(r.delta.point)))
-        for r in computed_rows
-    )
-    if max_val == 0:
-        max_val = 1.0
-
-    if max_val <= 1.0:
-        limit = 1.0
+def _whisker_panel(
+    panel_id: str,
+    cap_id: str,
+    panel_label: str,
+    rows: list,
+    limit: float,
+    is_comparison: bool,
+) -> html_builder.Html:
+    """One unit's dot-and-whisker panel on its own shared zero line (design s6 rows 4 and 11:
+    'the marks of one measure family share a zero' -- not a scale shared across incomparable
+    units). `limit` is this panel's own axis limit: 1.0 for the pass@1 share, or the panel's own
+    0-100+ point scale for everything else (composite/area measures)."""
+    if limit <= 1.0:
         ticks = [-1.0, -0.5, 0.5, 1.0]
         tick_labels = ["-1.0", "-0.5", "+0.5", "+1.0"]
     else:
-        limit = max(100.0, max_val)
         ticks = [-100.0, -50.0, 50.0, 100.0] if limit == 100.0 else [-limit, -limit / 2, limit / 2, limit]
         tick_labels = [f"{t:+.0f}" for t in ticks]
 
@@ -707,12 +697,12 @@ def _whisker_chart(
 
     row_height = 32
     y_start = 30
-    y_bottom = y_start + len(computed_rows) * row_height
+    y_bottom = y_start + len(rows) * row_height
     svg_height = y_bottom + 30
 
     svg_children: list[html_builder.Html] = []
 
-    # Axis (shared zero line)
+    # Axis (this panel's own shared zero line)
     svg_children.append(
         html_builder.el("line", {
             "x1": str(x_zero),
@@ -750,8 +740,8 @@ def _whisker_chart(
         }, "0")
     )
 
-    # Marks for each computed row
-    for i, r in enumerate(computed_rows):
+    # Marks for each row in this panel
+    for i, r in enumerate(rows):
         y = y_start + i * row_height
         is_p1 = r.measure == "pass_at_1"
         decimals = 2 if is_p1 else 1
@@ -796,72 +786,125 @@ def _whisker_chart(
         })
         svg_children.extend([whisker, dot])
 
-    cap_id = f"{tid}-cap"
-    svg = html_builder.el("svg", {
-        "id": f"{tid}-svg",
+    return html_builder.el("svg", {
+        "id": f"{panel_id}-svg",
         "role": "img",
         "aria-labelledby": cap_id,
+        "aria-label": panel_label,
         "viewBox": f"0 0 560 {svg_height}",
         "width": "100%",
     }, *svg_children)
+
+
+def _whisker_chart(
+    tid: str,
+    title: str,
+    rows: Sequence[board.PackEffectRow | board.ComparisonRow],
+    is_comparison: bool = False,
+) -> html_builder.Html | None:
+    computed_rows = [
+        r for r in rows
+        if r.delta.lo is not None and r.delta.hi is not None and r.delta.point is not None
+    ]
+    if not computed_rows:
+        return None
+
+    # One panel per unit (design s6 rows 4 and 11): pass@1 deltas are shares (-1..1); every other
+    # measure (composite/area) is a 0-100-point delta. Incomparable units never share a scale --
+    # pass@1 panel first, then the points panel, each on its own axis.
+    p1_rows = [r for r in computed_rows if r.measure == "pass_at_1"]
+    point_rows = [r for r in computed_rows if r.measure != "pass_at_1"]
+
+    cap_id = f"{tid}-cap"
+    panels: list[html_builder.Html] = []
+    if p1_rows:
+        panels.append(_whisker_panel(f"{tid}-p1", cap_id, "pass@1, as a share of tasks", p1_rows, 1.0, is_comparison))
+    if point_rows:
+        max_val = max(
+            max(abs(float(r.delta.lo)), abs(float(r.delta.hi)), abs(float(r.delta.point)))
+            for r in point_rows
+        )
+        limit = max(100.0, max_val)
+        panels.append(_whisker_panel(f"{tid}-pts", cap_id, "composite and area, 0-100 points", point_rows, limit, is_comparison))
+
     caption = html_builder.el("figcaption", {"id": cap_id}, title)
-    return html_builder.el("figure", None, svg, caption)
+    return html_builder.el("figure", None, html_builder.el("div", {"class": "chart-panels"}, *panels), caption)
 
 
-def _pack_effect_table(rows: list[board.PackEffectRow]) -> html_builder.Html:
-    headers = [("Combo", False), ("Measure", False), ("Delta", True), ("95% Interval", False), ("Label", False)]
+def _delta_table(
+    rows: Sequence[board.PackEffectRow | board.ComparisonRow],
+    caption_id: str,
+    caption_text: str,
+    has_pack: bool,
+) -> html_builder.Html:
+    """The pack effect and comparison table alternatives share every column but Pack (design
+    section 5 names this duplication as the thing the model/builder split removes); `has_pack`
+    is the one difference between them."""
+    headers = [("Combo", False)]
+    if has_pack:
+        headers.append(("Pack", False))
+    headers += [("Measure", False), ("Delta", True), ("95% Interval", False), ("Label", False)]
     head_tr = html_builder.el("tr", None, *(
         html_builder.el("th", {"scope": "col", "class": "num"} if is_num else {"scope": "col"}, h)
         for h, is_num in headers
     ))
     tr_list = []
-    for pr in rows:
-        is_p1 = pr.measure == "pass_at_1"
+    for r in rows:
+        is_p1 = r.measure == "pass_at_1"
         decimals = 2 if is_p1 else 1
-        combo_td = html_builder.el("td", None, pr.combo)
-        measure_td = html_builder.el("td", None, pr.measure)
+        row_reason = getattr(r, "reason", None)
+        row_cells = [html_builder.el("td", None, r.combo)]
+        if has_pack:
+            row_cells.append(html_builder.el("td", None, r.pack))
+        row_cells.append(html_builder.el("td", None, r.measure))
 
-        if pr.delta.point is not None:
-            delta_str = f"{pr.delta.point:+.{decimals}f}"
-            delta_attrs = {"class": "num", "data-interval-point": f"{pr.delta.point:.{decimals}f}"}
-            if pr.delta.lo is not None and pr.delta.hi is not None:
-                delta_attrs["data-interval-lo"] = f"{pr.delta.lo:.{decimals}f}"
-                delta_attrs["data-interval-hi"] = f"{pr.delta.hi:.{decimals}f}"
+        if r.delta.point is not None:
+            delta_str = f"{r.delta.point:+.{decimals}f}"
+            delta_attrs = {"class": "num", "data-interval-point": f"{r.delta.point:.{decimals}f}"}
+            if r.delta.lo is not None and r.delta.hi is not None:
+                delta_attrs["data-interval-lo"] = f"{r.delta.lo:.{decimals}f}"
+                delta_attrs["data-interval-hi"] = f"{r.delta.hi:.{decimals}f}"
             delta_td = html_builder.el("td", delta_attrs, delta_str)
         else:
-            delta_str = pr.reason or pr.delta.reason or "NA"
+            delta_str = row_reason or r.delta.reason or "NA"
             delta_td = html_builder.el("td", {"class": "num na"}, delta_str)
+        row_cells.append(delta_td)
 
-        if pr.delta.lo is not None and pr.delta.hi is not None:
-            iv_str = f"[{pr.delta.lo:.{decimals}f}, {pr.delta.hi:.{decimals}f}]"
+        if r.delta.lo is not None and r.delta.hi is not None:
+            iv_str = f"[{r.delta.lo:.{decimals}f}, {r.delta.hi:.{decimals}f}]"
             iv_attrs = {
-                "data-interval-lo": f"{pr.delta.lo:.{decimals}f}",
-                "data-interval-hi": f"{pr.delta.hi:.{decimals}f}",
+                "data-interval-lo": f"{r.delta.lo:.{decimals}f}",
+                "data-interval-hi": f"{r.delta.hi:.{decimals}f}",
             }
-            if pr.delta.point is not None:
-                iv_attrs["data-interval-point"] = f"{pr.delta.point:.{decimals}f}"
+            if r.delta.point is not None:
+                iv_attrs["data-interval-point"] = f"{r.delta.point:.{decimals}f}"
             iv_td = html_builder.el("td", iv_attrs, iv_str)
         else:
-            iv_str = pr.reason or pr.delta.reason or "interval not computed"
+            iv_str = row_reason or r.delta.reason or "interval not computed"
             iv_td = html_builder.el("td", {"class": "na"}, iv_str)
+        row_cells.append(iv_td)
 
-        _, label_str = _mark_class_and_label(pr.delta, pr.label)
-        label_td = html_builder.el("td", None, label_str)
+        _, label_str = _mark_class_and_label(r.delta, r.label)
+        row_cells.append(html_builder.el("td", None, label_str))
 
-        tr_list.append(html_builder.el("tr", None, combo_td, measure_td, delta_td, iv_td, label_td))
+        tr_list.append(html_builder.el("tr", None, *row_cells))
 
     table = html_builder.el(
         "table", None,
-        html_builder.el("caption", {"id": "pack-effect-caption"}, "Pack effect per combo and area"),
+        html_builder.el("caption", {"id": caption_id}, caption_text),
         html_builder.el("thead", None, head_tr),
         html_builder.el("tbody", None, *tr_list),
     )
     region = html_builder.el(
         "div",
-        {"class": "region", "role": "region", "tabindex": "0", "aria-labelledby": "pack-effect-caption"},
+        {"class": "region", "role": "region", "tabindex": "0", "aria-labelledby": caption_id},
         table,
     )
     return html_builder.el("details", None, html_builder.el("summary", None, "Table"), region)
+
+
+def _pack_effect_table(rows: list[board.PackEffectRow]) -> html_builder.Html:
+    return _delta_table(rows, "pack-effect-caption", "Pack effect per combo and area", has_pack=False)
 
 
 def _pack_effect(board_obj: board.Board) -> html_builder.Html:
@@ -985,67 +1028,8 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str], run_
 
 
 def _comparison_table(comparison_obj: board.Comparison) -> html_builder.Html:
-    headers = [
-        ("Combo", False),
-        ("Pack", False),
-        ("Measure", False),
-        ("Delta", True),
-        ("95% Interval", False),
-        ("Label", False),
-    ]
-    head_tr = html_builder.el("tr", None, *(
-        html_builder.el("th", {"scope": "col", "class": "num"} if is_num else {"scope": "col"}, h)
-        for h, is_num in headers
-    ))
-    tr_list = []
-    for cr in comparison_obj.rows:
-        is_p1 = cr.measure == "pass_at_1"
-        decimals = 2 if is_p1 else 1
-        combo_td = html_builder.el("td", None, cr.combo)
-        pack_td = html_builder.el("td", None, cr.pack)
-        measure_td = html_builder.el("td", None, cr.measure)
-
-        if cr.delta.point is not None:
-            delta_str = f"{cr.delta.point:+.{decimals}f}"
-            delta_attrs = {"class": "num", "data-interval-point": f"{cr.delta.point:.{decimals}f}"}
-            if cr.delta.lo is not None and cr.delta.hi is not None:
-                delta_attrs["data-interval-lo"] = f"{cr.delta.lo:.{decimals}f}"
-                delta_attrs["data-interval-hi"] = f"{cr.delta.hi:.{decimals}f}"
-            delta_td = html_builder.el("td", delta_attrs, delta_str)
-        else:
-            delta_str = cr.delta.reason or "NA"
-            delta_td = html_builder.el("td", {"class": "num na"}, delta_str)
-
-        if cr.delta.lo is not None and cr.delta.hi is not None:
-            iv_str = f"[{cr.delta.lo:.{decimals}f}, {cr.delta.hi:.{decimals}f}]"
-            iv_attrs = {
-                "data-interval-lo": f"{cr.delta.lo:.{decimals}f}",
-                "data-interval-hi": f"{cr.delta.hi:.{decimals}f}",
-            }
-            if cr.delta.point is not None:
-                iv_attrs["data-interval-point"] = f"{cr.delta.point:.{decimals}f}"
-            iv_td = html_builder.el("td", iv_attrs, iv_str)
-        else:
-            iv_str = cr.delta.reason or "interval not computed"
-            iv_td = html_builder.el("td", {"class": "na"}, iv_str)
-
-        _, label_str = _mark_class_and_label(cr.delta, cr.label)
-        label_td = html_builder.el("td", None, label_str)
-
-        tr_list.append(html_builder.el("tr", None, combo_td, pack_td, measure_td, delta_td, iv_td, label_td))
-
-    table = html_builder.el(
-        "table", None,
-        html_builder.el("caption", {"id": "comparison-caption"}, f"Comparison: {comparison_obj.view_run_id} vs baseline {comparison_obj.base_run_id}"),
-        html_builder.el("thead", None, head_tr),
-        html_builder.el("tbody", None, *tr_list),
-    )
-    region = html_builder.el(
-        "div",
-        {"class": "region", "role": "region", "tabindex": "0", "aria-labelledby": "comparison-caption"},
-        table,
-    )
-    return html_builder.el("details", None, html_builder.el("summary", None, "Table"), region)
+    caption_text = f"Comparison: {comparison_obj.view_run_id} vs baseline {comparison_obj.base_run_id}"
+    return _delta_table(comparison_obj.rows, "comparison-caption", caption_text, has_pack=True)
 
 
 def _comparison(comparison_obj: board.Comparison | str | None) -> html_builder.Html | None:
