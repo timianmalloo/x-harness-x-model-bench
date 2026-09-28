@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-27T23:58:06Z",
+  "generated": "2026-09-28T00:04:47Z",
   "audit": [
     {
       "actor": null,
@@ -40412,6 +40412,331 @@ window.AUDIT_DATA = {
             "sha256": "e3758a322c4c304094423a3dcbb878e9e27b6da53cfc143d58e6c917801e3674",
             "status": "resolved",
             "token": "phase3-cost.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3JN82TC9ARFSA1DSCWPDZXP",
+      "shortname": "Goal: implement slice S2 of docs/design/phase4-statistics.md, the rankin…",
+      "datetime": "2026-09-28T00:04:45Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: implement slice S2 of docs/design/phase4-statistics.md, the ranking `stats.rank` in src/harness_bench/stats.py (S1, the bootstrap core, is merged: build on its Interval), exactly as the design specifies it (read the whole document first: the data model, the bootstrap procedure, the RNG discipline, the Ranking section with its K1-K16 cases and the counterexample to count-based ranking, the contract for stats.rank, the test plan T-R1..R16, the stats.json mutants for no_detectable_effect, below, the gate merge and the tier sweep, and the implementation-slices table row S2), red first.\nMeasured (design author, 2026-09-27, Appendix A): stdlib Decimal is fast enough (0.024 s per interval at 24 tasks x 3 reps x 2,000 resamples); the two-stage percentile bootstrap covers 0.97 at 6 tasks x 3 reps. S1 is merged on main (stats.py, tests/test_stats.py, tests/mutations/stats.json); ruling R-78 closed every decision request; S2 depends only on S1.\nDone when: stats.rank exists with the contracted signature and T-R3 (all intervals overlap gives `1=` for every row) is committed red first, failing on an assertion, then green; T-R1..R16 pass as exact fixtures of the design's K cases; the S2 mutants the design lists are added to tests/mutations/stats.json and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message); property tests use hypothesis (already a dev dependency) where the design says so; any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently; nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_stats.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S3-S7; the catalog; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-statistics.md (all of it; the Ranking section; T-R1..R16 near line 654; the S2 row near line 758); src/harness_bench/stats.py (S1); src/harness_bench/ (package layout, Decimal conventions in views.py); tests/mutations/*.json (format); tools/mutate_check.py. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3JN8509Z5S42ND4A44607VE",
+      "shortname": "compile-Goal: implement slice S2 of docs/design/phase4-statistics.md, the rankin…",
+      "datetime": "2026-09-28T00:04:47Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement slice S2 of docs/design/phase4-statistics.md, the ranking `stats.rank` in src/harness_bench/stats.py (S1, the bootstrap core, is merged: build on its Interval), exactly as the design specifies it (read the whole document first: the data model, the bootstrap procedure, the RNG discipline, the Ranking section with its K1-K16 cases and the counterexample to count-based ranking, the contract for stats.rank, the test plan T-R1..R16, the stats.json mutants for no_detectable_effect, below, the gate merge and the tier sweep, and the implementation-slices table row S2), red first. Measured (design author, 2026-09-27, Appendix A): stdlib Decimal is fast enough (0.024 s per interval at 24 tasks x 3 reps x 2,000 resamples); the two-stage percentile bootstrap covers 0.97 at 6 tasks x 3 reps. S1 is merged on main (stats.py, tests/test_stats.py, tests/mutations/stats.json); ruling R-78 closed every decision request; S2 depends only on S1.\nDone when: stats.rank exists with the contracted signature and T-R3 (all intervals overlap gives `1=` for every row) is committed red first, failing on an assertion, then green; T-R1..R16 pass as exact fixtures of the design's K cases; the S2 mutants the design lists are added to tests/mutations/stats.json and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message); property tests use hypothesis (already a dev dependency) where the design says so; any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently; nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider tests/test_stats.py passes; uv run pytest -q -p no:cacheprovider --collect-only exits 0; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: slices S3-S7; the catalog; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (all of it; the Ranking section; T-R1..R16 near line 654; the S2 row near line 758); src/harness_bench/stats.py (S1); src/harness_bench/ (package layout, Decimal conventions in views.py); tests/mutations/*.json (format); tools/mutate_check.py. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: stats.rank exists with the contracted signature and T-R3 (all intervals overlap gives `1=` for every row) is committed red first, failing on an assertion, then green | phrase: stats.rank exists with the contracted signature and T-R3 (all intervals overlap gives `1=` for every row) is committed red first, failing on an assertion, then green |\n| done_when: T-R1..R16 pass as exact fixtures of the design's K cases | phrase: T-R1..R16 pass as exact fixtures of the design's K cases |\n| done_when: the S2 mutants the design lists are added to tests/mutations/stats.json and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message) | phrase: the S2 mutants the design lists are added to tests/mutations/stats.json and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message) |\n| done_when: property tests use hypothesis (already a dev dependency) where the design says so | phrase: property tests use hypothesis (already a dev dependency) where the design says so |\n| done_when: any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently | phrase: any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently |\n| done_when: nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change) | phrase: nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider tests/test_stats.py passes | phrase: uv run pytest -q -p no:cacheprovider tests/test_stats.py passes |\n| done_when: uv run pytest -q -p no:cacheprovider --collect-only exits 0 | phrase: uv run pytest -q -p no:cacheprovider --collect-only exits 0 |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: slices S3-S7 | phrase: slices S3-S7 |\n| not_in_scope: the catalog | phrase: the catalog |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- stats.rank: unresolved (not found)\n- 1=: unresolved (not found)\n- assume: unresolved (not found)\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd\n- src/harness_bench/stats.py: src/harness_bench/stats.py sha256 31c752c687c20f18c5f55a38730d13c7f3ebd2065d7b81e5ea90328143b2a4fe\n- stats.json: tests/mutations/stats.json sha256 dd6cff27f73a63e64474755e07b41bd3ec82a84666a79e43d0801aa9a3b977af\n- stats.py: src/harness_bench/stats.py sha256 31c752c687c20f18c5f55a38730d13c7f3ebd2065d7b81e5ea90328143b2a4fe\n- tests/test_stats.py: tests/test_stats.py sha256 4fcca39ae35828cf94210e1143fe41d79cabdac03723f79acf1cee4781f6a1df\n- tests/mutations/stats.json: tests/mutations/stats.json sha256 dd6cff27f73a63e64474755e07b41bd3ec82a84666a79e43d0801aa9a3b977af\n- tools/mutate_check.py: tools/mutate_check.py sha256 51f6617b7cadab4595f40bc4250b39001ec8b66b06b7c740565d49cbe1418ba2\n- runs/: unresolved (not found)\n- src/harness_bench/: unresolved (not found)\n- views.py: src/harness_bench/views.py sha256 ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3JN82TC9ARFSA1DSCWPDZXP\nraw sha256: 5cb8c0ceccfe70b2ea8dd34324ed8d821a5bc36f6b1cf604ece5e6de3fffa6e7\ncompiler model: claude-opus-5-5\nengine seconds: 0.007\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3JN82TC9ARFSA1DSCWPDZXP for claude-code v1: 15 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "stats.rank exists with the contracted signature and T-R3 (all intervals overlap gives `1=` for every row) is committed red first, failing on an assertion, then green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "stats.rank exists with the contracted signature and T-R3 (all intervals overlap gives `1=` for every row) is committed red first, failing on an assertion, then green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "T-R1..R16 pass as exact fixtures of the design's K cases",
+            "trace": {
+              "kind": "phrase",
+              "ref": "T-R1..R16 pass as exact fixtures of the design's K cases"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the S2 mutants the design lists are added to tests/mutations/stats.json and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the S2 mutants the design lists are added to tests/mutations/stats.json and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "property tests use hypothesis (already a dev dependency) where the design says so",
+            "trace": {
+              "kind": "phrase",
+              "ref": "property tests use hypothesis (already a dev dependency) where the design says so"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider tests/test_stats.py passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider tests/test_stats.py passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider --collect-only exits 0",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider --collect-only exits 0"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "slices S3-S7",
+            "trace": {
+              "kind": "phrase",
+              "ref": "slices S3-S7"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the catalog",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the catalog"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "stats.rank exists with the contracted signature and T-R3 (all intervals overlap gives `1=` for every row) is committed red first, failing on an assertion, then green",
+            "T-R1..R16 pass as exact fixtures of the design's K cases",
+            "the S2 mutants the design lists are added to tests/mutations/stats.json and killed by uv run python tools/mutate_check.py tests/mutations/stats.json (record the output lines in the commit message)",
+            "property tests use hypothesis (already a dev dependency) where the design says so",
+            "any place where the design is ambiguous is resolved by the design's own text or marked `assume:` in code with what would confirm it, never guessed silently",
+            "nothing outside stats.py, tests/test_stats.py and tests/mutations/stats.json changes (no views, board, composites, report or CLI change)",
+            "a test earns its place by a failure only it catches",
+            "uv run pytest -q -p no:cacheprovider tests/test_stats.py passes",
+            "uv run pytest -q -p no:cacheprovider --collect-only exits 0",
+            "uv run ruff check src tests tools is clean",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "implement slice S2 of docs/design/phase4-statistics.md, the ranking `stats.rank` in src/harness_bench/stats.py (S1, the bootstrap core, is merged: build on its Interval), exactly as the design specifies it (read the whole document first: the data model, the bootstrap procedure, the RNG discipline, the Ranking section with its K1-K16 cases and the counterexample to count-based ranking, the contract for stats.rank, the test plan T-R1..R16, the stats.json mutants for no_detectable_effect, below, the gate merge and the tier sweep, and the implementation-slices table row S2), red first. Measured (design author, 2026-09-27, Appendix A): stdlib Decimal is fast enough (0.024 s per interval at 24 tasks x 3 reps x 2,000 resamples); the two-stage percentile bootstrap covers 0.97 at 6 tasks x 3 reps. S1 is merged on main (stats.py, tests/test_stats.py, tests/mutations/stats.json); ruling R-78 closed every decision request; S2 depends only on S1.",
+          "main_line_budget": "one slice of at most 18 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (all of it; the Ranking section; T-R1..R16 near line 654; the S2 row near line 758); src/harness_bench/stats.py (S1); src/harness_bench/ (package layout, Decimal conventions in views.py); tests/mutations/*.json (format); tools/mutate_check.py. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "slices S3-S7",
+            "the catalog",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.007,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3JN82TC9ARFSA1DSCWPDZXP",
+        "raw_sha256": "5cb8c0ceccfe70b2ea8dd34324ed8d821a5bc36f6b1cf604ece5e6de3fffa6e7",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stats.rank"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "1="
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "assume"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase4-statistics.md",
+            "reason": null,
+            "sha256": "2ae2dff5e9f6cf9e9299bb4131fc89f55d1157d10d29fc4e8d65d7d76fcda8fd",
+            "status": "resolved",
+            "token": "docs/design/phase4-statistics.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/stats.py",
+            "reason": null,
+            "sha256": "31c752c687c20f18c5f55a38730d13c7f3ebd2065d7b81e5ea90328143b2a4fe",
+            "status": "resolved",
+            "token": "src/harness_bench/stats.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/stats.json",
+            "reason": null,
+            "sha256": "dd6cff27f73a63e64474755e07b41bd3ec82a84666a79e43d0801aa9a3b977af",
+            "status": "resolved",
+            "token": "stats.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/stats.py",
+            "reason": null,
+            "sha256": "31c752c687c20f18c5f55a38730d13c7f3ebd2065d7b81e5ea90328143b2a4fe",
+            "status": "resolved",
+            "token": "stats.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_stats.py",
+            "reason": null,
+            "sha256": "4fcca39ae35828cf94210e1143fe41d79cabdac03723f79acf1cee4781f6a1df",
+            "status": "resolved",
+            "token": "tests/test_stats.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/stats.json",
+            "reason": null,
+            "sha256": "dd6cff27f73a63e64474755e07b41bd3ec82a84666a79e43d0801aa9a3b977af",
+            "status": "resolved",
+            "token": "tests/mutations/stats.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "51f6617b7cadab4595f40bc4250b39001ec8b66b06b7c740565d49cbe1418ba2",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/views.py",
+            "reason": null,
+            "sha256": "ae95e2d4501ddc2c61e93877b6713d5a27e6d5d2428e61cf3aac3801fb3bb842",
+            "status": "resolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/*.json"
           }
         ],
         "schema": "compiled-prompt/1",
