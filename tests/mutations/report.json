@@ -352,5 +352,12 @@
   "find": "      if (pressed.length === 1 && pressed[0] === btn) {",
   "replace": "      if (false) {",
   "tests": ["tests/test_report_browser.py::test_keyboard_path"]
+ },
+ {
+  "name": "the whisker marks drop data-combo",
+  "file": "src/harness_bench/report/html.py",
+  "find": "        token = combo_ix.get(r.combo)\n        if token is not None:\n            mark_attrs[\"data-combo\"] = token\n",
+  "replace": "",
+  "tests": ["tests/test_report.py::test_pack_effect_marks_and_rows_carry_the_legend_combo_token"]
  }
 ]
