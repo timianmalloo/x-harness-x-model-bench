@@ -342,6 +342,15 @@ def _cmd_check_clean() -> int:
     return 1
 
 
+def touched_sets(changed: set[str], sets: dict[str, list[dict]]) -> list[str]:
+    """Set files whose mutants' files are among `changed`. The test-path half is not selected yet."""
+    selected = []
+    for set_path, mutants in sets.items():
+        if any(m["file"] in changed for m in mutants):
+            selected.append(set_path)
+    return selected
+
+
 def main(argv: list[str]) -> int:
     _reconfigure_streams()
     if argv and argv[0] == "--restore":

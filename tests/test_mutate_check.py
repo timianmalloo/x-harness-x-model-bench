@@ -556,3 +556,30 @@ def test_check_clean_exits_1_naming_the_file_only_when_a_sidecar_exists(
     assert rc == expected_rc
     if recorded_file is not None:
         assert recorded_file in out
+
+
+# --- TEST-A join control: a set is selected from changed paths, with no git call ---------------
+#
+# A join re-runs the mutation sets of the modules a track touched. A set is selected when any
+# mutant's file, or the path part of any of its tests, is in the changed set. The function takes
+# the changed paths and the set files; it never calls git.
+
+
+def test_touched_sets_select_a_mutant_file_or_the_path_of_a_named_test():
+    """A changed test file selects the set that names it, even when no mutant file changed."""
+    sets = {
+        "tests/mutations/report.json": [
+            {"file": "src/harness_bench/report/__init__.py",
+             "tests": ["tests/test_report.py::test_the_cli_table_prints_the_flag"]},
+        ],
+        "tests/mutations/board.json": [
+            {"file": "src/harness_bench/board.py",
+             "tests": ["tests/test_board.py::test_export_version"]},
+        ],
+    }
+    changed = {"src/harness_bench/report/__init__.py"}
+    assert mutate_check.touched_sets(changed, sets) == ["tests/mutations/report.json"]
+    # the test-path part: only the named test's file changed, and the set is still selected
+    changed_test = {"tests/test_report.py"}
+    assert mutate_check.touched_sets(changed_test, sets) == ["tests/mutations/report.json"]
+    assert mutate_check.touched_sets({"docs/lessons/defect-classes.md"}, sets) == []
