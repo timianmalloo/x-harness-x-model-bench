@@ -83,8 +83,11 @@ def test_the_page_is_structurally_accessible(page):
 
 
 def test_no_colour_size_or_radius_literal_outside_root(page):  # T-UI-tokens
+    # DR-R-3: dark mode is a second `:root{...}` inside `@media (prefers-color-scheme: dark)`, so
+    # every `:root{...}` block (not only the first, light one `_root_block` returns) is stripped
+    # before the stray-literal scan.
     style = re.search(r"<style>(.*)</style>", page, re.DOTALL).group(1)
-    outside = style.replace(_root_block(page), "")
+    outside = re.sub(r":root\s*\{[^}]*\}", "", style)
     assert not re.findall(r"#[0-9a-fA-F]{3,8}\b|rgba?\(|\b\d+(?:\.\d+)?(?:px|rem|em)\b", outside)
 
 
