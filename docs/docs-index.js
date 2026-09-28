@@ -986,6 +986,39 @@ window.DOCS_INDEX = {
       "sourceSha256": "5ef416d018179c6637ba358a9fe1787d392f2211b744f725440b8b73b1e43c1d"
     },
     {
+      "id": "note-catalog-0.5-anchors",
+      "path": "docs/notes/catalog-0.5-anchors.md",
+      "title": "Catalog 0.5.dev normalisation anchors and weight corrections (R-78 condition 1, R-79)",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-10",
+      "reviewSuggested": [],
+      "summary": "Catalog 0.5.dev normalisation anchors and R-78 weight corrections, approved with changes by the Owner seat in R-79. Lists all 49 anchored metrics with kind: score and weight > 0, their better direction, anchor [worst, best], source note, and observed values from runs/smoke-1 and runs/row15-d1-1.",
+      "tags": [
+        "catalog",
+        "metrics",
+        "normalisation",
+        "anchors",
+        "r-78",
+        "r-79",
+        "composites"
+      ],
+      "links": [
+        {
+          "to": "design-phase4-statistics",
+          "rel": "implements"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "deb0fa795ed410044d2d792ddfe860eec136a3794973f5169a18beded5a2dfbc"
+    },
+    {
       "id": "note-d1-vendored-red-baseline",
       "path": "docs/notes/d1-vendored-red-baseline.md",
       "title": "D1 vendored red baseline - dotnet test fails the same 72 layout-bound tests on both runs' cells; the 69/74/75 Stryker counts are the Stryker session's",
@@ -1249,7 +1282,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ceda0b93330947fc4783c09bccd32c57bab03c59a9a2b72f99652ce1e29447af"
+      "sourceSha256": "c40fb1d4dd4c7f18b94f7f61a7f0609858663907534ea8bea9462895d6820c93"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -1570,7 +1603,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "e3758a322c4c304094423a3dcbb878e9e27b6da53cfc143d58e6c917801e3674"
+      "sourceSha256": "b98ebe81faa4fc34f9e89af9dc5b9bced87fd337a2d9ff9658c529769a58004c"
     },
     {
       "id": "design-phase3-gateway-judges",
@@ -1944,7 +1977,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b135a1bd22810b9caca9d12b2312720b8f197ea1cc8ffb07b6f18ca23a7ebe06"
+      "sourceSha256": "6baf0a8eb543beff5d3cf273a6a67c1344f0889a05de778fbac1a245fe3dcee9"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -2957,5 +2990,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "8aa306c898e0535744a6a8dc7c73bb0395166a729c78539c0387a86da077f484"
+  "graphSha256": "8f82f20bdeaa89cb7334db9ed0bab5553f4dc85bd31e04eff9b204c16a050bcc"
 };
