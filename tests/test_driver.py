@@ -589,6 +589,7 @@ def _tapped_turn(tmp_path, argv, env, acp_mode=None, model=None) -> set[str]:
                         model=model)
     finally:
         stop.cancel()
+        stop.join()
         cell.terminate_and_confirm(timeout=10)
         cell.close()
     return _message_types(bytes(cell.proc.stdout.data), bytes(cell.proc.stdin.data))
