@@ -1,0 +1,51 @@
+[
+  {
+    "name": "an NA cell enters as 0",
+    "file": "src/harness_bench/board.py",
+    "find": "        for c in valid_cells:\n            score = c.scores.get(\"pass_at_1\")\n            if score is not None and score.value is not None:\n                t, r, _ = _cell_task_rep(c.cell_id, plan_by_id)\n                obs_p1.append(Obs(task=t, rep=r, value=Decimal(str(score.value))))\n            else:\n                na_p1_cells.append(c)",
+    "replace": "        for c in valid_cells:\n            score = c.scores.get(\"pass_at_1\")\n            if score is not None and score.value is not None:\n                t, r, _ = _cell_task_rep(c.cell_id, plan_by_id)\n                obs_p1.append(Obs(task=t, rep=r, value=Decimal(str(score.value))))\n            else:\n                t, r, _ = _cell_task_rep(c.cell_id, plan_by_id)\n                obs_p1.append(Obs(task=t, rep=r, value=Decimal(0)))\n                na_p1_cells.append(c)",
+    "tests": ["tests/test_board.py::test_tb8_na_and_invalid_cells"]
+  },
+  {
+    "name": "an invalid cell enters",
+    "file": "src/harness_bench/board.py",
+    "find": "    for (combo, pack), cells in groups.items():\n        valid_cells = [c for c in cells if c.validity == \"valid\"]",
+    "replace": "    for (combo, pack), cells in groups.items():\n        valid_cells = list(cells)",
+    "tests": ["tests/test_board.py::test_tb8_na_and_invalid_cells"]
+  },
+  {
+    "name": "the E1–E3 filter dropped (line kept)",
+    "file": "src/harness_bench/board.py",
+    "find": "        clean_cells = [\n            c for c in combo_cells\n            if _cell_task_rep(c.cell_id, plan_by_id)[0] not in CONTAMINATION_PRONE\n        ]",
+    "replace": "        clean_cells = list(combo_cells)",
+    "tests": ["tests/test_board.py::test_tp3_pack_effect_contamination_prone_tasks_excluded"]
+  },
+  {
+    "name": "the HB-STA-001 check dropped",
+    "file": "src/harness_bench/board.py",
+    "find": "    if base.run_id == view.run_id:\n        raise BenchError(\"HB-STA-001\", \"statistics input spans more than one grading pass of one run\")",
+    "replace": "    if False:\n        raise BenchError(\"HB-STA-001\", \"statistics input spans more than one grading pass of one run\")",
+    "tests": ["tests/test_board.py::test_tb4_compare_same_run_refusal"]
+  },
+  {
+    "name": "one HB-STA-002 precondition dropped (each, parametrised)",
+    "file": "src/harness_bench/board.py",
+    "find": "    if diffs:\n        raise BenchError(\"HB-STA-002\", \"; \".join(diffs))",
+    "replace": "    if False:\n        raise BenchError(\"HB-STA-002\", \"; \".join(diffs))",
+    "tests": ["tests/test_board.py::test_tb5_compare_preconditions_parametrised"]
+  },
+  {
+    "name": "base and view swapped in compare",
+    "file": "src/harness_bench/board.py",
+    "find": "delta_iv, _ = paired_delta(ref=obs_a, treat=obs_b, labels=(base.run_id, view.run_id), params=params, key=key)",
+    "replace": "delta_iv, _ = paired_delta(ref=obs_b, treat=obs_a, labels=(view.run_id, base.run_id), params=params, key=key)",
+    "tests": ["tests/test_board.py::test_tm3_comparison_direction_and_negation"]
+  },
+  {
+    "name": "seed or resamples left out of the export",
+    "file": "src/harness_bench/board.py",
+    "find": "    payload: dict[str, Any] = {\n        \"method\": METHOD,\n        \"seed\": board.params.seed,\n        \"resamples\": board.params.resamples,",
+    "replace": "    payload: dict[str, Any] = {\n        \"method\": METHOD,",
+    "tests": ["tests/test_board.py::test_tb3_board_export_golden"]
+  }
+]

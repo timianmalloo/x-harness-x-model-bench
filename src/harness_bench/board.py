@@ -332,6 +332,11 @@ def _build_pack_effect(
                 )
             continue
 
+        clean_cells = [
+            c for c in combo_cells
+            if _cell_task_rep(c.cell_id, plan_by_id)[0] not in CONTAMINATION_PRONE
+        ]
+
         for m in measures:
             if m == "pass_at_1":
                 off_obs = [
@@ -340,10 +345,9 @@ def _build_pack_effect(
                         _cell_task_rep(c.cell_id, plan_by_id)[1],
                         Decimal(str(c.scores["pass_at_1"].value)),
                     )
-                    for c in combo_cells
+                    for c in clean_cells
                     if c.pack == "off"
                     and c.validity == "valid"
-                    and _cell_task_rep(c.cell_id, plan_by_id)[0] not in CONTAMINATION_PRONE
                     and c.scores.get("pass_at_1", Measure(None)).value is not None
                 ]
                 on_obs = [
@@ -352,20 +356,18 @@ def _build_pack_effect(
                         _cell_task_rep(c.cell_id, plan_by_id)[1],
                         Decimal(str(c.scores["pass_at_1"].value)),
                     )
-                    for c in combo_cells
+                    for c in clean_cells
                     if c.pack == "on"
                     and c.validity == "valid"
-                    and _cell_task_rep(c.cell_id, plan_by_id)[0] not in CONTAMINATION_PRONE
                     and c.scores.get("pass_at_1", Measure(None)).value is not None
                 ]
             else:
                 # Area score
                 off_obs = []
-                for c in combo_cells:
+                for c in clean_cells:
                     if (
                         c.pack == "off"
                         and c.validity == "valid"
-                        and _cell_task_rep(c.cell_id, plan_by_id)[0] not in CONTAMINATION_PRONE
                     ):
                         score = c.scores.get(m)
                         if score is not None and score.value is not None:
@@ -377,11 +379,10 @@ def _build_pack_effect(
                                 )
                             )
                 on_obs = []
-                for c in combo_cells:
+                for c in clean_cells:
                     if (
                         c.pack == "on"
                         and c.validity == "valid"
-                        and _cell_task_rep(c.cell_id, plan_by_id)[0] not in CONTAMINATION_PRONE
                     ):
                         score = c.scores.get(m)
                         if score is not None and score.value is not None:
@@ -422,6 +423,11 @@ def header_row(board: Board) -> str:
         f"seed {board.params.seed}, resampled by task then repetition, "
         f"Python {py_ver} random stream; ranked on {ranked_on}"
     )
+
+
+def timing_line(intervals: int, seconds: float) -> str:
+    """Format the timing telemetry line (US-36, design section Telemetry)."""
+    return f"statistics: {intervals} intervals in {seconds:.3f} s"
 
 
 def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = None) -> Comparison:
