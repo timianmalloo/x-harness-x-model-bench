@@ -123,10 +123,6 @@ class AreaRow:
     area: str
     interval: Interval
 
-    @property
-    def composite(self) -> Interval:
-        return self.interval
-
 
 @dataclass
 class ScenarioRow:
@@ -338,11 +334,13 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
         r.rank_reason = rk_reason
         ordered_rows.append(r)
     combos = sorted({c.combo for c in view.cells})
+    # Only the arms the run has: a row for an unplanned arm would read as a missing result.
+    packs = {combo: sorted(p for c2, p in groups if c2 == combo) for combo in combos}
 
     # Areas projection
     areas_list: list[AreaRow] = []
     for combo in combos:
-        for pack in ("off", "on"):
+        for pack in packs[combo]:
             combo_cells = [c for c in view.cells if c.combo == combo and c.pack == pack]
             valid_cells = [c for c in combo_cells if c.validity == "valid"]
             for a in cat.areas:
@@ -369,7 +367,7 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
             {t_data.get("scenario") for t_data in view.plan["tasks"].values() if t_data.get("scenario") is not None}
         )
     for combo in combos:
-        for pack in ("off", "on"):
+        for pack in packs[combo]:
             combo_cells = [c for c in view.cells if c.combo == combo and c.pack == pack]
             valid_cells = [c for c in combo_cells if c.validity == "valid"]
             for sc in scenarios:
@@ -407,7 +405,7 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
     # Frontier projection
     frontier_list: list[FrontierRow] = []
     for combo in combos:
-        for pack in ("off", "on"):
+        for pack in packs[combo]:
             combo_cells = [c for c in view.cells if c.combo == combo and c.pack == pack]
             valid_cells = [c for c in combo_cells if c.validity == "valid"]
             r_lb = rows_dict.get((combo, pack))

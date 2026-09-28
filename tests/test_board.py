@@ -704,7 +704,6 @@ def test_board_areas_projection(tmp_path):
     assert len(b.areas) > 0
     corr = next(a for a in b.areas if a.combo == "c" and a.pack == "off" and a.area == "correctness")
     assert corr.interval.point is not None
-    assert corr.composite == corr.interval
 
     # Check export payload carries areas with null for missing point/bounds when not computed
     exp = board.export(b)
