@@ -175,7 +175,8 @@ def test_a_killed_turn_returns_promptly_with_eof(tmp_path):
 @pytestmark_native
 def test_cancel_sends_session_cancel_during_the_prompt(tmp_path):  # D-1
     cancel = threading.Event()
-    cell = _spawn(tmp_path, fake="on_cancel")
+    # Longer than Timer(0.4): the fake stays in initialize, so this wall-clock cancel lands before the prompt.
+    cell = _spawn(tmp_path, fake="on_cancel", handshake_delay=2)
     timer = threading.Timer(0.4, cancel.set)
     try:
         timer.start()
