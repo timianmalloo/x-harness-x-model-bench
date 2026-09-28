@@ -18,6 +18,7 @@ import html as _html
 import json
 import re
 from collections.abc import Sequence
+from decimal import Decimal
 from pathlib import Path
 
 from harness_bench import (
@@ -100,9 +101,6 @@ code,.small{font-size:var(--fs-small)}
 def _e(value) -> str:
     return _html.escape(str(value), quote=True)
 
-
-def _fact(value) -> str:
-    return _e(value) if value not in (None, "") else "not recorded"
 
 
 def _table(tid: str, caption: str, headers: list[tuple[str, bool]], rows: list[list[tuple]]) -> str:
@@ -209,7 +207,7 @@ def _scenario6_facts(view: views.RunView) -> list[tuple[str, str | None]]:
 def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | None = None,
             judging: list[tuple[str, str | None]] | None = None, root: Path | None = None,
             run_dir: Path | None = None, board_obj: board.Board | None = None,
-            params: stats.Params | None = None) -> str:
+            params: stats.Params | None = None) -> html_builder.Html:
     plan = view.plan
     planned = ", ".join(views.build_label(h, str(b.get("version", ""))) for h, b in sorted((plan.get("builds") or {}).items()))
     facts = [("Run", view.run_id), ("State", "complete" if view.completed else "incomplete"),
@@ -228,27 +226,242 @@ def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | N
         facts.append((report.N5_FLAG, f"see {report.N5_EVIDENCE}"))
     if report.has_claude_code_cell(plan):
         facts.append((report.R36_FLAG, f"see {report.R36_EVIDENCE}"))
-    rows = "".join(f"<dt>{_e(k)}</dt><dd>{_fact(v)}</dd>" for k, v in facts)
-    return f'<section id="header"><h1>harness-bench run {_e(view.run_id)}</h1><dl>{rows}</dl></section>'
 
+    status_str = "Complete" if view.completed else "Incomplete"
+    bom_val = plan.get("bom")
+    bom_str = f"BOM {bom_val}" if bom_val else "BOM not recorded"
+    cat_str = f"catalog {view.catalog_version}" if view.catalog_version else "catalog not recorded"
+    pack_rev = (plan.get("pack") or {}).get("revision")
+    pack_str = f"pack ai-forward revision {pack_rev}" if pack_rev is not None else "pack revision not recorded"
+    cells_str = f"{len(view.cells)} cells"
 
-def _validity(view: views.RunView) -> str:
-    n = len(view.cells)
-    if n and all(c.validity == "valid" for c in view.cells):
-        body = f"<p>All {n} cells completed and are valid.</p>"
+    summary_p = html_builder.el(
+        "p", {"class": "muted"},
+        f"{status_str} · {bom_str} · {cat_str} · {pack_str} · {cells_str} · ",
+        html_builder.el("a", {"href": "#leaderboard"}, "Leaderboard"),
+        " · ",
+        html_builder.el("a", {"href": "#pack-effect"}, "Pack effect"),
+    )
+
+    # 1a. About this run (<details>)
+    about_pack_rev = f"ai-forward revision {pack_rev if pack_rev is not None else 'not recorded'}"
+    about_intro = html_builder.el(
+        "p", None,
+        "This run tests the pack ",
+        html_builder.el("strong", None, about_pack_rev),
+        ".",
+    )
+    terms = [
+        ("combo", "A combo is one harness, at one build, driving one model."),
+        ("pack on / pack off", "Pack on runs the task with the AI-Forward Pack installed in the workspace; pack off runs the same task without it."),
+        ("correctness-gated composite", "The correctness-gated composite is the mean of the area scores (0-100) a cell recorded, set to 0 when its hidden tests fail."),
+        ("pass@1 / pass^k", "pass@1 is the share of cells whose hidden tests pass; pass^k is the share of tasks passed in all k repetitions."),
+        ("interval", "An interval is the 95% bootstrap range of a value over tasks and repetitions; overlapping intervals mean the data cannot tell the values apart."),
+        ("not recorded", "Not recorded means the value could not be measured, and it is never counted as 0."),
+    ]
+    about_dl_items = []
+    for term, definition in terms:
+        about_dl_items.append(html_builder.el("dt", None, term))
+        about_dl_items.append(html_builder.el("dd", None, definition))
+    about_details = html_builder.el(
+        "details", None,
+        html_builder.el("summary", None, "About this run"),
+        about_intro,
+        html_builder.el("dl", {"class": "facts small"}, *about_dl_items),
+    )
+
+    header_dl_items = []
+
+    # Judges (only when judging was performed)
+    judges_dict = dict(judging or [])
+    if judges_dict.get("Judges"):
+        j_line = judges_dict["Judges"]
+        agr = judges_dict.get("Agreement on this run")
+        if agr and not str(agr).startswith("not recorded"):
+            judges_text = f"{j_line} · {agr}"
+        else:
+            judges_text = str(j_line)
+        header_dl_items.extend([
+            html_builder.el("dt", None, "Judges"),
+            html_builder.el("dd", None, judges_text),
+        ])
+
+    # Spend
+    costs = [c.scores.get("cost_usd") for c in view.cells if "cost_usd" in c.scores]
+    if not costs or not view.cells:
+        runs_spend = "not recorded"
+    elif any(m.value is None for m in costs):
+        reason = next((m.reason for m in costs if m.value is None and m.reason), "not recorded")
+        runs_spend = f"NA ({reason})"
     else:
-        counts: dict[str, int] = {}
-        for c in view.cells:
-            counts[c.validity] = counts.get(c.validity, 0) + 1
-        items = "".join(f"<li>{_e(k)}: {v}</li>" for k, v in sorted(counts.items()))
-        listed = "".join(f"<li>{_e(c.label)}: {_e(c.validity)}{' ' + _e(c.validity_code) if c.validity_code else ''}</li>"
-                         for c in view.cells if c.validity != "valid")
-        state = "" if view.completed else f"<p>The run is incomplete. {sum(1 for c in view.cells if c.outcome == 'not started')} cells never started.</p>"
-        body = f"{state}<ul>{items}</ul><p>Cells that are not valid:</p><ul>{listed}</ul>"
-    warned = "".join(f"<li>{_e(c.label)}: {_e(w.code)} {_e(w.message)}</li>" for c in view.cells for w in c.warnings)
+        total_cost = sum(Decimal(str(m.value)) for m in costs)
+        runs_spend = f"${total_cost:.6f}"
+
+    judge_spend = judges_dict.get("Judge spend") or "0 calls"
+    coord_spend = "not recorded"
+    spend_text = f"runs {runs_spend} · judges {judge_spend} · coordinator {coord_spend}"
+
+    # Wall clock
+    wall_measures = [c.wall_ms for c in view.cells if c.wall_ms and c.wall_ms.value is not None]
+    if wall_measures:
+        total_ms = sum(Decimal(str(m.value)) for m in wall_measures)
+        wall_text = f"{total_ms / 1000:.1f} s"
+    else:
+        wall_text = "not recorded"
+
+    # Statistics
+    if board_obj is not None:
+        stat_text = board.header_row(board_obj).removeprefix("statistics: ")
+    else:
+        stat_text = "not recorded"
+
+    header_dl_items.extend([
+        html_builder.el("dt", None, "Spend"), html_builder.el("dd", None, spend_text),
+        html_builder.el("dt", None, "Wall clock"), html_builder.el("dd", None, wall_text),
+        html_builder.el("dt", None, "Statistics"), html_builder.el("dd", None, stat_text),
+    ])
+
+    header_dl = html_builder.el("dl", {"class": "facts small"}, *header_dl_items)
+
+    # Provenance details
+    prov_dl_items = []
+    for k, v in facts:
+        prov_dl_items.append(html_builder.el("dt", None, k))
+        val_str = str(v) if v not in (None, "") else "not recorded"
+        prov_dl_items.append(html_builder.el("dd", None, val_str))
+    prov_details = html_builder.el(
+        "details", None,
+        html_builder.el("summary", None, f"Provenance details ({len(facts)} rows)"),
+        html_builder.el("dl", {"class": "facts small"}, *prov_dl_items),
+    )
+
+    return html_builder.el(
+        "section", {"id": "header"},
+        html_builder.el("h1", None, f"harness-bench run {view.run_id}"),
+        summary_p,
+        about_details,
+        header_dl,
+        prov_details,
+    )
+
+
+def _validity(view: views.RunView) -> html_builder.Html:
+    n = len(view.cells)
+    warned_items = [
+        html_builder.el("li", None, f"{c.label}: {w.code} {w.message}")
+        for c in view.cells for w in c.warnings
+    ]
+    warned = warned_items  # R-24/R-26 c5, R-28: flags that do not change validity
     if warned:  # R-24/R-26 c5, R-28: flags that do not change validity
-        body += f'<p>Warnings:</p><ul id="validity-warnings">{warned}</ul>'
-    return f'<section id="validity"><h2>Validity</h2>{body}</section>'
+        warnings_block = [
+            html_builder.el("p", None, "Warnings:"),
+            html_builder.el("ul", {"id": "validity-warnings"}, *warned_items),
+        ]
+    else:
+        warnings_block = []
+
+    if n and all(c.validity == "valid" for c in view.cells):
+        body_elements = [
+            html_builder.el("p", None, f"All {n} cells completed and are valid."),
+            *warnings_block,
+        ]
+        return html_builder.el("section", {"id": "validity"}, html_builder.el("h2", None, "Validity"), *body_elements)
+
+    # Count exclusion classes according to section 6 row 2
+    # NA costs · invalid · not applicable · timed out · stopped / skipped / never started · withheld · low-confidence matchers · disagreeing judges
+    na_costs = sum(1 for c in view.cells if "cost_usd" in c.scores and c.scores["cost_usd"].value is None)
+    invalid = sum(1 for c in view.cells if c.validity.startswith("invalid") or c.outcome == "failed")
+    not_applicable = sum(
+        1 for c in view.cells
+        if c.validity == "not applicable" or c.outcome == "not applicable" or (c.cause and "not applicable" in c.cause.lower())
+    )
+    timed_out = sum(1 for c in view.cells if c.outcome == "timed_out" or c.cause == "timed_out")
+    stopped = sum(
+        1 for c in view.cells
+        if c.outcome in ("stopped", "skipped") or c.cause in ("stopped", "skipped")
+    )
+    withheld = sum(
+        1 for c in view.cells
+        if c.cause == "withheld" or (c.code and "withheld" in c.code.lower()) or c.outcome == "withheld"
+    )
+    has_matcher_source = any(
+        "low-confidence matcher" in (m.reason or "").lower()
+        for c in view.cells for m in c.scores.values()
+    )
+    lc_matchers = sum(
+        1 for c in view.cells
+        if any("low-confidence matcher" in (m.reason or "").lower() for m in c.scores.values())
+    ) if has_matcher_source else None
+
+    has_judge_source = any(
+        "judges disagree" in (m.reason or "").lower()
+        for c in view.cells for m in c.scores.values()
+    )
+    disagreeing_judges = sum(
+        1 for c in view.cells
+        if any("judges disagree" in (m.reason or "").lower() for m in c.scores.values())
+    ) if has_judge_source else 0
+
+    classes = [
+        ("NA costs", na_costs),
+        ("invalid", invalid),
+        ("not applicable", not_applicable),
+        ("timed out", timed_out),
+        ("stopped / skipped / never started", stopped),
+        ("withheld", withheld),
+        ("low-confidence matchers", lc_matchers),
+        ("disagreeing judges", disagreeing_judges),
+    ]
+
+    active_classes = [(label, count) for label, count in classes if count is not None and count > 0]
+
+    items_spans = []
+    if len(active_classes) > 5:
+        for label, count in active_classes[:5]:
+            items_spans.append(html_builder.el("a", {"href": "#runs"}, f"{count} {label}"))
+        k_more = len(active_classes) - 5
+        items_spans.append(f"and {k_more} more")
+    else:
+        for label, count in classes:
+            if count is None:
+                items_spans.append(f"{label}: not recorded")
+            elif count > 0:
+                items_spans.append(html_builder.el("a", {"href": "#runs"}, f"{count} {label}"))
+            else:
+                items_spans.append(f"0 {label}")
+
+    p_children = []
+    for i, item in enumerate(items_spans):
+        if i > 0:
+            p_children.append(" · ")
+        p_children.append(item)
+    summary_paragraph = html_builder.el("p", None, *p_children)
+
+    counts: dict[str, int] = {}
+    for c in view.cells:
+        counts[c.validity] = counts.get(c.validity, 0) + 1
+    items = [html_builder.el("li", None, f"{k}: {v}") for k, v in sorted(counts.items())]
+    listed = [
+        html_builder.el("li", None, f"{c.label}: {c.validity}" + (f" {c.validity_code}" if c.validity_code else ""))
+        for c in view.cells if c.validity != "valid"
+    ]
+
+    state_elements = []
+    if not view.completed:
+        never_started = sum(1 for c in view.cells if c.outcome == "not started")
+        state_elements.append(
+            html_builder.el("p", None, f"The run is incomplete. {never_started} cells never started.")
+        )
+
+    body_elements = [
+        *state_elements,
+        summary_paragraph,
+        html_builder.el("ul", None, *items),
+        html_builder.el("p", None, "Cells that are not valid:"),
+        html_builder.el("ul", None, *listed),
+        *warnings_block,
+    ]
+    return html_builder.el("section", {"id": "validity"}, html_builder.el("h2", None, "Validity"), *body_elements)
 
 
 def _leaderboard(view: views.RunView, board_obj: board.Board) -> str:
@@ -470,13 +683,15 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
         board_obj = board.build(view, cat, params=params)
 
     # R1: the shell (head, CSP, nav/jump-links, section order) goes through html_builder + model
-    # (design section 5); the section bodies are unchanged, `trusted()`-marked at this one seam
-    # (R2-R9 retire that marking section by section as each renderer moves onto `el()` directly).
-    header_html = _header(view, tags, _permission_modes(run_dir), judging, root, run_dir, board_obj=board_obj, params=params)
+    # (design section 5); R2-R9 retire trusted() marking section by section as each renderer moves onto `el()` directly.
+    header_el = _header(view, tags, _permission_modes(run_dir), judging, root, run_dir, board_obj=board_obj, params=params)
+    validity_el = _validity(view)
     comparison_html = _comparison(comparison_obj)
-    sections = [model.Section("header", "Run header", html_builder.trusted(header_html))]
+    sections = [
+        model.Section("header", "Run header", header_el),
+        model.Section("validity", "Validity", validity_el),
+    ]
     for sid, title, body in (
-        ("validity", "Validity", _validity(view)),
         ("leaderboard", "Leaderboard", _leaderboard(view, board_obj)),
         ("pack-effect", "Pack effect", _pack_effect(board_obj)),
         ("runs", "Runs", _runs(view, archive_present, tags, run_dir, root)),

@@ -70,11 +70,25 @@
   "tests": ["tests/test_report.py::test_numeric_cells_are_tabular_right_aligned_and_carry_units"]
  },
  {
-  "name": "the all-valid banner missing",
+  "name": "the all-valid form",
   "file": "src/harness_bench/report/html.py",
   "find": "    if n and all(c.validity == \"valid\" for c in view.cells):\n",
   "replace": "    if False:\n",
-  "tests": ["tests/test_report.py::test_the_banner_says_so_when_every_cell_is_valid"]
+  "tests": ["tests/test_report.py::test_the_banner_says_so_when_every_cell_is_valid", "tests/test_report.py::test_validity_banner_counts_each_exclusion_class"]
+ },
+ {
+  "name": "the and <k> more cut",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    if len(active_classes) > 5:\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_report.py::test_validity_banner_counts_each_exclusion_class"]
+ },
+ {
+  "name": "the not-recorded branch",
+  "file": "src/harness_bench/report/html.py",
+  "find": "            if count is None:\n                items_spans.append(f\"{label}: not recorded\")\n",
+  "replace": "            if count is None:\n                items_spans.append(f\"0 {label}\")\n",
+  "tests": ["tests/test_report.py::test_validity_banner_counts_each_exclusion_class"]
  },
  {
   "name": "a missing header fact rendered empty",

@@ -198,8 +198,8 @@
  {
   "name": "a header value is rendered without _e (T-GW-36)",
   "file": "src/harness_bench/report/html.py",
-  "find": "<dd>{_fact(v)}</dd>",
-  "replace": "<dd>{v}</dd>",
+  "find": "prov_dl_items.append(html_builder.el(\"dd\", None, val_str))",
+  "replace": "prov_dl_items.append(html_builder.el(\"dd\", None, html_builder.trusted(val_str)))",
   "tests": ["tests/test_report_judges.py::test_t_gw_36_a_script_rationale_renders_as_inert_text"]
  },
  {
