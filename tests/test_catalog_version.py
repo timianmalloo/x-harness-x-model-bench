@@ -171,6 +171,8 @@ def frozen(tmp_path):
     set_catalog_version(root, "9.1")
     golden = tmp_path / "golden"
     (golden / "9.1").mkdir(parents=True)
+    board_golden = tmp_path / "board" / "1"
+    board_golden.mkdir(parents=True)
     pins, board_pins = {}, {}
     for name in FIXTURES:
         data = graded_export(root, name, tmp_path / "freeze")
@@ -178,10 +180,12 @@ def frozen(tmp_path):
         pins[name] = hashlib.sha256(data).hexdigest()
         board_data = graded_board_export(root, name, tmp_path / "freeze-board")
         (golden / "9.1" / f"{name}.board.export").write_bytes(board_data)
+        (board_golden / f"{name}.board.export").write_bytes(board_data)
         board_pins[name] = hashlib.sha256(board_data).hexdigest()
     freeze = {"schema": "bench-catalog-freeze/1",
               "versions": {"9.0": {"catalog_hash": "0" * 64, "golden": {}},
-                           "9.1": {"catalog_hash": runner.catalog_hash(root), "golden": pins, "board_golden": board_pins}}}
+                           "9.1": {"catalog_hash": runner.catalog_hash(root), "golden": pins, "board_golden": board_pins}},
+              "board_exports": {"1": {"catalog": "9.1", "golden": board_pins}}}
     return root, golden, freeze
 
 
@@ -309,6 +313,67 @@ def test_an_edited_board_golden_pin_is_red_through_e(frozen, tmp_path):
     edited["versions"]["9.0"] = {**edited["versions"]["9.0"], "board_golden": {"heads": "b" * 64}}
     assert problems(frozen, tmp_path, base=base, freeze=edited) == [
         f"(e) {FREEZE} entry '9.0' was changed or removed since the merge base"]
+
+
+def test_board_export_differing_under_current_export_version_is_red_through_a(frozen, tmp_path):
+    """(a) a board export differing from its golden under the current EXPORT_VERSION fails."""
+    _, golden, _ = frozen
+    N = str(getattr(board, "EXPORT_VERSION", 1))
+    path = golden.parent / "board" / N / "heads.board.export"
+    path.write_bytes(path.read_bytes() + b" ")
+    assert problems(frozen, tmp_path) == [
+        "(a) heads: the board export differs from its golden file (a statistic moved without a bump)",
+        f"(c) board goldens for export version {N} differ from the digests pinned in {FREEZE}",
+    ]
+
+
+def test_board_export_golden_digests_differing_from_board_exports_pin_is_red_through_c(frozen, tmp_path):
+    """(c) golden digests must equal board_exports[N].golden."""
+    _, _, freeze = frozen
+    N = str(getattr(board, "EXPORT_VERSION", 1))
+    freeze["board_exports"][N]["golden"] = {name: "0" * 64 for name in FIXTURES}
+    assert problems(frozen, tmp_path) == [
+        f"(c) board goldens for export version {N} differ from the digests pinned in {FREEZE}",
+    ]
+
+
+def test_absent_board_exports_entry_or_catalog_mismatch_is_red_through_d(frozen, tmp_path):
+    """(d) fails when board_exports[N] is absent or its catalog is not the released version."""
+    _, _, freeze = frozen
+    N = str(getattr(board, "EXPORT_VERSION", 1))
+    # absent entry
+    del freeze["board_exports"][N]
+    assert problems(frozen, tmp_path) == [
+        f"(d) no board_exports entry for export version {N} in {FREEZE}",
+    ]
+    # catalog mismatch
+    freeze["board_exports"][N] = {"catalog": "9.9", "golden": {}}
+    assert problems(frozen, tmp_path) == [
+        f"(d) board_exports[{N}] catalog '9.9' != '9.1' (board export catalog must match released version)",
+    ]
+
+
+def test_board_exports_append_only_and_v1_equals_v05_golden_is_red_through_e(frozen, tmp_path):
+    """(e) board_exports entries are append-only against the merge base, and board_exports['1'].golden must equal versions['0.5'].board_golden."""
+    _, _, pinned = frozen
+    base = {
+        "versions": dict(pinned["versions"]),
+        "board_exports": {k: dict(v) for k, v in pinned.get("board_exports", {}).items()},
+    }
+    edited = {
+        "versions": dict(base["versions"]),
+        "board_exports": {"1": {"catalog": "9.1", "golden": {"heads": "1" * 64}}},
+    }
+    assert problems(frozen, tmp_path, base=base, freeze=edited) == [
+        f"(e) {FREEZE} board_exports entry '1' was changed or removed since the merge base",
+    ]
+    mismatch = {
+        "versions": {**base["versions"], "0.5": {"catalog_hash": "a" * 64, "golden": {}, "board_golden": {"heads": "a" * 64}}},
+        "board_exports": {"1": {"catalog": "0.5", "golden": {"heads": "b" * 64}}},
+    }
+    assert problems(frozen, tmp_path, base=mismatch, freeze=mismatch) == [
+        f"(e) board_exports['1'].golden != versions['0.5'].board_golden in {FREEZE}",
+    ]
 
 
 def test_a_version_frozen_before_boards_is_exempt_and_says_so(frozen, tmp_path, capsys):
