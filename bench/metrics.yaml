@@ -36,7 +36,7 @@ areas:
       - { id: turns_and_tool_calls,    source: [H],    better: lower,  grader: cost,        kind: derived, weight: 0 }
       - { id: cache_hit_ratio,         source: [H, D], better: higher, grader: cost,        kind: score, weight: 1, scale: 4, anchor: [0.0000, 100.0000], anchor_note: "spec docs/design/phase3-cost.md:106" }
       - { id: cache_write_amplification, source: [D],  better: lower,  grader: cost,        kind: score, weight: 1, scale: 4, anchor: [100.0000, 0.0000], anchor_note: "spec docs/design/phase3-cost.md:116" }
-      - { id: context_growth,          source: [H, D], better: lower,  grader: cost,        kind: score, weight: 1, anchor: [4966520, 0], anchor_note: "measured smoke-1 14633..2483260, worst = 2x the smoke-1 max, re-anchor at 0.6 if any cell saturates", note: "peak, slope, turns to 50% window" }
+      - { id: context_growth,          source: [H, D], better: lower,  grader: cost,        kind: score, weight: 1, anchor: [134980, 0], anchor_note: "measured smoke-1 codex-sol per-call peak 14633..67490 (6 tasks, 1 run; Copilot session totals and Claude Code acp_turn are NA), worst = 2x the max, re-anchor at 0.6 if any cell saturates", note: "peak, slope, turns to 50% window" }
       - { id: compactions,             source: [H],    better: lower,  grader: cost,        kind: score, weight: 0 }
       - { id: coordinator_overhead,    source: [D],    better: lower,  grader: cost,        kind: derived, weight: 0, note: "reported, never charged to a cell" }
   correctness:

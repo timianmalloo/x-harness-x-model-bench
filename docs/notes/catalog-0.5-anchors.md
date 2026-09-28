@@ -41,7 +41,7 @@ reworded per R-79 item 3 (anchors kept, except `convention_drift`'s note which c
 3. **Uniform widening rule for measured anchors, reworded per R-79 item 3** (anchors unchanged; the note now
    states the rule directly and names the re-anchor trigger): "measured, worst = 2x the smoke-1 max,
    re-anchor at 0.6 if any cell saturates."
-   - `context_growth`: observed in smoke-1 `14633..2483260` → `worst = 4966520` (`[4966520, 0]`).
+   - `context_growth`: observed in smoke-1 `14633..2483260` → `worst = 4966520`; **re-derived 2026-09-27** after the Copilot fix (a Copilot row is a session total, now NA): Codex per-call peaks `14633..67490` → `[134980, 0]`.
    - `scope_creep`: observed in smoke-1 `0..752` → `worst = 1504` (`[1504, 0]`).
    - `stuck_loops`: observed in smoke-1 `0..2` → `worst = 4` (`[4, 0]`).
    - `cache_write_amplification` is **not** in this group after R-79: it is replaced by a spec anchor
@@ -76,7 +76,7 @@ reworded per R-79 item 3 (anchors kept, except `convention_drift`'s note which c
 | `cost_usd` | cost | `lower` | 6 | `[10.000000, 0.000000]` | `convention: $10 is provisional until the first priced run; 0 is zero cost` | NA (no price list entry in smoke-1 or row15-d1-1) |
 | `cache_hit_ratio` | cost | `higher` | 4 | `[0.0000, 100.0000]` | `spec docs/design/phase3-cost.md:106` | smoke-1: 71.3374..99.9970; row15-d1-1: 83.0718..99.9970 |
 | `cache_write_amplification` | cost | `lower` | 4 | `[100.0000, 0.0000]` | `spec docs/design/phase3-cost.md:116` | smoke-1: 0.0000..30.5116; row15-d1-1: 0.0000..11.0740 |
-| `context_growth` | cost | `lower` | — | `[4966520, 0]` | `measured smoke-1 14633..2483260, worst = 2x the smoke-1 max, re-anchor at 0.6 if any cell saturates` | smoke-1: 14633..2483260; row15-d1-1: 32855..1919510 |
+| `context_growth` | cost | `lower` | — | `[134980, 0]` | `measured smoke-1 codex-sol per-call peak 14633..67490 (6 tasks, 1 run; Copilot session totals and Claude Code acp_turn are NA), worst = 2x the max, re-anchor at 0.6 if any cell saturates` | smoke-1 Codex per-call: 14633..67490 (the earlier 2483260 was a Copilot session total, a grader defect fixed 2026-09-27) |
 | `partial_credit` | correctness | `higher` | 4 | `[0.0000, 1.0000]` | `convention: ratio in [0, 1]` | smoke-1: 0.0000..1.0000; row15-d1-1: 0.0000..1.0000 |
 | `build_and_suite_clean` | correctness | `higher` | — | `[0, 1]` | `convention: binary indicator in [0, 1]` | smoke-1: 0..1; row15-d1-1: 1..1 |
 | `mutation_score` | correctness | `higher` | 4 | `[0.0000, 1.0000]` | `convention: ratio in [0, 1]` | smoke-1: 0.8500..1.0000; row15-d1-1: 0.8095..0.9286 |
