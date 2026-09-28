@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-28T04:55:38Z",
+  "generated": "2026-09-28T05:15:16Z",
   "audit": [
     {
       "actor": null,
@@ -44258,6 +44258,28 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3K70NHHGC3SK61S4VR6F6YQ",
+      "shortname": "us4-board-goldens",
+      "datetime": "2026-09-28T05:15:16Z",
+      "session": "worker-grok-freezectl",
+      "prompt": "Extend the US-4 catalog control to board.export goldens and commit tools/freeze_catalog.py. Red first. No 0.5 freeze.",
+      "summary": "US-4 now checks board.export goldens for a released version whose freeze entry carries board_golden, and prints the pre-board exemption when the key is absent (0.4). tools/freeze_catalog.py grades both X1 fixtures twice and writes the views golden, the board golden, and the freeze entry. No 0.5 freeze was performed. Commits 6929c34 (red control), b6aaf42 (green control), 90f46f6 (red tool), 6108da0 (green tool). pytest 1896 passed; ruff clean.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled_from": "al-01M3K5WJSF6TGEW46K57YCRVTZ",
+      "goal": "Extend the US-4 catalog control to board.export goldens and commit tools/freeze_catalog.py, red first, with no 0.5 freeze performed.",
+      "done_when": "us4_problems checks a board golden per fixture for a released version and pins board_golden; a version with no board_golden prints the exemption; checks (a)-(d) have board counterparts and (e) covers board_golden; tools/freeze_catalog.py writes both goldens and the freeze entry and refuses .dev, already-frozen, and uncommitted metrics; tests use a tmp root; pytest and ruff are clean; each red and green is committed.",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-09-28T04:55:57Z",
+      "duration_seconds": 1159.0
     }
   ],
   "changes": [
