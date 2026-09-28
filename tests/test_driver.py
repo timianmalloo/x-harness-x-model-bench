@@ -6,6 +6,7 @@ import json
 import os
 import sys
 import threading
+import time
 from pathlib import Path
 
 import pytest
@@ -22,6 +23,74 @@ FAKE = Path(__file__).parent / "fake_acp_agent.py"
 def _spawn(tmp_path, fake="ok", **cfg):
     env = dict(os.environ, FAKE_ACP=json.dumps({"mode": fake, **cfg}))
     return procs.spawn([sys.executable, str(FAKE)], cwd=str(tmp_path), env=env)
+
+
+# TIME-A: arm a cancel from a phase the fake has reached, not from a wall clock.
+# A timer measured on an idle machine fires before the phase when spawn is slow.
+_PHASE_BOUND_S = 30.0
+
+
+def _poll_until(ready, bound: float = _PHASE_BOUND_S) -> bool:
+    deadline = time.monotonic() + bound
+    while time.monotonic() < deadline:
+        if ready():
+            return True
+        time.sleep(0.02)
+    return bool(ready())
+
+
+def _arm_when_ready(ready, action, on_miss) -> threading.Thread:
+    def run() -> None:
+        if _poll_until(ready):
+            action()
+        else:
+            on_miss()
+
+    thread = threading.Thread(target=run, daemon=True)
+    thread.start()
+    return thread
+
+
+def _arm_on_marker(marker: Path, phase: str, action, cell, missed: list[str]) -> threading.Thread:
+    def on_miss() -> None:
+        missed.append(phase)
+        cell.terminate_and_confirm(timeout=10)
+
+    return _arm_when_ready(marker.exists, action, on_miss)
+
+
+def _join_phase(thread: threading.Thread) -> bool:
+    thread.join(timeout=_PHASE_BOUND_S + 20)
+    return thread.is_alive()
+
+
+def _phase_miss(missed: list[str], node_name: str, detail: str) -> None:
+    if missed:
+        pytest.fail(f"{node_name}: {missed[0]} never reached ({detail})")
+
+
+class _HandshakeStdin:
+    """The cell's stdin. Seeing the initialize request means the handshake phase has started."""
+
+    def __init__(self, stream, seen: threading.Event, on_initialize) -> None:
+        self._stream, self._seen, self._on_initialize = stream, seen, on_initialize
+
+    def write(self, data: bytes) -> int:
+        written = self._stream.write(data)
+        if b'"method": "initialize"' in data and not self._seen.is_set():
+            self._seen.set()
+            self._on_initialize()
+        return written
+
+    def flush(self) -> None:
+        self._stream.flush()
+
+    def close(self) -> None:
+        self._stream.close()
+
+    @property
+    def closed(self) -> bool:
+        return self._stream.closed
 
 
 def _turn(tmp_path, prompt="Do the task.", before_send=None, acp_mode=None, handshake=10, fake="ok", **cfg):
@@ -161,67 +230,88 @@ def test_the_profile_mode_is_set_before_the_prompt(tmp_path):
 
 
 @pytestmark_native
-def test_a_killed_turn_returns_promptly_with_eof(tmp_path):
-    import threading
+def test_a_killed_turn_returns_promptly_with_eof(tmp_path, request):
     cell = _spawn(tmp_path, fake="hang_prompt")
-    timer = threading.Timer(1.5, lambda: cell.terminate_and_confirm(timeout=10))
-    timer.start()
-    result = driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=None, handshake_timeout=10, before_send=lambda sid: None)
-    timer.join()
-    cell.close()
+    missed: list[str] = []
+    phase = "after a hang starts"
+    # hang_prompt writes .fake-prompt.txt and then sleeps. Kill once that file exists.
+    thread = _arm_on_marker(tmp_path / ".fake-prompt.txt", phase,
+                            lambda: cell.terminate_and_confirm(timeout=10), cell, missed)
+    try:
+        result = driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=None, handshake_timeout=10,
+                                 before_send=lambda sid: None)
+    finally:
+        still_waiting = _join_phase(thread)
+        cell.close()
+    if still_waiting:
+        pytest.fail(f"{request.node.name}: phase waiter still running")
+    _phase_miss(missed, request.node.name, ".fake-prompt.txt")
     assert result.prompt_sent and result.stop_reason is None and result.eof
 
 
 @pytestmark_native
-def test_cancel_sends_session_cancel_during_the_prompt(tmp_path):  # D-1
+def test_cancel_sends_session_cancel_during_the_prompt(tmp_path, request):  # D-1
+    # handshake_delay is longer than the old Timer(0.4). The cancel waits for .fake-prompt.txt,
+    # so the delay cannot move it into the handshake (TIME-A, observed red at that timer).
     cancel = threading.Event()
-    cell = _spawn(tmp_path, fake="on_cancel")
-    timer = threading.Timer(0.4, cancel.set)
+    cell = _spawn(tmp_path, fake="on_cancel", handshake_delay=2)
+    missed: list[str] = []
+    phase = "during the prompt"
+    thread = _arm_on_marker(tmp_path / ".fake-prompt.txt", phase, cancel.set, cell, missed)
     try:
-        timer.start()
         result = driver.run_turn(cell, tmp_path, "p", None, 10, lambda sid: None, cancel=cancel)
+        _phase_miss(missed, request.node.name, ".fake-prompt.txt")
         assert result.stop_reason == "cancelled"
         sent = json.loads((tmp_path / ".fake-cancel.json").read_text(encoding="utf-8"))
         assert sent == {"jsonrpc": "2.0", "method": "session/cancel", "params": {"sessionId": result.session_id}}
     finally:
-        timer.join()
+        still_waiting = _join_phase(thread)
         cell.terminate_and_confirm(timeout=10)
         cell.close()
+    if still_waiting:
+        pytest.fail(f"{request.node.name}: phase waiter still running")
 
 
 @pytestmark_native
-def test_cancel_closes_stdin_during_the_handshake(tmp_path):  # D-1
+def test_cancel_closes_stdin_during_the_handshake(tmp_path, request):  # D-1
+    # The cancel has to land before the prompt. handshake_delay holds the fake in initialize;
+    # the cancel is set when that request is written, not by a timer racing the spawn.
     cancel = threading.Event()
     cell = _spawn(tmp_path, fake="ok", handshake_delay=2)
-    timer = threading.Timer(0.2, cancel.set)
+    seen = threading.Event()
+    cell.proc.stdin = _HandshakeStdin(cell.proc.stdin, seen, cancel.set)
     try:
-        timer.start()
         driver.run_turn(cell, tmp_path, "p", None, 5, lambda sid: None, cancel=cancel)
+        if not seen.is_set():
+            pytest.fail(f"{request.node.name}: during the handshake never reached (initialize not written)")
         assert cell.proc.stdin.closed
         assert not (tmp_path / ".fake-prompt.txt").exists()
         assert not (tmp_path / ".fake-cancel.json").exists()
     finally:
-        timer.join()
         cell.terminate_and_confirm(timeout=10)
         cell.close()
 
 
 @pytestmark_native
-def test_writes_after_a_cancel_are_dropped(tmp_path):  # D-2
+def test_writes_after_a_cancel_are_dropped(tmp_path, request):  # D-2
     cancel = threading.Event()
     cell = _spawn(tmp_path, fake="on_cancel", late_permission=True, usage=[{"model": "fake-model"}])
-    timer = threading.Timer(0.4, cancel.set)
+    missed: list[str] = []
+    phase = "during the prompt"
+    thread = _arm_on_marker(tmp_path / ".fake-prompt.txt", phase, cancel.set, cell, missed)
     try:
-        timer.start()
         result = driver.run_turn(cell, tmp_path, "p", None, 10, lambda sid: None, cancel=cancel)
+        _phase_miss(missed, request.node.name, ".fake-prompt.txt")
         assert result.stop_reason == "cancelled"
         assert result.permission_requests == 1
         assert result.usage is not None
         assert result.cause is None
     finally:
-        timer.join()
+        still_waiting = _join_phase(thread)
         cell.terminate_and_confirm(timeout=10)
         cell.close()
+    if still_waiting:
+        pytest.fail(f"{request.node.name}: phase waiter still running")
 
 
 @pytestmark_native
@@ -579,19 +669,34 @@ def _message_types(agent: bytes, client: bytes) -> set[str]:
 
 
 def _tapped_turn(tmp_path, argv, env, acp_mode=None, model=None) -> set[str]:
-    import threading
     cell = procs.spawn(argv, cwd=str(tmp_path), env=env)
     cell.proc.stdout, cell.proc.stdin = _Tap(cell.proc.stdout), _Tap(cell.proc.stdin)
-    stop = threading.Timer(4, lambda: cell.terminate_and_confirm(timeout=10))  # ends the hang modes
-    stop.start()
+    cfg = json.loads(env.get("FAKE_ACP") or "{}")
+    mode = cfg.get("mode", "ok")
+    # assume: mode hang_handshake sleeps before it answers initialize and writes no file
+    # (tests/fake_acp_agent.py, the initialize branch). run_turn's handshake_timeout ends that
+    # phase. A wall-clock kill cannot be aimed at "after the hang starts" because the fake
+    # publishes no observation of it.
+    # Confirm: the sleep precedes every Path.write in that branch.
+    # Breaks: a hang_handshake that ignores a closed stdin and outlives handshake_timeout
+    # leaves this turn blocked until the driver returns; nothing else kills it before then.
+    missed: list[str] = []
+    hangs_after_prompt = mode in {"hang_prompt", "stubborn", "on_cancel"} or bool(cfg.get("hang"))
+    ender = None
+    if hangs_after_prompt:
+        ender = _arm_on_marker(tmp_path / ".fake-prompt.txt", "after a hang starts",
+                               lambda: cell.terminate_and_confirm(timeout=10), cell, missed)
     try:
-        driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=acp_mode, handshake_timeout=3, before_send=lambda sid: None,
-                        model=model)
+        driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=acp_mode, handshake_timeout=3,
+                        before_send=lambda sid: None, model=model)
     finally:
-        stop.cancel()
-        stop.join()
+        still_waiting = ender is not None and _join_phase(ender)
         cell.terminate_and_confirm(timeout=10)
         cell.close()
+    if still_waiting:
+        pytest.fail(f"after a hang starts: phase waiter still running for mode {mode}")
+    if missed:
+        pytest.fail(f"after a hang starts never reached (.fake-prompt.txt) for mode {mode}")
     return _message_types(bytes(cell.proc.stdout.data), bytes(cell.proc.stdin.data))
 
 
@@ -650,40 +755,6 @@ def test_the_fidelity_check_fails_on_a_seeded_unpaired_type(tmp_path):  # D7 neg
     assert "session/update.plan" in emitted
     with pytest.raises(AssertionError, match=r"session/update\.plan"):
         _assert_paired(emitted)
-
-
-@pytestmark_native
-@pytest.mark.filterwarnings("error::pytest.PytestUnhandledThreadExceptionWarning")  # the race fails the test itself
-def test_tapped_turn_timer_race_does_not_emit_unhandled_thread_exception(tmp_path, monkeypatch):
-    """CI-OPT finding 3: when a turn ends near the timer deadline, cancel() without join()
-    leaves the timer thread running while finally: cell.close() closes the job handle.
-    The callback then crashes with [WinError 6] The handle is invalid, emitting
-    PytestUnhandledThreadExceptionWarning.
-    """
-    import time
-
-    created = []
-
-    class RacingTimer(threading.Thread):
-        def __init__(self, interval, function):
-            super().__init__()
-            self.function = function
-            self.started_event = threading.Event()
-            created.append(self)
-
-        def run(self):
-            self.started_event.wait()
-            time.sleep(0.005)
-            self.function()
-
-        def cancel(self):
-            self.started_event.set()
-
-    monkeypatch.setattr(threading, "Timer", RacingTimer)
-    env = dict(os.environ, FAKE_ACP=json.dumps({"mode": "ok"}))
-    emitted = _tapped_turn(tmp_path, [sys.executable, str(FAKE)], env)
-    assert "initialize.result" in emitted
-    created[0].join()
 
 
 # the engine's side of the driver change (R-13, R-24, R-28: W1-ACP's engine.py hunks), through a real engine run
