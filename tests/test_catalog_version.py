@@ -207,8 +207,12 @@ def test_a_grader_change_without_a_bump_is_red_through_a(frozen, tmp_path, monke
         return out
 
     monkeypatch.setitem(runner.GRADERS, "correctness", changed)
-    assert problems(frozen, tmp_path) == [f"(a) {name}: the export differs from its golden file (a score or reason moved without a bump)"
-                                          for name in sorted(FIXTURES)]
+    # partial_credit feeds the correctness area, so the gated composite moves too: both goldens catch it
+    assert problems(frozen, tmp_path) == sorted(
+        [f"(a) {name}: the export differs from its golden file (a score or reason moved without a bump)"
+         for name in FIXTURES]
+        + [f"(a) {name}: the board export differs from its golden file (a statistic moved without a bump)"
+           for name in FIXTURES])
 
 
 def test_a_weight_changed_without_a_bump_is_red_through_b(frozen, tmp_path):

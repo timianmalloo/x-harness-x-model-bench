@@ -5,3 +5,11 @@ versions:
     golden:
       c44dd2b-no-heads: 55bd1375b3fffa5c6315b466c0bfa11fa3af7dad5347f0a4a8fd8db6e93b8929
       heads: 55bd1375b3fffa5c6315b466c0bfa11fa3af7dad5347f0a4a8fd8db6e93b8929
+  '0.5':
+    catalog_hash: 8776c2d3bc43c65d5c51d8615d36c6bdc14c442052e584d43b999244c3f97ced
+    golden:
+      c44dd2b-no-heads: e473aa6a07de3353775829d3509d53c6ca88270625b059c5c1a7f9fff06e73c9
+      heads: e473aa6a07de3353775829d3509d53c6ca88270625b059c5c1a7f9fff06e73c9
+    board_golden:
+      c44dd2b-no-heads: 0f745f0e2708fe2cb8c0a421c2e6c4421f472b266babc2ec2663d597c06b0c97
+      heads: 0f745f0e2708fe2cb8c0a421c2e6c4421f472b266babc2ec2663d597c06b0c97
