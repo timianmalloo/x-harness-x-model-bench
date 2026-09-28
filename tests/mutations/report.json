@@ -91,6 +91,55 @@
   "tests": ["tests/test_report.py::test_validity_banner_counts_each_exclusion_class"]
  },
  {
+  "name": "invalid conflates a failed outcome with an invalid cell",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    invalid = sum(1 for c in view.cells if c.validity.startswith(\"invalid\"))\n",
+  "replace": "    invalid = sum(1 for c in view.cells if c.validity.startswith(\"invalid\") or c.outcome == \"failed\")\n",
+  "tests": ["tests/test_report.py::test_invalid_count_never_conflates_a_failed_outcome_with_an_invalid_cell"]
+ },
+ {
+  "name": "stopped drops the never-launched states",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    stopped = sum(1 for c in view.cells if c.outcome in (\"stopped\", lifecycle.SKIPPED, \"not started\", \"no outcome\"))\n",
+  "replace": "    stopped = sum(1 for c in view.cells if c.outcome in (\"stopped\", lifecycle.SKIPPED))\n",
+  "tests": ["tests/test_report.py::test_validity_banner_counts_each_exclusion_class"]
+ },
+ {
+  "name": "withheld reads the cell's own cause/code instead of the judge gateway's HB-GW-009",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    withheld = sum(1 for c in view.cells if any(WITHHELD_CODE in (m.reason or \"\") for m in c.scores.values()))\n",
+  "replace": "    withheld = sum(1 for c in view.cells if c.cause == \"withheld\" or (c.code and \"withheld\" in c.code.lower()))\n",
+  "tests": ["tests/test_report.py::test_validity_banner_counts_each_exclusion_class"]
+ },
+ {
+  "name": "low-confidence matchers computed instead of always not recorded",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    lc_matchers = None\n",
+  "replace": "    lc_matchers = 0\n",
+  "tests": ["tests/test_report.py::test_validity_banner_counts_each_exclusion_class"]
+ },
+ {
+  "name": "disagreeing judges falls back to 0 with no cell judged",
+  "file": "src/harness_bench/report/html.py",
+  "find": ") if has_disagree_source else None\n",
+  "replace": ") if has_disagree_source else 0\n",
+  "tests": ["tests/test_report.py::test_validity_banner_counts_each_exclusion_class"]
+ },
+ {
+  "name": "judge spend invents a call count when no judging ran",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    judge_spend = judges_dict.get(\"Judge spend\") or judges.NO_CALL\n",
+  "replace": "    judge_spend = judges_dict.get(\"Judge spend\") or \"0 calls\"\n",
+  "tests": ["tests/test_report.py::test_judge_spend_says_so_when_no_judging_ran"]
+ },
+ {
+  "name": "the header's wall clock is never run-level",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    wall_text = _run_wall_clock(run_dir)\n",
+  "replace": "    wall_text = \"not recorded\"\n",
+  "tests": ["tests/test_report.py::test_header_wall_clock_is_run_level_not_a_cell_sum"]
+ },
+ {
   "name": "a missing header fact rendered empty",
   "file": "src/harness_bench/report/html.py",
   "find": "else \"not recorded\"",

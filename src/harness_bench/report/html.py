@@ -26,12 +26,14 @@ from harness_bench import (
     composites,
     config,
     egress,
+    lifecycle,
     profiles,
     report,
     stats,
     views,
 )
 from harness_bench.errors import BenchError
+from harness_bench.grade import judge as grade_judge
 from harness_bench.plan import resolved_model_map
 from harness_bench.report import html_builder, judges, model
 from harness_bench.report.credentials import encodings
@@ -45,6 +47,10 @@ SECRET_SHAPES = (
 PUBLICATION = "report"  # the egress destination id of report publication (US-47 c3)
 RECORD = "report-record.json"  # beside report.html: what the report withheld (US-47 c3) and flagged (US-46 c2)
 PARTIAL = "partial: email not supplied"  # the publication scan without BENCH_OPERATOR_EMAIL (R-80 DR-EG-3)
+# The judge gateway's own withholding: gateway/pipeline.py:168 returns Result("failed", "HB-GW-009", ...);
+# grade/judge.py's item_score (Verified, :186-200) composes it onto the score's reason as "judge <model>: failed
+# HB-GW-009"; ruling R-80 c1 names this as the one definition (never a second copy in the report's own guess).
+WITHHELD_CODE = "HB-GW-009"
 # One rendered section. Sections never nest, and every value is escaped by `_e`, so "</section>" is only a tag.
 _SECTION = re.compile(r'<section id="([a-z0-9-]+)">.*?</section>', re.DOTALL)
 _HEADER_END = re.compile(r'(<section id="header">.*?)(</section>)', re.DOTALL)  # where the egress row goes (R-80 c1)
@@ -102,7 +108,6 @@ def _e(value) -> str:
     return _html.escape(str(value), quote=True)
 
 
-
 def _table(tid: str, caption: str, headers: list[tuple[str, bool]], rows: list[list[tuple]]) -> str:
     head = "".join(f'<th scope="col"{" class=\"num\"" if num else ""}>{_e(h)}</th>' for h, num in headers)
     body = "".join("<tr>" + "".join(
@@ -138,6 +143,23 @@ def _context_window_fact(cells: list[views.CellView], tags: dict[str, str]) -> s
         if line not in lines:
             lines.append(line)
     return "; ".join(lines)
+
+
+def _run_wall_clock(run_dir: Path | None) -> str:
+    """R2 (design section 6 row 1): the run's own wall clock, not a sum over cells that ran in parallel.
+    `run.started` and `run.completed` (engine.py:382, :425) are each stamped with `mono_ns` (ledger.py:70 -- every
+    event row, monotonic); the run's wall clock is their difference, valid because both are written by the one
+    engine process a run_dir ever has (a second `Engine.run()` on the same run_dir refuses at HB-USR-002,
+    engine.py:373, so the two mono_ns values are never compared across processes). Missing either event, or a
+    ledger from before mono_ns was stamped, reads not recorded -- never a plausible number (IO)."""
+    if run_dir is None:
+        return "not recorded"
+    events = views.rows(run_dir, "events")
+    started = next((e for e in events if e.get("kind") == "run.started" and "mono_ns" in e), None)
+    completed = next((e for e in events if e.get("kind") == "run.completed" and "mono_ns" in e), None)
+    if started is None or completed is None:
+        return "not recorded"
+    return f"{(completed['mono_ns'] - started['mono_ns']) / 1_000_000_000:.1f} s"
 
 
 def _permission_modes(run_dir: Path | None) -> dict[str, str]:
@@ -297,17 +319,23 @@ def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | N
         total_cost = sum(Decimal(str(m.value)) for m in costs)
         runs_spend = f"${total_cost:.6f}"
 
-    judge_spend = judges_dict.get("Judge spend") or "0 calls"
+    # judges.NO_CALL ("no call in this pass"): the existing judging-facts wording for an absent call
+    # (judges.py:40, :179), never an invented "0 calls" when judging did not run at all (judges.facts
+    # returns [] with no pass looked up, judges.py:253).
+    judge_spend = judges_dict.get("Judge spend") or judges.NO_CALL
     coord_spend = "not recorded"
     spend_text = f"runs {runs_spend} · judges {judge_spend} · coordinator {coord_spend}"
 
-    # Wall clock
+    # Wall clock: the run's own duration (R2), never a sum over cells that ran in parallel.
+    wall_text = _run_wall_clock(run_dir)
+
+    # Cell time (sum): the same per-cell sum the old "Wall clock" row carried, honestly labelled (R2).
     wall_measures = [c.wall_ms for c in view.cells if c.wall_ms and c.wall_ms.value is not None]
     if wall_measures:
         total_ms = sum(Decimal(str(m.value)) for m in wall_measures)
-        wall_text = f"{total_ms / 1000:.1f} s"
+        cell_time_text = f"{total_ms / 1000:.1f} s"
     else:
-        wall_text = "not recorded"
+        cell_time_text = "not recorded"
 
     # Statistics
     if board_obj is not None:
@@ -318,6 +346,7 @@ def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | N
     header_dl_items.extend([
         html_builder.el("dt", None, "Spend"), html_builder.el("dd", None, spend_text),
         html_builder.el("dt", None, "Wall clock"), html_builder.el("dd", None, wall_text),
+        html_builder.el("dt", None, "Cell time (sum)"), html_builder.el("dd", None, cell_time_text),
         html_builder.el("dt", None, "Statistics"), html_builder.el("dd", None, stat_text),
     ])
 
@@ -351,8 +380,7 @@ def _validity(view: views.RunView) -> html_builder.Html:
         html_builder.el("li", None, f"{c.label}: {w.code} {w.message}")
         for c in view.cells for w in c.warnings
     ]
-    warned = warned_items  # R-24/R-26 c5, R-28: flags that do not change validity
-    if warned:  # R-24/R-26 c5, R-28: flags that do not change validity
+    if warned_items:  # R-24/R-26 c5, R-28: flags that do not change validity
         warnings_block = [
             html_builder.el("p", None, "Warnings:"),
             html_builder.el("ul", {"id": "validity-warnings"}, *warned_items),
@@ -367,40 +395,45 @@ def _validity(view: views.RunView) -> html_builder.Html:
         ]
         return html_builder.el("section", {"id": "validity"}, html_builder.el("h2", None, "Validity"), *body_elements)
 
-    # Count exclusion classes according to section 6 row 2
+    # Count exclusion classes according to section 6 row 2, each from the source that actually produces it --
+    # never a hand-typed guess against a plausible-looking string:
     # NA costs · invalid · not applicable · timed out · stopped / skipped / never started · withheld · low-confidence matchers · disagreeing judges
     na_costs = sum(1 for c in view.cells if "cost_usd" in c.scores and c.scores["cost_usd"].value is None)
-    invalid = sum(1 for c in view.cells if c.validity.startswith("invalid") or c.outcome == "failed")
-    not_applicable = sum(
-        1 for c in view.cells
-        if c.validity == "not applicable" or c.outcome == "not applicable" or (c.cause and "not applicable" in c.cause.lower())
-    )
-    timed_out = sum(1 for c in view.cells if c.outcome == "timed_out" or c.cause == "timed_out")
-    stopped = sum(
-        1 for c in view.cells
-        if c.outcome in ("stopped", "skipped") or c.cause in ("stopped", "skipped")
-    )
-    withheld = sum(
-        1 for c in view.cells
-        if c.cause == "withheld" or (c.code and "withheld" in c.code.lower()) or c.outcome == "withheld"
-    )
-    has_matcher_source = any(
-        "low-confidence matcher" in (m.reason or "").lower()
-        for c in view.cells for m in c.scores.values()
-    )
-    lc_matchers = sum(
-        1 for c in view.cells
-        if any("low-confidence matcher" in (m.reason or "").lower() for m in c.scores.values())
-    ) if has_matcher_source else None
-
-    has_judge_source = any(
-        "judges disagree" in (m.reason or "").lower()
-        for c in view.cells for m in c.scores.values()
-    )
+    # invalid: validity is the one source (views.py:435,437,441,446,450,454, all prefixed "invalid ("). A failed
+    # *outcome* is not itself invalid: Cause.invalidates is true only for infrastructure/benchmark attributions
+    # (errors.py:34-38), so an agent- or harness-attributed failure can still be a valid, scored cell.
+    invalid = sum(1 for c in view.cells if c.validity.startswith("invalid"))
+    # not applicable: no producer of this label exists anywhere in src/harness_bench. validity and outcome are
+    # each a closed enumeration (views.py:117, :120) and neither lists it; no Cause label or RUN_CODES entry
+    # (errors.py) names it either.
+    # assume: the design's "not applicable" row has no current source in this codebase; confirm: a producer is
+    # added under a named constant and this match is updated to it, or the design drops the row; breaks: this
+    # class silently stays "not recorded" even after a producer exists, until this match is updated to it.
+    not_applicable = None
+    timed_out = sum(1 for c in view.cells if c.outcome == "timed_out")  # the outcome literal (views.py:117; engine.py:634,670)
+    # stopped / skipped / never started: "stopped" (engine.py:634,654,669; status.py:288 checks the same
+    # literal), lifecycle.SKIPPED (engine.py:362, a skip_combo decision), and the two never-launched states
+    # views.py:507 produces when no cell.outcome was ever recorded ("not started" | "no outcome") -- the old
+    # match dropped both never-launched states.
+    stopped = sum(1 for c in view.cells if c.outcome in ("stopped", lifecycle.SKIPPED, "not started", "no outcome"))
+    # withheld: the judge gateway's own withholding (WITHHELD_CODE == HB-GW-009, ruling R-80 c1), read off the
+    # score's reason -- never the cell's own cause/code, which is a Cause label and never carries this text.
+    withheld = sum(1 for c in view.cells if any(WITHHELD_CODE in (m.reason or "") for m in c.scores.values()))
+    # low-confidence matchers: no producer of this text exists anywhere in src/harness_bench either -- checked
+    # directly: scripted_user/matcher.py and grade/clarify.py write no such reason string, and a grep of the
+    # whole package for "confidence" finds only this comment and the class label below.
+    # assume: no matcher/clarifier grader flags a low-confidence match today; confirm: one is added with a named
+    # reason string and this match is updated to it, or the design drops the row; breaks: this class silently
+    # stays "not recorded" even after a producer exists, until this match is updated to it.
+    lc_matchers = None
+    # disagreeing judges: grade_judge.DISAGREE (judge.py:47, "judges disagree by 2 steps"), the one constant
+    # metric_score composes into a score's reason (judge.py:200-207). With no such reason anywhere in the view,
+    # this run is unmeasured for the class (no cell was judged, or none disagreed where a rubric ran) -- not
+    # recorded, matching low-confidence matchers, never a bare 0 (the fixed bug: this used to fall back to 0).
+    has_disagree_source = any(grade_judge.DISAGREE in (m.reason or "") for c in view.cells for m in c.scores.values())
     disagreeing_judges = sum(
-        1 for c in view.cells
-        if any("judges disagree" in (m.reason or "").lower() for m in c.scores.values())
-    ) if has_judge_source else 0
+        1 for c in view.cells if any(grade_judge.DISAGREE in (m.reason or "") for m in c.scores.values())
+    ) if has_disagree_source else None
 
     classes = [
         ("NA costs", na_costs),
