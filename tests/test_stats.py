@@ -1,7 +1,8 @@
-"""Bootstrap core and ranking (design phase4-statistics, slices S1 and S2).
+"""Bootstrap core, ranking, paired differences and pass@k (design phase4-statistics).
 
 T-S1 is the red-first test for S1. T-R3 is the red-first test for S2.
-T-S3 and T-R12/T-R13 are the hypothesis suites. T-S4 pins the stream and one
+T-S7 is the red-first test for S3.
+T-S3, T-S7, T-R12 and T-R13 are the hypothesis suites. T-S4 pins the stream and one
 interval as exact strings. T-S8's covered count is a characterization (D6).
 """
 
@@ -15,7 +16,18 @@ from hypothesis import example, given, settings
 from hypothesis import strategies as st
 
 from harness_bench.errors import BenchError
-from harness_bench.stats import Interval, Obs, Params, interval, rank, rng
+from harness_bench.stats import (
+    Interval,
+    Measure,
+    Obs,
+    Params,
+    interval,
+    no_detectable_effect,
+    paired_delta,
+    pass_k,
+    rank,
+    rng,
+)
 
 # assume: T-S4 says "a committed 6-task fixture" and names no path. This is that fixture.
 # Confirm: replace this path if the Owner names a different one.
@@ -47,6 +59,23 @@ UNBALANCED = [
     Obs("C", 2, Decimal(6)),
     Obs("C", 3, Decimal(9)),
 ]
+
+# A and B are in both arms, with different repetition counts. C is reference-only, D treatment-only.
+# Point is (10 + 3) / 2 = 13/2, and the interval is not symmetric about zero.
+TS7_REF = [
+    Obs("A", 1, Decimal(0)),
+    Obs("B", 1, Decimal(1)),
+    Obs("B", 2, Decimal(1)),
+    Obs("C", 1, Decimal(10)),
+]
+TS7_TREAT = [
+    Obs("A", 1, Decimal(10)),
+    Obs("A", 2, Decimal(10)),
+    Obs("A", 3, Decimal(10)),
+    Obs("B", 1, Decimal(4)),
+    Obs("D", 1, Decimal(9)),
+]
+TS7_ARMS = (TS7_REF, TS7_TREAT, ("off", "on"))
 
 _unbalanced_hits = 0
 
@@ -716,6 +745,171 @@ def test_tr15_k13_competition_ranks_print_the_spec_tie():
     assert result[("B", "off")][0] == "2="
     assert result[("C", "off")][0] == "2="
     assert result[("D", "off")][0] == "4"
+
+
+def test_ts7_swapping_arms_negates_the_interval():
+    """T-S7: swapping the arms gives exactly (−hi, −lo).
+
+    The arms are not mirrors, and one task sits in each arm only. The interval
+    is not symmetric about zero, so (−hi, −lo) is a different pair from (lo, hi).
+    """
+    params = Params()
+    forward, only_forward = paired_delta(TS7_REF, TS7_TREAT, ("off", "on"), params, "pack")
+    backward, only_backward = paired_delta(TS7_TREAT, TS7_REF, ("on", "off"), params, "pack")
+    assert forward.lo is not None and forward.hi is not None
+    assert forward.lo != -forward.hi
+    assert backward.lo == -forward.hi
+    assert backward.hi == -forward.lo
+    assert backward.point == -forward.point
+    assert forward.point == Decimal(13) / Decimal(2)
+    assert only_forward == ("C", "D")
+    assert only_backward == ("C", "D")
+
+
+def _one_arm(ref: list[Obs], treat: list[Obs]) -> tuple[str, ...]:
+    return tuple(sorted({item.task for item in ref} ^ {item.task for item in treat}))
+
+
+def _shared_count(ref: list[Obs], treat: list[Obs]) -> int:
+    return len({item.task for item in ref} & {item.task for item in treat})
+
+
+@st.composite
+def _paired_arms(draw):
+    """Two or more shared tasks, plus one task that only the reference arm holds
+    and one that only the treatment arm holds. No `assume`, so nothing is discarded.
+    """
+    n_shared = draw(st.integers(min_value=2, max_value=4))
+    ref: list[Obs] = []
+    treat: list[Obs] = []
+    for index in range(n_shared):
+        task = f"S{index}"
+        for rep in range(1, draw(st.integers(min_value=1, max_value=3)) + 1):
+            ref.append(Obs(task, rep, Decimal(draw(st.integers(min_value=0, max_value=9)))))
+        for rep in range(1, draw(st.integers(min_value=1, max_value=3)) + 1):
+            treat.append(Obs(task, rep, Decimal(draw(st.integers(min_value=0, max_value=9)))))
+    ref.append(Obs("ONLY-R", 1, Decimal(draw(st.integers(min_value=0, max_value=9)))))
+    treat.append(Obs("ONLY-T", 1, Decimal(draw(st.integers(min_value=0, max_value=9)))))
+    label_a = draw(st.sampled_from(("off", "run-a")))
+    label_b = draw(st.sampled_from(("on", "run-b")))
+    return ref, treat, (label_a, label_b)
+
+
+@settings(max_examples=40, deadline=None, derandomize=True)
+@given(
+    arms=_paired_arms(),
+    seed=st.integers(min_value=0, max_value=2**63 - 1),
+    key=st.text(alphabet="abc", min_size=1, max_size=6),
+)
+@example(arms=TS7_ARMS, seed=20260927, key="pack")
+def ts7_properties(arms, seed, key):
+    """T-S7: swapping arms negates the interval. One-arm tasks stay listed."""
+    ref, treat, labels = arms
+    params = Params(seed=seed)
+    forward, only_forward = paired_delta(ref, treat, labels, params, key)
+    backward, only_backward = paired_delta(treat, ref, (labels[1], labels[0]), params, key)
+    assert forward.n == _shared_count(ref, treat)
+    assert forward.n >= 2 and forward.reason is None
+    assert forward.lo is not None and forward.hi is not None
+    assert backward.lo == -forward.hi
+    assert backward.hi == -forward.lo
+    assert backward.point == -forward.point
+    assert only_forward == _one_arm(ref, treat)
+    assert only_backward == only_forward
+    shuffled, only_shuffled = paired_delta(
+        list(reversed(ref)), list(reversed(treat)), labels, params, key
+    )
+    assert shuffled == forward
+    assert only_shuffled == only_forward
+
+
+def test_ts7_antisymmetry_holds_for_generated_arms():
+    """The property is called, including the deterministic antisymmetry example."""
+    ts7_properties()
+
+
+def test_ts7_paired_n_below_two_is_not_a_zero_interval():
+    """T-S7: one shared task has no interval. No shared task is a point NA."""
+    params = Params()
+    ref = [Obs("A", 1, Decimal(2)), Obs("A", 2, Decimal(4)), Obs("Z", 1, Decimal(7))]
+    treat = [Obs("A", 1, Decimal(5)), Obs("Y", 1, Decimal(1))]
+    one, only = paired_delta(ref, treat, ("off", "on"), params, "one")
+    assert one.reason == "interval not computed (n < 2)"
+    assert one.lo is None and one.hi is None
+    assert one.n == 1
+    assert one.point == Decimal(2)
+    assert one.point != Decimal(0)
+    assert not (one.lo is not None and one.lo == one.hi)
+    assert only == ("Y", "Z")
+
+    none, only_none = paired_delta(
+        [Obs("A", 1, Decimal(1))],
+        [Obs("B", 1, Decimal(2))],
+        ("off", "on"),
+        params,
+        "none",
+    )
+    assert none.point is None
+    assert none.lo is None and none.hi is None
+    assert none.n == 0
+    assert none.reason == "not computed (no valid cell with a value)"
+    assert none.point != Decimal(0)
+    assert only_none == ("A", "B")
+
+
+def test_ts7_no_detectable_effect():
+    """T-S7: touching zero counts. An interval entirely off zero does not. Not computed is None.
+
+    (−3, −1) is False, so `lo <= 0` without the upper bound is killed.
+    """
+
+    def built(lo: int, hi: int) -> Interval:
+        return Interval(Decimal(0), Decimal(lo), Decimal(hi), 2, None)
+
+    assert no_detectable_effect(built(-1, 0)) is True
+    assert no_detectable_effect(built(0, 2)) is True
+    assert no_detectable_effect(built(1, 2)) is False
+    assert no_detectable_effect(built(-3, -1)) is False
+    missing = Interval(Decimal(1), None, None, 1, "interval not computed (n < 2)")
+    assert no_detectable_effect(missing) is None
+
+
+def test_tk_pass_k_and_pass_hat_k():
+    """T-K: one example per cell of the pass@k / pass^k table, and K = 1.
+
+    A recorded failure with repetitions missing is pass^k 0, not NA.
+    """
+    missing = "repetitions not recorded"
+    cases = [
+        ("any recorded pass", [1, 0], 3, Measure(Decimal(1)), Measure(Decimal(0))),
+        ("every repetition recorded, none passed", [0, 0, 0], 3, Measure(Decimal(0)), Measure(Decimal(0))),
+        ("every repetition recorded, all passed", [1, 1, 1], 3, Measure(Decimal(1)), Measure(Decimal(1))),
+        (
+            "failure recorded, repetitions missing",
+            [0],
+            3,
+            Measure(None, f"2 of 3 {missing}"),
+            Measure(Decimal(0)),
+        ),
+        (
+            "pass recorded, no failure, repetitions missing",
+            [1, 1],
+            3,
+            Measure(Decimal(1)),
+            Measure(None, f"1 of 3 {missing}"),
+        ),
+        (
+            "nothing recorded",
+            [],
+            3,
+            Measure(None, f"3 of 3 {missing}"),
+            Measure(None, f"3 of 3 {missing}"),
+        ),
+        ("K = 1 pass", [1], 1, Measure(Decimal(1)), Measure(Decimal(1))),
+        ("K = 1 fail", [0], 1, Measure(Decimal(0)), Measure(Decimal(0))),
+    ]
+    for name, outcomes, planned, at_k, hat_k in cases:
+        assert pass_k(outcomes, planned) == (at_k, hat_k), name
 
 
 def test_tr16_uncomputed_pass_at_1_is_not_a_gate_check():

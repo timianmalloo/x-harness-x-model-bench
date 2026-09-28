@@ -1,4 +1,4 @@
-"""Two-stage percentile bootstrap and ranking (design: phase4-statistics).
+"""Two-stage percentile bootstrap, paired differences, pass@k and ranking.
 
 Pure calculation: the standard library and `harness_bench.errors` only. No I/O, no catalog, no views.
 Values stay `Decimal`. One keyed `random.Random` stream per quantity; only `random()` is drawn.
@@ -19,6 +19,10 @@ from harness_bench.errors import BenchError
 METHOD = "percentile bootstrap, 95%, two-stage (task, then repetition), task-balanced mean"
 DEFAULT_SEED: int = 20260927
 MIN_RESAMPLES, MAX_RESAMPLES = 2000, 100_000
+# simplify: task ids, as the spec names them. Ceiling: the public calibration tasks are
+# exactly E1-E3. Upgrade trigger: a fourth such task, or any of E1-E3 re-authored as
+# private; then this becomes a task.yaml field. R-78 condition 6: the only source of
+# the exclusion.
 CONTAMINATION_PRONE = ("E1", "E2", "E3")
 
 # Fixed context so a caller's ambient precision cannot move a result (T-S5).
@@ -70,8 +74,21 @@ class Interval:
     point: Decimal | None
     lo: Decimal | None
     hi: Decimal | None
-    n: int  # tasks
+    n: int  # tasks (paired: tasks in both arms)
     reason: str | None  # set whenever lo/hi are None
+
+
+@dataclass(frozen=True)
+class Measure:
+    """A derived rate, or not recorded (`value` None) with the reason.
+
+    assume: views.Measure has these two fields, and S5 reads them without requiring
+    isinstance(..., views.Measure). stats does not import views (module contract, T-B9).
+    Confirm: S5 uses `.value` and `.reason`. Breaks if false: S5 must convert.
+    """
+
+    value: Decimal | None
+    reason: str | None = None
 
 
 def _mean(values: Sequence[Decimal]) -> Decimal:
@@ -117,15 +134,130 @@ def _interval(obs: Sequence[Obs], params: Params, key: str) -> Interval:
             drawn = [pool[_draw(stream, width)] for _rep_draw in range(width)]
             task_means.append(_mean(drawn))
         statistics.append(_mean(task_means))
+    lo, hi = _percentile(statistics, B)
+    return Interval(point, lo, hi, n, None)
+
+
+def _percentile(statistics: list[Decimal], resamples: int) -> tuple[Decimal, Decimal]:
+    """No interpolation. lo is the low tail, hi the matching high tail."""
     statistics.sort()
+    B = resamples
     j = B * 25 // 1000
-    return Interval(point, statistics[j], statistics[B - 1 - j], n, None)
+    return statistics[j], statistics[B - 1 - j]
 
 
 def interval(obs: Sequence[Obs], params: Params, key: str) -> Interval:
     """95% two-stage percentile interval of the task-balanced mean."""
     with localcontext(_CONTEXT):
         return _interval(obs, params, key)
+
+
+def _paired_delta(
+    ref: Sequence[Obs],
+    treat: Sequence[Obs],
+    labels: tuple[str, str],
+    params: Params,
+    key: str,
+) -> tuple[Interval, tuple[str, ...]]:
+    """treat − ref over tasks present in both arms. The tuple is tasks in one arm only.
+
+    n == 0 uses the bootstrap's empty reason (step 2). n == 1 keeps the point and
+    `interval not computed (n < 2)` (Minimum n).
+    """
+    ref_tasks, ref_values = _by_task(ref)
+    treat_tasks, treat_values = _by_task(treat)
+    ref_set = set(ref_tasks)
+    treat_set = set(treat_tasks)
+    shared = tuple(sorted(ref_set & treat_set))
+    only = tuple(sorted(ref_set ^ treat_set))
+    n = len(shared)
+    if n == 0:
+        return Interval(None, None, None, 0, "not computed (no valid cell with a value)"), only
+    point = _mean([_mean(treat_values[task]) - _mean(ref_values[task]) for task in shared])
+    if n < 2:
+        return Interval(point, None, None, n, "interval not computed (n < 2)"), only
+    # assume: the stream prefix joins the sorted labels with "|", the separator in
+    # `seed|key` and `key|arm|<label>`. The three streams are then `key|tasks` and
+    # `key|arm|<label>` after `key` has sorted the two labels. Confirm: a paired
+    # golden pins one stream's first draw. Breaks if false: the interval bytes move.
+    # Antisymmetry still holds while each arm's stream stays tied to its label.
+    label_a, label_b = labels
+    left, right = sorted((label_a, label_b))
+    base = f"{key}|{left}|{right}"
+    rng_t = rng(params.seed, f"{base}|tasks")
+    rng_a = rng(params.seed, f"{base}|arm|{label_a}")
+    rng_b = rng(params.seed, f"{base}|arm|{label_b}")
+    B = params.resamples
+    statistics: list[Decimal] = []
+    for _ in range(B):
+        diffs: list[Decimal] = []
+        for _task_draw in range(n):
+            task = shared[_draw(rng_t, n)]
+            pool_a = ref_values[task]
+            pool_b = treat_values[task]
+            width_a = len(pool_a)
+            width_b = len(pool_b)
+            # Draw order: one shared task, then A's repetitions, then B's, then the next task.
+            mean_a = _mean([pool_a[_draw(rng_a, width_a)] for _rep in range(width_a)])
+            mean_b = _mean([pool_b[_draw(rng_b, width_b)] for _rep in range(width_b)])
+            diffs.append(mean_b - mean_a)
+        statistics.append(_mean(diffs))
+    lo, hi = _percentile(statistics, B)
+    return Interval(point, lo, hi, n, None), only
+
+
+def paired_delta(
+    ref: Sequence[Obs],
+    treat: Sequence[Obs],
+    labels: tuple[str, str],
+    params: Params,
+    key: str,
+) -> tuple[Interval, tuple[str, ...]]:
+    """95% paired interval of treat − ref, plus tasks present in one arm only."""
+    with localcontext(_CONTEXT):
+        return _paired_delta(ref, treat, labels, params, key)
+
+
+def no_detectable_effect(iv: Interval) -> bool | None:
+    """True when a computed interval contains 0, including at either bound.
+
+    None when the interval was not computed. The only definition of the label.
+    """
+    if iv.lo is None or iv.hi is None:
+        return None
+    return iv.lo <= 0 <= iv.hi
+
+
+def pass_k(outcomes: Sequence[int], planned: int) -> tuple[Measure, Measure]:
+    """pass@k and pass^k for one task. Points only: 0, 1, or not recorded.
+
+    `outcomes` is the recorded pass@1 indicators. Repetitions that were not recorded
+    are absent. `planned` is K. A recorded pass makes pass@k 1, and a recorded
+    failure makes pass^k 0, even when other repetitions are missing.
+
+    assume: every outcome is 0 or 1, len(outcomes) <= planned, and planned >= 1.
+    Confirm: S5 passes recorded pass_at_1 values and matrix.repetitions.
+    Breaks if false: a value other than 0 or 1 is neither a pass nor a failure,
+    and a negative missing-count reaches the reason string.
+    """
+    recorded = len(outcomes)
+    missing = planned - recorded
+    reason = f"{missing} of {planned} repetitions not recorded"
+    any_passed = any(value == 1 for value in outcomes)
+    any_failed = any(value == 0 for value in outcomes)
+    if any_passed:
+        at_k = Measure(Decimal(1))
+    elif recorded == planned:
+        at_k = Measure(Decimal(0))
+    else:
+        at_k = Measure(None, reason)
+    if recorded == planned and not any_failed:
+        hat_k = Measure(Decimal(1))
+    elif any_failed:
+        hat_k = Measure(Decimal(0))
+    else:
+        hat_k = Measure(None, reason)
+    return at_k, hat_k
 
 
 # (combo, pack). The contract's RowId.
