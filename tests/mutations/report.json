@@ -335,8 +335,8 @@
  {
   "name": "the pass@1 panel shares the area panel's scale",
   "file": "src/harness_bench/report/html.py",
-  "find": "panels.append(_whisker_panel(f\"{tid}-p1\", cap_id, \"pass@1, as a share of tasks\", p1_rows, 1.0, is_comparison))",
-  "replace": "panels.append(_whisker_panel(f\"{tid}-p1\", cap_id, \"pass@1, as a share of tasks\", p1_rows, 100.0, is_comparison))",
+  "find": "panels.append(_whisker_panel(f\"{tid}-p1\", cap_id, \"pass@1, as a share of tasks\", p1_rows, 1.0, is_comparison, combo_ix))",
+  "replace": "panels.append(_whisker_panel(f\"{tid}-p1\", cap_id, \"pass@1, as a share of tasks\", p1_rows, 100.0, is_comparison, combo_ix))",
   "tests": ["tests/test_report.py::test_pack_effect_units_get_separate_panels"]
  },
  {
