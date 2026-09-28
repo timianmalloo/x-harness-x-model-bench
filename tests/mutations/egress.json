@@ -430,5 +430,115 @@
   "tests": [
    "tests/test_architecture.py::test_a_judge_backend_is_reached_only_through_egress_check_and_release"
   ]
+ },
+ {
+  "name": "injection: ignore_instructions never matches",
+  "file": "src/harness_bench/views.py",
+  "find": "r\"\\b(?:ignore|disregard|forget|override)\\b[^.\\n]{0,40}?\"",
+  "replace": "r\"\\b(?:never-matches)\\b[^.\\n]{0,40}?\"",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_the_detector_flags_the_injection_fixture_and_not_its_clean_twin",
+   "tests/test_injection_and_publication.py::test_each_pattern_fires_on_its_shape_and_ordinary_prose_is_not_flagged"
+  ]
+ },
+ {
+  "name": "injection: score_directive misses a bare 10",
+  "file": "src/harness_bench/views.py",
+  "find": "(?:\\b10\\b|",
+  "replace": "(?:\\bnever-matches\\b|",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_the_detector_flags_the_injection_fixture_and_not_its_clean_twin"
+  ]
+ },
+ {
+  "name": "injection: role_override never matches",
+  "file": "src/harness_bench/views.py",
+  "find": "r\"\\b(?:you are now|new instructions|system prompt)\\b\"",
+  "replace": "r\"\\b(?:never-matches)\\b\"",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_each_pattern_fires_on_its_shape_and_ordinary_prose_is_not_flagged"
+  ]
+ },
+ {
+  "name": "injection: an unknown patterns version is not refused",
+  "file": "src/harness_bench/views.py",
+  "find": "if patterns_version not in _INJECTION_PATTERNS:",
+  "replace": "if False:",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_an_unknown_patterns_version_is_refused_never_read_as_clean"
+  ]
+ },
+ {
+  "name": "injection: the archived artifact is never read",
+  "file": "src/harness_bench/report/judges.py",
+  "find": "return file.read_bytes().decode(\"utf-8\", errors=\"replace\") if file is not None and file.is_file() else \"\"",
+  "replace": "return \"\"",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_the_injection_flag_reaches_the_report_header_and_the_run_record_for_the_injected_cell_only"
+  ]
+ },
+ {
+  "name": "injection: the header row ignores the flagged items",
+  "file": "src/harness_bench/report/judges.py",
+  "find": "injection_row(injection_items(root, run_dir, view),",
+  "replace": "injection_row([],",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_the_injection_flag_reaches_the_report_header_and_the_run_record_for_the_injected_cell_only"
+  ]
+ },
+ {
+  "name": "injection: the run record drops the flagged items",
+  "file": "src/harness_bench/report/html.py",
+  "find": "for c, m, p in judges.injection_items(root, run_dir, view)]}",
+  "replace": "for c, m, p in []]}",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_the_injection_flag_reaches_the_report_header_and_the_run_record_for_the_injected_cell_only"
+  ]
+ },
+ {
+  "name": "publication: a withheld section is published",
+  "file": "src/harness_bench/report/html.py",
+  "find": "if verdict.withheld else m.group(0)",
+  "replace": "if False else m.group(0)",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_report_publication_withholds_each_section_carrying_a_planted_canary_and_the_run_record_lists_it",
+   "tests/test_injection_and_publication.py::test_the_operators_email_in_a_section_is_withheld_too"
+  ]
+ },
+ {
+  "name": "publication: the section scan drops the canaries",
+  "file": "src/harness_bench/report/html.py",
+  "find": "secrets=sorted(secrets),\n                               canaries=canaries)",
+  "replace": "secrets=sorted(secrets),\n                               canaries=())",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_report_publication_withholds_each_section_carrying_a_planted_canary_and_the_run_record_lists_it"
+  ]
+ },
+ {
+  "name": "publication: the run record lists no withheld section",
+  "file": "src/harness_bench/report/html.py",
+  "find": "\"withheld\": [s[\"section\"] for s in sections if s[\"classes\"]]",
+  "replace": "\"withheld\": []",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_report_publication_withholds_each_section_carrying_a_planted_canary_and_the_run_record_lists_it"
+  ]
+ },
+ {
+  "name": "publication: a hit outside every section is published",
+  "file": "src/harness_bench/report/html.py",
+  "find": "egress.check(_SECTION.sub(\"\", doc),",
+  "replace": "egress.check(\"\",",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_a_hit_outside_every_section_writes_nothing"
+  ]
+ },
+ {
+  "name": "publication: no operator reads as scanned",
+  "file": "src/harness_bench/report/html.py",
+  "find": "return doc, {\"egress\": judges.NO_OPERATOR,",
+  "replace": "return doc, {\"egress\": \"scanned\",",
+  "tests": [
+   "tests/test_injection_and_publication.py::test_without_the_operators_identifiers_the_publication_scan_is_not_recorded"
+  ]
  }
 ]
