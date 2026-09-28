@@ -1,0 +1,26 @@
+[
+  {
+    "name": "the clamp removed",
+    "file": "src/harness_bench/composites.py",
+    "find": "    clamped_t = min(Decimal(1), max(Decimal(0), t))\n    return Measure(Decimal(100) * clamped_t, None)",
+    "replace": "    return Measure(Decimal(100) * t, None)",
+    "tests": ["tests/test_composites.py::test_tc2_normalisation_is_monotone_and_bounded"]
+  },
+  {
+    "name": "NA metric's weight kept in the denominator",
+    "file": "src/harness_bench/composites.py",
+    "find": "        score = scores.get(mid)\n        if score is None or score.value is None:\n            reason = score.reason if score and score.reason else \"not recorded\"\n            excluded.append((mid, reason))\n        else:\n            weight = Decimal(str(entry.get(\"weight\", 1)))\n            included_sum += weight * Decimal(str(score.value))\n            denom += weight",
+    "replace": "        weight = Decimal(str(entry.get(\"weight\", 1)))\n        denom += weight\n        score = scores.get(mid)\n        if score is None or score.value is None:\n            reason = score.reason if score and score.reason else \"not recorded\"\n            excluded.append((mid, reason))\n        else:\n            included_sum += weight * Decimal(str(score.value))",
+    "tests": [
+      "tests/test_composites.py::test_tc1_overlap_composite_renormalises_weights",
+      "tests/test_composites.py::test_tc1_deterministic_example"
+    ]
+  },
+  {
+    "name": "gated NA when pass_at_1 = 0 and overall NA",
+    "file": "src/harness_bench/composites.py",
+    "find": "def gated(scores: Mapping[str, Measure], cat: Catalog) -> Measure:\n    p1 = scores.get(\"pass_at_1\")\n    if p1 is not None and p1.value is not None and Decimal(str(p1.value)) == Decimal(0):\n        return Measure(Decimal(0), None)",
+    "replace": "def gated(scores: Mapping[str, Measure], cat: Catalog) -> Measure:\n    ov = overall(scores, cat)\n    if ov.value is None:\n        return Measure(None, ov.reason)\n    p1 = scores.get(\"pass_at_1\")\n    if p1 is not None and p1.value is not None and Decimal(str(p1.value)) == Decimal(0):\n        return Measure(Decimal(0), None)",
+    "tests": ["tests/test_composites.py::test_tc5_gated_composite_rules"]
+  }
+]

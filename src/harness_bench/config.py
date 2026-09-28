@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from decimal import Decimal
 from pathlib import Path
 
 import yaml
@@ -124,9 +125,20 @@ def validate_matrix(m: dict, bom: dict, p: Problems, where: str) -> None:
         p.add(where, "bom.subset must be smoke, full, or a list of task ids")
 
 
-def validate_metrics(metrics: dict, p: Problems, grader_modules: set[str], where: str = "bench/metrics.yaml") -> None:
+def validate_metrics(
+    metrics: dict,
+    p: Problems,
+    grader_modules: set[str],
+    where: str = "bench/metrics.yaml",
+    root: Path | None = None,
+) -> None:
     if metrics.get("schema") != "bench-metrics/1":
         p.add(where, "schema must be bench-metrics/1")
+    if root is None:
+        try:
+            root = repo_root()
+        except FileNotFoundError:
+            root = Path.cwd()
     seen = set()
     for area_id, area in (metrics.get("areas") or {}).items():
         for m in area.get("metrics") or []:
@@ -136,10 +148,39 @@ def validate_metrics(metrics: dict, p: Problems, grader_modules: set[str], where
             seen.add(mid)
             if not set(m.get("source") or []) or not set(m["source"]) <= set(METRIC_SOURCES):
                 p.add(where, f"{area_id}.{mid}: source must be a non-empty subset of {METRIC_SOURCES}")
-            if m.get("better") not in ("higher", "lower"):
+            better = m.get("better")
+            if better not in ("higher", "lower"):
                 p.add(where, f"{area_id}.{mid}: better must be higher or lower")
             if m.get("grader") not in grader_modules:
                 p.add(where, f"{area_id}.{mid}: grader {m.get('grader')!r} has no module in harness_bench.grade")
+            kind = m.get("kind")
+            weight = m.get("weight", 0)
+            if kind == "derived" and weight > 0:
+                p.add(where, f"{area_id}.{mid}: kind: derived metric cannot have weight > 0")
+            anchor = m.get("anchor")
+            if kind == "score" and weight > 0 and anchor is None:
+                p.add(where, f"{area_id}.{mid}: weighted kind: score metric has no anchor")
+            if anchor is not None:
+                if not isinstance(anchor, (list, tuple)) or len(anchor) != 2:
+                    p.add(where, f"{area_id}.{mid}: anchor must be [worst, best]")
+                else:
+                    worst, best = anchor[0], anchor[1]
+                    if worst == best:
+                        p.add(where, f"{area_id}.{mid}: anchor worst == best ({worst})")
+                    elif (better == "higher" and worst > best) or (better == "lower" and worst < best):
+                        p.add(where, f"{area_id}.{mid}: anchor direction contradicts better ({better})")
+                    if m.get("grader") == "judge" and m.get("rubrics"):
+                        for task, rname in sorted((m.get("rubrics") or {}).items()):
+                            rpath = root / "bench" / "rubrics" / str(rname)
+                            if rpath.is_file():
+                                rtext = rpath.read_text(encoding="utf-8")
+                                items = len(re.findall(r"^(\d+)\. ", rtext, re.MULTILINE))
+                                if items > 0:
+                                    span = abs(Decimal(str(best)) - Decimal(str(worst)))
+                                    if span != Decimal(2 * items):
+                                        p.add(where, f"{area_id}.{mid}: judged metric |best - worst| != 2 x rubric item count ({2 * items})")
+                                    if better == "lower" and Decimal(str(worst)) != Decimal(2 * items):
+                                        p.add(where, f"{area_id}.{mid}: a better: lower judged rubric must define 2 as worst per item")
     if len(metrics.get("areas") or {}) != 7:
         p.add(where, "expected the proposal's seven areas")
 
@@ -328,7 +369,7 @@ def validate_repo(root: Path) -> list[str]:
     markers = pack_marker_bytes(root)
     bom = load_yaml(root / "bench" / "bom.yaml")
     validate_bom(bom, p)
-    validate_metrics(load_yaml(root / "bench" / "metrics.yaml"), p, graders)
+    validate_metrics(load_yaml(root / "bench" / "metrics.yaml"), p, graders, root=root)
     validate_matrix(load_yaml(root / "bench" / "matrix.example.yaml"), bom, p, "bench/matrix.example.yaml")
     if (root / "bench" / "gateway.yaml").is_file():  # absent until the Leader's measured turn (R-70)
         validate_gateway(load_yaml(root / "bench" / "gateway.yaml"), p)

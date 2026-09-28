@@ -33,5 +33,47 @@
   "find": "    if ws not in f.parents:\n        return False\n    rel_ws = f.relative_to(ws).as_posix()\n    return any(rel_ws == vp or rel_ws.startswith(vp + \"/\") for vp in vendored_paths)",
   "replace": "    rel_ws = f.relative_to(ws.parent).as_posix()\n    return any(rel_ws == vp or rel_ws.startswith(vp + \"/\") for vp in vendored_paths)",
   "tests": ["tests/test_config.py::test_vendored_workspace_content_is_exempt_from_the_profile_path_scan_but_oracle_is_not"]
+ },
+ {
+  "name": "a weighted kind: score metric without an anchor is no longer refused",
+  "file": "src/harness_bench/config.py",
+  "find": "            if kind == \"score\" and weight > 0 and anchor is None:\n                p.add(where, f\"{area_id}.{mid}: weighted kind: score metric has no anchor\")\n",
+  "replace": "",
+  "tests": ["tests/test_config.py::test_weighted_score_metric_without_anchor_is_refused"]
+ },
+ {
+  "name": "anchor worst == best is no longer refused",
+  "file": "src/harness_bench/config.py",
+  "find": "                    if worst == best:",
+  "replace": "                    if False and worst == best:",
+  "tests": ["tests/test_config.py::test_anchor_worst_equals_best_is_refused"]
+ },
+ {
+  "name": "anchor direction contradicting better is no longer refused",
+  "file": "src/harness_bench/config.py",
+  "find": "                    elif (better == \"higher\" and worst > best) or (better == \"lower\" and worst < best):\n                        p.add(where, f\"{area_id}.{mid}: anchor direction contradicts better ({better})\")\n",
+  "replace": "",
+  "tests": ["tests/test_config.py::test_anchor_direction_contradicting_better_is_refused"]
+ },
+ {
+  "name": "kind: derived metric with weight > 0 is no longer refused",
+  "file": "src/harness_bench/config.py",
+  "find": "            if kind == \"derived\" and weight > 0:\n                p.add(where, f\"{area_id}.{mid}: kind: derived metric cannot have weight > 0\")\n",
+  "replace": "",
+  "tests": ["tests/test_config.py::test_derived_metric_with_positive_weight_is_refused"]
+ },
+ {
+  "name": "judged metric with rubric and wrong anchor span is no longer refused",
+  "file": "src/harness_bench/config.py",
+  "find": "                                    if span != Decimal(2 * items):\n                                        p.add(where, f\"{area_id}.{mid}: judged metric |best - worst| != 2 x rubric item count ({2 * items})\")\n",
+  "replace": "",
+  "tests": ["tests/test_config.py::test_judged_metric_with_rubric_and_wrong_anchor_span_is_refused"]
+ },
+ {
+  "name": "better: lower judged rubric not defining 2 as worst per item is no longer refused",
+  "file": "src/harness_bench/config.py",
+  "find": "                                    if better == \"lower\" and Decimal(str(worst)) != Decimal(2 * items):\n                                        p.add(where, f\"{area_id}.{mid}: a better: lower judged rubric must define 2 as worst per item\")\n",
+  "replace": "",
+  "tests": ["tests/test_config.py::test_better_lower_judged_rubric_must_define_2_as_worst_per_item_is_refused"]
  }
 ]
