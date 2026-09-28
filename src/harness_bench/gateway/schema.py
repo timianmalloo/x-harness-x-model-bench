@@ -4,6 +4,11 @@ A stdlib validator for the closed subset of JSON Schema that file uses: `type` (
 `required`, `properties`, `additionalProperties: false`, `items`, `minItems`, `enum`, `minimum`, `maxLength`. A JSON
 boolean is never an integer. Beyond the file, one check depends on the rubric: the item ids are exactly 1..n, each
 once (JSON Schema cannot say "unique by property"). A keyword outside the subset fails closed.
+
+`check_shape` (R7, design phase4-report.md section 8) is the same walker (`_check`) against a caller-named
+schema file: `report/summaries.py` reuses it for `schemas/summary-claims.v1.json` rather than a second
+validator (DM7, Solution-Selection Ladder rung "reuse-in-codebase"). `validate`'s item-id-exactly-1..n check
+stays specific to the judge's rubric shape.
 """
 
 from __future__ import annotations
@@ -13,13 +18,23 @@ import json
 from pathlib import Path
 
 SCHEMA_PATH = Path(__file__).resolve().parent / "schemas" / "verdict-set.v1.json"
+CLAIMS_SCHEMA_PATH = Path(__file__).resolve().parent / "schemas" / "summary-claims.v1.json"
 _KNOWN = {"$id", "type", "required", "properties", "additionalProperties", "items", "minItems", "enum", "minimum",
           "maxLength"}
 _TYPES = {"object": dict, "array": list, "integer": int, "string": str}
 
 
-def schema_sha256() -> str:
-    return hashlib.sha256(SCHEMA_PATH.read_bytes()).hexdigest()
+def schema_sha256(path: Path = SCHEMA_PATH) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def check_shape(answer: object, schema_path: Path) -> list[str]:
+    """Every problem with `answer` against the schema file at `schema_path`, in a fixed order; [] when it
+    matches. The generic half of `validate`, factored out so a second schema (the claims shape) reuses the
+    one walker rather than a second one (R7)."""
+    out: list[str] = []
+    _check(answer, json.loads(schema_path.read_text(encoding="utf-8")), "$", out)
+    return out
 
 
 def _check(value: object, rule: dict, path: str, out: list[str]) -> None:
@@ -53,8 +68,7 @@ def _check(value: object, rule: dict, path: str, out: list[str]) -> None:
 
 def validate(answer: object, items: int) -> list[str]:
     """Every problem with `answer`, in a fixed order; [] when it is a valid verdict set for a rubric of `items`."""
-    out: list[str] = []
-    _check(answer, json.loads(SCHEMA_PATH.read_text(encoding="utf-8")), "$", out)
+    out: list[str] = check_shape(answer, SCHEMA_PATH)
     rows = answer["items"] if isinstance(answer, dict) and "items" in answer else None
     if not isinstance(rows, list):
         return out

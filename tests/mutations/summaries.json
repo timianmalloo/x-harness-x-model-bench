@@ -1,0 +1,34 @@
+[
+ {
+  "name": "the zero rule never fails an effect claim on a crossing interval",
+  "file": "src/harness_bench/report/summaries.py",
+  "find": "    if claim[\"kind\"] in (\"effect\", \"suggestion\") and any(nde):\n        return False\n",
+  "replace": "    if False and claim[\"kind\"] in (\"effect\", \"suggestion\") and any(nde):\n        return False\n",
+  "tests": ["tests/test_report_summaries.py::test_zero_rule_matrix"]
+ },
+ {
+  "name": "the number check accepts an uncited or mismatched numeral",
+  "file": "src/harness_bench/report/summaries.py",
+  "find": "        if not matched:\n            return False\n",
+  "replace": "        if not matched:\n            continue\n",
+  "tests": ["tests/test_report_summaries.py::test_number_precision_table",
+            "tests/test_report_summaries.py::test_number_check_a_number_equal_only_to_an_uncited_result_fails"]
+ },
+ {
+  "name": "the manifest check never refuses a mismatch",
+  "file": "src/harness_bench/report/summaries.py",
+  "find": "    return recomputed == recorded\n",
+  "replace": "    return True\n",
+  "tests": [
+   "tests/test_report_summaries.py::test_manifest_check_refuses_when_an_export_byte_changed_after_the_manifest_was_built",
+   "tests/test_report_summaries.py::test_manifest_check_refuses_when_a_payload_segment_is_absent_from_the_manifest"
+  ]
+ },
+ {
+  "name": "bench report --summaries spawns without the live-run refusal",
+  "file": "src/harness_bench/report/summaries.py",
+  "find": "    _found, live = gw_backend.scan_runs(roots)\n    if live:\n",
+  "replace": "    _found, live = gw_backend.scan_runs(roots)\n    if False and live:\n",
+  "tests": ["tests/test_report_summaries.py::test_summaries_refuse_while_run_live"]
+ }
+]

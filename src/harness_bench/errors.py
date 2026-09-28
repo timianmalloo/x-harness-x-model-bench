@@ -98,6 +98,12 @@ RUN_CODES: dict[str, str] = {
     "HB-STA-001": "statistics input spans more than one grading pass of one run",
     "HB-STA-002": "runs not comparable: every difference named",
     "HB-STA-003": "--resamples below 2000 in bench report (US-36, R-78 condition 7)",
+    # phase 4 report, R7 (design phase4-report.md section 8; ruling R-81 condition 3): bench report --summaries
+    # mirrors the judge gateway's own live-run refusal (HB-GRD-005) at its own call site.
+    "HB-SUM-001": "bench report --summaries refused: a run is live (lock liveness alive or stalled)",
+    # D&P Architect review (R7, before the final commit): a second concurrent `bench report --summaries`
+    # for the same run is refused rather than racing SegmentWriter.reopen and breaking the segment's chain.
+    "HB-SUM-002": "summary_records write lock held: another bench report --summaries is writing this run's summaries",
 }
 
 _ALL_CODES = set(RUN_CODES) | {c.code for c in Cause}

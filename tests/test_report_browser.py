@@ -67,7 +67,7 @@ def test_offline_zero_requests(browser_page):
     # "controls" (R4 join review): the control bar's own publication-scan unit (US-47 c3) -- chrome,
     # not one of the report's eleven IA sections, but still a real <section> in the DOM.
     assert set(ids) == {"header", "controls", "validity", "leaderboard", "pack-effect", "cost-frontier", "areas",
-                        "scenarios", "context-growth", "runs"}
+                        "scenarios", "context-growth", "summaries", "runs"}
 
 
 def test_keyboard_path(browser_page):

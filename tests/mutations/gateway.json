@@ -411,8 +411,8 @@
  {
   "name": "the validator ignores the schema file",
   "file": "src/harness_bench/gateway/schema.py",
-  "find": "    _check(answer, json.loads(SCHEMA_PATH.read_text(encoding=\"utf-8\")), \"$\", out)",
-  "replace": "    _check(answer, json.loads((Path(__file__).resolve().parent / \"schemas\" / \"verdict-set.v1.json\").read_text(encoding=\"utf-8\")), \"$\", out)",
+  "find": "    out: list[str] = check_shape(answer, SCHEMA_PATH)",
+  "replace": "    out: list[str] = check_shape(answer, Path(__file__).resolve().parent / \"schemas\" / \"verdict-set.v1.json\")",
   "tests": [
    "tests/test_gateway_schema.py::test_t_gw_05_the_validator_reads_the_schema_file"
   ]
