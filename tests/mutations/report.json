@@ -331,5 +331,12 @@
   "find": "    cls = \"pos\" if (delta.point is not None and delta.point > 0) else \"neg\"\n",
   "replace": "    cls = \"neg\" if (delta.point is not None and delta.point > 0) else \"pos\"\n",
   "tests": ["tests/test_report.py::test_crossing_zero_uses_neutral_mark_and_label"]
+ },
+ {
+  "name": "the pass@1 panel shares the area panel's scale",
+  "file": "src/harness_bench/report/html.py",
+  "find": "panels.append(_whisker_panel(f\"{tid}-p1\", cap_id, \"pass@1, as a share of tasks\", p1_rows, 1.0, is_comparison))",
+  "replace": "panels.append(_whisker_panel(f\"{tid}-p1\", cap_id, \"pass@1, as a share of tasks\", p1_rows, 100.0, is_comparison))",
+  "tests": ["tests/test_report.py::test_pack_effect_units_get_separate_panels"]
  }
 ]
