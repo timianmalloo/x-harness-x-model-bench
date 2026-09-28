@@ -1164,3 +1164,56 @@ def test_uia6_palette_source_scan():
         assert not re.search(r"\brainbow\b", text, re.IGNORECASE), f"forbidden 'rainbow' in {py_file.name}"
         assert not re.search(r"\bred[-_ ]green\b|\bgreen[-_ ]red\b", text, re.IGNORECASE), f"forbidden red-green pair in {py_file.name}"
 
+
+def test_pack_effect_units_get_separate_panels():
+    """R5 join fix (design s6 row 4): pass@1 deltas are shares (-1..1) and area deltas are 0-100
+    points. When a pack effect has both a pass_at_1 row and an area row, each unit draws on its
+    own panel with its own shared zero line -- the pass@1 whisker must not collapse to the area
+    panel's 0-100 scale."""
+    view = _state_view("valid", None)
+    pe_rows = [
+        board.PackEffectRow(
+            combo="c1",
+            measure="pass_at_1",
+            delta=stats.Interval(point=Decimal("0.05"), lo=Decimal("-0.10"), hi=Decimal("0.20"), n=6, reason=None),
+            label=None,
+        ),
+        board.PackEffectRow(
+            combo="c1",
+            measure="correctness",
+            delta=stats.Interval(point=Decimal("20.0"), lo=Decimal("-40.0"), hi=Decimal("60.0"), n=6, reason=None),
+            label=None,
+        ),
+    ]
+    board_obj = board.Board(
+        run_id="r1",
+        catalog_version="0.5",
+        params=stats.Params(),
+        primary="gated",
+        primary_reason=None,
+        rows=[],
+        pack_effect=board.PackEffect(status=None, excluded_tasks=(), rows=pe_rows),
+    )
+    doc = html.render(view, archive_present=True, board_obj=board_obj)
+    pe_match = re.search(r'<section id="pack-effect".*?</section>', doc, re.DOTALL)
+    assert pe_match is not None
+    pe_section = pe_match.group(0)
+
+    whisk = re.search(
+        r'<line[^>]*class="[^"]*\bwhisk\b[^"]*"[^>]*x1="([-0-9.]+)"[^>]*x2="([-0-9.]+)"[^>]*'
+        r'data-interval-lo="-0\.10"[^>]*data-interval-hi="0\.20"',
+        pe_section,
+    )
+    if whisk is None:
+        whisk = re.search(
+            r'<line[^>]*x1="([-0-9.]+)"[^>]*x2="([-0-9.]+)"[^>]*class="[^"]*\bwhisk\b[^"]*"[^>]*'
+            r'data-interval-lo="-0\.10"[^>]*data-interval-hi="0\.20"',
+            pe_section,
+        )
+    assert whisk is not None, "pass@1 whisker mark not found"
+    x1, x2 = float(whisk.group(1)), float(whisk.group(2))
+    assert abs(x2 - x1) > 10, (
+        f"pass@1 whisker x-extent {abs(x2 - x1)} is not a visible fraction of its panel's width "
+        "-- it collapsed onto the area panel's 0-100 scale"
+    )
+
