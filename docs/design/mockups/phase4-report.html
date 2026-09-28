@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-state="default" data-viewport="desktop" data-motion="full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>harness-bench report mockup (row 20)</title>
+<!-- Mockup for docs/design/phase4-report.md. Self-contained, no network. Data: the smoke-1 shape (G6);
+     values marked "illustrative" are not in smoke-1 (areas, scenarios, context growth: F-1 and R0 make them real).
+     <header class="harness"> is review chrome only and never ships. -->
+<style>
+:root{
+  --bg:#f3f5f7;--panel:#ffffff;--ink:#18212b;--ink-2:#4b5563;--ink-3:#7a8491;--rule:#d9dee5;--rule-strong:#767f8b;
+  --focus:#1d5fbf;--na:#5f6873;--warn:#8a5a00;--bad:#9b1c1c;--bad-bg:#fbeaea;
+  --c1:#0b63a8;--c2:#b35400;--c3:#00795a;--div-pos:#5e3c99;--div-neg:#b35806;
+  --heat-0:#440154;--heat-3:#31688e;--heat-5:#1f9e89;--heat-7:#6ece58;--heat-9:#fde725;--on-heat-dark:#ffffff;--on-heat-light:#000000;
+  --font:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --fs-small:13px;--fs:15px;--fs-h2:19px;--fs-h1:26px;--s1:4px;--s2:8px;--s3:16px;--s4:24px;--s5:40px;
+  --radius:4px;--rule-w:1px;--focus-w:2px;--target:24px;--maxw:1240px;--bar-h:88px;
+}
+:root[data-theme="dark"]{
+  --bg:#0e1318;--panel:#151c23;--ink:#e7ecf1;--ink-2:#aab5c1;--ink-3:#76818d;--rule:#2a343f;--rule-strong:#6c7784;
+  --focus:#7fb2ff;--na:#98a3ae;--warn:#e3b35a;--bad:#ffb3b3;--bad-bg:#3a1c1f;
+  --c1:#5fb0f0;--c2:#f0a050;--c3:#3fc79a;--div-pos:#b2abd2;--div-neg:#fdb863;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:var(--bar-h)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:var(--fs);line-height:1.45}
+.harness{background:var(--ink);color:var(--bg);padding:var(--s2) var(--s3);font-size:var(--fs-small);display:flex;flex-wrap:wrap;gap:var(--s3);align-items:center}
+.harness select,.harness label{font:inherit;min-height:var(--target)}
+.frame{margin:0 auto;max-width:var(--maxw);background:var(--bg)}
+[data-viewport="phone"] .frame{max-width:320px}[data-viewport="tablet"] .frame{max-width:768px}
+main{padding:var(--s4) var(--s3)}
+h1{font-size:var(--fs-h1);margin:0 0 var(--s2);font-weight:600}
+h2{font-size:var(--fs-h2);margin:0 0 var(--s2);font-weight:600}
+section{border-top:var(--rule-w) solid var(--rule);padding-top:var(--s4);margin-top:var(--s5)}
+section#header{border:0;margin:0;padding:0}
+.muted{color:var(--ink-2)}.small{font-size:var(--fs-small)}
+.na{color:var(--na)}.bad{color:var(--bad);background:var(--bad-bg);padding:var(--s1) var(--s2);border-radius:var(--radius)}
+.facts{display:grid;grid-template-columns:max-content 1fr;gap:var(--s1) var(--s3);margin:var(--s3) 0}
+.facts dt{color:var(--ink-2)}.facts dd{margin:0;overflow-wrap:anywhere}
+a{color:var(--focus)}
+:focus-visible{outline:var(--focus-w) solid var(--focus);outline-offset:var(--focus-w)}
+.bar{position:sticky;top:0;z-index:2;background:var(--bg);border-bottom:var(--rule-w) solid var(--rule-strong);padding:var(--s2) 0;display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);align-items:center}
+.bar nav{display:flex;flex-wrap:wrap;gap:var(--s1) var(--s3);font-size:var(--fs-small)}
+.tg{font:inherit;font-size:var(--fs-small);min-height:var(--target);min-width:var(--target);padding:0 var(--s2);background:var(--panel);color:var(--ink);border:var(--rule-w) solid var(--rule-strong);border-radius:var(--radius);cursor:pointer}
+.tg[aria-pressed="true"]{box-shadow:inset 0 calc(-1 * var(--focus-w)) 0 var(--focus);font-weight:600}
+.tg[aria-pressed="true"]::before{content:"\2713  "}
+.tg[aria-disabled="true"]{color:var(--ink-2);border-style:dashed;cursor:not-allowed}
+.region{overflow-x:auto;max-width:100%;background:var(--panel);border:var(--rule-w) solid var(--rule);border-radius:var(--radius)}
+table{border-collapse:collapse;min-width:100%}
+caption{text-align:left;padding:var(--s2);font-weight:600}
+th,td{padding:var(--s1) var(--s2);border-top:var(--rule-w) solid var(--rule);text-align:left;vertical-align:top;white-space:nowrap}
+th{font-weight:600;font-size:var(--fs-small);color:var(--ink-2)}
+td:first-child,th:first-child{position:sticky;left:0;background:var(--panel)}
+.num{text-align:right;font-variant-numeric:tabular-nums lining-nums}
+.ev{font:inherit;color:inherit;background:none;border:0;border-bottom:var(--rule-w) dotted var(--rule-strong);padding:0;min-height:var(--target);cursor:pointer}
+.sort{font:inherit;color:inherit;background:none;border:0;padding:0;min-height:var(--target);cursor:pointer;font-weight:600}
+.ivbar{display:inline-block;vertical-align:middle;margin-left:var(--s2)}
+.ivbar line{stroke:var(--ink-2);stroke-width:2}.ivbar circle{fill:var(--ink)}
+.mk-c1{fill:var(--c1);stroke:var(--c1)}.mk-c2{fill:var(--c2);stroke:var(--c2)}.mk-c3{fill:var(--c3);stroke:var(--c3)}
+.hollow{fill:var(--panel);stroke-width:2}.dash{stroke-dasharray:4 3}
+.pos{fill:var(--div-pos);stroke:var(--div-pos)}.neg{fill:var(--div-neg);stroke:var(--div-neg)}.nde{fill:var(--ink-2);stroke:var(--ink-2)}
+.axis{stroke:var(--rule-strong);stroke-width:1}.grid{stroke:var(--rule);stroke-width:1}
+svg text{fill:var(--ink-2);font-size:var(--fs-small);font-family:var(--font)}
+.whisk{stroke-width:2}
+.popover{position:absolute;z-index:3;background:var(--panel);color:var(--ink);border:var(--rule-w) solid var(--rule-strong);border-radius:var(--radius);padding:var(--s2) var(--s3);max-width:360px;font-size:var(--fs-small);overflow-wrap:anywhere}
+.heat td.h{text-align:center;white-space:normal}
+.h0{background:var(--heat-0);color:var(--on-heat-dark)}.h3{background:var(--heat-3);color:var(--on-heat-dark)}.h5{background:var(--heat-5);color:var(--on-heat-light)}.h7{background:var(--heat-7);color:var(--on-heat-light)}.h9{background:var(--heat-9);color:var(--on-heat-light)}
+.claims li{margin:var(--s2) 0}
+.label-ai{font-size:var(--fs-small);color:var(--ink-2)}
+details>summary{cursor:pointer;min-height:var(--target)}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--s3)}
+figure{margin:0}figcaption{font-size:var(--fs-small);color:var(--ink-2)}
+.st{display:none}
+.frame [data-when~="default"]{display:revert}
+[data-state="empty"] .frame [data-when~="default"],[data-state="onepack"] .frame [data-when~="twopack"],[data-state="noarchive"] .frame [data-when~="archive"],[data-state="summary-pub"] .frame [data-when~="sumwait"],[data-state="compare-refused"] .frame [data-when~="default"].cmp{display:none}
+[data-state="empty"] .frame .st[data-when~="empty"],[data-state="onepack"] .frame .st[data-when~="onepack"],[data-state="noarchive"] .frame .st[data-when~="noarchive"],[data-state="summary-pub"] .frame .st[data-when~="sumpub"],[data-state="compare-refused"] .frame .st[data-when~="refused"]{display:revert}
+[data-state="empty"] .frame .hide-empty{display:none}
+.audit{max-width:var(--maxw);margin:var(--s5) auto;padding:var(--s3);font-size:var(--fs-small);border-top:var(--rule-w) dashed var(--rule-strong)}
+</style>
+</head>
+<body>
+<header class="harness" role="region" aria-label="Review harness">
+  <strong>Review harness</strong>
+  <label>Viewport <select id="h-viewport"><option value="desktop">1280 desktop</option><option value="tablet">768 tablet</option><option value="phone">320 phone</option></select></label>
+  <label>Theme <select id="h-theme"><option>light</option><option>dark</option></select></label>
+  <label>State <select id="h-state"><option value="default">smoke-1 (default)</option><option value="empty">empty run</option><option value="onepack">one pack setting</option><option value="noarchive">archive absent</option><option value="summary-pub">summary published (illustrative)</option><option value="compare-refused">comparison refused</option></select></label>
+  <label><input type="checkbox" id="h-motion"> Reduced motion</label>
+  <span id="h-verdict">audit -</span>
+</header>
+<div class="frame">
+<main id="report">
+<section id="header" aria-labelledby="h-title">
+  <h1 id="h-title">harness-bench run smoke-1</h1>
+  <p class="muted">Complete · BOM 0.2 · catalog 0.5 · pack ai-forward revision 95 · 36 cells: 3 combos × 2 pack settings × 6 tasks × 1 repetition · <a href="#leaderboard">Leaderboard</a> · <a href="#pack-effect">Pack effect</a></p>
+  <details><summary>About this run</summary>
+    <p>This run tests the pack <strong>ai-forward revision 95</strong>.</p>
+    <dl class="facts small">
+      <dt>combo</dt><dd>A combo is one harness, at one build, driving one model.</dd>
+      <dt>pack on / pack off</dt><dd>Pack on runs the task with the AI-Forward Pack installed in the workspace; pack off runs the same task without it.</dd>
+      <dt>correctness-gated composite</dt><dd>The correctness-gated composite is the mean of the area scores (0-100) a cell recorded, set to 0 when its hidden tests fail.</dd>
+      <dt>pass@1 / pass^k</dt><dd>pass@1 is the share of cells whose hidden tests pass; pass^k is the share of tasks passed in all k repetitions.</dd>
+      <dt>interval</dt><dd>An interval is the 95% bootstrap range of a value over tasks and repetitions; overlapping intervals mean the data cannot tell the values apart.</dd>
+      <dt>not recorded</dt><dd>Not recorded means the value could not be measured, and it is never counted as 0.</dd>
+    </dl></details>
+  <dl class="facts small">
+    <dt>Combos</dt><dd>copilot-sol: copilot 1.0.89-1, gpt-6-sol · codex-sol: codex 0.156.0, gpt-6-sol · cc-opus: claude-code 2.1.282, claude-opus-5-5</dd>
+    <dt>Judges</dt><dd>claude-fable-5-1 and gpt-6-sol, both qualified · 42 items, exact agreement 41, within one step 42</dd>
+    <dt>Spend</dt><dd>runs <span class="na">NA (no price list entry for gpt-6-sol, claude-haiku-4-5-20251001)</span> · judges 0 calls · coordinator <span class="na">not recorded</span></dd>
+    <dt>Statistics</dt><dd>percentile bootstrap, 95%, 2000 resamples, seed recorded, resampled by task then repetition; ranked on correctness-gated composite</dd>
+  </dl>
+  <details><summary>Provenance details (22 rows)</summary><p class="small muted">Plan hash, pack commit, planned and executed builds, credential kind, network mode, context window, permission mode, price list hash, scenario-6 model maps, served models, calibration, gate allowance, D1 baseline: the existing disclosure rows, unchanged.</p></details>
+</section>
+
+<div class="bar" role="region" aria-label="Filters and sections">
+  <div role="group" aria-label="Combos">
+    <button class="tg" aria-pressed="true" data-combo="c1"><svg width="10" height="10" aria-hidden="true"><circle cx="5" cy="5" r="4" class="mk-c1"/></svg> copilot-sol</button>
+    <button class="tg" aria-pressed="true" data-combo="c2"><svg width="10" height="10" aria-hidden="true"><rect x="1" y="1" width="8" height="8" class="mk-c2"/></svg> codex-sol</button>
+    <button class="tg" aria-pressed="true" data-combo="c3"><svg width="10" height="10" aria-hidden="true"><path d="M5 1 9 9 1 9Z" class="mk-c3"/></svg> cc-opus</button>
+  </div>
+  <div role="group" aria-label="Pack setting">
+    <button class="tg" aria-pressed="true" data-pack="both">both</button><button class="tg" aria-pressed="false" data-pack="on">on</button><button class="tg" aria-pressed="false" data-pack="off">off</button>
+  </div>
+  <nav aria-label="Sections"><a href="#validity">Validity</a><a href="#leaderboard">Leaderboard</a><a href="#pack-effect">Pack effect</a><a href="#frontier">Cost frontier</a><a href="#areas">Areas</a><a href="#scenarios">Scenarios</a><a href="#context">Context growth</a><a href="#summaries">Summaries</a><a href="#runs">Runs</a><a href="#comparison">Comparison</a></nav>
+</div>
+
+<section id="validity" aria-labelledby="v-h"><h2 id="v-h">Validity</h2>
+  <p data-when="default"><span class="bad">2 invalid</span> · <a href="#runs">36 NA costs</a> · <a href="#runs">2 invalid (benchmark, HB-CELL-116)</a> · 0 timed out · 0 stopped, skipped or never started · 0 withheld · low-confidence matchers <span class="na">not recorded</span> · 0 disagreeing judges · <a href="#runs">36 warnings (HB-VAL-006)</a></p>
+  <p class="st" data-when="empty">The run is incomplete. 48 cells never started.</p>
+</section>
+
+<section id="leaderboard" aria-labelledby="l-h"><h2 id="l-h">Leaderboard</h2>
+  <p class="st" data-when="empty">No cell completed in this run. Run bench status smoke-1 to see why.</p>
+  <div class="hide-empty">
+  <p>All 6 rows share rank 1: their intervals overlap, so this run cannot separate them.</p>
+  <div class="region" role="region" tabindex="0" aria-labelledby="lb-cap"><table id="lb"><caption id="lb-cap">Ranked on correctness-gated composite, one row per combo and pack</caption>
+  <thead><tr><th scope="col">Rank</th><th scope="col">Combo</th><th scope="col">Pack</th><th scope="col" class="num" aria-sort="descending"><button class="sort">Gated (0-100) ▼</button></th><th scope="col">95% interval</th><th scope="col" class="num"><button class="sort">pass@1</button></th><th scope="col">95% interval</th><th scope="col" class="num">Cost per pass (USD)</th><th scope="col" class="num">Tokens per cell</th><th scope="col" class="num">Wall per cell (s)</th><th scope="col" class="num">Valid cells</th></tr></thead>
+  <tbody id="lb-body"></tbody></table></div>
+  <p class="small muted">Cost is <span class="na">NA</span> on every row: no price list entry for gpt-6-sol or claude-haiku-4-5-20251001. codex-sol: user-config exposed (N5). cc-opus: account context (R1.4).</p>
+  </div>
+</section>
+
+<section id="pack-effect" aria-labelledby="p-h"><h2 id="p-h">Pack effect</h2>
+  <p class="small muted">On − off, 95% interval over tasks × repetitions. Excluded as contamination-prone: none in this run.</p>
+  <p class="st" data-when="onepack">This run has one pack setting; no effect to show.</p>
+  <p class="small" id="pe-disabled" hidden>Pack effect needs both settings.</p>
+  <figure data-when="default twopack"><svg id="pe-svg" role="img" aria-labelledby="pe-cap" viewBox="0 0 560 150" width="100%"></svg>
+  <figcaption id="pe-cap">pass@1 delta per combo: every interval crosses 0, so each reads no detectable effect (interval crosses 0). Area rows: not computed (F-1 in the design; R0 makes them numbers).</figcaption></figure>
+  <details data-when="default twopack"><summary>Table</summary><div class="region" role="region" tabindex="0" aria-label="Pack effect table"><table><thead><tr><th scope="col">Combo</th><th scope="col">Measure</th><th scope="col" class="num">Delta</th><th scope="col">95% interval</th><th scope="col">Label</th></tr></thead><tbody id="pe-body"></tbody></table></div></details>
+</section>
+
+<section id="frontier" aria-labelledby="f-h"><h2 id="f-h">Cost frontier</h2>
+  <div class="charts hide-empty">
+    <figure><p class="na">Cost not recorded for any combo: no price list entry for gpt-6-sol, claude-haiku-4-5-20251001.</p><figcaption>pass@1 vs cost per task (no axes drawn)</figcaption></figure>
+    <figure><svg id="fr-tok" role="img" aria-label="pass@1 against tokens per cell" viewBox="0 0 300 200" width="100%"></svg><figcaption>pass@1 vs tokens per cell (thousands), whiskers on pass@1</figcaption></figure>
+  </div>
+  <p class="st" data-when="empty">No completed cells to plot.</p>
+</section>
+
+<section id="areas" aria-labelledby="a-h"><h2 id="a-h">Areas</h2>
+  <p class="small muted">Illustrative values (smoke-1 has none until R0). Fixed axis order: correctness, rigor, drift, specification, autonomy, coordination, cost. Pack on solid, pack off dashed.</p>
+  <div class="charts hide-empty" id="radars"></div>
+  <p class="st" data-when="empty">No completed cells to plot.</p>
+</section>
+
+<section id="scenarios" aria-labelledby="s-h"><h2 id="s-h">Scenarios</h2>
+  <p class="small muted">Illustrative values. Colour: correctness-gated composite, 0 … 100 (viridis). Each cell prints the value and its interval.</p>
+  <div class="region hide-empty" role="region" tabindex="0" aria-label="Scenario heatmap"><table class="heat"><thead><tr><th scope="col">Combo · pack</th><th scope="col">1 clarify</th><th scope="col">2 build</th><th scope="col">3 fix</th><th scope="col">5 review</th><th scope="col">6 coordinate</th></tr></thead>
+  <tbody><tr><th scope="row">copilot-sol · off</th><td class="h h9 num">93.0<br>[84.2, 97.9]</td><td class="h h7 num">81.0<br>[60.0, 95.0]</td><td class="h h5 num">55.2<br>[20.1, 88.0]</td><td class="h h3 num">38.0<br>[9.0, 70.0]</td><td class="h na">not recorded<br>coordination: not built in 0.4</td></tr>
+  <tr><th scope="row">cc-opus · on</th><td class="h h3 num">31.0<br>[5.0, 66.0]</td><td class="h h0 num">4.5<br>[0.0, 20.0]</td><td class="h h5 num">50.0<br>[18.0, 82.0]</td><td class="h h7 num">72.0<br>[40.0, 95.0]</td><td class="h">—<br>no cells in this scenario</td></tr></tbody></table></div>
+</section>
+
+<section id="context" aria-labelledby="c-h"><h2 id="c-h">Context growth</h2>
+  <label class="hide-empty">Task <select><option>B1</option><option>A1</option><option>D1: No turns recorded for D1.</option></select></label>
+  <figure class="hide-empty"><svg id="cg" role="img" aria-label="Prompt tokens per turn, B1, illustrative" viewBox="0 0 560 170" width="100%"></svg><figcaption>Prompt tokens per turn (thousands), illustrative. ▲ marks a compaction; the table lists each one.</figcaption></figure>
+  <p class="st" data-when="empty">No completed cells to plot.</p>
+</section>
+
+<section id="summaries" aria-labelledby="su-h"><h2 id="su-h">Summaries</h2>
+  <div data-when="default sumwait"><h3>1 Ranking and insights</h3><p class="na">Summary not generated: no summary was requested for this results pass. Generate with bench report smoke-1 --summaries.</p>
+  <h3>2 Pack observations</h3><p class="na">Summary not generated: the summarizer backend is not available (backend_unavailable).</p></div>
+  <div class="st" data-when="sumpub"><h3>1 Ranking and insights</h3>
+    <p class="label-ai">Written by claude-opus-5-5 from the results store. Every claim links to its runs.</p>
+    <details><summary>Input manifest (1 item)</summary><p class="small"><code>board-export sha256 3f1c…a9</code></p></details>
+    <ul class="claims"><li>All six combo-pack rows share rank 1; their gated intervals overlap (copilot-sol off 93.0 [84.2, 97.9], cc-opus on 44.5 [11.9, 77.2]). <a href="#runs">copilot-sol off</a> · <a href="#runs">cc-opus on</a></li>
+    <li>Two codex-sol cells are invalid (HB-CELL-116) and are excluded from its rows. <a href="#runs">F1.codex-sol.pack-on.r1</a> · <a href="#runs">F1.codex-sol.pack-off.r1</a></li></ul>
+    <h3>2 Pack observations</h3><p class="bad">Not published: 1 claims did not resolve. Regenerate the summaries with bench report.</p></div>
+</section>
+
+<section id="runs" aria-labelledby="r-h"><h2 id="r-h">Runs</h2>
+  <p class="small muted">Filters: task · combo · pack · outcome · validity (all).</p>
+  <div class="region" role="region" tabindex="0" aria-labelledby="r-cap"><table><caption id="r-cap">Every cell of the run (3 of 36 shown in the mockup)</caption>
+  <thead><tr><th scope="col">Cell</th><th scope="col">Outcome</th><th scope="col">Validity</th><th scope="col" class="num">pass@1</th><th scope="col" class="num">Tokens</th><th scope="col" class="num">Wall (s)</th><th scope="col" class="num">Cost (USD)</th><th scope="col">Evidence</th></tr></thead>
+  <tbody>
+  <tr id="cell-A1-c1-on"><td>A1.copilot-sol.pack-on.r1</td><td>completed</td><td>valid</td><td class="num">1.00</td><td class="num">637,940 tok</td><td class="num">91.3 s</td><td class="num"><button class="ev na" data-tip="not recorded — no price list entry for gpt-6-sol">NA</button></td><td><a data-when="default archive" href="grading/grade-20260928T051943-3f4910/b32fd5dd6f0baab4/correctness/oracle.log">oracle.log</a><span class="st small" data-when="noarchive">This copy doesn't include the run archive. Evidence path: grading/grade-20260928T051943-3f4910/b32fd5dd6f0baab4/correctness/oracle.log.</span></td></tr>
+  <tr><td>B1.copilot-sol.pack-on.r1</td><td>completed</td><td>valid</td><td class="num">0.00</td><td class="num">1,610,497 tok</td><td class="num">254.3 s</td><td class="num"><button class="ev na" data-tip="not recorded — no price list entry for gpt-6-sol">NA</button></td><td>oracle.log</td></tr>
+  <tr><td>F1.codex-sol.pack-on.r1 (user-config exposed, N5)</td><td>completed</td><td class="bad">invalid (benchmark) HB-CELL-116</td><td class="num"><button class="ev na" data-tip="not recorded — cell invalid (HB-CELL-116)">NA</button></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td>cause shown in the cell card</td></tr>
+  </tbody></table></div>
+</section>
+
+<section id="comparison" aria-labelledby="cm-h"><h2 id="cm-h">Comparison</h2>
+  <p class="cmp" data-when="default">No earlier run to compare. (The section appears only with --baseline; shown here for review.)</p>
+  <p class="st bad" data-when="refused">Runs not comparable: combos differ: only in A: cc-sonnet; catalog version differs: A 0.4, B 0.5</p>
+</section>
+</main>
+</div>
+<section class="audit" aria-label="Mechanical audit"><strong>Mechanical audit</strong> (review chrome)<table><tbody id="audit-rows"></tbody></table><p id="audit-targets"></p></section>
+<div class="popover" id="pop" role="tooltip" hidden></div>
+<script>
+const R=document.documentElement,$=s=>document.querySelector(s),NS='http://www.w3.org/2000/svg';
+const S=(p,tag,a)=>{const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e};
+const T=(p,x,y,t,a)=>{const e=S(p,'text',Object.assign({x,y},a||{}));e.textContent=t;return e};
+/* smoke-1 leaderboard, verbatim from runs/smoke-1/report.html (G6) */
+const LB=[['c1','copilot-sol','off',93.0,84.2,97.9,1.00,1.00,1.00,206971,80.3,'6/6'],['c3','cc-opus','off',76.5,45.1,95.1,0.83,0.50,1.00,223176,219.2,'6/6'],['c2','codex-sol','off',69.4,32.0,94.7,0.80,0.40,1.00,160748,102.8,'5/6'],['c2','codex-sol','on',65.0,31.0,89.7,0.80,0.40,1.00,835310,206.6,'5/6'],['c1','copilot-sol','on',60.2,22.0,93.1,0.67,0.33,1.00,1734587,219.8,'6/6'],['c3','cc-opus','on',44.5,11.9,77.2,0.50,0.17,0.83,403100,215.4,'6/6']];
+const ivbar=(lo,hi,pt,max)=>{const w=80,s=v=>4+v/max*(w-8),svg=document.createElementNS(NS,'svg');svg.setAttribute('class','ivbar');svg.setAttribute('width',w);svg.setAttribute('height',12);svg.setAttribute('aria-hidden','true');S(svg,'line',{x1:s(lo),x2:s(hi),y1:6,y2:6});S(svg,'circle',{cx:s(pt),cy:6,r:3});return svg};
+const cell=(tr,txt,cls,attrs)=>{const td=document.createElement('td');if(cls)td.className=cls;for(const k in attrs||{})td.setAttribute(k,attrs[k]);if(txt instanceof Node)td.appendChild(txt);else td.textContent=txt;tr.appendChild(td);return td};
+for(const r of LB){const tr=document.createElement('tr');tr.dataset.combo=r[0];tr.dataset.pack=r[2];
+  const b=document.createElement('button');b.className='ev';b.textContent='1=';b.dataset.tip='1= (intervals overlap)';cell(tr,b);
+  cell(tr,r[1]);cell(tr,r[2]==='on'?'● on':'○ off');
+  const g=document.createElement('button');g.className='ev';g.textContent=r[3].toFixed(1);g.dataset.tip=`gated ${r[3].toFixed(1)} [${r[4].toFixed(1)}, ${r[5].toFixed(1)}] · catalog 0.5 · evidence: grading/…/scores`;
+  cell(tr,g,'num',{'data-interval-lo':r[4],'data-interval-hi':r[5]});
+  const i1=cell(tr,`[${r[4].toFixed(1)}, ${r[5].toFixed(1)}]`,'num');i1.appendChild(ivbar(r[4],r[5],r[3],100));
+  cell(tr,r[6].toFixed(2),'num',{'data-interval-lo':r[7],'data-interval-hi':r[8]});
+  const i2=cell(tr,`[${r[7].toFixed(2)}, ${r[8].toFixed(2)}]`,'num');i2.appendChild(ivbar(r[7],r[8],r[6],1));
+  const na=document.createElement('button');na.className='ev na';na.textContent='NA';na.dataset.tip='not recorded — no price list entry for the served model';cell(tr,na,'num');
+  cell(tr,r[9].toLocaleString('en-US')+' tok','num');cell(tr,r[10].toFixed(1)+' s','num');cell(tr,r[11],'num');$('#lb-body').appendChild(tr);}
+/* pack effect: smoke-1 pass@1 deltas (G6) */
+const PE=[['cc-opus',-0.33,-0.67,0.00],['codex-sol',0.00,-0.60,0.60],['copilot-sol',-0.33,-0.67,0.00]];
+(()=>{const g=$('#pe-svg'),x=v=>300+v*220;S(g,'line',{x1:x(0),x2:x(0),y1:10,y2:120,class:'axis'});
+ [-1,-0.5,0.5,1].forEach(v=>{S(g,'line',{x1:x(v),x2:x(v),y1:10,y2:120,class:'grid'});T(g,x(v)-12,140,(v>0?'+':'')+v.toFixed(1))});T(g,x(0)-4,140,'0');
+ PE.forEach((p,i)=>{const y=30+i*35,cls=(p[2]<=0&&p[3]>=0)?'nde':(p[1]>0?'pos':'neg');T(g,4,y+4,p[0]);
+  const l=S(g,'line',{x1:x(p[2]),x2:x(p[3]),y1:y,y2:y,class:cls+' whisk','data-interval-lo':p[2],'data-interval-hi':p[3]});
+  S(g,'circle',{cx:x(p[1]),cy:y,r:5,class:cls,'data-interval-lo':p[2],'data-interval-hi':p[3]});
+  const tr=document.createElement('tr');[p[0],'pass@1',(p[1]>=0?'+':'')+p[1].toFixed(2),`[${p[2].toFixed(2)}, ${p[3].toFixed(2)}]`,'no detectable effect (interval crosses 0)'].forEach((t,j)=>cell(tr,t,j===2||j===3?'num':''));$('#pe-body').appendChild(tr);});
+ const tr=document.createElement('tr');['all combos','correctness … cost (7 areas)','','','not computed (F-1; R0)'].forEach(t=>cell(tr,t,'na'));$('#pe-body').appendChild(tr);})();
+/* frontier: pass@1 vs tokens per cell (smoke-1 rows) */
+(()=>{const g=$('#fr-tok'),x=v=>40+v/1800*250,y=v=>170-v*150;S(g,'line',{x1:40,x2:290,y1:170,y2:170,class:'axis'});S(g,'line',{x1:40,x2:40,y1:15,y2:170,class:'axis'});
+ T(g,4,24,'1.00');T(g,4,174,'0.00');T(g,240,192,'1,800 k');
+ LB.forEach(r=>{const cx=x(r[9]/1000);S(g,'line',{x1:cx,x2:cx,y1:y(r[7]),y2:y(r[8]),class:'mk-'+r[0]+' whisk'+(r[2]==='off'?' dash':''),'data-interval-lo':r[7],'data-interval-hi':r[8]});
+  S(g,'circle',{cx,cy:y(r[6]),r:5,class:'mk-'+r[0]+(r[2]==='off'?' hollow':'')});});})();
+/* radars, illustrative */
+const AX=['correctness','rigor','drift','specification','autonomy','coordination','cost'];
+[['c1','copilot-sol',[90,70,80,60,75,null,null],[85,60,70,55,70,null,null]],['c2','codex-sol',[70,65,60,50,80,null,null],[72,60,62,52,78,null,null]],['c3','cc-opus',[50,80,55,70,60,null,null],[76,75,60,65,62,null,null]]].forEach(([c,name,on,off])=>{
+ const fig=document.createElement('figure'),g=document.createElementNS(NS,'svg');g.setAttribute('viewBox','0 0 220 200');g.setAttribute('role','img');g.setAttribute('aria-label',name+' areas, illustrative');fig.appendChild(g);
+ const pt=(i,v)=>{const a=-Math.PI/2+i*2*Math.PI/7,r=v/100*70;return[110+r*Math.cos(a),100+r*Math.sin(a)]};
+ AX.forEach((ax,i)=>{const [ex,ey]=pt(i,100);S(g,'line',{x1:110,y1:100,x2:ex,y2:ey,class:'grid'});const na=on[i]===null;T(g,ex-(ex<110?40:0),ey+(ey>100?12:-2),ax.slice(0,5)+(na?' NA':''))});
+ [[on,''],[off,' dash']].forEach(([vals,d])=>{const pts=vals.map((v,i)=>v===null?null:pt(i,v)).filter(Boolean).map(p=>p.join(',')).join(' ');S(g,'polygon',{points:pts,class:'mk-'+c+d,'fill-opacity':'0.12','stroke-width':'2'})});
+ const cap=document.createElement('figcaption');cap.textContent=name+': coordination and cost NA (not recorded)';fig.appendChild(cap);$('#radars').appendChild(fig);});
+/* context growth, illustrative */
+(()=>{const g=$('#cg'),x=t=>40+t*50,y=v=>150-v/300*130;S(g,'line',{x1:40,x2:550,y1:150,y2:150,class:'axis'});S(g,'line',{x1:40,x2:40,y1:15,y2:150,class:'axis'});T(g,2,24,'300 k');T(g,2,154,'0');
+ [['c1',[20,60,110,170,240,120,160,210]],['c2',[15,40,70,95,130,160,190,220]],['c3',[25,70,120,90,110,140,150,170]]].forEach(([c,v])=>{S(g,'polyline',{points:v.map((d,i)=>x(i)+','+y(d)).join(' '),class:'mk-'+c,fill:'none','stroke-width':'2'});});
+ T(g,x(5)-5,y(120)-8,'▲');T(g,x(3)-5,y(90)-8,'▲');})();
+/* popover: focus and hover open, Esc closes (1.4.13) */
+const pop=$('#pop');let owner=null;
+const show=b=>{owner=b;pop.textContent=b.dataset.tip||b.textContent;const r=b.getBoundingClientRect();pop.style.left=(r.left+scrollX)+'px';pop.style.top=(r.bottom+scrollY+4)+'px';pop.hidden=false;b.setAttribute('aria-describedby','pop')};
+const hide=()=>{pop.hidden=true;if(owner)owner.removeAttribute('aria-describedby');owner=null};
+document.addEventListener('focusin',e=>{if(e.target.classList.contains('ev'))show(e.target)});
+document.addEventListener('mouseover',e=>{if(e.target.classList&&e.target.classList.contains('ev'))show(e.target)});
+document.addEventListener('focusout',e=>{if(e.target===owner)hide()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!pop.hidden){const o=owner;hide();o&&o.focus()}});
+/* combo legend and pack switch */
+document.querySelectorAll('[data-combo].tg').forEach(b=>b.addEventListener('click',()=>{if(b.getAttribute('aria-disabled')==='true')return;
+ const on=[...document.querySelectorAll('[data-combo].tg[aria-pressed="true"]')];if(on.length===1&&on[0]===b){b.setAttribute('aria-disabled','true');b.title='At least one combo must stay visible.';return}
+ document.querySelectorAll('[data-combo].tg').forEach(x=>{x.removeAttribute('aria-disabled')});b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')==='true'?'false':'true');apply()}));
+document.querySelectorAll('[data-pack].tg').forEach(b=>b.addEventListener('click',()=>{if(b.getAttribute('aria-disabled')==='true')return;document.querySelectorAll('[data-pack].tg').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));apply()}));
+function apply(){const hidden=[...document.querySelectorAll('[data-combo].tg[aria-pressed="false"]')].map(b=>b.dataset.combo),pk=$('[data-pack].tg[aria-pressed="true"]').dataset.pack;
+ document.querySelectorAll('#lb-body tr').forEach(tr=>{tr.hidden=hidden.includes(tr.dataset.combo)||(pk!=='both'&&tr.dataset.pack!==pk)});$('#pe-disabled').hidden=pk==='both'}
+/* harness wiring */
+['viewport','theme','state'].forEach(k=>$('#h-'+k).addEventListener('change',e=>{R.dataset[k]=e.target.value;packAvail();audit()}));
+$('#h-motion').addEventListener('change',e=>R.dataset.motion=e.target.checked?'reduced':'full');
+function packAvail(){const one=R.dataset.state==='onepack';['on','both'].forEach(v=>{const b=$(`[data-pack="${v}"]`);if(one){b.setAttribute('aria-disabled','true');b.title='This run has pack off only.'}else{b.removeAttribute('aria-disabled');b.removeAttribute('title')}})}
+/* mechanical audit: page box first (DC-200), then token contrast, then 24 px targets (2.5.8) */
+const PAIRS=[['--ink','--panel','text'],['--ink-2','--panel','text'],['--ink-2','--bg','text'],['--na','--bg','text'],['--bad','--bad-bg','text'],['--focus','--panel','ui'],['--rule-strong','--bg','ui'],['--c1','--panel','ui'],['--c2','--panel','ui'],['--c3','--panel','ui'],['--div-pos','--panel','ui'],['--div-neg','--panel','ui'],['--rule','--panel','decorative']];
+const lin=c=>{c/=255;return c<=.03928?c/12.92:Math.pow((c+.055)/1.055,2.4)},L=([r,g,b])=>.2126*lin(r)+.7152*lin(g)+.0722*lin(b);
+const rgb=v=>{const p=document.createElement('span');p.style.color=v.trim();document.body.appendChild(p);const m=getComputedStyle(p).color.match(/\d+(\.\d+)?/g);p.remove();return m.slice(0,3).map(Number)};
+function audit(){const box=$('#report').getBoundingClientRect(),v=$('#h-verdict');
+ if(!box.width||!box.height){v.textContent='audit: page not rendered; no number is reported';$('#audit-rows').textContent='';return}
+ const cs=getComputedStyle(R);let fails=0;const rows=$('#audit-rows');rows.textContent='';
+ for(const [f,b,k] of PAIRS){const l1=L(rgb(cs.getPropertyValue(f))),l2=L(rgb(cs.getPropertyValue(b))),r=(Math.max(l1,l2)+.05)/(Math.min(l1,l2)+.05),need=k==='text'?4.5:3,req=k!=='decorative',ok=r>=need;if(req&&!ok)fails++;
+  const tr=document.createElement('tr');[`${f} on ${b} (${k})`,r.toFixed(2)+':1',req?(ok?'PASS':'FAIL')+` (needs ${need}:1)`:'reported, not counted'].forEach(t=>cell(tr,t));rows.appendChild(tr)}
+ const small=[...document.querySelectorAll('#report button,#report a,#report select,#report summary,.bar button,.bar a')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&r.height<24});
+ $('#audit-targets').textContent=small.length?`${small.length} target(s) under 24 CSS px high (inline text links are exempt under 2.5.8's inline exception; review each).`:'All targets are at least 24 CSS px high.';
+ v.textContent=`audit: ${fails} contrast fail · ${small.length} target(s) < 24 px`}
+audit();
+</script>
+</body>
+</html>
