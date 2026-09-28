@@ -1085,3 +1085,30 @@ Append only. One entry per ruling. Newest last.
   6. `stats.CONTAMINATION_PRONE` is the only source of the exclusion. T-M1..M3 include one case where run B holds an `E*` task and the comparison section names it under the same statement as US-37's.
   7. `--resamples < 2000` in `bench report` exits invalid-input with a named code in the `HB-STA` family. The design's error table gains that row before S6 closes.
   8. The smoke run's rank under `0.4` is reported as a pass@1 rank in any operator-facing summary. The AI summary (US-42) may not describe it as a composite rank.
+
+## R-79 · 2026-09-27 · Owner seat (Fable) · Catalog 0.5.dev anchor review: APPROVE WITH CHANGES; measured anchors saturate, never shift other cells; judged metrics anchored to their rubric's shape; DR-C1 (a)
+
+- **Ruling:** the draft on `w4-cat05` (commits `6f61db8`, `e0726cc`) is approved with the changes below. The weight-0 corrections are Verified exact against R-78 condition 1, and nothing else moved.
+  1. **Normalisation saturates** (design `phase4-statistics.md:163-167`, Verified): `t=(x−worst)/(best−worst)`, `N=100×clamp(t,0,1)`. A later value past an anchor scores 0 or 100 and never reads another cell. The catalog comment states this rule and the three `anchor_note` forms (`spec <path>:<line>` | `measured <run> <min>..<max> (n tasks, k runs)` | `convention: <reason>`). A measured or provisional anchor is re-anchored in the next version when a run saturates a cell.
+  2. **Replacements:**
+     - `cache_write_amplification` → `[100.0000, 0.0000]`, from spec `docs/design/phase3-cost.md:116`.
+     - `time_to_first_green` → `[3600000, 0]`, from spec `docs/specs/harness-bench.md:266` (the 60-minute task ceiling).
+     - `regression_count` → `[1, 0]`, by convention: one regression is a correctness failure (design `phase3-graders.md:331`).
+     - The seven judged metrics without a rubric (`honest_completion_claims`, `error_handling`, `assumption_disclosure`, `handoff_fidelity` → `[0, 2]`; `goal_drift_slope`, `unrequested_behaviour`, `mast_failure_codes` → `[2, 0]`), each noted as "judged sum of n items at 0..2 (judge.py:22, adr_quality.md:5), n=1 provisional until the rubric lands; re-anchor to 2n at 0.6".
+  3. **Notes reworded** (anchors kept):
+     - `context_growth`, `scope_creep`, `stuck_loops`: measured, worst = 2× the smoke-1 max, re-anchor at 0.6 if any cell saturates.
+     - `cost_usd`: $10 is provisional until the first priced run.
+     - `static_analysis_delta`: no spec ceiling; a negative delta clamps to 100.
+     - `constraint_violations`: provisional until the first checklist exists.
+     - `coordination_overhead`: undefined in code today.
+     - `convention_drift`: the unit comes from design `phase3-graders.md:426`; the draft cited the wrong line (`:128`).
+  4. **DR-C1: (a).** S4 adds two refusals to `bench validate`. A judged metric whose `|best − worst| != 2 × rubric item count` is refused whenever a `rubrics:` entry exists. A `better: lower` judged rubric must define 2 as the worst score per item.
+- **Reasoning:**
+  - Saturation removes the fear that one smoke run's range moves the whole board. What remains is resolution loss and one-run bias, which the re-anchor rule bounds.
+  - Judged metrics are scored as the sum of 0/1/2 per rubric item (`judge.py:22-24`, Verified), so their anchor is structural: `[0, 2n]`. The draft's shapes contradicted the code.
+- **Conditions:**
+  1. The applied diff is minimal: anchors and notes are added to the existing metric lines without re-flowing unrelated lines, so review reads only the change.
+  2. Tests that hard-code catalog `"0.4"` read the catalog's own version (or `make_root`'s release label) instead. The stale gate stamp is renewed by the Leader with a real `pytest -m gate` run before the merge.
+- **Findings for the Leader (not catalog changes):**
+  - A smoke-1 `context_growth` single-call peak of 2.48M tokens exceeds any served context window. `cost.py:161` sums uncached + cache_read + cache_write per call; the grader needs a check (Inferred).
+  - Judged metrics other than `adr_quality` carry no `scale` while `judge.py:50` writes scale-1 decimals. `scale` is frozen by R-78 condition 1, so this is recorded for 0.6.
