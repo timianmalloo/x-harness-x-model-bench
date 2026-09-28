@@ -19,6 +19,7 @@ are written back. A kill between the two leaves it, and `--restore` puts the fil
 Usage: python tools/mutate_check.py <mutations.json>
        python tools/mutate_check.py --restore
        python tools/mutate_check.py --check-clean
+       python tools/mutate_check.py --touched <base> [--list]
 
 TOOL-B, cosmic-ray mode: python tools/mutate_check.py --cosmic-ray <module-tests.json> [<dump.jsonl>|-]
 re-derives each kill in a `cosmic-ray dump <session.sqlite>` transcript (a file, or `-`/omitted for
@@ -342,27 +343,58 @@ def _cmd_check_clean() -> int:
     return 1
 
 
+def _test_path(node_id: str) -> str:
+    """The path part of a pytest node id (`path::name`, or a bare test file)."""
+    return node_id.split("::", 1)[0].replace("\\", "/")
+
+
 def touched_sets(changed: set[str], sets: dict[str, list[dict]]) -> list[str]:
-    """Set files whose mutants' files are among `changed`. The test-path half is not selected yet."""
+    """Set files selected by `changed` repo-relative paths, in `sets` order. No git call.
+
+    A set is selected when any mutant's file, or the path part of any of its tests, is in
+    `changed`.
+    """
+    normalised = {p.replace("\\", "/") for p in changed}
     selected = []
     for set_path, mutants in sets.items():
-        if any(m["file"] in changed for m in mutants):
+        hits = False
+        for mutant in mutants:
+            if mutant["file"].replace("\\", "/") in normalised:
+                hits = True
+                break
+            if any(_test_path(node) in normalised for node in mutant.get("tests", [])):
+                hits = True
+                break
+        if hits:
             selected.append(set_path)
     return selected
 
 
-def main(argv: list[str]) -> int:
-    _reconfigure_streams()
-    if argv and argv[0] == "--restore":
-        return _cmd_restore()
-    if argv and argv[0] == "--check-clean":
-        return _cmd_check_clean()
-    if argv and argv[0] == "--cosmic-ray":
-        return _main_cosmic_ray(argv[1:])
-    refused = _refuse_if_sidecar()
-    if refused is not None:
-        return refused
-    spec = json.loads(Path(argv[0]).read_text(encoding="utf-8"))
+def _load_sets(mutations_dir: Path) -> dict[str, list[dict]]:
+    loaded: dict[str, list[dict]] = {}
+    for path in sorted(mutations_dir.glob("*.json")):
+        rel = path.relative_to(ROOT).as_posix()
+        loaded[rel] = json.loads(path.read_text(encoding="utf-8"))
+    return loaded
+
+
+def _changed_paths(base: str) -> list[str]:
+    """`git diff --name-only <base>...HEAD` from the repo root."""
+    env = {k: v for k, v in os.environ.items() if k not in {"GIT_DIR", "GIT_WORK_TREE"}}
+    result = subprocess.run(
+        ["git", "diff", "--name-only", f"{base}...HEAD"],
+        cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
+        check=False, env=env,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout).strip()
+        print(f"git diff --name-only {base}...HEAD failed: {detail}", flush=True)
+        raise SystemExit(2)
+    return [line.replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
+
+
+def _run_set(spec: list[dict]) -> int:
+    """Run one mutation set. Returns how many mutants were not killed. Caller checked the sidecar."""
     survivors = 0
     for m in spec:
         path = ROOT / m["file"]
@@ -401,6 +433,50 @@ def main(argv: list[str]) -> int:
             survivors += 0 if outcome == "killed" else 1
         finally:
             _restore_original(m["file"], original)
+    return survivors
+
+
+def _cmd_touched(base: str, list_only: bool) -> int:
+    """Select the mutation sets a `<base>...HEAD` diff touches, and run each one.
+
+    The caller already refused while a sidecar exists. `--list` prints the selected
+    paths and runs nothing. No selection prints `no mutation set touched` and exits 0.
+    Any mutant not killed exits 1.
+    """
+    changed = set(_changed_paths(base))
+    selected = touched_sets(changed, _load_sets(ROOT / "tests" / "mutations"))
+    if not selected:
+        print("no mutation set touched", flush=True)
+        return 0
+    for rel in selected:
+        print(rel, flush=True)
+    if list_only:
+        return 0
+    survivors = 0
+    for rel in selected:
+        survivors += _run_set(json.loads((ROOT / rel).read_text(encoding="utf-8")))
+    print(f"{survivors} not killed" if survivors else "every mutation killed", flush=True)
+    return 1 if survivors else 0
+
+
+def main(argv: list[str]) -> int:
+    _reconfigure_streams()
+    if argv and argv[0] == "--restore":
+        return _cmd_restore()
+    if argv and argv[0] == "--check-clean":
+        return _cmd_check_clean()
+    if argv and argv[0] == "--cosmic-ray":
+        return _main_cosmic_ray(argv[1:])
+    refused = _refuse_if_sidecar()
+    if refused is not None:
+        return refused
+    if argv and argv[0] == "--touched":
+        if len(argv) < 2 or (len(argv) == 3 and argv[2] != "--list") or len(argv) > 3:
+            print("usage: python tools/mutate_check.py --touched <base> [--list]", flush=True)
+            return 2
+        return _cmd_touched(argv[1], list_only=len(argv) == 3)
+    spec = json.loads(Path(argv[0]).read_text(encoding="utf-8"))
+    survivors = _run_set(spec)
     print(f"{survivors} not killed" if survivors else "every mutation killed", flush=True)
     return 1 if survivors else 0
 

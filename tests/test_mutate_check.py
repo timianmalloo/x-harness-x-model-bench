@@ -583,3 +583,119 @@ def test_touched_sets_select_a_mutant_file_or_the_path_of_a_named_test():
     changed_test = {"tests/test_report.py"}
     assert mutate_check.touched_sets(changed_test, sets) == ["tests/mutations/report.json"]
     assert mutate_check.touched_sets({"docs/lessons/defect-classes.md"}, sets) == []
+
+
+def _commit_file(repo: Path, rel: str, content: bytes, message: str) -> None:
+    env = _git_env()
+    target = repo / rel
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(content)
+    subprocess.run(["git", "add", rel], cwd=repo, check=True, capture_output=True, env=env)
+    subprocess.run(
+        ["git", "-c", "user.email=muta@example.com", "-c", "user.name=muta", "commit", "-m", message],
+        cwd=repo, check=True, capture_output=True, env=env,
+    )
+
+
+def _touched_repo(tmp_path: Path) -> tuple[Path, str]:
+    """A repo whose HEAD changes one source file and one test file against `base`."""
+    repo = _git_init(tmp_path / "repo")
+    subprocess.run(
+        ["git", "config", "user.email", "muta@example.com"], cwd=repo, check=True, capture_output=True, env=_git_env(),
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "muta"], cwd=repo, check=True, capture_output=True, env=_git_env(),
+    )
+    _commit_file(repo, "src/mod.py", b"X = 1\n", "base source")
+    _commit_file(repo, "tests/test_mod.py", b"import mod\n\ndef test_x():\n    assert mod.X == 1\n", "base test")
+    base = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True, encoding="utf-8",
+        env=_git_env(),
+    ).stdout.strip()
+    (repo / "tests" / "mutations").mkdir(parents=True)
+    (repo / "tests" / "mutations" / "by_file.json").write_text(json.dumps([{
+        "name": "file mutant", "file": "src/mod.py", "find": "X = 1", "replace": "X = 2",
+        "tests": ["tests/test_mod.py::test_x"],
+    }]), encoding="utf-8")
+    (repo / "tests" / "mutations" / "by_test.json").write_text(json.dumps([{
+        "name": "test mutant", "file": "src/other.py", "find": "Y = 1", "replace": "Y = 2",
+        "tests": ["tests/test_other.py::test_y"],
+    }]), encoding="utf-8")
+    (repo / "tests" / "mutations" / "untouched.json").write_text(json.dumps([{
+        "name": "untouched", "file": "src/untouched.py", "find": "Z = 1", "replace": "Z = 2",
+        "tests": ["tests/test_untouched.py::test_z"],
+    }]), encoding="utf-8")
+    (repo / "src" / "other.py").write_bytes(b"Y = 1\n")
+    (repo / "tests" / "test_other.py").write_bytes(b"import other\n\ndef test_y():\n    assert other.Y == 1\n")
+    _commit_file(repo, "src/mod.py", b"X = 1\n# touched\n", "touch the source")
+    _commit_file(repo, "tests/test_other.py", b"import other\n\ndef test_y():\n    assert other.Y == 1\n# touched\n",
+                 "touch the named test")
+    return repo, base
+
+
+def test_touched_lists_selected_set_paths_and_runs_nothing(tmp_path, monkeypatch, capsys):
+    """--touched <base> --list prints each selected set and does not apply a mutant."""
+    repo, base = _touched_repo(tmp_path)
+    original = (repo / "src" / "mod.py").read_bytes()
+    monkeypatch.setattr(mutate_check, "ROOT", repo)
+    ran: list[str] = []
+    monkeypatch.setattr(mutate_check, "_run_set", lambda spec: ran.append("ran") or 0)
+    rc = mutate_check.main(["--touched", base, "--list"])
+    out = capsys.readouterr().out
+    assert rc == 0, out
+    assert out.splitlines() == [
+        "tests/mutations/by_file.json",
+        "tests/mutations/by_test.json",
+    ]
+    assert ran == []
+    assert (repo / "src" / "mod.py").read_bytes() == original
+
+
+def test_touched_prints_no_mutation_set_touched_and_exits_0(tmp_path, monkeypatch, capsys):
+    repo, _base = _touched_repo(tmp_path)
+    # the diff from HEAD to itself selects nothing
+    monkeypatch.setattr(mutate_check, "ROOT", repo)
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True, encoding="utf-8",
+        env=_git_env(),
+    ).stdout.strip()
+    rc = mutate_check.main(["--touched", head])
+    out = capsys.readouterr().out
+    assert rc == 0, out
+    assert out.strip() == "no mutation set touched"
+
+
+def test_touched_runs_each_selected_set_and_exits_1_when_any_mutant_survives(tmp_path, monkeypatch, capsys):
+    """The set path is printed before the set runs, and one unkilled mutant fails the command."""
+    repo, base = _touched_repo(tmp_path)
+    monkeypatch.setattr(mutate_check, "ROOT", repo)
+    calls: list[list[dict]] = []
+
+    def run_set(spec):
+        calls.append(spec)
+        return 1 if spec[0]["name"] == "test mutant" else 0
+
+    monkeypatch.setattr(mutate_check, "_run_set", run_set)
+    rc = mutate_check.main(["--touched", base])
+    out = capsys.readouterr().out
+    lines = out.splitlines()
+    assert rc == 1, out
+    assert lines[0] == "tests/mutations/by_file.json"
+    assert lines[1] == "tests/mutations/by_test.json"
+    assert "untouched.json" not in out
+    assert lines[-1] == "1 not killed"
+    assert [spec[0]["name"] for spec in calls] == ["file mutant", "test mutant"]
+
+
+def test_touched_refuses_to_start_while_a_sidecar_exists(tmp_path, monkeypatch, capsys):
+    repo, base = _touched_repo(tmp_path)
+    monkeypatch.setattr(mutate_check, "ROOT", repo)
+    original = (repo / "src" / "mod.py").read_bytes()
+    _plant_sidecar(repo, "src/mod.py", original)
+    (repo / "src" / "mod.py").write_bytes(b"X = 9\n")
+    rc = mutate_check.main(["--touched", base])
+    out = capsys.readouterr().out
+    assert rc == 2
+    assert "src/mod.py" in out
+    assert "--restore" in out
+    assert (repo / "src" / "mod.py").read_bytes() == b"X = 9\n"
