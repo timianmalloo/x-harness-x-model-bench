@@ -5,7 +5,6 @@ Pure over a loaded Catalog; reads a file only in load_catalog.
 
 from __future__ import annotations
 
-import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from decimal import Decimal
@@ -86,7 +85,6 @@ def area(
     area_id: str,
     cat: Catalog,
 ) -> tuple[Measure, tuple[tuple[str, str], ...]]:
-    # RED-FIRST MUTANT: keeps NA metric's weight in the denominator
     metric_ids = cat.areas.get(area_id, ())
     included_sum = Decimal(0)
     denom = Decimal(0)
@@ -95,15 +93,15 @@ def area(
         entry = cat.metrics.get(mid, {})
         if entry.get("kind") != "score" or entry.get("weight", 0) <= 0:
             continue
-        weight = Decimal(str(entry.get("weight", 1)))
-        denom += weight  # Bug: adds all weights unconditionally
         score = scores.get(mid)
         if score is None or score.value is None:
             reason = score.reason if score and score.reason else "not recorded"
             excluded.append((mid, reason))
         else:
+            weight = Decimal(str(entry.get("weight", 1)))
             included_sum += weight * Decimal(str(score.value))
-    if denom == Decimal(0) or not any(scores.get(m) and scores[m].value is not None for m in metric_ids):
+            denom += weight
+    if denom == Decimal(0):
         return Measure(None, f"no {area_id} metric recorded"), tuple(excluded)
     return Measure(included_sum / denom, None), tuple(excluded)
 
