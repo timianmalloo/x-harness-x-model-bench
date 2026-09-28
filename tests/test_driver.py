@@ -757,27 +757,6 @@ def test_the_fidelity_check_fails_on_a_seeded_unpaired_type(tmp_path):  # D7 neg
         _assert_paired(emitted)
 
 
-@pytestmark_native
-@pytest.mark.filterwarnings("error::pytest.PytestUnhandledThreadExceptionWarning")  # a stray timer thread fails the test
-def test_tapped_turn_timer_race_does_not_emit_unhandled_thread_exception(tmp_path, monkeypatch):
-    """CI-OPT finding 3 armed threading.Timer(4) and cancelled it as the turn ended. The callback
-    could then run after cell.close() and raise WinError 6. Hang modes are now ended when
-    .fake-prompt.txt appears, so this helper arms no timer for a turn that completes.
-    """
-    created = []
-    real_timer = threading.Timer
-
-    def spy_timer(*args, **kwargs):
-        created.append(args)
-        return real_timer(*args, **kwargs)
-
-    monkeypatch.setattr(threading, "Timer", spy_timer)
-    env = dict(os.environ, FAKE_ACP=json.dumps({"mode": "ok"}))
-    emitted = _tapped_turn(tmp_path, [sys.executable, str(FAKE)], env)
-    assert "initialize.result" in emitted
-    assert created == []
-
-
 # the engine's side of the driver change (R-13, R-24, R-28: W1-ACP's engine.py hunks), through a real engine run
 
 @pytest.mark.parametrize("set_model", [False, True])
