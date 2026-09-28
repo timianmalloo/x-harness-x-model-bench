@@ -1144,3 +1144,47 @@ Append only. One entry per ruling. Newest last.
   4. DR-EG-3, red first: `bench report` without the environment variable yields per-section verdicts, `scanned` without `email`, and `egress: partial: email not supplied`. The `operator is None` early return in `_publish` is deleted. `Operator.__post_init__` requires a non-empty username and home; the email is non-empty or `None`.
   5. Mutants for each new branch join `tests/mutations/egress.json`. The Leader stamps the gate with a real run.
   6. No live test is required for this ruling; US-46 c2 and US-47 c3 stand as run today.
+
+## R-81 · 2026-09-28 · Owner seat (Fable) · DR-R-1..10: DR-R-1..9 every recommended default is granted; DR-R-10 (b): board goldens are keyed by `board.EXPORT_VERSION`, the catalog stays `0.5`, and the US-4 control checks the (catalog, export-version) pair
+
+- **Ruling:**
+  - **DR-R-1: granted.** Heatmap text is `#000` or `#fff` (`--on-heat-*`), whichever contrasts more. The spec's clause "switches ink by cell luminance to keep 4.5:1" (`:1009`) stays true as written; only the ink tokens differ. The bound is Verified by the design's arithmetic: the two ratios multiply to 21, so the larger is at least √21 = 4.58.
+  - **DR-R-2: granted.** Archive presence is decided at generation time, and the pointer text is always visible. The residual risk, that a file copied alone shows a dead link, is accepted and stated in About this run.
+  - **DR-R-3: granted.** Dark mode follows `prefers-color-scheme`, with no toggle and no stored preference.
+  - **DR-R-4: granted.** Per combo: the `pack=on` cells whose pass@1 differs from their paired `pack=off` cell, at most 2 per combo, chosen by cell id; up to 8,000 characters each; each excerpt passes through `egress.check`.
+  - **DR-R-5: granted.** `bench report <run> --summaries` is the only trigger, and it refuses while any run is live. Plain `bench report` makes no model call.
+  - **DR-R-6: granted, composed with R-80.** `egress.check` runs per embedded excerpt and per summary, a hit withholds that item as `withheld: sensitive content`, and HB-SEC-001 stays the page-level backstop. The canary source is `egress.CANARIES` (R-80 c3), the scan always runs (R-80 c4), and the verdicts land in `report-record.json` (R-80 c1).
+  - **DR-R-7: granted.** F-1 is fixed in R0 under row 20, with the reason string from phase4-statistics `:336`. No live seam: S5 has joined (the `0.5` freeze entry carries `board_golden`, which R-78 c5 allowed only after S4–S7 joined). The class is registered at the fix (condition 4).
+  - **DR-R-8: granted.** The section and nav label is **Runs**; the table caption is "Every cell of the run".
+  - **DR-R-9: granted.** `playwright` becomes a pinned dev dependency, with a vendored, pinned `axe-core` under `tests/vendor/` and its MPL-2.0 licence, in a `browser` pytest marker ring run at readiness.
+  - **DR-R-10: (b).**
+    - `board.py` gains `EXPORT_VERSION: int`. The `0.5` freeze pinned version `1`; R0 ships `2`.
+    - The export bytes carry `"export_version"` beside `method` and `catalog_version`, and the header's disclosure row names it (G12, one source).
+    - Board goldens are pinned per export version, and the catalog stays `0.5`.
+    - R-78 c5's last sentence is amended: *a catalog-content change after the freeze is `0.6`; a statistics-code change is `EXPORT_VERSION + 1`, and both are visible in the bytes.*
+    - (a) is refused: a `0.6` whose `catalog_hash` equals `0.5`'s says content changed when it did not (ADR-0006:59, content-addressed).
+    - (c) is refused: check (e) is append-only against the merge base precisely so that a same-commit re-pin cannot pass. An audited exception is the control's own defect signature.
+  - **The freeze record.**
+    - A new top-level, append-only `board_exports:` map is keyed by export version.
+    - Its first entry is `'1': {catalog: '0.5', golden: {c44dd2b-no-heads: 0f745f…, heads: 0f745f…}}`. It is a copy of the freeze-time pin, which the control holds equal, as R-59 DR-5 holds the rubric copy.
+    - Then `'2': {catalog: '0.5', golden: {…}}` is written at R0's join.
+    - The existing `'0.5'.board_golden` is untouched. It remains the freeze's historical record, still guarded by (c) and (e).
+  - **The control (`tests/test_catalog_version.py`).** Board goldens live at `tests/fixtures/board/<N>/<fixture>.board.export`; the `0.5` tree's `.board.export` files stay frozen. For a released catalog `v` and the current `N`:
+    - (a) the `board.export` of each fixture graded under `v` equals its golden under `N`;
+    - (c) the golden files' sha256 equal `board_exports[N].golden`;
+    - (d) fails when `board_exports[N]` is absent or its `catalog` is not `v`;
+    - (e) extends to `board_exports`: an entry present at the merge base is never changed or removed. The control also asserts `board_exports['1'].golden == versions['0.5'].board_golden`.
+    The `.dev` exemption is unchanged. A board byte change without an `EXPORT_VERSION` bump fails (a) under a released catalog, as today. A bump without a new `board_exports` entry fails (d).
+- **Reasoning:**
+  - DR-R-1..9 are each the smallest option that keeps the spec's words true. The two vetoes (Test Architect, UX & Accessibility) already passed the design with these defaults in it (`phase4-report.md` §17).
+  - DR-R-10 carries DR-S-4's intent one step further. R-78 separated statistics bytes from catalog bytes so that "a statistics fix never looks like a silent score move". Keying the board golden by catalog version re-coupled them the moment the first board fix arrived. Two independently versioned things need two version numbers, each in the bytes it governs.
+  - R0 does not touch `views.export`, and the control's views check (a) proves it at the join. If the F-1 fix moved a score, (a) fails on `heads.export`, and the answer is a catalog bump after all.
+  - The past record keeps its meaning. A `0.5` pass rendered under export `1` reads every area NA and says `export_version: 1`; the same pass under `2` says `2`. Nothing is rewritten (DM: Type-2 by version, derive don't store).
+- **Conditions:**
+  1. **DR-R-10 lands red first, in R0, before any other board change:** first the control's new (a)/(c)/(d)/(e) cases on the 9.x fixture root (`test_catalog_version.py:166`), then `EXPORT_VERSION = 2`, then the `board_exports` rows. R0's join reports the control's full output, not just its exit code. `bench/catalog-freeze.yaml` stays Leader-owned.
+  2. A change to `METHOD`, any export key, any encoding (precision, `null` for missing) or any row or column addition bumps `EXPORT_VERSION`. The comment on the constant says so, and T-B3's pinned digest comment (`phase4-statistics.md:681`) is updated to name `EXPORT_VERSION` too.
+  3. DR-R-4/5: the summary manifest records the sampling rule's name, the cell ids chosen and each excerpt's length. The live-run refusal exits with a named `HB-` code, added to the design's error table before R7 closes.
+  4. DR-R-7: `docs/lessons/defect-classes.md` gains "code diverging from its own design's reason text". Its control is a test asserting that the one-arm reason equals the literal `not computed (no <area> score in pack=<arm>)`.
+  5. DR-R-6: each withheld excerpt is a row in `report-record.json` (section, item id, class), and the header's withheld count includes it (R-80 c1).
+  6. DR-R-9: the Security & Identity Architect reviews both new dependencies before merge (a new dependency convenes that lens). The `axe-core` file's sha256 is recorded beside its licence. `playwright install` runs only in the readiness ring, never in the offline gate. The `browser` ring is a fail-closed required check at readiness.
+  7. The audit entry for R0 cites this ruling and the amended R-78 c5 sentence.
