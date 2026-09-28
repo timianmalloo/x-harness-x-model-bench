@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-28T04:04:16Z",
+  "generated": "2026-09-28T04:24:23Z",
   "audit": [
     {
       "actor": null,
@@ -43416,6 +43416,448 @@ window.AUDIT_DATA = {
         "branch": "w4-s6",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M3K43C0KN7JV5QB6S7SN1PNV",
+      "shortname": "Goal: implement slice S7 of docs/design/phase4-statistics.md, the run co…",
+      "datetime": "2026-09-28T04:24:19Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: implement slice S7 of docs/design/phase4-statistics.md, the run comparison: board.compare, the #comparison section in the report (CLI and HTML), and `bench report <run> --baseline <run>`, red first.\nMeasured (Leader, 2026-09-27): S1-S6 are merged (stats.py, composites.py, board.py with board.build and board.export, the report reading the board, --seed/--resamples). At the S6 join the Leader found a defect of class VER-A (docs/lessons/defect-classes.md): board.build applied the workstation's catalog 0.5.dev anchors to a pass graded under 0.4; it now uses anchors only when the loaded catalog's version equals the current pass's (the primary measure is pass@1 otherwise, and composite values are NA \"no normalisation anchors for catalog <version>\"). Rulings R-78 DR-S-6 and condition 6 bind the comparison: stats.CONTAMINATION_PRONE is the only source of the E1-E3 exclusion and the comparison prints the same statement as the pack effect (`Excluded as contamination-prone: ...` / `none in this run`).\nDone when: every S7 deliverable in the design's slice table (row S7, about line 763) exists; T-M1 is committed red first, failing on an assertion, then green; T-M1..M3, T-B4 and T-B5 pass; T-M1..M3 include one case where run B holds an E* task and the comparison names it under the same statement as the pack effect (R-78 c6); the comparison's preconditions follow the design (same combos, BOM version and catalog version; task versions equal; each violated precondition is a named HB-STA-002 refusal, not a silent partial comparison); the VER-A rule holds for both runs: a composite delta is computed only when both runs' current passes are of the loaded catalog's version, otherwise the area rows are NA with the reason, and pass@1 deltas are still computed; a test pins that rule; `bench report <run> --baseline <run>` renders the #comparison section (B - A per area and combo with intervals, `no detectable effect` where the interval touches zero) in the CLI table and the HTML, and the Leader will read it on two real runs; every mutant the design lists for S7 is added (board.json) and killed (uv run python tools/mutate_check.py tests/mutations/board.json; record the output lines); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: freezing 0.5 or re-pinning goldens (the Leader, R-78 condition 5); the full report's other sections (row 20); any file under runs/ written; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-statistics.md (the comparison section, T-M1..M3, T-B4, T-B5, the S7 row near line 763, the error table); docs/notes/rulings.md R-78; docs/lessons/defect-classes.md VER-A; src/harness_bench/board.py (build, compare if a stub exists, export); src/harness_bench/stats.py (paired_delta, CONTAMINATION_PRONE); src/harness_bench/report/{__init__,cli_table,html}.py; src/harness_bench/cli.py (cmd_report); tests/test_board.py; tests/stats_fixtures.py; tests/mutations/board.json; docs/specs/harness-bench.md (the comparison, around line 520 and the layout near 941). Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3K43FNVCJA5HWG32H7JRMP3",
+      "shortname": "compile-Goal: implement slice S7 of docs/design/phase4-statistics.md, the run co…",
+      "datetime": "2026-09-28T04:24:23Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement slice S7 of docs/design/phase4-statistics.md, the run comparison: board.compare, the #comparison section in the report (CLI and HTML), and `bench report <run> --baseline <run>`, red first. Measured (Leader, 2026-09-27): S1-S6 are merged (stats.py, composites.py, board.py with board.build and board.export, the report reading the board, --seed/--resamples). At the S6 join the Leader found a defect of class VER-A (docs/lessons/defect-classes.md): board.build applied the workstation's catalog 0.5.dev anchors to a pass graded under 0.4; it now uses anchors only when the loaded catalog's version equals the current pass's (the primary measure is pass@1 otherwise, and composite values are NA \"no normalisation anchors for catalog <version>\"). Rulings R-78 DR-S-6 and condition 6 bind the comparison: stats.CONTAMINATION_PRONE is the only source of the E1-E3 exclusion and the comparison prints the same statement as the pack effect (`Excluded as contamination-prone: ...` / `none in this run`).\nDone when: every S7 deliverable in the design's slice table (row S7, about line 763) exists; T-M1 is committed red first, failing on an assertion, then green; T-M1..M3, T-B4 and T-B5 pass; T-M1..M3 include one case where run B holds an E* task and the comparison names it under the same statement as the pack effect (R-78 c6); the comparison's preconditions follow the design (same combos, BOM version and catalog version; task versions equal; each violated precondition is a named HB-STA-002 refusal, not a silent partial comparison); the VER-A rule holds for both runs: a composite delta is computed only when both runs' current passes are of the loaded catalog's version, otherwise the area rows are NA with the reason, and pass@1 deltas are still computed; a test pins that rule; `bench report <run> --baseline <run>` renders the #comparison section (B - A per area and combo with intervals, `no detectable effect` where the interval touches zero) in the CLI table and the HTML, and the Leader will read it on two real runs; every mutant the design lists for S7 is added (board.json) and killed (uv run python tools/mutate_check.py tests/mutations/board.json; record the output lines); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring); uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: freezing 0.5 or re-pinning goldens (the Leader, R-78 condition 5); the full report's other sections (row 20); any file under runs/ written; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (the comparison section, T-M1..M3, T-B4, T-B5, the S7 row near line 763, the error table); docs/notes/rulings.md R-78; docs/lessons/defect-classes.md VER-A; src/harness_bench/board.py (build, compare if a stub exists, export); src/harness_bench/stats.py (paired_delta, CONTAMINATION_PRONE); src/harness_bench/report/{__init__,cli_table,html}.py; src/harness_bench/cli.py (cmd_report); tests/test_board.py; tests/stats_fixtures.py; tests/mutations/board.json; docs/specs/harness-bench.md (the comparison, around line 520 and the layout near 941). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: every S7 deliverable in the design's slice table (row S7, about line 763) exists | phrase: every S7 deliverable in the design's slice table (row S7, about line 763) exists |\n| done_when: T-M1 is committed red first, failing on an assertion, then green | phrase: T-M1 is committed red first, failing on an assertion, then green |\n| done_when: T-M1..M3, T-B4 and T-B5 pass | phrase: T-M1..M3, T-B4 and T-B5 pass |\n| done_when: T-M1..M3 include one case where run B holds an E* task and the comparison names it under the same statement as the pack effect (R-78 c6) | phrase: T-M1..M3 include one case where run B holds an E* task and the comparison names it under the same statement as the pack effect (R-78 c6) |\n| done_when: the comparison's preconditions follow the design (same combos, BOM version and catalog version | phrase: the comparison's preconditions follow the design (same combos, BOM version and catalog version |\n| done_when: task versions equal | phrase: task versions equal |\n| done_when: each violated precondition is a named HB-STA-002 refusal, not a silent partial comparison) | phrase: each violated precondition is a named HB-STA-002 refusal, not a silent partial comparison) |\n| done_when: the VER-A rule holds for both runs: a composite delta is computed only when both runs' current passes are of the loaded catalog's version, otherwise the area rows are NA with the reason, and pass@1 deltas are still computed | phrase: the VER-A rule holds for both runs: a composite delta is computed only when both runs' current passes are of the loaded catalog's version, otherwise the area rows are NA with the reason, and pass@1 deltas are still computed |\n| done_when: a test pins that rule | phrase: a test pins that rule |\n| done_when: `bench report <run> --baseline <run>` renders the #comparison section (B - A per area and combo with intervals, `no detectable effect` where the interval touches zero) in the CLI table and the HTML, and the Leader will read it on two real runs | phrase: `bench report <run> --baseline <run>` renders the #comparison section (B - A per area and combo with intervals, `no detectable effect` where the interval touches zero) in the CLI table and the HTML, and the Leader will read it on two real runs |\n| done_when: every mutant the design lists for S7 is added (board.json) and killed (uv run python tools/mutate_check.py tests/mutations/board.json | phrase: every mutant the design lists for S7 is added (board.json) and killed (uv run python tools/mutate_check.py tests/mutations/board.json |\n| done_when: record the output lines) | phrase: record the output lines) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring) | phrase: uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring) |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: freezing 0.5 or re-pinning goldens (the Leader, R-78 condition 5) | phrase: freezing 0.5 or re-pinning goldens (the Leader, R-78 condition 5) |\n| not_in_scope: the full report's other sections (row 20) | phrase: the full report's other sections (row 20) |\n| not_in_scope: any file under runs/ written | phrase: any file under runs/ written |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- bench report <run> --baseline <run: unresolved (not found)\n- Excluded as contamination-prone: : unresolved (not found)\n- none in this run: unresolved (not found)\n- no detectable effect: unresolved (not found)\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 f1287f87dcd98736870f8601dd4ba57ddb9501b0aea99ab8b9784e4434c94140\n- stats.py: src/harness_bench/stats.py sha256 c4b05430bd544d9079c4afc9e058e40320a992dfc9804ba6e394abf2ddbc4e83\n- composites.py: src/harness_bench/composites.py sha256 4d0296c8b87ae82c814605aa603bc711da6b1a705f308563aba20d575911a5a8\n- board.py: src/harness_bench/board.py sha256 c3fa7ad8413defae7e344d404727050b0f64c81c84451902236cff5c39cbf459\n- --seed/--resamples: unresolved (not found)\n- docs/lessons/defect-classes.md: unresolved (ambiguous: 5 matches)\n- /: unresolved (outside repo)\n- board.json: tests/mutations/board.json sha256 5ffaa58ad4768972c5a0b460d404595b4439058ed7208d3e2079348d5b45341d\n- tools/mutate_check.py: tools/mutate_check.py sha256 df1e8be368ac77ce67eba3a3f761cddd85af8a623e025ba9efb9669a1aa22ff7\n- tests/mutations/board.json: tests/mutations/board.json sha256 5ffaa58ad4768972c5a0b460d404595b4439058ed7208d3e2079348d5b45341d\n- runs/: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- src/harness_bench/board.py: src/harness_bench/board.py sha256 c3fa7ad8413defae7e344d404727050b0f64c81c84451902236cff5c39cbf459\n- src/harness_bench/stats.py: src/harness_bench/stats.py sha256 c4b05430bd544d9079c4afc9e058e40320a992dfc9804ba6e394abf2ddbc4e83\n- src/harness_bench/report/{__init__,cli_table,html}.py: unresolved (not found)\n- src/harness_bench/cli.py: src/harness_bench/cli.py sha256 332c513dbe526785cc438fc97da1b3bfb5cd64431e4ce403a60822e22326a0cc\n- tests/test_board.py: tests/test_board.py sha256 8d76c6cb4e5bfba110aa315241f4bceb99e985abeda385403d9a8a4eb3bcaaa0\n- tests/stats_fixtures.py: tests/stats_fixtures.py sha256 ebaff5104059ce4edbc985ee12d04830b11544365495cb7f0eb06156fb139287\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3K43C0KN7JV5QB6S7SN1PNV\nraw sha256: 9f493af70951a69796d6f216a76c03ba847ae99609dd82a4f2dc20829c2ee282\ncompiler model: claude-opus-5-5\nengine seconds: 0.006\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3K43C0KN7JV5QB6S7SN1PNV for claude-code v1: 20 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "every S7 deliverable in the design's slice table (row S7, about line 763) exists",
+            "trace": {
+              "kind": "phrase",
+              "ref": "every S7 deliverable in the design's slice table (row S7, about line 763) exists"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "T-M1 is committed red first, failing on an assertion, then green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "T-M1 is committed red first, failing on an assertion, then green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "T-M1..M3, T-B4 and T-B5 pass",
+            "trace": {
+              "kind": "phrase",
+              "ref": "T-M1..M3, T-B4 and T-B5 pass"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "T-M1..M3 include one case where run B holds an E* task and the comparison names it under the same statement as the pack effect (R-78 c6)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "T-M1..M3 include one case where run B holds an E* task and the comparison names it under the same statement as the pack effect (R-78 c6)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the comparison's preconditions follow the design (same combos, BOM version and catalog version",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the comparison's preconditions follow the design (same combos, BOM version and catalog version"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "task versions equal",
+            "trace": {
+              "kind": "phrase",
+              "ref": "task versions equal"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "each violated precondition is a named HB-STA-002 refusal, not a silent partial comparison)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "each violated precondition is a named HB-STA-002 refusal, not a silent partial comparison)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the VER-A rule holds for both runs: a composite delta is computed only when both runs' current passes are of the loaded catalog's version, otherwise the area rows are NA with the reason, and pass@1 deltas are still computed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the VER-A rule holds for both runs: a composite delta is computed only when both runs' current passes are of the loaded catalog's version, otherwise the area rows are NA with the reason, and pass@1 deltas are still computed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test pins that rule",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test pins that rule"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "`bench report <run> --baseline <run>` renders the #comparison section (B - A per area and combo with intervals, `no detectable effect` where the interval touches zero) in the CLI table and the HTML, and the Leader will read it on two real runs",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`bench report <run> --baseline <run>` renders the #comparison section (B - A per area and combo with intervals, `no detectable effect` where the interval touches zero) in the CLI table and the HTML, and the Leader will read it on two real runs"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "every mutant the design lists for S7 is added (board.json) and killed (uv run python tools/mutate_check.py tests/mutations/board.json",
+            "trace": {
+              "kind": "phrase",
+              "ref": "every mutant the design lists for S7 is added (board.json) and killed (uv run python tools/mutate_check.py tests/mutations/board.json"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "record the output lines)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "record the output lines)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "freezing 0.5 or re-pinning goldens (the Leader, R-78 condition 5)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "freezing 0.5 or re-pinning goldens (the Leader, R-78 condition 5)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the full report's other sections (row 20)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the full report's other sections (row 20)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/ written",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/ written"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "every S7 deliverable in the design's slice table (row S7, about line 763) exists",
+            "T-M1 is committed red first, failing on an assertion, then green",
+            "T-M1..M3, T-B4 and T-B5 pass",
+            "T-M1..M3 include one case where run B holds an E* task and the comparison names it under the same statement as the pack effect (R-78 c6)",
+            "the comparison's preconditions follow the design (same combos, BOM version and catalog version",
+            "task versions equal",
+            "each violated precondition is a named HB-STA-002 refusal, not a silent partial comparison)",
+            "the VER-A rule holds for both runs: a composite delta is computed only when both runs' current passes are of the loaded catalog's version, otherwise the area rows are NA with the reason, and pass@1 deltas are still computed",
+            "a test pins that rule",
+            "`bench report <run> --baseline <run>` renders the #comparison section (B - A per area and combo with intervals, `no detectable effect` where the interval touches zero) in the CLI table and the HTML, and the Leader will read it on two real runs",
+            "every mutant the design lists for S7 is added (board.json) and killed (uv run python tools/mutate_check.py tests/mutations/board.json",
+            "record the output lines)",
+            "a test earns its place by a failure only it catches",
+            "uv run pytest -q -p no:cacheprovider -n auto passes (the full default ring)",
+            "uv run ruff check src tests tools is clean",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "implement slice S7 of docs/design/phase4-statistics.md, the run comparison: board.compare, the #comparison section in the report (CLI and HTML), and `bench report <run> --baseline <run>`, red first. Measured (Leader, 2026-09-27): S1-S6 are merged (stats.py, composites.py, board.py with board.build and board.export, the report reading the board, --seed/--resamples). At the S6 join the Leader found a defect of class VER-A (docs/lessons/defect-classes.md): board.build applied the workstation's catalog 0.5.dev anchors to a pass graded under 0.4; it now uses anchors only when the loaded catalog's version equals the current pass's (the primary measure is pass@1 otherwise, and composite values are NA \"no normalisation anchors for catalog <version>\"). Rulings R-78 DR-S-6 and condition 6 bind the comparison: stats.CONTAMINATION_PRONE is the only source of the E1-E3 exclusion and the comparison prints the same statement as the pack effect (`Excluded as contamination-prone: ...` / `none in this run`).",
+          "main_line_budget": "one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-statistics.md (the comparison section, T-M1..M3, T-B4, T-B5, the S7 row near line 763, the error table); docs/notes/rulings.md R-78; docs/lessons/defect-classes.md VER-A; src/harness_bench/board.py (build, compare if a stub exists, export); src/harness_bench/stats.py (paired_delta, CONTAMINATION_PRONE); src/harness_bench/report/{__init__,cli_table,html}.py; src/harness_bench/cli.py (cmd_report); tests/test_board.py; tests/stats_fixtures.py; tests/mutations/board.json; docs/specs/harness-bench.md (the comparison, around line 520 and the layout near 941). Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "freezing 0.5 or re-pinning goldens (the Leader, R-78 condition 5)",
+            "the full report's other sections (row 20)",
+            "any file under runs/ written",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.006,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3K43C0KN7JV5QB6S7SN1PNV",
+        "raw_sha256": "9f493af70951a69796d6f216a76c03ba847ae99609dd82a4f2dc20829c2ee282",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench report <run> --baseline <run"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Excluded as contamination-prone: "
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "none in this run"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "no detectable effect"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase4-statistics.md",
+            "reason": null,
+            "sha256": "f1287f87dcd98736870f8601dd4ba57ddb9501b0aea99ab8b9784e4434c94140",
+            "status": "resolved",
+            "token": "docs/design/phase4-statistics.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/stats.py",
+            "reason": null,
+            "sha256": "c4b05430bd544d9079c4afc9e058e40320a992dfc9804ba6e394abf2ddbc4e83",
+            "status": "resolved",
+            "token": "stats.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/composites.py",
+            "reason": null,
+            "sha256": "4d0296c8b87ae82c814605aa603bc711da6b1a705f308563aba20d575911a5a8",
+            "status": "resolved",
+            "token": "composites.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/board.py",
+            "reason": null,
+            "sha256": "c3fa7ad8413defae7e344d404727050b0f64c81c84451902236cff5c39cbf459",
+            "status": "resolved",
+            "token": "board.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--seed/--resamples"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 5 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/board.json",
+            "reason": null,
+            "sha256": "5ffaa58ad4768972c5a0b460d404595b4439058ed7208d3e2079348d5b45341d",
+            "status": "resolved",
+            "token": "board.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "df1e8be368ac77ce67eba3a3f761cddd85af8a623e025ba9efb9669a1aa22ff7",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/board.json",
+            "reason": null,
+            "sha256": "5ffaa58ad4768972c5a0b460d404595b4439058ed7208d3e2079348d5b45341d",
+            "status": "resolved",
+            "token": "tests/mutations/board.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/board.py",
+            "reason": null,
+            "sha256": "c3fa7ad8413defae7e344d404727050b0f64c81c84451902236cff5c39cbf459",
+            "status": "resolved",
+            "token": "src/harness_bench/board.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/stats.py",
+            "reason": null,
+            "sha256": "c4b05430bd544d9079c4afc9e058e40320a992dfc9804ba6e394abf2ddbc4e83",
+            "status": "resolved",
+            "token": "src/harness_bench/stats.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/report/{__init__,cli_table,html}.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "332c513dbe526785cc438fc97da1b3bfb5cd64431e4ce403a60822e22326a0cc",
+            "status": "resolved",
+            "token": "src/harness_bench/cli.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_board.py",
+            "reason": null,
+            "sha256": "8d76c6cb4e5bfba110aa315241f4bceb99e985abeda385403d9a8a4eb3bcaaa0",
+            "status": "resolved",
+            "token": "tests/test_board.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/stats_fixtures.py",
+            "reason": null,
+            "sha256": "ebaff5104059ce4edbc985ee12d04830b11544365495cb7f0eb06156fb139287",
+            "status": "resolved",
+            "token": "tests/stats_fixtures.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/specs/harness-bench.md",
+            "reason": null,
+            "sha256": "7f3a8675fbafdd9599e5a90bfd6d3674e8ca85ca79ce301108aab80517198094",
+            "status": "resolved",
+            "token": "docs/specs/harness-bench.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
     }
   ],
   "changes": [
