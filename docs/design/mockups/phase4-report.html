@@ -42,6 +42,9 @@ a{color:var(--focus)}
 :focus-visible{outline:var(--focus-w) solid var(--focus);outline-offset:var(--focus-w)}
 .bar{position:sticky;top:0;z-index:2;background:var(--bg);border-bottom:var(--rule-w) solid var(--rule-strong);padding:var(--s2) 0;display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);align-items:center}
 .bar nav{display:flex;flex-wrap:wrap;gap:var(--s1) var(--s3);font-size:var(--fs-small)}
+select{font:inherit;min-height:var(--target)}
+.frame a.evlink{display:inline-flex}
+.bar nav a,.region td a,.claims a{display:inline-flex;align-items:center;min-height:var(--target)}
 .tg{font:inherit;font-size:var(--fs-small);min-height:var(--target);min-width:var(--target);padding:0 var(--s2);background:var(--panel);color:var(--ink);border:var(--rule-w) solid var(--rule-strong);border-radius:var(--radius);cursor:pointer}
 .tg[aria-pressed="true"]{box-shadow:inset 0 calc(-1 * var(--focus-w)) 0 var(--focus);font-weight:600}
 .tg[aria-pressed="true"]::before{content:"\2713  "}
@@ -121,6 +124,7 @@ figure{margin:0}figcaption{font-size:var(--fs-small);color:var(--ink-2)}
   <div role="group" aria-label="Pack setting">
     <button class="tg" aria-pressed="true" data-pack="both">both</button><button class="tg" aria-pressed="false" data-pack="on">on</button><button class="tg" aria-pressed="false" data-pack="off">off</button>
   </div>
+  <p class="small" id="bar-reason" aria-live="polite"></p>
   <nav aria-label="Sections"><a href="#validity">Validity</a><a href="#leaderboard">Leaderboard</a><a href="#pack-effect">Pack effect</a><a href="#frontier">Cost frontier</a><a href="#areas">Areas</a><a href="#scenarios">Scenarios</a><a href="#context">Context growth</a><a href="#summaries">Summaries</a><a href="#runs">Runs</a><a href="#comparison">Comparison</a></nav>
 </div>
 
@@ -152,14 +156,16 @@ figure{margin:0}figcaption{font-size:var(--fs-small);color:var(--ink-2)}
 <section id="frontier" aria-labelledby="f-h"><h2 id="f-h">Cost frontier</h2>
   <div class="charts hide-empty">
     <figure><p class="na">Cost not recorded for any combo: no price list entry for gpt-6-sol, claude-haiku-4-5-20251001.</p><figcaption>pass@1 vs cost per task (no axes drawn)</figcaption></figure>
-    <figure><svg id="fr-tok" role="img" aria-label="pass@1 against tokens per cell" viewBox="0 0 300 200" width="100%"></svg><figcaption>pass@1 vs tokens per cell (thousands), whiskers on pass@1</figcaption></figure>
+    <figure><svg id="fr-tok" role="img" aria-label="pass@1 against tokens per cell" viewBox="0 0 300 200" width="100%"></svg><figcaption>pass@1 vs tokens per cell (thousands), whiskers on pass@1; marker shape = combo, hollow = pack off</figcaption></figure>
   </div>
+  <details class="hide-empty"><summary>Table</summary><div class="region" role="region" tabindex="0" aria-label="Cost frontier table"><table><thead><tr><th scope="col">Combo</th><th scope="col">Pack</th><th scope="col" class="num">pass@1</th><th scope="col">95% interval</th><th scope="col" class="num">Tokens per cell</th><th scope="col" class="num">Cost per task (USD)</th></tr></thead><tbody id="fr-body"></tbody></table></div></details>
   <p class="st" data-when="empty">No completed cells to plot.</p>
 </section>
 
 <section id="areas" aria-labelledby="a-h"><h2 id="a-h">Areas</h2>
   <p class="small muted">Illustrative values (smoke-1 has none until R0). Fixed axis order: correctness, rigor, drift, specification, autonomy, coordination, cost. Pack on solid, pack off dashed.</p>
   <div class="charts hide-empty" id="radars"></div>
+  <details class="hide-empty"><summary>Table</summary><div class="region" role="region" tabindex="0" aria-label="Areas table"><table><thead><tr><th scope="col">Combo</th><th scope="col">Pack</th><th scope="col" class="num">correctness</th><th scope="col" class="num">rigor</th><th scope="col" class="num">drift</th><th scope="col" class="num">specification</th><th scope="col" class="num">autonomy</th><th scope="col" class="num">coordination</th><th scope="col" class="num">cost</th></tr></thead><tbody id="ar-body"></tbody></table></div></details>
   <p class="st" data-when="empty">No completed cells to plot.</p>
 </section>
 
@@ -172,7 +178,8 @@ figure{margin:0}figcaption{font-size:var(--fs-small);color:var(--ink-2)}
 
 <section id="context" aria-labelledby="c-h"><h2 id="c-h">Context growth</h2>
   <label class="hide-empty">Task <select><option>B1</option><option>A1</option><option>D1: No turns recorded for D1.</option></select></label>
-  <figure class="hide-empty"><svg id="cg" role="img" aria-label="Prompt tokens per turn, B1, illustrative" viewBox="0 0 560 170" width="100%"></svg><figcaption>Prompt tokens per turn (thousands), illustrative. ▲ marks a compaction; the table lists each one.</figcaption></figure>
+  <figure class="hide-empty"><svg id="cg" role="img" aria-label="Prompt tokens per turn, B1, illustrative" viewBox="0 0 560 170" width="100%"></svg><figcaption>Prompt tokens per turn (thousands), illustrative. ▲ marks a compaction; the table lists each one. Line style = combo (solid, long dash, dot).</figcaption></figure>
+  <details class="hide-empty"><summary>Table</summary><div class="region" role="region" tabindex="0" aria-label="Context growth table"><table><thead><tr><th scope="col">Combo</th><th scope="col">Prompt tokens per turn, turns 1-8 (thousands)</th><th scope="col">Compactions</th></tr></thead><tbody id="cg-body"></tbody></table></div></details>
   <p class="st" data-when="empty">No completed cells to plot.</p>
 </section>
 
@@ -192,7 +199,7 @@ figure{margin:0}figcaption{font-size:var(--fs-small);color:var(--ink-2)}
   <div class="region" role="region" tabindex="0" aria-labelledby="r-cap"><table><caption id="r-cap">Every cell of the run (3 of 36 shown in the mockup)</caption>
   <thead><tr><th scope="col">Cell</th><th scope="col">Outcome</th><th scope="col">Validity</th><th scope="col" class="num">pass@1</th><th scope="col" class="num">Tokens</th><th scope="col" class="num">Wall (s)</th><th scope="col" class="num">Cost (USD)</th><th scope="col">Evidence</th></tr></thead>
   <tbody>
-  <tr id="cell-A1-c1-on"><td>A1.copilot-sol.pack-on.r1</td><td>completed</td><td>valid</td><td class="num">1.00</td><td class="num">637,940 tok</td><td class="num">91.3 s</td><td class="num"><button class="ev na" data-tip="not recorded — no price list entry for gpt-6-sol">NA</button></td><td><a data-when="default archive" href="grading/grade-20260928T051943-3f4910/b32fd5dd6f0baab4/correctness/oracle.log">oracle.log</a><span class="st small" data-when="noarchive">This copy doesn't include the run archive. Evidence path: grading/grade-20260928T051943-3f4910/b32fd5dd6f0baab4/correctness/oracle.log.</span></td></tr>
+  <tr id="cell-A1-c1-on"><td>A1.copilot-sol.pack-on.r1</td><td>completed</td><td>valid</td><td class="num">1.00</td><td class="num">637,940 tok</td><td class="num">91.3 s</td><td class="num"><button class="ev na" data-tip="not recorded — no price list entry for gpt-6-sol">NA</button></td><td><a class="evlink" data-when="default archive" href="grading/grade-20260928T051943-3f4910/b32fd5dd6f0baab4/correctness/oracle.log">oracle.log</a><span class="st small" data-when="noarchive">This copy doesn't include the run archive. Evidence path: grading/grade-20260928T051943-3f4910/b32fd5dd6f0baab4/correctness/oracle.log.</span></td></tr>
   <tr><td>B1.copilot-sol.pack-on.r1</td><td>completed</td><td>valid</td><td class="num">0.00</td><td class="num">1,610,497 tok</td><td class="num">254.3 s</td><td class="num"><button class="ev na" data-tip="not recorded — no price list entry for gpt-6-sol">NA</button></td><td>oracle.log</td></tr>
   <tr><td>F1.codex-sol.pack-on.r1 (user-config exposed, N5)</td><td>completed</td><td class="bad">invalid (benchmark) HB-CELL-116</td><td class="num"><button class="ev na" data-tip="not recorded — cell invalid (HB-CELL-116)">NA</button></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td>cause shown in the cell card</td></tr>
   </tbody></table></div>
@@ -212,6 +219,8 @@ const S=(p,tag,a)=>{const e=document.createElementNS(NS,tag);for(const k in a)e.
 const T=(p,x,y,t,a)=>{const e=S(p,'text',Object.assign({x,y},a||{}));e.textContent=t;return e};
 /* smoke-1 leaderboard, verbatim from runs/smoke-1/report.html (G6) */
 const LB=[['c1','copilot-sol','off',93.0,84.2,97.9,1.00,1.00,1.00,206971,80.3,'6/6'],['c3','cc-opus','off',76.5,45.1,95.1,0.83,0.50,1.00,223176,219.2,'6/6'],['c2','codex-sol','off',69.4,32.0,94.7,0.80,0.40,1.00,160748,102.8,'5/6'],['c2','codex-sol','on',65.0,31.0,89.7,0.80,0.40,1.00,835310,206.6,'5/6'],['c1','copilot-sol','on',60.2,22.0,93.1,0.67,0.33,1.00,1734587,219.8,'6/6'],['c3','cc-opus','on',44.5,11.9,77.2,0.50,0.17,0.83,403100,215.4,'6/6']];
+/* marker shape per combo, matching the legend: c1 circle, c2 square, c3 triangle (colour is never the only carrier) */
+const mark=(g,c,x,y,hollow)=>{const cls='mk-'+c+(hollow?' hollow':'');if(c==='c1')return S(g,'circle',{cx:x,cy:y,r:5,class:cls});if(c==='c2')return S(g,'rect',{x:x-5,y:y-5,width:10,height:10,class:cls});return S(g,'path',{d:`M${x} ${y-6} ${x+6} ${y+5} ${x-6} ${y+5}Z`,class:cls})};
 const ivbar=(lo,hi,pt,max)=>{const w=80,s=v=>4+v/max*(w-8),svg=document.createElementNS(NS,'svg');svg.setAttribute('class','ivbar');svg.setAttribute('width',w);svg.setAttribute('height',12);svg.setAttribute('aria-hidden','true');S(svg,'line',{x1:s(lo),x2:s(hi),y1:6,y2:6});S(svg,'circle',{cx:s(pt),cy:6,r:3});return svg};
 const cell=(tr,txt,cls,attrs)=>{const td=document.createElement('td');if(cls)td.className=cls;for(const k in attrs||{})td.setAttribute(k,attrs[k]);if(txt instanceof Node)td.appendChild(txt);else td.textContent=txt;tr.appendChild(td);return td};
 for(const r of LB){const tr=document.createElement('tr');tr.dataset.combo=r[0];tr.dataset.pack=r[2];
@@ -237,7 +246,8 @@ const PE=[['cc-opus',-0.33,-0.67,0.00],['codex-sol',0.00,-0.60,0.60],['copilot-s
 (()=>{const g=$('#fr-tok'),x=v=>40+v/1800*250,y=v=>170-v*150;S(g,'line',{x1:40,x2:290,y1:170,y2:170,class:'axis'});S(g,'line',{x1:40,x2:40,y1:15,y2:170,class:'axis'});
  T(g,4,24,'1.00');T(g,4,174,'0.00');T(g,240,192,'1,800 k');
  LB.forEach(r=>{const cx=x(r[9]/1000);S(g,'line',{x1:cx,x2:cx,y1:y(r[7]),y2:y(r[8]),class:'mk-'+r[0]+' whisk'+(r[2]==='off'?' dash':''),'data-interval-lo':r[7],'data-interval-hi':r[8]});
-  S(g,'circle',{cx,cy:y(r[6]),r:5,class:'mk-'+r[0]+(r[2]==='off'?' hollow':'')});});})();
+  mark(g,r[0],cx,y(r[6]),r[2]==='off');
+  const tr=document.createElement('tr');tr.dataset.combo=r[0];tr.dataset.pack=r[2];[r[1],r[2],r[6].toFixed(2),`[${r[7].toFixed(2)}, ${r[8].toFixed(2)}]`,r[9].toLocaleString('en-US')+' tok','NA'].forEach((t,j)=>{const td=cell(tr,t,j>=2&&j!==3?'num':(j===3?'num':''));if(j===2){td.setAttribute('data-interval-lo',r[7]);td.setAttribute('data-interval-hi',r[8])}if(j===5){td.className='num na';td.textContent='NA (no price list entry)'}});$('#fr-body').appendChild(tr);});})();
 /* radars, illustrative */
 const AX=['correctness','rigor','drift','specification','autonomy','coordination','cost'];
 [['c1','copilot-sol',[90,70,80,60,75,null,null],[85,60,70,55,70,null,null]],['c2','codex-sol',[70,65,60,50,80,null,null],[72,60,62,52,78,null,null]],['c3','cc-opus',[50,80,55,70,60,null,null],[76,75,60,65,62,null,null]]].forEach(([c,name,on,off])=>{
@@ -245,10 +255,13 @@ const AX=['correctness','rigor','drift','specification','autonomy','coordination
  const pt=(i,v)=>{const a=-Math.PI/2+i*2*Math.PI/7,r=v/100*70;return[110+r*Math.cos(a),100+r*Math.sin(a)]};
  AX.forEach((ax,i)=>{const [ex,ey]=pt(i,100);S(g,'line',{x1:110,y1:100,x2:ex,y2:ey,class:'grid'});const na=on[i]===null;T(g,ex-(ex<110?40:0),ey+(ey>100?12:-2),ax.slice(0,5)+(na?' NA':''))});
  [[on,''],[off,' dash']].forEach(([vals,d])=>{const pts=vals.map((v,i)=>v===null?null:pt(i,v)).filter(Boolean).map(p=>p.join(',')).join(' ');S(g,'polygon',{points:pts,class:'mk-'+c+d,'fill-opacity':'0.12','stroke-width':'2'})});
- const cap=document.createElement('figcaption');cap.textContent=name+': coordination and cost NA (not recorded)';fig.appendChild(cap);$('#radars').appendChild(fig);});
+ const cap=document.createElement('figcaption');cap.textContent=name+': coordination and cost NA (not recorded)';fig.appendChild(cap);$('#radars').appendChild(fig);
+ [['on',on],['off',off]].forEach(([p,vals])=>{const tr=document.createElement('tr');tr.dataset.combo=c;tr.dataset.pack=p;cell(tr,name);cell(tr,p);vals.forEach(v=>cell(tr,v===null?'NA (not recorded)':v.toFixed(1),v===null?'num na':'num'));$('#ar-body').appendChild(tr)});});
 /* context growth, illustrative */
 (()=>{const g=$('#cg'),x=t=>40+t*50,y=v=>150-v/300*130;S(g,'line',{x1:40,x2:550,y1:150,y2:150,class:'axis'});S(g,'line',{x1:40,x2:40,y1:15,y2:150,class:'axis'});T(g,2,24,'300 k');T(g,2,154,'0');
- [['c1',[20,60,110,170,240,120,160,210]],['c2',[15,40,70,95,130,160,190,220]],['c3',[25,70,120,90,110,140,150,170]]].forEach(([c,v])=>{S(g,'polyline',{points:v.map((d,i)=>x(i)+','+y(d)).join(' '),class:'mk-'+c,fill:'none','stroke-width':'2'});});
+ const DASH={c1:'none',c2:'8 4',c3:'2 3'},NAME={c1:'copilot-sol',c2:'codex-sol',c3:'cc-opus'},COMP={c1:'after turn 5',c2:'none',c3:'after turn 3'};
+ [['c1',[20,60,110,170,240,120,160,210]],['c2',[15,40,70,95,130,160,190,220]],['c3',[25,70,120,90,110,140,150,170]]].forEach(([c,v])=>{S(g,'polyline',{points:v.map((d,i)=>x(i)+','+y(d)).join(' '),class:'mk-'+c,fill:'none','stroke-width':'2','stroke-dasharray':DASH[c]});mark(g,c,x(7),y(v[7]),false);
+  const tr=document.createElement('tr');tr.dataset.combo=c;[NAME[c],v.join(', ')+' k',COMP[c]].forEach(t=>cell(tr,t));$('#cg-body').appendChild(tr);});
  T(g,x(5)-5,y(120)-8,'▲');T(g,x(3)-5,y(90)-8,'▲');})();
 /* popover: focus and hover open, Esc closes (1.4.13) */
 const pop=$('#pop');let owner=null;
@@ -257,20 +270,27 @@ const hide=()=>{pop.hidden=true;if(owner)owner.removeAttribute('aria-describedby
 document.addEventListener('focusin',e=>{if(e.target.classList.contains('ev'))show(e.target)});
 document.addEventListener('mouseover',e=>{if(e.target.classList&&e.target.classList.contains('ev'))show(e.target)});
 document.addEventListener('focusout',e=>{if(e.target===owner)hide()});
+document.addEventListener('mouseout',e=>{if(e.target===owner&&document.activeElement!==owner&&!pop.contains(e.relatedTarget))hide()});
+pop.addEventListener('mouseleave',()=>{if(owner&&document.activeElement!==owner)hide()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!pop.hidden){const o=owner;hide();o&&o.focus()}});
 /* combo legend and pack switch */
 document.querySelectorAll('[data-combo].tg').forEach(b=>b.addEventListener('click',()=>{if(b.getAttribute('aria-disabled')==='true')return;
- const on=[...document.querySelectorAll('[data-combo].tg[aria-pressed="true"]')];if(on.length===1&&on[0]===b){b.setAttribute('aria-disabled','true');b.title='At least one combo must stay visible.';return}
- document.querySelectorAll('[data-combo].tg').forEach(x=>{x.removeAttribute('aria-disabled')});b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')==='true'?'false':'true');apply()}));
+ const on=[...document.querySelectorAll('[data-combo].tg[aria-pressed="true"]')];if(on.length===1&&on[0]===b){disable(b,'At least one combo must stay visible.');return}
+ document.querySelectorAll('[data-combo].tg').forEach(enable);b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')==='true'?'false':'true');apply()}));
 document.querySelectorAll('[data-pack].tg').forEach(b=>b.addEventListener('click',()=>{if(b.getAttribute('aria-disabled')==='true')return;document.querySelectorAll('[data-pack].tg').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));apply()}));
 function apply(){const hidden=[...document.querySelectorAll('[data-combo].tg[aria-pressed="false"]')].map(b=>b.dataset.combo),pk=$('[data-pack].tg[aria-pressed="true"]').dataset.pack;
  document.querySelectorAll('#lb-body tr').forEach(tr=>{tr.hidden=hidden.includes(tr.dataset.combo)||(pk!=='both'&&tr.dataset.pack!==pk)});$('#pe-disabled').hidden=pk==='both'}
 /* harness wiring */
 ['viewport','theme','state'].forEach(k=>$('#h-'+k).addEventListener('change',e=>{R.dataset[k]=e.target.value;packAvail();audit()}));
 $('#h-motion').addEventListener('change',e=>R.dataset.motion=e.target.checked?'reduced':'full');
-function packAvail(){const one=R.dataset.state==='onepack';['on','both'].forEach(v=>{const b=$(`[data-pack="${v}"]`);if(one){b.setAttribute('aria-disabled','true');b.title='This run has pack off only.'}else{b.removeAttribute('aria-disabled');b.removeAttribute('title')}})}
+function packAvail(){const one=R.dataset.state==='onepack';['on','both'].forEach(v=>{const b=$(`[data-pack="${v}"]`);one?disable(b,'This run has pack off only.'):enable(b)})}
+/* disabled controls stay focusable; the reason is visible text referenced by aria-describedby (UIA-14), never title */
+function disable(b,why){b.setAttribute('aria-disabled','true');const p=$('#bar-reason');p.textContent=why;b.setAttribute('aria-describedby','bar-reason')}
+function enable(b){if(b.getAttribute('aria-disabled')!=='true')return;b.removeAttribute('aria-disabled');b.removeAttribute('aria-describedby');if(!document.querySelector('.bar [aria-disabled="true"]'))$('#bar-reason').textContent=''}
+/* the sticky bar's real height drives scroll-padding-top, so a focused or targeted element is never under it (2.4.11) */
+new ResizeObserver(([e])=>R.style.setProperty('--bar-h',Math.ceil(e.target.getBoundingClientRect().height+8)+'px')).observe($('.bar'));
 /* mechanical audit: page box first (DC-200), then token contrast, then 24 px targets (2.5.8) */
-const PAIRS=[['--ink','--panel','text'],['--ink-2','--panel','text'],['--ink-2','--bg','text'],['--na','--bg','text'],['--bad','--bad-bg','text'],['--focus','--panel','ui'],['--rule-strong','--bg','ui'],['--c1','--panel','ui'],['--c2','--panel','ui'],['--c3','--panel','ui'],['--div-pos','--panel','ui'],['--div-neg','--panel','ui'],['--rule','--panel','decorative']];
+const PAIRS=[['--ink','--panel','text'],['--ink','--bg','text'],['--na','--panel','text'],['--warn','--panel','text'],['--warn','--bg','text'],['--ink-2','--panel','text'],['--ink-2','--bg','text'],['--na','--bg','text'],['--bad','--bad-bg','text'],['--focus','--panel','ui'],['--rule-strong','--bg','ui'],['--c1','--panel','ui'],['--c2','--panel','ui'],['--c3','--panel','ui'],['--div-pos','--panel','ui'],['--div-neg','--panel','ui'],['--rule','--panel','decorative']];
 const lin=c=>{c/=255;return c<=.03928?c/12.92:Math.pow((c+.055)/1.055,2.4)},L=([r,g,b])=>.2126*lin(r)+.7152*lin(g)+.0722*lin(b);
 const rgb=v=>{const p=document.createElement('span');p.style.color=v.trim();document.body.appendChild(p);const m=getComputedStyle(p).color.match(/\d+(\.\d+)?/g);p.remove();return m.slice(0,3).map(Number)};
 function audit(){const box=$('#report').getBoundingClientRect(),v=$('#h-verdict');
@@ -278,7 +298,7 @@ function audit(){const box=$('#report').getBoundingClientRect(),v=$('#h-verdict'
  const cs=getComputedStyle(R);let fails=0;const rows=$('#audit-rows');rows.textContent='';
  for(const [f,b,k] of PAIRS){const l1=L(rgb(cs.getPropertyValue(f))),l2=L(rgb(cs.getPropertyValue(b))),r=(Math.max(l1,l2)+.05)/(Math.min(l1,l2)+.05),need=k==='text'?4.5:3,req=k!=='decorative',ok=r>=need;if(req&&!ok)fails++;
   const tr=document.createElement('tr');[`${f} on ${b} (${k})`,r.toFixed(2)+':1',req?(ok?'PASS':'FAIL')+` (needs ${need}:1)`:'reported, not counted'].forEach(t=>cell(tr,t));rows.appendChild(tr)}
- const small=[...document.querySelectorAll('#report button,#report a,#report select,#report summary,.bar button,.bar a')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&r.height<24});
+ const small=[...document.querySelectorAll('#report button,#report a,#report select,#report summary')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&r.height<24&&!e.closest('p,dd,figcaption')});document.body.dataset.reflow=document.scrollingElement.scrollWidth+'/'+innerWidth;document.body.dataset.small=small.map(e=>e.tagName+':'+e.textContent.trim().slice(0,20)).join('|');
  $('#audit-targets').textContent=small.length?`${small.length} target(s) under 24 CSS px high (inline text links are exempt under 2.5.8's inline exception; review each).`:'All targets are at least 24 CSS px high.';
  v.textContent=`audit: ${fails} contrast fail · ${small.length} target(s) < 24 px`}
 audit();

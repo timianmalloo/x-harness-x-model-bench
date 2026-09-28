@@ -1764,6 +1764,69 @@ window.DOCS_INDEX = {
       "sourceSha256": "544b1cad5a82ff64b5e1ef998fd28b0cf116461e07d0f676d36c2bba35c08875"
     },
     {
+      "id": "design-phase4-report",
+      "path": "docs/design/phase4-report.md",
+      "title": "Design: the full HTML report and its two AI summaries (phase 4, wave 4 row 20)",
+      "type": "design",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 4 · statistics and full report (wave 4: row 20)",
+      "reviewBy": "2027-03-28",
+      "reviewSuggested": [],
+      "summary": "Row 20: the eleven-section, self-contained, offline HTML report (US-40, US-41, US-43, US-51) and the two AI summaries (US-42). The report is a pure projection of the views and the statistics board, pre-rendered as HTML and inline SVG, with one hashed script for sort, filters and popovers under a CSP that blocks every other script. The only new stored fact is the summary record. The design fixes the archetype, tokens (colour-blind-safe categorical, PuOr diverging, viridis heatmap, all contrast-measured), every section's states, the summaries' claim-check contract, the EGRESS s2 sequencing, the test plan for UIA-1..15, and ten red-first slices (R0-R9). Nine decision requests (DR-R-1..9) carry recommended defaults. Mockup: docs/design/mockups/phase4-report.html.",
+      "tags": [
+        "benchmark",
+        "report",
+        "ui",
+        "accessibility",
+        "summaries",
+        "egress",
+        "csp",
+        "offline",
+        "uncertainty"
+      ],
+      "links": [
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "design-phase4-statistics",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-phase3-gateway-judges",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0005-egress-control",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0009-model-gateway",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0012-proportionate-security",
+          "rel": "depends-on"
+        },
+        {
+          "to": "coordination-finish-harness-bench",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "cd53479df70c7f9e697d06a7a38c03e13031e60ca8cc998b421fd2ded8e8c4bf"
+    },
+    {
       "id": "design-phase4-statistics",
       "path": "docs/design/phase4-statistics.md",
       "title": "Design: statistics — composites, bootstrap intervals, ranking with ties, pack effect and run comparison (phase 4, wave 4 row 19)",
@@ -2952,6 +3015,13 @@ window.DOCS_INDEX = {
       "artifactId": "audit-log"
     },
     {
+      "id": "surface-design-mockups-phase4-report",
+      "path": "docs/design/mockups/phase4-report.html",
+      "title": "harness-bench report mockup (row 20)",
+      "kind": "design-preview",
+      "description": "Inspect a rendered design or design-language preview."
+    },
+    {
       "id": "surface-coordination-coordination-phase1-finish",
       "path": "docs/coordination/coordination-phase1-finish.html",
       "title": "Coordination plan - finish harness-bench phase 1 (pre-merge findings, N5, mutation bar, E2E)",
@@ -2990,5 +3060,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "dc81f684bcb7521c6624dfaa5f04719d55d03bd12f9d6dde6da9ae6d2d4d0f0a"
+  "graphSha256": "363af1a6b109fa39afff0f6ec5655d21ebeb1e436caa9c3e255f3e7a1671ec74"
 };

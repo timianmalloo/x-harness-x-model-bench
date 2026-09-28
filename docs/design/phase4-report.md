@@ -112,7 +112,7 @@ size or radius literal anywhere else fails UIA-10. Contrast was **measured** wit
 | --- | --- | --- | --- | --- |
 | `--bg` | `#f3f5f7` | `#0e1318` | page | — |
 | `--panel` | `#ffffff` | `#151c23` | tables, charts | — |
-| `--ink` | `#18212b` | `#e7ecf1` | text | 16.26 / 14.45 on panel |
+| `--ink` | `#18212b` | `#e7ecf1` | text | 16.26 / 14.45 on panel; 14.88 / 15.70 on bg |
 | `--ink-2` | `#4b5563` | `#aab5c1` | secondary text | 7.56 / 8.25 on panel; 6.91 / 8.97 on bg |
 | `--ink-3` | `#7a8491` | `#76818d` | **non-text only** (axis ticks, gridline labels ≥ 3:1) | 3.79 / 4.33 on panel |
 | `--rule` | `#d9dee5` | `#2a343f` | decorative dividers | decorative, reported not counted |
@@ -268,17 +268,38 @@ Egress s1's lint (the gate is the only path to a backend) covers the new call si
 is the only trigger. It refuses while any run is live, as judge calls do (DR-R-5).
 
 **The claim check (pure, offline, deterministic).**
-- Every sentence or bullet is a schema `claim` with at least one `ref` (a cell id, a run id, or a metric reference `board:<combo>|<pack>|<measure>` / `pack:<combo>|<measure>`).
-- Every ref resolves in the current pass's results.
-- Every number in the claim text is matched to a cited value at the precision the report displays: rates to 2 decimals, composites to 1 decimal (phase4-statistics `:375`).
-- A claim that states or suggests an effect whose cited interval crosses zero (`no_detectable_effect` is True) **fails**.
-- A summary-2 suggestion must name the metric, the effect with its interval, and evidence run ids.
-- Any failing claim means the whole summary is `not_published`.
+- **Shape.** Every sentence or bullet is a schema `claim` with:
+  - `text`;
+  - `kind` ∈ {`effect`, `no_effect`, `observation`, `suggestion`};
+  - at least one `ref` (a cell id, a run id, or a metric reference `board:<combo>|<pack>|<measure>` / `pack:<combo>|<measure>` / `cmp:<combo>|<pack>|<measure>`).
+  The schema rejects a claim without refs.
+- **Resolution.** Every ref resolves in the current pass's results.
+- **Numbers.** Extraction regex: `[-+−]?\d+(?:[.,]\d+)*%?`.
+  - Exempt numerals are a closed list: the `95` of "95%", the repetition count `k`, `n` of an interval, and digits inside a ref or cell id.
+  - Every other number must equal a cited value's point, `lo` or `hi` after rounding that value to the report's displayed precision: rates 2 decimals, composites and area deltas 1 decimal, tokens integer, USD 2 decimals (phase4-statistics `:375`).
+  - A percentage `p%` is read as the rate `p/100` at 2 decimals.
+  - A count ("2 combos", "36 cells") must equal a count in the cited result set (the rows or cells the refs name).
+  - Anything else fails.
+- **The zero rule (mechanical).**
+  - A `kind=effect` or `kind=suggestion` claim with any cited `pack:` or `cmp:` ref whose `no_detectable_effect` is True **fails**.
+  - A `kind=no_effect` claim whose cited interval does **not** cross zero **fails** (the mirror).
+  - So "no detectable effect on cc-opus [−0.67, 0.00]" is a valid `no_effect` claim, and "the pack lowered cc-opus's pass@1" is a failing `effect` claim.
+- **Suggestions.** A `kind=suggestion` claim (summary 2) must cite a metric ref and at least one cell or run id, and its text must contain the effect with its interval.
+- Any failing claim means the whole summary is `not_published`, and the record lists each failing claim id with its rule.
+
+**The manifest check (US-42 c1), independent of `summaries.manifest()`.** The test does not compare the manifest
+with itself:
+1. It extracts each nonce-fenced data segment from the **captured** request payload (the bytes the backend received).
+2. It recomputes sha256 over each segment, and over `board.export(board)` rebuilt from the ledger.
+3. It compares the result with the recorded manifest.
+4. Two mutation tests must refuse:
+   - one export byte changed after the manifest was built;
+   - a payload segment absent from the manifest.
 
 **How a published summary renders.** Each claim is a list item with its text, then its citations. A run id is a
 link that opens Runs filtered to that cell or range (UXA-6). A metric reference opens its evidence popover. An
-interval is printed as `[lo, hi]` beside its number. A sentence-level "finding" is never shown for a
-`no detectable effect` row, because the check has already refused it.
+interval is printed as `[lo, hi]` beside its number. A `no detectable effect` row can appear only as a
+`no_effect` claim, never as an effect or a suggestion (the zero rule above).
 
 **States (copy from the spec where it has one).**
 
@@ -323,7 +344,7 @@ interval is printed as `[lo, hi]` beside its number. A sentence-level "finding" 
 
 | Boundary | Threat | Disposition |
 | --- | --- | --- |
-| Agent text → report DOM | Tampering / EoP: `<script>` or `onerror` in a diff, excerpt, question or rationale | Mitigate: escape by construction (§5). The builder refuses `on*` and `style` attributes and `javascript:` hrefs. CSP blocks inline scripts. Tests: the injection fixture (UIA-15) and a builder property test (hypothesis: `str` never yields a tag). |
+| Agent text → report DOM (embedded, in the cell card only: the clarifying-question text, the judge rationale, and at most 40 lines of test output, each after egress; diffs and transcripts are linked, not embedded) | Tampering / EoP: `<script>` or `onerror` in that text | Mitigate: escape by construction (§5). The builder refuses `on*` and `style` attributes and `javascript:` hrefs. CSP blocks inline scripts. Tests: the injection fixture (UIA-15) and a builder property test (hypothesis: `str` never yields a tag). |
 | Agent text → summarizer | Tampering: an injection steers claims | Mitigate: tool-less call, delimited data, schema output, and the claim check (a steered claim still must resolve). Test: US-46 c3 (R8, live) plus an offline replay variant (R7). |
 | Report → reader (publication) | Information disclosure: a key, canary, email or home path in the file | Mitigate: `egress.check` per embedded excerpt; a hit renders `withheld: sensitive content` (US-47 c2). The page-level scan stays as the backstop (HB-SEC-001). Test: planted canary fixture, absent from the file (US-47 c3, offline part). DR-R-6. |
 | Relative evidence href | Spoofing: a pointer that escapes the run folder (`../`) | Mitigate: pointers are validated as run-relative, with no `..` and no scheme, before an `href` is emitted; otherwise the pointer is text only. Test: a fixture pointer `../../x`. |
@@ -359,11 +380,21 @@ Fixture runs are built to induce every state:
 - `empty` (0 completed), `one-pack`, `no-archive`;
 - `injection` (`<script>`, `onerror`, a `../` pointer, a planted canary);
 - `576-cell` (performance);
-- `two-runs` and `two-runs-refused`.
+- `two-runs` and `two-runs-refused`;
+- `no-anchors` (primary falls back to pass@1);
+- `many-classes`: 7 exclusion classes, including disagreeing judges, low-confidence matchers, withheld and stopped, so the `and <k> more` form and every UIA-9 validity row can execute;
+- `stale-summary`: a summary record, then a regrade;
+- `live-run`: a run in state `running`, for DR-R-5's refusal.
+
+**Cardinality floor (applies to every "every X" row below).** Each test first asserts that the count of X in the
+DOM equals the count of X in the `ReportModel` for its fixture, and that this count is > 0. Only then does it
+check the property. So an absent element can never satisfy the test. Gate-type tests (UIA-10, UIA-12) also carry
+a **negative control**: one planted colour literal gives ≥ 1 finding, and one perturbed token gives a failing
+pair.
 
 | Item | Test (ring) | Red-first assertion |
 | --- | --- | --- |
-| UIA-1 / US-40 c1 | offline load (browser) | network requests = 0, console errors = 0, all 11 section ids present (10 without a baseline) |
+| UIA-1 / US-40 c1 | offline load (browser) | one test, all conjuncts: the `report-ready` mark fired, network requests = 0, console errors = 0, all 11 section ids present (10 without a baseline) |
 | US-40 c2 | section order (unit) | section ids in the IA order |
 | UIA-2 | axe WCAG 2.2 AA, `emulateMedia` light and dark (browser) | 0 violations each |
 | UIA-3 | 320 px viewport (browser) | `scrollWidth ≤ 320` |
@@ -377,17 +408,25 @@ Fixture runs are built to induce every state:
 | UIA-11 | CLI plain (unit) | `NO_COLOR=1` and a redirected stdout give ASCII-only output with ties, NA and invalid marks |
 | UIA-12 | token contrast (unit) | the §3 pairs computed from the style block, both modes |
 | UIA-13 | chart = table (unit) | each chart's data-attributes equal its table's cells (values, units, intervals, evidence ids) |
-| UIA-14 | disabled controls (browser) | focusable, `aria-disabled`, and `aria-describedby` resolves to text |
+| UIA-14 | disabled controls (browser) | on `one-pack`, at least 2 disabled controls (the pack switch and, after hiding all but one combo, the last combo toggle); each is focusable, has `aria-disabled`, and its `aria-describedby` resolves to visible text (never `title`) |
 | UIA-15 / US-40 c3 | injection (unit + browser) | text is inert; an injected inline script does not run and raises `securitypolicyviolation` |
 | US-41 | evidence (unit + browser) | the popover fields; a relative href present with the archive; the exact copy without it |
-| US-42 c1-c4 | summaries (unit, replay backend) | manifest hash = captured request's input hashes; summary 2's manifest lists the sampled transcripts; one unresolved number means `not_published`; a suggestion on an interval crossing 0 fails |
+| US-42 c1 | manifest (unit, replay backend) | the independent recomputation in §8, plus its two mutation refusals |
+| US-42 c2 | summary 2 manifest (unit) | it lists each sampled transcript; each excerpt appears nonce-fenced in the captured payload; a planted-canary excerpt is dropped and listed `withheld: sensitive content` |
+| US-42 c3 | numbers (unit, table-driven) | `0.67` vs cited 0.667 passes; `0.68` fails; `44.5` vs cited 44.53 passes; a number equal only to an uncited result fails; an uncited count ("2 combos") fails; `67%` vs cited 0.67 passes; one failing claim gives `not_published` |
+| US-42 c4 / US-37 c2 | zero rule (unit, 4 cases) | `effect` on a crossing interval fails; `effect` on a clear interval passes; `no_effect` on a crossing interval passes; `no_effect` on a clear interval fails |
+| UXA-4 | excluded values (unit) | on `many-classes`, every NA, invalid, not-applicable, stopped, timed-out and withheld value differs in text from a measured value in every section, and its reason is in an `aria-describedby` target or the adjacent text |
+| UXA-6 | summary links (browser) | activating a run id in a published summary shows Runs with only that cell's row visible |
+| UXA-7 | `--summaries` refusals (unit) | on `live-run`, the refusal names the run id, the cause (a run is live) and the action (wait, or stop it) |
+| US-43 no source | banner (unit) | a class with no source in the views reads `<class>: not recorded`, never `0` |
+| §13 degrades | one test each | `no-anchors`: the header says `ranked on pass@1 (…)` and the areas read NA with the reason; JS off (browser, `javaScriptEnabled=false`): every series is in the DOM and `<details>` opens; `stale-summary`: S-STALE copy; withheld request: the replay backend records **0** calls |
 | US-43 | banner (unit) | each class count and link; the one-line all-valid form |
 | US-51 | About (unit) | the pack and revision named; the six definitions present |
 | UXA-3 | 1280x800 (browser) | the first leaderboard row is in the viewport at load; evidence is 2 activations away |
 | UXA-5 | filters (browser) | every section follows the legend; Pack effect shows the disabled reason |
 | UXA-8 | empty run (unit) | header, banner and the empty copy; no `<svg>` with axes |
-| Perf | 576-cell (browser, readiness) | ≤ 5 MB, ready ≤ 2 s, filter ≤ 100 ms, medians of 5 |
-| F-1 | pack-effect areas (unit) | on a fixture with anchors, the `correctness` delta is a number, not `not computed (no valid cell with a value)` |
+| Perf | 576-cell (unit + browser, readiness) | fails hard on the deterministic parts from `report.built`: bytes ≤ 5 MB and marks ≤ one per (series, cell); the timings (ready ≤ 2 s, filter ≤ 100 ms, medians of 5) are recorded at readiness and gate only there |
+| F-1 | pack-effect areas (unit) | on a fixture with anchors, the `correctness` delta is a number, not `not computed (no valid cell with a value)`; negative: an area missing in one arm gives `not computed (no <area> score in pack=<arm>)` |
 
 The Proof Pack and the manual NVDA and keyboard pass remain carried conditions at `/implement` (spec gate `:1176`).
 
@@ -408,20 +447,79 @@ The Proof Pack and the manual NVDA and keyboard pass remain carried conditions a
 
 ## 14. Mockup and rubric critique (ui-design Stage 4)
 
-Filled in after the mockup exists: see §17.
+**Mockup:** `docs/design/mockups/phase4-report.html`.
+- It is one file with no network reference: 0 `http(s)` references, 0 `fetch`/XHR and 0 `style=""` attributes, counted by a script.
+- Its script passes `node --check`.
+- The leaderboard, pack effect and frontier data are smoke-1's recorded values (G6). Areas, scenarios and context growth are marked *illustrative*, because smoke-1 has no area composites until R0.
+
+**Review harness:**
+- Viewport: 1280 / 768 / 320 frame.
+- Theme: light / dark.
+- Reduced motion.
+- States: smoke-1, empty run, one pack setting, archive absent, summary published, comparison refused.
+- An in-page audit that measures the page box first (DC-200), then 17 token contrast pairs, then 24 px targets.
+
+**Measurements (DX23; headless Chrome `--dump-dom`, this session).**
+
+| Measure | Value |
+| --- | --- |
+| Tables populated by the script | leaderboard 6 rows, pack effect 4, frontier 6, areas 6, context growth 3 |
+| In-page audit, light + default | `0 contrast fail · 0 target(s) < 24 px` |
+| In-page audit, dark + archive absent | `0 contrast fail · 0 target(s) < 24 px` |
+| Reflow | scrollWidth 497 ≤ innerWidth 512. Headless Chrome will not size below 512, so **320 px is not measured here**; the UIA-3 Playwright test owns it. |
+| Distinct type sizes | 4 (13 / 15 / 19 / 26) |
+| Interface accent colours | 1 (`--focus`); every other colour encodes data |
+| Focal points | 1 (the leaderboard, preceded by the tie sentence) |
+
+**Craft detector (`ui-craft-gate.py --a11y-obligation`).** It is available and was run twice.
+- Final run: **7 Minor** findings, all `cramped-padding` on the `.region` table wrappers.
+- 0 accessibility findings and 0 off-token findings.
+- Disposition: **accepted as a deliberate choice**. The dense table padding is the TQ1 compact-density decision in §2. The UX & Accessibility lens concurred that it hides no target-size or contrast problem, since the interactive elements carry `min-height: var(--target)` on their own.
+- A clean detector run is a floor, not a verdict (CD13).
+
+**Rubric, structure before surface (DX24).** Severity: 4 Blocker · 3 Major · 2 Minor · 1 Nit.
+
+| # | Location | Dimension | Sev | Evidence | Fix | Status | Conf. |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Leaderboard | 11 Archetype fit / 17 focal point | 3 | smoke-1 has every row `1=`; a sorted table alone implies an order the data does not support | a tie sentence above the table, and the caption names the ranking measure | fixed in the design and the mockup | Verified |
+| 2 | Pack effect, Areas | 12 State completeness | 3 | F-1: every area row is NA on real data | R0 (DR-R-7) | slice | Verified |
+| 3 | Frontier, Areas, Context growth | 14 Accessibility (1.1.1, 1.3.1) | 4 | no table alternative (UX gate) | a collapsed `<details>` table per chart | fixed | Verified |
+| 4 | Legend toggles, pack switch | 14 Accessibility (UIA-14) | 3 | the disabled reason was a `title` | visible `#bar-reason` text plus `aria-describedby` | fixed | Verified |
+| 5 | Frontier, Context growth | 14 Accessibility (1.4.1) | 3 | series identified by colour only | the legend's marker shape per combo and a dash per line | fixed | Verified |
+| 6 | Sticky bar | 14 Accessibility (2.4.11) | 3 | static `--bar-h: 88px`, while the bar wraps | a `ResizeObserver` sets `--bar-h` from the bar's height | fixed; the 320 and 768 px check is in UIA-8 | Inferred |
+| 7 | Popover | 3 User control | 1 | stayed open after the mouse left | hide on mouse-out unless focused | fixed | Verified |
+| 8 | Cost frontier, cost panel | 12 State completeness | 2 | all cost is NA in smoke-1 | a sentence in place of empty axes (UXA-8) | in the design and the mockup | Verified |
+| 9 | Links in tables and the bar | 14 Accessibility (2.5.8) | 2 | 16, then 2, targets under 24 px were measured | `min-height: var(--target)` on the bar, table and claim links and on `select`; inline sentence links are exempt | fixed; now 0 | Verified |
+
+**Generic-tells self-check (DX3):**
+- no gradient;
+- no card grid (rules and space contain);
+- no three stat tiles;
+- a real type scale;
+- real data, including NA and ties;
+- no emoji;
+- the hard states come first (the empty, one-pack and archive-absent states exist in the harness);
+- one editorial column, off-centre focal emphasis by the tie sentence;
+- motion is none, by decision (B3).
+
+**Ranked plan.**
+- Must fix: R0 (F-1).
+- Should fix next: measure 320 px reflow and the sticky-bar focus with Playwright (UIA-3, UIA-8).
+- Worth doing: a quantile dotplot option for the pack effect (spec `:1079`).
+- **Highest improvement-to-effort change:** R0. It turns 21 NA pack-effect rows and 3 empty radars into numbers on data that already exists.
 
 ## 15. Implementation slices (dependency order; each one worker slice)
 
 | Slice | Content | Depends on | Red-first test |
 | --- | --- | --- | --- |
-| R0 | board: fix F-1 (areas via `composites.area`, the phase4-statistics reason string); add `areas`, `scenarios`, `frontier` projections; extend `export` with `null`-for-missing | — | `test_pack_effect_area_delta_is_computed_with_anchors` (red on the current code: every area row is NA) |
-| R1 | `html_builder` (escape by construction, SVG helpers), `report.model`, page shell: tokens (both themes), CSP with hashes, section order, index and jump links | — (parallel with R0) | `test_injection_fixture_renders_inert` plus `test_builder_refuses_on_attributes` (hypothesis) |
+| R0 | board: fix F-1 (areas via `composites.area`, the phase4-statistics reason string); add `areas`, `scenarios`, `frontier` projections; extend `export` with `null`-for-missing | — | `test_pack_effect_area_delta_is_computed_with_anchors` (red on the current code: every area row is NA), plus the one-arm negative; R0 re-runs the catalog-0.5 freeze gate (ENV-B) and states the result |
+| R1 | `html_builder` (escape by construction, SVG helpers), `report.model`, page shell: tokens (both themes), CSP with hashes, section order, index and jump links | — (parallel with R0) | `test_builder_refuses_on_attributes` (hypothesis: no `str` input yields a tag or an `on*`/`style` attribute) plus `test_csp_meta_is_first_head_child_with_script_hash` |
 | R2 | Header, About this run, Validity banner | R1 | `test_validity_banner_counts_each_exclusion_class` plus `test_about_defines_six_terms` |
-| R3 | Leaderboard (interval bars, ties caption, NA focus), evidence popover markup, Runs table and cell card | R0, R1 | `test_every_interval_element_has_bounds_or_reason` (UIA-5) plus `test_archive_absent_copy` |
+| R3 | Leaderboard (interval bars, ties caption, NA focus), evidence popover markup, Runs table and cell card | R0, R1 | `test_injection_fixture_renders_inert`: `&lt;script&gt;` and `onerror` appear as text inside `#cell-<id>`, and the only `<script>` element is the hashed one; plus `test_every_interval_element_has_bounds_or_reason` (UIA-5, with the cardinality floor) and `test_archive_absent_copy` |
 | R4 | `report.js`: sort, combo toggles, pack switch, popovers, Runs filter; browser ring set up (DR-R-9) | R3 | `test_keyboard_path` (UIA-8) plus `test_offline_zero_requests` (UIA-1) |
 | R5 | Pack effect and Comparison whisker charts with tables | R0, R3 | `test_crossing_zero_uses_neutral_mark_and_label` plus UIA-6 palette scan |
 | R6 | Cost frontier, Areas radars, Scenarios heatmap, Context growth, each with a table alternative | R0, R4 | `test_chart_equals_table` (UIA-13) plus `test_empty_run_draws_no_axes` (UXA-8) |
-| R7 | Summaries offline: manifest, `summary-request/1`, `summary-claims.v1.json`, `claim_check`, `summary_records` fact, section states, `bench report --summaries` with `ReplayBackend` only | R1, R3, egress s1, gateway s1 | `test_claim_on_interval_crossing_zero_fails` plus `test_manifest_hash_matches_captured_request` |
+| R7 | Summaries offline: manifest, `summary-request/1`, `summary-claims.v1.json`, `claim_check`, `summary_records` fact, section states, `bench report --summaries` with `ReplayBackend` only | R1, R3, egress s1, gateway s1 | `test_zero_rule_matrix` (4 cases), `test_number_precision_table`, `test_manifest_recomputed_from_captured_payload` (+ 2 mutations), `test_summaries_refuse_while_run_live` (fixture `live-run`) |
 | R8 | Summaries live: `Headless` backend wiring; US-46 c3 planted-injection transcript; US-47 c3 canary absent | R7, **EGRESS s2**, GW-I live | `test_live_injection_does_not_change_claim_set` (Leader day window) |
 | R9 | Publication egress per excerpt (DR-R-6); 576-cell performance and axe light/dark at readiness; two P3 readers (row 20 gate) | R6, R7 | `test_planted_canary_absent_from_report` plus `test_perf_576_cells` |
 
@@ -444,4 +542,39 @@ off the critical path, gated only by EGRESS s2.
 
 ## 17. Gate record
 
-Filled in after the gates run (below).
+**Round 1 (2026-09-28).** Both lenses returned **BLOCK**.
+- **Test Architect** (claude-fable-5-1, hard veto) raised 7 veto items:
+  1. no cardinality floor on the "every X" DOM checks;
+  2. R1's injection test was vacuous at R1;
+  3. the zero rule was not mechanical, and it refused honest `no_effect` claims;
+  4. the manifest test was tautological;
+  5. the precision rule had no extraction rule or negative tests;
+  6. five §13 degrades had no test or fixture;
+  7. UXA-4/6/7, the US-42 c2 negatives and US-43's no-source row were unmapped.
+  Advisories: the F-1 negative plus a freeze re-run (ENV-B); negative controls for the gate-type tests; perf failing only on deterministic parts; the `report-ready` conjunct; the `live-run` fixture.
+  The lens **confirmed F-1 from the code** (`board.py:391-422` vs `:579, :589`).
+- **UX & Accessibility** (claude-sonnet-5, accessibility hard veto) raised 1 Blocker and 3 Majors:
+  - Blocker: 3 charts lacked table alternatives;
+  - Majors: the disabled reason in `title`; colour-only series; the static `--bar-h`.
+  - Minors: the popover on mouse-out, and `--ink` on `--bg` unrecorded.
+  It accepted the 7 detector findings.
+
+**Resolution (by the author, in this document and the mockup; the veto holders did not re-review in this session):**
+- Test Architect items 1-7 are folded into §8 (the claim kinds, the numeric extraction and exempt list, the zero rule and its mirror, the independent manifest recomputation plus 2 mutations), §10 (which agent text is embedded), §12 (new fixtures, the cardinality floor, 9 new rows) and §15 (the R1 and R3 red-first tests reassigned; R0 and R7 tests renamed). All advisories are applied.
+- The UX findings are fixed in the mockup and recorded as rubric rows 3-7 and 9 in §14. `--ink` on `--bg` was measured (14.88 / 15.70) and added to §3.
+
+**Status:** the vetoes are **not cleared**. The author does not clear its own vetoes. Clearance needs a round-2 re-review by each lens against:
+- the Test Architect's predicate: "items 1-7 folded with named tests, failing inputs and fixtures; R1 and R3 reassigned";
+- the UX predicate: "chart table alternatives present; UIA-14 semantics; not colour alone".
+
+**Carried to `/implement`:**
+- the Proof Pack;
+- the manual NVDA and keyboard pass (spec `:1176`);
+- the 320 px reflow and sticky-focus measurement (UIA-3, UIA-8).
+
+**Residual risk:**
+- colour-blind separability of the palette is Inferred, and shape plus label carry identity;
+- a report copied after generation shows dead evidence links (DR-R-2);
+- live summary behaviour is untested until R8 (EGRESS s2);
+- CSP on `file://` rests on the UIA-15 browser test.
+- `assume:` a CSSOM write (`element.style.setProperty`, used for `--bar-h`) is not blocked by a `style-src` hash CSP, because CSP governs parsed style attributes and elements, not CSSOM calls. Confirmed by: the UIA-8 browser test under the production CSP. If false: `--bar-h` stays at its token default, and the sticky bar can hide focus at narrow widths; UIA-8 fails red.
