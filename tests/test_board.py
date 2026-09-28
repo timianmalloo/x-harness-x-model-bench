@@ -16,7 +16,7 @@ from archived_runs import make_root
 from stats_fixtures import stats_run
 from test_composites import TEST_CATALOG
 
-from harness_bench import board, stats, views
+from harness_bench import board, composites, stats, views
 from harness_bench.composites import Catalog
 from harness_bench.errors import BenchError
 from harness_bench.stats import METHOD, Obs, Params
@@ -261,6 +261,19 @@ def test_tb7_timing_line_format_and_export_absence():
     b = board.build(view, cat)
     exp = board.export(b)
     assert b"intervals in" not in exp
+
+
+def test_the_gated_composite_computes_under_the_real_catalog_where_pass_at_1_has_no_anchor(tmp_path):
+    """R-78 DR-S-2 amended: pass_at_1 is the gate factor at weight 0, so the real catalog gives it no anchor. The gate
+    must read its raw 0/1 value; a normalised pass_at_1 (NA: no anchor) must never replace it. Found at the 0.5 freeze:
+    every smoke-1 row read 'not computed' because the board merged normalised scores over the raw ones."""
+    root = make_root(tmp_path)  # the real catalog, released (anchors on every weighted score metric)
+    run_dir = stats_run(root, tmp_path, run_id="r-real-cat", tasks=("A1", "B1"), reps=2, arms=("off",), combos=["c"])
+    view = views.load(run_dir)
+    b = board.build(view, composites.load_catalog(root))
+    assert b.primary == "gated"
+    assert all("pass_at_1" not in (r.gated.reason or "") for r in b.rows)
+    assert any(r.gated.point is not None for r in b.rows)
 
 
 def test_anchors_of_another_catalog_version_never_make_the_primary_gated():
