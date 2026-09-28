@@ -234,6 +234,17 @@ def test_tb7_timing_line_format_and_export_absence():
     assert b"intervals in" not in exp
 
 
+def test_anchors_of_another_catalog_version_never_make_the_primary_gated():
+    """R-78 c3: the primary measure is pass@1 while the CURRENT PASS's catalog has no anchors. A loaded catalog of
+    another version (here the workstation's newer .dev catalog) says nothing about the pass's anchors, so the board
+    must not rank a pass graded under 0.4 on a gated composite (found at the S6 join on smoke-1: every row unranked)."""
+    view = views.load(HEADS_RUN)
+    other = Catalog(version=f"{view.catalog_version}-other", hash="h", metrics={}, areas={}, has_anchors=True)
+    b = board.build(view, other)
+    assert b.primary == "pass_at_1"
+    assert view.catalog_version in b.primary_reason and other.version in b.primary_reason
+
+
 def test_tb8_na_and_invalid_cells(tmp_path):
     """T-B8 (US-27 at row layer): a stats_run build with one NA cell and one invalid cell."""
     root = make_root(tmp_path)
