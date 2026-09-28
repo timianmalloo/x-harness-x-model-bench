@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-28T07:44:53Z",
+  "generated": "2026-09-28T16:48:31Z",
   "audit": [
     {
       "actor": null,
@@ -44280,6 +44280,31 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-09-28T04:55:57Z",
       "duration_seconds": 1159.0
+    },
+    {
+      "id": "al-01M3MEP13ZY39EKZVZ6F4QJAG1",
+      "shortname": "design-slice-phase4-report",
+      "datetime": "2026-09-28T16:48:31Z",
+      "session": "w4-report-design",
+      "prompt": "Worker seat w4-report-design: detailed design for wave 4 row 20, the full report and its summaries, per the compiled brief al-01M3MDD0MN10YWDK3MMHYVYAAQ (ui-design + design-slice; design and mockup only).",
+      "summary": "Eleven-section offline report design + mockup; F-1 found (board pack-effect area rows never call composites.area); slices R0-R9 with red-first tests; DR-R-1..9; Test Architect PASS (round 2), UX & Accessibility PASS (round 3); EGRESS s2 needed only by R8.",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/phase4-report.md",
+        "docs/design/mockups/phase4-report.html"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "docs/design/phase4-report.md and docs/design/mockups/phase4-report.html, ready for red-first slices",
+      "done_when": "the brief's Done-when list: archetype, direction, tokens, all section states, US-41 offline evidence, US-42 contract with EGRESS s2 sequenced, UIA-15 security, perf budget, test plan, mockup + rubric + craft gate, slices, DR-R-n, both gates recorded, docs-graph derive/validate, committed",
+      "tier": "T2",
+      "fan_out": 2,
+      "started_at": "2026-09-28T16:27:15Z",
+      "duration_seconds": 1276.0
     }
   ],
   "changes": [
@@ -44666,6 +44691,31 @@ window.AUDIT_DATA = {
         "pushed": null,
         "commits": [
           "30af0a5 design(stats): phase-4 statistics first draft - composites, two-stage percentile bootstrap, ranking with ties, pack effect, run comparison; DR-S-1..6 open"
+        ]
+      }
+    },
+    {
+      "id": "cl-01M3MENFS0Z3SF72CSHC7CRQNB",
+      "datetime": "2026-09-28T16:48:13Z",
+      "session": "w4-report-design",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "Row 20 report: a pure projection pre-rendered as HTML and SVG under a hashed-script CSP; summaries gated by a mechanical claim check; only R8 waits on EGRESS s2",
+      "prompt": "Compiled brief al-01M3MDD0MN10YWDK3MMHYVYAAQ (row 20)",
+      "summary": "Design + mockup committed; F-1 surfaced; DR-R-1..9 with defaults",
+      "rationale": "Offline, zero-request, readable without JS (US-40, spec :988); summaries cannot publish an unverifiable or zero-crossing claim (US-42, US-37 c2); live model spend isolated to one slice after EGRESS s2",
+      "artifacts": [
+        "docs/design/phase4-report.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "2a8057ed5622030692d03ac96c5035b1448d6eef",
+        "after": "623db6de7bd5ef972713490ff437688f16bdf251",
+        "branch": "w4-report-design",
+        "pushed": null,
+        "commits": [
+          "623db6d docs(design): row-20 report design, round-1 gate fold-in (Test Architect 7 items, UX 1 blocker + 3 majors)",
+          "e618adb docs(design): phase-4 report and summaries design, first draft, with mockup (row 20)"
         ]
       }
     }

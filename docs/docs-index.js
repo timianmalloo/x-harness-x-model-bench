@@ -1824,7 +1824,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "cd53479df70c7f9e697d06a7a38c03e13031e60ca8cc998b421fd2ded8e8c4bf"
+      "sourceSha256": "01d38b34f80229ea604d98d88f144d5e36865e71a67d97616bea7c4ce8eea470"
     },
     {
       "id": "design-phase4-statistics",
@@ -3060,5 +3060,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "363af1a6b109fa39afff0f6ec5655d21ebeb1e436caa9c3e255f3e7a1671ec74"
+  "graphSha256": "4c3501f945087abcdd4daf87d64cbd8920f698831edf96cc39b3bccb1f7bcb56"
 };

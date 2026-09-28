@@ -278,11 +278,13 @@ is the only trigger. It refuses while any run is live, as judge calls do (DR-R-5
   - Exempt numerals are a closed list: the `95` of "95%", the repetition count `k`, `n` of an interval, and digits inside a ref or cell id.
   - Every other number must equal a cited value's point, `lo` or `hi` after rounding that value to the report's displayed precision: rates 2 decimals, composites and area deltas 1 decimal, tokens integer, USD 2 decimals (phase4-statistics `:375`).
   - A percentage `p%` is read as the rate `p/100` at 2 decimals.
+  - The sign must match after rounding. The Unicode minus `−` and the ASCII hyphen `-` are equivalent.
   - A count ("2 combos", "36 cells") must equal a count in the cited result set (the rows or cells the refs name).
   - Anything else fails.
 - **The zero rule (mechanical).**
   - A `kind=effect` or `kind=suggestion` claim with any cited `pack:` or `cmp:` ref whose `no_detectable_effect` is True **fails**.
   - A `kind=no_effect` claim whose cited interval does **not** cross zero **fails** (the mirror).
+  - Any claim (including `kind=observation`) that cites a `pack:` or `cmp:` ref must print that ref's `[lo, hi]` in its text, and the number check then verifies both bounds. Otherwise it fails. So relabelling an effect as an observation cannot state a bare point.
   - So "no detectable effect on cc-opus [−0.67, 0.00]" is a valid `no_effect` claim, and "the pack lowered cc-opus's pass@1" is a failing `effect` claim.
 - **Suggestions.** A `kind=suggestion` claim (summary 2) must cite a metric ref and at least one cell or run id, and its text must contain the effect with its interval.
 - Any failing claim means the whole summary is `not_published`, and the record lists each failing claim id with its rule.
@@ -384,6 +386,11 @@ Fixture runs are built to induce every state:
 - `no-anchors` (primary falls back to pass@1);
 - `many-classes`: 7 exclusion classes, including disagreeing judges, low-confidence matchers, withheld and stopped, so the `and <k> more` form and every UIA-9 validity row can execute;
 - `stale-summary`: a summary record, then a regrade;
+- the summary-state inducers for UIA-9:
+  - S-WAIT: a `ReplayBackend` key that answers unavailable;
+  - S-REFUSED: a schema-invalid answer;
+  - S-WITHHELD: a canary planted in the request's source data;
+  - S-NOTPUB: an answer with one unresolved number;
 - `live-run`: a run in state `running`, for DR-R-5's refusal.
 
 **Cardinality floor (applies to every "every X" row below).** Each test first asserts that the count of X in the
@@ -413,8 +420,8 @@ pair.
 | US-41 | evidence (unit + browser) | the popover fields; a relative href present with the archive; the exact copy without it |
 | US-42 c1 | manifest (unit, replay backend) | the independent recomputation in §8, plus its two mutation refusals |
 | US-42 c2 | summary 2 manifest (unit) | it lists each sampled transcript; each excerpt appears nonce-fenced in the captured payload; a planted-canary excerpt is dropped and listed `withheld: sensitive content` |
-| US-42 c3 | numbers (unit, table-driven) | `0.67` vs cited 0.667 passes; `0.68` fails; `44.5` vs cited 44.53 passes; a number equal only to an uncited result fails; an uncited count ("2 combos") fails; `67%` vs cited 0.67 passes; one failing claim gives `not_published` |
-| US-42 c4 / US-37 c2 | zero rule (unit, 4 cases) | `effect` on a crossing interval fails; `effect` on a clear interval passes; `no_effect` on a crossing interval passes; `no_effect` on a clear interval fails |
+| US-42 c3 | numbers (unit, table-driven) | `0.67` vs cited 0.667 passes; `0.68` fails; `44.5` vs cited 44.53 passes; a number equal only to an uncited result fails; an uncited count ("2 combos") fails; `67%` vs cited 0.67 passes; `−0.33` vs cited −0.33 passes; `0.33` vs cited −0.33 fails; `-0.33` (hyphen) vs cited −0.33 passes; one failing claim gives `not_published` |
+| US-42 c4 / US-37 c2 | zero rule (unit, 5 cases) | `effect` on a crossing interval fails; `effect` on a clear interval passes; `no_effect` on a crossing interval passes; `no_effect` on a clear interval fails; an `observation` citing a `pack:` ref without its `[lo, hi]` fails |
 | UXA-4 | excluded values (unit) | on `many-classes`, every NA, invalid, not-applicable, stopped, timed-out and withheld value differs in text from a measured value in every section, and its reason is in an `aria-describedby` target or the adjacent text |
 | UXA-6 | summary links (browser) | activating a run id in a published summary shows Runs with only that cell's row visible |
 | UXA-7 | `--summaries` refusals (unit) | on `live-run`, the refusal names the run id, the cause (a run is live) and the action (wait, or stop it) |
@@ -519,7 +526,7 @@ The Proof Pack and the manual NVDA and keyboard pass remain carried conditions a
 | R4 | `report.js`: sort, combo toggles, pack switch, popovers, Runs filter; browser ring set up (DR-R-9) | R3 | `test_keyboard_path` (UIA-8) plus `test_offline_zero_requests` (UIA-1) |
 | R5 | Pack effect and Comparison whisker charts with tables | R0, R3 | `test_crossing_zero_uses_neutral_mark_and_label` plus UIA-6 palette scan |
 | R6 | Cost frontier, Areas radars, Scenarios heatmap, Context growth, each with a table alternative | R0, R4 | `test_chart_equals_table` (UIA-13) plus `test_empty_run_draws_no_axes` (UXA-8) |
-| R7 | Summaries offline: manifest, `summary-request/1`, `summary-claims.v1.json`, `claim_check`, `summary_records` fact, section states, `bench report --summaries` with `ReplayBackend` only | R1, R3, egress s1, gateway s1 | `test_zero_rule_matrix` (4 cases), `test_number_precision_table`, `test_manifest_recomputed_from_captured_payload` (+ 2 mutations), `test_summaries_refuse_while_run_live` (fixture `live-run`) |
+| R7 | Summaries offline: manifest, `summary-request/1`, `summary-claims.v1.json`, `claim_check`, `summary_records` fact, section states, `bench report --summaries` with `ReplayBackend` only | R1, R3, egress s1, gateway s1 | `test_zero_rule_matrix` (5 cases), `test_number_precision_table`, `test_manifest_recomputed_from_captured_payload` (+ 2 mutations), `test_summaries_refuse_while_run_live` (fixture `live-run`) |
 | R8 | Summaries live: `Headless` backend wiring; US-46 c3 planted-injection transcript; US-47 c3 canary absent | R7, **EGRESS s2**, GW-I live | `test_live_injection_does_not_change_claim_set` (Leader day window) |
 | R9 | Publication egress per excerpt (DR-R-6); 576-cell performance and axe light/dark at readiness; two P3 readers (row 20 gate) | R6, R7 | `test_planted_canary_absent_from_report` plus `test_perf_576_cells` |
 
@@ -563,7 +570,20 @@ off the critical path, gated only by EGRESS s2.
 - Test Architect items 1-7 are folded into §8 (the claim kinds, the numeric extraction and exempt list, the zero rule and its mirror, the independent manifest recomputation plus 2 mutations), §10 (which agent text is embedded), §12 (new fixtures, the cardinality floor, 9 new rows) and §15 (the R1 and R3 red-first tests reassigned; R0 and R7 tests renamed). All advisories are applied.
 - The UX findings are fixed in the mockup and recorded as rubric rows 3-7 and 9 in §14. `--ink` on `--bg` was measured (14.88 / 15.70) and added to §3.
 
-**Status:** the vetoes are **not cleared**. The author does not clear its own vetoes. Clearance needs a round-2 re-review by each lens against:
+**Round 2 (2026-09-28).**
+- **Test Architect: PASS-WITH-CONDITIONS; veto cleared at the design gate** (by the lens, not the author). It left three conditions, all applied after round 2:
+  - an `observation` citing a `pack:` or `cmp:` ref must print `[lo, hi]` (the 5th zero-rule case);
+  - the sign must match (with the hyphen/minus equivalence rows);
+  - the named inducers for S-WAIT, S-REFUSED, S-WITHHELD and S-NOTPUB.
+- **UX & Accessibility: BLOCK on one Major.** Every disabled control pointed `aria-describedby` at one shared `#bar-reason` node, so with two controls disabled at once, the earlier one announced the other's reason. This fails the design's own UIA-14 scenario.
+  - Fixed: each control gets its own reason node, `reason-<combo>` or `reason-pack-<setting>`, inside `#bar-reasons`.
+  - Measured in headless Chrome with the `one-pack` state and the last combo hidden: 3 controls disabled at once, and each resolves to its own reason (`reason-c3` → `At least one combo must stay visible.`, `reason-pack-both` and `reason-pack-on` → `This run has pack off only.`).
+  - **Round 3: PASS; accessibility veto cleared for the design stage** (by the lens, not the author). The lens verified the per-control nodes at script lines 288-289.
+  - Carried to implementation: a real 320 px UIA-3 pass, colour-blind separability through UIA-2 and UIA-12, and axe plus NVDA (UIA-2, UIA-8).
+
+`GATE design-slice + ui-design · 2026-09-28 · Test Architect (claude-fable-5-1), UX & Accessibility (claude-sonnet-5) · verdict: PASS (Test Architect round 2 with 3 conditions, applied; UX round 3) · authors did not clear their own vetoes`
+
+**Round-1 status, kept for the record:** the vetoes were not cleared. The author does not clear its own vetoes. Round 2 re-reviewed each lens against:
 - the Test Architect's predicate: "items 1-7 folded with named tests, failing inputs and fixtures; R1 and R3 reassigned";
 - the UX predicate: "chart table alternatives present; UIA-14 semantics; not colour alone".
 

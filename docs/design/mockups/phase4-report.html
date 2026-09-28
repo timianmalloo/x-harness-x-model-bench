@@ -124,7 +124,7 @@ figure{margin:0}figcaption{font-size:var(--fs-small);color:var(--ink-2)}
   <div role="group" aria-label="Pack setting">
     <button class="tg" aria-pressed="true" data-pack="both">both</button><button class="tg" aria-pressed="false" data-pack="on">on</button><button class="tg" aria-pressed="false" data-pack="off">off</button>
   </div>
-  <p class="small" id="bar-reason" aria-live="polite"></p>
+  <div class="small" id="bar-reasons" aria-live="polite"></div>
   <nav aria-label="Sections"><a href="#validity">Validity</a><a href="#leaderboard">Leaderboard</a><a href="#pack-effect">Pack effect</a><a href="#frontier">Cost frontier</a><a href="#areas">Areas</a><a href="#scenarios">Scenarios</a><a href="#context">Context growth</a><a href="#summaries">Summaries</a><a href="#runs">Runs</a><a href="#comparison">Comparison</a></nav>
 </div>
 
@@ -285,8 +285,8 @@ function apply(){const hidden=[...document.querySelectorAll('[data-combo].tg[ari
 $('#h-motion').addEventListener('change',e=>R.dataset.motion=e.target.checked?'reduced':'full');
 function packAvail(){const one=R.dataset.state==='onepack';['on','both'].forEach(v=>{const b=$(`[data-pack="${v}"]`);one?disable(b,'This run has pack off only.'):enable(b)})}
 /* disabled controls stay focusable; the reason is visible text referenced by aria-describedby (UIA-14), never title */
-function disable(b,why){b.setAttribute('aria-disabled','true');const p=$('#bar-reason');p.textContent=why;b.setAttribute('aria-describedby','bar-reason')}
-function enable(b){if(b.getAttribute('aria-disabled')!=='true')return;b.removeAttribute('aria-disabled');b.removeAttribute('aria-describedby');if(!document.querySelector('.bar [aria-disabled="true"]'))$('#bar-reason').textContent=''}
+function disable(b,why){b.setAttribute('aria-disabled','true');const id='reason-'+(b.dataset.combo||'pack-'+b.dataset.pack);let p=document.getElementById(id);if(!p){p=document.createElement('p');p.id=id;$('#bar-reasons').appendChild(p)}p.textContent=why;b.setAttribute('aria-describedby',id)}
+function enable(b){if(b.getAttribute('aria-disabled')!=='true')return;const id=b.getAttribute('aria-describedby');b.removeAttribute('aria-disabled');b.removeAttribute('aria-describedby');const p=id&&document.getElementById(id);if(p)p.remove()}
 /* the sticky bar's real height drives scroll-padding-top, so a focused or targeted element is never under it (2.4.11) */
 new ResizeObserver(([e])=>R.style.setProperty('--bar-h',Math.ceil(e.target.getBoundingClientRect().height+8)+'px')).observe($('.bar'));
 /* mechanical audit: page box first (DC-200), then token contrast, then 24 px targets (2.5.8) */
