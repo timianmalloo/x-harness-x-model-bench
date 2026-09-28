@@ -6,3 +6,9 @@ catalog: "0.3"
 runs:
   row15-d1-1: {export_sha256: 8b35fdf94a231353fbce8ed17cc6b18461222a1217603b20d4202dcfdb76e1d2, bytes: 7917, pass: grade-20260925T063930-dec9eb}
   a1-capture-1: {export_sha256: 30126414cc5461a326d7404015fb617e6a1dcb1ff18ad0de29b35772e5c02022, bytes: 3980, pass: grade-20260925T075419-1dc414}
+# 2026-09-27, views export shape 2: views.export no longer carries `leaderboard` (R-78 DR-S-4; board.export owns it).
+# Same 0.3 passes, measured by the Leader: for each run, the old code still reproduces the entry above, and that
+# export minus `leaderboard`, re-canonicalised, is byte-equal to the new export below. check_regrade reads this section.
+runs_export_2:
+  row15-d1-1: {export_sha256: f65031ceaf136e7acc0986a4313ccc3420bd21a092b4c8595663c2fda9dd6e20, bytes: 5815, pass: grade-20260925T063930-dec9eb}
+  a1-capture-1: {export_sha256: a1d069d21d07c930da02d8003a4676d9f47ddc6dfe5adb4d6884b263c0327c01, bytes: 2924, pass: grade-20260925T075419-1dc414}

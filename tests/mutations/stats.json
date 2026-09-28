@@ -26,8 +26,8 @@
  {
   "name": "localcontext removed",
   "file": "src/harness_bench/stats.py",
-  "find": "with localcontext(_CONTEXT):",
-  "replace": "if True:",
+  "find": "with localcontext(_CONTEXT):\n        return _interval(obs, params, key)",
+  "replace": "if True:\n        return _interval(obs, params, key)",
   "tests": ["tests/test_stats.py::test_ts5_ambient_decimal_context_does_not_change_the_bytes"]
  },
  {

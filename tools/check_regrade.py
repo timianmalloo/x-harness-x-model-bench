@@ -41,6 +41,7 @@ from harness_bench.plan import file_hash, load_confirmed
 
 ROOT = Path(__file__).resolve().parents[1]
 BASELINE = "bench/regrade-baseline-0.3.yaml"
+BASELINE_KEY = "runs_export_2"  # the section for the current views export shape (R-78 DR-S-4: no leaderboard)
 FREEZE = "bench/catalog-freeze.yaml"
 EXPECTED = "tests/fixtures/gate/expected-counts.yaml"
 ALLOWANCE = ROOT / "bench" / "regrade-allowed-findings.yaml"
@@ -106,7 +107,7 @@ def gate(run_dir: Path, grade: Callable[[Path], str], *, baseline: dict, frozen_
         report.failures.append("criterion 2: pass B's export differs from pass A's")
     v03_after = views.load(run_dir, "0.3")  # 3
     e03_after = _sha(v03_after)
-    base = (baseline.get("runs") or {}).get(run_dir.name)
+    base = (baseline.get(BASELINE_KEY) or {}).get(run_dir.name)
     if base is not None:
         if not e03_before == e03_after == base["export_sha256"]:
             report.failures.append(f"criterion 3: the 0.3 export {e03_before} before, {e03_after} after, "

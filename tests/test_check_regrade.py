@@ -35,7 +35,7 @@ def gate_run(tmp_path):
     root = make_root(tmp_path)  # a released version (the .dev suffix stripped), as at the gate
     run_dir = tmp_path / "runs" / "heads"
     shutil.copytree(MINI_RUN, run_dir)
-    baseline = {"runs": {"heads": {"export_sha256": hashlib.sha256(views.export(views.load(run_dir, "0.3"))).hexdigest()}}}
+    baseline = {check_regrade.BASELINE_KEY: {"heads": {"export_sha256": hashlib.sha256(views.export(views.load(run_dir, "0.3"))).hexdigest()}}}
     calibration = tmp_path / "calibration" / "heads"
     shutil.copytree(MINI_RUN, calibration)
     runner.run_pass(calibration, root)
@@ -97,8 +97,8 @@ def test_a_value_moved_by_pass_b_fails_the_gate(gate_run, monkeypatch):
 
 
 def test_a_moved_0_3_byte_fails_the_gate(gate_run):
-    e03 = gate_run[2]["runs"]["heads"]["export_sha256"]
-    report = run_gate(gate_run, baseline={"runs": {"heads": {"export_sha256": "0" * 64}}})
+    e03 = gate_run[2][check_regrade.BASELINE_KEY]["heads"]["export_sha256"]
+    report = run_gate(gate_run, baseline={check_regrade.BASELINE_KEY: {"heads": {"export_sha256": "0" * 64}}})
     assert report.failures == [f"criterion 3: the 0.3 export {e03} before, {e03} after, baseline {'0' * 64}"]
 
 

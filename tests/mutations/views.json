@@ -78,30 +78,30 @@
  },
  {
   "name": "invalid cells counted toward their combo",
-  "file": "src/harness_bench/views.py",
+  "file": "src/harness_bench/board.py",
   "find": "    valid = [c for c in cells if c.validity == \"valid\"]\n",
   "replace": "    valid = list(cells)\n",
   "tests": ["tests/test_views.py::test_an_invalid_cell_never_counts_toward_its_combo"]
  },
  {
   "name": "rank inverted (a failure outranks a pass)",
-  "file": "src/harness_bench/views.py",
+  "file": "src/harness_bench/board.py",
   "find": "sum(1 for o in ranked if o > v)",
   "replace": "sum(1 for o in ranked if o < v)",
   "tests": ["tests/test_views.py::test_the_leaderboard_ranks_by_pass_rate_and_shows_ties"]
  },
  {
   "name": "ties not marked",
-  "file": "src/harness_bench/views.py",
+  "file": "src/harness_bench/board.py",
   "find": " + (\"=\" if ranked.count(v) > 1 else \"\")",
   "replace": "",
   "tests": ["tests/test_views.py::test_the_leaderboard_ranks_by_pass_rate_and_shows_ties"]
  },
  {
   "name": "a combo's cost shown when some valid cell has none",
-  "file": "src/harness_bench/views.py",
-  "find": "    elif no_cost:\n",
-  "replace": "    elif False:\n",
+  "file": "src/harness_bench/board.py",
+  "find": "    elif no_cost:\n        reason = no_cost[0].scores.get(\"cost_usd\", ViewsMeasure(None, \"not graded\")).reason\n",
+  "replace": "    elif False:\n        reason = no_cost[0].scores.get(\"cost_usd\", ViewsMeasure(None, \"not graded\")).reason\n",
   "tests": ["tests/test_views.py::test_cost_is_na_for_a_combo_when_any_valid_cell_has_no_cost"]
  },
  {
