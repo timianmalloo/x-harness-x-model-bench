@@ -202,7 +202,8 @@ def frozen(tmp_path):
     set_catalog_version(root, "9.1")
     golden = tmp_path / "golden"
     (golden / "9.1").mkdir(parents=True)
-    board_golden = tmp_path / "board" / "1"
+    N = str(getattr(board, "EXPORT_VERSION", 1))
+    board_golden = tmp_path / "board" / N
     board_golden.mkdir(parents=True)
     pins, board_pins = {}, {}
     for name in FIXTURES:
@@ -216,7 +217,8 @@ def frozen(tmp_path):
     freeze = {"schema": "bench-catalog-freeze/1",
               "versions": {"9.0": {"catalog_hash": "0" * 64, "golden": {}},
                            "9.1": {"catalog_hash": runner.catalog_hash(root), "golden": pins, "board_golden": board_pins}},
-              "board_exports": {"1": {"catalog": "9.1", "golden": board_pins}}}
+              "board_exports": {"1": {"catalog": "0.5", "golden": board_pins},
+                                N: {"catalog": "9.1", "golden": board_pins}}}
     return root, golden, freeze
 
 
@@ -388,11 +390,13 @@ def test_absent_board_exports_entry_or_catalog_mismatch_is_red_through_d(frozen,
 def test_board_exports_append_only_and_v1_equals_v05_golden_is_red_through_e(frozen, tmp_path):
     """(e) board_exports entries are append-only against the merge base, and board_exports['1'].golden must equal versions['0.5'].board_golden."""
     _, _, pinned = frozen
+    N = str(getattr(board, "EXPORT_VERSION", 1))
     base = {
         "versions": dict(pinned["versions"]),
         "board_exports": {
             "0": {"catalog": "9.0", "golden": {"heads": "0" * 64}},
             "1": dict(pinned["board_exports"]["1"]),
+            N: dict(pinned["board_exports"][N]),
         },
     }
     # entry '0' changed
@@ -401,6 +405,7 @@ def test_board_exports_append_only_and_v1_equals_v05_golden_is_red_through_e(fro
         "board_exports": {
             "0": {"catalog": "9.0", "golden": {"heads": "1" * 64}},
             "1": dict(pinned["board_exports"]["1"]),
+            N: dict(pinned["board_exports"][N]),
         },
     }
     assert problems(frozen, tmp_path, base=base, freeze=edited) == [
@@ -411,6 +416,7 @@ def test_board_exports_append_only_and_v1_equals_v05_golden_is_red_through_e(fro
         "versions": dict(base["versions"]),
         "board_exports": {
             "1": dict(pinned["board_exports"]["1"]),
+            N: dict(pinned["board_exports"][N]),
         },
     }
     assert problems(frozen, tmp_path, base=base, freeze=removed) == [
@@ -419,7 +425,7 @@ def test_board_exports_append_only_and_v1_equals_v05_golden_is_red_through_e(fro
     # board_exports['1'].golden != versions['0.5'].board_golden
     mismatch = {
         "versions": {**base["versions"], "0.5": {"catalog_hash": "a" * 64, "golden": {}, "board_golden": {"heads": "diff" * 8}}},
-        "board_exports": dict(pinned["board_exports"]),
+        "board_exports": dict(base["board_exports"]),
     }
     assert problems(frozen, tmp_path, base=mismatch, freeze=mismatch) == [
         f"(e) board_exports['1'].golden != versions['0.5'].board_golden in {FREEZE}",

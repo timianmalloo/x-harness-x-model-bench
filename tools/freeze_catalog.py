@@ -118,13 +118,64 @@ def freeze(root: Path, golden: Path, freeze_path: Path) -> int:
     return 0
 
 
+def freeze_board_export(root: Path, board_golden: Path, freeze_path: Path) -> int:
+    """Write tests/fixtures/board/<N>/ in the control's environment without touching the catalog entries,
+    and print the exact YAML the Leader must append to bench/catalog-freeze.yaml."""
+    version = str(config.load_yaml(root / "bench" / "metrics.yaml")["version"])
+    N = str(board.EXPORT_VERSION)
+    with tempfile.TemporaryDirectory(prefix="freeze-board-") as raw:
+        tmp = Path(raw)
+        board_pins = {}
+        clean = _control_root(root, tmp)
+        out = board_golden / N
+        out.mkdir(parents=True, exist_ok=True)
+        try:
+            for name in FIXTURES:
+                _, board_bytes = _twice(clean, name, tmp)
+                (out / f"{name}.board.export").write_bytes(board_bytes)
+                board_pins[name] = _sha(board_bytes)
+        except SystemExit:
+            shutil.rmtree(out, ignore_errors=True)
+            raise
+
+    # Print the exact YAML the Leader must append
+    record = yaml.safe_load(freeze_path.read_text(encoding="utf-8")) if freeze_path.is_file() else {}
+    v05_pins = record.get("versions", {}).get("0.5", {}).get("board_golden", {})
+    lines = [
+        "board_exports:",
+        "  '1':",
+        "    catalog: '0.5'",
+        "    golden:",
+    ]
+    for name in FIXTURES:
+        lines.append(f"      {name}: {v05_pins.get(name, '')}")
+    lines.extend([
+        f"  '{N}':",
+        f"    catalog: '{version}'",
+        "    golden:",
+    ])
+    for name in FIXTURES:
+        lines.append(f"      {name}: {board_pins[name]}")
+    yaml_text = "\n".join(lines) + "\n"
+    print(f"froze board export version {N} into {out}")
+    print("\nExact YAML to append to " + str(freeze_path) + ":\n")
+    print(yaml_text)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--root", type=Path, default=_repo_root(), help="bench root whose catalog is frozen")
     ap.add_argument("--golden", type=Path, default=_repo_root() / "tests" / "fixtures" / "catalog",
                     help="directory that receives <version>/<fixture>.export and <fixture>.board.export")
+    ap.add_argument("--board-golden", type=Path, default=_repo_root() / "tests" / "fixtures" / "board",
+                    help="directory that receives <N>/<fixture>.board.export")
     ap.add_argument("--freeze", type=Path, default=_repo_root() / FREEZE_NAME, help="the freeze record to append to")
+    ap.add_argument("--board-export", action="store_true",
+                    help="write tests/fixtures/board/<N>/ goldens without touching catalog entries")
     args = ap.parse_args(argv)
+    if args.board_export:
+        return freeze_board_export(args.root, args.board_golden, args.freeze)
     return freeze(args.root, args.golden, args.freeze)
 
 
