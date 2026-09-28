@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-27T23:58:06Z",
+  "generated": "2026-09-28T00:22:54Z",
   "audit": [
     {
       "actor": null,
@@ -40420,6 +40420,29 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3JP99QXB4W0X26YTW9B13G1",
+      "shortname": "draft-catalog-0.5.dev",
+      "datetime": "2026-09-28T00:22:53Z",
+      "session": "worker-agy-cat05",
+      "prompt": "draft catalog 0.5.dev in bench/metrics.yaml exactly as ruling R-78 condition 1 requires",
+      "summary": "Drafted catalog 0.5.dev in bench/metrics.yaml with normalisation anchors for 49 score metrics and R-78 weight corrections; recorded anchor source table in docs/notes/catalog-0.5-anchors.md",
+      "kind": "manual",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "started_at": "2026-09-28T00:04:05Z",
+      "duration_seconds": 1128.0,
+      "git": {
+        "sha": "6f61db84bd799fb37a8667463b80d9f25c989b2f",
+        "short": "6f61db84b",
+        "branch": "w4-cat05",
+        "pushed": null
+      }
     }
   ],
   "changes": [
