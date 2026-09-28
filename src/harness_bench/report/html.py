@@ -13,6 +13,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import html as _html
 import json
 import re
@@ -44,6 +45,7 @@ PUBLICATION = "report"  # the egress destination id of report publication (US-47
 RECORD = "report-record.json"  # beside report.html: what the report withheld (US-47 c3) and flagged (US-46 c2)
 # One rendered section. Sections never nest, and every value is escaped by `_e`, so "</section>" is only a tag.
 _SECTION = re.compile(r'<section id="([a-z0-9-]+)">.*?</section>', re.DOTALL)
+_HEADER_END = re.compile(r'(<section id="header">.*?)(</section>)', re.DOTALL)  # where the egress row goes (R-80 c1)
 
 STYLE = """
 :root{color-scheme: light;
@@ -478,15 +480,22 @@ def _publish(doc: str, operator: egress.Operator | None, secrets: set[str], cana
                        "withheld": [s["section"] for s in sections if s["classes"]]}
 
 
+def _egress_row(record: dict) -> str:
+    """R-80 c1: the header's publication-egress row names the scan status, the withheld count and the record. It is
+    added after the section scan and holds only bench-authored text (a status, two counts, a file name); the
+    HB-SEC-001 shape pass still reads it."""
+    text = f"{record['egress']}; {len(record['withheld'])} of {len(record['sections'])} sections withheld; record {RECORD}"
+    return f"<dl><dt>Publication egress</dt><dd>{_e(text)}</dd></dl>"
+
+
 def write(run_dir: Path, view: views.RunView, credential_values: set[str] = frozenset(), root: Path | None = None,
           operator: egress.Operator | None = None, board_obj: board.Board | None = None,
           params: stats.Params | None = None, comparison_obj: board.Comparison | str | None = None,
           canaries: Sequence[str] = ()) -> Path:
     """report.html, after publication egress (`_publish`) and the credential scan (HB-SEC-001), and beside it the run
-    record of what the report withheld and flagged (`RECORD`).
-    assume: a report-time file beside report.html is the run record US-47 c3 and US-46 c2 name. Confirm: the Leader's
-    ruling on EGRESS s2. Breaks: if it must be a ledger fact (the design's `egress_events`), this record moves there
-    with an ADR-0006 amendment; its content stays the same."""
+    record of what the report withheld and flagged (`RECORD`). The record is the publication record, a derived
+    artifact regenerated with the report and never a ledger fact (R-80 DR-EG-1, ADR-0006 amendment); `report_sha256`
+    binds it to the report.html written beside it (R-80 c1)."""
     doc = render(view, archive_present=(run_dir / "archive").is_dir(), run_dir=run_dir, root=root, operator=operator,
                  board_obj=board_obj, params=params, comparison_obj=comparison_obj)
     published, record = _publish(doc, operator, set(credential_values), canaries)
@@ -496,7 +505,9 @@ def write(run_dir: Path, view: views.RunView, credential_values: set[str] = froz
     record["injection"] = {"patterns_version": views.INJECTION_PATTERNS_VERSION,
                            "items": [{"cell_id": c, "metric": m, "patterns": list(p)}
                                      for c, m, p in judges.injection_items(root, run_dir, view)]}
+    published = _HEADER_END.sub(lambda m: m.group(1) + _egress_row(record) + m.group(2), published, count=1)
     path = run_dir / "report.html"
     path.write_text(published, encoding="utf-8", newline="\n")
+    record["report_sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
     (run_dir / RECORD).write_text(json.dumps(record, indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     return path
