@@ -159,6 +159,28 @@ def render(
                 comp_table.add_row(cr.combo, cr.pack, cr.measure, delta_str, iv_str, label_str)
             console.print(comp_table)
 
+    if board_obj.areas:
+        combos_packs: list[tuple[str, str]] = []
+        areas_by_cp: dict[tuple[str, str], list[board.AreaRow]] = {}
+        for ar in board_obj.areas:
+            key = (ar.combo, ar.pack)
+            if key not in areas_by_cp:
+                combos_packs.append(key)
+                areas_by_cp[key] = []
+            areas_by_cp[key].append(ar)
+        for combo, pack in combos_packs:
+            row_areas = areas_by_cp[(combo, pack)]
+            parts = []
+            for ar in row_areas:
+                if ar.interval.point is not None:
+                    parts.append(f"{ar.area} {ar.interval.point:.1f}")
+                else:
+                    reason = ar.interval.reason or "not recorded"
+                    parts.append(f"{ar.area} NA ({reason})")
+            line = f"Areas ({combo} {pack}): {', '.join(parts)}"
+            line = line.replace("—", "-").replace("−", "-")
+            console.print(line, markup=False)
+
     not_valid = [c for c in view.cells if c.validity.startswith("invalid") or c.validity == "not recorded"]
     if not_valid:
         console.print("Cells that are not valid:")

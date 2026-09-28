@@ -16,8 +16,9 @@ from __future__ import annotations
 import hashlib
 import html as _html
 import json
+import math
 import re
-from collections.abc import Sequence
+from collections.abc import Callable, Mapping, Sequence
 from decimal import Decimal
 from pathlib import Path
 
@@ -112,6 +113,12 @@ figcaption{font-size:var(--fs-small);color:var(--ink-2)}
 .sort{font:inherit;color:inherit;background:none;border:0;padding:0;min-height:var(--target);cursor:pointer;font-weight:600}
 .popover{position:absolute;z-index:3;background:var(--panel);color:var(--ink);border:var(--rule-w) solid var(--rule-strong);border-radius:var(--radius);padding:var(--s2) var(--s3);max-width:var(--popover-maxw);font-size:var(--fs-small);overflow-wrap:anywhere}
 select{font:inherit;min-height:var(--target)}
+.mk-c1{fill:var(--c1);stroke:var(--c1)}.mk-c2{fill:var(--c2);stroke:var(--c2)}.mk-c3{fill:var(--c3);stroke:var(--c3)}
+.mk-c4{fill:var(--c4);stroke:var(--c4)}.mk-c5{fill:var(--c5);stroke:var(--c5)}.mk-c6{fill:var(--c6);stroke:var(--c6)}
+.mk-c7{fill:var(--c7);stroke:var(--c7)}.mk-c8{fill:var(--c8);stroke:var(--c8)}
+.hollow{fill:var(--panel);stroke-width:2}.dash{stroke-dasharray:4 3}
+.charts{display:flex;flex-wrap:wrap;gap:var(--s3)}
+.step{stroke:var(--rule-strong);stroke-dasharray:2 2}
 /* Global filter state (design section 6): classes on <main>, so CSS alone hides matching rows/marks
    at redraw time (no per-node JS). c1..c8 matches the categorical palette's own cap (design section 3). */
 main.hide-c1 [data-combo="c1"]{display:none}
@@ -1074,6 +1081,476 @@ def _pack_effect(board_obj: board.Board, combo_ix: dict[str, str]) -> html_build
     return html_builder.el("section", {"id": "pack-effect"}, *children)
 
 
+def _marker_shape(
+    shape_num: int,
+    cx: float,
+    cy: float,
+    combo_token: str,
+    is_hollow: bool,
+    attrs: Mapping[str, object] | None = None,
+) -> html_builder.Html:
+    cls = f"mk-{combo_token}" + (" hollow" if is_hollow else "")
+    el_attrs = dict(attrs or {})
+    el_attrs["class"] = cls
+    s = (shape_num - 1) % 8 + 1
+    if s == 1:
+        el_attrs["cx"] = str(round(cx, 1))
+        el_attrs["cy"] = str(round(cy, 1))
+        el_attrs["r"] = "5"
+        return html_builder.el("circle", el_attrs)
+    if s == 2:
+        el_attrs["x"] = str(round(cx - 5, 1))
+        el_attrs["y"] = str(round(cy - 5, 1))
+        el_attrs["width"] = "10"
+        el_attrs["height"] = "10"
+        return html_builder.el("rect", el_attrs)
+    if s == 3:
+        el_attrs["d"] = f"M{round(cx, 1)} {round(cy - 6, 1)} L{round(cx + 6, 1)} {round(cy + 5, 1)} L{round(cx - 6, 1)} {round(cy + 5, 1)} Z"
+        return html_builder.el("path", el_attrs)
+    if s == 4:
+        el_attrs["d"] = f"M{round(cx, 1)} {round(cy - 6, 1)} L{round(cx + 6, 1)} {round(cy, 1)} L{round(cx, 1)} {round(cy + 6, 1)} L{round(cx - 6, 1)} {round(cy, 1)} Z"
+        return html_builder.el("path", el_attrs)
+    if s == 5:
+        el_attrs["d"] = f"M{round(cx - 6, 1)} {round(cy - 5, 1)} L{round(cx + 6, 1)} {round(cy - 5, 1)} L{round(cx, 1)} {round(cy + 6, 1)} Z"
+        return html_builder.el("path", el_attrs)
+    if s == 6:
+        el_attrs["d"] = f"M{round(cx - 5, 1)} {round(cy, 1)} L{round(cx + 5, 1)} {round(cy, 1)} M{round(cx, 1)} {round(cy - 5, 1)} L{round(cx, 1)} {round(cy + 5, 1)}"
+        el_attrs["stroke-width"] = "2"
+        return html_builder.el("path", el_attrs)
+    if s == 7:
+        el_attrs["d"] = f"M{round(cx - 4, 1)} {round(cy - 4, 1)} L{round(cx + 4, 1)} {round(cy + 4, 1)} M{round(cx - 4, 1)} {round(cy + 4, 1)} L{round(cx + 4, 1)} {round(cy - 4, 1)}"
+        el_attrs["stroke-width"] = "2"
+        return html_builder.el("path", el_attrs)
+    star_pts = (
+        f"{round(cx, 1)},{round(cy - 6, 1)} {round(cx + 2, 1)},{round(cy - 2, 1)} {round(cx + 6, 1)},{round(cy - 2, 1)} "
+        f"{round(cx + 3, 1)},{round(cy + 1, 1)} {round(cx + 4, 1)},{round(cy + 5, 1)} {round(cx, 1)},{round(cy + 2, 1)} "
+        f"{round(cx - 4, 1)},{round(cy + 5, 1)} {round(cx - 3, 1)},{round(cy + 1, 1)} {round(cx - 6, 1)},{round(cy - 2, 1)} "
+        f"{round(cx - 2, 1)},{round(cy - 2, 1)}"
+    )
+    el_attrs["points"] = star_pts
+    return html_builder.el("polygon", el_attrs)
+
+
+def _cost_frontier_panel(
+    panel_title: str,
+    metric_label: str,
+    rows: Sequence[board.FrontierRow],
+    metric_getter: Callable[[board.FrontierRow], tuple[float | None, str | None, str]],
+    combo_ix: dict[str, str],
+) -> html_builder.Html:
+    valid_points: list[tuple[board.FrontierRow, float, str, float]] = []
+    for r in rows:
+        val, val_raw, _ = metric_getter(r)
+        p1 = float(r.pass_at_1.point) if r.pass_at_1.point is not None else None
+        if val is not None and p1 is not None:
+            valid_points.append((r, val, val_raw, p1))
+
+    if not valid_points:
+        return html_builder.el(
+            "figure", None,
+            html_builder.el("p", {"class": "na"}, f"{metric_label} not recorded for any combo."),
+            html_builder.el("figcaption", None, f"pass@1 vs {metric_label} (no axes drawn)"),
+        )
+
+    x_vals = [p[1] for p in valid_points]
+    min_x = min(x_vals)
+    max_x = max(x_vals)
+    if min_x == max_x:
+        min_x = 0.0
+        max_x = max(1.0, max_x * 1.2)
+
+    def x_scale(v: float) -> float:
+        return 45.0 + ((v - min_x) / (max_x - min_x)) * 255.0
+
+    def y_scale(p1: float) -> float:
+        return 165.0 - (p1 * 145.0)
+
+    svg_children: list[html_builder.Html] = [
+        html_builder.el("line", {"x1": "45", "y1": "20", "x2": "45", "y2": "165", "class": "axis"}),
+        html_builder.el("line", {"x1": "45", "y1": "165", "x2": "300", "y2": "165", "class": "axis"}),
+        html_builder.el("text", {"x": "4", "y": "24"}, "1.00"),
+        html_builder.el("text", {"x": "4", "y": "169"}, "0.00"),
+        html_builder.el("text", {"x": "45", "y": "185"}, f"{min_x:.1f}"),
+        html_builder.el("text", {"x": "250", "y": "185"}, f"{max_x:.1f}"),
+    ]
+
+    # Pareto step line: sort by x ascending
+    pareto_pts: list[tuple[float, float]] = []
+    max_p1 = -1.0
+    for _, val, _, p1 in sorted(valid_points, key=lambda p: (p[1], -p[3])):
+        if p1 > max_p1:
+            max_p1 = p1
+            pareto_pts.append((x_scale(val), y_scale(p1)))
+
+    if len(pareto_pts) >= 2:
+        step_coords: list[tuple[float, float]] = []
+        for i, (cx, cy) in enumerate(pareto_pts):
+            if i == 0:
+                step_coords.append((cx, cy))
+            else:
+                _, prev_cy = pareto_pts[i - 1]
+                step_coords.append((cx, prev_cy))
+                step_coords.append((cx, cy))
+        step_points_str = " ".join(f"{round(x, 1)},{round(y, 1)}" for x, y in step_coords)
+        svg_children.append(html_builder.el("polyline", {"points": step_points_str, "class": "grid step", "fill": "none", "stroke-width": "1"}))
+
+    # Whiskers and markers
+    for r, val, val_raw, p1 in valid_points:
+        cx = round(x_scale(val), 1)
+        combo_token = combo_ix[r.combo]  # every board combo has a legend token; a miss is a defect, never c1
+        p1_pt_str = f"{p1:.2f}"
+        lo_str = f"{r.pass_at_1.lo:.2f}" if r.pass_at_1.lo is not None else None
+        hi_str = f"{r.pass_at_1.hi:.2f}" if r.pass_at_1.hi is not None else None
+
+        if r.pass_at_1.lo is not None and r.pass_at_1.hi is not None:
+            y_lo = round(y_scale(float(r.pass_at_1.lo)), 1)
+            y_hi = round(y_scale(float(r.pass_at_1.hi)), 1)
+            whisker_attrs = {
+                "x1": str(cx),
+                "y1": str(min(y_lo, y_hi)),
+                "x2": str(cx),
+                "y2": str(max(y_lo, y_hi)),
+                "class": f"mk-{combo_token} whisk" + (" dash" if r.pack == "off" else ""),
+                "data-combo": combo_token,
+                "data-pack": r.pack,
+                "data-interval-lo": lo_str,
+                "data-interval-hi": hi_str,
+                "data-interval-point": p1_pt_str,
+            }
+            svg_children.append(html_builder.el("line", whisker_attrs))
+
+        cy = round(y_scale(p1), 1)
+        shape_idx = int(combo_token[1:]) if len(combo_token) > 1 and combo_token[1:].isdigit() else 1
+        mark_attrs: dict[str, object] = {
+            "data-combo": combo_token,
+            "data-pack": r.pack,
+            "data-interval-point": p1_pt_str,
+            "data-value": val_raw,
+        }
+        if lo_str is not None and hi_str is not None:
+            mark_attrs["data-interval-lo"] = lo_str
+            mark_attrs["data-interval-hi"] = hi_str
+
+        svg_children.append(_marker_shape(shape_idx, cx, cy, combo_token, r.pack == "off", mark_attrs))
+
+    svg = html_builder.el("svg", {
+        "role": "img",
+        "aria-label": f"pass@1 against {metric_label}",
+        "viewBox": "0 0 320 200",
+        "width": "100%",
+    }, *svg_children)
+
+    fig_children = [svg, html_builder.el("figcaption", None, panel_title)]
+    omitted = len(rows) - len(valid_points)
+    if omitted > 0:
+        fig_children.append(html_builder.el("p", {"class": "small muted"}, f"{omitted} combos not plotted: not recorded"))
+
+    return html_builder.el("figure", None, *fig_children)
+
+
+def _cost_frontier(view: views.RunView, board_obj: board.Board, combo_ix: dict[str, str]) -> html_builder.Html:
+    if not any(c.outcome == "completed" for c in view.cells) or not board_obj.frontier:
+        return html_builder.el(
+            "section", {"id": "cost-frontier"},
+            html_builder.el("h2", None, "Cost frontier"),
+            html_builder.el("p", {"class": "st"}, "No completed cells to plot."),
+        )
+
+    # 1. Cost panel
+    all_cost_na = all(r.cost_per_task.value is None for r in board_obj.frontier)
+    if all_cost_na:
+        models: set[str] = set()
+        for r in board_obj.frontier:
+            if r.cost_per_task.reason:
+                found = re.findall(r"no price list entry for ([a-zA-Z0-9_\-\.]+)", r.cost_per_task.reason)
+                models.update(found)
+        if models:
+            cost_sentence = f"Cost not recorded for any combo: no price list entry for {', '.join(sorted(models))}."
+        else:
+            reasons = [r.cost_per_task.reason for r in board_obj.frontier if r.cost_per_task.reason]
+            cost_sentence = f"Cost not recorded for any combo: {reasons[0] if reasons else 'not recorded'}."
+        cost_fig = html_builder.el(
+            "figure", None,
+            html_builder.el("p", {"class": "na"}, cost_sentence),
+            html_builder.el("figcaption", None, "pass@1 vs cost per task (no axes drawn)"),
+        )
+    else:
+        def get_cost(r: board.FrontierRow) -> tuple[float | None, str | None, str]:
+            v = float(r.cost_per_task.value) if r.cost_per_task.value is not None else None
+            return v, str(r.cost_per_task.value) if r.cost_per_task.value is not None else None, "cost"
+        cost_fig = _cost_frontier_panel("pass@1 vs cost per task (USD)", "cost per task", board_obj.frontier, get_cost, combo_ix)
+
+    # 2. Tokens panel
+    def get_tokens(r: board.FrontierRow) -> tuple[float | None, str | None, str]:
+        v = float(r.tokens_per_solved.value) if r.tokens_per_solved.value is not None else None
+        return v, str(r.tokens_per_solved.value) if r.tokens_per_solved.value is not None else None, "tokens"
+    tokens_fig = _cost_frontier_panel("pass@1 vs tokens per solved task", "tokens per solved", board_obj.frontier, get_tokens, combo_ix)
+
+    # 3. Wall panel
+    def get_wall(r: board.FrontierRow) -> tuple[float | None, str | None, str]:
+        if r.wall_per_task.value is not None:
+            s_val = float(r.wall_per_task.value) / 1000.0
+            return s_val, f"{s_val:.1f}", "wall"
+        return None, None, "wall"
+    wall_fig = _cost_frontier_panel("pass@1 vs wall per task (s)", "wall per task", board_obj.frontier, get_wall, combo_ix)
+
+    charts_div = html_builder.el("div", {"class": "charts"}, cost_fig, tokens_fig, wall_fig)
+
+    # Table alternative
+    headers = [("Combo", False), ("Pack", False), ("pass@1", True), ("95% interval", False),
+               ("Tokens per solved", True), ("Cost per task (USD)", True), ("Wall per task (s)", True)]
+    head_tr = html_builder.el("tr", None, *(
+        html_builder.el("th", {"scope": "col", "class": "num"} if is_num else {"scope": "col"}, h)
+        for h, is_num in headers
+    ))
+
+    tr_list = []
+    for r in board_obj.frontier:
+        combo_token = combo_ix[r.combo]  # every board combo has a legend token; a miss is a defect, never c1
+        cells = [html_builder.el("td", None, r.combo), html_builder.el("td", None, r.pack)]
+
+        # pass@1
+        if r.pass_at_1.point is not None:
+            p1_attrs = {
+                "class": "num",
+                "data-interval-point": f"{r.pass_at_1.point:.2f}",
+            }
+            if r.pass_at_1.lo is not None and r.pass_at_1.hi is not None:
+                p1_attrs["data-interval-lo"] = f"{r.pass_at_1.lo:.2f}"
+                p1_attrs["data-interval-hi"] = f"{r.pass_at_1.hi:.2f}"
+            cells.append(html_builder.el("td", p1_attrs, f"{r.pass_at_1.point:.2f}"))
+        else:
+            cells.append(html_builder.el("td", {"class": "num na"}, "NA"))
+
+        # 95% interval
+        if r.pass_at_1.lo is not None and r.pass_at_1.hi is not None:
+            cells.append(html_builder.el("td", {"class": "num"}, f"[{r.pass_at_1.lo:.2f}, {r.pass_at_1.hi:.2f}]"))
+        else:
+            cells.append(html_builder.el("td", {"class": "na"}, r.pass_at_1.reason or "interval not computed"))
+
+        # Tokens
+        if r.tokens_per_solved.value is not None:
+            cells.append(html_builder.el("td", {"class": "num", "data-value": str(r.tokens_per_solved.value)}, report.tokens(r.tokens_per_solved)))
+        else:
+            cells.append(html_builder.el("td", {"class": "num na"}, "NA"))
+
+        # Cost
+        if r.cost_per_task.value is not None:
+            cells.append(html_builder.el("td", {"class": "num", "data-value": str(r.cost_per_task.value)}, report.usd(r.cost_per_task)))
+        else:
+            cells.append(html_builder.el("td", {"class": "num na"}, "NA"))
+
+        # Wall
+        if r.wall_per_task.value is not None:
+            wall_s = float(r.wall_per_task.value) / 1000.0
+            cells.append(html_builder.el("td", {"class": "num", "data-value": f"{wall_s:.1f}"}, report.seconds(r.wall_per_task)))
+        else:
+            cells.append(html_builder.el("td", {"class": "num na"}, "NA"))
+
+        tr_list.append(html_builder.el("tr", {"data-combo": combo_token, "data-pack": r.pack}, *cells))
+
+    table = html_builder.el(
+        "table", None,
+        html_builder.el("caption", {"id": "cost-frontier-caption"}, "Cost frontier table"),
+        html_builder.el("thead", None, head_tr),
+        html_builder.el("tbody", None, *tr_list),
+    )
+    region = html_builder.el("div", {"class": "region", "role": "region", "tabindex": "0", "aria-labelledby": "cost-frontier-caption"}, table)
+    details = html_builder.el("details", None, html_builder.el("summary", None, "Table"), region)
+
+    return html_builder.el(
+        "section", {"id": "cost-frontier"},
+        html_builder.el("h2", None, "Cost frontier"),
+        charts_div,
+        details,
+    )
+
+
+def _areas(view: views.RunView, board_obj: board.Board, combo_ix: dict[str, str]) -> html_builder.Html:
+    if not any(c.outcome == "completed" for c in view.cells) or not board_obj.areas:
+        return html_builder.el(
+            "section", {"id": "areas"},
+            html_builder.el("h2", None, "Areas"),
+            html_builder.el("p", {"class": "st"}, "No completed cells to plot."),
+        )
+
+    all_na = all(ar.interval.point is None for ar in board_obj.areas)
+    if all_na:
+        reasons = [ar.interval.reason for ar in board_obj.areas if ar.interval.reason]
+        reason = (reasons[0] if reasons else None) or "not recorded"
+        return html_builder.el(
+            "section", {"id": "areas"},
+            html_builder.el("h2", None, "Areas"),
+            html_builder.el("p", {"class": "na"}, f"No area composites for this run: {reason}."),
+        )
+
+    def _radar_label_pos(ex: float, ey: float) -> dict[str, str]:
+        """The full area name just outside its axis end, anchored away from the centre (110, 100)."""
+        anchor = "middle" if abs(ex - 110.0) < 8 else ("start" if ex > 110 else "end")
+        dx = 0.0 if anchor == "middle" else (4.0 if anchor == "start" else -4.0)
+        dy = 12.0 if ey > 100 else -4.0
+        return {"x": f"{ex + dx:.1f}", "y": f"{ey + dy:.1f}", "text-anchor": anchor}
+
+    catalog_areas: list[str] = []
+    for ar in board_obj.areas:
+        if ar.area not in catalog_areas:
+            catalog_areas.append(ar.area)
+    num_axes = len(catalog_areas) or 7
+    angles = [-math.pi / 2 + i * 2 * math.pi / num_axes for i in range(num_axes)]
+
+    combos: list[str] = []
+    for ar in board_obj.areas:
+        if ar.combo not in combos:
+            combos.append(ar.combo)
+
+    radars: list[html_builder.Html] = []
+    for combo in combos:
+        combo_token = combo_ix[combo]  # every board combo has a legend token; a miss is a defect, never c1
+        combo_rows = [ar for ar in board_obj.areas if ar.combo == combo]
+        svg_children: list[html_builder.Html] = []
+
+        # Grid circles
+        for pct in (25, 50, 75, 100):
+            r_circle = (pct / 100.0) * 70.0
+            svg_children.append(html_builder.el("circle", {"cx": "110", "cy": "100", "r": str(r_circle), "class": "grid", "fill": "none"}))
+
+        # Axis lines and ticks
+        for i, area in enumerate(catalog_areas):
+            a = angles[i]
+            ex = 110.0 + 70.0 * math.cos(a)
+            ey = 100.0 + 70.0 * math.sin(a)
+            area_rows = [ar for ar in combo_rows if ar.area == area]
+            is_na = all(ar.interval.point is None for ar in area_rows)
+            if is_na:
+                svg_children.append(html_builder.el("line", {
+                    "x1": "110", "y1": "100", "x2": f"{ex:.1f}", "y2": f"{ey:.1f}",
+                    "class": "grid na hollow", "stroke-dasharray": "4 3",
+                }))
+                svg_children.append(html_builder.el("text", {**_radar_label_pos(ex, ey), "class": "na"}, f"{area} NA"))
+            else:
+                svg_children.append(html_builder.el("line", {
+                    "x1": "110", "y1": "100", "x2": f"{ex:.1f}", "y2": f"{ey:.1f}",
+                    "class": "grid",
+                }))
+                svg_children.append(html_builder.el("text", _radar_label_pos(ex, ey), area))
+
+        # Polygons per pack arm
+        for arm in ("on", "off"):
+            arm_rows = {ar.area: ar for ar in combo_rows if ar.pack == arm}
+            pts: list[tuple[float, float, str, stats.Interval]] = []
+            hi_pts: list[tuple[float, float]] = []
+            lo_pts: list[tuple[float, float]] = []
+            for i, area in enumerate(catalog_areas):
+                ar = arm_rows.get(area)
+                if ar is not None and ar.interval.point is not None:
+                    val = float(ar.interval.point)
+                    r_pt = (val / 100.0) * 70.0
+                    vx = 110.0 + r_pt * math.cos(angles[i])
+                    vy = 100.0 + r_pt * math.sin(angles[i])
+                    pts.append((vx, vy, area, ar.interval))
+                if ar is not None and ar.interval.lo is not None and ar.interval.hi is not None:
+                    r_hi = (float(ar.interval.hi) / 100.0) * 70.0
+                    r_lo = (float(ar.interval.lo) / 100.0) * 70.0
+                    hi_pts.append((110.0 + r_hi * math.cos(angles[i]), 100.0 + r_hi * math.sin(angles[i])))
+                    lo_pts.append((110.0 + r_lo * math.cos(angles[i]), 100.0 + r_lo * math.sin(angles[i])))
+
+            if pts:
+                if len(hi_pts) == len(pts) and len(hi_pts) >= 3:
+                    band_pts = " ".join(f"{x:.1f},{y:.1f}" for x, y in hi_pts) + " " + " ".join(f"{x:.1f},{y:.1f}" for x, y in reversed(lo_pts))
+                    svg_children.append(html_builder.el("polygon", {"points": band_pts, "class": f"mk-{combo_token}", "fill-opacity": "0.08", "stroke": "none"}))
+
+                poly_pts = " ".join(f"{vx:.1f},{vy:.1f}" for vx, vy, _, _ in pts)
+                poly_cls = f"mk-{combo_token}" + (" dash" if arm == "off" else "")
+                svg_children.append(html_builder.el("polygon", {
+                    "points": poly_pts,
+                    "class": poly_cls,
+                    "data-combo": combo_token,
+                    "data-pack": arm,
+                    "fill-opacity": "0.12",
+                    "stroke-width": "2",
+                }))
+
+                for vx, vy, area, iv in pts:
+                    mark_attrs: dict[str, object] = {
+                        "cx": f"{vx:.1f}",
+                        "cy": f"{vy:.1f}",
+                        "r": "3",
+                        "class": f"mk-{combo_token}",
+                        "data-combo": combo_token,
+                        "data-pack": arm,
+                        "data-area": area,
+                        "data-value": f"{iv.point:.1f}",
+                        "data-interval-point": f"{iv.point:.1f}",
+                    }
+                    if iv.lo is not None and iv.hi is not None:
+                        mark_attrs["data-interval-lo"] = f"{iv.lo:.1f}"
+                        mark_attrs["data-interval-hi"] = f"{iv.hi:.1f}"
+                    svg_children.append(html_builder.el("circle", mark_attrs))
+
+        svg = html_builder.el("svg", {
+            "viewBox": "-70 0 360 200",  # 70-unit margins either side hold the full area names
+            "role": "img",
+            "aria-label": f"{combo} areas",
+            "width": "100%",
+        }, *svg_children)
+        radars.append(html_builder.el("figure", None, svg, html_builder.el("figcaption", None, f"{combo}: areas radar")))
+
+    radars_div = html_builder.el("div", {"class": "charts"}, *radars)
+
+    # Table alternative
+    head_cells = [html_builder.el("th", {"scope": "col"}, "Combo"), html_builder.el("th", {"scope": "col"}, "Pack")]
+    for area in catalog_areas:
+        head_cells.append(html_builder.el("th", {"scope": "col", "class": "num"}, area))
+    head_tr = html_builder.el("tr", None, *head_cells)
+
+    tr_list = []
+    # Group by (combo, pack)
+    combos_packs: list[tuple[str, str]] = []
+    for ar in board_obj.areas:
+        key = (ar.combo, ar.pack)
+        if key not in combos_packs:
+            combos_packs.append(key)
+
+    for combo, pack in combos_packs:
+        combo_token = combo_ix[combo]  # every board combo has a legend token; a miss is a defect, never c1
+        arm_rows = {ar.area: ar for ar in board_obj.areas if ar.combo == combo and ar.pack == pack}
+        row_cells = [html_builder.el("td", None, combo), html_builder.el("td", None, pack)]
+        for area in catalog_areas:
+            ar = arm_rows.get(area)
+            if ar is not None and ar.interval.point is not None:
+                td_attrs = {
+                    "class": "num",
+                    "data-area": area,
+                    "data-value": f"{ar.interval.point:.1f}",
+                    "data-interval-point": f"{ar.interval.point:.1f}",
+                }
+                if ar.interval.lo is not None and ar.interval.hi is not None:
+                    td_attrs["data-interval-lo"] = f"{ar.interval.lo:.1f}"
+                    td_attrs["data-interval-hi"] = f"{ar.interval.hi:.1f}"
+                row_cells.append(html_builder.el("td", td_attrs, f"{ar.interval.point:.1f}"))
+            else:
+                reason = (ar.interval.reason if ar else None) or "not recorded"
+                row_cells.append(html_builder.el("td", {"class": "num na", "data-area": area}, f"NA ({reason})"))
+        tr_list.append(html_builder.el("tr", {"data-combo": combo_token, "data-pack": pack}, *row_cells))
+
+    table = html_builder.el(
+        "table", None,
+        html_builder.el("caption", {"id": "areas-caption"}, "Areas table"),
+        html_builder.el("thead", None, head_tr),
+        html_builder.el("tbody", None, *tr_list),
+    )
+    region = html_builder.el("div", {"class": "region", "role": "region", "tabindex": "0", "aria-labelledby": "areas-caption"}, table)
+    details = html_builder.el("details", None, html_builder.el("summary", None, "Table"), region)
+
+    return html_builder.el(
+        "section", {"id": "areas"},
+        html_builder.el("h2", None, "Areas"),
+        html_builder.el("p", {"class": "small muted"}, f"Fixed axis order: {', '.join(catalog_areas)}. Pack on solid, pack off dashed."),
+        radars_div,
+        details,
+    )
+
+
 def _cell_card(c: views.CellView, archive_present: bool, catalog_version: str | None) -> str:
     """Design section 6 row 10: the inline `<details>` cell card -- fields, scores with evidence, and the
     cause for invalid/blocked/failed/stopped/withheld. The one place section 10's STRIDE row names for
@@ -1289,16 +1766,20 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
     # R1: the shell (head, CSP, nav/jump-links, section order) goes through html_builder + model
     # (design section 5); header, validity (R2), leaderboard, runs (R3), pack effect and comparison (R5)
     # are built on `html_builder.el` end to end, so no section is trusted()-marked at the seam.
-    # One c1..c8 map (design section 6). Pack effect and comparison receive it; they do not
-    # build a second one. The leaderboard reads the same function on this board.
+    # One c1..c8 map (design section 6). Every section that follows the legend receives it; none
+    # builds a second one. The leaderboard reads the same function on this board.
     combo_ix = _combo_index(board_obj)
     comparison_sec = _comparison(comparison_obj, combo_ix)
+    cost_frontier_sec = _cost_frontier(view, board_obj, combo_ix)
+    areas_sec = _areas(view, board_obj, combo_ix)
     sections = [
         model.Section("header", "Run header",
                       _header(view, tags, _permission_modes(run_dir), judging, root, run_dir, board_obj=board_obj, params=params)),
         model.Section("validity", "Validity", _validity(view)),
         model.Section("leaderboard", "Leaderboard", _leaderboard(view, board_obj)),
         model.Section("pack-effect", "Pack effect", _pack_effect(board_obj, combo_ix)),
+        model.Section("cost-frontier", "Cost frontier", cost_frontier_sec),
+        model.Section("areas", "Areas", areas_sec),
         model.Section("runs", "Runs", _runs(view, archive_present, tags, run_dir, root,
                                             catalog_version=view.catalog_version, combo_ix=combo_ix)),
     ]
