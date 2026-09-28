@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-28T18:59:27Z",
+  "generated": "2026-09-28T20:06:42Z",
   "audit": [
     {
       "actor": null,
@@ -47879,6 +47879,45 @@ window.AUDIT_DATA = {
       "tags": [
         "TIME-A"
       ],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": "Antigravity (worker-agy-r2)",
+      "artifacts": [
+        "src/harness_bench/report/html.py",
+        "tests/test_report.py",
+        "tests/mutations/report.json",
+        "tests/mutations/calibrate.json"
+      ],
+      "compiled": false,
+      "datetime": "2026-09-28T19:06:50Z",
+      "done_when": "_header and _validity rebuilt on html_builder.el; About this run collapsible with six definitions; Validity banner with exclusion classes and and <k> more form; red-first tests green; named mutants killed; 1948 tests passing",
+      "duration_seconds": 2625.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "w4-r2",
+        "pushed": null,
+        "sha": "5f35890fb686f838274d5ced9a876e2c459b54b7",
+        "short": "5f35890fb"
+      },
+      "goal": "implement report slice R2 of docs/design/phase4-report.md (section 15, the R2 row: Header, About this run, Validity banner), red first, rendering every new element through report/html_builder.el (R1)",
+      "id": "al-01M3MPK9JRZR6YYSJ38G0ZCSNG",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "implement report slice R2 of docs/design/phase4-report.md (section 15, the R2 row: Header, About this run, Validity banner), red first, rendering every new element through report/html_builder.el (R1)",
+      "session": "worker-agy-r2",
+      "shortname": "worker-agy-r2-r2",
+      "signals": {
+        "acceptance_met": true,
+        "regression": false,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "coordination-worker",
+      "started_at": "2026-09-28T18:23:05Z",
+      "summary": "R2 implementation: Header, About this run details, and Validity banner rebuilt on html_builder.el. Trusted() markings removed for header and validity. 35/35 mutants in report.json killed, all 1948 tests pass, ruff clean.",
+      "tags": [],
       "tier": "T1",
       "tool": null
     }
