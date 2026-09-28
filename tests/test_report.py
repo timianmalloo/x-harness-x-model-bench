@@ -1510,6 +1510,8 @@ def test_areas_radar_na_axis_drawn_hollow_with_na_tick():
     # NA axis is drawn hollow with an NA tick
     assert re.search(r'<line[^>]*class="[^"]*\bna\b[^"]*\bhollow\b[^"]*"', ar_sec) is not None
     assert re.search(r'<text[^>]*class="[^"]*\bna\b[^"]*"[^>]*>.*?NA.*?</text>', ar_sec) is not None
+    # The axis labels are the catalog's area names in full, never cut ("corre", "speci")
+    assert {t for t in re.findall(r"<text[^>]*>([^<]*)</text>", ar_sec)} >= {"correctness", "cost NA"}
 
     # Case 2: all NA
     all_na_areas = [
