@@ -1,1 +1,2 @@
 {"agent": "worker-grok-ctx", "at": 1790556275.048369, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-grok-ctx", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w4-ctx"}
+{"agent": "worker-grok-ctx", "at": 1790557556.988981, "kind": "session-end", "path": "-", "seq": 2, "session": "worker-grok-ctx", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w4-ctx"}
