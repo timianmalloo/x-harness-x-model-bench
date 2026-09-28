@@ -185,8 +185,8 @@
  {
   "name": "the leaderboard combo cell never flags a codex row",
   "file": "src/harness_bench/report/html.py",
-  "find": "combo_text = report.flag_if_claude_code(report.flag_if_codex(r.combo, r.harness), r.harness)",
-  "replace": "combo_text = report.flag_if_claude_code(r.combo, r.harness)",
+  "find": "    return report.flag_if_claude_code(report.flag_if_codex(combo, harness), harness)\n",
+  "replace": "    return report.flag_if_claude_code(combo, harness)\n",
   "tests": ["tests/test_report.py::test_the_leaderboard_and_cells_table_flag_only_the_codex_rows"]
  },
  {

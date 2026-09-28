@@ -102,7 +102,7 @@ caption{text-align:left;font-weight:600;padding:var(--s2)}
 th,td{padding:var(--s1) var(--s2);border-top:var(--rule-w) solid var(--rule);text-align:left;vertical-align:top}
 .num{text-align: right; font-variant-numeric: tabular-nums; white-space:nowrap}
 code,.small{font-size:var(--fs-small)}
-.bar{position:sticky;top:0;z-index:2;background:var(--bg);border-bottom:var(--rule-w) solid var(--rule-strong);padding:var(--s2) 0;display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);align-items:center}
+#controls{position:sticky;top:0;z-index:2;background:var(--bg);border-bottom:var(--rule-w) solid var(--rule-strong);padding:var(--s2) 0;display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);align-items:center}
 .tg{font:inherit;font-size:var(--fs-small);min-height:var(--target);min-width:var(--target);padding:0 var(--s2);background:var(--panel);color:var(--ink);border:var(--rule-w) solid var(--rule-strong);border-radius:var(--radius);cursor:pointer}
 .tg[aria-pressed="true"]{box-shadow:inset 0 calc(-1 * var(--focus-w)) 0 var(--focus);font-weight:600}
 .tg[aria-disabled="true"]{color:var(--ink-2);border-style:dashed;cursor:not-allowed}
@@ -666,22 +666,39 @@ def _combo_index(board_obj: board.Board) -> dict[str, str]:
     return order
 
 
+def _combo_label(combo: str, harness: str) -> str:
+    """The combo's own display label -- exactly the text the leaderboard's Combo column shows
+    (`_leaderboard`'s `combo_text`), factored out so the control bar's legend (below) names the same
+    thing rather than re-deriving it. Used only inside a real `<section>` (Leaderboard, Runs, and now
+    `controls`), so a flagged or canary-shaped combo name stays inside `_publish`'s per-section scan."""
+    return report.flag_if_claude_code(report.flag_if_codex(combo, harness), harness)
+
+
 def _control_bar(board_obj: board.Board, combo_ix: dict[str, str]) -> html_builder.Html:
     """The sticky control bar (design section 6): the combo legend (`aria-pressed`, one button per
-    combo) and the pack switch (`both`/`on`/`off`, `aria-disabled` for a setting this run lacks,
-    each with its own reason node -- design gate round 2's UX fix, never one shared node). JS (R4)
-    owns the interaction; this function only emits the markup and the initial disabled state."""
-    # The button text is the index token's own ordinal ("Combo 1"), never the combo's own name: the bar sits
-    # outside every `<section>`, so it is outside `_publish`'s per-section egress scan (`_SECTION`, US-47 c3)
-    # -- a combo name that happened to match a canary or secret shape would otherwise leak past that scan and
-    # fail the whole write at the page-level backstop instead of being withheld per section (confirmed by
-    # `tests/test_injection_and_publication.py::test_report_publication_withholds_each_section_carrying_a_planted_canary...`,
-    # which plants a canary as a combo name). The combo's own name is still visible, protected, inside the
-    # Leaderboard and Runs sections (the "Combo" column, the Runs filter's own options); this legend cross-
-    # references those rows by the same c1..c8 token their `data-combo` carries.
+    combo, its own label per UXA-5) and the pack switch (`both`/`on`/`off`, `aria-disabled` for a
+    setting this run lacks, each with its own reason node -- design gate round 2's UX fix, never one
+    shared node). JS (R4) owns the interaction; this function only emits the markup and the initial
+    disabled state.
+
+    Rendered as `<section id="controls">` -- the bar's *only* attribute, matching `_SECTION`'s regex
+    (`<section id="([a-z0-9-]+)">`, US-47 c3) exactly, the same shape every other section carries --
+    so `_publish` scans and, on a hit, withholds it as a unit through the same generic per-section
+    path every other section already goes through: no `_publish`/`_SECTION` change needed. It is not a
+    `model.Section` (it carries no jump link and never joins the section-id/IA order); `model.page`
+    inserts it after the nav, still structurally the "sticky bar right under the header" design
+    section 6 asks for. Styling and the `role="group"` landmarks live on its *children*, never on the
+    section tag itself, so a second attribute there never breaks the scan (confirmed by
+    `tests/test_injection_and_publication.py::test_report_publication_withholds_each_section_carrying_a_planted_canary...`).
+    """
+    combo_harness: dict[str, str] = {}
+    for r in board_obj.rows:
+        combo_harness.setdefault(r.combo, r.harness)
     legend_buttons = [
-        html_builder.el("button", {"class": "tg", "type": "button", "aria-pressed": "true", "data-combo": ix},
-                        f"Combo {ix[1:]}")
+        html_builder.el(
+            "button", {"class": "tg", "type": "button", "aria-pressed": "true", "data-combo": ix},
+            _combo_label(combo, combo_harness[combo]),
+        )
         for combo, ix in combo_ix.items()
     ]
     legend = html_builder.el("div", {"role": "group", "aria-label": "Combos", "id": "legend"}, *legend_buttons)
@@ -705,7 +722,7 @@ def _control_bar(board_obj: board.Board, combo_ix: dict[str, str]) -> html_build
     reasons = html_builder.el("div", {"class": "small", "id": "bar-reasons", "aria-live": "polite"}, *reason_children)
 
     return html_builder.el(
-        "div", {"class": "bar", "id": "control-bar"},
+        "section", {"id": "controls"},
         legend, pack_switch, reasons,
     )
 
@@ -738,7 +755,7 @@ def _leaderboard(view: views.RunView, board_obj: board.Board) -> str:
 
     body_rows = []
     for r in board_obj.rows:
-        combo_text = report.flag_if_claude_code(report.flag_if_codex(r.combo, r.harness), r.harness)
+        combo_text = _combo_label(r.combo, r.harness)
         g_td, g_iv_td = _lb_measure_cells(r.gated, "gated", 1, view.catalog_version, r.combo, r.pack, "gated")
         p1_td, p1_iv_td = _lb_measure_cells(r.pass_at_1, "pass_at_1", 2, view.catalog_version, r.combo, r.pack, "pass_at_1")
         tokens_per_solved = frontier_by_key.get((r.combo, r.pack))
