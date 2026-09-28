@@ -951,3 +951,13 @@ def test_header_wall_clock_not_recorded_with_no_run_completed_event(root, tmp_pa
 
 
 
+
+
+def test_the_header_names_the_bom_the_plan_froze(root, tmp_path):
+    """R2 join: the plan records the BOM as bom_version plus matrix.bom.subset; the header read a `bom` key no plan has
+    and printed `not recorded` for a recorded value."""
+    _, view = _graded(root, tmp_path, {"a": GOOD})
+    view.plan["bom_version"] = "0.3"
+    view.plan["matrix"] = {"bom": {"file": "bench/bom.yaml", "subset": ["X1", "A1"]}}
+    summary = re.search(r'<section id="header">.*?<p class="muted">(.*?)</p>', html.render(view, archive_present=True), re.S)
+    assert "BOM 0.3 (X1, A1) · " in summary.group(1)
