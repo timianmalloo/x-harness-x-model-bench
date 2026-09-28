@@ -758,4 +758,85 @@ def test_tm2_shared_pack_revision_labelled_a_replication(root, tmp_path, capsys)
     assert "data-interval-lo=" in doc
 
 
+# --- R2 (design phase4-report.md s15, US-43, US-51) ---------------------------------------------------
+
+
+def test_about_defines_six_terms(root, tmp_path):
+    """R2 (design phase4-report.md s15, US-51, s6 row 1a, s9): About this run names pack revision and defines six terms."""
+    _, view = _graded(root, tmp_path, {"a": GOOD})
+    view.plan["pack"] = {"revision": 95, "commit": "a" * 40}
+    doc = html.render(view, archive_present=True)
+    assert "<summary>About this run</summary>" in doc
+    assert "This run tests the pack <strong>ai-forward revision 95</strong>." in doc
+    assert "<dt>combo</dt><dd>A combo is one harness, at one build, driving one model.</dd>" in doc
+    assert "<dt>pack on / pack off</dt><dd>Pack on runs the task with the AI-Forward Pack installed in the workspace; pack off runs the same task without it.</dd>" in doc
+    assert "<dt>correctness-gated composite</dt><dd>The correctness-gated composite is the mean of the area scores (0-100) a cell recorded, set to 0 when its hidden tests fail.</dd>" in doc
+    assert "<dt>pass@1 / pass^k</dt><dd>pass@1 is the share of cells whose hidden tests pass; pass^k is the share of tasks passed in all k repetitions.</dd>" in doc
+    assert "<dt>interval</dt><dd>An interval is the 95% bootstrap range of a value over tasks and repetitions; overlapping intervals mean the data cannot tell the values apart.</dd>" in doc
+    assert "<dt>not recorded</dt><dd>Not recorded means the value could not be measured, and it is never counted as 0.</dd>" in doc
+
+
+def make_many_classes_run(root: Path, tmp_path: Path) -> tuple[Path, views.RunView]:
+    """Fixture run with 7 exclusion classes (design section 12 row many-classes):
+    invalid, NA costs, timed out, stopped, withheld, low-confidence matchers, disagreeing judges.
+    """
+    cells = {f"c{i}": GOOD for i in range(1, 8)}
+    combos = {f"c{i}": f"combo{i}" for i in range(1, 8)}
+    outcomes = {
+        "c1": {"outcome": "failed", "cause": "provider", "code": "HB-CELL-108"},
+        "c3": {"outcome": "timed_out", "cause": "timed_out", "code": "HB-CELL-301"},
+        "c4": {"outcome": "stopped"},
+        "c5": {"outcome": "failed", "cause": "unclassified", "code": "HB-GW-009"},
+    }
+    run_dir = make_run(root, tmp_path, cells, combos=combos, outcomes=outcomes)
+    runner.run_pass(run_dir, root)
+    view = views.load(run_dir)
+    # c2 already has NA cost because the price list is empty
+    # Set c5 withheld cause, c6 disagreeing judges and c7 low-confidence matcher
+    c5 = next(c for c in view.cells if c.cell_id == "c5")
+    c5.cause = "withheld"
+    c6 = next(c for c in view.cells if c.cell_id == "c6")
+    c6.scores["adr_quality"] = views.Measure(None, "judges disagree by 2 steps")
+    c7 = next(c for c in view.cells if c.cell_id == "c7")
+    c7.scores["clarifications"] = views.Measure(None, "low-confidence matcher")
+    return run_dir, view
+
+
+def test_validity_banner_counts_each_exclusion_class(root, tmp_path):
+    """R2 (design phase4-report.md s15, US-43, US-43 no source, s6 row 2):
+    validity banner counts each exclusion class, links to runs, handles unrecorded source,
+    one-line all-valid form, and the first 5 plus and <k> more form on many-classes.
+    """
+    # 1. All-valid form
+    _, view_valid = _graded(root, tmp_path / "valid", {"a": GOOD})
+    doc_valid = html.render(view_valid, archive_present=True)
+    assert "All 1 cells completed and are valid." in doc_valid
+
+    # 2. Incomplete run form
+    run_dir_inc = make_run(root, tmp_path / "inc", {"a": GOOD}, unstarted=("b", "c"))
+    view_inc = views.load(run_dir_inc)
+    view_inc.completed = False
+    doc_inc = html.render(view_inc, archive_present=True)
+    assert "The run is incomplete. 2 cells never started." in doc_inc
+
+    # 3. Class with no source reads not recorded (never 0)
+    run_dir_partial = make_run(root, tmp_path / "partial", {"a": GOOD, "b": GOOD},
+                               outcomes={"b": {"outcome": "failed", "cause": "provider", "code": "HB-CELL-108"}})
+    runner.run_pass(run_dir_partial, root)
+    view_partial = views.load(run_dir_partial)
+    doc_partial = html.render(view_partial, archive_present=True)
+    banner_partial = re.search(r'<section id="validity".*?</section>', doc_partial, re.DOTALL).group(0)
+    assert "low-confidence matchers: not recorded" in banner_partial
+    assert "0 low-confidence matchers" not in banner_partial
+
+    # 4. many-classes fixture run with 7 exclusion classes driving the "and <k> more" form
+    _, view_many = make_many_classes_run(root, tmp_path / "many")
+    doc_many = html.render(view_many, archive_present=True)
+    banner_many = re.search(r'<section id="validity".*?</section>', doc_many, re.DOTALL).group(0)
+    assert "and 2 more" in banner_many
+    assert '<a href="#runs">' in banner_many
+
+
+
+
 
