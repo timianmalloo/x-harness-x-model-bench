@@ -1,0 +1,40 @@
+[
+ {
+  "name": "the n < 2 guard deleted",
+  "file": "src/harness_bench/stats.py",
+  "find": "    if n < 2:\n        return Interval(point, None, None, n, \"interval not computed (n < 2)\")\n",
+  "replace": "",
+  "tests": ["tests/test_stats.py::test_ts1_fewer_than_two_tasks_is_not_a_zero_interval"]
+ },
+ {
+  "name": "j = B * 25 // 1000 off by one (+1)",
+  "file": "src/harness_bench/stats.py",
+  "find": "j = B * 25 // 1000",
+  "replace": "j = B * 25 // 1000 + 1",
+  "tests": ["tests/test_stats.py::test_ts4_golden_stream_and_six_task_interval"]
+ },
+ {
+  "name": "the seed left out of the key",
+  "file": "src/harness_bench/stats.py",
+  "find": "f\"{seed}|{key}\"",
+  "replace": "f\"{key}\"",
+  "tests": [
+   "tests/test_stats.py::test_ts3_adding_another_quantity_does_not_move_this_interval",
+   "tests/test_stats.py::test_ts4_golden_stream_and_six_task_interval"
+  ]
+ },
+ {
+  "name": "localcontext removed",
+  "file": "src/harness_bench/stats.py",
+  "find": "with localcontext(_CONTEXT):",
+  "replace": "if True:",
+  "tests": ["tests/test_stats.py::test_ts5_ambient_decimal_context_does_not_change_the_bytes"]
+ },
+ {
+  "name": "a bound of Params loosened",
+  "file": "src/harness_bench/stats.py",
+  "find": "MIN_RESAMPLES <= self.resamples <= MAX_RESAMPLES",
+  "replace": "self.resamples <= MAX_RESAMPLES",
+  "tests": ["tests/test_stats.py::test_ts6_params_refuses_out_of_range"]
+ }
+]
