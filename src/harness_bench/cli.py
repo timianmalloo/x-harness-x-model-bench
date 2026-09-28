@@ -379,6 +379,7 @@ def build_parser() -> argparse.ArgumentParser:
         if name == "report":
             sp.add_argument("--seed", type=int, default=None, help="bootstrap seed (default: 20260927)")
             sp.add_argument("--resamples", type=int, default=None, help="bootstrap resamples (minimum: 2000)")
+            sp.add_argument("--baseline", default=None, help="baseline run id for comparison")
         if name == "status":
             sp.add_argument("--json", action="store_true", help="bench-status/1 on stdout")
         if name == "grade":
