@@ -67,10 +67,19 @@ def graded_board_export(root: Path, name: str, tmp: Path) -> bytes:
     return board.export(board.build(view, composites.load_catalog(root)))
 
 
+def _board_stem(path: Path) -> str | None:
+    """The fixture name of a `<fixture>.board.export`, or None for a views golden."""
+    suffix = ".board.export"
+    return path.name[:-len(suffix)] if path.name.endswith(suffix) else None
+
+
 def us4_problems(root: Path, golden: Path, freeze: dict, base: dict, export: Callable[[str], bytes],
                  board_export: Callable[[str], bytes] | None = None) -> list[str]:
-    """Checks (a)-(e) for `root`'s current catalog; [] when the control passes. Board goldens are not checked yet."""
-    del board_export
+    """Checks (a)-(e) for `root`'s current catalog, views and board goldens; [] when the control passes.
+
+    A freeze entry with no `board_golden` key was written before boards existed (0.4). That version skips the board
+    check and the control prints the exemption. An entry that has the key, even empty, was frozen after and is checked.
+    """
     versions, was = freeze.get("versions") or {}, base.get("versions") or {}
     problems = [f"(e) {FREEZE} entry {v!r} was changed or removed since the merge base" for v in sorted(was) if versions.get(v) != was[v]]
     version = str(config.load_yaml(root / "bench" / "metrics.yaml")["version"])
@@ -84,7 +93,7 @@ def us4_problems(root: Path, golden: Path, freeze: dict, base: dict, export: Cal
     elif pinned.get("catalog_hash") != current:
         problems.append(f"(b) catalog_hash {current} != {pinned.get('catalog_hash')} pinned for {version}: a weight, rubric or "
                         "definition changed without a version bump")
-    files = sorted(p for p in (golden / version).glob("*.export") if not p.name.endswith(".board.export"))
+    files = sorted(p for p in (golden / version).glob("*.export") if _board_stem(p) is None)
     if not files:
         problems.append(f"(d) no golden export for {version} (a freeze needs a golden export)")
     digests = {f.stem: hashlib.sha256(f.read_bytes()).hexdigest() for f in files}
@@ -95,6 +104,22 @@ def us4_problems(root: Path, golden: Path, freeze: dict, base: dict, export: Cal
             problems.append(f"(a) {f.stem}: no committed fixture of that name")
         elif export(f.stem) != f.read_bytes():
             problems.append(f"(a) {f.stem}: the export differs from its golden file (a score or reason moved without a bump)")
+    if pinned is not None and "board_golden" not in pinned:
+        print(BOARD_EXEMPT)
+        return sorted(problems)
+    board_files = sorted((golden / version).glob("*.board.export"))
+    if pinned is not None and not board_files:
+        problems.append(f"(d) no board golden for {version} (a freeze after board.export needs a board golden)")
+    board_digests = {stem: hashlib.sha256(p.read_bytes()).hexdigest() for p in board_files if (stem := _board_stem(p))}
+    if pinned is not None and board_digests != (pinned.get("board_golden") or {}):
+        problems.append(f"(c) board goldens for {version} differ from the digests pinned in {FREEZE}")
+    for p in board_files:
+        stem = _board_stem(p)
+        if stem not in FIXTURES:
+            problems.append(f"(a) {stem}: no committed fixture of that name")
+        elif board_export is not None and board_export(stem) != p.read_bytes():
+            problems.append(f"(a) {stem}: the board export differs from its golden file "
+                            "(a statistic moved without a bump)")
     return sorted(problems)
 
 
@@ -214,7 +239,9 @@ def test_a_rewritten_golden_file_is_red_through_c(frozen, tmp_path):
 
 def test_a_released_version_with_no_golden_export_is_red_through_d(frozen, tmp_path):
     _, golden, freeze = frozen
-    shutil.rmtree(golden / "9.1")
+    for path in (golden / "9.1").glob("*.export"):  # the views goldens only; the board files stay
+        if not path.name.endswith(".board.export"):
+            path.unlink()
     freeze["versions"]["9.1"]["golden"] = {}
     assert problems(frozen, tmp_path) == ["(d) no golden export for 9.1 (a freeze needs a golden export)"]
 
