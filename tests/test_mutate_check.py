@@ -6,6 +6,7 @@ A collection error, a timeout, or a failure of some other test is not evidence t
 import base64
 import hashlib
 import importlib.util
+import io
 import json
 import os
 import subprocess
@@ -161,6 +162,31 @@ def test_non_ascii_test_output_is_decoded_as_utf8_not_the_locale(tmp_path, monke
     monkeypatch.delenv("PYTHONUTF8", raising=False)
     monkeypatch.setenv("PYTHONIOENCODING", "utf-8")  # the child writes UTF-8 bytes, as pytest did in the finding
     assert mutate_check.main([str(spec)]) == 0  # killed, and no UnicodeDecodeError
+
+
+def test_a_mutant_name_with_non_cp1252_characters_does_not_crash_on_cp1252_stdout(tmp_path, monkeypatch):
+    """OUT-A finding (Leader, 2026-09-27): stdout under cp1252 redirection crashed on '≤' in a mutant name.
+
+    The mutant is killed, and printing its name must not raise UnicodeEncodeError or fail the run."""
+    (tmp_path / "m.py").write_bytes(b"X = 1\n")
+    (tmp_path / "test_m.py").write_bytes(b"import m\n\n\ndef test_x():\n    assert m.X == 1\n")
+    spec = tmp_path / "spec.json"
+    spec.write_text(json.dumps([{
+        "name": "the tier sweep uses < instead of ≤",
+        "file": "m.py",
+        "find": "X = 1",
+        "replace": "X = 2",
+        "tests": ["test_m.py::test_x"],
+    }]), encoding="utf-8")
+    monkeypatch.setattr(mutate_check, "ROOT", tmp_path)
+    buf = io.BytesIO()
+    cp1252_stdout = io.TextIOWrapper(buf, encoding="cp1252")
+    monkeypatch.setattr(sys, "stdout", cp1252_stdout)
+    assert mutate_check.main([str(spec)]) == 0
+    cp1252_stdout.flush()
+    output = buf.getvalue().decode("utf-8", errors="replace")
+    assert "killed   the tier sweep uses < instead of ≤" in output
+    assert "every mutation killed" in output
 
 
 # --- TOOL-B: a cosmic-ray "killed" is re-derived from a named test failing --------------------

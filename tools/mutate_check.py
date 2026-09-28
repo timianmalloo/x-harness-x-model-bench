@@ -35,6 +35,7 @@ directory prefix covering every module under it, as "src/harness_bench/grade" co
 
 import base64
 import hashlib
+import io
 import json
 import os
 import re
@@ -42,6 +43,24 @@ import subprocess
 import sys
 from collections.abc import Iterable
 from pathlib import Path
+
+
+def _reconfigure_streams() -> None:
+    """Reconfigure stdout and stderr to UTF-8 with a replacement error handler.
+
+    Prevents UnicodeEncodeError when mutant names, test ids, or pytest output contain
+    characters unrepresentable in the console or redirected stream encoding (OUT-A).
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (AttributeError, io.UnsupportedOperation, OSError, ValueError):
+                continue
+
+
+_reconfigure_streams()
 
 ROOT = Path(__file__).resolve().parents[1]
 # a node id, with its parametrize case id whole: a case id may hold spaces ("[answer and timeout in one tick]")
@@ -324,6 +343,7 @@ def _cmd_check_clean() -> int:
 
 
 def main(argv: list[str]) -> int:
+    _reconfigure_streams()
     if argv and argv[0] == "--restore":
         return _cmd_restore()
     if argv and argv[0] == "--check-clean":

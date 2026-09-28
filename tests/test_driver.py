@@ -589,6 +589,7 @@ def _tapped_turn(tmp_path, argv, env, acp_mode=None, model=None) -> set[str]:
                         model=model)
     finally:
         stop.cancel()
+        stop.join()
         cell.terminate_and_confirm(timeout=10)
         cell.close()
     return _message_types(bytes(cell.proc.stdout.data), bytes(cell.proc.stdin.data))
@@ -649,6 +650,40 @@ def test_the_fidelity_check_fails_on_a_seeded_unpaired_type(tmp_path):  # D7 neg
     assert "session/update.plan" in emitted
     with pytest.raises(AssertionError, match=r"session/update\.plan"):
         _assert_paired(emitted)
+
+
+@pytestmark_native
+@pytest.mark.filterwarnings("error::pytest.PytestUnhandledThreadExceptionWarning")  # the race fails the test itself
+def test_tapped_turn_timer_race_does_not_emit_unhandled_thread_exception(tmp_path, monkeypatch):
+    """CI-OPT finding 3: when a turn ends near the timer deadline, cancel() without join()
+    leaves the timer thread running while finally: cell.close() closes the job handle.
+    The callback then crashes with [WinError 6] The handle is invalid, emitting
+    PytestUnhandledThreadExceptionWarning.
+    """
+    import time
+
+    created = []
+
+    class RacingTimer(threading.Thread):
+        def __init__(self, interval, function):
+            super().__init__()
+            self.function = function
+            self.started_event = threading.Event()
+            created.append(self)
+
+        def run(self):
+            self.started_event.wait()
+            time.sleep(0.005)
+            self.function()
+
+        def cancel(self):
+            self.started_event.set()
+
+    monkeypatch.setattr(threading, "Timer", RacingTimer)
+    env = dict(os.environ, FAKE_ACP=json.dumps({"mode": "ok"}))
+    emitted = _tapped_turn(tmp_path, [sys.executable, str(FAKE)], env)
+    assert "initialize.result" in emitted
+    created[0].join()
 
 
 # the engine's side of the driver change (R-13, R-24, R-28: W1-ACP's engine.py hunks), through a real engine run
