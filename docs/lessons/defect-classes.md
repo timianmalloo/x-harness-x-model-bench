@@ -30,6 +30,7 @@ summary: >-
 - 4 instances of MOD-A in one session; the control was built after the fourth.
 - 2026-09-23: EDIT-B recurred once after registration, and its hook control was then built.
 - The phase-1 finish found four new classes from three real E2E runs: CONC-A, PATH-A, CLN-A, and a RIG-D instance.
+- 2026-09-28: TIME-A, a wall-clock cancel aimed at a phase. The control is a phase-triggered wait; it was observed red at `454d869`.
 
 ---
 
@@ -507,6 +508,16 @@ summary: >-
 - **Instances:** `2026-09-28`, wave-4 R0 (defect F-1, R-81 DR-R-7 / c4). In `src/harness_bench/board.py`, the one-arm pack effect reason was omitted or diverged from `docs/design/phase4-statistics.md:336`, which specified the exact text `not computed (no <area> score in pack=<arm>)`. Caught during R0 design review (Test Architect / Leader).
 - **Sweep:** checked reason strings across `board.py`, `composites.py`, and `views.py` against `docs/design/phase4-statistics.md` and `docs/design/phase4-report.md`.
 - **Control:** an automated unit test asserting that the one-arm reason equals the literal `not computed (no <area> score in pack=<arm>)` (`tests/test_board.py::test_pack_effect_area_one_arm_negative_reason`), backed by a named mutant in `tests/mutations/board.json` verifying the exact literal cannot mutate without detection.
+- **Status:** `controlled`
+
+### TIME-A: a wall-clock timer aimed at a phase the scheduler can miss
+- **Signature:** a test arms `threading.Timer(seconds, ...)` so a cancel or a kill lands inside a phase (the prompt is in flight, the handshake is in progress, a hang has started). The seconds were measured on an idle machine. Under `pytest -n auto` the spawn is slow, the timer fires before the phase, and the assertion sees the other phase. A cancel before the prompt is the handshake path: `stop_reason` stays `None` and `prompt_sent` stays false.
+- **Why it survives:** run alone, the spawn is fast and the timer lands inside the phase. The suite is green. Only CPU contention moves the firing earlier than the phase. A second run can fail a different timer in the same set.
+- **Instances:**
+  - `2026-09-28`, the Leader, main `adb2a92`: `tests/test_driver.py::test_cancel_sends_session_cancel_during_the_prompt` failed under `-n auto` and passed 5 of 5 alone. A repeat run failed a different cancel-timing test the same way. The timers were `Timer(1.5)` (kill after a hang), `Timer(0.4)` (cancel during the prompt, twice), `Timer(0.2)` (cancel during the handshake) and `Timer(4)` (end the hang modes in `_tapped_turn`).
+  - `2026-09-28`, this slice: the same prompt-phase test with `handshake_delay=2` (longer than `Timer(0.4)`) failed on that timer with `assert result.stop_reason == "cancelled"` (`stop_reason` is `None`, `prompt_sent` is false). Observed red at `454d869`.
+- **Sweep:** the five timers in `tests/test_driver.py`. `tests/test_engine.py` arms `Timer(0.2)` to enqueue `run.started`; it does not aim a cancel at an agent phase. `tests/fixtures/acp/scripted-user/probe_turn.py` arms a probe budget. Neither is this failing shape.
+- **Control:** the test sets the cancel or the kill when the fake has reached the phase. During the prompt, and after a hang that starts once the prompt is received, it polls for `.fake-prompt.txt` and fails by the test's name if that file never appears (bound 30 s). The handshake test needs the cancel before the prompt: `handshake_delay` holds the fake in initialize, and the cancel is set when that request is written, not on a clock. `hang_handshake` publishes no file before it sleeps; the `assume:` beside `_tapped_turn` records that `handshake_timeout` ends that phase. The prompt-phase test keeps `handshake_delay=2`, so putting `Timer(0.4)` back fails the stop-reason assertion. That failure was observed on the old arm, and the same test passes once the cancel waits for `.fake-prompt.txt`.
 - **Status:** `controlled`
 
 ---
