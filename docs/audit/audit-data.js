@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-28T16:54:15Z",
+  "generated": "2026-09-28T17:23:48Z",
   "audit": [
     {
       "actor": null,
@@ -46107,6 +46107,355 @@ window.AUDIT_DATA = {
             "sha256": "74d6621e64c8e40314ac581c55c0f42c30303f2c34cf3ac3ec80fc393e3a14a4",
             "status": "resolved",
             "token": "tests/test_board.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3MGPGEE7PMKSJJE81AT7EK1",
+      "shortname": "Goal: implement report slice R1 of docs/design/phase4-report.md (section…",
+      "datetime": "2026-09-28T17:23:44Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: implement report slice R1 of docs/design/phase4-report.md (section 15, the R1 row; read the whole design first: the direction, the design system and tokens for both themes, the section order, the security rules for UIA-15, the page shell): the safe HTML builder (escape by construction, SVG helpers), the report model, and the page shell (tokens for light and dark via prefers-color-scheme per R-81 DR-R-3, a content security policy with script hashes, the section order, the index and jump links), red first.\nMeasured (Leader, 2026-09-28): the design and its mockup (docs/design/mockups/phase4-report.html) are merged and passed the Test Architect and UX & Accessibility gates; rulings R-81 (DR-R-1..10) and R-80 are in docs/notes/rulings.md; src/harness_bench/report/html.py renders the current report (header, leaderboard from the board, pack effect, comparison, runs) and, after EGRESS s3, scans each section through egress.check and writes report-record.json with report_sha256; slice R0 (board changes) runs in parallel in another tree and does not touch report/.\nDone when: the R1 deliverables exist as the design names them (a builder module the design names html_builder, the report model, the page shell) and the existing report renders through the builder with no behaviour lost (every existing report test stays green: grep tests for html.write/render); test_builder_refuses_on_attributes (hypothesis: no str input yields a tag or an on*/style attribute) and test_csp_meta_is_first_head_child_with_script_hash are each committed red first, failing on an assertion, then green; agent-derived text is only ever emitted through the escaping builder (a structural test asserts report/ has no other path that writes raw markup from a str, e.g. no f-string markup outside the builder: choose the smallest reliable check and say why); the CSP blocks inline scripts except the hashed ones (the UIA-15 injection fixture's <script> and onerror render as text); the tokens match the design's design system for both themes (a test pins the token names and that dark mode is prefers-color-scheme only, no toggle); the report-record digest (R-80 c1) still matches the written file; named mutants for the builder's escaping and the CSP hash in tests/mutations (report.json or a new file), each killed; a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: R0 (board), R2-R9 (header content, leaderboard redesign, report.js, charts, summaries, browser ring); any dependency addition; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-report.md (all of it; section 15 R1 row); docs/design/mockups/phase4-report.html (the reference markup and tokens); docs/notes/rulings.md R-81, R-80; src/harness_bench/report/{html,__init__,cli_table}.py; tests/test_report*.py; tests/test_injection_and_publication.py; tests/mutations/report.json; .claude/knowledge/ui-interaction-design.md. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3MGPM67A7W82A2TCG07PSXG",
+      "shortname": "compile-Goal: implement report slice R1 of docs/design/phase4-report.md (section…",
+      "datetime": "2026-09-28T17:23:48Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement report slice R1 of docs/design/phase4-report.md (section 15, the R1 row; read the whole design first: the direction, the design system and tokens for both themes, the section order, the security rules for UIA-15, the page shell): the safe HTML builder (escape by construction, SVG helpers), the report model, and the page shell (tokens for light and dark via prefers-color-scheme per R-81 DR-R-3, a content security policy with script hashes, the section order, the index and jump links), red first. Measured (Leader, 2026-09-28): the design and its mockup (docs/design/mockups/phase4-report.html) are merged and passed the Test Architect and UX & Accessibility gates; rulings R-81 (DR-R-1..10) and R-80 are in docs/notes/rulings.md; src/harness_bench/report/html.py renders the current report (header, leaderboard from the board, pack effect, comparison, runs) and, after EGRESS s3, scans each section through egress.check and writes report-record.json with report_sha256; slice R0 (board changes) runs in parallel in another tree and does not touch report/.\nDone when: the R1 deliverables exist as the design names them (a builder module the design names html_builder, the report model, the page shell) and the existing report renders through the builder with no behaviour lost (every existing report test stays green: grep tests for html.write/render); test_builder_refuses_on_attributes (hypothesis: no str input yields a tag or an on*/style attribute) and test_csp_meta_is_first_head_child_with_script_hash are each committed red first, failing on an assertion, then green; agent-derived text is only ever emitted through the escaping builder (a structural test asserts report/ has no other path that writes raw markup from a str, e.g. no f-string markup outside the builder: choose the smallest reliable check and say why); the CSP blocks inline scripts except the hashed ones (the UIA-15 injection fixture's <script> and onerror render as text); the tokens match the design's design system for both themes (a test pins the token names and that dark mode is prefers-color-scheme only, no toggle); the report-record digest (R-80 c1) still matches the written file; named mutants for the builder's escaping and the CSP hash in tests/mutations (report.json or a new file), each killed; a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: R0 (board), R2-R9 (header content, leaderboard redesign, report.js, charts, summaries, browser ring); any dependency addition; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-report.md (all of it; section 15 R1 row); docs/design/mockups/phase4-report.html (the reference markup and tokens); docs/notes/rulings.md R-81, R-80; src/harness_bench/report/{html,__init__,cli_table}.py; tests/test_report*.py; tests/test_injection_and_publication.py; tests/mutations/report.json; .claude/knowledge/ui-interaction-design.md. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: the R1 deliverables exist as the design names them (a builder module the design names html_builder, the report model, the page shell) and the existing report renders through the builder with no behaviour lost (every existing report test stays green: grep tests for html.write/render) | phrase: the R1 deliverables exist as the design names them (a builder module the design names html_builder, the report model, the page shell) and the existing report renders through the builder with no behaviour lost (every existing report test stays green: grep tests for html.write/render) |\n| done_when: test_builder_refuses_on_attributes (hypothesis: no str input yields a tag or an on*/style attribute) and test_csp_meta_is_first_head_child_with_script_hash are each committed red first, failing on an assertion, then green | phrase: test_builder_refuses_on_attributes (hypothesis: no str input yields a tag or an on*/style attribute) and test_csp_meta_is_first_head_child_with_script_hash are each committed red first, failing on an assertion, then green |\n| done_when: agent-derived text is only ever emitted through the escaping builder (a structural test asserts report/ has no other path that writes raw markup from a str, e.g. no f-string markup outside the builder: choose the smallest reliable check and say why) | phrase: agent-derived text is only ever emitted through the escaping builder (a structural test asserts report/ has no other path that writes raw markup from a str, e.g. no f-string markup outside the builder: choose the smallest reliable check and say why) |\n| done_when: the CSP blocks inline scripts except the hashed ones (the UIA-15 injection fixture's <script> and onerror render as text) | phrase: the CSP blocks inline scripts except the hashed ones (the UIA-15 injection fixture's <script> and onerror render as text) |\n| done_when: the tokens match the design's design system for both themes (a test pins the token names and that dark mode is prefers-color-scheme only, no toggle) | phrase: the tokens match the design's design system for both themes (a test pins the token names and that dark mode is prefers-color-scheme only, no toggle) |\n| done_when: the report-record digest (R-80 c1) still matches the written file | phrase: the report-record digest (R-80 c1) still matches the written file |\n| done_when: named mutants for the builder's escaping and the CSP hash in tests/mutations (report.json or a new file), each killed | phrase: named mutants for the builder's escaping and the CSP hash in tests/mutations (report.json or a new file), each killed |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes | phrase: uv run pytest -q -p no:cacheprovider -n auto passes |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: R0 (board), R2-R9 (header content, leaderboard redesign, report.js, charts, summaries, browser ring) | phrase: R0 (board), R2-R9 (header content, leaderboard redesign, report.js, charts, summaries, browser ring) |\n| not_in_scope: any dependency addition | phrase: any dependency addition |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- docs/design/phase4-report.md: docs/design/phase4-report.md sha256 01d38b34f80229ea604d98d88f144d5e36865e71a67d97616bea7c4ce8eea470\n- docs/design/mockups/phase4-report.html: docs/design/mockups/phase4-report.html sha256 030de33b610812f1c1db034699a4811fe9b0ee2cf7a54dfad09d6c1a3e4f36bc\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- src/harness_bench/report/html.py: src/harness_bench/report/html.py sha256 faf445a6faf85ced62fc033db1bdfa07f3bba3d21a6d3cc6268d03cca6a94639\n- report-record.json: unresolved (not found)\n- report/: unresolved (not found)\n- html.write/render: unresolved (not found)\n- on*/style: unresolved (not found)\n- tests/mutations: unresolved (not found)\n- report.json: tests/mutations/report.json sha256 69a4c917024cd71e611b1ae2aaa706b4bfdf8e8bbb37e072ea7921280d616b27\n- report.js: unresolved (not found; nearest: tests/mutations/report.json)\n- runs/: unresolved (not found)\n- src/harness_bench/report/{html,__init__,cli_table}.py: unresolved (not found)\n- tests/test_report*.py: unresolved (not found; nearest: tests/test_report.py)\n- tests/test_injection_and_publication.py: tests/test_injection_and_publication.py sha256 a20f5f2632492f4a9d07a931591045d38a951229149743e71241f79ccc45ff1c\n- tests/mutations/report.json: tests/mutations/report.json sha256 69a4c917024cd71e611b1ae2aaa706b4bfdf8e8bbb37e072ea7921280d616b27\n- .claude/knowledge/ui-interaction-design.md: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3MGPGEE7PMKSJJE81AT7EK1\nraw sha256: 74f1ba5399d5ac5ac0d30c90432babbc5dcebcce99f2790f6253b8f49a299f26\ncompiler model: claude-opus-5-5\nengine seconds: 0.007\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3MGPGEE7PMKSJJE81AT7EK1 for claude-code v1: 15 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "the R1 deliverables exist as the design names them (a builder module the design names html_builder, the report model, the page shell) and the existing report renders through the builder with no behaviour lost (every existing report test stays green: grep tests for html.write/render)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the R1 deliverables exist as the design names them (a builder module the design names html_builder, the report model, the page shell) and the existing report renders through the builder with no behaviour lost (every existing report test stays green: grep tests for html.write/render)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "test_builder_refuses_on_attributes (hypothesis: no str input yields a tag or an on*/style attribute) and test_csp_meta_is_first_head_child_with_script_hash are each committed red first, failing on an assertion, then green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "test_builder_refuses_on_attributes (hypothesis: no str input yields a tag or an on*/style attribute) and test_csp_meta_is_first_head_child_with_script_hash are each committed red first, failing on an assertion, then green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "agent-derived text is only ever emitted through the escaping builder (a structural test asserts report/ has no other path that writes raw markup from a str, e.g. no f-string markup outside the builder: choose the smallest reliable check and say why)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "agent-derived text is only ever emitted through the escaping builder (a structural test asserts report/ has no other path that writes raw markup from a str, e.g. no f-string markup outside the builder: choose the smallest reliable check and say why)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the CSP blocks inline scripts except the hashed ones (the UIA-15 injection fixture's <script> and onerror render as text)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the CSP blocks inline scripts except the hashed ones (the UIA-15 injection fixture's <script> and onerror render as text)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the tokens match the design's design system for both themes (a test pins the token names and that dark mode is prefers-color-scheme only, no toggle)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the tokens match the design's design system for both themes (a test pins the token names and that dark mode is prefers-color-scheme only, no toggle)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the report-record digest (R-80 c1) still matches the written file",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the report-record digest (R-80 c1) still matches the written file"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "named mutants for the builder's escaping and the CSP hash in tests/mutations (report.json or a new file), each killed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "named mutants for the builder's escaping and the CSP hash in tests/mutations (report.json or a new file), each killed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider -n auto passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider -n auto passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "R0 (board), R2-R9 (header content, leaderboard redesign, report.js, charts, summaries, browser ring)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "R0 (board), R2-R9 (header content, leaderboard redesign, report.js, charts, summaries, browser ring)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any dependency addition",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any dependency addition"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "the R1 deliverables exist as the design names them (a builder module the design names html_builder, the report model, the page shell) and the existing report renders through the builder with no behaviour lost (every existing report test stays green: grep tests for html.write/render)",
+            "test_builder_refuses_on_attributes (hypothesis: no str input yields a tag or an on*/style attribute) and test_csp_meta_is_first_head_child_with_script_hash are each committed red first, failing on an assertion, then green",
+            "agent-derived text is only ever emitted through the escaping builder (a structural test asserts report/ has no other path that writes raw markup from a str, e.g. no f-string markup outside the builder: choose the smallest reliable check and say why)",
+            "the CSP blocks inline scripts except the hashed ones (the UIA-15 injection fixture's <script> and onerror render as text)",
+            "the tokens match the design's design system for both themes (a test pins the token names and that dark mode is prefers-color-scheme only, no toggle)",
+            "the report-record digest (R-80 c1) still matches the written file",
+            "named mutants for the builder's escaping and the CSP hash in tests/mutations (report.json or a new file), each killed",
+            "a test earns its place by a failure only it catches",
+            "uv run pytest -q -p no:cacheprovider -n auto passes",
+            "uv run ruff check src tests tools is clean",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "implement report slice R1 of docs/design/phase4-report.md (section 15, the R1 row; read the whole design first: the direction, the design system and tokens for both themes, the section order, the security rules for UIA-15, the page shell): the safe HTML builder (escape by construction, SVG helpers), the report model, and the page shell (tokens for light and dark via prefers-color-scheme per R-81 DR-R-3, a content security policy with script hashes, the section order, the index and jump links), red first. Measured (Leader, 2026-09-28): the design and its mockup (docs/design/mockups/phase4-report.html) are merged and passed the Test Architect and UX & Accessibility gates; rulings R-81 (DR-R-1..10) and R-80 are in docs/notes/rulings.md; src/harness_bench/report/html.py renders the current report (header, leaderboard from the board, pack effect, comparison, runs) and, after EGRESS s3, scans each section through egress.check and writes report-record.json with report_sha256; slice R0 (board changes) runs in parallel in another tree and does not touch report/.",
+          "main_line_budget": "one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-report.md (all of it; section 15 R1 row); docs/design/mockups/phase4-report.html (the reference markup and tokens); docs/notes/rulings.md R-81, R-80; src/harness_bench/report/{html,__init__,cli_table}.py; tests/test_report*.py; tests/test_injection_and_publication.py; tests/mutations/report.json; .claude/knowledge/ui-interaction-design.md. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "R0 (board), R2-R9 (header content, leaderboard redesign, report.js, charts, summaries, browser ring)",
+            "any dependency addition",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.007,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3MGPGEE7PMKSJJE81AT7EK1",
+        "raw_sha256": "74f1ba5399d5ac5ac0d30c90432babbc5dcebcce99f2790f6253b8f49a299f26",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": "docs/design/phase4-report.md",
+            "reason": null,
+            "sha256": "01d38b34f80229ea604d98d88f144d5e36865e71a67d97616bea7c4ce8eea470",
+            "status": "resolved",
+            "token": "docs/design/phase4-report.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/mockups/phase4-report.html",
+            "reason": null,
+            "sha256": "030de33b610812f1c1db034699a4811fe9b0ee2cf7a54dfad09d6c1a3e4f36bc",
+            "status": "resolved",
+            "token": "docs/design/mockups/phase4-report.html"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/html.py",
+            "reason": null,
+            "sha256": "faf445a6faf85ced62fc033db1bdfa07f3bba3d21a6d3cc6268d03cca6a94639",
+            "status": "resolved",
+            "token": "src/harness_bench/report/html.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report-record.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "html.write/render"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "on*/style"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/report.json",
+            "reason": null,
+            "sha256": "69a4c917024cd71e611b1ae2aaa706b4bfdf8e8bbb37e072ea7921280d616b27",
+            "status": "resolved",
+            "token": "report.json"
+          },
+          {
+            "nearest": "tests/mutations/report.json",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report.js"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/report/{html,__init__,cli_table}.py"
+          },
+          {
+            "nearest": "tests/test_report.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_report*.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_injection_and_publication.py",
+            "reason": null,
+            "sha256": "a20f5f2632492f4a9d07a931591045d38a951229149743e71241f79ccc45ff1c",
+            "status": "resolved",
+            "token": "tests/test_injection_and_publication.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/report.json",
+            "reason": null,
+            "sha256": "69a4c917024cd71e611b1ae2aaa706b4bfdf8e8bbb37e072ea7921280d616b27",
+            "status": "resolved",
+            "token": "tests/mutations/report.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".claude/knowledge/ui-interaction-design.md"
           }
         ],
         "schema": "compiled-prompt/1",
