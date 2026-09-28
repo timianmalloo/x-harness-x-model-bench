@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import random
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from decimal import ROUND_HALF_EVEN, Context, Decimal, localcontext
 
@@ -124,3 +124,15 @@ def interval(obs: Sequence[Obs], params: Params, key: str) -> Interval:
     """95% two-stage percentile interval of the task-balanced mean."""
     with localcontext(_CONTEXT):
         return _interval(obs, params, key)
+
+
+# (combo, pack). The contract's RowId.
+RowId = tuple[str, str]
+
+
+def rank(rows: Mapping[RowId, tuple[Interval, Interval]]) -> dict[RowId, tuple[str, str | None]]:
+    """Red stub: a lone `1`, so T-R3's `1=` assertion fails."""
+    return {
+        row_id: ("1", None) if primary.lo is not None else ("", None)
+        for row_id, (primary, _pass_at_1) in rows.items()
+    }

@@ -14,7 +14,7 @@ from hypothesis import example, given, settings
 from hypothesis import strategies as st
 
 from harness_bench.errors import BenchError
-from harness_bench.stats import Interval, Obs, Params, interval, rng
+from harness_bench.stats import Interval, Obs, Params, interval, rank, rng
 
 # assume: T-S4 says "a committed 6-task fixture" and names no path. This is that fixture.
 # Confirm: replace this path if the Owner names a different one.
@@ -264,3 +264,24 @@ def test_ts8_two_stage_coverage_at_six_tasks_by_three_reps():
     assert covered == COVERED_AT_SIX_BY_THREE, (
         "characterization (D6): exact covered count pinned on first green"
     )
+
+
+def test_tr3_k3_every_overlap_is_a_tie():
+    """T-R3, K3: every primary interval overlaps, so every row is `1=`.
+
+    S2's red-first test. The three primaries pairwise overlap, so the overlap
+    component is one tier and the tie marker is required.
+    """
+
+    def iv(lo: int, hi: int) -> Interval:
+        return Interval(Decimal(lo + hi) / Decimal(2), Decimal(lo), Decimal(hi), 2, None)
+
+    rows = {
+        ("A", "off"): (iv(0, 10), iv(0, 1)),
+        ("B", "on"): (iv(4, 14), iv(0, 1)),
+        ("C", "off"): (iv(8, 12), iv(0, 1)),
+    }
+    result = rank(rows)
+    assert result[("A", "off")][0] == "1="
+    assert result[("B", "on")][0] == "1="
+    assert result[("C", "off")][0] == "1="
