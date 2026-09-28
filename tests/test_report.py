@@ -11,6 +11,7 @@ from pathlib import Path
 
 import pytest
 from archived_runs import GOOD, STUB, make_root, make_run
+from stats_fixtures import stats_run
 
 from harness_bench import ledger, views
 from harness_bench.errors import BenchError
@@ -571,3 +572,45 @@ def test_no_connector_name_is_hard_coded_in_the_report_source():  # R-36 conditi
     for path in sources:
         src = path.read_text(encoding="utf-8")
         assert "mcp__claude_ai" not in src and "Claude_Docs" not in src, path.name
+
+
+# --- S6 report wiring (T-U1..U3) -------------------------------------------------------------------
+
+
+def test_tu1_cli_prints_columns_and_header_row(root, tmp_path):
+    """T-U1 (red first for S6): the CLI prints the columns and the header row.
+
+    Shows the board's rows (rank with ties, pass@1 or gated with its interval,
+    the primary-measure line, seed, resamples and METHOD in the header,
+    the pack effect with `no detectable effect` where the interval touches zero,
+    and the E1-E3 exclusion statement or `none in this run`).
+    """
+    outcomes = {
+        ("A1", 1, "off"): 1,
+        ("A1", 2, "off"): 1,
+        ("A1", 1, "on"): 1,
+        ("A1", 2, "on"): 1,
+    }
+    run_dir = stats_run(
+        root, tmp_path, run_id="r-tu1", tasks=("A1",), reps=2, arms=("off", "on"), combos=["c1"], outcomes=outcomes
+    )
+    view = views.load(run_dir)
+    out, code = cli_table.render(view, plain=True, run_dir=run_dir, root=root)
+    assert code == 0
+
+    # Header rows: primary measure and statistics with METHOD, seed, resamples
+    assert "primary measure: pass@1 (catalog 0.4 has no normalisation anchors)" in out
+    assert "statistics: percentile bootstrap, 95%, two-stage (task, then repetition), task-balanced mean" in out
+    assert "2000 resamples" in out
+    assert "seed 20260927" in out
+
+    # CLI leaderboard columns: pass@1 95%, Gated, Gated 95%, NO Interval column
+    assert "pass@1 95%" in out
+    assert "Gated" in out
+    assert "Gated 95%" in out
+    header_line = next(line for line in out.splitlines() if "Rank" in line and "Combo" in line)
+    assert "Interval" not in header_line.split()
+
+    # Pack effect section and exclusion statement
+    assert "Excluded as contamination-prone: none in this run" in out
+    assert "no detectable effect" in out
