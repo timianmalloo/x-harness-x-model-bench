@@ -12,5 +12,12 @@
     "find": "    refused = _refuse_if_sidecar()\n",
     "replace": "    refused = None\n",
     "tests": ["tests/test_mutate_check.py::test_a_run_refuses_to_start_while_a_sidecar_exists"]
+  },
+  {
+    "name": "the test-path part dropped",
+    "file": "tools/mutate_check.py",
+    "find": "            if any(_test_path(node) in normalised for node in mutant.get(\"tests\", [])):\n                hits = True\n                break\n",
+    "replace": "            pass\n",
+    "tests": ["tests/test_mutate_check.py::test_touched_sets_select_a_mutant_file_or_the_path_of_a_named_test"]
   }
 ]
