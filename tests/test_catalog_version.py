@@ -1,15 +1,23 @@
 """The US-4 control: a score, weight, rubric or definition never changes under one catalog version (R-59 c1, c3;
-design docs/design/phase3-graders.md, "Catalog-version rule" 4; CORE s2).
+design docs/design/phase3-graders.md, "Catalog-version rule" 4; CORE s2). Statistics have their own golden
+(R-78 DR-S-4): `board.export` of each fixture, pinned the same way.
 
 For a current `version` that does not end in `.dev`, the control fails when:
 - (a) a committed fixture, graded offline under the current catalog, exports other bytes than its golden file
-      `tests/fixtures/catalog/<version>/<fixture>.export` (a score or reason moved with no bump);
+      `tests/fixtures/catalog/<version>/<fixture>.export` (a score or reason moved with no bump), or other board
+      bytes than `tests/fixtures/catalog/<version>/<fixture>.board.export` (`board.export(board.build(view, catalog))`
+      at the default seed and resamples);
 - (b) the current `catalog_hash` differs from the one pinned for the version in `bench/catalog-freeze.yaml` (a weight,
       rubric, definition or anchor edit, which the export cannot see), or none is pinned;
-- (c) the golden files' sha256 differ from the digests pinned there (a same-commit rewrite of a golden file);
-- (d) no golden file exists for the version (a freeze needs a golden export);
-- (e) an entry present in `bench/catalog-freeze.yaml` at the merge base was changed or removed (append-only per version).
+- (c) the golden files' sha256 differ from the digests pinned there (`golden` and `board_golden`; a same-commit
+      rewrite of a golden file);
+- (d) no golden file exists for the version (a freeze needs a golden export), or a released version whose freeze
+      entry has no `board_golden` was frozen after boards existed;
+- (e) an entry present in `bench/catalog-freeze.yaml` at the merge base was changed or removed (append-only per
+      version), `board_golden` included.
 A `.dev` version is a probe and is exempt from (a)-(d) only here; the control prints `probe: exempt`. (e) always applies.
+A version frozen before boards existed (its entry has no `board_golden`, as 0.4) is exempt from the board check; the
+control prints `board golden: not pinned (frozen before board.export)`.
 
 `bench/catalog-freeze.yaml` is Leader-owned (written at each freeze); this file only reads it.
 The fixtures are the two committed X1 mini-runs (D6); the judge is not applicable to X1, so no model is called.
@@ -30,25 +38,39 @@ import yaml
 from archived_runs import ROOT, make_root, set_catalog_version
 from slow_ring import dotnet_gate
 
-from harness_bench import config, views
+from harness_bench import board, composites, config, views
 from harness_bench.grade import Score, runner
 
 FIXTURES = {name: Path(__file__).parent / "fixtures" / "ledger" / name / "run" for name in ("c44dd2b-no-heads", "heads")}
 GOLDEN = Path(__file__).parent / "fixtures" / "catalog"
 FREEZE = "bench/catalog-freeze.yaml"
 PROBE = "probe: exempt"
+BOARD_EXEMPT = "board golden: not pinned (frozen before board.export)"
 
 
-def graded_export(root: Path, name: str, tmp: Path) -> bytes:
-    """The export of fixture `name` after one pass under `root`'s catalog, read by that catalog's version."""
+def graded_view(root: Path, name: str, tmp: Path):
+    """Fixture `name` after one pass under `root`'s catalog, read by that catalog's version."""
     run_dir = tmp / f"us4-{name}-{uuid.uuid4().hex}" / "run"
     shutil.copytree(FIXTURES[name], run_dir)
     runner.run_pass(run_dir, root)
-    return views.export(views.load(run_dir, str(config.load_yaml(root / "bench" / "metrics.yaml")["version"])))
+    return views.load(run_dir, str(config.load_yaml(root / "bench" / "metrics.yaml")["version"]))
 
 
-def us4_problems(root: Path, golden: Path, freeze: dict, base: dict, export: Callable[[str], bytes]) -> list[str]:
-    """Checks (a)-(e) for `root`'s current catalog; [] when the control passes."""
+def graded_export(root: Path, name: str, tmp: Path) -> bytes:
+    """The views export of fixture `name` after one pass under `root`'s catalog."""
+    return views.export(graded_view(root, name, tmp))
+
+
+def graded_board_export(root: Path, name: str, tmp: Path) -> bytes:
+    """`board.export(board.build(view, catalog))` at the default seed and resamples."""
+    view = graded_view(root, name, tmp)
+    return board.export(board.build(view, composites.load_catalog(root)))
+
+
+def us4_problems(root: Path, golden: Path, freeze: dict, base: dict, export: Callable[[str], bytes],
+                 board_export: Callable[[str], bytes] | None = None) -> list[str]:
+    """Checks (a)-(e) for `root`'s current catalog; [] when the control passes. Board goldens are not checked yet."""
+    del board_export
     versions, was = freeze.get("versions") or {}, base.get("versions") or {}
     problems = [f"(e) {FREEZE} entry {v!r} was changed or removed since the merge base" for v in sorted(was) if versions.get(v) != was[v]]
     version = str(config.load_yaml(root / "bench" / "metrics.yaml")["version"])
@@ -62,7 +84,7 @@ def us4_problems(root: Path, golden: Path, freeze: dict, base: dict, export: Cal
     elif pinned.get("catalog_hash") != current:
         problems.append(f"(b) catalog_hash {current} != {pinned.get('catalog_hash')} pinned for {version}: a weight, rubric or "
                         "definition changed without a version bump")
-    files = sorted((golden / version).glob("*.export"))
+    files = sorted(p for p in (golden / version).glob("*.export") if not p.name.endswith(".board.export"))
     if not files:
         problems.append(f"(d) no golden export for {version} (a freeze needs a golden export)")
     digests = {f.stem: hashlib.sha256(f.read_bytes()).hexdigest() for f in files}
@@ -100,9 +122,15 @@ def test_the_current_catalog_passes_the_us4_control(tmp_path, capsys):
         shutil.copytree(ROOT / "bench" / "rubrics", root / "bench" / "rubrics")
     assert runner.catalog_hash(root) == runner.catalog_hash(ROOT)
     freeze = config.load_yaml(ROOT / FREEZE) if (ROOT / FREEZE).is_file() else {}
-    assert us4_problems(root, GOLDEN, freeze, merge_base_freeze(), lambda name: graded_export(root, name, tmp_path)) == []
+    got = us4_problems(root, GOLDEN, freeze, merge_base_freeze(), lambda name: graded_export(root, name, tmp_path),
+                       lambda name: graded_board_export(root, name, tmp_path))
+    assert got == []
     version = str(config.load_yaml(ROOT / "bench" / "metrics.yaml")["version"])
-    assert (PROBE in capsys.readouterr().out) == version.endswith(".dev")  # the exemption is visible, and only for a probe
+    out = capsys.readouterr().out
+    assert (PROBE in out) == version.endswith(".dev")  # the exemption is visible, and only for a probe
+    entry = (freeze.get("versions") or {}).get(version) or {}
+    # 0.4 was frozen before boards existed: the missing pin is printed, and only then
+    assert (BOARD_EXEMPT in out) == (not version.endswith(".dev") and "board_golden" not in entry)
 
 
 # --- red first: each violation fails the control (TA 5, TA re-review 6) -------------------------------------------
@@ -110,25 +138,34 @@ def test_the_current_catalog_passes_the_us4_control(tmp_path, capsys):
 
 @pytest.fixture
 def frozen(tmp_path):
-    """A root whose catalog is released as 9.1, with its golden exports and a freeze record pinning both: it passes."""
+    """A root whose catalog is released as 9.1, with views and board goldens and a freeze record pinning both.
+
+    9.0 has no `board_golden`: it stands for a version frozen before boards existed. 9.1 pins both.
+    """
     root = make_root(tmp_path)
     set_catalog_version(root, "9.1")
     golden = tmp_path / "golden"
     (golden / "9.1").mkdir(parents=True)
-    pins = {}
+    pins, board_pins = {}, {}
     for name in FIXTURES:
         data = graded_export(root, name, tmp_path / "freeze")
         (golden / "9.1" / f"{name}.export").write_bytes(data)
         pins[name] = hashlib.sha256(data).hexdigest()
-    freeze = {"schema": "bench-catalog-freeze/1", "versions": {"9.0": {"catalog_hash": "0" * 64, "golden": {}},
-                                                                "9.1": {"catalog_hash": runner.catalog_hash(root), "golden": pins}}}
+        board_data = graded_board_export(root, name, tmp_path / "freeze-board")
+        (golden / "9.1" / f"{name}.board.export").write_bytes(board_data)
+        board_pins[name] = hashlib.sha256(board_data).hexdigest()
+    freeze = {"schema": "bench-catalog-freeze/1",
+              "versions": {"9.0": {"catalog_hash": "0" * 64, "golden": {}},
+                           "9.1": {"catalog_hash": runner.catalog_hash(root), "golden": pins, "board_golden": board_pins}}}
     return root, golden, freeze
 
 
 def problems(frozen, tmp_path, base: dict | None = None, freeze: dict | None = None) -> list[str]:
     root, golden, pinned = frozen
     freeze = freeze or pinned
-    return us4_problems(root, golden, freeze, pinned if base is None else base, lambda name: graded_export(root, name, tmp_path))
+    return us4_problems(root, golden, freeze, pinned if base is None else base,
+                        lambda name: graded_export(root, name, tmp_path),
+                        lambda name: graded_board_export(root, name, tmp_path))
 
 
 def test_a_frozen_catalog_with_unchanged_scores_passes(frozen, tmp_path):
@@ -196,6 +233,57 @@ def test_an_edited_or_removed_freeze_entry_is_red_through_e(frozen, tmp_path):
     assert problems(frozen, tmp_path, base=base, freeze=edited) == [f"(e) {FREEZE} entry '9.0' was changed or removed since the merge base"]
     assert problems(frozen, tmp_path, base=base, freeze=removed) == [f"(e) {FREEZE} entry '9.0' was changed or removed since the merge base"]
     assert problems(frozen, tmp_path, base=base, freeze=appended) == []  # append-only: a new version is fine
+
+
+def test_a_board_export_that_differs_is_red_through_a(frozen, tmp_path, monkeypatch):
+    """(a) board: the views export is unchanged, so only the board golden sees a moved statistic."""
+    real = board.build
+
+    def shifted(view, cat, params=None):
+        built = real(view, cat, params)
+        if built.rows:
+            built.rows[0].n_cells += 1
+        return built
+
+    monkeypatch.setattr(board, "build", shifted)
+    assert problems(frozen, tmp_path) == [
+        f"(a) {name}: the board export differs from its golden file (a statistic moved without a bump)"
+        for name in sorted(FIXTURES)]
+
+
+def test_board_digests_that_differ_from_the_pins_are_red_through_c(frozen, tmp_path):
+    """(c) board: rewriting a board golden moves its digest while the views pin still matches."""
+    _, golden, _ = frozen
+    path = golden / "9.1" / "heads.board.export"
+    path.write_bytes(path.read_bytes() + b" ")
+    assert problems(frozen, tmp_path) == [
+        "(a) heads: the board export differs from its golden file (a statistic moved without a bump)",
+        f"(c) board goldens for 9.1 differ from the digests pinned in {FREEZE}"]
+
+
+def test_a_released_version_frozen_with_no_board_golden_is_red_through_d(frozen, tmp_path):
+    """(d) board: a version frozen after boards existed (`board_golden` is present) with nothing pinned."""
+    _, golden, freeze = frozen
+    for path in (golden / "9.1").glob("*.board.export"):
+        path.unlink()
+    freeze["versions"]["9.1"]["board_golden"] = {}
+    assert problems(frozen, tmp_path) == ["(d) no board golden for 9.1 (a freeze after board.export needs a board golden)"]
+
+
+def test_a_version_frozen_before_boards_is_exempt_and_says_so(frozen, tmp_path, capsys):
+    """An entry with no board_golden (0.4's shape) skips the board check, and the skip is printed."""
+    root, golden, freeze = frozen
+    set_catalog_version(root, "9.0")
+    (golden / "9.0").mkdir()
+    pins = {}
+    for name in FIXTURES:
+        data = graded_export(root, name, tmp_path / "pre-board")
+        (golden / "9.0" / f"{name}.export").write_bytes(data)
+        pins[name] = hashlib.sha256(data).hexdigest()
+    freeze["versions"]["9.0"] = {"catalog_hash": runner.catalog_hash(root), "golden": pins}
+    (golden / "9.0" / "heads.board.export").write_bytes(b"not a board")  # ignored: this version predates boards
+    assert problems(frozen, tmp_path) == []
+    assert capsys.readouterr().out.strip().splitlines() == [BOARD_EXEMPT]
 
 
 def test_a_dev_version_is_exempt_and_says_so(frozen, tmp_path, capsys):
