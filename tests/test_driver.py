@@ -653,6 +653,7 @@ def test_the_fidelity_check_fails_on_a_seeded_unpaired_type(tmp_path):  # D7 neg
 
 
 @pytestmark_native
+@pytest.mark.filterwarnings("error::pytest.PytestUnhandledThreadExceptionWarning")  # the race fails the test itself
 def test_tapped_turn_timer_race_does_not_emit_unhandled_thread_exception(tmp_path, monkeypatch):
     """CI-OPT finding 3: when a turn ends near the timer deadline, cancel() without join()
     leaves the timer thread running while finally: cell.close() closes the job handle.
