@@ -20,10 +20,8 @@ from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from pathlib import Path
 
 from harness_bench import board as board_mod
-from harness_bench import egress, ledger, views
-from harness_bench.errors import (  # noqa: F401 -- TODO(R7 red): used once the live-run refusal is wired
-    BenchError,
-)
+from harness_bench import egress, ledger, oslock, views
+from harness_bench.errors import BenchError
 from harness_bench.gateway import backend as gw_backend
 from harness_bench.gateway import request as gw_request
 from harness_bench.gateway import schema as gw_schema
@@ -119,13 +117,26 @@ def _segment_path(run_dir: Path) -> Path:
 
 def append(run_dir: Path, row: Row) -> dict:
     """Append one `summary_records` row through `ledger` (append-only; never rewritten). The segment is
-    never sealed: a regenerate reopens it and appends a new row (design section 4's history rule)."""
-    path = _segment_path(run_dir)
-    writer = ledger.SegmentWriter.reopen(path) if path.is_file() else ledger.SegmentWriter.create(run_dir / FACT, SEGMENT_ID)
+    never sealed: a regenerate reopens it and appends a new row (design section 4's history rule).
+
+    `SegmentWriter`'s single-writer guard is in-process only (`ledger._open_writers`, a Python `set`),
+    and this is the one call site that reopens a fact segment across separate `bench report --summaries`
+    processes rather than opening a fresh segment once per run (Data & Persistence Architect review,
+    R7 final review, Major finding): two racing processes would both `_scan` the same head, then both
+    append with the same `seq`, breaking the hash chain for the *whole* segment on the next read, not
+    only the new row. `HB-SUM-002` takes an OS file lock (`oslock`, the same primitive the run and grade
+    locks use) around reopen+append+close, so a race fails closed and loud instead of poisoning history.
+    """
+    lock = oslock.RunLock.acquire(run_dir / FACT / ".lock", "HB-SUM-002")
     try:
-        return writer.append(ledger.stamp(row.to_record()))
+        path = _segment_path(run_dir)
+        writer = ledger.SegmentWriter.reopen(path) if path.is_file() else ledger.SegmentWriter.create(run_dir / FACT, SEGMENT_ID)
+        try:
+            return writer.append(ledger.stamp(row.to_record()))
+        finally:
+            writer.close()
     finally:
-        writer.close()
+        lock.release()
 
 
 def read_records(run_dir: Path) -> list[dict]:
@@ -293,7 +304,9 @@ def manifest_matches(manifest: tuple[dict, ...], request_text: str) -> bool:
     """US-42 c1: recomputes sha256 over each captured segment and compares with the recorded manifest.
     False (refuses) on any mismatch: a tampered export byte changes a hash; a payload segment absent from
     the manifest, or a manifest entry the payload never carried, changes the key set."""
-    return True  # TODO(R7 red): wire the manifest check
+    recomputed = recompute_manifest(request_text)
+    recorded = {e["id"]: e["sha256"] for e in manifest if e.get("sha256") is not None}
+    return recomputed == recorded
 
 
 # --------------------------------------------------------------------------------------------- the claim check
@@ -431,7 +444,7 @@ def _numbers_ok(text: str, resolved: list[Resolved]) -> bool:
             if matched:
                 break
         if not matched:
-            continue  # TODO(R7 red): wire the number check
+            return False
     return True
 
 
@@ -455,7 +468,8 @@ def _zero_rule_ok(claim: dict, resolved: dict[str, Resolved]) -> bool:
     """section 8's zero rule and its mirror, plus the observation/suggestion print-the-interval rule."""
     delta_refs = [resolved[r] for r in claim["refs"] if r in resolved and resolved[r].is_delta]
     nde = [no_detectable_effect(r.interval) for r in delta_refs]
-    # TODO(R7 red): wire the zero rule (an effect/suggestion claim on a crossing interval must fail)
+    if claim["kind"] in ("effect", "suggestion") and any(nde):
+        return False
     if claim["kind"] == "no_effect" and delta_refs and not any(nde):
         return False
     text = claim["text"].translate(_MINUS)
@@ -508,7 +522,10 @@ def refuse_if_live(roots: tuple[Path, ...]) -> None:
     """DR-R-5: `bench report --summaries` refuses while any run is live -- its own call site, its own code
     (HB-SUM-001, ruling R-81 condition 3), reusing the one liveness scan (`gateway.backend.scan_runs`)
     HB-GRD-005 also reads from (DM7)."""
-    gw_backend.scan_runs(roots)  # TODO(R7 red): wire the live-run refusal
+    _found, live = gw_backend.scan_runs(roots)
+    if live:
+        raise BenchError("HB-SUM-001", f"bench report --summaries refused while a run is live; scanned "
+                                       f"{', '.join(map(str, roots))}; {'; '.join(live)}")
 
 
 def generate(kind: str, run_dir: Path, view: views.RunView, board_obj: board_mod.Board, backend,

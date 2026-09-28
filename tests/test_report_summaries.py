@@ -87,6 +87,25 @@ def test_summary_records_rewrite_fails(tmp_path):
     assert exc.value.code == "HB-LED-002"
 
 
+def test_a_concurrent_writer_is_refused_not_raced(tmp_path):
+    """D&P Architect review (R7): a second `bench report --summaries` process for the same run is refused
+    (HB-SUM-002) while the first holds the write lock, rather than both reopening the segment and racing
+    `SegmentWriter.append` -- which would break the whole segment's hash chain, not only the new row."""
+    run_dir = tmp_path / "r1"
+    row = s.Row(run_id="r1", pass_id="grade-1", kind="ranking", model="m", manifest=(), manifest_sha256="x" * 64,
+               request_sha256="y" * 64, template_version="summary-request/1", schema_sha256="z" * 64,
+               outcome="backend_unavailable")
+    lock = oslock.RunLock.acquire(run_dir / s.FACT / ".lock", "HB-SUM-002")
+    try:
+        with pytest.raises(BenchError) as exc:
+            s.append(run_dir, row)
+    finally:
+        lock.release()
+    assert exc.value.code == "HB-SUM-002"
+    s.append(run_dir, row)  # the lock is free again: a later, non-concurrent write succeeds
+    assert len(s.read_records(run_dir)) == 1
+
+
 def test_published_row_requires_passing_claims():
     """The second invariant (design section 4): a `published` row with a failing claim cannot be
     constructed -- `Row.__post_init__` refuses it directly, not merely a caller that happens not to."""
