@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-28T01:04:59Z",
+  "generated": "2026-09-28T01:44:15Z",
   "audit": [
     {
       "actor": null,
@@ -42879,6 +42879,39 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3JTY94ZKW6775T322W0HZGP",
+      "shortname": "s5-board",
+      "datetime": "2026-09-28T01:44:15Z",
+      "session": "worker-agy-s5",
+      "prompt": "implement slice S5 of docs/design/phase4-statistics.md, the board projection",
+      "summary": "Implement slice S5 of docs/design/phase4-statistics.md (the board projection, Z-2, Z-5)",
+      "kind": "manual",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled_from": "al-01M3JRPC9GGTEX27PWC7V68YMC",
+      "goal": "implement slice S5 of docs/design/phase4-statistics.md, the board projection: src/harness_bench/board.py, tests/stats_fixtures.py, tests/test_board.py, tests/mutations/board.json, and the seams Z-2 (errors.py: HB-STA-001/002) and Z-5 (the views.py hunks: the leaderboard leaves views.export per R-78 DR-S-4), red first.",
+      "done_when": "every S5 deliverable in the design's slice table exists; tests/stats_fixtures.py committed first; T-B1 committed red first then green; T-B1..B3, T-B6..B9, T-P1..P4 pass; board.export owns statistics bytes; views.export no longer carries leaderboard key; HB-STA-001/002 in errors.py; all board.json mutants killed; clean ruff",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-28T01:05:20Z",
+      "duration_seconds": 2335.0,
+      "git": {
+        "sha": "4056010aceafa8543689ac8987c68fa053d42df6",
+        "short": "4056010ac",
+        "branch": "w4-s5",
+        "pushed": null
+      }
     }
   ],
   "changes": [
