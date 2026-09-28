@@ -30,7 +30,7 @@
  {
   "name": "a focus colour below 3:1",
   "file": "src/harness_bench/report/html.py",
-  "find": "--focus:#1d6fd6;",
+  "find": "--focus:#1d5fbf;",
   "replace": "--focus:#9fb8d8;",
   "tests": ["tests/test_report.py::test_text_and_focus_contrast_meet_wcag_aa"]
  },
@@ -188,5 +188,49 @@
   "find": "    if n < 2:  # fewer than two Stryker cells: not derived, never 0 and never a task constant (R-77 item 1)\n        return f\"not derived ({n} {'cell' if n == 1 else 'cells'})\"\n",
   "replace": "",
   "tests": ["tests/test_report_disclosure.py::test_d1_baseline_is_derived_from_this_runs_stryker_cells"]
+ },
+ {
+  "name": "the builder stops escaping child text",
+  "file": "src/harness_bench/report/html_builder.py",
+  "find": "    inner = \"\".join(c if isinstance(c, Html) else _html.escape(str(c), quote=True) for c in children)\n",
+  "replace": "    inner = \"\".join(c if isinstance(c, Html) else str(c) for c in children)\n",
+  "tests": ["tests/test_report_builder.py::test_builder_refuses_on_attributes",
+            "tests/test_report_builder.py::test_builder_refuses_on_attributes_named_examples"]
+ },
+ {
+  "name": "the on*/style attribute guard is disabled",
+  "file": "src/harness_bench/report/html_builder.py",
+  "find": "    if _BAD_ATTR.match(name) or name.lower() == \"style\":\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_report_builder.py::test_attribute_names_matching_on_star_or_style_are_refused"]
+ },
+ {
+  "name": "the javascript: href guard is disabled",
+  "file": "src/harness_bench/report/html_builder.py",
+  "find": "    if name.lower() in _HREF_ATTRS and _JS_HREF.match(str(value)):\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_report_builder.py::test_javascript_href_is_refused"]
+ },
+ {
+  "name": "the CSP script-src hash is dropped even with a script",
+  "file": "src/harness_bench/report/html_builder.py",
+  "find": "    script_src = f\"'{sha256_token(script_text)}'\" if script_text else \"'none'\"\n",
+  "replace": "    script_src = \"'none'\"\n",
+  "tests": ["tests/test_report_builder.py::test_csp_meta_is_first_head_child_with_script_hash"]
+ },
+ {
+  "name": "the CSP style-src hash is a constant, not the style's own hash",
+  "file": "src/harness_bench/report/html_builder.py",
+  "find": "        f\"style-src '{sha256_token(style_text)}'\",\n",
+  "replace": "        \"style-src 'sha256-0000000000000000000000000000000000000000000='\",\n",
+  "tests": ["tests/test_report_builder.py::test_csp_meta_is_first_head_child_with_script_hash"]
+ },
+ {
+  "name": "the CSP meta is no longer the first head child",
+  "file": "src/harness_bench/report/html_builder.py",
+  "find": "        \"head\", None,\n        csp_meta(style_text, script_text),\n        el(\"meta\", {\"charset\": \"utf-8\"}),\n",
+  "replace": "        \"head\", None,\n        el(\"meta\", {\"charset\": \"utf-8\"}),\n        csp_meta(style_text, script_text),\n",
+  "tests": ["tests/test_report_builder.py::test_csp_meta_is_first_head_child_with_script_hash",
+            "tests/test_report_builder.py::test_page_shell_csp_is_first_head_child"]
  }
 ]

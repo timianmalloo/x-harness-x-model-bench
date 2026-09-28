@@ -32,7 +32,7 @@ from harness_bench import (
 )
 from harness_bench.errors import BenchError
 from harness_bench.plan import resolved_model_map
-from harness_bench.report import judges
+from harness_bench.report import html_builder, judges, model
 from harness_bench.report.credentials import encodings
 
 SECRET_SHAPES = (
@@ -48,14 +48,39 @@ PARTIAL = "partial: email not supplied"  # the publication scan without BENCH_OP
 _SECTION = re.compile(r'<section id="([a-z0-9-]+)">.*?</section>', re.DOTALL)
 _HEADER_END = re.compile(r'(<section id="header">.*?)(</section>)', re.DOTALL)  # where the egress row goes (R-80 c1)
 
+# R1 (design section 3, DR-R-3): both themes in one style block, dark under `prefers-color-scheme`
+# only -- no toggle, no stored preference. `--heat-0..9` are the viridis stops; the design names only
+# the endpoints and three interior samples (`#440154 ... #31688e ... #1f9e89 ... #6ece58 ... #fde725`,
+# section 3 and the mockup). assume: heat-1/2/4/6/8 are linear-RGB interpolations between the nearest
+# named anchors, not read from a verified viridis LUT (no plotting library is a project dependency to
+# compute one from, and adding one is out of scope here); confirmed by: R6 (Scenarios heatmap, the
+# first and only R1-scope-adjacent consumer of the mid stops) checking them against a real viridis
+# table before the heatmap ships; if false: only these five interior fills are a slightly off shade of
+# viridis until R6 corrects them -- DR-R-1's on-heat-text contrast proof holds for *any* fill, so no
+# accessibility floor is at risk in the meantime.
 STYLE = """
-:root{color-scheme: light;
-  --bg:#f3f5f7; --panel:#ffffff; --ink:#18212b; --ink-2:#4b5563; --rule:#d9dee5; --focus:#1d6fd6;
-  --font:"Segoe UI", system-ui, -apple-system, sans-serif;
+:root{color-scheme: light dark;
+  --bg:#f3f5f7; --panel:#ffffff; --ink:#18212b; --ink-2:#4b5563; --ink-3:#7a8491; --rule:#d9dee5;
+  --rule-strong:#767f8b; --focus:#1d5fbf; --na:#5f6873; --warn:#8a5a00; --bad:#9b1c1c; --bad-bg:#fbeaea;
+  --c1:#0b63a8; --c2:#b35400; --c3:#00795a; --c4:#a3417d; --c5:#5b4bb0; --c6:#7a6400; --c7:#b0303a; --c8:#3d6e8f;
+  --div-pos:#5e3c99; --div-neg:#b35806;
+  --heat-0:#440154; --heat-1:#3e2367; --heat-2:#37467b; --heat-3:#31688e; --heat-4:#28838c; --heat-5:#1f9e89;
+  --heat-6:#46b670; --heat-7:#6ece58; --heat-8:#b6da3e; --heat-9:#fde725;
+  --on-heat-dark:#ffffff; --on-heat-light:#000000;
+  --font:"Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --fs:15px; --fs-small:13px; --fs-h1:26px; --fs-h2:19px;
-  --s1:4px; --s2:8px; --s3:16px; --s4:24px; --radius:4px; --rule-w:1px; --focus-w:2px; --maxw:1240px;}
+  --s1:4px; --s2:8px; --s3:16px; --s4:24px; --s5:40px;
+  --radius:4px; --rule-w:1px; --focus-w:2px; --target:24px; --maxw:1240px; --bar-h:88px;}
+@media (prefers-color-scheme: dark){
+:root{
+  --bg:#0e1318; --panel:#151c23; --ink:#e7ecf1; --ink-2:#aab5c1; --ink-3:#76818d; --rule:#2a343f;
+  --rule-strong:#6c7784; --focus:#7fb2ff; --na:#98a3ae; --warn:#e3b35a; --bad:#ffb3b3; --bad-bg:#3a1c1f;
+  --c1:#5fb0f0; --c2:#f0a050; --c3:#3fc79a; --c4:#e58cc0; --c5:#a79cf2; --c6:#d9c24a; --c7:#ff8a8f; --c8:#8fc3e0;
+  --div-pos:#b2abd2; --div-neg:#fdb863;
+}}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:var(--fs);line-height:1.45}
 main{max-width:var(--maxw);margin:0 auto;padding:var(--s4) var(--s3)}
+html{scroll-padding-top:var(--bar-h)}
 h1{font-size:var(--fs-h1);margin:0 0 var(--s2)}
 h2{font-size:var(--fs-h2);margin:var(--s4) 0 var(--s2)}
 .muted,dt{color:var(--ink-2)}
@@ -63,6 +88,7 @@ dl{display:grid;grid-template-columns:max-content 1fr;gap:var(--s1) var(--s3);ma
 dd{margin:0}
 .region{overflow-x:auto;max-width:100%;background:var(--panel);border:var(--rule-w) solid var(--rule);border-radius:var(--radius)}
 .region:focus-visible{outline:var(--focus-w) solid var(--focus);outline-offset:var(--focus-w)}
+nav[aria-label="Sections"]{display:flex;flex-wrap:wrap;gap:var(--s1) var(--s3);font-size:var(--fs-small);padding:var(--s2) 0}
 table{border-collapse:collapse;min-width:100%}
 caption{text-align:left;font-weight:600;padding:var(--s2)}
 th,td{padding:var(--s1) var(--s2);border-top:var(--rule-w) solid var(--rule);text-align:left;vertical-align:top}
@@ -324,7 +350,7 @@ def _evidence(c: views.CellView, archive_present: bool) -> str:
 def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str], run_dir: Path | None = None,
           root: Path | None = None) -> str:
     if not view.cells:
-        return '<section id="runs"><h2>Cells</h2><p>No cells in this run.</p></section>'
+        return '<section id="runs"><h2>Runs</h2><p>No cells in this run.</p></section>'
     show_mutation = report.has_d1_cell(view.plan)
     mutation = report.d1_mutation_values(root, run_dir, view) if show_mutation else {}
     headers = [("Cell", False), ("Outcome", False), ("Validity", False), ("pass@1", True), ("Partial credit", True),
@@ -343,7 +369,7 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str], run_
              (_e(report.usd(c.scores.get("cost_usd", na))), True), (_e(report.context_window(c.harness, tags.get(c.cell_id))), False),
              (_e(", ".join(w.code for w in c.warnings) or "none"), False),
              (_evidence(c, archive_present), False)] for c in view.cells]
-    return f'<section id="runs"><h2>Cells</h2>{_table("runs", "Every cell of the run", headers, rows)}</section>'
+    return f'<section id="runs"><h2>Runs</h2>{_table("runs", "Every cell of the run", headers, rows)}</section>'
 
 
 def _comparison(comparison_obj: board.Comparison | str | None) -> str:
@@ -443,11 +469,22 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
             )
         board_obj = board.build(view, cat, params=params)
 
-    return ("<!doctype html>\n"
-            f'<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-            f"<title>harness-bench run {_e(view.run_id)}</title><style>{STYLE}</style></head>"
-            f"<body><main>{_header(view, tags, _permission_modes(run_dir), judging, root, run_dir, board_obj=board_obj, params=params)}{_validity(view)}{_leaderboard(view, board_obj)}{_pack_effect(board_obj)}{_runs(view, archive_present, tags, run_dir, root)}{_comparison(comparison_obj)}"
-            f"</main></body></html>\n")
+    # R1: the shell (head, CSP, nav/jump-links, section order) goes through html_builder + model
+    # (design section 5); the section bodies are unchanged, `trusted()`-marked at this one seam
+    # (R2-R9 retire that marking section by section as each renderer moves onto `el()` directly).
+    header_html = _header(view, tags, _permission_modes(run_dir), judging, root, run_dir, board_obj=board_obj, params=params)
+    comparison_html = _comparison(comparison_obj)
+    sections = [model.Section("header", "Run header", html_builder.trusted(header_html))]
+    for sid, title, body in (
+        ("validity", "Validity", _validity(view)),
+        ("leaderboard", "Leaderboard", _leaderboard(view, board_obj)),
+        ("pack-effect", "Pack effect", _pack_effect(board_obj)),
+        ("runs", "Runs", _runs(view, archive_present, tags, run_dir, root)),
+    ):
+        sections.append(model.Section(sid, title, html_builder.trusted(body)))
+    if comparison_html:
+        sections.append(model.Section("comparison", "Comparison", html_builder.trusted(comparison_html)))
+    return model.page(model.ReportModel(run_id=view.run_id, sections=tuple(sections)), style=STYLE)
 
 
 def scan(text: str, credential_values: set[str] = frozenset()) -> int:

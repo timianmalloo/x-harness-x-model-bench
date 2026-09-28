@@ -83,8 +83,11 @@ def test_the_page_is_structurally_accessible(page):
 
 
 def test_no_colour_size_or_radius_literal_outside_root(page):  # T-UI-tokens
+    # DR-R-3: dark mode is a second `:root{...}` inside `@media (prefers-color-scheme: dark)`, so
+    # every `:root{...}` block (not only the first, light one `_root_block` returns) is stripped
+    # before the stray-literal scan.
     style = re.search(r"<style>(.*)</style>", page, re.DOTALL).group(1)
-    outside = style.replace(_root_block(page), "")
+    outside = re.sub(r":root\s*\{[^}]*\}", "", style)
     assert not re.findall(r"#[0-9a-fA-F]{3,8}\b|rgba?\(|\b\d+(?:\.\d+)?(?:px|rem|em)\b", outside)
 
 
@@ -395,7 +398,8 @@ def test_the_leaderboard_and_cells_table_flag_only_the_codex_rows():
 
 def test_the_cli_table_prints_the_flag_as_ascii_after_the_table_when_a_codex_cell_is_present():
     out, code = cli_table.render(_codex_only_view(), plain=True)
-    assert code == 0 and out.isascii() and N5_FLAG in out
+    # The line itself, not the phrase: a codex model label carries the flag too (TEST-A).
+    assert code == 0 and out.isascii() and any(ln.startswith(f"{N5_FLAG}: see ") for ln in out.splitlines())
 
 
 def test_the_cli_table_has_no_flag_when_no_codex_cell():
