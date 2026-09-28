@@ -1,7 +1,8 @@
-"""Two-stage percentile bootstrap (design: phase4-statistics, The bootstrap).
+"""Two-stage percentile bootstrap and ranking (design: phase4-statistics).
 
 Pure calculation: the standard library and `harness_bench.errors` only. No I/O, no catalog, no views.
 Values stay `Decimal`. One keyed `random.Random` stream per quantity; only `random()` is drawn.
+Ranking is the overlap components of the primary interval, then one pass@1 gate.
 """
 
 from __future__ import annotations
@@ -11,6 +12,7 @@ import random
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from decimal import ROUND_HALF_EVEN, Context, Decimal, localcontext
+from typing import NamedTuple
 
 from harness_bench.errors import BenchError
 
@@ -130,9 +132,115 @@ def interval(obs: Sequence[Obs], params: Params, key: str) -> Interval:
 RowId = tuple[str, str]
 
 
-def rank(rows: Mapping[RowId, tuple[Interval, Interval]]) -> dict[RowId, tuple[str, str | None]]:
-    """Red stub: a lone `1`, so T-R3's `1=` assertion fails."""
-    return {
-        row_id: ("1", None) if primary.lo is not None else ("", None)
-        for row_id, (primary, _pass_at_1) in rows.items()
-    }
+class _Ranked(NamedTuple):
+    row_id: RowId
+    primary: Interval
+    pass_at_1: Interval
+
+
+def _computed(iv: Interval) -> bool:
+    return iv.lo is not None and iv.hi is not None
+
+
+def _below(a: Interval, b: Interval) -> bool:
+    """`a` lies entirely under `b`. Touching (`hi == lo`) is not below (K12)."""
+    return a.hi < b.lo
+
+
+def _tiers_by_overlap(ranked: list[_Ranked]) -> list[list[_Ranked]]:
+    """Overlap components, lowest `lo` first.
+
+    Sort by primary `lo`, then `hi`, then row id. A row joins the current tier when
+    its `lo` is at most the running maximum `hi` (closed intervals: touching joins).
+    The running value is the maximum, so a wide interval keeps later rows that overlap
+    it and miss each other.
+    """
+    ordered = sorted(ranked, key=lambda row: (row.primary.lo, row.primary.hi, row.row_id))
+    tiers: list[list[_Ranked]] = []
+    running_hi: Decimal | None = None
+    for row in ordered:
+        lo = row.primary.lo
+        hi = row.primary.hi
+        assert lo is not None and hi is not None
+        if running_hi is not None and lo <= running_hi:
+            tiers[-1].append(row)
+            running_hi = max(running_hi, hi)
+        else:
+            tiers.append([row])
+            running_hi = hi
+    return tiers
+
+
+def _merge_span(tiers: list[list[_Ranked]], ix: int, iy: int) -> list[list[_Ranked]]:
+    """Merge every tier from `ix` through `iy` (K8). The tiers between the ends are included."""
+    head = tiers[:ix]
+    between = tiers[ix + 1 : iy]
+    tail = tiers[iy + 1 :]
+    merged = [*tiers[ix], *[row for tier in between for row in tier], *tiers[iy]]
+    return [*head, merged, *tail]
+
+
+def _apply_gate(tiers: list[list[_Ranked]]) -> list[list[_Ranked]]:
+    """One pass over pairs in row-id order. A merge only coarsens, so it adds no new violation.
+
+    A row whose pass@1 interval is not computed takes part in no check (T-R16).
+    """
+    by_id = {row.row_id: row for tier in tiers for row in tier}
+
+    def indexes() -> dict[RowId, int]:
+        return {row.row_id: i for i, tier in enumerate(tiers) for row in tier}
+
+    for x in sorted(by_id):
+        for y in sorted(by_id):
+            if x == y:
+                continue
+            px = by_id[x].pass_at_1
+            py = by_id[y].pass_at_1
+            if not _computed(px) or not _computed(py):
+                continue
+            place = indexes()
+            if _below(px, py) and place[x] < place[y]:
+                tiers = _merge_span(tiers, place[x], place[y])
+    return tiers
+
+
+def rank(
+    rows: Mapping[RowId, tuple[Interval, Interval]],
+) -> dict[RowId, tuple[str, str | None]]:
+    """Competition ranks of the primary-interval tiers after the pass@1 gate.
+
+    Unranked rows (primary not computed) are `("", "not ranked: <reason>")`.
+    A tier of one row prints `k`; a tier of more than one prints `k=`.
+    The dict is in display order: tier best-first, then primary point descending,
+    then row id; unranked rows follow, by row id.
+
+    assume: K1's "-" and the note "No row could be ranked." are the report's
+    rendering of an empty rank (section "Where each result reaches the report"),
+    not a value this function returns. Confirm: S6 prints that note when every
+    rank string is empty.
+    assume: a computed primary has a point (`interval` sets one whenever n >= 1).
+    Display order sorts by it. Confirm: a computed Interval with point None.
+    Breaks if false: sorting the tier raises TypeError.
+    """
+    ranked: list[_Ranked] = []
+    unranked: list[tuple[RowId, str]] = []
+    for row_id, (primary, pass_at_1) in rows.items():
+        if _computed(primary):
+            ranked.append(_Ranked(row_id, primary, pass_at_1))
+        else:
+            unranked.append((row_id, f"not ranked: {primary.reason}"))
+    # Worst-lo first out of the sweep; best (higher interval) first for ranks.
+    tiers = list(reversed(_tiers_by_overlap(ranked)))
+    tiers = _apply_gate(tiers)
+    result: dict[RowId, tuple[str, str | None]] = {}
+    placed = 0
+    for tier in tiers:
+        number = 1 + placed
+        label = f"{number}=" if len(tier) > 1 else str(number)
+        ordered = sorted(tier, key=lambda row: (-row.primary.point, row.row_id))
+        for row in ordered:
+            result[row.row_id] = (label, None)
+        placed += len(tier)
+    for row_id, reason in sorted(unranked, key=lambda item: item[0]):
+        result[row_id] = ("", reason)
+    return result
