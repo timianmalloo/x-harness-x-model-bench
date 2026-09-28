@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-28T20:06:42Z",
+  "generated": "2026-09-28T20:11:04Z",
   "audit": [
     {
       "actor": null,
@@ -47920,6 +47920,858 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T1",
       "tool": null
+    },
+    {
+      "id": "al-01M3MT8M7FHEQ2TKS9DZSE45JX",
+      "shortname": "Goal: implement report slice R4 of docs/design/phase4-report.md (section…",
+      "datetime": "2026-09-28T20:10:55Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: implement report slice R4 of docs/design/phase4-report.md (section 15, the R4 row): report/assets/report.js (sort, combo toggles, pack switch, popovers, Runs filter) hashed into the CSP, and the browser ring set up under ruling R-81 DR-R-9, red first.\nMeasured (Leader, 2026-09-28, main eb2e71a): R0-R3 are merged; the page shell's CSP has script-src 'none' because no script exists yet (report/html_builder.csp_meta takes script_text; model.page takes script); the leaderboard and Runs markup carry button.ev triggers with hidden popover siblings, #cell-<id> rows and inline details cell cards (R3), and the leaderboard popovers' \"Show cells\" link points at #runs under an assume: that R4 makes it filter Runs by the row's combo and pack; the design's section 5 (report.js under 12 KB, vanilla, progressive enhancement, the CSP line and its assume: about meta CSP on file://), section 6 (global controls: combo legend toggles with aria-pressed, the last visible combo refused with aria-disabled, the pack switch both/on/off with a missing setting aria-disabled, filter state as classes on main), section 7 (popover behaviour: click, Enter or Space opens; focus or hover shows; Esc closes and returns focus) and section 12 (UIA-1, UIA-8, UIA-14, UXA-5; the browser ring runs Playwright plus a vendored axe-core at readiness, against HTML generated from fixtures) give the behaviour and tests; R-81 DR-R-9 and its condition 6: playwright becomes a pinned dev dependency, axe-core is vendored and pinned under tests/vendor/ with its MPL-2.0 licence and its sha256 recorded beside the licence, a browser pytest marker ring runs at readiness, playwright install runs only in the readiness ring and never in the offline gate, and the Security & Identity Architect reviews both dependencies before merge.\nDone when: report/assets/report.js exists, under 12 KB, vanilla with no import, loaded as the page's one inline script whose sha256 is the CSP's script-src (html.render passes it through model.page); without the script every table, details element and link still works; the script implements sort (sort buttons in the leaderboard column headers), the combo legend toggles (aria-pressed; hiding the last visible combo is refused with aria-disabled and an aria-describedby that resolves to visible text), the pack switch (both/on/off; a setting the run lacks is aria-disabled with the section 6 reason), the evidence popovers (section 7's open, show, Esc-close and focus-return rules), the Runs filter (task, combo, pack, outcome, validity; the no-match copy \"No cells match this filter.\"), and the leaderboard's Show cells link filtering Runs by its row's combo and pack; the markup the script needs (the legend, the switch, the filter controls, the sort buttons) is rendered by html_builder.el in report/html.py; playwright is a pinned dev dependency in pyproject.toml and uv.lock, axe-core is vendored at a pinned version under tests/vendor/ with its licence file and a sha256 line beside it, the browser marker is registered, excluded from the default ring and from CI's selector exactly as slow, gate, workstation and credentials are, and tests/test_ci_selector or its equivalent still passes; test_keyboard_path (UIA-8) and test_offline_zero_requests (UIA-1: the report-ready mark fired, zero network requests, zero console errors, and the section ids the page renders all present) are browser-ring tests, each committed red first failing on an assertion, then green, run with uv run pytest -m browser; a unit test pins the CSP script hash to the script bytes, red first; named mutants for the CSP script hash and one keyboard or ARIA branch in tests/mutations/report.json, each killed (uv run python tools/mutate_check.py --touched main); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes and never launches a browser; uv run ruff check src tests tools is clean; the report says exactly which commands installed what (uv add, playwright install) so the Leader can convene the Security & Identity review; Commit each red and each green immediately.\nNot in scope: the charts (R5, R6) and their toggling beyond the markup that exists today; axe WCAG runs in light and dark (UIA-2), the 320 px check (UIA-3) and the 576-cell performance test (R9); summaries (R7, R8); editing the pack effect or comparison renderers (R5 runs in parallel and owns _pack_effect and _comparison); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 60 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-report.md (sections 5, 6, 7, 11, 12, 13); docs/design/mockups/phase4-report.html (the reference script behaviour and markup); docs/notes/rulings.md R-81; src/harness_bench/report/{html,html_builder,model}.py; pyproject.toml ([tool.pytest.ini_options] markers and addopts); .github/workflows/ci.yml (the marker selector); tests/test_report.py; tests/test_report_builder.py; tests/mutations/report.json. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-r4 (use absolute paths or cd into it in each shell command).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3MT8R0WA50V55SP2BNH3026",
+      "shortname": "compile-Goal: implement report slice R4 of docs/design/phase4-report.md (section…",
+      "datetime": "2026-09-28T20:10:58Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement report slice R4 of docs/design/phase4-report.md (section 15, the R4 row): report/assets/report.js (sort, combo toggles, pack switch, popovers, Runs filter) hashed into the CSP, and the browser ring set up under ruling R-81 DR-R-9, red first. Measured (Leader, 2026-09-28, main eb2e71a): R0-R3 are merged; the page shell's CSP has script-src 'none' because no script exists yet (report/html_builder.csp_meta takes script_text; model.page takes script); the leaderboard and Runs markup carry button.ev triggers with hidden popover siblings, #cell-<id> rows and inline details cell cards (R3), and the leaderboard popovers' \"Show cells\" link points at #runs under an assume: that R4 makes it filter Runs by the row's combo and pack; the design's section 5 (report.js under 12 KB, vanilla, progressive enhancement, the CSP line and its assume: about meta CSP on file://), section 6 (global controls: combo legend toggles with aria-pressed, the last visible combo refused with aria-disabled, the pack switch both/on/off with a missing setting aria-disabled, filter state as classes on main), section 7 (popover behaviour: click, Enter or Space opens; focus or hover shows; Esc closes and returns focus) and section 12 (UIA-1, UIA-8, UIA-14, UXA-5; the browser ring runs Playwright plus a vendored axe-core at readiness, against HTML generated from fixtures) give the behaviour and tests; R-81 DR-R-9 and its condition 6: playwright becomes a pinned dev dependency, axe-core is vendored and pinned under tests/vendor/ with its MPL-2.0 licence and its sha256 recorded beside the licence, a browser pytest marker ring runs at readiness, playwright install runs only in the readiness ring and never in the offline gate, and the Security & Identity Architect reviews both dependencies before merge.\nDone when: report/assets/report.js exists, under 12 KB, vanilla with no import, loaded as the page's one inline script whose sha256 is the CSP's script-src (html.render passes it through model.page); without the script every table, details element and link still works; the script implements sort (sort buttons in the leaderboard column headers), the combo legend toggles (aria-pressed; hiding the last visible combo is refused with aria-disabled and an aria-describedby that resolves to visible text), the pack switch (both/on/off; a setting the run lacks is aria-disabled with the section 6 reason), the evidence popovers (section 7's open, show, Esc-close and focus-return rules), the Runs filter (task, combo, pack, outcome, validity; the no-match copy \"No cells match this filter.\"), and the leaderboard's Show cells link filtering Runs by its row's combo and pack; the markup the script needs (the legend, the switch, the filter controls, the sort buttons) is rendered by html_builder.el in report/html.py; playwright is a pinned dev dependency in pyproject.toml and uv.lock, axe-core is vendored at a pinned version under tests/vendor/ with its licence file and a sha256 line beside it, the browser marker is registered, excluded from the default ring and from CI's selector exactly as slow, gate, workstation and credentials are, and tests/test_ci_selector or its equivalent still passes; test_keyboard_path (UIA-8) and test_offline_zero_requests (UIA-1: the report-ready mark fired, zero network requests, zero console errors, and the section ids the page renders all present) are browser-ring tests, each committed red first failing on an assertion, then green, run with uv run pytest -m browser; a unit test pins the CSP script hash to the script bytes, red first; named mutants for the CSP script hash and one keyboard or ARIA branch in tests/mutations/report.json, each killed (uv run python tools/mutate_check.py --touched main); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes and never launches a browser; uv run ruff check src tests tools is clean; the report says exactly which commands installed what (uv add, playwright install) so the Leader can convene the Security & Identity review; Commit each red and each green immediately.\nNot in scope: the charts (R5, R6) and their toggling beyond the markup that exists today; axe WCAG runs in light and dark (UIA-2), the 320 px check (UIA-3) and the 576-cell performance test (R9); summaries (R7, R8); editing the pack effect or comparison renderers (R5 runs in parallel and owns _pack_effect and _comparison); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 60 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-report.md (sections 5, 6, 7, 11, 12, 13); docs/design/mockups/phase4-report.html (the reference script behaviour and markup); docs/notes/rulings.md R-81; src/harness_bench/report/{html,html_builder,model}.py; pyproject.toml ([tool.pytest.ini_options] markers and addopts); .github/workflows/ci.yml (the marker selector); tests/test_report.py; tests/test_report_builder.py; tests/mutations/report.json. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-r4 (use absolute paths or cd into it in each shell command).\nTrace\n| clause | trace |\n|---|---|\n| done_when: report/assets/report.js exists, under 12 KB, vanilla with no import, loaded as the page's one inline script whose sha256 is the CSP's script-src (html.render passes it through model.page) | phrase: report/assets/report.js exists, under 12 KB, vanilla with no import, loaded as the page's one inline script whose sha256 is the CSP's script-src (html.render passes it through model.page) |\n| done_when: without the script every table, details element and link still works | phrase: without the script every table, details element and link still works |\n| done_when: the script implements sort (sort buttons in the leaderboard column headers), the combo legend toggles (aria-pressed | phrase: the script implements sort (sort buttons in the leaderboard column headers), the combo legend toggles (aria-pressed |\n| done_when: hiding the last visible combo is refused with aria-disabled and an aria-describedby that resolves to visible text), the pack switch (both/on/off | phrase: hiding the last visible combo is refused with aria-disabled and an aria-describedby that resolves to visible text), the pack switch (both/on/off |\n| done_when: a setting the run lacks is aria-disabled with the section 6 reason), the evidence popovers (section 7's open, show, Esc-close and focus-return rules), the Runs filter (task, combo, pack, outcome, validity | phrase: a setting the run lacks is aria-disabled with the section 6 reason), the evidence popovers (section 7's open, show, Esc-close and focus-return rules), the Runs filter (task, combo, pack, outcome, validity |\n| done_when: the no-match copy \"No cells match this filter.\"), and the leaderboard's Show cells link filtering Runs by its row's combo and pack | phrase: the no-match copy \"No cells match this filter.\"), and the leaderboard's Show cells link filtering Runs by its row's combo and pack |\n| done_when: the markup the script needs (the legend, the switch, the filter controls, the sort buttons) is rendered by html_builder.el in report/html.py | phrase: the markup the script needs (the legend, the switch, the filter controls, the sort buttons) is rendered by html_builder.el in report/html.py |\n| done_when: playwright is a pinned dev dependency in pyproject.toml and uv.lock, axe-core is vendored at a pinned version under tests/vendor/ with its licence file and a sha256 line beside it, the browser marker is registered, excluded from the default ring and from CI's selector exactly as slow, gate, workstation and credentials are, and tests/test_ci_selector or its equivalent still passes | phrase: playwright is a pinned dev dependency in pyproject.toml and uv.lock, axe-core is vendored at a pinned version under tests/vendor/ with its licence file and a sha256 line beside it, the browser marker is registered, excluded from the default ring and from CI's selector exactly as slow, gate, workstation and credentials are, and tests/test_ci_selector or its equivalent still passes |\n| done_when: test_keyboard_path (UIA-8) and test_offline_zero_requests (UIA-1: the report-ready mark fired, zero network requests, zero console errors, and the section ids the page renders all present) are browser-ring tests, each committed red first failing on an assertion, then green, run with uv run pytest -m browser | phrase: test_keyboard_path (UIA-8) and test_offline_zero_requests (UIA-1: the report-ready mark fired, zero network requests, zero console errors, and the section ids the page renders all present) are browser-ring tests, each committed red first failing on an assertion, then green, run with uv run pytest -m browser |\n| done_when: a unit test pins the CSP script hash to the script bytes, red first | phrase: a unit test pins the CSP script hash to the script bytes, red first |\n| done_when: named mutants for the CSP script hash and one keyboard or ARIA branch in tests/mutations/report.json, each killed (uv run python tools/mutate_check.py --touched main) | phrase: named mutants for the CSP script hash and one keyboard or ARIA branch in tests/mutations/report.json, each killed (uv run python tools/mutate_check.py --touched main) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes and never launches a browser | phrase: uv run pytest -q -p no:cacheprovider -n auto passes and never launches a browser |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: the report says exactly which commands installed what (uv add, playwright install) so the Leader can convene the Security & Identity review | phrase: the report says exactly which commands installed what (uv add, playwright install) so the Leader can convene the Security & Identity review |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: the charts (R5, R6) and their toggling beyond the markup that exists today | phrase: the charts (R5, R6) and their toggling beyond the markup that exists today |\n| not_in_scope: axe WCAG runs in light and dark (UIA-2), the 320 px check (UIA-3) and the 576-cell performance test (R9) | phrase: axe WCAG runs in light and dark (UIA-2), the 320 px check (UIA-3) and the 576-cell performance test (R9) |\n| not_in_scope: summaries (R7, R8) | phrase: summaries (R7, R8) |\n| not_in_scope: editing the pack effect or comparison renderers (R5 runs in parallel and owns _pack_effect and _comparison) | phrase: editing the pack effect or comparison renderers (R5 runs in parallel and owns _pack_effect and _comparison) |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- docs/design/phase4-report.md: docs/design/phase4-report.md sha256 01d38b34f80229ea604d98d88f144d5e36865e71a67d97616bea7c4ce8eea470\n- report/assets/report.js: unresolved (not found; nearest: tests/mutations/report.json)\n- report/html_builder.csp_meta: unresolved (not found)\n- report.js: unresolved (not found; nearest: tests/mutations/report.json)\n- file://: unresolved (not found)\n- both/on/off: unresolved (not found)\n- tests/vendor/: unresolved (not found)\n- report/html.py: src/harness_bench/report/html.py sha256 0741995e2c7008d0e2173332cecf1342fa68d19855017e56772b237032f45fcf\n- tests/test_ci_selector: unresolved (not found)\n- tests/mutations/report.json: tests/mutations/report.json sha256 2f9fea01719d6ee57b5e64c0f317b8090c975fadb14d41a16c06528a67f3d269\n- tools/mutate_check.py: tools/mutate_check.py sha256 d376e98dfc678013d439ff6bb229042d1e3830d9f78fbdda331dfcaba42e8811\n- runs/: unresolved (not found)\n- docs/design/mockups/phase4-report.html: docs/design/mockups/phase4-report.html sha256 030de33b610812f1c1db034699a4811fe9b0ee2cf7a54dfad09d6c1a3e4f36bc\n- docs/notes/rulings.md: unresolved (ambiguous: 3 matches)\n- src/harness_bench/report/{html,html_builder,model}.py: unresolved (not found)\n- .github/workflows/ci.yml: unresolved (not found; nearest: .github/workflows/ci.yml)\n- tests/test_report.py: tests/test_report.py sha256 41bd96ec4a7ef6e7da491c79c71d4a47f3ab8982c12433374d5d948d921d19ba\n- tests/test_report_builder.py: tests/test_report_builder.py sha256 72adb9203f7ed611c1a903634eec6c2cfcfb9da19526ba9d77f5dabc1854051e\n- C:/Projects/x-harness-x-model-bench-w4-r4: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3MT8M7FHEQ2TKS9DZSE45JX\nraw sha256: a6fcbddd54fc4c14e318b4b9b431967f708edeafa6c45b29867929c88c18c8a1\ncompiler model: claude-opus-5-5\nengine seconds: 0.007\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3MT8M7FHEQ2TKS9DZSE45JX for claude-code v1: 22 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "report/assets/report.js exists, under 12 KB, vanilla with no import, loaded as the page's one inline script whose sha256 is the CSP's script-src (html.render passes it through model.page)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "report/assets/report.js exists, under 12 KB, vanilla with no import, loaded as the page's one inline script whose sha256 is the CSP's script-src (html.render passes it through model.page)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "without the script every table, details element and link still works",
+            "trace": {
+              "kind": "phrase",
+              "ref": "without the script every table, details element and link still works"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the script implements sort (sort buttons in the leaderboard column headers), the combo legend toggles (aria-pressed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the script implements sort (sort buttons in the leaderboard column headers), the combo legend toggles (aria-pressed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "hiding the last visible combo is refused with aria-disabled and an aria-describedby that resolves to visible text), the pack switch (both/on/off",
+            "trace": {
+              "kind": "phrase",
+              "ref": "hiding the last visible combo is refused with aria-disabled and an aria-describedby that resolves to visible text), the pack switch (both/on/off"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a setting the run lacks is aria-disabled with the section 6 reason), the evidence popovers (section 7's open, show, Esc-close and focus-return rules), the Runs filter (task, combo, pack, outcome, validity",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a setting the run lacks is aria-disabled with the section 6 reason), the evidence popovers (section 7's open, show, Esc-close and focus-return rules), the Runs filter (task, combo, pack, outcome, validity"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the no-match copy \"No cells match this filter.\"), and the leaderboard's Show cells link filtering Runs by its row's combo and pack",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the no-match copy \"No cells match this filter.\"), and the leaderboard's Show cells link filtering Runs by its row's combo and pack"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the markup the script needs (the legend, the switch, the filter controls, the sort buttons) is rendered by html_builder.el in report/html.py",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the markup the script needs (the legend, the switch, the filter controls, the sort buttons) is rendered by html_builder.el in report/html.py"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "playwright is a pinned dev dependency in pyproject.toml and uv.lock, axe-core is vendored at a pinned version under tests/vendor/ with its licence file and a sha256 line beside it, the browser marker is registered, excluded from the default ring and from CI's selector exactly as slow, gate, workstation and credentials are, and tests/test_ci_selector or its equivalent still passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "playwright is a pinned dev dependency in pyproject.toml and uv.lock, axe-core is vendored at a pinned version under tests/vendor/ with its licence file and a sha256 line beside it, the browser marker is registered, excluded from the default ring and from CI's selector exactly as slow, gate, workstation and credentials are, and tests/test_ci_selector or its equivalent still passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "test_keyboard_path (UIA-8) and test_offline_zero_requests (UIA-1: the report-ready mark fired, zero network requests, zero console errors, and the section ids the page renders all present) are browser-ring tests, each committed red first failing on an assertion, then green, run with uv run pytest -m browser",
+            "trace": {
+              "kind": "phrase",
+              "ref": "test_keyboard_path (UIA-8) and test_offline_zero_requests (UIA-1: the report-ready mark fired, zero network requests, zero console errors, and the section ids the page renders all present) are browser-ring tests, each committed red first failing on an assertion, then green, run with uv run pytest -m browser"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a unit test pins the CSP script hash to the script bytes, red first",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a unit test pins the CSP script hash to the script bytes, red first"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "named mutants for the CSP script hash and one keyboard or ARIA branch in tests/mutations/report.json, each killed (uv run python tools/mutate_check.py --touched main)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "named mutants for the CSP script hash and one keyboard or ARIA branch in tests/mutations/report.json, each killed (uv run python tools/mutate_check.py --touched main)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider -n auto passes and never launches a browser",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider -n auto passes and never launches a browser"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the report says exactly which commands installed what (uv add, playwright install) so the Leader can convene the Security & Identity review",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the report says exactly which commands installed what (uv add, playwright install) so the Leader can convene the Security & Identity review"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the charts (R5, R6) and their toggling beyond the markup that exists today",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the charts (R5, R6) and their toggling beyond the markup that exists today"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "axe WCAG runs in light and dark (UIA-2), the 320 px check (UIA-3) and the 576-cell performance test (R9)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "axe WCAG runs in light and dark (UIA-2), the 320 px check (UIA-3) and the 576-cell performance test (R9)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "summaries (R7, R8)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "summaries (R7, R8)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "editing the pack effect or comparison renderers (R5 runs in parallel and owns _pack_effect and _comparison)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "editing the pack effect or comparison renderers (R5 runs in parallel and owns _pack_effect and _comparison)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "report/assets/report.js exists, under 12 KB, vanilla with no import, loaded as the page's one inline script whose sha256 is the CSP's script-src (html.render passes it through model.page)",
+            "without the script every table, details element and link still works",
+            "the script implements sort (sort buttons in the leaderboard column headers), the combo legend toggles (aria-pressed",
+            "hiding the last visible combo is refused with aria-disabled and an aria-describedby that resolves to visible text), the pack switch (both/on/off",
+            "a setting the run lacks is aria-disabled with the section 6 reason), the evidence popovers (section 7's open, show, Esc-close and focus-return rules), the Runs filter (task, combo, pack, outcome, validity",
+            "the no-match copy \"No cells match this filter.\"), and the leaderboard's Show cells link filtering Runs by its row's combo and pack",
+            "the markup the script needs (the legend, the switch, the filter controls, the sort buttons) is rendered by html_builder.el in report/html.py",
+            "playwright is a pinned dev dependency in pyproject.toml and uv.lock, axe-core is vendored at a pinned version under tests/vendor/ with its licence file and a sha256 line beside it, the browser marker is registered, excluded from the default ring and from CI's selector exactly as slow, gate, workstation and credentials are, and tests/test_ci_selector or its equivalent still passes",
+            "test_keyboard_path (UIA-8) and test_offline_zero_requests (UIA-1: the report-ready mark fired, zero network requests, zero console errors, and the section ids the page renders all present) are browser-ring tests, each committed red first failing on an assertion, then green, run with uv run pytest -m browser",
+            "a unit test pins the CSP script hash to the script bytes, red first",
+            "named mutants for the CSP script hash and one keyboard or ARIA branch in tests/mutations/report.json, each killed (uv run python tools/mutate_check.py --touched main)",
+            "a test earns its place by a failure only it catches",
+            "uv run pytest -q -p no:cacheprovider -n auto passes and never launches a browser",
+            "uv run ruff check src tests tools is clean",
+            "the report says exactly which commands installed what (uv add, playwright install) so the Leader can convene the Security & Identity review",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "implement report slice R4 of docs/design/phase4-report.md (section 15, the R4 row): report/assets/report.js (sort, combo toggles, pack switch, popovers, Runs filter) hashed into the CSP, and the browser ring set up under ruling R-81 DR-R-9, red first. Measured (Leader, 2026-09-28, main eb2e71a): R0-R3 are merged; the page shell's CSP has script-src 'none' because no script exists yet (report/html_builder.csp_meta takes script_text; model.page takes script); the leaderboard and Runs markup carry button.ev triggers with hidden popover siblings, #cell-<id> rows and inline details cell cards (R3), and the leaderboard popovers' \"Show cells\" link points at #runs under an assume: that R4 makes it filter Runs by the row's combo and pack; the design's section 5 (report.js under 12 KB, vanilla, progressive enhancement, the CSP line and its assume: about meta CSP on file://), section 6 (global controls: combo legend toggles with aria-pressed, the last visible combo refused with aria-disabled, the pack switch both/on/off with a missing setting aria-disabled, filter state as classes on main), section 7 (popover behaviour: click, Enter or Space opens; focus or hover shows; Esc closes and returns focus) and section 12 (UIA-1, UIA-8, UIA-14, UXA-5; the browser ring runs Playwright plus a vendored axe-core at readiness, against HTML generated from fixtures) give the behaviour and tests; R-81 DR-R-9 and its condition 6: playwright becomes a pinned dev dependency, axe-core is vendored and pinned under tests/vendor/ with its MPL-2.0 licence and its sha256 recorded beside the licence, a browser pytest marker ring runs at readiness, playwright install runs only in the readiness ring and never in the offline gate, and the Security & Identity Architect reviews both dependencies before merge.",
+          "main_line_budget": "one slice of at most 60 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-report.md (sections 5, 6, 7, 11, 12, 13); docs/design/mockups/phase4-report.html (the reference script behaviour and markup); docs/notes/rulings.md R-81; src/harness_bench/report/{html,html_builder,model}.py; pyproject.toml ([tool.pytest.ini_options] markers and addopts); .github/workflows/ci.yml (the marker selector); tests/test_report.py; tests/test_report_builder.py; tests/mutations/report.json. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-r4 (use absolute paths or cd into it in each shell command).",
+          "not_in_scope": [
+            "the charts (R5, R6) and their toggling beyond the markup that exists today",
+            "axe WCAG runs in light and dark (UIA-2), the 320 px check (UIA-3) and the 576-cell performance test (R9)",
+            "summaries (R7, R8)",
+            "editing the pack effect or comparison renderers (R5 runs in parallel and owns _pack_effect and _comparison)",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.007,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3MT8M7FHEQ2TKS9DZSE45JX",
+        "raw_sha256": "a6fcbddd54fc4c14e318b4b9b431967f708edeafa6c45b29867929c88c18c8a1",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": "docs/design/phase4-report.md",
+            "reason": null,
+            "sha256": "01d38b34f80229ea604d98d88f144d5e36865e71a67d97616bea7c4ce8eea470",
+            "status": "resolved",
+            "token": "docs/design/phase4-report.md"
+          },
+          {
+            "nearest": "tests/mutations/report.json",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/assets/report.js"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/html_builder.csp_meta"
+          },
+          {
+            "nearest": "tests/mutations/report.json",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report.js"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "file://"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "both/on/off"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/vendor/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/html.py",
+            "reason": null,
+            "sha256": "0741995e2c7008d0e2173332cecf1342fa68d19855017e56772b237032f45fcf",
+            "status": "resolved",
+            "token": "report/html.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_ci_selector"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/report.json",
+            "reason": null,
+            "sha256": "2f9fea01719d6ee57b5e64c0f317b8090c975fadb14d41a16c06528a67f3d269",
+            "status": "resolved",
+            "token": "tests/mutations/report.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "d376e98dfc678013d439ff6bb229042d1e3830d9f78fbdda331dfcaba42e8811",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/mockups/phase4-report.html",
+            "reason": null,
+            "sha256": "030de33b610812f1c1db034699a4811fe9b0ee2cf7a54dfad09d6c1a3e4f36bc",
+            "status": "resolved",
+            "token": "docs/design/mockups/phase4-report.html"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/report/{html,html_builder,model}.py"
+          },
+          {
+            "nearest": ".github/workflows/ci.yml",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".github/workflows/ci.yml"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_report.py",
+            "reason": null,
+            "sha256": "41bd96ec4a7ef6e7da491c79c71d4a47f3ab8982c12433374d5d948d921d19ba",
+            "status": "resolved",
+            "token": "tests/test_report.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_report_builder.py",
+            "reason": null,
+            "sha256": "72adb9203f7ed611c1a903634eec6c2cfcfb9da19526ba9d77f5dabc1854051e",
+            "status": "resolved",
+            "token": "tests/test_report_builder.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/x-harness-x-model-bench-w4-r4"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3MT8RBB2D9HFTHZ0B82A0VC",
+      "shortname": "Goal: implement report slice R5 of docs/design/phase4-report.md (section…",
+      "datetime": "2026-09-28T20:10:59Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: implement report slice R5 of docs/design/phase4-report.md (section 15, the R5 row): the Pack effect and Comparison sections as dot-and-whisker charts on a shared zero line, each with its table alternative, built on report/html_builder.el, red first.\nMeasured (Leader, 2026-09-28, main eb2e71a): R0-R3 are merged; board.build gives Board.pack_effect (rows with delta intervals, labels and reasons, the one-arm reason `not computed (no <area> score in pack=<arm>)`, the exclusion line) and board.compare gives the Comparison; report/html.py still renders _pack_effect and _comparison as f-strings wrapped by trusted() at the render seam (the only two sections left there); the design's section 6 rows 4 and 11 give the content and states (the dot takes --div-pos or --div-neg by sign, or --ink-2 when the interval crosses 0 and is then labelled `no detectable effect (interval crosses 0)`; the exclusion line always shows; one pack setting: `This run has one pack setting; no effect to show.`; comparison refused: `Runs not comparable: <each difference>`; replication: `same pack revision (<n>): a replication`; not requested: section and index entry absent), section 3 gives the tokens (--div-pos/--div-neg are the PuOr ends; --heat-0..9 are the viridis stops), and section 12 gives UIA-5 (every effect and delta element, SVG marks included, carries data-interval-* or a reason, never 0 for missing), UIA-6 (palette source scan) and UIA-13 (chart equals table); R1 wrote five interior heat tokens as linear interpolations under an assume: in report/html.py STYLE that UIA-6 must now settle.\nDone when: _pack_effect and _comparison are rebuilt on html_builder.el with section 6 rows 4 and 11 and every listed state, each chart an inline SVG of one mark per (combo, measure) whose data-interval-lo/hi/point attributes equal its table row's values, with the table alternative below it; the trusted() calls for both sections are removed from render(), so no section is trusted()-marked at the seam; test_crossing_zero_uses_neutral_mark_and_label (a delta whose interval crosses 0 draws the --ink-2 mark and the exact label, and a positive and a negative delta take --div-pos and --div-neg) and the UIA-6 palette scan (the --heat-0..9 tokens equal the ten viridis stops, the diverging tokens are the PuOr ends of section 3, and no jet, rainbow or red-green pair appears in report/ source) are each committed red first, failing on an assertion (not an import or collection error), then green; the viridis stops are the published ten-stop sampling (#440154 #482878 #3e4989 #31688e #26828e #1f9e89 #35b779 #6ece58 #b5de2b #fde725 is the Leader's Inferred list: check it against a published viridis table if one is reachable, cite the source in a comment, else keep an assume: naming what would confirm it), which retires R1's interpolation assume:; a UIA-13 unit check that each chart's marks equal its table's cells is added only if no existing test already proves it; every existing report, board and injection test stays green and report-record.json's report_sha256 still matches; named mutants for the neutral-mark branch and the sign-to-token mapping in tests/mutations/report.json, each killed (uv run python tools/mutate_check.py --touched main); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: report.js and every behaviour (R4 runs in parallel and owns report/assets/, the legend, the pack switch, sort, popovers and filters: edit only _pack_effect, _comparison, their helpers and new functions, and the STYLE heat and chart rules); the cost frontier, areas, scenarios and context-growth charts (R6); summaries (R7, R8); board.py changes (any export change needs EXPORT_VERSION and a Leader-written board_exports row: if you find one is needed, stop and report it); any dependency addition; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/phase4-report.md (sections 3, 5, 6 rows 4 and 11, 9, 12, 13); docs/design/mockups/phase4-report.html (the whisker grammar and its markup); docs/design/phase4-statistics.md (the pack effect and comparison semantics); src/harness_bench/board.py (PackEffect, PackEffectRow, Comparison, Interval); src/harness_bench/report/{html,html_builder,model}.py; tests/test_report.py; tests/test_report_builder.py; tests/mutations/report.json. Use python, not python3 (Windows).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3MT8WXHAGJ50EYE1FHGHSN2",
+      "shortname": "compile-Goal: implement report slice R5 of docs/design/phase4-report.md (section…",
+      "datetime": "2026-09-28T20:11:03Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement report slice R5 of docs/design/phase4-report.md (section 15, the R5 row): the Pack effect and Comparison sections as dot-and-whisker charts on a shared zero line, each with its table alternative, built on report/html_builder.el, red first. Measured (Leader, 2026-09-28, main eb2e71a): R0-R3 are merged; board.build gives Board.pack_effect (rows with delta intervals, labels and reasons, the one-arm reason `not computed (no <area> score in pack=<arm>)`, the exclusion line) and board.compare gives the Comparison; report/html.py still renders _pack_effect and _comparison as f-strings wrapped by trusted() at the render seam (the only two sections left there); the design's section 6 rows 4 and 11 give the content and states (the dot takes --div-pos or --div-neg by sign, or --ink-2 when the interval crosses 0 and is then labelled `no detectable effect (interval crosses 0)`; the exclusion line always shows; one pack setting: `This run has one pack setting; no effect to show.`; comparison refused: `Runs not comparable: <each difference>`; replication: `same pack revision (<n>): a replication`; not requested: section and index entry absent), section 3 gives the tokens (--div-pos/--div-neg are the PuOr ends; --heat-0..9 are the viridis stops), and section 12 gives UIA-5 (every effect and delta element, SVG marks included, carries data-interval-* or a reason, never 0 for missing), UIA-6 (palette source scan) and UIA-13 (chart equals table); R1 wrote five interior heat tokens as linear interpolations under an assume: in report/html.py STYLE that UIA-6 must now settle.\nDone when: _pack_effect and _comparison are rebuilt on html_builder.el with section 6 rows 4 and 11 and every listed state, each chart an inline SVG of one mark per (combo, measure) whose data-interval-lo/hi/point attributes equal its table row's values, with the table alternative below it; the trusted() calls for both sections are removed from render(), so no section is trusted()-marked at the seam; test_crossing_zero_uses_neutral_mark_and_label (a delta whose interval crosses 0 draws the --ink-2 mark and the exact label, and a positive and a negative delta take --div-pos and --div-neg) and the UIA-6 palette scan (the --heat-0..9 tokens equal the ten viridis stops, the diverging tokens are the PuOr ends of section 3, and no jet, rainbow or red-green pair appears in report/ source) are each committed red first, failing on an assertion (not an import or collection error), then green; the viridis stops are the published ten-stop sampling (#440154 #482878 #3e4989 #31688e #26828e #1f9e89 #35b779 #6ece58 #b5de2b #fde725 is the Leader's Inferred list: check it against a published viridis table if one is reachable, cite the source in a comment, else keep an assume: naming what would confirm it), which retires R1's interpolation assume:; a UIA-13 unit check that each chart's marks equal its table's cells is added only if no existing test already proves it; every existing report, board and injection test stays green and report-record.json's report_sha256 still matches; named mutants for the neutral-mark branch and the sign-to-token mapping in tests/mutations/report.json, each killed (uv run python tools/mutate_check.py --touched main); a test earns its place by a failure only it catches; uv run pytest -q -p no:cacheprovider -n auto passes; uv run ruff check src tests tools is clean; Commit each red and each green immediately.\nNot in scope: report.js and every behaviour (R4 runs in parallel and owns report/assets/, the legend, the pack switch, sort, popovers and filters: edit only _pack_effect, _comparison, their helpers and new functions, and the STYLE heat and chart rules); the cost frontier, areas, scenarios and context-growth charts (R6); summaries (R7, R8); board.py changes (any export change needs EXPORT_VERSION and a Leader-written board_exports row: if you find one is needed, stop and report it); any dependency addition; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-report.md (sections 3, 5, 6 rows 4 and 11, 9, 12, 13); docs/design/mockups/phase4-report.html (the whisker grammar and its markup); docs/design/phase4-statistics.md (the pack effect and comparison semantics); src/harness_bench/board.py (PackEffect, PackEffectRow, Comparison, Interval); src/harness_bench/report/{html,html_builder,model}.py; tests/test_report.py; tests/test_report_builder.py; tests/mutations/report.json. Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: _pack_effect and _comparison are rebuilt on html_builder.el with section 6 rows 4 and 11 and every listed state, each chart an inline SVG of one mark per (combo, measure) whose data-interval-lo/hi/point attributes equal its table row's values, with the table alternative below it | phrase: _pack_effect and _comparison are rebuilt on html_builder.el with section 6 rows 4 and 11 and every listed state, each chart an inline SVG of one mark per (combo, measure) whose data-interval-lo/hi/point attributes equal its table row's values, with the table alternative below it |\n| done_when: the trusted() calls for both sections are removed from render(), so no section is trusted()-marked at the seam | phrase: the trusted() calls for both sections are removed from render(), so no section is trusted()-marked at the seam |\n| done_when: test_crossing_zero_uses_neutral_mark_and_label (a delta whose interval crosses 0 draws the --ink-2 mark and the exact label, and a positive and a negative delta take --div-pos and --div-neg) and the UIA-6 palette scan (the --heat-0..9 tokens equal the ten viridis stops, the diverging tokens are the PuOr ends of section 3, and no jet, rainbow or red-green pair appears in report/ source) are each committed red first, failing on an assertion (not an import or collection error), then green | phrase: test_crossing_zero_uses_neutral_mark_and_label (a delta whose interval crosses 0 draws the --ink-2 mark and the exact label, and a positive and a negative delta take --div-pos and --div-neg) and the UIA-6 palette scan (the --heat-0..9 tokens equal the ten viridis stops, the diverging tokens are the PuOr ends of section 3, and no jet, rainbow or red-green pair appears in report/ source) are each committed red first, failing on an assertion (not an import or collection error), then green |\n| done_when: the viridis stops are the published ten-stop sampling (#440154 #482878 #3e4989 #31688e #26828e #1f9e89 #35b779 #6ece58 #b5de2b #fde725 is the Leader's Inferred list: check it against a published viridis table if one is reachable, cite the source in a comment, else keep an assume: naming what would confirm it), which retires R1's interpolation assume: | phrase: the viridis stops are the published ten-stop sampling (#440154 #482878 #3e4989 #31688e #26828e #1f9e89 #35b779 #6ece58 #b5de2b #fde725 is the Leader's Inferred list: check it against a published viridis table if one is reachable, cite the source in a comment, else keep an assume: naming what would confirm it), which retires R1's interpolation assume: |\n| done_when: a UIA-13 unit check that each chart's marks equal its table's cells is added only if no existing test already proves it | phrase: a UIA-13 unit check that each chart's marks equal its table's cells is added only if no existing test already proves it |\n| done_when: every existing report, board and injection test stays green and report-record.json's report_sha256 still matches | phrase: every existing report, board and injection test stays green and report-record.json's report_sha256 still matches |\n| done_when: named mutants for the neutral-mark branch and the sign-to-token mapping in tests/mutations/report.json, each killed (uv run python tools/mutate_check.py --touched main) | phrase: named mutants for the neutral-mark branch and the sign-to-token mapping in tests/mutations/report.json, each killed (uv run python tools/mutate_check.py --touched main) |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes | phrase: uv run pytest -q -p no:cacheprovider -n auto passes |\n| done_when: uv run ruff check src tests tools is clean | phrase: uv run ruff check src tests tools is clean |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: report.js and every behaviour (R4 runs in parallel and owns report/assets/, the legend, the pack switch, sort, popovers and filters: edit only _pack_effect, _comparison, their helpers and new functions, and the STYLE heat and chart rules) | phrase: report.js and every behaviour (R4 runs in parallel and owns report/assets/, the legend, the pack switch, sort, popovers and filters: edit only _pack_effect, _comparison, their helpers and new functions, and the STYLE heat and chart rules) |\n| not_in_scope: the cost frontier, areas, scenarios and context-growth charts (R6) | phrase: the cost frontier, areas, scenarios and context-growth charts (R6) |\n| not_in_scope: summaries (R7, R8) | phrase: summaries (R7, R8) |\n| not_in_scope: board.py changes (any export change needs EXPORT_VERSION and a Leader-written board_exports row: if you find one is needed, stop and report it) | phrase: board.py changes (any export change needs EXPORT_VERSION and a Leader-written board_exports row: if you find one is needed, stop and report it) |\n| not_in_scope: any dependency addition | phrase: any dependency addition |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- not computed (no <area> score in pack=<arm: unresolved (not found)\n- no detectable effect (interval crosses 0: unresolved (not found)\n- This run has one pack setting; no effect to show: unresolved (not found)\n- Runs not comparable: <each difference: unresolved (not found)\n- same pack revision (<n>): a replication: unresolved (not found)\n- docs/design/phase4-report.md: docs/design/phase4-report.md sha256 01d38b34f80229ea604d98d88f144d5e36865e71a67d97616bea7c4ce8eea470\n- report/html_builder.el: unresolved (not found; nearest: src/harness_bench/report/html_builder.py)\n- report/html.py: src/harness_bench/report/html.py sha256 0741995e2c7008d0e2173332cecf1342fa68d19855017e56772b237032f45fcf\n- --div-pos/--div-neg: unresolved (not found)\n- data-interval-lo/hi/point: unresolved (not found)\n- report/: unresolved (not found)\n- tests/mutations/report.json: tests/mutations/report.json sha256 2f9fea01719d6ee57b5e64c0f317b8090c975fadb14d41a16c06528a67f3d269\n- tools/mutate_check.py: tools/mutate_check.py sha256 d376e98dfc678013d439ff6bb229042d1e3830d9f78fbdda331dfcaba42e8811\n- report.js: unresolved (not found; nearest: tests/mutations/report.json)\n- report/assets/: unresolved (not found)\n- board.py: src/harness_bench/board.py sha256 0ebe33e2361e4024102cde09ce369285997aa7804166aadbad3204b0c33aac8f\n- runs/: unresolved (not found)\n- docs/design/mockups/phase4-report.html: docs/design/mockups/phase4-report.html sha256 030de33b610812f1c1db034699a4811fe9b0ee2cf7a54dfad09d6c1a3e4f36bc\n- docs/design/phase4-statistics.md: docs/design/phase4-statistics.md sha256 628acd92a45d75f6450e391cd74d6b4186188edcb733177950f318b80824889a\n- src/harness_bench/board.py: src/harness_bench/board.py sha256 0ebe33e2361e4024102cde09ce369285997aa7804166aadbad3204b0c33aac8f\n- src/harness_bench/report/{html,html_builder,model}.py: unresolved (not found)\n- tests/test_report.py: tests/test_report.py sha256 41bd96ec4a7ef6e7da491c79c71d4a47f3ab8982c12433374d5d948d921d19ba\n- tests/test_report_builder.py: tests/test_report_builder.py sha256 72adb9203f7ed611c1a903634eec6c2cfcfb9da19526ba9d77f5dabc1854051e\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3MT8RBB2D9HFTHZ0B82A0VC\nraw sha256: 4140aeeed80e597f484caef3e401d0ee8bfb27fe6a804027300e6cb341a1cd3b\ncompiler model: claude-opus-5-5\nengine seconds: 0.007\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3MT8RBB2D9HFTHZ0B82A0VC for claude-code v1: 18 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "_pack_effect and _comparison are rebuilt on html_builder.el with section 6 rows 4 and 11 and every listed state, each chart an inline SVG of one mark per (combo, measure) whose data-interval-lo/hi/point attributes equal its table row's values, with the table alternative below it",
+            "trace": {
+              "kind": "phrase",
+              "ref": "_pack_effect and _comparison are rebuilt on html_builder.el with section 6 rows 4 and 11 and every listed state, each chart an inline SVG of one mark per (combo, measure) whose data-interval-lo/hi/point attributes equal its table row's values, with the table alternative below it"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the trusted() calls for both sections are removed from render(), so no section is trusted()-marked at the seam",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the trusted() calls for both sections are removed from render(), so no section is trusted()-marked at the seam"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "test_crossing_zero_uses_neutral_mark_and_label (a delta whose interval crosses 0 draws the --ink-2 mark and the exact label, and a positive and a negative delta take --div-pos and --div-neg) and the UIA-6 palette scan (the --heat-0..9 tokens equal the ten viridis stops, the diverging tokens are the PuOr ends of section 3, and no jet, rainbow or red-green pair appears in report/ source) are each committed red first, failing on an assertion (not an import or collection error), then green",
+            "trace": {
+              "kind": "phrase",
+              "ref": "test_crossing_zero_uses_neutral_mark_and_label (a delta whose interval crosses 0 draws the --ink-2 mark and the exact label, and a positive and a negative delta take --div-pos and --div-neg) and the UIA-6 palette scan (the --heat-0..9 tokens equal the ten viridis stops, the diverging tokens are the PuOr ends of section 3, and no jet, rainbow or red-green pair appears in report/ source) are each committed red first, failing on an assertion (not an import or collection error), then green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the viridis stops are the published ten-stop sampling (#440154 #482878 #3e4989 #31688e #26828e #1f9e89 #35b779 #6ece58 #b5de2b #fde725 is the Leader's Inferred list: check it against a published viridis table if one is reachable, cite the source in a comment, else keep an assume: naming what would confirm it), which retires R1's interpolation assume:",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the viridis stops are the published ten-stop sampling (#440154 #482878 #3e4989 #31688e #26828e #1f9e89 #35b779 #6ece58 #b5de2b #fde725 is the Leader's Inferred list: check it against a published viridis table if one is reachable, cite the source in a comment, else keep an assume: naming what would confirm it), which retires R1's interpolation assume:"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a UIA-13 unit check that each chart's marks equal its table's cells is added only if no existing test already proves it",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a UIA-13 unit check that each chart's marks equal its table's cells is added only if no existing test already proves it"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "every existing report, board and injection test stays green and report-record.json's report_sha256 still matches",
+            "trace": {
+              "kind": "phrase",
+              "ref": "every existing report, board and injection test stays green and report-record.json's report_sha256 still matches"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "named mutants for the neutral-mark branch and the sign-to-token mapping in tests/mutations/report.json, each killed (uv run python tools/mutate_check.py --touched main)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "named mutants for the neutral-mark branch and the sign-to-token mapping in tests/mutations/report.json, each killed (uv run python tools/mutate_check.py --touched main)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider -n auto passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider -n auto passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "report.js and every behaviour (R4 runs in parallel and owns report/assets/, the legend, the pack switch, sort, popovers and filters: edit only _pack_effect, _comparison, their helpers and new functions, and the STYLE heat and chart rules)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "report.js and every behaviour (R4 runs in parallel and owns report/assets/, the legend, the pack switch, sort, popovers and filters: edit only _pack_effect, _comparison, their helpers and new functions, and the STYLE heat and chart rules)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the cost frontier, areas, scenarios and context-growth charts (R6)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the cost frontier, areas, scenarios and context-growth charts (R6)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "summaries (R7, R8)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "summaries (R7, R8)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "board.py changes (any export change needs EXPORT_VERSION and a Leader-written board_exports row: if you find one is needed, stop and report it)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "board.py changes (any export change needs EXPORT_VERSION and a Leader-written board_exports row: if you find one is needed, stop and report it)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any dependency addition",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any dependency addition"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "_pack_effect and _comparison are rebuilt on html_builder.el with section 6 rows 4 and 11 and every listed state, each chart an inline SVG of one mark per (combo, measure) whose data-interval-lo/hi/point attributes equal its table row's values, with the table alternative below it",
+            "the trusted() calls for both sections are removed from render(), so no section is trusted()-marked at the seam",
+            "test_crossing_zero_uses_neutral_mark_and_label (a delta whose interval crosses 0 draws the --ink-2 mark and the exact label, and a positive and a negative delta take --div-pos and --div-neg) and the UIA-6 palette scan (the --heat-0..9 tokens equal the ten viridis stops, the diverging tokens are the PuOr ends of section 3, and no jet, rainbow or red-green pair appears in report/ source) are each committed red first, failing on an assertion (not an import or collection error), then green",
+            "the viridis stops are the published ten-stop sampling (#440154 #482878 #3e4989 #31688e #26828e #1f9e89 #35b779 #6ece58 #b5de2b #fde725 is the Leader's Inferred list: check it against a published viridis table if one is reachable, cite the source in a comment, else keep an assume: naming what would confirm it), which retires R1's interpolation assume:",
+            "a UIA-13 unit check that each chart's marks equal its table's cells is added only if no existing test already proves it",
+            "every existing report, board and injection test stays green and report-record.json's report_sha256 still matches",
+            "named mutants for the neutral-mark branch and the sign-to-token mapping in tests/mutations/report.json, each killed (uv run python tools/mutate_check.py --touched main)",
+            "a test earns its place by a failure only it catches",
+            "uv run pytest -q -p no:cacheprovider -n auto passes",
+            "uv run ruff check src tests tools is clean",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "implement report slice R5 of docs/design/phase4-report.md (section 15, the R5 row): the Pack effect and Comparison sections as dot-and-whisker charts on a shared zero line, each with its table alternative, built on report/html_builder.el, red first. Measured (Leader, 2026-09-28, main eb2e71a): R0-R3 are merged; board.build gives Board.pack_effect (rows with delta intervals, labels and reasons, the one-arm reason `not computed (no <area> score in pack=<arm>)`, the exclusion line) and board.compare gives the Comparison; report/html.py still renders _pack_effect and _comparison as f-strings wrapped by trusted() at the render seam (the only two sections left there); the design's section 6 rows 4 and 11 give the content and states (the dot takes --div-pos or --div-neg by sign, or --ink-2 when the interval crosses 0 and is then labelled `no detectable effect (interval crosses 0)`; the exclusion line always shows; one pack setting: `This run has one pack setting; no effect to show.`; comparison refused: `Runs not comparable: <each difference>`; replication: `same pack revision (<n>): a replication`; not requested: section and index entry absent), section 3 gives the tokens (--div-pos/--div-neg are the PuOr ends; --heat-0..9 are the viridis stops), and section 12 gives UIA-5 (every effect and delta element, SVG marks included, carries data-interval-* or a reason, never 0 for missing), UIA-6 (palette source scan) and UIA-13 (chart equals table); R1 wrote five interior heat tokens as linear interpolations under an assume: in report/html.py STYLE that UIA-6 must now settle.",
+          "main_line_budget": "one slice of at most 50 minutes; commit each red and each green immediately.\nGrounding: docs/design/phase4-report.md (sections 3, 5, 6 rows 4 and 11, 9, 12, 13); docs/design/mockups/phase4-report.html (the whisker grammar and its markup); docs/design/phase4-statistics.md (the pack effect and comparison semantics); src/harness_bench/board.py (PackEffect, PackEffectRow, Comparison, Interval); src/harness_bench/report/{html,html_builder,model}.py; tests/test_report.py; tests/test_report_builder.py; tests/mutations/report.json. Use python, not python3 (Windows).",
+          "not_in_scope": [
+            "report.js and every behaviour (R4 runs in parallel and owns report/assets/, the legend, the pack switch, sort, popovers and filters: edit only _pack_effect, _comparison, their helpers and new functions, and the STYLE heat and chart rules)",
+            "the cost frontier, areas, scenarios and context-growth charts (R6)",
+            "summaries (R7, R8)",
+            "board.py changes (any export change needs EXPORT_VERSION and a Leader-written board_exports row: if you find one is needed, stop and report it)",
+            "any dependency addition",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.007,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3MT8RBB2D9HFTHZ0B82A0VC",
+        "raw_sha256": "4140aeeed80e597f484caef3e401d0ee8bfb27fe6a804027300e6cb341a1cd3b",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "not computed (no <area> score in pack=<arm"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "no detectable effect (interval crosses 0"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "This run has one pack setting; no effect to show"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Runs not comparable: <each difference"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "same pack revision (<n>): a replication"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase4-report.md",
+            "reason": null,
+            "sha256": "01d38b34f80229ea604d98d88f144d5e36865e71a67d97616bea7c4ce8eea470",
+            "status": "resolved",
+            "token": "docs/design/phase4-report.md"
+          },
+          {
+            "nearest": "src/harness_bench/report/html_builder.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/html_builder.el"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/html.py",
+            "reason": null,
+            "sha256": "0741995e2c7008d0e2173332cecf1342fa68d19855017e56772b237032f45fcf",
+            "status": "resolved",
+            "token": "report/html.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--div-pos/--div-neg"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "data-interval-lo/hi/point"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/report.json",
+            "reason": null,
+            "sha256": "2f9fea01719d6ee57b5e64c0f317b8090c975fadb14d41a16c06528a67f3d269",
+            "status": "resolved",
+            "token": "tests/mutations/report.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "d376e98dfc678013d439ff6bb229042d1e3830d9f78fbdda331dfcaba42e8811",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": "tests/mutations/report.json",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report.js"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/assets/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/board.py",
+            "reason": null,
+            "sha256": "0ebe33e2361e4024102cde09ce369285997aa7804166aadbad3204b0c33aac8f",
+            "status": "resolved",
+            "token": "board.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/mockups/phase4-report.html",
+            "reason": null,
+            "sha256": "030de33b610812f1c1db034699a4811fe9b0ee2cf7a54dfad09d6c1a3e4f36bc",
+            "status": "resolved",
+            "token": "docs/design/mockups/phase4-report.html"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase4-statistics.md",
+            "reason": null,
+            "sha256": "628acd92a45d75f6450e391cd74d6b4186188edcb733177950f318b80824889a",
+            "status": "resolved",
+            "token": "docs/design/phase4-statistics.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/board.py",
+            "reason": null,
+            "sha256": "0ebe33e2361e4024102cde09ce369285997aa7804166aadbad3204b0c33aac8f",
+            "status": "resolved",
+            "token": "src/harness_bench/board.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/report/{html,html_builder,model}.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_report.py",
+            "reason": null,
+            "sha256": "41bd96ec4a7ef6e7da491c79c71d4a47f3ab8982c12433374d5d948d921d19ba",
+            "status": "resolved",
+            "token": "tests/test_report.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_report_builder.py",
+            "reason": null,
+            "sha256": "72adb9203f7ed611c1a903634eec6c2cfcfb9da19526ba9d77f5dabc1854051e",
+            "status": "resolved",
+            "token": "tests/test_report_builder.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
     }
   ],
   "changes": [
