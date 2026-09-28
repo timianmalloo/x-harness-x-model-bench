@@ -74,7 +74,7 @@
  {
   "name": "operator accepts an empty identifier",
   "file": "src/harness_bench/egress.py",
-  "find": "if not all(v.strip() for v in (self.email, self.username, self.home)):",
+  "find": "if not (self.username.strip() and self.home.strip()) or (self.email is not None and not self.email.strip()):",
   "replace": "if False:",
   "tests": [
    "tests/test_egress.py::test_the_operator_refuses_an_empty_identifier"
@@ -530,15 +530,6 @@
   "replace": "egress.check(\"\",",
   "tests": [
    "tests/test_injection_and_publication.py::test_a_hit_outside_every_section_writes_nothing"
-  ]
- },
- {
-  "name": "publication: no operator reads as scanned",
-  "file": "src/harness_bench/report/html.py",
-  "find": "return doc, {\"egress\": judges.NO_OPERATOR,",
-  "replace": "return doc, {\"egress\": \"scanned\",",
-  "tests": [
-   "tests/test_injection_and_publication.py::test_without_the_operators_identifiers_the_publication_scan_is_not_recorded"
   ]
  }
 ]

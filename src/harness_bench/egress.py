@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import base64
 import binascii
+import getpass
 import hashlib
 import html
 import re
@@ -28,6 +29,7 @@ import unicodedata
 import urllib.parse
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import TypeVar
 
 from harness_bench.report import html as report_html
@@ -99,16 +101,22 @@ class Verdict:
 
 @dataclass(frozen=True)
 class Operator:
-    """The operator's identifiers, supplied at run time and never committed (the origin repo is public, R-42)."""
+    """The operator's identifiers, supplied at run time and never committed (the origin repo is public, R-42).
+    The email is optional (R-80 DR-EG-3): without it the email class is not scanned, and `scanned` says so."""
 
-    email: str = field(repr=False)
+    email: str | None = field(repr=False)
     username: str = field(repr=False)
     home: str = field(repr=False)
 
     def __post_init__(self) -> None:
         # An empty identifier would be "not scanned" while the verdict reads "clean" (D&P, R-60 c4).
-        if not all(v.strip() for v in (self.email, self.username, self.home)):
-            raise ValueError("Operator: email, username and home are all required and non-empty")
+        if not (self.username.strip() and self.home.strip()) or (self.email is not None and not self.email.strip()):
+            raise ValueError("Operator: username and home are required and non-empty; the email is non-empty or None")
+
+    @classmethod
+    def from_os(cls, email: str | None = None) -> Operator:
+        """This login's user name and home (OS facts, R-80 DR-EG-3) and the email the caller read at run time."""
+        return cls(email=email, username=getpass.getuser(), home=str(Path.home()))
 
 
 def _json_unescape(text: str) -> str:
@@ -246,7 +254,7 @@ def check(payload: str, *, destination: str, operator: Operator, secrets: Sequen
             "token_prefix": (lambda: any(re.search(re.escape(p) + TOKEN_BODY, v, re.IGNORECASE)
                                          for v in views for p in token_prefixes if p.strip()))
             if token_prefixes else None,
-            "email": lambda: _anycase(views, operator.email),
+            "email": (lambda: _anycase(views, operator.email)) if operator.email is not None else None,
             "username": lambda: _word(views, operator.username),
             "home_path": lambda: _path(views, operator.home),
             "canary": (lambda: _exact(views, canaries)) if canaries else None,

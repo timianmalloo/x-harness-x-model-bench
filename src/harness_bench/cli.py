@@ -8,7 +8,6 @@ and hands them to the engine. Errors go to stderr as `<code>: <message>`. Exit c
 from __future__ import annotations
 
 import argparse
-import getpass
 import json
 import os
 import sys
@@ -229,11 +228,11 @@ def cmd_answer(args) -> int:
     return OK
 
 
-def _report_operator() -> egress.Operator | None:
-    """The operator's identifiers for the report's CLI-added-context row (design section 7.4), read at run time and
-    never committed (R-42); None, shown as `not recorded`, when BENCH_OPERATOR_EMAIL is not set."""
-    email = os.environ.get("BENCH_OPERATOR_EMAIL", "").strip()
-    return egress.Operator(email=email, username=getpass.getuser(), home=str(Path.home())) if email else None
+def _report_operator() -> egress.Operator:
+    """The operator's identifiers for the report's publication scan and CLI-added-context row (design section 7.4),
+    read at run time and never committed (R-42): this login's user name and home, and the email when
+    BENCH_OPERATOR_EMAIL is set. Without it the scan is `partial: email not supplied` (R-80 DR-EG-3)."""
+    return egress.Operator.from_os(os.environ.get("BENCH_OPERATOR_EMAIL", "").strip() or None)
 
 
 def _judge_calls(args, root: Path) -> judge.Calls:
@@ -246,7 +245,7 @@ def _judge_calls(args, root: Path) -> judge.Calls:
                                        "request for it (supplied at run time, never committed, R-42)")
     return judge.Calls(cells_root=Path(args.cells_root), builds=tools.resolve(Path(args.tools_dir)),
                        profiles={h: profiles.load(root, h) for h in profiles.HARNESSES},
-                       operator=egress.Operator(email=email, username=getpass.getuser(), home=str(Path.home())),
+                       operator=egress.Operator.from_os(email),
                        secrets=tuple(sorted(report_credentials.host_values(root))), canaries=egress.CANARIES)
 
 
@@ -324,8 +323,7 @@ def cmd_report(args) -> int:
     text, code = cli_table.render(view, plain=_plain(), run_dir=run_dir, root=root, board_obj=board_obj, params=params, comparison_obj=comp_obj)
     if code == OK:
         # html.write's credential scan must run before a label reaches the terminal (residual 5).
-        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator(), board_obj=board_obj, params=params, comparison_obj=comp_obj,
-                                 canaries=egress.CANARIES)
+        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator(), board_obj=board_obj, params=params, comparison_obj=comp_obj, canaries=egress.CANARIES)
         print(text, end="")
         print(f"report: {report_path}")
     else:

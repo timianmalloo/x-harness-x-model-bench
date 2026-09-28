@@ -43,6 +43,7 @@ SECRET_SHAPES = (
 )
 PUBLICATION = "report"  # the egress destination id of report publication (US-47 c3)
 RECORD = "report-record.json"  # beside report.html: what the report withheld (US-47 c3) and flagged (US-46 c2)
+PARTIAL = "partial: email not supplied"  # the publication scan without BENCH_OPERATOR_EMAIL (R-80 DR-EG-3)
 # One rendered section. Sections never nest, and every value is escaped by `_e`, so "</section>" is only a tag.
 _SECTION = re.compile(r'<section id="([a-z0-9-]+)">.*?</section>', re.DOTALL)
 _HEADER_END = re.compile(r'(<section id="header">.*?)(</section>)', re.DOTALL)  # where the egress row goes (R-80 c1)
@@ -458,12 +459,11 @@ def scan(text: str, credential_values: set[str] = frozenset()) -> int:
     return found
 
 
-def _publish(doc: str, operator: egress.Operator | None, secrets: set[str], canaries: Sequence[str]) -> tuple[str, dict]:
-    """US-47 c3: every section through `egress.check` (destination `report`). A withheld section is replaced by
-    `withheld: sensitive content`; a hit outside every section writes nothing (HB-SEC-001). Returns the page to publish
-    and the record: each section's verdict record (digest and class names, never content) and the withheld ids."""
-    if operator is None:  # the scan needs the operator's identifiers (read at run time, R-42)
-        return doc, {"egress": judges.NO_OPERATOR, "sections": [], "withheld": []}
+def _publish(doc: str, operator: egress.Operator, secrets: set[str], canaries: Sequence[str]) -> tuple[str, dict]:
+    """US-47 c3: every section through `egress.check` (destination `report`), always (R-80 c4). A withheld section is
+    replaced by `withheld: sensitive content`; a hit outside every section writes nothing (HB-SEC-001). Returns the page
+    to publish and the record: each section's verdict record (digest and class names, never content), the withheld
+    ids, and `egress` (`scanned`, or `partial: email not supplied` when the operator gave no email)."""
     sections: list[dict] = []
 
     def one(m: re.Match) -> str:
@@ -476,7 +476,7 @@ def _publish(doc: str, operator: egress.Operator | None, secrets: set[str], cana
     if egress.check(_SECTION.sub("", doc), destination=PUBLICATION, operator=operator, secrets=sorted(secrets),
                     canaries=canaries).withheld:
         raise BenchError("HB-SEC-001", f"the page outside its sections is {egress.WITHHELD}; nothing was written")
-    return published, {"egress": "scanned", "sections": sections,
+    return published, {"egress": "scanned" if operator.email is not None else PARTIAL, "sections": sections,
                        "withheld": [s["section"] for s in sections if s["classes"]]}
 
 
@@ -495,13 +495,17 @@ def write(run_dir: Path, view: views.RunView, credential_values: set[str] = froz
     """report.html, after publication egress (`_publish`) and the credential scan (HB-SEC-001), and beside it the run
     record of what the report withheld and flagged (`RECORD`). The record is the publication record, a derived
     artifact regenerated with the report and never a ledger fact (R-80 DR-EG-1, ADR-0006 amendment); `report_sha256`
-    binds it to the report.html written beside it (R-80 c1)."""
+    binds it to the report.html written beside it (R-80 c1). Without an `operator`, this login's user name and home are
+    scanned and the email is not (R-80 c4)."""
+    operator = operator if operator is not None else egress.Operator.from_os()
     doc = render(view, archive_present=(run_dir / "archive").is_dir(), run_dir=run_dir, root=root, operator=operator,
                  board_obj=board_obj, params=params, comparison_obj=comparison_obj)
-    published, record = _publish(doc, operator, set(credential_values), canaries)
-    found = scan(published, credential_values)
+    # The rendered page, before any section is withheld: a credential refuses the whole write, never only its section,
+    # so `bench report` never prints a table that carries it either (residual 5; R-80 c4 made the section scan run).
+    found = scan(doc, credential_values)
     if found:
         raise BenchError("HB-SEC-001", f"{found} credential-shaped string(s) in the report; nothing was written")
+    published, record = _publish(doc, operator, set(credential_values), canaries)
     # R-80 c3: the set scanned for, by version; a caller that left the production set out reads "not scanned".
     record["canaries"] = {"version": egress.CANARIES_VERSION if set(egress.CANARIES) <= set(canaries) else "not scanned",
                           "us48": egress.CANARIES_US48}
