@@ -8,7 +8,7 @@
 # check > trace conformance > tests > judge). J metrics cover only what no rung above can measure.
 # Changing a definition, weight or rubric bumps `version` (historical scores must not move silently).
 schema: bench-metrics/1
-version: "0.4"   # 0.4: the wave-3 graders (frozen by the Leader 2026-09-25, R-59 c3; bench/catalog-freeze.yaml; a change after this is 0.5); 0.4.dev: kind, asked_unmatched, scope_creep_files; 0.3: decimal scales for non-integer values (ADR-0006: no floats in the ledger); 0.2: formal metrics and protocol conformance
+version: "0.5.dev"   # 0.5.dev: normalisation anchors on all weighted score metrics and R-78 weight corrections (pass_at_1 gate factor, derived cost/reliability metrics weight 0); 0.4: the wave-3 graders (frozen by the Leader 2026-09-25, R-59 c3; bench/catalog-freeze.yaml; a change after this is 0.5); 0.4.dev: kind, asked_unmatched, scope_creep_files; 0.3: decimal scales for non-integer values (ADR-0006: no floats in the ledger); 0.2: formal metrics and protocol conformance
 # scale: a non-integer value is stored as a decimal string with this many places.
 # kind: score (one row per cell per grading pass, for each task whose graders name its grader) |
 #       derived (computed above the cell or in views; never a score row, DM7).
@@ -20,88 +20,86 @@ areas:
   cost:
     title: Cost & efficiency
     metrics:
-      - { id: tokens_by_type,          source: [H],    better: lower,  grader: cost,        kind: derived, weight: 0, note: "raw only; in/out/cacheRead/cacheWrite by model" }
-      - { id: cost_usd,                source: [H, D], better: lower,  grader: cost,        kind: score, weight: 1, scale: 6, note: "NA when no cost basis; never 0" }
-      - { id: cost_of_pass,            source: [D],    better: lower,  grader: cost,        kind: derived, weight: 1 }
-      - { id: tokens_per_solved,       source: [D],    better: lower,  grader: cost,        kind: derived, weight: 1 }
-      - { id: wall_clock_split,        source: [H],    better: lower,  grader: cost,        kind: derived, weight: 1, note: "wall, model, tool, idle" }
-      - { id: tokens_per_minute,       source: [D],    better: higher, grader: cost,        kind: score, weight: 0 }
-      - { id: output_tokens_per_turn,  source: [D],    better: lower,  grader: cost,        kind: score, weight: 0 }
-      - { id: turns_and_tool_calls,    source: [H],    better: lower,  grader: cost,        kind: derived, weight: 0 }
-      - { id: cache_hit_ratio,         source: [H, D], better: higher, grader: cost,        kind: score, weight: 1, scale: 4 }
-      - { id: cache_write_amplification, source: [D],  better: lower,  grader: cost,        kind: score, weight: 1, scale: 4 }
-      - { id: context_growth,          source: [H, D], better: lower,  grader: cost,        kind: score, weight: 1, note: "peak, slope, turns to 50% window" }
-      - { id: compactions,             source: [H],    better: lower,  grader: cost,        kind: score, weight: 0 }
-      - { id: coordinator_overhead,    source: [D],    better: lower,  grader: cost,        kind: derived, weight: 0, note: "reported, never charged to a cell" }
+      - { id: tokens_by_type, source: [H], better: lower, grader: cost, kind: derived, weight: 0, note: "raw only; in/out/cacheRead/cacheWrite by model" }
+      - { id: cost_usd, source: [H, D], better: lower, grader: cost, kind: score, weight: 1, scale: 6, anchor: [10.000000, 0.000000], anchor_note: "convention: task spend ceiling of $10.000000; 0 is zero cost", note: "NA when no cost basis; never 0" }
+      - { id: cost_of_pass, source: [D], better: lower, grader: cost, kind: derived, weight: 0, note: "derived; cell composites read kind: score only (R-78 DR-S-3)" }
+      - { id: tokens_per_solved, source: [D], better: lower, grader: cost, kind: derived, weight: 0, note: "derived; cell composites read kind: score only (R-78 DR-S-3)" }
+      - { id: wall_clock_split, source: [H], better: lower, grader: cost, kind: derived, weight: 0, note: "wall, model, tool, idle; cell composites read kind: score only (R-78 DR-S-3)" }
+      - { id: tokens_per_minute, source: [D], better: higher, grader: cost, kind: score, weight: 0 }
+      - { id: output_tokens_per_turn, source: [D], better: lower, grader: cost, kind: score, weight: 0 }
+      - { id: turns_and_tool_calls, source: [H], better: lower, grader: cost, kind: derived, weight: 0 }
+      - { id: cache_hit_ratio, source: [H, D], better: higher, grader: cost, kind: score, weight: 1, scale: 4, anchor: [0.0000, 100.0000], anchor_note: "spec docs/design/phase3-cost.md:106" }
+      - { id: cache_write_amplification, source: [D], better: lower, grader: cost, kind: score, weight: 1, scale: 4, anchor: [61.0232, 0.0000], anchor_note: "measured smoke-1 0.0000..30.5116, worst widened 2x to 61.0232" }
+      - { id: context_growth, source: [H, D], better: lower, grader: cost, kind: score, weight: 1, anchor: [4966520, 0], anchor_note: "measured smoke-1 14633..2483260, worst widened 2x to 4966520", note: "peak, slope, turns to 50% window" }
+      - { id: compactions, source: [H], better: lower, grader: cost, kind: score, weight: 0 }
+      - { id: coordinator_overhead, source: [D], better: lower, grader: cost, kind: derived, weight: 0, note: "reported, never charged to a cell" }
   correctness:
     title: Correctness
     metrics:
-      - { id: pass_at_1,               source: [D], better: higher, grader: correctness, kind: score, weight: 1 }
-      - { id: pass_at_k,               source: [D], better: higher, grader: correctness, kind: derived, weight: 0 }
-      - { id: pass_hat_k,              source: [D], better: higher, grader: correctness, kind: derived, weight: 1, note: "all k reps pass" }
-      - { id: partial_credit,          source: [D], better: higher, grader: correctness, kind: score, weight: 1, scale: 4 }
-      - { id: build_and_suite_clean,   source: [D], better: higher, grader: correctness, kind: score, weight: 1 }
-      - { id: mutation_score,          source: [D], better: higher, grader: mutation,    kind: score, weight: 1, scale: 4 }
-      - { id: regression_count,        source: [D], better: lower,  grader: correctness, kind: score, weight: 1 }
-      - { id: behavioural_equivalence, source: [D], better: higher, grader: correctness, kind: score, weight: 1, note: "D-tasks only" }
-      - { id: formal_checks_clean,     source: [D], better: higher, grader: formal,      kind: score, weight: 1, note: "G-tasks: lake build, #print axioms standard only, no sorry/admit/axiom; TLC completes in bounds" }
-      - { id: bugs_confirmed,          source: [D], better: higher, grader: formal,      kind: score, weight: 1, note: "G-tasks: reported bugs reproduced by a failing test on the real code" }
+      - { id: pass_at_1, source: [D], better: higher, grader: correctness, kind: score, weight: 0, note: "gate factor in 0.5 (R-78 DR-S-2 amendment)" }
+      - { id: pass_at_k, source: [D], better: higher, grader: correctness, kind: derived, weight: 0 }
+      - { id: pass_hat_k, source: [D], better: higher, grader: correctness, kind: derived, weight: 0, note: "all k reps pass; cell composites read kind: score only (R-78 DR-S-3)" }
+      - { id: partial_credit, source: [D], better: higher, grader: correctness, kind: score, weight: 1, scale: 4, anchor: [0.0000, 1.0000], anchor_note: "convention: ratio in [0, 1]" }
+      - { id: build_and_suite_clean, source: [D], better: higher, grader: correctness, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: binary indicator in [0, 1]" }
+      - { id: mutation_score, source: [D], better: higher, grader: mutation, kind: score, weight: 1, scale: 4, anchor: [0.0000, 1.0000], anchor_note: "convention: ratio in [0, 1]" }
+      - { id: regression_count, source: [D], better: lower, grader: correctness, kind: score, weight: 1, anchor: [5, 0], anchor_note: "convention: cap at 5 regressions; 0 is clean" }
+      - { id: behavioural_equivalence, source: [D], better: higher, grader: correctness, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: ratio in [0, 1]", note: "D-tasks only" }
+      - { id: formal_checks_clean, source: [D], better: higher, grader: formal, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: binary indicator in [0, 1]", note: "G-tasks: lake build, #print axioms standard only, no sorry/admit/axiom; TLC completes in bounds" }
+      - { id: bugs_confirmed, source: [D], better: higher, grader: formal, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: binary indicator in [0, 1]", note: "G-tasks: reported bugs reproduced by a failing test on the real code" }
   rigor:
     title: Rigor & quality
     metrics:
-      - { id: verification_before_done, source: [D],    better: higher, grader: rigor, kind: score, weight: 1 }
-      - { id: test_quality,             source: [D, J], better: higher, grader: rigor, kind: score, weight: 1 }
-      - { id: static_analysis_delta,    source: [D],    better: lower,  grader: rigor, kind: score, weight: 1, note: "incl. LOA001-LOA102 when pack on" }
-      - { id: maintainability,          source: [D],    better: higher, grader: rigor, kind: score, weight: 1 }
-      - { id: style_conformance,        source: [D, J], better: higher, grader: rigor, kind: score, weight: 1 }
-      - { id: honest_completion_claims, source: [J],    better: higher, grader: judge, kind: score, weight: 1 }
-      - { id: error_handling,           source: [J],    better: higher, grader: judge, kind: score, weight: 1 }
-      - { id: bug_claim_precision,      source: [D],    better: higher, grader: formal, kind: score, weight: 1, note: "G-tasks: confirmed / claimed" }
+      - { id: verification_before_done, source: [D], better: higher, grader: rigor, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: binary indicator in [0, 1]" }
+      - { id: test_quality, source: [D, J], better: higher, grader: rigor, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: ratio in [0, 1]" }
+      - { id: static_analysis_delta, source: [D], better: lower, grader: rigor, kind: score, weight: 1, anchor: [10, 0], anchor_note: "convention: cap at 10 added warnings; 0 is clean", note: "incl. LOA001-LOA102 when pack on" }
+      - { id: maintainability, source: [D], better: higher, grader: rigor, kind: score, weight: 1, anchor: [0, 100], anchor_note: "convention: index in [0, 100]" }
+      - { id: style_conformance, source: [D, J], better: higher, grader: rigor, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: ratio in [0, 1]" }
+      - { id: honest_completion_claims, source: [J], better: higher, grader: judge, kind: score, weight: 1, anchor: [0, 2], anchor_note: "convention: rubric item scale [0, 2]" }
+      - { id: error_handling, source: [J], better: higher, grader: judge, kind: score, weight: 1, anchor: [0, 2], anchor_note: "convention: rubric item scale [0, 2]" }
+      - { id: bug_claim_precision, source: [D], better: higher, grader: formal, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: ratio in [0, 1]", note: "G-tasks: confirmed / claimed" }
   drift:
     title: Drift & adherence
     metrics:
-      - { id: spec_coverage,          source: [D, J], better: higher, grader: drift, kind: score, weight: 1 }
-      - { id: scope_creep,            source: [D],    better: lower,  grader: drift, kind: score, weight: 1 }
-      - { id: scope_creep_files,      source: [D],    better: lower,  grader: drift, kind: score, weight: 0, note: "the files scope_creep counts (US-30)" }
-      - { id: constraint_violations,  source: [D, J], better: lower,  grader: drift, kind: score, weight: 1, note: "MTAC-IFBench categories" }
-      - { id: goal_drift_slope,       source: [J],    better: lower,  grader: judge, kind: score, weight: 1 }
-      - { id: convention_drift,       source: [D],    better: lower,  grader: drift, kind: score, weight: 1, scale: 2 }
-      - { id: instruction_reread_rate, source: [D],   better: higher, grader: drift, kind: score, weight: 0, note: "diagnostic" }
-      - { id: unrequested_behaviour,  source: [J],    better: lower,  grader: judge, kind: score, weight: 1 }
-      - { id: statement_integrity,    source: [D],    better: higher, grader: formal, kind: score, weight: 1, note: "G-tasks: given statements/properties byte-identical (hash)" }
+      - { id: spec_coverage, source: [D, J], better: higher, grader: drift, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: ratio in [0, 1]" }
+      - { id: scope_creep, source: [D], better: lower, grader: drift, kind: score, weight: 1, anchor: [1504, 0], anchor_note: "measured smoke-1 0..752, worst widened 2x to 1504" }
+      - { id: scope_creep_files, source: [D], better: lower, grader: drift, kind: score, weight: 0, note: "the files scope_creep counts (US-30)" }
+      - { id: constraint_violations, source: [D, J], better: lower, grader: drift, kind: score, weight: 1, anchor: [5, 0], anchor_note: "convention: cap at 5 constraint violations; 0 is clean", note: "MTAC-IFBench categories" }
+      - { id: goal_drift_slope, source: [J], better: lower, grader: judge, kind: score, weight: 1, anchor: [1, 0], anchor_note: "convention: cap at 1 drift slope; 0 is stable" }
+      - { id: convention_drift, source: [D], better: lower, grader: drift, kind: score, weight: 1, scale: 2, anchor: [10.00, 0.00], anchor_note: "spec docs/design/phase3-graders.md:128" }
+      - { id: instruction_reread_rate, source: [D], better: higher, grader: drift, kind: score, weight: 0, note: "diagnostic" }
+      - { id: unrequested_behaviour, source: [J], better: lower, grader: judge, kind: score, weight: 1, anchor: [5, 0], anchor_note: "convention: cap at 5 unrequested behaviours; 0 is none" }
+      - { id: statement_integrity, source: [D], better: higher, grader: formal, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: binary indicator in [0, 1]", note: "G-tasks: given statements/properties byte-identical (hash)" }
   specification:
     title: Specification & clarification
     metrics:
-      - { id: ask_vs_assume,             source: [D],    better: higher, grader: clarify,      kind: score, weight: 1, scale: 4 }
-      - { id: key_question_recall,       source: [D, J], better: higher, grader: clarify,      kind: score, weight: 1, scale: 4 }
-      - { id: key_question_precision,    source: [D, J], better: higher, grader: clarify,      kind: score, weight: 1, scale: 4 }
-      - { id: asked_unmatched,           source: [D],    better: lower,  grader: clarify,      kind: score, weight: 0, note: "questions whose stored decision matched nothing (R-52 c2)" }
-      - { id: assumption_disclosure,     source: [J],    better: higher, grader: judge,        kind: score, weight: 1 }
-      - { id: spec_quality,              source: [J],    better: higher, grader: judge,        kind: score, weight: 1 }
-      - { id: architecture_conformance,  source: [D],    better: higher, grader: architecture, kind: score, weight: 1, scale: 4 }
-      - { id: adr_quality,               source: [J],    better: higher, grader: judge,        kind: score, weight: 1, scale: 1,
-          rubrics: { C1: adr_quality.md }, artifact: [docs/architecture.md, priority_queue.py],
-          note: "Judged: no proof, model check, trace conformance or test decides whether an architecture note's claims are stated and consistent with the code it describes (US-25; R-64)." }
-      - { id: model_conformance,         source: [D],    better: higher, grader: formal,       kind: score, weight: 1, note: "G-tasks: real-code traces accepted by the agent's model / traces" }
-      - { id: model_non_vacuity,         source: [D],    better: higher, grader: formal,       kind: score, weight: 1, note: "G-tasks: bug-seeded variants rejected / variants" }
+      - { id: ask_vs_assume, source: [D], better: higher, grader: clarify, kind: score, weight: 1, scale: 4, anchor: [0.0000, 1.0000], anchor_note: "convention: ratio in [0, 1]" }
+      - { id: key_question_recall, source: [D, J], better: higher, grader: clarify, kind: score, weight: 1, scale: 4, anchor: [0.0000, 1.0000], anchor_note: "convention: ratio in [0, 1]" }
+      - { id: key_question_precision, source: [D, J], better: higher, grader: clarify, kind: score, weight: 1, scale: 4, anchor: [0.0000, 1.0000], anchor_note: "convention: ratio in [0, 1]" }
+      - { id: asked_unmatched, source: [D], better: lower, grader: clarify, kind: score, weight: 0, note: "questions whose stored decision matched nothing (R-52 c2)" }
+      - { id: assumption_disclosure, source: [J], better: higher, grader: judge, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: ratio in [0, 1]" }
+      - { id: spec_quality, source: [J], better: higher, grader: judge, kind: score, weight: 1, anchor: [0, 16], anchor_note: "spec tasks/B1/oracle/rubric.md:18" }
+      - { id: architecture_conformance, source: [D], better: higher, grader: architecture, kind: score, weight: 1, scale: 4, anchor: [0.0000, 1.0000], anchor_note: "convention: ratio in [0, 1]" }
+      - { id: adr_quality, source: [J], better: higher, grader: judge, kind: score, weight: 1, scale: 1, rubrics: { C1: adr_quality.md }, artifact: [docs/architecture.md, priority_queue.py], anchor: [0.0, 14.0], anchor_note: "spec bench/rubrics/adr_quality.md:15", note: "Judged: no proof, model check, trace conformance or test decides whether an architecture note's claims are stated and consistent with the code it describes (US-25; R-64)." }
+      - { id: model_conformance, source: [D], better: higher, grader: formal, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: ratio in [0, 1]", note: "G-tasks: real-code traces accepted by the agent's model / traces" }
+      - { id: model_non_vacuity, source: [D], better: higher, grader: formal, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: ratio in [0, 1]", note: "G-tasks: bug-seeded variants rejected / variants" }
   autonomy:
     title: Autonomy & process
     metrics:
-      - { id: completion_without_intervention, source: [D], better: higher, grader: process, kind: score, weight: 1 }
-      - { id: stuck_loops,                     source: [D], better: lower,  grader: process, kind: score, weight: 1 }
-      - { id: recovery_rate,                   source: [D], better: higher, grader: process, kind: score, weight: 1, scale: 4 }
-      - { id: tool_error_rate,                 source: [H], better: lower,  grader: process, kind: score, weight: 1, scale: 4 }
-      - { id: planning_ratio,                  source: [D], better: higher, grader: process, kind: score, weight: 0, scale: 4, note: "diagnostic; no a-priori good direction" }
-      - { id: time_to_first_green,             source: [D], better: lower,  grader: process, kind: score, weight: 1 }
+      - { id: completion_without_intervention, source: [D], better: higher, grader: process, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: binary indicator in [0, 1]" }
+      - { id: stuck_loops, source: [D], better: lower, grader: process, kind: score, weight: 1, anchor: [4, 0], anchor_note: "measured smoke-1 0..2, worst widened 2x to 4" }
+      - { id: recovery_rate, source: [D], better: higher, grader: process, kind: score, weight: 1, scale: 4, anchor: [0.0000, 1.0000], anchor_note: "convention: ratio in [0, 1]" }
+      - { id: tool_error_rate, source: [H], better: lower, grader: process, kind: score, weight: 1, scale: 4, anchor: [1.0000, 0.0000], anchor_note: "convention: ratio in [0, 1]" }
+      - { id: planning_ratio, source: [D], better: higher, grader: process, kind: score, weight: 0, scale: 4, note: "diagnostic; no a-priori good direction" }
+      - { id: time_to_first_green, source: [D], better: lower, grader: process, kind: score, weight: 1, anchor: [1800000, 0], anchor_note: "convention: task budget cap of 30 minutes (1800000 ms); 0 is best" }
   coordination:
     title: Coordination & pack effect
     metrics:
-      - { id: model_map_adherence,   source: [D, P], better: higher, grader: coordination, kind: score, weight: 1 }
-      - { id: per_agent_attribution, source: [H],    better: higher, grader: coordination, kind: score, weight: 1 }
-      - { id: handoff_fidelity,      source: [J],    better: higher, grader: judge,        kind: score, weight: 1 }
-      - { id: intent_log_completeness, source: [D, P], better: higher, grader: coordination, kind: score, weight: 1 }
-      - { id: kg_use,                source: [D, P], better: higher, grader: coordination, kind: score, weight: 1 }
-      - { id: coordination_overhead, source: [D],    better: lower,  grader: coordination, kind: score, weight: 1 }
-      - { id: mast_failure_codes,    source: [J],    better: lower,  grader: judge,        kind: score, weight: 1 }
-      - { id: parallel_efficiency,   source: [D],    better: higher, grader: coordination, kind: score, weight: 1 }
-      - { id: protocol_conformance,  source: [D, P], better: higher, grader: coordination, kind: score, weight: 1, note: "coordination ledger replayed against models/coordination_protocol.tla" }
+      - { id: model_map_adherence, source: [D, P], better: higher, grader: coordination, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: ratio in [0, 1]" }
+      - { id: per_agent_attribution, source: [H], better: higher, grader: coordination, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: ratio in [0, 1]" }
+      - { id: handoff_fidelity, source: [J], better: higher, grader: judge, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: ratio in [0, 1]" }
+      - { id: intent_log_completeness, source: [D, P], better: higher, grader: coordination, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: ratio in [0, 1]" }
+      - { id: kg_use, source: [D, P], better: higher, grader: coordination, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: ratio in [0, 1]" }
+      - { id: coordination_overhead, source: [D], better: lower, grader: coordination, kind: score, weight: 1, anchor: [1, 0], anchor_note: "convention: cap at 1.0 overhead ratio (100%); 0 is no overhead" }
+      - { id: mast_failure_codes, source: [J], better: lower, grader: judge, kind: score, weight: 1, anchor: [14, 0], anchor_note: "spec tasks/F1/oracle/README.md:64" }
+      - { id: parallel_efficiency, source: [D], better: higher, grader: coordination, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: ratio in [0, 1]" }
+      - { id: protocol_conformance, source: [D, P], better: higher, grader: coordination, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: ratio in [0, 1]", note: "coordination ledger replayed against models/coordination_protocol.tla" }
