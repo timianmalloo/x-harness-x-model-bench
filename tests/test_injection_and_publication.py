@@ -10,6 +10,7 @@
 Every sensitive value is an inert synthetic string made here at run time (R-42, R-60).
 """
 
+import hashlib
 import json
 from html import unescape
 from pathlib import Path
@@ -152,6 +153,21 @@ def test_a_hit_outside_every_section_writes_nothing(tmp_path, monkeypatch):
         html.write(run_dir, views.load(run_dir), set(), root=root, operator=_operator(), canaries=(canary,))
     assert refused.value.code == "HB-SEC-001" and canary not in str(refused.value)
     assert not (run_dir / "report.html").exists()
+
+
+def test_the_run_record_binds_to_the_written_report_by_digest_and_the_header_names_it(tmp_path):
+    # R-80 c1: the record is the publication record, so it names the exact report it describes.
+    root = judged_root(tmp_path)
+    canary = f"canary-{token_hex(8)}"
+    run_dir = make_run(root, tmp_path, {"a": GOOD, "b": GOOD}, combos={"a": canary, "b": "combo-placeholder"})
+    runner.run_pass(run_dir, root)
+    path = html.write(run_dir, views.load(run_dir), set(), root=root, operator=_operator(), canaries=(canary,))
+    record = _record(run_dir)
+    assert record["report_sha256"] == hashlib.sha256(path.read_bytes()).hexdigest()
+    withheld, total = len(record["withheld"]), len(record["sections"])
+    assert withheld
+    assert _dd(path.read_text(encoding="utf-8"), "Publication egress") == \
+        f"scanned; {withheld} of {total} sections withheld; record report-record.json"
 
 
 def test_without_the_operators_identifiers_the_publication_scan_is_not_recorded(tmp_path):
