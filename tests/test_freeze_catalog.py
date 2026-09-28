@@ -15,8 +15,8 @@ import pytest
 import yaml
 from archived_runs import ROOT, make_root, set_catalog_version
 
-from harness_bench import composites, config, views
 from harness_bench import board as board_mod
+from harness_bench import composites, config, views
 from harness_bench.grade import runner
 
 _spec = importlib.util.spec_from_file_location("freeze_catalog", ROOT / "tools" / "freeze_catalog.py")
@@ -105,8 +105,10 @@ def test_freeze_refuses_when_the_two_grades_differ(tmp_path, monkeypatch):
 
     def flip(root, name, tmp):
         calls["n"] += 1
-        data = real(root, name, tmp)
-        return data if calls["n"] % 2 else data + b" "
+        view_bytes, board_bytes = real(root, name, tmp)
+        if calls["n"] % 2 == 0:  # the second grade of a fixture disagrees
+            board_bytes += b" "
+        return view_bytes, board_bytes
 
     monkeypatch.setattr(freeze_catalog, "graded", flip)
     with pytest.raises(SystemExit) as exc:

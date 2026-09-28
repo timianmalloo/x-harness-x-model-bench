@@ -297,6 +297,16 @@ def test_a_released_version_frozen_with_no_board_golden_is_red_through_d(frozen,
     assert problems(frozen, tmp_path) == ["(d) no board golden for 9.1 (a freeze after board.export needs a board golden)"]
 
 
+def test_an_edited_board_golden_pin_is_red_through_e(frozen, tmp_path):
+    """(e) covers board_golden on its own: the views pin and the hash stay, and only that map changes."""
+    _, _, pinned = frozen
+    base = {"versions": {v: dict(entry) for v, entry in pinned["versions"].items()}}
+    edited = {"versions": {v: dict(entry) for v, entry in base["versions"].items()}}
+    edited["versions"]["9.0"] = {**edited["versions"]["9.0"], "board_golden": {"heads": "b" * 64}}
+    assert problems(frozen, tmp_path, base=base, freeze=edited) == [
+        f"(e) {FREEZE} entry '9.0' was changed or removed since the merge base"]
+
+
 def test_a_version_frozen_before_boards_is_exempt_and_says_so(frozen, tmp_path, capsys):
     """An entry with no board_golden (0.4's shape) skips the board check, and the skip is printed."""
     root, golden, freeze = frozen
