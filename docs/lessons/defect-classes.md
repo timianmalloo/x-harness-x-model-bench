@@ -461,6 +461,21 @@ summary: >-
 - **Control:** `board.build` refuses anchors of any version other than the current pass's (`test_anchors_of_another_catalog_version_never_make_the_primary_gated`, plus a named mutant in `board.json`). At every join that touches the report, the Leader reads `bench report` on a real run graded under an older catalog. That is a Leader procedure for now. Upgrade trigger: a second instance, then a fixture run graded under a previous catalog version is part of every report test.
 - **Status:** `observed` (control in code; procedure at the join)
 
+### ENV-B: a test or golden built in an environment that differs from the one it certifies
+- **Signature:** a unit test, fixture or golden is produced under a configuration that differs from the one it stands for (a test catalog, a live price list, a different root). It passes, and the difference hides exactly the defect it should catch.
+- **Instances:**
+  - `2026-09-27`, the 0.5 freeze. The gated composite was NA on every real smoke-1 cell. The board merged normalised scores over raw ones, so `pass_at_1` (the gate factor, weight 0, no anchor in the real catalog) became NA. Every composite test used `TEST_CATALOG`, where `pass_at_1` carried an anchor.
+  - `2026-09-27`, the same freeze. `tools/freeze_catalog.py` graded the goldens under the real root's live price list. The US-4 control, and CI, grade under `make_root`'s empty price list, so the board golden never matched (a different cost reason).
+- **Sweep:** other goldens and characterizations in this repo:
+  - the 0.3 regrade baseline and the gate values are measured on the real gate runs by the same code that checks them;
+  - T-B3 builds with the pass's own catalog version (VER-A);
+  - the D1 characterization values come from the real archives.
+- **Control:**
+  - `test_the_gated_composite_computes_under_the_real_catalog_where_pass_at_1_has_no_anchor` builds under the real catalog, with a named mutant.
+  - The freeze tool builds its goldens in the control's own environment (`_control_root`) and refuses a catalog-hash mismatch.
+  - Rule for briefs: every test that certifies a real-configuration behaviour has at least one case on the real configuration.
+- **Status:** `observed` (controls in code; the brief rule is a Leader procedure)
+
 ### PIN-A: a pin resolved through a path another session owns
 - **Signature:** a plan pins a version (here pack revision 95, commit `df3baf2`) by pointing at a working tree that another session created and may remove. The pin is right; the path to it is borrowed. When the owner cleans up, the next plan fails with a low-level error far from the cause.
 - **Instances:** `2026-09-26`: every plan since the qualifications used `--pack-source C:/Projects/ai-forward-fix-runner-long-slices`, a worktree of the ai-forward repository made by another session. That session removed it, together with `ai-forward-fix-grok-workflows-reload`, between the `smoke-1-f1codex` plan and the `smoke-1-f1codex-2` plan (about an hour apart). The second plan failed `HB-CELL-114: cannot start git (win32 error 267)`, a missing working directory.
