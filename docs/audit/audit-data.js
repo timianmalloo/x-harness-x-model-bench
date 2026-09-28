@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-28T20:06:42Z",
+  "generated": "2026-09-28T20:44:37Z",
   "audit": [
     {
       "actor": null,
@@ -47920,6 +47920,40 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T1",
       "tool": null
+    },
+    {
+      "id": "al-01M3MW6B5NHQ8C2N2RXX5HTQHN",
+      "shortname": "R5 report slice",
+      "datetime": "2026-09-28T20:44:37Z",
+      "session": "worker-agy-r5",
+      "prompt": "implement report slice R5 of docs/design/phase4-report.md",
+      "summary": "Implement report slice R5: rebuild _pack_effect and _comparison on html_builder.el with SVG whisker charts and table alternatives, retiring trusted() from render(). Verified viridis palette and UIA-13 chart=table.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "implement report slice R5 of docs/design/phase4-report.md: Pack effect and Comparison sections as dot-and-whisker charts on a shared zero line, each with its table alternative, built on report/html_builder.el, red first.",
+      "done_when": "_pack_effect and _comparison are rebuilt on html_builder.el with section 6 rows 4 and 11 and every listed state; trusted() removed; red/green tests committed; mutants killed; all tests pass.",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-28T20:11:43Z",
+      "duration_seconds": 1974.0,
+      "git": {
+        "sha": "78796d38fa44e3d1174d4d568af124340491cf0b",
+        "short": "78796d38f",
+        "branch": "w4-r5",
+        "pushed": null
+      }
     }
   ],
   "changes": [
