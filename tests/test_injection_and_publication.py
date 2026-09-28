@@ -12,6 +12,7 @@ Every sensitive value is an inert synthetic string made here at run time (R-42, 
 
 import hashlib
 import json
+import re
 from html import unescape
 from pathlib import Path
 from secrets import token_hex
@@ -124,6 +125,10 @@ def test_report_publication_withholds_each_section_carrying_a_planted_canary_and
     record = _record(run_dir)
     withheld = record["withheld"]
     assert withheld and "header" not in withheld  # only the sections that carry it
+    # The control bar (the combo legend) is its own publication-scan unit, never a page-level leak: a
+    # combo name that matches a canary withholds the bar as a unit, exactly like any other section --
+    # the legend's button text carries the combo's own label (below), so it is in scope for this scan.
+    assert "controls" in withheld
     for section in withheld:
         assert f'<section id="{section}"><p>withheld: sensitive content</p></section>' in page
     assert '<section id="header"><h1>' in page  # a clean section is published unchanged
@@ -131,6 +136,25 @@ def test_report_publication_withholds_each_section_carrying_a_planted_canary_and
     assert all(scanned[s]["classes"] == ["canary"] for s in withheld)
     assert all(scanned[s]["destination"] == "report" and "canary" in scanned[s]["scanned"] for s in scanned)
     assert canary not in json.dumps(record)  # the record names sections and classes, never the value
+
+
+def test_the_legend_shows_the_combos_own_label_without_a_canary(tmp_path):
+    """The combo legend's own text is the combo's label (the same text the leaderboard's Combo column
+    shows, design section 6: "one toggle button per combo, with the marker and label"), not a generic
+    "Combo 1"/"Combo 2" placeholder -- restored now that the bar is its own scan unit above, so a real
+    combo name reaching the legend is no longer a page-level publication risk."""
+    root = judged_root(tmp_path)
+    run_dir = make_run(root, tmp_path, {"a": GOOD, "b": GOOD}, harness="copilot",  # no codex/claude-code flag suffix
+                       combos={"a": "combo-a", "b": "combo-b"})
+    runner.run_pass(run_dir, root)
+    view = views.load(run_dir)
+    page = html.write(run_dir, view, set(), root=root, operator=_operator()).read_text(encoding="utf-8")
+    controls = re.search(r'<section id="controls">(.*?)</section>', page, re.DOTALL)
+    assert controls is not None, "the control bar is not its own <section id=\"controls\"> (US-47 c3 scan unit)"
+    bar = controls.group(1)
+    for combo in ("combo-a", "combo-b"):
+        assert f">{combo}<" in bar
+    assert "Combo 1" not in bar and "Combo 2" not in bar
 
 
 def test_the_operators_email_in_a_section_is_withheld_too(tmp_path):
