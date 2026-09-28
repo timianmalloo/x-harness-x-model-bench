@@ -317,5 +317,19 @@
   "find": "    bom_str = f\"BOM {plan['bom_version']}\" if plan.get(\"bom_version\") else \"BOM not recorded\"\n",
   "replace": "    bom_str = f\"BOM {plan['bom']}\" if plan.get(\"bom\") else \"BOM not recorded\"\n",
   "tests": ["tests/test_report.py::test_the_header_names_the_bom_the_plan_froze"]
+ },
+ {
+  "name": "the CSP script hash is not the shipped report.js bytes",
+  "file": "src/harness_bench/report/html.py",
+  "find": "    script_text = SCRIPT_PATH.read_text(encoding=\"utf-8\")\n",
+  "replace": "    script_text = SCRIPT_PATH.read_text(encoding=\"utf-8\") + \" \"\n",
+  "tests": ["tests/test_report.py::test_csp_script_hash_pins_the_shipped_report_js"]
+ },
+ {
+  "name": "the legend never refuses hiding the last visible combo",
+  "file": "src/harness_bench/report/assets/report.js",
+  "find": "      if (pressed.length === 1 && pressed[0] === btn) {",
+  "replace": "      if (false) {",
+  "tests": ["tests/test_report_browser.py::test_keyboard_path"]
  }
 ]

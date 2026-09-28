@@ -1073,10 +1073,11 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
     ]
     if comparison_html:
         sections.append(model.Section("comparison", "Comparison", html_builder.trusted(comparison_html)))
-    # R4: the sticky control bar the script drives (markup only at this checkpoint).
+    # R4: the one hashed inline script (design section 5) plus the sticky control bar it drives.
+    script_text = SCRIPT_PATH.read_text(encoding="utf-8")
     bar = _control_bar(board_obj, combo_ix)
     return model.page(model.ReportModel(run_id=view.run_id, sections=tuple(sections)), style=STYLE,
-                      script=None, bar=bar)  # RED-CHECKPOINT: script wiring lands in the next commit
+                      script=script_text, bar=bar)
 
 
 def scan(text: str, credential_values: set[str] = frozenset()) -> int:
