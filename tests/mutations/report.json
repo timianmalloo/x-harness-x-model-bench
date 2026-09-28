@@ -37,15 +37,15 @@
  {
   "name": "header cells without scope",
   "file": "src/harness_bench/report/html.py",
-  "find": "f'<th scope=\"col\"{",
-  "replace": "f'<th{",
+  "find": "    headers = [(\"Rank\", False), (\"Combo\", False), (\"Pack\", False), (\"Valid cells\", True), (\"pass@1\", True), (\"pass@1 95%\", False),\n               (\"Gated\", True), (\"Gated 95%\", False), (\"Tokens per cell\", True), (\"Wall per cell\", True), (\"Cost per cell\", True)]\n    head_row = html_builder.el(\"tr\", None, *(\n        html_builder.el(\"th\", {\"scope\": \"col\", \"class\": \"num\"} if num else {\"scope\": \"col\"}, h) for h, num in headers))",
+  "replace": "    headers = [(\"Rank\", False), (\"Combo\", False), (\"Pack\", False), (\"Valid cells\", True), (\"pass@1\", True), (\"pass@1 95%\", False),\n               (\"Gated\", True), (\"Gated 95%\", False), (\"Tokens per cell\", True), (\"Wall per cell\", True), (\"Cost per cell\", True)]\n    head_row = html_builder.el(\"tr\", None, *(\n        html_builder.el(\"th\", {\"class\": \"num\"} if num else {}, h) for h, num in headers))",
   "tests": ["tests/test_report.py::test_the_page_is_structurally_accessible"]
  },
  {
   "name": "a scroll region not focusable",
   "file": "src/harness_bench/report/html.py",
-  "find": "role=\"region\" tabindex=\"0\" aria-labelledby",
-  "replace": "role=\"region\" aria-labelledby",
+  "find": "\"div\", {\"class\": \"region\", \"role\": \"region\", \"tabindex\": \"0\", \"aria-labelledby\": \"leaderboard-caption\"}, table)",
+  "replace": "\"div\", {\"class\": \"region\", \"role\": \"region\", \"aria-labelledby\": \"leaderboard-caption\"}, table)",
   "tests": ["tests/test_report.py::test_the_page_is_structurally_accessible"]
  },
  {
@@ -60,7 +60,8 @@
   "file": "src/harness_bench/report/html.py",
   "find": "    if archive_present:\n",
   "replace": "    if True:\n",
-  "tests": ["tests/test_report.py::test_evidence_without_the_archive_says_so"]
+  "tests": ["tests/test_report.py::test_evidence_without_the_archive_says_so",
+            "tests/test_report.py::test_archive_absent_copy"]
  },
  {
   "name": "numbers left-aligned",
@@ -121,15 +122,15 @@
  {
   "name": "the leaderboard combo cell never flags a codex row",
   "file": "src/harness_bench/report/html.py",
-  "find": "(_e(report.flag_if_claude_code(report.flag_if_codex(r.combo, r.harness), r.harness)), False)",
-  "replace": "(_e(report.flag_if_claude_code(r.combo, r.harness)), False)",
+  "find": "combo_text = report.flag_if_claude_code(report.flag_if_codex(r.combo, r.harness), r.harness)",
+  "replace": "combo_text = report.flag_if_claude_code(r.combo, r.harness)",
   "tests": ["tests/test_report.py::test_the_leaderboard_and_cells_table_flag_only_the_codex_rows"]
  },
  {
   "name": "the cells table label never flags a codex cell",
   "file": "src/harness_bench/report/html.py",
-  "find": "report.flag_if_codex(\n                c.label + (f\" · {COORDINATION_BANNER}\" if c.scenario == 6 else \"\"), c.harness)",
-  "replace": "(c.label + (f\" · {COORDINATION_BANNER}\" if c.scenario == 6 else \"\"))",
+  "find": "report.flag_if_codex(\n            c.label + (f\" · {COORDINATION_BANNER}\" if c.scenario == 6 else \"\"), c.harness), c.harness)",
+  "replace": "(c.label + (f\" · {COORDINATION_BANNER}\" if c.scenario == 6 else \"\")), c.harness)",
   "tests": ["tests/test_report.py::test_the_leaderboard_and_cells_table_flag_only_the_codex_rows"]
  },
  {
@@ -232,5 +233,19 @@
   "replace": "        \"head\", None,\n        el(\"meta\", {\"charset\": \"utf-8\"}),\n        csp_meta(style_text, script_text),\n",
   "tests": ["tests/test_report_builder.py::test_csp_meta_is_first_head_child_with_script_hash",
             "tests/test_report_builder.py::test_page_shell_csp_is_first_head_child"]
+ },
+ {
+  "name": "the leaderboard interval reason is dropped",
+  "file": "src/harness_bench/report/html.py",
+  "find": "iv.reason or \"interval not computed\"",
+  "replace": "\"\"",
+  "tests": ["tests/test_report.py::test_every_interval_element_has_bounds_or_reason"]
+ },
+ {
+  "name": "the cell card's warning text bypasses el() and escapes nothing",
+  "file": "src/harness_bench/report/html.py",
+  "find": "html_builder.el(\"li\", None, f\"{w.code} {w.message}\") for w in c.warnings)",
+  "replace": "html_builder.trusted(f\"<li>{w.code} {w.message}</li>\") for w in c.warnings)",
+  "tests": ["tests/test_report.py::test_injection_fixture_renders_inert"]
  }
 ]
