@@ -72,6 +72,29 @@ def test_a_gate_without_a_pipe_passes(command):
     assert _run(command).returncode == 0
 
 
+@pytest.mark.parametrize("command", [
+    "git worktree remove --force /c/Projects/x-red",  # the third instance, 2026-09-27
+    "cd /c/x && git worktree remove --force $R 2>/dev/null || git worktree remove $R",
+    "git -C /c/repo worktree remove -f /c/Projects/x-tree",
+    "git branch -D w3-slice",
+    "git -C /c/repo branch -D w3-slice",
+])
+def test_a_forced_worktree_or_branch_removal_is_blocked(command):  # CLN-C: removal goes through the holding scripts
+    result = _run(command)
+    assert result.returncode == 2
+    assert "CLN-C" in result.stderr
+
+
+@pytest.mark.parametrize("command", [
+    "git worktree remove /c/Projects/x-red",
+    "git branch -d w3-slice",
+    "git worktree list",
+    "git commit -q -m 'git branch -D is forbidden (CLN-C)'",  # quoted text is data
+])
+def test_a_plain_removal_passes(command):
+    assert _run(command).returncode == 0
+
+
 def test_a_malformed_payload_never_blocks():
     result = subprocess.run([sys.executable, str(GUARD)], input="not json", capture_output=True, text=True, timeout=30, check=False)
     assert result.returncode == 0
