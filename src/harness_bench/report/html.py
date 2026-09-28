@@ -1122,16 +1122,20 @@ def _scenario_cell(sr: board.ScenarioRow | None, combo_tok: str, pack: str, scen
                                f"— {reason}")
     bucket = _heat_bucket(gated.point)
     value_str = f"{gated.point:.1f}"
-    lo_str = f"{gated.lo:.1f}"
-    hi_str = f"{gated.hi:.1f}"
-    cell_attrs = {**attrs, "class": f"h h{bucket} num", "data-value": value_str,
-                 "data-interval-lo": lo_str, "data-interval-hi": hi_str}
+    cell_attrs = {**attrs, "class": f"h h{bucket} num", "data-value": value_str}
+    if gated.lo is not None and gated.hi is not None:
+        lo_str, hi_str = f"{gated.lo:.1f}", f"{gated.hi:.1f}"
+        cell_attrs["data-interval-lo"] = lo_str
+        cell_attrs["data-interval-hi"] = hi_str
+        iv_text = f"[{lo_str}, {hi_str}]"
+    else:
+        iv_text = gated.reason or "interval not computed"
     p1_str = f"{p1.point:.2f}" if p1.point is not None else (p1.reason or "NA")
     if p1.point is not None:
         cell_attrs["data-pass1"] = p1_str
     return html_builder.el(
         "td", cell_attrs,
-        value_str, html_builder.el("br"), f"[{lo_str}, {hi_str}]", html_builder.el("br"), f"pass@1 {p1_str}",
+        value_str, html_builder.el("br"), iv_text, html_builder.el("br"), f"pass@1 {p1_str}",
     )
 
 

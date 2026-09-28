@@ -160,7 +160,8 @@ def test_page_shell_section_order_matches_the_ia(tmp_path, page):
     # "controls" (R4 join review) sits right after "header": a real <section> for the publication scan
     # (US-47 c3), inserted right after the nav like the sticky bar design section 6 asks for, but it is
     # not part of the report's eleven-section IA (US-40 c2) and carries no nav entry (test above).
-    assert ids == ["header", "controls", "validity", "leaderboard", "pack-effect", "runs"]  # no --baseline
+    assert ids == ["header", "controls", "validity", "leaderboard", "pack-effect", "scenarios",
+                  "context-growth", "runs"]  # no --baseline
 
 
 def test_dark_theme_tokens_only_change_under_prefers_color_scheme_media_query(tmp_path, page):  # DR-R-3

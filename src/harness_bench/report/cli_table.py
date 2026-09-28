@@ -143,8 +143,10 @@ def render(
     for sr in board_obj.scenarios:
         gated, p1 = sr.gated, sr.pass_at_1
         if gated.point is not None:
+            iv_str = f"[{gated.lo:.1f}, {gated.hi:.1f}]" if gated.lo is not None and gated.hi is not None else (
+                gated.reason or "interval not computed")
             p1_str = f"pass@1 {p1.point:.2f}" if p1.point is not None else f"pass@1 {p1.reason or 'NA'}"
-            line = f"{sr.combo} {sr.pack} scenario {sr.scenario}: {gated.point:.1f} [{gated.lo:.1f}, {gated.hi:.1f}] {p1_str}"
+            line = f"{sr.combo} {sr.pack} scenario {sr.scenario}: {gated.point:.1f} {iv_str} {p1_str}"
         else:
             line = f"{sr.combo} {sr.pack} scenario {sr.scenario}: {gated.reason or 'NA'}"
         console.print(line, markup=False)
