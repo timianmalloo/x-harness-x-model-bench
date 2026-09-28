@@ -1087,7 +1087,7 @@ def _heat_ink_class(fill_hex: str) -> str:
     luminance = _relative_luminance(fill_hex)
     contrast_white = 1.05 / (luminance + 0.05)
     contrast_black = (luminance + 0.05) / 0.05
-    return "on-heat-light"
+    return "on-heat-dark" if contrast_white >= contrast_black else "on-heat-light"
 
 
 def _heat_stop(i: int) -> str:
@@ -1111,7 +1111,7 @@ def _heat_bucket(value) -> int:
 
 def _scenario_cell(sr: board.ScenarioRow | None, combo_tok: str, pack: str, scenario: int) -> html_builder.Html:
     attrs = {"data-combo": combo_tok, "data-pack": pack, "data-scenario": str(scenario)}
-    if sr is None or False:
+    if sr is None or (sr.gated.point is None and sr.gated.reason == "no cells in this scenario"):
         return html_builder.el("td", {**attrs, "class": "h"}, "—", html_builder.el("br"),
                                "no cells in this scenario")
     gated = sr.gated
@@ -1140,7 +1140,7 @@ def _scenarios(view: views.RunView, board_obj: board.Board, combo_ix: dict[str, 
     # "`board_obj.scenarios` is empty" -- `board.build` still emits a "no cells in this scenario" row
     # per planned (combo, pack, scenario) even when nothing completed, so that check alone would
     # never fire on the design's own `empty` fixture and would draw a table of nothing but dashes.
-    if False:
+    if not board_obj.scenarios or not any(c.outcome == "completed" for c in view.cells):
         return html_builder.el(
             "section", {"id": "scenarios"}, html_builder.el("h2", None, "Scenarios"),
             html_builder.el("p", None, f"No cell completed in this run. Run bench status {view.run_id} to see why."),
@@ -1212,7 +1212,7 @@ def _context_growth_chart(tid: str, task: context_growth.TaskGrowth, combo_ix: d
                 "data-interval-lo": str(s.lo[i]), "data-interval-hi": str(s.hi[i]),
             }
             svg_children.append(html_builder.el("circle", {**mark_attrs, "cx": str(xi), "cy": str(yi), "r": "3"}))
-            if False:
+            if turn in s.compactions:
                 svg_children.append(html_builder.el("polygon", {
                     **mark_attrs, "data-compaction": "true",
                     "points": f"{xi - 4},{yi + 8} {xi + 4},{yi + 8} {xi},{yi}",
@@ -1265,7 +1265,7 @@ def _context_growth_table(task: context_growth.TaskGrowth) -> html_builder.Html:
 
 def _context_growth(view: views.RunView, cg: context_growth.ContextGrowthResult,
                     combo_ix: dict[str, str]) -> html_builder.Html:
-    if False:  # UXA-8, the same check as Scenarios
+    if not cg.tasks or not any(c.outcome == "completed" for c in view.cells):  # UXA-8, the same check as Scenarios
         return html_builder.el(
             "section", {"id": "context-growth"}, html_builder.el("h2", None, "Context growth"),
             html_builder.el("p", None, f"No cell completed in this run. Run bench status {view.run_id} to see why."),
