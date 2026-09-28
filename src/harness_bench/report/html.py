@@ -1238,6 +1238,86 @@ def _comparison(comparison_obj: board.Comparison | str | None) -> html_builder.H
     return html_builder.el("section", {"id": "comparison"}, *elements)
 
 
+# R7 (design section 15, 6 row 9, 8): the Summaries section, built on `html_builder.el`. Reads
+# `summary_records` through `report.summaries` only (a lazy import: `summaries` imports `egress`, which
+# already imports this module -- see `egress.py`'s own module docstring on that existing cycle -- so the
+# import is deferred to call time here rather than added at module top).
+
+
+_SUMMARY_TITLES = {"ranking": "1 Ranking and insights", "pack": "2 Pack observations"}
+
+
+def _citations(refs: tuple[str, ...], run_id: str) -> html_builder.Html:
+    """section 8: a run id or cell id is a link (UXA-6); a metric reference is shown as its own text.
+    simplify: a metric ref does not yet open its evidence popover (that needs the catalog version and an
+    evidence pointer this section does not carry); upgrade trigger: R9's publication polish wires `_ev()`
+    the way the leaderboard's cells already do."""
+    children: list = []
+    for i, r in enumerate(refs):
+        if i:
+            children.append(", ")
+        if r == run_id:
+            children.append(html_builder.el("a", {"href": "#runs"}, r))
+        elif r.startswith(("board:", "pack:", "cmp:")):
+            children.append(html_builder.el("span", {"class": "small citation"}, r))
+        else:
+            children.append(html_builder.el("a", {"href": f"#cell-{r}"}, r))
+    return html_builder.el("span", {"class": "citations"}, *children)
+
+
+def _claim_item(claim: dict, run_id: str) -> html_builder.Html:
+    return html_builder.el("li", None, str(claim.get("text", "")), " ",
+                           _citations(tuple(claim.get("refs") or ()), run_id))
+
+
+def _published_block(row, run_id: str) -> html_builder.Html:
+    from harness_bench.report import summaries
+
+    label = html_builder.el("p", None, summaries.PUB_LABEL.format(model=row.model))
+    manifest_items: list = []
+    for e in row.manifest:
+        manifest_items += [html_builder.el("dt", None, str(e.get("id", ""))),
+                           html_builder.el("dd", None, str(e.get("sha256") or e.get("withheld") or ""))]
+    manifest_details = html_builder.el(
+        "details", None, html_builder.el("summary", None, "Manifest"),
+        html_builder.el("dl", {"class": "small"}, *manifest_items),
+    )
+    claims = html_builder.el("ul", None, *(_claim_item(c, run_id) for c in row.claims))
+    return html_builder.el("div", None, label, manifest_details, claims)
+
+
+def _summary_block(kind: str, run_dir: Path | None, view: views.RunView, current_manifest_sha256: str | None) -> html_builder.Html:
+    from harness_bench.report import summaries
+
+    row = summaries.latest_row(run_dir, view.run_id, kind) if run_dir is not None else None
+    state = summaries.state_for(row, current_manifest_sha256)
+    heading = html_builder.el("h3", None, _SUMMARY_TITLES[kind])
+    if state == "S-PUB":
+        body = _published_block(row, view.run_id)
+    elif state == "S-NOTPUB":
+        body = html_builder.el("p", None, summaries.STATE_COPY[state].format(n=len(row.failing_claims)))
+    else:
+        body = html_builder.el("p", None, summaries.STATE_COPY[state].format(run_id=view.run_id))
+    return html_builder.el("div", {"id": f"summary-{kind}"}, heading, body)
+
+
+def _summaries(run_dir: Path | None, view: views.RunView, board_obj: board.Board) -> html_builder.Html:
+    """design section 6 row 9 (US-42): both summary blocks, each reading `summary_records` independently.
+    The ranking block's current manifest is recomputed here (deterministic, board-only) so a regraded pass
+    reads S-STALE; the pack block's manifest also depends on the archive and egress (DR-R-4), which this
+    read-only render path does not have wired through it yet -- simplify: the pack block never reads
+    S-STALE in R7 (it still reads every other state correctly from the stored row); upgrade trigger: R9
+    threads `operator`/`secrets` into this call the way `_header`'s judge block already does."""
+    from harness_bench.report import summaries
+
+    ranking_sha = summaries.manifest_digest(summaries.build_ranking_request(view, board_obj).manifest)
+    blocks = [
+        _summary_block("ranking", run_dir, view, ranking_sha),
+        _summary_block("pack", run_dir, view, None),
+    ]
+    return html_builder.el("section", {"id": "summaries"}, html_builder.el("h2", None, "Summaries"), *blocks)
+
+
 def render(view: views.RunView, archive_present: bool, run_dir: Path | None = None, root: Path | None = None,
            operator: egress.Operator | None = None, board_obj: board.Board | None = None,
            params: stats.Params | None = None, comparison_obj: board.Comparison | str | None = None) -> str:
@@ -1275,6 +1355,10 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
         model.Section("validity", "Validity", _validity(view)),
         model.Section("leaderboard", "Leaderboard", _leaderboard(view, board_obj)),
         model.Section("pack-effect", "Pack effect", _pack_effect(board_obj)),
+        # design section 6's IA order 9 (Summaries) precedes 10 (Runs); rows 5-8 (Cost frontier, Areas,
+        # Scenarios, Context growth) are R6a/R6b's parallel slices and are inserted between pack-effect and
+        # this section at their own join (brief: "keep your edits to ... its place in render()").
+        model.Section("summaries", "Summaries", _summaries(run_dir, view, board_obj)),
         model.Section("runs", "Runs", _runs(view, archive_present, tags, run_dir, root,
                                             catalog_version=view.catalog_version, combo_ix=combo_ix)),
     ]

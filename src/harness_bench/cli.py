@@ -39,7 +39,7 @@ from harness_bench import (
 from harness_bench.errors import BenchError
 from harness_bench.gateway import backend as gateway
 from harness_bench.grade import judge, runner
-from harness_bench.report import cli_table, html
+from harness_bench.report import cli_table, html, summaries
 from harness_bench.report import credentials as report_credentials
 
 OK, INVALID, INCOMPLETE, NOT_BUILT, INTEGRITY = 0, 1, 3, 4, 5
@@ -281,6 +281,10 @@ def cmd_report(args) -> int:
     run_dir = _run_dir(args)
     root = Path(args.root)
     view = views.load(run_dir)
+    if getattr(args, "summaries", False):
+        # DR-R-5: refused before any other work, mirroring the judge gateway's own live-run refusal
+        # (HB-GRD-005) at its own call site (HB-SUM-001, ruling R-81 condition 3).
+        summaries.refuse_if_live(gateway.run_roots(root, Path(args.runs)))
     resamples = getattr(args, "resamples", None)
     seed = getattr(args, "seed", None)
     if resamples is not None and resamples < 2000:
@@ -319,6 +323,16 @@ def cmd_report(args) -> int:
         status.require_known(base_run_dir)
         base_view = views.load(base_run_dir)
         comp_obj = board.compare(base=base_view, view=view, cat=cat, params=params)
+
+    if getattr(args, "summaries", False):
+        if board_obj is None:
+            raise BenchError("HB-USR-002", "bench report --summaries needs a graded pass")
+        operator = _report_operator()
+        backend = gateway.ReplayBackend({}, run_dir / "summaries" / "gateway")  # R7: no live gateway (R8)
+        secrets = tuple(sorted(_credential_values(root, run_dir)))
+        for kind in summaries.KINDS:
+            summaries.generate(kind, run_dir, view, board_obj, backend, operator=operator, secrets=secrets,
+                              canaries=egress.CANARIES)
 
     text, code = cli_table.render(view, plain=_plain(), run_dir=run_dir, root=root, board_obj=board_obj, params=params, comparison_obj=comp_obj)
     if code == OK:
@@ -402,6 +416,9 @@ def build_parser() -> argparse.ArgumentParser:
             sp.add_argument("--seed", type=int, default=None, help="bootstrap seed (default: 20260927)")
             sp.add_argument("--resamples", type=int, default=None, help="bootstrap resamples (minimum: 2000)")
             sp.add_argument("--baseline", default=None, help="baseline run id for comparison")
+            sp.add_argument("--summaries", action="store_true",
+                            help="generate the AI summaries (US-42); refused while any run is live "
+                                 "(HB-SUM-001); the ReplayBackend only until R8 wires the live gateway")
         if name == "status":
             sp.add_argument("--json", action="store_true", help="bench-status/1 on stdout")
         if name == "grade":
