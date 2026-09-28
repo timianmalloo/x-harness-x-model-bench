@@ -526,6 +526,58 @@ def test_tp4_pack_effect_states(tmp_path):
     assert d_rows[0].reason == "Pack effect needs both settings."
 
 
+def test_pack_effect_area_delta_is_computed_with_anchors(tmp_path):
+    """F-1: pack effect's area rows are computed with composites.area on anchored inputs."""
+    root = make_root(tmp_path)
+    run_dir = stats_run(
+        root,
+        tmp_path,
+        run_id="r-pe-anchors",
+        tasks=("A1", "B1"),
+        reps=2,
+        arms=("off", "on"),
+        combos=["c"],
+    )
+    view = views.load(run_dir)
+    cat = dataclasses.replace(TEST_CATALOG, version=view.catalog_version)
+    b = board.build(view, cat)
+    corr_row = next((r for r in b.pack_effect.rows if r.measure == "correctness"), None)
+    assert corr_row is not None
+    assert corr_row.delta.point is not None
+
+
+def test_pack_effect_area_one_arm_negative_reason(tmp_path):
+    """R-81 c4: negative one-arm area reason equals literal 'not computed (no <area> score in pack=<arm>)'."""
+    root = make_root(tmp_path)
+    run_dir = stats_run(
+        root,
+        tmp_path,
+        run_id="r-pe-onearm",
+        tasks=("A1", "B1"),
+        reps=2,
+        arms=("off", "on"),
+        combos=["c"],
+    )
+    view = views.load(run_dir)
+    cat = dataclasses.replace(TEST_CATALOG, version=view.catalog_version)
+
+    # 1. pack=off has no area scores
+    cells_no_off = [dataclasses.replace(c, scores={}) if c.pack == "off" else c for c in view.cells]
+    b_no_off = board.build(dataclasses.replace(view, cells=cells_no_off), cat)
+    corr_off = next((r for r in b_no_off.pack_effect.rows if r.measure == "correctness"), None)
+    assert corr_off is not None
+    assert corr_off.reason == "not computed (no correctness score in pack=off)"
+    assert corr_off.delta.reason == "not computed (no correctness score in pack=off)"
+
+    # 2. pack=on has no area scores
+    cells_no_on = [dataclasses.replace(c, scores={}) if c.pack == "on" else c for c in view.cells]
+    b_no_on = board.build(dataclasses.replace(view, cells=cells_no_on), cat)
+    corr_on = next((r for r in b_no_on.pack_effect.rows if r.measure == "correctness"), None)
+    assert corr_on is not None
+    assert corr_on.reason == "not computed (no correctness score in pack=on)"
+    assert corr_on.delta.reason == "not computed (no correctness score in pack=on)"
+
+
 def test_tm3_comparison_direction_and_negation(tmp_path):
     """T-M3 (US-52 criterion 1): run A is a stats_run build; run B is a second build
     with one (task, rep) outcome flipped from pass to fail in one (combo, pack).
