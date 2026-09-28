@@ -17,7 +17,7 @@ from harness_bench import ledger, stats, views
 from harness_bench.errors import BenchError
 from harness_bench.grade import judge as grade_judge
 from harness_bench.grade import runner
-from harness_bench.report import cli_table, credentials, html
+from harness_bench.report import cli_table, credentials, html, html_builder
 
 
 @pytest.fixture
@@ -119,7 +119,7 @@ def test_not_recorded_never_renders_as_zero(page):  # T-UI-NA
 
 def test_numeric_cells_are_tabular_right_aligned_and_carry_units(page):  # T-UI-numerics
     assert re.search(r"\.num\s*\{[^}]*text-align:\s*right[^}]*font-variant-numeric:\s*tabular-nums", page)
-    numeric = re.findall(r'<td class="num">([^<]*)</td>', page)
+    numeric = re.findall(r'<td class="num"[^>]*>([^<]*)</td>', page)
     assert numeric and all(v.startswith("NA (") or re.search(r"(tok|s|ms|\$)", v) or re.fullmatch(r"[\d.]+", v)
                            for v in numeric)
 
@@ -255,8 +255,22 @@ def test_the_header_has_no_claude_code_permission_row_without_a_claude_code_cell
     assert PERMISSION_ROW not in _header_of(_with_modes(run_dir, {"b": "agent-full-access"}))
 
 
-def test_the_page_makes_no_network_request_and_has_no_script(page):
-    assert not re.search(r"https?://|<script|@import|url\(|<link", page)
+def test_the_page_makes_no_network_request_and_has_one_inline_script(page):
+    """R4: the page now ships exactly one script -- the hashed, inline `report.js` -- and it carries no
+    `src` (so loading it is never a network request); every other network-shaped reference stays absent."""
+    assert not re.search(r"https?://|@import|url\(|<link", page)
+    scripts = re.findall(r"<script[^>]*>", page)
+    assert len(scripts) == 1 and "src=" not in scripts[0]
+
+
+def test_csp_script_hash_pins_the_shipped_report_js(page):
+    """R4: the CSP's `script-src` is the sha256 of exactly `report.js`'s own bytes on disk (design
+    section 5) -- a mutant that hashes something else, or a stale copy of the file that no longer
+    matches what ships, fails this red (the browser ring's UIA-15/UIA-1 tests would then fail too,
+    but this one is offline and catches it on every push)."""
+    script_text = html.SCRIPT_PATH.read_text(encoding="utf-8")
+    assert html_builder.sha256_token(script_text) in page
+    assert "script-src &#x27;none&#x27;" not in page  # R1's placeholder is retired now that a script ships
 
 
 def test_a_planted_credential_is_found_and_the_report_refused(root, tmp_path):  # T-SEC-report (positive control)
@@ -481,7 +495,7 @@ def test_the_html_validity_section_counts_and_lists_each_wave_two_state(validity
 def _cells_column(doc: str, header: str) -> list[str]:
     runs = re.search(r'<section id="runs".*?</section>', doc, re.DOTALL).group(0)
     headers = re.findall(r'<th scope="col"[^>]*>([^<]*)</th>', runs)
-    rows = re.findall(r"<tr[^>]*>(.*?)</tr>", re.search(r"<tbody>(.*?)</tbody>", runs, re.DOTALL).group(1))
+    rows = re.findall(r"<tr[^>]*>(.*?)</tr>", re.search(r"<tbody[^>]*>(.*?)</tbody>", runs, re.DOTALL).group(1))
     return [re.findall(r"<td[^>]*>(.*?)</td>", row)[headers.index(header)] for row in rows]
 
 
@@ -531,7 +545,7 @@ def test_the_html_cells_table_names_each_cells_warning_codes():
     doc = html.render(_state_view("valid", None, [TOKENS_WARNING, BUILD_FLAG]), archive_present=True)
     runs = re.search(r'<section id="runs".*?</section>', doc, re.DOTALL).group(0)
     headers = re.findall(r'<th scope="col"[^>]*>([^<]*)</th>', runs)
-    cells = re.findall(r"<td[^>]*>(.*?)</td>", re.search(r"<tbody>(.*?)</tbody>", runs, re.DOTALL).group(1))
+    cells = re.findall(r"<td[^>]*>(.*?)</td>", re.search(r"<tbody[^>]*>(.*?)</tbody>", runs, re.DOTALL).group(1))
     assert cells[headers.index("Warnings")] == "HB-VAL-005, HB-VAL-006"
 
 
@@ -539,7 +553,7 @@ def test_the_html_cells_table_reads_none_for_a_cell_without_warnings():
     doc = html.render(_state_view("valid", None), archive_present=True)
     runs = re.search(r'<section id="runs".*?</section>', doc, re.DOTALL).group(0)
     headers = re.findall(r'<th scope="col"[^>]*>([^<]*)</th>', runs)
-    cells = re.findall(r"<td[^>]*>(.*?)</td>", re.search(r"<tbody>(.*?)</tbody>", runs, re.DOTALL).group(1))
+    cells = re.findall(r"<td[^>]*>(.*?)</td>", re.search(r"<tbody[^>]*>(.*?)</tbody>", runs, re.DOTALL).group(1))
     assert cells[headers.index("Warnings")] == "none" and '<ul id="validity-warnings">' not in doc
 
 
@@ -556,9 +570,13 @@ def test_injection_fixture_renders_inert():
     `script-src` stays `'none'` until R4 anyway, but escaping is the first-line control, section 5)."""
     view = _state_view("valid", None, [INJECTED_WARNING])
     doc = html.render(view, archive_present=True)
-    assert "<script>" not in doc and "<script " not in doc  # no real script element anywhere in the page
+    # R4: the page now carries exactly one real <script> element -- the hashed report.js -- and its
+    # content is our own vendored source, never the injection fixture's text (which stays inert below).
+    assert doc.count("<script>") == 1
+    script_body = re.search(r"<script>(.*?)</script>", doc, re.DOTALL).group(1)
+    assert "alert(1)" not in script_body and "onerror" not in script_body
     cell_id = view.cells[0].cell_id
-    match = re.search(rf'<tr id="cell-{re.escape(cell_id)}">.*?</tr>', doc, re.DOTALL)
+    match = re.search(rf'<tr id="cell-{re.escape(cell_id)}"[^>]*>.*?</tr>', doc, re.DOTALL)
     assert match is not None, "no row carries id=\"cell-<id>\" (design section 15 R3)"
     row = match.group(0)
     assert "&lt;script&gt;alert(1)&lt;/script&gt;" in row
@@ -572,8 +590,8 @@ def test_every_interval_element_has_bounds_or_reason(root, tmp_path):
     _, view = _graded(root, tmp_path, {"a": GOOD, "b": GOOD}, combos={"a": "c1", "b": "c2"})
     doc = html.render(view, archive_present=True)
     section = re.search(r'<section id="leaderboard".*?</section>', doc, re.DOTALL).group(0)
-    row_count = len(re.findall(r"<tr>.*?</tr>",
-                               re.search(r"<tbody>(.*?)</tbody>", section, re.DOTALL).group(1), re.DOTALL))
+    row_count = len(re.findall(r"<tr[^>]*>.*?</tr>",
+                               re.search(r"<tbody[^>]*>(.*?)</tbody>", section, re.DOTALL).group(1), re.DOTALL))
     marks = re.findall(
         r'<svg[^>]*class="[^"]*\bivmark\b[^"]*"[^>]*>.*?</svg>|<span[^>]*class="[^"]*\bivmark\b[^"]*"[^>]*>[^<]*</span>',
         section, re.DOTALL)
@@ -593,7 +611,7 @@ def test_archive_absent_copy(root, tmp_path):
     _, view = _graded(root, tmp_path, {"a": GOOD})
     doc = html.render(view, archive_present=False)
     cell_id = view.cells[0].cell_id
-    match = re.search(rf'<tr id="cell-{re.escape(cell_id)}">.*?</tr>', doc, re.DOTALL)
+    match = re.search(rf'<tr id="cell-{re.escape(cell_id)}"[^>]*>.*?</tr>', doc, re.DOTALL)
     assert match is not None, "no row carries id=\"cell-<id>\" (design section 15 R3)"
     row = match.group(0)
     assert "This copy doesn&#x27;t include the run archive. Evidence path: grading/" in row

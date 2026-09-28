@@ -16,6 +16,7 @@ bench = "harness_bench.cli:main"
 [dependency-groups]
 dev = [
     "hypothesis>=6.100",
+    "playwright==1.63.0",
     "pytest>=8.0",
     "pytest-xdist>=3.8.0",
 ]
@@ -33,9 +34,10 @@ testpaths = ["tests"]
 # The `slow` ring (real dotnet graders) runs on the grading host: `HB_REQUIRE_DOTNET=1 python -m pytest -m slow` (V-4).
 # A command-line -m replaces this one, so .github/workflows/ci.yml excludes `slow` and `workstation` in its own -m as well.
 # `workstation` stays in the local run: the marker is not a skip, and a missing harness build or sibling checkout fails loudly.
-addopts = "-m 'not credentials and not slow and not gate'"
+addopts = "-m 'not credentials and not slow and not gate and not browser'"
 markers = [
     "slow: the dotnet graders' fixtures; the Leader's pre-freeze ring on the grading host (HB_REQUIRE_DOTNET=1)",
     "workstation: needs the installed harness builds and sibling checkouts",
     "gate: frozen gate-run characterizations; run by the Leader when the gate stamp is stale",
+    "browser: needs Playwright's Chromium (playwright install); the readiness ring, never the offline gate (R-81 DR-R-9)",
 ]

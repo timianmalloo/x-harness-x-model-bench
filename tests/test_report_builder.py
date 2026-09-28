@@ -160,7 +160,10 @@ def test_page_shell_section_order_matches_the_ia(tmp_path, page):
 def test_dark_theme_tokens_only_change_under_prefers_color_scheme_media_query(tmp_path, page):  # DR-R-3
     doc = page(tmp_path)
     style = re.search(r"<style>(.*)</style>", doc, re.DOTALL).group(1)
-    assert 'data-theme' not in doc and "<select" not in doc  # no toggle, no stored preference
+    # No theme toggle, no stored preference (R4 adds ordinary `<select>`s for the Runs filters, unrelated
+    # to theme -- DR-R-3 is about the colour scheme only, never about those).
+    assert 'data-theme' not in doc
+    assert not re.search(r'id="[^"]*theme[^"]*"', doc)
     assert "@media (prefers-color-scheme: dark){" in style
     light_block = re.search(r":root\{color-scheme: light dark;(.*?)\}\n@media", style, re.DOTALL).group(1)
     dark_block = re.search(r"@media \(prefers-color-scheme: dark\)\{\n:root\{(.*?)\}\}", style, re.DOTALL).group(1)

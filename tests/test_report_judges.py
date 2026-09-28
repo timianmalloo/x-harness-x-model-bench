@@ -10,6 +10,7 @@ or random synthetic strings (R-42).
 import hashlib
 import importlib
 import json
+import re
 from decimal import Decimal
 from html import unescape
 from pathlib import Path
@@ -222,5 +223,8 @@ def test_t_gw_36_a_script_rationale_renders_as_inert_text(tmp_path, base, monkey
     root, run_dir, _ = judged_run(tmp_path, base)
     monkeypatch.setattr(judges, "facts", lambda *a, **k: [("Disagreements", line)])
     page = html.render(views.load(run_dir), False, run_dir, root=root)
-    assert "<script>" not in page
+    # R4: the page now carries exactly one real <script> element -- the hashed report.js -- and the
+    # hostile text never reaches it.
+    assert page.count("<script>") == 1
+    assert hostile not in re.search(r"<script>(.*?)</script>", page, re.DOTALL).group(1)
     assert "&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;" in _dd(page, "Disagreements", raw=True)

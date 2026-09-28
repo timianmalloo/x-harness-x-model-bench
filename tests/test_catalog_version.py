@@ -463,13 +463,14 @@ def test_a_dev_version_is_exempt_and_says_so(frozen, tmp_path, capsys):
 
 def test_both_selectors_exclude_the_slow_ring():  # TA re-review 1: a command-line -m replaces addopts, so both change
     ini = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["tool"]["pytest"]["ini_options"]
-    assert ini["addopts"] == "-m 'not credentials and not slow and not gate'"
+    assert ini["addopts"] == "-m 'not credentials and not slow and not gate and not browser'"
     assert any(m.startswith("slow:") for m in ini["markers"])
     assert any(m.startswith("workstation:") for m in ini["markers"])  # CI has no harness builds or sibling checkouts
     assert any(m.startswith("gate:") for m in ini["markers"])
+    assert any(m.startswith("browser:") for m in ini["markers"])  # R-81 DR-R-9: readiness ring only, never CI's offline gate
     ci = [line.strip() for line in (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8").splitlines()]
     assert [line for line in ci if "pytest" in line and line.startswith("- run:")] == [
-        '- run: uv run pytest -q -n auto -m "not credentials and not slow and not workstation and not gate"']
+        '- run: uv run pytest -q -n auto -m "not credentials and not slow and not workstation and not gate and not browser"']
 
 
 @pytest.mark.parametrize(("env", "which", "outcome"), [

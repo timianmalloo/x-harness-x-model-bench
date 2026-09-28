@@ -51,6 +51,7 @@ PARTIAL = "partial: email not supplied"  # the publication scan without BENCH_OP
 # grade/judge.py's item_score (Verified, :186-200) composes it onto the score's reason as "judge <model>: failed
 # HB-GW-009"; ruling R-80 c1 names this as the one definition (never a second copy in the report's own guess).
 WITHHELD_CODE = "HB-GW-009"
+SCRIPT_PATH = Path(__file__).parent / "assets" / "report.js"  # R4: the one hashed inline script (design section 5)
 # One rendered section. Sections never nest, and every value is escaped by `_e`, so "</section>" is only a tag.
 _SECTION = re.compile(r'<section id="([a-z0-9-]+)">.*?</section>', re.DOTALL)
 _HEADER_END = re.compile(r'(<section id="header">.*?)(</section>)', re.DOTALL)  # where the egress row goes (R-80 c1)
@@ -77,7 +78,7 @@ STYLE = """
   --font:"Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --fs:15px; --fs-small:13px; --fs-h1:26px; --fs-h2:19px;
   --s1:4px; --s2:8px; --s3:16px; --s4:24px; --s5:40px;
-  --radius:4px; --rule-w:1px; --focus-w:2px; --target:24px; --maxw:1240px; --bar-h:88px;}
+  --radius:4px; --rule-w:1px; --focus-w:2px; --target:24px; --maxw:1240px; --bar-h:88px; --popover-maxw:360px;}
 @media (prefers-color-scheme: dark){
 :root{
   --bg:#0e1318; --panel:#151c23; --ink:#e7ecf1; --ink-2:#aab5c1; --ink-3:#76818d; --rule:#2a343f;
@@ -101,6 +102,25 @@ caption{text-align:left;font-weight:600;padding:var(--s2)}
 th,td{padding:var(--s1) var(--s2);border-top:var(--rule-w) solid var(--rule);text-align:left;vertical-align:top}
 .num{text-align: right; font-variant-numeric: tabular-nums; white-space:nowrap}
 code,.small{font-size:var(--fs-small)}
+.bar{position:sticky;top:0;z-index:2;background:var(--bg);border-bottom:var(--rule-w) solid var(--rule-strong);padding:var(--s2) 0;display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);align-items:center}
+.tg{font:inherit;font-size:var(--fs-small);min-height:var(--target);min-width:var(--target);padding:0 var(--s2);background:var(--panel);color:var(--ink);border:var(--rule-w) solid var(--rule-strong);border-radius:var(--radius);cursor:pointer}
+.tg[aria-pressed="true"]{box-shadow:inset 0 calc(-1 * var(--focus-w)) 0 var(--focus);font-weight:600}
+.tg[aria-disabled="true"]{color:var(--ink-2);border-style:dashed;cursor:not-allowed}
+.sort{font:inherit;color:inherit;background:none;border:0;padding:0;min-height:var(--target);cursor:pointer;font-weight:600}
+.popover{position:absolute;z-index:3;background:var(--panel);color:var(--ink);border:var(--rule-w) solid var(--rule-strong);border-radius:var(--radius);padding:var(--s2) var(--s3);max-width:var(--popover-maxw);font-size:var(--fs-small);overflow-wrap:anywhere}
+select{font:inherit;min-height:var(--target)}
+/* Global filter state (design section 6): classes on <main>, so CSS alone hides matching rows/marks
+   at redraw time (no per-node JS). c1..c8 matches the categorical palette's own cap (design section 3). */
+main.hide-c1 [data-combo="c1"]{display:none}
+main.hide-c2 [data-combo="c2"]{display:none}
+main.hide-c3 [data-combo="c3"]{display:none}
+main.hide-c4 [data-combo="c4"]{display:none}
+main.hide-c5 [data-combo="c5"]{display:none}
+main.hide-c6 [data-combo="c6"]{display:none}
+main.hide-c7 [data-combo="c7"]{display:none}
+main.hide-c8 [data-combo="c8"]{display:none}
+main.pack-on [data-pack="off"]{display:none}
+main.pack-off [data-pack="on"]{display:none}
 """
 
 
@@ -565,29 +585,49 @@ def _interval_mark(iv, decimals: int) -> str:
     return html_builder.el("span", {"class": "ivbar-reason ivmark"}, iv.reason or "interval not computed")
 
 
-def _lb_measure_cells(iv, metric: str, decimals: int, catalog_version: str | None) -> tuple[str, str]:
+def _show_cells_link(combo: str, pack: str) -> html_builder.Html:
+    """R4: the popover's "Show cells" link, now combo/pack-aware -- `report.js` reads
+    `data-runs-combo`/`data-runs-pack` to filter Runs to this row's cells before the in-page jump
+    (design section 15 R4's own done-when: "the leaderboard's Show cells link filtering Runs")."""
+    return html_builder.el("a", {"href": "#runs", "data-runs-combo": combo, "data-runs-pack": pack}, "Show cells")
+
+
+def _lb_measure_cells(iv, metric: str, decimals: int, catalog_version: str | None, combo: str, pack: str,
+                      sort_key: str | None = None) -> tuple[str, str]:
     """The point cell (an evidence-trigger button; DR-R aggregates have no single cell evidence pointer, so
     its popover's cross-link is `#runs` -- `assume:` a board row's evidence is "the cells behind it", not
     one pointer; confirmed by R4 wiring that link to filter Runs on this row's combo/pack; if false, the
     link is merely inert until R4, no regression, since script-src stays 'none' until then) and the
-    interval-or-reason cell (UIA-5)."""
+    interval-or-reason cell (UIA-5). `sort_key`/`data-sort-value` (R4) let `report.js` sort this column
+    without re-parsing formatted text; NA carries no `data-sort-value`, so it always sorts last."""
     na = iv.point is None
     text = f"{iv.point:.{decimals}f}" if not na else (f"NA ({iv.reason})" if iv.reason else "NA")
-    evidence = html_builder.el("a", {"href": "#runs"}, "Show cells")
-    point_td = html_builder.el("td", {"class": "num"}, html_builder.trusted(
+    evidence = _show_cells_link(combo, pack)
+    point_attrs: dict[str, object] = {"class": "num"}
+    if sort_key:
+        point_attrs["data-sort"] = sort_key
+        if not na:
+            point_attrs["data-sort-value"] = f"{iv.point:.6f}"
+    point_td = html_builder.el("td", point_attrs, html_builder.trusted(
         _ev(text, na, _UNIT.get(metric, ""), catalog_version, evidence, None)))
     interval_td = html_builder.el("td", None, html_builder.trusted(_interval_mark(iv, decimals)))
     return point_td, interval_td
 
 
-def _lb_measure_ev_cell(measure, metric: str, formatter, catalog_version: str | None) -> str:
+def _lb_measure_ev_cell(measure, metric: str, formatter, catalog_version: str | None, combo: str, pack: str,
+                        sort_key: str | None = None) -> str:
     """A leaderboard `Measure` column (pass^k, cost-of-pass, tokens per solved, wall per cell) as an
     evidence-trigger button (design section 6 row 3: every displayed score is `.ev`). The cross-link is
     `#runs`, the same board-row-aggregate `assume:` `_lb_measure_cells` documents above."""
     na = measure.value is None
     text = formatter(measure)
-    evidence = html_builder.el("a", {"href": "#runs"}, "Show cells")
-    return html_builder.el("td", {"class": "num"}, html_builder.trusted(
+    evidence = _show_cells_link(combo, pack)
+    attrs: dict[str, object] = {"class": "num"}
+    if sort_key:
+        attrs["data-sort"] = sort_key
+        if not na:
+            attrs["data-sort-value"] = str(measure.value)
+    return html_builder.el("td", attrs, html_builder.trusted(
         _ev(text, na, _UNIT.get(metric, ""), catalog_version, evidence, None)))
 
 
@@ -610,6 +650,66 @@ def _measure_label(board_obj: board.Board) -> str:
     return "correctness-gated composite" if board_obj.primary == "gated" else "pass@1"
 
 
+# R4 (design section 15, 5, 6): report.js, its markup (the combo legend, the pack switch, the Runs
+# filters, the sort buttons) and the browser ring (DR-R-9).
+
+
+def _combo_index(board_obj: board.Board) -> dict[str, str]:
+    """combo -> "c1".."c8" in first-appearance order over `board_obj.rows` -- the same token
+    vocabulary the categorical palette uses (design section 3: "in matrix order"; beyond 8 it
+    cycles, so a 9th distinct combo reuses c1's slot for the legend/filter classes only, never for
+    colour -- no report renderer paints by this index yet, R5/R6 own colour)."""
+    order: dict[str, str] = {}
+    for r in board_obj.rows:
+        if r.combo not in order:
+            order[r.combo] = f"c{len(order) % 8 + 1}"
+    return order
+
+
+def _control_bar(board_obj: board.Board, combo_ix: dict[str, str]) -> html_builder.Html:
+    """The sticky control bar (design section 6): the combo legend (`aria-pressed`, one button per
+    combo) and the pack switch (`both`/`on`/`off`, `aria-disabled` for a setting this run lacks,
+    each with its own reason node -- design gate round 2's UX fix, never one shared node). JS (R4)
+    owns the interaction; this function only emits the markup and the initial disabled state."""
+    # The button text is the index token's own ordinal ("Combo 1"), never the combo's own name: the bar sits
+    # outside every `<section>`, so it is outside `_publish`'s per-section egress scan (`_SECTION`, US-47 c3)
+    # -- a combo name that happened to match a canary or secret shape would otherwise leak past that scan and
+    # fail the whole write at the page-level backstop instead of being withheld per section (confirmed by
+    # `tests/test_injection_and_publication.py::test_report_publication_withholds_each_section_carrying_a_planted_canary...`,
+    # which plants a canary as a combo name). The combo's own name is still visible, protected, inside the
+    # Leaderboard and Runs sections (the "Combo" column, the Runs filter's own options); this legend cross-
+    # references those rows by the same c1..c8 token their `data-combo` carries.
+    legend_buttons = [
+        html_builder.el("button", {"class": "tg", "type": "button", "aria-pressed": "true", "data-combo": ix},
+                        f"Combo {ix[1:]}")
+        for combo, ix in combo_ix.items()
+    ]
+    legend = html_builder.el("div", {"role": "group", "aria-label": "Combos", "id": "legend"}, *legend_buttons)
+
+    packs_present = sorted({r.pack for r in board_obj.rows})
+    reason_children: list[html_builder.Html] = []
+    pack_buttons = []
+    for setting in ("both", "on", "off"):
+        attrs: dict[str, object] = {"class": "tg", "type": "button", "data-pack": setting,
+                                    "aria-pressed": "true" if setting == "both" else "false"}
+        lacks = setting != "both" and setting not in packs_present
+        one_setting_only = len(packs_present) == 1 and setting == "both"
+        if lacks or one_setting_only:
+            only = packs_present[0] if packs_present else "neither"
+            reason_id = f"reason-pack-{setting}"
+            attrs["aria-disabled"] = "true"
+            attrs["aria-describedby"] = reason_id
+            reason_children.append(html_builder.el("p", {"id": reason_id}, f"This run has pack {only} only."))
+        pack_buttons.append(html_builder.el("button", attrs, setting))
+    pack_switch = html_builder.el("div", {"role": "group", "aria-label": "Pack setting", "id": "pack-switch"}, *pack_buttons)
+    reasons = html_builder.el("div", {"class": "small", "id": "bar-reasons", "aria-live": "polite"}, *reason_children)
+
+    return html_builder.el(
+        "div", {"class": "bar", "id": "control-bar"},
+        legend, pack_switch, reasons,
+    )
+
+
 def _leaderboard(view: views.RunView, board_obj: board.Board) -> str:
     if not any(c.outcome == "completed" for c in view.cells):
         return html_builder.el(
@@ -619,39 +719,49 @@ def _leaderboard(view: views.RunView, board_obj: board.Board) -> str:
     caption = f"Ranked on {_measure_label(board_obj)}. Rows that share a rank cannot be separated by this data."
     # Design section 6 row 3's order: rank · combo · pack · gated ± interval · pass@1 ± interval · pass^k ·
     # cost-of-pass · tokens per solved · wall per cell · valid cells (Leader R3 join note).
-    headers = [("Rank", False), ("Combo", False), ("Pack", False), ("Gated", True), ("Gated 95%", False),
-               ("pass@1", True), ("pass@1 95%", False), ("pass^k", True), ("Cost per pass", True),
-               ("Tokens per solved", True), ("Wall per cell", True), ("Valid cells", True)]
-    head_row = html_builder.el("tr", None, *(
-        html_builder.el("th", {"scope": "col", "class": "num"} if num else {"scope": "col"}, h) for h, num in headers))
+    # R4: a sort key per sortable column ("Sort buttons sit in the column headers", design section 6 row 3);
+    # None for the four columns that are not sortable measures (Rank has its own tie affordance, Combo/Pack
+    # are dimensions, not measures).
+    headers = [("Rank", False, None), ("Combo", False, None), ("Pack", False, None), ("Gated", True, "gated"),
+               ("Gated 95%", False, None), ("pass@1", True, "pass_at_1"), ("pass@1 95%", False, None),
+               ("pass^k", True, "pass_hat_k"), ("Cost per pass", True, "cost_of_pass"),
+               ("Tokens per solved", True, "tokens_per_solved"), ("Wall per cell", True, "wall_ms"),
+               ("Valid cells", True, "n_valid")]
+    head_cells = []
+    for h, num, sort_key in headers:
+        label = html_builder.el("button", {"class": "sort", "type": "button", "data-sort-key": sort_key}, h) if sort_key else h
+        head_cells.append(html_builder.el("th", {"scope": "col", "class": "num"} if num else {"scope": "col"}, label))
+    head_row = html_builder.el("tr", None, *head_cells)
     frontier_by_key = {(fr.combo, fr.pack): fr for fr in board_obj.frontier}
     no_solved = stats.Measure(None, "not recorded")
+    combo_ix = _combo_index(board_obj)
 
     body_rows = []
     for r in board_obj.rows:
         combo_text = report.flag_if_claude_code(report.flag_if_codex(r.combo, r.harness), r.harness)
-        g_td, g_iv_td = _lb_measure_cells(r.gated, "gated", 1, view.catalog_version)
-        p1_td, p1_iv_td = _lb_measure_cells(r.pass_at_1, "pass_at_1", 2, view.catalog_version)
+        g_td, g_iv_td = _lb_measure_cells(r.gated, "gated", 1, view.catalog_version, r.combo, r.pack, "gated")
+        p1_td, p1_iv_td = _lb_measure_cells(r.pass_at_1, "pass_at_1", 2, view.catalog_version, r.combo, r.pack, "pass_at_1")
         tokens_per_solved = frontier_by_key.get((r.combo, r.pack))
         tokens_per_solved = tokens_per_solved.tokens_per_solved if tokens_per_solved is not None else no_solved
+        row_attrs = {"data-combo": combo_ix[r.combo], "data-pack": r.pack}
         body_rows.append(html_builder.el(
-            "tr", None,
+            "tr", row_attrs,
             _rank_cell(r),
             html_builder.el("td", None, combo_text),
             html_builder.el("td", None, r.pack),
             html_builder.trusted(g_td), html_builder.trusted(g_iv_td),
             html_builder.trusted(p1_td), html_builder.trusted(p1_iv_td),
-            html_builder.trusted(_lb_measure_ev_cell(r.pass_hat_k, "pass_hat_k", report.rate, view.catalog_version)),
-            html_builder.trusted(_lb_measure_ev_cell(r.cost_of_pass, "cost_of_pass", report.usd, view.catalog_version)),
-            html_builder.trusted(_lb_measure_ev_cell(tokens_per_solved, "tokens_per_solved", report.tokens, view.catalog_version)),
-            html_builder.trusted(_lb_measure_ev_cell(r.wall_ms, "wall_ms", report.seconds, view.catalog_version)),
-            html_builder.el("td", {"class": "num"}, f"{r.n_valid}/{r.n_cells} cells"),
+            html_builder.trusted(_lb_measure_ev_cell(r.pass_hat_k, "pass_hat_k", report.rate, view.catalog_version, r.combo, r.pack, "pass_hat_k")),
+            html_builder.trusted(_lb_measure_ev_cell(r.cost_of_pass, "cost_of_pass", report.usd, view.catalog_version, r.combo, r.pack, "cost_of_pass")),
+            html_builder.trusted(_lb_measure_ev_cell(tokens_per_solved, "tokens_per_solved", report.tokens, view.catalog_version, r.combo, r.pack, "tokens_per_solved")),
+            html_builder.trusted(_lb_measure_ev_cell(r.wall_ms, "wall_ms", report.seconds, view.catalog_version, r.combo, r.pack, "wall_ms")),
+            html_builder.el("td", {"class": "num", "data-sort": "n_valid", "data-sort-value": str(r.n_valid)}, f"{r.n_valid}/{r.n_cells} cells"),
         ))
     table = html_builder.el(
-        "table", None,
+        "table", {"id": "leaderboard-table"},
         html_builder.el("caption", {"id": "leaderboard-caption"}, caption),
         html_builder.el("thead", None, head_row),
-        html_builder.el("tbody", None, *body_rows),
+        html_builder.el("tbody", {"id": "leaderboard-body"}, *body_rows),
     )
     region = html_builder.el(
         "div", {"class": "region", "role": "region", "tabindex": "0", "aria-labelledby": "leaderboard-caption"}, table)
@@ -751,8 +861,43 @@ def _runs_ev_td(text: str, na: bool, metric: str, c: views.CellView, archive_pre
         _ev(text, na, _UNIT.get(metric, ""), catalog_version, evidence, c.cell_id)))
 
 
+def _task_id(c: views.CellView) -> str:
+    """The cell's task id: `label`'s own first segment (`plan.py:78-79`, `f"{task}.{combo}.pack-{pack}.r{rep}"`
+    -- the one place a label is built, so this is read from the format, never guessed)."""
+    return c.label.split(".", 1)[0]
+
+
+def _runs_filters(view: views.RunView) -> html_builder.Html:
+    """R4: the Runs filter controls (design section 6 row 10, section 10 `_runs_filters`): task, combo,
+    pack, outcome, validity, each a `<select>` with an "All" default plus every distinct value this run's
+    cells carry -- `report.js` reads these five and hides non-matching rows, showing the design's exact
+    no-match copy when nothing is left."""
+    def select(field_id: str, label: str, values: list[str]) -> html_builder.Html:
+        options = [html_builder.el("option", {"value": ""}, f"All ({label.lower()})")]
+        options += [html_builder.el("option", {"value": v}, v) for v in values]
+        return html_builder.el(
+            "label", None, label, " ",
+            html_builder.el("select", {"id": field_id}, *options),
+        )
+
+    tasks = sorted({_task_id(c) for c in view.cells})
+    combos = sorted({c.combo for c in view.cells})
+    packs = sorted({c.pack for c in view.cells})
+    outcomes = sorted({c.outcome for c in view.cells})
+    validities = sorted({c.validity for c in view.cells})
+    return html_builder.el(
+        "div", {"id": "runs-filters", "class": "small"},
+        select("filter-task", "Task", tasks),
+        select("filter-combo", "Combo", combos),
+        select("filter-pack", "Pack", packs),
+        select("filter-outcome", "Outcome", outcomes),
+        select("filter-validity", "Validity", validities),
+    )
+
+
 def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str], run_dir: Path | None = None,
-          root: Path | None = None, catalog_version: str | None = None) -> str:
+          root: Path | None = None, catalog_version: str | None = None,
+          combo_ix: dict[str, str] | None = None) -> str:
     if not view.cells:
         return html_builder.el("section", {"id": "runs"}, html_builder.el("h2", None, "Runs"),
                                html_builder.el("p", None, "No cells in this run."))
@@ -794,17 +939,25 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str], run_
             html_builder.el("td", None, _evidence_content(c, "pass_at_1", archive_present)),
             html_builder.el("td", None, _cell_card(c, archive_present, catalog_version)),
         ]
-        body_rows.append(html_builder.el("tr", {"id": f"cell-{c.cell_id}"}, *row_cells))
+        # `data-combo` carries the legend's "c1".."c8" token (design section 6: hiding a combo hides its
+        # rows "everywhere, except in Validity" -- so Runs shares the same CSS hide-cN vocabulary the
+        # leaderboard rows use); `data-combo-name` is the literal combo the Runs filter select matches.
+        row_attrs = {"id": f"cell-{c.cell_id}", "data-task": _task_id(c),
+                    "data-combo": (combo_ix or {}).get(c.combo, ""), "data-combo-name": c.combo,
+                    "data-pack": c.pack, "data-outcome": c.outcome, "data-validity": c.validity}
+        body_rows.append(html_builder.el("tr", row_attrs, *row_cells))
 
     table = html_builder.el(
         "table", None,
         html_builder.el("caption", {"id": "runs-caption"}, "Every cell of the run"),
         html_builder.el("thead", None, head_row),
-        html_builder.el("tbody", None, *body_rows),
+        html_builder.el("tbody", {"id": "runs-body"}, *body_rows),
     )
     region = html_builder.el(
         "div", {"class": "region", "role": "region", "tabindex": "0", "aria-labelledby": "runs-caption"}, table)
-    return html_builder.el("section", {"id": "runs"}, html_builder.el("h2", None, "Runs"), region)
+    no_match = html_builder.el("p", {"id": "runs-no-match", "hidden": True}, "No cells match this filter.")
+    return html_builder.el("section", {"id": "runs"}, html_builder.el("h2", None, "Runs"), _runs_filters(view),
+                           no_match, region)
 
 
 def _comparison(comparison_obj: board.Comparison | str | None) -> str:
@@ -908,17 +1061,22 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
     # (design section 5); header, validity (R2), leaderboard and runs (R3) are built on `html_builder.el` end to
     # end, so they are already `Html`; pack effect and comparison stay `trusted()`-marked here until R5.
     comparison_html = _comparison(comparison_obj)
+    combo_ix = _combo_index(board_obj)  # R4: the legend's c1..c8 token, shared by the leaderboard and Runs rows
     sections = [
         model.Section("header", "Run header",
                       _header(view, tags, _permission_modes(run_dir), judging, root, run_dir, board_obj=board_obj, params=params)),
         model.Section("validity", "Validity", _validity(view)),
         model.Section("leaderboard", "Leaderboard", _leaderboard(view, board_obj)),
         model.Section("pack-effect", "Pack effect", html_builder.trusted(_pack_effect(board_obj))),
-        model.Section("runs", "Runs", _runs(view, archive_present, tags, run_dir, root, catalog_version=view.catalog_version)),
+        model.Section("runs", "Runs", _runs(view, archive_present, tags, run_dir, root,
+                                            catalog_version=view.catalog_version, combo_ix=combo_ix)),
     ]
     if comparison_html:
         sections.append(model.Section("comparison", "Comparison", html_builder.trusted(comparison_html)))
-    return model.page(model.ReportModel(run_id=view.run_id, sections=tuple(sections)), style=STYLE)
+    # R4: the sticky control bar the script drives (markup only at this checkpoint).
+    bar = _control_bar(board_obj, combo_ix)
+    return model.page(model.ReportModel(run_id=view.run_id, sections=tuple(sections)), style=STYLE,
+                      script=None, bar=bar)  # RED-CHECKPOINT: script wiring lands in the next commit
 
 
 def scan(text: str, credential_values: set[str] = frozenset()) -> int:
