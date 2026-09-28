@@ -18,7 +18,7 @@ from archived_runs import GOOD, make_run
 from test_calibrate import cal_root, calibrate
 from test_grade_judge import CLAUDE, FIX, ROOT, fake_calls, judged_root, spawns
 
-from harness_bench import egress, views
+from harness_bench import config, egress, views
 from harness_bench.grade import judge, runner
 from harness_bench.report import html
 
@@ -158,14 +158,16 @@ def test_a_dev_catalog_pass_reads_probe_pass(tmp_path):
     root = judged_root(tmp_path)
     catalog = root / "bench" / "metrics.yaml"
     raw = catalog.read_text(encoding="utf-8")
-    assert raw.count("version: '0.4'") == 1
-    catalog.write_text(raw.replace("version: '0.4'", 'version: "0.4.dev"', 1), encoding="utf-8")
+    release = config.load_yaml(catalog)["version"]  # make_root already released it; judged_root re-dumps via yaml.safe_dump (single quotes)
+    dev = f"{release}.dev"
+    assert raw.count(f"version: '{release}'") == 1
+    catalog.write_text(raw.replace(f"version: '{release}'", f'version: "{dev}"', 1), encoding="utf-8")
     run_dir = make_run(root, tmp_path, {"a": GOOD}, combos={"a": "combo-placeholder"})
     gid = runner.run_pass(run_dir, root).grading_id
-    catalog.write_text(catalog.read_text(encoding="utf-8").replace('version: "0.4.dev"', "version: '0.4'", 1),
+    catalog.write_text(catalog.read_text(encoding="utf-8").replace(f'version: "{dev}"', f"version: '{release}'", 1),
                        encoding="utf-8")
-    view = views.load(run_dir, "0.4.dev")
-    assert view.grading_id == gid and view.catalog_version == "0.4.dev"
+    view = views.load(run_dir, dev)
+    assert view.grading_id == gid and view.catalog_version == dev
     page = html.render(view, False, run_dir, root=root)
     assert "<dt>Probe versions</dt><dd>probe pass</dd>" in page
 
