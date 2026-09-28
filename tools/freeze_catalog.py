@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import shutil
 import subprocess
 import sys
@@ -27,6 +28,26 @@ def _repo_root() -> Path:
 
 def _fixture_run(name: str) -> Path:
     return _repo_root() / "tests" / "fixtures" / "ledger" / name / "run"
+
+
+def _control_root(root: Path, tmp: Path) -> Path:
+    """The environment the US-4 control grades in (tests/archived_runs.make_root, release=False, plus bench/rubrics):
+    root's X1 task, catalog, profiles and rubrics, and an empty price list. Goldens graded under the real root would
+    read its live price list, which the control (and CI) never sees, so they would never match (found at the 0.5
+    freeze: the board's cost reason differed)."""
+    r = tmp / "control-root"
+    shutil.copytree(root / "tasks" / "X1", r / "tasks" / "X1")
+    (r / "bench").mkdir(parents=True)
+    shutil.copy(root / METRICS, r / METRICS)
+    shutil.copytree(root / "bench" / "profiles", r / "bench" / "profiles")
+    if (root / "bench" / "rubrics").is_dir():
+        shutil.copytree(root / "bench" / "rubrics", r / "bench" / "rubrics")
+    (r / "bench" / "prices.yaml").write_text(json.dumps({"schema": "bench-prices/1", "currency": "USD",
+                                                         "unit": "per_million_tokens", "entries": []}),
+                                             encoding="utf-8")  # the bytes tests/archived_runs.set_prices writes
+    if runner.catalog_hash(r) != runner.catalog_hash(root):
+        raise SystemExit("the control root's catalog_hash differs from the root's; nothing frozen")
+    return r
 
 
 def graded(root: Path, name: str, tmp: Path) -> tuple[bytes, bytes]:
@@ -78,11 +99,12 @@ def freeze(root: Path, golden: Path, freeze_path: Path) -> int:
     with tempfile.TemporaryDirectory(prefix="freeze-") as raw:
         tmp = Path(raw)
         view_pins, board_pins = {}, {}
+        clean = _control_root(root, tmp)
         out = golden / version
         out.mkdir(parents=True, exist_ok=True)
         try:
             for name in FIXTURES:
-                view_bytes, board_bytes = _twice(root, name, tmp)
+                view_bytes, board_bytes = _twice(clean, name, tmp)
                 (out / f"{name}.export").write_bytes(view_bytes)
                 (out / f"{name}.board.export").write_bytes(board_bytes)
                 view_pins[name] = _sha(view_bytes)
@@ -91,7 +113,7 @@ def freeze(root: Path, golden: Path, freeze_path: Path) -> int:
             shutil.rmtree(out, ignore_errors=True)
             raise
     versions[version] = {"catalog_hash": runner.catalog_hash(root), "golden": view_pins, "board_golden": board_pins}
-    freeze_path.write_text(yaml.safe_dump(record, sort_keys=False), encoding="utf-8")
+    freeze_path.write_text(yaml.safe_dump(record, sort_keys=False), encoding="utf-8", newline="\n")  # LF (eol=lf)
     print(f"froze {version}: catalog_hash {versions[version]['catalog_hash']}")
     return 0
 
