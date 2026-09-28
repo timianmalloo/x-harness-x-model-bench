@@ -350,7 +350,7 @@ def _evidence(c: views.CellView, archive_present: bool) -> str:
 def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str], run_dir: Path | None = None,
           root: Path | None = None) -> str:
     if not view.cells:
-        return '<section id="runs"><h2>Cells</h2><p>No cells in this run.</p></section>'
+        return '<section id="runs"><h2>Runs</h2><p>No cells in this run.</p></section>'
     show_mutation = report.has_d1_cell(view.plan)
     mutation = report.d1_mutation_values(root, run_dir, view) if show_mutation else {}
     headers = [("Cell", False), ("Outcome", False), ("Validity", False), ("pass@1", True), ("Partial credit", True),
@@ -369,7 +369,7 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str], run_
              (_e(report.usd(c.scores.get("cost_usd", na))), True), (_e(report.context_window(c.harness, tags.get(c.cell_id))), False),
              (_e(", ".join(w.code for w in c.warnings) or "none"), False),
              (_evidence(c, archive_present), False)] for c in view.cells]
-    return f'<section id="runs"><h2>Cells</h2>{_table("runs", "Every cell of the run", headers, rows)}</section>'
+    return f'<section id="runs"><h2>Runs</h2>{_table("runs", "Every cell of the run", headers, rows)}</section>'
 
 
 def _comparison(comparison_obj: board.Comparison | str | None) -> str:
@@ -479,7 +479,7 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
         ("validity", "Validity", _validity(view)),
         ("leaderboard", "Leaderboard", _leaderboard(view, board_obj)),
         ("pack-effect", "Pack effect", _pack_effect(board_obj)),
-        ("runs", "Cells", _runs(view, archive_present, tags, run_dir, root)),
+        ("runs", "Runs", _runs(view, archive_present, tags, run_dir, root)),
     ):
         sections.append(model.Section(sid, title, html_builder.trusted(body)))
     if comparison_html:
