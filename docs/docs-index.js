@@ -2285,6 +2285,49 @@ window.DOCS_INDEX = {
       "sourceSha256": "eb2da9c50caab0eb1856d7407bba4811a01934d4a41f077b672ab3a85a2045be"
     },
     {
+      "id": "note-spike-s12-formal-toolchains",
+      "path": "docs/notes/spike-s12-formal-toolchains.md",
+      "title": "Spike S-12: TLA+ and Lean 4 toolchains run natively on the Windows operator host",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-29",
+      "reviewSuggested": [],
+      "summary": "Both toolchains proved out natively on this Windows 11 host. TLA+: Temurin JDK 21 already on PATH, tla2tools.jar v1.7.4 re-downloaded and its sha256 matched tools/check_models.py's pin exactly, TLC checked run_lifecycle.tla (liveness config) clean in 10.4s inside a fresh git worktree. Lean 4: elan 4.2.4 installed natively to the operator's per-user ~/.elan, a minimal no-Mathlib lake project pinned to leanprover/lean4:v4.34.1 built clean (`#print axioms` shows only propext/Quot.sound, no sorry) in a fresh git worktree; first build (toolchain download+install+build) took 54.3s, a rebuild with the toolchain already warm took 1.1s. The elan toolchain cache is 3.1 GB and lives outside any cell's working copy; a cell's own `.lake/build` is 70 KB. macOS is unverified for both toolchains (marked, not guessed): no macOS CI job exists today. Nothing in either toolchain failed; a first draft Lean proof was wrong (my error, not a toolchain fault) and was fixed.",
+      "tags": [
+        "benchmark",
+        "spike",
+        "formal-methods",
+        "tla+",
+        "lean",
+        "toolchain",
+        "S-12",
+        "G1",
+        "G2"
+      ],
+      "links": [
+        {
+          "to": "plan-spec-backlog",
+          "rel": "refines"
+        },
+        {
+          "to": "note-proposal-grounding-findings",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0013-native-cells",
+          "rel": "depends-on"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "df8d513d62ec351e5a02eff71d55416089cba5b8bdf5132f1f28f97c6071b32c"
+    },
+    {
       "id": "proof-phase2",
       "path": "docs/proof/phase2.md",
       "title": "Proof Pack - phase 2 (wave-by-wave joins)",
@@ -3060,5 +3103,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "9ce56853ce17c528d374aebc866693ee2980eaa20097087f778b4636b2eabf89"
+  "graphSha256": "90047c32ac45713311d33395ca231f610dd1886447430e0d451e4d72b726323c"
 };
