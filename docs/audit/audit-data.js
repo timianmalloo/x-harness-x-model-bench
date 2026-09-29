@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-29T18:39:09Z",
+  "generated": "2026-09-29T19:21:18Z",
   "audit": [
     {
       "actor": null,
@@ -61143,6 +61143,21 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-09-29T18:23:15Z",
+      "id": "al-01M3Q6G6MSNZYT4SREH8WJRDG7",
+      "kind": "command",
+      "outcome": "success",
+      "prompt": "Author benchmark task E4 (SWE-bench Verified task, 15-60 min band, scenario 5) from stub to ready per the E4 inventory row and tasks/README.md contract, following /new-bench-task with E6 as the worked pattern.",
+      "session": "worker-sonnet-e4",
+      "shortname": "new-bench-task-E4",
+      "skill": "new-bench-task",
+      "summary": "E4 ready: django__django-12155 (SWE-bench Verified, dataset princeton-nlp/SWE-bench_Verified rev c104f840cc67f8b6eec6f759ebc8b2693d585d4a), repo django/django @ e8fcdaad5c428878d0a5d6ba820d957013f75595 pinned not vendored (workspace/README.md); oracle uv run --python 3.8 --with-editable . --with docutils python tests/runtests.py -v2 <7 labels>; 1 FAIL_TO_PASS + 6 PASS_TO_PASS discriminate 6/7 FAILED on base vs 7/7 OK on reference (oracle/grade_e4.py via harness_bench.grade.correctness.grade, oracle/evidence.md); bench validate ok.",
+      "tags": [],
+      "tool": null
     }
   ],
   "changes": [

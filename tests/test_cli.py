@@ -354,7 +354,7 @@ def test_a_relative_tools_dir_resolves_absolute_and_the_pack_on_build_succeeds(r
 
     pack_root = Path(args.tools_dir).parent / "pack"
     p = {"pack": {"source": args.pack_source, "commit": commit}, "parameters": {"git_timeout": 60}}
-    build = cli._workspace_builder(Path(args.root), p, tmp_path / "sources", pack_root)
+    build = cli._workspace_builder(Path(args.root), p, tmp_path / "sources", pack_root, tmp_path / "upstream")
     result = build({"task": "X1", "task_version": "v1", "pack": "on"}, tmp_path / "cells" / "c1")
     assert result == {"pack": "on", "pack_manifest": 1}
     assert (tmp_path / "cells" / "c1" / "ws" / "PACK-MARKER.txt").read_text(encoding="utf-8") == "X1"

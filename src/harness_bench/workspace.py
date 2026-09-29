@@ -12,15 +12,17 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import shutil
 import sys
+import tarfile
 import time
 import uuid
 from pathlib import Path
 
-from harness_bench import archive, gitsafe, procs
+from harness_bench import archive, config, gitsafe, procs
 from harness_bench.errors import BenchError
 
 INSTRUCTION_FILES = ("CLAUDE.md", ".claude/CLAUDE.md", "AGENTS.md", "GEMINI.md", ".github/copilot-instructions.md")
@@ -90,14 +92,72 @@ def _land(tmp: Path, dest: Path, valid) -> Path:
     return dest
 
 
-def task_source(task_dir: Path, version: str, sources_root: Path) -> Path:
-    """The bench-owned repository of one task version's base tree (created once, then reused)."""
+def _verify_commit(clone: Path, commit: str) -> None:
+    """Refuse a pin that is not the exact commit id (a short prefix, a moved tag, the wrong repo) --
+    `rev-parse --verify <commit>^{commit}` resolves a prefix to its full oid, so an exact string
+    comparison is what tells "verified to be exactly that commit" from merely "reachable"."""
+    result = gitsafe.git(["rev-parse", "--verify", f"{commit}^{{commit}}"], cwd=clone, timeout=GIT_TIMEOUT)
+    if result.stdout.strip() != commit:
+        raise BenchError("HB-PRE-007", f"{clone}: {commit!r} is not the exact upstream commit id (resolved to "
+                                        f"{result.stdout.strip()!r})")
+
+
+def upstream_tree(repo: str, commit: str, upstream_root: Path) -> Path:
+    """A bench-owned, `--no-checkout` clone of one pinned upstream commit (fetched once, cached under
+    `upstream_root`, keyed by repo+commit, and reused by every task version that pins it). Kept
+    checkout-free so many `task_source` builds can `git archive` its tree concurrently with nothing
+    to race on; the clone itself is never modified after landing."""
+    key = hashlib.sha256(f"{repo}@{commit}".encode()).hexdigest()[:16]
+    dest = upstream_root / key
+    if (dest / ".git").is_dir():
+        _verify_commit(dest, commit)
+        return dest
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    tmp = dest.parent / f".{dest.name}.{uuid.uuid4().hex[:8]}.tmp"
+    try:
+        gitsafe.git(["clone", "--quiet", "--no-checkout", repo, str(tmp)], cwd=dest.parent, timeout=GIT_TIMEOUT * 5)
+        _verify_commit(tmp, commit)
+        return _land(tmp, dest, lambda d: (d / ".git").is_dir())
+    finally:
+        _discard(tmp)
+
+
+def _extract_upstream_tree(clone: Path, commit: str, dest: Path) -> None:
+    """`git archive` the clone's tree at `commit` into the already-created, empty `dest` -- a tree, not a
+    repository (R-83): no `.git`, no history, no reflog. Extracted through a tar file rather than a
+    captured stdout pipe, because `procs.run` decodes stdout as UTF-8 text (`decode(...,
+    errors="replace")`), which would corrupt a binary tar stream."""
+    tar_path = dest.parent / f".{dest.name}.{uuid.uuid4().hex[:8]}.tar"
+    try:
+        gitsafe.git(["archive", "--format=tar", f"--output={tar_path}", commit], cwd=clone, timeout=GIT_TIMEOUT * 5)
+        with tarfile.open(tar_path) as tar:
+            tar.extractall(dest, filter="data")
+    finally:
+        tar_path.unlink(missing_ok=True)
+
+
+def task_source(task_dir: Path, version: str, sources_root: Path, upstream_root: Path | None = None) -> Path:
+    """The bench-owned repository of one task version's base tree (created once, then reused).
+
+    A workspace/-only task (the default) commits `tasks/<ID>/workspace/` as-is, exactly as before. A
+    task whose `task.yaml` sets `source.workspace_from: source` opts in instead: the base tree is the
+    pinned `source.repo` at `source.commit` (a cached, verified upstream clone's tree, via `git
+    archive`), with `tasks/<ID>/workspace/` overlaid on top -- so a large public task's base tree
+    never vendors the upstream repository into this one, and the cell still sees one tree with one
+    base commit, never the upstream's history (R-83)."""
     dest = sources_root / task_dir.name / version[:16]
     if (dest / ".git").is_dir():
         return dest
     dest.parent.mkdir(parents=True, exist_ok=True)
     tmp = _fresh(dest)
     try:
+        source = config.load_yaml(task_dir / "task.yaml").get("source") or {}
+        if source.get("workspace_from") == "source":
+            if upstream_root is None:
+                raise BenchError("HB-PRE-007", f"{task_dir.name}: source.workspace_from: source needs an upstream "
+                                                "cache root")
+            clone = upstream_tree(source["repo"], source["commit"], upstream_root)
+            _extract_upstream_tree(clone, source["commit"], tmp)
         shutil.copytree(task_dir / "workspace", tmp, dirs_exist_ok=True)
         gitsafe.git(["init", "-q", "-b", "main"], cwd=tmp, timeout=GIT_TIMEOUT)
         gitsafe.git(["add", "-A"], cwd=tmp, timeout=GIT_TIMEOUT)

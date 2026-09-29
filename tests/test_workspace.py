@@ -149,6 +149,88 @@ def test_one_cells_git_state_is_invisible_to_another(source, tmp_path):  # T-WS-
     assert not (b / "solution.txt").exists()
 
 
+# --- workspace_from: source (R-83): a task's base tree from a pinned upstream commit, never the
+# upstream repository -- `task_source` builds it as that commit's tree (via a cached, verified
+# clone) with tasks/<ID>/workspace/ overlaid, still one base commit, no upstream history. -------
+
+
+def _local_upstream_repo(path: Path, files: dict) -> str:
+    """A tiny local git repo used as `source.repo` for a `workspace_from: source` task."""
+    for rel, content in files.items():
+        target = path / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+    for args in (["init", "-q", "-b", "main"], ["add", "-A"], ["commit", "-q", "-m", "upstream"]):
+        gitsafe.git(args, cwd=path, timeout=60, identity=True)
+    return gitsafe.git(["rev-parse", "HEAD"], cwd=path, timeout=60).stdout.strip()
+
+
+def _source_task(path: Path, repo: Path, commit: str, overlay: dict) -> None:
+    """A task folder opted into `source.workspace_from: source`, with `workspace/` as the overlay."""
+    (path / "workspace").mkdir(parents=True)
+    for rel, content in overlay.items():
+        target = path / "workspace" / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+    (path / "task.yaml").write_text(
+        "schema: bench-task/1\n"
+        f"id: {path.name}\n"
+        "scenario: 5\n"
+        "title: t\n"
+        "status: ready\n"
+        "source:\n"
+        "  kind: public\n"
+        f'  repo: "{repo.as_posix()}"\n'
+        f'  commit: "{commit}"\n'
+        "  workspace_from: source\n"
+        "budget:\n"
+        "  minutes: 10\n",
+        encoding="utf-8",
+    )
+
+
+def _tree(dest: Path) -> dict:
+    return {p.relative_to(dest).as_posix(): p.read_text(encoding="utf-8")
+            for p in dest.rglob("*") if p.is_file() and ".git" not in p.parts}
+
+
+def test_task_source_from_upstream_builds_the_pinned_tree_plus_the_overlay(base):  # T-WS-upstream
+    upstream = base / "upstream"
+    upstream.mkdir()
+    commit = _local_upstream_repo(upstream, {"a.txt": "A\n", "sub/b.txt": "B\n"})
+    task_dir = base / "tasks" / "P1"
+    _source_task(task_dir, upstream, commit, {"README.md": "overlay\n", "a.txt": "OVERRIDE\n"})
+
+    dest = workspace.task_source(task_dir, "v1", base / "sources", base / "upstream-cache")
+
+    assert _tree(dest) == {"a.txt": "OVERRIDE\n", "sub/b.txt": "B\n", "README.md": "overlay\n"}
+    assert len(_git(dest, "log", "--oneline").strip().splitlines()) == 1  # one base commit, no upstream history
+    assert _git(dest, "remote").strip() == ""
+
+
+def test_task_source_from_upstream_needs_an_upstream_cache_root(base):
+    upstream = base / "upstream"
+    upstream.mkdir()
+    commit = _local_upstream_repo(upstream, {"a.txt": "A\n"})
+    task_dir = base / "tasks" / "P3"
+    _source_task(task_dir, upstream, commit, {"README.md": "x\n"})
+    with pytest.raises(BenchError) as e:
+        workspace.task_source(task_dir, "v3", base / "sources")  # no upstream_root given
+    assert e.value.code == "HB-PRE-007"
+
+
+def test_task_source_from_upstream_refuses_a_commit_that_is_not_exact(base):  # "verified to be exactly that commit"
+    upstream = base / "upstream"
+    upstream.mkdir()
+    commit = _local_upstream_repo(upstream, {"a.txt": "A\n"})
+    task_dir = base / "tasks" / "P2"
+    # a short prefix resolves, but is not the exact 40-hex pin
+    _source_task(task_dir, upstream, commit[:12], {"README.md": "x\n"})
+    with pytest.raises(BenchError) as e:
+        workspace.task_source(task_dir, "v2", base / "sources", base / "upstream-cache")
+    assert e.value.code == "HB-PRE-007"
+
+
 @pytest.fixture
 def clean_base(base):
     """A folder under C:/Projects with no instruction file above it (pytest's tmp_path is under the profile).

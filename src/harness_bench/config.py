@@ -27,6 +27,10 @@ SCENARIOS = range(1, 8)
 SMOKE_REQUIRED = range(1, 7)
 FORMAL_TOOLS = ("tla", "lean")
 TASK_STATUSES = ("stub", "draft", "ready")
+# source.workspace_from (opt-in, default "workspace"): "source" builds the base tree from the pinned
+# source.repo/source.commit (workspace.task_source), with tasks/<ID>/workspace/ overlaid on top,
+# instead of committing tasks/<ID>/workspace/ alone (tasks/README.md).
+WORKSPACE_FROM_VALUES = ("workspace", "source")
 HARNESSES = ("claude-code", "codex", "copilot", "grok", "agy")
 PACKS = ("on", "off")
 METRIC_SOURCES = ("D", "J", "H", "P")
@@ -252,6 +256,9 @@ def validate_task(task_dir: Path, bom_entry: dict | None, p: Problems, grader_mo
     t = load_yaml(ty)
     vendored_paths = [str(vp).rstrip("/") for vp in (t.get("source") or {}).get("vendored_paths") or []]
     _profile_path_problems(task_dir, p, where, vendored_paths)
+    workspace_from = (t.get("source") or {}).get("workspace_from", "workspace")
+    if workspace_from not in WORKSPACE_FROM_VALUES:
+        p.add(where, f"source.workspace_from must be one of {WORKSPACE_FROM_VALUES}, got {workspace_from!r}")
     if t.get("schema") != "bench-task/1":
         p.add(where, "schema must be bench-task/1")
     if t.get("id") != task_dir.name:

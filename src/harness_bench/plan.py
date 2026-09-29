@@ -291,7 +291,7 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, p
         probe = Path(tempfile.mkdtemp(prefix="bench-plan-", dir=cells_root))
         try:
             for task_id, arm in sorted({(c.task, c.pack) for c in cells if c.harness == "copilot"}):
-                source = workspace.task_source(root / "tasks" / task_id, versions[task_id], probe / "sources")
+                source = workspace.task_source(root / "tasks" / task_id, versions[task_id], probe / "sources", probe / "upstream")
                 ws = workspace.cell_working_copy(source, probe / "cells" / task_id / arm / "ws")
                 if arm == "on":
                     pack_dir = workspace.pack_checkout(Path(pack["source"]), pack["commit"], probe / "pack")
