@@ -2,13 +2,25 @@ schema: bench-task/1
 id: E5
 scenario: 5
 title: "SWE-bench Verified task, 15-60 min band"
-status: stub
+status: ready   # oracle discriminates (oracle/evidence.md): the FAIL_TO_PASS test fails on the base, PASS_TO_PASS passes on the base, both pass on the reference
 language: python
 source:
   kind: public
-  upstream: "SWE-bench Verified"
-  repo: "harbor:swe-bench-verified"
-  commit: "tbd"
+  upstream: "SWE-bench Verified sympy__sympy-24443"
+  repo: "https://github.com/sympy/sympy.git"
+  commit: "809c53c077485ca48a206cee78340389cb83b7f1"
+  workspace_from: source   # the engine's own task_source() builds the base tree from repo@commit (never vendored)
+  license: "BSD-3-Clause"
+  copyright: "Copyright (c) 2006-2022 SymPy Development Team."
+  dataset:
+    name: "princeton-nlp/SWE-bench_Verified"
+    revision: "c104f840cc67f8b6eec6f759ebc8b2693d585d4a"   # HF dataset commit sha, confirmed current via GET .../api/datasets/princeton-nlp/SWE-bench_Verified at authoring 2026-09-29 (same revision E4 pinned)
+    instance_id: "sympy__sympy-24443"
+    difficulty: "15 min - 1 hour"   # the dataset's own band label; matches this row's title
+  environment:
+    tool: uv
+    python: "3.11"
+    dependencies: []   # sympy's own install_requires is exactly `mpmath>=0.19` (setup.py); no test-time pin exists upstream (no requirements_test*.txt), so it resolves via --with-editable . alone
 budget:
   minutes: 60
   usd_cap: null
@@ -16,10 +28,27 @@ blast_radius:
   - "**"
 model_map: null
 scripted_user: false
+formal: null
 graders:
   - correctness
   - drift
   - cost
   - process
 oracle:
-  summary: "Fail-to-pass tests."
+  summary: "SWE-bench Verified's own FAIL_TO_PASS (1) and PASS_TO_PASS (1) tests for sympy-24443, both in sympy/combinatorics/tests/test_homomorphisms.py, run via pytest under an ephemeral uv environment, graded from a named JUnit XML report (--junitxml)."
+  runner: pytest          # the report format correctness.py's parse_pytest reads
+  command:
+    - uv
+    - run
+    - --python
+    - "3.11"
+    - --with-editable
+    - .
+    - --with
+    - pytest
+    - python
+    - -m
+    - pytest
+    - sympy/combinatorics/tests/test_homomorphisms.py::test_homomorphism
+    - sympy/combinatorics/tests/test_homomorphisms.py::test_isomorphisms
+    - --junitxml=report.xml
