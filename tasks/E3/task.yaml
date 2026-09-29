@@ -36,8 +36,8 @@ graders:
   - process
 oracle:
   summary: "Upstream TB2 test suite (tests/test_outputs.py, 2 tests): the agent's solution.txt must exist and its Levenshtein similarity to the expected 280-line Zork transcript must be >= 90%. Run with pytest under a pinned uv-managed Python 3.13 (the task's own Dockerfile, FROM ubuntu:24.04 with no RUN lines beyond WORKDIR, installs nothing; 3.13 is this task version's own grading pin, matching the uv-managed Python already resolved on this host)."
-  runner: pytest   # not yet built in src/harness_bench/grade/correctness.py (grade() accepts only unittest/dotnet);
-                    # the discrimination proof below was run directly, outside the engine, per R-83 c3.
+  runner: pytest   # the named JUnit XML report runner (correctness.py); the Leader re-proved base 0 / reference 1
+                    # through correctness.grade at the join (evidence.md), after the author's direct pytest run.
   command:
     - uv
     - run
