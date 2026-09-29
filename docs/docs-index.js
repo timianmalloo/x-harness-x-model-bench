@@ -1282,7 +1282,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "a94262424492b7a4678c2192be4f175a812ba5c95db333daefcf6e8316614220"
+      "sourceSha256": "31c7c3f6f203feedea7f8c1b609f561f13813eca9870cc24f6c1743f558a6386"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -2040,7 +2040,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "92fec85d0493c47b632a5847d36e49735cbf493879745f4169a13ce98130fd8f"
+      "sourceSha256": "9752c350e63415489f689e380e8f40766d0e2d72ab16191e52a764c56d1d90fb"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -2337,7 +2337,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TD\n  C[Coordinator session<br/>Claude Code or Codex] --> IL[(Intent log + KG<br/>ai-forward)]\n  C --> M[matrix.yaml × bom.yaml<br/>run plan]\n  M --> W1[Worker: Codex CLI<br/>gpt-6-sol]\n  M --> W2[Worker: Copilot CLI<br/>gpt-6-sol]\n  M --> W3[Worker: Claude Code<br/>opus-5.5]\n  W1 --> R1[Isolated repo + container<br/>pack on/off bootstrap]\n  W2 --> R2[Isolated repo + container]\n  W3 --> R3[Isolated repo + container]\n  R1 --> T[Telemetry sink<br/>OTel collector + session logs]\n  R2 --> T\n  R3 --> T\n  T --> G[grade/*.py<br/>deterministic + judge]\n  G --> S[(results.duckdb)]\n  S --> RP[report: CLI table<br/>HTML + kiviats + AI summaries]"
         }
       ],
-      "sourceSha256": "0d970fba92ab07db3c068eb4a1bc87122b8fd0c821b3f4df299807aa36efa410"
+      "sourceSha256": "599e881c212a84daecdb3fe4fcce0f251a6f89faee2040584fd621926e706112"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -3060,5 +3060,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "039f6e0dffda443234b4b4b8162064d1fb182a2d3c2f10dd43584a9f0a5df407"
+  "graphSha256": "9ce56853ce17c528d374aebc866693ee2980eaa20097087f778b4636b2eabf89"
 };

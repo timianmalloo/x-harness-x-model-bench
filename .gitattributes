@@ -5,6 +5,7 @@
 * text=auto eol=lf
 # Vendored from cfd-bench with git archive. That blob is CRLF; do not renormalize it.
 tasks/B1/workspace/docs/proposals/build-phasing-plan.html -text
+tasks/B3/workspace/docs/proposals/build-phasing-plan.html -text
 docs/docs-index.js merge=coord-regen
 docs/audit/audit-data.js merge=coord-regen
 docs/audit/index.html merge=coord-regen

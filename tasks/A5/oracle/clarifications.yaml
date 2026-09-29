@@ -1,0 +1,29 @@
+# Annotated key clarifications for A5: the scripted user's only answerable questions (tasks/README.md, spec US-10).
+# A question that matches a clarification gets its `reply` verbatim; every other question gets `default_reply`.
+schema: bench-clarifications/1
+task: A5
+default_reply: "Decide and state your assumption."
+clarifications:
+  - id: scope
+    type: Scope
+    deleted_information: "whether the changed-files view covers only the current agent's own lane/worktree, or every agent's lane across the repository"
+    question: "Does 'what changed' mean the changes in the current agent's own lane/worktree, or changes across every agent's lane in the repository?"
+    reply: "It means the changes in the current agent's own worktree only, relative to where that lane's branch started — not changes from any other agent's lane, and not the wider repository."
+
+  - id: granularity
+    type: Format
+    deleted_information: "whether the view lists changed file paths with a change kind, or shows the full line-by-line diff content of each file"
+    question: "Should the view show a list of changed file paths with each file's change kind (added, modified, deleted), or the full line-by-line diff content of each file?"
+    reply: "A list of changed file paths, each labelled added, modified, or deleted; not the full line-by-line diff content of any file."
+
+  - id: source-of-truth
+    type: Architecture
+    deleted_information: "whether the changed-files list is computed from git, or reconstructed from the recorded tool-call / audit log of what the agent attempted"
+    question: "Should the changed-files list be computed from git, or reconstructed from the recorded tool-call or audit log of what the agent attempted?"
+    reply: "Computed from git — the lane's working tree compared against where its branch started — not reconstructed from the tool-call or audit log, which records what the agent attempted rather than what the filesystem holds."
+
+  - id: refresh
+    type: Behavior
+    deleted_information: "whether the view updates live as the agent works, or is computed on demand when the user asks to see it"
+    question: "Should the changed-files view update live as the agent works, or be computed on demand when the user asks to see it?"
+    reply: "Computed on demand, when the user asks to see it; not a continuously live-updating stream."
