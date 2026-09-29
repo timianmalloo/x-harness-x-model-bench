@@ -6,6 +6,11 @@
 # Vendored from cfd-bench with git archive. That blob is CRLF; do not renormalize it.
 tasks/B1/workspace/docs/proposals/build-phasing-plan.html -text
 tasks/B3/workspace/docs/proposals/build-phasing-plan.html -text
+# Vendored from terminal-bench-2 with git archive (R-83/R-42 c3). Those blobs are CRLF; do not
+# renormalize them, or oracle/vendoring_check.py's byte-for-byte rebuild goes stale.
+tasks/E3/LICENSE -text
+tasks/E3/oracle/reference/solve.sh -text
+tasks/E3/tests/test_outputs.py -text
 docs/docs-index.js merge=coord-regen
 docs/audit/audit-data.js merge=coord-regen
 docs/audit/index.html merge=coord-regen
