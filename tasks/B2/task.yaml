@@ -2,13 +2,18 @@ schema: bench-task/1
 id: B2
 scenario: 2
 title: "ai-de Core feature primer to full spec"
-status: stub
+status: ready
 language: csharp
 source:
   kind: authored
-  upstream: "ai-de Core feature primer"
+  upstream: "ai-de docs/architecture.md - the Freshness Prober capability"
   repo: "https://github.com/timianmalloo/ai-de"
-  commit: "tbd"
+  commit: "88e0c33f0b7c419b1e64d87686987374285292d8"  # same pin as D1/D2 (ai-de); git -C C:\projects\ai-de rev-parse HEAD, 2026-09-18
+  license: MIT
+  copyright: "Copyright (c) 2026 timianmalloo"
+  vendored_paths:
+    - LICENSE
+    - docs/architecture.md
 budget:
   minutes: 20
   usd_cap: null
@@ -17,9 +22,12 @@ blast_radius:
 model_map: null
 scripted_user: false
 graders:
+  - correctness
   - judge
   - drift
   - cost
   - process
 oracle:
-  summary: "Same rubric as B1 + reference spec."
+  summary: "Rubric from the /specify definition of done (core scenario, non-goals, Gherkin ACs, ISO 25010 NFRs, three layers) + reference spec."
+  runner: unittest
+  command: ["{python}", "-m", "unittest", "-v", "test_b2_hidden"]
