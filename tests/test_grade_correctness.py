@@ -499,12 +499,15 @@ def test_a_dotnet_working_copy_with_no_project_is_not_a_clean_build(tmp_path, mo
     assert (got.value, got.reason) == (0, None)
 
 
+@pytest.mark.parametrize("kind", ["unittest", "pytest"])
 @pytest.mark.parametrize(("source", "value"), [("def slugify(text):\n    return (\n", 0), ("x = 1\n", 1)])
-def test_build_and_suite_clean_compiles_a_python_copy(tmp_path, source, value):  # the seeded .py syntax error -> 0
+def test_build_and_suite_clean_compiles_a_python_copy(tmp_path, kind, source, value):  # the seeded .py syntax error -> 0
     folder = tmp_path / "run" / "archive" / "c1" / "attempt-1"
     (folder / "ws").mkdir(parents=True)
     (folder / "ws" / "slug.py").write_text(source, encoding="utf-8")
     inp = cell_input(tmp_path / "run", folder, {"cell_id": "c1", "task": "X1"}, tmp_path / "run" / "grading" / "g" / "c1" / "correctness")
+    if kind == "pytest":  # build_and_suite_clean treats a pytest oracle the same as unittest: both compile
+        inp = dataclasses.replace(inp, task={**inp.task, "oracle": {"runner": "pytest", "command": ["{python}", "-m", "pytest"]}})
     before = tree_digest(folder)
     got = correctness.build_and_suite_clean(inp, inp.task["oracle"], 60)
     assert (got.value, got.reason) == (value, None)

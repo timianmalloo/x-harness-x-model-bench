@@ -1,5 +1,32 @@
 [
   {
+    "name": "pytest oracle: a nested or wrong-suffix --junitxml argument is accepted (report-name validation dropped)",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "    if not name or Path(name).name != name or Path(name).suffix.lower() != \".xml\":\n        return None\n    return name",
+    "replace": "    return name",
+    "tests": [
+      "tests/test_correctness_pytest.py::test_a_nested_junitxml_path_is_rejected_as_no_report_named",
+      "tests/test_correctness_pytest.py::test_a_non_xml_junitxml_suffix_is_rejected_as_no_report_named"
+    ]
+  },
+  {
+    "name": "pytest oracle: a stale JUnit XML report is not removed before the step",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "    report_name = _pytest_spec(oracle[\"command\"]) if kind == \"pytest\" else None\n    if report_name:\n        for old in _report_matches(work, report_name):\n            old.unlink()  # discard archived results in this disposable copy before the new step\n",
+    "replace": "    report_name = _pytest_spec(oracle[\"command\"]) if kind == \"pytest\" else None\n",
+    "tests": ["tests/test_correctness_pytest.py::test_a_stale_report_is_removed_and_a_process_that_writes_none_is_na"]
+  },
+  {
+    "name": "pytest oracle: errors dropped from the JUnit XML failure count",
+    "file": "src/harness_bench/grade/correctness.py",
+    "find": "            failed += int(suite.attrib[\"failures\"]) + int(suite.attrib[\"errors\"]) + int(suite.attrib[\"skipped\"])",
+    "replace": "            failed += int(suite.attrib[\"failures\"]) + int(suite.attrib[\"skipped\"])",
+    "tests": [
+      "tests/test_correctness_pytest.py::test_a_collection_error_scores_0_not_na",
+      "tests/test_correctness_pytest.py::test_the_pytest_report_reader_sums_every_testsuite_element"
+    ]
+  },
+  {
     "name": "zero dotnet tests read as pass",
     "file": "src/harness_bench/grade/correctness.py",
     "find": "    if total == 0:\n        return Result(None, None, \"no hidden test ran\", evidence)\n",
