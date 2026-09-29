@@ -1793,7 +1793,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "544b1cad5a82ff64b5e1ef998fd28b0cf116461e07d0f676d36c2bba35c08875"
+      "sourceSha256": "fa7a0f6fd7e21269edee76a1b41bd420fea03f84e13adde5f44a7ddb3e752a3b"
     },
     {
       "id": "design-phase4-report",
@@ -1918,7 +1918,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "628acd92a45d75f6450e391cd74d6b4186188edcb733177950f318b80824889a"
+      "sourceSha256": "8b0a99de10b1c210eac82145dac5801695ce1630b2241eee347f571eed9ec892"
     },
     {
       "id": "design-run-lifecycle-model",
@@ -2072,7 +2072,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f62191fb72cba59ad89f29c38f7fd3b3931347d880f3e4021e5c0daf9f874601"
+      "sourceSha256": "4a80aa387443b88912862b866b1ebb8aa8e947e1e533d7af447c315a9cc29bb4"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -3135,5 +3135,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "a48529a1f2db3e693e3cf00282724982f965ad144a3ce23e4f22d590b86a8400"
+  "graphSha256": "35d2db4275bad69461409ae780a11bb2eaa90e4e6581c71ec0f8e762a618da7b"
 };
