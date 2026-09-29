@@ -2,25 +2,25 @@ schema: bench-task/1
 id: E5
 scenario: 5
 title: "SWE-bench Verified task, 15-60 min band"
-status: ready   # oracle discriminates (oracle/evidence.md): the 21 FAIL_TO_PASS tests fail on the base (a collection-time ImportError), all 21 pass on the reference (PASS_TO_PASS is empty for this instance)
+status: draft   # prompt and source pin land first; oracle/tests land in the next commit (new-bench-task stages 1-2 vs 3-6)
 language: python
 source:
   kind: public
-  upstream: "SWE-bench Verified pylint-dev__pylint-4604"
-  repo: "https://github.com/pylint-dev/pylint.git"
-  commit: "1e55ae64624d28c5fe8b63ad7979880ee2e6ef3f"
+  upstream: "SWE-bench Verified sympy__sympy-24443"
+  repo: "https://github.com/sympy/sympy.git"
+  commit: "809c53c077485ca48a206cee78340389cb83b7f1"
   workspace_from: source   # the engine's own task_source() builds the base tree from repo@commit (never vendored)
-  license: "GPL-2.0-or-later"
-  copyright: "Copyright (c) https://github.com/PyCQA/pylint (Python Code Quality Authority)."
+  license: "BSD-3-Clause"
+  copyright: "Copyright (c) 2006-2022 SymPy Development Team."
   dataset:
     name: "princeton-nlp/SWE-bench_Verified"
     revision: "c104f840cc67f8b6eec6f759ebc8b2693d585d4a"   # HF dataset commit sha, confirmed current via GET .../api/datasets/princeton-nlp/SWE-bench_Verified at authoring 2026-09-29 (same revision E4 pinned)
-    instance_id: "pylint-dev__pylint-4604"
+    instance_id: "sympy__sympy-24443"
     difficulty: "15 min - 1 hour"   # the dataset's own band label; matches this row's title
   environment:
     tool: uv
-    python: "3.9"
-    dependencies: ["astroid==2.6.5"]   # pinned exactly as pylint's own requirements_test_min.txt pins it; pylint's own install_requires (isort, mccabe, toml, colorama on win32) resolve via --with-editable .
+    python: "3.11"
+    dependencies: []   # sympy's own install_requires is exactly `mpmath>=0.19` (setup.py); no test-time pin exists upstream (no requirements_test*.txt), so it resolves via --with-editable . alone
 budget:
   minutes: 60
   usd_cap: null
@@ -35,41 +35,20 @@ graders:
   - cost
   - process
 oracle:
-  summary: "SWE-bench Verified's own FAIL_TO_PASS (21) tests for pylint-dev__pylint-4604, all in tests/checkers/unittest_variables.py (PASS_TO_PASS is empty for this instance), run via pytest under an ephemeral uv environment, graded from a named JUnit XML report (--junitxml). The base fails as one collection-time ImportError (the hidden test file imports a constant the base source does not yet define), which parse_pytest reads as 0 of 1 passed; the reference collects and passes all 21 (oracle/README.md)."
+  summary: "SWE-bench Verified's own FAIL_TO_PASS (1) and PASS_TO_PASS (1) tests for sympy-24443, both in sympy/combinatorics/tests/test_homomorphisms.py, run via pytest under an ephemeral uv environment, graded from a named JUnit XML report (--junitxml)."
   runner: pytest          # the report format correctness.py's parse_pytest reads
   command:
     - uv
     - run
     - --python
-    - "3.9"
+    - "3.11"
     - --with-editable
     - .
-    - --with
-    - astroid==2.6.5
     - --with
     - pytest
     - python
     - -m
     - pytest
-    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_bitbucket_issue_78
-    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_no_name_in_module_skipped
-    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_all_elements_without_parent
-    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_redefined_builtin_ignored
-    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_redefined_builtin_custom_modules
-    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_redefined_builtin_modname_not_ignored
-    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_redefined_builtin_in_function
-    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_unassigned_global
-    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_listcomp_in_decorator
-    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_listcomp_in_ancestors
-    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_return_type_annotation
-    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_attribute_in_type_comment
-    - tests/checkers/unittest_variables.py::TestVariablesCheckerWithTearDown::test_custom_callback_string
-    - tests/checkers/unittest_variables.py::TestVariablesCheckerWithTearDown::test_redefined_builtin_modname_not_ignored
-    - tests/checkers/unittest_variables.py::TestVariablesCheckerWithTearDown::test_redefined_builtin_in_function
-    - tests/checkers/unittest_variables.py::TestVariablesCheckerWithTearDown::test_import_as_underscore
-    - tests/checkers/unittest_variables.py::TestVariablesCheckerWithTearDown::test_lambda_in_classdef
-    - tests/checkers/unittest_variables.py::TestVariablesCheckerWithTearDown::test_nested_lambda
-    - tests/checkers/unittest_variables.py::TestVariablesCheckerWithTearDown::test_ignored_argument_names_no_message
-    - tests/checkers/unittest_variables.py::TestVariablesCheckerWithTearDown::test_ignored_argument_names_starred_args
-    - tests/checkers/unittest_variables.py::TestMissingSubmodule::test_package_all
+    - sympy/combinatorics/tests/test_homomorphisms.py::test_homomorphism
+    - sympy/combinatorics/tests/test_homomorphisms.py::test_isomorphisms
     - --junitxml=report.xml
