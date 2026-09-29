@@ -299,17 +299,27 @@ Cell ids: D1 cells are from `runs/row15-d1-1`, A1 cells from `runs/a1-capture-1`
 - Definition: 1 iff the hidden-test step exits 0 and every hidden test passes (built, `correctness.py:164`).
   - **0.4 change (DR-G4), decided by cause:** after a **successful restore**, any compiler error scores **0**, wherever it sits, including in a file the cell did not touch.
   - Failures before compilation stay NA: restore, a missing SDK, `dotnet --version` failing, or a timeout.
+  - **Wave 5: `oracle.runner: pytest`.** The command must name a JUnit XML report (`--junitxml=<file>`, a bare
+    file name, no directory component, validated as strictly as `_trx_spec` validates the TRX name). Any stale
+    report already in the archived working copy is removed before the step; exactly one fresh report is read
+    after it. `tests`, `failures`, `errors` and `skipped` are summed across every `<testsuite>` element (a bare
+    `<testsuite>` root, or the `<testsuites>` wrapper pytest writes by default); `passed = tests - failures -
+    errors - skipped`. A pytest **collection error** (a broken test module) still writes a report with `errors`
+    against the total, so it scores **0**, never NA -- the same "0, not NA" rule DR-G4 uses for a dotnet compile
+    error, reached here without a separate cause check because the report already carries it. This unblocks
+    Terminal-Bench 2.0's `tests/test_outputs.py` tasks and most of SWE-bench Verified for E5 (`docs/notes/tb2-native-survey.md`).
 - Rung: tests.
-- NA reasons (besides the shared ones): `oracle runner <kind> not built`; `infrastructure failure before build: <restore|sdk>`; `no hidden test ran`.
+- NA reasons (besides the shared ones): `oracle runner <kind> not built`; `infrastructure failure before build: <restore|sdk>`; `no hidden test ran`; **pytest:** `oracle command has no named JUnit XML report` (no `--junitxml`, or a rejected name); `named JUnit XML report missing`; `multiple named JUnit XML reports`; `named JUnit XML report is unparsable`.
 - Fixtures:
   - D1 cells: `4a62…` 1, `3ff0…` 1, `35af…` **0**, `caa8…` 1, `2535…` 1, `c3d4…` 1 (G16).
   - A1: all three cells 1.
   - C1 and E6: the reference scores 1 and the base scores 0 (`oracle/evidence.md`).
   - **Seeded:** D1 base plus an added file with a syntax error → 0. D1 reference with one member deleted that an unchanged vendored file uses → 0. An empty `NUGET_PACKAGES` → NA `infrastructure failure before build: restore`.
+  - **Seeded (pytest, small real subprocess runs, `tests/test_correctness_pytest.py`):** a passing test module → 1; one pass plus one fail → 0, `0.5000`; a syntax-error module (collection error) → 0, `0.0000`; a module with no tests → NA `no hidden test ran`; a command with no `--junitxml` → NA `oracle command has no named JUnit XML report`; a stale report left in the archive plus a step that writes none → NA `named JUnit XML report missing`.
 
 **`partial_credit`**
 - Kind and class: score · non-additive (fraction, scale 4).
-- Definition: hidden tests passed ÷ hidden tests run. A compile error gives `0.0000`.
+- Definition: hidden tests passed ÷ hidden tests run. A compile error (dotnet) or a collection error (pytest) gives `0.0000`.
 - Rung: tests.
 - NA reasons: as `pass_at_1`.
 - Fixtures: as `pass_at_1`. `35af…` = `0.0000` (5 of 5 failed).
@@ -318,7 +328,8 @@ Cell ids: D1 cells are from `runs/row15-d1-1`, A1 cells from `runs/a1-capture-1`
 - Kind and class: score · additive (0/1).
 - Definition: 1 iff the cell's working copy builds on its own, and 0 otherwise.
   - dotnet: `dotnet build` of the workspace, including its own test projects, exits 0.
-  - python: `python -m compileall -q` over the copy exits 0.
+  - python (`unittest` or `pytest` oracle): `python -m compileall -q` over the copy exits 0. The two Python oracles
+    share this definition -- it measures whether the copy compiles, not how its hidden tests run.
 - Rung: analysis.
 - NA reasons: `infrastructure failure before build: <restore|sdk>`.
 - Fixtures:
