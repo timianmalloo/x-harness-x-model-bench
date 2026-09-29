@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-29T18:26:03Z",
+  "generated": "2026-09-29T18:32:13Z",
   "audit": [
     {
       "actor": null,
@@ -60432,6 +60432,403 @@ window.AUDIT_DATA = {
             "sha256": null,
             "status": "unresolved",
             "token": "C:/Projects/x-harness-x-model-bench-w5-tb2"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3Q70CPBGKX7K6SCBX8MQK40",
+      "shortname": "Goal: author benchmark task G1 (scenario 7, \"TLA+ model of the coord-cor…",
+      "datetime": "2026-09-29T18:32:05Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: author benchmark task G1 (scenario 7, \"TLA+ model of the coord-core lease protocol; find the seeded bug\", 45 minutes) from stub to ready, including the toolchain spike S-12 it depends on, following the /new-bench-task skill (its scenario-7 rules) and the proposal's inventory row.\nMeasured (Leader, 2026-09-29, main after B3's join): tasks/G1/task.yaml is a stub (source ai-forward pack/scripts/coord-core.py lease fold, commit tbd; formal.tool tla on a pinned JDK, formal.statements fixed, formal.toolchain and statement_hash tbd, seeded_bugs 1; graders formal, correctness, drift); the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, row G1) gives the task: model the lease protocol of ai-forward's coord-core.py (claim, release, except carve-outs, retried tool calls, replay) in TLA+, check the stated safety properties with TLC, report bugs; given an extracted standalone slice of the lease fold plus its tests at a pinned commit with one seeded concurrency bug and the safety properties in prose; its design rules require pinned toolchains warmed before the clock, hashed given properties, and every reported bug confirmed by a failing test on the real code; docs/notes/proposal-grounding-findings.md F9 flags spike S-12 (the toolchain is unproven on Windows inside a cell worktree); src/harness_bench/grade/formal.py is the formal grader; this repository already runs TLC in CI (.github/workflows/ci.yml, the models job, Java 21) against models/run_lifecycle.tla, which shows the invocation pattern; ADR-0013 Amendment 1 requires the task to run natively on Windows and macOS.\nDone when: spike S-12 is closed for TLA+ with evidence recorded in the task's oracle/README.md: a pinned tla2tools.jar version (fetched from its official release with its sha256 recorded) and a pinned JDK version, TLC run natively on this Windows host inside a git worktree, and the command portable to macOS (an assume: names the CI job that would confirm it); the lease-fold slice is extracted from ai-forward pack/scripts/coord-core.py at a pinned commit (source.commit set to the full SHA; public repository) into workspace/ as standalone code with its tests, with exactly one seeded concurrency bug and a reproducing test for it under tests/ (hidden); the safety properties are written in prose, taken from coord-core's own docs and tests, not from reading the code, and their file hashed into formal.statement_hash; oracle/ holds a reference TLA+ model that TLC accepts on the real (bug-free) fold and rejects on the seeded variant, with the counterexample recorded; the formal grader (grade/formal.py) scores the reference as passing and a model that misses the bug as not finding it, shown by running it; status ready and uv run bench validate prints ok; the oracle and toolchain commands invoke java directly with forward-slash paths, never through cmd.exe; a test earns its place by a failure only it catches; Commit each stage immediately.\nNot in scope: task G2 (Lean 4); changes to ai-forward itself; engine or grader code changes beyond what formal.py already supports (if the formal grader cannot score this task as written, stop and report the gap); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 75 minutes; commit each stage immediately.\n\nGrounding: .claude/skills/new-bench-task/SKILL.md (scenario-7 rules); tasks/README.md; tasks/G1/task.yaml; the proposal's G1 row and design rules; docs/notes/proposal-grounding-findings.md F9; src/harness_bench/grade/formal.py; models/ and the models job in .github/workflows/ci.yml; the ai-forward repository (read it from a fresh clone of https://github.com/timianmalloo/ai-forward at a pinned commit in a scratch directory, never from C:/Projects/ai-forward's local main); docs/adr/0013-native-cells-own-working-copy.md (Amendment 1). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-g1 (use absolute paths or cd into it in each shell command).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3Q70MH23S9XYRQ9XCA37766",
+      "shortname": "compile-Goal: author benchmark task G1 (scenario 7, \"TLA+ model of the coord-cor…",
+      "datetime": "2026-09-29T18:32:13Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: author benchmark task G1 (scenario 7, \"TLA+ model of the coord-core lease protocol; find the seeded bug\", 45 minutes) from stub to ready, including the toolchain spike S-12 it depends on, following the /new-bench-task skill (its scenario-7 rules) and the proposal's inventory row. Measured (Leader, 2026-09-29, main after B3's join): tasks/G1/task.yaml is a stub (source ai-forward pack/scripts/coord-core.py lease fold, commit tbd; formal.tool tla on a pinned JDK, formal.statements fixed, formal.toolchain and statement_hash tbd, seeded_bugs 1; graders formal, correctness, drift); the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, row G1) gives the task: model the lease protocol of ai-forward's coord-core.py (claim, release, except carve-outs, retried tool calls, replay) in TLA+, check the stated safety properties with TLC, report bugs; given an extracted standalone slice of the lease fold plus its tests at a pinned commit with one seeded concurrency bug and the safety properties in prose; its design rules require pinned toolchains warmed before the clock, hashed given properties, and every reported bug confirmed by a failing test on the real code; docs/notes/proposal-grounding-findings.md F9 flags spike S-12 (the toolchain is unproven on Windows inside a cell worktree); src/harness_bench/grade/formal.py is the formal grader; this repository already runs TLC in CI (.github/workflows/ci.yml, the models job, Java 21) against models/run_lifecycle.tla, which shows the invocation pattern; ADR-0013 Amendment 1 requires the task to run natively on Windows and macOS.\nDone when: spike S-12 is closed for TLA+ with evidence recorded in the task's oracle/README.md: a pinned tla2tools.jar version (fetched from its official release with its sha256 recorded) and a pinned JDK version, TLC run natively on this Windows host inside a git worktree, and the command portable to macOS (an assume: names the CI job that would confirm it); the lease-fold slice is extracted from ai-forward pack/scripts/coord-core.py at a pinned commit (source.commit set to the full SHA; public repository) into workspace/ as standalone code with its tests, with exactly one seeded concurrency bug and a reproducing test for it under tests/ (hidden); the safety properties are written in prose, taken from coord-core's own docs and tests, not from reading the code, and their file hashed into formal.statement_hash; oracle/ holds a reference TLA+ model that TLC accepts on the real (bug-free) fold and rejects on the seeded variant, with the counterexample recorded; the formal grader (grade/formal.py) scores the reference as passing and a model that misses the bug as not finding it, shown by running it; status ready and uv run bench validate prints ok; the oracle and toolchain commands invoke java directly with forward-slash paths, never through cmd.exe; a test earns its place by a failure only it catches; Commit each stage immediately.\nNot in scope: task G2 (Lean 4); changes to ai-forward itself; engine or grader code changes beyond what formal.py already supports (if the formal grader cannot score this task as written, stop and report the gap); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 75 minutes; commit each stage immediately.\nGrounding: .claude/skills/new-bench-task/SKILL.md (scenario-7 rules); tasks/README.md; tasks/G1/task.yaml; the proposal's G1 row and design rules; docs/notes/proposal-grounding-findings.md F9; src/harness_bench/grade/formal.py; models/ and the models job in .github/workflows/ci.yml; the ai-forward repository (read it from a fresh clone of https://github.com/timianmalloo/ai-forward at a pinned commit in a scratch directory, never from C:/Projects/ai-forward's local main); docs/adr/0013-native-cells-own-working-copy.md (Amendment 1). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-g1 (use absolute paths or cd into it in each shell command).\nTrace\n| clause | trace |\n|---|---|\n| done_when: spike S-12 is closed for TLA+ with evidence recorded in the task's oracle/README.md: a pinned tla2tools.jar version (fetched from its official release with its sha256 recorded) and a pinned JDK version, TLC run natively on this Windows host inside a git worktree, and the command portable to macOS (an assume: names the CI job that would confirm it) | phrase: spike S-12 is closed for TLA+ with evidence recorded in the task's oracle/README.md: a pinned tla2tools.jar version (fetched from its official release with its sha256 recorded) and a pinned JDK version, TLC run natively on this Windows host inside a git worktree, and the command portable to macOS (an assume: names the CI job that would confirm it) |\n| done_when: the lease-fold slice is extracted from ai-forward pack/scripts/coord-core.py at a pinned commit (source.commit set to the full SHA | phrase: the lease-fold slice is extracted from ai-forward pack/scripts/coord-core.py at a pinned commit (source.commit set to the full SHA |\n| done_when: public repository) into workspace/ as standalone code with its tests, with exactly one seeded concurrency bug and a reproducing test for it under tests/ (hidden) | phrase: public repository) into workspace/ as standalone code with its tests, with exactly one seeded concurrency bug and a reproducing test for it under tests/ (hidden) |\n| done_when: the safety properties are written in prose, taken from coord-core's own docs and tests, not from reading the code, and their file hashed into formal.statement_hash | phrase: the safety properties are written in prose, taken from coord-core's own docs and tests, not from reading the code, and their file hashed into formal.statement_hash |\n| done_when: oracle/ holds a reference TLA+ model that TLC accepts on the real (bug-free) fold and rejects on the seeded variant, with the counterexample recorded | phrase: oracle/ holds a reference TLA+ model that TLC accepts on the real (bug-free) fold and rejects on the seeded variant, with the counterexample recorded |\n| done_when: the formal grader (grade/formal.py) scores the reference as passing and a model that misses the bug as not finding it, shown by running it | phrase: the formal grader (grade/formal.py) scores the reference as passing and a model that misses the bug as not finding it, shown by running it |\n| done_when: status ready and uv run bench validate prints ok | phrase: status ready and uv run bench validate prints ok |\n| done_when: the oracle and toolchain commands invoke java directly with forward-slash paths, never through cmd.exe | phrase: the oracle and toolchain commands invoke java directly with forward-slash paths, never through cmd.exe |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: Commit each stage immediately. | phrase: Commit each stage immediately. |\n| not_in_scope: task G2 (Lean 4) | phrase: task G2 (Lean 4) |\n| not_in_scope: changes to ai-forward itself | phrase: changes to ai-forward itself |\n| not_in_scope: engine or grader code changes beyond what formal.py already supports (if the formal grader cannot score this task as written, stop and report the gap) | phrase: engine or grader code changes beyond what formal.py already supports (if the formal grader cannot score this task as written, stop and report the gap) |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- /new-bench-task: unresolved (outside repo)\n- tasks/G1/task.yaml: tasks/G1/task.yaml sha256 6e4fc7b64e12980861c5f892b7fdbe9779c165c2e012d3b5254caf70913f21eb\n- pack/scripts/coord-core.py: unresolved (ambiguous: 3 matches)\n- docs/proposals/cross-harness-benchmarking-proposal.md: docs/proposals/cross-harness-benchmarking-proposal.md sha256 599e881c212a84daecdb3fe4fcce0f251a6f89faee2040584fd621926e706112\n- coord-core.py: unresolved (ambiguous: 145 matches)\n- docs/notes/proposal-grounding-findings.md: docs/notes/proposal-grounding-findings.md sha256 6e60fa814c6eae61a7b55760e8315c186138ee62e0783571b412994046748e4e\n- src/harness_bench/grade/formal.py: src/harness_bench/grade/formal.py sha256 8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7\n- .github/workflows/ci.yml: unresolved (not found; nearest: .github/workflows/ci.yml)\n- models/run_lifecycle.tla: models/run_lifecycle.tla sha256 f4f34a5bacbaac523de17713746b97be05f856418c133812f304b4a06ff2a6d7\n- oracle/README.md: unresolved (ambiguous: 17 matches)\n- workspace/: unresolved (not found)\n- tests/: unresolved (not found)\n- oracle/: unresolved (not found)\n- grade/formal.py: src/harness_bench/grade/formal.py sha256 8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7\n- formal.py: src/harness_bench/grade/formal.py sha256 8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7\n- runs/: unresolved (not found)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 6496362998afdbef7816c9a5e376c03a2b9e87474f3c460ca6fb8ac769fcc587\n- models/: unresolved (not found)\n- https://github.com/timianmalloo/ai-forward: unresolved (not found)\n- C:/Projects/ai-forward's: unresolved (outside repo)\n- docs/adr/0013-native-cells-own-working-copy.md: docs/adr/0013-native-cells-own-working-copy.md sha256 8387ae6205532c71d610c371dfa493322031185950aa6fd2dbaeddba8b40763f\n- C:/Projects/x-harness-x-model-bench-w5-g1: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3Q70CPBGKX7K6SCBX8MQK40\nraw sha256: 478032b60176ca33ad7e00edf244d656717561403d7e83da0622e994101c8ef6\ncompiler model: claude-opus-5-5\nengine seconds: 0.009\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3Q70CPBGKX7K6SCBX8MQK40 for claude-code v1: 15 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "spike S-12 is closed for TLA+ with evidence recorded in the task's oracle/README.md: a pinned tla2tools.jar version (fetched from its official release with its sha256 recorded) and a pinned JDK version, TLC run natively on this Windows host inside a git worktree, and the command portable to macOS (an assume: names the CI job that would confirm it)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "spike S-12 is closed for TLA+ with evidence recorded in the task's oracle/README.md: a pinned tla2tools.jar version (fetched from its official release with its sha256 recorded) and a pinned JDK version, TLC run natively on this Windows host inside a git worktree, and the command portable to macOS (an assume: names the CI job that would confirm it)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the lease-fold slice is extracted from ai-forward pack/scripts/coord-core.py at a pinned commit (source.commit set to the full SHA",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the lease-fold slice is extracted from ai-forward pack/scripts/coord-core.py at a pinned commit (source.commit set to the full SHA"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "public repository) into workspace/ as standalone code with its tests, with exactly one seeded concurrency bug and a reproducing test for it under tests/ (hidden)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "public repository) into workspace/ as standalone code with its tests, with exactly one seeded concurrency bug and a reproducing test for it under tests/ (hidden)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the safety properties are written in prose, taken from coord-core's own docs and tests, not from reading the code, and their file hashed into formal.statement_hash",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the safety properties are written in prose, taken from coord-core's own docs and tests, not from reading the code, and their file hashed into formal.statement_hash"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "oracle/ holds a reference TLA+ model that TLC accepts on the real (bug-free) fold and rejects on the seeded variant, with the counterexample recorded",
+            "trace": {
+              "kind": "phrase",
+              "ref": "oracle/ holds a reference TLA+ model that TLC accepts on the real (bug-free) fold and rejects on the seeded variant, with the counterexample recorded"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the formal grader (grade/formal.py) scores the reference as passing and a model that misses the bug as not finding it, shown by running it",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the formal grader (grade/formal.py) scores the reference as passing and a model that misses the bug as not finding it, shown by running it"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "status ready and uv run bench validate prints ok",
+            "trace": {
+              "kind": "phrase",
+              "ref": "status ready and uv run bench validate prints ok"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the oracle and toolchain commands invoke java directly with forward-slash paths, never through cmd.exe",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the oracle and toolchain commands invoke java directly with forward-slash paths, never through cmd.exe"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each stage immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each stage immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "task G2 (Lean 4)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "task G2 (Lean 4)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "changes to ai-forward itself",
+            "trace": {
+              "kind": "phrase",
+              "ref": "changes to ai-forward itself"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "engine or grader code changes beyond what formal.py already supports (if the formal grader cannot score this task as written, stop and report the gap)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "engine or grader code changes beyond what formal.py already supports (if the formal grader cannot score this task as written, stop and report the gap)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "spike S-12 is closed for TLA+ with evidence recorded in the task's oracle/README.md: a pinned tla2tools.jar version (fetched from its official release with its sha256 recorded) and a pinned JDK version, TLC run natively on this Windows host inside a git worktree, and the command portable to macOS (an assume: names the CI job that would confirm it)",
+            "the lease-fold slice is extracted from ai-forward pack/scripts/coord-core.py at a pinned commit (source.commit set to the full SHA",
+            "public repository) into workspace/ as standalone code with its tests, with exactly one seeded concurrency bug and a reproducing test for it under tests/ (hidden)",
+            "the safety properties are written in prose, taken from coord-core's own docs and tests, not from reading the code, and their file hashed into formal.statement_hash",
+            "oracle/ holds a reference TLA+ model that TLC accepts on the real (bug-free) fold and rejects on the seeded variant, with the counterexample recorded",
+            "the formal grader (grade/formal.py) scores the reference as passing and a model that misses the bug as not finding it, shown by running it",
+            "status ready and uv run bench validate prints ok",
+            "the oracle and toolchain commands invoke java directly with forward-slash paths, never through cmd.exe",
+            "a test earns its place by a failure only it catches",
+            "Commit each stage immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "author benchmark task G1 (scenario 7, \"TLA+ model of the coord-core lease protocol; find the seeded bug\", 45 minutes) from stub to ready, including the toolchain spike S-12 it depends on, following the /new-bench-task skill (its scenario-7 rules) and the proposal's inventory row. Measured (Leader, 2026-09-29, main after B3's join): tasks/G1/task.yaml is a stub (source ai-forward pack/scripts/coord-core.py lease fold, commit tbd; formal.tool tla on a pinned JDK, formal.statements fixed, formal.toolchain and statement_hash tbd, seeded_bugs 1; graders formal, correctness, drift); the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, row G1) gives the task: model the lease protocol of ai-forward's coord-core.py (claim, release, except carve-outs, retried tool calls, replay) in TLA+, check the stated safety properties with TLC, report bugs; given an extracted standalone slice of the lease fold plus its tests at a pinned commit with one seeded concurrency bug and the safety properties in prose; its design rules require pinned toolchains warmed before the clock, hashed given properties, and every reported bug confirmed by a failing test on the real code; docs/notes/proposal-grounding-findings.md F9 flags spike S-12 (the toolchain is unproven on Windows inside a cell worktree); src/harness_bench/grade/formal.py is the formal grader; this repository already runs TLC in CI (.github/workflows/ci.yml, the models job, Java 21) against models/run_lifecycle.tla, which shows the invocation pattern; ADR-0013 Amendment 1 requires the task to run natively on Windows and macOS.",
+          "main_line_budget": "one slice of at most 75 minutes; commit each stage immediately.\nGrounding: .claude/skills/new-bench-task/SKILL.md (scenario-7 rules); tasks/README.md; tasks/G1/task.yaml; the proposal's G1 row and design rules; docs/notes/proposal-grounding-findings.md F9; src/harness_bench/grade/formal.py; models/ and the models job in .github/workflows/ci.yml; the ai-forward repository (read it from a fresh clone of https://github.com/timianmalloo/ai-forward at a pinned commit in a scratch directory, never from C:/Projects/ai-forward's local main); docs/adr/0013-native-cells-own-working-copy.md (Amendment 1). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-g1 (use absolute paths or cd into it in each shell command).",
+          "not_in_scope": [
+            "task G2 (Lean 4)",
+            "changes to ai-forward itself",
+            "engine or grader code changes beyond what formal.py already supports (if the formal grader cannot score this task as written, stop and report the gap)",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.009,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3Q70CPBGKX7K6SCBX8MQK40",
+        "raw_sha256": "478032b60176ca33ad7e00edf244d656717561403d7e83da0622e994101c8ef6",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/new-bench-task"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/G1/task.yaml",
+            "reason": null,
+            "sha256": "6e4fc7b64e12980861c5f892b7fdbe9779c165c2e012d3b5254caf70913f21eb",
+            "status": "resolved",
+            "token": "tasks/G1/task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pack/scripts/coord-core.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/proposals/cross-harness-benchmarking-proposal.md",
+            "reason": null,
+            "sha256": "599e881c212a84daecdb3fe4fcce0f251a6f89faee2040584fd621926e706112",
+            "status": "resolved",
+            "token": "docs/proposals/cross-harness-benchmarking-proposal.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 145 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-core.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/proposal-grounding-findings.md",
+            "reason": null,
+            "sha256": "6e60fa814c6eae61a7b55760e8315c186138ee62e0783571b412994046748e4e",
+            "status": "resolved",
+            "token": "docs/notes/proposal-grounding-findings.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/formal.py",
+            "reason": null,
+            "sha256": "8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/formal.py"
+          },
+          {
+            "nearest": ".github/workflows/ci.yml",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".github/workflows/ci.yml"
+          },
+          {
+            "nearest": null,
+            "path": "models/run_lifecycle.tla",
+            "reason": null,
+            "sha256": "f4f34a5bacbaac523de17713746b97be05f856418c133812f304b4a06ff2a6d7",
+            "status": "resolved",
+            "token": "models/run_lifecycle.tla"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 17 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "workspace/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/formal.py",
+            "reason": null,
+            "sha256": "8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7",
+            "status": "resolved",
+            "token": "grade/formal.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/formal.py",
+            "reason": null,
+            "sha256": "8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7",
+            "status": "resolved",
+            "token": "formal.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".claude/skills/new-bench-task/SKILL.md"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/README.md",
+            "reason": null,
+            "sha256": "6496362998afdbef7816c9a5e376c03a2b9e87474f3c460ca6fb8ac769fcc587",
+            "status": "resolved",
+            "token": "tasks/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "models/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "https://github.com/timianmalloo/ai-forward"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/ai-forward's"
+          },
+          {
+            "nearest": null,
+            "path": "docs/adr/0013-native-cells-own-working-copy.md",
+            "reason": null,
+            "sha256": "8387ae6205532c71d610c371dfa493322031185950aa6fd2dbaeddba8b40763f",
+            "status": "resolved",
+            "token": "docs/adr/0013-native-cells-own-working-copy.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/x-harness-x-model-bench-w5-g1"
           }
         ],
         "schema": "compiled-prompt/1",
