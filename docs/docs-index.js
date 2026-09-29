@@ -1079,6 +1079,38 @@ window.DOCS_INDEX = {
       "sourceSha256": "3d69ca1bc51b03548430e76e152891eb2c8f6b6a14eb8845602e7e6b53ccf664"
     },
     {
+      "id": "note-tb2-native-survey",
+      "path": "docs/notes/tb2-native-survey.md",
+      "title": "TB2 native survey: all 89 Terminal-Bench 2.0 tasks at 2fd12b88, read for a native/apt/linux-only/git-state verdict (R-83 condition 1)",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2027-03-29",
+      "reviewSuggested": [],
+      "summary": "R-83 condition 1. Every one of the 89 Terminal-Bench 2.0 task folders at commit 2fd12b88aafdd04a52c298e3940bcb189f9766d6 (2fd12b88) was read (task.toml, environment/Dockerfile, and, where the Dockerfile alone did not settle it, tests/test.sh and solution/solve.sh) and given one verdict: native (19), apt (63), linux-only (5) or git-state (2). No easy-band task is native, so E1 takes a shortfall task from the medium band (R-83's shortfall rule 1); E2 and E3 take native tasks from their own bands. No task was run and no task folder changed.",
+      "tags": [
+        "benchmark",
+        "terminal-bench-2",
+        "r-83",
+        "adr-0013",
+        "survey",
+        "tb2"
+      ],
+      "links": [
+        {
+          "to": "rulings-register",
+          "rel": "relates-to"
+        },
+        {
+          "to": "adr-0013-native-cells",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "a7fbc49645bd7e5c8bcfe25298ca69ff096eede0ed2b996918f76d2e90fb2cce"
+    },
+    {
       "id": "review-w1-acp-codex",
       "path": "docs/notes/review-w1-acp-codex.md",
       "title": "W1-ACP cross-vendor join review",
@@ -1282,7 +1314,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ae9225dac64b9e572f632d4afbe9cb05b6f327e44bc64abc8006c608779f2427"
+      "sourceSha256": "31c7c3f6f203feedea7f8c1b609f561f13813eca9870cc24f6c1743f558a6386"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -3060,5 +3092,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "a804d385e66b10bdefbedae2df07573a16b58ccd4cc6e903f1327a700e2f5edf"
+  "graphSha256": "13a2f37488b0114a196121c9dc47bc9ae18d3b398409809e22de702776d6c62b"
 };
