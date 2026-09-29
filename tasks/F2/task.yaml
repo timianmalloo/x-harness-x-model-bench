@@ -2,23 +2,50 @@ schema: bench-task/1
 id: F2
 scenario: 6
 title: "D1 feature as design / implement / adversarial review"
-status: stub
+status: ready   # oracle discriminates (oracle/evidence.md): 0/5 on the pinned base, 5/5 on the reference, 6/6 mutants killed
 language: csharp
 source:
   kind: authored
-  upstream: "ai-de D1 feature as coordination"
+  upstream: "ai-de AiDe.Core Projections/, D1's feature run as scenario 6"
   repo: "https://github.com/timianmalloo/ai-de"
-  commit: "tbd"
+  commit: "88e0c33f0b7c419b1e64d87686987374285292d8"
+  license: MIT
+  copyright: "Copyright (c) 2026 timianmalloo"
+  vendored_paths:
+    - Directory.Build.props
+    - Directory.Packages.props
+    - global.json
+    - LICENSE
+    - src/AiDe.Core/
+    - src/AiDe.Mcp/
+    - src/AiDe.Daemon/
+    - tests/AiDe.Core.Tests/
+    - tests/AiDe.Core.TerminalHost/
+    - tests/AiDe.Core.AcpProbe/
+    - tests/Shared/
+    - tests/fixtures/
+  excluded_paths:
+    - src/AiDe.Core/Watcher/DreamCorpusReader.cs
+    - tests/AiDe.Core.Tests/Watcher/DreamCorpusReaderTests.cs
 budget:
   minutes: 60
   usd_cap: null
 blast_radius:
   - "src/AiDe.Core/Projections/**"
   - "tests/**"
+# One entry per track in prompt.md. Convention fixed by R-73 (the operator, 2026-09-25, F1's
+# DR-F1-1): <role>@<vendor>; a cell reads only its own vendor's column. The strongest model takes
+# the role that decides the public contract (as F1's domain-model); the workhorse takes the role
+# that implements against it and the role that adversarially tests it (as F1's derived-quantities
+# and tests). OpenAI columns follow F1's own choice of gpt-6-sol for the contract-deciding role and
+# gpt-6-luna for the other two (F1's oracle/README.md DR-F1-1).
 model_map:
-  design: tbd
-  implement: tbd
-  adversarial-review: tbd
+  design@anthropic: claude-opus-5-5
+  implement@anthropic: claude-sonnet-5
+  adversarial-review@anthropic: claude-sonnet-5
+  design@openai: gpt-6-sol
+  implement@openai: gpt-6-luna
+  adversarial-review@openai: gpt-6-luna
 scripted_user: false
 graders:
   - correctness
@@ -28,4 +55,16 @@ graders:
   - cost
   - process
 oracle:
-  summary: "As F1."
+  summary: "Hidden xUnit tests for the evidence census projection (D1's contract, run under scenario-6 coordination); intent-log completeness, model-map adherence and MAST coding for the later graders, as F1."
+  runner: dotnet
+  command:
+    - dotnet
+    - test
+    - F2.HiddenTests/F2.HiddenTests.csproj
+    - -p:RestoreSources=.
+    - -p:NuGetAudit=false
+    - --logger
+    - "trx;LogFileName=f2-hidden.trx"
+    - --results-directory
+    - TestResults
+    - "-v:q"
