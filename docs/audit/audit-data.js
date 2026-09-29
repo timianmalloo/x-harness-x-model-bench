@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-29T18:25:09Z",
+  "generated": "2026-09-29T18:26:03Z",
   "audit": [
     {
       "actor": null,
@@ -60159,6 +60159,279 @@ window.AUDIT_DATA = {
             "sha256": null,
             "status": "unresolved",
             "token": "evidence.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3Q6N1JPXE0YD4MAT8958M43",
+      "shortname": "Goal: produce the one committed survey that ruling R-83 condition 1 requ…",
+      "datetime": "2026-09-29T18:25:53Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: produce the one committed survey that ruling R-83 condition 1 requires: every Terminal-Bench 2.0 task at commit 2fd12b88 read and given a verdict (native, apt, linux-only or git-state), so the Leader can select E1, E2 and E3 without a later wave re-deriving it.\nMeasured (Leader, 2026-09-29, main 7e2a79b): docs/notes/rulings.md R-83 (the last entry) defines the survey, its verdicts, the meaning of native (the Dockerfile installs only uv-managed Python or Node beyond the base image; the tests are tests/test_outputs.py or a portable equivalent; the mechanic is a tree, not git state; no step is Linux-only), and the band selection and shortfall rules; the E1 worker already verified the four easy-band tasks (audit entry al-01M3Q61B6QFAQP08P0BKZFVRW9: cobol-modernization apt, fix-git git-state, overfull-hbox apt, prove-plus-comm apt), which are the survey's first four rows, cited, not re-derived; the upstream is https://github.com/harbor-framework/terminal-bench-2 (Apache-2.0).\nDone when: docs/notes/tb2-native-survey.md exists with frontmatter like the other docs/notes files, a header naming the full commit SHA that 2fd12b88 abbreviates and the exact git command used to enumerate the task folders, and one row per task (all of them; state the count) giving the task name, its upstream difficulty from task.toml, the apt or other install lines from environment/Dockerfile, the verdict and the reason, where every native verdict quotes the Dockerfile lines it read; a closing section names the first native task of each band (easy, medium, hard) by the upstream difficulty field, or states the band has none, and applies R-83's shortfall rule to say which tasks E1, E2 and E3 would take; the file is committed as one commit; uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes; no task is run, no task folder changes, and the BOM does not change.\nNot in scope: authoring any task; bench/bom.yaml (the Leader lands BOM 0.5 from this survey); any engine code; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 45 minutes.\n\nGrounding: docs/notes/rulings.md R-83 and R-7; docs/adr/0013-native-cells-own-working-copy.md (Amendment 1); a shallow clone of the upstream at the pinned commit in a scratch directory outside the repository; docs/notes/ (the frontmatter shape). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-tb2 (use absolute paths or cd into it in each shell command).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3Q6NBHPH6RBA7W8YM48J2V5",
+      "shortname": "compile-Goal: produce the one committed survey that ruling R-83 condition 1 requ…",
+      "datetime": "2026-09-29T18:26:03Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: produce the one committed survey that ruling R-83 condition 1 requires: every Terminal-Bench 2.0 task at commit 2fd12b88 read and given a verdict (native, apt, linux-only or git-state), so the Leader can select E1, E2 and E3 without a later wave re-deriving it. Measured (Leader, 2026-09-29, main 7e2a79b): docs/notes/rulings.md R-83 (the last entry) defines the survey, its verdicts, the meaning of native (the Dockerfile installs only uv-managed Python or Node beyond the base image; the tests are tests/test_outputs.py or a portable equivalent; the mechanic is a tree, not git state; no step is Linux-only), and the band selection and shortfall rules; the E1 worker already verified the four easy-band tasks (audit entry al-01M3Q61B6QFAQP08P0BKZFVRW9: cobol-modernization apt, fix-git git-state, overfull-hbox apt, prove-plus-comm apt), which are the survey's first four rows, cited, not re-derived; the upstream is https://github.com/harbor-framework/terminal-bench-2 (Apache-2.0).\nDone when: docs/notes/tb2-native-survey.md exists with frontmatter like the other docs/notes files, a header naming the full commit SHA that 2fd12b88 abbreviates and the exact git command used to enumerate the task folders, and one row per task (all of them; state the count) giving the task name, its upstream difficulty from task.toml, the apt or other install lines from environment/Dockerfile, the verdict and the reason, where every native verdict quotes the Dockerfile lines it read; a closing section names the first native task of each band (easy, medium, hard) by the upstream difficulty field, or states the band has none, and applies R-83's shortfall rule to say which tasks E1, E2 and E3 would take; the file is committed as one commit; uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes; no task is run, no task folder changes, and the BOM does not change.\nNot in scope: authoring any task; bench/bom.yaml (the Leader lands BOM 0.5 from this survey); any engine code; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 45 minutes.\nGrounding: docs/notes/rulings.md R-83 and R-7; docs/adr/0013-native-cells-own-working-copy.md (Amendment 1); a shallow clone of the upstream at the pinned commit in a scratch directory outside the repository; docs/notes/ (the frontmatter shape). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-tb2 (use absolute paths or cd into it in each shell command).\nTrace\n| clause | trace |\n|---|---|\n| done_when: docs/notes/tb2-native-survey.md exists with frontmatter like the other docs/notes files, a header naming the full commit SHA that 2fd12b88 abbreviates and the exact git command used to enumerate the task folders, and one row per task (all of them | phrase: docs/notes/tb2-native-survey.md exists with frontmatter like the other docs/notes files, a header naming the full commit SHA that 2fd12b88 abbreviates and the exact git command used to enumerate the task folders, and one row per task (all of them |\n| done_when: state the count) giving the task name, its upstream difficulty from task.toml, the apt or other install lines from environment/Dockerfile, the verdict and the reason, where every native verdict quotes the Dockerfile lines it read | phrase: state the count) giving the task name, its upstream difficulty from task.toml, the apt or other install lines from environment/Dockerfile, the verdict and the reason, where every native verdict quotes the Dockerfile lines it read |\n| done_when: a closing section names the first native task of each band (easy, medium, hard) by the upstream difficulty field, or states the band has none, and applies R-83's shortfall rule to say which tasks E1, E2 and E3 would take | phrase: a closing section names the first native task of each band (easy, medium, hard) by the upstream difficulty field, or states the band has none, and applies R-83's shortfall rule to say which tasks E1, E2 and E3 would take |\n| done_when: the file is committed as one commit | phrase: the file is committed as one commit |\n| done_when: uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes | phrase: uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes |\n| done_when: no task is run, no task folder changes, and the BOM does not change. | phrase: no task is run, no task folder changes, and the BOM does not change. |\n| not_in_scope: authoring any task | phrase: authoring any task |\n| not_in_scope: bench/bom.yaml (the Leader lands BOM 0.5 from this survey) | phrase: bench/bom.yaml (the Leader lands BOM 0.5 from this survey) |\n| not_in_scope: any engine code | phrase: any engine code |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- docs/notes/rulings.md: unresolved (ambiguous: 4 matches)\n- tests/test_outputs.py: unresolved (not found)\n- https://github.com/harbor-framework/terminal-bench-2: unresolved (not found)\n- docs/notes/tb2-native-survey.md: unresolved (not found)\n- docs/notes: unresolved (not found)\n- environment/Dockerfile: unresolved (not found)\n- docs/ai-forward-pack/scripts/docs-graph.py: unresolved (ambiguous: 142 matches)\n- bench/bom.yaml: bench/bom.yaml sha256 0e91fae3a33d803df974665bee09f3e084122b11cd0d1caa82ac164d2b51e82d\n- runs/: unresolved (not found)\n- docs/adr/0013-native-cells-own-working-copy.md: docs/adr/0013-native-cells-own-working-copy.md sha256 8387ae6205532c71d610c371dfa493322031185950aa6fd2dbaeddba8b40763f\n- docs/notes/: unresolved (not found)\n- C:/Projects/x-harness-x-model-bench-w5-tb2: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3Q6N1JPXE0YD4MAT8958M43\nraw sha256: 8de8d262cce0c4b8f2167cae4a7df4a1bfdb07106e8671a01516b9b6b78be989\ncompiler model: claude-opus-5-5\nengine seconds: 0.009\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3Q6N1JPXE0YD4MAT8958M43 for claude-code v1: 11 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "docs/notes/tb2-native-survey.md exists with frontmatter like the other docs/notes files, a header naming the full commit SHA that 2fd12b88 abbreviates and the exact git command used to enumerate the task folders, and one row per task (all of them",
+            "trace": {
+              "kind": "phrase",
+              "ref": "docs/notes/tb2-native-survey.md exists with frontmatter like the other docs/notes files, a header naming the full commit SHA that 2fd12b88 abbreviates and the exact git command used to enumerate the task folders, and one row per task (all of them"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "state the count) giving the task name, its upstream difficulty from task.toml, the apt or other install lines from environment/Dockerfile, the verdict and the reason, where every native verdict quotes the Dockerfile lines it read",
+            "trace": {
+              "kind": "phrase",
+              "ref": "state the count) giving the task name, its upstream difficulty from task.toml, the apt or other install lines from environment/Dockerfile, the verdict and the reason, where every native verdict quotes the Dockerfile lines it read"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a closing section names the first native task of each band (easy, medium, hard) by the upstream difficulty field, or states the band has none, and applies R-83's shortfall rule to say which tasks E1, E2 and E3 would take",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a closing section names the first native task of each band (easy, medium, hard) by the upstream difficulty field, or states the band has none, and applies R-83's shortfall rule to say which tasks E1, E2 and E3 would take"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the file is committed as one commit",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the file is committed as one commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "no task is run, no task folder changes, and the BOM does not change.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "no task is run, no task folder changes, and the BOM does not change."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "authoring any task",
+            "trace": {
+              "kind": "phrase",
+              "ref": "authoring any task"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench/bom.yaml (the Leader lands BOM 0.5 from this survey)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/bom.yaml (the Leader lands BOM 0.5 from this survey)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any engine code",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any engine code"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "docs/notes/tb2-native-survey.md exists with frontmatter like the other docs/notes files, a header naming the full commit SHA that 2fd12b88 abbreviates and the exact git command used to enumerate the task folders, and one row per task (all of them",
+            "state the count) giving the task name, its upstream difficulty from task.toml, the apt or other install lines from environment/Dockerfile, the verdict and the reason, where every native verdict quotes the Dockerfile lines it read",
+            "a closing section names the first native task of each band (easy, medium, hard) by the upstream difficulty field, or states the band has none, and applies R-83's shortfall rule to say which tasks E1, E2 and E3 would take",
+            "the file is committed as one commit",
+            "uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes",
+            "no task is run, no task folder changes, and the BOM does not change."
+          ],
+          "fan_out_cap": 0,
+          "goal": "produce the one committed survey that ruling R-83 condition 1 requires: every Terminal-Bench 2.0 task at commit 2fd12b88 read and given a verdict (native, apt, linux-only or git-state), so the Leader can select E1, E2 and E3 without a later wave re-deriving it. Measured (Leader, 2026-09-29, main 7e2a79b): docs/notes/rulings.md R-83 (the last entry) defines the survey, its verdicts, the meaning of native (the Dockerfile installs only uv-managed Python or Node beyond the base image; the tests are tests/test_outputs.py or a portable equivalent; the mechanic is a tree, not git state; no step is Linux-only), and the band selection and shortfall rules; the E1 worker already verified the four easy-band tasks (audit entry al-01M3Q61B6QFAQP08P0BKZFVRW9: cobol-modernization apt, fix-git git-state, overfull-hbox apt, prove-plus-comm apt), which are the survey's first four rows, cited, not re-derived; the upstream is https://github.com/harbor-framework/terminal-bench-2 (Apache-2.0).",
+          "main_line_budget": "one slice of at most 45 minutes.\nGrounding: docs/notes/rulings.md R-83 and R-7; docs/adr/0013-native-cells-own-working-copy.md (Amendment 1); a shallow clone of the upstream at the pinned commit in a scratch directory outside the repository; docs/notes/ (the frontmatter shape). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-tb2 (use absolute paths or cd into it in each shell command).",
+          "not_in_scope": [
+            "authoring any task",
+            "bench/bom.yaml (the Leader lands BOM 0.5 from this survey)",
+            "any engine code",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.009,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3Q6N1JPXE0YD4MAT8958M43",
+        "raw_sha256": "8de8d262cce0c4b8f2167cae4a7df4a1bfdb07106e8671a01516b9b6b78be989",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 4 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_outputs.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "https://github.com/harbor-framework/terminal-bench-2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/tb2-native-survey.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "environment/Dockerfile"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 142 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": "bench/bom.yaml",
+            "reason": null,
+            "sha256": "0e91fae3a33d803df974665bee09f3e084122b11cd0d1caa82ac164d2b51e82d",
+            "status": "resolved",
+            "token": "bench/bom.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": "docs/adr/0013-native-cells-own-working-copy.md",
+            "reason": null,
+            "sha256": "8387ae6205532c71d610c371dfa493322031185950aa6fd2dbaeddba8b40763f",
+            "status": "resolved",
+            "token": "docs/adr/0013-native-cells-own-working-copy.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/x-harness-x-model-bench-w5-tb2"
           }
         ],
         "schema": "compiled-prompt/1",
