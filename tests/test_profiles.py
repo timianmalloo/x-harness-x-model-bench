@@ -394,7 +394,7 @@ def test_a_real_profile_launcher_gets_the_engine_past_attempt_start(base, tmp_pa
 def test_the_launcher_rehashes_the_build_at_every_cell_start(tmp_path):  # US-12, HB-CELL-115
     launcher, tools_dir = _launcher(tmp_path)
     assert launcher.check_build()["version"] == "0.156.0"
-    exe = tools_dir / "node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe"
+    exe = tools_dir / "node_modules" / tools.LAYOUT["codex"].exe
     exe.write_text("self-updated", encoding="utf-8")
     with pytest.raises(tools.BuildChanged):
         launcher.check_build()

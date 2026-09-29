@@ -42,7 +42,8 @@ def test_resolve_names_version_executable_adapter_and_hash(tmp_path):
     builds = tools.resolve(_fake_tree(tmp_path))
     claude, codex = builds["claude-code"], builds["codex"]
     assert (claude.version, codex.version) == ("2.1.274", "0.156.0")
-    assert claude.exe.name == "claude.exe" and codex.exe.name == "codex.exe"
+    assert claude.exe.name == Path(tools.LAYOUT["claude-code"].exe).name
+    assert codex.exe.name == Path(tools.LAYOUT["codex"].exe).name
     assert claude.adapter.name == "index.js" and "claude-agent-acp" in claude.adapter.as_posix()
     assert len(claude.sha256) == 64 and claude.sha256 != codex.sha256
     assert claude.record() == {"version": "2.1.274", "sha256": claude.sha256, "adapter_version": "0.79.0",
@@ -60,7 +61,7 @@ def test_hash_covers_the_adapter_too(tmp_path):
 def test_copilot_resolves_platform_build_without_adapter(tmp_path):
     copilot = tools.resolve(_fake_tree(tmp_path))["copilot"]
     assert copilot.version == "1.0.89-1"
-    assert copilot.exe.name == "copilot.exe"
+    assert copilot.exe.name == Path(tools.LAYOUT["copilot"].exe).name
     assert len(copilot.sha256) == 64
     assert copilot.adapter is None
     assert copilot.record() == {"version": "1.0.89-1", "sha256": copilot.sha256,
@@ -71,7 +72,7 @@ def test_copilot_resolves_platform_build_without_adapter(tmp_path):
 
 def test_copilot_missing_exe_is_hb_pre_007(tmp_path):
     tree = _fake_tree(tmp_path)
-    (tree / "node_modules/@github/copilot-win32-x64/copilot.exe").unlink()
+    (tree / "node_modules" / tools.LAYOUT["copilot"].exe).unlink()
     with pytest.raises(BenchError) as error:
         tools.resolve(tree)
     assert error.value.code == "HB-PRE-007"
@@ -90,7 +91,7 @@ def test_resolve_requires_an_adapter_entry_script(tmp_path):
 def test_copilot_binary_change_is_detected_at_cell_start(tmp_path):
     tree = _fake_tree(tmp_path)
     planned = tools.resolve(tree)["copilot"].record()
-    (tree / "node_modules/@github/copilot-win32-x64/copilot.exe").write_text("changed", encoding="utf-8")
+    (tree / "node_modules" / tools.LAYOUT["copilot"].exe).write_text("changed", encoding="utf-8")
     with pytest.raises(tools.BuildChanged) as error:
         tools.check_build(tools.resolve(tree)["copilot"], planned)
     assert error.value.cause is Cause.build_changed

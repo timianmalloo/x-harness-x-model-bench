@@ -2,6 +2,7 @@ import functools
 import os
 import shutil
 import sys
+import tempfile
 import uuid
 from pathlib import Path
 
@@ -12,7 +13,16 @@ from harness_bench import archive, procs
 
 # A folder with no agent instruction file in any ancestor (HB-PRE-002). The operator's profile, where
 # pytest's tmp_path lives, holds ~/.claude/CLAUDE.md, so cells cannot be built there.
-CLEAN_PARENT = Path("C:/Projects/bench-test")
+#
+# `Path("C:/Projects/bench-test")` is a Windows drive-letter path; POSIX pathlib does not recognise the
+# `C:` prefix as a root, so on macOS the fixture's own `root.mkdir(parents=True)` silently created it as
+# a *relative* path under the process's cwd -- the CI checkout -- landing every cell inside the repo
+# that carries CLAUDE.md at its root and turning `HB-PRE-002` on for tests/test_calibrate.py,
+# tests/test_preflight.py and tests/test_report_judges.py wholesale (ADR-0013 Amendment 1, macOS port).
+# `tempfile.gettempdir()` is already proven clean of any instruction file on both hosts: it is where
+# pytest's own `tmp_path` lives on macOS (the errors above showed `/private/var/folders/.../T/...`), and
+# on Windows it stays the pinned `C:/Projects/bench-test` unchanged, per the comment above.
+CLEAN_PARENT = Path("C:/Projects/bench-test") if sys.platform == "win32" else Path(tempfile.gettempdir()) / "bench-test"
 
 
 @pytest.fixture
