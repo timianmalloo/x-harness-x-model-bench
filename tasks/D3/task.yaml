@@ -2,7 +2,7 @@ schema: bench-task/1
 id: D3
 scenario: 4
 title: "P0 wing spine from a given architecture"
-status: draft
+status: ready   # oracle discriminates (oracle/evidence.md): 0/6 on the pinned base, 6/6 on the reference, 6/6 mutants killed
 language: csharp
 source:
   kind: authored
@@ -28,3 +28,13 @@ graders:
   - process
 oracle:
   summary: "Hidden tests with reference values (span, area, aspect ratio, mean chord) + mutation suite."
+  runner: dotnet
+  command:
+    - cmd.exe
+    - /c
+    - 'D3.HiddenTests\run.cmd'
+    - --logger
+    - "trx;LogFileName=d3-hidden.trx"
+    - --results-directory
+    - TestResults
+    - "-v:q"
