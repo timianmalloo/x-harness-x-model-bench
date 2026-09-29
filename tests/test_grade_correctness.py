@@ -260,6 +260,9 @@ def test_d1_cell_copies_are_independent_and_equal_fresh_build(tmp_path):
     fresh_base = tmp_path / "fresh_base"
     shutil.copytree(D1 / "workspace", fresh_base)
     git(fresh_base, "init", "-q", "-b", "main")
+    # Same macos-latest CI shape as `_build_d1_cache` above (its comment has the full account): stop
+    # git deciding to auto-gc this throwaway repo between the commit below and the copytree that follows.
+    git(fresh_base, "config", "gc.auto", "0")
     git(fresh_base, "add", "-A")
     git(fresh_base, "commit", "-q", "-m", f"D1 base ({D1_VERSION[:12]})")
     fresh_base_tree = git(fresh_base, "rev-parse", "HEAD^{tree}")

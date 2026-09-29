@@ -97,8 +97,18 @@ class CellProcess:
     def close(self) -> None:
         """Close the job first (kill-on-close, or its POSIX stand-in, ends any remaining tree), then the
         pipes. In that order a close never blocks: closing a pipe that a reader thread is blocked on
-        waits for the child to exit."""
+        waits for the child to exit.
+
+        `close()` can run with no prior `terminate_and_confirm` (a caller may go straight to close()), so
+        it reaps `self.proc` itself rather than relying on that method's own reap (procs.py's
+        terminate_and_confirm docstring: a POSIX zombie still reads alive via `os.kill(pid, 0)` until
+        reaped). `job.close()` just sent SIGKILL, an unblockable, near-instant kill, so a short bounded
+        wait -- never the caller's problem, never unbounded -- is enough to collect it."""
         self.job.close()
+        try:
+            self.proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            pass
         for stream in (self.proc.stdin, self.proc.stdout, self.proc.stderr):
             if stream is not None:
                 try:
