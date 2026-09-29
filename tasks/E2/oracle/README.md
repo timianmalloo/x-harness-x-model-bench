@@ -1,5 +1,8 @@
 # E2 Oracle
 
+**Status: ready** — `oracle/evidence.md` records the discrimination proof: 1 failed on the base
+tree, 1 passed on the reference (below).
+
 The oracle is Terminal-Bench 2.0's own `count-dataset-tokens` test, `tests/test_outputs.py`,
 unmodified except the one native-path edit (`tasks/E2/README.md`): it asserts `answer.txt` (in the
 grading copy's working directory) contains the substring `79586`, the correct total deepseek-token
@@ -14,8 +17,13 @@ config, `train` split), tokenized with the `Qwen/Qwen2.5-1.5B-Instruct` tokenize
 with forward-slash paths and a bare `--junitxml=e2.xml` report name:
 
 ```
-uv run --python 3.13 --with pytest==8.4.1 pytest tests/test_outputs.py --junitxml=e2.xml -rA
+uv run --python 3.13 --with pytest==8.4.1 pytest test_outputs.py --junitxml=e2.xml -rA
 ```
+
+The target is `test_outputs.py`, not `tests/test_outputs.py`: `grade/correctness.py`'s `grade()`
+copies the *contents* of `task_dir / "tests"` into the grading copy's root
+(`shutil.copytree(task_dir / "tests", work, dirs_exist_ok=True)`), so `tasks/E2/tests/test_outputs.py`
+lands at the copy's root, not under a `tests/` subdirectory there.
 
 `oracle.runner: pytest` is not yet dispatched by `src/harness_bench/grade/correctness.py`
 (`grade()` recognises only `"unittest"` and `"dotnet"`; see `tasks/E2/README.md`). The proof in

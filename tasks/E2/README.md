@@ -1,8 +1,8 @@
 # E2 — Terminal-Bench 2.0 `count-dataset-tokens` (medium band)
 
-**Status: draft**, advancing to `ready` once `oracle/evidence.md` records the discrimination proof
-run on this host (this slice). `prompt.md`, pinned source, `workspace/`, hidden pytest test, and the
-upstream reference solution under `oracle/reference/` are all present.
+**Status: ready.** `prompt.md`, pinned source, `workspace/`, hidden pytest test, and an oracle that
+fails on the base tree and passes on `oracle/reference/` (`oracle/evidence.md`) are all present.
+`uv run bench validate` accepts the folder.
 
 Selected under R-83 (DR-W5-3): `docs/notes/tb2-native-survey.md` verdicts `count-dataset-tokens`
 `native` (medium band, first-alphabetical after E1's shortfall claim on `code-from-image`); no
@@ -69,7 +69,10 @@ No other line differs from the upstream file in each case (`tasks/E2/oracle/vend
 proves it: it undoes exactly this one substitution and asserts byte-equality against the archived
 original). `assume:` the cell's working directory is the correct native stand-in for the upstream
 `/app` (both are "the one directory the agent's tools default to and the verifier reads from");
-**confirm:** `oracle/evidence.md`'s discrimination proof runs `pytest tests/test_outputs.py` with
+**confirm:** `oracle/evidence.md`'s discrimination proof runs `pytest test_outputs.py` (the grading
+copy's `tests/` overlay places `tasks/E2/tests/test_outputs.py` at the copy's root, exactly as
+`grade/correctness.py`'s `grade()` does: `shutil.copytree(task_dir / "tests", work,
+dirs_exist_ok=True)` copies the *contents* of `tests/` into `work`, not into `work/tests/`) with
 `cwd` set to the grading copy's working-directory root and finds `answer.txt` there; **breaks:** if
 the engine's `task_source()`/`cell_working_copy()` cwd convention ever differs from the grading
 copy's cwd, the prompt's instruction and the test's read would point at different places.

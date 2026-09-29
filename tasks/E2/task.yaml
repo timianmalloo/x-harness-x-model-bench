@@ -2,7 +2,7 @@ schema: bench-task/1
 id: E2
 scenario: 5
 title: "TB2 software-engineering task, medium band"
-status: draft   # advances to ready once oracle/evidence.md records the discrimination proof (this slice)
+status: ready   # oracle discriminates (oracle/evidence.md): 1 failed on the base tree, 1 passed on the reference
 language: python
 source:
   kind: public
@@ -45,7 +45,7 @@ graders:
   - cost
   - process
 oracle:
-  summary: "Upstream TB2 pytest test tests/test_outputs.py::test_command_output_content_example, asserting answer.txt (native path; upstream is /app/answer.txt) contains the correct deepseek token count (79586) for the science-domain (chemistry, biology, physics) rows of ryanmarten/OpenThoughts-1k-sample, tokenized over the deepseek_reasoning and deepseek_solution fields with the Qwen2.5-1.5B-Instruct tokenizer."
+  summary: "Upstream TB2 pytest test tasks/E2/tests/test_outputs.py::test_command_output_content_example (run as test_outputs.py at the grading copy's root, once grade/correctness.py's grade() overlays tests/ there), asserting answer.txt (native path; upstream is /app/answer.txt) contains the correct deepseek token count (79586) for the science-domain (chemistry, biology, physics) rows of ryanmarten/OpenThoughts-1k-sample, tokenized over the deepseek_reasoning and deepseek_solution fields with the Qwen2.5-1.5B-Instruct tokenizer."
   runner: pytest   # not yet built by grade/correctness.py (the pytest oracle-runner slice is unmerged); see tasks/E2/oracle/README.md
   command:
     - uv
@@ -55,6 +55,6 @@ oracle:
     - --with
     - pytest==8.4.1
     - pytest
-    - tests/test_outputs.py
+    - test_outputs.py
     - --junitxml=e2.xml
     - -rA
