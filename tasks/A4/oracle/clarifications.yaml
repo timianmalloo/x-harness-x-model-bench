@@ -1,0 +1,35 @@
+# Annotated key clarifications for A4: the scripted user's only answerable questions (tasks/README.md, spec US-10).
+# A question that matches a clarification gets its `reply` verbatim; every other question gets `default_reply`.
+schema: bench-clarifications/1
+task: A4
+default_reply: "Decide and state your assumption."
+clarifications:
+  - id: persistence-vs-sharing
+    type: Architecture
+    deleted_information: "whether reuse requires local filesystem persistence across runs or networked multi-user sharing"
+    question: "Does making the wing definition reusable across runs mean saving it to a local file, or sharing it over a network service?"
+    reply: "It means saving and loading the wing definition to and from a local project file on disk."
+
+  - id: format
+    type: Format
+    deleted_information: "the data serialization format for storing the wing definition"
+    question: "What file format should be used to store the wing definition?"
+    reply: "Use a structured JSON format representing the wing and its stations."
+
+  - id: versioning
+    type: Compatibility
+    deleted_information: "whether the stored format must include an explicit schema version identifier"
+    question: "Does the wing file format require an explicit schema version identifier?"
+    reply: "Yes, the file must include an explicit format version identifier so incompatible revisions are refused."
+
+  - id: validation
+    type: Validation
+    deleted_information: "how invalid or corrupted wing files should be handled upon loading"
+    question: "How should invalid files or data that violates wing invariants be handled when loading?"
+    reply: "Loading must fail closed, rejecting corrupt data or invariant violations with a descriptive error without loading a wing."
+
+  - id: scope
+    type: Scope
+    deleted_information: "whether reuse includes derived quantities and simulation meshes or only the core wing definition"
+    question: "Does reusability apply only to the wing geometry definition or also to derived quantities and simulation results?"
+    reply: "It applies only to the core wing definition (stations and geometric parameters); derived quantities must be recomputed rather than stored."
