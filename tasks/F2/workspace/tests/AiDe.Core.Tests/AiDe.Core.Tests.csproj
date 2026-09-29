@@ -1,0 +1,98 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Captured agent output, used as a fixture. Copied rather than embedded so it stays readable in
+      the repository: it is evidence a human has to be able to inspect, not just bytes a test loads.
+    -->
+    <None Include="fixtures\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AiDe.Core\AiDe.Core.csproj" />
+
+    <!--
+      The MCP server lives here for its tests because the one that matters spans both: the
+      cross-path equivalence gate compares an MCP tool call against a hand-written contract line,
+      and the thing it compares them THROUGH is Core's ingest. A separate test project would put the
+      gate on one side of the boundary it exists to check.
+    -->
+    <ProjectReference Include="..\..\src\AiDe.Mcp\AiDe.Mcp.csproj" />
+
+    <!--
+      A BUILD-ORDER dependency, not an assembly reference. The ConPTY conformance case launches this
+      executable with CREATE_NEW_CONSOLE (DC-014), so it must exist whenever these tests run — and
+      `verify-test-run.py` deliberately runs `dotnet test` PER PROJECT to get per-assembly counts,
+      which would otherwise never build it.
+
+      ReferenceOutputAssembly="false" because the tests start it as a process and must not link it.
+    -->
+    <ProjectReference Include="..\AiDe.Core.TerminalHost\AiDe.Core.TerminalHost.csproj"
+                      ReferenceOutputAssembly="false" />
+
+    <!--
+      The ACP probe, built alongside the tests for the same reason as the terminal host: the
+      self-test case runs it as a real process to prove the shipped self-test flag's guards fire
+      (DC-104), and the process-reaping case needs a child that will not exit on its own.
+
+      ReferenceOutputAssembly="false" because it is started, never linked. No platform condition:
+      it targets net10.0 and both cases are portable.
+    -->
+    <ProjectReference Include="..\AiDe.Core.AcpProbe\AiDe.Core.AcpProbe.csproj"
+                      ReferenceOutputAssembly="false" />
+
+    <!--
+      The daemon, built alongside the tests so DaemonProcessTests cannot silently skip.
+
+      Those tests start it as a real second process — the only way to prove the process split at
+      all. Without this reference it is simply absent on a clean clone, and the case fails on a
+      missing file, which reads as broken tooling rather than as the question going unasked (DC-012).
+
+      ReferenceOutputAssembly="false" because it is started, never linked, and
+      SkipGetTargetFrameworkProperties because the daemon targets net10.0-windows while these
+      tests target net10.0 — without it the build refuses a reference it is only using for
+      ordering.
+
+      AND CONDITIONED ON WINDOWS, which is what lets this project build on Linux at all. These tests
+      target net10.0 and 1,621 of their 1,719 cases are portable — but a net10.0-windows project
+      cannot be BUILT off Windows, so this single build-order reference, present for the 9 cases that
+      launch the daemon as a process, was pinning the entire suite to a 2× runner (INV-0005).
+
+      The cases that need it declare [Trait("Platform", "Windows")] and run only there; on Linux the
+      reference is absent and so are they. `splits` in tools/expected-test-counts.json asserts the
+      two halves still account for all 1,719, so the split can be re-balanced but coverage cannot
+      quietly shrink.
+    -->
+    <ProjectReference Include="..\..\src\AiDe.Daemon\AiDe.Daemon.csproj"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Shared by both test projects: every method added to IWorkspaceQueries used to break four
+         hand-written stubs across two assemblies. Linked rather than packaged, because a project
+         for forty lines is more machinery than the churn it removes. -->
+    <Compile Include="..\Shared\FakeWorkspaceQueries.cs" Link="FakeWorkspaceQueries.cs" />
+    <Compile Include="..\Shared\ConsoleHostCensus.cs" Link="ConsoleHostCensus.cs" />
+  </ItemGroup>
+
+</Project>
