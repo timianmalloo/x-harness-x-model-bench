@@ -6,6 +6,25 @@ from PATH: `bench/tools/package-lock.json` pins both ACP adapters, the Claude Co
 the adapter's SDK, Codex 0.156.0 (0.154.0 rejects gpt-6-sol, spike R11.5), and Copilot 1.0.89-1.
 `npm ci` installs them
 into `.tools/harness/`; each build is invoked by path and re-hashed at every cell start.
+
+Platform (ADR-0013 Amendment 1, section 5): `bench/tools/package.json` depends on each harness's
+platform-neutral wrapper package (`@anthropic-ai/claude-agent-sdk`, `@openai/codex`, `@github/copilot`);
+npm's own `optionalDependencies` resolution installs only the folder matching the running host's
+`os`/`cpu` (`win32-x64`, `darwin-arm64`, `darwin-x64`, ...) -- the pinned `package-lock.json` already
+lists every platform variant (verified: `node_modules/@anthropic-ai/claude-agent-sdk-darwin-{arm64,x64}`,
+`@openai/codex-darwin-{arm64,x64}` and `@github/copilot-darwin-{arm64,x64}` are all present rows), so no
+lockfile change was needed for this port. `LAYOUT` below picks the matching folder name and binary path
+for the current host; each name and its binary's path inside the package were checked against the
+published npm registry (`registry.npmjs.org`) and the real tarball contents, not guessed:
+- `@anthropic-ai/claude-agent-sdk-darwin-{arm64,x64}` (registry: package exists, 200) ships `claude` at
+  its package root (verified: tarball listing of `claude-agent-sdk-darwin-arm64@0.3.284`).
+- `@openai/codex-darwin-{arm64,x64}` is an npm alias (`"@openai/codex-darwin-x64": "npm:@openai/codex@<ver>-darwin-x64"`,
+  read from `@openai/codex`'s own `optionalDependencies`, matching the existing win32-x64 row's alias
+  shape) that still creates a `node_modules/@openai/codex-darwin-{arch}` folder; its binary is at
+  `vendor/<target-triple>/bin/codex` (verified: tarball listing of `codex@0.156.0-darwin-arm64` and
+  `-darwin-x64`, target triples `aarch64-apple-darwin` and `x86_64-apple-darwin`).
+- `@github/copilot-darwin-{arm64,x64}` (registry: package exists, 200) ships `copilot` at its package
+  root (verified: tarball listing of `copilot-darwin-arm64@1.0.89`).
 """
 
 from __future__ import annotations
@@ -13,7 +32,9 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import platform
 import shutil
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -21,6 +42,8 @@ from harness_bench import procs
 from harness_bench.errors import BenchError, Cause
 
 STAMP = ".lock-sha256"
+
+_DARWIN_TARGET_TRIPLE = {"arm64": "aarch64-apple-darwin", "x64": "x86_64-apple-darwin"}
 
 
 @dataclass(frozen=True)
@@ -31,16 +54,39 @@ class ToolLayout:
     adapter: str | None
 
 
-LAYOUT = {
-    "claude-code": ToolLayout("@anthropic-ai/claude-agent-sdk/package.json", "claudeCodeVersion",
-                              "@anthropic-ai/claude-agent-sdk-win32-x64/claude.exe",
-                              "@agentclientprotocol/claude-agent-acp"),
-    "codex": ToolLayout("@openai/codex/package.json", "version",
-                        "@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe",
-                        "@agentclientprotocol/codex-acp"),
-    "copilot": ToolLayout("@github/copilot-win32-x64/package.json", "version",
-                          "@github/copilot-win32-x64/copilot.exe", None),
-}
+def host_arch() -> str:
+    """npm's own `cpu` tag for the running host: `arm64`, else `x64` (x86_64/AMD64; win32 pins x64 only,
+    unchanged, ADR-0013 section 2: the operator's workstation)."""
+    return "arm64" if platform.machine().lower() in ("arm64", "aarch64") else "x64"
+
+
+def platform_tag(plat: str = sys.platform) -> str:
+    """The npm platform suffix each harness publishes a package for (`win32-x64`, `darwin-arm64`,
+    `darwin-x64`); ADR-0013 section 5 names Windows and macOS as the only supported hosts."""
+    if plat == "win32":
+        return "win32-x64"
+    if plat == "darwin":
+        return f"darwin-{host_arch()}"
+    raise BenchError("HB-PRE-007", f"unsupported host platform {plat!r} (ADR-0013 section 5: Windows or macOS only)")
+
+
+def _layout(tag: str) -> dict[str, ToolLayout]:
+    if tag.startswith("win32"):
+        claude_exe, copilot_exe = f"@anthropic-ai/claude-agent-sdk-{tag}/claude.exe", f"@github/copilot-{tag}/copilot.exe"
+        codex_exe = f"@openai/codex-{tag}/vendor/x86_64-pc-windows-msvc/bin/codex.exe"
+    else:  # darwin
+        arch = tag.rsplit("-", 1)[1]
+        claude_exe, copilot_exe = f"@anthropic-ai/claude-agent-sdk-{tag}/claude", f"@github/copilot-{tag}/copilot"
+        codex_exe = f"@openai/codex-{tag}/vendor/{_DARWIN_TARGET_TRIPLE[arch]}/bin/codex"
+    return {
+        "claude-code": ToolLayout("@anthropic-ai/claude-agent-sdk/package.json", "claudeCodeVersion", claude_exe,
+                                  "@agentclientprotocol/claude-agent-acp"),
+        "codex": ToolLayout("@openai/codex/package.json", "version", codex_exe, "@agentclientprotocol/codex-acp"),
+        "copilot": ToolLayout(f"@github/copilot-{tag}/package.json", "version", copilot_exe, None),
+    }
+
+
+LAYOUT = _layout(platform_tag())
 
 
 class BuildChanged(Exception):
