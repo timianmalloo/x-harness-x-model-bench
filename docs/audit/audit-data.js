@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-29T17:10:38Z",
+  "generated": "2026-09-29T17:21:54Z",
   "audit": [
     {
       "actor": null,
@@ -53507,6 +53507,31 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3Q2ZWJQ13WBN28P6C7KYZRW",
+      "shortname": "new-bench-task-D3",
+      "datetime": "2026-09-29T17:21:54Z",
+      "session": "worker-sonnet-d3",
+      "prompt": "Author benchmark task D3 (P0 wing spine from a given architecture, scenario 4) from stub to ready, following the /new-bench-task skill and the task contract, with task D1 as the worked pattern (Leader brief, worker-sonnet-d3).",
+      "summary": "D3 authored stub->ready: workspace gives docs/architecture-note.md plus interface stubs (Units, Station given/implemented; Wing.Create and 4 WingDerivations producers stubbed with NotImplementedException). source.commit pinned to F1's cfd-bench commit 496a0a8ca2fae9026927167a8f3e5da0a53f2233 (net-new authored content, not vendored bytes: that commit has no C# code). tests/D3.HiddenTests: 6 xUnit tests, reference values reused from F1's verified closed forms (rectangular/tapered/cranked), restricted to span/area/aspect-ratio/mean-geometric-chord. Discrimination proof (oracle/probe.py): base 0/6 passed (exit 1, runtime NotImplementedException failures, not a compile failure), reference 6/6 passed (exit 0). Mutation suite (oracle/mutants.py): 6 mutants, all killed. uv run bench validate: ok. Two commits: 8d42710 (prompt+workspace+pin), f692252 (tests+oracle+ready).",
+      "kind": "command",
+      "skill": "new-bench-task",
+      "tool": null,
+      "actor": "claude-sonnet-5",
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled_from": "al-01M3Q2B8E2GRSMW9NWR00Y387X",
+      "goal": "Author D3 (P0 wing spine from a given architecture, scenario 4) from stub to ready per its inventory row, following /new-bench-task and the D1/F1 pattern.",
+      "done_when": "D3 follows its inventory row exactly; source/commit pinned (same as F1's cfd-bench commit); prompt.md is harness-neutral; hidden oracle fails on the base and passes on the reference, proof recorded in oracle/README.md and evidence.md; status ready; uv run bench validate prints ok; no secrets/PII.",
+      "tier": "T1",
+      "git": {
+        "sha": "f692252fb3e345323420b0df4da07a664bbb2e61",
+        "short": "f692252fb",
+        "branch": "w5-d3",
+        "pushed": null
+      }
     }
   ],
   "changes": [
