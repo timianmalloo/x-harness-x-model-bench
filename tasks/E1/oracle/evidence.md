@@ -2,7 +2,7 @@
 
 All commands run on this Windows host, 2026-09-29, from `C:\Projects\x-harness-x-model-bench-w5-e1`
 (worktree `w5-e1`) unless noted. The upstream repo was cloned once into a scratch directory outside
-this repository (`C:\Users\malla\AppData\Local\Temp\claude\scratch-tb2\terminal-bench-2`); `git
+this repository (`<scratch>/terminal-bench-2`); `git
 rev-parse HEAD` there prints `2fd12b88aafdd04a52c298e3940bcb189f9766d6`, exactly the pinned commit.
 
 ## Toolchain versions
