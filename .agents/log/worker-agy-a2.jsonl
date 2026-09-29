@@ -1,0 +1,2 @@
+{"agent": "worker-agy-a2", "at": 1790701850.124272, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-agy-a2", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-w5-a2"}
+{"agent": "worker-agy-a2", "at": 1790701989.7301257, "calls": 18, "event": "PostToolUse", "files": 0, "host": "agy", "kind": "heartbeat", "leader_renewed": null, "path": "-", "seq": 2, "session": "worker-agy-a2", "since": null, "tokens": "not recorded", "wi": "worker-agy-a2", "worktree": "x-harness-x-model-bench-w5-a2"}
