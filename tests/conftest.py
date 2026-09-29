@@ -41,14 +41,24 @@ def require_dotnet() -> None:
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "native: needs Windows Job Objects and real processes")
+    config.addinivalue_line("markers", "posix: needs POSIX process groups and real processes (setsid, killpg, pgrep)")
     config.addinivalue_line("markers", "credentials: needs the operator's harness logins (real model calls)")
 
 
 def pytest_collection_modifyitems(config, items):
+    # Symmetric, explicit skips (ADR-0013 Amendment 1 s5): a `native` test needs Windows Job Objects and
+    # is skipped everywhere else; a `posix` test needs a real POSIX process group (setsid/killpg/pgrep)
+    # and is skipped on Windows, where those calls do not exist. Neither skip is silent (pytest prints
+    # the reason); the macos-latest CI job is the only host where `posix` tests run for real.
     if sys.platform != "win32":
         skip = pytest.mark.skip(reason="Windows only (NG9): Job Objects")
         for item in items:
             if "native" in item.keywords:
+                item.add_marker(skip)
+    else:
+        skip = pytest.mark.skip(reason="POSIX only (ADR-0013 Amendment 1 s5): process groups (setsid, killpg, pgrep)")
+        for item in items:
+            if "posix" in item.keywords:
                 item.add_marker(skip)
 
 

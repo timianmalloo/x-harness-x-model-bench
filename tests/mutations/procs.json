@@ -1,0 +1,23 @@
+[
+  {
+    "name": "pgrep output parsed as empty (a false confirmed POSIX kill, ADR-0013 Amendment 1 s5)",
+    "file": "src/harness_bench/procs.py",
+    "find": "    return {int(p) for p in stdout.split()}",
+    "replace": "    return set()",
+    "tests": ["tests/test_procs_platform.py::test_parse_pgrep_reads_every_pid_pgrep_printed"]
+  },
+  {
+    "name": "SpawnError never names errno off Windows (reads win32 error unconditionally)",
+    "file": "src/harness_bench/procs.py",
+    "find": "        label = \"win32 error\" if sys.platform == \"win32\" else \"errno\"  # read live: testable under a patched sys.platform",
+    "replace": "        label = \"win32 error\"",
+    "tests": ["tests/test_procs_platform.py::test_spawn_error_names_errno_off_windows"]
+  },
+  {
+    "name": "CellProcess.wait always masks to unsigned, even off Windows (misreads a POSIX signal death)",
+    "file": "src/harness_bench/procs.py",
+    "find": "        return code & 0xFFFFFFFF if sys.platform == \"win32\" else code",
+    "replace": "        return code & 0xFFFFFFFF",
+    "tests": ["tests/test_procs_platform.py::test_cell_process_wait_is_not_masked_off_windows"]
+  }
+]
