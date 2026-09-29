@@ -1,0 +1,8 @@
+{
+  "name": "@agentclientprotocol/claude-agent-acp",
+  "version": "0.75.1",
+  "description": "STAND-IN for the fresh-machine oracle (Ruling 104 condition 2): the pinned name and version from EngineCatalog, one entry module, no dependencies, no lifecycle scripts. Never the real adapter; served only by tests/AiDe.Core.Tests/fixtures/first-use/local-registry.js on 127.0.0.1.",
+  "bin": { "claude-agent-acp": "dist/index.js" },
+  "main": "dist/index.js",
+  "files": ["dist/index.js"]
+}

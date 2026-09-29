@@ -363,6 +363,14 @@ summary: >-
 - **Control:** `tests/test_mutate_check.py::test_every_named_test_in_the_mutation_sets_exists`, in the default ring. It was observed red on the stale id, then green. `--touched` also selects a set when a named test's file changes.
 - **Status:** `controlled`
 
+### RUL-A: a ruling's file condition closed without landing, so a later wave re-derived it
+- **Signature:** a ruling orders a file change, for example "`bench/bom.yaml` changes `source` to `authored`". The ruling is recorded and treated as done, but no commit ever changes the file. A later wave reads the file, not the ruling, and repeats the investigation.
+- **Why it survives:** the ruling text is the visible record. A reader who finds the ruling assumes its conditions landed. Nothing ties a condition to the commit that satisfied it.
+- **Instances:** `2026-09-29`, wave 5 (R-82). R-7 c2 and c4 (2026-09-24) ruled B3 and C2 authored substitutes and ordered BOM notes. Neither landed: `bom.yaml` still named SpecBench and ArchBench, and both task stubs cited them. The B3 and C2 workers spent about 50 minutes re-verifying what R-7 had found, and the Owner then ruled it a second time. The BOM 0.4 commit that carries this entry lands R-7 c2/c4.
+- **Sweep:** the other rulings' file conditions (R-1 to R-81) are not yet checked. That is the first use of the control.
+- **Control (R-82 c5, minimum):** the wave join for any ruling with file conditions lists each named file with the commit that changed it. A join that cannot name the commit is red. The upgrade is a tool that extracts each ruling's condition paths and asks git which commit touched each one after the ruling's date.
+- **Status:** `observed` (the minimum control is a join step; the tool and the sweep are next steps)
+
 ### OUT-A: a saved measurement reported as a failure because printing it failed
 - **Signature:** a tool saves its result file and then prints the same result to stdout. The text holds a character the console cannot encode: a Windows pipe defaults to cp1252, and model text carries `−` or emoji. The print raises, and the exit status turns non-zero. The caller reads the exit code as the measurement, although the saved file says the opposite.
 - **Why it survives:** offline tests use ASCII fixtures, and an interactive terminal is often UTF-8. Only a real model's text on a redirected Windows pipe hits it. The saved file is correct, so nothing that reads the file fails.
