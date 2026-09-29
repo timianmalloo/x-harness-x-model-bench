@@ -2,13 +2,14 @@ schema: bench-task/1
 id: A4
 scenario: 1
 title: "Make the wing definition reusable across runs"
-status: stub
+status: draft
 language: csharp
 source:
   kind: authored
   upstream: "cfd-bench P0 domain"
   repo: "https://github.com/timianmalloo/cfd-bench"
-  commit: "tbd"
+  commit: "496a0a8ca2fae9026927167a8f3e5da0a53f2233"
+  license: "none (the operator's own repository; operator decision 2026-09-25, same ruling as F1)"
 budget:
   minutes: 15
   usd_cap: null
@@ -18,8 +19,11 @@ model_map: null
 scripted_user: true
 graders:
   - clarify
+  - correctness
   - judge
   - cost
   - process
 oracle:
-  summary: "5 annotated clarifications (persistence vs sharing, format, versioning, validation, scope) + reference spec."
+  summary: "5 annotated clarifications (persistence vs sharing, format, versioning, validation, scope) in oracle/clarifications.yaml; reference spec in oracle/reference/docs/specs/reusable-wing-definition.md; structural spec checks in tests/test_a4_hidden.py; judge rubric in oracle/rubric.md."
+  runner: unittest
+  command: ["{python}", "-m", "unittest", "-v", "test_a4_hidden"]
