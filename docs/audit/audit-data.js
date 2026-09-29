@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-29T18:33:09Z",
+  "generated": "2026-09-29T18:39:09Z",
   "audit": [
     {
       "actor": null,
@@ -60853,6 +60853,296 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T1",
       "tool": null
+    },
+    {
+      "id": "al-01M3Q7D26RBC8Y8H3SFCT3EHYC",
+      "shortname": "Goal: close spike S-12: prove the formal toolchains that tasks G1 (TLA+)…",
+      "datetime": "2026-09-29T18:39:00Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: close spike S-12: prove the formal toolchains that tasks G1 (TLA+) and G2 (Lean 4) need run natively on the operator's Windows host inside a git worktree like a cell's, pinned and reproducible, and record the result as the spike note the formal grader design (S-08g) and the G-task authoring will build on.\nMeasured (Leader, 2026-09-29): docs/specs/README.md lists S-12 (the toolchain spike) as the dependency of S-08g (the formal grader) and of tasks G1 and G2; docs/notes/proposal-grounding-findings.md F9 flags that the toolchains are unproven on Windows inside a worker worktree; tools/check_models.py (~:24-27) already pins tla2tools.jar v1.7.4 by sha256 and the CI models job runs it on ubuntu-latest with Temurin JDK 21, so the TLA+ pin is proven on Linux only; the proposal's design rules require pinned toolchains warmed before the clock (Lean via elan, TLA+ tools with a pinned JDK) and no Mathlib in BOM v0; ADR-0013 Amendment 1 requires native execution on Windows and macOS.\nDone when: docs/notes/spike-s12-formal-toolchains.md exists with frontmatter like the other docs/notes files and records, each with the exact command and its observed output: (1) TLA+: a pinned JDK version (and how it is installed natively on Windows, and on macOS as an assume: naming the CI job that would confirm it), tla2tools.jar at the pin tools/check_models.py already uses (its sha256 re-verified against the downloaded file), and TLC checking a small model (models/run_lifecycle.tla with one of its .cfg files, or a minimal spec) run inside a fresh git worktree on this host, with the wall time; (2) Lean 4: elan installed natively on Windows, a pinned Lean toolchain version (lean-toolchain file), a minimal lake project with one theorem and `#print axioms` output, lake build run inside a fresh git worktree on this host, with the wall time and the disk size of the toolchain, no Mathlib; (3) what a cell needs warmed before its clock starts (toolchain caches, their paths, and whether they live outside the cell working copy), and how a grading step would invoke each tool directly with forward-slash paths, never through cmd.exe; (4) anything that failed and what that means for G1 and G2, stated plainly; uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes; the note is committed.\nNot in scope: implementing the formal grader (S-08g); authoring G1 or G2; changing engine code; installing anything into the operator's real home directory beyond the toolchain installers' own standard per-user locations (name every path written); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 120k tokens\nMain-line budget: one slice of at most 50 minutes.\n\nGrounding: docs/specs/README.md (S-08g, S-12, T-G1, T-G2); docs/notes/proposal-grounding-findings.md F9; tools/check_models.py; .github/workflows/ci.yml (the models job); models/; the proposal's G1 and G2 rows and design rules; docs/adr/0013-native-cells-own-working-copy.md (Amendment 1). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-s12 (use absolute paths or cd into it in each shell command).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3Q7DASH5D5B41S9ZTB7KVR4",
+      "shortname": "compile-Goal: close spike S-12: prove the formal toolchains that tasks G1 (TLA+)…",
+      "datetime": "2026-09-29T18:39:09Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: close spike S-12: prove the formal toolchains that tasks G1 (TLA+) and G2 (Lean 4) need run natively on the operator's Windows host inside a git worktree like a cell's, pinned and reproducible, and record the result as the spike note the formal grader design (S-08g) and the G-task authoring will build on. Measured (Leader, 2026-09-29): docs/specs/README.md lists S-12 (the toolchain spike) as the dependency of S-08g (the formal grader) and of tasks G1 and G2; docs/notes/proposal-grounding-findings.md F9 flags that the toolchains are unproven on Windows inside a worker worktree; tools/check_models.py (~:24-27) already pins tla2tools.jar v1.7.4 by sha256 and the CI models job runs it on ubuntu-latest with Temurin JDK 21, so the TLA+ pin is proven on Linux only; the proposal's design rules require pinned toolchains warmed before the clock (Lean via elan, TLA+ tools with a pinned JDK) and no Mathlib in BOM v0; ADR-0013 Amendment 1 requires native execution on Windows and macOS.\nDone when: docs/notes/spike-s12-formal-toolchains.md exists with frontmatter like the other docs/notes files and records, each with the exact command and its observed output: (1) TLA+: a pinned JDK version (and how it is installed natively on Windows, and on macOS as an assume: naming the CI job that would confirm it), tla2tools.jar at the pin tools/check_models.py already uses (its sha256 re-verified against the downloaded file), and TLC checking a small model (models/run_lifecycle.tla with one of its .cfg files, or a minimal spec) run inside a fresh git worktree on this host, with the wall time; (2) Lean 4: elan installed natively on Windows, a pinned Lean toolchain version (lean-toolchain file), a minimal lake project with one theorem and `#print axioms` output, lake build run inside a fresh git worktree on this host, with the wall time and the disk size of the toolchain, no Mathlib; (3) what a cell needs warmed before its clock starts (toolchain caches, their paths, and whether they live outside the cell working copy), and how a grading step would invoke each tool directly with forward-slash paths, never through cmd.exe; (4) anything that failed and what that means for G1 and G2, stated plainly; uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes; the note is committed.\nNot in scope: implementing the formal grader (S-08g); authoring G1 or G2; changing engine code; installing anything into the operator's real home directory beyond the toolchain installers' own standard per-user locations (name every path written); any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 120k tokens\nMain-line budget: one slice of at most 50 minutes.\nGrounding: docs/specs/README.md (S-08g, S-12, T-G1, T-G2); docs/notes/proposal-grounding-findings.md F9; tools/check_models.py; .github/workflows/ci.yml (the models job); models/; the proposal's G1 and G2 rows and design rules; docs/adr/0013-native-cells-own-working-copy.md (Amendment 1). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-s12 (use absolute paths or cd into it in each shell command).\nTrace\n| clause | trace |\n|---|---|\n| done_when: docs/notes/spike-s12-formal-toolchains.md exists with frontmatter like the other docs/notes files and records, each with the exact command and its observed output: (1) TLA+: a pinned JDK version (and how it is installed natively on Windows, and on macOS as an assume: naming the CI job that would confirm it), tla2tools.jar at the pin tools/check_models.py already uses (its sha256 re-verified against the downloaded file), and TLC checking a small model (models/run_lifecycle.tla with one of its .cfg files, or a minimal spec) run inside a fresh git worktree on this host, with the wall time | phrase: docs/notes/spike-s12-formal-toolchains.md exists with frontmatter like the other docs/notes files and records, each with the exact command and its observed output: (1) TLA+: a pinned JDK version (and how it is installed natively on Windows, and on macOS as an assume: naming the CI job that would confirm it), tla2tools.jar at the pin tools/check_models.py already uses (its sha256 re-verified against the downloaded file), and TLC checking a small model (models/run_lifecycle.tla with one of its .cfg files, or a minimal spec) run inside a fresh git worktree on this host, with the wall time |\n| done_when: (2) Lean 4: elan installed natively on Windows, a pinned Lean toolchain version (lean-toolchain file), a minimal lake project with one theorem and `#print axioms` output, lake build run inside a fresh git worktree on this host, with the wall time and the disk size of the toolchain, no Mathlib | phrase: (2) Lean 4: elan installed natively on Windows, a pinned Lean toolchain version (lean-toolchain file), a minimal lake project with one theorem and `#print axioms` output, lake build run inside a fresh git worktree on this host, with the wall time and the disk size of the toolchain, no Mathlib |\n| done_when: (3) what a cell needs warmed before its clock starts (toolchain caches, their paths, and whether they live outside the cell working copy), and how a grading step would invoke each tool directly with forward-slash paths, never through cmd.exe | phrase: (3) what a cell needs warmed before its clock starts (toolchain caches, their paths, and whether they live outside the cell working copy), and how a grading step would invoke each tool directly with forward-slash paths, never through cmd.exe |\n| done_when: (4) anything that failed and what that means for G1 and G2, stated plainly | phrase: (4) anything that failed and what that means for G1 and G2, stated plainly |\n| done_when: uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes | phrase: uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes |\n| done_when: the note is committed. | phrase: the note is committed. |\n| not_in_scope: implementing the formal grader (S-08g) | phrase: implementing the formal grader (S-08g) |\n| not_in_scope: authoring G1 or G2 | phrase: authoring G1 or G2 |\n| not_in_scope: changing engine code | phrase: changing engine code |\n| not_in_scope: installing anything into the operator's real home directory beyond the toolchain installers' own standard per-user locations (name every path written) | phrase: installing anything into the operator's real home directory beyond the toolchain installers' own standard per-user locations (name every path written) |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- #print axioms: unresolved (not found)\n- docs/specs/README.md: docs/specs/README.md sha256 b65007497b4bc047e0bd76b590acbf1fb40ac4fd7ed46805de21d675cfe2c40d\n- docs/notes/proposal-grounding-findings.md: docs/notes/proposal-grounding-findings.md sha256 6e60fa814c6eae61a7b55760e8315c186138ee62e0783571b412994046748e4e\n- tools/check_models.py: tools/check_models.py sha256 4cfd675c95ac4cb4b73415977909479a1507c78a433ef5aed5878f1fb8d150b3\n- docs/notes/spike-s12-formal-toolchains.md: unresolved (not found)\n- docs/notes: unresolved (not found)\n- models/run_lifecycle.tla: models/run_lifecycle.tla sha256 f4f34a5bacbaac523de17713746b97be05f856418c133812f304b4a06ff2a6d7\n- docs/ai-forward-pack/scripts/docs-graph.py: unresolved (ambiguous: 142 matches)\n- runs/: unresolved (not found)\n- .github/workflows/ci.yml: unresolved (not found; nearest: .github/workflows/ci.yml)\n- models/: unresolved (not found)\n- docs/adr/0013-native-cells-own-working-copy.md: docs/adr/0013-native-cells-own-working-copy.md sha256 8387ae6205532c71d610c371dfa493322031185950aa6fd2dbaeddba8b40763f\n- C:/Projects/x-harness-x-model-bench-w5-s12: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3Q7D26RBC8Y8H3SFCT3EHYC\nraw sha256: d2723813be9d0706a6008c79ec8e95d1aaaabc7627422d2a3631a7e2bb84a666\ncompiler model: claude-opus-5-5\nengine seconds: 0.009\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3Q7D26RBC8Y8H3SFCT3EHYC for claude-code v1: 12 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "docs/notes/spike-s12-formal-toolchains.md exists with frontmatter like the other docs/notes files and records, each with the exact command and its observed output: (1) TLA+: a pinned JDK version (and how it is installed natively on Windows, and on macOS as an assume: naming the CI job that would confirm it), tla2tools.jar at the pin tools/check_models.py already uses (its sha256 re-verified against the downloaded file), and TLC checking a small model (models/run_lifecycle.tla with one of its .cfg files, or a minimal spec) run inside a fresh git worktree on this host, with the wall time",
+            "trace": {
+              "kind": "phrase",
+              "ref": "docs/notes/spike-s12-formal-toolchains.md exists with frontmatter like the other docs/notes files and records, each with the exact command and its observed output: (1) TLA+: a pinned JDK version (and how it is installed natively on Windows, and on macOS as an assume: naming the CI job that would confirm it), tla2tools.jar at the pin tools/check_models.py already uses (its sha256 re-verified against the downloaded file), and TLC checking a small model (models/run_lifecycle.tla with one of its .cfg files, or a minimal spec) run inside a fresh git worktree on this host, with the wall time"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "(2) Lean 4: elan installed natively on Windows, a pinned Lean toolchain version (lean-toolchain file), a minimal lake project with one theorem and `#print axioms` output, lake build run inside a fresh git worktree on this host, with the wall time and the disk size of the toolchain, no Mathlib",
+            "trace": {
+              "kind": "phrase",
+              "ref": "(2) Lean 4: elan installed natively on Windows, a pinned Lean toolchain version (lean-toolchain file), a minimal lake project with one theorem and `#print axioms` output, lake build run inside a fresh git worktree on this host, with the wall time and the disk size of the toolchain, no Mathlib"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "(3) what a cell needs warmed before its clock starts (toolchain caches, their paths, and whether they live outside the cell working copy), and how a grading step would invoke each tool directly with forward-slash paths, never through cmd.exe",
+            "trace": {
+              "kind": "phrase",
+              "ref": "(3) what a cell needs warmed before its clock starts (toolchain caches, their paths, and whether they live outside the cell working copy), and how a grading step would invoke each tool directly with forward-slash paths, never through cmd.exe"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "(4) anything that failed and what that means for G1 and G2, stated plainly",
+            "trace": {
+              "kind": "phrase",
+              "ref": "(4) anything that failed and what that means for G1 and G2, stated plainly"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the note is committed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the note is committed."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "implementing the formal grader (S-08g)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "implementing the formal grader (S-08g)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "authoring G1 or G2",
+            "trace": {
+              "kind": "phrase",
+              "ref": "authoring G1 or G2"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "changing engine code",
+            "trace": {
+              "kind": "phrase",
+              "ref": "changing engine code"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "installing anything into the operator's real home directory beyond the toolchain installers' own standard per-user locations (name every path written)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "installing anything into the operator's real home directory beyond the toolchain installers' own standard per-user locations (name every path written)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "120k tokens",
+          "done_when": [
+            "docs/notes/spike-s12-formal-toolchains.md exists with frontmatter like the other docs/notes files and records, each with the exact command and its observed output: (1) TLA+: a pinned JDK version (and how it is installed natively on Windows, and on macOS as an assume: naming the CI job that would confirm it), tla2tools.jar at the pin tools/check_models.py already uses (its sha256 re-verified against the downloaded file), and TLC checking a small model (models/run_lifecycle.tla with one of its .cfg files, or a minimal spec) run inside a fresh git worktree on this host, with the wall time",
+            "(2) Lean 4: elan installed natively on Windows, a pinned Lean toolchain version (lean-toolchain file), a minimal lake project with one theorem and `#print axioms` output, lake build run inside a fresh git worktree on this host, with the wall time and the disk size of the toolchain, no Mathlib",
+            "(3) what a cell needs warmed before its clock starts (toolchain caches, their paths, and whether they live outside the cell working copy), and how a grading step would invoke each tool directly with forward-slash paths, never through cmd.exe",
+            "(4) anything that failed and what that means for G1 and G2, stated plainly",
+            "uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes",
+            "the note is committed."
+          ],
+          "fan_out_cap": 0,
+          "goal": "close spike S-12: prove the formal toolchains that tasks G1 (TLA+) and G2 (Lean 4) need run natively on the operator's Windows host inside a git worktree like a cell's, pinned and reproducible, and record the result as the spike note the formal grader design (S-08g) and the G-task authoring will build on. Measured (Leader, 2026-09-29): docs/specs/README.md lists S-12 (the toolchain spike) as the dependency of S-08g (the formal grader) and of tasks G1 and G2; docs/notes/proposal-grounding-findings.md F9 flags that the toolchains are unproven on Windows inside a worker worktree; tools/check_models.py (~:24-27) already pins tla2tools.jar v1.7.4 by sha256 and the CI models job runs it on ubuntu-latest with Temurin JDK 21, so the TLA+ pin is proven on Linux only; the proposal's design rules require pinned toolchains warmed before the clock (Lean via elan, TLA+ tools with a pinned JDK) and no Mathlib in BOM v0; ADR-0013 Amendment 1 requires native execution on Windows and macOS.",
+          "main_line_budget": "one slice of at most 50 minutes.\nGrounding: docs/specs/README.md (S-08g, S-12, T-G1, T-G2); docs/notes/proposal-grounding-findings.md F9; tools/check_models.py; .github/workflows/ci.yml (the models job); models/; the proposal's G1 and G2 rows and design rules; docs/adr/0013-native-cells-own-working-copy.md (Amendment 1). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-s12 (use absolute paths or cd into it in each shell command).",
+          "not_in_scope": [
+            "implementing the formal grader (S-08g)",
+            "authoring G1 or G2",
+            "changing engine code",
+            "installing anything into the operator's real home directory beyond the toolchain installers' own standard per-user locations (name every path written)",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.009,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3Q7D26RBC8Y8H3SFCT3EHYC",
+        "raw_sha256": "d2723813be9d0706a6008c79ec8e95d1aaaabc7627422d2a3631a7e2bb84a666",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "#print axioms"
+          },
+          {
+            "nearest": null,
+            "path": "docs/specs/README.md",
+            "reason": null,
+            "sha256": "b65007497b4bc047e0bd76b590acbf1fb40ac4fd7ed46805de21d675cfe2c40d",
+            "status": "resolved",
+            "token": "docs/specs/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/proposal-grounding-findings.md",
+            "reason": null,
+            "sha256": "6e60fa814c6eae61a7b55760e8315c186138ee62e0783571b412994046748e4e",
+            "status": "resolved",
+            "token": "docs/notes/proposal-grounding-findings.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/check_models.py",
+            "reason": null,
+            "sha256": "4cfd675c95ac4cb4b73415977909479a1507c78a433ef5aed5878f1fb8d150b3",
+            "status": "resolved",
+            "token": "tools/check_models.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/spike-s12-formal-toolchains.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes"
+          },
+          {
+            "nearest": null,
+            "path": "models/run_lifecycle.tla",
+            "reason": null,
+            "sha256": "f4f34a5bacbaac523de17713746b97be05f856418c133812f304b4a06ff2a6d7",
+            "status": "resolved",
+            "token": "models/run_lifecycle.tla"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 142 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": ".github/workflows/ci.yml",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".github/workflows/ci.yml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "models/"
+          },
+          {
+            "nearest": null,
+            "path": "docs/adr/0013-native-cells-own-working-copy.md",
+            "reason": null,
+            "sha256": "8387ae6205532c71d610c371dfa493322031185950aa6fd2dbaeddba8b40763f",
+            "status": "resolved",
+            "token": "docs/adr/0013-native-cells-own-working-copy.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/x-harness-x-model-bench-w5-s12"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
     }
   ],
   "changes": [
