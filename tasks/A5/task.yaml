@@ -2,13 +2,19 @@ schema: bench-task/1
 id: A5
 scenario: 1
 title: "Users want to see what changed"
-status: stub
+status: draft
 language: csharp
 source:
   kind: authored
   upstream: "ai-de AiDe.Core"
   repo: "https://github.com/timianmalloo/ai-de"
-  commit: "tbd"
+  commit: "88e0c33f0b7c419b1e64d87686987374285292d8"   # same pin as D1/D2 (AiDe.Core AgentPlane/Workbench)
+  license: MIT
+  copyright: "Copyright (c) 2026 timianmalloo"
+  vendored_paths:
+    - LICENSE
+    - src/AiDe.Core/AgentPlane/WorktreeProvisioner.cs
+    - src/AiDe.Core/Workbench/AgentWorktree.cs
 budget:
   minutes: 15
   usd_cap: null
