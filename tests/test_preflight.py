@@ -44,7 +44,7 @@ def test_long_paths_off_is_hb_pre_005(tmp_path, base):
 def test_a_build_changed_since_the_plan_is_hb_pre_007(tmp_path, base):
     tools_dir = _fake_tree(tmp_path / "tools")
     plan = _plan(tools_dir)
-    (tools_dir / "node_modules/@anthropic-ai/claude-agent-sdk-win32-x64/claude.exe").write_text("updated", encoding="utf-8")
+    (tools_dir / "node_modules" / tools.LAYOUT["claude-code"].exe).write_text("updated", encoding="utf-8")
     assert _code(lambda: preflight.check(plan, base / "cells", tools_dir, min_free=1, long_paths=lambda: True)) == "HB-PRE-007"
 
 

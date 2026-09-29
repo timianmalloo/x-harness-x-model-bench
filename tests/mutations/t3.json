@@ -65,22 +65,22 @@
  {
   "name": "T3-5 a failed job query reads a zeroed struct",
   "file": "src/harness_bench/procs.py",
-  "find": "        if not _query(self.handle, info_class, buf):\n            raise ctypes.WinError(ctypes.get_last_error())\n",
-  "replace": "        _query(self.handle, info_class, buf)\n",
+  "find": "            if not _query(self.handle, info_class, buf):\n                raise ctypes.WinError(ctypes.get_last_error())\n",
+  "replace": "            _query(self.handle, info_class, buf)\n",
   "tests": ["tests/test_procs.py::test_a_failed_job_query_raises_from_the_last_error"]
  },
  {
   "name": "T3-5 a closed job queries the caller's own job",
   "file": "src/harness_bench/procs.py",
-  "find": "        if not self.handle:  # a NULL handle would query the job of the calling process instead\n            raise ctypes.WinError(_ERROR_INVALID_HANDLE)\n",
+  "find": "            if not self.handle:  # a NULL handle would query the job of the calling process instead\n                raise ctypes.WinError(_ERROR_INVALID_HANDLE)\n",
   "replace": "",
   "tests": ["tests/test_procs.py::test_a_closed_job_is_not_reported_empty"]
  },
  {
   "name": "T3-5 a failed handle-information query reads as not inheritable",
   "file": "src/harness_bench/procs.py",
-  "find": "        if not self.handle or not _k32.GetHandleInformation(self.handle, ctypes.byref(flags)):  # same class: no zeroed answer\n            raise ctypes.WinError(ctypes.get_last_error() or _ERROR_INVALID_HANDLE)\n",
-  "replace": "        _k32.GetHandleInformation(self.handle, ctypes.byref(flags))\n",
+  "find": "            if not self.handle or not _k32.GetHandleInformation(self.handle, ctypes.byref(flags)):  # same class: no zeroed answer\n                raise ctypes.WinError(ctypes.get_last_error() or _ERROR_INVALID_HANDLE)\n",
+  "replace": "            _k32.GetHandleInformation(self.handle, ctypes.byref(flags))\n",
   "tests": ["tests/test_procs.py::test_a_closed_job_is_not_reported_empty"]
  },
  {

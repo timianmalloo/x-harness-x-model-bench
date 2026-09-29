@@ -90,7 +90,16 @@ def stryker_lookups_unavailable(monkeypatch, tmp_path):
     monkeypatch.setenv("PATH", os.pathsep.join(kept))
     pinned = empty / "dotnet-stryker" / "4.16.0" / "tools" / "net8.0" / "any" / "Stryker.CLI.dll"
     monkeypatch.setattr(mutation, "find_stryker_dll", lambda: pinned)
-    monkeypatch.setattr(mutation.shutil, "which", lambda cmd: "dotnet" if cmd == "dotnet" else shutil.which(cmd))
+    # `mutation.shutil` is the same singleton module object as this file's own `import shutil` (and as
+    # procs.py's `import shutil as _shutil`), so `setattr(mutation.shutil, "which", ...)` replaces
+    # `shutil.which` process-wide, not just inside mutation.py. The old lambda's fallback branch called
+    # `shutil.which(cmd)` by name, which re-read the now-patched attribute and called itself -- a no-op
+    # on Windows (nothing here calls `shutil.which` with any other command), but genuine infinite
+    # recursion on macOS/POSIX, where `d1_cell`'s `git()` spawns through procs.run, whose
+    # `terminate_and_confirm` resolves `pgrep` via this same patched `shutil.which` (ADR-0013 Amendment
+    # 1, macOS port). Capturing the real `which` before patching breaks the self-reference.
+    real_which = shutil.which
+    monkeypatch.setattr(mutation.shutil, "which", lambda cmd: "dotnet" if cmd == "dotnet" else real_which(cmd))
     return empty
 
 

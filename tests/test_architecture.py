@@ -223,7 +223,9 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
         # Fable Major 1: outside gateway/, only today's procs callers reach procs (read 2026-09-25, not recalled:
         # engine spawns; gitsafe, grade/correctness, plan, tools and workspace run; driver only names CellProcess in
         # annotations). A new caller - a judge spawned from grade/judge.py above all - fails until added here on purpose.
-        allowed = {"engine", "gitsafe", "grade/correctness", "plan", "procs", "tools", "workspace"}
+        # host added (ADR-0013 Amendment 1 s5, the macOS port): POSIX creation_time() runs `ps -o lstart=` through
+        # procs.run, the only sanctioned subprocess gateway (D3) -- host.py itself never calls subprocess directly.
+        allowed = {"engine", "gitsafe", "grade/correctness", "host", "plan", "procs", "tools", "workspace"}
         for rel in sorted(set(trees) - inside):
             if Path(rel).with_suffix("").as_posix().removeprefix("src/harness_bench/") in allowed:
                 continue

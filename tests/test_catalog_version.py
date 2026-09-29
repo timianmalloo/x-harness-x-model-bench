@@ -469,8 +469,11 @@ def test_both_selectors_exclude_the_slow_ring():  # TA re-review 1: a command-li
     assert any(m.startswith("gate:") for m in ini["markers"])
     assert any(m.startswith("browser:") for m in ini["markers"])  # R-81 DR-R-9: readiness ring only, never CI's offline gate
     ci = [line.strip() for line in (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8").splitlines()]
-    assert [line for line in ci if "pytest" in line and line.startswith("- run:")] == [
-        '- run: uv run pytest -q -n auto -m "not credentials and not slow and not workstation and not gate and not browser"']
+    pytest_lines = [line for line in ci if "pytest" in line and line.startswith("- run:")]
+    # Two jobs run the default ring now (ADR-0013 Amendment 1 s5: windows-latest and macos-latest), each
+    # with this exact line -- one per host, byte-identical, never a drifted filter on either.
+    assert pytest_lines == [
+        '- run: uv run pytest -q -n auto -m "not credentials and not slow and not workstation and not gate and not browser"'] * 2
 
 
 @pytest.mark.parametrize(("env", "which", "outcome"), [
