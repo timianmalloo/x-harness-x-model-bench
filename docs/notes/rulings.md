@@ -1235,3 +1235,50 @@ Append only. One entry per ruling. Newest last.
   4. Each worker's report names the wall clock spent re-verifying, so the cost of the unlanded ruling is measured, not estimated.
   5. `docs/lessons/defect-classes.md` gains "a ruling's file condition closed without landing, so a later wave re-derived it". The control is the Leader's choice. At minimum, the wave join for any ruling with file conditions lists each named file with the commit that changed it, and a join that cannot name the commit is red. R-7 c2/c4 are the first entries.
   6. No live run is required for this ruling.
+
+## R-83 · 2026-09-29 · Owner seat (Fable) · DR-W5-3: E1–E3 are (a), selected under ADR-0013 Amendment 1's own selection rule from one committed survey of all 89 TB2 tasks; a shortfall relaxes the band before it defers, and is never authored under an E1–E3 id; (d) no engine change, the limitation goes in the task contract
+
+- **Ruling:**
+  - **What R-7 already decided, and what stands.**
+    - R-7 row 21 ruled TB2 *reachable as is, gated by row 9*. R-7 c1 pins `source.commit` to a real commit. R-7 c5 and R-40 deferred E1 from the smoke run and made E6 the scenario-5 smoke task: "not substituted; the E-tasks are the calibration baseline".
+    - ADR-0013 Amendment 1 (2026-09-28) then withdrew the row-9 gate. It also ruled the selection rule that the Leader's option (a) restates. A public task gets a pinned upstream instance, a native working copy, a toolchain installed by the task's own setup, and its upstream tests on the host. An instance whose setup or tests need Linux, or only one of Windows and macOS, is not selected, and "its task picks another from the same upstream band and records why" (`0013:81-84`).
+    - So the selection rule is not new. What is new: the survey's scope and stop rule, what a shortfall does, the band assignment, and the reflog limitation.
+  - **DR-W5-3: (a), bounded to one committed survey.**
+    - One worker reads every TB2 task's `task.toml` and `environment/Dockerfile` at `2fd12b88` (89 folders; no task is run to survey it). It writes `docs/notes/tb2-native-survey.md`: one row per task, with its upstream difficulty, its apt lines, a verdict (`native` / `apt` / `linux-only` / `git-state`) and the reason.
+    - The E1 worker's four easy-band rows (audit `al-01M3Q61B6QFAQP08P0BKZFVRW9`) are the survey's first four rows, cited, not re-derived.
+    - The survey is committed before any task folder changes, so no later wave derives it a third time (R-82 c5's class).
+    - `native` means all of these hold:
+      - the Dockerfile installs only `uv`-managed Python or Node beyond the base image;
+      - the tests are `tests/test_outputs.py` (pytest) or a portable equivalent;
+      - the task's mechanic is a tree (see (d) below);
+      - no step is Linux-only.
+    - Verdicts come from reading. The `ready` gate is the run on this host (R-7 c6's pattern).
+    - E1, E2 and E3 take the first `native` task of the easy, medium and hard bands respectively, by the upstream's own difficulty field, verbatim.
+    - **Shortfall, in this order:**
+      1. A band with no `native` task takes a `native` task from the nearest band, and the BOM title records the actual band.
+      2. If TB2 has fewer than three `native` tasks in total, the unfilled row stays `stub`, `smoke: false`, with a dated BOM note, as R-40 did for E1.
+    - **(b) is refused as the shortfall.** E1–E3 are the calibration baseline (proposal `:41`, `:94`; R-7 c5). They are also the contamination-prone set that `CONTAMINATION_PRONE` (`board.py:26`), US-51 (`spec:512`) and `tasks/README.md:36` exclude from the pack effect by id. An authored task under one of those ids is neither a calibration point nor contamination-prone, so the title, the constant and the exclusion statement would all become false. If the Leader wants an authored scenario-5 task, it gets a new row id in a BOM version bump, outside that set.
+    - **(c) is refused.** Amendment 1 closed the container question; there is nothing to revisit.
+  - **(d): no engine change for BOM v0.**
+    - The engine models a task as a base tree at one commit. `task_source()` copies `tasks/<ID>/workspace/`, runs `git init` and makes one commit (`workspace.py:93-105`). The cell copy is `git clone --local` (`:110-117`).
+    - Git state (history, reflog, dangling objects) therefore never enters a task in the first place. Preserving the reflog in the clone would not make fix-git run.
+    - A repository-state task kind is an ADR-0013 change, not a wave-5 row.
+    - The limitation is recorded in one sentence in the task contract, `tasks/README.md`: *a task is a tree, not a repository; a task whose mechanic depends on git history, reflog or dangling objects is not selectable (R-83).* No ADR amendment: the ADR already says "base commit".
+- **Reasoning:**
+  - Amendment 1 already contains the selection rule and the same-band fallback. This ruling only bounds the survey so that it happens once, and says what "no task in the band" means, which Amendment 1 does not.
+  - Keeping the E ids public keeps three things consistent that are coupled by id in the code, the spec and the contract. Relaxing the band costs one word in a title. Authoring under the id costs the meaning of the calibration and of the exclusion.
+  - A survey of 89 `task.toml` and Dockerfile reads is smaller than one authored task with tests and a reference, and it answers the question exactly. Four of 89 read so far is not evidence about the other 85.
+  - The reflog finding is correct, but the fix is misplaced: the history is lost one layer above the clone. Naming the class in the contract is the control that keeps a future worker from selecting the next fix-git.
+- **Conditions:**
+  1. The survey lands as one commit. Its header gives the git command used to enumerate the 89 folders and the full SHA of `2fd12b88`. A verdict of `native` cites the Dockerfile lines it read.
+  2. Each selected task folder follows E6's pattern:
+     - `task.yaml` has `source.kind: public`, `repo: https://github.com/harbor-framework/terminal-bench-2`, the full commit SHA and `license: Apache-2.0`;
+     - the upstream `LICENSE` is copied into the folder;
+     - the vendored paths are listed, so a test can rebuild them from `git archive <commit> -- <paths>` (R-42 c3);
+     - `instruction.md` becomes `prompt.md`, and any edit for native paths is recorded as a diff in the folder's README;
+     - `tests/test_outputs.py` goes under `tests/` and `solution/solve.sh` under `oracle/reference/`; neither enters `workspace/` (US-8).
+  3. `ready` needs the upstream tests run on this host: fail on the base tree, pass on the reference, and `bench validate` ok. The `dotnet`/`uv`/`node` version is recorded in `evidence.md`. macOS is recorded as unverified until the engine's macOS port (ADR-0013 §5) exists; that is not a reason to skip a task.
+  4. The `assume:` on the 60-minute budget (`bom.yaml:38`) closes for each row by recording the task's own `task.toml` agent timeout beside it. The BOM budget stays 60 unless the timeout is smaller.
+  5. `bench/bom.yaml` becomes **0.5**. E1–E3 rows carry the selected task's upstream name and actual band; an unfilled row carries "no native TB2 task in band (R-83, survey <commit>)". E1's `task.yaml` values `repo: harbor:terminal-bench@2.0` and `commit: tbd` are replaced in the same commit.
+  6. `tasks/README.md` gains the one-sentence tree-not-repository rule above, with fix-git as its first cited instance. The wave join lists this file and the BOM with the commit that changed each (R-82 c5).
+  7. No live run is required for this ruling.
