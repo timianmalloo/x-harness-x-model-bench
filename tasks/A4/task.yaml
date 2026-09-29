@@ -2,7 +2,7 @@ schema: bench-task/1
 id: A4
 scenario: 1
 title: "Make the wing definition reusable across runs"
-status: draft
+status: ready
 language: csharp
 source:
   kind: authored
