@@ -12,6 +12,7 @@ links:
   - { to: design-run-lifecycle-model, rel: documents }
   - { to: design-phase2-copilot-profile, rel: documents }
   - { to: design-phase3-gateway-judges, rel: documents }
+  - { to: design-formal-grader, rel: documents }
   - { to: adr-0012-proportionate-security, rel: depends-on }
   - { to: adr-0013-native-cells, rel: depends-on }
 review-by: "2027-03-22"
@@ -68,11 +69,24 @@ flowchart LR
 | B4 | Cell output ↔ host git | Archived workspace | Host git tooling | design-phase1-walking-skeleton |
 | B5 | Credential ↔ published report | Report readers | The owner's tokens | design-phase1-walking-skeleton |
 | B6 | TLA+ tools download ↔ CI | GitHub release asset | CI runner, check result | design-run-lifecycle-model |
+| B7 | Agent-authored TLA+/Lean ↔ grading host | The agent's `spec/**`/`Proofs/**` (TLC, `lake` invoked as host code) | The checking process itself (JVM/native), hidden oracle assets | design-formal-grader |
+| B8 | `BUGS.md` ↔ grading host argv | The agent's free-text bug report | `pytest`'s subprocess argv | design-formal-grader |
 
 ## 2. Threat register (generated — see command above)
 
 | source | Boundary | Threat | Disposition | Control | Test |
 |---| --- | --- | --- | --- | --- |
+| [design-formal-grader](../design/formal-grader.md) | Agent-authored TLA+/Lean → grading host | **T:** the agent's `Model.cfg` shrinks the state space or points at a different module, so checks look clean by construction | **prevent** | the grader always writes `Model.cfg`/the check config from `oracle/bounds.cfg`; the agent's own `.cfg`, if any, is never read | FM3's fixture |
+| [design-formal-grader](../design/formal-grader.md) | Agent-authored TLA+/Lean → grading host | **T:** `given statements edited` (properties weakened, fold definition rewritten) | **prevent** | `statement_integrity` hash gate + cascade | the byte-flip/signature-edit fixtures |
+| [design-formal-grader](../design/formal-grader.md) | Agent-authored TLA+/Lean → grading host | **E:** a Lean `native_decide` tactic runs arbitrary compiled native code inside the grading host's process instead of proving via the kernel | **mitigate + detect** | the lexical ban plus `#print axioms` (FM6); `run_step`'s Job Object still bounds the process the same as any other native code the host runs today (transfer to ADR-0013, unchanged) | the `native_decide` fixture |
+| [design-formal-grader](../design/formal-grader.md) | Agent-authored TLA+/Lean → grading host | **E:** `#eval`/`initialize`/`run_cmd`/`unsafe`/`@[extern]` run or admit code at Lean elaboration time, independent of any tactic and invisible to `#print axioms` | **mitigate** | the lexical scan is extended to these tokens (FM14); `run_step`'s Job Object still bounds the process, unchanged from the `native_decide` row | the `#eval` fixture |
+| [design-formal-grader](../design/formal-grader.md) | Agent-authored TLA+/Lean → grading host | **E, T:** TLC's documented operator-override mechanism — a same-named `.class` file beside a `.tla` module runs as JVM bytecode inside the checking process, able to read hidden oracle assets and forge a clean result | **prevent** | the binary-artifact scan refuses to invoke TLC when `spec/**` holds anything but `.tla`/`.cfg`/`.tex` (FM12) — strictly stronger than "mitigate": TLC is never invoked at all on a hit | the `.class`-file fixture |
+| [design-formal-grader](../design/formal-grader.md) | Agent-authored TLA+/Lean → grading host | **T (supply chain):** an agent-edited `lakefile.toml` adds an unpinned `[[require]]` external git dependency — a network fetch of unreviewed build code inside the timed grading step | **prevent** | `lakefile.toml`/`lean-toolchain` are task-owned, frozen, hash-covered by `statement_integrity`, and independently byte-checked by `formal_checks_clean` before `lake build` runs (FM13) | the `lakefile.toml` edit fixture |
+| [design-formal-grader](../design/formal-grader.md) | `BUGS.md` → grading host argv | **T, E:** `BUGS.md`'s agent-authored `Test:` reference reaches `pytest`'s argv — a path-traversal target, or a leading-`-` value read as a CLI option/plugin load | **prevent** | strict validation (no `..`, no leading `-`, resolves under `tests/**`) before any argv is built; a validation failure is NA, never attempted (FM15) | the path-traversal and option-like `Test:` fixtures |
+| [design-formal-grader](../design/formal-grader.md) | Agent-authored TLA+/Lean → grading host | **E:** a TLA+ module `EXTENDS`/`INSTANCE`s an out-of-tree module or a Java `-cp` addition to escape the sandboxed state-space check | **mitigate** | `Model.cfg` and the `-cp` argument are both grader-controlled, never agent-supplied; `cwd` is the task's own `spec/` directory only; `env` excludes `TLA_LIBRARY` | a fixture model that attempts `EXTENDS` on a path outside `spec/` is graded with TLC's own module-not-found error, surfaced as `formal_checks_clean = 0`, not a host escape |
+| [design-formal-grader](../design/formal-grader.md) | Agent-authored TLA+/Lean → grading host | **D:** a pathological TLA+ model (huge `CONSTANTS`, unbounded recursion) or a slow Lean elaboration exhausts the grading step | **mitigate** | `run_step`'s existing timeout + Job Object (FM8) | the reused `HB-GRD-002` fixture |
+| [design-formal-grader](../design/formal-grader.md) | Agent-authored TLA+/Lean → grading host | **I:** a TLC counterexample or Lean error message embeds an absolute host path into the report | **mitigate** | the evidence convention stores the *log*; the report reads only `Score.reason` (closed vocabulary) and the log's relative path | the reason-lint test, extended to this grader's fixtures |
+| [design-formal-grader](../design/formal-grader.md) | Agent-authored TLA+/Lean → grading host | **S, R** | not applicable | no identity crosses this boundary; scores attribute to a sealed pass | — |
 | [design-phase1-walking-skeleton](../design/phase1-walking-skeleton.md) | Agent ↔ host | E/T: damage to host files or credentials | accept (owner, ADR-0013) | — | — |
 | [design-phase1-walking-skeleton](../design/phase1-walking-skeleton.md) | Agent ↔ oracle | I: hidden tests in the agent's own tree | mitigate | The task clone never contains `tests/` or `oracle/`, in its tree or history | T-WS-oracle |
 | [design-phase1-walking-skeleton](../design/phase1-walking-skeleton.md) | Agent ↔ git remote | T: push by accident | mitigate | No remote in the task clone (`gh` stays available; owner-accepted) | T-WS-noremote |
@@ -112,7 +126,7 @@ flowchart LR
 | [design-run-lifecycle-model](../design/run-lifecycle-model.md) | The tla2tools.jar download | T: a substituted jar changes check results or runs code in CI | mitigate | Pinned release URL + sha256; delete on mismatch | `test_corrupted_tla_jar_is_deleted_and_refused` |
 | [design-run-lifecycle-model](../design/run-lifecycle-model.md) | CI runner executing the jar | E: third-party code in CI | accept (ADR-0012) | Upstream TLA+ tools, pinned by hash; CI job permissions `contents: read` | — |
 
-<!-- rolled up from 5 artifact(s) by docs-graph.py rollup on 2026-09-25 -->
+<!-- rolled up from 6 artifact(s) by docs-graph.py rollup on 2026-09-29 -->
 
 ## 3. Accepted-risk register
 

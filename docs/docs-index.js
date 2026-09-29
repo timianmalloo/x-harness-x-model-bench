@@ -1317,6 +1317,58 @@ window.DOCS_INDEX = {
       "sourceSha256": "31c7c3f6f203feedea7f8c1b609f561f13813eca9870cc24f6c1743f558a6386"
     },
     {
+      "id": "design-formal-grader",
+      "path": "docs/design/formal-grader.md",
+      "title": "Design: the formal grader (grade/formal.py) — checks, statement integrity, trace conformance, bug confirmation",
+      "type": "design",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 2: deterministic graders (S-08g); unblocks T-G1, T-G2",
+      "reviewBy": "2027-03-29",
+      "reviewSuggested": [],
+      "summary": "Design for grade/formal.py: the four US-32 scores (checks, statement integrity, model conformance, model non-vacuity) plus US-33 bug confirmation (bugs_confirmed, bug_claim_precision) for G1 (TLA+) and G2 (Lean 4). Closes S-12's warm-before-clock gap for tla2tools.jar by design; names the toolchain invocation contract (correctness.run_step, the only sanctioned procs path); flags the TLA+ trace-replay mechanism as unspiked.",
+      "tags": [
+        "benchmark",
+        "grading",
+        "formal-methods",
+        "tla+",
+        "lean",
+        "scenario-7"
+      ],
+      "links": [
+        {
+          "to": "spec-harness-bench",
+          "rel": "implements"
+        },
+        {
+          "to": "plan-spec-backlog",
+          "rel": "refines"
+        },
+        {
+          "to": "note-spike-s12-formal-toolchains",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-proposal-grounding-findings",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-phase3-graders",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0013-native-cells",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "d25da6e28666eaab36ce9d234843b8359c990b3b42ac985175bfa56392af60a8"
+    },
+    {
       "id": "design-phase1-walking-skeleton",
       "path": "docs/design/phase1-walking-skeleton.md",
       "title": "Design: phase 1 walking skeleton (engine, cells, telemetry, grading, report)",
@@ -3135,5 +3187,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "35d2db4275bad69461409ae780a11bb2eaa90e4e6581c71ec0f8e762a618da7b"
+  "graphSha256": "d0cf8e286cbbaaa58802a469c87602974a99cd3a7ee2cfbb39fa2b5baecb8859"
 };
