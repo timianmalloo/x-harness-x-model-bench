@@ -635,7 +635,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "e806a82fabe4e9fffd808707e4ea5dcfa5632d029fddfc1ec20ea1d0d3e687a4"
+      "sourceSha256": "8387ae6205532c71d610c371dfa493322031185950aa6fd2dbaeddba8b40763f"
     },
     {
       "id": "arch-harness-bench",
@@ -3060,5 +3060,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "6eaf2414bc567e732e34188f456e9e49babf077cd9224a7218688be37d7fd04e"
+  "graphSha256": "039f6e0dffda443234b4b4b8162064d1fb182a2d3c2f10dd43584a9f0a5df407"
 };

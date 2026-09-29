@@ -81,10 +81,11 @@ Grading runs natively too: each step that runs cell content works in its own gra
 **4. Every task runs natively, public ones included (Amendment 1, owner ruling 2026-09-28).** No cell uses Docker or any container. The ruling: "I thought we agreed we were not going to use docker" / "this is single user benchmarking."
 - The earlier text kept containers for Harbor (E-task) cells, pending spike A6 in phase 2. That exception is withdrawn.
 - A public task (Terminal-Bench 2.0, SWE-bench Verified, SpecBench, ArchBench) is authored like an authored task. It gets a pinned upstream instance, a native working copy, a native toolchain installed by the task's own setup (a `uv` environment, a pinned SDK) and its upstream tests run on the host.
-- An instance whose environment cannot run natively on the operator's Windows host is not selected. Its task picks another instance from the same upstream band and records why.
+- "Native" is the run's own host. The operator works on Windows or macOS (owner, 2026-09-28: "I may be on macos or windows so runs natively is execution context specific"). Every task must therefore run natively on both. An instance whose setup or tests need Linux, or only one of the two, is not selected; its task picks another from the same upstream band and records why.
 - Spike A6 is not needed.
 
-**5. Platform.** Authored-task cells run on Windows, the operator's platform. The report header says so.
+**5. Platform.** Cells run on the operator's host, Windows or macOS (Amendment 1). The report header names the platform. A run is compared only with a run on the same platform, because the platform changes what is measured (wall clock, the harness build, the toolchain).
+- Finding, 2026-09-28: the engine is Windows-only today. `procs.py` stops a cell through a Win32 Job Object, `tools.py` pins the `win32-x64` harness packages, and `oslock.py` and `preflight.py` branch on `win32`. On macOS the engine fails at import: `procs.py` calls `ctypes.WinDLL`, which exists only on Windows. It never refuses cleanly. A macOS port (a process group with confirmed termination, the `darwin` packages, the lock and the preflight) is a follow-up.
 
 ## Alternatives considered
 
