@@ -2,13 +2,14 @@ schema: bench-task/1
 id: D3
 scenario: 4
 title: "P0 wing spine from a given architecture"
-status: stub
+status: draft
 language: csharp
 source:
   kind: authored
   upstream: "cfd-bench P0 wing spine"
   repo: "https://github.com/timianmalloo/cfd-bench"
-  commit: "tbd"
+  commit: "496a0a8ca2fae9026927167a8f3e5da0a53f2233"
+  license: "none (the operator's own repository; operator decision 2026-09-25, same ruling as F1)"
 budget:
   minutes: 40
   usd_cap: null
