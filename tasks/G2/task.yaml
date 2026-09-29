@@ -2,7 +2,7 @@ schema: bench-task/1
 id: G2
 scenario: 7
 title: "Lean 4 proofs of fixed statements about the lease fold"
-status: draft
+status: ready
 language: other
 source:
   kind: authored
