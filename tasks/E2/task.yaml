@@ -2,13 +2,36 @@ schema: bench-task/1
 id: E2
 scenario: 5
 title: "TB2 software-engineering task, medium band"
-status: stub
-language: other
+status: ready   # oracle discriminates (oracle/evidence.md): 1 failed on the base tree, 1 passed on the reference
+language: python
 source:
   kind: public
-  upstream: "Terminal-Bench 2.0 via Harbor (medium band)"
-  repo: "harbor:terminal-bench@2.0"
-  commit: "tbd"
+  upstream: "Terminal-Bench 2.0 via Harbor: count-dataset-tokens (medium band)"
+  repo: "https://github.com/harbor-framework/terminal-bench-2"
+  commit: "2fd12b88aafdd04a52c298e3940bcb189f9766d6"
+  license: "Apache-2.0"
+  # The LICENSE at this commit is the unfilled Apache-2.0 template ("Copyright [yyyy] [name of
+  # copyright owner]"); no copyright holder is stated in-repo at this commit (checked, not guessed).
+  copyright: "not stated at this commit (LICENSE template copyright line unfilled)"
+  vendored_paths:
+    - count-dataset-tokens/environment/Dockerfile
+    - count-dataset-tokens/task.toml
+    - count-dataset-tokens/README.md
+    - count-dataset-tokens/instruction.md
+    - count-dataset-tokens/tests/test_outputs.py
+    - count-dataset-tokens/solution/solve.sh
+  # R-83 condition 4: the upstream task's own agent timeout, recorded beside the BOM's 60-minute
+  # budget (bench/bom.yaml E2). 900s = 15 min < 60 min, so the BOM budget is not tightened by this
+  # row alone (bench/bom.yaml is not in scope for this task folder; R-83 c5 is a Leader join step).
+  upstream_agent_timeout_sec: 900
+  upstream_verifier_timeout_sec: 900
+  environment:
+    # No container is built or run (ADR-0013 Amendment 1, R-83): the upstream Dockerfile installs
+    # nothing beyond the `python:3.13-slim-bookworm` base image, so the task's own setup needs only
+    # a uv-managed Python 3.13. Internet access is required (HuggingFace dataset + tokenizer
+    # download), same as the upstream `allow_internet = true`.
+    tool: uv
+    python: "3.13"
 budget:
   minutes: 60
   usd_cap: null
@@ -16,9 +39,22 @@ blast_radius:
   - "**"
 model_map: null
 scripted_user: false
+formal: null
 graders:
   - correctness
   - cost
   - process
 oracle:
-  summary: "Upstream TB2 tests."
+  summary: "Upstream TB2 pytest test tasks/E2/tests/test_outputs.py::test_command_output_content_example (run as test_outputs.py at the grading copy's root, once grade/correctness.py's grade() overlays tests/ there), asserting answer.txt (native path; upstream is /app/answer.txt) contains the correct deepseek token count (79586) for the science-domain (chemistry, biology, physics) rows of ryanmarten/OpenThoughts-1k-sample, tokenized over the deepseek_reasoning and deepseek_solution fields with the Qwen2.5-1.5B-Instruct tokenizer."
+  runner: pytest   # not yet built by grade/correctness.py (the pytest oracle-runner slice is unmerged); see tasks/E2/oracle/README.md
+  command:
+    - uv
+    - run
+    - --python
+    - "3.13"
+    - --with
+    - pytest==8.4.1
+    - pytest
+    - test_outputs.py
+    - --junitxml=e2.xml
+    - -rA
