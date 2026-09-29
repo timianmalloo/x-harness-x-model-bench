@@ -1282,3 +1282,62 @@ Append only. One entry per ruling. Newest last.
   5. `bench/bom.yaml` becomes **0.5**. E1–E3 rows carry the selected task's upstream name and actual band; an unfilled row carries "no native TB2 task in band (R-83, survey <commit>)". E1's `task.yaml` values `repo: harbor:terminal-bench@2.0` and `commit: tbd` are replaced in the same commit.
   6. `tasks/README.md` gains the one-sentence tree-not-repository rule above, with fix-git as its first cited instance. The wave join lists this file and the BOM with the commit that changed each (R-82 c5).
   7. No live run is required for this ruling.
+
+## R-84 · 2026-09-29 · Owner seat (Fable) · DR-FM1..2 and the G2-first sequence: DR-FM1 is a spike with exit criteria, not a mechanism ruled from memory; DR-FM2 is ruled from the proposal's own rule (no failing test → an unconfirmed claim), with only the judge-pending branch excluded from N; G2 lands first, the spike runs beside it, and a stub never scores a real pass
+
+- **Ruling:**
+  - **DR-FM1: the spike is granted; the mechanism is not.**
+    - The design's recommended default names "TLC's documented trace-validation feature, a generated `<Model>TTrace.tla`/`.cfg` pair". Its source is a community wiki that nobody in this repo has opened (`formal-grader.md:132`, which its own author labels Flagged/Inferred).
+    - *Inferred, not verified:* the `*TTrace*.tla` file that TLC emits is the replay artifact for a counterexample TLC found itself. Validating an *externally recorded* trace is a different pattern: a trace spec that constrains `Next` to the recorded events. Which pattern applies is the spike's first question, not a premise to build on.
+    - The Python-side symbolic replay alternative is refused. A second TLA+ evaluator would be two definitions of one quantity (DM), and the toolchain is already pinned.
+    - The spike is one worker task, `docs/notes/spike-fm1-tla-trace-validation.md`, in S-12's shape. Its exit evidence, all measured on this host:
+      1. The S-12 scaffold or the `tests/fixtures/grade/formal/g1/` reference model **accepts** one recorded real-fold trace and **rejects** one bug-seeded trace. Accept or reject is read from a closed predicate on TLC's output (the exit code plus a named line), never from "no error printed".
+      2. On rejection, a line in the evidence log identifies the first divergent step (the `<path>:<line>` convention, `formal-grader.md:274`).
+      3. The two named golden-master tests (`test_g1_reference_cell_all_scores`, `test_g1_seeded_variant_cell_fails_non_vacuity`) pass against the real `_replay`, not the stub.
+      4. The **trace interface** is written down: the state variables and action names the generated trace spec binds to. Without it, an *agent-authored* model cannot be trace-validated. G1's `prompt.md` states the interface as a task rule. A model that does not expose it accepts no trace and scores `model_conformance = 0.0000`, not NA: failing to follow the prompt is the agent's failure, and NA is only for what cannot be measured.
+    - These constraints hold whatever the spike finds:
+      - `tla2tools.jar` is the only jar, unless a second one is needed (CommunityModules, if the trace spec needs `Json`/`IOUtils`). A second jar is pinned by sha256 and warmed before the clock, exactly as the first is (`formal-grader.md:214`).
+      - The generated trace spec and `.cfg` are written by the grader into `out_dir`, never into the archive.
+      - The recorded traces stay hidden oracle assets (US-3).
+      - `cwd` is the `spec/` directory (G8).
+      - The spike runs natively on Windows now. macOS is recorded as unverified (FM11), which is not a reason to wait.
+  - **DR-FM2: ruled from the proposal's own rule, not the recommended default.**
+    - Proposal `:140`: *"Every bug a G-task agent reports must come with a failing test on the real code, or it counts as an unconfirmed claim."* US-33 `:472`: precision = confirmed ÷ N, where N is the number reported.
+    - The decision tree is fully mechanical. It needs no "does it match the seed" step:
+
+      | Entry outcome | In N | Confirmed |
+      | --- | --- | --- |
+      | no `Test:` line, or the reference fails validation (`..`, a leading `-`, outside `tests/**`), so it is never run | yes | no |
+      | the test **passes** on the real fold | yes | no (refuted) |
+      | fails on the real fold, **passes** on the reference fix | yes | yes (seeded branch) |
+      | fails on the real fold, **fails** on the fix | **excluded** | — (judge-pending; disclosed) |
+
+    - Only the last row is the not-seeded judge branch that US-33 names, and only that row is excluded. This mirrors R-68's NA-by-design rule: the mechanical rung has done everything it can, and the judge rubric does not exist.
+    - The design's exclusion of unvalidated and no-`Test:` entries (`formal-grader.md:204`) is **refused**. A reported bug with no runnable test is the proposal's "unconfirmed claim", and the prompt states the format, so the format is part of the task.
+    - Two fixtures move: "one correct plus one path-traversal `Test:` line" and "one correct plus one no-`Test:` entry" now read `0.5000`, not `1.0000`.
+    - The Security & Identity Architect's control is untouched: the entry is still never passed to `run_step`.
+    - `BUGS.md` schema: the recommended minimum is granted. There is one `## <slug>` per claim and one `Test: tests/<file>.py::<function>` line. The schema lives in `tasks/README.md`'s scenario-7 contract and verbatim in G1's `prompt.md`. The reference solution's own `BUGS.md` proves it can be satisfied.
+    - No `BUGS.md`, or one with no entries: `bugs_confirmed = 0`, because the seeded bug exists and was not found, which is a measurement. `bug_claim_precision` is NA `0/0`. The design's NA `no BUGS.md` for `bugs_confirmed` is refused: NA is never 0, and 0 is never NA.
+    - When the judge rubric is written, it is a catalog bump (US-4), and `0.5` rows keep their values. Until then, the judge-pending count is a line in the evidence log, not a metric.
+  - **Sequence: granted.**
+    - G2 (Lean) is designed, authored and implemented first.
+    - The DR-FM1 spike runs beside it as an independent worker.
+    - G1's conformance and non-vacuity slice starts only on the spike's exit evidence.
+    - Every G2 metric can be computed without `_replay` (`model_non_vacuity` on G2 is a second `lake build`, `formal-grader.md:189`), so one formal task can reach `ready` on this evidence alone.
+- **Reasoning:**
+  - "Results first" is served by the sequence, not by shortening the spike. G2 is a real result. A G1 conformance score from a mechanism nobody ran would be a plausible wrong number (IO).
+  - Ruling DR-FM1's mechanism now would repeat the design's own mistake: asserting a documented feature from memory. The exit criteria are what US-32 `:465` actually demands; the mechanism is whatever meets them.
+  - DR-FM2's default penalised nothing that could not be judged. That is right for the judge-pending row and wrong for the rows the mechanical rung already decides. A claim with no failing test is exactly the case the proposal wrote the rule for.
+  - The trace interface is the load-bearing finding: without it, G1 cannot be authored, whatever the spike says about TLC.
+- **Conditions:**
+  1. The `_replay` stub is test-only. In a real grading pass, G1's `model_conformance` and `model_non_vacuity` read NA `not built` until the spike's items 1–3 are committed. When `formal` registers, `test_grade_runner.py:73-77` keeps that shape for those two ids.
+  2. G2 `ready` needs all of the following:
+     - `formal.theorem_names` in `task.yaml`;
+     - US-2 `:271`'s third clause met in `evidence.md`, with the buggy fold as the seeded bug and the reference proofs' failing build on it as the reproducing test;
+     - `bench validate` ok.
+
+     `config.py`'s missing clause-three check (G3) is a named gap for the join, not a blocker for the slice.
+  3. The spike note records the exact TLC argv, the generated trace spec, the trace JSON shape, the interface (item 4) and the wall time per trace. A new jar, if any, is pinned in the note by URL and sha256 before `tool_versions` learns it.
+  4. The DR-FM2 table is the D2 generator's third dimension (`formal-grader.md:290`), with one fixture per row. The two moved fixtures are updated in the design in the same commit as the implementation.
+  5. The wave join lists `tasks/README.md`, G1's `prompt.md`, the design and the spike note, each with the commit that changed it (R-82 c5).
+  6. No live run is required for this ruling.
