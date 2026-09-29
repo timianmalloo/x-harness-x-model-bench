@@ -133,6 +133,12 @@ def test_phase1_plan_has_four_cells_and_every_recorded_field():
     assert p["parameters"]["parallelism"] == 2
 
 
+def test_plan_records_the_host_platform():  # ADR-0013 Amendment 1 section 5
+    import sys
+
+    assert _phase1_plan()["platform"] == sys.platform
+
+
 def test_plan_records_each_profiles_shutdown_grace():  # PR-3
     p = _phase1_plan()
     assert {h: record["shutdown_grace_seconds"] for h, record in p["profiles"].items()} == {

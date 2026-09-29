@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import shutil
+import sys
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -89,6 +90,7 @@ def stats_run(
     run_id: str = "r1",
     bom_version: str = "0.4",
     pack_revision: str = "95",
+    platform: str = sys.platform,  # default: this host, so two runs built on the same host never diverge (ADR-0013 s5)
 ) -> Path:
     """Build, archive, and grade a real multi-task, multi-rep, multi-arm run.
 
@@ -154,6 +156,7 @@ def stats_run(
         "created_at": "2026-09-27T10:00:00Z",
         "plan_hash": "",
         "bom_version": bom_version,
+        "platform": platform,
         "price_list_hash": runner.file_hash(prices_path),
         "parameters": {"parallelism": 2, "grading_step_timeout": 900},
         "matrix": {

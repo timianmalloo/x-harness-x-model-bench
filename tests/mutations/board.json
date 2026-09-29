@@ -35,6 +35,13 @@
     "tests": ["tests/test_board.py::test_tb5_compare_preconditions_parametrised"]
   },
   {
+    "name": "the cross-platform comparison refusal dropped (ADR-0013 Amendment 1 s5): a run is compared with a run on a different platform",
+    "file": "src/harness_bench/board.py",
+    "find": "    if base_platform is not None and view_platform is not None and base_platform != view_platform:\n        diffs.append(f\"platform differs: A {base_platform}, B {view_platform}\")",
+    "replace": "    if False:\n        diffs.append(f\"platform differs: A {base_platform}, B {view_platform}\")",
+    "tests": ["tests/test_board.py::test_tb5_compare_preconditions_parametrised"]
+  },
+  {
     "name": "base and view swapped in compare",
     "file": "src/harness_bench/board.py",
     "find": "delta_iv, _ = paired_delta(ref=obs_a, treat=obs_b, labels=(base.run_id, view.run_id), params=params, key=key)",

@@ -21,6 +21,7 @@ import math
 import os
 import secrets
 import shutil
+import sys
 import tempfile
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass
@@ -316,6 +317,10 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, p
         "run_id": run_id,
         "created_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "trace_id": secrets.token_hex(16),
+        # ADR-0013 Amendment 1 section 5: the report header names the platform, and board.compare
+        # refuses to compare runs recorded on different platforms (the platform changes what is
+        # measured: wall clock, the harness build, the toolchain).
+        "platform": sys.platform,
         "matrix": matrix,
         "matrix_hash": _sha(matrix),
         "bom_version": str(bom.get("version")),

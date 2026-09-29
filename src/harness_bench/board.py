@@ -734,6 +734,16 @@ def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = 
         if base_task_vers[t] != view_task_vers[t]:
             diffs.append(f"task version of {t} differs")
 
+    # 6. Platform (ADR-0013 Amendment 1, section 5): the platform changes what is measured (wall clock,
+    # the harness build, the toolchain), so a run is compared only with a run on the same platform.
+    # assume: an unrecorded platform (a pre-port plan with no "platform" field) is never asserted to
+    # differ -- only two recorded, differing platforms are refused. Confirm: no plan fixture in this
+    # repo predates the port without an explicit platform. Breaks if false: a genuinely cross-platform
+    # comparison where one side's plan predates the port would pass silently instead of naming HB-STA-002.
+    base_platform, view_platform = base.plan.get("platform"), view.plan.get("platform")
+    if base_platform is not None and view_platform is not None and base_platform != view_platform:
+        diffs.append(f"platform differs: A {base_platform}, B {view_platform}")
+
     if diffs:
         raise BenchError("HB-STA-002", "; ".join(diffs))
 

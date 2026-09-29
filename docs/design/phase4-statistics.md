@@ -349,7 +349,11 @@ exit, G11), and nothing else is printed for the comparison:
 4. the same catalog version of the current pass: `catalog version differs: A 0.4, B 0.5`;
 5. the same `task_version` for every task both runs hold (implied by 3; checked defensively): `task version of
    D1 differs`;
-6. different run ids: the same run twice is `HB-STA-001` (R-19: two passes of one run are never one input).
+6. the same recorded host platform (ADR-0013 Amendment 1, section 5: the platform changes what is measured --
+   wall clock, the harness build, the toolchain): `platform differs: A win32, B darwin`. A plan recorded before
+   the platform was frozen (no `platform` field) is never asserted to differ from another plan: only two
+   *recorded, differing* platforms are refused;
+7. different run ids: the same run twice is `HB-STA-001` (R-19: two passes of one run are never one input).
 
 A shared pack revision is allowed: the header says `same pack revision (<n>): a replication`. The spec's Given
 names different revisions, but its refusal list does not include the revision. Different BOM subsets are not a
@@ -708,7 +712,7 @@ Comparison (`tests/test_board.py`, `tests/test_report.py`):
 
   `compare(base=B, view=A)` gives the negated point.
 - **T-B4**: `compare` on the same run → `HB-STA-001`.
-- **T-B5** (parametrised, one `HB-STA-002` naming all of them): combos, BOM version and catalog version differ; a run not graded; a task version differs.
+- **T-B5** (parametrised, one `HB-STA-002` naming all of them): combos, BOM version and catalog version differ; a run not graded; a task version differs; the platform differs (ADR-0013 Amendment 1 s5).
 
 **Named mutants** (D1; each must be killed by the test named, and the slice's mutation file lists exactly these at least):
 
@@ -732,6 +736,7 @@ Comparison (`tests/test_board.py`, `tests/test_report.py`):
 | `board.json` | the E1–E3 filter dropped (line kept) | T-P3 |
 | `board.json` | the HB-STA-001 check dropped | T-B4 |
 | `board.json` | one HB-STA-002 precondition dropped (each, parametrised) | T-B5 |
+| `board.json` | the cross-platform comparison refusal dropped (ADR-0013 Amendment 1 s5) | T-B5 |
 | `board.json` | `base` and `view` swapped in `compare` | T-M3 |
 | `board.json` | seed or resamples left out of the export | T-B3 |
 

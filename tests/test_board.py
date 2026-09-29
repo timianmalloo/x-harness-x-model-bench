@@ -145,7 +145,7 @@ def test_tb4_compare_same_run_refusal(tmp_path):
 
 @pytest.mark.parametrize(
     "diff_kind",
-    ["not_graded", "combos", "bom_version", "catalog_version", "task_version"],
+    ["not_graded", "combos", "bom_version", "catalog_version", "task_version", "platform"],
 )
 def test_tb5_compare_preconditions_parametrised(tmp_path, diff_kind):
     """T-B5: compare preconditions (parametrised, each naming the difference) -> HB-STA-002."""
@@ -190,6 +190,10 @@ def test_tb5_compare_preconditions_parametrised(tmp_path, diff_kind):
             cells=view_b.cells,
             header=view_b.header,
         )
+    elif diff_kind == "platform":
+        run_b = stats_run(root, tmp_path, run_id="r-b", tasks=("A1",), reps=1, arms=("off",), combos=["c"],
+                          platform="darwin" if view_a.plan.get("platform") != "darwin" else "win32")
+        view_b = views.load(run_b)
 
     with pytest.raises(BenchError) as exc_info:
         board.compare(view_a, view_b, TEST_CATALOG)
@@ -205,6 +209,8 @@ def test_tb5_compare_preconditions_parametrised(tmp_path, diff_kind):
         assert f"catalog version differs: A {view_a.catalog_version}, B {view_b.catalog_version}" in msg
     elif diff_kind == "task_version":
         assert "task version of A1 differs" in msg
+    elif diff_kind == "platform":
+        assert f"platform differs: A {view_a.plan.get('platform')}, B {view_b.plan.get('platform')}" in msg
 
 
 def test_tb5_multiple_preconditions_all_named(tmp_path):
