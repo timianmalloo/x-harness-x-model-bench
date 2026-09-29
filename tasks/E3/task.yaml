@@ -2,23 +2,49 @@ schema: bench-task/1
 id: E3
 scenario: 5
 title: "TB2 software-engineering task, hard band"
-status: stub
-language: other
+status: ready   # oracle discriminates (oracle/evidence.md): 0/2 on the base tree, 2/2 on the reference
+language: python
 source:
   kind: public
-  upstream: "Terminal-Bench 2.0 via Harbor (hard band)"
-  repo: "harbor:terminal-bench@2.0"
-  commit: "tbd"
+  upstream: "Terminal-Bench 2.0 extract-moves-from-video"
+  repo: "https://github.com/harbor-framework/terminal-bench-2"
+  commit: "2fd12b88aafdd04a52c298e3940bcb189f9766d6"
+  license: "Apache-2.0"
+  # copyright: not stated in-tree. The vendored LICENSE is the unfilled Apache-2.0 boilerplate
+  # ("Copyright [yyyy] [name of copyright owner]"), and no NOTICE file exists at this commit
+  # (checked: `find . -iname 'NOTICE*'` and a repo-wide grep for '^Copyright' at the repo root,
+  # both empty). GitHub org of record: harbor-framework.
+  copyright: null
+  vendored_paths:
+    - "extract-moves-from-video/solution/solve.sh"
+    - "extract-moves-from-video/tests/test_outputs.py"   # one edit: /app/solution.txt -> solution.txt (README diff)
 budget:
   minutes: 60
   usd_cap: null
+  # R-83 c4: upstream task.toml's own [agent] and [verifier] timeout_sec are both 1800.0 (30 min),
+  # smaller than this row's 60-minute BOM budget (bench/bom.yaml row 44, unchanged here — the BOM
+  # is the Leader's at the R-83 c5 join, not in scope for this worker). Recorded, not applied.
 blast_radius:
   - "**"
 model_map: null
 scripted_user: false
+formal: null
 graders:
   - correctness
+  - drift
   - cost
   - process
 oracle:
-  summary: "Upstream TB2 tests."
+  summary: "Upstream TB2 test suite (tests/test_outputs.py, 2 tests): the agent's solution.txt must exist and its Levenshtein similarity to the expected 280-line Zork transcript must be >= 90%. Run with pytest under a pinned uv-managed Python 3.13 (the task's own Dockerfile, FROM ubuntu:24.04 with no RUN lines beyond WORKDIR, installs nothing; 3.13 is this task version's own grading pin, matching the uv-managed Python already resolved on this host)."
+  runner: pytest   # the named JUnit XML report runner (correctness.py); the Leader re-proved base 0 / reference 1
+                    # through correctness.grade at the join (evidence.md), after the author's direct pytest run.
+  command:
+    - uv
+    - run
+    - --python
+    - "3.13"
+    - --with
+    - pytest==8.4.1
+    - pytest
+    - test_outputs.py
+    - --junitxml=e3.xml

@@ -111,8 +111,7 @@ def test_the_unittest_summary_is_parsed_strictly(stderr, expected):
     assert correctness.parse_unittest(stderr) == expected
 
 
-@pytest.mark.parametrize("oracle", [{"runner": "pytest", "command": ["{python}", "-m", "pytest"]}, {"runner": "unittest"},
-                                    {"runner": "zeta", "command": ["{python}", "-c", "pass"]}])
+@pytest.mark.parametrize("oracle", [{"runner": "unittest"}, {"runner": "zeta", "command": ["{python}", "-c", "pass"]}])
 def test_an_oracle_phase_1_cannot_run_is_na_before_anything_runs(tmp_path, oracle):
     result = correctness.grade(tmp_path / "ws", tmp_path / "task", oracle, tmp_path / "out", tmp_path, 10)
     assert (result.passed, result.partial_credit, result.evidence) == (None, None, "")

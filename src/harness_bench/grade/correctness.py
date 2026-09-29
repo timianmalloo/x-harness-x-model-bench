@@ -3,8 +3,10 @@
 - The hidden tests run in a grading copy (the archived working copy, then the task's `tests/`), never in
   the archive, in their own Job Object under the grading-step deadline (HB-GRD-002). The copy is removed
   afterwards; the oracle's output is kept as the evidence.
-- `unittest` summaries and the named TRX file from a `dotnet` oracle are parsed strictly; a missing or
-  invalid summary is NA, never 0. A pass needs exit status 0 and every test passed.
+- `unittest` summaries, the named TRX file from a `dotnet` oracle, and the named JUnit XML report from a `pytest`
+  oracle (`--junitxml=<file>`, a bare file name) are parsed strictly; a missing or invalid summary is NA, never 0.
+  A pass needs exit status 0 and every test passed. A pytest collection error writes a report with `errors`
+  counted against the total, so it scores 0 like any other failure, never NA.
 - DR-G4, decided by cause (R-67 c1; measured in docs/notes/spike-gr-code-trx.md): a dotnet step that wrote no TRX
   is classified from MSBuild's canonical error lines. A restore error (`NUxxxx`) is NA
   `infrastructure failure before build: restore`; a failing `dotnet --version` is NA `... sdk`. A compiler error
@@ -126,6 +128,28 @@ def _trx_matches(work: Path, spec: tuple[str, str]) -> list[Path]:
     return sorted(p for p in work.rglob(name) if p.is_file() and p.parent.name.casefold() == directory.casefold())
 
 
+def _pytest_spec(command: list[str]) -> str | None:
+    """The oracle's exact JUnit XML report filename, from `--junitxml` (a bare file name, validated as strictly as
+    `_trx_spec` validates the TRX name): no directory component, and a `.xml` suffix."""
+    name = None
+    for index, arg in enumerate(command):
+        if arg == "--junitxml" and index + 1 < len(command):
+            name = command[index + 1]
+        elif arg.startswith("--junitxml="):
+            name = arg[len("--junitxml="):]
+    if not name:
+        return None
+    name = name.strip().strip('"')
+    if not name or Path(name).name != name or Path(name).suffix.lower() != ".xml":
+        return None
+    return name
+
+
+def _report_matches(work: Path, name: str) -> list[Path]:
+    """Find every file named `name` under `work` (the grading copy), for a pytest oracle's JUnit XML report."""
+    return sorted(p for p in work.rglob(name) if p.is_file())
+
+
 def parse_trx(path: Path) -> tuple[int, int] | None:
     """(total, passed) from the named TRX ResultSummary/Counters, or None if invalid."""
     try:
@@ -145,9 +169,33 @@ def parse_trx(path: Path) -> tuple[int, int] | None:
     return (total, passed) if total >= 0 and 0 <= passed <= total else None
 
 
+def parse_pytest(path: Path) -> tuple[int, int] | None:
+    """(total, passed) from the JUnit XML's testsuite element(s) -- tests minus failures, errors and skipped, summed
+    across every `<testsuite>` (a bare root, or the `<testsuites>` wrapper pytest writes by default) -- or None if
+    invalid or empty."""
+    try:
+        root = ET.parse(path).getroot()
+        if root.tag == "testsuites":
+            suites = [e for e in root if e.tag == "testsuite"]
+        elif root.tag == "testsuite":
+            suites = [root]
+        else:
+            return None
+        if not suites:
+            return None
+        total = failed = 0
+        for suite in suites:
+            total += int(suite.attrib["tests"])
+            failed += int(suite.attrib["failures"]) + int(suite.attrib["errors"]) + int(suite.attrib["skipped"])
+    except (ET.ParseError, OSError, KeyError, ValueError):
+        return None
+    passed = total - failed
+    return (total, passed) if total >= 0 and 0 <= passed <= total else None
+
+
 def grade(ws: Path, task_dir: Path, oracle: dict, out_dir: Path, run_dir: Path, timeout: float) -> Result:
     kind = oracle.get("runner")
-    if kind not in ("unittest", "dotnet") or not oracle.get("command"):
+    if kind not in ("unittest", "dotnet", "pytest") or not oracle.get("command"):
         return Result(None, None, f"oracle runner {kind!r} not built (phase 1 runs unittest)", "")
     if not ws.is_dir():
         return Result(None, None, "no working copy in the archive", "")
@@ -165,6 +213,10 @@ def grade(ws: Path, task_dir: Path, oracle: dict, out_dir: Path, run_dir: Path, 
     if spec:
         for old in _trx_matches(work, spec):
             old.unlink()  # discard archived results in this disposable copy before the new step
+    report_name = _pytest_spec(oracle["command"]) if kind == "pytest" else None
+    if report_name:
+        for old in _report_matches(work, report_name):
+            old.unlink()  # discard archived results in this disposable copy before the new step
     started = time.monotonic()
     try:
         if kind == "dotnet":
@@ -174,6 +226,9 @@ def grade(ws: Path, task_dir: Path, oracle: dict, out_dir: Path, run_dir: Path, 
         done = procs.run(argv, cwd=work, env=env, timeout=max(remaining, 0)) if remaining > 0 and not (version_done and version_done.timed_out) else None
         trx_files = _trx_matches(work, spec) if spec else []
         parsed = parse_trx(trx_files[0]) if len(trx_files) == 1 else None
+        report_files = _report_matches(work, report_name) if report_name else []
+        if kind == "pytest" and len(report_files) == 1:
+            parsed = parse_pytest(report_files[0])  # read while `work` still exists; `finally` removes it next
     finally:
         shutil.rmtree(work, onexc=archive.make_writable)
     log = out_dir / "oracle.log"
@@ -188,6 +243,8 @@ def grade(ws: Path, task_dir: Path, oracle: dict, out_dir: Path, run_dir: Path, 
         return Result(None, None, SDK, evidence)
     if kind == "dotnet" and spec is None:
         return Result(None, None, "oracle command has no named TRX result", evidence)
+    if kind == "pytest" and report_name is None:
+        return Result(None, None, "oracle command has no named JUnit XML report", evidence)
     cause = build_failure(done.stdout) if kind == "dotnet" and not trx_files else None
     if cause == "restore":
         return Result(None, None, RESTORE, evidence)
@@ -195,10 +252,17 @@ def grade(ws: Path, task_dir: Path, oracle: dict, out_dir: Path, run_dir: Path, 
         return Result(None, None, "named TRX result file missing", evidence, compile_error=cause == "compile")
     if kind == "dotnet" and len(trx_files) != 1:
         return Result(None, None, "multiple named TRX result files", evidence)
+    if kind == "pytest" and not report_files:
+        return Result(None, None, "named JUnit XML report missing", evidence)
+    if kind == "pytest" and len(report_files) != 1:
+        return Result(None, None, "multiple named JUnit XML reports", evidence)
     if kind == "unittest":
         parsed = parse_unittest(done.stderr)
     if parsed is None:
-        return Result(None, None, "named TRX result is unparsable" if kind == "dotnet" else "oracle output has no unittest summary", evidence)
+        return Result(None, None,
+                      "named TRX result is unparsable" if kind == "dotnet" else
+                      "named JUnit XML report is unparsable" if kind == "pytest" else
+                      "oracle output has no unittest summary", evidence)
     total, passed = parsed
     if total == 0:
         return Result(None, None, "no hidden test ran", evidence)
@@ -243,7 +307,7 @@ def _by_cause(inp: CellInput, oracle: dict, cell: Result, timeout: float, pre: P
 def build_and_suite_clean(inp: CellInput, oracle: dict, timeout: float) -> Score:
     """1 iff the working copy builds on its own (analysis rung); NA only for a failure before the build."""
     kind, ws = oracle.get("runner"), inp.archive / "ws"
-    if kind not in ("unittest", "dotnet") or not oracle.get("command"):
+    if kind not in ("unittest", "dotnet", "pytest") or not oracle.get("command"):
         return Score(None, f"oracle runner {kind!r} not built (phase 1 runs unittest)")
     if not ws.is_dir():
         return Score(None, "no working copy in the archive")
@@ -255,7 +319,7 @@ def build_and_suite_clean(inp: CellInput, oracle: dict, timeout: float) -> Score
     steps, lines, last = [], [], None
     started = time.monotonic()
     with _changes.grading_copy(ws, out / "work") as work:
-        if kind == "unittest":
+        if kind in ("unittest", "pytest"):
             steps = [[sys.executable, "-m", "compileall", "-q", "."]]
         else:
             projects = sorted(p.relative_to(work).as_posix() for p in work.rglob("*.csproj") if p.is_file())

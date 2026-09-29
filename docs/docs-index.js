@@ -1079,6 +1079,38 @@ window.DOCS_INDEX = {
       "sourceSha256": "3d69ca1bc51b03548430e76e152891eb2c8f6b6a14eb8845602e7e6b53ccf664"
     },
     {
+      "id": "note-tb2-native-survey",
+      "path": "docs/notes/tb2-native-survey.md",
+      "title": "TB2 native survey: all 89 Terminal-Bench 2.0 tasks at 2fd12b88, read for a native/apt/linux-only/git-state verdict (R-83 condition 1)",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2027-03-29",
+      "reviewSuggested": [],
+      "summary": "R-83 condition 1. Every one of the 89 Terminal-Bench 2.0 task folders at commit 2fd12b88aafdd04a52c298e3940bcb189f9766d6 (2fd12b88) was read (task.toml, environment/Dockerfile, and, where the Dockerfile alone did not settle it, tests/test.sh and solution/solve.sh) and given one verdict: native (19), apt (63), linux-only (5) or git-state (2). No easy-band task is native, so E1 takes a shortfall task from the medium band (R-83's shortfall rule 1); E2 and E3 take native tasks from their own bands. No task was run and no task folder changed.",
+      "tags": [
+        "benchmark",
+        "terminal-bench-2",
+        "r-83",
+        "adr-0013",
+        "survey",
+        "tb2"
+      ],
+      "links": [
+        {
+          "to": "rulings-register",
+          "rel": "relates-to"
+        },
+        {
+          "to": "adr-0013-native-cells",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "a7fbc49645bd7e5c8bcfe25298ca69ff096eede0ed2b996918f76d2e90fb2cce"
+    },
+    {
       "id": "review-w1-acp-codex",
       "path": "docs/notes/review-w1-acp-codex.md",
       "title": "W1-ACP cross-vendor join review",
@@ -2040,7 +2072,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9752c350e63415489f689e380e8f40766d0e2d72ab16191e52a764c56d1d90fb"
+      "sourceSha256": "f62191fb72cba59ad89f29c38f7fd3b3931347d880f3e4021e5c0daf9f874601"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -3103,5 +3135,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "90047c32ac45713311d33395ca231f610dd1886447430e0d451e4d72b726323c"
+  "graphSha256": "a48529a1f2db3e693e3cf00282724982f965ad144a3ce23e4f22d590b86a8400"
 };
