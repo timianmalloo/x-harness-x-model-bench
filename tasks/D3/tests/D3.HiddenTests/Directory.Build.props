@@ -1,0 +1,4 @@
+<Project>
+  <!-- Isolation: MSBuild imports the nearest Directory.Build.props, so the agent's repo-wide settings
+       (for example TreatWarningsAsErrors) do not reach the hidden test project. -->
+</Project>
