@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -51,14 +52,23 @@ def test_verify_detects_a_changed_archived_file(tmp_path):
 
 
 def test_links_are_recorded_never_followed(tmp_path):
+    """The link mechanism differs by host (a Windows NTFS junction has no POSIX equivalent), but the
+    behaviour under test -- archive.archive_cell records a link and never walks into it -- is the same
+    cross-platform recipe (archive.py's `_is_link`: `path.is_symlink() or is_junction()`). On Windows this
+    keeps the original `mklink /J` junction; on POSIX (macos-latest CI, ADR-0013 Amendment 1) a directory
+    symlink is the equivalent escape a cell's working copy could contain, so `os.symlink` proves the same
+    guarantee there."""
     cell = _cell(tmp_path)
     outside = tmp_path / "outside"
     outside.mkdir()
     (outside / "secret.txt").write_text("do not copy", encoding="utf-8")
     link = cell / "ws" / "escape"
-    made = subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(outside)], capture_output=True, check=False)
-    if made.returncode != 0:
-        pytest.skip("cannot create a junction here")
+    if sys.platform == "win32":
+        made = subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(outside)], capture_output=True, check=False)
+        if made.returncode != 0:
+            pytest.skip("cannot create a junction here")
+    else:
+        os.symlink(outside, link, target_is_directory=True)
     result = archive.archive_cell(cell, tmp_path / "a", attempt=1, exclude_names=set())
     rows = {r["path"]: r for r in result.rows}
     assert rows["ws/escape"]["kind"] == "link" and rows["ws/escape"]["link_target"]
@@ -66,6 +76,10 @@ def test_links_are_recorded_never_followed(tmp_path):
     assert not (result.folder / "ws" / "escape" / "secret.txt").exists()
 
 
+@pytest.mark.native  # T-ARC-locked measures a Windows-only mechanism (mandatory file locking / sharing
+# violation): opening a file for read blocks `shutil.rmtree` deleting it on Windows, but not on POSIX,
+# where an open-but-unlinked file's data simply outlives the unlink until the last fd closes and rmtree
+# itself succeeds -- there is no POSIX mirror of this guarantee to write (ADR-0013 Amendment 1, macOS port).
 def test_delete_only_after_verification_and_retry_on_a_held_file(tmp_path):  # T-ARC-locked
     cell = _cell(tmp_path)
     result = archive.archive_cell(cell, tmp_path / "a", attempt=1, exclude_names=set())
