@@ -387,7 +387,7 @@
  {
   "name": "tree_hash in the order given, not sorted",
   "file": "src/harness_bench/plan.py",
-  "find": "    for f in sorted(files):\n",
+  "find": "    for f in sorted(files, key=lambda p: p.relative_to(base).as_posix().casefold()):\n",
   "replace": "    for f in files:\n",
   "tests": ["tests/test_plan.py::test_tree_hash_is_the_one_recipe_path_nul_lf_bytes_nul_in_sorted_path_order"]
  },
