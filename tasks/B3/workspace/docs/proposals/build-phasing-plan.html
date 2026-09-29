@@ -1,0 +1,668 @@
+<title>Build Phasing Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --ground:#F6F8F7; --surface:#FFFFFF; --sunk:#EDF1F0;
+    --ink:#0C1B21; --body:#22343A; --muted:#5A6E75; --muted2:#8A9AA0;
+    --rule:#D6DFDE; --rule-strong:#B7C6C4;
+    --accent:#C8500F;
+    --go:#1F6F5C; --warn:#8A6100; --stop:#A32C1E;
+    --go-bg:#E3F0EB; --warn-bg:#F6EED9; --stop-bg:#F6E2DE;
+    --s1:#1F6F5C; --s2:#2E6F8E; --s3:#7A5AA6; --s4:#C8500F;
+    --shadow:0 1px 2px rgba(12,27,33,.05), 0 8px 24px -12px rgba(12,27,33,.18);
+    --measure:66ch;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#081317; --surface:#0E1F25; --sunk:#0A1A1F;
+      --ink:#E6EFEE; --body:#C3D3D3; --muted:#8CA3A6; --muted2:#7A9195;
+      --rule:#1E333A; --rule-strong:#2C464E;
+      --accent:#F0793C;
+      --go:#5FC0A3; --warn:#D8A93A; --stop:#E4796A;
+      --go-bg:#102C26; --warn-bg:#2C2412; --stop-bg:#2E1815;
+      --s1:#5FC0A3; --s2:#6FB3D6; --s3:#B79BE0; --s4:#F0793C;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#081317; --surface:#0E1F25; --sunk:#0A1A1F;
+    --ink:#E6EFEE; --body:#C3D3D3; --muted:#8CA3A6; --muted2:#7A9195;
+    --rule:#1E333A; --rule-strong:#2C464E;
+    --accent:#F0793C;
+    --go:#5FC0A3; --warn:#D8A93A; --stop:#E4796A;
+    --go-bg:#102C26; --warn-bg:#2C2412; --stop-bg:#2E1815;
+    --s1:#5FC0A3; --s2:#6FB3D6; --s3:#B79BE0; --s4:#F0793C;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box}
+  body{background:var(--ground); color:var(--body);
+    font-family:"Source Serif 4","Iowan Old Style",Georgia,serif;
+    font-size:17px; line-height:1.62; margin:0; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 28px 96px}
+  .col{max-width:var(--measure)}
+  h1,h2,h3,h4{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+  h1{font-size:clamp(2.1rem,4.4vw,3.1rem); line-height:1.06; font-weight:700;
+     letter-spacing:-.022em; color:var(--ink); margin:0 0 .5rem; text-wrap:balance}
+  h2{font-size:1.55rem; font-weight:700; letter-spacing:-.015em; color:var(--ink);
+     margin:0 0 .2rem; text-wrap:balance}
+  h3{font-size:1.08rem; font-weight:600; letter-spacing:-.008em; color:var(--ink);
+     margin:0 0 .35rem; text-wrap:balance}
+  h4{font-size:.95rem; font-weight:600; color:var(--ink); margin:1.3rem 0 .3rem}
+  p{margin:0 0 1.05rem}
+  strong{color:var(--ink); font-weight:600}
+  a{color:var(--accent)}
+  code,.num{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+    font-size:.87em; font-variant-numeric:tabular-nums}
+  code{background:var(--sunk); padding:.1em .38em; border-radius:3px; color:var(--ink)}
+  pre{background:var(--sunk); border:1px solid var(--rule); padding:16px 18px;
+    overflow-x:auto; margin:0 0 1.3rem; border-radius:2px}
+  pre code{background:none; padding:0; font-size:.8rem; line-height:1.62; color:var(--body)}
+  .cm{color:var(--muted2)} .kw{color:var(--accent); font-weight:500}
+  .eyebrow{font-family:Archivo,sans-serif; font-size:.7rem; font-weight:600;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 .55rem}
+  header.top{border-bottom:2px solid var(--ink); padding:56px 0 22px}
+  .kicker{display:flex; gap:10px; align-items:baseline; flex-wrap:wrap;
+    font-family:Archivo,sans-serif; font-size:.72rem; font-weight:600;
+    letter-spacing:.13em; text-transform:uppercase; color:var(--muted); margin-bottom:18px}
+  .kicker .dot{color:var(--rule-strong)} .kicker .hl{color:var(--accent)}
+  .standfirst{font-size:1.16rem; line-height:1.55; color:var(--body); max-width:60ch; margin:0}
+  .rig{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:0;
+    border-bottom:1px solid var(--rule); margin:0 0 52px}
+  .rig div{padding:16px 18px 18px; border-right:1px solid var(--rule)}
+  .rig div:last-child{border-right:0}
+  .rig dt{font-family:Archivo,sans-serif; font-size:.66rem; font-weight:600;
+    letter-spacing:.11em; text-transform:uppercase; color:var(--muted); margin-bottom:5px}
+  .rig dd{margin:0; font-family:"IBM Plex Mono",monospace; font-size:.95rem; font-weight:500;
+    color:var(--ink); font-variant-numeric:tabular-nums}
+  .rig dd.bad{color:var(--stop)} .rig dd.good{color:var(--go)}
+  section{padding:44px 0; border-top:1px solid var(--rule)}
+  .sec-head{display:flex; gap:14px; align-items:baseline; margin-bottom:1.4rem}
+  .sec-num{font-family:"IBM Plex Mono",monospace; font-size:.8rem; color:var(--accent);
+    font-weight:500; padding-top:.28rem; flex:none}
+  .callout{background:var(--surface); border:1px solid var(--rule);
+    border-left:3px solid var(--accent); padding:20px 24px; margin:0 0 1.4rem; box-shadow:var(--shadow)}
+  .callout p:last-child{margin-bottom:0}
+  .callout.quiet{border-left-color:var(--rule-strong); box-shadow:none; background:var(--sunk)}
+  .callout.cut{border-left-color:var(--stop); box-shadow:none; background:var(--stop-bg)}
+  .tscroll{overflow-x:auto; margin:0 0 1.3rem; border:1px solid var(--rule); background:var(--surface)}
+  table{border-collapse:collapse; width:100%; font-size:.88rem}
+  th,td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--rule); vertical-align:top}
+  thead th{font-family:Archivo,sans-serif; font-size:.64rem; font-weight:600; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--muted); background:var(--sunk);
+    border-bottom:1px solid var(--rule-strong); white-space:nowrap}
+  tbody tr:last-child td{border-bottom:0}
+  td.n{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; white-space:nowrap}
+  .conf{font-family:Archivo,sans-serif; font-size:.58rem; font-weight:600; letter-spacing:.08em;
+    text-transform:uppercase; padding:2px 6px; border-radius:2px; white-space:nowrap}
+  .conf.v{background:var(--go-bg); color:var(--go)}
+  .conf.i{background:var(--warn-bg); color:var(--warn)}
+  .conf.f{background:var(--stop-bg); color:var(--stop)}
+  .tag{font-family:Archivo,sans-serif; font-size:.62rem; font-weight:600; letter-spacing:.1em;
+    text-transform:uppercase; padding:3px 7px; border-radius:2px}
+  .tag.a{background:var(--go-bg); color:var(--go)}
+  .tag.b{background:var(--warn-bg); color:var(--warn)}
+  .tag.c{background:var(--stop-bg); color:var(--stop)}
+  figure{margin:0 0 1.4rem; border:1px solid var(--rule); background:var(--surface); padding:22px 24px 18px}
+  figcaption{font-size:.83rem; color:var(--muted); margin-top:12px; line-height:1.5}
+  svg{display:block; width:100%; height:auto}
+  .legend{display:flex; gap:18px; flex-wrap:wrap; margin-top:10px;
+    font-family:Archivo,sans-serif; font-size:.72rem; font-weight:600; color:var(--muted)}
+  .legend span{display:flex; align-items:center; gap:6px}
+  .legend i{width:14px; height:3px; border-radius:2px; display:block}
+  ul.body-list{margin:0 0 1.1rem; padding-left:1.15em}
+  ul.body-list li{margin-bottom:.5rem}
+  ul.body-list li::marker{color:var(--muted2)}
+  ol.body-list{margin:0 0 1.1rem; padding-left:1.3em}
+  ol.body-list li{margin-bottom:.55rem}
+  .stack{border:1px solid var(--rule); background:var(--surface); margin-bottom:1.4rem}
+  .layer{display:grid; grid-template-columns:130px 1fr 110px; gap:18px; padding:15px 20px;
+    border-bottom:1px solid var(--rule); align-items:start}
+  .layer:last-child{border-bottom:0}
+  .layer-k{font-family:Archivo,sans-serif; font-size:.66rem; font-weight:600; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--muted); padding-top:.2rem}
+  .layer p{margin:0; font-size:.89rem; line-height:1.5}
+  .layer .cost{font-family:"IBM Plex Mono",monospace; font-size:.78rem; color:var(--accent);
+    text-align:right; padding-top:.15rem; white-space:nowrap}
+  .ph{display:grid; grid-template-columns:120px 1fr; gap:20px; padding:18px 0;
+    border-bottom:1px solid var(--rule)}
+  .ph:last-child{border-bottom:0}
+  .ph-k{font-family:Archivo,sans-serif; font-size:.68rem; font-weight:600; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--muted); padding-top:.22rem}
+  .ph-k b{display:block; font-family:"IBM Plex Mono",monospace; font-size:.95rem; color:var(--ink);
+    letter-spacing:0; text-transform:none; font-weight:600; margin-bottom:2px}
+  .ph p{margin:0 0 .4rem; font-size:.93rem}
+  .ph p:last-child{margin-bottom:0}
+  .ph .aside{color:var(--muted); font-size:.87rem}
+  .wire{border:1px solid var(--rule-strong); background:var(--surface); padding:0;
+    margin:0 0 1.4rem; overflow:hidden}
+  .wire-bar{background:var(--sunk); border-bottom:1px solid var(--rule);
+    padding:8px 14px; font-family:Archivo,sans-serif; font-size:.66rem; font-weight:600;
+    letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+  footer{border-top:2px solid var(--ink); padding:26px 0 0; margin-top:44px;
+    font-size:.85rem; color:var(--muted)}
+  footer p{margin:0 0 .5rem; max-width:70ch}
+  @media (max-width:760px){
+    .ph{grid-template-columns:1fr; gap:6px}
+    .layer{grid-template-columns:1fr; gap:5px}
+    .layer .cost{text-align:left}
+    body{font-size:16px}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+  a:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <div class="kicker">
+    <span>CFD-Bench</span><span class="dot">/</span>
+    <span class="hl">Build Phasing</span><span class="dot">/</span>
+    <span>Revision 2 &middot; answers folded in</span><span class="dot">/</span>
+    <span>6 September 2026</span>
+  </div>
+  <h1>Nine phases, each one a verb</h1>
+  <p class="standfirst">How to build this so that every phase ends with something you can actually
+  use &mdash; what gates each one, what it closes, and the honest risk in the ordering.</p>
+</header>
+
+<dl class="rig">
+  <div><dt>Phases</dt><dd>8 + de-risk</dd></div>
+  <div><dt>Indicative total</dt><dd>~40 weeks</dd></div>
+  <div><dt>Useful tool at</dt><dd class="good">40%</dd></div>
+  <div><dt>Domain experts</dt><dd>7</dd></div>
+  <div><dt>Spikes</dt><dd>4</dd></div>
+  <div><dt>Commitments held</dt><dd>4</dd></div>
+</dl>
+
+
+<section style="border-top:0">
+  <div class="sec-head"><span class="sec-num">00</span><div>
+    <p class="eyebrow">Revision 2</p>
+    <h2>Your four answers, and what each changed</h2>
+  </div></div>
+
+  <div class="tscroll">
+  <table>
+    <thead><tr><th>Question</th><th>Answer</th><th>Consequence</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Who is the first user?</strong></td>
+        <td>An engineer who understands fluid mechanics, <em>but must be able to think in rider
+        requirements</em></td>
+        <td><strong>P2's gate is satisfied</strong> &mdash; the UI speaks full technical register, no
+        dumbing down: Cp, &sigma;&#7522; and validity envelopes go on screen directly. <strong>And the
+        vocabulary bridge reverses direction.</strong> It is no longer about parsing rider complaints
+        into engineering; it is about <em>expressing engineering results as rider experience</em>
+        &mdash; "this wing will feel sticky on take-off for a 95 kg rider". That is the harder and
+        more valuable direction, and it is now a headline capability rather than an accessibility
+        nicety</td></tr>
+      <tr><td><strong>Is fabrication in scope?</strong></td>
+        <td>No &mdash; but the architecture must not make pulling it in later difficult</td>
+        <td><strong>P6 (build the wing) is removed as a phase.</strong> Its content splits: the
+        <em>architectural</em> half becomes a constraint threaded through P0 and P3 &mdash; the loft
+        stays a real spline surface capable of exact export, and the export boundary stays an
+        interface with a stubbed implementation. <strong>SPIKE-02 (STEP writer) is deferred</strong>,
+        not deleted. The <em>manufacturability realism</em> half stays, because a wing with a
+        0.02&nbsp;mm trailing edge is not a real wing even if nobody cuts it. The CAD/CAM domain
+        expert exists precisely to guard this door</td></tr>
+      <tr><td><strong>De-risk the free surface?</strong></td>
+        <td>Yes &mdash; include it</td>
+        <td><strong>A two-week slice at ~week 16</strong>, immediately after P3. One wing, one
+        hand-built mesh, one free-surface run at shallow submergence, checking whether the lift-loss
+        trend is credible. It tests the assumption the project's justification rests on, seventeen
+        weeks before the full tier would</td></tr>
+      <tr><td><strong>Time budget?</strong></td>
+        <td>Fine</td>
+        <td>No change. The stopping points in section 05 remain useful as decision points rather than
+        as necessities</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="col">
+  <div class="callout">
+    <p><strong>Net effect on the schedule: none.</strong> Removing the fabrication phase pays for the
+    de-risking slice almost exactly &mdash; still about forty weeks. <strong>But the risk profile is
+    materially better</strong>, because the project's central claim now gets tested at week 16
+    instead of week 32.</p>
+  </div>
+
+  <p><strong>Also new since revision 1:</strong> seven domain experts are now on the roster
+  (<code>docs/domain-experts.md</code>) &mdash; a Computational Fluid Dynamicist, an Experimental
+  Fluid Dynamics Expert, a GPU/CUDA Expert, an OpenFOAM/SU2 Specialist, a Parametric Geometry
+  Expert, a CAD/CAM Interop Expert, and a <strong>Composite Structures &amp; Hydroelasticity
+  Expert</strong> that was recommended rather than requested, because GAP-02 left thickness decided
+  by physics nothing in the stack could see. The phase table below names which convene where.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">01</span><div>
+    <p class="eyebrow">The organising principle</p>
+    <h2>Every phase ends with a verb you gain</h2>
+  </div></div>
+
+  <div class="col">
+  <p>The failure mode for a project this size is a sequence of infrastructure phases that produce
+  nothing usable until month nine. So each phase below is named for <strong>what you can do at the
+  end of it</strong> that you could not do at the start. If a phase cannot be named that way, it is
+  the wrong phase boundary.</p>
+
+  <p>Three rules follow from that, and they shaped the ordering more than anything else:</p>
+
+  <ol class="body-list">
+    <li><strong>Retrofit-hostile things go first.</strong> Units, coordinate frames and the file
+    format are cheap now and expensive later. Nothing else is allowed to precede them.</li>
+    <li><strong>A commitment is a dependency.</strong> COMMIT-01 says no optimiser result ships on
+    estimator evidence alone. That single sentence forces the VLM tier to exist <em>before</em> the
+    goal-driven experience &mdash; which is not the order anyone would pick by enthusiasm.</li>
+    <li><strong>Validate before you build on it.</strong> The estimator is validated against
+    experimental data in Phase 1, before four phases of UI are built on top of it.</li>
+  </ol>
+
+  <div class="callout quiet">
+    <p><strong>On the numbers.</strong> Week counts are <em>indicative</em> and assume one developer
+    working steadily on a personal project. <strong>Treat the ratios as the signal, not the absolute
+    weeks</strong> &mdash; that P3 is three times P1, and P7 is the largest single item, is the
+    useful information here.</p>
+  </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">02</span><div>
+    <p class="eyebrow">The shape</p>
+    <h2>Sequence, and where it can widen</h2>
+  </div></div>
+
+  <figure>
+    <svg viewBox="0 0 830 400" role="img" aria-label="Revised timeline of eight build phases plus a de-risking slice over about forty weeks. Fabrication has been removed and a two-week free-surface de-risking slice inserted at week sixteen.">
+      <g font-family="Archivo, sans-serif" font-size="11" font-weight="600" fill="var(--muted)">
+        <text x="0" y="22" letter-spacing="1">PHASE</text>
+        <text x="800" y="22" letter-spacing="1" text-anchor="end">WEEKS</text>
+      </g>
+      <g stroke="var(--rule)" stroke-width="1" stroke-dasharray="2 4">
+        <line x1="246" y1="30" x2="246" y2="352"></line>
+        <line x1="382" y1="30" x2="382" y2="352"></line>
+        <line x1="518" y1="30" x2="518" y2="352"></line>
+        <line x1="654" y1="30" x2="654" y2="352"></line>
+      </g>
+      <g font-family="IBM Plex Mono, monospace" font-size="10.5">
+        <text x="0" y="45" fill="var(--ink)">P0</text><text x="30" y="45" fill="var(--body)">conventions &amp; spine</text>
+        <rect x="110" y="34" width="42" height="15" fill="var(--s3)"></rect>
+        <text x="800" y="45" fill="var(--muted)" text-anchor="end">2.5</text>
+
+        <text x="0" y="79" fill="var(--ink)">P1</text><text x="30" y="79" fill="var(--body)">estimator, validated</text>
+        <rect x="152" y="68" width="51" height="15" fill="var(--s3)"></rect>
+        <text x="800" y="79" fill="var(--muted)" text-anchor="end">3</text>
+
+        <text x="0" y="113" fill="var(--ink)">P2</text><text x="30" y="113" fill="var(--body)">read a wing</text>
+        <rect x="204" y="102" width="68" height="15" fill="var(--s2)"></rect>
+        <text x="800" y="113" fill="var(--muted)" text-anchor="end">4</text>
+
+        <text x="0" y="147" fill="var(--ink)">P3</text><text x="30" y="147" fill="var(--body)">draw a wing</text>
+        <rect x="272" y="136" width="110" height="15" fill="var(--s2)"></rect>
+        <text x="800" y="147" fill="var(--muted)" text-anchor="end">6.5</text>
+
+        <text x="0" y="181" fill="var(--accent)">DR</text><text x="30" y="181" fill="var(--accent)">de-risk: free surface</text>
+        <rect x="382" y="170" width="34" height="15" fill="var(--accent)"></rect>
+        <text x="800" y="181" fill="var(--accent)" text-anchor="end">2</text>
+
+        <text x="0" y="215" fill="var(--ink)">P4</text><text x="30" y="215" fill="var(--body)">trust the numbers</text>
+        <rect x="416" y="204" width="119" height="15" fill="var(--s1)"></rect>
+        <text x="800" y="215" fill="var(--muted)" text-anchor="end">7</text>
+
+        <text x="0" y="249" fill="var(--ink)">P5</text><text x="30" y="249" fill="var(--body)">state a goal</text>
+        <rect x="535" y="238" width="68" height="15" fill="var(--s1)"></rect>
+        <text x="800" y="249" fill="var(--muted)" text-anchor="end">4</text>
+
+        <text x="0" y="283" fill="var(--ink)">P6</text><text x="30" y="283" fill="var(--body)">explain it</text>
+        <rect x="603" y="272" width="51" height="15" fill="var(--s1)" opacity="0.45"></rect>
+        <rect x="535" y="272" width="51" height="15" fill="none" stroke="var(--s1)" stroke-width="1.4" stroke-dasharray="3 3"></rect>
+        <text x="800" y="283" fill="var(--muted)" text-anchor="end">3</text>
+
+        <text x="0" y="317" fill="var(--ink)">P7</text><text x="30" y="317" fill="var(--body)">prove it &#183; CFD</text>
+        <rect x="654" y="306" width="136" height="15" fill="var(--s4)"></rect>
+        <text x="800" y="317" fill="var(--muted)" text-anchor="end">8</text>
+      </g>
+      <line x1="110" y1="352" x2="790" y2="352" stroke="var(--rule-strong)"></line>
+      <g font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--muted2)" text-anchor="middle">
+        <text x="110" y="368">0</text><text x="246" y="368">8</text><text x="382" y="368">16</text>
+        <text x="518" y="368">24</text><text x="654" y="368">32</text><text x="790" y="368">40</text>
+      </g>
+      <text x="450" y="386" font-family="Archivo, sans-serif" font-size="10" font-weight="600" letter-spacing="1" fill="var(--muted)" text-anchor="middle">INDICATIVE WEEKS</text>
+      <g>
+        <rect x="272" y="128" width="110" height="31" fill="none" stroke="var(--accent)" stroke-width="1.6"></rect>
+        <text x="327" y="124" font-family="Archivo, sans-serif" font-size="10" font-weight="600" fill="var(--accent)" text-anchor="middle">a useful tool exists here &#183; 40%</text>
+      </g>
+    </svg>
+    <div class="legend">
+      <span><i style="background:var(--accent)"></i>De-risking slice</span>
+      <span><i style="background:var(--s3)"></i>Foundations</span>
+      <span><i style="background:var(--s2)"></i>The tool people use</span>
+      <span><i style="background:var(--s1)"></i>Fidelity &amp; automation</span>
+      <span><i style="background:var(--s4)"></i>The differentiator</span>
+      <span><i style="border:1.4px dashed var(--s1); height:9px; background:none"></i>Can start earlier</span>
+    </div>
+    <figcaption><strong>Revision 2.</strong> Fabrication removed as a phase; a two-week free-surface
+    de-risking slice inserted at week&nbsp;16. Net schedule unchanged at ~40 weeks, but the project's
+    central claim is now tested at week&nbsp;16 rather than week&nbsp;32. Dashed outline shows where
+    the AI capabilities can be pulled forward individually.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">03</span><div>
+    <p class="eyebrow">The phases</p>
+    <h2>What each one gates, closes and delivers</h2>
+  </div></div>
+
+  <div class="ph">
+    <div class="ph-k"><b>P0</b>2.5 weeks</div>
+    <div>
+      <h3>Conventions &amp; spine</h3>
+      <p><strong>Gate to start:</strong> none. This is the front of the queue by definition.</p>
+      <p><strong>Contents.</strong> The units, coordinate-frame and sign-convention specification
+      &mdash; origin, axis directions, the sign of anhedral and twist, and units carried in the type
+      system rather than in comments. The station-and-loft geometry model with its two layers. The
+      file format, which is load-bearing because it is the <em>only</em> import path. A test strategy
+      for numerical code: analytic reference cases, golden masters, tolerance comparison.</p>
+      <p><strong>You can:</strong> define a wing and get span, area, aspect ratio and mean chord out
+      of it, with tests that prove they are right.</p>
+      <p><strong>Added in revision 2:</strong> the loft must remain a real spline surface capable of
+      exact export, and the export boundary must be an interface with a stubbed implementation
+      &mdash; fabrication is out of scope, but nothing here may foreclose it.</p>
+      <p class="aside"><strong>Closes GAP-04, GAP-08, GAP-09.</strong> Honours COMMIT-03.
+      <strong>Convene:</strong> Parametric Geometry Expert, CAD/CAM Interop Expert.
+      &mdash; This is the one phase whose deliverable is thin, and it is worth it: a sign convention
+      retrofitted after four phases of code is how sign errors become permanent.</p>
+    </div>
+  </div>
+
+  <div class="ph">
+    <div class="ph-k"><b>P1</b>3 weeks</div>
+    <div>
+      <h3>Estimator, validated</h3>
+      <p><strong>Gate to start:</strong> P0 complete.</p>
+      <p><strong>Contents.</strong> The section catalog &mdash; 11 already vendored with hashes and
+      measured geometry, plus the Selig/Lednicer format detection that a defect already taught us to
+      need. Section polars retaining <span class="num">Cp_min</span> and <span class="num">Ncrit</span>.
+      The closed-form chain: Helmbold, lifting-line induced drag, ITTC friction, Hoerner form factor,
+      cavitation critical speed. Then <strong>validation against DTIC ADA032272</strong> &mdash; real
+      towing-tank lift and drag for NACA 16-309 and 64A309.</p>
+      <p><strong>You can:</strong> hand it a wing definition and get L/D, Cl/Cd, required &alpha; and
+      cavitation margin &mdash; headless, scriptable, and <em>checked against experiment</em>.</p>
+      <p class="aside"><strong>Closes GAP-01.</strong> <strong>Convene:</strong> Computational Fluid
+      Dynamicist, Experimental Fluid Dynamics Expert. &mdash; Headless on purpose. The core value is
+      testable without a single pixel, and everything downstream consumes it. Validating here means
+      four phases of UI are not built on an unverified number.</p>
+    </div>
+  </div>
+
+  <div class="ph">
+    <div class="ph-k"><b>P2</b>4 weeks</div>
+    <div>
+      <h3>Read a wing</h3>
+      <p><strong>Gate to start:</strong> <span class="tag a">Satisfied.</span> The user is an
+      engineer who understands fluid mechanics and must be able to think in rider requirements
+      &mdash; so the screen speaks full technical register, and the rider translation is a capability
+      rather than a simplification.</p>
+      <p><strong>Contents.</strong> The WPF shell. The chart set &mdash; Cp distribution, drag polar,
+      Cl/Cd/L/D against &alpha;, the cavitation bucket, transition location &mdash; on ScottPlot.
+      Discipline presets from the geometry catalog. Salt and fresh as an ITTC fluid record. Overlay
+      comparison, because comparing two candidates is the actual task.</p>
+      <p><strong>You can:</strong> open a wing and understand it. First genuinely useful product.</p>
+      <p class="aside">Analysis only &mdash; no editing yet. That boundary keeps the phase honest and
+      shippable.</p>
+    </div>
+  </div>
+
+  <div class="ph">
+    <div class="ph-k"><b>P3</b>6.5 weeks</div>
+    <div>
+      <h3>Draw a wing</h3>
+      <p><strong>Gate to start:</strong> P2 complete. <strong>SPIKE-01</strong> should run here
+      &mdash; but it is not blocking, because its fallback (2D curve editing only) is the design the
+      proposal already favours.</p>
+      <p><strong>Contents.</strong> The five distribution curves &mdash; outline, chord, anhedral,
+      thickness, twist &mdash; each a 2D editing problem with control points, handles, keyboard
+      nudge at a defined step, and <strong>curvature combs always on</strong>. Degree-5 splines. The
+      live properties strip running the estimator on every drag. HelixToolkit 3D viewport for display
+      and selection.</p>
+      <p><strong>You can:</strong> design a wing by hand and see the hydrodynamic consequence of a
+      control-point move at the moment you make it.</p>
+      <p><strong>Added in revision 2:</strong> a manufacturability realism check on the geometry
+      &mdash; minimum trailing-edge thickness above all. Our measured sections currently carry
+      trailing edges of 0&ndash;0.08&nbsp;mm at an 80&nbsp;mm chord, which is not a real wing even
+      though nobody is cutting it.</p>
+      <p class="aside"><strong>This is arguably the product.</strong> <strong>Convene:</strong>
+      Parametric Geometry Expert, CAD/CAM Interop Expert. At the end of P3 you are 40% of
+      the way through the effort and you have a tool nothing else on the market offers &mdash; live
+      L/D and cavitation margin while shaping.</p>
+    </div>
+  </div>
+
+  <div class="ph">
+    <div class="ph-k"><b>DR</b>2 weeks</div>
+    <div>
+      <h3>De-risk the free surface</h3>
+      <p><strong>Gate to start:</strong> P3 complete. <span class="tag a">Requested in revision 2.</span></p>
+      <p><strong>Contents.</strong> Not a tier &mdash; <em>one case</em>. Take a single wing, mesh it
+      by hand, run one free-surface simulation at shallow submergence, and check whether the
+      lift-loss trend with depth is credible against what the literature reports. No orchestration
+      layer, no automation, no UI.</p>
+      <p><strong>You learn:</strong> whether the claim the entire project is justified on survives
+      contact with a solver.</p>
+      <p class="aside"><strong>Convene:</strong> Computational Fluid Dynamicist, OpenFOAM/SU2
+      Specialist, Experimental Fluid Dynamics Expert. &mdash; Two weeks, about 5% of total effort, to
+      test the assumption the other 95% rests on. If it holds, P7 is derisked. If it does not, you
+      have learned it <strong>sixteen weeks early</strong> and the whole plan changes while changing
+      it is still cheap.</p>
+    </div>
+  </div>
+
+  <div class="ph">
+    <div class="ph-k"><b>P4</b>7 weeks</div>
+    <div>
+      <h3>Trust the numbers</h3>
+      <p><strong>Gate to start:</strong> P1 complete (needs the estimator to disagree with).</p>
+      <p><strong>Contents.</strong> The vortex-lattice tier over the same stations &mdash; real
+      spanwise loading, <em>computed</em> span efficiency instead of an assumed constant, and
+      stabiliser downwash so a rear wing is evaluated in the front wing's wake rather than free
+      stream. The quasi-3D section view driven by <span class="num">&alpha;_eff</span>, not the
+      geometric angle. Multi-fidelity reconciliation: what the UI shows when two tiers disagree.
+      <strong>And a beam structural model</strong> taking loads from the VLM tier.</p>
+      <p><strong>You can:</strong> trust a number enough to cut material &mdash; and ask whether the
+      section is thick enough to survive, which until now nothing could answer.</p>
+      <p class="aside"><strong>Closes GAP-02, GAP-05 partly, GAP-06, GAP-11.</strong> Unblocks
+      COMMIT-01. <strong>Convene:</strong> Computational Fluid Dynamicist, Experimental Fluid
+      Dynamics Expert, <strong>Composite Structures Expert</strong>. &mdash; Structures lands here because it needs aero loads, and because it turns
+      thickness from a user-set constraint with a displayed cost into a <em>solved</em> quantity.</p>
+    </div>
+  </div>
+
+  <div class="ph">
+    <div class="ph-k"><b>P5</b>4 weeks</div>
+    <div>
+      <h3>State a goal</h3>
+      <p><strong>Gate to start:</strong> <span class="tag c">P4 complete &mdash; hard gate.</span>
+      COMMIT-01 forbids presenting an optimiser result on estimator evidence alone, so the
+      verification tier must exist first.</p>
+      <p><strong>Contents.</strong> The constraint / objective / context model as three distinct
+      input types. NSGA-II or MOPSO over the estimator with feasibility-first ranking. The four-pane
+      screen, Pareto set, preference brushing, and the pin-and-compare ghost line. Every optimum
+      re-checked at the VLM tier before it is shown, with a confidence beside the score.</p>
+      <p><strong>You can:</strong> describe what you want and get candidates that have been checked
+      before you see them.</p>
+      <p class="aside"><strong>Convene:</strong> Computational Fluid Dynamicist (envelope
+      enforcement), Composite Structures Expert (thickness is not a free optimisation variable).
+      The search itself is free &mdash; 20,000 evaluations in 0.2 seconds. The work
+      here is interaction design, not optimisation.</p>
+    </div>
+  </div>
+
+  <div class="ph">
+    <div class="ph-k"><b>P6</b>3 weeks</div>
+    <div>
+      <h3>Explain it</h3>
+      <p><strong>Gate to start:</strong> <strong>SPIKE-04</strong> &mdash; the numeral check must
+      exist before any explanation ships. Individual capabilities can be pulled forward: brief&rarr;intent
+      alongside P5, vocabulary bridging as early as P2.</p>
+      <p><strong>Contents.</strong> The numeral check first. Then explain-the-design, then
+      brief&rarr;intent with per-field provenance flags, then knowledge-base Q&amp;A and the
+      vocabulary bridge. BYOK key handling. Every capability with its eval.</p>
+      <p><strong>You can:</strong> ask why, and get an answer that cites its sources and cannot
+      invent a number.</p>
+      <p class="aside">Honours COMMIT-04. <strong>Convene:</strong> AI Systems Engineer. &mdash;
+      Additive by construction: no key, no network, and
+      everything else still works.</p>
+    </div>
+  </div>
+
+  <div class="ph">
+    <div class="ph-k"><b>P7</b>8 weeks</div>
+    <div>
+      <h3>Prove it &middot; the CFD tier</h3>
+      <p><strong>Gate to start:</strong> <strong>SPIKE-03</strong> &mdash; can meshing be generated
+      unattended across the geometry range? This is the load-bearing assumption of the whole
+      orchestration story.</p>
+      <p><strong>Contents.</strong> The <code>ICfdBackend</code> boundary. WSL2 substrate, case
+      generation, process orchestration with streaming residuals. OpenFOAM and SU2. The CUDA LBM
+      tier for free-surface proximity, separation and ventilation onset &mdash; toolchain already
+      proven on this machine. 3D flow visualisation from the same VRAM buffers.</p>
+      <p><strong>You can:</strong> see the free surface, which nothing else in this category can do.</p>
+      <p class="aside"><strong>Convene:</strong> Computational Fluid Dynamicist, GPU &amp; CUDA
+      Expert, OpenFOAM/SU2 Specialist, Experimental Fluid Dynamics Expert.
+      <strong>The one open physics risk sits here:</strong> LBM accuracy above
+      Re&nbsp;10&#8310; is still unproven, and our envelope is 5.5&times;10&#8309;&ndash;1.6&times;10&#8310;.
+      The first deliverable of this phase is a <em>comparison</em>, not a solver.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">04</span><div>
+    <p class="eyebrow">The problem with this ordering</p>
+    <h2>The differentiator is last</h2>
+  </div></div>
+
+  <div class="col">
+  <div class="callout cut">
+    <p><strong>Free surface is the thing that justifies building anything at all &mdash; and in this
+    plan it arrives at week 32, if it arrives.</strong></p>
+    <p style="margin-top:.8rem">The gap review was explicit: after the surfboard scope cut, the
+    case for this project rests on two gaps, and <em>free surface is the load-bearing one</em>. No
+    small tool models it; hydrofoils run shallow where it dominates. If P7 never happens, what you
+    have built is a very good XFLR5-for-hydrofoils &mdash; genuinely useful, and not the thing the
+    project was justified on.</p>
+  </div>
+
+  <p>Three ways to respond, and I would take the third:</p>
+
+  <ol class="body-list">
+    <li><strong>Accept it.</strong> A better XFLR5 with live estimation, a measured section catalog,
+    cavitation margin and STEP export is a real tool. If it stops there, that is not a failure.
+    <em>But decide that deliberately rather than discovering it at week 32.</em></li>
+    <li><strong>Move P7 earlier.</strong> Honest about the priority, but it means building the most
+    expensive tier before the cheap ones that answer most questions &mdash; and before the geometry
+    model has settled under real use.</li>
+    <li><strong>Insert a de-risking slice at ~week 16.</strong> <span class="tag a">Chosen</span> Not the tier &mdash; one case. Take
+    a single wing, mesh it by hand, run one free-surface simulation at a shallow submergence, and
+    check whether the lift-loss trend is credible. <strong>Two weeks to learn whether the
+    project's central claim survives contact with a solver.</strong> If it does, P7 is derisked. If
+    it does not, you have learned it sixteen weeks early and the whole plan changes.</li>
+  </ol>
+
+  <p><strong>Option 3 was chosen.</strong> It costs about 5% of the total and tests the assumption the other 96% rests on. That is
+  the same reasoning that made Phase 0 measurement worth doing, and it paid off there.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">05</span><div>
+    <p class="eyebrow">If you build less</p>
+    <h2>Three natural stopping points</h2>
+  </div></div>
+
+  <div class="tscroll">
+  <table>
+    <thead><tr><th>Stop after</th><th>Effort</th><th>What you have</th><th>What is missing</th></tr></thead>
+    <tbody>
+      <tr><td><strong>P3 &mdash; draw a wing</strong></td><td class="n">40%</td>
+        <td>A hand-design tool with a measured section catalog, live L/D and cavitation margin while
+        shaping, and validated estimation behind it. <strong>Nothing on the market does this.</strong></td>
+        <td>No verification tier, so the numbers carry estimator confidence only. No export, no
+        optimiser, no free surface</td></tr>
+      <tr><td><strong>P5 &mdash; state a goal</strong></td><td class="n">72%</td>
+        <td>The above plus verified numbers, a structural answer on thickness, and goal-driven
+        design with candidates checked before display</td>
+        <td>Cannot machine it; cannot see the free surface</td></tr>
+      <tr><td><strong>P6 &mdash; explain it</strong></td><td class="n">80%</td>
+        <td>The above plus the AI layer. <strong>The natural "version 1"</strong> for an analysis and
+        design tool with no fabrication path.</td>
+        <td>The differentiator (P7 &mdash; CFD)</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="col">
+  <p><strong>With fabrication out of scope, P5 is the honest v1 boundary</strong> &mdash; a designer
+  can state a goal, get verified candidates, shape them by hand and trust the numbers. P6 (the AI
+  layer) is polish on top of that; P7 is the differentiator. And because the de-risking slice sits at
+  week&nbsp;16, <strong>you will know whether P7 is worth reaching before you commit to it.</strong></p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">06</span><div>
+    <p class="eyebrow">Before /specify</p>
+    <h2>What still needs your input</h2>
+  </div></div>
+
+  <div class="col">
+  <p>Four things this plan assumes and cannot decide for you. Each changes the phasing if answered
+  differently:</p>
+
+  <ul class="body-list">
+    <li><s>Who is the first user?</s> <strong>Answered:</strong> an engineer who thinks in rider
+    terms. The screen speaks full technical register; the rider translation becomes an
+    <em>outbound</em> capability &mdash; expressing results as felt experience.</li>
+    <li><s>Is fabrication in scope?</s> <strong>Answered: no</strong>, but the architecture must not
+    foreclose it. P6 removed; SPIKE-02 deferred; the constraint threaded through P0 and P3 and
+    guarded by the CAD/CAM domain expert.</li>
+    <li><s>How much does the free surface matter?</s> <strong>Answered:</strong> enough to de-risk.
+    The two-week slice is in the plan at week&nbsp;16.</li>
+    <li><s>Time budget?</s> <strong>Answered: fine.</strong> The stopping points in section 05 stay
+    useful as decision points rather than as necessities.</li>
+    <li><strong>Still open &mdash; the units and coordinate-convention specification (GAP-04).</strong>
+    It is P0's first deliverable and the cheapest thing in the plan, but it needs your sign
+    conventions, not mine: origin at leading edge or quarter chord, and the sign of anhedral and
+    twist.</li>
+  </ul>
+
+  <div class="callout">
+    <p><s>Run <code>/adddomainexperts</code> before <code>/specify</code>.</s> <strong>Done
+    &mdash; seven experts added</strong> (<code>docs/domain-experts.md</code>), including the
+    Composite Structures &amp; Hydroelasticity lens that was recommended rather than requested. They
+    join each phase by their own convene-when predicates, named in section 03.</p>
+    <p style="margin-top:.8rem"><strong>Remaining process gap: still zero ADRs beyond
+    <code>decision-0001</code>.</strong> Real architecture decisions &mdash; layered fidelity tiers,
+    station-and-loft geometry, WPF plus HelixToolkit, native CUDA over ILGPU, permissive licensing
+    &mdash; live as prose inside proposals. <strong>Back-fill them before <code>/specify</code></strong>,
+    or the specification will rest on decisions it cannot be reviewed against.</p>
+  </div>
+  </div>
+</section>
+
+<footer>
+  <p><strong>Synthesised from:</strong> the seven knowledge bases and four proposals in
+  <code>docs/knowledge/</code> and <code>docs/proposals/</code>, the sixteen gaps in
+  <code>docs/knowledge/knowledge-gap-register.md</code>, and the spikes and standing commitments in
+  <code>docs/backlog.md</code>. No new research &mdash; this is a sequencing argument over evidence
+  already gathered.</p>
+  <p><strong>Status:</strong> revision 2, input for <code>/specify</code>, not a plan of record. The week counts
+  are indicative; the ordering and the gates are the part worth arguing with.</p>
+</footer>
+
+</div>
