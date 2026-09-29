@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-29T22:46:49Z",
+  "generated": "2026-09-29T23:22:33Z",
   "audit": [
     {
       "actor": null,
@@ -61160,6 +61160,29 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-09-29T19:57:09Z",
+      "fan_out": 0,
+      "git": {
+        "branch": "w5-e2",
+        "pushed": null,
+        "sha": "40d6187fa6c146863815cecf5bcb9204fa4acd6a",
+        "short": "40d6187fa"
+      },
+      "id": "al-01M3QBW5F5SAX326XPCSZ81XRY",
+      "kind": "command",
+      "outcome": "success",
+      "prompt": "Author benchmark task E2 from stub to ready as Terminal-Bench 2.0's count-dataset-tokens (medium band), selected by docs/notes/tb2-native-survey.md under R-83.",
+      "session": "worker-sonnet-tb-e2",
+      "shortname": "new-bench-task-E2",
+      "skill": "new-bench-task",
+      "summary": "E2 (count-dataset-tokens, medium band) advanced stub -> draft -> ready. task.yaml pins harbor-framework/terminal-bench-2 @2fd12b88, Apache-2.0. Vendored 6 upstream paths, rebuilt byte-for-byte by oracle/vendoring_check.py via git -c core.autocrlf=false archive. One native-path edit (/app/answer.txt -> answer.txt) applied to prompt.md, tests/test_outputs.py and oracle/reference/solve.sh, proved as the sole diff. oracle.runner: pytest (unmerged grader, w5-pytest); bench validate ok regardless. Discrimination proof (oracle/evidence.md): base tree 1 failed (FileNotFoundError), reference 1 passed (79586). Toolchain uv 0.11.26 / Python 3.13.14 / pytest 8.4.1. task.toml agent timeout 900s recorded beside the BOM's 60-minute budget (unchanged, smaller). bench/bom.yaml untouched (Leader join).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
       "actor": "Claude Sonnet 5 worker",
       "artifacts": [],
       "datetime": "2026-09-29T19:43:20Z",
@@ -62673,6 +62696,32 @@ window.AUDIT_DATA = {
       "summary": "E3 ready, task substituted to extract-moves-from-video (cancel-async-tasks' SIGINT tests raise ValueError: Unsupported signal: 2 on Windows, per R-83's shortfall rule). Vendored solve.sh + test_outputs.py from terminal-bench-2@2fd12b88 (Apache-2.0), one native-path edit, oracle/vendoring_check.py rebuild ok. Oracle: 0/2 base, 2/2 reference. bench validate: ok.",
       "tags": [],
       "tool": null
+    },
+    {
+      "id": "al-01M3QQK2HDKRCQJJ411ANYCTJ8",
+      "shortname": "design-slice-formal-grader",
+      "datetime": "2026-09-29T23:21:54Z",
+      "session": "worker-sonnet-formal",
+      "prompt": "Design the formal grader (spec S-08g) with the /design-slice skill, so a later /implement slice can build src/harness_bench/grade/formal.py and tasks G1 (TLA+) and G2 (Lean 4) can be authored; the design is the deliverable, not code. Done when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining the four scores of US-32, statement integrity, trace conformance, bug-seeded variants, bug confirmation, the toolchain invocation (warm-before-clock, closing S-12's tla2tools gap), the report surfaces, the ledger facts, error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (persona reviews incl. Test Architect), each verdict recorded in the doc; any decision the design cannot settle becomes a decision request with a recommended default; the doc is committed; docs-graph.py validate passes. Not in scope: implementing formal.py; authoring G1 or G2; changing any code; any file under runs/; any push.",
+      "summary": "docs/design/formal-grader.md, revision 2 (post-gate): grade/formal.py's six metric definitions (formal_checks_clean, statement_integrity, model_conformance, model_non_vacuity, bugs_confirmed, bug_claim_precision) for G1 (TLA+) and G2 (Lean 4), with an exact per-task NA-cascade table, the toolchain-invocation contract via correctness.run_step (closing the D3 procs-allowlist question), a warm-before-clock fix for S-12's tla2tools gap, a STRIDE-lite analysis, a G2 statement-integrity hash that reuses Lean's own #check output, two whole-cell golden-master tests, and a red-first test plan with named mutants. Three real persona reviews ran in parallel (Test Architect, Security & Identity Architect, The Simplifier), each BLOCK on revision 1; all Blockers (2 TA, 3 Security) and the Simplifier's Major are fixed in revision 2, recorded in the Gate record. Two decision requests remain open (DR-FM1: the TLA+ trace-replay mechanism is unspiked, needs a pre-implementation spike; DR-FM2: no judge rubric yet for a not-seeded bug claim). Security/privacy rollups (docs/security/threat-model.md, privacy-review.md) updated with this design's boundaries and findings. docs-graph.py validate: 0 defects.",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/formal-grader.md"
+      ],
+      "tags": [
+        "formal-methods",
+        "grading",
+        "S-08g"
+      ],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Design the formal grader (spec S-08g) with the /design-slice skill, so a later /implement slice can build src/harness_bench/grade/formal.py and tasks G1 (TLA+) and G2 (Lean 4) can be authored; the design is the deliverable, not code. Done when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining the four scores of US-32, statement integrity, trace conformance, bug-seeded variants, bug confirmation, the toolchain invocation (warm-before-clock, closing S-12's tla2tools gap), the report surfaces, the ledger facts, error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (persona reviews incl. Test Architect), each verdict recorded in the doc; any decision the design cannot settle becomes a decision request with a recommended default; the doc is committed; docs-graph.py validate passes. Not in scope: implementing formal.py; authoring G1 or G2; changing any code; any file under runs/; any push.",
+      "done_when": "/design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining: the four scores of US-32 (their names, grain, additivity, NA reasons and exact computation for TLA+ and for Lean 4), statement integrity (the hash check and what an edit does), trace conformance, how bug-seeded variants are run and scored, how a reported bug is confirmed by a failing test, the toolchain invocation (direct, forward-slash paths, never cmd.exe; the warm-before-clock contract and where caches live, closing S-12's tla2tools gap by design), the report surfaces (the four scores and the first counterexample or failing trace step), the ledger facts or scores rows it writes, its error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (its persona reviews, including the Test Architect), with each verdict recorded in the doc; any decision the design cannot settle is written as a decision request with a recommended default for the Owner seat; the doc is committed; uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes.",
+      "tier": "T2",
+      "fan_out": 3
     }
   ],
   "changes": [
@@ -63086,6 +63135,29 @@ window.AUDIT_DATA = {
           "e618adb docs(design): phase-4 report and summaries design, first draft, with mockup (row 20)"
         ]
       }
+    },
+    {
+      "id": "cl-01M3QQM2N1YTHZY4Q54W01QV9Z",
+      "datetime": "2026-09-29T23:22:27Z",
+      "session": "worker-sonnet-formal",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "Design the formal grader (grade/formal.py) for G1/G2: four US-32 scores, statement integrity, bug confirmation",
+      "prompt": "Design the formal grader (spec S-08g) with the /design-slice skill, so a later /implement slice can build src/harness_bench/grade/formal.py and tasks G1 (TLA+) and G2 (Lean 4) can be authored; the design is the deliverable, not code. Done when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining the four scores of US-32, statement integrity, trace conformance, bug-seeded variants, bug confirmation, the toolchain invocation (warm-before-clock, closing S-12's tla2tools gap), the report surfaces, the ledger facts, error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (persona reviews incl. Test Architect), each verdict recorded in the doc; any decision the design cannot settle becomes a decision request with a recommended default; the doc is committed; docs-graph.py validate passes. Not in scope: implementing formal.py; authoring G1 or G2; changing any code; any file under runs/; any push.",
+      "summary": "docs/design/formal-grader.md, revision 2 (post-gate): grade/formal.py's six metric definitions (formal_checks_clean, statement_integrity, model_conformance, model_non_vacuity, bugs_confirmed, bug_claim_precision) for G1 (TLA+) and G2 (Lean 4), with an exact per-task NA-cascade table, the toolchain-invocation contract via correctness.run_step (closing the D3 procs-allowlist question), a warm-before-clock fix for S-12's tla2tools gap, a STRIDE-lite analysis, a G2 statement-integrity hash that reuses Lean's own #check output, two whole-cell golden-master tests, and a red-first test plan with named mutants. Three real persona reviews ran in parallel (Test Architect, Security & Identity Architect, The Simplifier), each BLOCK on revision 1; all Blockers (2 TA, 3 Security) and the Simplifier's Major are fixed in revision 2, recorded in the Gate record. Two decision requests remain open (DR-FM1: the TLA+ trace-replay mechanism is unspiked, needs a pre-implementation spike; DR-FM2: no judge rubric yet for a not-seeded bug claim). Security/privacy rollups (docs/security/threat-model.md, privacy-review.md) updated with this design's boundaries and findings. docs-graph.py validate: 0 defects.",
+      "rationale": "S-08g is on T-G1/T-G2's critical path and US-32/US-33 require four separate formal scores plus bug confirmation, not a single pass/fail. Three adversarial persona reviews (Test Architect, Security & Identity Architect, The Simplifier) found real gaps in revision 1 -- most materially an untrusted-content-to-tool path (agent-authored TLA+/Lean executed by the grading host) with three unmitigated boundaries -- all closed in revision 2 before the gate cleared.",
+      "artifacts": [
+        "docs/design/formal-grader.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "f31ce5bf8316c4ce44442386a184b10273b30a79",
+        "after": "f31ce5bf8316c4ce44442386a184b10273b30a79",
+        "branch": "w5-formal",
+        "pushed": null,
+        "commits": []
+      },
+      "audit_ref": "al-01M3QQK2HDKRCQJJ411ANYCTJ8"
     }
   ],
   "messages": [

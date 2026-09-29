@@ -12,6 +12,7 @@ links:
   - { to: design-run-lifecycle-model, rel: documents }
   - { to: design-phase2-copilot-profile, rel: documents }
   - { to: design-phase3-gateway-judges, rel: documents }
+  - { to: design-formal-grader, rel: documents }
 review-by: "2027-03-22"
 review-suggested:
   - { by: design-phase3-gateway-judges, on: 2026-09-25, reason: "row-17 gateway design gated (rev 3): Fable judge, Codex not qualified (DR-GW-1), CLI-added context (DR-GW-5)" }
@@ -57,6 +58,7 @@ python3 docs/ai-forward-pack/scripts/docs-graph.py rollup --heading "Privacy ana
 <!-- rolled up from 3 artifact(s) by docs-graph.py rollup on 2026-09-25 -->
 
 `design-run-lifecycle-model` touches no personal data (its section says so and is not a findings table).
+`design-formal-grader` touches no personal data (its section says so and is not a findings table).
 
 ## 3. Data-subject rights paths
 
