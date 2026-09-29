@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-29T17:21:54Z",
+  "generated": "2026-09-29T17:38:22Z",
   "audit": [
     {
       "actor": null,
@@ -53530,6 +53530,30 @@ window.AUDIT_DATA = {
         "sha": "f692252fb3e345323420b0df4da07a664bbb2e61",
         "short": "f692252fb",
         "branch": "w5-d3",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M3Q3Y15G4103PEC1J19M4Y62",
+      "shortname": "new-bench-task-D2",
+      "datetime": "2026-09-29T17:38:22Z",
+      "session": "worker-sonnet-d2",
+      "prompt": "Author benchmark task D2 (New extraction rule in AiDe.Core Extraction/, scenario 4) from stub to ready, per the proposal's authored-task inventory and tasks/D1 as the worked pattern.",
+      "summary": "D2 status ready: ImportOriginRule (AiDe.Core.Extraction) classifies an import specifier Builtin/Workspace/External, reusing PythonStandardLibrary/NodeBuiltinModules. Repo pinned at ai-de 88e0c33f (D1's commit); workspace diff -rq identical to D1's. 20 hidden xUnit cases fail 0/20 on base, pass 20/20 on reference (uv run python tasks/D2/oracle/probe.py through the real correctness grader). Six named mutants all killed (tasks/D2/oracle/mutants.py). Oracle command invokes dotnet directly with forward-slash paths, no cmd.exe (portable per ADR-0013 Amendment 1), unlike D1/D3/E6/F1. uv run bench validate: ok.",
+      "kind": "command",
+      "skill": "new-bench-task",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "tier": "T1",
+      "started_at": "2026-09-29T17:38:09Z",
+      "duration_seconds": 13.0,
+      "git": {
+        "sha": "d2133a4d3734dc58c693d0c647f5a15b2b484d9d",
+        "short": "d2133a4d3",
+        "branch": "w5-d2",
         "pushed": null
       }
     }
