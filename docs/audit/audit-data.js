@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-29T17:50:17Z",
+  "generated": "2026-09-29T17:59:51Z",
   "audit": [
     {
       "actor": null,
@@ -55202,34 +55202,23 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M3Q487VPMQG58JJ6HT3CD159",
-      "shortname": "Goal: author benchmark task B2 (\"ai-de Core feature primer to full spec\"…",
-      "datetime": "2026-09-29T17:43:57Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: author benchmark task B2 (\"ai-de Core feature primer to full spec\", scenario 2) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task B1 as the worked pattern.\nMeasured (Leader, 2026-09-28): tasks/B2/task.yaml is a stub; the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, \"Authored task inventory\") specifies B2 as a one-paragraph primer for one ai-de Core feature plus ai-de's docs/architecture.md; the oracle is B1's rubric (the /specify definition of done: core scenario, non-goals, Gherkin acceptance criteria, ISO 25010 NFRs, the three-layer spec) and a reference spec; bench/bom.yaml fixes its scenario and budget (20 minutes); task B1 is ready and shows every file, pin and oracle command the contract needs.\nDone when: B2 follows its inventory row exactly as quoted above; the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why); prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording; the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it; the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it); every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md); workspace/ holds only what the agent may see; tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/; oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed); the task fits its budget with headroom (state the reference solution's own time); status is ready and uv run bench validate prints ok; no real secret, customer data or private content is in the folder; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\n\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/B1/ (every file); tasks/B2/task.yaml; bench/bom.yaml (the B2 row); the proposal's authored-task inventory and design rules; tasks/B1/ (every file); tasks/D1/ (the ai-de pin). Use python, not python3 (Windows). Do not run the repo's full test suite: run uv run bench validate and the task's own oracle commands only.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
+      "datetime": "2026-09-29T17:43:57Z",
+      "id": "al-01M3Q487VPMQG58JJ6HT3CD159",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: author benchmark task B2 (\"ai-de Core feature primer to full spec\", scenario 2) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task B1 as the worked pattern.\nMeasured (Leader, 2026-09-28): tasks/B2/task.yaml is a stub; the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, \"Authored task inventory\") specifies B2 as a one-paragraph primer for one ai-de Core feature plus ai-de's docs/architecture.md; the oracle is B1's rubric (the /specify definition of done: core scenario, non-goals, Gherkin acceptance criteria, ISO 25010 NFRs, the three-layer spec) and a reference spec; bench/bom.yaml fixes its scenario and budget (20 minutes); task B1 is ready and shows every file, pin and oracle command the contract needs.\nDone when: B2 follows its inventory row exactly as quoted above; the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why); prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording; the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it; the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it); every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md); workspace/ holds only what the agent may see; tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/; oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed); the task fits its budget with headroom (state the reference solution's own time); status is ready and uv run bench validate prints ok; no real secret, customer data or private content is in the folder; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\n\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/B1/ (every file); tasks/B2/task.yaml; bench/bom.yaml (the B2 row); the proposal's authored-task inventory and design rules; tasks/B1/ (every file); tasks/D1/ (the ai-de pin). Use python, not python3 (Windows). Do not run the repo's full test suite: run uv run bench validate and the task's own oracle commands only.",
+      "session": "prompt-compile",
+      "shortname": "Goal: author benchmark task B2 (\"ai-de Core feature primer to full spec\"…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M3Q48DD0S7DES03CRYEH6D0J",
-      "shortname": "compile-Goal: author benchmark task B2 (\"ai-de Core feature primer to full spec\"…",
-      "datetime": "2026-09-29T17:44:02Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: author benchmark task B2 (\"ai-de Core feature primer to full spec\", scenario 2) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task B1 as the worked pattern. Measured (Leader, 2026-09-28): tasks/B2/task.yaml is a stub; the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, \"Authored task inventory\") specifies B2 as a one-paragraph primer for one ai-de Core feature plus ai-de's docs/architecture.md; the oracle is B1's rubric (the /specify definition of done: core scenario, non-goals, Gherkin acceptance criteria, ISO 25010 NFRs, the three-layer spec) and a reference spec; bench/bom.yaml fixes its scenario and budget (20 minutes); task B1 is ready and shows every file, pin and oracle command the contract needs.\nDone when: B2 follows its inventory row exactly as quoted above; the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why); prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording; the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it; the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it); every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md); workspace/ holds only what the agent may see; tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/; oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed); the task fits its budget with headroom (state the reference solution's own time); status is ready and uv run bench validate prints ok; no real secret, customer data or private content is in the folder; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/B1/ (every file); tasks/B2/task.yaml; bench/bom.yaml (the B2 row); the proposal's authored-task inventory and design rules; tasks/B1/ (every file); tasks/D1/ (the ai-de pin). Use python, not python3 (Windows). Do not run the repo's full test suite: run uv run bench validate and the task's own oracle commands only.\nTrace\n| clause | trace |\n|---|---|\n| done_when: B2 follows its inventory row exactly as quoted above | phrase: B2 follows its inventory row exactly as quoted above |\n| done_when: the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why) | phrase: the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why) |\n| done_when: prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording | phrase: prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording |\n| done_when: the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it | phrase: the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it |\n| done_when: the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it) | phrase: the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it) |\n| done_when: every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md) | phrase: every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md) |\n| done_when: workspace/ holds only what the agent may see | phrase: workspace/ holds only what the agent may see |\n| done_when: tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/ | phrase: tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/ |\n| done_when: oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed) | phrase: oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed) |\n| done_when: the task fits its budget with headroom (state the reference solution's own time) | phrase: the task fits its budget with headroom (state the reference solution's own time) |\n| done_when: status is ready and uv run bench validate prints ok | phrase: status is ready and uv run bench validate prints ok |\n| done_when: no real secret, customer data or private content is in the folder | phrase: no real secret, customer data or private content is in the folder |\n| done_when: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover | phrase: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover |\n| done_when: Commit each stage immediately. | phrase: Commit each stage immediately. |\n| not_in_scope: any other task | phrase: any other task |\n| not_in_scope: any engine, grader or report code | phrase: any engine, grader or report code |\n| not_in_scope: running the task in a real harness | phrase: running the task in a real harness |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task. | phrase: any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task. |\nReferences\n- /new-bench-task: unresolved (outside repo)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- tasks/B2/task.yaml: tasks/B2/task.yaml sha256 a93f63d7fcc0cd7f0547f9cb6ac4171153e564d3c103e0c630d39b41734bb119\n- docs/proposals/cross-harness-benchmarking-proposal.md: docs/proposals/cross-harness-benchmarking-proposal.md sha256 0d970fba92ab07db3c068eb4a1bc87122b8fd0c821b3f4df299807aa36efa410\n- docs/architecture.md: unresolved (ambiguous: 32 matches)\n- /specify: unresolved (outside repo)\n- bench/bom.yaml: bench/bom.yaml sha256 1ecd633f918176a0f9b9afd87275414434bc3f7a1efe0d31461358b6989bd346\n- task.yaml: unresolved (ambiguous: 28 matches)\n- prompt.md: unresolved (ambiguous: 15 matches)\n- oracle/README.md: unresolved (ambiguous: 12 matches)\n- workspace/: unresolved (not found)\n- tests/: unresolved (not found)\n- oracle/: unresolved (not found)\n- oracle/reference/: unresolved (not found)\n- runs/: unresolved (not found)\n- tasks/_template/: unresolved (not found)\n- tasks/B1/: unresolved (not found)\n- tasks/D1/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3Q487VPMQG58JJ6HT3CD159\nraw sha256: 6a8111ea292b994977548dd8e429dce56f48a6c6817d5941473d84003a6c0952\ncompiler model: claude-opus-5-5\nengine seconds: 0.008\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3Q487VPMQG58JJ6HT3CD159 for claude-code v1: 19 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -55599,38 +55588,38 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3Q4JXEYB2HKB9QB99ZR126Z",
-      "shortname": "Goal: fix the ai-forward pack's coord-runner so a slow leader check unde…",
-      "datetime": "2026-09-29T17:49:46Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: fix the ai-forward pack's coord-runner so a slow leader check under CPU load never cancels a run whose lease is still valid; cancellation happens only when authority is actually lost (the epoch changed or the lease expired), red first, in the ai-forward repository.\nMeasured (Leader in the consuming repo x-harness-x-model-bench, 2026-09-29, ai-forward origin/main 648f8f0): pack/scripts/coord-runner.py bounds every leader check with a 2-second subprocess timeout: `leader(self, owner, timeout=2, ...)` (~:668), `fence(remaining)` calls `self.leader(owner, timeout=min(2, remaining, lease[\"expires_at\"] - time.time()))` (~:848), the in-run renewal calls `self.leader(owner, timeout=min(2, ...), renew_run=...)` (~:986), and the pre-dispatch check `admitted(2)` (~:571, :576); any timeout of that subprocess raises RUN-LEADER and the in-run path sets lease[\"reason\"] = \"RUN-LEADER\" and stops every worker; the consuming repo measured `coord-core.py leader who --json` at 144-246 ms idle and up to 1352 ms under one parallel test run on a 28-core Windows host, and two Agy worker runs were cancelled RUN-LEADER within 4 s of each other while four workers and a dotnet build loaded the host, with the lease live before and after (TTL 300 s, renewed every 90 s by a separate loop); the consuming repo's vendored docs/ai-forward-pack/scripts/coord-runner.py is byte-identical to this file.\nDone when: a leader check during a run is bounded by the lease's remaining time (never a fixed 2 seconds), a check that times out or fails transiently while the lease still has time is retried rather than treated as lost authority, and RUN-LEADER is raised only when a check observes a different epoch, an expired lease, or the lease's own time running out; the pre-dispatch admission check (admitted) keeps its purpose but uses a bound that tolerates a loaded host (state the bound and why); the change is made in pack/scripts/coord-runner.py and mirrored to the repo's installed copy docs/ai-forward-pack/scripts/coord-runner.py if that copy exists and is meant to match (check how the repo keeps them in sync and follow it); a test in tests/docs_explorer/test_coord_runner.py that simulates a leader check slower than 2 s while the lease is valid and asserts the run is not cancelled is committed red first, failing on an assertion, then green, plus a test that a changed epoch still cancels; the repo's own defect register or learnings record gets the class (a liveness check whose timeout is tighter than the host's load-time variance turns load into a false loss of authority), following the repo's conventions for that; the existing coord-runner tests pass (python -m pytest tests/docs_explorer/test_coord_runner.py -q); Commit each red and each green immediately on the branch fix/runner-leader-check-timeout.\nNot in scope: any other runner behaviour; the lease TTL or renew cadence; the consuming repo x-harness-x-model-bench; ai-forward's local main (never check it out, reset or commit to it); any push (the Leader asks the owner before pushing).\nTier: T1\nFan-out cap: 0\nContext ceiling: 120k tokens\nMain-line budget: one slice of at most 45 minutes; commit each red and each green immediately.\n\nGrounding: C:/Projects/ai-forward-fix-runner-leader-timeout/AGENTS.md (this repo's conventions); pack/scripts/coord-runner.py (leader, fence, admitted, the in-run renewal); tests/docs_explorer/test_coord_runner.py; the repo's defect or learnings register (find it from AGENTS.md). Use python, not python3 (Windows).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3Q4K73M91FWPR48PACHH04W",
-      "shortname": "compile-Goal: fix the ai-forward pack's coord-runner so a slow leader check unde…",
-      "datetime": "2026-09-29T17:49:56Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: fix the ai-forward pack's coord-runner so a slow leader check under CPU load never cancels a run whose lease is still valid; cancellation happens only when authority is actually lost (the epoch changed or the lease expired), red first, in the ai-forward repository. Measured (Leader in the consuming repo x-harness-x-model-bench, 2026-09-29, ai-forward origin/main 648f8f0): pack/scripts/coord-runner.py bounds every leader check with a 2-second subprocess timeout: `leader(self, owner, timeout=2, ...)` (~:668), `fence(remaining)` calls `self.leader(owner, timeout=min(2, remaining, lease[\"expires_at\"] - time.time()))` (~:848), the in-run renewal calls `self.leader(owner, timeout=min(2, ...), renew_run=...)` (~:986), and the pre-dispatch check `admitted(2)` (~:571, :576); any timeout of that subprocess raises RUN-LEADER and the in-run path sets lease[\"reason\"] = \"RUN-LEADER\" and stops every worker; the consuming repo measured `coord-core.py leader who --json` at 144-246 ms idle and up to 1352 ms under one parallel test run on a 28-core Windows host, and two Agy worker runs were cancelled RUN-LEADER within 4 s of each other while four workers and a dotnet build loaded the host, with the lease live before and after (TTL 300 s, renewed every 90 s by a separate loop); the consuming repo's vendored docs/ai-forward-pack/scripts/coord-runner.py is byte-identical to this file.\nDone when: a leader check during a run is bounded by the lease's remaining time (never a fixed 2 seconds), a check that times out or fails transiently while the lease still has time is retried rather than treated as lost authority, and RUN-LEADER is raised only when a check observes a different epoch, an expired lease, or the lease's own time running out; the pre-dispatch admission check (admitted) keeps its purpose but uses a bound that tolerates a loaded host (state the bound and why); the change is made in pack/scripts/coord-runner.py and mirrored to the repo's installed copy docs/ai-forward-pack/scripts/coord-runner.py if that copy exists and is meant to match (check how the repo keeps them in sync and follow it); a test in tests/docs_explorer/test_coord_runner.py that simulates a leader check slower than 2 s while the lease is valid and asserts the run is not cancelled is committed red first, failing on an assertion, then green, plus a test that a changed epoch still cancels; the repo's own defect register or learnings record gets the class (a liveness check whose timeout is tighter than the host's load-time variance turns load into a false loss of authority), following the repo's conventions for that; the existing coord-runner tests pass (python -m pytest tests/docs_explorer/test_coord_runner.py -q); Commit each red and each green immediately on the branch fix/runner-leader-check-timeout.\nNot in scope: any other runner behaviour; the lease TTL or renew cadence; the consuming repo x-harness-x-model-bench; ai-forward's local main (never check it out, reset or commit to it); any push (the Leader asks the owner before pushing).\nTier: T1\nFan-out cap: 0\nContext ceiling: 120k tokens\nMain-line budget: one slice of at most 45 minutes; commit each red and each green immediately.\nGrounding: C:/Projects/ai-forward-fix-runner-leader-timeout/AGENTS.md (this repo's conventions); pack/scripts/coord-runner.py (leader, fence, admitted, the in-run renewal); tests/docs_explorer/test_coord_runner.py; the repo's defect or learnings register (find it from AGENTS.md). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: a leader check during a run is bounded by the lease's remaining time (never a fixed 2 seconds), a check that times out or fails transiently while the lease still has time is retried rather than treated as lost authority, and RUN-LEADER is raised only when a check observes a different epoch, an expired lease, or the lease's own time running out | phrase: a leader check during a run is bounded by the lease's remaining time (never a fixed 2 seconds), a check that times out or fails transiently while the lease still has time is retried rather than treated as lost authority, and RUN-LEADER is raised only when a check observes a different epoch, an expired lease, or the lease's own time running out |\n| done_when: the pre-dispatch admission check (admitted) keeps its purpose but uses a bound that tolerates a loaded host (state the bound and why) | phrase: the pre-dispatch admission check (admitted) keeps its purpose but uses a bound that tolerates a loaded host (state the bound and why) |\n| done_when: the change is made in pack/scripts/coord-runner.py and mirrored to the repo's installed copy docs/ai-forward-pack/scripts/coord-runner.py if that copy exists and is meant to match (check how the repo keeps them in sync and follow it) | phrase: the change is made in pack/scripts/coord-runner.py and mirrored to the repo's installed copy docs/ai-forward-pack/scripts/coord-runner.py if that copy exists and is meant to match (check how the repo keeps them in sync and follow it) |\n| done_when: a test in tests/docs_explorer/test_coord_runner.py that simulates a leader check slower than 2 s while the lease is valid and asserts the run is not cancelled is committed red first, failing on an assertion, then green, plus a test that a changed epoch still cancels | phrase: a test in tests/docs_explorer/test_coord_runner.py that simulates a leader check slower than 2 s while the lease is valid and asserts the run is not cancelled is committed red first, failing on an assertion, then green, plus a test that a changed epoch still cancels |\n| done_when: the repo's own defect register or learnings record gets the class (a liveness check whose timeout is tighter than the host's load-time variance turns load into a false loss of authority), following the repo's conventions for that | phrase: the repo's own defect register or learnings record gets the class (a liveness check whose timeout is tighter than the host's load-time variance turns load into a false loss of authority), following the repo's conventions for that |\n| done_when: the existing coord-runner tests pass (python -m pytest tests/docs_explorer/test_coord_runner.py -q) | phrase: the existing coord-runner tests pass (python -m pytest tests/docs_explorer/test_coord_runner.py -q) |\n| done_when: Commit each red and each green immediately on the branch fix/runner-leader-check-timeout. | phrase: Commit each red and each green immediately on the branch fix/runner-leader-check-timeout. |\n| not_in_scope: any other runner behaviour | phrase: any other runner behaviour |\n| not_in_scope: the lease TTL or renew cadence | phrase: the lease TTL or renew cadence |\n| not_in_scope: the consuming repo x-harness-x-model-bench | phrase: the consuming repo x-harness-x-model-bench |\n| not_in_scope: ai-forward's local main (never check it out, reset or commit to it) | phrase: ai-forward's local main (never check it out, reset or commit to it) |\n| not_in_scope: any push (the Leader asks the owner before pushing). | phrase: any push (the Leader asks the owner before pushing). |\nReferences\n- leader(self, owner, timeout=2, : unresolved (not found)\n- fence(remaining: unresolved (not found)\n- self.leader(owner, timeout=min(2, remaining, lease[\"expires_at\"] - time.time: unresolved (not found)\n- self.leader(owner, timeout=min(2, ...), renew_run=: unresolved (not found)\n- admitted(2: unresolved (not found)\n- coord-core.py leader who --json: unresolved (not found)\n- origin/main: unresolved (not found)\n- pack/scripts/coord-runner.py: unresolved (ambiguous: 3 matches)\n- coord-core.py: unresolved (ambiguous: 145 matches)\n- docs/ai-forward-pack/scripts/coord-runner.py: unresolved (ambiguous: 142 matches)\n- tests/docs_explorer/test_coord_runner.py: unresolved (ambiguous: 3 matches)\n- fix/runner-leader-check-timeout: unresolved (not found)\n- C:/Projects/ai-forward-fix-runner-leader-timeout/AGENTS.md: unresolved (outside repo)\n- AGENTS.md: unresolved (ambiguous: 142 matches)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3Q4JXEYB2HKB9QB99ZR126Z\nraw sha256: 42d19638071252d6f44231198509dc6cfc27ba17cbb3709d111441d9afca4c2b\ncompiler model: claude-opus-5-5\nengine seconds: 0.009\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3Q4JXEYB2HKB9QB99ZR126Z for claude-code v1: 12 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-29T17:44:02Z",
+      "dispatchable": true,
+      "id": "al-01M3Q48DD0S7DES03CRYEH6D0J",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: author benchmark task B2 (\"ai-de Core feature primer to full spec\", scenario 2) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task B1 as the worked pattern. Measured (Leader, 2026-09-28): tasks/B2/task.yaml is a stub; the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, \"Authored task inventory\") specifies B2 as a one-paragraph primer for one ai-de Core feature plus ai-de's docs/architecture.md; the oracle is B1's rubric (the /specify definition of done: core scenario, non-goals, Gherkin acceptance criteria, ISO 25010 NFRs, the three-layer spec) and a reference spec; bench/bom.yaml fixes its scenario and budget (20 minutes); task B1 is ready and shows every file, pin and oracle command the contract needs.\nDone when: B2 follows its inventory row exactly as quoted above; the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why); prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording; the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it; the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it); every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md); workspace/ holds only what the agent may see; tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/; oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed); the task fits its budget with headroom (state the reference solution's own time); status is ready and uv run bench validate prints ok; no real secret, customer data or private content is in the folder; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/B1/ (every file); tasks/B2/task.yaml; bench/bom.yaml (the B2 row); the proposal's authored-task inventory and design rules; tasks/B1/ (every file); tasks/D1/ (the ai-de pin). Use python, not python3 (Windows). Do not run the repo's full test suite: run uv run bench validate and the task's own oracle commands only.\nTrace\n| clause | trace |\n|---|---|\n| done_when: B2 follows its inventory row exactly as quoted above | phrase: B2 follows its inventory row exactly as quoted above |\n| done_when: the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why) | phrase: the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why) |\n| done_when: prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording | phrase: prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording |\n| done_when: the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it | phrase: the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it |\n| done_when: the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it) | phrase: the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it) |\n| done_when: every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md) | phrase: every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md) |\n| done_when: workspace/ holds only what the agent may see | phrase: workspace/ holds only what the agent may see |\n| done_when: tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/ | phrase: tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/ |\n| done_when: oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed) | phrase: oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed) |\n| done_when: the task fits its budget with headroom (state the reference solution's own time) | phrase: the task fits its budget with headroom (state the reference solution's own time) |\n| done_when: status is ready and uv run bench validate prints ok | phrase: status is ready and uv run bench validate prints ok |\n| done_when: no real secret, customer data or private content is in the folder | phrase: no real secret, customer data or private content is in the folder |\n| done_when: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover | phrase: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover |\n| done_when: Commit each stage immediately. | phrase: Commit each stage immediately. |\n| not_in_scope: any other task | phrase: any other task |\n| not_in_scope: any engine, grader or report code | phrase: any engine, grader or report code |\n| not_in_scope: running the task in a real harness | phrase: running the task in a real harness |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task. | phrase: any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task. |\nReferences\n- /new-bench-task: unresolved (outside repo)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- tasks/B2/task.yaml: tasks/B2/task.yaml sha256 a93f63d7fcc0cd7f0547f9cb6ac4171153e564d3c103e0c630d39b41734bb119\n- docs/proposals/cross-harness-benchmarking-proposal.md: docs/proposals/cross-harness-benchmarking-proposal.md sha256 0d970fba92ab07db3c068eb4a1bc87122b8fd0c821b3f4df299807aa36efa410\n- docs/architecture.md: unresolved (ambiguous: 32 matches)\n- /specify: unresolved (outside repo)\n- bench/bom.yaml: bench/bom.yaml sha256 1ecd633f918176a0f9b9afd87275414434bc3f7a1efe0d31461358b6989bd346\n- task.yaml: unresolved (ambiguous: 28 matches)\n- prompt.md: unresolved (ambiguous: 15 matches)\n- oracle/README.md: unresolved (ambiguous: 12 matches)\n- workspace/: unresolved (not found)\n- tests/: unresolved (not found)\n- oracle/: unresolved (not found)\n- oracle/reference/: unresolved (not found)\n- runs/: unresolved (not found)\n- tasks/_template/: unresolved (not found)\n- tasks/B1/: unresolved (not found)\n- tasks/D1/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3Q487VPMQG58JJ6HT3CD159\nraw sha256: 6a8111ea292b994977548dd8e429dce56f48a6c6817d5941473d84003a6c0952\ncompiler model: claude-opus-5-5\nengine seconds: 0.008\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: author benchmark task B2 (\"ai-de Core feature primer to full spec\"…",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3Q487VPMQG58JJ6HT3CD159 for claude-code v1: 19 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-29T17:49:46Z",
+      "id": "al-01M3Q4JXEYB2HKB9QB99ZR126Z",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: fix the ai-forward pack's coord-runner so a slow leader check under CPU load never cancels a run whose lease is still valid; cancellation happens only when authority is actually lost (the epoch changed or the lease expired), red first, in the ai-forward repository.\nMeasured (Leader in the consuming repo x-harness-x-model-bench, 2026-09-29, ai-forward origin/main 648f8f0): pack/scripts/coord-runner.py bounds every leader check with a 2-second subprocess timeout: `leader(self, owner, timeout=2, ...)` (~:668), `fence(remaining)` calls `self.leader(owner, timeout=min(2, remaining, lease[\"expires_at\"] - time.time()))` (~:848), the in-run renewal calls `self.leader(owner, timeout=min(2, ...), renew_run=...)` (~:986), and the pre-dispatch check `admitted(2)` (~:571, :576); any timeout of that subprocess raises RUN-LEADER and the in-run path sets lease[\"reason\"] = \"RUN-LEADER\" and stops every worker; the consuming repo measured `coord-core.py leader who --json` at 144-246 ms idle and up to 1352 ms under one parallel test run on a 28-core Windows host, and two Agy worker runs were cancelled RUN-LEADER within 4 s of each other while four workers and a dotnet build loaded the host, with the lease live before and after (TTL 300 s, renewed every 90 s by a separate loop); the consuming repo's vendored docs/ai-forward-pack/scripts/coord-runner.py is byte-identical to this file.\nDone when: a leader check during a run is bounded by the lease's remaining time (never a fixed 2 seconds), a check that times out or fails transiently while the lease still has time is retried rather than treated as lost authority, and RUN-LEADER is raised only when a check observes a different epoch, an expired lease, or the lease's own time running out; the pre-dispatch admission check (admitted) keeps its purpose but uses a bound that tolerates a loaded host (state the bound and why); the change is made in pack/scripts/coord-runner.py and mirrored to the repo's installed copy docs/ai-forward-pack/scripts/coord-runner.py if that copy exists and is meant to match (check how the repo keeps them in sync and follow it); a test in tests/docs_explorer/test_coord_runner.py that simulates a leader check slower than 2 s while the lease is valid and asserts the run is not cancelled is committed red first, failing on an assertion, then green, plus a test that a changed epoch still cancels; the repo's own defect register or learnings record gets the class (a liveness check whose timeout is tighter than the host's load-time variance turns load into a false loss of authority), following the repo's conventions for that; the existing coord-runner tests pass (python -m pytest tests/docs_explorer/test_coord_runner.py -q); Commit each red and each green immediately on the branch fix/runner-leader-check-timeout.\nNot in scope: any other runner behaviour; the lease TTL or renew cadence; the consuming repo x-harness-x-model-bench; ai-forward's local main (never check it out, reset or commit to it); any push (the Leader asks the owner before pushing).\nTier: T1\nFan-out cap: 0\nContext ceiling: 120k tokens\nMain-line budget: one slice of at most 45 minutes; commit each red and each green immediately.\n\nGrounding: C:/Projects/ai-forward-fix-runner-leader-timeout/AGENTS.md (this repo's conventions); pack/scripts/coord-runner.py (leader, fence, admitted, the in-run renewal); tests/docs_explorer/test_coord_runner.py; the repo's defect or learnings register (find it from AGENTS.md). Use python, not python3 (Windows).",
+      "session": "prompt-compile",
+      "shortname": "Goal: fix the ai-forward pack's coord-runner so a slow leader check unde…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -55897,38 +55886,38 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3Q4K7JNNTW2KAYXD46EQ5XQ",
-      "shortname": "Goal: author benchmark task A5 (\"Users want to see what changed\", scenar…",
-      "datetime": "2026-09-29T17:49:57Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: author benchmark task A5 (\"Users want to see what changed\", scenario 1) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task A1 as the worked pattern.\nMeasured (Leader, 2026-09-28): tasks/A5/task.yaml is a stub; the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, \"Authored task inventory\") specifies A5 as the one-line prompt \"Users want to see what changed\" on ai-de Core, AiDe.Core as the workspace and the scripted user; the oracle is 4 annotated clarifications and a reference spec; bench/bom.yaml fixes its scenario and budget (15 minutes); task A1 is ready and shows every file, pin and oracle command the contract needs.\nDone when: A5 follows its inventory row exactly as quoted above; the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why); prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording; the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it; the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it); every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md); workspace/ holds only what the agent may see; tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/; oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed); the task fits its budget with headroom (state the reference solution's own time); status is ready and uv run bench validate prints ok; no real secret, customer data or private content is in the folder; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\n\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/A1/ (every file); tasks/A5/task.yaml; bench/bom.yaml (the A5 row); the proposal's authored-task inventory and design rules; tasks/D1/ (the ai-de pin and AiDe.Core). Use python, not python3 (Windows). Do not run the repo's full test suite: run uv run bench validate and the task's own oracle commands only.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3Q4KG879FZNNXH87NEK7P3Z",
-      "shortname": "compile-Goal: author benchmark task A5 (\"Users want to see what changed\", scenar…",
-      "datetime": "2026-09-29T17:50:06Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: author benchmark task A5 (\"Users want to see what changed\", scenario 1) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task A1 as the worked pattern. Measured (Leader, 2026-09-28): tasks/A5/task.yaml is a stub; the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, \"Authored task inventory\") specifies A5 as the one-line prompt \"Users want to see what changed\" on ai-de Core, AiDe.Core as the workspace and the scripted user; the oracle is 4 annotated clarifications and a reference spec; bench/bom.yaml fixes its scenario and budget (15 minutes); task A1 is ready and shows every file, pin and oracle command the contract needs.\nDone when: A5 follows its inventory row exactly as quoted above; the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why); prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording; the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it; the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it); every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md); workspace/ holds only what the agent may see; tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/; oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed); the task fits its budget with headroom (state the reference solution's own time); status is ready and uv run bench validate prints ok; no real secret, customer data or private content is in the folder; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/A1/ (every file); tasks/A5/task.yaml; bench/bom.yaml (the A5 row); the proposal's authored-task inventory and design rules; tasks/D1/ (the ai-de pin and AiDe.Core). Use python, not python3 (Windows). Do not run the repo's full test suite: run uv run bench validate and the task's own oracle commands only.\nTrace\n| clause | trace |\n|---|---|\n| done_when: A5 follows its inventory row exactly as quoted above | phrase: A5 follows its inventory row exactly as quoted above |\n| done_when: the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why) | phrase: the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why) |\n| done_when: prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording | phrase: prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording |\n| done_when: the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it | phrase: the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it |\n| done_when: the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it) | phrase: the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it) |\n| done_when: every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md) | phrase: every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md) |\n| done_when: workspace/ holds only what the agent may see | phrase: workspace/ holds only what the agent may see |\n| done_when: tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/ | phrase: tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/ |\n| done_when: oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed) | phrase: oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed) |\n| done_when: the task fits its budget with headroom (state the reference solution's own time) | phrase: the task fits its budget with headroom (state the reference solution's own time) |\n| done_when: status is ready and uv run bench validate prints ok | phrase: status is ready and uv run bench validate prints ok |\n| done_when: no real secret, customer data or private content is in the folder | phrase: no real secret, customer data or private content is in the folder |\n| done_when: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover | phrase: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover |\n| done_when: Commit each stage immediately. | phrase: Commit each stage immediately. |\n| not_in_scope: any other task | phrase: any other task |\n| not_in_scope: any engine, grader or report code | phrase: any engine, grader or report code |\n| not_in_scope: running the task in a real harness | phrase: running the task in a real harness |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task. | phrase: any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task. |\nReferences\n- /new-bench-task: unresolved (outside repo)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- tasks/A5/task.yaml: tasks/A5/task.yaml sha256 e3aed82c33ef46be0e6a16f7520163bffd24e1b684e8451d0bf984bbcdb93291\n- docs/proposals/cross-harness-benchmarking-proposal.md: docs/proposals/cross-harness-benchmarking-proposal.md sha256 0d970fba92ab07db3c068eb4a1bc87122b8fd0c821b3f4df299807aa36efa410\n- bench/bom.yaml: bench/bom.yaml sha256 1ecd633f918176a0f9b9afd87275414434bc3f7a1efe0d31461358b6989bd346\n- task.yaml: unresolved (ambiguous: 28 matches)\n- prompt.md: unresolved (ambiguous: 15 matches)\n- oracle/README.md: unresolved (ambiguous: 12 matches)\n- workspace/: unresolved (not found)\n- tests/: unresolved (not found)\n- oracle/: unresolved (not found)\n- oracle/reference/: unresolved (not found)\n- runs/: unresolved (not found)\n- tasks/_template/: unresolved (not found)\n- tasks/A1/: unresolved (not found)\n- tasks/D1/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3Q4K7JNNTW2KAYXD46EQ5XQ\nraw sha256: 28929e1230db06bcc8e523d5d6f878573d52f2f521fb19d3d61b12ba9d475286\ncompiler model: claude-opus-5-5\nengine seconds: 0.01\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3Q4K7JNNTW2KAYXD46EQ5XQ for claude-code v1: 19 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-29T17:49:56Z",
+      "dispatchable": true,
+      "id": "al-01M3Q4K73M91FWPR48PACHH04W",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: fix the ai-forward pack's coord-runner so a slow leader check under CPU load never cancels a run whose lease is still valid; cancellation happens only when authority is actually lost (the epoch changed or the lease expired), red first, in the ai-forward repository. Measured (Leader in the consuming repo x-harness-x-model-bench, 2026-09-29, ai-forward origin/main 648f8f0): pack/scripts/coord-runner.py bounds every leader check with a 2-second subprocess timeout: `leader(self, owner, timeout=2, ...)` (~:668), `fence(remaining)` calls `self.leader(owner, timeout=min(2, remaining, lease[\"expires_at\"] - time.time()))` (~:848), the in-run renewal calls `self.leader(owner, timeout=min(2, ...), renew_run=...)` (~:986), and the pre-dispatch check `admitted(2)` (~:571, :576); any timeout of that subprocess raises RUN-LEADER and the in-run path sets lease[\"reason\"] = \"RUN-LEADER\" and stops every worker; the consuming repo measured `coord-core.py leader who --json` at 144-246 ms idle and up to 1352 ms under one parallel test run on a 28-core Windows host, and two Agy worker runs were cancelled RUN-LEADER within 4 s of each other while four workers and a dotnet build loaded the host, with the lease live before and after (TTL 300 s, renewed every 90 s by a separate loop); the consuming repo's vendored docs/ai-forward-pack/scripts/coord-runner.py is byte-identical to this file.\nDone when: a leader check during a run is bounded by the lease's remaining time (never a fixed 2 seconds), a check that times out or fails transiently while the lease still has time is retried rather than treated as lost authority, and RUN-LEADER is raised only when a check observes a different epoch, an expired lease, or the lease's own time running out; the pre-dispatch admission check (admitted) keeps its purpose but uses a bound that tolerates a loaded host (state the bound and why); the change is made in pack/scripts/coord-runner.py and mirrored to the repo's installed copy docs/ai-forward-pack/scripts/coord-runner.py if that copy exists and is meant to match (check how the repo keeps them in sync and follow it); a test in tests/docs_explorer/test_coord_runner.py that simulates a leader check slower than 2 s while the lease is valid and asserts the run is not cancelled is committed red first, failing on an assertion, then green, plus a test that a changed epoch still cancels; the repo's own defect register or learnings record gets the class (a liveness check whose timeout is tighter than the host's load-time variance turns load into a false loss of authority), following the repo's conventions for that; the existing coord-runner tests pass (python -m pytest tests/docs_explorer/test_coord_runner.py -q); Commit each red and each green immediately on the branch fix/runner-leader-check-timeout.\nNot in scope: any other runner behaviour; the lease TTL or renew cadence; the consuming repo x-harness-x-model-bench; ai-forward's local main (never check it out, reset or commit to it); any push (the Leader asks the owner before pushing).\nTier: T1\nFan-out cap: 0\nContext ceiling: 120k tokens\nMain-line budget: one slice of at most 45 minutes; commit each red and each green immediately.\nGrounding: C:/Projects/ai-forward-fix-runner-leader-timeout/AGENTS.md (this repo's conventions); pack/scripts/coord-runner.py (leader, fence, admitted, the in-run renewal); tests/docs_explorer/test_coord_runner.py; the repo's defect or learnings register (find it from AGENTS.md). Use python, not python3 (Windows).\nTrace\n| clause | trace |\n|---|---|\n| done_when: a leader check during a run is bounded by the lease's remaining time (never a fixed 2 seconds), a check that times out or fails transiently while the lease still has time is retried rather than treated as lost authority, and RUN-LEADER is raised only when a check observes a different epoch, an expired lease, or the lease's own time running out | phrase: a leader check during a run is bounded by the lease's remaining time (never a fixed 2 seconds), a check that times out or fails transiently while the lease still has time is retried rather than treated as lost authority, and RUN-LEADER is raised only when a check observes a different epoch, an expired lease, or the lease's own time running out |\n| done_when: the pre-dispatch admission check (admitted) keeps its purpose but uses a bound that tolerates a loaded host (state the bound and why) | phrase: the pre-dispatch admission check (admitted) keeps its purpose but uses a bound that tolerates a loaded host (state the bound and why) |\n| done_when: the change is made in pack/scripts/coord-runner.py and mirrored to the repo's installed copy docs/ai-forward-pack/scripts/coord-runner.py if that copy exists and is meant to match (check how the repo keeps them in sync and follow it) | phrase: the change is made in pack/scripts/coord-runner.py and mirrored to the repo's installed copy docs/ai-forward-pack/scripts/coord-runner.py if that copy exists and is meant to match (check how the repo keeps them in sync and follow it) |\n| done_when: a test in tests/docs_explorer/test_coord_runner.py that simulates a leader check slower than 2 s while the lease is valid and asserts the run is not cancelled is committed red first, failing on an assertion, then green, plus a test that a changed epoch still cancels | phrase: a test in tests/docs_explorer/test_coord_runner.py that simulates a leader check slower than 2 s while the lease is valid and asserts the run is not cancelled is committed red first, failing on an assertion, then green, plus a test that a changed epoch still cancels |\n| done_when: the repo's own defect register or learnings record gets the class (a liveness check whose timeout is tighter than the host's load-time variance turns load into a false loss of authority), following the repo's conventions for that | phrase: the repo's own defect register or learnings record gets the class (a liveness check whose timeout is tighter than the host's load-time variance turns load into a false loss of authority), following the repo's conventions for that |\n| done_when: the existing coord-runner tests pass (python -m pytest tests/docs_explorer/test_coord_runner.py -q) | phrase: the existing coord-runner tests pass (python -m pytest tests/docs_explorer/test_coord_runner.py -q) |\n| done_when: Commit each red and each green immediately on the branch fix/runner-leader-check-timeout. | phrase: Commit each red and each green immediately on the branch fix/runner-leader-check-timeout. |\n| not_in_scope: any other runner behaviour | phrase: any other runner behaviour |\n| not_in_scope: the lease TTL or renew cadence | phrase: the lease TTL or renew cadence |\n| not_in_scope: the consuming repo x-harness-x-model-bench | phrase: the consuming repo x-harness-x-model-bench |\n| not_in_scope: ai-forward's local main (never check it out, reset or commit to it) | phrase: ai-forward's local main (never check it out, reset or commit to it) |\n| not_in_scope: any push (the Leader asks the owner before pushing). | phrase: any push (the Leader asks the owner before pushing). |\nReferences\n- leader(self, owner, timeout=2, : unresolved (not found)\n- fence(remaining: unresolved (not found)\n- self.leader(owner, timeout=min(2, remaining, lease[\"expires_at\"] - time.time: unresolved (not found)\n- self.leader(owner, timeout=min(2, ...), renew_run=: unresolved (not found)\n- admitted(2: unresolved (not found)\n- coord-core.py leader who --json: unresolved (not found)\n- origin/main: unresolved (not found)\n- pack/scripts/coord-runner.py: unresolved (ambiguous: 3 matches)\n- coord-core.py: unresolved (ambiguous: 145 matches)\n- docs/ai-forward-pack/scripts/coord-runner.py: unresolved (ambiguous: 142 matches)\n- tests/docs_explorer/test_coord_runner.py: unresolved (ambiguous: 3 matches)\n- fix/runner-leader-check-timeout: unresolved (not found)\n- C:/Projects/ai-forward-fix-runner-leader-timeout/AGENTS.md: unresolved (outside repo)\n- AGENTS.md: unresolved (ambiguous: 142 matches)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3Q4JXEYB2HKB9QB99ZR126Z\nraw sha256: 42d19638071252d6f44231198509dc6cfc27ba17cbb3709d111441d9afca4c2b\ncompiler model: claude-opus-5-5\nengine seconds: 0.009\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: fix the ai-forward pack's coord-runner so a slow leader check unde…",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3Q4JXEYB2HKB9QB99ZR126Z for claude-code v1: 12 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-29T17:49:57Z",
+      "id": "al-01M3Q4K7JNNTW2KAYXD46EQ5XQ",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: author benchmark task A5 (\"Users want to see what changed\", scenario 1) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task A1 as the worked pattern.\nMeasured (Leader, 2026-09-28): tasks/A5/task.yaml is a stub; the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, \"Authored task inventory\") specifies A5 as the one-line prompt \"Users want to see what changed\" on ai-de Core, AiDe.Core as the workspace and the scripted user; the oracle is 4 annotated clarifications and a reference spec; bench/bom.yaml fixes its scenario and budget (15 minutes); task A1 is ready and shows every file, pin and oracle command the contract needs.\nDone when: A5 follows its inventory row exactly as quoted above; the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why); prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording; the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it; the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it); every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md); workspace/ holds only what the agent may see; tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/; oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed); the task fits its budget with headroom (state the reference solution's own time); status is ready and uv run bench validate prints ok; no real secret, customer data or private content is in the folder; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\n\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/A1/ (every file); tasks/A5/task.yaml; bench/bom.yaml (the A5 row); the proposal's authored-task inventory and design rules; tasks/D1/ (the ai-de pin and AiDe.Core). Use python, not python3 (Windows). Do not run the repo's full test suite: run uv run bench validate and the task's own oracle commands only.",
+      "session": "prompt-compile",
+      "shortname": "Goal: author benchmark task A5 (\"Users want to see what changed\", scenar…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -56282,38 +56271,38 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3Q4KGZ2EPN88QN3Y818JJTY",
-      "shortname": "Goal: author benchmark task B2 (\"ai-de Core feature primer to full spec\"…",
       "datetime": "2026-09-29T17:50:06Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: author benchmark task B2 (\"ai-de Core feature primer to full spec\", scenario 2) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task B1 as the worked pattern.\nMeasured (Leader, 2026-09-28): tasks/B2/task.yaml is a stub; the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, \"Authored task inventory\") specifies B2 as a one-paragraph primer for one ai-de Core feature plus ai-de's docs/architecture.md; the oracle is B1's rubric (the /specify definition of done: core scenario, non-goals, Gherkin acceptance criteria, ISO 25010 NFRs, the three-layer spec) and a reference spec; bench/bom.yaml fixes its scenario and budget (20 minutes); task B1 is ready and shows every file, pin and oracle command the contract needs.\nDone when: B2 follows its inventory row exactly as quoted above; the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why); prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording; the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it; the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it); every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md); workspace/ holds only what the agent may see; tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/; oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed); the task fits its budget with headroom (state the reference solution's own time); status is ready and uv run bench validate prints ok; no real secret, customer data or private content is in the folder; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\n\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/B1/ (every file); tasks/B2/task.yaml; bench/bom.yaml (the B2 row); the proposal's authored-task inventory and design rules; tasks/B1/ (every file); tasks/D1/ (the ai-de pin). Use python, not python3 (Windows). Do not run the repo's full test suite: run uv run bench validate and the task's own oracle commands only.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
+      "dispatchable": true,
+      "id": "al-01M3Q4KG879FZNNXH87NEK7P3Z",
+      "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: author benchmark task A5 (\"Users want to see what changed\", scenario 1) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task A1 as the worked pattern. Measured (Leader, 2026-09-28): tasks/A5/task.yaml is a stub; the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, \"Authored task inventory\") specifies A5 as the one-line prompt \"Users want to see what changed\" on ai-de Core, AiDe.Core as the workspace and the scripted user; the oracle is 4 annotated clarifications and a reference spec; bench/bom.yaml fixes its scenario and budget (15 minutes); task A1 is ready and shows every file, pin and oracle command the contract needs.\nDone when: A5 follows its inventory row exactly as quoted above; the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why); prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording; the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it; the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it); every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md); workspace/ holds only what the agent may see; tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/; oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed); the task fits its budget with headroom (state the reference solution's own time); status is ready and uv run bench validate prints ok; no real secret, customer data or private content is in the folder; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/A1/ (every file); tasks/A5/task.yaml; bench/bom.yaml (the A5 row); the proposal's authored-task inventory and design rules; tasks/D1/ (the ai-de pin and AiDe.Core). Use python, not python3 (Windows). Do not run the repo's full test suite: run uv run bench validate and the task's own oracle commands only.\nTrace\n| clause | trace |\n|---|---|\n| done_when: A5 follows its inventory row exactly as quoted above | phrase: A5 follows its inventory row exactly as quoted above |\n| done_when: the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why) | phrase: the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why) |\n| done_when: prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording | phrase: prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording |\n| done_when: the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it | phrase: the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it |\n| done_when: the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it) | phrase: the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it) |\n| done_when: every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md) | phrase: every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md) |\n| done_when: workspace/ holds only what the agent may see | phrase: workspace/ holds only what the agent may see |\n| done_when: tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/ | phrase: tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/ |\n| done_when: oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed) | phrase: oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed) |\n| done_when: the task fits its budget with headroom (state the reference solution's own time) | phrase: the task fits its budget with headroom (state the reference solution's own time) |\n| done_when: status is ready and uv run bench validate prints ok | phrase: status is ready and uv run bench validate prints ok |\n| done_when: no real secret, customer data or private content is in the folder | phrase: no real secret, customer data or private content is in the folder |\n| done_when: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover | phrase: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover |\n| done_when: Commit each stage immediately. | phrase: Commit each stage immediately. |\n| not_in_scope: any other task | phrase: any other task |\n| not_in_scope: any engine, grader or report code | phrase: any engine, grader or report code |\n| not_in_scope: running the task in a real harness | phrase: running the task in a real harness |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task. | phrase: any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task. |\nReferences\n- /new-bench-task: unresolved (outside repo)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- tasks/A5/task.yaml: tasks/A5/task.yaml sha256 e3aed82c33ef46be0e6a16f7520163bffd24e1b684e8451d0bf984bbcdb93291\n- docs/proposals/cross-harness-benchmarking-proposal.md: docs/proposals/cross-harness-benchmarking-proposal.md sha256 0d970fba92ab07db3c068eb4a1bc87122b8fd0c821b3f4df299807aa36efa410\n- bench/bom.yaml: bench/bom.yaml sha256 1ecd633f918176a0f9b9afd87275414434bc3f7a1efe0d31461358b6989bd346\n- task.yaml: unresolved (ambiguous: 28 matches)\n- prompt.md: unresolved (ambiguous: 15 matches)\n- oracle/README.md: unresolved (ambiguous: 12 matches)\n- workspace/: unresolved (not found)\n- tests/: unresolved (not found)\n- oracle/: unresolved (not found)\n- oracle/reference/: unresolved (not found)\n- runs/: unresolved (not found)\n- tasks/_template/: unresolved (not found)\n- tasks/A1/: unresolved (not found)\n- tasks/D1/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3Q4K7JNNTW2KAYXD46EQ5XQ\nraw sha256: 28929e1230db06bcc8e523d5d6f878573d52f2f521fb19d3d61b12ba9d475286\ncompiler model: claude-opus-5-5\nengine seconds: 0.01\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: author benchmark task A5 (\"Users want to see what changed\", scenar…",
       "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
+      "summary": "compiled al-01M3Q4K7JNNTW2KAYXD46EQ5XQ for claude-code v1: 19 clauses, 0 assumptions, 0 decision requests",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M3Q4KV86EH9VHNMQQBWWBPXD",
-      "shortname": "compile-Goal: author benchmark task B2 (\"ai-de Core feature primer to full spec\"…",
-      "datetime": "2026-09-29T17:50:17Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: author benchmark task B2 (\"ai-de Core feature primer to full spec\", scenario 2) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task B1 as the worked pattern. Measured (Leader, 2026-09-28): tasks/B2/task.yaml is a stub; the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, \"Authored task inventory\") specifies B2 as a one-paragraph primer for one ai-de Core feature plus ai-de's docs/architecture.md; the oracle is B1's rubric (the /specify definition of done: core scenario, non-goals, Gherkin acceptance criteria, ISO 25010 NFRs, the three-layer spec) and a reference spec; bench/bom.yaml fixes its scenario and budget (20 minutes); task B1 is ready and shows every file, pin and oracle command the contract needs.\nDone when: B2 follows its inventory row exactly as quoted above; the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why); prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording; the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it; the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it); every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md); workspace/ holds only what the agent may see; tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/; oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed); the task fits its budget with headroom (state the reference solution's own time); status is ready and uv run bench validate prints ok; no real secret, customer data or private content is in the folder; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/B1/ (every file); tasks/B2/task.yaml; bench/bom.yaml (the B2 row); the proposal's authored-task inventory and design rules; tasks/B1/ (every file); tasks/D1/ (the ai-de pin). Use python, not python3 (Windows). Do not run the repo's full test suite: run uv run bench validate and the task's own oracle commands only.\nTrace\n| clause | trace |\n|---|---|\n| done_when: B2 follows its inventory row exactly as quoted above | phrase: B2 follows its inventory row exactly as quoted above |\n| done_when: the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why) | phrase: the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why) |\n| done_when: prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording | phrase: prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording |\n| done_when: the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it | phrase: the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it |\n| done_when: the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it) | phrase: the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it) |\n| done_when: every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md) | phrase: every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md) |\n| done_when: workspace/ holds only what the agent may see | phrase: workspace/ holds only what the agent may see |\n| done_when: tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/ | phrase: tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/ |\n| done_when: oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed) | phrase: oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed) |\n| done_when: the task fits its budget with headroom (state the reference solution's own time) | phrase: the task fits its budget with headroom (state the reference solution's own time) |\n| done_when: status is ready and uv run bench validate prints ok | phrase: status is ready and uv run bench validate prints ok |\n| done_when: no real secret, customer data or private content is in the folder | phrase: no real secret, customer data or private content is in the folder |\n| done_when: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover | phrase: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover |\n| done_when: Commit each stage immediately. | phrase: Commit each stage immediately. |\n| not_in_scope: any other task | phrase: any other task |\n| not_in_scope: any engine, grader or report code | phrase: any engine, grader or report code |\n| not_in_scope: running the task in a real harness | phrase: running the task in a real harness |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task. | phrase: any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task. |\nReferences\n- /new-bench-task: unresolved (outside repo)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- tasks/B2/task.yaml: tasks/B2/task.yaml sha256 a93f63d7fcc0cd7f0547f9cb6ac4171153e564d3c103e0c630d39b41734bb119\n- docs/proposals/cross-harness-benchmarking-proposal.md: docs/proposals/cross-harness-benchmarking-proposal.md sha256 0d970fba92ab07db3c068eb4a1bc87122b8fd0c821b3f4df299807aa36efa410\n- docs/architecture.md: unresolved (ambiguous: 32 matches)\n- /specify: unresolved (outside repo)\n- bench/bom.yaml: bench/bom.yaml sha256 1ecd633f918176a0f9b9afd87275414434bc3f7a1efe0d31461358b6989bd346\n- task.yaml: unresolved (ambiguous: 28 matches)\n- prompt.md: unresolved (ambiguous: 15 matches)\n- oracle/README.md: unresolved (ambiguous: 12 matches)\n- workspace/: unresolved (not found)\n- tests/: unresolved (not found)\n- oracle/: unresolved (not found)\n- oracle/reference/: unresolved (not found)\n- runs/: unresolved (not found)\n- tasks/_template/: unresolved (not found)\n- tasks/B1/: unresolved (not found)\n- tasks/D1/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3Q4KGZ2EPN88QN3Y818JJTY\nraw sha256: 6a8111ea292b994977548dd8e429dce56f48a6c6817d5941473d84003a6c0952\ncompiler model: claude-opus-5-5\nengine seconds: 0.014\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3Q4KGZ2EPN88QN3Y818JJTY for claude-code v1: 19 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-29T17:50:06Z",
+      "id": "al-01M3Q4KGZ2EPN88QN3Y818JJTY",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: author benchmark task B2 (\"ai-de Core feature primer to full spec\", scenario 2) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task B1 as the worked pattern.\nMeasured (Leader, 2026-09-28): tasks/B2/task.yaml is a stub; the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, \"Authored task inventory\") specifies B2 as a one-paragraph primer for one ai-de Core feature plus ai-de's docs/architecture.md; the oracle is B1's rubric (the /specify definition of done: core scenario, non-goals, Gherkin acceptance criteria, ISO 25010 NFRs, the three-layer spec) and a reference spec; bench/bom.yaml fixes its scenario and budget (20 minutes); task B1 is ready and shows every file, pin and oracle command the contract needs.\nDone when: B2 follows its inventory row exactly as quoted above; the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why); prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording; the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it; the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it); every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md); workspace/ holds only what the agent may see; tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/; oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed); the task fits its budget with headroom (state the reference solution's own time); status is ready and uv run bench validate prints ok; no real secret, customer data or private content is in the folder; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\n\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/B1/ (every file); tasks/B2/task.yaml; bench/bom.yaml (the B2 row); the proposal's authored-task inventory and design rules; tasks/B1/ (every file); tasks/D1/ (the ai-de pin). Use python, not python3 (Windows). Do not run the repo's full test suite: run uv run bench validate and the task's own oracle commands only.",
+      "session": "prompt-compile",
+      "shortname": "Goal: author benchmark task B2 (\"ai-de Core feature primer to full spec\"…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -56677,6 +56666,824 @@ window.AUDIT_DATA = {
             "sha256": null,
             "status": "unresolved",
             "token": "tasks/D1/"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-09-29T17:50:17Z",
+      "dispatchable": true,
+      "id": "al-01M3Q4KV86EH9VHNMQQBWWBPXD",
+      "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: author benchmark task B2 (\"ai-de Core feature primer to full spec\", scenario 2) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task B1 as the worked pattern. Measured (Leader, 2026-09-28): tasks/B2/task.yaml is a stub; the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, \"Authored task inventory\") specifies B2 as a one-paragraph primer for one ai-de Core feature plus ai-de's docs/architecture.md; the oracle is B1's rubric (the /specify definition of done: core scenario, non-goals, Gherkin acceptance criteria, ISO 25010 NFRs, the three-layer spec) and a reference spec; bench/bom.yaml fixes its scenario and budget (20 minutes); task B1 is ready and shows every file, pin and oracle command the contract needs.\nDone when: B2 follows its inventory row exactly as quoted above; the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why); prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording; the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it; the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it); every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md); workspace/ holds only what the agent may see; tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/; oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed); the task fits its budget with headroom (state the reference solution's own time); status is ready and uv run bench validate prints ok; no real secret, customer data or private content is in the folder; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/B1/ (every file); tasks/B2/task.yaml; bench/bom.yaml (the B2 row); the proposal's authored-task inventory and design rules; tasks/B1/ (every file); tasks/D1/ (the ai-de pin). Use python, not python3 (Windows). Do not run the repo's full test suite: run uv run bench validate and the task's own oracle commands only.\nTrace\n| clause | trace |\n|---|---|\n| done_when: B2 follows its inventory row exactly as quoted above | phrase: B2 follows its inventory row exactly as quoted above |\n| done_when: the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why) | phrase: the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why) |\n| done_when: prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording | phrase: prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording |\n| done_when: the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it | phrase: the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it |\n| done_when: the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it) | phrase: the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it) |\n| done_when: every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md) | phrase: every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md) |\n| done_when: workspace/ holds only what the agent may see | phrase: workspace/ holds only what the agent may see |\n| done_when: tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/ | phrase: tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/ |\n| done_when: oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed) | phrase: oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed) |\n| done_when: the task fits its budget with headroom (state the reference solution's own time) | phrase: the task fits its budget with headroom (state the reference solution's own time) |\n| done_when: status is ready and uv run bench validate prints ok | phrase: status is ready and uv run bench validate prints ok |\n| done_when: no real secret, customer data or private content is in the folder | phrase: no real secret, customer data or private content is in the folder |\n| done_when: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover | phrase: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover |\n| done_when: Commit each stage immediately. | phrase: Commit each stage immediately. |\n| not_in_scope: any other task | phrase: any other task |\n| not_in_scope: any engine, grader or report code | phrase: any engine, grader or report code |\n| not_in_scope: running the task in a real harness | phrase: running the task in a real harness |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task. | phrase: any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task. |\nReferences\n- /new-bench-task: unresolved (outside repo)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- tasks/B2/task.yaml: tasks/B2/task.yaml sha256 a93f63d7fcc0cd7f0547f9cb6ac4171153e564d3c103e0c630d39b41734bb119\n- docs/proposals/cross-harness-benchmarking-proposal.md: docs/proposals/cross-harness-benchmarking-proposal.md sha256 0d970fba92ab07db3c068eb4a1bc87122b8fd0c821b3f4df299807aa36efa410\n- docs/architecture.md: unresolved (ambiguous: 32 matches)\n- /specify: unresolved (outside repo)\n- bench/bom.yaml: bench/bom.yaml sha256 1ecd633f918176a0f9b9afd87275414434bc3f7a1efe0d31461358b6989bd346\n- task.yaml: unresolved (ambiguous: 28 matches)\n- prompt.md: unresolved (ambiguous: 15 matches)\n- oracle/README.md: unresolved (ambiguous: 12 matches)\n- workspace/: unresolved (not found)\n- tests/: unresolved (not found)\n- oracle/: unresolved (not found)\n- oracle/reference/: unresolved (not found)\n- runs/: unresolved (not found)\n- tasks/_template/: unresolved (not found)\n- tasks/B1/: unresolved (not found)\n- tasks/D1/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3Q4KGZ2EPN88QN3Y818JJTY\nraw sha256: 6a8111ea292b994977548dd8e429dce56f48a6c6817d5941473d84003a6c0952\ncompiler model: claude-opus-5-5\nengine seconds: 0.014\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: author benchmark task B2 (\"ai-de Core feature primer to full spec\"…",
+      "skill": null,
+      "summary": "compiled al-01M3Q4KGZ2EPN88QN3Y818JJTY for claude-code v1: 19 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": "Claude Sonnet 5 worker (Sub-Agent, Leader join on Claude Opus 5.5 coord-opus-cq)",
+      "artifacts": [],
+      "datetime": "2026-09-29T17:54:42Z",
+      "done_when": "E7 follows its inventory row; source repo/commit pinned (same as F1 unless a newer commit is required); prompt.md holds the exact combo text; oracle invokes dotnet directly with forward-slash paths (no cmd.exe); workspace/ holds only what the agent may see; oracle/README.md records the discrimination proof; status ready; uv run bench validate prints ok.",
+      "git": {
+        "branch": "w5-e7",
+        "pushed": null,
+        "sha": "9c414a81197987de277ec2e5e3d82fc72ae8a519",
+        "short": "9c414a811"
+      },
+      "goal": "Author benchmark task E7 (P1 estimator slice, scenario 5) from stub to ready, following /new-bench-task and tasks/README.md, with E6 as the folder-shape pattern and F1 as the cfd-bench repo pin.",
+      "id": "al-01M3Q4VXPYYA5BK19ZMGTCAKR0",
+      "kind": "command",
+      "outcome": "success",
+      "prompt": "Task E7 (P1 estimator slice): author from stub to ready per the compiled brief al-01M3Q40YWFXEVZRMY9R3SNW5PV, following /new-bench-task and tasks/README.md, with E6 as the worked pattern and D2 as the portable-oracle-command pattern.",
+      "session": "worker-sonnet-e7",
+      "shortname": "new-bench-task-E7",
+      "skill": "new-bench-task",
+      "summary": "E7 stub to ready. Formulas (Helmbold, lifting-line induced drag, ITTC 1957, Hoerner, cavitation number) verified by reproducing all 12 rows of estimation-methods.md's own worked table exactly. Same repo pin as F1 (496a0a8c, confirmed current HEAD; no src/ at this commit, so workspace/ is a fresh stub, nothing vendored). 23 hidden xUnit tests: 0/23 on the base stub, 23/23 on the reference, via harness_bench.grade.correctness.grade. 6/6 named mutants killed. Oracle command: dotnet test E7.HiddenTests/E7.HiddenTests.csproj (direct invocation, forward-slash, portable per ADR-0013 Amendment 1). uv run bench validate: ok. Two design decisions marked assume: (Cl/Cd vs L/D distinction; cavitation-margin = sigma - sigma_i).",
+      "tags": [
+        "bench",
+        "new-bench-task",
+        "E7",
+        "cfd-bench"
+      ],
+      "tier": "T1",
+      "tool": "claude-code"
+    },
+    {
+      "id": "al-01M3Q551DZN15CF16MXXRQBW26",
+      "shortname": "Goal: author benchmark task F2 (\"D1 feature as design / implement / adve…",
+      "datetime": "2026-09-29T17:59:40Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: author benchmark task F2 (\"D1 feature as design / implement / adversarial review\", scenario 6) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task F1 as the worked pattern.\nMeasured (Leader, 2026-09-28): tasks/F2/task.yaml is a stub; the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, \"Authored task inventory\") specifies F2 as D1's feature as a three-track coordination (design, implement, adversarial review) under a model_map, given the prompt, the model_map and a /prepare-for-coordination plan skeleton; the oracle is F1's: hidden tests, intent-log completeness, model-map adherence and MAST coding; bench/bom.yaml fixes its scenario and budget (60 minutes); task F1 is ready and shows every file, pin and oracle command the contract needs.\nDone when: F2 follows its inventory row exactly as quoted above; the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why); prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording; the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it; the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it); every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md); workspace/ holds only what the agent may see; tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/; oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed); the task fits its budget with headroom (state the reference solution's own time); status is ready and uv run bench validate prints ok; no real secret, customer data or private content is in the folder; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\n\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/F1/ (every file); tasks/F2/task.yaml; bench/bom.yaml (the F2 row); the proposal's authored-task inventory and design rules; tasks/F1/ (every file); tasks/D1/ (the feature and its oracle). Use python, not python3 (Windows). Do not run the repo's full test suite: run uv run bench validate and the task's own oracle commands only.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3Q556HNVGPR360SSCWNPXF5",
+      "shortname": "compile-Goal: author benchmark task F2 (\"D1 feature as design / implement / adve…",
+      "datetime": "2026-09-29T17:59:45Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: author benchmark task F2 (\"D1 feature as design / implement / adversarial review\", scenario 6) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task F1 as the worked pattern. Measured (Leader, 2026-09-28): tasks/F2/task.yaml is a stub; the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, \"Authored task inventory\") specifies F2 as D1's feature as a three-track coordination (design, implement, adversarial review) under a model_map, given the prompt, the model_map and a /prepare-for-coordination plan skeleton; the oracle is F1's: hidden tests, intent-log completeness, model-map adherence and MAST coding; bench/bom.yaml fixes its scenario and budget (60 minutes); task F1 is ready and shows every file, pin and oracle command the contract needs.\nDone when: F2 follows its inventory row exactly as quoted above; the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why); prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording; the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it; the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it); every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md); workspace/ holds only what the agent may see; tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/; oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed); the task fits its budget with headroom (state the reference solution's own time); status is ready and uv run bench validate prints ok; no real secret, customer data or private content is in the folder; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/F1/ (every file); tasks/F2/task.yaml; bench/bom.yaml (the F2 row); the proposal's authored-task inventory and design rules; tasks/F1/ (every file); tasks/D1/ (the feature and its oracle). Use python, not python3 (Windows). Do not run the repo's full test suite: run uv run bench validate and the task's own oracle commands only.\nTrace\n| clause | trace |\n|---|---|\n| done_when: F2 follows its inventory row exactly as quoted above | phrase: F2 follows its inventory row exactly as quoted above |\n| done_when: the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why) | phrase: the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why) |\n| done_when: prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording | phrase: prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording |\n| done_when: the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it | phrase: the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it |\n| done_when: the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it) | phrase: the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it) |\n| done_when: every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md) | phrase: every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md) |\n| done_when: workspace/ holds only what the agent may see | phrase: workspace/ holds only what the agent may see |\n| done_when: tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/ | phrase: tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/ |\n| done_when: oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed) | phrase: oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed) |\n| done_when: the task fits its budget with headroom (state the reference solution's own time) | phrase: the task fits its budget with headroom (state the reference solution's own time) |\n| done_when: status is ready and uv run bench validate prints ok | phrase: status is ready and uv run bench validate prints ok |\n| done_when: no real secret, customer data or private content is in the folder | phrase: no real secret, customer data or private content is in the folder |\n| done_when: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover | phrase: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover |\n| done_when: Commit each stage immediately. | phrase: Commit each stage immediately. |\n| not_in_scope: any other task | phrase: any other task |\n| not_in_scope: any engine, grader or report code | phrase: any engine, grader or report code |\n| not_in_scope: running the task in a real harness | phrase: running the task in a real harness |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task. | phrase: any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task. |\nReferences\n- /: unresolved (outside repo)\n- /new-bench-task: unresolved (outside repo)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- tasks/F2/task.yaml: tasks/F2/task.yaml sha256 0ce3de9a8d1e263b723709ba131fe26f9ed94d264262a0579f9418ace91df198\n- docs/proposals/cross-harness-benchmarking-proposal.md: docs/proposals/cross-harness-benchmarking-proposal.md sha256 0d970fba92ab07db3c068eb4a1bc87122b8fd0c821b3f4df299807aa36efa410\n- /prepare-for-coordination: unresolved (outside repo)\n- bench/bom.yaml: bench/bom.yaml sha256 1ecd633f918176a0f9b9afd87275414434bc3f7a1efe0d31461358b6989bd346\n- task.yaml: unresolved (ambiguous: 28 matches)\n- prompt.md: unresolved (ambiguous: 16 matches)\n- oracle/README.md: unresolved (ambiguous: 13 matches)\n- workspace/: unresolved (not found)\n- tests/: unresolved (not found)\n- oracle/: unresolved (not found)\n- oracle/reference/: unresolved (not found)\n- runs/: unresolved (not found)\n- tasks/_template/: unresolved (not found)\n- tasks/F1/: unresolved (not found)\n- tasks/D1/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3Q551DZN15CF16MXXRQBW26\nraw sha256: ee3107e3df60a23ca91b816eb3194274109d0666c12d808aad1b0f3fda19a10d\ncompiler model: claude-opus-5-5\nengine seconds: 0.008\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3Q551DZN15CF16MXXRQBW26 for claude-code v1: 19 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "F2 follows its inventory row exactly as quoted above",
+            "trace": {
+              "kind": "phrase",
+              "ref": "F2 follows its inventory row exactly as quoted above"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording",
+            "trace": {
+              "kind": "phrase",
+              "ref": "prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "workspace/ holds only what the agent may see",
+            "trace": {
+              "kind": "phrase",
+              "ref": "workspace/ holds only what the agent may see"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the task fits its budget with headroom (state the reference solution's own time)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the task fits its budget with headroom (state the reference solution's own time)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "status is ready and uv run bench validate prints ok",
+            "trace": {
+              "kind": "phrase",
+              "ref": "status is ready and uv run bench validate prints ok"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "no real secret, customer data or private content is in the folder",
+            "trace": {
+              "kind": "phrase",
+              "ref": "no real secret, customer data or private content is in the folder"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each stage immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each stage immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any other task",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any other task"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any engine, grader or report code",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any engine, grader or report code"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "running the task in a real harness",
+            "trace": {
+              "kind": "phrase",
+              "ref": "running the task in a real harness"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "F2 follows its inventory row exactly as quoted above",
+            "the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why)",
+            "prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording",
+            "the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it",
+            "the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it)",
+            "every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md)",
+            "workspace/ holds only what the agent may see",
+            "tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/",
+            "oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed)",
+            "the task fits its budget with headroom (state the reference solution's own time)",
+            "status is ready and uv run bench validate prints ok",
+            "no real secret, customer data or private content is in the folder",
+            "a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover",
+            "Commit each stage immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "author benchmark task F2 (\"D1 feature as design / implement / adversarial review\", scenario 6) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task F1 as the worked pattern. Measured (Leader, 2026-09-28): tasks/F2/task.yaml is a stub; the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, \"Authored task inventory\") specifies F2 as D1's feature as a three-track coordination (design, implement, adversarial review) under a model_map, given the prompt, the model_map and a /prepare-for-coordination plan skeleton; the oracle is F1's: hidden tests, intent-log completeness, model-map adherence and MAST coding; bench/bom.yaml fixes its scenario and budget (60 minutes); task F1 is ready and shows every file, pin and oracle command the contract needs.",
+          "main_line_budget": "one slice of at most 55 minutes; commit each stage immediately.\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/F1/ (every file); tasks/F2/task.yaml; bench/bom.yaml (the F2 row); the proposal's authored-task inventory and design rules; tasks/F1/ (every file); tasks/D1/ (the feature and its oracle). Use python, not python3 (Windows). Do not run the repo's full test suite: run uv run bench validate and the task's own oracle commands only.",
+          "not_in_scope": [
+            "any other task",
+            "any engine, grader or report code",
+            "running the task in a real harness",
+            "any file under runs/",
+            "any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.008,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3Q551DZN15CF16MXXRQBW26",
+        "raw_sha256": "ee3107e3df60a23ca91b816eb3194274109d0666c12d808aad1b0f3fda19a10d",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/new-bench-task"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".claude/skills/new-bench-task/SKILL.md"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/README.md",
+            "reason": null,
+            "sha256": "df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363",
+            "status": "resolved",
+            "token": "tasks/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/F2/task.yaml",
+            "reason": null,
+            "sha256": "0ce3de9a8d1e263b723709ba131fe26f9ed94d264262a0579f9418ace91df198",
+            "status": "resolved",
+            "token": "tasks/F2/task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "docs/proposals/cross-harness-benchmarking-proposal.md",
+            "reason": null,
+            "sha256": "0d970fba92ab07db3c068eb4a1bc87122b8fd0c821b3f4df299807aa36efa410",
+            "status": "resolved",
+            "token": "docs/proposals/cross-harness-benchmarking-proposal.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/prepare-for-coordination"
+          },
+          {
+            "nearest": null,
+            "path": "bench/bom.yaml",
+            "reason": null,
+            "sha256": "1ecd633f918176a0f9b9afd87275414434bc3f7a1efe0d31461358b6989bd346",
+            "status": "resolved",
+            "token": "bench/bom.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 28 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 16 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "prompt.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 13 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "workspace/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/reference/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/_template/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/F1/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/D1/"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3Q556W6SEJCD2DE90XHT9M8",
+      "shortname": "Goal: author benchmark task E4 (\"SWE-bench Verified task, 15-60 min band…",
+      "datetime": "2026-09-29T17:59:46Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: author benchmark task E4 (\"SWE-bench Verified task, 15-60 min band\", scenario 5) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task E6 as the worked pattern.\nMeasured (Leader, 2026-09-28): tasks/E4/task.yaml is a stub; the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, \"Authored task inventory\") specifies E4 as one SWE-bench Verified instance in the 15-60 minute band: the issue text as the given and its FAIL_TO_PASS and PASS_TO_PASS tests as the oracle, the repository at its base commit with a native uv environment (ADR-0013 Amendment 1: no Docker; choose a pure-Python instance whose install and tests run natively on both Windows and macOS (prove it on this Windows host; mark macOS with an assume:), and record which instances were rejected and why); bench/bom.yaml fixes its scenario and budget (60 minutes); task E6 is ready and shows every file, pin and oracle command the contract needs.\nDone when: E4 follows its inventory row exactly as quoted above; the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why); prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording; the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it; the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it); every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md); workspace/ holds only what the agent may see; tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/; oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed); the task fits its budget with headroom (state the reference solution's own time); status is ready and uv run bench validate prints ok; no real secret, customer data or private content is in the folder; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\n\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/E6/ (every file); tasks/E4/task.yaml; bench/bom.yaml (the E4 row); the proposal's authored-task inventory and design rules; tasks/E6/; ADR-0013 Amendment 1 (section 4). Use python, not python3 (Windows). Do not run the repo's full test suite: run uv run bench validate and the task's own oracle commands only.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3Q55BW5NVWCYWZKMGZ7E0F7",
+      "shortname": "compile-Goal: author benchmark task E4 (\"SWE-bench Verified task, 15-60 min band…",
+      "datetime": "2026-09-29T17:59:51Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: author benchmark task E4 (\"SWE-bench Verified task, 15-60 min band\", scenario 5) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task E6 as the worked pattern. Measured (Leader, 2026-09-28): tasks/E4/task.yaml is a stub; the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, \"Authored task inventory\") specifies E4 as one SWE-bench Verified instance in the 15-60 minute band: the issue text as the given and its FAIL_TO_PASS and PASS_TO_PASS tests as the oracle, the repository at its base commit with a native uv environment (ADR-0013 Amendment 1: no Docker; choose a pure-Python instance whose install and tests run natively on both Windows and macOS (prove it on this Windows host; mark macOS with an assume:), and record which instances were rejected and why); bench/bom.yaml fixes its scenario and budget (60 minutes); task E6 is ready and shows every file, pin and oracle command the contract needs.\nDone when: E4 follows its inventory row exactly as quoted above; the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why); prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording; the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it; the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it); every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md); workspace/ holds only what the agent may see; tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/; oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed); the task fits its budget with headroom (state the reference solution's own time); status is ready and uv run bench validate prints ok; no real secret, customer data or private content is in the folder; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/E6/ (every file); tasks/E4/task.yaml; bench/bom.yaml (the E4 row); the proposal's authored-task inventory and design rules; tasks/E6/; ADR-0013 Amendment 1 (section 4). Use python, not python3 (Windows). Do not run the repo's full test suite: run uv run bench validate and the task's own oracle commands only.\nTrace\n| clause | trace |\n|---|---|\n| done_when: E4 follows its inventory row exactly as quoted above | phrase: E4 follows its inventory row exactly as quoted above |\n| done_when: the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why) | phrase: the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why) |\n| done_when: prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording | phrase: prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording |\n| done_when: the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it | phrase: the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it |\n| done_when: the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it) | phrase: the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it) |\n| done_when: every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md) | phrase: every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md) |\n| done_when: workspace/ holds only what the agent may see | phrase: workspace/ holds only what the agent may see |\n| done_when: tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/ | phrase: tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/ |\n| done_when: oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed) | phrase: oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed) |\n| done_when: the task fits its budget with headroom (state the reference solution's own time) | phrase: the task fits its budget with headroom (state the reference solution's own time) |\n| done_when: status is ready and uv run bench validate prints ok | phrase: status is ready and uv run bench validate prints ok |\n| done_when: no real secret, customer data or private content is in the folder | phrase: no real secret, customer data or private content is in the folder |\n| done_when: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover | phrase: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover |\n| done_when: Commit each stage immediately. | phrase: Commit each stage immediately. |\n| not_in_scope: any other task | phrase: any other task |\n| not_in_scope: any engine, grader or report code | phrase: any engine, grader or report code |\n| not_in_scope: running the task in a real harness | phrase: running the task in a real harness |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task. | phrase: any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task. |\nReferences\n- /new-bench-task: unresolved (outside repo)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- tasks/E4/task.yaml: tasks/E4/task.yaml sha256 f8ea0d08181ad394430cfb271dbd5b04825e77cb9a6fbf6b3e400f8ad9e1c735\n- docs/proposals/cross-harness-benchmarking-proposal.md: docs/proposals/cross-harness-benchmarking-proposal.md sha256 0d970fba92ab07db3c068eb4a1bc87122b8fd0c821b3f4df299807aa36efa410\n- bench/bom.yaml: bench/bom.yaml sha256 1ecd633f918176a0f9b9afd87275414434bc3f7a1efe0d31461358b6989bd346\n- task.yaml: unresolved (ambiguous: 28 matches)\n- prompt.md: unresolved (ambiguous: 16 matches)\n- oracle/README.md: unresolved (ambiguous: 13 matches)\n- workspace/: unresolved (not found)\n- tests/: unresolved (not found)\n- oracle/: unresolved (not found)\n- oracle/reference/: unresolved (not found)\n- runs/: unresolved (not found)\n- tasks/_template/: unresolved (not found)\n- tasks/E6/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3Q556W6SEJCD2DE90XHT9M8\nraw sha256: e859c3a3f74abc76ed320abe3c6ad391c078a8aa4e86a68ee8e3bc28a057263c\ncompiler model: claude-opus-5-5\nengine seconds: 0.008\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3Q556W6SEJCD2DE90XHT9M8 for claude-code v1: 19 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "E4 follows its inventory row exactly as quoted above",
+            "trace": {
+              "kind": "phrase",
+              "ref": "E4 follows its inventory row exactly as quoted above"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording",
+            "trace": {
+              "kind": "phrase",
+              "ref": "prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "workspace/ holds only what the agent may see",
+            "trace": {
+              "kind": "phrase",
+              "ref": "workspace/ holds only what the agent may see"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the task fits its budget with headroom (state the reference solution's own time)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the task fits its budget with headroom (state the reference solution's own time)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "status is ready and uv run bench validate prints ok",
+            "trace": {
+              "kind": "phrase",
+              "ref": "status is ready and uv run bench validate prints ok"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "no real secret, customer data or private content is in the folder",
+            "trace": {
+              "kind": "phrase",
+              "ref": "no real secret, customer data or private content is in the folder"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each stage immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each stage immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any other task",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any other task"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any engine, grader or report code",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any engine, grader or report code"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "running the task in a real harness",
+            "trace": {
+              "kind": "phrase",
+              "ref": "running the task in a real harness"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "E4 follows its inventory row exactly as quoted above",
+            "the source repo and commit are pinned in task.yaml (the same repo pin as the pattern task where the source is the same repo, unless a newer commit is required, in which case say why)",
+            "prompt.md holds the exact text every combo receives, with no harness-specific or OS-specific wording",
+            "the workspace, the oracle commands and the reference solution use only portable paths and tools, so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1), proven here on Windows with macOS marked by an assume: naming what would confirm it",
+            "the oracle command invokes its tool directly (for example dotnet or python) with forward-slash paths and never wraps it in cmd.exe or a shell (tasks D1, D3, E6 and F1 still do: that is the non-portable shape, do not copy it)",
+            "every hidden content check can fail for a plausible wrong answer (a single keyword that any on-topic text contains, as in A4's scope check, measures nothing: check the decided content, and show one plausible wrong answer failing each check in oracle/README.md)",
+            "workspace/ holds only what the agent may see",
+            "tests/ and oracle/ hold the hidden oracle, and nothing in them is reachable from workspace/",
+            "oracle/README.md records the discrimination proof (the hidden oracle failing on the base workspace and passing on a reference solution kept under oracle/reference/, with the exact commands and counts observed)",
+            "the task fits its budget with headroom (state the reference solution's own time)",
+            "status is ready and uv run bench validate prints ok",
+            "no real secret, customer data or private content is in the folder",
+            "a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover",
+            "Commit each stage immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "author benchmark task E4 (\"SWE-bench Verified task, 15-60 min band\", scenario 5) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task E6 as the worked pattern. Measured (Leader, 2026-09-28): tasks/E4/task.yaml is a stub; the proposal's authored-task inventory (docs/proposals/cross-harness-benchmarking-proposal.md, \"Authored task inventory\") specifies E4 as one SWE-bench Verified instance in the 15-60 minute band: the issue text as the given and its FAIL_TO_PASS and PASS_TO_PASS tests as the oracle, the repository at its base commit with a native uv environment (ADR-0013 Amendment 1: no Docker; choose a pure-Python instance whose install and tests run natively on both Windows and macOS (prove it on this Windows host; mark macOS with an assume:), and record which instances were rejected and why); bench/bom.yaml fixes its scenario and budget (60 minutes); task E6 is ready and shows every file, pin and oracle command the contract needs.",
+          "main_line_budget": "one slice of at most 55 minutes; commit each stage immediately.\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/E6/ (every file); tasks/E4/task.yaml; bench/bom.yaml (the E4 row); the proposal's authored-task inventory and design rules; tasks/E6/; ADR-0013 Amendment 1 (section 4). Use python, not python3 (Windows). Do not run the repo's full test suite: run uv run bench validate and the task's own oracle commands only.",
+          "not_in_scope": [
+            "any other task",
+            "any engine, grader or report code",
+            "running the task in a real harness",
+            "any file under runs/",
+            "any push. If the inventory row cannot be met as written (a source path does not exist at the pin, or the budget cannot hold), stop and report it rather than redefining the task."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.008,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3Q556W6SEJCD2DE90XHT9M8",
+        "raw_sha256": "e859c3a3f74abc76ed320abe3c6ad391c078a8aa4e86a68ee8e3bc28a057263c",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/new-bench-task"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".claude/skills/new-bench-task/SKILL.md"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/README.md",
+            "reason": null,
+            "sha256": "df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363",
+            "status": "resolved",
+            "token": "tasks/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/E4/task.yaml",
+            "reason": null,
+            "sha256": "f8ea0d08181ad394430cfb271dbd5b04825e77cb9a6fbf6b3e400f8ad9e1c735",
+            "status": "resolved",
+            "token": "tasks/E4/task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "docs/proposals/cross-harness-benchmarking-proposal.md",
+            "reason": null,
+            "sha256": "0d970fba92ab07db3c068eb4a1bc87122b8fd0c821b3f4df299807aa36efa410",
+            "status": "resolved",
+            "token": "docs/proposals/cross-harness-benchmarking-proposal.md"
+          },
+          {
+            "nearest": null,
+            "path": "bench/bom.yaml",
+            "reason": null,
+            "sha256": "1ecd633f918176a0f9b9afd87275414434bc3f7a1efe0d31461358b6989bd346",
+            "status": "resolved",
+            "token": "bench/bom.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 28 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 16 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "prompt.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 13 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "workspace/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/reference/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/_template/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/E6/"
           }
         ],
         "schema": "compiled-prompt/1",
