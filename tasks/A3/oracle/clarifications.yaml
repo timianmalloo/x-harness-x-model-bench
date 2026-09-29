@@ -1,0 +1,20 @@
+# Annotated key clarifications for A3: the scripted user's only answerable questions (tasks/README.md, spec US-10).
+# A question that matches a clarification gets its `reply` verbatim; every other question gets `default_reply`.
+# Question and reply are ClarifyCodeBench's annotation, verbatim (task_254, qa_pairs[0]; MIT, see ../NOTICE.md).
+schema: bench-clarifications/1
+task: A3
+upstream:
+  benchmark: ClarifyCodeBench
+  repo: "https://github.com/fangz-cs/ClarifyCodeBench"
+  commit: "5e2d5b5ce6259daa034cebb69f65e5e4c6dec3e9"
+  file: "data/ClarifyCodeBench.jsonl"
+  task_id: task_254
+  question_id: abc397_c
+  keywords: [Terminology]
+default_reply: "Decide and state your assumption."
+clarifications:
+  - id: term-counts
+    type: Terminology          # upstream taxonomy (clarifycodebench/taxonomy.py): ambiguous term
+    deleted_information: "the term meaning: distinct integers (original: 'find the maximum possible sum of the varieties of those subarrays' / 'the number of distinct integers in ...')"
+    question: "In the expression “sum of the counts in those subarrays,” does “counts” refer to the number of distinct integers or the total number of elements?"
+    reply: "“Counts” refers to the number of distinct integers in each subarray."
