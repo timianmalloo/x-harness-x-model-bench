@@ -4,7 +4,7 @@
 # Scenario 7 joins the smoke BOM after the formal-toolchain spike (spec S-12).
 # Status lives in each task's task.yaml, not here.
 schema: bench-bom/1
-version: "0.3"   # 0.2: scenario 7 (formalize and find bugs), G1-G2. 0.3: E6 replaces E1 in the smoke BOM (R-40)
+version: "0.4"   # 0.2: scenario 7 (formalize and find bugs), G1-G2. 0.3: E6 replaces E1 in the smoke BOM (R-40). 0.4: B3 and C2 authored substitutes (R-7 c2/c4, landed by R-82)
 scenarios:
   1: Specify from an ambiguous prompt
   2: Specify from a primer spec
@@ -23,10 +23,13 @@ tasks:
   # Scenario 2: primer -> spec
   - { id: B1, scenario: 2, smoke: true,  budget_minutes: 20, source: cfd-bench, title: "P0 conventions and spine primer to full spec" }
   - { id: B2, scenario: 2, smoke: false, budget_minutes: 20, source: ai-de,     title: "ai-de Core feature primer to full spec" }
-  - { id: B3, scenario: 2, smoke: false, budget_minutes: 20, source: SpecBench, title: "SpecBench task" }
+  # B3: SpecBench repository unreachable 2026-09-24, re-verified 2026-09-29 (github.com/kevins981/SpecBench 404; R-7 c2, R-82).
+  - { id: B3, scenario: 2, smoke: false, budget_minutes: 20, source: authored,  title: "cfd-bench P1 primer to full spec" }
   # Scenario 3: spec -> architecture
   - { id: C1, scenario: 3, smoke: true,  budget_minutes: 30, source: ProjDevBench, title: "Concept-oriented requirements to architecture" }
-  - { id: C2, scenario: 3, smoke: false, budget_minutes: 30, source: ArchBench,    title: "Requirement-to-architecture task" }
+  # C2: ArchBench ships no requirement-to-architecture task (2026-09-24, re-verified 2026-09-29; R-7 c4). The row described
+  # R2ABench (arXiv 2604.06683), not used: no licence, private dataset links (403), an API-keyed judge (R-82).
+  - { id: C2, scenario: 3, smoke: false, budget_minutes: 30, source: authored,     title: "ai-de requirement-to-architecture (from B2's spec)" }
   # Scenario 4: architecture -> code
   - { id: D1, scenario: 4, smoke: true,  budget_minutes: 45, source: ai-de,     title: "New projection in AiDe.Core Projections/" }
   - { id: D2, scenario: 4, smoke: false, budget_minutes: 45, source: ai-de,     title: "New extraction rule in AiDe.Core Extraction/" }

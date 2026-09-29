@@ -1188,3 +1188,50 @@ Append only. One entry per ruling. Newest last.
   5. DR-R-6: each withheld excerpt is a row in `report-record.json` (section, item id, class), and the header's withheld count includes it (R-80 c1).
   6. DR-R-9: the Security & Identity Architect reviews both new dependencies before merge (a new dependency convenes that lens). The `axe-core` file's sha256 is recorded beside its licence. `playwright install` runs only in the readiness ring, never in the offline gate. The `browser` ring is a fail-closed required check at readiness.
   7. The audit entry for R0 cites this ruling and the amended R-78 c5 sentence.
+
+## R-82 · 2026-09-29 · Owner seat (Fable) · DR-W5-1..2: both rows were retired by R-7 five days ago and the retirement never landed; B3 is (b) on the cfd-bench P1 paragraph, C2 is (c) on ai-de, and BOM 0.4 records both
+
+- **Ruling:**
+  - **Finding first, larger than either request.** R-7 (2026-09-24) already ruled B3 and C2 **operator-authored substitutes**, for the same two reasons the workers found again:
+    - SpecBench's only URL is unreachable (R-7 row 16).
+    - ArchBench ships no requirement-to-architecture task and is API-keyed (R-7 rows 18, 27).
+
+    R-7 c2 and c4 ordered `bench/bom.yaml` to `source: authored`, with a dated note. Neither change landed: `bom.yaml:26` and `:29` still read `SpecBench` and `ArchBench`, and `tasks/B3/task.yaml` and `tasks/C2/task.yaml` are stubs that cite them with `repo: tbd` (Verified 2026-09-29). Two workers spent 50 minutes re-deriving a closed ruling. Condition 5 registers the class.
+  - **DR-W5-1: (b), as R-7 c2 ruled, with the source amended to cfd-bench.**
+    - B3 is a scenario-2 primer-to-spec task on the **P1 phase paragraph** of `docs/proposals/build-phasing-plan.html`, at B1's pin `496a0a8`, with the same vendored file and the same licence record. Its target is C#/.NET 10, as for every authored non-G task.
+    - It is graded as B2 is: structural checks, at least two decided-content checks, and the judge against a reference spec.
+    - R-7 c2 named `ai-forward ca032f0` as the source. That is released: B1's pin and vendoring already exist, and ai-forward keeps G1/G2.
+    - (a) is refused. The repository has never been crawled, and "results first" does not wait on a paper's promise.
+    - (c) is refused. It changes scenario 2's shape, and its only oracle is a paid two-judge ensemble, which subscriptions-only excludes.
+  - **DR-W5-2: (c), as R-7 c4 ruled.**
+    - (a) is refused on three verified grounds:
+      - R2ABench's public repository (`github.com/luuquangkhai9/R2ABench`, `89c43b5`) has **no licence** (`license: null`, and no `LICENSE` in the tree). Its 68 requirements documents and reference views therefore cannot be vendored into a public bench repository.
+      - Both Figshare links (`/s/01f0a5…` from the arXiv page, `/s/3ef188…` from the README) are private share links and return **403**.
+      - Its L2 judge reads `OPENAI_API_KEY` and defaults to a third-party relay (`l2_semantic.py:25,41`). Its L0 needs a Java PlantUML install, a third toolchain for one task.
+    - (b) is refused. A serverless component task is scenario 5, not 3, and its optional judge is keyed.
+    - (d) is refused. Scenario 3 would hold one task.
+    - C2's source is **ai-de**, not cfd-bench, because the proposal's design rules defer "architecture-from-spec on cfd-bench P0–P1" to BOM v1.
+    - Default input: B2's reference spec (`tasks/B2/oracle/reference/docs/specs/freshness-prober.md`) is the given spec, so scenario 3 consumes what scenario 2 produces. The Leader may instead pick another `docs/architecture.md` capability at pin `88e0c33`.
+    - It is graded like C1: structural checks on `docs/architecture.md`, plus the judge rubric against a reference architecture note. R2ABench's three-layer grading is cited by name as the pattern; no text, rubric or data is copied.
+  - **The inventory is corrected once, not per task.**
+    - `bench/bom.yaml` becomes **0.4**. B3 and C2 get `source: authored`, with the notes R-7 c2/c4 specified, dated 2026-09-24 and re-verified 2026-09-29. C2's note names R2ABench (arXiv 2604.06683) as the paper the row described, and says why it is not used.
+    - The proposal's rows 119 and 121, and the two public-inventory rows (`:99`, `:100`), say the same in the same commit.
+- **Reasoning:**
+  - A ruling whose file conditions never land is a ruling that did not happen. The workers stopped correctly; the defect is upstream of them. Ruling the same thing a second time is only worth it if the register learns the class, so that no third time is needed.
+  - Both substitutes are the proposal's own fallback ("borrow the grading pattern; tasks are ours", R-7 reasoning), so nothing here is new design. The licence and key facts on R2ABench are the Owner's constraints applied, not a judgement of the paper's quality.
+  - Reusing B1's source pin and B2's reference spec is the Solution-Selection Ladder's reuse rung: no new licence check, no new vendoring decision, no new toolchain.
+- **Conditions:**
+  1. **B3, red first:**
+     - `prompt.md` gives the P1 paragraph and the spec template sections.
+     - The hidden checks are structural, plus at least two decided-content checks. Each check has a control under `oracle/reference/controls/` that fails exactly its own check (A5's pattern).
+     - `oracle/reference/docs/specs/` holds the reference spec. `rubric.md` is the /specify definition of done. `evidence.md` records fail-on-base and pass-on-reference. `bench validate` is ok.
+     - `task.yaml`: `source.kind: authored`, B1's `repo`/`commit`/`license` lines verbatim, `language: csharp`, `budget.minutes: 20`.
+  2. **C2, red first:**
+     - The given is the spec named above, verbatim.
+     - The hidden checks require `docs/architecture.md` with the sections C1 requires, plus a component list and one ADR-style decision with alternatives. There are at least two decided-content checks, each with a control as in c1.
+     - `oracle/reference/` holds the reference architecture note. `rubric.md` cites R2ABench's L1/L2 layers by name only. `evidence.md` is present. `bench validate` is ok.
+     - `task.yaml`: `source.kind: authored`, ai-de's MIT lines from B2 verbatim, `language: csharp`, `budget.minutes: 30`.
+  3. BOM 0.4 and the proposal corrections land in one Leader commit **before** either worker's join, so each join is made against a row that names its real source.
+  4. Each worker's report names the wall clock spent re-verifying, so the cost of the unlanded ruling is measured, not estimated.
+  5. `docs/lessons/defect-classes.md` gains "a ruling's file condition closed without landing, so a later wave re-derived it". The control is the Leader's choice. At minimum, the wave join for any ruling with file conditions lists each named file with the commit that changed it, and a join that cannot name the commit is red. R-7 c2/c4 are the first entries.
+  6. No live run is required for this ruling.

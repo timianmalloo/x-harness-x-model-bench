@@ -96,8 +96,8 @@ BOM v0 is 24 tasks, all sized under 60 minutes, drawn from nine public benchmark
 | MultiPL-E, HumanEval-C# split | Function-level problems translated to C#, executable tests | Our runner, batched as one task | E (C# floor) | 1 batch of 10 problems | full |
 | [ClarifyCodeBench](https://arxiv.org/abs/2607.00711) | Underspecified requirement + annotated key clarifications + simulated user + tests | Its interactive protocol, ported into our scripted user | A | 3 tasks across the three ambiguity types | none (Python) |
 | [ClarEval](https://arxiv.org/html/2603.00187v1) | Same idea, repo-level, single- and multi-turn | Reference only in v0 | A | protocol and metrics (KQC, PIR) | — |
-| [SpecBench](https://arxiv.org/abs/2605.30314) | Spec-level reasoning tasks for SE agents | Our runner + its checker | B | 1 task | tbc |
-| [ArchBench](https://awesomepapers.io/ai-for-code/papers/2603.17833) | Architecture task plugins with trajectory logging and hybrid grading | Its CLI, our wrapper | C | 1 requirement-to-architecture task | tbc |
+| [SpecBench](https://arxiv.org/abs/2605.30314) | Spec-level reasoning tasks for SE agents | Not used: repository unreachable (R-7, R-82); B3 is authored | B | 0 | — |
+| [ArchBench](https://awesomepapers.io/ai-for-code/papers/2603.17833) | Architecture task plugins with trajectory logging and hybrid grading | Not used: no requirement-to-architecture task (R-7); the row described R2ABench (arXiv 2604.06683), unlicensed with a keyed judge (R-82); C2 is authored | C | 0 | — |
 | [ProjDevBench](https://arxiv.org/abs/2602.01655v2) | Requirements → whole project; OJ tests + LLM code review of architecture | Our runner, its OJ tests | C | 1 small concept-oriented problem | none |
 | [MTAC-IFBench](https://arxiv.org/pdf/2609.14992) | Multi-turn constrained coding with per-turn checklists | Taxonomy only in v0 | Drift grader | 6×18 constraint categories for `drift.py` checklists | — |
 | [MAST](https://arxiv.org/pdf/2503.13657) | 14 multi-agent failure modes | Coding scheme only | F judge | failure-mode rubric | — |
@@ -116,9 +116,9 @@ Public benchmarks have almost no C# coverage (Aider Polyglot, Multi-SWE-bench an
 | A5 | 1 | "Users want to see what changed" on ai-de Core | One-line prompt + AiDe.Core + scripted user | 4 annotated clarifications, reference spec | 15 min |
 | B1 ★ | 2 Primer → spec | P0 "Conventions and spine" primer → full spec | The P0 paragraph of cfd-bench's phasing plan + pack `spec.template.md` sections as the required shape | Rubric from `/specify` definition of done: core scenario, non-goals, Gherkin ACs, ISO 25010 NFRs, three-layer spec; reference spec | 20 min |
 | B2 | 2 | One-paragraph primer for an ai-de Core feature → spec | Primer + `docs/architecture.md` | Same rubric, reference spec | 20 min |
-| B3 | 2 | SpecBench task | Its spec input | Its checker | 20 min |
+| B3 | 2 | cfd-bench P1 primer → full spec (authored, R-7 c2, R-82) | The P1 paragraph of `build-phasing-plan.html` + the spec template sections | Structural and decided-content checks, the judge against a reference spec | 20 min |
 | C1 ★ | 3 Spec → architecture | ProjDevBench concept problem | Its requirements | Its OJ tests + architecture review rubric | 30 min |
-| C2 | 3 | ArchBench requirement-to-architecture task | Its inputs | Its hybrid grader | 30 min |
+| C2 | 3 | ai-de requirement-to-architecture (authored, R-7 c4, R-82) | B2's reference spec | Structural and decided-content checks plus the judge (R2ABench's layered pattern, cited by name) | 30 min |
 | D1 ★ | 4 Architecture → code | Implement a Core feature against ai-de's existing architecture (candidate: a new projection in `Projections/`) | `docs/architecture.md`, the relevant ADRs, stubs, public tests | Hidden xUnit tests, Stryker.NET mutation suite, layering check | 45 min |
 | D2 | 4 | Second ai-de Core feature (candidate: an extraction rule in `Extraction/`) | as D1 | as D1 | 45 min |
 | D3 | 4 | P0 wing spine from a given architecture: `Wing` aggregate, derived span/area/aspect ratio/mean chord | Architecture note + interface stubs | Hidden tests with reference values, mutation suite | 40 min |
