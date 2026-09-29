@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-29T17:10:38Z",
+  "generated": "2026-09-29T17:33:12Z",
   "audit": [
     {
       "actor": null,
@@ -53507,6 +53507,40 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3Q3MHX7CSGEBJ8N1CBP2VFY",
+      "shortname": "new-bench-task-A2",
+      "datetime": "2026-09-29T17:33:11Z",
+      "session": "worker-agy-a2",
+      "prompt": "Goal: author benchmark task A2 (\"Missing-premise ambiguity\", scenario 1) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task A1 as the worked pattern.",
+      "summary": "A2 missing-premise ambiguity ready: ClarifyCodeBench task_109 (LiveCodeBench abc393_d 'Swap to Gather' with deleted precondition 'S contains at least one 1'). Hidden tests: 43 LiveCodeBench cases (3 public, 40 private) in tests/a2_cases.json and test_a2_hidden.py. Reference solution median-gathering, control gathers zeros. Discrimination proof: base 43/43 fail (exit 1), reference 43/43 pass (exit 0), control 32/43 fail (exit 1). 38 held-out questions labelled and verified. Portable stdlib, macOS assume: recorded. bench validate ok.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "author benchmark task A2 (\"Missing-premise ambiguity\", scenario 1) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task A1 as the worked pattern. Measured (Leader, 2026-09-28, main 2770c5d): tasks/A2/task.yaml is a stub; task A1 is ready from ClarifyCodeBench task_199; A2 picks ClarifyCodeBench instance with missing premise ambiguity.",
+      "done_when": "A2 picks one ClarifyCodeBench instance whose ambiguity type is a missing premise (a deleted precondition or input constraint, not a deleted objective as in A1), named by its exact upstream instance id, with the same repo commit pin as A1 and its hidden tests' upstream dataset, revision, file and sha256 pinned in task.yaml; prompt.md holds the upstream's ambiguous text unchanged (never fixed); workspace/ holds only what the agent may see, with only portable paths and tools so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1; prove it on Windows here and mark macOS with an assume:); tests/ holds the hidden cases with one unittest test each and the oracle command recorded as A1's is; oracle/clarifications.yaml annotates the one key clarification and the scripted user's answer, and oracle/heldout_questions.yaml labels a held-out question set for the matcher following A1's shape; oracle/README.md records the discrimination proof, the hidden tests failing on the base workspace and passing on a reference solution under oracle/reference/, with the exact commands and counts observed; NOTICE.md carries the upstream licences; status is ready and uv run bench validate prints ok; no file under tests/ or oracle/ is reachable from workspace/; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-09-29T17:11:28Z",
+      "duration_seconds": 1303.0,
+      "git": {
+        "sha": "59083b525cb4bc55d27c8ef10589f066b025f20e",
+        "short": "59083b525",
+        "branch": "w5-a2",
+        "pushed": null
+      }
     }
   ],
   "changes": [
