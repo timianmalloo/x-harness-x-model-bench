@@ -22,7 +22,15 @@ from harness_bench import archive, procs
 # `tempfile.gettempdir()` is already proven clean of any instruction file on both hosts: it is where
 # pytest's own `tmp_path` lives on macOS (the errors above showed `/private/var/folders/.../T/...`), and
 # on Windows it stays the pinned `C:/Projects/bench-test` unchanged, per the comment above.
-CLEAN_PARENT = Path("C:/Projects/bench-test") if sys.platform == "win32" else Path(tempfile.gettempdir()) / "bench-test"
+#
+# `.resolve()`: on macOS, `/var` is a symlink to `/private/var`, so `tempfile.gettempdir()` itself
+# ("/var/folders/...") and the canonical path a spawned child's own `os.getcwd()` reports
+# ("/private/var/folders/...") name the same real folder but do not `==` as unresolved `Path`s.
+# tests/test_gateway_headless.py's `assert Path(seen["cwd"]) == call / "work"` compares exactly that
+# (a fake harness's real `os.getcwd()` against a path built by joining onto `base`), so `base` is
+# resolved once here to the canonical form every OS-reported path already uses, rather than resolving
+# at each comparison site.
+CLEAN_PARENT = Path("C:/Projects/bench-test") if sys.platform == "win32" else Path(tempfile.gettempdir()).resolve() / "bench-test"
 
 
 @pytest.fixture

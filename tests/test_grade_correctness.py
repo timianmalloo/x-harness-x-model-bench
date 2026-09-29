@@ -209,6 +209,17 @@ def _build_d1_cache() -> None:
     base_ws = root / "base"
     shutil.copytree(D1 / "workspace", base_ws)
     git(base_ws, "init", "-q", "-b", "main")
+    # macos-latest CI (ADR-0013 Amendment 1, macOS port): `shutil.copytree(base_ws, pack_ws)` below observed
+    # dozens of `base_ws/.git/objects/<xx>` entries vanish between the top-level directory listing and the
+    # recursive read of each -- consistent with a background `git gc --auto` repacking and pruning the loose
+    # objects this `add`+`commit` just wrote, mid-copy. This never showed on Windows (checked: the same
+    # objects survive to the copy there). `gc.auto 0` stops git from ever deciding to run that
+    # maintenance on this throwaway, single-purpose repo, on either host.
+    # assume: git's own background auto-gc is the mechanism removing the loose objects mid-copy, not a
+    # symptom of something else deleting them. Confirm: the macos-latest CI job's
+    # test_grade_architecture.py and test_grade_correctness.py (the shutil.Error instances) turn green.
+    # Breaks if false: the shutil.Error persists after this change, and the real cause is still unread.
+    git(base_ws, "config", "gc.auto", "0")
     git(base_ws, "add", "-A")
     git(base_ws, "commit", "-q", "-m", f"D1 base ({D1_VERSION[:12]})")
     _D1_CACHE[False] = base_ws

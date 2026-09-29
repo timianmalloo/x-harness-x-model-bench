@@ -70,7 +70,15 @@ class CellProcess:
         return code & 0xFFFFFFFF if sys.platform == "win32" else code
 
     def terminate_and_confirm(self, timeout: float) -> bool:
-        """Kill the whole tree, re-sending the kill every second; True once the job reports no active process."""
+        """Kill the whole tree, re-sending the kill every second; True once the job reports no active process.
+
+        POSIX (ADR-0013 Amendment 1, macOS port): once `pgrep -g` reports the group empty, `self.proc` (the
+        direct child, killed by SIGKILL) is a zombie until this process reaps it -- `pgrep` does not list a
+        zombie, but `os.kill(pid, 0)` still reports it alive (the pid table entry persists until reaped),
+        and macos-latest CI observed a following `os.killpg` on that same, still-unreaped pgid fail with
+        `PermissionError` instead of `ProcessLookupError` (verified: tests/test_procs_posix.py's own
+        `_alive()` check on the confirmed-empty group still returned True). `poll()` reaps it (a no-op,
+        cheap, and harmless on Windows too, where there is no zombie state to clear)."""
         deadline = time.monotonic() + timeout
         next_kill = 0.0
         while time.monotonic() < deadline:
@@ -78,9 +86,13 @@ class CellProcess:
                 self.job.terminate()
                 next_kill = time.monotonic() + 1.0
             if self.job.active() == 0:
+                self.proc.poll()
                 return True
             time.sleep(0.05)
-        return self.job.active() == 0
+        confirmed = self.job.active() == 0
+        if confirmed:
+            self.proc.poll()
+        return confirmed
 
     def close(self) -> None:
         """Close the job first (kill-on-close, or its POSIX stand-in, ends any remaining tree), then the
@@ -355,21 +367,28 @@ else:
             """SIGKILL, not SIGTERM: a Windows Job Object's TerminateJobObject is an unconditional hard
             stop with no graceful phase of its own (the graceful phase, closing stdin and waiting a
             grace period, is engine.py's, above this layer) -- SIGTERM here could leave a
-            signal-ignoring process never confirmed gone, which TerminateJobObject cannot do."""
+            signal-ignoring process never confirmed gone, which TerminateJobObject cannot do.
+
+            `PermissionError` is swallowed alongside `ProcessLookupError`: a repeat SIGKILL to a pgid
+            whose sole member is already dead but not yet reaped (a zombie; CellProcess.terminate_and_confirm's
+            own docstring) can read as EPERM rather than ESRCH on macOS/Darwin -- an already-dead target,
+            never a real permission problem for a group this process itself just created."""
             if self.pgid is None:
                 return
             try:
                 os.killpg(self.pgid, signal.SIGKILL)
-            except ProcessLookupError:
+            except (ProcessLookupError, PermissionError):
                 pass
 
         def close(self) -> None:
             """Kill whatever remains of the group (the close-time insurance Windows gets from
-            kill-on-close), then stop the watchdog -- it has nothing left to watch."""
+            kill-on-close), then stop the watchdog -- it has nothing left to watch. `PermissionError` is
+            swallowed for the same reason as `terminate()`: this can run against a pgid already fully
+            terminated and reaped by terminate_and_confirm, and macOS can answer that with EPERM."""
             if self.pgid is not None:
                 try:
                     os.killpg(self.pgid, signal.SIGKILL)
-                except ProcessLookupError:
+                except (ProcessLookupError, PermissionError):
                     pass
                 self.pgid = None
             if self._watchdog is not None:
