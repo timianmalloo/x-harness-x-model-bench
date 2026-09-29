@@ -1,11 +1,9 @@
 """Run correctness.grade on the base workspace and the reference solution for task E1.
 
 E1 vendors its workspace directly (tasks/E1/workspace/code.png), like E6 -- unlike E4 there is no
-task_source() build from a live upstream clone. correctness.grade()'s oracle.runner gate only builds
-"unittest" and "dotnet" (src/harness_bench/grade/correctness.py:150,246,388); "pytest" is not merged
-yet (the Leader's parallel slice). Both calls below are therefore expected to return an NA Result with
-reason "oracle runner 'pytest' not built ..." today -- this script documents that disclosed gap; it is
-not the discrimination proof (that is the direct pytest command run and recorded in evidence.md).
+task_source() build from a live upstream clone. This is the discrimination proof through the grader's
+pytest runner (a named JUnit XML report): the base scores passed=0 and the reference passed=1, as the
+Leader re-ran it at the join (2026-09-29).
 """
 
 import shutil
