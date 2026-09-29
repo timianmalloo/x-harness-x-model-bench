@@ -2,7 +2,7 @@ schema: bench-task/1
 id: D2
 scenario: 4
 title: "New extraction rule in AiDe.Core Extraction/"
-status: draft
+status: ready   # oracle discriminates (oracle/evidence.md): 0/20 on the pinned base, 20/20 on the reference, 6/6 mutants killed
 language: csharp
 source:
   kind: authored
