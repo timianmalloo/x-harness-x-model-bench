@@ -19,7 +19,7 @@ source:
     - "extract-moves-from-video/solution/solve.sh"
     - "extract-moves-from-video/tests/test_outputs.py"   # one edit: /app/solution.txt -> solution.txt (README diff)
 budget:
-  minutes: 60
+  minutes: 30   # the upstream task.toml [agent] timeout_sec (R-83 c4: the budget is the smaller of 60 and the timeout)
   usd_cap: null
   # R-83 c4: upstream task.toml's own [agent] and [verifier] timeout_sec are both 1800.0 (30 min),
   # smaller than this row's 60-minute BOM budget (bench/bom.yaml row 44, unchanged here — the BOM

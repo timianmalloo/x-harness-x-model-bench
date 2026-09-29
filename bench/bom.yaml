@@ -4,7 +4,7 @@
 # Scenario 7 joins the smoke BOM after the formal-toolchain spike (spec S-12).
 # Status lives in each task's task.yaml, not here.
 schema: bench-bom/1
-version: "0.4"   # 0.2: scenario 7 (formalize and find bugs), G1-G2. 0.3: E6 replaces E1 in the smoke BOM (R-40). 0.4: B3 and C2 authored substitutes (R-7 c2/c4, landed by R-82)
+version: "0.5"   # 0.2: scenario 7 (formalize and find bugs), G1-G2. 0.3: E6 replaces E1 in the smoke BOM (R-40). 0.4: B3 and C2 authored substitutes (R-7 c2/c4, landed by R-82). 0.5: E1-E3 are the TB2 tasks R-83's survey selected (docs/notes/tb2-native-survey.md), budgets from their task.toml agent timeouts (R-83 c4)
 scenarios:
   1: Specify from an ambiguous prompt
   2: Specify from a primer spec
@@ -35,13 +35,13 @@ tasks:
   - { id: D2, scenario: 4, smoke: false, budget_minutes: 45, source: ai-de,     title: "New extraction rule in AiDe.Core Extraction/" }
   - { id: D3, scenario: 4, smoke: false, budget_minutes: 40, source: cfd-bench, title: "P0 wing spine from a given architecture" }
   # Scenario 5: prompt -> code (calibration)
-  # assume: the proposal gives E1-E5 budgets as "per task" (upstream). 60 is the BOM-wide
-  # sub-hour ceiling, not a measured upstream value; replace with the upstream budget when the
-  # concrete TB2 / SWE-bench instances are picked (spec S-03).
-  # E1 deferred: no container path in wave 2 (R-40). E6 is the scenario-5 smoke task; E1 returns in a later BOM version.
-  - { id: E1, scenario: 5, smoke: false, budget_minutes: 60, source: Terminal-Bench-2.0, title: "TB2 software-engineering task, easy band" }
-  - { id: E2, scenario: 5, smoke: false, budget_minutes: 60, source: Terminal-Bench-2.0, title: "TB2 software-engineering task, medium band" }
-  - { id: E3, scenario: 5, smoke: false, budget_minutes: 60, source: Terminal-Bench-2.0, title: "TB2 software-engineering task, hard band" }
+  # E1-E3 budgets are their upstream task.toml agent timeouts (R-83 c4, closed 2026-09-29). E4-E5 keep the BOM-wide
+  # sub-hour ceiling of 60 until an upstream budget exists for them (SWE-bench Verified gives a difficulty band only).
+  # E1 was deferred in wave 2 (no container path, R-40); it returns natively in BOM 0.5 (ADR-0013 Amendment 1, R-83).
+  # E6 stays the scenario-5 smoke task.
+  - { id: E1, scenario: 5, smoke: false, budget_minutes: 20, source: Terminal-Bench-2.0, title: "TB2 code-from-image (medium band: no native easy-band task, R-83 shortfall rule 1)" }
+  - { id: E2, scenario: 5, smoke: false, budget_minutes: 15, source: Terminal-Bench-2.0, title: "TB2 count-dataset-tokens (medium band)" }
+  - { id: E3, scenario: 5, smoke: false, budget_minutes: 30, source: Terminal-Bench-2.0, title: "TB2 extract-moves-from-video (hard band; cancel-async-tasks needs POSIX SIGINT, R-83)" }
   - { id: E4, scenario: 5, smoke: false, budget_minutes: 60, source: SWE-bench-Verified, title: "SWE-bench Verified task, 15-60 min band" }
   - { id: E5, scenario: 5, smoke: false, budget_minutes: 60, source: SWE-bench-Verified, title: "SWE-bench Verified task, 15-60 min band" }
   - { id: E6, scenario: 5, smoke: true,  budget_minutes: 20, source: MultiPL-E,          title: "HumanEval-C# batch of 10" }

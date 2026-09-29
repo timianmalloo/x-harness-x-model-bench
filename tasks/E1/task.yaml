@@ -24,7 +24,7 @@ source:
     # relative-name comparison D1's test uses, since the local name differs from the upstream name).
     - code-from-image/environment/code.png
 budget:
-  minutes: 60   # bom.yaml E1 row; task.toml [agent] timeout_sec = 1200.0 (20 min) is smaller, so the BOM budget stands (R-83 c4)
+  minutes: 20   # the upstream task.toml [agent] timeout_sec (R-83 c4: the budget is the smaller of 60 and the timeout)
   usd_cap: null
 blast_radius:
   - "**"

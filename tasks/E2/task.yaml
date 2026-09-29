@@ -33,7 +33,7 @@ source:
     tool: uv
     python: "3.13"
 budget:
-  minutes: 60
+  minutes: 15   # the upstream task.toml [agent] timeout_sec (R-83 c4: the budget is the smaller of 60 and the timeout)
   usd_cap: null
 blast_radius:
   - "**"
