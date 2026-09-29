@@ -93,9 +93,18 @@ def select_tasks(bom: dict, subset) -> list[dict]:
 def tree_hash(base: Path, files: Iterable[Path]) -> str:
     """The one content-address recipe (R-59 c1, seam S-2): sha256 over each file's path relative to `base`, NUL,
     its bytes with CRLF as LF, NUL, in sorted path order. The task version and the catalog hash are both this.
-    The order is `Path` order (case-insensitive on Windows), exactly as the frozen task versions were computed."""
+
+    Sort key is the case-folded posix-relative path, not native `Path` comparison (ADR-0013 Amendment 1,
+    macOS port): `pathlib.Path.__lt__` compares case-insensitively on Windows (`os.path.normcase` lowercases)
+    but case-sensitively on POSIX, so the same file set hashed the same sorted(files) call landed in two
+    different orders on the two hosts and produced two different digests for the same content -- the actual
+    cause of the tasks/A1 (etc.) mismatch on macos-latest CI, verified by reproducing both orders locally
+    against the CI-reported digest, not the line-ending difference the CI's own failure log first suggested
+    (both hosts check out these files as pure LF; ADR-0013's `eol=lf` and `git show`'s blob content confirm
+    no CRLF ever reaches this hash). Explicit casefold order matches the case-insensitive order the frozen
+    task versions were already computed in on Windows, so Windows digests are unchanged by this fix."""
     h = hashlib.sha256()
-    for f in sorted(files):
+    for f in sorted(files, key=lambda p: p.relative_to(base).as_posix().casefold()):
         h.update(f.relative_to(base).as_posix().encode() + b"\0")
         h.update(f.read_bytes().replace(b"\r\n", b"\n") + b"\0")
     return h.hexdigest()

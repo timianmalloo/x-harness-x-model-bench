@@ -48,10 +48,16 @@ def compute_digest(root: Path | None = None) -> str:
     h = hashlib.sha256()
 
     # 1. Sorted bytes of src/harness_bench/grade/**/*.py (path and content)
+    # Sort key is the case-folded posix-relative path, not native Path comparison: pathlib's `Path.__lt__`
+    # compares case-insensitively on Windows and case-sensitively on POSIX, so a bare `sorted(...)` here
+    # would put this digest's own file order at risk of the same cross-host mismatch that hit
+    # plan.tree_hash's tasks/<ID> ordering (ADR-0013 Amendment 1, macOS port; see plan.py's tree_hash
+    # docstring for the verified cause). No filename in grade/ collides under case-folding today, but the
+    # explicit key removes the platform dependency rather than relying on that happening to stay true.
     grade_dir = repo_root / "src" / "harness_bench" / "grade"
     grade_files = sorted(
-        p for p in grade_dir.rglob("*.py")
-        if "__pycache__" not in p.parts and p.is_file()
+        (p for p in grade_dir.rglob("*.py") if "__pycache__" not in p.parts and p.is_file()),
+        key=lambda p: p.relative_to(repo_root).as_posix().casefold(),
     )
     for p in grade_files:
         rel = p.relative_to(repo_root).as_posix().encode()
