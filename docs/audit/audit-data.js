@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-29T22:46:49Z",
+  "generated": "2026-09-29T22:53:27Z",
   "audit": [
     {
       "actor": null,
@@ -61160,6 +61160,29 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-09-29T19:57:09Z",
+      "fan_out": 0,
+      "git": {
+        "branch": "w5-e2",
+        "pushed": null,
+        "sha": "40d6187fa6c146863815cecf5bcb9204fa4acd6a",
+        "short": "40d6187fa"
+      },
+      "id": "al-01M3QBW5F5SAX326XPCSZ81XRY",
+      "kind": "command",
+      "outcome": "success",
+      "prompt": "Author benchmark task E2 from stub to ready as Terminal-Bench 2.0's count-dataset-tokens (medium band), selected by docs/notes/tb2-native-survey.md under R-83.",
+      "session": "worker-sonnet-tb-e2",
+      "shortname": "new-bench-task-E2",
+      "skill": "new-bench-task",
+      "summary": "E2 (count-dataset-tokens, medium band) advanced stub -> draft -> ready. task.yaml pins harbor-framework/terminal-bench-2 @2fd12b88, Apache-2.0. Vendored 6 upstream paths, rebuilt byte-for-byte by oracle/vendoring_check.py via git -c core.autocrlf=false archive. One native-path edit (/app/answer.txt -> answer.txt) applied to prompt.md, tests/test_outputs.py and oracle/reference/solve.sh, proved as the sole diff. oracle.runner: pytest (unmerged grader, w5-pytest); bench validate ok regardless. Discrimination proof (oracle/evidence.md): base tree 1 failed (FileNotFoundError), reference 1 passed (79586). Toolchain uv 0.11.26 / Python 3.13.14 / pytest 8.4.1. task.toml agent timeout 900s recorded beside the BOM's 60-minute budget (unchanged, smaller). bench/bom.yaml untouched (Leader join).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
       "actor": "Claude Sonnet 5 worker",
       "artifacts": [],
       "datetime": "2026-09-29T19:43:20Z",
@@ -62673,6 +62696,742 @@ window.AUDIT_DATA = {
       "summary": "E3 ready, task substituted to extract-moves-from-video (cancel-async-tasks' SIGINT tests raise ValueError: Unsupported signal: 2 on Windows, per R-83's shortfall rule). Vendored solve.sh + test_outputs.py from terminal-bench-2@2fd12b88 (Apache-2.0), one native-path edit, oracle/vendoring_check.py rebuild ok. Oracle: 0/2 base, 2/2 reference. bench validate: ok.",
       "tags": [],
       "tool": null
+    },
+    {
+      "id": "al-01M3QNX8WV0RTQXYG2DABKY5VR",
+      "shortname": "Goal: author benchmark task E5 (scenario 5, a SWE-bench Verified instanc…",
+      "datetime": "2026-09-29T22:52:32Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: author benchmark task E5 (scenario 5, a SWE-bench Verified instance in the 15-60 minute band, from a different repository than E4's Django) from stub to ready, native on the operator's host, following the /new-bench-task skill with task E4 as the worked pattern.\nMeasured (Leader, 2026-09-29, main f31ce5b): task E4 (tasks/E4/) is django__django-12155 from princeton-nlp/SWE-bench_Verified revision c104f840cc67f8b6eec6f759ebc8b2693d585d4a; it opts into source.workspace_from: source, so workspace.task_source() builds its base tree from source.repo at source.commit with tasks/E4/workspace/ overlaid (tasks/README.md), and its proof tasks/E4/oracle/grade_e4.py builds through workspace.task_source() and workspace.cell_working_copy() (defect class ORCL-A: a proof must use the engine's own path); the correctness grader now has an oracle runner pytest that reads a named JUnit XML report (the command must pass --junitxml=<bare name>.xml), so the pytest-based SWE-bench repositories the E4 worker screened out (astropy, matplotlib, scikit-learn, pytest, pylint, requests, flask, sphinx, xarray, seaborn) are now eligible; ADR-0013 Amendment 1 requires native execution on Windows and macOS, and task E2's worker found that code using multiprocessing without a __main__ guard respawns forever under Windows spawn.\nDone when: E5 pins one SWE-bench Verified instance from the 15-60 minute band whose repository differs from django, whose install and tests run natively on this Windows host with a uv-managed Python (pure-Python dependencies preferred; record every instance you rejected and why), with the dataset name and revision, the instance id, the repository and its base commit pinned in task.yaml; the task opts into source.workspace_from: source; prompt.md is the verbatim issue text; tests/ holds the FAIL_TO_PASS and PASS_TO_PASS tests the upstream names; oracle.runner is pytest with a command that invokes uv directly (never cmd.exe, forward-slash paths) and names a bare --junitxml report; oracle/reference/ holds the gold patch's changed files; tasks/E5/oracle/grade_e5.py proves, through workspace.task_source(), workspace.cell_working_copy() and harness_bench.grade.correctness.grade, that the base fails a FAIL_TO_PASS test while the PASS_TO_PASS tests pass, and that the reference passes all, recorded in oracle/evidence.md with the counts; macOS is recorded as an assume: naming the macos-latest CI job; uv run bench validate prints ok; a test earns its place by a failure only it catches; Commit each stage immediately.\nNot in scope: engine or grader changes (if an instance needs one, pick another instance); bench/bom.yaml (the Leader updates the E5 row at the join); any other task; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 60 minutes; commit each stage immediately.\n\nGrounding: tasks/E4/ (every file); tasks/README.md; .claude/skills/new-bench-task/SKILL.md; src/harness_bench/workspace.py (task_source, cell_working_copy); src/harness_bench/grade/correctness.py (the pytest runner); docs/adr/0013-native-cells-own-working-copy.md (Amendment 1); bench/bom.yaml (the E5 row). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-e5 (use absolute paths or cd into it in each shell command).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3QNXFHG0G20858YJ1EVE35T",
+      "shortname": "compile-Goal: author benchmark task E5 (scenario 5, a SWE-bench Verified instanc…",
+      "datetime": "2026-09-29T22:52:38Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: author benchmark task E5 (scenario 5, a SWE-bench Verified instance in the 15-60 minute band, from a different repository than E4's Django) from stub to ready, native on the operator's host, following the /new-bench-task skill with task E4 as the worked pattern. Measured (Leader, 2026-09-29, main f31ce5b): task E4 (tasks/E4/) is django__django-12155 from princeton-nlp/SWE-bench_Verified revision c104f840cc67f8b6eec6f759ebc8b2693d585d4a; it opts into source.workspace_from: source, so workspace.task_source() builds its base tree from source.repo at source.commit with tasks/E4/workspace/ overlaid (tasks/README.md), and its proof tasks/E4/oracle/grade_e4.py builds through workspace.task_source() and workspace.cell_working_copy() (defect class ORCL-A: a proof must use the engine's own path); the correctness grader now has an oracle runner pytest that reads a named JUnit XML report (the command must pass --junitxml=<bare name>.xml), so the pytest-based SWE-bench repositories the E4 worker screened out (astropy, matplotlib, scikit-learn, pytest, pylint, requests, flask, sphinx, xarray, seaborn) are now eligible; ADR-0013 Amendment 1 requires native execution on Windows and macOS, and task E2's worker found that code using multiprocessing without a __main__ guard respawns forever under Windows spawn.\nDone when: E5 pins one SWE-bench Verified instance from the 15-60 minute band whose repository differs from django, whose install and tests run natively on this Windows host with a uv-managed Python (pure-Python dependencies preferred; record every instance you rejected and why), with the dataset name and revision, the instance id, the repository and its base commit pinned in task.yaml; the task opts into source.workspace_from: source; prompt.md is the verbatim issue text; tests/ holds the FAIL_TO_PASS and PASS_TO_PASS tests the upstream names; oracle.runner is pytest with a command that invokes uv directly (never cmd.exe, forward-slash paths) and names a bare --junitxml report; oracle/reference/ holds the gold patch's changed files; tasks/E5/oracle/grade_e5.py proves, through workspace.task_source(), workspace.cell_working_copy() and harness_bench.grade.correctness.grade, that the base fails a FAIL_TO_PASS test while the PASS_TO_PASS tests pass, and that the reference passes all, recorded in oracle/evidence.md with the counts; macOS is recorded as an assume: naming the macos-latest CI job; uv run bench validate prints ok; a test earns its place by a failure only it catches; Commit each stage immediately.\nNot in scope: engine or grader changes (if an instance needs one, pick another instance); bench/bom.yaml (the Leader updates the E5 row at the join); any other task; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 60 minutes; commit each stage immediately.\nGrounding: tasks/E4/ (every file); tasks/README.md; .claude/skills/new-bench-task/SKILL.md; src/harness_bench/workspace.py (task_source, cell_working_copy); src/harness_bench/grade/correctness.py (the pytest runner); docs/adr/0013-native-cells-own-working-copy.md (Amendment 1); bench/bom.yaml (the E5 row). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-e5 (use absolute paths or cd into it in each shell command).\nTrace\n| clause | trace |\n|---|---|\n| done_when: E5 pins one SWE-bench Verified instance from the 15-60 minute band whose repository differs from django, whose install and tests run natively on this Windows host with a uv-managed Python (pure-Python dependencies preferred | phrase: E5 pins one SWE-bench Verified instance from the 15-60 minute band whose repository differs from django, whose install and tests run natively on this Windows host with a uv-managed Python (pure-Python dependencies preferred |\n| done_when: record every instance you rejected and why), with the dataset name and revision, the instance id, the repository and its base commit pinned in task.yaml | phrase: record every instance you rejected and why), with the dataset name and revision, the instance id, the repository and its base commit pinned in task.yaml |\n| done_when: the task opts into source.workspace_from: source | phrase: the task opts into source.workspace_from: source |\n| done_when: prompt.md is the verbatim issue text | phrase: prompt.md is the verbatim issue text |\n| done_when: tests/ holds the FAIL_TO_PASS and PASS_TO_PASS tests the upstream names | phrase: tests/ holds the FAIL_TO_PASS and PASS_TO_PASS tests the upstream names |\n| done_when: oracle.runner is pytest with a command that invokes uv directly (never cmd.exe, forward-slash paths) and names a bare --junitxml report | phrase: oracle.runner is pytest with a command that invokes uv directly (never cmd.exe, forward-slash paths) and names a bare --junitxml report |\n| done_when: oracle/reference/ holds the gold patch's changed files | phrase: oracle/reference/ holds the gold patch's changed files |\n| done_when: tasks/E5/oracle/grade_e5.py proves, through workspace.task_source(), workspace.cell_working_copy() and harness_bench.grade.correctness.grade, that the base fails a FAIL_TO_PASS test while the PASS_TO_PASS tests pass, and that the reference passes all, recorded in oracle/evidence.md with the counts | phrase: tasks/E5/oracle/grade_e5.py proves, through workspace.task_source(), workspace.cell_working_copy() and harness_bench.grade.correctness.grade, that the base fails a FAIL_TO_PASS test while the PASS_TO_PASS tests pass, and that the reference passes all, recorded in oracle/evidence.md with the counts |\n| done_when: macOS is recorded as an assume: naming the macos-latest CI job | phrase: macOS is recorded as an assume: naming the macos-latest CI job |\n| done_when: uv run bench validate prints ok | phrase: uv run bench validate prints ok |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: Commit each stage immediately. | phrase: Commit each stage immediately. |\n| not_in_scope: engine or grader changes (if an instance needs one, pick another instance) | phrase: engine or grader changes (if an instance needs one, pick another instance) |\n| not_in_scope: bench/bom.yaml (the Leader updates the E5 row at the join) | phrase: bench/bom.yaml (the Leader updates the E5 row at the join) |\n| not_in_scope: any other task | phrase: any other task |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- /new-bench-task: unresolved (outside repo)\n- tasks/E4/: unresolved (not found)\n- princeton-nlp/SWE-bench_Verified: unresolved (not found)\n- tasks/E4/workspace/: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 23a07b8325eac52178bb4b464c7908c00dccbdc827e5de277ced630199217912\n- tasks/E4/oracle/grade_e4.py: tasks/E4/oracle/grade_e4.py sha256 72d296c00007383b9301cbb4769caa4985aaa392d25a0fefc3e64b1f40c49410\n- task.yaml: unresolved (ambiguous: 28 matches)\n- prompt.md: unresolved (ambiguous: 25 matches)\n- tests/: unresolved (not found)\n- oracle/reference/: unresolved (not found)\n- tasks/E5/oracle/grade_e5.py: unresolved (not found)\n- oracle/evidence.md: unresolved (ambiguous: 19 matches)\n- bench/bom.yaml: bench/bom.yaml sha256 2ee4035679594664e23b4b11a982d624a6745c0d8f79eabc55f05dbd725cf903\n- runs/: unresolved (not found)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- src/harness_bench/workspace.py: src/harness_bench/workspace.py sha256 ce71125302db58ef09a19621407e57cf1b5e21a6adc9217e1edf4c3d79c7ee26\n- src/harness_bench/grade/correctness.py: src/harness_bench/grade/correctness.py sha256 8f0cbd0b973974e5cbd98998ac2b8d27c5b904342596f01c4056d8fe948c0ff3\n- docs/adr/0013-native-cells-own-working-copy.md: docs/adr/0013-native-cells-own-working-copy.md sha256 8387ae6205532c71d610c371dfa493322031185950aa6fd2dbaeddba8b40763f\n- C:/Projects/x-harness-x-model-bench-w5-e5: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3QNX8WV0RTQXYG2DABKY5VR\nraw sha256: 3119a5ddf189902012713f8c3600e5653ed31886c2505ccac235369871fe3950\ncompiler model: claude-opus-5-5\nengine seconds: 0.009\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3QNX8WV0RTQXYG2DABKY5VR for claude-code v1: 17 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "E5 pins one SWE-bench Verified instance from the 15-60 minute band whose repository differs from django, whose install and tests run natively on this Windows host with a uv-managed Python (pure-Python dependencies preferred",
+            "trace": {
+              "kind": "phrase",
+              "ref": "E5 pins one SWE-bench Verified instance from the 15-60 minute band whose repository differs from django, whose install and tests run natively on this Windows host with a uv-managed Python (pure-Python dependencies preferred"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "record every instance you rejected and why), with the dataset name and revision, the instance id, the repository and its base commit pinned in task.yaml",
+            "trace": {
+              "kind": "phrase",
+              "ref": "record every instance you rejected and why), with the dataset name and revision, the instance id, the repository and its base commit pinned in task.yaml"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the task opts into source.workspace_from: source",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the task opts into source.workspace_from: source"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "prompt.md is the verbatim issue text",
+            "trace": {
+              "kind": "phrase",
+              "ref": "prompt.md is the verbatim issue text"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/ holds the FAIL_TO_PASS and PASS_TO_PASS tests the upstream names",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/ holds the FAIL_TO_PASS and PASS_TO_PASS tests the upstream names"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "oracle.runner is pytest with a command that invokes uv directly (never cmd.exe, forward-slash paths) and names a bare --junitxml report",
+            "trace": {
+              "kind": "phrase",
+              "ref": "oracle.runner is pytest with a command that invokes uv directly (never cmd.exe, forward-slash paths) and names a bare --junitxml report"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "oracle/reference/ holds the gold patch's changed files",
+            "trace": {
+              "kind": "phrase",
+              "ref": "oracle/reference/ holds the gold patch's changed files"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tasks/E5/oracle/grade_e5.py proves, through workspace.task_source(), workspace.cell_working_copy() and harness_bench.grade.correctness.grade, that the base fails a FAIL_TO_PASS test while the PASS_TO_PASS tests pass, and that the reference passes all, recorded in oracle/evidence.md with the counts",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tasks/E5/oracle/grade_e5.py proves, through workspace.task_source(), workspace.cell_working_copy() and harness_bench.grade.correctness.grade, that the base fails a FAIL_TO_PASS test while the PASS_TO_PASS tests pass, and that the reference passes all, recorded in oracle/evidence.md with the counts"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "macOS is recorded as an assume: naming the macos-latest CI job",
+            "trace": {
+              "kind": "phrase",
+              "ref": "macOS is recorded as an assume: naming the macos-latest CI job"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run bench validate prints ok",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run bench validate prints ok"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each stage immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each stage immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "engine or grader changes (if an instance needs one, pick another instance)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "engine or grader changes (if an instance needs one, pick another instance)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench/bom.yaml (the Leader updates the E5 row at the join)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/bom.yaml (the Leader updates the E5 row at the join)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any other task",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any other task"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "E5 pins one SWE-bench Verified instance from the 15-60 minute band whose repository differs from django, whose install and tests run natively on this Windows host with a uv-managed Python (pure-Python dependencies preferred",
+            "record every instance you rejected and why), with the dataset name and revision, the instance id, the repository and its base commit pinned in task.yaml",
+            "the task opts into source.workspace_from: source",
+            "prompt.md is the verbatim issue text",
+            "tests/ holds the FAIL_TO_PASS and PASS_TO_PASS tests the upstream names",
+            "oracle.runner is pytest with a command that invokes uv directly (never cmd.exe, forward-slash paths) and names a bare --junitxml report",
+            "oracle/reference/ holds the gold patch's changed files",
+            "tasks/E5/oracle/grade_e5.py proves, through workspace.task_source(), workspace.cell_working_copy() and harness_bench.grade.correctness.grade, that the base fails a FAIL_TO_PASS test while the PASS_TO_PASS tests pass, and that the reference passes all, recorded in oracle/evidence.md with the counts",
+            "macOS is recorded as an assume: naming the macos-latest CI job",
+            "uv run bench validate prints ok",
+            "a test earns its place by a failure only it catches",
+            "Commit each stage immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "author benchmark task E5 (scenario 5, a SWE-bench Verified instance in the 15-60 minute band, from a different repository than E4's Django) from stub to ready, native on the operator's host, following the /new-bench-task skill with task E4 as the worked pattern. Measured (Leader, 2026-09-29, main f31ce5b): task E4 (tasks/E4/) is django__django-12155 from princeton-nlp/SWE-bench_Verified revision c104f840cc67f8b6eec6f759ebc8b2693d585d4a; it opts into source.workspace_from: source, so workspace.task_source() builds its base tree from source.repo at source.commit with tasks/E4/workspace/ overlaid (tasks/README.md), and its proof tasks/E4/oracle/grade_e4.py builds through workspace.task_source() and workspace.cell_working_copy() (defect class ORCL-A: a proof must use the engine's own path); the correctness grader now has an oracle runner pytest that reads a named JUnit XML report (the command must pass --junitxml=<bare name>.xml), so the pytest-based SWE-bench repositories the E4 worker screened out (astropy, matplotlib, scikit-learn, pytest, pylint, requests, flask, sphinx, xarray, seaborn) are now eligible; ADR-0013 Amendment 1 requires native execution on Windows and macOS, and task E2's worker found that code using multiprocessing without a __main__ guard respawns forever under Windows spawn.",
+          "main_line_budget": "one slice of at most 60 minutes; commit each stage immediately.\nGrounding: tasks/E4/ (every file); tasks/README.md; .claude/skills/new-bench-task/SKILL.md; src/harness_bench/workspace.py (task_source, cell_working_copy); src/harness_bench/grade/correctness.py (the pytest runner); docs/adr/0013-native-cells-own-working-copy.md (Amendment 1); bench/bom.yaml (the E5 row). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-e5 (use absolute paths or cd into it in each shell command).",
+          "not_in_scope": [
+            "engine or grader changes (if an instance needs one, pick another instance)",
+            "bench/bom.yaml (the Leader updates the E5 row at the join)",
+            "any other task",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.009,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3QNX8WV0RTQXYG2DABKY5VR",
+        "raw_sha256": "3119a5ddf189902012713f8c3600e5653ed31886c2505ccac235369871fe3950",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/new-bench-task"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/E4/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "princeton-nlp/SWE-bench_Verified"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/E4/workspace/"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/README.md",
+            "reason": null,
+            "sha256": "23a07b8325eac52178bb4b464c7908c00dccbdc827e5de277ced630199217912",
+            "status": "resolved",
+            "token": "tasks/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/E4/oracle/grade_e4.py",
+            "reason": null,
+            "sha256": "72d296c00007383b9301cbb4769caa4985aaa392d25a0fefc3e64b1f40c49410",
+            "status": "resolved",
+            "token": "tasks/E4/oracle/grade_e4.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 28 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 25 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "prompt.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/reference/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/E5/oracle/grade_e5.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 19 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/evidence.md"
+          },
+          {
+            "nearest": null,
+            "path": "bench/bom.yaml",
+            "reason": null,
+            "sha256": "2ee4035679594664e23b4b11a982d624a6745c0d8f79eabc55f05dbd725cf903",
+            "status": "resolved",
+            "token": "bench/bom.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".claude/skills/new-bench-task/SKILL.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/workspace.py",
+            "reason": null,
+            "sha256": "ce71125302db58ef09a19621407e57cf1b5e21a6adc9217e1edf4c3d79c7ee26",
+            "status": "resolved",
+            "token": "src/harness_bench/workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/correctness.py",
+            "reason": null,
+            "sha256": "8f0cbd0b973974e5cbd98998ac2b8d27c5b904342596f01c4056d8fe948c0ff3",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/correctness.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/adr/0013-native-cells-own-working-copy.md",
+            "reason": null,
+            "sha256": "8387ae6205532c71d610c371dfa493322031185950aa6fd2dbaeddba8b40763f",
+            "status": "resolved",
+            "token": "docs/adr/0013-native-cells-own-working-copy.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/x-harness-x-model-bench-w5-e5"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3QNYSPYD2VZJY8BA0PZCBXD",
+      "shortname": "Goal: design the formal grader (spec S-08g) with the /design-slice skill…",
+      "datetime": "2026-09-29T22:53:22Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: design the formal grader (spec S-08g) with the /design-slice skill, so a later /implement slice can build src/harness_bench/grade/formal.py and tasks G1 (TLA+) and G2 (Lean 4) can be authored; the design is the deliverable, not code.\nMeasured (Leader, 2026-09-29, main f31ce5b): docs/specs/README.md lists S-08g (formal grader: checks, statement integrity, trace conformance, bug-seeded variants, bug confirmation; /design-slice then /implement; depends on S-12; file grade/formal.py) and T-G1/T-G2 depending on it; docs/specs/harness-bench.md holds US-32 (formal artifacts graded as four separate scores, so a complete proof of the wrong model is not a pass), the scenario-7 validate rule (~:271: a ready scenario-7 task pins toolchain versions, records the statement hash, and has at least one seeded bug with a reproducing test) and the report flow (~:851: four formal scores side by side plus the first counterexample or failing trace step); src/harness_bench/grade/formal.py is a stub that raises NotImplementedError and is not registered in grade/runner.py GRADERS; docs/notes/spike-s12-formal-toolchains.md (S-12, closed) proves TLC (tla2tools v1.7.4, Temurin JDK 21) and Lean 4 (elan, lean4 v4.34.1, no Mathlib) run natively on Windows in a worktree, with two gaps: tla2tools.jar is downloaded into the working copy by tools/check_models.py (not warmed before the clock) and macOS is unverified; the proposal's G1 and G2 rows and design rules (docs/proposals/cross-harness-benchmarking-proposal.md) require hashed given statements (editing one voids the proof score), pinned toolchains warmed before the clock, and every reported bug confirmed by a failing test on the real code; tasks/G1/task.yaml and tasks/G2/task.yaml are stubs whose formal: blocks name the fields.\nDone when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining: the four scores of US-32 (their names, grain, additivity, NA reasons and exact computation for TLA+ and for Lean 4), statement integrity (the hash check and what an edit does), trace conformance, how bug-seeded variants are run and scored, how a reported bug is confirmed by a failing test, the toolchain invocation (direct, forward-slash paths, never cmd.exe; the warm-before-clock contract and where caches live, closing S-12's tla2tools gap by design), the report surfaces (the four scores and the first counterexample or failing trace step), the ledger facts or scores rows it writes, its error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (its persona reviews, including the Test Architect), with each verdict recorded in the doc; any decision the design cannot settle is written as a decision request with a recommended default for the Owner seat; the doc is committed; uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes.\nNot in scope: implementing formal.py; authoring G1 or G2; changing any code; any file under runs/; any push.\nTier: T2\nFan-out cap: 3\nContext ceiling: 180k tokens\nMain-line budget: one slice of at most 75 minutes.\n\nGrounding: .claude/skills/design-slice/SKILL.md; docs/specs/README.md (S-08g, S-12, T-G1, T-G2); docs/specs/harness-bench.md (US-32, the scenario-7 rules, the report flow); docs/notes/spike-s12-formal-toolchains.md; docs/notes/proposal-grounding-findings.md F9; the proposal's G rows and design rules; src/harness_bench/grade/{formal,runner,correctness}.py; docs/design/phase3-graders.md (the existing graders' design shape); tasks/G1/task.yaml, tasks/G2/task.yaml; tools/check_models.py. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-formal (use absolute paths or cd into it in each shell command).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3QNYZ2DXZ1TWEZHBB2GH3AW",
+      "shortname": "compile-Goal: design the formal grader (spec S-08g) with the /design-slice skill…",
+      "datetime": "2026-09-29T22:53:27Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: design the formal grader (spec S-08g) with the /design-slice skill, so a later /implement slice can build src/harness_bench/grade/formal.py and tasks G1 (TLA+) and G2 (Lean 4) can be authored; the design is the deliverable, not code. Measured (Leader, 2026-09-29, main f31ce5b): docs/specs/README.md lists S-08g (formal grader: checks, statement integrity, trace conformance, bug-seeded variants, bug confirmation; /design-slice then /implement; depends on S-12; file grade/formal.py) and T-G1/T-G2 depending on it; docs/specs/harness-bench.md holds US-32 (formal artifacts graded as four separate scores, so a complete proof of the wrong model is not a pass), the scenario-7 validate rule (~:271: a ready scenario-7 task pins toolchain versions, records the statement hash, and has at least one seeded bug with a reproducing test) and the report flow (~:851: four formal scores side by side plus the first counterexample or failing trace step); src/harness_bench/grade/formal.py is a stub that raises NotImplementedError and is not registered in grade/runner.py GRADERS; docs/notes/spike-s12-formal-toolchains.md (S-12, closed) proves TLC (tla2tools v1.7.4, Temurin JDK 21) and Lean 4 (elan, lean4 v4.34.1, no Mathlib) run natively on Windows in a worktree, with two gaps: tla2tools.jar is downloaded into the working copy by tools/check_models.py (not warmed before the clock) and macOS is unverified; the proposal's G1 and G2 rows and design rules (docs/proposals/cross-harness-benchmarking-proposal.md) require hashed given statements (editing one voids the proof score), pinned toolchains warmed before the clock, and every reported bug confirmed by a failing test on the real code; tasks/G1/task.yaml and tasks/G2/task.yaml are stubs whose formal: blocks name the fields.\nDone when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining: the four scores of US-32 (their names, grain, additivity, NA reasons and exact computation for TLA+ and for Lean 4), statement integrity (the hash check and what an edit does), trace conformance, how bug-seeded variants are run and scored, how a reported bug is confirmed by a failing test, the toolchain invocation (direct, forward-slash paths, never cmd.exe; the warm-before-clock contract and where caches live, closing S-12's tla2tools gap by design), the report surfaces (the four scores and the first counterexample or failing trace step), the ledger facts or scores rows it writes, its error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (its persona reviews, including the Test Architect), with each verdict recorded in the doc; any decision the design cannot settle is written as a decision request with a recommended default for the Owner seat; the doc is committed; uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes.\nNot in scope: implementing formal.py; authoring G1 or G2; changing any code; any file under runs/; any push.\nTier: T2\nFan-out cap: 3\nContext ceiling: 180k tokens\nMain-line budget: one slice of at most 75 minutes.\nGrounding: .claude/skills/design-slice/SKILL.md; docs/specs/README.md (S-08g, S-12, T-G1, T-G2); docs/specs/harness-bench.md (US-32, the scenario-7 rules, the report flow); docs/notes/spike-s12-formal-toolchains.md; docs/notes/proposal-grounding-findings.md F9; the proposal's G rows and design rules; src/harness_bench/grade/{formal,runner,correctness}.py; docs/design/phase3-graders.md (the existing graders' design shape); tasks/G1/task.yaml, tasks/G2/task.yaml; tools/check_models.py. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-formal (use absolute paths or cd into it in each shell command).\nTrace\n| clause | trace |\n|---|---|\n| done_when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining: the four scores of US-32 (their names, grain, additivity, NA reasons and exact computation for TLA+ and for Lean 4), statement integrity (the hash check and what an edit does), trace conformance, how bug-seeded variants are run and scored, how a reported bug is confirmed by a failing test, the toolchain invocation (direct, forward-slash paths, never cmd.exe | phrase: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining: the four scores of US-32 (their names, grain, additivity, NA reasons and exact computation for TLA+ and for Lean 4), statement integrity (the hash check and what an edit does), trace conformance, how bug-seeded variants are run and scored, how a reported bug is confirmed by a failing test, the toolchain invocation (direct, forward-slash paths, never cmd.exe |\n| done_when: the warm-before-clock contract and where caches live, closing S-12's tla2tools gap by design), the report surfaces (the four scores and the first counterexample or failing trace step), the ledger facts or scores rows it writes, its error codes, and a red-first test plan with named mutants | phrase: the warm-before-clock contract and where caches live, closing S-12's tla2tools gap by design), the report surfaces (the four scores and the first counterexample or failing trace step), the ledger facts or scores rows it writes, its error codes, and a red-first test plan with named mutants |\n| done_when: the design passes the gates /design-slice requires (its persona reviews, including the Test Architect), with each verdict recorded in the doc | phrase: the design passes the gates /design-slice requires (its persona reviews, including the Test Architect), with each verdict recorded in the doc |\n| done_when: any decision the design cannot settle is written as a decision request with a recommended default for the Owner seat | phrase: any decision the design cannot settle is written as a decision request with a recommended default for the Owner seat |\n| done_when: the doc is committed | phrase: the doc is committed |\n| done_when: uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes. | phrase: uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes. |\n| not_in_scope: implementing formal.py | phrase: implementing formal.py |\n| not_in_scope: authoring G1 or G2 | phrase: authoring G1 or G2 |\n| not_in_scope: changing any code | phrase: changing any code |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- /design-slice: unresolved (outside repo)\n- /implement: unresolved (outside repo)\n- src/harness_bench/grade/formal.py: src/harness_bench/grade/formal.py sha256 8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7\n- docs/specs/README.md: docs/specs/README.md sha256 b65007497b4bc047e0bd76b590acbf1fb40ac4fd7ed46805de21d675cfe2c40d\n- grade/formal.py: src/harness_bench/grade/formal.py sha256 8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7\n- T-G1/T-G2: unresolved (not found)\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 9d009f9d990506096fc9b3358ad05b5c2b70c8f8804b52fdb96958ba2d35e321\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 07a23ac32eff003eac0a1b19b9b1f376b42383693581a008ff22e8578b35efcb\n- docs/notes/spike-s12-formal-toolchains.md: docs/notes/spike-s12-formal-toolchains.md sha256 df8d513d62ec351e5a02eff71d55416089cba5b8bdf5132f1f28f97c6071b32c\n- tools/check_models.py: tools/check_models.py sha256 4cfd675c95ac4cb4b73415977909479a1507c78a433ef5aed5878f1fb8d150b3\n- docs/proposals/cross-harness-benchmarking-proposal.md: docs/proposals/cross-harness-benchmarking-proposal.md sha256 599e881c212a84daecdb3fe4fcce0f251a6f89faee2040584fd621926e706112\n- tasks/G1/task.yaml: tasks/G1/task.yaml sha256 6e4fc7b64e12980861c5f892b7fdbe9779c165c2e012d3b5254caf70913f21eb\n- tasks/G2/task.yaml: tasks/G2/task.yaml sha256 aad11fceb17d6e72e3d218527d7337e506b0bab7803f6f03cc8e34f775d88506\n- docs/design/: unresolved (not found)\n- docs/ai-forward-pack/scripts/docs-graph.py: unresolved (ambiguous: 142 matches)\n- formal.py: src/harness_bench/grade/formal.py sha256 8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7\n- runs/: unresolved (not found)\n- .claude/skills/design-slice/SKILL.md: unresolved (not found)\n- docs/notes/proposal-grounding-findings.md: docs/notes/proposal-grounding-findings.md sha256 6e60fa814c6eae61a7b55760e8315c186138ee62e0783571b412994046748e4e\n- src/harness_bench/grade/{formal,runner,correctness}.py: unresolved (not found)\n- docs/design/phase3-graders.md: docs/design/phase3-graders.md sha256 fa7a0f6fd7e21269edee76a1b41bd420fea03f84e13adde5f44a7ddb3e752a3b\n- C:/Projects/x-harness-x-model-bench-w5-formal: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3QNYSPYD2VZJY8BA0PZCBXD\nraw sha256: 052759d7d5ad240fb2e79832f05d8df1be78f5fdeea88ec5589506d7dea1b05e\ncompiler model: claude-opus-5-5\nengine seconds: 0.009\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3QNYSPYD2VZJY8BA0PZCBXD for claude-code v1: 11 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "/design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining: the four scores of US-32 (their names, grain, additivity, NA reasons and exact computation for TLA+ and for Lean 4), statement integrity (the hash check and what an edit does), trace conformance, how bug-seeded variants are run and scored, how a reported bug is confirmed by a failing test, the toolchain invocation (direct, forward-slash paths, never cmd.exe",
+            "trace": {
+              "kind": "phrase",
+              "ref": "/design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining: the four scores of US-32 (their names, grain, additivity, NA reasons and exact computation for TLA+ and for Lean 4), statement integrity (the hash check and what an edit does), trace conformance, how bug-seeded variants are run and scored, how a reported bug is confirmed by a failing test, the toolchain invocation (direct, forward-slash paths, never cmd.exe"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the warm-before-clock contract and where caches live, closing S-12's tla2tools gap by design), the report surfaces (the four scores and the first counterexample or failing trace step), the ledger facts or scores rows it writes, its error codes, and a red-first test plan with named mutants",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the warm-before-clock contract and where caches live, closing S-12's tla2tools gap by design), the report surfaces (the four scores and the first counterexample or failing trace step), the ledger facts or scores rows it writes, its error codes, and a red-first test plan with named mutants"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the design passes the gates /design-slice requires (its persona reviews, including the Test Architect), with each verdict recorded in the doc",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the design passes the gates /design-slice requires (its persona reviews, including the Test Architect), with each verdict recorded in the doc"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "any decision the design cannot settle is written as a decision request with a recommended default for the Owner seat",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any decision the design cannot settle is written as a decision request with a recommended default for the Owner seat"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the doc is committed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the doc is committed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "implementing formal.py",
+            "trace": {
+              "kind": "phrase",
+              "ref": "implementing formal.py"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "authoring G1 or G2",
+            "trace": {
+              "kind": "phrase",
+              "ref": "authoring G1 or G2"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "changing any code",
+            "trace": {
+              "kind": "phrase",
+              "ref": "changing any code"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "180k tokens",
+          "done_when": [
+            "/design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining: the four scores of US-32 (their names, grain, additivity, NA reasons and exact computation for TLA+ and for Lean 4), statement integrity (the hash check and what an edit does), trace conformance, how bug-seeded variants are run and scored, how a reported bug is confirmed by a failing test, the toolchain invocation (direct, forward-slash paths, never cmd.exe",
+            "the warm-before-clock contract and where caches live, closing S-12's tla2tools gap by design), the report surfaces (the four scores and the first counterexample or failing trace step), the ledger facts or scores rows it writes, its error codes, and a red-first test plan with named mutants",
+            "the design passes the gates /design-slice requires (its persona reviews, including the Test Architect), with each verdict recorded in the doc",
+            "any decision the design cannot settle is written as a decision request with a recommended default for the Owner seat",
+            "the doc is committed",
+            "uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes."
+          ],
+          "fan_out_cap": 3,
+          "goal": "design the formal grader (spec S-08g) with the /design-slice skill, so a later /implement slice can build src/harness_bench/grade/formal.py and tasks G1 (TLA+) and G2 (Lean 4) can be authored; the design is the deliverable, not code. Measured (Leader, 2026-09-29, main f31ce5b): docs/specs/README.md lists S-08g (formal grader: checks, statement integrity, trace conformance, bug-seeded variants, bug confirmation; /design-slice then /implement; depends on S-12; file grade/formal.py) and T-G1/T-G2 depending on it; docs/specs/harness-bench.md holds US-32 (formal artifacts graded as four separate scores, so a complete proof of the wrong model is not a pass), the scenario-7 validate rule (~:271: a ready scenario-7 task pins toolchain versions, records the statement hash, and has at least one seeded bug with a reproducing test) and the report flow (~:851: four formal scores side by side plus the first counterexample or failing trace step); src/harness_bench/grade/formal.py is a stub that raises NotImplementedError and is not registered in grade/runner.py GRADERS; docs/notes/spike-s12-formal-toolchains.md (S-12, closed) proves TLC (tla2tools v1.7.4, Temurin JDK 21) and Lean 4 (elan, lean4 v4.34.1, no Mathlib) run natively on Windows in a worktree, with two gaps: tla2tools.jar is downloaded into the working copy by tools/check_models.py (not warmed before the clock) and macOS is unverified; the proposal's G1 and G2 rows and design rules (docs/proposals/cross-harness-benchmarking-proposal.md) require hashed given statements (editing one voids the proof score), pinned toolchains warmed before the clock, and every reported bug confirmed by a failing test on the real code; tasks/G1/task.yaml and tasks/G2/task.yaml are stubs whose formal: blocks name the fields.",
+          "main_line_budget": "one slice of at most 75 minutes.\nGrounding: .claude/skills/design-slice/SKILL.md; docs/specs/README.md (S-08g, S-12, T-G1, T-G2); docs/specs/harness-bench.md (US-32, the scenario-7 rules, the report flow); docs/notes/spike-s12-formal-toolchains.md; docs/notes/proposal-grounding-findings.md F9; the proposal's G rows and design rules; src/harness_bench/grade/{formal,runner,correctness}.py; docs/design/phase3-graders.md (the existing graders' design shape); tasks/G1/task.yaml, tasks/G2/task.yaml; tools/check_models.py. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-formal (use absolute paths or cd into it in each shell command).",
+          "not_in_scope": [
+            "implementing formal.py",
+            "authoring G1 or G2",
+            "changing any code",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.009,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3QNYSPYD2VZJY8BA0PZCBXD",
+        "raw_sha256": "052759d7d5ad240fb2e79832f05d8df1be78f5fdeea88ec5589506d7dea1b05e",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/design-slice"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/implement"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/formal.py",
+            "reason": null,
+            "sha256": "8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/formal.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/specs/README.md",
+            "reason": null,
+            "sha256": "b65007497b4bc047e0bd76b590acbf1fb40ac4fd7ed46805de21d675cfe2c40d",
+            "status": "resolved",
+            "token": "docs/specs/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/formal.py",
+            "reason": null,
+            "sha256": "8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7",
+            "status": "resolved",
+            "token": "grade/formal.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "T-G1/T-G2"
+          },
+          {
+            "nearest": null,
+            "path": "docs/specs/harness-bench.md",
+            "reason": null,
+            "sha256": "9d009f9d990506096fc9b3358ad05b5c2b70c8f8804b52fdb96958ba2d35e321",
+            "status": "resolved",
+            "token": "docs/specs/harness-bench.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "07a23ac32eff003eac0a1b19b9b1f376b42383693581a008ff22e8578b35efcb",
+            "status": "resolved",
+            "token": "grade/runner.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/spike-s12-formal-toolchains.md",
+            "reason": null,
+            "sha256": "df8d513d62ec351e5a02eff71d55416089cba5b8bdf5132f1f28f97c6071b32c",
+            "status": "resolved",
+            "token": "docs/notes/spike-s12-formal-toolchains.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/check_models.py",
+            "reason": null,
+            "sha256": "4cfd675c95ac4cb4b73415977909479a1507c78a433ef5aed5878f1fb8d150b3",
+            "status": "resolved",
+            "token": "tools/check_models.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/proposals/cross-harness-benchmarking-proposal.md",
+            "reason": null,
+            "sha256": "599e881c212a84daecdb3fe4fcce0f251a6f89faee2040584fd621926e706112",
+            "status": "resolved",
+            "token": "docs/proposals/cross-harness-benchmarking-proposal.md"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/G1/task.yaml",
+            "reason": null,
+            "sha256": "6e4fc7b64e12980861c5f892b7fdbe9779c165c2e012d3b5254caf70913f21eb",
+            "status": "resolved",
+            "token": "tasks/G1/task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/G2/task.yaml",
+            "reason": null,
+            "sha256": "aad11fceb17d6e72e3d218527d7337e506b0bab7803f6f03cc8e34f775d88506",
+            "status": "resolved",
+            "token": "tasks/G2/task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/design/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 142 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/formal.py",
+            "reason": null,
+            "sha256": "8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7",
+            "status": "resolved",
+            "token": "formal.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".claude/skills/design-slice/SKILL.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/proposal-grounding-findings.md",
+            "reason": null,
+            "sha256": "6e60fa814c6eae61a7b55760e8315c186138ee62e0783571b412994046748e4e",
+            "status": "resolved",
+            "token": "docs/notes/proposal-grounding-findings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/grade/{formal,runner,correctness}.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/phase3-graders.md",
+            "reason": null,
+            "sha256": "fa7a0f6fd7e21269edee76a1b41bd420fea03f84e13adde5f44a7ddb3e752a3b",
+            "status": "resolved",
+            "token": "docs/design/phase3-graders.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/x-harness-x-model-bench-w5-formal"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
     }
   ],
   "changes": [
