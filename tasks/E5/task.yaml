@@ -2,13 +2,25 @@ schema: bench-task/1
 id: E5
 scenario: 5
 title: "SWE-bench Verified task, 15-60 min band"
-status: stub
+status: draft   # prompt and source pin land first; oracle/tests land in the next commit (new-bench-task stages 1-2 vs 3-6)
 language: python
 source:
   kind: public
-  upstream: "SWE-bench Verified"
-  repo: "harbor:swe-bench-verified"
-  commit: "tbd"
+  upstream: "SWE-bench Verified pylint-dev__pylint-4604"
+  repo: "https://github.com/pylint-dev/pylint.git"
+  commit: "1e55ae64624d28c5fe8b63ad7979880ee2e6ef3f"
+  workspace_from: source   # the engine's own task_source() builds the base tree from repo@commit (never vendored)
+  license: "GPL-2.0-or-later"
+  copyright: "Copyright (c) https://github.com/PyCQA/pylint (Python Code Quality Authority)."
+  dataset:
+    name: "princeton-nlp/SWE-bench_Verified"
+    revision: "c104f840cc67f8b6eec6f759ebc8b2693d585d4a"   # HF dataset commit sha, confirmed current via GET .../api/datasets/princeton-nlp/SWE-bench_Verified at authoring 2026-09-29 (same revision E4 pinned)
+    instance_id: "pylint-dev__pylint-4604"
+    difficulty: "15 min - 1 hour"   # the dataset's own band label; matches this row's title
+  environment:
+    tool: uv
+    python: "3.9"
+    dependencies: ["astroid==2.6.5"]   # pinned exactly as pylint's own requirements_test_min.txt pins it; pylint's own install_requires (isort, mccabe, toml, colorama on win32) resolve via --with-editable .
 budget:
   minutes: 60
   usd_cap: null
@@ -16,10 +28,48 @@ blast_radius:
   - "**"
 model_map: null
 scripted_user: false
+formal: null
 graders:
   - correctness
   - drift
   - cost
   - process
 oracle:
-  summary: "Fail-to-pass tests."
+  summary: "SWE-bench Verified's own FAIL_TO_PASS (21) tests for pylint-dev__pylint-4604, all in tests/checkers/unittest_variables.py (PASS_TO_PASS is empty for this instance), run via pytest under an ephemeral uv environment, graded from a named JUnit XML report (--junitxml). The base fails as one collection-time ImportError (the hidden test file imports a constant the base source does not yet define), which parse_pytest reads as 0 of 1 passed; the reference collects and passes all 21 (oracle/README.md)."
+  runner: pytest          # the report format correctness.py's parse_pytest reads
+  command:
+    - uv
+    - run
+    - --python
+    - "3.9"
+    - --with-editable
+    - .
+    - --with
+    - astroid==2.6.5
+    - --with
+    - pytest
+    - python
+    - -m
+    - pytest
+    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_bitbucket_issue_78
+    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_no_name_in_module_skipped
+    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_all_elements_without_parent
+    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_redefined_builtin_ignored
+    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_redefined_builtin_custom_modules
+    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_redefined_builtin_modname_not_ignored
+    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_redefined_builtin_in_function
+    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_unassigned_global
+    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_listcomp_in_decorator
+    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_listcomp_in_ancestors
+    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_return_type_annotation
+    - tests/checkers/unittest_variables.py::TestVariablesChecker::test_attribute_in_type_comment
+    - tests/checkers/unittest_variables.py::TestVariablesCheckerWithTearDown::test_custom_callback_string
+    - tests/checkers/unittest_variables.py::TestVariablesCheckerWithTearDown::test_redefined_builtin_modname_not_ignored
+    - tests/checkers/unittest_variables.py::TestVariablesCheckerWithTearDown::test_redefined_builtin_in_function
+    - tests/checkers/unittest_variables.py::TestVariablesCheckerWithTearDown::test_import_as_underscore
+    - tests/checkers/unittest_variables.py::TestVariablesCheckerWithTearDown::test_lambda_in_classdef
+    - tests/checkers/unittest_variables.py::TestVariablesCheckerWithTearDown::test_nested_lambda
+    - tests/checkers/unittest_variables.py::TestVariablesCheckerWithTearDown::test_ignored_argument_names_no_message
+    - tests/checkers/unittest_variables.py::TestVariablesCheckerWithTearDown::test_ignored_argument_names_starred_args
+    - tests/checkers/unittest_variables.py::TestMissingSubmodule::test_package_all
+    - --junitxml=report.xml
