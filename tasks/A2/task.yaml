@@ -2,7 +2,7 @@ schema: bench-task/1
 id: A2
 scenario: 1
 title: "Missing-premise ambiguity"
-status: stub
+status: draft
 language: python
 source:
   kind: public
