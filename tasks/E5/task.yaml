@@ -2,7 +2,7 @@ schema: bench-task/1
 id: E5
 scenario: 5
 title: "SWE-bench Verified task, 15-60 min band"
-status: draft   # prompt and source pin land first; oracle/tests land in the next commit (new-bench-task stages 1-2 vs 3-6)
+status: ready   # oracle discriminates (oracle/evidence.md): the FAIL_TO_PASS test fails on the base, PASS_TO_PASS passes on the base, both pass on the reference
 language: python
 source:
   kind: public

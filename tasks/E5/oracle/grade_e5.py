@@ -1,7 +1,7 @@
 """Run correctness.grade on the base workspace and the reference solution for task E5.
 
 E5's task.yaml sets `source.workspace_from: source`, so its base tree is the one the engine's own
-`workspace.task_source()` builds -- the pinned pylint-dev/pylint clone at `source.commit` (cached,
+`workspace.task_source()` builds -- the pinned sympy/sympy clone at `source.commit` (cached,
 verified, fetched via `git archive`), with `tasks/E5/workspace/` overlaid -- and each working copy
 is `workspace.cell_working_copy()`'s own `git clone --local`, exactly as a real cell gets it. This
 proves the oracle against the tree the engine actually builds, not a working copy this script
