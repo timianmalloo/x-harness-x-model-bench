@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!--
+      A HELPER, not a test project. It ships the self-test flag N4 owes (DC-104), the live
+      round-trip against the pinned adapter, and a child that deliberately never exits so the
+      process-reaping case has something real to reap. It has no test framework and produces no
+      .trx, so verify-test-run.py must not expect one - an unexplained "NO RESULTS" row trains
+      people to ignore the gate, which is worse than the silence it exists to prevent.
+    -->
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AiDe.Core\AiDe.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Linked, not copied: the pushable reader and the recording writer are the only way to drive the
+      peer without a child process, and the self-test and the unit tests need the same two. A second
+      copy is the shape that lets one of them go on testing a framing rule the other has changed.
+    -->
+    <Compile Include="..\AiDe.Core.Tests\AgentPlane\AcpTestDoubles.cs" Link="AcpTestDoubles.cs" />
+  </ItemGroup>
+
+</Project>
