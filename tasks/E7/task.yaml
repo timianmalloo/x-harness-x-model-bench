@@ -2,13 +2,18 @@ schema: bench-task/1
 id: E7
 scenario: 5
 title: "P1 estimator slice"
-status: stub
+status: ready   # oracle discriminates (oracle/evidence.md): 0/23 on the base stub, 23/23 on the reference, 6/6 mutants killed
 language: csharp
 source:
   kind: authored
-  upstream: "cfd-bench P1 estimator"
+  upstream: "cfd-bench P1 estimator (docs/knowledge/cfd-hydrofoil-simulation/estimation-methods.md, data-and-constants.md)"
   repo: "https://github.com/timianmalloo/cfd-bench"
-  commit: "tbd"
+  commit: "496a0a8ca2fae9026927167a8f3e5da0a53f2233"
+  license: "none (the operator's own repository; same pin and same decision as F1, 2026-09-25)"
+  # Same pin as F1 (the pattern task for this repo): `git ls-remote` on 2026-09-29 returned this commit
+  # as HEAD, so it is also the newest commit -- no newer commit is required or possible. The repo carries
+  # no src/ at this commit (P1 is pre-code per the phasing plan), so nothing is vendored into workspace/;
+  # the pin identifies the two knowledge docs the formulas are sourced from (oracle/README.md).
 budget:
   minutes: 45
   usd_cap: null
@@ -25,4 +30,16 @@ graders:
   - cost
   - process
 oracle:
-  summary: "Our reference implementation of the named formulas + property tests (monotonic in alpha, dimensional consistency, limiting cases) + mutation suite. DTIC validation out of scope."
+  summary: "Hidden xUnit tests (4 exact-value regressions against estimation-methods.md's own worked table, Helmbold/ITTC limiting-case and published-value checks, two monotonicity properties, 13 argument-validation cases) for the P1 closed-form estimator chain. DTIC validation out of scope."
+  runner: dotnet
+  command:
+    - dotnet
+    - test
+    - E7.HiddenTests/E7.HiddenTests.csproj
+    - -p:RestoreSources=.
+    - -p:NuGetAudit=false
+    - --logger
+    - "trx;LogFileName=e7-hidden.trx"
+    - --results-directory
+    - TestResults
+    - "-v:q"
