@@ -1,0 +1,16 @@
+[
+  {
+    "name": "the workspace_from: source opt-in branch is skipped",
+    "file": "src/harness_bench/workspace.py",
+    "find": "        if source.get(\"workspace_from\") == \"source\":\n",
+    "replace": "        if False:\n",
+    "tests": ["tests/test_workspace.py::test_task_source_from_upstream_builds_the_pinned_tree_plus_the_overlay"]
+  },
+  {
+    "name": "the upstream commit verification is skipped",
+    "file": "src/harness_bench/workspace.py",
+    "find": "    if result.stdout.strip() != commit:\n",
+    "replace": "    if False:\n",
+    "tests": ["tests/test_workspace.py::test_task_source_from_upstream_refuses_a_commit_that_is_not_exact"]
+  }
+]

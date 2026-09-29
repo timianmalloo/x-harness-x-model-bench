@@ -32,6 +32,7 @@ A matrix run refuses any task that is not `ready`.
 - A-tasks: the scripted user answers only questions that match an annotated clarification in `oracle/clarifications.yaml`. Everything else gets "decide and state your assumption".
 - cfd-bench slices need no UI, no OpenFOAM and no STEP export: pure domain code with numeric oracles.
 - A task is a tree, not a repository: a task whose mechanic depends on git history, reflog or dangling objects is not selectable (R-83). First instance: Terminal-Bench 2.0's `fix-git`, which recovers a commit reachable only through `.git/logs/HEAD`.
+- A large public task can pin its base tree to an upstream commit instead of vendoring it: `task.yaml`'s `source.workspace_from: source` (default `workspace`) has `workspace.task_source()` build the base tree as `source.repo`@`source.commit` (a cached, verified clone, extracted with `git archive`) with `tasks/<ID>/workspace/` overlaid on top, still one base commit and no upstream history in the cell (R-83). First instance: E4 (SWE-bench Verified, Django).
 - Public tasks keep their upstream graders; ours add on top.
 - Scenario 7 (G-tasks): pinned formal toolchain, given statements hashed, at least one bug-seeded variant the reference model or proof rejects, and a reproducing test per seeded bug. A reported bug counts only when a failing test reproduces it.
 - Authored tasks are private and versioned. Contamination-prone public tasks (E1-E3) are excluded from the pack-effect analysis.
