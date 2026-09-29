@@ -2,13 +2,24 @@ schema: bench-task/1
 id: E4
 scenario: 5
 title: "SWE-bench Verified task, 15-60 min band"
-status: stub
+status: ready   # oracle discriminates (oracle/evidence.md): FAIL_TO_PASS fails on the base, 7/7 pass on the reference
 language: python
 source:
   kind: public
-  upstream: "SWE-bench Verified"
-  repo: "harbor:swe-bench-verified"
-  commit: "tbd"
+  upstream: "SWE-bench Verified django__django-12155"
+  repo: "https://github.com/django/django.git"
+  commit: "e8fcdaad5c428878d0a5d6ba820d957013f75595"
+  license: "BSD-3-Clause"
+  copyright: "Copyright (c) Django Software Foundation and individual contributors."
+  dataset:
+    name: "princeton-nlp/SWE-bench_Verified"
+    revision: "c104f840cc67f8b6eec6f759ebc8b2693d585d4a"   # HF dataset commit sha (git ls-remote equivalent), pinned at authoring 2026-09-29
+    instance_id: "django__django-12155"
+    difficulty: "15 min - 1 hour"   # the dataset's own band label; matches this row's title
+  environment:
+    tool: uv
+    python: "3.8"
+    dependencies: ["docutils"]   # Django's own install_requires (asgiref, pytz, sqlparse) resolve from its setup.cfg via --with-editable
 budget:
   minutes: 60
   usd_cap: null
@@ -16,10 +27,31 @@ blast_radius:
   - "**"
 model_map: null
 scripted_user: false
+formal: null
 graders:
   - correctness
   - drift
   - cost
   - process
 oracle:
-  summary: "Fail-to-pass tests."
+  summary: "SWE-bench Verified's own FAIL_TO_PASS (1) and PASS_TO_PASS (6) tests for django__django-12155, all in tests/admin_docs/test_utils.py::TestUtils, run via Django's own test runner (tests/runtests.py, built on unittest.TextTestRunner) under an ephemeral uv environment."
+  runner: unittest          # the summary format correctness.py parses (Django's runner is unittest.TextTestRunner under the hood)
+  command:
+    - uv
+    - run
+    - --python
+    - "3.8"
+    - --with-editable
+    - .
+    - --with
+    - docutils
+    - python
+    - tests/runtests.py
+    - -v2
+    - admin_docs.test_utils.TestUtils.test_description_output
+    - admin_docs.test_utils.TestUtils.test_initial_header_level
+    - admin_docs.test_utils.TestUtils.test_parse_docstring
+    - admin_docs.test_utils.TestUtils.test_parse_rst
+    - admin_docs.test_utils.TestUtils.test_publish_parts
+    - admin_docs.test_utils.TestUtils.test_title_output
+    - admin_docs.test_utils.TestUtils.test_parse_rst_with_docstring_no_leading_line_feed
