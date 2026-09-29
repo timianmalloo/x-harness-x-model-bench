@@ -1,25 +1,33 @@
 schema: bench-task/1
 id: C2
 scenario: 3
-title: "Requirement-to-architecture task"
-status: stub
-language: other
+title: "ai-de requirement-to-architecture (from B2's spec)"
+status: ready   # oracle discriminates (oracle/evidence.md): fail on base, pass on reference, 2/2 controls each fail exactly their own check
+language: csharp
 source:
-  kind: public
-  upstream: "ArchBench (requirement-to-architecture)"
-  repo: "tbd"
-  commit: "tbd"
+  kind: authored
+  upstream: "ai-de docs/architecture.md - the Freshness Prober capability"
+  repo: "https://github.com/timianmalloo/ai-de"
+  commit: "88e0c33f0b7c419b1e64d87686987374285292d8"  # same pin as B2/D1/D2 (ai-de); R-82 condition 2: ai-de's MIT lines from B2 verbatim
+  license: MIT
+  copyright: "Copyright (c) 2026 timianmalloo"
+  vendored_paths:
+    - LICENSE
+    - docs/specs/freshness-prober.md   # B2's reference spec, copied verbatim (R-82: "the given is the spec named above, verbatim")
 budget:
   minutes: 30
   usd_cap: null
 blast_radius:
-  - "**"
+  - "docs/architecture.md"
 model_map: null
 scripted_user: false
 graders:
+  - correctness
   - architecture
   - judge
   - cost
   - process
 oracle:
-  summary: "ArchBench hybrid grader (structural checks + judge)."
+  summary: "Local unittest structural + decided-content checks that docs/architecture.md carries the required sections (C1's set, plus a component list and one ADR-style decision with alternatives), plus a judge rubric citing R2ABench's L1/L2 layers by name only against a reference architecture note."
+  runner: unittest
+  command: ["{python}", "-m", "unittest", "-v", "test_c2_hidden"]
