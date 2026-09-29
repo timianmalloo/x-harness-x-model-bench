@@ -1,0 +1,200 @@
+# A2 held-out question set for the scripted-user matcher (R-39 condition 2; plan row 8, `:146`).
+# Authored by W2-TASKS-a, not by the matcher's author (W2-USER-M). USER-D measures the matcher's precision and
+# recall on it and sets the S-04 threshold from that measurement (R-39 condition 1). Do not tune the matcher on it:
+# a set the matcher was fitted to is no longer held out.
+#
+# Labelling rule. `expected` is the id of the clarification in clarifications.yaml whose `reply` answers what the
+# question asks: the same core ambiguity, in ClarifyCodeBench's judge wording (clarifycodebench/prompts.py
+# JUDGE_PROMPT: "address the same core ambiguity, even if they use different wording"). Anything else is
+# `default`, and its correct reply is exactly `default_reply`.
+#
+# kind:
+#   exact       the annotated question, verbatim
+#   normalised  the annotated question after one surface transform (`transform`); a normalising matcher should hit it
+#   paraphrase  a different wording of the same ambiguity; a deterministic matcher may miss it (a recall measurement)
+#   compound    asks the annotated ambiguity plus something else in one question
+#   near-miss   labelled default, but shares the key question's or the task's vocabulary; built to catch a
+#               matcher that over-matches on words. Its correct reply is exactly `Decide and state your assumption.`
+#   off-topic   labelled default; not about the requirement's content
+schema: bench-heldout-questions/1
+task: A2
+clarifications: clarifications.yaml
+default_reply: "Decide and state your assumption."
+questions:
+  # --- expected: premise-at-least-one-1 -----------------------------------------------------------------------------
+  - id: h01
+    kind: exact
+    expected: premise-at-least-one-1
+    question: "Can the string S consist entirely of 0s, or is there always at least one 1?"
+  - id: h02
+    kind: normalised
+    transform: unicode (full-width S)
+    expected: premise-at-least-one-1
+    question: "Can the string Ｓ consist entirely of 0s, or is there always at least one 1?"
+  - id: h03
+    kind: normalised
+    transform: case (lower)
+    expected: premise-at-least-one-1
+    question: "can the string s consist entirely of 0s, or is there always at least one 1?"
+  - id: h04
+    kind: normalised
+    transform: whitespace (leading, trailing, doubled)
+    expected: premise-at-least-one-1
+    question: "  Can the string S  consist entirely of 0s, or is there always at least one 1?  "
+  - id: h05
+    kind: normalised
+    transform: punctuation (final question mark dropped)
+    expected: premise-at-least-one-1
+    question: "Can the string S consist entirely of 0s, or is there always at least one 1"
+  - id: h06
+    kind: normalised
+    transform: unicode + case + punctuation
+    expected: premise-at-least-one-1
+    question: "can the string ｓ consist entirely of 0s, or is there always at least one 1"
+  - id: h07
+    kind: paraphrase
+    expected: premise-at-least-one-1
+    question: "Is it guaranteed that the string S contains at least one 1?"
+  - id: h08
+    kind: paraphrase
+    expected: premise-at-least-one-1
+    question: "Can S consist entirely of zeros?"
+  - id: h09
+    kind: paraphrase
+    expected: premise-at-least-one-1
+    question: "Is S guaranteed to have at least one 1, or can it be all 0s?"
+  - id: h10
+    kind: paraphrase
+    expected: premise-at-least-one-1
+    question: "What should happen if the string S contains no 1s at all?"
+  - id: h11
+    kind: paraphrase
+    expected: premise-at-least-one-1
+    question: "Does the string always contain at least one 1?"
+  - id: h12
+    kind: paraphrase
+    expected: premise-at-least-one-1
+    question: "Can the input string contain only 0s?"
+  - id: h13
+    kind: paraphrase
+    expected: premise-at-least-one-1
+    question: "Is an all-zero string possible as input?"
+  - id: h14
+    kind: paraphrase
+    expected: premise-at-least-one-1
+    question: "Will S ever be all zeros, or is at least one 1 guaranteed?"
+  - id: h15
+    kind: paraphrase
+    expected: premise-at-least-one-1
+    question: "Could S consist of only 0s with no 1s present?"
+  - id: h16
+    kind: paraphrase
+    expected: premise-at-least-one-1
+    question: "Are we guaranteed that there is at least one occurrence of the character 1 in S?"
+  - id: h17
+    kind: compound
+    expected: premise-at-least-one-1
+    note: "the premise part matches; the second part (length N) is already given in constraints"
+    question: "Is it guaranteed that S contains at least one 1, and what is the maximum length N?"
+  # --- expected: default, near-miss ---------------------------------------------------------------------------------
+  - id: n01
+    kind: near-miss
+    expected: default
+    note: "shares vocabulary; asks whether all 1s can occur, not whether all 0s are possible"
+    question: "Can the string S consist entirely of 1s?"
+  - id: n02
+    kind: near-miss
+    expected: default
+    note: "asks about 0s guarantee; not the deleted premise"
+    question: "Is S guaranteed to contain at least one 0?"
+  - id: n03
+    kind: near-miss
+    expected: default
+    note: "answered by the constraints (2 <= N <= 5*10^5)"
+    question: "What is the maximum possible value of N?"
+  - id: n04
+    kind: near-miss
+    expected: default
+    note: "answered by the prompt ('string of 0 and 1')"
+    question: "Can S contain characters other than 0 and 1?"
+  - id: n05
+    kind: near-miss
+    expected: default
+    note: "answered by the constraints (N is an integer >= 2)"
+    question: "Can N be an odd number?"
+  - id: n06
+    kind: near-miss
+    expected: default
+    note: "implementation limit, not annotated"
+    question: "Does the answer fit in a standard 64-bit integer?"
+  - id: n07
+    kind: near-miss
+    expected: default
+    note: "answered by the prompt (swapping adjacent characters i and i+1)"
+    question: "Can we swap non-adjacent characters in S?"
+  - id: n08
+    kind: near-miss
+    expected: default
+    note: "answered by the prompt ('possibly zero')"
+    question: "Is it allowed to perform zero operations if all 1s are already contiguous?"
+  - id: n09
+    kind: near-miss
+    expected: default
+    note: "asks output if already contiguous, which follows from minimum operations being 0"
+    question: "What should we output if all 1s are already contiguous?"
+  - id: n10
+    kind: near-miss
+    expected: default
+    note: "answered by the prompt (1 <= i <= N-1)"
+    question: "Can the swap index i be equal to N?"
+  - id: n11
+    kind: near-miss
+    expected: default
+    note: "definition clarifies any [l, r], not just prefix"
+    question: "Must all 1s be moved to the beginning of the string?"
+  - id: n12
+    kind: near-miss
+    expected: default
+    note: "operations are sequential"
+    question: "Can multiple swaps be performed simultaneously?"
+  - id: n13
+    kind: near-miss
+    expected: default
+    note: "contiguous anywhere"
+    question: "Does it matter where the contiguous block of 1s ends up?"
+  - id: n14
+    kind: near-miss
+    expected: default
+    note: "input format specifies N on line 1, S on line 2"
+    question: "Is the input given on two lines, with N on the first line and S on the second?"
+  - id: n15
+    kind: near-miss
+    expected: default
+    note: "N >= 2 in constraints"
+    question: "Can the string S be empty or have length 1?"
+  # --- expected: default, off-topic ---------------------------------------------------------------------------------
+  - id: o01
+    kind: off-topic
+    expected: default
+    question: "Which Python version will this run on?"
+  - id: o02
+    kind: off-topic
+    expected: default
+    question: "Can I use numpy?"
+  - id: o03
+    kind: off-topic
+    expected: default
+    question: "Should I also write unit tests?"
+  - id: o04
+    kind: off-topic
+    expected: default
+    question: "What is the time limit?"
+  - id: o05
+    kind: off-topic
+    expected: default
+    question: "Should the program read the input from a file instead of standard input?"
+  - id: o06
+    kind: off-topic
+    expected: default
+    note: "an example output would reveal problem details; the scripted user answers only annotated clarifications"
+    question: "Can you give me an example input and its expected output?"

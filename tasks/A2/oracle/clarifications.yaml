@@ -1,0 +1,20 @@
+# Annotated key clarifications for A2: the scripted user's only answerable questions (tasks/README.md, spec US-10).
+# A question that matches a clarification gets its `reply` verbatim; every other question gets `default_reply`.
+# Question and reply are ClarifyCodeBench's annotation, verbatim (task_109, qa_pairs[0]; MIT, see ../NOTICE.md).
+schema: bench-clarifications/1
+task: A2
+upstream:
+  benchmark: ClarifyCodeBench
+  repo: "https://github.com/fangz-cs/ClarifyCodeBench"
+  commit: "5e2d5b5ce6259daa034cebb69f65e5e4c6dec3e9"
+  file: "data/ClarifyCodeBench.jsonl"
+  task_id: task_109
+  question_id: abc393_d
+  keywords: [Edge Cases]
+default_reply: "Decide and state your assumption."
+clarifications:
+  - id: premise-at-least-one-1
+    type: Edge Cases            # upstream taxonomy (clarifycodebench/taxonomy.py): boundary or exceptional conditions
+    deleted_information: "the precondition/constraint: S contains at least one 1 (original: 'It is guaranteed that S contains at least one 1.', and under Constraints: '- S contains at least one 1.')"
+    question: "Can the string S consist entirely of 0s, or is there always at least one 1?"
+    reply: "It is guaranteed that S contains at least one 1."
