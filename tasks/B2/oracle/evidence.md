@@ -69,6 +69,14 @@ Exit code: **1**. Summary: `Ran 4 tests` / `FAILED (failures=1)`.
 
 Each content check fails on the one wrong answer that gets its fact wrong, and only that one — confirming the checks are independent and each is load-bearing, not a keyword any on-topic text would satisfy.
 
+## Budget and headroom
+
+Budget: 20 minutes (1200 s), same as B1's row for the same scenario (2 Primer → spec) and the same 20-minute `bom.yaml` entry.
+
+Hidden-test execution time (all four cases above): `Ran 4 tests in 0.001s` — under 0.1% of budget.
+
+The primer itself is short: one component-map table row plus one bullet (~90 words) in `docs/architecture.md`; the rest of that 1279-line file is read-only context, not something the agent must reproduce or transform. The reference spec is 110 lines, close to B1's 125-line reference for the same headings and the same scenario, which is already `ready` at the identical 20-minute budget. No new mechanism (no toolchain to install, no repo to build) sits between reading the primer and writing the spec, so this task's shape is at least as fast as B1's, not slower.
+
 ## Status
 
 `ready`. The skill checklist holds: source repo and commit are pinned (same ai-de commit as D1/D2), `prompt.md` is present, `workspace/` holds the primer context (`docs/architecture.md`, `LICENSE`), `tests/` and `oracle/` are non-empty, and the hidden tests fail on the base workspace and pass on the reference spec, with the two content checks each individually discriminating against a plausible wrong answer.

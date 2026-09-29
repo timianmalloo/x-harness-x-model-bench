@@ -28,3 +28,18 @@ This gets the "does not repair" fact right but compares against the daemon's own
 This gets the repository-vs-daemon fact right but has the prober repair the drift itself, which the primer never grants it.
 
 See `evidence.md` for the exact commands, working directories, and counts.
+
+## macOS (ADR-0013 Amendment 1)
+
+assume: this task runs natively on macOS unchanged. The workspace is one Markdown file
+(`docs/architecture.md`) plus `LICENSE`, no Windows-only path or tool; the oracle command is
+`["{python}", "-m", "unittest", "-v", "test_b2_hidden"]`, invoked directly with a forward-slash
+`pathlib.Path` and no shell wrapper — unlike D1/D3/E6/F1's `cmd.exe /c ...` shape — which
+`harness_bench.grade.correctness.grade` passes to `procs.run` unshelled on both platforms, exactly
+as B1's `["{python}", "-m", "unittest", "-v", "test_b1_hidden"]` already does. **Confirm:** run
+`python -m unittest -v test_b2_hidden` directly on a macOS host from a working copy carrying
+`tasks/B2/tests/test_b2_hidden.py` alongside a copy of `tasks/B2/workspace` (or the reference), and
+observe the same fail-4/pass-4 split recorded in `evidence.md`. **Breaks if false:** something in
+the regex content checks or the heading parser is not macOS-portable (neither uses an OS-specific
+API), which would be a defect specific to this task rather than the known `cmd.exe` gap ADR-0013
+Amendment 1 records for D1/D3/E6/F1. Not measured here (no macOS host in this worktree).
