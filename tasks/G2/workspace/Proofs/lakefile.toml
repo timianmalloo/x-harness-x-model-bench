@@ -1,0 +1,8 @@
+name = "Proofs"
+defaultTargets = ["Fold", "Statements"]
+
+[[lean_lib]]
+name = "Fold"
+
+[[lean_lib]]
+name = "Statements"
