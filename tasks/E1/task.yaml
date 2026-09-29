@@ -1,24 +1,52 @@
 schema: bench-task/1
 id: E1
 scenario: 5
-title: "TB2 software-engineering task, easy band"
-status: stub
-language: other
+title: "TB2 software-engineering task, medium band (easy-band shortfall, R-83): code-from-image"
+status: ready   # oracle discriminates on this host: pytest fails on the base tree, passes on the reference (oracle/evidence.md)
+language: python
 source:
   kind: public
-  upstream: "Terminal-Bench 2.0 via Harbor (easy band)"
-  repo: "harbor:terminal-bench@2.0"
-  commit: "tbd"
+  upstream: "Terminal-Bench 2.0 code-from-image"
+  repo: "https://github.com/harbor-framework/terminal-bench-2"
+  commit: "2fd12b88aafdd04a52c298e3940bcb189f9766d6"
+  license: "Apache-2.0"
+  # The repo's top-level LICENSE carries the unfilled Apache-2.0 boilerplate ("Copyright [yyyy] [name
+  # of copyright owner]"); no NOTICE file and no per-file copyright header exist in the repo (checked
+  # 2026-09-29). No copyright line is recorded (same class as B1's task.yaml: an absence is recorded,
+  # never guessed).
+  copyright: null
+  vendored_paths:
+    # Upstream-repo-relative path (R-42 c3: `git archive <commit> -- <paths>` rebuilds it). Vendored
+    # locally as the flattened workspace/code.png -- the task's own convention (upstream Dockerfile:
+    # `COPY code.png /app`) puts this file at the working-directory root, not nested under
+    # code-from-image/environment/; the nesting is TB2's own multi-task-repo layout, not part of the
+    # task's semantics. tests/test_e1_vendoring.py maps the one path explicitly (not the generic
+    # relative-name comparison D1's test uses, since the local name differs from the upstream name).
+    - code-from-image/environment/code.png
 budget:
-  minutes: 60
+  minutes: 60   # bom.yaml E1 row; task.toml [agent] timeout_sec = 1200.0 (20 min) is smaller, so the BOM budget stands (R-83 c4)
   usd_cap: null
 blast_radius:
   - "**"
 model_map: null
 scripted_user: false
+formal: null
 graders:
   - correctness
   - cost
   - process
 oracle:
-  summary: "Upstream TB2 tests."
+  summary: "Upstream TB2 test_outputs.py (2 pytest cases) verifying /app/output.txt (native-path edit: output.txt at the working-directory root) is the SHA256-derived hex digest documented in oracle/README.md, run via uv-managed pytest with a named JUnit XML report."
+  runner: pytest   # DR-W5-3 (R-83): the correctness grader's pytest support is a parallel slice, not yet merged (oracle/evidence.md)
+  command:
+    - uv
+    - run
+    - --no-project
+    - --python
+    - "3.13"
+    - --with
+    - pytest==8.4.1
+    - pytest
+    - test_outputs.py
+    - --junitxml=e1.xml
+    - -v
