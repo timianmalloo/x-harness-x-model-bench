@@ -90,8 +90,11 @@ def _land(tmp: Path, dest: Path, valid) -> Path:
     return dest
 
 
-def task_source(task_dir: Path, version: str, sources_root: Path) -> Path:
-    """The bench-owned repository of one task version's base tree (created once, then reused)."""
+def task_source(task_dir: Path, version: str, sources_root: Path, upstream_root: Path | None = None) -> Path:
+    """The bench-owned repository of one task version's base tree (created once, then reused).
+
+    `upstream_root` is accepted but not yet used: a task whose `task.yaml` sets
+    `source.workspace_from: source` still builds from `tasks/<ID>/workspace/` alone, unchanged."""
     dest = sources_root / task_dir.name / version[:16]
     if (dest / ".git").is_dir():
         return dest

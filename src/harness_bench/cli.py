@@ -136,10 +136,10 @@ def cmd_plan(args) -> int:
     return OK
 
 
-def _workspace_builder(root: Path, p: dict, sources_root: Path, pack_root: Path):
+def _workspace_builder(root: Path, p: dict, sources_root: Path, pack_root: Path, upstream_root: Path):
     def build(cell: dict, cell_dir: Path) -> dict:
         task_dir = root / "tasks" / cell["task"]
-        source = workspace.task_source(task_dir, cell["task_version"], sources_root)
+        source = workspace.task_source(task_dir, cell["task_version"], sources_root, upstream_root)
         ws = workspace.cell_working_copy(source, cell_dir / "ws")
         manifest: list[str] = []
         if cell["pack"] == "on":
@@ -166,7 +166,8 @@ def cmd_run(args) -> int:
     log_handler = engine.configure_logging(run_dir, p["trace_id"])
     try:
         cfg = engine.EngineConfig(run_dir=run_dir, cells_root=cells_root, launchers=launchers,
-                                  build_workspace=_workspace_builder(root, p, cells_root / ".sources", tools_dir.parent / "pack"),
+                                  build_workspace=_workspace_builder(root, p, cells_root / ".sources", tools_dir.parent / "pack",
+                                                                     tools_dir.parent / "upstream"),
                                   grade=lambda d: runner.run_pass(d, root, judge.IN_RUN).summary())  # no judge call
         summary = engine.Engine(p, cfg).run()
     finally:
