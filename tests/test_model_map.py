@@ -131,10 +131,17 @@ def test_the_f1_draft_map_is_refused_by_bench_validate(tmp_path):  # red first o
     assert [i for i in config.validate_repo(root) if i.startswith("tasks/F1")] == []
 
 
-def test_a_stub_map_is_a_placeholder_and_the_plan_still_refuses_it():  # the stub gate; item 5 closes the path
-    stub = config.load_yaml(ROOT / "tasks" / "F2" / "task.yaml")  # F1 went ready at its join (R-73 map)
-    assert stub["status"] == "stub" and set(stub["model_map"].values()) == {"tbd"}
-    assert [i for i in config.validate_repo(ROOT) if i.startswith("tasks/F2")] == []
+def test_a_stub_map_is_a_placeholder_and_the_plan_still_refuses_it(tmp_path):  # the stub gate; item 5 closes the path
+    # A self-made stub: the repo's own scenario-6 stubs (F1, then F2) each went ready at their joins.
+    root = tmp_path / "root"
+    shutil.copytree(ROOT / "bench", root / "bench")
+    shutil.copytree(ROOT / "src", root / "src", ignore=shutil.ignore_patterns("__pycache__"))  # grader modules
+    shutil.copytree(ROOT / "tasks", root / "tasks", ignore=shutil.ignore_patterns("workspace", "tests", "oracle"))
+    task = root / "tasks" / "F2" / "task.yaml"
+    stub = config.load_yaml(task)
+    stub.update(status="stub", model_map={k: "tbd" for k in stub["model_map"]})
+    task.write_text(yaml.safe_dump(stub, sort_keys=False), encoding="utf-8")
+    assert [i for i in config.validate_repo(root) if i.startswith("tasks/F2")] == []
 
 
 # --- item 5: bench plan refuses a map that cannot distinguish routing from no routing -------------------------------
