@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-29T17:10:38Z",
+  "generated": "2026-09-29T17:25:30Z",
   "audit": [
     {
       "actor": null,
@@ -53507,6 +53507,39 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3Q36ETEXQ1HEVND86JHYTZS",
+      "shortname": "new-bench-task-A3",
+      "datetime": "2026-09-29T17:25:30Z",
+      "session": "worker-agy-a3",
+      "prompt": "Goal state\nGoal: author benchmark task A3 (\"Ambiguous-term ambiguity\", scenario 1) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task A1 as the worked pattern.\nDone when: A3 picks one ClarifyCodeBench instance whose ambiguity type is an ambiguous term (a word or phrase with two readings that change the correct output, not a deleted objective as in A1 or a deleted premise as in A2), named by its exact upstream instance id, with the same repo commit pin as A1 and its hidden tests' upstream dataset, revision, file and sha256 pinned in task.yaml; prompt.md holds the upstream's ambiguous text unchanged (never fixed); workspace/ holds only what the agent may see, with only portable paths and tools so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1; prove it on Windows here and mark macOS with an assume:); tests/ holds the hidden cases with one unittest test each and the oracle command recorded as A1's is; oracle/clarifications.yaml annotates the one key clarification and the scripted user's answer, and oracle/heldout_questions.yaml labels a held-out question set for the matcher following A1's shape; oracle/README.md records the discrimination proof, the hidden tests failing on the base workspace and passing on a reference solution under oracle/reference/, with the exact commands and counts observed; NOTICE.md carries the upstream licences; status is ready and uv run bench validate prints ok; no file under tests/ or oracle/ is reachable from workspace/; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push.\nTier: T1\nFan-out cap: 0",
+      "summary": "A3, ready, ClarifyCodeBench task_254 (abc397_c), discrimination proof: base exit 1 (42 failed), ref exit 0 (42 passed), control exit 1 (29 failed)",
+      "kind": "command",
+      "skill": "new-bench-task",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled_from": "al-01M3Q2AGRVN54M3DPDBQQASWZ8",
+      "goal": "Goal: author benchmark task A3 (\"Ambiguous-term ambiguity\", scenario 1) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task A1 as the worked pattern.",
+      "done_when": "A3 picks one ClarifyCodeBench instance whose ambiguity type is an ambiguous term (a word or phrase with two readings that change the correct output, not a deleted objective as in A1 or a deleted premise as in A2), named by its exact upstream instance id, with the same repo commit pin as A1 and its hidden tests' upstream dataset, revision, file and sha256 pinned in task.yaml; prompt.md holds the upstream's ambiguous text unchanged (never fixed); workspace/ holds only what the agent may see, with only portable paths and tools so the task runs natively on both Windows and macOS (ADR-0013 Amendment 1; prove it on Windows here and mark macOS with an assume:); tests/ holds the hidden cases with one unittest test each and the oracle command recorded as A1's is; oracle/clarifications.yaml annotates the one key clarification and the scripted user's answer, and oracle/heldout_questions.yaml labels a held-out question set for the matcher following A1's shape; oracle/README.md records the discrimination proof, the hidden tests failing on the base workspace and passing on a reference solution under oracle/reference/, with the exact commands and counts observed; NOTICE.md carries the upstream licences; status is ready and uv run bench validate prints ok; no file under tests/ or oracle/ is reachable from workspace/; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-09-29T17:18:16Z",
+      "duration_seconds": 434.0,
+      "git": {
+        "sha": "277640a1e028899221b86f9f8dad6855e451b50d",
+        "short": "277640a1e",
+        "branch": "w5-a3",
+        "pushed": null
+      }
     }
   ],
   "changes": [
