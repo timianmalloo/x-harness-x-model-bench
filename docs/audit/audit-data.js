@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-29T19:21:18Z",
+  "generated": "2026-09-29T19:43:20Z",
   "audit": [
     {
       "actor": null,
@@ -61158,6 +61158,28 @@ window.AUDIT_DATA = {
       "summary": "E4 ready: django__django-12155 (SWE-bench Verified, dataset princeton-nlp/SWE-bench_Verified rev c104f840cc67f8b6eec6f759ebc8b2693d585d4a), repo django/django @ e8fcdaad5c428878d0a5d6ba820d957013f75595 pinned not vendored (workspace/README.md); oracle uv run --python 3.8 --with-editable . --with docutils python tests/runtests.py -v2 <7 labels>; 1 FAIL_TO_PASS + 6 PASS_TO_PASS discriminate 6/7 FAILED on base vs 7/7 OK on reference (oracle/grade_e4.py via harness_bench.grade.correctness.grade, oracle/evidence.md); bench validate ok.",
       "tags": [],
       "tool": null
+    },
+    {
+      "id": "al-01M3QB2VGDGCY73WBBWNW15N5H",
+      "shortname": "new-bench-task-E1",
+      "datetime": "2026-09-29T19:43:20Z",
+      "session": "worker-sonnet-tb-e1",
+      "prompt": "Author benchmark task E1 from stub to ready as the Terminal-Bench 2.0 task code-from-image (medium band, easy-band shortfall, R-83 shortfall rule 1), selected by the committed survey docs/notes/tb2-native-survey.md under ruling R-83, following the /new-bench-task skill and R-83's conditions 2 to 4.",
+      "summary": "E1 status ready: vendored TB2 code-from-image at 2fd12b88 (Apache-2.0, LICENSE copied, workspace/code.png byte-verified against git archive via tests/test_e1_vendoring.py, R-42 c3); instruction.md/test_outputs.py native-path edits recorded in README.md; task.yaml oracle.runner: pytest via uv (--no-project --python 3.13 --with pytest==8.4.1, --junitxml=e1.xml bare name), the correctness grader's pytest support not yet merged (disclosed in oracle/README.md and oracle/evidence.md, Not in scope); discrimination proof run directly on this host: 2 failed/0 passed on base, 0 failed/2 passed on reference (oracle/evidence.md); uv run bench validate prints ok; task.toml agent timeout 1200s recorded beside the 60-min BOM budget.",
+      "kind": "command",
+      "skill": "new-bench-task",
+      "tool": null,
+      "actor": "Claude Sonnet 5 worker",
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "tier": "T1",
+      "git": {
+        "sha": "72a700559c570fc39b12d236347d84e74022df1e",
+        "short": "72a700559",
+        "branch": "w5-e1",
+        "pushed": null
+      }
     }
   ],
   "changes": [
