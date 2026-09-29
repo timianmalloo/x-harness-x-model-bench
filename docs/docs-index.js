@@ -1314,7 +1314,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "31c7c3f6f203feedea7f8c1b609f561f13813eca9870cc24f6c1743f558a6386"
+      "sourceSha256": "4bd0643b49ef8013d28dca7680622dda01f765adb6d382027b65ae830952da5b"
     },
     {
       "id": "design-formal-grader",
@@ -2152,6 +2152,43 @@ window.DOCS_INDEX = {
       "sourceSha256": "6e60fa814c6eae61a7b55760e8315c186138ee62e0783571b412994046748e4e"
     },
     {
+      "id": "note-spike-fm1-tla-trace-validation",
+      "path": "docs/notes/spike-fm1-tla-trace-validation.md",
+      "title": "Spike DR-FM1: TLC's external-trace-validation mechanism, measured on this host",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 2: deterministic graders (S-08g); unblocks T-G1's model_conformance/model_non_vacuity",
+      "reviewBy": "2026-10-29",
+      "reviewSuggested": [],
+      "summary": "DR-FM1's granted spike (docs/notes/rulings.md R-84), run on this host. TWO documented TLC trace-validation mechanisms were opened and read: the current one (tlaplus/Examples' EWD998ChanTrace.tla, using the Json/IOUtils CommunityModules and a POSTCONDITION) and the original one (Pressler/Kuppe, \"Verifying Software Traces Against a Formal Specification with TLA+ and TLC\", Dec 2018). The pinned tla2tools v1.7.4 (TLC 2.19) does not support the POSTCONDITION/ALIAS config keywords the current pattern uses (verified from the jar's own keyword table), and every CommunityModules release checked (Feb 2023 - Sep 2026) fails to load under TLC 2.19 at all (a class it references, tlc2.value.impl.KSubsetValue, does not exist in that TLC build, and TLC's override loader aborts for Json/IOUtils too even though neither needs it). The classic technique needs neither: the trace is a literal TLA+ value, the model's own post-step state is compared to a recorded snapshot via an INVARIANT, and TLC's own violation report names the first divergent line. Run end to end on this host: a small reference model of coord-core.py's lease fold accepts one recorded five-step trace (exit 0, \"No error has been found\", depth 6) and rejects one bug-seeded trace at exactly its known divergence (exit 12, \"Invariant TraceInv is violated\", the printed line naming trace step 3 verbatim). The trace interface (state variables and the recorded-line shape) is written down for G1's prompt.",
+      "tags": [
+        "benchmark",
+        "spike",
+        "formal-methods",
+        "tla+",
+        "toolchain",
+        "DR-FM1",
+        "G1"
+      ],
+      "links": [
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-formal-grader",
+          "rel": "refines"
+        },
+        {
+          "to": "note-spike-s12-formal-toolchains",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "c3fb2b2bc474aad67f114db773a428d3d4da6766a4c87636d14baade372bed46"
+    },
+    {
       "id": "note-spike-gw-headless",
       "path": "docs/notes/spike-gw-headless.md",
       "title": "Spike GW-H: the headless judge CLIs with every tool denied: Claude qualifies in text mode; Codex keeps its code-mode exec tool",
@@ -2600,10 +2637,14 @@ window.DOCS_INDEX = {
         {
           "to": "design-phase3-gateway-judges",
           "rel": "documents"
+        },
+        {
+          "to": "design-formal-grader",
+          "rel": "documents"
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8a234feb6e1c15bb06d9eaac3ec6142a14c4eeddb494fce360c8d231317842b3"
+      "sourceSha256": "3cd0f2f69f16d1e0ae4804ded9648d9738bbb726885ee49639910c937a7cfbf3"
     },
     {
       "id": "findings-t1-engine-hardening",
@@ -3114,6 +3155,10 @@ window.DOCS_INDEX = {
           "rel": "documents"
         },
         {
+          "to": "design-formal-grader",
+          "rel": "documents"
+        },
+        {
           "to": "adr-0012-proportionate-security",
           "rel": "depends-on"
         },
@@ -3129,7 +3174,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart LR\n  subgraph Host[\"Host (trusted: the operator)\"]\n    Engine[\"bench engine\\n(single writer)\"]\n    Runs[\"runs/&lt;id&gt;\\nledger + archives\"]\n    Creds[\"subscription logins\\n(harness homes)\"]\n    Report[\"report HTML\"]\n  end\n  subgraph Cell[\"Cell (the agent, with the operator's rights)\"]\n    Agent[\"harness + model\"]\n    WS[\"own git working copy\"]\n  end\n  Oracle[\"hidden tests / oracle\"]\n  Engine -- \"B1 spawn into Job Object, kill\" --> Cell\n  Creds -- \"B1 per-cell copy\" --> Cell\n  Cell -- \"B4 archive\" --> Runs\n  Oracle -. \"B2 never in the task clone\" .- Cell\n  Runs --> Report\n  Report -- \"B5 publish\" --> Shared[\"shared report\"]"
         }
       ],
-      "sourceSha256": "cf96632215fe35af4ab9d8c3c91929e5925db17785e8b6bdeef34158a400c17b"
+      "sourceSha256": "72039cacf42bf7d64e146390be99b1733a044f832b5e1ee5ad089bfff7ccfc85"
     }
   ],
   "surfaces": [
@@ -3187,5 +3232,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "d0cf8e286cbbaaa58802a469c87602974a99cd3a7ee2cfbb39fa2b5baecb8859"
+  "graphSha256": "cd1f777d466477d95780dbfb1e707919c35c4625928d13c08cb845246f62fbfa"
 };
