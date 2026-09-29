@@ -1314,7 +1314,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "31c7c3f6f203feedea7f8c1b609f561f13813eca9870cc24f6c1743f558a6386"
+      "sourceSha256": "4bd0643b49ef8013d28dca7680622dda01f765adb6d382027b65ae830952da5b"
     },
     {
       "id": "design-formal-grader",
@@ -2600,10 +2600,14 @@ window.DOCS_INDEX = {
         {
           "to": "design-phase3-gateway-judges",
           "rel": "documents"
+        },
+        {
+          "to": "design-formal-grader",
+          "rel": "documents"
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8a234feb6e1c15bb06d9eaac3ec6142a14c4eeddb494fce360c8d231317842b3"
+      "sourceSha256": "3cd0f2f69f16d1e0ae4804ded9648d9738bbb726885ee49639910c937a7cfbf3"
     },
     {
       "id": "findings-t1-engine-hardening",
@@ -3114,6 +3118,10 @@ window.DOCS_INDEX = {
           "rel": "documents"
         },
         {
+          "to": "design-formal-grader",
+          "rel": "documents"
+        },
+        {
           "to": "adr-0012-proportionate-security",
           "rel": "depends-on"
         },
@@ -3129,7 +3137,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart LR\n  subgraph Host[\"Host (trusted: the operator)\"]\n    Engine[\"bench engine\\n(single writer)\"]\n    Runs[\"runs/&lt;id&gt;\\nledger + archives\"]\n    Creds[\"subscription logins\\n(harness homes)\"]\n    Report[\"report HTML\"]\n  end\n  subgraph Cell[\"Cell (the agent, with the operator's rights)\"]\n    Agent[\"harness + model\"]\n    WS[\"own git working copy\"]\n  end\n  Oracle[\"hidden tests / oracle\"]\n  Engine -- \"B1 spawn into Job Object, kill\" --> Cell\n  Creds -- \"B1 per-cell copy\" --> Cell\n  Cell -- \"B4 archive\" --> Runs\n  Oracle -. \"B2 never in the task clone\" .- Cell\n  Runs --> Report\n  Report -- \"B5 publish\" --> Shared[\"shared report\"]"
         }
       ],
-      "sourceSha256": "cf96632215fe35af4ab9d8c3c91929e5925db17785e8b6bdeef34158a400c17b"
+      "sourceSha256": "72039cacf42bf7d64e146390be99b1733a044f832b5e1ee5ad089bfff7ccfc85"
     }
   ],
   "surfaces": [
@@ -3187,5 +3195,5 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     }
   ],
-  "graphSha256": "d0cf8e286cbbaaa58802a469c87602974a99cd3a7ee2cfbb39fa2b5baecb8859"
+  "graphSha256": "2574f96ddef54933836461533026c33a51224002b07675c69da5ca52c952d13e"
 };

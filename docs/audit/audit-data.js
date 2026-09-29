@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-29T22:53:27Z",
+  "generated": "2026-09-29T23:29:36Z",
   "audit": [
     {
       "actor": null,
@@ -62698,34 +62698,23 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M3QNX8WV0RTQXYG2DABKY5VR",
-      "shortname": "Goal: author benchmark task E5 (scenario 5, a SWE-bench Verified instanc…",
-      "datetime": "2026-09-29T22:52:32Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: author benchmark task E5 (scenario 5, a SWE-bench Verified instance in the 15-60 minute band, from a different repository than E4's Django) from stub to ready, native on the operator's host, following the /new-bench-task skill with task E4 as the worked pattern.\nMeasured (Leader, 2026-09-29, main f31ce5b): task E4 (tasks/E4/) is django__django-12155 from princeton-nlp/SWE-bench_Verified revision c104f840cc67f8b6eec6f759ebc8b2693d585d4a; it opts into source.workspace_from: source, so workspace.task_source() builds its base tree from source.repo at source.commit with tasks/E4/workspace/ overlaid (tasks/README.md), and its proof tasks/E4/oracle/grade_e4.py builds through workspace.task_source() and workspace.cell_working_copy() (defect class ORCL-A: a proof must use the engine's own path); the correctness grader now has an oracle runner pytest that reads a named JUnit XML report (the command must pass --junitxml=<bare name>.xml), so the pytest-based SWE-bench repositories the E4 worker screened out (astropy, matplotlib, scikit-learn, pytest, pylint, requests, flask, sphinx, xarray, seaborn) are now eligible; ADR-0013 Amendment 1 requires native execution on Windows and macOS, and task E2's worker found that code using multiprocessing without a __main__ guard respawns forever under Windows spawn.\nDone when: E5 pins one SWE-bench Verified instance from the 15-60 minute band whose repository differs from django, whose install and tests run natively on this Windows host with a uv-managed Python (pure-Python dependencies preferred; record every instance you rejected and why), with the dataset name and revision, the instance id, the repository and its base commit pinned in task.yaml; the task opts into source.workspace_from: source; prompt.md is the verbatim issue text; tests/ holds the FAIL_TO_PASS and PASS_TO_PASS tests the upstream names; oracle.runner is pytest with a command that invokes uv directly (never cmd.exe, forward-slash paths) and names a bare --junitxml report; oracle/reference/ holds the gold patch's changed files; tasks/E5/oracle/grade_e5.py proves, through workspace.task_source(), workspace.cell_working_copy() and harness_bench.grade.correctness.grade, that the base fails a FAIL_TO_PASS test while the PASS_TO_PASS tests pass, and that the reference passes all, recorded in oracle/evidence.md with the counts; macOS is recorded as an assume: naming the macos-latest CI job; uv run bench validate prints ok; a test earns its place by a failure only it catches; Commit each stage immediately.\nNot in scope: engine or grader changes (if an instance needs one, pick another instance); bench/bom.yaml (the Leader updates the E5 row at the join); any other task; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 60 minutes; commit each stage immediately.\n\nGrounding: tasks/E4/ (every file); tasks/README.md; .claude/skills/new-bench-task/SKILL.md; src/harness_bench/workspace.py (task_source, cell_working_copy); src/harness_bench/grade/correctness.py (the pytest runner); docs/adr/0013-native-cells-own-working-copy.md (Amendment 1); bench/bom.yaml (the E5 row). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-e5 (use absolute paths or cd into it in each shell command).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
+      "datetime": "2026-09-29T22:52:32Z",
+      "id": "al-01M3QNX8WV0RTQXYG2DABKY5VR",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Goal: author benchmark task E5 (scenario 5, a SWE-bench Verified instance in the 15-60 minute band, from a different repository than E4's Django) from stub to ready, native on the operator's host, following the /new-bench-task skill with task E4 as the worked pattern.\nMeasured (Leader, 2026-09-29, main f31ce5b): task E4 (tasks/E4/) is django__django-12155 from princeton-nlp/SWE-bench_Verified revision c104f840cc67f8b6eec6f759ebc8b2693d585d4a; it opts into source.workspace_from: source, so workspace.task_source() builds its base tree from source.repo at source.commit with tasks/E4/workspace/ overlaid (tasks/README.md), and its proof tasks/E4/oracle/grade_e4.py builds through workspace.task_source() and workspace.cell_working_copy() (defect class ORCL-A: a proof must use the engine's own path); the correctness grader now has an oracle runner pytest that reads a named JUnit XML report (the command must pass --junitxml=<bare name>.xml), so the pytest-based SWE-bench repositories the E4 worker screened out (astropy, matplotlib, scikit-learn, pytest, pylint, requests, flask, sphinx, xarray, seaborn) are now eligible; ADR-0013 Amendment 1 requires native execution on Windows and macOS, and task E2's worker found that code using multiprocessing without a __main__ guard respawns forever under Windows spawn.\nDone when: E5 pins one SWE-bench Verified instance from the 15-60 minute band whose repository differs from django, whose install and tests run natively on this Windows host with a uv-managed Python (pure-Python dependencies preferred; record every instance you rejected and why), with the dataset name and revision, the instance id, the repository and its base commit pinned in task.yaml; the task opts into source.workspace_from: source; prompt.md is the verbatim issue text; tests/ holds the FAIL_TO_PASS and PASS_TO_PASS tests the upstream names; oracle.runner is pytest with a command that invokes uv directly (never cmd.exe, forward-slash paths) and names a bare --junitxml report; oracle/reference/ holds the gold patch's changed files; tasks/E5/oracle/grade_e5.py proves, through workspace.task_source(), workspace.cell_working_copy() and harness_bench.grade.correctness.grade, that the base fails a FAIL_TO_PASS test while the PASS_TO_PASS tests pass, and that the reference passes all, recorded in oracle/evidence.md with the counts; macOS is recorded as an assume: naming the macos-latest CI job; uv run bench validate prints ok; a test earns its place by a failure only it catches; Commit each stage immediately.\nNot in scope: engine or grader changes (if an instance needs one, pick another instance); bench/bom.yaml (the Leader updates the E5 row at the join); any other task; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 60 minutes; commit each stage immediately.\n\nGrounding: tasks/E4/ (every file); tasks/README.md; .claude/skills/new-bench-task/SKILL.md; src/harness_bench/workspace.py (task_source, cell_working_copy); src/harness_bench/grade/correctness.py (the pytest runner); docs/adr/0013-native-cells-own-working-copy.md (Amendment 1); bench/bom.yaml (the E5 row). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-e5 (use absolute paths or cd into it in each shell command).",
+      "session": "prompt-compile",
+      "shortname": "Goal: author benchmark task E5 (scenario 5, a SWE-bench Verified instanc…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M3QNXFHG0G20858YJ1EVE35T",
-      "shortname": "compile-Goal: author benchmark task E5 (scenario 5, a SWE-bench Verified instanc…",
-      "datetime": "2026-09-29T22:52:38Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: author benchmark task E5 (scenario 5, a SWE-bench Verified instance in the 15-60 minute band, from a different repository than E4's Django) from stub to ready, native on the operator's host, following the /new-bench-task skill with task E4 as the worked pattern. Measured (Leader, 2026-09-29, main f31ce5b): task E4 (tasks/E4/) is django__django-12155 from princeton-nlp/SWE-bench_Verified revision c104f840cc67f8b6eec6f759ebc8b2693d585d4a; it opts into source.workspace_from: source, so workspace.task_source() builds its base tree from source.repo at source.commit with tasks/E4/workspace/ overlaid (tasks/README.md), and its proof tasks/E4/oracle/grade_e4.py builds through workspace.task_source() and workspace.cell_working_copy() (defect class ORCL-A: a proof must use the engine's own path); the correctness grader now has an oracle runner pytest that reads a named JUnit XML report (the command must pass --junitxml=<bare name>.xml), so the pytest-based SWE-bench repositories the E4 worker screened out (astropy, matplotlib, scikit-learn, pytest, pylint, requests, flask, sphinx, xarray, seaborn) are now eligible; ADR-0013 Amendment 1 requires native execution on Windows and macOS, and task E2's worker found that code using multiprocessing without a __main__ guard respawns forever under Windows spawn.\nDone when: E5 pins one SWE-bench Verified instance from the 15-60 minute band whose repository differs from django, whose install and tests run natively on this Windows host with a uv-managed Python (pure-Python dependencies preferred; record every instance you rejected and why), with the dataset name and revision, the instance id, the repository and its base commit pinned in task.yaml; the task opts into source.workspace_from: source; prompt.md is the verbatim issue text; tests/ holds the FAIL_TO_PASS and PASS_TO_PASS tests the upstream names; oracle.runner is pytest with a command that invokes uv directly (never cmd.exe, forward-slash paths) and names a bare --junitxml report; oracle/reference/ holds the gold patch's changed files; tasks/E5/oracle/grade_e5.py proves, through workspace.task_source(), workspace.cell_working_copy() and harness_bench.grade.correctness.grade, that the base fails a FAIL_TO_PASS test while the PASS_TO_PASS tests pass, and that the reference passes all, recorded in oracle/evidence.md with the counts; macOS is recorded as an assume: naming the macos-latest CI job; uv run bench validate prints ok; a test earns its place by a failure only it catches; Commit each stage immediately.\nNot in scope: engine or grader changes (if an instance needs one, pick another instance); bench/bom.yaml (the Leader updates the E5 row at the join); any other task; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 60 minutes; commit each stage immediately.\nGrounding: tasks/E4/ (every file); tasks/README.md; .claude/skills/new-bench-task/SKILL.md; src/harness_bench/workspace.py (task_source, cell_working_copy); src/harness_bench/grade/correctness.py (the pytest runner); docs/adr/0013-native-cells-own-working-copy.md (Amendment 1); bench/bom.yaml (the E5 row). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-e5 (use absolute paths or cd into it in each shell command).\nTrace\n| clause | trace |\n|---|---|\n| done_when: E5 pins one SWE-bench Verified instance from the 15-60 minute band whose repository differs from django, whose install and tests run natively on this Windows host with a uv-managed Python (pure-Python dependencies preferred | phrase: E5 pins one SWE-bench Verified instance from the 15-60 minute band whose repository differs from django, whose install and tests run natively on this Windows host with a uv-managed Python (pure-Python dependencies preferred |\n| done_when: record every instance you rejected and why), with the dataset name and revision, the instance id, the repository and its base commit pinned in task.yaml | phrase: record every instance you rejected and why), with the dataset name and revision, the instance id, the repository and its base commit pinned in task.yaml |\n| done_when: the task opts into source.workspace_from: source | phrase: the task opts into source.workspace_from: source |\n| done_when: prompt.md is the verbatim issue text | phrase: prompt.md is the verbatim issue text |\n| done_when: tests/ holds the FAIL_TO_PASS and PASS_TO_PASS tests the upstream names | phrase: tests/ holds the FAIL_TO_PASS and PASS_TO_PASS tests the upstream names |\n| done_when: oracle.runner is pytest with a command that invokes uv directly (never cmd.exe, forward-slash paths) and names a bare --junitxml report | phrase: oracle.runner is pytest with a command that invokes uv directly (never cmd.exe, forward-slash paths) and names a bare --junitxml report |\n| done_when: oracle/reference/ holds the gold patch's changed files | phrase: oracle/reference/ holds the gold patch's changed files |\n| done_when: tasks/E5/oracle/grade_e5.py proves, through workspace.task_source(), workspace.cell_working_copy() and harness_bench.grade.correctness.grade, that the base fails a FAIL_TO_PASS test while the PASS_TO_PASS tests pass, and that the reference passes all, recorded in oracle/evidence.md with the counts | phrase: tasks/E5/oracle/grade_e5.py proves, through workspace.task_source(), workspace.cell_working_copy() and harness_bench.grade.correctness.grade, that the base fails a FAIL_TO_PASS test while the PASS_TO_PASS tests pass, and that the reference passes all, recorded in oracle/evidence.md with the counts |\n| done_when: macOS is recorded as an assume: naming the macos-latest CI job | phrase: macOS is recorded as an assume: naming the macos-latest CI job |\n| done_when: uv run bench validate prints ok | phrase: uv run bench validate prints ok |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: Commit each stage immediately. | phrase: Commit each stage immediately. |\n| not_in_scope: engine or grader changes (if an instance needs one, pick another instance) | phrase: engine or grader changes (if an instance needs one, pick another instance) |\n| not_in_scope: bench/bom.yaml (the Leader updates the E5 row at the join) | phrase: bench/bom.yaml (the Leader updates the E5 row at the join) |\n| not_in_scope: any other task | phrase: any other task |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- /new-bench-task: unresolved (outside repo)\n- tasks/E4/: unresolved (not found)\n- princeton-nlp/SWE-bench_Verified: unresolved (not found)\n- tasks/E4/workspace/: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 23a07b8325eac52178bb4b464c7908c00dccbdc827e5de277ced630199217912\n- tasks/E4/oracle/grade_e4.py: tasks/E4/oracle/grade_e4.py sha256 72d296c00007383b9301cbb4769caa4985aaa392d25a0fefc3e64b1f40c49410\n- task.yaml: unresolved (ambiguous: 28 matches)\n- prompt.md: unresolved (ambiguous: 25 matches)\n- tests/: unresolved (not found)\n- oracle/reference/: unresolved (not found)\n- tasks/E5/oracle/grade_e5.py: unresolved (not found)\n- oracle/evidence.md: unresolved (ambiguous: 19 matches)\n- bench/bom.yaml: bench/bom.yaml sha256 2ee4035679594664e23b4b11a982d624a6745c0d8f79eabc55f05dbd725cf903\n- runs/: unresolved (not found)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- src/harness_bench/workspace.py: src/harness_bench/workspace.py sha256 ce71125302db58ef09a19621407e57cf1b5e21a6adc9217e1edf4c3d79c7ee26\n- src/harness_bench/grade/correctness.py: src/harness_bench/grade/correctness.py sha256 8f0cbd0b973974e5cbd98998ac2b8d27c5b904342596f01c4056d8fe948c0ff3\n- docs/adr/0013-native-cells-own-working-copy.md: docs/adr/0013-native-cells-own-working-copy.md sha256 8387ae6205532c71d610c371dfa493322031185950aa6fd2dbaeddba8b40763f\n- C:/Projects/x-harness-x-model-bench-w5-e5: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3QNX8WV0RTQXYG2DABKY5VR\nraw sha256: 3119a5ddf189902012713f8c3600e5653ed31886c2505ccac235369871fe3950\ncompiler model: claude-opus-5-5\nengine seconds: 0.009\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3QNX8WV0RTQXYG2DABKY5VR for claude-code v1: 17 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -63077,38 +63066,38 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
-      "mode": "pass-through",
-      "dispatchable": true
-    },
-    {
-      "id": "al-01M3QNYSPYD2VZJY8BA0PZCBXD",
-      "shortname": "Goal: design the formal grader (spec S-08g) with the /design-slice skill…",
-      "datetime": "2026-09-29T22:53:22Z",
-      "session": "prompt-compile",
-      "prompt": "Goal: design the formal grader (spec S-08g) with the /design-slice skill, so a later /implement slice can build src/harness_bench/grade/formal.py and tasks G1 (TLA+) and G2 (Lean 4) can be authored; the design is the deliverable, not code.\nMeasured (Leader, 2026-09-29, main f31ce5b): docs/specs/README.md lists S-08g (formal grader: checks, statement integrity, trace conformance, bug-seeded variants, bug confirmation; /design-slice then /implement; depends on S-12; file grade/formal.py) and T-G1/T-G2 depending on it; docs/specs/harness-bench.md holds US-32 (formal artifacts graded as four separate scores, so a complete proof of the wrong model is not a pass), the scenario-7 validate rule (~:271: a ready scenario-7 task pins toolchain versions, records the statement hash, and has at least one seeded bug with a reproducing test) and the report flow (~:851: four formal scores side by side plus the first counterexample or failing trace step); src/harness_bench/grade/formal.py is a stub that raises NotImplementedError and is not registered in grade/runner.py GRADERS; docs/notes/spike-s12-formal-toolchains.md (S-12, closed) proves TLC (tla2tools v1.7.4, Temurin JDK 21) and Lean 4 (elan, lean4 v4.34.1, no Mathlib) run natively on Windows in a worktree, with two gaps: tla2tools.jar is downloaded into the working copy by tools/check_models.py (not warmed before the clock) and macOS is unverified; the proposal's G1 and G2 rows and design rules (docs/proposals/cross-harness-benchmarking-proposal.md) require hashed given statements (editing one voids the proof score), pinned toolchains warmed before the clock, and every reported bug confirmed by a failing test on the real code; tasks/G1/task.yaml and tasks/G2/task.yaml are stubs whose formal: blocks name the fields.\nDone when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining: the four scores of US-32 (their names, grain, additivity, NA reasons and exact computation for TLA+ and for Lean 4), statement integrity (the hash check and what an edit does), trace conformance, how bug-seeded variants are run and scored, how a reported bug is confirmed by a failing test, the toolchain invocation (direct, forward-slash paths, never cmd.exe; the warm-before-clock contract and where caches live, closing S-12's tla2tools gap by design), the report surfaces (the four scores and the first counterexample or failing trace step), the ledger facts or scores rows it writes, its error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (its persona reviews, including the Test Architect), with each verdict recorded in the doc; any decision the design cannot settle is written as a decision request with a recommended default for the Owner seat; the doc is committed; uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes.\nNot in scope: implementing formal.py; authoring G1 or G2; changing any code; any file under runs/; any push.\nTier: T2\nFan-out cap: 3\nContext ceiling: 180k tokens\nMain-line budget: one slice of at most 75 minutes.\n\nGrounding: .claude/skills/design-slice/SKILL.md; docs/specs/README.md (S-08g, S-12, T-G1, T-G2); docs/specs/harness-bench.md (US-32, the scenario-7 rules, the report flow); docs/notes/spike-s12-formal-toolchains.md; docs/notes/proposal-grounding-findings.md F9; the proposal's G rows and design rules; src/harness_bench/grade/{formal,runner,correctness}.py; docs/design/phase3-graders.md (the existing graders' design shape); tasks/G1/task.yaml, tasks/G2/task.yaml; tools/check_models.py. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-formal (use absolute paths or cd into it in each shell command).",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success"
-    },
-    {
-      "id": "al-01M3QNYZ2DXZ1TWEZHBB2GH3AW",
-      "shortname": "compile-Goal: design the formal grader (spec S-08g) with the /design-slice skill…",
-      "datetime": "2026-09-29T22:53:27Z",
-      "session": "coord-opus-cq",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: design the formal grader (spec S-08g) with the /design-slice skill, so a later /implement slice can build src/harness_bench/grade/formal.py and tasks G1 (TLA+) and G2 (Lean 4) can be authored; the design is the deliverable, not code. Measured (Leader, 2026-09-29, main f31ce5b): docs/specs/README.md lists S-08g (formal grader: checks, statement integrity, trace conformance, bug-seeded variants, bug confirmation; /design-slice then /implement; depends on S-12; file grade/formal.py) and T-G1/T-G2 depending on it; docs/specs/harness-bench.md holds US-32 (formal artifacts graded as four separate scores, so a complete proof of the wrong model is not a pass), the scenario-7 validate rule (~:271: a ready scenario-7 task pins toolchain versions, records the statement hash, and has at least one seeded bug with a reproducing test) and the report flow (~:851: four formal scores side by side plus the first counterexample or failing trace step); src/harness_bench/grade/formal.py is a stub that raises NotImplementedError and is not registered in grade/runner.py GRADERS; docs/notes/spike-s12-formal-toolchains.md (S-12, closed) proves TLC (tla2tools v1.7.4, Temurin JDK 21) and Lean 4 (elan, lean4 v4.34.1, no Mathlib) run natively on Windows in a worktree, with two gaps: tla2tools.jar is downloaded into the working copy by tools/check_models.py (not warmed before the clock) and macOS is unverified; the proposal's G1 and G2 rows and design rules (docs/proposals/cross-harness-benchmarking-proposal.md) require hashed given statements (editing one voids the proof score), pinned toolchains warmed before the clock, and every reported bug confirmed by a failing test on the real code; tasks/G1/task.yaml and tasks/G2/task.yaml are stubs whose formal: blocks name the fields.\nDone when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining: the four scores of US-32 (their names, grain, additivity, NA reasons and exact computation for TLA+ and for Lean 4), statement integrity (the hash check and what an edit does), trace conformance, how bug-seeded variants are run and scored, how a reported bug is confirmed by a failing test, the toolchain invocation (direct, forward-slash paths, never cmd.exe; the warm-before-clock contract and where caches live, closing S-12's tla2tools gap by design), the report surfaces (the four scores and the first counterexample or failing trace step), the ledger facts or scores rows it writes, its error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (its persona reviews, including the Test Architect), with each verdict recorded in the doc; any decision the design cannot settle is written as a decision request with a recommended default for the Owner seat; the doc is committed; uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes.\nNot in scope: implementing formal.py; authoring G1 or G2; changing any code; any file under runs/; any push.\nTier: T2\nFan-out cap: 3\nContext ceiling: 180k tokens\nMain-line budget: one slice of at most 75 minutes.\nGrounding: .claude/skills/design-slice/SKILL.md; docs/specs/README.md (S-08g, S-12, T-G1, T-G2); docs/specs/harness-bench.md (US-32, the scenario-7 rules, the report flow); docs/notes/spike-s12-formal-toolchains.md; docs/notes/proposal-grounding-findings.md F9; the proposal's G rows and design rules; src/harness_bench/grade/{formal,runner,correctness}.py; docs/design/phase3-graders.md (the existing graders' design shape); tasks/G1/task.yaml, tasks/G2/task.yaml; tools/check_models.py. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-formal (use absolute paths or cd into it in each shell command).\nTrace\n| clause | trace |\n|---|---|\n| done_when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining: the four scores of US-32 (their names, grain, additivity, NA reasons and exact computation for TLA+ and for Lean 4), statement integrity (the hash check and what an edit does), trace conformance, how bug-seeded variants are run and scored, how a reported bug is confirmed by a failing test, the toolchain invocation (direct, forward-slash paths, never cmd.exe | phrase: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining: the four scores of US-32 (their names, grain, additivity, NA reasons and exact computation for TLA+ and for Lean 4), statement integrity (the hash check and what an edit does), trace conformance, how bug-seeded variants are run and scored, how a reported bug is confirmed by a failing test, the toolchain invocation (direct, forward-slash paths, never cmd.exe |\n| done_when: the warm-before-clock contract and where caches live, closing S-12's tla2tools gap by design), the report surfaces (the four scores and the first counterexample or failing trace step), the ledger facts or scores rows it writes, its error codes, and a red-first test plan with named mutants | phrase: the warm-before-clock contract and where caches live, closing S-12's tla2tools gap by design), the report surfaces (the four scores and the first counterexample or failing trace step), the ledger facts or scores rows it writes, its error codes, and a red-first test plan with named mutants |\n| done_when: the design passes the gates /design-slice requires (its persona reviews, including the Test Architect), with each verdict recorded in the doc | phrase: the design passes the gates /design-slice requires (its persona reviews, including the Test Architect), with each verdict recorded in the doc |\n| done_when: any decision the design cannot settle is written as a decision request with a recommended default for the Owner seat | phrase: any decision the design cannot settle is written as a decision request with a recommended default for the Owner seat |\n| done_when: the doc is committed | phrase: the doc is committed |\n| done_when: uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes. | phrase: uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes. |\n| not_in_scope: implementing formal.py | phrase: implementing formal.py |\n| not_in_scope: authoring G1 or G2 | phrase: authoring G1 or G2 |\n| not_in_scope: changing any code | phrase: changing any code |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- /design-slice: unresolved (outside repo)\n- /implement: unresolved (outside repo)\n- src/harness_bench/grade/formal.py: src/harness_bench/grade/formal.py sha256 8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7\n- docs/specs/README.md: docs/specs/README.md sha256 b65007497b4bc047e0bd76b590acbf1fb40ac4fd7ed46805de21d675cfe2c40d\n- grade/formal.py: src/harness_bench/grade/formal.py sha256 8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7\n- T-G1/T-G2: unresolved (not found)\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 9d009f9d990506096fc9b3358ad05b5c2b70c8f8804b52fdb96958ba2d35e321\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 07a23ac32eff003eac0a1b19b9b1f376b42383693581a008ff22e8578b35efcb\n- docs/notes/spike-s12-formal-toolchains.md: docs/notes/spike-s12-formal-toolchains.md sha256 df8d513d62ec351e5a02eff71d55416089cba5b8bdf5132f1f28f97c6071b32c\n- tools/check_models.py: tools/check_models.py sha256 4cfd675c95ac4cb4b73415977909479a1507c78a433ef5aed5878f1fb8d150b3\n- docs/proposals/cross-harness-benchmarking-proposal.md: docs/proposals/cross-harness-benchmarking-proposal.md sha256 599e881c212a84daecdb3fe4fcce0f251a6f89faee2040584fd621926e706112\n- tasks/G1/task.yaml: tasks/G1/task.yaml sha256 6e4fc7b64e12980861c5f892b7fdbe9779c165c2e012d3b5254caf70913f21eb\n- tasks/G2/task.yaml: tasks/G2/task.yaml sha256 aad11fceb17d6e72e3d218527d7337e506b0bab7803f6f03cc8e34f775d88506\n- docs/design/: unresolved (not found)\n- docs/ai-forward-pack/scripts/docs-graph.py: unresolved (ambiguous: 142 matches)\n- formal.py: src/harness_bench/grade/formal.py sha256 8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7\n- runs/: unresolved (not found)\n- .claude/skills/design-slice/SKILL.md: unresolved (not found)\n- docs/notes/proposal-grounding-findings.md: docs/notes/proposal-grounding-findings.md sha256 6e60fa814c6eae61a7b55760e8315c186138ee62e0783571b412994046748e4e\n- src/harness_bench/grade/{formal,runner,correctness}.py: unresolved (not found)\n- docs/design/phase3-graders.md: docs/design/phase3-graders.md sha256 fa7a0f6fd7e21269edee76a1b41bd420fea03f84e13adde5f44a7ddb3e752a3b\n- C:/Projects/x-harness-x-model-bench-w5-formal: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3QNYSPYD2VZJY8BA0PZCBXD\nraw sha256: 052759d7d5ad240fb2e79832f05d8df1be78f5fdeea88ec5589506d7dea1b05e\ncompiler model: claude-opus-5-5\nengine seconds: 0.009\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M3QNYSPYD2VZJY8BA0PZCBXD for claude-code v1: 11 clauses, 0 assumptions, 0 decision requests",
+      "datetime": "2026-09-29T22:52:38Z",
+      "dispatchable": true,
+      "id": "al-01M3QNXFHG0G20858YJ1EVE35T",
       "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: author benchmark task E5 (scenario 5, a SWE-bench Verified instance in the 15-60 minute band, from a different repository than E4's Django) from stub to ready, native on the operator's host, following the /new-bench-task skill with task E4 as the worked pattern. Measured (Leader, 2026-09-29, main f31ce5b): task E4 (tasks/E4/) is django__django-12155 from princeton-nlp/SWE-bench_Verified revision c104f840cc67f8b6eec6f759ebc8b2693d585d4a; it opts into source.workspace_from: source, so workspace.task_source() builds its base tree from source.repo at source.commit with tasks/E4/workspace/ overlaid (tasks/README.md), and its proof tasks/E4/oracle/grade_e4.py builds through workspace.task_source() and workspace.cell_working_copy() (defect class ORCL-A: a proof must use the engine's own path); the correctness grader now has an oracle runner pytest that reads a named JUnit XML report (the command must pass --junitxml=<bare name>.xml), so the pytest-based SWE-bench repositories the E4 worker screened out (astropy, matplotlib, scikit-learn, pytest, pylint, requests, flask, sphinx, xarray, seaborn) are now eligible; ADR-0013 Amendment 1 requires native execution on Windows and macOS, and task E2's worker found that code using multiprocessing without a __main__ guard respawns forever under Windows spawn.\nDone when: E5 pins one SWE-bench Verified instance from the 15-60 minute band whose repository differs from django, whose install and tests run natively on this Windows host with a uv-managed Python (pure-Python dependencies preferred; record every instance you rejected and why), with the dataset name and revision, the instance id, the repository and its base commit pinned in task.yaml; the task opts into source.workspace_from: source; prompt.md is the verbatim issue text; tests/ holds the FAIL_TO_PASS and PASS_TO_PASS tests the upstream names; oracle.runner is pytest with a command that invokes uv directly (never cmd.exe, forward-slash paths) and names a bare --junitxml report; oracle/reference/ holds the gold patch's changed files; tasks/E5/oracle/grade_e5.py proves, through workspace.task_source(), workspace.cell_working_copy() and harness_bench.grade.correctness.grade, that the base fails a FAIL_TO_PASS test while the PASS_TO_PASS tests pass, and that the reference passes all, recorded in oracle/evidence.md with the counts; macOS is recorded as an assume: naming the macos-latest CI job; uv run bench validate prints ok; a test earns its place by a failure only it catches; Commit each stage immediately.\nNot in scope: engine or grader changes (if an instance needs one, pick another instance); bench/bom.yaml (the Leader updates the E5 row at the join); any other task; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 60 minutes; commit each stage immediately.\nGrounding: tasks/E4/ (every file); tasks/README.md; .claude/skills/new-bench-task/SKILL.md; src/harness_bench/workspace.py (task_source, cell_working_copy); src/harness_bench/grade/correctness.py (the pytest runner); docs/adr/0013-native-cells-own-working-copy.md (Amendment 1); bench/bom.yaml (the E5 row). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-e5 (use absolute paths or cd into it in each shell command).\nTrace\n| clause | trace |\n|---|---|\n| done_when: E5 pins one SWE-bench Verified instance from the 15-60 minute band whose repository differs from django, whose install and tests run natively on this Windows host with a uv-managed Python (pure-Python dependencies preferred | phrase: E5 pins one SWE-bench Verified instance from the 15-60 minute band whose repository differs from django, whose install and tests run natively on this Windows host with a uv-managed Python (pure-Python dependencies preferred |\n| done_when: record every instance you rejected and why), with the dataset name and revision, the instance id, the repository and its base commit pinned in task.yaml | phrase: record every instance you rejected and why), with the dataset name and revision, the instance id, the repository and its base commit pinned in task.yaml |\n| done_when: the task opts into source.workspace_from: source | phrase: the task opts into source.workspace_from: source |\n| done_when: prompt.md is the verbatim issue text | phrase: prompt.md is the verbatim issue text |\n| done_when: tests/ holds the FAIL_TO_PASS and PASS_TO_PASS tests the upstream names | phrase: tests/ holds the FAIL_TO_PASS and PASS_TO_PASS tests the upstream names |\n| done_when: oracle.runner is pytest with a command that invokes uv directly (never cmd.exe, forward-slash paths) and names a bare --junitxml report | phrase: oracle.runner is pytest with a command that invokes uv directly (never cmd.exe, forward-slash paths) and names a bare --junitxml report |\n| done_when: oracle/reference/ holds the gold patch's changed files | phrase: oracle/reference/ holds the gold patch's changed files |\n| done_when: tasks/E5/oracle/grade_e5.py proves, through workspace.task_source(), workspace.cell_working_copy() and harness_bench.grade.correctness.grade, that the base fails a FAIL_TO_PASS test while the PASS_TO_PASS tests pass, and that the reference passes all, recorded in oracle/evidence.md with the counts | phrase: tasks/E5/oracle/grade_e5.py proves, through workspace.task_source(), workspace.cell_working_copy() and harness_bench.grade.correctness.grade, that the base fails a FAIL_TO_PASS test while the PASS_TO_PASS tests pass, and that the reference passes all, recorded in oracle/evidence.md with the counts |\n| done_when: macOS is recorded as an assume: naming the macos-latest CI job | phrase: macOS is recorded as an assume: naming the macos-latest CI job |\n| done_when: uv run bench validate prints ok | phrase: uv run bench validate prints ok |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: Commit each stage immediately. | phrase: Commit each stage immediately. |\n| not_in_scope: engine or grader changes (if an instance needs one, pick another instance) | phrase: engine or grader changes (if an instance needs one, pick another instance) |\n| not_in_scope: bench/bom.yaml (the Leader updates the E5 row at the join) | phrase: bench/bom.yaml (the Leader updates the E5 row at the join) |\n| not_in_scope: any other task | phrase: any other task |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- /new-bench-task: unresolved (outside repo)\n- tasks/E4/: unresolved (not found)\n- princeton-nlp/SWE-bench_Verified: unresolved (not found)\n- tasks/E4/workspace/: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 23a07b8325eac52178bb4b464c7908c00dccbdc827e5de277ced630199217912\n- tasks/E4/oracle/grade_e4.py: tasks/E4/oracle/grade_e4.py sha256 72d296c00007383b9301cbb4769caa4985aaa392d25a0fefc3e64b1f40c49410\n- task.yaml: unresolved (ambiguous: 28 matches)\n- prompt.md: unresolved (ambiguous: 25 matches)\n- tests/: unresolved (not found)\n- oracle/reference/: unresolved (not found)\n- tasks/E5/oracle/grade_e5.py: unresolved (not found)\n- oracle/evidence.md: unresolved (ambiguous: 19 matches)\n- bench/bom.yaml: bench/bom.yaml sha256 2ee4035679594664e23b4b11a982d624a6745c0d8f79eabc55f05dbd725cf903\n- runs/: unresolved (not found)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- src/harness_bench/workspace.py: src/harness_bench/workspace.py sha256 ce71125302db58ef09a19621407e57cf1b5e21a6adc9217e1edf4c3d79c7ee26\n- src/harness_bench/grade/correctness.py: src/harness_bench/grade/correctness.py sha256 8f0cbd0b973974e5cbd98998ac2b8d27c5b904342596f01c4056d8fe948c0ff3\n- docs/adr/0013-native-cells-own-working-copy.md: docs/adr/0013-native-cells-own-working-copy.md sha256 8387ae6205532c71d610c371dfa493322031185950aa6fd2dbaeddba8b40763f\n- C:/Projects/x-harness-x-model-bench-w5-e5: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3QNX8WV0RTQXYG2DABKY5VR\nraw sha256: 3119a5ddf189902012713f8c3600e5653ed31886c2505ccac235369871fe3950\ncompiler model: claude-opus-5-5\nengine seconds: 0.009\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: author benchmark task E5 (scenario 5, a SWE-bench Verified instanc…",
       "skill": null,
-      "tool": null,
+      "summary": "compiled al-01M3QNX8WV0RTQXYG2DABKY5VR for claude-code v1: 17 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-09-29T22:53:22Z",
+      "id": "al-01M3QNYSPYD2VZJY8BA0PZCBXD",
+      "kind": "prompt",
       "outcome": "success",
+      "prompt": "Goal: design the formal grader (spec S-08g) with the /design-slice skill, so a later /implement slice can build src/harness_bench/grade/formal.py and tasks G1 (TLA+) and G2 (Lean 4) can be authored; the design is the deliverable, not code.\nMeasured (Leader, 2026-09-29, main f31ce5b): docs/specs/README.md lists S-08g (formal grader: checks, statement integrity, trace conformance, bug-seeded variants, bug confirmation; /design-slice then /implement; depends on S-12; file grade/formal.py) and T-G1/T-G2 depending on it; docs/specs/harness-bench.md holds US-32 (formal artifacts graded as four separate scores, so a complete proof of the wrong model is not a pass), the scenario-7 validate rule (~:271: a ready scenario-7 task pins toolchain versions, records the statement hash, and has at least one seeded bug with a reproducing test) and the report flow (~:851: four formal scores side by side plus the first counterexample or failing trace step); src/harness_bench/grade/formal.py is a stub that raises NotImplementedError and is not registered in grade/runner.py GRADERS; docs/notes/spike-s12-formal-toolchains.md (S-12, closed) proves TLC (tla2tools v1.7.4, Temurin JDK 21) and Lean 4 (elan, lean4 v4.34.1, no Mathlib) run natively on Windows in a worktree, with two gaps: tla2tools.jar is downloaded into the working copy by tools/check_models.py (not warmed before the clock) and macOS is unverified; the proposal's G1 and G2 rows and design rules (docs/proposals/cross-harness-benchmarking-proposal.md) require hashed given statements (editing one voids the proof score), pinned toolchains warmed before the clock, and every reported bug confirmed by a failing test on the real code; tasks/G1/task.yaml and tasks/G2/task.yaml are stubs whose formal: blocks name the fields.\nDone when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining: the four scores of US-32 (their names, grain, additivity, NA reasons and exact computation for TLA+ and for Lean 4), statement integrity (the hash check and what an edit does), trace conformance, how bug-seeded variants are run and scored, how a reported bug is confirmed by a failing test, the toolchain invocation (direct, forward-slash paths, never cmd.exe; the warm-before-clock contract and where caches live, closing S-12's tla2tools gap by design), the report surfaces (the four scores and the first counterexample or failing trace step), the ledger facts or scores rows it writes, its error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (its persona reviews, including the Test Architect), with each verdict recorded in the doc; any decision the design cannot settle is written as a decision request with a recommended default for the Owner seat; the doc is committed; uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes.\nNot in scope: implementing formal.py; authoring G1 or G2; changing any code; any file under runs/; any push.\nTier: T2\nFan-out cap: 3\nContext ceiling: 180k tokens\nMain-line budget: one slice of at most 75 minutes.\n\nGrounding: .claude/skills/design-slice/SKILL.md; docs/specs/README.md (S-08g, S-12, T-G1, T-G2); docs/specs/harness-bench.md (US-32, the scenario-7 rules, the report flow); docs/notes/spike-s12-formal-toolchains.md; docs/notes/proposal-grounding-findings.md F9; the proposal's G rows and design rules; src/harness_bench/grade/{formal,runner,correctness}.py; docs/design/phase3-graders.md (the existing graders' design shape); tasks/G1/task.yaml, tasks/G2/task.yaml; tools/check_models.py. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-formal (use absolute paths or cd into it in each shell command).",
+      "session": "prompt-compile",
+      "shortname": "Goal: design the formal grader (spec S-08g) with the /design-slice skill…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -63424,6 +63413,1142 @@ window.AUDIT_DATA = {
             "sha256": null,
             "status": "unresolved",
             "token": "C:/Projects/x-harness-x-model-bench-w5-formal"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-09-29T22:53:27Z",
+      "dispatchable": true,
+      "id": "al-01M3QNYZ2DXZ1TWEZHBB2GH3AW",
+      "kind": "compilation",
+      "mode": "pass-through",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: design the formal grader (spec S-08g) with the /design-slice skill, so a later /implement slice can build src/harness_bench/grade/formal.py and tasks G1 (TLA+) and G2 (Lean 4) can be authored; the design is the deliverable, not code. Measured (Leader, 2026-09-29, main f31ce5b): docs/specs/README.md lists S-08g (formal grader: checks, statement integrity, trace conformance, bug-seeded variants, bug confirmation; /design-slice then /implement; depends on S-12; file grade/formal.py) and T-G1/T-G2 depending on it; docs/specs/harness-bench.md holds US-32 (formal artifacts graded as four separate scores, so a complete proof of the wrong model is not a pass), the scenario-7 validate rule (~:271: a ready scenario-7 task pins toolchain versions, records the statement hash, and has at least one seeded bug with a reproducing test) and the report flow (~:851: four formal scores side by side plus the first counterexample or failing trace step); src/harness_bench/grade/formal.py is a stub that raises NotImplementedError and is not registered in grade/runner.py GRADERS; docs/notes/spike-s12-formal-toolchains.md (S-12, closed) proves TLC (tla2tools v1.7.4, Temurin JDK 21) and Lean 4 (elan, lean4 v4.34.1, no Mathlib) run natively on Windows in a worktree, with two gaps: tla2tools.jar is downloaded into the working copy by tools/check_models.py (not warmed before the clock) and macOS is unverified; the proposal's G1 and G2 rows and design rules (docs/proposals/cross-harness-benchmarking-proposal.md) require hashed given statements (editing one voids the proof score), pinned toolchains warmed before the clock, and every reported bug confirmed by a failing test on the real code; tasks/G1/task.yaml and tasks/G2/task.yaml are stubs whose formal: blocks name the fields.\nDone when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining: the four scores of US-32 (their names, grain, additivity, NA reasons and exact computation for TLA+ and for Lean 4), statement integrity (the hash check and what an edit does), trace conformance, how bug-seeded variants are run and scored, how a reported bug is confirmed by a failing test, the toolchain invocation (direct, forward-slash paths, never cmd.exe; the warm-before-clock contract and where caches live, closing S-12's tla2tools gap by design), the report surfaces (the four scores and the first counterexample or failing trace step), the ledger facts or scores rows it writes, its error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (its persona reviews, including the Test Architect), with each verdict recorded in the doc; any decision the design cannot settle is written as a decision request with a recommended default for the Owner seat; the doc is committed; uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes.\nNot in scope: implementing formal.py; authoring G1 or G2; changing any code; any file under runs/; any push.\nTier: T2\nFan-out cap: 3\nContext ceiling: 180k tokens\nMain-line budget: one slice of at most 75 minutes.\nGrounding: .claude/skills/design-slice/SKILL.md; docs/specs/README.md (S-08g, S-12, T-G1, T-G2); docs/specs/harness-bench.md (US-32, the scenario-7 rules, the report flow); docs/notes/spike-s12-formal-toolchains.md; docs/notes/proposal-grounding-findings.md F9; the proposal's G rows and design rules; src/harness_bench/grade/{formal,runner,correctness}.py; docs/design/phase3-graders.md (the existing graders' design shape); tasks/G1/task.yaml, tasks/G2/task.yaml; tools/check_models.py. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-formal (use absolute paths or cd into it in each shell command).\nTrace\n| clause | trace |\n|---|---|\n| done_when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining: the four scores of US-32 (their names, grain, additivity, NA reasons and exact computation for TLA+ and for Lean 4), statement integrity (the hash check and what an edit does), trace conformance, how bug-seeded variants are run and scored, how a reported bug is confirmed by a failing test, the toolchain invocation (direct, forward-slash paths, never cmd.exe | phrase: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining: the four scores of US-32 (their names, grain, additivity, NA reasons and exact computation for TLA+ and for Lean 4), statement integrity (the hash check and what an edit does), trace conformance, how bug-seeded variants are run and scored, how a reported bug is confirmed by a failing test, the toolchain invocation (direct, forward-slash paths, never cmd.exe |\n| done_when: the warm-before-clock contract and where caches live, closing S-12's tla2tools gap by design), the report surfaces (the four scores and the first counterexample or failing trace step), the ledger facts or scores rows it writes, its error codes, and a red-first test plan with named mutants | phrase: the warm-before-clock contract and where caches live, closing S-12's tla2tools gap by design), the report surfaces (the four scores and the first counterexample or failing trace step), the ledger facts or scores rows it writes, its error codes, and a red-first test plan with named mutants |\n| done_when: the design passes the gates /design-slice requires (its persona reviews, including the Test Architect), with each verdict recorded in the doc | phrase: the design passes the gates /design-slice requires (its persona reviews, including the Test Architect), with each verdict recorded in the doc |\n| done_when: any decision the design cannot settle is written as a decision request with a recommended default for the Owner seat | phrase: any decision the design cannot settle is written as a decision request with a recommended default for the Owner seat |\n| done_when: the doc is committed | phrase: the doc is committed |\n| done_when: uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes. | phrase: uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes. |\n| not_in_scope: implementing formal.py | phrase: implementing formal.py |\n| not_in_scope: authoring G1 or G2 | phrase: authoring G1 or G2 |\n| not_in_scope: changing any code | phrase: changing any code |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- /design-slice: unresolved (outside repo)\n- /implement: unresolved (outside repo)\n- src/harness_bench/grade/formal.py: src/harness_bench/grade/formal.py sha256 8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7\n- docs/specs/README.md: docs/specs/README.md sha256 b65007497b4bc047e0bd76b590acbf1fb40ac4fd7ed46805de21d675cfe2c40d\n- grade/formal.py: src/harness_bench/grade/formal.py sha256 8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7\n- T-G1/T-G2: unresolved (not found)\n- docs/specs/harness-bench.md: docs/specs/harness-bench.md sha256 9d009f9d990506096fc9b3358ad05b5c2b70c8f8804b52fdb96958ba2d35e321\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 07a23ac32eff003eac0a1b19b9b1f376b42383693581a008ff22e8578b35efcb\n- docs/notes/spike-s12-formal-toolchains.md: docs/notes/spike-s12-formal-toolchains.md sha256 df8d513d62ec351e5a02eff71d55416089cba5b8bdf5132f1f28f97c6071b32c\n- tools/check_models.py: tools/check_models.py sha256 4cfd675c95ac4cb4b73415977909479a1507c78a433ef5aed5878f1fb8d150b3\n- docs/proposals/cross-harness-benchmarking-proposal.md: docs/proposals/cross-harness-benchmarking-proposal.md sha256 599e881c212a84daecdb3fe4fcce0f251a6f89faee2040584fd621926e706112\n- tasks/G1/task.yaml: tasks/G1/task.yaml sha256 6e4fc7b64e12980861c5f892b7fdbe9779c165c2e012d3b5254caf70913f21eb\n- tasks/G2/task.yaml: tasks/G2/task.yaml sha256 aad11fceb17d6e72e3d218527d7337e506b0bab7803f6f03cc8e34f775d88506\n- docs/design/: unresolved (not found)\n- docs/ai-forward-pack/scripts/docs-graph.py: unresolved (ambiguous: 142 matches)\n- formal.py: src/harness_bench/grade/formal.py sha256 8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7\n- runs/: unresolved (not found)\n- .claude/skills/design-slice/SKILL.md: unresolved (not found)\n- docs/notes/proposal-grounding-findings.md: docs/notes/proposal-grounding-findings.md sha256 6e60fa814c6eae61a7b55760e8315c186138ee62e0783571b412994046748e4e\n- src/harness_bench/grade/{formal,runner,correctness}.py: unresolved (not found)\n- docs/design/phase3-graders.md: docs/design/phase3-graders.md sha256 fa7a0f6fd7e21269edee76a1b41bd420fea03f84e13adde5f44a7ddb3e752a3b\n- C:/Projects/x-harness-x-model-bench-w5-formal: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3QNYSPYD2VZJY8BA0PZCBXD\nraw sha256: 052759d7d5ad240fb2e79832f05d8df1be78f5fdeea88ec5589506d7dea1b05e\ncompiler model: claude-opus-5-5\nengine seconds: 0.009\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-cq",
+      "shortname": "compile-Goal: design the formal grader (spec S-08g) with the /design-slice skill…",
+      "skill": null,
+      "summary": "compiled al-01M3QNYSPYD2VZJY8BA0PZCBXD for claude-code v1: 11 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/formal-grader.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-09-29T23:21:54Z",
+      "done_when": "/design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining: the four scores of US-32 (their names, grain, additivity, NA reasons and exact computation for TLA+ and for Lean 4), statement integrity (the hash check and what an edit does), trace conformance, how bug-seeded variants are run and scored, how a reported bug is confirmed by a failing test, the toolchain invocation (direct, forward-slash paths, never cmd.exe; the warm-before-clock contract and where caches live, closing S-12's tla2tools gap by design), the report surfaces (the four scores and the first counterexample or failing trace step), the ledger facts or scores rows it writes, its error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (its persona reviews, including the Test Architect), with each verdict recorded in the doc; any decision the design cannot settle is written as a decision request with a recommended default for the Owner seat; the doc is committed; uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes.",
+      "fan_out": 3,
+      "goal": "Design the formal grader (spec S-08g) with the /design-slice skill, so a later /implement slice can build src/harness_bench/grade/formal.py and tasks G1 (TLA+) and G2 (Lean 4) can be authored; the design is the deliverable, not code. Done when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining the four scores of US-32, statement integrity, trace conformance, bug-seeded variants, bug confirmation, the toolchain invocation (warm-before-clock, closing S-12's tla2tools gap), the report surfaces, the ledger facts, error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (persona reviews incl. Test Architect), each verdict recorded in the doc; any decision the design cannot settle becomes a decision request with a recommended default; the doc is committed; docs-graph.py validate passes. Not in scope: implementing formal.py; authoring G1 or G2; changing any code; any file under runs/; any push.",
+      "id": "al-01M3QQK2HDKRCQJJ411ANYCTJ8",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Design the formal grader (spec S-08g) with the /design-slice skill, so a later /implement slice can build src/harness_bench/grade/formal.py and tasks G1 (TLA+) and G2 (Lean 4) can be authored; the design is the deliverable, not code. Done when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining the four scores of US-32, statement integrity, trace conformance, bug-seeded variants, bug confirmation, the toolchain invocation (warm-before-clock, closing S-12's tla2tools gap), the report surfaces, the ledger facts, error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (persona reviews incl. Test Architect), each verdict recorded in the doc; any decision the design cannot settle becomes a decision request with a recommended default; the doc is committed; docs-graph.py validate passes. Not in scope: implementing formal.py; authoring G1 or G2; changing any code; any file under runs/; any push.",
+      "session": "worker-sonnet-formal",
+      "shortname": "design-slice-formal-grader",
+      "skill": "design-slice",
+      "summary": "docs/design/formal-grader.md, revision 2 (post-gate): grade/formal.py's six metric definitions (formal_checks_clean, statement_integrity, model_conformance, model_non_vacuity, bugs_confirmed, bug_claim_precision) for G1 (TLA+) and G2 (Lean 4), with an exact per-task NA-cascade table, the toolchain-invocation contract via correctness.run_step (closing the D3 procs-allowlist question), a warm-before-clock fix for S-12's tla2tools gap, a STRIDE-lite analysis, a G2 statement-integrity hash that reuses Lean's own #check output, two whole-cell golden-master tests, and a red-first test plan with named mutants. Three real persona reviews ran in parallel (Test Architect, Security & Identity Architect, The Simplifier), each BLOCK on revision 1; all Blockers (2 TA, 3 Security) and the Simplifier's Major are fixed in revision 2, recorded in the Gate record. Two decision requests remain open (DR-FM1: the TLA+ trace-replay mechanism is unspiked, needs a pre-implementation spike; DR-FM2: no judge rubric yet for a not-seeded bug claim). Security/privacy rollups (docs/security/threat-model.md, privacy-review.md) updated with this design's boundaries and findings. docs-graph.py validate: 0 defects.",
+      "tags": [
+        "formal-methods",
+        "grading",
+        "S-08g"
+      ],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M3QQZCQQ6QW1B09J7P8VYHB4",
+      "shortname": "Goal: implement the formal grader (spec S-08g) in src/harness_bench/grad…",
+      "datetime": "2026-09-29T23:28:38Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: implement the formal grader (spec S-08g) in src/harness_bench/grade/formal.py exactly as docs/design/formal-grader.md (revision 2) specifies, as amended by ruling R-84, red first, and register it in grade/runner.py GRADERS.\nMeasured (Leader, 2026-09-29, main ca49bd0e): docs/design/formal-grader.md defines the six metrics under grader formal (formal_checks_clean, statement_integrity with its per-task NA cascade, model_conformance for G1, model_non_vacuity, bugs_confirmed and bug_claim_precision), the toolchain invocation through correctness.run_step (formal.py is not on the procs allowlist), the warm-before-clock tla2tools cache (HB_TLA_JAR or the host cache, sha256-verified once at grading.started), the security controls (BUGS.md Test: references validated before any argv; the binary-artifact scan of spec/** before TLC; the Lean elaboration side-effect ban; lakefile and lean-toolchain byte checks), error codes and a red-first test plan with named mutants and golden-master tests; docs/notes/rulings.md R-84 (the last entry) amends it: condition 1, G1 model_conformance and model_non_vacuity read NA \"not built\" in a real grading pass until the DR-FM1 spike lands (the _replay stub is test-only), and DR-FM2's mechanical table replaces the design's exclusion rule (an entry with no Test: line, or a Test: reference that fails validation, is in N and not confirmed; a test that passes on the real fold is in N and not confirmed; fails on real and passes on the fix is confirmed; fails on both is excluded as judge-pending), with the two moved fixtures reading 0.5000, and no BUGS.md meaning bugs_confirmed 0 and bug_claim_precision NA 0/0; bench/metrics.yaml 0.5 already scaffolds the six metrics; tools/gate_stamp.py's digest covers grade/*.py, so the Leader re-runs the gate ring and renews the stamp after this merges.\nDone when: formal.py implements every metric, check and control the design and R-84 define, for both G1 (with the two replay metrics NA \"not built\" outside tests, R-84 c1) and G2; grade/runner.py registers formal; the design's red-first test plan is implemented, with each test committed red first, failing on an assertion, then green, using small real toolchain runs (TLC with the pinned jar, lake build with the pinned toolchain from spike S-12) where the design names them, and fixtures under tests/fixtures/grade/formal/; the DR-FM2 table is the generator's third dimension, with one fixture per row, and the two moved fixtures read 0.5000; the design doc is updated in the same commit for R-84's changes (the moved fixtures, the no-BUGS.md rule, the NA-not-built rule); the design's named mutants join tests/mutations (a formal set), each killed; the report surface for the four scores is either built here, if the design assigns it to this slice, or named as the next slice; uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (name it); uv run ruff check src tests tools is clean before each commit; a test earns its place by a failure only it catches; Commit each red and each green immediately.\nNot in scope: the DR-FM1 trace-replay mechanism (a parallel spike); authoring tasks G1 or G2 (a parallel worker authors G2); renewing the gate stamp; bench/metrics.yaml changes beyond what the design names; any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 180k tokens\nMain-line budget: one slice of at most 90 minutes; commit each red and each green immediately.\n\nGrounding: docs/design/formal-grader.md (all of it); docs/notes/rulings.md R-84; docs/notes/spike-s12-formal-toolchains.md; src/harness_bench/grade/{formal,runner,correctness}.py; bench/metrics.yaml; tests/test_grade_runner.py; tests/mutations/; tools/check_models.py (the jar pin). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-fimpl (use absolute paths or cd into it in each shell command).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3QQZMTNK03H721QYH2B12HA",
+      "shortname": "compile-Goal: implement the formal grader (spec S-08g) in src/harness_bench/grad…",
+      "datetime": "2026-09-29T23:28:46Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: implement the formal grader (spec S-08g) in src/harness_bench/grade/formal.py exactly as docs/design/formal-grader.md (revision 2) specifies, as amended by ruling R-84, red first, and register it in grade/runner.py GRADERS. Measured (Leader, 2026-09-29, main ca49bd0e): docs/design/formal-grader.md defines the six metrics under grader formal (formal_checks_clean, statement_integrity with its per-task NA cascade, model_conformance for G1, model_non_vacuity, bugs_confirmed and bug_claim_precision), the toolchain invocation through correctness.run_step (formal.py is not on the procs allowlist), the warm-before-clock tla2tools cache (HB_TLA_JAR or the host cache, sha256-verified once at grading.started), the security controls (BUGS.md Test: references validated before any argv; the binary-artifact scan of spec/** before TLC; the Lean elaboration side-effect ban; lakefile and lean-toolchain byte checks), error codes and a red-first test plan with named mutants and golden-master tests; docs/notes/rulings.md R-84 (the last entry) amends it: condition 1, G1 model_conformance and model_non_vacuity read NA \"not built\" in a real grading pass until the DR-FM1 spike lands (the _replay stub is test-only), and DR-FM2's mechanical table replaces the design's exclusion rule (an entry with no Test: line, or a Test: reference that fails validation, is in N and not confirmed; a test that passes on the real fold is in N and not confirmed; fails on real and passes on the fix is confirmed; fails on both is excluded as judge-pending), with the two moved fixtures reading 0.5000, and no BUGS.md meaning bugs_confirmed 0 and bug_claim_precision NA 0/0; bench/metrics.yaml 0.5 already scaffolds the six metrics; tools/gate_stamp.py's digest covers grade/*.py, so the Leader re-runs the gate ring and renews the stamp after this merges.\nDone when: formal.py implements every metric, check and control the design and R-84 define, for both G1 (with the two replay metrics NA \"not built\" outside tests, R-84 c1) and G2; grade/runner.py registers formal; the design's red-first test plan is implemented, with each test committed red first, failing on an assertion, then green, using small real toolchain runs (TLC with the pinned jar, lake build with the pinned toolchain from spike S-12) where the design names them, and fixtures under tests/fixtures/grade/formal/; the DR-FM2 table is the generator's third dimension, with one fixture per row, and the two moved fixtures read 0.5000; the design doc is updated in the same commit for R-84's changes (the moved fixtures, the no-BUGS.md rule, the NA-not-built rule); the design's named mutants join tests/mutations (a formal set), each killed; the report surface for the four scores is either built here, if the design assigns it to this slice, or named as the next slice; uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (name it); uv run ruff check src tests tools is clean before each commit; a test earns its place by a failure only it catches; Commit each red and each green immediately.\nNot in scope: the DR-FM1 trace-replay mechanism (a parallel spike); authoring tasks G1 or G2 (a parallel worker authors G2); renewing the gate stamp; bench/metrics.yaml changes beyond what the design names; any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 180k tokens\nMain-line budget: one slice of at most 90 minutes; commit each red and each green immediately.\nGrounding: docs/design/formal-grader.md (all of it); docs/notes/rulings.md R-84; docs/notes/spike-s12-formal-toolchains.md; src/harness_bench/grade/{formal,runner,correctness}.py; bench/metrics.yaml; tests/test_grade_runner.py; tests/mutations/; tools/check_models.py (the jar pin). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-fimpl (use absolute paths or cd into it in each shell command).\nTrace\n| clause | trace |\n|---|---|\n| done_when: formal.py implements every metric, check and control the design and R-84 define, for both G1 (with the two replay metrics NA \"not built\" outside tests, R-84 c1) and G2 | phrase: formal.py implements every metric, check and control the design and R-84 define, for both G1 (with the two replay metrics NA \"not built\" outside tests, R-84 c1) and G2 |\n| done_when: grade/runner.py registers formal | phrase: grade/runner.py registers formal |\n| done_when: the design's red-first test plan is implemented, with each test committed red first, failing on an assertion, then green, using small real toolchain runs (TLC with the pinned jar, lake build with the pinned toolchain from spike S-12) where the design names them, and fixtures under tests/fixtures/grade/formal/ | phrase: the design's red-first test plan is implemented, with each test committed red first, failing on an assertion, then green, using small real toolchain runs (TLC with the pinned jar, lake build with the pinned toolchain from spike S-12) where the design names them, and fixtures under tests/fixtures/grade/formal/ |\n| done_when: the DR-FM2 table is the generator's third dimension, with one fixture per row, and the two moved fixtures read 0.5000 | phrase: the DR-FM2 table is the generator's third dimension, with one fixture per row, and the two moved fixtures read 0.5000 |\n| done_when: the design doc is updated in the same commit for R-84's changes (the moved fixtures, the no-BUGS.md rule, the NA-not-built rule) | phrase: the design doc is updated in the same commit for R-84's changes (the moved fixtures, the no-BUGS.md rule, the NA-not-built rule) |\n| done_when: the design's named mutants join tests/mutations (a formal set), each killed | phrase: the design's named mutants join tests/mutations (a formal set), each killed |\n| done_when: the report surface for the four scores is either built here, if the design assigns it to this slice, or named as the next slice | phrase: the report surface for the four scores is either built here, if the design assigns it to this slice, or named as the next slice |\n| done_when: uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (name it) | phrase: uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (name it) |\n| done_when: uv run ruff check src tests tools is clean before each commit | phrase: uv run ruff check src tests tools is clean before each commit |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: Commit each red and each green immediately. | phrase: Commit each red and each green immediately. |\n| not_in_scope: the DR-FM1 trace-replay mechanism (a parallel spike) | phrase: the DR-FM1 trace-replay mechanism (a parallel spike) |\n| not_in_scope: authoring tasks G1 or G2 (a parallel worker authors G2) | phrase: authoring tasks G1 or G2 (a parallel worker authors G2) |\n| not_in_scope: renewing the gate stamp | phrase: renewing the gate stamp |\n| not_in_scope: bench/metrics.yaml changes beyond what the design names | phrase: bench/metrics.yaml changes beyond what the design names |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- src/harness_bench/grade/formal.py: src/harness_bench/grade/formal.py sha256 8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7\n- docs/design/formal-grader.md: docs/design/formal-grader.md sha256 d25da6e28666eaab36ce9d234843b8359c990b3b42ac985175bfa56392af60a8\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 07a23ac32eff003eac0a1b19b9b1f376b42383693581a008ff22e8578b35efcb\n- formal.py: src/harness_bench/grade/formal.py sha256 8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7\n- BUGS.md: unresolved (not found)\n- spec/**: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 4 matches)\n- 0/0: unresolved (not found)\n- bench/metrics.yaml: bench/metrics.yaml sha256 5037087dfa68f84ec284e57561369865952e5916c024201a168eb8150dc7e1c5\n- tools/gate_stamp.py's: unresolved (not found; nearest: tools/gate_stamp.py)\n- grade/*.py: unresolved (not found)\n- tests/fixtures/grade/formal/: unresolved (not found)\n- no-BUGS.md: unresolved (not found)\n- tests/mutations: unresolved (not found)\n- tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp: unresolved (not found)\n- runs/: unresolved (not found)\n- docs/notes/spike-s12-formal-toolchains.md: docs/notes/spike-s12-formal-toolchains.md sha256 df8d513d62ec351e5a02eff71d55416089cba5b8bdf5132f1f28f97c6071b32c\n- src/harness_bench/grade/{formal,runner,correctness}.py: unresolved (not found)\n- tests/test_grade_runner.py: tests/test_grade_runner.py sha256 99845b2748aeec0819b55b78795813ebae32ccf2ed1de507ffd2a0ddaf9ff2e7\n- tests/mutations/: unresolved (not found)\n- tools/check_models.py: tools/check_models.py sha256 4cfd675c95ac4cb4b73415977909479a1507c78a433ef5aed5878f1fb8d150b3\n- C:/Projects/x-harness-x-model-bench-w5-fimpl: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3QQZCQQ6QW1B09J7P8VYHB4\nraw sha256: f5e2f0f190d2ccd38bcb92080b7ecd52edbfe71e8472f9bc62d3caa1677e67b2\ncompiler model: claude-opus-5-5\nengine seconds: 0.009\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3QQZCQQ6QW1B09J7P8VYHB4 for claude-code v1: 17 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "formal.py implements every metric, check and control the design and R-84 define, for both G1 (with the two replay metrics NA \"not built\" outside tests, R-84 c1) and G2",
+            "trace": {
+              "kind": "phrase",
+              "ref": "formal.py implements every metric, check and control the design and R-84 define, for both G1 (with the two replay metrics NA \"not built\" outside tests, R-84 c1) and G2"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "grade/runner.py registers formal",
+            "trace": {
+              "kind": "phrase",
+              "ref": "grade/runner.py registers formal"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the design's red-first test plan is implemented, with each test committed red first, failing on an assertion, then green, using small real toolchain runs (TLC with the pinned jar, lake build with the pinned toolchain from spike S-12) where the design names them, and fixtures under tests/fixtures/grade/formal/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the design's red-first test plan is implemented, with each test committed red first, failing on an assertion, then green, using small real toolchain runs (TLC with the pinned jar, lake build with the pinned toolchain from spike S-12) where the design names them, and fixtures under tests/fixtures/grade/formal/"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the DR-FM2 table is the generator's third dimension, with one fixture per row, and the two moved fixtures read 0.5000",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the DR-FM2 table is the generator's third dimension, with one fixture per row, and the two moved fixtures read 0.5000"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the design doc is updated in the same commit for R-84's changes (the moved fixtures, the no-BUGS.md rule, the NA-not-built rule)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the design doc is updated in the same commit for R-84's changes (the moved fixtures, the no-BUGS.md rule, the NA-not-built rule)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the design's named mutants join tests/mutations (a formal set), each killed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the design's named mutants join tests/mutations (a formal set), each killed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the report surface for the four scores is either built here, if the design assigns it to this slice, or named as the next slice",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the report surface for the four scores is either built here, if the design assigns it to this slice, or named as the next slice"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (name it)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (name it)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "uv run ruff check src tests tools is clean before each commit",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check src tests tools is clean before each commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each red and each green immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each red and each green immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the DR-FM1 trace-replay mechanism (a parallel spike)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the DR-FM1 trace-replay mechanism (a parallel spike)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "authoring tasks G1 or G2 (a parallel worker authors G2)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "authoring tasks G1 or G2 (a parallel worker authors G2)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "renewing the gate stamp",
+            "trace": {
+              "kind": "phrase",
+              "ref": "renewing the gate stamp"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "bench/metrics.yaml changes beyond what the design names",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/metrics.yaml changes beyond what the design names"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "180k tokens",
+          "done_when": [
+            "formal.py implements every metric, check and control the design and R-84 define, for both G1 (with the two replay metrics NA \"not built\" outside tests, R-84 c1) and G2",
+            "grade/runner.py registers formal",
+            "the design's red-first test plan is implemented, with each test committed red first, failing on an assertion, then green, using small real toolchain runs (TLC with the pinned jar, lake build with the pinned toolchain from spike S-12) where the design names them, and fixtures under tests/fixtures/grade/formal/",
+            "the DR-FM2 table is the generator's third dimension, with one fixture per row, and the two moved fixtures read 0.5000",
+            "the design doc is updated in the same commit for R-84's changes (the moved fixtures, the no-BUGS.md rule, the NA-not-built rule)",
+            "the design's named mutants join tests/mutations (a formal set), each killed",
+            "the report surface for the four scores is either built here, if the design assigns it to this slice, or named as the next slice",
+            "uv run pytest -q -p no:cacheprovider -n auto passes except tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp (name it)",
+            "uv run ruff check src tests tools is clean before each commit",
+            "a test earns its place by a failure only it catches",
+            "Commit each red and each green immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "implement the formal grader (spec S-08g) in src/harness_bench/grade/formal.py exactly as docs/design/formal-grader.md (revision 2) specifies, as amended by ruling R-84, red first, and register it in grade/runner.py GRADERS. Measured (Leader, 2026-09-29, main ca49bd0e): docs/design/formal-grader.md defines the six metrics under grader formal (formal_checks_clean, statement_integrity with its per-task NA cascade, model_conformance for G1, model_non_vacuity, bugs_confirmed and bug_claim_precision), the toolchain invocation through correctness.run_step (formal.py is not on the procs allowlist), the warm-before-clock tla2tools cache (HB_TLA_JAR or the host cache, sha256-verified once at grading.started), the security controls (BUGS.md Test: references validated before any argv; the binary-artifact scan of spec/** before TLC; the Lean elaboration side-effect ban; lakefile and lean-toolchain byte checks), error codes and a red-first test plan with named mutants and golden-master tests; docs/notes/rulings.md R-84 (the last entry) amends it: condition 1, G1 model_conformance and model_non_vacuity read NA \"not built\" in a real grading pass until the DR-FM1 spike lands (the _replay stub is test-only), and DR-FM2's mechanical table replaces the design's exclusion rule (an entry with no Test: line, or a Test: reference that fails validation, is in N and not confirmed; a test that passes on the real fold is in N and not confirmed; fails on real and passes on the fix is confirmed; fails on both is excluded as judge-pending), with the two moved fixtures reading 0.5000, and no BUGS.md meaning bugs_confirmed 0 and bug_claim_precision NA 0/0; bench/metrics.yaml 0.5 already scaffolds the six metrics; tools/gate_stamp.py's digest covers grade/*.py, so the Leader re-runs the gate ring and renews the stamp after this merges.",
+          "main_line_budget": "one slice of at most 90 minutes; commit each red and each green immediately.\nGrounding: docs/design/formal-grader.md (all of it); docs/notes/rulings.md R-84; docs/notes/spike-s12-formal-toolchains.md; src/harness_bench/grade/{formal,runner,correctness}.py; bench/metrics.yaml; tests/test_grade_runner.py; tests/mutations/; tools/check_models.py (the jar pin). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-fimpl (use absolute paths or cd into it in each shell command).",
+          "not_in_scope": [
+            "the DR-FM1 trace-replay mechanism (a parallel spike)",
+            "authoring tasks G1 or G2 (a parallel worker authors G2)",
+            "renewing the gate stamp",
+            "bench/metrics.yaml changes beyond what the design names",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.009,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3QQZCQQ6QW1B09J7P8VYHB4",
+        "raw_sha256": "f5e2f0f190d2ccd38bcb92080b7ecd52edbfe71e8472f9bc62d3caa1677e67b2",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/formal.py",
+            "reason": null,
+            "sha256": "8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/formal.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/formal-grader.md",
+            "reason": null,
+            "sha256": "d25da6e28666eaab36ce9d234843b8359c990b3b42ac985175bfa56392af60a8",
+            "status": "resolved",
+            "token": "docs/design/formal-grader.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "07a23ac32eff003eac0a1b19b9b1f376b42383693581a008ff22e8578b35efcb",
+            "status": "resolved",
+            "token": "grade/runner.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/formal.py",
+            "reason": null,
+            "sha256": "8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7",
+            "status": "resolved",
+            "token": "formal.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "BUGS.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "spec/**"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 4 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "0/0"
+          },
+          {
+            "nearest": null,
+            "path": "bench/metrics.yaml",
+            "reason": null,
+            "sha256": "5037087dfa68f84ec284e57561369865952e5916c024201a168eb8150dc7e1c5",
+            "status": "resolved",
+            "token": "bench/metrics.yaml"
+          },
+          {
+            "nearest": "tools/gate_stamp.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/gate_stamp.py's"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/*.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/grade/formal/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "no-BUGS.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/spike-s12-formal-toolchains.md",
+            "reason": null,
+            "sha256": "df8d513d62ec351e5a02eff71d55416089cba5b8bdf5132f1f28f97c6071b32c",
+            "status": "resolved",
+            "token": "docs/notes/spike-s12-formal-toolchains.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/grade/{formal,runner,correctness}.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_runner.py",
+            "reason": null,
+            "sha256": "99845b2748aeec0819b55b78795813ebae32ccf2ed1de507ffd2a0ddaf9ff2e7",
+            "status": "resolved",
+            "token": "tests/test_grade_runner.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/"
+          },
+          {
+            "nearest": null,
+            "path": "tools/check_models.py",
+            "reason": null,
+            "sha256": "4cfd675c95ac4cb4b73415977909479a1507c78a433ef5aed5878f1fb8d150b3",
+            "status": "resolved",
+            "token": "tools/check_models.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/x-harness-x-model-bench-w5-fimpl"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3QQZN6SP7GF2T8WBW142CXS",
+      "shortname": "Goal: author benchmark task G2 (scenario 7, \"Lean 4 proofs of fixed stat…",
+      "datetime": "2026-09-29T23:28:47Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: author benchmark task G2 (scenario 7, \"Lean 4 proofs of fixed statements about the lease fold\", 45 minutes) from stub to ready as ruling R-84 sequences it, following the /new-bench-task skill's scenario-7 rules and docs/design/formal-grader.md.\nMeasured (Leader, 2026-09-29, main ca49bd0e): tasks/G2/task.yaml is a stub; the proposal's G2 row gives the task: prove fixed theorem statements about ai-forward's coord-core lease fold in Lean 4 (for example replay is idempotent; a retried claim takes no second lease), given the fold translated to Lean by us, the hashed theorem statements, a pinned Lean toolchain and no Mathlib; the oracle is lake build clean, #print axioms standard only, statements byte-identical, and a bug-seeded variant on which the proofs must fail; docs/design/formal-grader.md defines what the grader checks for G2 (formal_checks_clean including the lexical ban, the axiom check and the lakefile/lean-toolchain byte check; statement_integrity as a combined hash over Fold.lean, lakefile.toml, lean-toolchain and Lean's own #check output for each name in formal.theorem_names; model_non_vacuity as the agent's proofs failing to build against a swapped-in buggy Fold.lean; model_conformance, bugs_confirmed and bug_claim_precision NA by design on G2); R-84 condition 2 says G2 ready needs formal.theorem_names in task.yaml, US-2's third clause (a seeded bug with a reproducing test) met in evidence.md with the buggy fold as the seeded bug and the reference proofs' failing build on it as the reproducing test, and bench validate ok; spike S-12 (docs/notes/spike-s12-formal-toolchains.md) pins elan 4.2.4 and lean4 v4.34.1, proven natively on this host; the formal grader is being implemented in parallel and is not merged yet.\nDone when: the lease fold is taken from ai-forward pack/scripts/coord-core.py at a pinned public commit (source.commit the full SHA; read from a fresh clone in a scratch directory, never C:/Projects/ai-forward's local main) and translated faithfully into the workspace's Fold.lean, with the translation's correspondence to the Python written down in the oracle README; the theorem statements are taken from coord-core's own documented properties and tests, not invented, given in the workspace with sorry bodies for the agent to prove, and their names listed in formal.theorem_names; lakefile.toml and lean-toolchain are task-owned and pinned (no Mathlib, no network in the timed step); oracle/reference/ holds complete proofs that build clean with #print axioms standard only, plus a bug-seeded Fold.lean variant on which those reference proofs fail to build, recorded in oracle/evidence.md with the exact lake commands, outputs and wall times; formal.statement_hash and the other formal: fields are filled; every command invokes its tool directly with forward-slash paths, never cmd.exe; macOS is recorded as unverified with an assume:; status ready and uv run bench validate prints ok; a test earns its place by a failure only it catches; Commit each stage immediately.\nNot in scope: the formal grader code (a parallel worker); task G1; changes to ai-forward; any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 75 minutes; commit each stage immediately.\n\nGrounding: docs/design/formal-grader.md; docs/notes/rulings.md R-84; docs/notes/spike-s12-formal-toolchains.md; .claude/skills/new-bench-task/SKILL.md; tasks/README.md (the scenario-7 rules); tasks/G2/task.yaml; the proposal's G2 row and design rules. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-g2 (use absolute paths or cd into it in each shell command).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3QQZT55SMGSBSAB7N7J6GP5",
+      "shortname": "compile-Goal: author benchmark task G2 (scenario 7, \"Lean 4 proofs of fixed stat…",
+      "datetime": "2026-09-29T23:28:52Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: author benchmark task G2 (scenario 7, \"Lean 4 proofs of fixed statements about the lease fold\", 45 minutes) from stub to ready as ruling R-84 sequences it, following the /new-bench-task skill's scenario-7 rules and docs/design/formal-grader.md. Measured (Leader, 2026-09-29, main ca49bd0e): tasks/G2/task.yaml is a stub; the proposal's G2 row gives the task: prove fixed theorem statements about ai-forward's coord-core lease fold in Lean 4 (for example replay is idempotent; a retried claim takes no second lease), given the fold translated to Lean by us, the hashed theorem statements, a pinned Lean toolchain and no Mathlib; the oracle is lake build clean, #print axioms standard only, statements byte-identical, and a bug-seeded variant on which the proofs must fail; docs/design/formal-grader.md defines what the grader checks for G2 (formal_checks_clean including the lexical ban, the axiom check and the lakefile/lean-toolchain byte check; statement_integrity as a combined hash over Fold.lean, lakefile.toml, lean-toolchain and Lean's own #check output for each name in formal.theorem_names; model_non_vacuity as the agent's proofs failing to build against a swapped-in buggy Fold.lean; model_conformance, bugs_confirmed and bug_claim_precision NA by design on G2); R-84 condition 2 says G2 ready needs formal.theorem_names in task.yaml, US-2's third clause (a seeded bug with a reproducing test) met in evidence.md with the buggy fold as the seeded bug and the reference proofs' failing build on it as the reproducing test, and bench validate ok; spike S-12 (docs/notes/spike-s12-formal-toolchains.md) pins elan 4.2.4 and lean4 v4.34.1, proven natively on this host; the formal grader is being implemented in parallel and is not merged yet.\nDone when: the lease fold is taken from ai-forward pack/scripts/coord-core.py at a pinned public commit (source.commit the full SHA; read from a fresh clone in a scratch directory, never C:/Projects/ai-forward's local main) and translated faithfully into the workspace's Fold.lean, with the translation's correspondence to the Python written down in the oracle README; the theorem statements are taken from coord-core's own documented properties and tests, not invented, given in the workspace with sorry bodies for the agent to prove, and their names listed in formal.theorem_names; lakefile.toml and lean-toolchain are task-owned and pinned (no Mathlib, no network in the timed step); oracle/reference/ holds complete proofs that build clean with #print axioms standard only, plus a bug-seeded Fold.lean variant on which those reference proofs fail to build, recorded in oracle/evidence.md with the exact lake commands, outputs and wall times; formal.statement_hash and the other formal: fields are filled; every command invokes its tool directly with forward-slash paths, never cmd.exe; macOS is recorded as unverified with an assume:; status ready and uv run bench validate prints ok; a test earns its place by a failure only it catches; Commit each stage immediately.\nNot in scope: the formal grader code (a parallel worker); task G1; changes to ai-forward; any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 75 minutes; commit each stage immediately.\nGrounding: docs/design/formal-grader.md; docs/notes/rulings.md R-84; docs/notes/spike-s12-formal-toolchains.md; .claude/skills/new-bench-task/SKILL.md; tasks/README.md (the scenario-7 rules); tasks/G2/task.yaml; the proposal's G2 row and design rules. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-g2 (use absolute paths or cd into it in each shell command).\nTrace\n| clause | trace |\n|---|---|\n| done_when: the lease fold is taken from ai-forward pack/scripts/coord-core.py at a pinned public commit (source.commit the full SHA | phrase: the lease fold is taken from ai-forward pack/scripts/coord-core.py at a pinned public commit (source.commit the full SHA |\n| done_when: read from a fresh clone in a scratch directory, never C:/Projects/ai-forward's local main) and translated faithfully into the workspace's Fold.lean, with the translation's correspondence to the Python written down in the oracle README | phrase: read from a fresh clone in a scratch directory, never C:/Projects/ai-forward's local main) and translated faithfully into the workspace's Fold.lean, with the translation's correspondence to the Python written down in the oracle README |\n| done_when: the theorem statements are taken from coord-core's own documented properties and tests, not invented, given in the workspace with sorry bodies for the agent to prove, and their names listed in formal.theorem_names | phrase: the theorem statements are taken from coord-core's own documented properties and tests, not invented, given in the workspace with sorry bodies for the agent to prove, and their names listed in formal.theorem_names |\n| done_when: lakefile.toml and lean-toolchain are task-owned and pinned (no Mathlib, no network in the timed step) | phrase: lakefile.toml and lean-toolchain are task-owned and pinned (no Mathlib, no network in the timed step) |\n| done_when: oracle/reference/ holds complete proofs that build clean with #print axioms standard only, plus a bug-seeded Fold.lean variant on which those reference proofs fail to build, recorded in oracle/evidence.md with the exact lake commands, outputs and wall times | phrase: oracle/reference/ holds complete proofs that build clean with #print axioms standard only, plus a bug-seeded Fold.lean variant on which those reference proofs fail to build, recorded in oracle/evidence.md with the exact lake commands, outputs and wall times |\n| done_when: formal.statement_hash and the other formal: fields are filled | phrase: formal.statement_hash and the other formal: fields are filled |\n| done_when: every command invokes its tool directly with forward-slash paths, never cmd.exe | phrase: every command invokes its tool directly with forward-slash paths, never cmd.exe |\n| done_when: macOS is recorded as unverified with an assume: | phrase: macOS is recorded as unverified with an assume: |\n| done_when: status ready and uv run bench validate prints ok | phrase: status ready and uv run bench validate prints ok |\n| done_when: a test earns its place by a failure only it catches | phrase: a test earns its place by a failure only it catches |\n| done_when: Commit each stage immediately. | phrase: Commit each stage immediately. |\n| not_in_scope: the formal grader code (a parallel worker) | phrase: the formal grader code (a parallel worker) |\n| not_in_scope: task G1 | phrase: task G1 |\n| not_in_scope: changes to ai-forward | phrase: changes to ai-forward |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- /new-bench-task: unresolved (outside repo)\n- docs/design/formal-grader.md: docs/design/formal-grader.md sha256 d25da6e28666eaab36ce9d234843b8359c990b3b42ac985175bfa56392af60a8\n- tasks/G2/task.yaml: tasks/G2/task.yaml sha256 aad11fceb17d6e72e3d218527d7337e506b0bab7803f6f03cc8e34f775d88506\n- lakefile/lean-toolchain: unresolved (not found)\n- task.yaml: unresolved (ambiguous: 28 matches)\n- evidence.md: unresolved (ambiguous: 20 matches)\n- docs/notes/spike-s12-formal-toolchains.md: docs/notes/spike-s12-formal-toolchains.md sha256 df8d513d62ec351e5a02eff71d55416089cba5b8bdf5132f1f28f97c6071b32c\n- pack/scripts/coord-core.py: unresolved (ambiguous: 3 matches)\n- C:/Projects/ai-forward's: unresolved (outside repo)\n- oracle/reference/: unresolved (not found)\n- oracle/evidence.md: unresolved (ambiguous: 20 matches)\n- runs/: unresolved (not found)\n- docs/notes/rulings.md: unresolved (ambiguous: 4 matches)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 23a07b8325eac52178bb4b464c7908c00dccbdc827e5de277ced630199217912\n- C:/Projects/x-harness-x-model-bench-w5-g2: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3QQZN6SP7GF2T8WBW142CXS\nraw sha256: d71e5f5bb1c15232c241ac5b17411c5f67e08abb2bfa3000e9cd2346e05638e9\ncompiler model: claude-opus-5-5\nengine seconds: 0.009\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3QQZN6SP7GF2T8WBW142CXS for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "the lease fold is taken from ai-forward pack/scripts/coord-core.py at a pinned public commit (source.commit the full SHA",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the lease fold is taken from ai-forward pack/scripts/coord-core.py at a pinned public commit (source.commit the full SHA"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "read from a fresh clone in a scratch directory, never C:/Projects/ai-forward's local main) and translated faithfully into the workspace's Fold.lean, with the translation's correspondence to the Python written down in the oracle README",
+            "trace": {
+              "kind": "phrase",
+              "ref": "read from a fresh clone in a scratch directory, never C:/Projects/ai-forward's local main) and translated faithfully into the workspace's Fold.lean, with the translation's correspondence to the Python written down in the oracle README"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the theorem statements are taken from coord-core's own documented properties and tests, not invented, given in the workspace with sorry bodies for the agent to prove, and their names listed in formal.theorem_names",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the theorem statements are taken from coord-core's own documented properties and tests, not invented, given in the workspace with sorry bodies for the agent to prove, and their names listed in formal.theorem_names"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "lakefile.toml and lean-toolchain are task-owned and pinned (no Mathlib, no network in the timed step)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "lakefile.toml and lean-toolchain are task-owned and pinned (no Mathlib, no network in the timed step)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "oracle/reference/ holds complete proofs that build clean with #print axioms standard only, plus a bug-seeded Fold.lean variant on which those reference proofs fail to build, recorded in oracle/evidence.md with the exact lake commands, outputs and wall times",
+            "trace": {
+              "kind": "phrase",
+              "ref": "oracle/reference/ holds complete proofs that build clean with #print axioms standard only, plus a bug-seeded Fold.lean variant on which those reference proofs fail to build, recorded in oracle/evidence.md with the exact lake commands, outputs and wall times"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "formal.statement_hash and the other formal: fields are filled",
+            "trace": {
+              "kind": "phrase",
+              "ref": "formal.statement_hash and the other formal: fields are filled"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "every command invokes its tool directly with forward-slash paths, never cmd.exe",
+            "trace": {
+              "kind": "phrase",
+              "ref": "every command invokes its tool directly with forward-slash paths, never cmd.exe"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "macOS is recorded as unverified with an assume:",
+            "trace": {
+              "kind": "phrase",
+              "ref": "macOS is recorded as unverified with an assume:"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "status ready and uv run bench validate prints ok",
+            "trace": {
+              "kind": "phrase",
+              "ref": "status ready and uv run bench validate prints ok"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each stage immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each stage immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the formal grader code (a parallel worker)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the formal grader code (a parallel worker)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "task G1",
+            "trace": {
+              "kind": "phrase",
+              "ref": "task G1"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "changes to ai-forward",
+            "trace": {
+              "kind": "phrase",
+              "ref": "changes to ai-forward"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "the lease fold is taken from ai-forward pack/scripts/coord-core.py at a pinned public commit (source.commit the full SHA",
+            "read from a fresh clone in a scratch directory, never C:/Projects/ai-forward's local main) and translated faithfully into the workspace's Fold.lean, with the translation's correspondence to the Python written down in the oracle README",
+            "the theorem statements are taken from coord-core's own documented properties and tests, not invented, given in the workspace with sorry bodies for the agent to prove, and their names listed in formal.theorem_names",
+            "lakefile.toml and lean-toolchain are task-owned and pinned (no Mathlib, no network in the timed step)",
+            "oracle/reference/ holds complete proofs that build clean with #print axioms standard only, plus a bug-seeded Fold.lean variant on which those reference proofs fail to build, recorded in oracle/evidence.md with the exact lake commands, outputs and wall times",
+            "formal.statement_hash and the other formal: fields are filled",
+            "every command invokes its tool directly with forward-slash paths, never cmd.exe",
+            "macOS is recorded as unverified with an assume:",
+            "status ready and uv run bench validate prints ok",
+            "a test earns its place by a failure only it catches",
+            "Commit each stage immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "author benchmark task G2 (scenario 7, \"Lean 4 proofs of fixed statements about the lease fold\", 45 minutes) from stub to ready as ruling R-84 sequences it, following the /new-bench-task skill's scenario-7 rules and docs/design/formal-grader.md. Measured (Leader, 2026-09-29, main ca49bd0e): tasks/G2/task.yaml is a stub; the proposal's G2 row gives the task: prove fixed theorem statements about ai-forward's coord-core lease fold in Lean 4 (for example replay is idempotent; a retried claim takes no second lease), given the fold translated to Lean by us, the hashed theorem statements, a pinned Lean toolchain and no Mathlib; the oracle is lake build clean, #print axioms standard only, statements byte-identical, and a bug-seeded variant on which the proofs must fail; docs/design/formal-grader.md defines what the grader checks for G2 (formal_checks_clean including the lexical ban, the axiom check and the lakefile/lean-toolchain byte check; statement_integrity as a combined hash over Fold.lean, lakefile.toml, lean-toolchain and Lean's own #check output for each name in formal.theorem_names; model_non_vacuity as the agent's proofs failing to build against a swapped-in buggy Fold.lean; model_conformance, bugs_confirmed and bug_claim_precision NA by design on G2); R-84 condition 2 says G2 ready needs formal.theorem_names in task.yaml, US-2's third clause (a seeded bug with a reproducing test) met in evidence.md with the buggy fold as the seeded bug and the reference proofs' failing build on it as the reproducing test, and bench validate ok; spike S-12 (docs/notes/spike-s12-formal-toolchains.md) pins elan 4.2.4 and lean4 v4.34.1, proven natively on this host; the formal grader is being implemented in parallel and is not merged yet.",
+          "main_line_budget": "one slice of at most 75 minutes; commit each stage immediately.\nGrounding: docs/design/formal-grader.md; docs/notes/rulings.md R-84; docs/notes/spike-s12-formal-toolchains.md; .claude/skills/new-bench-task/SKILL.md; tasks/README.md (the scenario-7 rules); tasks/G2/task.yaml; the proposal's G2 row and design rules. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-g2 (use absolute paths or cd into it in each shell command).",
+          "not_in_scope": [
+            "the formal grader code (a parallel worker)",
+            "task G1",
+            "changes to ai-forward",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.009,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3QQZN6SP7GF2T8WBW142CXS",
+        "raw_sha256": "d71e5f5bb1c15232c241ac5b17411c5f67e08abb2bfa3000e9cd2346e05638e9",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/new-bench-task"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/formal-grader.md",
+            "reason": null,
+            "sha256": "d25da6e28666eaab36ce9d234843b8359c990b3b42ac985175bfa56392af60a8",
+            "status": "resolved",
+            "token": "docs/design/formal-grader.md"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/G2/task.yaml",
+            "reason": null,
+            "sha256": "aad11fceb17d6e72e3d218527d7337e506b0bab7803f6f03cc8e34f775d88506",
+            "status": "resolved",
+            "token": "tasks/G2/task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "lakefile/lean-toolchain"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 28 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 20 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "evidence.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/spike-s12-formal-toolchains.md",
+            "reason": null,
+            "sha256": "df8d513d62ec351e5a02eff71d55416089cba5b8bdf5132f1f28f97c6071b32c",
+            "status": "resolved",
+            "token": "docs/notes/spike-s12-formal-toolchains.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pack/scripts/coord-core.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/ai-forward's"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/reference/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 20 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/evidence.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 4 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".claude/skills/new-bench-task/SKILL.md"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/README.md",
+            "reason": null,
+            "sha256": "23a07b8325eac52178bb4b464c7908c00dccbdc827e5de277ced630199217912",
+            "status": "resolved",
+            "token": "tasks/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/x-harness-x-model-bench-w5-g2"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3QQZTHB6T6FJG0QCASZC0ND",
+      "shortname": "Goal: run the DR-FM1 spike that ruling R-84 grants: find and prove, on t…",
+      "datetime": "2026-09-29T23:28:52Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: run the DR-FM1 spike that ruling R-84 grants: find and prove, on this host, how TLC validates an externally recorded trace of the lease fold against a TLA+ model, so the formal grader can score G1's model_conformance and model_non_vacuity; the spike note is the deliverable.\nMeasured (Leader, 2026-09-29, main ca49bd0e): docs/notes/rulings.md R-84 (the last entry) grants the spike, not a mechanism: the design's default (TLC's generated <Model>TTrace.tla/.cfg pair) is unverified, and may be the replay artifact for a counterexample TLC found itself rather than a way to validate an external trace. R-84 lists the exit evidence: (1) a reference model accepts one recorded real-fold trace and rejects one bug-seeded trace, read from a closed predicate on TLC's output (the exit code plus a named line), never from \"no error printed\"; (2) on rejection, the first divergent step is identified by a line in the evidence log; (3) the two golden-master tests test_g1_reference_cell_all_scores and test_g1_seeded_variant_cell_fails_non_vacuity pass against a real _replay — this depends on the parallel formal-grader implementation, so if it has not merged, prove items 1, 2 and 4 and name item 3 as the join step; (4) the trace interface (the state variables and action names a trace spec binds to) is written down, so G1's prompt can state it. R-84's constraints: tla2tools.jar is the only jar, unless a second one (for example CommunityModules, for Json or IOUtils) is pinned by URL and sha256 and warmed before the clock; generated trace specs go to out_dir, never the archive; recorded traces stay hidden oracle assets; cwd is spec/; native on Windows now, with macOS recorded as unverified. Spike S-12 pinned tla2tools v1.7.4 (sha256 in tools/check_models.py) and Temurin JDK 21 on this host.\nDone when: docs/notes/spike-fm1-tla-trace-validation.md exists, with frontmatter like the other docs/notes files, and records, measured on this host:\n- which TLC mechanism validates an external trace, with its source cited (opened and read, not recalled);\n- the exact TLC argv;\n- the generated trace spec and .cfg;\n- the shape of the trace (JSON or other);\n- the trace interface;\n- a small lease-fold reference model that accepts one recorded real-fold trace and rejects one bug-seeded trace, with the closed accept and reject predicates and the first divergent step;\n- the wall time per trace;\n- any second jar, pinned by URL and sha256;\n- what could not be proven.\nThe note is committed, and uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes.\nNot in scope: formal.py (a parallel worker implements it); authoring G1; engine changes; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 60 minutes.\n\nGrounding: docs/notes/rulings.md R-84; docs/design/formal-grader.md; docs/notes/spike-s12-formal-toolchains.md; tools/check_models.py; models/ (a TLA+ example that runs here); the ai-forward coord-core.py lease fold (from a fresh clone in a scratch directory at a pinned public commit, never C:/Projects/ai-forward's local main). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-fm1 (use absolute paths or cd into it in each shell command).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3QQZZTHRMH40F124SK7Z7G6",
+      "shortname": "compile-Goal: run the DR-FM1 spike that ruling R-84 grants: find and prove, on t…",
+      "datetime": "2026-09-29T23:28:58Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: run the DR-FM1 spike that ruling R-84 grants: find and prove, on this host, how TLC validates an externally recorded trace of the lease fold against a TLA+ model, so the formal grader can score G1's model_conformance and model_non_vacuity; the spike note is the deliverable. Measured (Leader, 2026-09-29, main ca49bd0e): docs/notes/rulings.md R-84 (the last entry) grants the spike, not a mechanism: the design's default (TLC's generated <Model>TTrace.tla/.cfg pair) is unverified, and may be the replay artifact for a counterexample TLC found itself rather than a way to validate an external trace. R-84 lists the exit evidence: (1) a reference model accepts one recorded real-fold trace and rejects one bug-seeded trace, read from a closed predicate on TLC's output (the exit code plus a named line), never from \"no error printed\"; (2) on rejection, the first divergent step is identified by a line in the evidence log; (3) the two golden-master tests test_g1_reference_cell_all_scores and test_g1_seeded_variant_cell_fails_non_vacuity pass against a real _replay — this depends on the parallel formal-grader implementation, so if it has not merged, prove items 1, 2 and 4 and name item 3 as the join step; (4) the trace interface (the state variables and action names a trace spec binds to) is written down, so G1's prompt can state it. R-84's constraints: tla2tools.jar is the only jar, unless a second one (for example CommunityModules, for Json or IOUtils) is pinned by URL and sha256 and warmed before the clock; generated trace specs go to out_dir, never the archive; recorded traces stay hidden oracle assets; cwd is spec/; native on Windows now, with macOS recorded as unverified. Spike S-12 pinned tla2tools v1.7.4 (sha256 in tools/check_models.py) and Temurin JDK 21 on this host.\nDone when: docs/notes/spike-fm1-tla-trace-validation.md exists, with frontmatter like the other docs/notes files, and records, measured on this host:; which TLC mechanism validates an external trace, with its source cited (opened and read, not recalled); the exact TLC argv; the generated trace spec and .cfg; the shape of the trace (JSON or other); the trace interface; a small lease-fold reference model that accepts one recorded real-fold trace and rejects one bug-seeded trace, with the closed accept and reject predicates and the first divergent step; the wall time per trace; any second jar, pinned by URL and sha256; what could not be proven.; The note is committed, and uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes.\nNot in scope: formal.py (a parallel worker implements it); authoring G1; engine changes; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 60 minutes.\nGrounding: docs/notes/rulings.md R-84; docs/design/formal-grader.md; docs/notes/spike-s12-formal-toolchains.md; tools/check_models.py; models/ (a TLA+ example that runs here); the ai-forward coord-core.py lease fold (from a fresh clone in a scratch directory at a pinned public commit, never C:/Projects/ai-forward's local main). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-fm1 (use absolute paths or cd into it in each shell command).\nTrace\n| clause | trace |\n|---|---|\n| done_when: docs/notes/spike-fm1-tla-trace-validation.md exists, with frontmatter like the other docs/notes files, and records, measured on this host: | phrase: docs/notes/spike-fm1-tla-trace-validation.md exists, with frontmatter like the other docs/notes files, and records, measured on this host: |\n| done_when: which TLC mechanism validates an external trace, with its source cited (opened and read, not recalled) | phrase: which TLC mechanism validates an external trace, with its source cited (opened and read, not recalled) |\n| done_when: the exact TLC argv | phrase: the exact TLC argv |\n| done_when: the generated trace spec and .cfg | phrase: the generated trace spec and .cfg |\n| done_when: the shape of the trace (JSON or other) | phrase: the shape of the trace (JSON or other) |\n| done_when: the trace interface | phrase: the trace interface |\n| done_when: a small lease-fold reference model that accepts one recorded real-fold trace and rejects one bug-seeded trace, with the closed accept and reject predicates and the first divergent step | phrase: a small lease-fold reference model that accepts one recorded real-fold trace and rejects one bug-seeded trace, with the closed accept and reject predicates and the first divergent step |\n| done_when: the wall time per trace | phrase: the wall time per trace |\n| done_when: any second jar, pinned by URL and sha256 | phrase: any second jar, pinned by URL and sha256 |\n| done_when: what could not be proven. | phrase: what could not be proven. |\n| done_when: The note is committed, and uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes. | phrase: The note is committed, and uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes. |\n| not_in_scope: formal.py (a parallel worker implements it) | phrase: formal.py (a parallel worker implements it) |\n| not_in_scope: authoring G1 | phrase: authoring G1 |\n| not_in_scope: engine changes | phrase: engine changes |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- docs/notes/rulings.md: unresolved (ambiguous: 4 matches)\n- Model>TTrace.tla/.cfg: unresolved (not found)\n- spec/: unresolved (not found)\n- tools/check_models.py: tools/check_models.py sha256 4cfd675c95ac4cb4b73415977909479a1507c78a433ef5aed5878f1fb8d150b3\n- docs/notes/spike-fm1-tla-trace-validation.md: unresolved (not found)\n- docs/notes: unresolved (not found)\n- docs/ai-forward-pack/scripts/docs-graph.py: unresolved (ambiguous: 142 matches)\n- formal.py: src/harness_bench/grade/formal.py sha256 8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7\n- runs/: unresolved (not found)\n- docs/design/formal-grader.md: docs/design/formal-grader.md sha256 d25da6e28666eaab36ce9d234843b8359c990b3b42ac985175bfa56392af60a8\n- docs/notes/spike-s12-formal-toolchains.md: docs/notes/spike-s12-formal-toolchains.md sha256 df8d513d62ec351e5a02eff71d55416089cba5b8bdf5132f1f28f97c6071b32c\n- models/: unresolved (not found)\n- coord-core.py: unresolved (ambiguous: 145 matches)\n- C:/Projects/ai-forward's: unresolved (outside repo)\n- C:/Projects/x-harness-x-model-bench-w5-fm1: unresolved (outside repo)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3QQZTHB6T6FJG0QCASZC0ND\nraw sha256: f7ea7db139ed08322dcbc0f605da6ee9f9bdc80dac4d7d5a6743b3a14d0698a8\ncompiler model: claude-opus-5-5\nengine seconds: 0.009\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3QQZTHB6T6FJG0QCASZC0ND for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "docs/notes/spike-fm1-tla-trace-validation.md exists, with frontmatter like the other docs/notes files, and records, measured on this host:",
+            "trace": {
+              "kind": "phrase",
+              "ref": "docs/notes/spike-fm1-tla-trace-validation.md exists, with frontmatter like the other docs/notes files, and records, measured on this host:"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "which TLC mechanism validates an external trace, with its source cited (opened and read, not recalled)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "which TLC mechanism validates an external trace, with its source cited (opened and read, not recalled)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the exact TLC argv",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the exact TLC argv"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the generated trace spec and .cfg",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the generated trace spec and .cfg"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the shape of the trace (JSON or other)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the shape of the trace (JSON or other)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the trace interface",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the trace interface"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a small lease-fold reference model that accepts one recorded real-fold trace and rejects one bug-seeded trace, with the closed accept and reject predicates and the first divergent step",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a small lease-fold reference model that accepts one recorded real-fold trace and rejects one bug-seeded trace, with the closed accept and reject predicates and the first divergent step"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "the wall time per trace",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the wall time per trace"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "any second jar, pinned by URL and sha256",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any second jar, pinned by URL and sha256"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "what could not be proven.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "what could not be proven."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The note is committed, and uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The note is committed, and uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "formal.py (a parallel worker implements it)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "formal.py (a parallel worker implements it)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "authoring G1",
+            "trace": {
+              "kind": "phrase",
+              "ref": "authoring G1"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "engine changes",
+            "trace": {
+              "kind": "phrase",
+              "ref": "engine changes"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "docs/notes/spike-fm1-tla-trace-validation.md exists, with frontmatter like the other docs/notes files, and records, measured on this host:",
+            "which TLC mechanism validates an external trace, with its source cited (opened and read, not recalled)",
+            "the exact TLC argv",
+            "the generated trace spec and .cfg",
+            "the shape of the trace (JSON or other)",
+            "the trace interface",
+            "a small lease-fold reference model that accepts one recorded real-fold trace and rejects one bug-seeded trace, with the closed accept and reject predicates and the first divergent step",
+            "the wall time per trace",
+            "any second jar, pinned by URL and sha256",
+            "what could not be proven.",
+            "The note is committed, and uv run python docs/ai-forward-pack/scripts/docs-graph.py validate passes."
+          ],
+          "fan_out_cap": 0,
+          "goal": "run the DR-FM1 spike that ruling R-84 grants: find and prove, on this host, how TLC validates an externally recorded trace of the lease fold against a TLA+ model, so the formal grader can score G1's model_conformance and model_non_vacuity; the spike note is the deliverable. Measured (Leader, 2026-09-29, main ca49bd0e): docs/notes/rulings.md R-84 (the last entry) grants the spike, not a mechanism: the design's default (TLC's generated <Model>TTrace.tla/.cfg pair) is unverified, and may be the replay artifact for a counterexample TLC found itself rather than a way to validate an external trace. R-84 lists the exit evidence: (1) a reference model accepts one recorded real-fold trace and rejects one bug-seeded trace, read from a closed predicate on TLC's output (the exit code plus a named line), never from \"no error printed\"; (2) on rejection, the first divergent step is identified by a line in the evidence log; (3) the two golden-master tests test_g1_reference_cell_all_scores and test_g1_seeded_variant_cell_fails_non_vacuity pass against a real _replay — this depends on the parallel formal-grader implementation, so if it has not merged, prove items 1, 2 and 4 and name item 3 as the join step; (4) the trace interface (the state variables and action names a trace spec binds to) is written down, so G1's prompt can state it. R-84's constraints: tla2tools.jar is the only jar, unless a second one (for example CommunityModules, for Json or IOUtils) is pinned by URL and sha256 and warmed before the clock; generated trace specs go to out_dir, never the archive; recorded traces stay hidden oracle assets; cwd is spec/; native on Windows now, with macOS recorded as unverified. Spike S-12 pinned tla2tools v1.7.4 (sha256 in tools/check_models.py) and Temurin JDK 21 on this host.",
+          "main_line_budget": "one slice of at most 60 minutes.\nGrounding: docs/notes/rulings.md R-84; docs/design/formal-grader.md; docs/notes/spike-s12-formal-toolchains.md; tools/check_models.py; models/ (a TLA+ example that runs here); the ai-forward coord-core.py lease fold (from a fresh clone in a scratch directory at a pinned public commit, never C:/Projects/ai-forward's local main). Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w5-fm1 (use absolute paths or cd into it in each shell command).",
+          "not_in_scope": [
+            "formal.py (a parallel worker implements it)",
+            "authoring G1",
+            "engine changes",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.009,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3QQZTHB6T6FJG0QCASZC0ND",
+        "raw_sha256": "f7ea7db139ed08322dcbc0f605da6ee9f9bdc80dac4d7d5a6743b3a14d0698a8",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 4 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Model>TTrace.tla/.cfg"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "spec/"
+          },
+          {
+            "nearest": null,
+            "path": "tools/check_models.py",
+            "reason": null,
+            "sha256": "4cfd675c95ac4cb4b73415977909479a1507c78a433ef5aed5878f1fb8d150b3",
+            "status": "resolved",
+            "token": "tools/check_models.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/spike-fm1-tla-trace-validation.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 142 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/formal.py",
+            "reason": null,
+            "sha256": "8badf2922762c325b851f9ca8dca09c9f33d67aba6d1a8d6cf71f797047755f7",
+            "status": "resolved",
+            "token": "formal.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/formal-grader.md",
+            "reason": null,
+            "sha256": "d25da6e28666eaab36ce9d234843b8359c990b3b42ac985175bfa56392af60a8",
+            "status": "resolved",
+            "token": "docs/design/formal-grader.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/spike-s12-formal-toolchains.md",
+            "reason": null,
+            "sha256": "df8d513d62ec351e5a02eff71d55416089cba5b8bdf5132f1f28f97c6071b32c",
+            "status": "resolved",
+            "token": "docs/notes/spike-s12-formal-toolchains.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "models/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 145 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-core.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/ai-forward's"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/x-harness-x-model-bench-w5-fm1"
           }
         ],
         "schema": "compiled-prompt/1",
@@ -63845,6 +64970,29 @@ window.AUDIT_DATA = {
           "e618adb docs(design): phase-4 report and summaries design, first draft, with mockup (row 20)"
         ]
       }
+    },
+    {
+      "id": "cl-01M3QQM2N1YTHZY4Q54W01QV9Z",
+      "datetime": "2026-09-29T23:22:27Z",
+      "session": "worker-sonnet-formal",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "Design the formal grader (grade/formal.py) for G1/G2: four US-32 scores, statement integrity, bug confirmation",
+      "prompt": "Design the formal grader (spec S-08g) with the /design-slice skill, so a later /implement slice can build src/harness_bench/grade/formal.py and tasks G1 (TLA+) and G2 (Lean 4) can be authored; the design is the deliverable, not code. Done when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining the four scores of US-32, statement integrity, trace conformance, bug-seeded variants, bug confirmation, the toolchain invocation (warm-before-clock, closing S-12's tla2tools gap), the report surfaces, the ledger facts, error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (persona reviews incl. Test Architect), each verdict recorded in the doc; any decision the design cannot settle becomes a decision request with a recommended default; the doc is committed; docs-graph.py validate passes. Not in scope: implementing formal.py; authoring G1 or G2; changing any code; any file under runs/; any push.",
+      "summary": "docs/design/formal-grader.md, revision 2 (post-gate): grade/formal.py's six metric definitions (formal_checks_clean, statement_integrity, model_conformance, model_non_vacuity, bugs_confirmed, bug_claim_precision) for G1 (TLA+) and G2 (Lean 4), with an exact per-task NA-cascade table, the toolchain-invocation contract via correctness.run_step (closing the D3 procs-allowlist question), a warm-before-clock fix for S-12's tla2tools gap, a STRIDE-lite analysis, a G2 statement-integrity hash that reuses Lean's own #check output, two whole-cell golden-master tests, and a red-first test plan with named mutants. Three real persona reviews ran in parallel (Test Architect, Security & Identity Architect, The Simplifier), each BLOCK on revision 1; all Blockers (2 TA, 3 Security) and the Simplifier's Major are fixed in revision 2, recorded in the Gate record. Two decision requests remain open (DR-FM1: the TLA+ trace-replay mechanism is unspiked, needs a pre-implementation spike; DR-FM2: no judge rubric yet for a not-seeded bug claim). Security/privacy rollups (docs/security/threat-model.md, privacy-review.md) updated with this design's boundaries and findings. docs-graph.py validate: 0 defects.",
+      "rationale": "S-08g is on T-G1/T-G2's critical path and US-32/US-33 require four separate formal scores plus bug confirmation, not a single pass/fail. Three adversarial persona reviews (Test Architect, Security & Identity Architect, The Simplifier) found real gaps in revision 1 -- most materially an untrusted-content-to-tool path (agent-authored TLA+/Lean executed by the grading host) with three unmitigated boundaries -- all closed in revision 2 before the gate cleared.",
+      "artifacts": [
+        "docs/design/formal-grader.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "f31ce5bf8316c4ce44442386a184b10273b30a79",
+        "after": "f31ce5bf8316c4ce44442386a184b10273b30a79",
+        "branch": "w5-formal",
+        "pushed": null,
+        "commits": []
+      },
+      "audit_ref": "al-01M3QQK2HDKRCQJJ411ANYCTJ8"
     }
   ],
   "messages": [
