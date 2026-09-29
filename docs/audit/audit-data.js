@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-29T19:21:18Z",
+  "generated": "2026-09-29T19:57:10Z",
   "audit": [
     {
       "actor": null,
@@ -61158,6 +61158,29 @@ window.AUDIT_DATA = {
       "summary": "E4 ready: django__django-12155 (SWE-bench Verified, dataset princeton-nlp/SWE-bench_Verified rev c104f840cc67f8b6eec6f759ebc8b2693d585d4a), repo django/django @ e8fcdaad5c428878d0a5d6ba820d957013f75595 pinned not vendored (workspace/README.md); oracle uv run --python 3.8 --with-editable . --with docutils python tests/runtests.py -v2 <7 labels>; 1 FAIL_TO_PASS + 6 PASS_TO_PASS discriminate 6/7 FAILED on base vs 7/7 OK on reference (oracle/grade_e4.py via harness_bench.grade.correctness.grade, oracle/evidence.md); bench validate ok.",
       "tags": [],
       "tool": null
+    },
+    {
+      "id": "al-01M3QBW5F5SAX326XPCSZ81XRY",
+      "shortname": "new-bench-task-E2",
+      "datetime": "2026-09-29T19:57:09Z",
+      "session": "worker-sonnet-tb-e2",
+      "prompt": "Author benchmark task E2 from stub to ready as Terminal-Bench 2.0's count-dataset-tokens (medium band), selected by docs/notes/tb2-native-survey.md under R-83.",
+      "summary": "E2 (count-dataset-tokens, medium band) advanced stub -> draft -> ready. task.yaml pins harbor-framework/terminal-bench-2 @2fd12b88, Apache-2.0. Vendored 6 upstream paths, rebuilt byte-for-byte by oracle/vendoring_check.py via git -c core.autocrlf=false archive. One native-path edit (/app/answer.txt -> answer.txt) applied to prompt.md, tests/test_outputs.py and oracle/reference/solve.sh, proved as the sole diff. oracle.runner: pytest (unmerged grader, w5-pytest); bench validate ok regardless. Discrimination proof (oracle/evidence.md): base tree 1 failed (FileNotFoundError), reference 1 passed (79586). Toolchain uv 0.11.26 / Python 3.13.14 / pytest 8.4.1. task.toml agent timeout 900s recorded beside the BOM's 60-minute budget (unchanged, smaller). bench/bom.yaml untouched (Leader join).",
+      "kind": "command",
+      "skill": "new-bench-task",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "tier": "T1",
+      "fan_out": 0,
+      "git": {
+        "sha": "40d6187fa6c146863815cecf5bcb9204fa4acd6a",
+        "short": "40d6187fa",
+        "branch": "w5-e2",
+        "pushed": null
+      }
     }
   ],
   "changes": [
