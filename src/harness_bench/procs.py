@@ -69,16 +69,32 @@ class CellProcess:
         code = self.proc.wait(timeout=timeout)
         return code & 0xFFFFFFFF if sys.platform == "win32" else code
 
-    def terminate_and_confirm(self, timeout: float) -> bool:
-        """Kill the whole tree, re-sending the kill every second; True once the job reports no active process.
+    def _reap_posix_zombie(self, bounded: bool = False) -> None:
+        """POSIX only, and only ever a no-op elsewhere (ADR-0013 Amendment 1, macOS port): a SIGKILLed
+        direct child is a zombie -- its pid table entry persists, so `os.kill(pid, 0)` still reports it
+        alive -- until this process reaps it, which `pgrep -g` (Job.active()) does not do. macos-latest CI
+        observed a following `os.killpg` on that same, still-unreaped pgid fail with `PermissionError`
+        instead of `ProcessLookupError` (tests/test_procs_posix.py). Kept strictly off `sys.platform ==
+        "win32"`: windows-latest CI (run 36619679279,
+        test_engine.py::test_a_cancelled_turn_is_classified_by_its_kill_reason) showed that even a
+        harmless-seeming extra call here is not free on that path -- Job Objects tie engine.py's
+        `_end_process` kill-reason classification to wall-clock timing, and Windows never had the zombie
+        problem this exists for, so it never runs there rather than being proven safe there. `bounded`
+        chooses a short, non-blocking-in-practice `wait()` (the kill was already unconditional) for a
+        caller (close()) that may have skipped terminate_and_confirm's own poll()."""
+        if sys.platform == "win32":
+            return
+        if bounded:
+            try:
+                self.proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                pass
+        else:
+            self.proc.poll()
 
-        POSIX (ADR-0013 Amendment 1, macOS port): once `pgrep -g` reports the group empty, `self.proc` (the
-        direct child, killed by SIGKILL) is a zombie until this process reaps it -- `pgrep` does not list a
-        zombie, but `os.kill(pid, 0)` still reports it alive (the pid table entry persists until reaped),
-        and macos-latest CI observed a following `os.killpg` on that same, still-unreaped pgid fail with
-        `PermissionError` instead of `ProcessLookupError` (verified: tests/test_procs_posix.py's own
-        `_alive()` check on the confirmed-empty group still returned True). `poll()` reaps it (a no-op,
-        cheap, and harmless on Windows too, where there is no zombie state to clear)."""
+    def terminate_and_confirm(self, timeout: float) -> bool:
+        """Kill the whole tree, re-sending the kill every second; True once the job reports no active
+        process. See `_reap_posix_zombie` for why a POSIX pass here also reaps `self.proc`."""
         deadline = time.monotonic() + timeout
         next_kill = 0.0
         while time.monotonic() < deadline:
@@ -86,12 +102,12 @@ class CellProcess:
                 self.job.terminate()
                 next_kill = time.monotonic() + 1.0
             if self.job.active() == 0:
-                self.proc.poll()
+                self._reap_posix_zombie()
                 return True
             time.sleep(0.05)
         confirmed = self.job.active() == 0
         if confirmed:
-            self.proc.poll()
+            self._reap_posix_zombie()
         return confirmed
 
     def close(self) -> None:
@@ -100,15 +116,9 @@ class CellProcess:
         waits for the child to exit.
 
         `close()` can run with no prior `terminate_and_confirm` (a caller may go straight to close()), so
-        it reaps `self.proc` itself rather than relying on that method's own reap (procs.py's
-        terminate_and_confirm docstring: a POSIX zombie still reads alive via `os.kill(pid, 0)` until
-        reaped). `job.close()` just sent SIGKILL, an unblockable, near-instant kill, so a short bounded
-        wait -- never the caller's problem, never unbounded -- is enough to collect it."""
+        on POSIX it reaps `self.proc` itself; see `_reap_posix_zombie`."""
         self.job.close()
-        try:
-            self.proc.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            pass
+        self._reap_posix_zombie(bounded=True)
         for stream in (self.proc.stdin, self.proc.stdout, self.proc.stderr):
             if stream is not None:
                 try:
