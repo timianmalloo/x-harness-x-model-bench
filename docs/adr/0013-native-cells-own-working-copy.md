@@ -18,7 +18,7 @@ summary: >-
   process on the operator's Windows workstation, working in its own git working copy, with its own harness
   home and a symmetric unsandboxed permission profile. A Windows Job Object is how the engine stops a
   cell and knows it has stopped, not a sandbox. Containers, the egress proxy and every other isolation
-  control are dropped for authored tasks; Harbor tasks keep their containers.
+  control are dropped. Amendment 1 (2026-09-28): public tasks run natively too; no cell uses Docker.
 review-suggested: []
 ---
 
@@ -78,7 +78,11 @@ ADR-0001 put each cell in a Linux container, mostly for security (US-48, US-49),
 
 Grading runs natively too: each step that runs cell content works in its own grading working copy (the archive, plus the hidden tests), inside its own Job Object with a deadline.
 
-**4. Harbor tasks keep containers.** Harbor's task format is a container, so Harbor (E-task) cells run in Harbor's environments under Docker Desktop, as the proposal had it. That design is decided with spike A6 in phase 2.
+**4. Every task runs natively, public ones included (Amendment 1, owner ruling 2026-09-28).** No cell uses Docker or any container. The ruling: "I thought we agreed we were not going to use docker" / "this is single user benchmarking."
+- The earlier text kept containers for Harbor (E-task) cells, pending spike A6 in phase 2. That exception is withdrawn.
+- A public task (Terminal-Bench 2.0, SWE-bench Verified, SpecBench, ArchBench) is authored like an authored task. It gets a pinned upstream instance, a native working copy, a native toolchain installed by the task's own setup (a `uv` environment, a pinned SDK) and its upstream tests run on the host.
+- An instance whose environment cannot run natively on the operator's Windows host is not selected. Its task picks another instance from the same upstream band and records why.
+- Spike A6 is not needed.
 
 **5. Platform.** Authored-task cells run on Windows, the operator's platform. The report header says so.
 
@@ -92,7 +96,7 @@ Grading runs natively too: each step that runs cell content works in its own gra
 ## Consequences
 
 - **Positive:**
-  - No Docker Desktop for authored tasks.
+  - No Docker Desktop, for any task (Amendment 1).
   - Copilot needs no token: owner decision 6 closes, and probe C1 is not needed.
   - Cells run where the operator works.
   - No cell survives an engine crash.

@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-28T22:54:54Z",
+  "generated": "2026-09-28T23:49:19Z",
   "audit": [
     {
       "actor": null,
@@ -50929,6 +50929,898 @@ window.AUDIT_DATA = {
             "sha256": null,
             "status": "unresolved",
             "token": "C:/Projects/x-harness-x-model-bench-w4-cg"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3N6R8AQWEEVNRPQW4BJK9MD",
+      "shortname": "Goal: author benchmark task A2 (\"Missing-premise ambiguity\", scenario 1)…",
+      "datetime": "2026-09-28T23:49:10Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: author benchmark task A2 (\"Missing-premise ambiguity\", scenario 1) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task A1 as the worked pattern.\nMeasured (Leader, 2026-09-28, main 2770c5d): tasks/A2/task.yaml is a stub (upstream \"ClarifyCodeBench (missing-premise)\", repo and commit \"tbd\", graders clarify, correctness, cost, process, scripted_user true, budget 15 minutes); task A1 is ready from the same source: ClarifyCodeBench (https://github.com/fangz-cs/ClarifyCodeBench, pinned commit 5e2d5b5ce6259daa034cebb69f65e5e4c6dec3e9) task_199, whose hidden tests come from livecodebench/code_generation_lite (revision 0fe84c3912ea0c4d4a78037083943e8f0c4dd505, file test6.jsonl, its sha256 pinned), with prompt.md, workspace/{README.md, solution.py}, tests/{a1_cases.json, test_a1_hidden.py}, oracle/{README.md, clarifications.yaml, heldout_questions.yaml, reference/} and NOTICE.md; A1's task.yaml records every pin, the oracle runner and command.\nDone when: A2 picks one ClarifyCodeBench instance whose ambiguity type is a missing premise (a deleted precondition or input constraint, not a deleted objective as in A1), named by its exact upstream instance id, with the same repo commit pin as A1 and its hidden tests' upstream dataset, revision, file and sha256 pinned in task.yaml; prompt.md holds the upstream's ambiguous text unchanged (never fixed); workspace/ holds only what the agent may see; tests/ holds the hidden cases with one unittest test each and the oracle command recorded as A1's is; oracle/clarifications.yaml annotates the one key clarification and the scripted user's answer, and oracle/heldout_questions.yaml labels a held-out question set for the matcher following A1's shape; oracle/README.md records the discrimination proof, the hidden tests failing on the base workspace and passing on a reference solution under oracle/reference/, with the exact commands and counts observed; NOTICE.md carries the upstream licences; status is ready and uv run bench validate prints ok; no file under tests/ or oracle/ is reachable from workspace/; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\n\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/A1/ (every file); tasks/A2/task.yaml; bench/bom.yaml (the A2 row); src/harness_bench/grade/clarify.py and src/harness_bench/scripted_user/ (what the clarify grader and the matcher read). Use python, not python3 (Windows). Do not run the full test suite with -n auto: run uv run bench validate and the task's own oracle commands only.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3N6RCH686JQ5S5WASP5HR1D",
+      "shortname": "compile-Goal: author benchmark task A2 (\"Missing-premise ambiguity\", scenario 1)…",
+      "datetime": "2026-09-28T23:49:14Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: author benchmark task A2 (\"Missing-premise ambiguity\", scenario 1) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task A1 as the worked pattern. Measured (Leader, 2026-09-28, main 2770c5d): tasks/A2/task.yaml is a stub (upstream \"ClarifyCodeBench (missing-premise)\", repo and commit \"tbd\", graders clarify, correctness, cost, process, scripted_user true, budget 15 minutes); task A1 is ready from the same source: ClarifyCodeBench (https://github.com/fangz-cs/ClarifyCodeBench, pinned commit 5e2d5b5ce6259daa034cebb69f65e5e4c6dec3e9) task_199, whose hidden tests come from livecodebench/code_generation_lite (revision 0fe84c3912ea0c4d4a78037083943e8f0c4dd505, file test6.jsonl, its sha256 pinned), with prompt.md, workspace/{README.md, solution.py}, tests/{a1_cases.json, test_a1_hidden.py}, oracle/{README.md, clarifications.yaml, heldout_questions.yaml, reference/} and NOTICE.md; A1's task.yaml records every pin, the oracle runner and command.\nDone when: A2 picks one ClarifyCodeBench instance whose ambiguity type is a missing premise (a deleted precondition or input constraint, not a deleted objective as in A1), named by its exact upstream instance id, with the same repo commit pin as A1 and its hidden tests' upstream dataset, revision, file and sha256 pinned in task.yaml; prompt.md holds the upstream's ambiguous text unchanged (never fixed); workspace/ holds only what the agent may see; tests/ holds the hidden cases with one unittest test each and the oracle command recorded as A1's is; oracle/clarifications.yaml annotates the one key clarification and the scripted user's answer, and oracle/heldout_questions.yaml labels a held-out question set for the matcher following A1's shape; oracle/README.md records the discrimination proof, the hidden tests failing on the base workspace and passing on a reference solution under oracle/reference/, with the exact commands and counts observed; NOTICE.md carries the upstream licences; status is ready and uv run bench validate prints ok; no file under tests/ or oracle/ is reachable from workspace/; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/A1/ (every file); tasks/A2/task.yaml; bench/bom.yaml (the A2 row); src/harness_bench/grade/clarify.py and src/harness_bench/scripted_user/ (what the clarify grader and the matcher read). Use python, not python3 (Windows). Do not run the full test suite with -n auto: run uv run bench validate and the task's own oracle commands only.\nTrace\n| clause | trace |\n|---|---|\n| done_when: A2 picks one ClarifyCodeBench instance whose ambiguity type is a missing premise (a deleted precondition or input constraint, not a deleted objective as in A1), named by its exact upstream instance id, with the same repo commit pin as A1 and its hidden tests' upstream dataset, revision, file and sha256 pinned in task.yaml | phrase: A2 picks one ClarifyCodeBench instance whose ambiguity type is a missing premise (a deleted precondition or input constraint, not a deleted objective as in A1), named by its exact upstream instance id, with the same repo commit pin as A1 and its hidden tests' upstream dataset, revision, file and sha256 pinned in task.yaml |\n| done_when: prompt.md holds the upstream's ambiguous text unchanged (never fixed) | phrase: prompt.md holds the upstream's ambiguous text unchanged (never fixed) |\n| done_when: workspace/ holds only what the agent may see | phrase: workspace/ holds only what the agent may see |\n| done_when: tests/ holds the hidden cases with one unittest test each and the oracle command recorded as A1's is | phrase: tests/ holds the hidden cases with one unittest test each and the oracle command recorded as A1's is |\n| done_when: oracle/clarifications.yaml annotates the one key clarification and the scripted user's answer, and oracle/heldout_questions.yaml labels a held-out question set for the matcher following A1's shape | phrase: oracle/clarifications.yaml annotates the one key clarification and the scripted user's answer, and oracle/heldout_questions.yaml labels a held-out question set for the matcher following A1's shape |\n| done_when: oracle/README.md records the discrimination proof, the hidden tests failing on the base workspace and passing on a reference solution under oracle/reference/, with the exact commands and counts observed | phrase: oracle/README.md records the discrimination proof, the hidden tests failing on the base workspace and passing on a reference solution under oracle/reference/, with the exact commands and counts observed |\n| done_when: NOTICE.md carries the upstream licences | phrase: NOTICE.md carries the upstream licences |\n| done_when: status is ready and uv run bench validate prints ok | phrase: status is ready and uv run bench validate prints ok |\n| done_when: no file under tests/ or oracle/ is reachable from workspace/ | phrase: no file under tests/ or oracle/ is reachable from workspace/ |\n| done_when: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover | phrase: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover |\n| done_when: Commit each stage immediately. | phrase: Commit each stage immediately. |\n| not_in_scope: any other task | phrase: any other task |\n| not_in_scope: any engine, grader or report code | phrase: any engine, grader or report code |\n| not_in_scope: running the task in a real harness | phrase: running the task in a real harness |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- /new-bench-task: unresolved (outside repo)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- tasks/A2/task.yaml: tasks/A2/task.yaml sha256 8d9b91afa45aa6f56240f019a51443faa929bfafff43f7d5a59bd184a52be9f8\n- https://github.com/fangz-cs/ClarifyCodeBench: unresolved (not found)\n- livecodebench/code_generation_lite: unresolved (not found)\n- prompt.md: unresolved (ambiguous: 10 matches)\n- workspace/{README.md: unresolved (not found)\n- tests/{a1_cases.json: unresolved (not found; nearest: tasks/A1/tests/a1_cases.json)\n- oracle/{README.md: unresolved (not found)\n- clarifications.yaml: unresolved (ambiguous: 2 matches)\n- heldout_questions.yaml: tasks/A1/oracle/heldout_questions.yaml sha256 7710c34509319b6cf07be70615c8eecadc63b80ce293ca2aa7b10b0c4d583f23\n- reference/}: unresolved (not found)\n- NOTICE.md: tasks/A1/NOTICE.md sha256 43b0609825c3e4d00bb388764dfa79f09e3a4e94c9e6ff29ea5da02a5b459237\n- task.yaml: unresolved (ambiguous: 28 matches)\n- workspace/: unresolved (not found)\n- tests/: unresolved (not found)\n- oracle/clarifications.yaml: tasks/A1/oracle/clarifications.yaml sha256 86fee6273e75d4fad474a89e25edde6f71a676a1112169149f733e8288963e0d\n- oracle/heldout_questions.yaml: tasks/A1/oracle/heldout_questions.yaml sha256 7710c34509319b6cf07be70615c8eecadc63b80ce293ca2aa7b10b0c4d583f23\n- oracle/README.md: unresolved (ambiguous: 7 matches)\n- oracle/reference/: unresolved (not found)\n- oracle/: unresolved (not found)\n- runs/: unresolved (not found)\n- tasks/_template/: unresolved (not found)\n- tasks/A1/: unresolved (not found)\n- bench/bom.yaml: bench/bom.yaml sha256 1ecd633f918176a0f9b9afd87275414434bc3f7a1efe0d31461358b6989bd346\n- src/harness_bench/grade/clarify.py: src/harness_bench/grade/clarify.py sha256 5e8920fddb37429b259995ff24fa6d4f77545e6dc4771c8def99694bf7e04909\n- src/harness_bench/scripted_user/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3N6R8AQWEEVNRPQW4BJK9MD\nraw sha256: 7756a653895215dfa156e7a9ffe0e941551f47ad77933975eaad29536c552069\ncompiler model: claude-opus-5-5\nengine seconds: 0.008\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3N6R8AQWEEVNRPQW4BJK9MD for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A2 picks one ClarifyCodeBench instance whose ambiguity type is a missing premise (a deleted precondition or input constraint, not a deleted objective as in A1), named by its exact upstream instance id, with the same repo commit pin as A1 and its hidden tests' upstream dataset, revision, file and sha256 pinned in task.yaml",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A2 picks one ClarifyCodeBench instance whose ambiguity type is a missing premise (a deleted precondition or input constraint, not a deleted objective as in A1), named by its exact upstream instance id, with the same repo commit pin as A1 and its hidden tests' upstream dataset, revision, file and sha256 pinned in task.yaml"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "prompt.md holds the upstream's ambiguous text unchanged (never fixed)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "prompt.md holds the upstream's ambiguous text unchanged (never fixed)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "workspace/ holds only what the agent may see",
+            "trace": {
+              "kind": "phrase",
+              "ref": "workspace/ holds only what the agent may see"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/ holds the hidden cases with one unittest test each and the oracle command recorded as A1's is",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/ holds the hidden cases with one unittest test each and the oracle command recorded as A1's is"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "oracle/clarifications.yaml annotates the one key clarification and the scripted user's answer, and oracle/heldout_questions.yaml labels a held-out question set for the matcher following A1's shape",
+            "trace": {
+              "kind": "phrase",
+              "ref": "oracle/clarifications.yaml annotates the one key clarification and the scripted user's answer, and oracle/heldout_questions.yaml labels a held-out question set for the matcher following A1's shape"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "oracle/README.md records the discrimination proof, the hidden tests failing on the base workspace and passing on a reference solution under oracle/reference/, with the exact commands and counts observed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "oracle/README.md records the discrimination proof, the hidden tests failing on the base workspace and passing on a reference solution under oracle/reference/, with the exact commands and counts observed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "NOTICE.md carries the upstream licences",
+            "trace": {
+              "kind": "phrase",
+              "ref": "NOTICE.md carries the upstream licences"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "status is ready and uv run bench validate prints ok",
+            "trace": {
+              "kind": "phrase",
+              "ref": "status is ready and uv run bench validate prints ok"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "no file under tests/ or oracle/ is reachable from workspace/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "no file under tests/ or oracle/ is reachable from workspace/"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each stage immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each stage immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any other task",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any other task"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any engine, grader or report code",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any engine, grader or report code"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "running the task in a real harness",
+            "trace": {
+              "kind": "phrase",
+              "ref": "running the task in a real harness"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "A2 picks one ClarifyCodeBench instance whose ambiguity type is a missing premise (a deleted precondition or input constraint, not a deleted objective as in A1), named by its exact upstream instance id, with the same repo commit pin as A1 and its hidden tests' upstream dataset, revision, file and sha256 pinned in task.yaml",
+            "prompt.md holds the upstream's ambiguous text unchanged (never fixed)",
+            "workspace/ holds only what the agent may see",
+            "tests/ holds the hidden cases with one unittest test each and the oracle command recorded as A1's is",
+            "oracle/clarifications.yaml annotates the one key clarification and the scripted user's answer, and oracle/heldout_questions.yaml labels a held-out question set for the matcher following A1's shape",
+            "oracle/README.md records the discrimination proof, the hidden tests failing on the base workspace and passing on a reference solution under oracle/reference/, with the exact commands and counts observed",
+            "NOTICE.md carries the upstream licences",
+            "status is ready and uv run bench validate prints ok",
+            "no file under tests/ or oracle/ is reachable from workspace/",
+            "a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover",
+            "Commit each stage immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "author benchmark task A2 (\"Missing-premise ambiguity\", scenario 1) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task A1 as the worked pattern. Measured (Leader, 2026-09-28, main 2770c5d): tasks/A2/task.yaml is a stub (upstream \"ClarifyCodeBench (missing-premise)\", repo and commit \"tbd\", graders clarify, correctness, cost, process, scripted_user true, budget 15 minutes); task A1 is ready from the same source: ClarifyCodeBench (https://github.com/fangz-cs/ClarifyCodeBench, pinned commit 5e2d5b5ce6259daa034cebb69f65e5e4c6dec3e9) task_199, whose hidden tests come from livecodebench/code_generation_lite (revision 0fe84c3912ea0c4d4a78037083943e8f0c4dd505, file test6.jsonl, its sha256 pinned), with prompt.md, workspace/{README.md, solution.py}, tests/{a1_cases.json, test_a1_hidden.py}, oracle/{README.md, clarifications.yaml, heldout_questions.yaml, reference/} and NOTICE.md; A1's task.yaml records every pin, the oracle runner and command.",
+          "main_line_budget": "one slice of at most 55 minutes; commit each stage immediately.\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/A1/ (every file); tasks/A2/task.yaml; bench/bom.yaml (the A2 row); src/harness_bench/grade/clarify.py and src/harness_bench/scripted_user/ (what the clarify grader and the matcher read). Use python, not python3 (Windows). Do not run the full test suite with -n auto: run uv run bench validate and the task's own oracle commands only.",
+          "not_in_scope": [
+            "any other task",
+            "any engine, grader or report code",
+            "running the task in a real harness",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.008,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3N6R8AQWEEVNRPQW4BJK9MD",
+        "raw_sha256": "7756a653895215dfa156e7a9ffe0e941551f47ad77933975eaad29536c552069",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/new-bench-task"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".claude/skills/new-bench-task/SKILL.md"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/README.md",
+            "reason": null,
+            "sha256": "df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363",
+            "status": "resolved",
+            "token": "tasks/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/A2/task.yaml",
+            "reason": null,
+            "sha256": "8d9b91afa45aa6f56240f019a51443faa929bfafff43f7d5a59bd184a52be9f8",
+            "status": "resolved",
+            "token": "tasks/A2/task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "https://github.com/fangz-cs/ClarifyCodeBench"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "livecodebench/code_generation_lite"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 10 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "prompt.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "workspace/{README.md"
+          },
+          {
+            "nearest": "tasks/A1/tests/a1_cases.json",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/{a1_cases.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/{README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "clarifications.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/A1/oracle/heldout_questions.yaml",
+            "reason": null,
+            "sha256": "7710c34509319b6cf07be70615c8eecadc63b80ce293ca2aa7b10b0c4d583f23",
+            "status": "resolved",
+            "token": "heldout_questions.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "reference/}"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/A1/NOTICE.md",
+            "reason": null,
+            "sha256": "43b0609825c3e4d00bb388764dfa79f09e3a4e94c9e6ff29ea5da02a5b459237",
+            "status": "resolved",
+            "token": "NOTICE.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 28 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "workspace/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/A1/oracle/clarifications.yaml",
+            "reason": null,
+            "sha256": "86fee6273e75d4fad474a89e25edde6f71a676a1112169149f733e8288963e0d",
+            "status": "resolved",
+            "token": "oracle/clarifications.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/A1/oracle/heldout_questions.yaml",
+            "reason": null,
+            "sha256": "7710c34509319b6cf07be70615c8eecadc63b80ce293ca2aa7b10b0c4d583f23",
+            "status": "resolved",
+            "token": "oracle/heldout_questions.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 7 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/reference/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/_template/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/A1/"
+          },
+          {
+            "nearest": null,
+            "path": "bench/bom.yaml",
+            "reason": null,
+            "sha256": "1ecd633f918176a0f9b9afd87275414434bc3f7a1efe0d31461358b6989bd346",
+            "status": "resolved",
+            "token": "bench/bom.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/clarify.py",
+            "reason": null,
+            "sha256": "5e8920fddb37429b259995ff24fa6d4f77545e6dc4771c8def99694bf7e04909",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/clarify.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/scripted_user/"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "pass-through",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M3N6RCYZ48N9S2QD1Q5VH8D5",
+      "shortname": "Goal: author benchmark task A3 (\"Ambiguous-term ambiguity\", scenario 1) …",
+      "datetime": "2026-09-28T23:49:14Z",
+      "session": "prompt-compile",
+      "prompt": "Goal: author benchmark task A3 (\"Ambiguous-term ambiguity\", scenario 1) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task A1 as the worked pattern.\nMeasured (Leader, 2026-09-28, main 2770c5d): tasks/A3/task.yaml is a stub (upstream \"ClarifyCodeBench (ambiguous-term)\", repo and commit \"tbd\", graders clarify, correctness, cost, process, scripted_user true, budget 15 minutes); task A1 is ready from the same source: ClarifyCodeBench (https://github.com/fangz-cs/ClarifyCodeBench, pinned commit 5e2d5b5ce6259daa034cebb69f65e5e4c6dec3e9) task_199, whose hidden tests come from livecodebench/code_generation_lite (revision 0fe84c3912ea0c4d4a78037083943e8f0c4dd505, file test6.jsonl, its sha256 pinned), with prompt.md, workspace/{README.md, solution.py}, tests/{a1_cases.json, test_a1_hidden.py}, oracle/{README.md, clarifications.yaml, heldout_questions.yaml, reference/} and NOTICE.md; A1's task.yaml records every pin, the oracle runner and command.\nDone when: A3 picks one ClarifyCodeBench instance whose ambiguity type is an ambiguous term (a word or phrase with two readings that change the correct output, not a deleted objective as in A1 or a deleted premise as in A2), named by its exact upstream instance id, with the same repo commit pin as A1 and its hidden tests' upstream dataset, revision, file and sha256 pinned in task.yaml; prompt.md holds the upstream's ambiguous text unchanged (never fixed); workspace/ holds only what the agent may see; tests/ holds the hidden cases with one unittest test each and the oracle command recorded as A1's is; oracle/clarifications.yaml annotates the one key clarification and the scripted user's answer, and oracle/heldout_questions.yaml labels a held-out question set for the matcher following A1's shape; oracle/README.md records the discrimination proof, the hidden tests failing on the base workspace and passing on a reference solution under oracle/reference/, with the exact commands and counts observed; NOTICE.md carries the upstream licences; status is ready and uv run bench validate prints ok; no file under tests/ or oracle/ is reachable from workspace/; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\n\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/A1/ (every file); tasks/A3/task.yaml; bench/bom.yaml (the A3 row); src/harness_bench/grade/clarify.py and src/harness_bench/scripted_user/ (what the clarify grader and the matcher read). Use python, not python3 (Windows). Do not run the full test suite with -n auto: run uv run bench validate and the task's own oracle commands only.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M3N6RH5NCNNN8Q1VRHPNN4RS",
+      "shortname": "compile-Goal: author benchmark task A3 (\"Ambiguous-term ambiguity\", scenario 1) …",
+      "datetime": "2026-09-28T23:49:19Z",
+      "session": "coord-opus-cq",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-cq --skill <skill>\nGoal state\nGoal: author benchmark task A3 (\"Ambiguous-term ambiguity\", scenario 1) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task A1 as the worked pattern. Measured (Leader, 2026-09-28, main 2770c5d): tasks/A3/task.yaml is a stub (upstream \"ClarifyCodeBench (ambiguous-term)\", repo and commit \"tbd\", graders clarify, correctness, cost, process, scripted_user true, budget 15 minutes); task A1 is ready from the same source: ClarifyCodeBench (https://github.com/fangz-cs/ClarifyCodeBench, pinned commit 5e2d5b5ce6259daa034cebb69f65e5e4c6dec3e9) task_199, whose hidden tests come from livecodebench/code_generation_lite (revision 0fe84c3912ea0c4d4a78037083943e8f0c4dd505, file test6.jsonl, its sha256 pinned), with prompt.md, workspace/{README.md, solution.py}, tests/{a1_cases.json, test_a1_hidden.py}, oracle/{README.md, clarifications.yaml, heldout_questions.yaml, reference/} and NOTICE.md; A1's task.yaml records every pin, the oracle runner and command.\nDone when: A3 picks one ClarifyCodeBench instance whose ambiguity type is an ambiguous term (a word or phrase with two readings that change the correct output, not a deleted objective as in A1 or a deleted premise as in A2), named by its exact upstream instance id, with the same repo commit pin as A1 and its hidden tests' upstream dataset, revision, file and sha256 pinned in task.yaml; prompt.md holds the upstream's ambiguous text unchanged (never fixed); workspace/ holds only what the agent may see; tests/ holds the hidden cases with one unittest test each and the oracle command recorded as A1's is; oracle/clarifications.yaml annotates the one key clarification and the scripted user's answer, and oracle/heldout_questions.yaml labels a held-out question set for the matcher following A1's shape; oracle/README.md records the discrimination proof, the hidden tests failing on the base workspace and passing on a reference solution under oracle/reference/, with the exact commands and counts observed; NOTICE.md carries the upstream licences; status is ready and uv run bench validate prints ok; no file under tests/ or oracle/ is reachable from workspace/; a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover; Commit each stage immediately.\nNot in scope: any other task; any engine, grader or report code; running the task in a real harness; any file under runs/; any push.\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: one slice of at most 55 minutes; commit each stage immediately.\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/A1/ (every file); tasks/A3/task.yaml; bench/bom.yaml (the A3 row); src/harness_bench/grade/clarify.py and src/harness_bench/scripted_user/ (what the clarify grader and the matcher read). Use python, not python3 (Windows). Do not run the full test suite with -n auto: run uv run bench validate and the task's own oracle commands only.\nTrace\n| clause | trace |\n|---|---|\n| done_when: A3 picks one ClarifyCodeBench instance whose ambiguity type is an ambiguous term (a word or phrase with two readings that change the correct output, not a deleted objective as in A1 or a deleted premise as in A2), named by its exact upstream instance id, with the same repo commit pin as A1 and its hidden tests' upstream dataset, revision, file and sha256 pinned in task.yaml | phrase: A3 picks one ClarifyCodeBench instance whose ambiguity type is an ambiguous term (a word or phrase with two readings that change the correct output, not a deleted objective as in A1 or a deleted premise as in A2), named by its exact upstream instance id, with the same repo commit pin as A1 and its hidden tests' upstream dataset, revision, file and sha256 pinned in task.yaml |\n| done_when: prompt.md holds the upstream's ambiguous text unchanged (never fixed) | phrase: prompt.md holds the upstream's ambiguous text unchanged (never fixed) |\n| done_when: workspace/ holds only what the agent may see | phrase: workspace/ holds only what the agent may see |\n| done_when: tests/ holds the hidden cases with one unittest test each and the oracle command recorded as A1's is | phrase: tests/ holds the hidden cases with one unittest test each and the oracle command recorded as A1's is |\n| done_when: oracle/clarifications.yaml annotates the one key clarification and the scripted user's answer, and oracle/heldout_questions.yaml labels a held-out question set for the matcher following A1's shape | phrase: oracle/clarifications.yaml annotates the one key clarification and the scripted user's answer, and oracle/heldout_questions.yaml labels a held-out question set for the matcher following A1's shape |\n| done_when: oracle/README.md records the discrimination proof, the hidden tests failing on the base workspace and passing on a reference solution under oracle/reference/, with the exact commands and counts observed | phrase: oracle/README.md records the discrimination proof, the hidden tests failing on the base workspace and passing on a reference solution under oracle/reference/, with the exact commands and counts observed |\n| done_when: NOTICE.md carries the upstream licences | phrase: NOTICE.md carries the upstream licences |\n| done_when: status is ready and uv run bench validate prints ok | phrase: status is ready and uv run bench validate prints ok |\n| done_when: no file under tests/ or oracle/ is reachable from workspace/ | phrase: no file under tests/ or oracle/ is reachable from workspace/ |\n| done_when: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover | phrase: a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover |\n| done_when: Commit each stage immediately. | phrase: Commit each stage immediately. |\n| not_in_scope: any other task | phrase: any other task |\n| not_in_scope: any engine, grader or report code | phrase: any engine, grader or report code |\n| not_in_scope: running the task in a real harness | phrase: running the task in a real harness |\n| not_in_scope: any file under runs/ | phrase: any file under runs/ |\n| not_in_scope: any push. | phrase: any push. |\nReferences\n- /new-bench-task: unresolved (outside repo)\n- .claude/skills/new-bench-task/SKILL.md: unresolved (not found)\n- tasks/README.md: tasks/README.md sha256 df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363\n- tasks/A3/task.yaml: tasks/A3/task.yaml sha256 f135b550ab7906226ed6ffc4b0717b3077bc5f06fc78ff38aa6b4505dbcc7e6c\n- https://github.com/fangz-cs/ClarifyCodeBench: unresolved (not found)\n- livecodebench/code_generation_lite: unresolved (not found)\n- prompt.md: unresolved (ambiguous: 10 matches)\n- workspace/{README.md: unresolved (not found)\n- tests/{a1_cases.json: unresolved (not found; nearest: tasks/A1/tests/a1_cases.json)\n- oracle/{README.md: unresolved (not found)\n- clarifications.yaml: unresolved (ambiguous: 2 matches)\n- heldout_questions.yaml: tasks/A1/oracle/heldout_questions.yaml sha256 7710c34509319b6cf07be70615c8eecadc63b80ce293ca2aa7b10b0c4d583f23\n- reference/}: unresolved (not found)\n- NOTICE.md: tasks/A1/NOTICE.md sha256 43b0609825c3e4d00bb388764dfa79f09e3a4e94c9e6ff29ea5da02a5b459237\n- task.yaml: unresolved (ambiguous: 28 matches)\n- workspace/: unresolved (not found)\n- tests/: unresolved (not found)\n- oracle/clarifications.yaml: tasks/A1/oracle/clarifications.yaml sha256 86fee6273e75d4fad474a89e25edde6f71a676a1112169149f733e8288963e0d\n- oracle/heldout_questions.yaml: tasks/A1/oracle/heldout_questions.yaml sha256 7710c34509319b6cf07be70615c8eecadc63b80ce293ca2aa7b10b0c4d583f23\n- oracle/README.md: unresolved (ambiguous: 7 matches)\n- oracle/reference/: unresolved (not found)\n- oracle/: unresolved (not found)\n- runs/: unresolved (not found)\n- tasks/_template/: unresolved (not found)\n- tasks/A1/: unresolved (not found)\n- bench/bom.yaml: bench/bom.yaml sha256 1ecd633f918176a0f9b9afd87275414434bc3f7a1efe0d31461358b6989bd346\n- src/harness_bench/grade/clarify.py: src/harness_bench/grade/clarify.py sha256 5e8920fddb37429b259995ff24fa6d4f77545e6dc4771c8def99694bf7e04909\n- src/harness_bench/scripted_user/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M3N6RCYZ48N9S2QD1Q5VH8D5\nraw sha256: 552fae321d586502089278b1f2ead2c30086b6b1d91db503602f1b435be2b555\ncompiler model: claude-opus-5-5\nengine seconds: 0.008\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M3N6RCYZ48N9S2QD1Q5VH8D5 for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A3 picks one ClarifyCodeBench instance whose ambiguity type is an ambiguous term (a word or phrase with two readings that change the correct output, not a deleted objective as in A1 or a deleted premise as in A2), named by its exact upstream instance id, with the same repo commit pin as A1 and its hidden tests' upstream dataset, revision, file and sha256 pinned in task.yaml",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A3 picks one ClarifyCodeBench instance whose ambiguity type is an ambiguous term (a word or phrase with two readings that change the correct output, not a deleted objective as in A1 or a deleted premise as in A2), named by its exact upstream instance id, with the same repo commit pin as A1 and its hidden tests' upstream dataset, revision, file and sha256 pinned in task.yaml"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "prompt.md holds the upstream's ambiguous text unchanged (never fixed)",
+            "trace": {
+              "kind": "phrase",
+              "ref": "prompt.md holds the upstream's ambiguous text unchanged (never fixed)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "workspace/ holds only what the agent may see",
+            "trace": {
+              "kind": "phrase",
+              "ref": "workspace/ holds only what the agent may see"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/ holds the hidden cases with one unittest test each and the oracle command recorded as A1's is",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/ holds the hidden cases with one unittest test each and the oracle command recorded as A1's is"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "oracle/clarifications.yaml annotates the one key clarification and the scripted user's answer, and oracle/heldout_questions.yaml labels a held-out question set for the matcher following A1's shape",
+            "trace": {
+              "kind": "phrase",
+              "ref": "oracle/clarifications.yaml annotates the one key clarification and the scripted user's answer, and oracle/heldout_questions.yaml labels a held-out question set for the matcher following A1's shape"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "oracle/README.md records the discrimination proof, the hidden tests failing on the base workspace and passing on a reference solution under oracle/reference/, with the exact commands and counts observed",
+            "trace": {
+              "kind": "phrase",
+              "ref": "oracle/README.md records the discrimination proof, the hidden tests failing on the base workspace and passing on a reference solution under oracle/reference/, with the exact commands and counts observed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "NOTICE.md carries the upstream licences",
+            "trace": {
+              "kind": "phrase",
+              "ref": "NOTICE.md carries the upstream licences"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "status is ready and uv run bench validate prints ok",
+            "trace": {
+              "kind": "phrase",
+              "ref": "status is ready and uv run bench validate prints ok"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "no file under tests/ or oracle/ is reachable from workspace/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "no file under tests/ or oracle/ is reachable from workspace/"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit each stage immediately.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit each stage immediately."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any other task",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any other task"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any engine, grader or report code",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any engine, grader or report code"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "running the task in a real harness",
+            "trace": {
+              "kind": "phrase",
+              "ref": "running the task in a real harness"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any file under runs/",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any file under runs/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "any push.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "any push."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "A3 picks one ClarifyCodeBench instance whose ambiguity type is an ambiguous term (a word or phrase with two readings that change the correct output, not a deleted objective as in A1 or a deleted premise as in A2), named by its exact upstream instance id, with the same repo commit pin as A1 and its hidden tests' upstream dataset, revision, file and sha256 pinned in task.yaml",
+            "prompt.md holds the upstream's ambiguous text unchanged (never fixed)",
+            "workspace/ holds only what the agent may see",
+            "tests/ holds the hidden cases with one unittest test each and the oracle command recorded as A1's is",
+            "oracle/clarifications.yaml annotates the one key clarification and the scripted user's answer, and oracle/heldout_questions.yaml labels a held-out question set for the matcher following A1's shape",
+            "oracle/README.md records the discrimination proof, the hidden tests failing on the base workspace and passing on a reference solution under oracle/reference/, with the exact commands and counts observed",
+            "NOTICE.md carries the upstream licences",
+            "status is ready and uv run bench validate prints ok",
+            "no file under tests/ or oracle/ is reachable from workspace/",
+            "a test earns its place by a failure only it catches, so add no repo test beyond what bench validate and the discrimination proof already cover",
+            "Commit each stage immediately."
+          ],
+          "fan_out_cap": 0,
+          "goal": "author benchmark task A3 (\"Ambiguous-term ambiguity\", scenario 1) from stub to ready, following the /new-bench-task skill (.claude/skills/new-bench-task/SKILL.md) and the task contract (tasks/README.md), with task A1 as the worked pattern. Measured (Leader, 2026-09-28, main 2770c5d): tasks/A3/task.yaml is a stub (upstream \"ClarifyCodeBench (ambiguous-term)\", repo and commit \"tbd\", graders clarify, correctness, cost, process, scripted_user true, budget 15 minutes); task A1 is ready from the same source: ClarifyCodeBench (https://github.com/fangz-cs/ClarifyCodeBench, pinned commit 5e2d5b5ce6259daa034cebb69f65e5e4c6dec3e9) task_199, whose hidden tests come from livecodebench/code_generation_lite (revision 0fe84c3912ea0c4d4a78037083943e8f0c4dd505, file test6.jsonl, its sha256 pinned), with prompt.md, workspace/{README.md, solution.py}, tests/{a1_cases.json, test_a1_hidden.py}, oracle/{README.md, clarifications.yaml, heldout_questions.yaml, reference/} and NOTICE.md; A1's task.yaml records every pin, the oracle runner and command.",
+          "main_line_budget": "one slice of at most 55 minutes; commit each stage immediately.\nGrounding: .claude/skills/new-bench-task/SKILL.md; tasks/README.md; tasks/_template/; tasks/A1/ (every file); tasks/A3/task.yaml; bench/bom.yaml (the A3 row); src/harness_bench/grade/clarify.py and src/harness_bench/scripted_user/ (what the clarify grader and the matcher read). Use python, not python3 (Windows). Do not run the full test suite with -n auto: run uv run bench validate and the task's own oracle commands only.",
+          "not_in_scope": [
+            "any other task",
+            "any engine, grader or report code",
+            "running the task in a real harness",
+            "any file under runs/",
+            "any push."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "pass-through",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.008,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M3N6RCYZ48N9S2QD1Q5VH8D5",
+        "raw_sha256": "552fae321d586502089278b1f2ead2c30086b6b1d91db503602f1b435be2b555",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/new-bench-task"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".claude/skills/new-bench-task/SKILL.md"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/README.md",
+            "reason": null,
+            "sha256": "df7c462792c9beb184cc7c65cc00acd973607e3ccb1721fbc3e0d5d8f8eba363",
+            "status": "resolved",
+            "token": "tasks/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/A3/task.yaml",
+            "reason": null,
+            "sha256": "f135b550ab7906226ed6ffc4b0717b3077bc5f06fc78ff38aa6b4505dbcc7e6c",
+            "status": "resolved",
+            "token": "tasks/A3/task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "https://github.com/fangz-cs/ClarifyCodeBench"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "livecodebench/code_generation_lite"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 10 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "prompt.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "workspace/{README.md"
+          },
+          {
+            "nearest": "tasks/A1/tests/a1_cases.json",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/{a1_cases.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/{README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "clarifications.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/A1/oracle/heldout_questions.yaml",
+            "reason": null,
+            "sha256": "7710c34509319b6cf07be70615c8eecadc63b80ce293ca2aa7b10b0c4d583f23",
+            "status": "resolved",
+            "token": "heldout_questions.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "reference/}"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/A1/NOTICE.md",
+            "reason": null,
+            "sha256": "43b0609825c3e4d00bb388764dfa79f09e3a4e94c9e6ff29ea5da02a5b459237",
+            "status": "resolved",
+            "token": "NOTICE.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 28 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "workspace/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/A1/oracle/clarifications.yaml",
+            "reason": null,
+            "sha256": "86fee6273e75d4fad474a89e25edde6f71a676a1112169149f733e8288963e0d",
+            "status": "resolved",
+            "token": "oracle/clarifications.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/A1/oracle/heldout_questions.yaml",
+            "reason": null,
+            "sha256": "7710c34509319b6cf07be70615c8eecadc63b80ce293ca2aa7b10b0c4d583f23",
+            "status": "resolved",
+            "token": "oracle/heldout_questions.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 7 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/reference/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/_template/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/A1/"
+          },
+          {
+            "nearest": null,
+            "path": "bench/bom.yaml",
+            "reason": null,
+            "sha256": "1ecd633f918176a0f9b9afd87275414434bc3f7a1efe0d31461358b6989bd346",
+            "status": "resolved",
+            "token": "bench/bom.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/clarify.py",
+            "reason": null,
+            "sha256": "5e8920fddb37429b259995ff24fa6d4f77545e6dc4771c8def99694bf7e04909",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/clarify.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/scripted_user/"
           }
         ],
         "schema": "compiled-prompt/1",

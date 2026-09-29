@@ -101,7 +101,7 @@ If that works end to end for the smoke BOM, the product is worth building. Every
 **In scope (BOM v0):**
 - The `harness × model × pack` factorial over the 24-task, seven-scenario BOM v0.2 (`bench/bom.yaml`).
 - Harnesses: Claude Code, Codex CLI, Copilot CLI.
-- Local execution on the owner's Windows 11 workstation. Authored-task cells run natively, each in its own git working copy. Harbor tasks run in their own containers under Docker Desktop (amended 2026-09-23 by ADR-0013, back to the proposal's split, after ADR-0001 had put every cell in a container).
+- Local execution on the owner's Windows 11 workstation. Every cell runs natively, each in its own git working copy, public tasks included; no cell uses Docker (ADR-0013, amended 2026-09-28: "this is single user benchmarking").
 - The seven metric areas of `bench/metrics.yaml` v0.2, the oracle ladder, two blind vendor judges and bootstrap statistics.
 - The CLI table, one HTML report and two AI summaries.
 - Comparison of two runs (for example two pack revisions), in the full milestone.
@@ -380,11 +380,10 @@ Each criterion is written so that a test can fail it. IDs are stable, and downst
   - the run record states, per harness, the static allowlist of tool classes (file edit in workspace, shell in workspace, package install, network), and the lists are identical across harnesses;
   - no tool call in any cell is approved by a model. [Spike: today Codex self-approves and Claude and Copilot block. Verified]
 - ~~**Given** a cell whose agent tries to write outside its workspace…~~ *Withdrawn 2026-09-23 by ADR-0013: an agent's reach outside its working copy is not restricted or detected, by owner ruling ("if an agent benchmark is operating in its own worktree, that's all we are looking for").*
-- **Given** a Harbor task container **When** it is created **Then** it has no bind mount of the operator's profile and no access to the Docker socket.
 
 **US-48 · smoke — As P1, I want no cell to be able to reach my credentials or other data on the host, so that an unattended agent cannot leak what it should never see.** *(Withdrawn for authored tasks 2026-09-23 by ADR-0013. Cells run with the operator's rights, and the owner accepts the risk: "that's a risk that I am not worried about." It still applies to Harbor task containers (US-14's Harbor criterion). It had earlier been amended by ADR-0012.)*
-- *(Harbor task containers only, from phase 2:)* **Given** canary secrets planted in the operator profile (an SSH key, a git credential, another harness's auth file, a file in a sibling repo) **When** a hostile fixture task tries to read each one and send it to a local listener **Then** every read is denied, or the cell runs under an identity or sandbox that cannot reach them. No canary appears in any transcript, archive or listener log. The transcript and archive check is mandatory even when the listener stays empty, because network egress is not enforced on native cells (C9).
-- *(Harbor task containers only, from phase 2:)* **Given** a cell **When** its environment is inspected **Then** the only credential it can reach is its own harness's model-API credential, recorded by name (never by value).
+- *(Withdrawn with containers, ADR-0013 Amendment 1: no cell runs in a container. The criteria below are kept as a record.)* **Given** canary secrets planted in the operator profile (an SSH key, a git credential, another harness's auth file, a file in a sibling repo) **When** a hostile fixture task tries to read each one and send it to a local listener **Then** every read is denied, or the cell runs under an identity or sandbox that cannot reach them. No canary appears in any transcript, archive or listener log. The transcript and archive check is mandatory even when the listener stays empty, because network egress is not enforced on native cells (C9).
+- *(Withdrawn with containers, ADR-0013 Amendment 1.)* **Given** a cell **When** its environment is inspected **Then** the only credential it can reach is its own harness's model-API credential, recorded by name (never by value).
 
 **US-49 · smoke — As P1, I want no cell to take an external, irreversible action, so that a benchmark run cannot push code, open issues or publish packages.** *(Amended 2026-09-23 by ADR-0013: met by a task clone with no remote. `gh` and git credential helpers stay available to cells as they are to the operator; the owner accepts this. It had earlier been amended by ADR-0012.)*
 - **Given** any cell **When** it starts **Then** its working copy has no git remote, and no commit, stash or remote made by another cell is visible in it.
@@ -407,7 +406,7 @@ Each criterion is written so that a test can fail it. IDs are stable, and downst
 **US-50 · smoke — As P1, I want every tool a run depends on pinned and recorded, so that a result is reproducible and a supply-chain change is visible.** *(Amended 2026-09-23 by ADR-0012: pins and digests kept; SBOM and CVE scanning optional.)*
 - **Given** a run **When** it starts **Then** the run record lists the version, content hash and licence of each dependency:
   - ACP adapters and the CLIs they run;
-  - Harbor and each task container image (by digest);
+  - each public task's pinned upstream instance and its native toolchain versions;
   - formal toolchains *(G)*;
   - mutation tools;
   - the Python environment lock.
@@ -571,7 +570,7 @@ Each criterion is written so that a test can fail it. IDs are stable, and downst
 | Security | US-14, US-46, US-47, US-48, US-49, US-50. No credential value in any archive, results store or report (US-47). |
 | Privacy | A published report and every vendor payload pass US-47. Archives stay local under `runs/` (gitignored), are never published with a report, and are kept until P1 deletes them. Transcripts enter vendor calls only for judges and summary 2, after US-47. |
 | Usability | UXA-3 (reach the leaderboard and any evidence) and UXA-7 (every error names cause and action). |
-| Compatibility | Windows 11 host; authored-task cells run natively in their own working copies (ADR-0013); Docker Desktop only for Harbor tasks. Python ≥ 3.12 on the host. One launch path for every cell of a run, so telemetry is comparable. Results describe harnesses on Windows, which every report header states, with the SDK versions used. |
+| Compatibility | Windows 11 host; every cell runs natively in its own working copy, public tasks included; no Docker (ADR-0013, Amendment 1). Python ≥ 3.12 on the host. One launch path for every cell of a run, so telemetry is comparable. Results describe harnesses on Windows, which every report header states, with the SDK versions used. |
 | Maintainability | Graders are pure functions of an archive (US-26), each with frozen-fixture tests. Scoring invariants (US-27, US-36, monotone normalisation) are property-tested. |
 | Portability | Windows only in v0 (NG9). |
 
@@ -610,7 +609,6 @@ Each criterion is written so that a test can fail it. IDs are stable, and downst
 - **Unhappy paths:**
   - model mismatch; auth failure under isolation; permission block; timeout;
   - disk full at archive;
-  - Docker not running for a Harbor task;
   - judge API outage: grading continues, judged metrics are NA, and a re-grade fills them;
   - a decision request unanswered at timeout (US-15).
 
@@ -1142,7 +1140,7 @@ One screen, eleven sections. Focal point: the **leaderboard** (U6).
 | R9 | Readers may misread intervals | Show the smoke report to two P3 readers; ask them to name the leader and whether the pack helped | S-10 |
 | R10 | Matcher threshold (US-31) is unset | **Closed 2026-09-25 (R-39 c1, R-52):** set from the held-out measurement in `docs/notes/spike-s04-scripted-user.md` and `docs/design/phase2-scripted-user.md` section 10. The floor is precision 1.0, 0 default matches and exact + normalised recall 1.0. Confidence T = 0.80 on paraphrase + compound recall; the wave-2 matcher scores 0/11, so A1 cells carry `low-confidence matcher`. Pinned by `tests/test_heldout_matcher.py` (T-39-1) | S-04 |
 | R11 | Host isolation from credentials and the network on native Windows (US-48, C9) | **Closed 2026-09-23:** isolation beyond a working copy is not required (ADR-0013); spikes R11, N1 and N2 recorded | S-02 |
-| R12 | Harbor is not installed; E1 needs it | Install Harbor; run one TB2 task under Docker Desktop | S-03 / S-06 |
+| R12 | Closed by ADR-0013 Amendment 1: E-tasks run natively, so Harbor and Docker are not needed | Select public instances that run natively on Windows | S-03 / S-06 |
 | R13 | `mutmut` may not run on native Windows (it forks) | Run `mutmut run` on the workstation; else run it under WSL or choose another tool | S-08b |
 | R14 | Package installs by agents run code on the host | Decide in S-02 whether package install is allowed, and from which registries; record it in the allowlist (US-14) | S-02 |
 | R15 | Prose→matrix compilation has no eval set beyond the plan confirmation | Five prose→matrix cases as a fixture in S-01 | S-01 |

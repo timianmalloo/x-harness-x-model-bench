@@ -38,7 +38,7 @@ summary: >-
 **What the system must do:** the spec's core scenario. Run a `harness × model × pack` matrix over a BOM, one isolated cell per (task version, combo, pack, repetition); grade every cell with the strongest oracle; report with honest uncertainty.
 
 **Hard constraints:**
-- **Host.** One Windows 11 workstation; local only (NG2); Windows host only (NG9). Docker Desktop only for Harbor tasks (ADR-0013).
+- **Host.** One Windows 11 workstation; local only (NG2); Windows host only (NG9). No Docker for any task (ADR-0013, Amendment 1).
 - **Isolation.** Each cell works in its own working copy, and nothing more (owner ruling, ADR-0013). US-8, US-13 and US-14 as amended; US-48 withdrawn for authored tasks.
 - **Validity.** US-9–US-12: verbatim prompts, pack-free `pack=off`, served model verified with at least one call, pinned builds.
 - **Reproducibility.** US-4 and US-26.
@@ -180,11 +180,11 @@ flowchart TB
 | Copilot CLI 1.0.88 / 1.0.89 | `--acp --model`, `--allow-tool`; per-home state; login from the Windows credential store | Spikes 1.2, R1, N1.2 | Verified |
 | Native records | Claude `projects/<slug>/<sid>.jsonl`; Codex `sessions/…/rollout-*-<sid>.jsonl`; Copilot `session-store.db` `assistant_usage_events`; token semantics differ per harness | Spikes 1.2, R1.2, R11.2 | Verified (formats unversioned) |
 | Windows Job Objects (`ctypes`) | Kill-on-close; `TerminateJobObject`; active-process count; peak memory | Spike N2 | Verified |
-| Docker Desktop 4.91 / engine 29.8 | Harbor task containers only | Spike R11.1 | Verified |
+| Docker Desktop | Not used: no cell runs in a container (ADR-0013, Amendment 1) | owner ruling 2026-09-28 | Verified |
 | Gateway backend (vendor API or headless, tools off) | Tool-less, schema-constrained output | Not spiked; no keys | Flagged (owner decision) |
 | TLC on JDK 21 | Model-check the lifecycle | `tools/check_models.py`; US-44 bounds checked | Verified |
 | Python monotonic clock on Windows across sleep | Whether it advances during suspend | Not spiked | Flagged (phase 1) |
-| Harbor environments as base images; this driver as a Harbor agent | E-tasks in our container shape | Not spiked; Harbor not installed | Flagged (A6) |
+| Harbor | Not used: E-tasks are authored natively (ADR-0013, Amendment 1) | owner ruling 2026-09-28 | Verified |
 
 ## Cross-cutting concerns
 
@@ -215,7 +215,7 @@ flowchart TB
 
 ## Load-bearing decisions → ADRs
 
-- **ADR-0001:** every measured cell runs in its own hardened Linux container. **Superseded by ADR-0013 for authored tasks**; kept for Harbor task containers.
+- **ADR-0001:** every measured cell runs in its own hardened Linux container. **Superseded by ADR-0013** for every task (Amendment 1 withdrew the Harbor exception).
 - **ADR-0002:** a bench-owned ACP cell driver, not coord-runner or Harbor, with a re-evaluation trigger.
 - **ADR-0003:** a pinned per-cell harness profile, scoped credential kinds, and a verified served model.
 - **ADR-0004:** a static, symmetric permission profile, with dependencies restored offline.
@@ -254,7 +254,7 @@ flowchart TB
 | Phase | End-to-end capability it proves | Real | Mocked / stubbed (seam = contract) | Human validation (demo) | Test validation (E2E) | Unblocks |
 | --- | --- | --- | --- | --- | --- | --- |
 | **1 · walking skeleton** | Prose → plan → 2 combos (cc-sonnet, codex-sol) × pack on/off × 1 rep on the operator-authored fixture task `X1` (tiny Python, hidden test) → native cells in their own working copies → archive → telemetry → correctness + cost in a grading working copy → CLI table + minimal HTML (header, validity banner, leaderboard, drill-down) | Lifecycle model + TLC; engine at parallelism ≤ 2 with intents, a Job Object per cell, failure taxonomy, deadlines, heartbeat, spans; workspace builder and tools folder; the Claude and Codex profiles; driver; archiver with no link following and the exact-value scan; readers; correctness and cost graders; views; report skeleton | Network `unrestricted` (recorded); Copilot not in phase 1; statistics `not computed (k=1)`; no judges or summaries in phase 1 (no caller yet) | `/start-benchmark cc-sonnet and codex-sol, pack on and off, task X1, 1 rep` → confirm → table and report → click a score → evidence | TLC passes and seeded variants fail; the 4-cell E2E asserts outcomes, verbatim prompt hash, served model ≥ 1 call, chained ledgers verify, byte-identical canonical exports on re-grade; kill-in-each-state leaves no process in the cell's job; B6 tests (fsmonitor, symlink, hook); ledger tamper tests; fault injection (an adapter crash, a handshake hang, a disk-full write) each gets its own cause and `failed (unclassified)` stays 0; per-cell resource samples (peak memory and CPU time from the job, archive bytes) recorded for the disk projection | Every later phase |
-| **2 · smoke on all harnesses** | The six smoke tasks on all three harnesses, overnight | + Copilot profile (native, no token); T0 scripted-user matcher for A1; Harbor E1 base image (spike A6); stop, decision timeout, circuit breaker; power request; per-class canaries (US-13); benchmark credentials required for non-operator tasks | Judges and summaries not yet (their metrics NOT_RECORDED, stated) | P1 runs the smoke BOM overnight; at 07:00 `bench status` explains every non-completed cell | Stop within 30 s; answer-versus-timeout race | Real grading at scale |
+| **2 · smoke on all harnesses** | The six smoke tasks on all three harnesses, overnight | + Copilot profile (native, no token); T0 scripted-user matcher for A1; E1 authored natively (ADR-0013, Amendment 1); stop, decision timeout, circuit breaker; power request; per-class canaries (US-13); benchmark credentials required for non-operator tasks | Judges and summaries not yet (their metrics NOT_RECORDED, stated) | P1 runs the smoke BOM overnight; at 07:00 `bench status` explains every non-completed cell | Stop within 30 s; answer-versus-timeout race | Real grading at scale |
 | **3 · full graders + judges** | Every smoke metric graded; judged items blind by two vendors | + drift, rigor, mutation, clarify, process graders; model gateway (owner-chosen backend); egress gate; calibration sets; matcher model rung | Summaries | Re-grade the smoke archive; κ in the header | Byte-identical re-grade from cache; injection fixture (US-46); egress canary (US-47) | The complete report |
 | **4 · report + statistics** | The complete Part C report with intervals, pack effect and AI summaries | + bootstrap; every section; summaries with the claim check; publication through the egress gate | — | Two P3 readers name the leader and the pack effect (R9) | UIA-1..15; axe; offline load | The full grid |
 | **5 · full grid** | 24 tasks × combos × packs × 3 reps; resume; comparison; G-tasks after S-12; protocol conformance | + resume; comparison; stability; G-task images; the coordination-protocol model | — | A pack change validated by a re-run comparison | Crash in each state, then resume; TLC on the coordination model | — |
@@ -275,7 +275,7 @@ Mapped to Python with one control per criterion in **ADR-0011**. Recorded deviat
 ## Spec amendments made by this architecture
 
 Applied to `docs/specs/harness-bench.md` on 2026-09-23:
-1. **In scope:** every cell runs in a Linux container (ADR-0001). *Superseded by ADR-0013: authored-task cells run natively in their own working copies; Harbor tasks in containers.*
+1. **In scope:** every cell runs in a Linux container (ADR-0001). *Superseded by ADR-0013: every cell runs natively in its own working copy, public tasks included (Amendment 1).*
 2. **Domain model:** the pack is not the benchmark's runner; the ACL is the coordination-ledger reader in the grader (ADR-0002).
 3. **NFR Compatibility:** Linux containers on a Windows host; report headers say so. *Superseded by ADR-0013: native Windows; report headers say so.*
 4. **Conflict C9:** proxy enforcement from phase 2; phase 1 `unrestricted` for operator-authored tasks only.
@@ -304,7 +304,7 @@ Applied to `docs/specs/harness-bench.md` on 2026-09-23:
 | A3 | Copied OAuth logins may rotate and invalidate the host login | Watch the token file across a long cell | 1 |
 | A4 | Claude account context under a subscription login | Benchmark account or API key (owner decision 1) | 1 |
 | A5 | Per-cell resources at parallelism 2+ | Peak memory and CPU time from the job, on D1 | 2 |
-| A6 | Harbor environments as base images; this driver as a Harbor agent | Spike on E1 | 2 |
+| A6 | Withdrawn: no Harbor or containers (ADR-0013, Amendment 1) | none | — |
 | A7 | Gateway backend | Owner decision 2; US-46 fixture | 3 |
 | A8 | Native record formats change across CLI builds | Profile qualification suite (ADR-0011) | all |
 | A9 | Monotonic clock across sleep on Windows | Sleep the host during a cell and observe | 1 |
