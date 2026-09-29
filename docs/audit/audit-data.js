@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-29T19:21:18Z",
+  "generated": "2026-09-29T19:41:51Z",
   "audit": [
     {
       "actor": null,
@@ -61158,6 +61158,21 @@ window.AUDIT_DATA = {
       "summary": "E4 ready: django__django-12155 (SWE-bench Verified, dataset princeton-nlp/SWE-bench_Verified rev c104f840cc67f8b6eec6f759ebc8b2693d585d4a), repo django/django @ e8fcdaad5c428878d0a5d6ba820d957013f75595 pinned not vendored (workspace/README.md); oracle uv run --python 3.8 --with-editable . --with docutils python tests/runtests.py -v2 <7 labels>; 1 FAIL_TO_PASS + 6 PASS_TO_PASS discriminate 6/7 FAILED on base vs 7/7 OK on reference (oracle/grade_e4.py via harness_bench.grade.correctness.grade, oracle/evidence.md); bench validate ok.",
       "tags": [],
       "tool": null
+    },
+    {
+      "id": "al-01M3QB045718RARRGA1YH835ES",
+      "shortname": "new-bench-task-E3",
+      "datetime": "2026-09-29T19:41:51Z",
+      "session": "worker-sonnet-tb-e3",
+      "prompt": "Author benchmark task E3 from stub to ready as the Terminal-Bench 2.0 task cancel-async-tasks (band hard), selected by docs/notes/tb2-native-survey.md under ruling R-83, following /new-bench-task and R-83 c2-c4.",
+      "summary": "E3 ready, task substituted to extract-moves-from-video (cancel-async-tasks' SIGINT tests raise ValueError: Unsupported signal: 2 on Windows, per R-83's shortfall rule). Vendored solve.sh + test_outputs.py from terminal-bench-2@2fd12b88 (Apache-2.0), one native-path edit, oracle/vendoring_check.py rebuild ok. Oracle: 0/2 base, 2/2 reference. bench validate: ok.",
+      "kind": "command",
+      "skill": "new-bench-task",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
     }
   ],
   "changes": [
