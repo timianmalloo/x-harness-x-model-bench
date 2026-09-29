@@ -1,0 +1,201 @@
+# A3 held-out question set for the scripted-user matcher (R-39 condition 2; plan row 8, `:146`).
+# Authored by W2-TASKS-a, not by the matcher's author (W2-USER-M). USER-D measures the matcher's precision and
+# recall on it and sets the S-04 threshold from that measurement (R-39 condition 1). Do not tune the matcher on it:
+# a set the matcher was fitted to is no longer held out.
+#
+# Labelling rule. `expected` is the id of the clarification in clarifications.yaml whose `reply` answers what the
+# question asks: the same core ambiguity, in ClarifyCodeBench's judge wording (clarifycodebench/prompts.py
+# JUDGE_PROMPT: "address the same core ambiguity, even if they use different wording"). Anything else is
+# `default`, and its correct reply is exactly `default_reply`.
+#
+# kind:
+#   exact       the annotated question, verbatim
+#   normalised  the annotated question after one surface transform (`transform`); a normalising matcher should hit it
+#   paraphrase  a different wording of the same ambiguity; a deterministic matcher may miss it (a recall measurement)
+#   compound    asks the annotated ambiguity plus something else in one question
+#   near-miss   labelled default, but shares the key question's or the task's vocabulary; built to catch a
+#               matcher that over-matches on words. Its correct reply is exactly `Decide and state your assumption.`
+#   off-topic   labelled default; not about the requirement's content
+schema: bench-heldout-questions/1
+task: A3
+clarifications: clarifications.yaml
+default_reply: "Decide and state your assumption."
+questions:
+  # --- expected: term-counts ---------------------------------------------------------------------------------------
+  - id: h01
+    kind: exact
+    expected: term-counts
+    question: "In the expression “sum of the counts in those subarrays,” does “counts” refer to the number of distinct integers or the total number of elements?"
+  - id: h02
+    kind: normalised
+    transform: quotes (curly to straight)
+    expected: term-counts
+    question: 'In the expression "sum of the counts in those subarrays," does "counts" refer to the number of distinct integers or the total number of elements?'
+  - id: h03
+    kind: normalised
+    transform: case (lower)
+    expected: term-counts
+    question: "in the expression “sum of the counts in those subarrays,” does “counts” refer to the number of distinct integers or the total number of elements?"
+  - id: h04
+    kind: normalised
+    transform: whitespace (leading, trailing, doubled)
+    expected: term-counts
+    question: "  In the expression “sum of the counts in those subarrays,”   does “counts” refer to the number of distinct integers or the total number of elements?  "
+  - id: h05
+    kind: normalised
+    transform: punctuation (final question mark dropped)
+    expected: term-counts
+    question: "In the expression “sum of the counts in those subarrays,” does “counts” refer to the number of distinct integers or the total number of elements"
+  - id: h06
+    kind: normalised
+    transform: quotes + case + punctuation
+    expected: term-counts
+    question: 'in the expression "sum of the counts in those subarrays," does "counts" refer to the number of distinct integers or the total number of elements'
+  - id: h07
+    kind: paraphrase
+    expected: term-counts
+    question: "Does count mean the number of distinct values in the subarray, or the total number of items?"
+  - id: h08
+    kind: paraphrase
+    expected: term-counts
+    question: "By 'count of integers', do you mean unique integers or total integers?"
+  - id: h09
+    kind: paraphrase
+    expected: term-counts
+    question: "Should we count duplicate values in each subarray, or only unique values?"
+  - id: h10
+    kind: paraphrase
+    expected: term-counts
+    question: "Does the count refer to distinct elements or the length of the subarray?"
+  - id: h11
+    kind: paraphrase
+    expected: term-counts
+    question: "Are duplicates counted when calculating the count in each subarray?"
+  - id: h12
+    kind: paraphrase
+    expected: term-counts
+    question: "Does 'count of integers' mean len(set(subarray)) or len(subarray)?"
+  - id: h13
+    kind: paraphrase
+    expected: term-counts
+    question: "Is 'count' the cardinality of the set of values, or the multiset size?"
+  - id: h14
+    kind: paraphrase
+    expected: term-counts
+    note: "a wrong guess at the meaning; the annotated reply resolves it, so it is the same ambiguity"
+    question: "Does 'count' mean the total number of elements in the subarray?"
+  - id: h15
+    kind: paraphrase
+    expected: term-counts
+    question: "When measuring the count of a subarray, do we ignore repeated numbers?"
+  - id: h16
+    kind: paraphrase
+    expected: term-counts
+    question: "The problem says count of integers in each subarray. Does that count unique elements only?"
+  - id: h17
+    kind: compound
+    expected: term-counts
+    note: "the term ambiguity matches; the non-empty part is already answered by the prompt"
+    question: "Does 'counts' mean the number of distinct integers in each subarray, and must both subarrays be non-empty?"
+  # --- expected: default, near-miss ---------------------------------------------------------------------------------
+  - id: n01
+    kind: near-miss
+    expected: default
+    note: "the split index bounds; answered by the constraints 1 <= i <= N-1"
+    question: "Can the split index i be equal to 0 or N?"
+  - id: n02
+    kind: near-miss
+    expected: default
+    note: "'maximum possible value'; answered by the constraints"
+    question: "What is the maximum possible value of N?"
+  - id: n03
+    kind: near-miss
+    expected: default
+    note: "'value of A_i'; answered by the constraints"
+    question: "Can A_i exceed N?"
+  - id: n04
+    kind: near-miss
+    expected: default
+    note: "answered by the prompt ('two non-empty (contiguous) subarrays')"
+    question: "Can either of the two subarrays be empty?"
+  - id: n05
+    kind: near-miss
+    expected: default
+    note: "'sum of counts'; an implementation limit, not annotated"
+    question: "Can the sum of counts exceed a 32-bit integer?"
+  - id: n06
+    kind: near-miss
+    expected: default
+    note: "'values'; answered by the constraints 1 <= A_i <= N"
+    question: "Can any elements of A be negative or zero?"
+  - id: n07
+    kind: near-miss
+    expected: default
+    note: "'counts', 'subarrays'; asks about output format, not the term meaning"
+    question: "Should the output also print the index i where the split occurs, or only the maximum sum?"
+  - id: n08
+    kind: near-miss
+    expected: default
+    note: "'sum of counts'; asks about a modulus, not annotated"
+    question: "Should the answer be computed modulo 998244353?"
+  - id: n09
+    kind: near-miss
+    expected: default
+    note: "'integers'; asks about input ordering, not annotated"
+    question: "Are the elements of A given in non-decreasing order?"
+  - id: n10
+    kind: near-miss
+    expected: default
+    note: "answered by the prompt ('(contiguous) subarrays')"
+    question: "Do the subarrays have to be contiguous, or can elements be skipped?"
+  - id: n11
+    kind: near-miss
+    expected: default
+    note: "mentions Problem F in the prompt; the prompt specifies one split into two subarrays"
+    question: "Should we split into two subarrays or three subarrays?"
+  - id: n12
+    kind: near-miss
+    expected: default
+    note: "answered by the input format"
+    question: "Is the sequence A given on a single line separated by spaces?"
+  - id: n13
+    kind: near-miss
+    expected: default
+    note: "presupposes distinct integers, but asks about a modulus, which the reply does not answer"
+    question: "Does counts refer to distinct integers modulo 10^9+7?"
+  - id: n14
+    kind: near-miss
+    expected: default
+    note: "ties in split positions; only the maximum sum is printed"
+    question: "If multiple split positions give the same maximum sum, which one should be preferred?"
+  - id: n15
+    kind: near-miss
+    expected: default
+    note: "answered by the prompt and input format"
+    question: "Does A_i represent the value or the index of the element?"
+  # --- expected: default, off-topic ---------------------------------------------------------------------------------
+  - id: o01
+    kind: off-topic
+    expected: default
+    question: "Which Python version will this run on?"
+  - id: o02
+    kind: off-topic
+    expected: default
+    question: "Can I use numpy or scipy?"
+  - id: o03
+    kind: off-topic
+    expected: default
+    question: "Should I write unit tests for solution.py?"
+  - id: o04
+    kind: off-topic
+    expected: default
+    question: "What is the CPU time limit per test case?"
+  - id: o05
+    kind: off-topic
+    expected: default
+    question: "Should the program read input from a file named input.txt?"
+  - id: o06
+    kind: off-topic
+    expected: default
+    note: "an example output would reveal the meaning of counts; the scripted user answers only annotated clarifications"
+    question: "Can you give me an example input and its expected output?"
