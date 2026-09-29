@@ -1,0 +1,203 @@
+# A4 held-out question set for the scripted-user matcher.
+# Labelling rule: `expected` is the id of the clarification in clarifications.yaml whose `reply` answers what the
+# question asks. Anything else is `default`, and its correct reply is exactly `default_reply`.
+#
+# kind:
+#   exact       the annotated question, verbatim
+#   normalised  the annotated question after one surface transform (`transform`)
+#   paraphrase  a different wording of the same ambiguity
+#   compound    asks the annotated ambiguity plus something else in one question
+#   near-miss   labelled default, but shares the key question's or domain vocabulary
+#   off-topic   labelled default; not about the requirement's content
+schema: bench-heldout-questions/1
+task: A4
+clarifications: clarifications.yaml
+default_reply: "Decide and state your assumption."
+questions:
+  # --- expected: persistence-vs-sharing ----------------------------------------------------------------------------
+  - id: h01
+    kind: exact
+    expected: persistence-vs-sharing
+    question: "Does making the wing definition reusable across runs mean saving it to a local file, or sharing it over a network service?"
+  - id: h02
+    kind: normalised
+    transform: quotes (curly to straight)
+    expected: persistence-vs-sharing
+    question: 'Does making the wing definition reusable across runs mean saving it to a local file, or sharing it over a network service?'
+  - id: h03
+    kind: normalised
+    transform: case (lower)
+    expected: persistence-vs-sharing
+    question: "does making the wing definition reusable across runs mean saving it to a local file, or sharing it over a network service?"
+  - id: h04
+    kind: normalised
+    transform: whitespace (leading, trailing, doubled)
+    expected: persistence-vs-sharing
+    question: "  Does making the wing definition reusable across runs mean saving it to a local file,  or sharing it over a network service?  "
+  - id: h05
+    kind: normalised
+    transform: punctuation (question mark dropped)
+    expected: persistence-vs-sharing
+    question: "Does making the wing definition reusable across runs mean saving it to a local file, or sharing it over a network service"
+  - id: h06
+    kind: paraphrase
+    expected: persistence-vs-sharing
+    question: "Should the wing be saved to a local disk file or synced to a central database or server?"
+  - id: h07
+    kind: paraphrase
+    expected: persistence-vs-sharing
+    question: "Are we persisting wing data locally on the machine or publishing it across a network?"
+  - id: h08
+    kind: compound
+    expected: persistence-vs-sharing
+    question: "Should the wing definition be stored locally on disk, and where should that file be located?"
+
+  # --- expected: format --------------------------------------------------------------------------------------------
+  - id: h09
+    kind: exact
+    expected: format
+    question: "What file format should be used to store the wing definition?"
+  - id: h10
+    kind: normalised
+    transform: case (lower)
+    expected: format
+    question: "what file format should be used to store the wing definition?"
+  - id: h11
+    kind: normalised
+    transform: punctuation (question mark dropped)
+    expected: format
+    question: "What file format should be used to store the wing definition"
+  - id: h12
+    kind: paraphrase
+    expected: format
+    question: "Which serialization format should be used to save the wing: JSON, XML, YAML, or binary?"
+  - id: h13
+    kind: paraphrase
+    expected: format
+    question: "What data format do you want the wing project document to be in?"
+  - id: h14
+    kind: compound
+    expected: format
+    question: "What file format should be used to store the wing, and should it be human-readable?"
+
+  # --- expected: versioning ----------------------------------------------------------------------------------------
+  - id: h15
+    kind: exact
+    expected: versioning
+    question: "Does the wing file format require an explicit schema version identifier?"
+  - id: h16
+    kind: normalised
+    transform: case (lower)
+    expected: versioning
+    question: "does the wing file format require an explicit schema version identifier?"
+  - id: h17
+    kind: normalised
+    transform: punctuation (question mark dropped)
+    expected: versioning
+    question: "Does the wing file format require an explicit schema version identifier"
+  - id: h18
+    kind: paraphrase
+    expected: versioning
+    question: "Should the saved file include a schema version or format header?"
+  - id: h19
+    kind: paraphrase
+    expected: versioning
+    question: "Do we need versioning in the serialized wing document to handle future schema changes?"
+
+  # --- expected: validation ----------------------------------------------------------------------------------------
+  - id: h20
+    kind: exact
+    expected: validation
+    question: "How should invalid files or data that violates wing invariants be handled when loading?"
+  - id: h21
+    kind: normalised
+    transform: case (lower)
+    expected: validation
+    question: "how should invalid files or data that violates wing invariants be handled when loading?"
+  - id: h22
+    kind: normalised
+    transform: punctuation (question mark dropped)
+    expected: validation
+    question: "How should invalid files or data that violates wing invariants be handled when loading"
+  - id: h23
+    kind: paraphrase
+    expected: validation
+    question: "What should happen if a file with invalid stations or negative chord is loaded?"
+  - id: h24
+    kind: paraphrase
+    expected: validation
+    question: "Should corrupted files fail loudly or attempt partial recovery?"
+
+  # --- expected: scope ---------------------------------------------------------------------------------------------
+  - id: h25
+    kind: exact
+    expected: scope
+    question: "Does reusability apply only to the wing geometry definition or also to derived quantities and simulation results?"
+  - id: h26
+    kind: normalised
+    transform: case (lower)
+    expected: scope
+    question: "does reusability apply only to the wing geometry definition or also to derived quantities and simulation results?"
+  - id: h27
+    kind: normalised
+    transform: punctuation (question mark dropped)
+    expected: scope
+    question: "Does reusability apply only to the wing geometry definition or also to derived quantities and simulation results"
+  - id: h28
+    kind: paraphrase
+    expected: scope
+    question: "Should we store computed planform values like span and area inside the file, or only stations?"
+  - id: h29
+    kind: paraphrase
+    expected: scope
+    question: "Are simulation outputs, CFD meshes, or polars stored alongside the wing?"
+
+  # --- expected: default, near-miss ---------------------------------------------------------------------------------
+  - id: h30
+    kind: near-miss
+    expected: default
+    note: "shares 'wing definition' and 'runs' but asks about optimization iterations rather than persistence"
+    question: "How many runs or iterations should the wing definition support?"
+  - id: h31
+    kind: near-miss
+    expected: default
+    note: "shares 'format' and 'export' but asks about CAD export rather than file persistence"
+    question: "Should the wing be exported as a STEP or IGES CAD format?"
+  - id: h32
+    kind: near-miss
+    expected: default
+    note: "shares 'stations' and 'validation' but asks about station limits"
+    question: "What is the maximum number of stations allowed in a wing?"
+  - id: h33
+    kind: near-miss
+    expected: default
+    note: "shares 'quantities' but asks about formula derivations"
+    question: "How is mean aerodynamic chord calculated for swept wings?"
+  - id: h34
+    kind: near-miss
+    expected: default
+    note: "shares 'file' and 'path' but asks about default directory location"
+    question: "What default directory path should be used for saved files?"
+  - id: h35
+    kind: near-miss
+    expected: default
+    note: "shares 'format' but asks about foil polar tables"
+    question: "What format should airfoil polars be loaded from?"
+
+  # --- expected: default, off-topic ---------------------------------------------------------------------------------
+  - id: h36
+    kind: off-topic
+    expected: default
+    question: "What version of .NET are we running on?"
+  - id: h37
+    kind: off-topic
+    expected: default
+    question: "Which LLM model is evaluating this session?"
+  - id: h38
+    kind: off-topic
+    expected: default
+    question: "Can you provide the password for the server?"
+  - id: h39
+    kind: off-topic
+    expected: default
+    question: "What is the capital of France?"
