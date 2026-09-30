@@ -439,8 +439,8 @@
   {
     "name": "a blocked cell keyed by the cell, not its harness",
     "file": "src/harness_bench/engine.py",
-    "find": "        self._open(kind, cell[field_name], outcome[\"code\"])\n",
-    "replace": "        self._open(kind, outcome[\"cell_id\"], outcome[\"code\"])\n",
+    "find": "        self._open(kind, cell[field_name], outcome[\"code\"], detail=outcome.get(\"detail\") or \"\")  # CAUSE-A\n",
+    "replace": "        self._open(kind, outcome[\"cell_id\"], outcome[\"code\"], detail=outcome.get(\"detail\") or \"\")  # CAUSE-A\n",
     "tests": ["tests/test_engine.py::test_one_blocked_harness_opens_one_decision"]
   },
   {

@@ -30,8 +30,8 @@
  {
   "name": "timeout outranks the provider error",
   "file": "src/harness_bench/engine.py",
-  "find": "        if scanned:\n            return scanned\n        if kill_reason == \"timeout\":\n            return Cause.timed_out\n",
-  "replace": "        if kill_reason == \"timeout\":\n            return Cause.timed_out\n        if scanned:\n            return scanned\n",
+  "find": "        if scanned:\n            result.detail = next((e.message for e in errors if normalize.classify([e]) == scanned), result.detail)\n            return scanned\n        if kill_reason == \"timeout\":\n            return Cause.timed_out\n",
+  "replace": "        if kill_reason == \"timeout\":\n            return Cause.timed_out\n        if scanned:\n            result.detail = next((e.message for e in errors if normalize.classify([e]) == scanned), result.detail)\n            return scanned\n",
   "tests": [
    "tests/test_engine.py::test_a_provider_error_outranks_a_budget_kill"
   ]

@@ -269,8 +269,8 @@
  {
   "name": "R-73/R-74 (W3-S6): the launcher seeds without the scenario",
   "file": "src/harness_bench/profiles.py",
-  "find": "cell[\"model\"], cell.get(\"scenario\"))  # R-74",
-  "replace": "cell[\"model\"], None)  # R-74",
+  "find": "cell[\"model\"], cell.get(\"scenario\"), oauth_token=self._oauth_token)",
+  "replace": "cell[\"model\"], None, oauth_token=self._oauth_token)",
   "tests": [
    "tests/test_delegate.py::test_the_launcher_seeds_from_the_cell"
   ]

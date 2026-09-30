@@ -691,8 +691,8 @@
  {
   "name": "Headless requires a credential copy for copilot too",
   "file": "src/harness_bench/gateway/backend.py",
-  "find": "            if name is not None:  # Copilot names none",
-  "replace": "            if True:  # Copilot names none",
+  "find": "            if name is not None and not oauth_token:  # Copilot names none",
+  "replace": "            if not oauth_token:  # Copilot names none",
   "tests": [
    "tests/test_gateway_headless.py::test_a_copilot_call_sends_the_request_on_stdin_to_an_empty_home_and_reads_the_answer_from_the_record"
   ]
