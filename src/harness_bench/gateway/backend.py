@@ -215,8 +215,11 @@ class Headless:
         try:
             for d in (home, work, decoy):
                 d.mkdir(parents=True, exist_ok=True)
+            # R-84 item 3: a claude-code judge call gets the same oauth-token-env alternative as a cell; Copilot's
+            # credential_name is always None (the Windows credential store), so oauth_token never applies to it.
+            oauth_token = os.environ.get(profiles.OAUTH_TOKEN_ENV) if launch.profile.harness == "claude-code" else None
             source, name = launch.profile.credential_source, launch.profile.credential_name
-            if name is not None:  # Copilot names none: its login is the Windows credential store
+            if name is not None and not oauth_token:  # Copilot names none: its login is the Windows credential store
                 if source is None or not source.is_file():
                     raise BackendDown("no credential to copy for the judge call")
                 shutil.copyfile(source, home / name)  # inside the try whose finally deletes it (section 8.2)
@@ -226,7 +229,7 @@ class Headless:
             else:
                 session = str(uuid.uuid4())
                 argv, stdin = claude_argv(exe, launch.model, launch.system, session), request
-            env = launch.profile.cell_env(dict(os.environ), home, launch.build, launch.model, "")
+            env = launch.profile.cell_env(dict(os.environ), home, launch.build, launch.model, "", oauth_token=oauth_token)
             env.update({"USERPROFILE": str(decoy), "HOME": str(decoy)})  # the qualified decoy profile (section 8.2)
             done = procs.run([*launch.prefix, *argv], cwd=str(work), env=env, timeout=launch.timeout, input=stdin)
             if done.timed_out:
