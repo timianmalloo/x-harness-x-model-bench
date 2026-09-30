@@ -88,6 +88,7 @@ def _ignored(base: Path, added: list[str], scratch: Path, timeout: float) -> set
     if not added:
         return set()
     repo, out = scratch / "ignore-rules.git", set()
+    scratch.mkdir(parents=True, exist_ok=True)
     try:
         gitsafe.git(["init", "-q", "--bare", str(repo)], cwd=scratch, timeout=timeout)
         for i in range(0, len(added), 100):  # a bounded command line (gitsafe has no stdin, so no `--stdin -z`)
@@ -115,11 +116,12 @@ def _measure(inp: CellInput, rules: tuple | None) -> dict[str, Score]:
     radius = inp.task.get("blast_radius") or []
     creep_lines = creep_files = changed = violations = 0
     log = []
+    work_root = inp.work_root or inp.out_dir  # ADR-0013: outside the repository in a real pass; out_dir in a test
     try:
-        with (_changes.pre_turn_tree(ws, commit, inp.out_dir / "pre-turn", timeout) as base,
-              _changes.grading_copy(ws, inp.out_dir / "work") as work):
+        with (_changes.pre_turn_tree(ws, commit, work_root / "pre-turn", timeout) as base,
+              _changes.grading_copy(ws, work_root / "work") as work):
             changes = _changes.change_set(base, work)
-            ignored = _ignored(base, [p for p, s in changes.items() if s == "added"], inp.out_dir, timeout)
+            ignored = _ignored(base, [p for p, s in changes.items() if s == "added"], work_root, timeout)
             for path, status in changes.items():
                 if path in ignored:
                     log.append(f"ignored\t{path}\n")

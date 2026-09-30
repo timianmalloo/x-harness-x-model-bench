@@ -6,6 +6,10 @@
 - HB-PRE-005: Windows long paths not enabled. Bench git always runs with `core.longpaths=true`
   (gitsafe), and cells get it through their environment (profiles.CELL_ENV).
 - HB-PRE-007: a planned harness build missing from the tools folder, or its hash differs from the plan.
+- HB-GRD-006: an upward-discovering tool's own project file (pyproject.toml, .python-version) in or above
+  `cells_root/grading` (ADR-0013 Amendment 2) -- checked here too (`grade/runner.run_pass` checks it again
+  at grading time, since `bench grade` does not go through preflight) so a misconfigured `--cells-root`
+  fails before the run starts, not after a whole run's worth of cells have completed.
 """
 
 from __future__ import annotations
@@ -38,6 +42,7 @@ def check(plan: dict, cells_root: Path, tools_dir: Path, min_free: int = MIN_FRE
           long_paths: Callable[[], bool | None] = long_paths_enabled) -> dict:
     """Run every check; return the facts it measured."""
     workspace.check_cells_root(cells_root)
+    workspace.check_grading_root(cells_root / "grading")
     cells_root.mkdir(parents=True, exist_ok=True)
     free = shutil.disk_usage(cells_root).free
     if free < min_free:

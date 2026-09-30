@@ -297,6 +297,29 @@ def test_a_cells_root_under_the_user_profile_is_refused(tmp_path):
         workspace.check_cells_root(tmp_path / "bench-cells")
 
 
+# --- check_grading_root (HB-GRD-006, ADR-0013 Amendment 2): no upward-discovering tool's own project file ------------
+
+@pytest.mark.parametrize("name", ["pyproject.toml", ".python-version"])
+def test_grading_root_below_an_upward_discovery_file_is_refused(clean_base, name):  # T-GRD-ancestor
+    (clean_base / name).write_text("x", encoding="utf-8")
+    with pytest.raises(BenchError) as e:
+        workspace.check_grading_root(clean_base / "bench-cells" / "grading")
+    assert e.value.code == "HB-GRD-006" and name in e.value.message
+
+
+def test_grading_root_itself_holding_the_file_is_refused(clean_base):
+    grading_root = clean_base / "bench-cells" / "grading"
+    grading_root.mkdir(parents=True)
+    (grading_root / "pyproject.toml").write_text("x", encoding="utf-8")
+    with pytest.raises(BenchError) as e:
+        workspace.check_grading_root(grading_root)
+    assert e.value.code == "HB-GRD-006"
+
+
+def test_a_clean_grading_root_is_accepted(clean_base):
+    workspace.check_grading_root(clean_base / "bench-cells" / "grading")
+
+
 def test_host_git_never_runs_repo_hooks(tmp_path):  # T-B6-fsmonitor (hooks half)
     repo = tmp_path / "repo"
     repo.mkdir()

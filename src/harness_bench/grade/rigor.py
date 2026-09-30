@@ -71,6 +71,7 @@ def grade_cell(inp: CellInput) -> Mapping[str, Score]:
 
         out = inp.out_dir
         out.mkdir(parents=True, exist_ok=True)
+        work_root = inp.work_root or inp.out_dir  # ADR-0013: outside the repository in a real pass; out_dir in a test
         log_file = out / "rigor.log"
         evidence = log_file.relative_to(inp.run_dir).as_posix()
         log: list[str] = []
@@ -80,7 +81,7 @@ def grade_cell(inp: CellInput) -> Mapping[str, Score]:
             res = {METRIC: score, **{m: Score(None, NA_BY_DESIGN[m]) for m in NA_BY_DESIGN}}
             return {m: res[m] for m in inp.metrics if m in res} if inp.metrics else res
 
-        with _changes.grading_copy(ws, out / "cell") as cell_tree:
+        with _changes.grading_copy(ws, work_root / "cell") as cell_tree:
             cell_outputs, cell_fail = correctness.build_tree(cell_tree, BUILD_FLAGS, timeout, started, log)
             cell_warnings = {w for out_text in cell_outputs for w in parse_warnings(out_text, cell_tree)}
 

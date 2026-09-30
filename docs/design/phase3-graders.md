@@ -194,7 +194,9 @@ class CellInput:                     # everything a grader may read; nothing els
     task: Mapping                    # task.yaml as loaded (a reads_task grader only runs when the task is current)
     task_dir: Path
     archive: Path                    # run_dir/archive/<cid>/attempt-<n>  (READ-ONLY)
-    out_dir: Path                    # run_dir/grading/<gid>/<cid>/<grader>/: the only place a grader writes
+    out_dir: Path                    # run_dir/grading/<gid>/<cid>/<grader>/: the only place a grader writes evidence
+    work_root: Path | None           # cells_root/grading/<gid>/<cid>/<grader>/: disposable working copies land here,
+                                      # outside the repository (ADR-0013 Amendment 2); None (-> out_dir) in a test
     events: tuple[Mapping, ...]      # this cell's engine events
     record_reason: str | None        # why the native record was unreadable (R-15), or None
     model_calls: tuple[Mapping, ...] # this cell's rows under the pass's extraction_id (unstamped)
@@ -207,7 +209,8 @@ GraderFn = Callable[[CellInput], Mapping[str, Score]]
 
 def grading_copy(inp: CellInput, tag: str) -> ContextManager[Path]: ...
 # A free function, lifted from correctness.py:117-140. It makes a disposable copy of archive/ws under
-# out_dir/<tag>, without .git and without build output (bin/, obj/, TestResults/, __pycache__/), copied
+# work_root/<tag> (outside the repository, ADR-0013 Amendment 2; out_dir/<tag> was the pre-amendment
+# location), without .git and without build output (bin/, obj/, TestResults/, __pycache__/), copied
 # with symlinks=True, and removes it on exit.
 ```
 
@@ -821,7 +824,7 @@ Red-first tests for `check_regrade.py`:
   - A timeout is HB-GRD-002.
 - **The archive is immutable.**
   - `_changes` finds the pre-turn commit with `git log --first-parent --reverse --format=%H%x00%s` and applies the tamper rule (STRIDE).
-  - It materialises that commit with `git archive <commit> | tar -x` into `out_dir/pre-turn`. Both are read-only, and neither touches the index.
+  - It materialises that commit with `git archive <commit> | tar -x` into `work_root/pre-turn` (outside the repository, ADR-0013 Amendment 2). Both are read-only, and neither touches the index.
   - It computes the change set by comparing that tree with a `grading_copy`, CRLF-normalised, with build output excluded (Simplifier 4).
   - It never runs `git status` or `git diff` against the archived work tree.
   - Test: the archive's file hashes are equal before and after a fixture is graded.

@@ -240,8 +240,8 @@
  {
   "name": "the in-run hook grades without IN_RUN",
   "file": "src/harness_bench/cli.py",
-  "find": "runner.run_pass(d, root, judge.IN_RUN).summary()",
-  "replace": "runner.run_pass(d, root).summary()",
+  "find": "runner.run_pass(d, root, judge.IN_RUN, cells_root=cells_root).summary()",
+  "replace": "runner.run_pass(d, root, cells_root=cells_root).summary()",
   "tests": ["tests/test_grade_judge.py::test_t_gw_22_the_in_run_pass_makes_no_lookup_no_call_and_no_verdict_uses_row"]
  },
  {

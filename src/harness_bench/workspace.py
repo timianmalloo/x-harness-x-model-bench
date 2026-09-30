@@ -45,6 +45,28 @@ def check_cells_root(root: Path) -> None:
                     raise BenchError("HB-PRE-002", f"{path} is above the cells root {root}; every cell would load it")
 
 
+# grade/runner.py's grading-copy-outside-repo fix (measured 2026-09-30, runs/grid-2, grading id
+# grade-20260930T204453-43f5b9): E2-E5's `uv run --python ... pytest ...` (no `--no-project`), run with cwd inside
+# the repo, discovered *this* repository's own pyproject.toml/.python-version and rebuilt the engine's own .venv
+# with the wrong Python (deleting site-packages; "error: failed to remove directory `.venv\Scripts`: Access is
+# denied"). Defect class ORCL-B (sibling of ORCL-A, docs/lessons/defect-classes.md): an upward-discovering tool (uv
+# today; pip, dotnet's global.json, npm, git config are the same class) must never see a project file that belongs
+# to the harness itself.
+UPWARD_DISCOVERY_FILES = ("pyproject.toml", ".python-version")
+
+
+def check_grading_root(root: Path) -> None:
+    """Refuse a grading root with an upward-discovering tool's own project file (`pyproject.toml`,
+    `.python-version`) in it or in any ancestor (HB-GRD-006). Checked once per grading pass
+    (grade/runner.py's run_pass), before any grader builds a working copy under it."""
+    resolved = root.resolve()
+    for folder in (resolved, *resolved.parents):
+        for name in UPWARD_DISCOVERY_FILES:
+            if (folder / name).is_file():
+                raise BenchError("HB-GRD-006", f"{folder / name} is above the grading root {root}; a grading step's "
+                                                "own upward-discovering tool (uv, pip, dotnet, ...) would reach it")
+
+
 def _fresh(dest: Path) -> Path:
     tmp = dest.parent / f".{dest.name}.{uuid.uuid4().hex[:8]}.tmp"
     tmp.mkdir(parents=True)

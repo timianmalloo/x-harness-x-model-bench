@@ -486,6 +486,49 @@ def test_the_hidden_test_step_is_na_by_cause_and_flags_a_compile_error(tmp_path,
     assert (c.passed, c.partial_credit, c.reason, c.compile_error) == (None, None, reason, compile_error)
 
 
+# --- ORCL-B / ADR-0013 Amendment 2: the grading copy must be unreachable from an upward-discovering tool ------------
+
+def test_a_grading_copy_nested_in_a_dummy_project_still_runs_uv_standalone(tmp_path):
+    """Reproduces the measured defect (runs/grid-2, grading id grade-20260930T204453-43f5b9, E2-E5): an oracle's
+    `uv run --python <pin> ...` (no `--no-project`) discovers a `pyproject.toml` above its cwd and honours *that*
+    project's `requires-python`, even when the caller only wants a standalone interpreter. `work_dir=None` (the
+    pre-fix path: the only working copy was `out_dir`, a subtree of `run_dir`) grades NA once `run_dir` sits inside
+    a project requiring an impossible Python version. An explicit `work_dir` outside that project (grade/runner.py's
+    `cells_root/grading`, ADR-0013 Amendment 2) is unaffected, and the dummy project's own .venv is never created
+    either way (uv refuses before creating one)."""
+    if shutil.which("uv") is None:
+        pytest.skip("uv not installed")
+    version = f"{sys.version_info.major}.{sys.version_info.minor}"  # an installed Python, matching this host
+
+    dummy_project = tmp_path / "dummy-project"
+    dummy_project.mkdir()
+    (dummy_project / "pyproject.toml").write_text(
+        '[project]\nname = "dummy"\nversion = "0.0.0"\nrequires-python = ">=3.99"\n', encoding="utf-8")
+    (dummy_project / ".python-version").write_text("3.99\n", encoding="utf-8")
+
+    run_dir = dummy_project / "runs" / "run1"  # a grading run nested inside the dummy project (runs/ under the repo)
+    folder = run_dir / "archive" / "c1" / "attempt-1"
+    (folder / "ws").mkdir(parents=True)
+    task_dir = tmp_path / "task"
+    (task_dir / "tests").mkdir(parents=True)
+    (task_dir / "tests" / "test_outputs.py").write_text("def test_ok():\n    assert True\n", encoding="utf-8")
+    oracle = {"runner": "pytest", "command": ["uv", "run", "--python", version, "--with", "pytest>=8.0", "pytest",
+                                              "test_outputs.py", "--junitxml=report.xml"]}
+    out_dir = run_dir / "grading" / "g" / "c1" / "correctness"
+    out_dir.mkdir(parents=True)
+
+    # Before the fix: the only working copy location was out_dir itself, nested inside the dummy project.
+    nested = correctness.grade(folder / "ws", task_dir, oracle, out_dir, run_dir, 120, work_dir=out_dir)
+    assert nested.passed is None
+    assert not (dummy_project / ".venv").exists()
+
+    # After the fix: work_dir sits outside the dummy project entirely.
+    outside_work = tmp_path / "outside-cells" / "grading" / "g" / "c1" / "correctness"
+    fixed = correctness.grade(folder / "ws", task_dir, oracle, out_dir, run_dir, 120, work_dir=outside_work)
+    assert (fixed.passed, fixed.reason) == (1, None)
+    assert not (dummy_project / ".venv").exists()
+
+
 @pytest.mark.parametrize(("results", "expected"), [
     ((done(0, "10.0.303"), done(0)), (1, None)),
     ((done(0, "10.0.303"), done(1, COMPILE_LINE), done(0)), (0, None)),  # the first failure decides
