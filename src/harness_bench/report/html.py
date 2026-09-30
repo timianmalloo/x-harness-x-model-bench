@@ -37,6 +37,7 @@ from harness_bench.errors import BenchError
 from harness_bench.grade import judge as grade_judge
 from harness_bench.plan import resolved_model_map
 from harness_bench.report import context_growth, html_builder, judges, model
+from harness_bench.report import pack_improvement as pack_improvement_mod
 from harness_bench.report.credentials import encodings
 
 SECRET_SHAPES = (
@@ -2061,6 +2062,119 @@ def _summaries(run_dir: Path | None, view: views.RunView, board_obj: board.Board
     return html_builder.el("section", {"id": "summaries"}, html_builder.el("h2", None, "Summaries"), *blocks)
 
 
+def _pi_ratio_cell(m) -> str:
+    return "NA" if m.value is None else f"{m.value:.2f}x"
+
+
+def _pi_group_row(g, combo_ix: dict[str, str]) -> html_builder.Html:
+    label = combo_ix.get(g.combo, g.combo)
+    flag = " (ceiling_off)" if g.is_ceiling_off else ""
+    return html_builder.el(
+        "tr", None,
+        html_builder.el("td", None, g.task),
+        html_builder.el("td", None, label),
+        html_builder.el("td", {"class": "num"}, f"{g.passes_on}/{g.n_pairs} · {g.passes_off}/{g.n_pairs}"),
+        html_builder.el("td", {"class": "num"},
+                        f"{_pi_ratio_cell(g.median_token_ratio)} ({g.n_token_above} of {g.n_token_valid} pairs > 1)"),
+        html_builder.el("td", {"class": "num"}, _pi_ratio_cell(g.median_wall_ratio)),
+        html_builder.el("td", None, g.cls + flag),
+    )
+
+
+def _pi_finding_row(f, combo_ix: dict[str, str]) -> html_builder.Html:
+    links = []
+    for i, cid in enumerate(f.evidence_cell_ids):
+        if i:
+            links.append(", ")
+        links.append(html_builder.el("a", {"href": f"#cell-{cid}"}, cid))
+    return html_builder.el(
+        "tr", None,
+        html_builder.el("td", None, f.code),
+        html_builder.el("td", None, f.title),
+        html_builder.el("td", {"class": "num"}, str(f.count)),
+        html_builder.el("td", None, f.detail or "—"),
+        html_builder.el("td", None, f.pack_area),
+        html_builder.el("td", None, f.confidence),
+        html_builder.el("td", None, *links) if links else html_builder.el("td", None, "—"),
+    )
+
+
+def _pack_improvement(view: views.RunView, board_obj: board.Board | None, run_dir: Path | None, root: Path | None,
+                      archive_present: bool, combo_ix: dict[str, str]) -> html_builder.Html:
+    """Design section 2/7: the always-last, always-present "Pack on vs pack off -- where to improve
+    the pack" section. Every table sits in the existing horizontally scrolling wrapper. Only counts,
+    ratios, verdict codes, metric/task/cell ids and the Method text leave `pack_improvement.assemble`
+    (design section 8) -- no transcript text, no command text, no path other than a repo-relative
+    pack prefix reaches this renderer to begin with."""
+    result = pack_improvement_mod.assemble(view, board_obj, run_dir, root, archive_present=archive_present)
+    heading = html_builder.el("h2", None, "Pack on vs pack off — where to improve the pack")
+    children: list[html_builder.Html] = [heading]
+    if result.state != pack_improvement_mod.STATE_FULL and result.state != pack_improvement_mod.STATE_PARTIAL:
+        children.append(html_builder.el("p", None, result.state_line))
+        method = html_builder.el(
+            "details", None, html_builder.el("summary", None, "Method"),
+            html_builder.el("ul", None, *(html_builder.el("li", None, ln) for ln in result.method_lines)),
+        )
+        children.append(method)
+        return html_builder.el("section", {"id": "pack-improvement"}, *children)
+
+    children.append(html_builder.el("p", None, result.headline or "No pack-attributable waste or harm was detected in this run."))
+    children.extend(html_builder.el("p", None, line) for line in result.population_caveats)
+
+    group_table = html_builder.el(
+        "table", None,
+        html_builder.el("caption", None, "Value vs waste, by task and combo"),
+        html_builder.el("thead", None, html_builder.el(
+            "tr", None, *(html_builder.el("th", {"scope": "col"}, h) for h in
+                          ("Task", "Combo", "Pass on · off", "Median token ratio", "Median wall ratio", "Class")))),
+        html_builder.el("tbody", None, *(_pi_group_row(g, combo_ix) for g in result.groups)),
+    )
+    children.append(html_builder.el(
+        "div", {"class": "region", "role": "region", "tabindex": "0", "aria-labelledby": "pi-groups-caption"},
+        group_table,
+    ))
+
+    if result.findings:
+        finding_table = html_builder.el(
+            "table", None,
+            html_builder.el("caption", None, "Where to improve the pack"),
+            html_builder.el("thead", None, html_builder.el(
+                "tr", None, *(html_builder.el("th", {"scope": "col"}, h) for h in
+                              ("Code", "Finding", "Count", "Waste", "Pack area", "Confidence", "Evidence")))),
+            html_builder.el("tbody", None, *(_pi_finding_row(f, combo_ix) for f in result.findings)),
+        )
+        children.append(html_builder.el(
+            "div", {"class": "region", "role": "region", "tabindex": "0", "aria-labelledby": "pi-findings-caption"},
+            finding_table,
+        ))
+    else:
+        children.append(html_builder.el("p", None, "No pack-attributable waste or harm was detected in this run."))
+
+    inconclusive_items = [
+        html_builder.el("li", None, f"{t.task}: {', '.join(t.reasons)}") for t in result.inconclusive
+    ]
+    if result.pk08 is not None:
+        on_text = "NA" if result.pk08.mean_on is None else f"{result.pk08.mean_on:.4f}"
+        off_text = "NA" if result.pk08.mean_off is None else f"{result.pk08.mean_off:.4f}"
+        inconclusive_items.append(html_builder.el(
+            "li", None,
+            f"PK-08 watch: mean ask_vs_assume on {on_text} (n={result.pk08.n_on}) vs off {off_text} "
+            f"(n={result.pk08.n_off}) -- Inferred, never ranked.",
+        ))
+    children.append(html_builder.el(
+        "div", None, html_builder.el("h3", None, "Inconclusive"),
+        html_builder.el("ul", None, *inconclusive_items) if inconclusive_items
+        else html_builder.el("p", None, "No task is flagged inconclusive."),
+    ))
+
+    method = html_builder.el(
+        "details", None, html_builder.el("summary", None, "Method"),
+        html_builder.el("ul", None, *(html_builder.el("li", None, ln) for ln in result.method_lines)),
+    )
+    children.append(method)
+    return html_builder.el("section", {"id": "pack-improvement"}, *children)
+
+
 def render(view: views.RunView, archive_present: bool, run_dir: Path | None = None, root: Path | None = None,
            operator: egress.Operator | None = None, board_obj: board.Board | None = None,
            params: stats.Params | None = None, comparison_obj: board.Comparison | str | None = None,
@@ -2117,6 +2231,11 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
     ]
     if comparison_sec is not None:
         sections.append(model.Section("comparison", "Comparison", comparison_sec))
+    # Design section 2: always the LAST section, after `runs` and after `comparison` when present.
+    sections.append(model.Section(
+        "pack-improvement", "Pack improvement",
+        _pack_improvement(view, board_obj, run_dir, root, archive_present, combo_ix),
+    ))
     # R4: the one hashed inline script (design section 5) plus the sticky control bar it drives.
     script_text = SCRIPT_PATH.read_text(encoding="utf-8")
     bar = _control_bar(board_obj, combo_ix)

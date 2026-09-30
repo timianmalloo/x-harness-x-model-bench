@@ -49,19 +49,25 @@ from harness_bench.telemetry import (
     Extraction,
     MissingField,
     ModelCall,
+    ProcessTrace,
     ProviderError,
     ToolCall,
+    ToolInput,
     as_dict,
     as_list,
     as_str,
     is_count,
+    patch_header_paths,
     rows,
     unexpected_status,
 )
 
-__all__ = ["ProviderError", "read"]
+__all__ = ["ProviderError", "read", "tool_inputs"]
 
 SUPPORTED_EVENT_VERSIONS = {1}
+
+# design pack-improvement-section.md section 4.3: is_write true for create, edit, str_replace_editor, apply_patch.
+WRITE_TOOLS = {"create", "edit", "str_replace_editor", "apply_patch"}
 
 TOOL_CLASS = {"powershell": "shell", "list_powershell": "shell", "read_powershell": "shell", "stop_powershell": "shell",
               "bash": "shell", "shell": "shell", "apply_patch": "edit", "write": "edit",
@@ -184,6 +190,48 @@ def read(path: Path) -> Extraction:
                                         total_nano_aiu=total_nano_aiu))
 
     return ex
+
+
+def tool_inputs(path: Path) -> ProcessTrace:
+    """`ToolInput`s from each `assistant.message.data.toolRequests[]`, in native order, plus this
+    record's own first non-empty assistant text (design section 4.3, slice S2). `arguments` is
+    either a JSON object (path/file_path/command by the same field names as Codex) or, observed in
+    the committed `apply_patch` captures, a plain string holding the patch body -- its own
+    `*** Add File: ` / `*** Update File: ` headers are the paths, and the call is a write regardless
+    of headers (the name alone decides, per the design's write-tool list).
+
+    R-85 condition 1 (PI-T6's count-equality assertion): unlike Claude Code and Codex, `ToolCall`
+    and `ToolInput` here are not two projections of one walked row set -- Copilot's own record
+    announces a tool call twice, as an `assistant.message` request (this reader's source) and as a
+    paired `tool.execution_start`/`tool.execution_complete` (`read()`'s source), and the two streams
+    are 1:1 by the harness's own construction (verified on the committed `off`/`on`/`fixed`
+    fixtures: 6/6, 17/17, 11/11) -- not by a shared predicate, because there is none to share."""
+    ex = Extraction()
+    first_text: str | None = None
+    calls: list[ToolInput] = []
+    for n, row in rows(path, ex):
+        if row.get("type") != "assistant.message":
+            continue
+        data = as_dict(row.get("data"))
+        if first_text is None:
+            text = as_str(data.get("content"))
+            if text:
+                first_text = text
+        for req in as_list(data.get("toolRequests")):
+            if not isinstance(req, dict):
+                continue
+            name = as_str(req.get("name")) or "unknown"
+            arguments = req.get("arguments")
+            if isinstance(arguments, dict):
+                paths = tuple(p for p in (as_str(arguments.get("path")), as_str(arguments.get("file_path"))) if p)
+                command = as_str(arguments.get("command"))
+            elif isinstance(arguments, str):
+                paths = patch_header_paths(arguments)
+                command = None
+            else:
+                paths, command = (), None
+            calls.append(ToolInput(n, name, paths, command, name in WRITE_TOOLS))
+    return ProcessTrace(first_text, tuple(calls))
 
 
 def us14_valid(tool_calls: list[dict]) -> bool:

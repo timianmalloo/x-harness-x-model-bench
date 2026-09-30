@@ -21,6 +21,8 @@ from harness_bench.stats import (
     Measure,
     Obs,
     Params,
+    fisher_exact_two_sided,
+    holm,
     interval,
     no_detectable_effect,
     paired_delta,
@@ -927,3 +929,35 @@ def test_tr16_uncomputed_pass_at_1_is_not_a_gate_check():
     assert result[("X", "on")] == ("1", None)
     assert result[("Y", "off")] == ("2", None)
     assert result[("Z", "off")] == ("", "not ranked: interval not computed (n < 2)")
+
+
+def _q4(value: Decimal) -> Decimal:
+    return value.quantize(Decimal("0.0001"))
+
+
+def test_pi_t5_fisher_exact_two_sided_and_holm():
+    """PI-T5 (design pack-improvement-section.md section 11, slice S1): the two-sided Fisher exact
+    p is the exact-probability method (sum every table at the same margins whose hypergeometric
+    probability is at most the observed table's own), never a one-sided or normal-approximated
+    value. `holm` is the standard step-down adjustment, non-decreasing by construction.
+    """
+    assert _q4(fisher_exact_two_sided(3, 6, 9, 0)) == Decimal("0.0090")
+    assert _q4(fisher_exact_two_sided(6, 3, 9, 0)) == Decimal("0.2059")
+    assert _q4(fisher_exact_two_sided(5, 4, 3, 6)) == Decimal("0.6372")
+
+    ps = {
+        "a": fisher_exact_two_sided(3, 6, 9, 0),
+        "b": fisher_exact_two_sided(6, 3, 9, 0),
+        "c": fisher_exact_two_sided(5, 4, 3, 6),
+        "d": Decimal(1),
+        "e": Decimal(1),
+        "f": Decimal(1),
+    }
+    adjusted = holm(ps)
+    assert _q4(adjusted["a"]) == Decimal("0.0543")
+    assert set(adjusted) == set(ps)
+    # non-decreasing when read back in ascending-p order (the Holm step-down invariant)
+    ordered = sorted(ps, key=lambda k: (ps[k], k))
+    values = [adjusted[k] for k in ordered]
+    assert values == sorted(values)
+    assert all(v <= Decimal(1) for v in values)

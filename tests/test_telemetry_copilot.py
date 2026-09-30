@@ -22,6 +22,7 @@ COPILOT_FIX = FIX / "native" / "copilot"
 OFF = next((COPILOT_FIX / "off").rglob("events.jsonl"))
 ON = next((COPILOT_FIX / "on").rglob("events.jsonl"))  # revision-95 pack-on recapture (R-27 c3)
 ON_REV92 = next((COPILOT_FIX / "on-rev92").rglob("events.jsonl"))  # revision-92 pack-on (negative control)
+FIXED = next((COPILOT_FIX / "fixed").rglob("events.jsonl"))  # apply_patch Add + Update File headers (PI-T6)
 PROVENANCE = json.loads((COPILOT_FIX / "provenance.json").read_text(encoding="utf-8"))
 
 # provenance.json: capture.prompt_sha256 (the same prompt both arms; tasks/X1/prompt.md's own hash)
@@ -564,3 +565,59 @@ def test_every_available_tools_id_in_the_copilot_profile_has_a_reader_class():  
     ids = [a for a in command[start:] if not a.startswith("--")]
     assert ids, "the profile names no --available-tools list"
     assert [i for i in ids if copilot.TOOL_CLASS.get(i, "other") == "other"] == []
+
+
+# PI-T6 (design pack-improvement-section.md section 11, slice S2): `tool_inputs`, read from the same
+# committed fixtures `read()` already uses, returns the paths, commands and `is_write` the
+# pack-improvement report section's ceremony/drift indicators are built on.
+
+# Regression (Leader forensic review, 2026-09-30, verified bug 2): the old `_PATCH_HEADER` pattern
+# truncated a Windows absolute path at "C:" -- confirmed against the real archive
+# (`runs/grid-1/archive/4a6250261f80ded4/attempt-1/home/session-state/.../events.jsonl:126`, a
+# Copilot D1 cell). This is that shape, as a fixture row through `copilot.tool_inputs` end to end.
+
+def test_pi_t6_apply_patch_windows_absolute_path_survives_its_own_backslashes(tmp_path):
+    row = {
+        "type": "assistant.message",
+        "data": {"content": "", "toolRequests": [{
+            "name": "apply_patch",
+            "arguments": (
+                "*** Begin Patch\n*** Add File: C:\\Projects\\bench-cells\\grid-1\\4a6250261f80ded4\\"
+                "ws-evidence-census\\tests\\AiDe.Core.Tests\\EvidenceCensusProjectionTests.cs\n"
+                "+using AiDe.Core.Facts;\n*** End Patch\n"
+            ),
+        }]},
+    }
+    record = tmp_path / "events.jsonl"
+    record.write_text(json.dumps(row) + "\n", encoding="utf-8")
+    trace = copilot.tool_inputs(record)
+    expected_path = (
+        "C:\\Projects\\bench-cells\\grid-1\\4a6250261f80ded4\\ws-evidence-census\\tests\\"
+        "AiDe.Core.Tests\\EvidenceCensusProjectionTests.cs"
+    )
+    assert trace.calls[0].paths == (expected_path,)
+    assert trace.calls[0].is_write
+
+
+def test_pi_t6_apply_patch_add_and_update_headers_are_writes():
+    trace = copilot.tool_inputs(FIXED)
+    patches = [c for c in trace.calls if c.name == "apply_patch"]
+    assert [(c.paths, c.is_write) for c in patches] == [(("probe.md",), True), (("calc.py",), True)]
+    assert trace.first_assistant_text.startswith("Goal: Record the web-tool result")
+
+
+def test_pi_t6_view_reads_path_and_powershell_reads_command_never_a_write():
+    trace = copilot.tool_inputs(FIXED)
+    view = next(c for c in trace.calls if c.name == "view")
+    assert view.paths == ("C:\\cells\\cell\\ws\\calc.py",) and view.command is None and not view.is_write
+    shell = next(c for c in trace.calls if c.name == "powershell")
+    assert shell.command == "git status --short; git worktree list --porcelain"
+    assert shell.paths == () and not shell.is_write
+
+
+@pytest.mark.parametrize("path", [OFF, ON, FIXED])
+def test_pi_t6_trace_length_equals_extractor_tool_call_count(path):
+    """R-85 condition 1: Copilot's own record announces a tool call twice (an `assistant.message`
+    request, a paired `tool.execution_start`/`tool.execution_complete`) at 1:1, so `tool_inputs`'s
+    count and `read`'s `ToolCall` count agree (`copilot.tool_inputs`'s own docstring)."""
+    assert len(copilot.tool_inputs(path).calls) == len(copilot.read(path).tool_calls)

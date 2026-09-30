@@ -1,0 +1,12 @@
+$ python -m unittest -v tests.test_b1_hidden
+test_spec_required_sections (test_b1_hidden.HiddenSpec.test_spec_required_sections) ... FAIL
+
+======================================================================
+FAIL: test_spec_required_sections (test_b1_hidden.HiddenSpec.test_spec_required_sections)
+----------------------------------------------------------------------
+AssertionError: Lists differ: ['## Part A — Functional specification'] != []
+
+----------------------------------------------------------------------
+Ran 1 test in 0.012s
+
+FAILED (failures=1)

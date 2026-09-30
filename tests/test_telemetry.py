@@ -9,7 +9,14 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from harness_bench.errors import Cause
-from harness_bench.telemetry import Extraction, claude_code, codex, copilot, normalize
+from harness_bench.telemetry import (
+    Extraction,
+    claude_code,
+    codex,
+    copilot,
+    normalize,
+    patch_header_paths,
+)
 
 FIX = Path(__file__).parent / "fixtures"
 PROMPT = 'Run this shell command: python -c "print(6*7)" and write its exact output to answer.txt in the current directory. Then reply DONE.'
@@ -504,3 +511,91 @@ def test_a_newline_free_record_is_read_in_bounded_memory(tmp_path, monkeypatch):
 def test_extraction_id_is_the_normaliser_build_hash():
     a = normalize.extraction_id()
     assert len(a) == 64 and a == normalize.extraction_id()
+
+
+# PI-T6 (design pack-improvement-section.md section 11, slice S2): each harness's `tool_inputs`, read
+# from the same committed fixtures `read()` already uses, returns the paths, commands and `is_write`
+# the pack-improvement report section's ceremony/drift indicators are built on.
+
+def test_pi_t6_claude_code_tool_inputs_reads_command_and_no_text_block():
+    trace = claude_code.tool_inputs(FIX / "native/claude-code/ok.jsonl")
+    assert trace.first_assistant_text is None  # this fixture's only assistant row is the tool call itself
+    assert [(c.name, c.paths, c.command, c.is_write) for c in trace.calls] == [
+        ("Bash", (), 'python -c "print(6*7)" > answer.txt && cat answer.txt', False),
+    ]
+
+
+def test_pi_t6_claude_code_tool_inputs_marks_write_tools_and_reads_paths(tmp_path):
+    rows = [
+        {"type": "assistant", "timestamp": "2026-09-25T05:20:53.616Z",
+         "message": {"id": "m1", "model": "claude-opus-5-5", "usage": {},
+                     "content": [{"type": "text", "text": "Goal: fix the bug."},
+                                 {"type": "tool_use", "id": "t1", "name": "Edit",
+                                  "input": {"file_path": "src/a.py", "command": "replace"}}]}},
+    ]
+    record = tmp_path / "s.jsonl"
+    record.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    trace = claude_code.tool_inputs(record)
+    assert trace.first_assistant_text == "Goal: fix the bug."
+    assert trace.calls == (claude_code.ToolInput(1, "Edit", ("src/a.py",), "replace", True),)
+
+
+def test_pi_t6_codex_tool_inputs_reads_exec_commands():
+    trace = codex.tool_inputs(FIX / "native/codex/ok.jsonl")
+    assert trace.first_assistant_text == "I’ll run the command and write its stdout bytes to `answer.txt`."
+    assert [(c.name, c.paths, c.command, c.is_write) for c in trace.calls] == [
+        ("exec", (), 'python -c "print(6*7)"', False),
+        ("exec", (), "[System.IO.File]::WriteAllBytes((Join-Path (Get-Location) 'answer.txt'), [byte[]](52,50,13,10))", False),
+    ]
+
+
+# Regression (Leader forensic review, 2026-09-30, verified bug 2): the old `_PATCH_HEADER` pattern
+# excluded backslash outright, so a Windows absolute path in a Copilot `apply_patch` body truncated
+# to "C:" -- confirmed against the real archive, `runs/grid-1/archive/4a6250261f80ded4/attempt-1/
+# home/session-state/d72fa471-ad50-4c41-97a2-8cb4a164683c/events.jsonl:126` (a Copilot D1 cell).
+
+def test_patch_header_paths_keeps_a_windows_absolute_path_with_backslashes():
+    text = (
+        '*** Begin Patch\n*** Add File: C:\\Projects\\bench-cells\\grid-1\\4a6250261f80ded4\\'
+        'ws-evidence-census\\tests\\AiDe.Core.Tests\\EvidenceCensusProjectionTests.cs\n'
+        '+using AiDe.Core.Facts;\n*** End Patch\n'
+    )
+    expected_path = (
+        'C:\\Projects\\bench-cells\\grid-1\\4a6250261f80ded4\\ws-evidence-census\\tests\\'
+        'AiDe.Core.Tests\\EvidenceCensusProjectionTests.cs'
+    )
+    assert patch_header_paths(text) == (expected_path,)
+
+
+def test_patch_header_paths_keeps_a_posix_absolute_path():
+    text = '*** Begin Patch\n*** Update File: /home/user/repo/src/a.py\n@@\n*** End Patch\n'
+    assert patch_header_paths(text) == ('/home/user/repo/src/a.py',)
+
+
+def test_pi_t6_codex_tool_inputs_apply_patch_update_header_is_a_write():
+    trace = codex.tool_inputs(FIX / "native/codex/pack-on.jsonl")
+    writes = [c for c in trace.calls if c.is_write]
+    assert len(writes) == 1
+    assert writes[0].paths == ("../ws-slugify/slug.py",)
+    assert writes[0].command is None
+    assert trace.first_assistant_text.startswith("Goal: make `slugify` match its docstring.")
+
+
+@pytest.mark.parametrize(
+    ("reader", "fixture"),
+    [
+        (claude_code, "native/claude-code/ok.jsonl"),
+        (codex, "native/codex/ok.jsonl"),
+        # pack-on.jsonl has no MCP/web_search rows (checked 2026-09-30): every ToolCall on this
+        # fixture comes from the same `function_call`/`custom_tool_call`/`local_shell_call` family
+        # `tool_inputs` walks, so the counts are directly comparable (R-85 condition 1's scope,
+        # "codex.py:41 CALL_TYPES" -- not the out-of-band MCP/web_search rows `mcp-inside-exec.jsonl`
+        # covers, which `tool_inputs` does not claim to count).
+        (codex, "native/codex/pack-on.jsonl"),
+    ],
+)
+def test_pi_t6_trace_length_equals_extractor_tool_call_count(reader, fixture):
+    """R-85 condition 1: `tool_inputs` and `read` are two projections of the one call family, so a
+    fixture with no out-of-band call source gives the same count from both."""
+    path = FIX / fixture
+    assert len(reader.tool_inputs(path).calls) == len(reader.read(path).tool_calls)

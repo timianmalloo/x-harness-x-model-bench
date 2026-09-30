@@ -21,3 +21,14 @@ summary: >-
 
 The analysis is the self-contained page [pack-onoff-analysis.html](pack-onoff-analysis.html). This file is its
 graph record: the docs graph joins the page to this frontmatter by the shared file stem.
+
+**Correction (2026-09-30):** the page originally counted two D1 Copilot pack-on cells
+(`4a6250261f80ded4`, `c6a763578ef7e110`) as worktree diversion (F-4). A forensic re-check on the
+`report-pack-improvement` branch (fixing a path-relativization bug in the automated pack-improvement
+report section this page's own hand method predates) found their sibling worktree byte-identical to
+`ws` over every matched blast-radius file -- they never wrote product code at all, a turn ended
+before product (F-5), not a diversion. Diverted deliveries are 5, not 7; the "turn ended before
+product" bucket is 5, not 3; the total of 10 of 14 pack-attributed failures is unchanged, only its
+composition. The ranked fixes and their order are unchanged; fixes 1 and 2's "Waste removed" counts
+are corrected in place. See the page's own Verdict-section correction note and the corrected F-4/F-5
+cards for the full evidence.

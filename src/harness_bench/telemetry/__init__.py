@@ -171,3 +171,56 @@ def as_dict(value) -> dict:
 
 def as_list(value) -> list:
     return value if isinstance(value, list) else []
+
+
+# The pack-improvement report section's ceremony/drift indicators (design pack-improvement-section.md
+# section 4.3, slice S2): one `ToolInput` per tool call, read tolerantly from the same native record
+# `read()` already parses, but never stored and never leaving `report.pack_improvement` past a
+# derived boolean or count (section 8: privacy and egress).
+#
+# The header line ends at either of two real shapes, both confirmed against the grid-1/grid-1-cc
+# archive (not guessed): Copilot's own `apply_patch` body is a plain, JSON-escaped string, so a
+# Windows absolute path's backslashes survive as literal backslash characters and the header ends
+# at a real newline (`runs/grid-1/archive/4a6250261f80ded4/.../events.jsonl:126`, a Copilot D1
+# cell: `*** Add File: C:\Projects\bench-cells\...\EvidenceCensusProjectionTests.cs`). Codex's own
+# call wraps the patch as JS source text the model wrote (`custom_tool_call`'s `arguments`), so the
+# patch's internal newlines are themselves the literal two-character escape `\n` -- there is no
+# real newline anywhere in that text (`tests/fixtures/native/codex/pack-on.jsonl` line 45). The old
+# pattern excluded backslash outright to catch Codex's case, which also truncated a Windows path
+# at "C:" -- a verified bug, not a hypothetical one. `.+?` cannot cross a real newline on its own
+# (`.` never matches one), so the non-greedy match naturally stops there for Copilot; the `\\n`
+# branch stops it at Codex's literal escape. Residual risk, accepted: a path segment that itself
+# starts with a literal `n` right after a backslash (e.g. `...\new\...`) would look like the
+# Codex escape and truncate early -- not observed in the archive, and strictly better than the
+# previous behaviour, which truncated at the FIRST backslash unconditionally.
+_PATCH_HEADER = re.compile(r"\*\*\* (?:Add|Update) File: (.+?)(?:\\n|\n|$)")
+
+
+@dataclass(frozen=True)
+class ToolInput:
+    """One tool call's inputs (design section 4.3). `paths` and `command` are read as the native
+    record states them -- not yet normalised to the cell's `ws` (`report.pack_improvement`'s job,
+    which knows the cell's `ws`; a bare reader over one record file does not)."""
+    native_ordinal: int
+    name: str
+    paths: tuple[str, ...]
+    command: str | None
+    is_write: bool
+
+
+@dataclass(frozen=True)
+class ProcessTrace:
+    """One native record's own `tool_inputs()` result, in native order. `first_assistant_text` is
+    this record's own first assistant text block (never a sub-agent's; composing the main session
+    with its sub-agent records in native order, design section 4.3's comment, is `report.pack_improvement`'s
+    job -- this module reads one record at a time)."""
+    first_assistant_text: str | None
+    calls: tuple[ToolInput, ...] = ()
+
+
+def patch_header_paths(text: str) -> tuple[str, ...]:
+    """Paths named by an `apply_patch` body's own `*** Add File: ` / `*** Update File: ` headers
+    (design section 4.3). Shared by Codex (whose call wraps the patch as JS source text) and
+    Copilot (whose call carries the patch body as a plain string) -- both formats use the same
+    header line, so one regex serves both readers."""
+    return tuple(_PATCH_HEADER.findall(text))

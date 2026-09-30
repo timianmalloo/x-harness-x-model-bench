@@ -18,8 +18,10 @@ from pathlib import Path
 from harness_bench.telemetry import (
     Extraction,
     ModelCall,
+    ProcessTrace,
     ProviderError,
     ToolCall,
+    ToolInput,
     as_dict,
     as_list,
     as_status,
@@ -28,7 +30,7 @@ from harness_bench.telemetry import (
     unexpected_status,
 )
 
-__all__ = ["ProviderError", "read"]
+__all__ = ["ProviderError", "read", "tool_inputs"]
 
 TOOL_CLASSES = {"Bash": "shell", "PowerShell": "shell", "Edit": "edit", "Write": "edit", "MultiEdit": "edit",
                 "NotebookEdit": "edit", "Read": "read", "Glob": "read", "Grep": "read",
@@ -37,6 +39,8 @@ TOOL_CLASSES = {"Bash": "shell", "PowerShell": "shell", "Edit": "edit", "Write":
                 "mcp__scripted_user__ask_user": "scripted user"}  # R-37 c2: the task's own MCP tool (a1-capture-1)
 # Account connectors as the pinned 2.1.282 record advertises them: prompt_snapshot tools and deferred_tools_delta.
 _ACCOUNT_CONNECTOR = re.compile(r"mcp__claude_ai_[A-Za-z0-9_]+")
+# design pack-improvement-section.md section 4.3: is_write true for Write, Edit, MultiEdit, NotebookEdit.
+WRITE_TOOLS = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
 
 
 def _text(content) -> str | None:
@@ -46,6 +50,17 @@ def _text(content) -> str | None:
         texts = [b.get("text") for b in content if isinstance(b, dict) and b.get("type") == "text" and isinstance(b.get("text"), str)]
         return "".join(texts) if texts else None
     return None
+
+
+def _tool_use_blocks(n: int, message: dict):
+    """Every `tool_use` block in one assistant row's content, in native order: `(native_ordinal,
+    block)`. The one walker `read()`'s `ToolCall`s and `tool_inputs()`'s `ToolInput`s both project
+    from (R-85 condition 1: two independently written loops over `tool_use` blocks would give two
+    counts of "tool calls per cell"; PI-T6 asserts the counts equal on a fixture with no out-of-band
+    tool source)."""
+    for block in as_list(message.get("content")):
+        if isinstance(block, dict) and block.get("type") == "tool_use" and isinstance(block.get("id"), str):
+            yield n, block
 
 
 def _note_advertised(names: list[str], row: dict) -> None:
@@ -111,11 +126,38 @@ def read(path: Path) -> Extraction:
             ex.model_calls.append(ModelCall(n, model, ex.count(n, usage, "input_tokens"), ex.count(n, usage, "cache_read_input_tokens"),
                                             ex.count(n, usage, "cache_creation_input_tokens"), ex.count(n, usage, "output_tokens"),
                                             None, stamp, stamp))
-        for block in as_list(message.get("content")):
-            if isinstance(block, dict) and block.get("type") == "tool_use" and isinstance(block.get("id"), str):
-                open_tools[block["id"]] = {"n": n, "name": as_str(block.get("name")) or "unknown", "start": stamp}
+        for _, block in _tool_use_blocks(n, message):
+            open_tools[block["id"]] = {"n": n, "name": as_str(block.get("name")) or "unknown", "start": stamp}
     for tool in open_tools.values():  # a call with no result (killed turn)
         ex.tool_calls.append(ToolCall(tool["n"], tool["name"], TOOL_CLASSES.get(tool["name"], "other"), tool["start"], None, None))
     ex.tool_calls.sort(key=lambda t: t.native_ordinal)
     ex.account_connector_tools = len({name for name in advertised if _ACCOUNT_CONNECTOR.fullmatch(name)})
     return ex
+
+
+def tool_inputs(path: Path) -> ProcessTrace:
+    """`ToolInput`s from each `tool_use` block, in native order, plus this record's own first
+    assistant text block (design pack-improvement-section.md section 4.3, slice S2). A row with
+    `isApiErrorMessage` is a provider error (module docstring), never a text block or a tool call."""
+    ex = Extraction()
+    first_text: str | None = None
+    calls: list[ToolInput] = []
+    for n, row in rows(path, ex):
+        if row.get("type") != "assistant" or row.get("isApiErrorMessage"):
+            continue
+        message = as_dict(row.get("message"))
+        model = message.get("model")
+        if not isinstance(model, str) or model == "<synthetic>":  # same gate read() applies (module docstring)
+            continue
+        if first_text is None:
+            texts = [b.get("text") for b in as_list(message.get("content"))
+                     if isinstance(b, dict) and b.get("type") == "text" and isinstance(b.get("text"), str)]
+            if texts:
+                first_text = "".join(texts)
+        for _, block in _tool_use_blocks(n, message):
+            name = as_str(block.get("name")) or "unknown"
+            inp = as_dict(block.get("input"))
+            paths = tuple(p for p in (as_str(inp.get("file_path")), as_str(inp.get("path")), as_str(inp.get("notebook_path"))) if p)
+            command = as_str(inp.get("command"))
+            calls.append(ToolInput(n, name, paths, command, name in WRITE_TOOLS))
+    return ProcessTrace(first_text, tuple(calls))
