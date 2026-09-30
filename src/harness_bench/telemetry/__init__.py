@@ -171,3 +171,40 @@ def as_dict(value) -> dict:
 
 def as_list(value) -> list:
     return value if isinstance(value, list) else []
+
+
+# The pack-improvement report section's ceremony/drift indicators (design pack-improvement-section.md
+# section 4.3, slice S2): one `ToolInput` per tool call, read tolerantly from the same native record
+# `read()` already parses, but never stored and never leaving `report.pack_improvement` past a
+# derived boolean or count (section 8: privacy and egress).
+_PATCH_HEADER = re.compile(r"\*\*\* (?:Add|Update) File: ([^\\\n]+)")
+
+
+@dataclass(frozen=True)
+class ToolInput:
+    """One tool call's inputs (design section 4.3). `paths` and `command` are read as the native
+    record states them -- not yet normalised to the cell's `ws` (`report.pack_improvement`'s job,
+    which knows the cell's `ws`; a bare reader over one record file does not)."""
+    native_ordinal: int
+    name: str
+    paths: tuple[str, ...]
+    command: str | None
+    is_write: bool
+
+
+@dataclass(frozen=True)
+class ProcessTrace:
+    """One native record's own `tool_inputs()` result, in native order. `first_assistant_text` is
+    this record's own first assistant text block (never a sub-agent's; composing the main session
+    with its sub-agent records in native order, design section 4.3's comment, is `report.pack_improvement`'s
+    job -- this module reads one record at a time)."""
+    first_assistant_text: str | None
+    calls: tuple[ToolInput, ...] = ()
+
+
+def patch_header_paths(text: str) -> tuple[str, ...]:
+    """Paths named by an `apply_patch` body's own `*** Add File: ` / `*** Update File: ` headers
+    (design section 4.3). Shared by Codex (whose call wraps the patch as JS source text) and
+    Copilot (whose call carries the patch body as a plain string) -- both formats use the same
+    header line, so one regex serves both readers."""
+    return tuple(_PATCH_HEADER.findall(text))
