@@ -25,8 +25,18 @@ from harness_bench.telemetry import claude_code, codex, copilot
 
 HARNESSES = ("claude-code", "codex", "copilot")
 USAGE_SOURCES = ("acp_turn", "native_record")
+# R-84 item 3: a claude-code-only alternative to the copied-credential-file path (ADR-0003 amended 2026-09-30).
+# Claude Code refresh tokens rotate; copying the operator's own ~/.claude login into every cell home means one
+# cell's refresh strands every other copy's, mid-run. `claude setup-token` mints a long-lived (1-year) OAuth
+# token for non-interactive use (never an API key, ADR-0003's "subscriptions only"); the operator keeps it in
+# OAUTH_TOKEN_ENV, the engine reads it once and injects it into each claude-code cell as CELL_OAUTH_ENV. The
+# operator's own ~/.claude login is never read or touched by this path. Without the var, the file-copy path
+# below is unchanged.
+OAUTH_TOKEN_ENV = "HB_CLAUDE_OAUTH_TOKEN"
+CELL_OAUTH_ENV = "CLAUDE_CODE_OAUTH_TOKEN"
+CREDENTIAL_KIND_OAUTH_TOKEN = "oauth_token_env"
 DROP_EXACT = {"CLAUDECODE", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "COPILOT_HOME", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN",
-              "OPENAI_API_KEY", "ANTHROPIC_MODEL", "CODEX_PATH", "CLAUDE_CODE_EXECUTABLE", "FAKE_ACP",
+              "OPENAI_API_KEY", "ANTHROPIC_MODEL", "CODEX_PATH", "CLAUDE_CODE_EXECUTABLE", "FAKE_ACP", OAUTH_TOKEN_ENV,
               "GH_TOKEN", "GITHUB_TOKEN", "GH_HOST", "GH_ENTERPRISE_TOKEN", "GITHUB_ENTERPRISE_TOKEN", "GH_CONFIG_DIR"}
 DROP_PREFIXES = ("CLAUDE_CODE_", "CODEX_", "COPILOT_", "GIT_CONFIG_")
 CELL_ENV = {
@@ -69,9 +79,13 @@ class Profile:
         in the reader), only in a scenario-6 cell. Every other cell is seeded and launched exactly as before."""
         return DELEGATE_IDS.get(self.harness, ()) if scenario == 6 else ()
 
-    def seed_home(self, home: Path, model: str, scenario: int | None = None) -> None:
+    def seed_home(self, home: Path, model: str, scenario: int | None = None, oauth_token: str | None = None) -> None:
         """Write the profile's files; `{delegate}` in a template becomes `, "<id>"` per delegate id of a scenario-6
-        cell (a JSON-list continuation, the Claude Code allowlist) and nothing in any other cell (R-74 item 3)."""
+        cell (a JSON-list continuation, the Claude Code allowlist) and nothing in any other cell (R-74 item 3).
+
+        `oauth_token` (R-84 item 3): when set, this claude-code cell authenticates through CELL_OAUTH_ENV
+        (`cell_env`) instead -- no credential file is copied into its home at all. A non-claude-code profile
+        never receives a token (ProfileLauncher gates it), so this only ever changes claude-code's seed."""
         home.mkdir(parents=True, exist_ok=True)
         delegate = "".join(f', "{name}"' for name in self.delegate_ids(scenario))
         # R-74 item 5: Codex 0.156.0 feature multi_agent (stable, default true) is what offers the collaboration tools.
@@ -80,7 +94,8 @@ class Profile:
         for name, template in self.files.items():
             (home / name).write_text(template.replace("{model}", model).replace("{delegate}", delegate)
                                      .replace("{multi_agent}", multi_agent) + "\n", encoding="utf-8")
-        if self.credential_source is not None and self.credential_name is not None and self.credential_source.is_file():
+        if (not oauth_token and self.credential_source is not None and self.credential_name is not None
+                and self.credential_source.is_file()):
             shutil.copyfile(self.credential_source, home / self.credential_name)
 
     def clean_home(self, home: Path) -> None:
@@ -88,7 +103,8 @@ class Profile:
         if self.credential_name is not None:
             (home / self.credential_name).unlink(missing_ok=True)
 
-    def cell_env(self, base: dict[str, str], home: Path, build: tools.Build, model: str, traceparent: str) -> dict[str, str]:
+    def cell_env(self, base: dict[str, str], home: Path, build: tools.Build, model: str, traceparent: str,
+                 oauth_token: str | None = None) -> dict[str, str]:
         env = {k: v for k, v in base.items() if k.upper() not in DROP_EXACT and not k.upper().startswith(DROP_PREFIXES)}
         env.update(CELL_ENV)
         env[self.home_env] = str(home)
@@ -96,6 +112,8 @@ class Profile:
             env[key] = template.replace("{model}", model).replace("{exe}", str(build.exe))
         if traceparent:
             env["TRACEPARENT"] = traceparent
+        if oauth_token:  # R-84 item 3: CLAUDE_CODE_OAUTH_TOKEN in place of the copied credential file
+            env[CELL_OAUTH_ENV] = oauth_token
         return env
 
     def argv(self, build: tools.Build, model: str | None = None, mcp_config: Path | None = None,
@@ -209,7 +227,10 @@ class ProfileLauncher:
         self.usage_source = profile.usage_source
         self.mode = profile.mode
         self.set_model = profile.set_model
-        self.credential_kind = profile.credential_kind
+        # R-84 item 3: read once, at construction (before any cell launches) -- the operator sets it before the run
+        # starts, for the run's duration. None for every harness but claude-code (the only one this path covers).
+        self._oauth_token = os.environ.get(OAUTH_TOKEN_ENV) if profile.harness == "claude-code" else None
+        self.credential_kind = CREDENTIAL_KIND_OAUTH_TOKEN if self._oauth_token else profile.credential_kind
         self.shutdown_grace = profile.shutdown_grace
         self.build: tools.Build | None = None
 
@@ -221,7 +242,8 @@ class ProfileLauncher:
         return build.record()
 
     def seed(self, home: Path, cell: dict) -> None:
-        self.profile.seed_home(home, cell["model"], cell.get("scenario"))  # R-74 item 3: the allowance is per cell
+        # R-74 item 3: the allowance is per cell; R-84 item 3: no credential file when an oauth token is set
+        self.profile.seed_home(home, cell["model"], cell.get("scenario"), oauth_token=self._oauth_token)
 
     def clean(self, home: Path) -> None:
         self.profile.clean_home(home)
@@ -231,7 +253,7 @@ class ProfileLauncher:
             raise RuntimeError("check_build must run before argv_env")
         return self.profile.argv(self.build, cell["model"], mcp_config=cell.get("mcp_config"),
                                  scenario=cell.get("scenario")), self.profile.cell_env(
-            dict(os.environ), home, self.build, cell["model"], traceparent)
+            dict(os.environ), home, self.build, cell["model"], traceparent, oauth_token=self._oauth_token)
 
     def records(self, home: Path, session_id: str) -> list[Path]:
         return self.profile.native_records(home, session_id)
