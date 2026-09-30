@@ -300,6 +300,11 @@ In order, built with `html_builder.el` (no `trusted()`), reusing the report's to
 1. **Headline**: one generated sentence from a fixed template, for example "Pack on used 3.5× the tokens and
    1.9× the wall clock; pass 40/54 vs 48/54 (pooled p = 0.08); 10 of 14 pack-on failures have a
    pack-attributed cause." Every number in it also appears in a table below.
+1a. **Population caveat** (added 2026-09-30, an NA-style honesty line, never a new metric): one line per
+   (combo, pack) whose planned cell count (`plan.json`'s own `cells[]`) landed fewer than half `valid` --
+   `pack_improvement.population_caveats(view)`, rendered right after the headline. Verified on grid-1: both
+   `cc-opus` arms fire (5 of 18 valid off, 6 of 18 on); every other combo x arm on grid-1 and grid-1-cc has
+   its full planned population, so neither renders a caveat there.
 2. **Intention verdicts**: a table with intention, verdict tag, and deciding evidence (metric or indicator, n).
 3. **Value vs waste**: a table with one row per (task, combo): pass k/n on·off, median token ratio (k of n > 1),
    wall ratio, class, saturated flag.
@@ -369,11 +374,13 @@ Write each test first and watch it fail for the stated reason. Each test names t
 | PI-T12 | findings ranking is stable under input shuffles, and a zero-count finding is not rendered | catches nondeterministic order |
 | PI-T13 | the Copilot first-call input is NA with `SESSION_TOTALS`; an `acp_turn` profile gives `ACP_MISSES_CALLS` | catches a session total shown as a per-call number |
 | PI-T14 | a canary planted in fixture transcript text and in a command is absent from the HTML | catches transcript text leaking into the report |
-| PI-T15 (slow ring) | golden on archived runs via `tests/archived_runs.gate_runs_root()` (skipped when absent). **grid-1-cc**: PK-01 evidence = {c4d05c98231eb3aa, 050c08027c79a944, efbedb23da7173d0}; PK-03 escalated by 73c87914995c00a9 (regression_count 3). **grid-1**: PK-01 evidence ⊇ {4a6250261f80ded4, c6a763578ef7e110, 3ff04431d3b5ac27, 757143056c649892}; PK-02 evidence = {b765f438fb811ea0, dfb4ae60b8a3d3a3, 0164cd01031f303f}; Codex first-call delta in 8,000–10,500; Codex token ratio > 5 | catches drift from the hand analysis the section automates |
+| PI-T15 (slow ring) | golden on archived runs via `tests/archived_runs.gate_runs_root()` (skipped when absent). Re-derived 2026-09-30 with the path-relativization fix (section 4.3/4.4; a golden pinned from the implementation's own pre-fix output inherits its bugs, `docs/lessons/defect-classes.md`). **grid-1-cc**: PK-01 evidence = {c4d05c98231eb3aa, 050c08027c79a944, efbedb23da7173d0}; PK-02 absent (0 -- every pre-fix "stopped without product" cell here, including the one also genuinely diverted, has a real in-`ws` product_write once relativized); PK-03 escalated by 73c87914995c00a9 (regression_count 3); headline attribution 3 of 5; no population caveat (every combo x arm has its full planned population). **grid-1**: PK-01 evidence = {35af195cfe821dca, 3ff04431d3b5ac27, 757143056c649892} (D1 copilot-sol's `4a6250261f80ded4`/`c6a763578ef7e110` are NOT diverted -- their sibling worktree is byte-identical to `ws`); PK-02 count 7, evidence (capped) = {0164cd01031f303f, 35af195cfe821dca, 3ff04431d3b5ac27, 4a6250261f80ded4, b765f438fb811ea0} (two cells in that same set are ALSO diverted_and_failed -- the rules are not mutually exclusive); headline attribution 8 of 11; population caveat on both cc-opus arms (5 of 18 off, 6 of 18 on -- both under half their planned population); Codex first-call delta in 8,000–10,500; Codex token ratio > 5 | catches drift from the hand analysis the section automates |
 
 Mutants to kill (add them to `tests/mutations` in the existing style): swap on/off in the ratio; treat NA as 0;
 include invalid cells in pairs; match `ws` itself as a sibling worktree; drop the Holm step; reverse the
-ranking; count pack-off ceremony as pack-on.
+ranking; count pack-off ceremony as pack-on; Codex `local_shell_call` dropped; blast radius unreadable
+reads as zero product writes; paths not relativized before a blast-radius glob match; backslash excluded
+from the `apply_patch` header (telemetry's `_PATCH_HEADER`).
 
 ## 12. Slices for the implementer
 
