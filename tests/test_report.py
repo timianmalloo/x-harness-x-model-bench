@@ -357,6 +357,20 @@ def test_a_value_found_only_on_the_host_side_is_refused(root, tmp_path, monkeypa
     assert err.value.code == "HB-SEC-001"
 
 
+def test_a_leaked_oauth_token_env_value_is_refused(root, tmp_path, monkeypatch):  # ADR-0003 Am. 2026-09-30
+    """HB_CLAUDE_OAUTH_TOKEN (profiles.OAUTH_TOKEN_ENV) replaces the copied credential file for claude-code
+    cells; its value must be in the same scan set as a credential file's, so a leak of it is HB-SEC-001 too."""
+    from harness_bench import profiles
+    monkeypatch.setenv(profiles.OAUTH_TOKEN_ENV, FAKE_ROTATED_TOKEN)
+    run_dir, view = _graded(root, tmp_path, {"a": GOOD})
+    values = credentials.host_values(root)
+    assert FAKE_ROTATED_TOKEN in values
+    view.cells[0].label = FAKE_ROTATED_TOKEN
+    with pytest.raises(BenchError) as err:
+        html.write(run_dir, view, values)
+    assert err.value.code == "HB-SEC-001"
+
+
 def test_a_clean_report_still_writes_when_credential_values_are_supplied(root, tmp_path):
     run_dir, view = _graded(root, tmp_path, {"a": GOOD})
     path = html.write(run_dir, view, {FAKE_ROTATED_TOKEN})

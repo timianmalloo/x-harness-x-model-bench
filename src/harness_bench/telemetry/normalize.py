@@ -8,7 +8,8 @@
   reports only the last call).
 - classify: provider errors to a cause. 401 and 403 are `blocked (auth)`; 408, 429, 5xx and overload
   are `failed (provider)` (infrastructure); any other status is `failed (model unavailable)` (benchmark:
-  the plan pinned a model the account cannot serve) (probe W3, R-23).
+  the plan pinned a model the account cannot serve) (probe W3, R-23). Without a status, an auth-failure
+  or network-failure text in the message decides first (CAUSE-A), before the provider-type check.
 - base_model_id / context_window_tag (R-32): Claude Code suffixes a served model id with the
   context window it ran (`claude-opus-5-5[1m]`); the API model id carries no such suffix. Model
   identity (`served_models`, per-model `totals`) is the base id; the tag itself is disclosed
@@ -28,6 +29,35 @@ from harness_bench.telemetry import Extraction, ProviderError, as_dict, as_int
 BUCKETS = ("uncached_input", "cache_read", "cache_write", "output")
 PROVIDER_TYPES = ("overloaded", "rate_limit", "timeout", "api_error", "server_error", "unavailable")
 _TAG_RE = re.compile(r"\[([^\[\]]+)\]$")  # a trailing bracketed context-window tag, e.g. "[1m]"
+
+# CAUSE-A: the one auth-failure text rule, shared by `classify` (the native-record scan) and
+# `driver._prompt_error_cause` (a prompt-time exception) -- previously two definitions of one
+# classification. Substring, case-insensitive, no word boundary (unchanged from the prior
+# driver-only rule). Evidence: grid-2 archive 9b4c563f3d520ee6, error_type "authentication_failed",
+# message "Failed to authenticate: OAuth session expired and could not be refreshed".
+_AUTH_WORDS = ("auth", "login", "credential")
+
+# CAUSE-A: a status-less network/infrastructure failure is `provider`, never `model_unavailable`.
+# Evidence: grid-2 archive dd44b0981d5f34f5 (copilot-sol), errorType "query", message "...client
+# error (Connect): dns error: error resolving DNS: No such host is known. (os error 11001)
+# [ENOTFOUND]". ECONNREFUSED/ECONNRESET are the same Node.js/libuv socket-error-code family as the
+# evidenced ENOTFOUND (the adapters here are Node-based CLIs); "connection refused"/"connection
+# reset" are their human-readable renderings. assume: every status-less network failure this harness
+# meets carries one of these; confirm: a second archived row outside this family; breaks: an
+# unlisted wording stays model_unavailable until it is measured and added (HYG-A sweep candidate).
+_NETWORK_WORDS = ("dns error", "enotfound", "no such host", "econnrefused", "econnreset",
+                  "connection refused", "connection reset")
+
+
+def is_auth_failure(text: str) -> bool:
+    """CAUSE-A: one place for the auth-failure text rule (moved from driver._auth_failure)."""
+    low = text.lower()
+    return any(w in low for w in _AUTH_WORDS)
+
+
+def _is_network_failure(text: str) -> bool:
+    low = text.lower()
+    return any(w in low for w in _NETWORK_WORDS)
 
 
 def base_model_id(model: str) -> str:
@@ -111,10 +141,12 @@ def record_unreadable(ex: Extraction) -> str | None:
 
 
 def classify(errors: list[ProviderError]) -> Cause | None:
-    """One classifier for the native record and the driver's prompt errors (R-23). A status is evidence and decides
-    first: 401 or 403 is blocked_auth; 408, 429 or 5xx is provider; any other status is model_unavailable. Only
-    without a status does the error type decide (a provider type is provider). The record message stays where the
-    reader stored it."""
+    """One classifier for the native record and the driver's prompt errors (R-23, CAUSE-A). A status is evidence and
+    decides first: 401 or 403 is blocked_auth; 408, 429 or 5xx is provider; any other status is model_unavailable.
+    Only without a status does text decide: an auth-failure text (is_auth_failure, on the message and the error
+    type together -- a reader may put the auth word in either, CAUSE-A) is blocked_auth; a network-failure text
+    (DNS/ENOTFOUND/connection refused/reset) is provider; else a provider error type is provider. The record
+    message stays where the reader stored it."""
     if not errors:
         return None
     for e in errors:
@@ -125,7 +157,10 @@ def classify(errors: list[ProviderError]) -> Cause | None:
         if e.status is not None:
             provider = e.status in (408, 429) or e.status >= 500
         else:
-            provider = any(t in e.error_type.lower() for t in PROVIDER_TYPES)
+            text = f"{e.message} {e.error_type}"
+            if is_auth_failure(text):
+                return Cause.blocked_auth
+            provider = _is_network_failure(text) or any(t in e.error_type.lower() for t in PROVIDER_TYPES)
         if provider:
             return Cause.provider
     return Cause.model_unavailable

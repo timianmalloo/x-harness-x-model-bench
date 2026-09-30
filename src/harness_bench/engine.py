@@ -313,7 +313,7 @@ class Engine:
         kind, field_name = DECISION_CAUSES[outcome["cause"]]
         if self.stopped or not any(c[field_name] == cell[field_name] for c in self.pending):
             return
-        self._open(kind, cell[field_name], outcome["code"])
+        self._open(kind, cell[field_name], outcome["code"], detail=outcome.get("detail") or "")  # CAUSE-A
 
     def _count_spend(self, spend: dict) -> None:
         """One ended cell's tokens (design 6.3). A spend_cap decision opens even after a launch stop, while a pending
@@ -777,9 +777,16 @@ class Engine:
 
     def _classify(self, result: driver.TurnResult, extractions: list, exit_status: int | None,
                   tail: bytes, kill_reason: str | None) -> Cause | None:
-        """Precedence: provider/model error in the native record > budget kill > host sleep > memory > driver cause."""
-        scanned = normalize.classify([error for ex in extractions for error in ex.errors])
+        """Precedence: provider/model error in the native record > budget kill > host sleep > memory > driver cause.
+
+        CAUSE-A: when the native record decided (`scanned`), the driver never saw this failure -- no prompt-time
+        exception, so `result.detail` is still its default "". The triggering error's own message becomes
+        `result.detail` here, so `cell.outcome.detail` (set from `result.detail` at the call site) and any
+        `decision.opened` it feeds are never empty for a scanned cause."""
+        errors = [error for ex in extractions for error in ex.errors]
+        scanned = normalize.classify(errors)
         if scanned:
+            result.detail = next((e.message for e in errors if normalize.classify([e]) == scanned), result.detail)
             return scanned
         if kill_reason == "timeout":
             return Cause.timed_out

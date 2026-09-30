@@ -217,11 +217,6 @@ class _Channel:
                 return msg.get("result") or {}
 
 
-def _auth_failure(detail: str) -> bool:
-    low = detail.lower()
-    return "auth" in low or "login" in low or "credential" in low
-
-
 # assume: an adapter reports a provider's HTTP status as "API Error: <status>" in the JSON-RPC error message and its
 # type as data.errorKind. Confirm: the one measured form, claude-agent-acp 0.79.0 refusing claude-opus-5-5
 # (tests/fixtures/acp/recordings/claude-code-x1-model-unsupported.jsonl). Breaks: another adapter's form is not
@@ -233,7 +228,7 @@ def _prompt_error_cause(exc: _AcpError) -> Cause:
     """R-23: a prompt-time error with a status or a provider type goes through the native-record classifier
     (`normalize.classify`, one classifier for both paths); an auth failure keeps its precedence; an error with
     neither status nor type is adapter_crash."""
-    if _auth_failure(str(exc)):
+    if normalize.is_auth_failure(str(exc)):  # CAUSE-A: one auth-failure text rule, shared with normalize.classify
         return Cause.blocked_auth
     message = exc.error.get("message") if isinstance(exc.error.get("message"), str) else ""
     data = exc.error.get("data") if isinstance(exc.error.get("data"), dict) else {}
@@ -286,7 +281,7 @@ def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handsh
     except ProtocolError as exc:
         return _fail(result, Cause.protocol, exc.detail, started)
     except _AcpError as exc:
-        cause = Cause.blocked_auth if _auth_failure(str(exc)) else Cause.adapter_crash
+        cause = Cause.blocked_auth if normalize.is_auth_failure(str(exc)) else Cause.adapter_crash
         return _fail(result, cause, f"handshake error: {exc}", started)
     result.handshake_seconds = time.monotonic() - started
 

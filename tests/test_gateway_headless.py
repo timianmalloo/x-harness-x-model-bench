@@ -301,6 +301,14 @@ def test_t_gw_10_the_credential_is_present_during_the_call_and_gone_after_it(tmp
     assert (result.outcome, seen["credential_present"], _credential_copies(base / "cells")) == ("stored", True, [])
 
 
+def test_an_oauth_token_skips_the_credential_copy_for_a_judge_call(tmp_path, base, monkeypatch):  # ADR-0003 Am. 2026-09-30
+    monkeypatch.setenv(profiles.OAUTH_TOKEN_ENV, "sk-ant-oat01-fake")
+    result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path), _launch(tmp_path, base / "cells"))
+    [seen] = _captured(tmp_path)
+    assert (result.outcome, seen["credential_present"], seen["oauth_token"], _credential_copies(base / "cells")) == (
+        "stored", False, "sk-ant-oat01-fake", [])
+
+
 def test_t_gw_10_the_credential_is_gone_after_a_timeout_and_after_an_exception_past_the_copy(tmp_path, base, monkeypatch):
     timed_out = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path / "a"), _launch(tmp_path, base / "cells", timeout=2, sleep=60))
     assert ((timed_out.outcome, timed_out.code), _credential_copies(base / "cells")) == (("failed", "HB-GW-001"), [])

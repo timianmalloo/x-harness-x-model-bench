@@ -28,6 +28,21 @@ summary: >-
   - the image layer is replaced by the pinned tools folder, invoked by path.
 
   With cells running as the operator, the copied credential is readable by the agent, as it was in the container. The owner accepts this (ADR-0013).
+- **Amended 2026-09-30 (operator decision, CAUSE-A): Claude Code cells may use an environment variable after all.** The
+  follow-up spike below is closed: a Claude Code OAuth refresh **does** rotate and invalidate every other copy of
+  the credential file in flight (Verified against code.claude.com/docs/en/authentication and
+  github.com/anthropics/claude-code issue #53063) -- one cell's refresh strands every other cell's copy mid-run,
+  surfacing as `blocked (auth)` on cells that never actually lost their login (measured on grid-2, archive
+  `9b4c563f3d520ee6`). For Claude Code only, the operator may run `claude setup-token` once (a 1-year, non-interactive
+  subscription token -- never an API key, so "subscriptions only" above still holds) and set it in their own user
+  environment variable `HB_CLAUDE_OAUTH_TOKEN`. When that variable is set, the engine injects its value into each
+  claude-code cell as `CLAUDE_CODE_OAUTH_TOKEN` and copies **no** credential file into that cell's home at all; the
+  operator's own `~/.claude` login is never read or touched by this path. `attempt.process_started.credential_kind`
+  records which path ran (`oauth_token_env` vs the unchanged `subscription login (copied)`). The token value is in
+  the same exact-value scan as a copied credential file (`report/credentials.py: host_values`), so a leak is
+  `HB-SEC-001` exactly as before. Without the variable, or for Codex/Copilot, every line below is unchanged.
+  Implementation: `src/harness_bench/profiles.py` (`OAUTH_TOKEN_ENV`, `CELL_OAUTH_ENV`), `gateway/backend.py` (the
+  same path for a judge call).
 - **Date:** 2026-09-23 (revised after council round 1)
 - **Deciders:** @timianmalloo; authored by Claude Code for the architect council
 - **Context spec/architecture:** `docs/specs/harness-bench.md` US-11, US-12, US-13, US-47, US-48, US-50
@@ -80,7 +95,7 @@ Home seeding is a function of the profile, not a separate component.
 ## Alternatives considered
 
 - **Mount the operator's real harness homes read-only:** rejected. Every user-level instruction, skill and memory would enter the cell (spike 1.5, R1).
-- **Environment variables for every harness:** rejected as the only mechanism. Claude and Codex subscription logins are files. Variables are used for API keys and the Copilot token.
+- **Environment variables for every harness:** rejected as the only mechanism. Claude and Codex subscription logins are files. Variables are used for API keys and the Copilot token. *(Amended 2026-09-30: Claude Code specifically now also supports a long-lived OAuth token by variable, alongside the file path -- not instead of it -- because unlike Codex's file, a Claude Code file copy rotates and strands its siblings mid-run. Codex's file-based login is unaffected.)*
 - **Pattern-based secret scanning only:** rejected. OAuth tokens and JWTs are missed by key patterns. The exact values are known and are the precise test.
 - **Trust the ACP-advertised model:** rejected. The advertised model is not the served model (spike 1.4).
 
@@ -98,7 +113,9 @@ Home seeding is a function of the profile, not a separate component.
   - **Residual (accepted in writing):** a cell can always reach its own model credential by design.
 - **Owner ruling (2026-09-23): subscriptions only, no API keys.** Every cell runs on a copied subscription login, so only operator-authored tasks may run until the owner chooses between swapping third-party smoke tasks for authored ones, a dedicated benchmark subscription account, or a recorded deviation. Copilot cells need a Copilot-only fine-grained token (still billed to the subscription), else `blocked (auth)`.
 - **Follow-ups / new risks:**
-  - Spike whether a cell's OAuth refresh rotates and invalidates the host login. Until then, copies are refreshed from the host before each cell and never written back.
+  - ~~Spike whether a cell's OAuth refresh rotates and invalidates the host login.~~ **Closed 2026-09-30 (CAUSE-A):** yes,
+    for Claude Code -- see the 2026-09-30 amendment above. Codex and Copilot were not measured; their copied
+    credentials are still refreshed from the host before each cell and never written back.
   - The owner decides whether to create benchmark credentials.
 
 ## Evidence

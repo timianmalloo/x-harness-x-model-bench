@@ -1470,9 +1470,9 @@ class _NativeRecords:
         return SimpleNamespace(errors=list(self.errors_per_record[int(path.stem)]))
 
 
-def _provider_error(status, error_type="overloaded_error"):
+def _provider_error(status, error_type="overloaded_error", message=""):
     from harness_bench.telemetry import ProviderError
-    return ProviderError(native_ordinal=1, status=status, error_type=error_type, message="")
+    return ProviderError(native_ordinal=1, status=status, error_type=error_type, message=message)
 
 
 def _classify(base, launcher=None, kill_reason=None, exit_status=0, tail=b"", **result):
@@ -1531,6 +1531,21 @@ def test_classify_reads_every_native_record_of_the_session(base):
     missing = _NativeRecords()
     assert _classify(base, missing, session_id=None, stop_reason="end_turn") is None
     assert missing.asked == [""]  # a session that never opened is looked up as "", never as None
+
+
+def test_a_native_record_cause_writes_its_triggering_message_as_the_detail(base):  # CAUSE-A
+    """The driver never saw this failure (no prompt-time exception, so result.detail defaults to ""): the
+    provider error's own message that decided the cause becomes result.detail, so cell.outcome.detail is
+    never empty for a native-record-classified cause."""
+    from harness_bench import driver
+    text = "Failed to authenticate: OAuth session expired and could not be refreshed"
+    turn = driver.TurnResult(session_id="s-9", stop_reason="end_turn")
+    launcher = _NativeRecords([_provider_error(None, "authentication_failed", message=text)])
+    config = engine.EngineConfig(run_dir=base / "runs" / "r", cells_root=base / "cells", launchers={},
+                                 build_workspace=_build_workspace, grade=None)
+    records = engine._read_records(launcher, base, turn.session_id)
+    cause = engine.Engine(_plan(n_cells=1), config)._classify(turn, records, 0, b"", None)
+    assert (cause.name, turn.detail) == ("blocked_auth", text)
 
 
 # --- run, _run_cell, _keep_tail (T10: cosmic-ray survivors) ------------------------------------------------------------
@@ -2125,6 +2140,7 @@ def test_blocked_cell_default_continues_after_the_timeout(base):  # US15-1 (US-1
     assert [{k: e[k] for k in ("decision_id", "decision_kind", "subject", "cause_code", "options", "default")} for e in opened] == [
         {"decision_id": "D1", "decision_kind": "blocked_cell", "subject": "fake", "cause_code": "HB-CELL-202",
          "options": ["continue", "stop"], "default": "continue"}]
+    assert "Authentication required" in opened[0]["detail"]  # CAUSE-A: the operator sees the triggering reason
     assert _resolutions(events) == [("D1", "default applied (timeout)", "continue")]
     start, end = events.index(opened[0]), events.index(_kind(events, "decision.resolved")[0])
     assert [e for e in events[start:end] if e["kind"] == "cell.launch_intent"] == []  # launching pauses while it is open
