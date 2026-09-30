@@ -215,7 +215,7 @@ class Headless:
         try:
             for d in (home, work, decoy):
                 d.mkdir(parents=True, exist_ok=True)
-            # R-84 item 3: a claude-code judge call gets the same oauth-token-env alternative as a cell; Copilot's
+            # ADR-0003 Am. 2026-09-30: a claude-code judge call gets the same oauth-token-env alternative as a cell; Copilot's
             # credential_name is always None (the Windows credential store), so oauth_token never applies to it.
             oauth_token = os.environ.get(profiles.OAUTH_TOKEN_ENV) if launch.profile.harness == "claude-code" else None
             source, name = launch.profile.credential_source, launch.profile.credential_name

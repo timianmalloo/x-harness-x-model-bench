@@ -3,7 +3,7 @@
 `report.html`'s shape regexes catch a credential-*shaped* string. This module supplements them with
 the actual values: it reads the host's credential files (named by `bench/profiles/*.yaml`,
 `credential.source`/`credential.name`), the operator's claude-code oauth-token-env value if set
-(`profiles.OAUTH_TOKEN_ENV`, R-84 item 3), and any leftover copy in an archived cell home, then
+(`profiles.OAUTH_TOKEN_ENV`, ADR-0003 Am. 2026-09-30), and any leftover copy in an archived cell home, then
 checks the report text for each value and for its base64 and URL-encoded forms. A hit never carries
 the value: only a count reaches the caller (`html.scan`), which is all `HB-SEC-001` ever names.
 
@@ -73,7 +73,7 @@ def credential_files(root: Path) -> dict[str, tuple[Path, str]]:
 
 def host_values(root: Path) -> set[str]:
     """Every credential value the host currently holds: one file per bench/profiles/*.yaml, plus the
-    operator's claude-code oauth-token-env value when set (R-84 item 3) -- it replaces a credential
+    operator's claude-code oauth-token-env value when set (ADR-0003 Am. 2026-09-30) -- it replaces a credential
     file for that harness, so it must be in the same scan set as one."""
     out: set[str] = set()
     for path, _name in credential_files(root).values():

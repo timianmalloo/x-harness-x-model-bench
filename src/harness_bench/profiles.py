@@ -25,7 +25,7 @@ from harness_bench.telemetry import claude_code, codex, copilot
 
 HARNESSES = ("claude-code", "codex", "copilot")
 USAGE_SOURCES = ("acp_turn", "native_record")
-# R-84 item 3: a claude-code-only alternative to the copied-credential-file path (ADR-0003 amended 2026-09-30).
+# ADR-0003 Am. 2026-09-30: a claude-code-only alternative to the copied-credential-file path (ADR-0003 amended 2026-09-30).
 # Claude Code refresh tokens rotate; copying the operator's own ~/.claude login into every cell home means one
 # cell's refresh strands every other copy's, mid-run. `claude setup-token` mints a long-lived (1-year) OAuth
 # token for non-interactive use (never an API key, ADR-0003's "subscriptions only"); the operator keeps it in
@@ -83,7 +83,7 @@ class Profile:
         """Write the profile's files; `{delegate}` in a template becomes `, "<id>"` per delegate id of a scenario-6
         cell (a JSON-list continuation, the Claude Code allowlist) and nothing in any other cell (R-74 item 3).
 
-        `oauth_token` (R-84 item 3): when set, this claude-code cell authenticates through CELL_OAUTH_ENV
+        `oauth_token` (ADR-0003 Am. 2026-09-30): when set, this claude-code cell authenticates through CELL_OAUTH_ENV
         (`cell_env`) instead -- no credential file is copied into its home at all. A non-claude-code profile
         never receives a token (ProfileLauncher gates it), so this only ever changes claude-code's seed."""
         home.mkdir(parents=True, exist_ok=True)
@@ -112,7 +112,7 @@ class Profile:
             env[key] = template.replace("{model}", model).replace("{exe}", str(build.exe))
         if traceparent:
             env["TRACEPARENT"] = traceparent
-        if oauth_token:  # R-84 item 3: CLAUDE_CODE_OAUTH_TOKEN in place of the copied credential file
+        if oauth_token:  # ADR-0003 Am. 2026-09-30: CLAUDE_CODE_OAUTH_TOKEN in place of the copied credential file
             env[CELL_OAUTH_ENV] = oauth_token
         return env
 
@@ -227,7 +227,7 @@ class ProfileLauncher:
         self.usage_source = profile.usage_source
         self.mode = profile.mode
         self.set_model = profile.set_model
-        # R-84 item 3: read once, at construction (before any cell launches) -- the operator sets it before the run
+        # ADR-0003 Am. 2026-09-30: read once, at construction (before any cell launches) -- the operator sets it before the run
         # starts, for the run's duration. None for every harness but claude-code (the only one this path covers).
         self._oauth_token = os.environ.get(OAUTH_TOKEN_ENV) if profile.harness == "claude-code" else None
         self.credential_kind = CREDENTIAL_KIND_OAUTH_TOKEN if self._oauth_token else profile.credential_kind
@@ -242,7 +242,7 @@ class ProfileLauncher:
         return build.record()
 
     def seed(self, home: Path, cell: dict) -> None:
-        # R-74 item 3: the allowance is per cell; R-84 item 3: no credential file when an oauth token is set
+        # R-74 item 3: the allowance is per cell; ADR-0003 Am. 2026-09-30: no credential file when an oauth token is set
         self.profile.seed_home(home, cell["model"], cell.get("scenario"), oauth_token=self._oauth_token)
 
     def clean(self, home: Path) -> None:

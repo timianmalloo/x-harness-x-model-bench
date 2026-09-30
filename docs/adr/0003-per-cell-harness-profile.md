@@ -28,7 +28,7 @@ summary: >-
   - the image layer is replaced by the pinned tools folder, invoked by path.
 
   With cells running as the operator, the copied credential is readable by the agent, as it was in the container. The owner accepts this (ADR-0013).
-- **Amended 2026-09-30 (operator decision, R-84): Claude Code cells may use an environment variable after all.** The
+- **Amended 2026-09-30 (operator decision, CAUSE-A): Claude Code cells may use an environment variable after all.** The
   follow-up spike below is closed: a Claude Code OAuth refresh **does** rotate and invalidate every other copy of
   the credential file in flight (Verified against code.claude.com/docs/en/authentication and
   github.com/anthropics/claude-code issue #53063) -- one cell's refresh strands every other cell's copy mid-run,
@@ -113,7 +113,7 @@ Home seeding is a function of the profile, not a separate component.
   - **Residual (accepted in writing):** a cell can always reach its own model credential by design.
 - **Owner ruling (2026-09-23): subscriptions only, no API keys.** Every cell runs on a copied subscription login, so only operator-authored tasks may run until the owner chooses between swapping third-party smoke tasks for authored ones, a dedicated benchmark subscription account, or a recorded deviation. Copilot cells need a Copilot-only fine-grained token (still billed to the subscription), else `blocked (auth)`.
 - **Follow-ups / new risks:**
-  - ~~Spike whether a cell's OAuth refresh rotates and invalidates the host login.~~ **Closed 2026-09-30 (R-84):** yes,
+  - ~~Spike whether a cell's OAuth refresh rotates and invalidates the host login.~~ **Closed 2026-09-30 (CAUSE-A):** yes,
     for Claude Code -- see the 2026-09-30 amendment above. Codex and Copilot were not measured; their copied
     credentials are still refreshed from the host before each cell and never written back.
   - The owner decides whether to create benchmark credentials.

@@ -228,7 +228,7 @@ def _prompt_error_cause(exc: _AcpError) -> Cause:
     """R-23: a prompt-time error with a status or a provider type goes through the native-record classifier
     (`normalize.classify`, one classifier for both paths); an auth failure keeps its precedence; an error with
     neither status nor type is adapter_crash."""
-    if normalize.is_auth_failure(str(exc)):  # R-84: one auth-failure text rule, shared with normalize.classify
+    if normalize.is_auth_failure(str(exc)):  # CAUSE-A: one auth-failure text rule, shared with normalize.classify
         return Cause.blocked_auth
     message = exc.error.get("message") if isinstance(exc.error.get("message"), str) else ""
     data = exc.error.get("data") if isinstance(exc.error.get("data"), dict) else {}

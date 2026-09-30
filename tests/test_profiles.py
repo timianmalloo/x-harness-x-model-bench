@@ -289,7 +289,7 @@ def test_claude_profile_seeds_settings_and_a_credential_copy(tmp_path):
     assert not (home / ".credentials.json").exists() and (home / "settings.json").exists()
 
 
-def test_claude_profile_with_an_oauth_token_copies_no_credential_file(tmp_path):  # R-84 item 3
+def test_claude_profile_with_an_oauth_token_copies_no_credential_file(tmp_path):  # ADR-0003 Am. 2026-09-30
     cred = tmp_path / "src-cred.json"
     cred.write_text('{"secret": "x"}', encoding="utf-8")
     p = profiles.load(ROOT, "claude-code", credential_source=cred)
@@ -299,20 +299,20 @@ def test_claude_profile_with_an_oauth_token_copies_no_credential_file(tmp_path):
     assert not (home / ".credentials.json").exists()
 
 
-def test_claude_cell_env_carries_the_oauth_token_when_given(tmp_path):  # R-84 item 3
+def test_claude_cell_env_carries_the_oauth_token_when_given(tmp_path):  # ADR-0003 Am. 2026-09-30
     p = profiles.load(ROOT, "claude-code", credential_source=tmp_path / "c")
     env = p.cell_env({"PATH": "x"}, home=tmp_path / "home", build=FakeBuild(), model="claude-sonnet-5",
                      traceparent="", oauth_token="sk-ant-oat01-fake")
     assert env["CLAUDE_CODE_OAUTH_TOKEN"] == "sk-ant-oat01-fake"
 
 
-def test_claude_cell_env_carries_no_oauth_token_by_default(tmp_path):  # R-84 item 3: unchanged without the var
+def test_claude_cell_env_carries_no_oauth_token_by_default(tmp_path):  # ADR-0003 Am. 2026-09-30: unchanged without the var
     p = profiles.load(ROOT, "claude-code", credential_source=tmp_path / "c")
     env = p.cell_env({"PATH": "x"}, home=tmp_path / "home", build=FakeBuild(), model="claude-sonnet-5", traceparent="")
     assert "CLAUDE_CODE_OAUTH_TOKEN" not in env
 
 
-def test_the_operators_oauth_env_var_never_reaches_a_cell_env_under_its_own_name(tmp_path):  # R-84 item 3
+def test_the_operators_oauth_env_var_never_reaches_a_cell_env_under_its_own_name(tmp_path):  # ADR-0003 Am. 2026-09-30
     p = profiles.load(ROOT, "claude-code", credential_source=tmp_path / "c")
     env = p.cell_env({"PATH": "x", profiles.OAUTH_TOKEN_ENV: "sk-ant-oat01-fake"}, home=tmp_path / "home",
                      build=FakeBuild(), model="claude-sonnet-5", traceparent="")
@@ -403,7 +403,7 @@ def test_the_launcher_reports_no_model_setter_and_a_copied_login(tmp_path, harne
     assert (launcher.set_model, launcher.credential_kind) == (False, "subscription login (copied)")
 
 
-def test_a_claude_code_launcher_with_the_oauth_env_var_reports_oauth_token_env(tmp_path, monkeypatch):  # R-84 item 3
+def test_a_claude_code_launcher_with_the_oauth_env_var_reports_oauth_token_env(tmp_path, monkeypatch):  # ADR-0003 Am. 2026-09-30
     (tmp_path / "c").write_text('{"secret": "x"}', encoding="utf-8")  # a real source: proves the skip, not a miss
     monkeypatch.setenv(profiles.OAUTH_TOKEN_ENV, "sk-ant-oat01-fake")
     launcher, _ = _launcher(tmp_path, "claude-code")
@@ -417,7 +417,7 @@ def test_a_claude_code_launcher_with_the_oauth_env_var_reports_oauth_token_env(t
     launcher.clean(home)  # T-CELL-credclean: still a no-op cleanup, nothing to remove
 
 
-def test_a_codex_launcher_ignores_the_claude_oauth_env_var(tmp_path, monkeypatch):  # R-84 item 3: claude-code only
+def test_a_codex_launcher_ignores_the_claude_oauth_env_var(tmp_path, monkeypatch):  # ADR-0003 Am. 2026-09-30: claude-code only
     monkeypatch.setenv(profiles.OAUTH_TOKEN_ENV, "sk-ant-oat01-fake")
     launcher, _ = _launcher(tmp_path, "codex")
     assert launcher.credential_kind == "subscription login (copied)"

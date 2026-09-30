@@ -204,7 +204,7 @@ def test_no_errors_classify_to_none():
     assert normalize.classify([]) is None
 
 
-# status-less text classification (R-84: grid-2 cc-opus and copilot-sol both silently fell to model_unavailable,
+# status-less text classification (CAUSE-A: grid-2 cc-opus and copilot-sol both silently fell to model_unavailable,
 # which opens a combo-scoped qualification_gap and skips the whole combo instead of blocking the harness or
 # counting as infrastructure; the native-record scan and driver._prompt_error_cause now share this one rule) ---
 
@@ -274,7 +274,7 @@ def test_other_status_less_network_texts_are_provider(message):
 
 
 def test_a_status_still_decides_first_even_with_auth_or_network_words_in_the_text():
-    """The text rule applies only when there is no status (R-84): a 4xx with 'auth' in the message stays whatever
+    """The text rule applies only when there is no status (CAUSE-A): a 4xx with 'auth' in the message stays whatever
     the status decides, matching the existing status-first precedence (test_error_classification)."""
     e = claude_code.ProviderError(1, 400, "invalid_request_error", "authentication context: model not found")
     assert normalize.classify([e]) == Cause.model_unavailable

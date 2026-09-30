@@ -357,7 +357,7 @@ def test_a_value_found_only_on_the_host_side_is_refused(root, tmp_path, monkeypa
     assert err.value.code == "HB-SEC-001"
 
 
-def test_a_leaked_oauth_token_env_value_is_refused(root, tmp_path, monkeypatch):  # R-84 item 3
+def test_a_leaked_oauth_token_env_value_is_refused(root, tmp_path, monkeypatch):  # ADR-0003 Am. 2026-09-30
     """HB_CLAUDE_OAUTH_TOKEN (profiles.OAUTH_TOKEN_ENV) replaces the copied credential file for claude-code
     cells; its value must be in the same scan set as a credential file's, so a leak of it is HB-SEC-001 too."""
     from harness_bench import profiles

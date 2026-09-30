@@ -301,7 +301,7 @@ def test_t_gw_10_the_credential_is_present_during_the_call_and_gone_after_it(tmp
     assert (result.outcome, seen["credential_present"], _credential_copies(base / "cells")) == ("stored", True, [])
 
 
-def test_an_oauth_token_skips_the_credential_copy_for_a_judge_call(tmp_path, base, monkeypatch):  # R-84 item 3
+def test_an_oauth_token_skips_the_credential_copy_for_a_judge_call(tmp_path, base, monkeypatch):  # ADR-0003 Am. 2026-09-30
     monkeypatch.setenv(profiles.OAUTH_TOKEN_ENV, "sk-ant-oat01-fake")
     result = pipeline.run(JUDGE, INPUTS, _ctx(tmp_path), _launch(tmp_path, base / "cells"))
     [seen] = _captured(tmp_path)

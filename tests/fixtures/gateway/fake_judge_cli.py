@@ -36,7 +36,7 @@ def main() -> int:
         seen = {"argv": argv, "stdin": request, "credential_present": (home / ".credentials.json").is_file(),
                 "home_files": sorted(p.name for p in home.iterdir()), "cwd": os.getcwd(),
                 "userprofile": os.environ.get("USERPROFILE"),
-                "oauth_token": os.environ.get("CLAUDE_CODE_OAUTH_TOKEN")}  # R-84 item 3
+                "oauth_token": os.environ.get("CLAUDE_CODE_OAUTH_TOKEN")}  # ADR-0003 Am. 2026-09-30
         Path(cfg["capture"]).mkdir(parents=True, exist_ok=True)
         (Path(cfg["capture"]) / f"{session}.json").write_text(json.dumps(seen), encoding="utf-8")
     record = Path(cfg["record"]).read_text(encoding="utf-8").replace(PLACEHOLDER_SESSION, session)

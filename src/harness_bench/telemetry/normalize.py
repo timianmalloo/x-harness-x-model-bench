@@ -9,7 +9,7 @@
 - classify: provider errors to a cause. 401 and 403 are `blocked (auth)`; 408, 429, 5xx and overload
   are `failed (provider)` (infrastructure); any other status is `failed (model unavailable)` (benchmark:
   the plan pinned a model the account cannot serve) (probe W3, R-23). Without a status, an auth-failure
-  or network-failure text in the message decides first (R-84), before the provider-type check.
+  or network-failure text in the message decides first (CAUSE-A), before the provider-type check.
 - base_model_id / context_window_tag (R-32): Claude Code suffixes a served model id with the
   context window it ran (`claude-opus-5-5[1m]`); the API model id carries no such suffix. Model
   identity (`served_models`, per-model `totals`) is the base id; the tag itself is disclosed
@@ -30,14 +30,14 @@ BUCKETS = ("uncached_input", "cache_read", "cache_write", "output")
 PROVIDER_TYPES = ("overloaded", "rate_limit", "timeout", "api_error", "server_error", "unavailable")
 _TAG_RE = re.compile(r"\[([^\[\]]+)\]$")  # a trailing bracketed context-window tag, e.g. "[1m]"
 
-# R-84: the one auth-failure text rule, shared by `classify` (the native-record scan) and
+# CAUSE-A: the one auth-failure text rule, shared by `classify` (the native-record scan) and
 # `driver._prompt_error_cause` (a prompt-time exception) -- previously two definitions of one
 # classification. Substring, case-insensitive, no word boundary (unchanged from the prior
 # driver-only rule). Evidence: grid-2 archive 9b4c563f3d520ee6, error_type "authentication_failed",
 # message "Failed to authenticate: OAuth session expired and could not be refreshed".
 _AUTH_WORDS = ("auth", "login", "credential")
 
-# R-84: a status-less network/infrastructure failure is `provider`, never `model_unavailable`.
+# CAUSE-A: a status-less network/infrastructure failure is `provider`, never `model_unavailable`.
 # Evidence: grid-2 archive dd44b0981d5f34f5 (copilot-sol), errorType "query", message "...client
 # error (Connect): dns error: error resolving DNS: No such host is known. (os error 11001)
 # [ENOTFOUND]". ECONNREFUSED/ECONNRESET are the same Node.js/libuv socket-error-code family as the
@@ -50,7 +50,7 @@ _NETWORK_WORDS = ("dns error", "enotfound", "no such host", "econnrefused", "eco
 
 
 def is_auth_failure(text: str) -> bool:
-    """R-84: one place for the auth-failure text rule (moved from driver._auth_failure)."""
+    """CAUSE-A: one place for the auth-failure text rule (moved from driver._auth_failure)."""
     low = text.lower()
     return any(w in low for w in _AUTH_WORDS)
 
@@ -141,10 +141,10 @@ def record_unreadable(ex: Extraction) -> str | None:
 
 
 def classify(errors: list[ProviderError]) -> Cause | None:
-    """One classifier for the native record and the driver's prompt errors (R-23, R-84). A status is evidence and
+    """One classifier for the native record and the driver's prompt errors (R-23, CAUSE-A). A status is evidence and
     decides first: 401 or 403 is blocked_auth; 408, 429 or 5xx is provider; any other status is model_unavailable.
     Only without a status does text decide: an auth-failure text (is_auth_failure, on the message and the error
-    type together -- a reader may put the auth word in either, R-84) is blocked_auth; a network-failure text
+    type together -- a reader may put the auth word in either, CAUSE-A) is blocked_auth; a network-failure text
     (DNS/ENOTFOUND/connection refused/reset) is provider; else a provider error type is provider. The record
     message stays where the reader stored it."""
     if not errors:

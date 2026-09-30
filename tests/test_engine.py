@@ -1533,7 +1533,7 @@ def test_classify_reads_every_native_record_of_the_session(base):
     assert missing.asked == [""]  # a session that never opened is looked up as "", never as None
 
 
-def test_a_native_record_cause_writes_its_triggering_message_as_the_detail(base):  # R-84 item 2
+def test_a_native_record_cause_writes_its_triggering_message_as_the_detail(base):  # CAUSE-A
     """The driver never saw this failure (no prompt-time exception, so result.detail defaults to ""): the
     provider error's own message that decided the cause becomes result.detail, so cell.outcome.detail is
     never empty for a native-record-classified cause."""
@@ -2140,7 +2140,7 @@ def test_blocked_cell_default_continues_after_the_timeout(base):  # US15-1 (US-1
     assert [{k: e[k] for k in ("decision_id", "decision_kind", "subject", "cause_code", "options", "default")} for e in opened] == [
         {"decision_id": "D1", "decision_kind": "blocked_cell", "subject": "fake", "cause_code": "HB-CELL-202",
          "options": ["continue", "stop"], "default": "continue"}]
-    assert "Authentication required" in opened[0]["detail"]  # R-84 item 2: the operator sees the triggering reason
+    assert "Authentication required" in opened[0]["detail"]  # CAUSE-A: the operator sees the triggering reason
     assert _resolutions(events) == [("D1", "default applied (timeout)", "continue")]
     start, end = events.index(opened[0]), events.index(_kind(events, "decision.resolved")[0])
     assert [e for e in events[start:end] if e["kind"] == "cell.launch_intent"] == []  # launching pauses while it is open
