@@ -1,0 +1,65 @@
+[
+ {
+  "name": "swap on/off in the ratio",
+  "file": "src/harness_bench/report/pack_improvement.py",
+  "find": "    on_t = sum_tokens(pair.on.tokens)\n",
+  "replace": "    on_t = sum_tokens(pair.off.tokens)\n",
+  "tests": ["tests/test_pack_improvement.py::test_pi_t4_tokens_none_gives_ratio_na_with_tokens_reason_and_median_uses_other_pairs"]
+ },
+ {
+  "name": "treat NA as 0",
+  "file": "src/harness_bench/report/pack_improvement.py",
+  "find": "    valid = sorted(r.value for r in ratios if r.value is not None)\n",
+  "replace": "    valid = sorted(r.value if r.value is not None else Decimal(0) for r in ratios)\n",
+  "tests": ["tests/test_pack_improvement.py::test_pi_t4_tokens_none_gives_ratio_na_with_tokens_reason_and_median_uses_other_pairs"]
+ },
+ {
+  "name": "include invalid cells in pairs",
+  "file": "src/harness_bench/report/pack_improvement.py",
+  "find": "        if c.validity != \"valid\":\n            continue\n",
+  "replace": "        if False:\n            continue\n",
+  "tests": ["tests/test_pack_improvement.py::test_pi_t3_pairs_exclude_a_cell_whose_other_arm_is_invalid"]
+ },
+ {
+  "name": "match ws itself as a sibling worktree",
+  "file": "src/harness_bench/report/pack_improvement.py",
+  "find": "        if not child.is_dir() or child.name in (\"home\", \"ws\"):\n",
+  "replace": "        if not child.is_dir() or child.name in (\"home\",):\n",
+  "tests": ["tests/test_pack_improvement_mutants.py::test_ws_itself_is_never_treated_as_a_sibling_worktree_even_with_a_gitdir_marker"]
+ },
+ {
+  "name": "drop the Holm step",
+  "file": "src/harness_bench/report/pack_improvement.py",
+  "find": "    holm_ps = holm(task_ps) if task_ps else {}\n",
+  "replace": "    holm_ps = task_ps if task_ps else {}\n",
+  "tests": ["tests/test_pack_improvement_mutants.py::test_holm_adjustment_changes_x1s_classification_from_value_to_neutral"]
+ },
+ {
+  "name": "reverse the ranking",
+  "file": "src/harness_bench/report/pack_improvement.py",
+  "find": "    return sorted(live, key=lambda f: (-f.failed_pairs, -f.extra_tokens, f.code))\n",
+  "replace": "    return sorted(live, key=lambda f: (f.failed_pairs, f.extra_tokens, f.code))\n",
+  "tests": ["tests/test_pack_improvement.py::test_pi_t12_ranking_is_stable_under_input_shuffles"]
+ },
+ {
+  "name": "count pack-off ceremony as pack-on",
+  "file": "src/harness_bench/report/pack_improvement.py",
+  "find": "        shares = [indicators[p.on.cell_id].ceremony_share for p in group_pairs if p.on.cell_id in indicators]\n",
+  "replace": "        shares = [indicators[p.off.cell_id].ceremony_share for p in group_pairs if p.on.cell_id in indicators]\n",
+  "tests": ["tests/test_pack_improvement_mutants.py::test_pk05_reads_on_cell_ceremony_share_never_off"]
+ },
+ {
+  "name": "Codex local_shell_call dropped",
+  "file": "src/harness_bench/telemetry/codex.py",
+  "find": "CALL_TYPES = (\"custom_tool_call\", \"function_call\", \"local_shell_call\")\n",
+  "replace": "CALL_TYPES = (\"custom_tool_call\", \"function_call\")\n",
+  "tests": ["tests/test_pack_improvement_mutants.py::test_r85_codex_local_shell_call_is_counted_by_tool_inputs"]
+ },
+ {
+  "name": "blast radius unreadable reads as zero product writes",
+  "file": "src/harness_bench/report/pack_improvement.py",
+  "find": "    `product_write` call anywhere turns this off (PI-T9).\"\"\"\n    if blast_radius is None:\n        return Measure(None, NA_BLAST_RADIUS)\n    if not (outcome == \"completed\" and stop_reason == \"end_turn\" and pass_at_1 == 0):\n",
+  "replace": "    `product_write` call anywhere turns this off (PI-T9).\"\"\"\n    if blast_radius is None:\n        blast_radius = ()\n    if not (outcome == \"completed\" and stop_reason == \"end_turn\" and pass_at_1 == 0):\n",
+  "tests": ["tests/test_pack_improvement.py::test_pi_t4_blast_radius_unreadable_cascades_to_test_first_and_stopped_without_product_and_diverted"]
+ }
+]
