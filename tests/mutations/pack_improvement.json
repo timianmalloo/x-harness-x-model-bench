@@ -61,5 +61,19 @@
   "find": "    `product_write` call anywhere turns this off (PI-T9).\"\"\"\n    if blast_radius is None:\n        return Measure(None, NA_BLAST_RADIUS)\n    if not (outcome == \"completed\" and stop_reason == \"end_turn\" and pass_at_1 == 0):\n",
   "replace": "    `product_write` call anywhere turns this off (PI-T9).\"\"\"\n    if blast_radius is None:\n        blast_radius = ()\n    if not (outcome == \"completed\" and stop_reason == \"end_turn\" and pass_at_1 == 0):\n",
   "tests": ["tests/test_pack_improvement.py::test_pi_t4_blast_radius_unreadable_cascades_to_test_first_and_stopped_without_product_and_diverted"]
+ },
+ {
+  "name": "paths not relativized",
+  "file": "src/harness_bench/report/pack_improvement.py",
+  "find": "    return tuple(replace(c, paths=tuple(_relative_to_root(p, ws) for p in c.paths)) for c in calls)\n",
+  "replace": "    return tuple(calls)\n",
+  "tests": ["tests/test_pack_improvement.py::test_pi_normalize_calls_lets_product_write_fire_on_absolute_paths_after_relativization"]
+ },
+ {
+  "name": "backslash excluded from the patch header",
+  "file": "src/harness_bench/telemetry/__init__.py",
+  "find": "_PATCH_HEADER = re.compile(r\"\\*\\*\\* (?:Add|Update) File: (.+?)(?:\\\\n|\\n|$)\")\n",
+  "replace": "_PATCH_HEADER = re.compile(r\"\\*\\*\\* (?:Add|Update) File: ([^\\\\\\n]+)\")\n",
+  "tests": ["tests/test_telemetry.py::test_patch_header_paths_keeps_a_windows_absolute_path_with_backslashes"]
  }
 ]
