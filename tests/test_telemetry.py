@@ -204,6 +204,82 @@ def test_no_errors_classify_to_none():
     assert normalize.classify([]) is None
 
 
+# status-less text classification (R-84: grid-2 cc-opus and copilot-sol both silently fell to model_unavailable,
+# which opens a combo-scoped qualification_gap and skips the whole combo instead of blocking the harness or
+# counting as infrastructure; the native-record scan and driver._prompt_error_cause now share this one rule) ---
+
+def test_grid2_cc_opus_auth_row_is_blocked_auth():
+    """Redacted from runs/grid-2/archive/9b4c563f3d520ee6 (attempt-1 native record, line 16): no apiErrorStatus
+    field at all, error 'authentication_failed', message 'Failed to authenticate: OAuth session expired and
+    could not be refreshed'. Was HB-CELL-116 (model_unavailable); must be blocked_auth (HB-CELL-202)."""
+    e = claude_code.ProviderError(1, None, "authentication_failed",
+                                  "Failed to authenticate: OAuth session expired and could not be refreshed")
+    assert (e.status, normalize.classify([e])) == (None, Cause.blocked_auth)
+
+
+def test_grid2_copilot_sol_dns_row_is_provider():
+    """Redacted from runs/grid-2/archive/dd44b0981d5f34f5 (session.error, events.jsonl line 34): errorType
+    'query', message '...client error (Connect): dns error: error resolving DNS: No such host is known.
+    (os error 11001) [ENOTFOUND]'. Was HB-CELL-116 (model_unavailable); must be provider (HB-CELL-108)."""
+    message = ("Execution failed: Failed to get response from the AI model; retried 5 times (total retry wait "
+               "time: 23.00 seconds) Last error: Failed native model HTTP request: error sending request for url "
+               "(https://api.enterprise.githubcopilot.com/responses): client error (Connect): dns error: error "
+               "resolving DNS: No such host is known. (os error 11001) [ENOTFOUND]")
+    e = copilot.ProviderError(1, None, "query", message[:300])
+    assert (e.status, normalize.classify([e])) == (None, Cause.provider)
+
+
+def test_grid2_cc_opus_row_through_the_reader_is_blocked_auth(tmp_path):
+    """The full path: claude_code.read() builds the ProviderError from the redacted row, then classify()."""
+    record = tmp_path / "session.jsonl"
+    record.write_text(json.dumps({"type": "assistant", "isApiErrorMessage": True, "error": "authentication_failed",
+                                  "message": {"content": "Failed to authenticate: OAuth session expired and "
+                                                          "could not be refreshed"}}) + "\n", encoding="utf-8")
+    ex = claude_code.read(record)
+    assert (ex.errors[0].status, ex.errors[0].error_type) == (None, "authentication_failed")
+    assert normalize.classify(ex.errors) == Cause.blocked_auth
+
+
+def test_grid2_copilot_sol_row_through_the_reader_is_provider(tmp_path):
+    """The full path: copilot.read() builds the ProviderError from the redacted row, then classify()."""
+    message = ("Execution failed: Failed to get response from the AI model; retried 5 times (total retry wait "
+               "time: 23.00 seconds) Last error: Failed native model HTTP request: error sending request for url "
+               "(https://api.enterprise.githubcopilot.com/responses): client error (Connect): dns error: error "
+               "resolving DNS: No such host is known. (os error 11001) [ENOTFOUND]")
+    record = tmp_path / "events.jsonl"
+    record.write_text(json.dumps({"type": "session.error", "data": {"errorType": "query", "message": message}}) + "\n",
+                      encoding="utf-8")
+    ex = copilot.read(record)
+    assert (ex.errors[0].status, ex.errors[0].error_type) == (None, "query")
+    assert normalize.classify(ex.errors) == Cause.provider
+
+
+@pytest.mark.parametrize("message", [
+    "Login failed: your session has expired, please sign in again",  # 'login', no 'auth'
+    "invalid credential: token not found",  # 'credential', no 'auth'
+])
+def test_other_status_less_auth_texts_are_blocked_auth(message):
+    e = claude_code.ProviderError(1, None, "unknown", message)
+    assert normalize.classify([e]) == Cause.blocked_auth
+
+
+@pytest.mark.parametrize("message", [
+    "connect ECONNREFUSED 127.0.0.1:443",
+    "read ECONNRESET",
+    "socket hang up: connection reset by peer",
+])
+def test_other_status_less_network_texts_are_provider(message):
+    e = claude_code.ProviderError(1, None, "unknown", message)
+    assert normalize.classify([e]) == Cause.provider
+
+
+def test_a_status_still_decides_first_even_with_auth_or_network_words_in_the_text():
+    """The text rule applies only when there is no status (R-84): a 4xx with 'auth' in the message stays whatever
+    the status decides, matching the existing status-first precedence (test_error_classification)."""
+    e = claude_code.ProviderError(1, 400, "invalid_request_error", "authentication context: model not found")
+    assert normalize.classify([e]) == Cause.model_unavailable
+
+
 # the adapter's turn usage (authoritative for Claude, a cross-check for Codex) ------------------------
 
 def test_claude_turn_usage_names_every_model_including_the_auxiliary_one():
