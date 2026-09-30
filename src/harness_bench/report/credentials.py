@@ -2,9 +2,10 @@
 
 `report.html`'s shape regexes catch a credential-*shaped* string. This module supplements them with
 the actual values: it reads the host's credential files (named by `bench/profiles/*.yaml`,
-`credential.source`/`credential.name`) and any leftover copy in an archived cell home, then checks the
-report text for each value and for its base64 and URL-encoded forms. A hit never carries the value:
-only a count reaches the caller (`html.scan`), which is all `HB-SEC-001` ever names.
+`credential.source`/`credential.name`), the operator's claude-code oauth-token-env value if set
+(`profiles.OAUTH_TOKEN_ENV`, R-84 item 3), and any leftover copy in an archived cell home, then
+checks the report text for each value and for its base64 and URL-encoded forms. A hit never carries
+the value: only a count reaches the caller (`html.scan`), which is all `HB-SEC-001` ever names.
 
 Reading a real host credential file is production behavior (`bench report` does this for real), never
 test behavior: every caller in this codebase's own tests passes concrete, planted paths.
@@ -14,10 +15,11 @@ from __future__ import annotations
 
 import base64
 import json
+import os
 import urllib.parse
 from pathlib import Path
 
-from harness_bench import config
+from harness_bench import config, profiles
 
 # Below this, a matched string is too likely to be a coincidental id or short field name to be
 # worth treating as "a credential value" (simplify: raise if false positives show up in practice).
@@ -70,10 +72,15 @@ def credential_files(root: Path) -> dict[str, tuple[Path, str]]:
 
 
 def host_values(root: Path) -> set[str]:
-    """Every credential value the host currently holds, one file per bench/profiles/*.yaml."""
+    """Every credential value the host currently holds: one file per bench/profiles/*.yaml, plus the
+    operator's claude-code oauth-token-env value when set (R-84 item 3) -- it replaces a credential
+    file for that harness, so it must be in the same scan set as one."""
     out: set[str] = set()
     for path, _name in credential_files(root).values():
         out |= values_in_file(path)
+    token = os.environ.get(profiles.OAUTH_TOKEN_ENV)
+    if token and len(token) >= MIN_VALUE_LEN:
+        out.add(token)
     return out
 
 
