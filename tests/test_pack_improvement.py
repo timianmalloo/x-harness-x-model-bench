@@ -181,6 +181,21 @@ def test_pi_t8_diverted_delivery_false_when_sibling_files_equal_ws(tmp_path):
     assert pi.diverted_delivery(attempt, ws, ["solution.py"]) == views.Measure(False)
 
 
+def test_pi_t8_diverted_delivery_matches_a_nested_double_star_blast_radius_pattern(tmp_path):
+    """Real grid-1-cc regression (S5 hand-off): a `src/**` blast radius (F1's own shape,
+    `tasks/F1/task.yaml`) must still catch a file several directories deep -- `Path.glob("src/**")`
+    alone finds only directories, never the leaf files, at every depth below the first."""
+    attempt = tmp_path / "attempt-1"
+    ws = attempt / "ws"
+    (ws / "src" / "a" / "b").mkdir(parents=True)
+    (ws / "src" / "a" / "b" / "deep.cs").write_bytes(b"A")
+    sibling = _make_sibling(attempt, "wt1", "/some/path/ws/.git/worktrees/wt1")
+    (sibling / "src" / "a" / "b").mkdir(parents=True)
+    (sibling / "src" / "a" / "b" / "deep.cs").write_bytes(b"B")
+
+    assert pi.diverted_delivery(attempt, ws, ["src/**"]) == views.Measure(True)
+
+
 def test_pi_t8_a_directory_without_a_git_file_is_not_a_sibling_worktree(tmp_path):
     attempt = tmp_path / "attempt-1"
     ws = attempt / "ws"
