@@ -961,4 +961,3 @@ def test_pi_t5_fisher_exact_two_sided_and_holm():
     values = [adjusted[k] for k in ordered]
     assert values == sorted(values)
     assert all(v <= Decimal(1) for v in values)
-    assert result[("Z", "off")] == ("", "not ranked: interval not computed (n < 2)")

@@ -12,6 +12,8 @@ import random
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from decimal import ROUND_HALF_EVEN, Context, Decimal, localcontext
+from fractions import Fraction
+from math import comb
 from typing import NamedTuple
 
 from harness_bench.errors import BenchError
@@ -258,6 +260,56 @@ def pass_k(outcomes: Sequence[int], planned: int) -> tuple[Measure, Measure]:
     else:
         hat_k = Measure(None, reason)
     return at_k, hat_k
+
+
+def _hypergeom_prob(a: int, row1: int, row2: int, col1: int, total: int) -> Fraction:
+    """P(X = a) under the hypergeometric null at fixed margins (row1, row2, col1). `total` is
+    `comb(row1 + row2, col1)`, the normalizing constant shared by every value of `a`."""
+    return Fraction(comb(row1, a) * comb(row2, col1 - a), total)
+
+
+def _fisher_exact_two_sided(a: int, b: int, c: int, d: int) -> Decimal:
+    row1, row2 = a + b, c + d
+    col1 = a + c
+    total = comb(row1 + row2, col1)
+    lo, hi = max(0, col1 - row2), min(row1, col1)
+    probs = {x: _hypergeom_prob(x, row1, row2, col1, total) for x in range(lo, hi + 1)}
+    observed = probs[a]
+    p = sum((prob for prob in probs.values() if prob <= observed), Fraction(0))
+    return Decimal(p.numerator) / Decimal(p.denominator)
+
+
+def fisher_exact_two_sided(a: int, b: int, c: int, d: int) -> Decimal:
+    """Two-sided Fisher exact p for the 2x2 table `[[a, b], [c, d]]` (design pack-improvement-section
+    section 4.1): the exact-probability method -- sum every table at the same margins whose
+    hypergeometric probability is at most the observed table's own. Computed in exact rationals
+    (`Fraction`, arbitrary-precision `comb`) so the `<=` comparison never suffers a float rounding
+    error at the tie boundary; only the final ratio is rounded, to the module's `_CONTEXT`."""
+    with localcontext(_CONTEXT):
+        return _fisher_exact_two_sided(a, b, c, d)
+
+
+def _holm(ps: Mapping[str, Decimal]) -> dict[str, Decimal]:
+    m = len(ps)
+    ordered = sorted(ps, key=lambda k: (ps[k], k))
+    one = Decimal(1)
+    running = Decimal(0)
+    adjusted: dict[str, Decimal] = {}
+    for i, key in enumerate(ordered):
+        candidate = min(one, ps[key] * Decimal(m - i))
+        running = max(running, candidate)
+        adjusted[key] = running
+    return adjusted
+
+
+def holm(ps: Mapping[str, Decimal]) -> dict[str, Decimal]:
+    """Holm-Bonferroni step-down adjustment across `m = len(ps)` tasks (design section 4.1): the
+    i-th smallest p (1-indexed) is multiplied by `m - i + 1`, capped at 1, then carried forward as a
+    running maximum so the sequence is non-decreasing in p-rank order -- the standard construction
+    that controls the family-wise error rate at alpha. Ties broken by key (the same deterministic
+    tie-break `rank` uses for row ids) so the adjustment never depends on dict iteration order."""
+    with localcontext(_CONTEXT):
+        return _holm(ps)
 
 
 # (combo, pack). The contract's RowId.
