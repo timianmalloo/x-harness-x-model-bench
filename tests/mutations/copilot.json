@@ -2,8 +2,8 @@
   {
     "name": "nullable credential copy guard",
     "file": "src/harness_bench/profiles.py",
-    "find": "if self.credential_source is not None and self.credential_name is not None and self.credential_source.is_file():",
-    "replace": "if self.credential_source is None or self.credential_name is None or self.credential_source.is_file():",
+    "find": "self.credential_source is not None and self.credential_name is not None\n                and self.credential_source.is_file()):",
+    "replace": "self.credential_source is None or self.credential_name is None\n                or self.credential_source.is_file()):",
     "tests": ["tests/test_profiles.py::test_copilot_null_credential_seeds_and_cleans_without_touching_other_files"]
   },
   {

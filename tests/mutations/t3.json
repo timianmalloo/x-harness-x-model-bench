@@ -23,8 +23,8 @@
  {
   "name": "T3-2 Codex reader uses a foreign-typed call_id as a key",
   "file": "src/harness_bench/telemetry/codex.py",
-  "find": "        call_id = as_str(payload.get(\"call_id\"))\n",
-  "replace": "        call_id = payload.get(\"call_id\")\n",
+  "find": "        stamp = as_str(row.get(\"timestamp\"))\n        call_id = as_str(payload.get(\"call_id\"))\n",
+  "replace": "        stamp = as_str(row.get(\"timestamp\"))\n        call_id = payload.get(\"call_id\")\n",
   "tests": ["tests/test_telemetry.py::test_foreign_types_in_known_fields_are_ignored_not_crashed_on"]
  },
  {
