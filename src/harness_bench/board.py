@@ -39,7 +39,7 @@ from harness_bench.stats import (
 )
 
 DEFAULT_RESAMPLES: int = MIN_RESAMPLES
-from harness_bench.views import CellView, RunView
+from harness_bench.views import CellView, RunView, sum_tokens
 
 
 @dataclass
@@ -289,7 +289,7 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
         )
 
         # Cost, tokens, wall_ms (moved verbatim from views._row)
-        used = [sum(sum(b.values()) for b in c.tokens.values()) for c in valid_cells if c.tokens]
+        used = [t for c in valid_cells if (t := sum_tokens(c.tokens)) is not None]  # one sum, views.sum_tokens (R-85 c4)
         walls = [c.wall_ms.value for c in valid_cells if c.wall_ms.value is not None]
         no_cost = [c for c in valid_cells if c.scores.get("cost_usd", Measure(None, "not graded")).value is None]
 
@@ -486,10 +486,11 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
                     tokens_m = Measure(None, "no solved tasks")
                 else:
                     task_tokens = [
-                        sum(
-                            sum(sum(b.values()) for b in c.tokens.values())
+                        sum(  # one sum, views.sum_tokens (R-85 c4)
+                            t2
                             for c in valid_cells
-                            if _cell_task_rep(c.cell_id, plan_by_id)[0] == t and c.tokens
+                            if _cell_task_rep(c.cell_id, plan_by_id)[0] == t
+                            and (t2 := sum_tokens(c.tokens)) is not None
                         )
                         for t in solved_tasks
                     ]

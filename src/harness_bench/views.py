@@ -265,6 +265,17 @@ def calls_per_cell(calls: list[ModelCall] | None) -> Measure:
     return Measure(sum(call.requests for call in calls))
 
 
+def sum_tokens(tokens: dict[str, dict[str, int]] | None) -> int | None:
+    """A cell's total tokens over every model's disjoint buckets (`CellView.tokens`'s own shape): the
+    one definition `board.py`'s leaderboard and frontier rows and `report.pack_improvement`'s cost
+    section both call (R-85 condition 4: the sum had two inlined homes, `board.py:292` and `:490`,
+    which is two definitions of one quantity, DM7). `None`, never 0, when `tokens` is `None` or empty
+    -- the caller's own `tokens_reason` (`CellView.tokens_reason`) is NOT_RECORDED, not a real zero."""
+    if not tokens:
+        return None
+    return sum(sum(bucket.values()) for bucket in tokens.values())
+
+
 def judge_calls(uses: list[dict]) -> dict[tuple[str, str | None], int]:
     """Judge calls per (outcome, code), over `verdict_uses` rows (ADR-0006 Amendment 3). A row is one rubric item,
     not one call: one call yields a row per item. So a call is one distinct (grading_id, cell_id, metric_id,

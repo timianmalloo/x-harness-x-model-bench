@@ -384,6 +384,7 @@ def test_tb9_ast_import_graph():
                 "hashlib",
                 "dataclasses",
                 "decimal",
+                "fractions",  # fisher_exact_two_sided's exact-rational comparison (PI-T5, S1)
                 "typing",
                 "collections",
             )
