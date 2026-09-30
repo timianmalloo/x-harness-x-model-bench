@@ -1,0 +1,64 @@
+[
+  {
+    "name": "G1: skip the spec/** binary-artifact scan before invoking TLC (TLC's .class-override mechanism, FM12)",
+    "file": "src/harness_bench/grade/formal.py",
+    "find": "    offender = _artifact_offender(spec_dir, _G1_SPEC_ALLOWED_EXTS, set())",
+    "replace": "    offender = None",
+    "tests": ["tests/test_grade_formal.py::test_g1_formal_checks_clean_refuses_a_binary_artifact_before_invoking_tlc"]
+  },
+  {
+    "name": "G2: skip the Proofs/** binary-artifact scan before invoking lake (FM12 analogue)",
+    "file": "src/harness_bench/grade/formal.py",
+    "find": "    offender = _artifact_offender(proofs_src, _G2_PROOF_ALLOWED_EXTS, _G2_PROOF_ALLOWED_NAMES)",
+    "replace": "    offender = None",
+    "tests": ["tests/test_grade_formal.py::test_g2_formal_checks_clean_refuses_a_binary_artifact_before_invoking_lake"]
+  },
+  {
+    "name": "G2: trust the agent's lakefile.toml/lean-toolchain instead of byte-checking against the task's frozen copy (FM13)",
+    "file": "src/harness_bench/grade/formal.py",
+    "find": "    if task_dir_proofs is not None:\n        for name in (\"lakefile.toml\", \"lean-toolchain\"):",
+    "replace": "    if False:\n        for name in (\"lakefile.toml\", \"lean-toolchain\"):",
+    "tests": ["tests/test_grade_formal.py::test_g2_formal_checks_clean_edited_manifest_never_reaches_lake_build"]
+  },
+  {
+    "name": "G2: axioms-only, no lexical scan (misses native_decide/#eval, which #print axioms cannot see, FM6/FM14)",
+    "file": "src/harness_bench/grade/formal.py",
+    "find": "        if lexical_hits:\n            evidence = _write_log(out_dir, \"lexical.log\", \"\".join(f\"{f}: {t}\\n\" for f, t in lexical_hits))\n            return Score(0, None, evidence)",
+    "replace": "        if False:\n            evidence = _write_log(out_dir, \"lexical.log\", \"\".join(f\"{f}: {t}\\n\" for f, t in lexical_hits))\n            return Score(0, None, evidence)",
+    "tests": [
+      "tests/test_grade_formal.py::test_g2_formal_checks_clean_seeded_variants_score_0[native_decide]",
+      "tests/test_grade_formal.py::test_g2_formal_checks_clean_seeded_variants_score_0[eval_effect]"
+    ]
+  },
+  {
+    "name": "bugs_confirmed counts any claim (N > 0), not a confirmed one, as the seeded bug being found",
+    "file": "src/harness_bench/grade/formal.py",
+    "find": "    return int(confirmed > 0), None, n, confirmed, evidence",
+    "replace": "    return int(n > 0), None, n, confirmed, evidence",
+    "tests": ["tests/test_grade_formal.py::test_bugs_confirmed_only_false_claim_is_0"]
+  },
+  {
+    "name": "drop the NA cascade for formal_checks_clean/model_conformance/model_non_vacuity when statement_integrity is 0 (US-32, the per-task cascade table)",
+    "file": "src/harness_bench/grade/formal.py",
+    "find": "        if cascaded:\n            out[metric] = Score(None, GIVEN_EDITED)",
+    "replace": "        if False:\n            out[metric] = Score(None, GIVEN_EDITED)",
+    "tests": [
+      "tests/test_grade_formal.py::test_cascade_g1_edited_statement_gates_checks_and_replay_metrics_but_not_bugs",
+      "tests/test_grade_formal.py::test_cascade_g2_edited_statement_gates_checks_and_non_vacuity_only"
+    ]
+  },
+  {
+    "name": "make the cascade also gate bugs_confirmed (the non-cascading pair, US-32, must NOT cascade)",
+    "file": "src/harness_bench/grade/formal.py",
+    "find": "    if \"bugs_confirmed\" in inp.metrics:\n        out[\"bugs_confirmed\"] = bugs_confirmed(inp, timeout)",
+    "replace": "    if \"bugs_confirmed\" in inp.metrics:\n        out[\"bugs_confirmed\"] = Score(None, GIVEN_EDITED) if cascaded else bugs_confirmed(inp, timeout)",
+    "tests": ["tests/test_grade_formal.py::test_cascade_g1_edited_statement_gates_checks_and_replay_metrics_but_not_bugs"]
+  },
+  {
+    "name": "G1: never write Model.cfg from the oracle's frozen bounds.cfg (FM3: an agent's own .cfg, if any, must never be trusted)",
+    "file": "src/harness_bench/grade/formal.py",
+    "find": "    cfg.write_text(bounds.read_text(encoding=\"utf-8\"), encoding=\"utf-8\")",
+    "replace": "    pass  # cfg.write_text(bounds.read_text(encoding=\"utf-8\"), encoding=\"utf-8\")",
+    "tests": ["tests/test_grade_formal.py::test_g1_formal_checks_clean_reference_is_1"]
+  }
+]

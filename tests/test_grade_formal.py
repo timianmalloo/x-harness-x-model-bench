@@ -437,6 +437,17 @@ def test_bug_claim_precision_correct_plus_false_claim_is_half(tmp_path):
     assert encode(formal.bug_claim_precision(inp, TIMEOUT)) == (Decimal("0.5"), None)
 
 
+def test_bugs_confirmed_only_false_claim_is_0(tmp_path):  # N > 0 but confirmed == 0: not "any claim at all"
+    ws = tmp_path / "ws"
+    shutil.copytree(G1_BUGS_WS, ws)
+    (ws / "tests" / "test_false.py").write_text(
+        "from coord_core import fold\n\n\ndef test_false_claim():\n    assert fold([]) is True\n", encoding="utf-8")
+    (ws / "BUGS.md").write_text("## false\n\nTest: tests/test_false.py::test_false_claim\n", encoding="utf-8")
+    inp = _cell_input(tmp_path, ws, G1_TASK, {"oracle/bugfix/Fold.py": G1_BUGFIX})
+    assert encode(formal.bugs_confirmed(inp, TIMEOUT)) == (0, None)
+    assert encode(formal.bug_claim_precision(inp, TIMEOUT)) == (Decimal(0), None)
+
+
 def test_bug_claim_precision_correct_plus_no_test_line_is_half(tmp_path):  # R-84: moved fixture (was 1.0000)
     bugs = CORRECT + "\n## vague\n\nNo test named here.\n"
     inp = _bugs_input(tmp_path, bugs)
