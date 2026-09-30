@@ -2,13 +2,13 @@ schema: bench-task/1
 id: G2
 scenario: 7
 title: "Lean 4 proofs of fixed statements about the lease fold"
-status: stub
+status: ready
 language: other
 source:
   kind: authored
   upstream: "ai-forward pack/scripts/coord-core.py lease fold, translated to Lean by us"
   repo: "https://github.com/timianmalloo/ai-forward"
-  commit: "tbd"
+  commit: "b647a34c20e6accab7fe9c11000496173f44f684"
 budget:
   minutes: 45
   usd_cap: null
@@ -18,9 +18,12 @@ model_map: null
 scripted_user: false
 formal:
   tool: lean              # Lean 4 via elan + lake, no Mathlib
-  statements: fixed       # e.g. replay is idempotent; a retried claim takes no second lease
-  toolchain: "tbd"        # lean-toolchain pin (spike S-12)
-  statement_hash: "tbd"   # sha256 of the theorem statements file
+  statements: fixed       # replay is idempotent (NFR-R1); a retried claim takes no second lease (F9)
+  toolchain: "leanprover/lean4:v4.34.1"   # lean-toolchain pin (spike S-12); elan 4.2.4 installs it
+  statement_hash: "751a0f1475b5a081aeab9c88479df327ae4b27d75a5bac2df94b760dd03c26cb"
+  theorem_names:
+    - fold_replay_is_idempotent   # NFR-R1, test_T2_fold_is_idempotent_under_replay
+    - retried_event_is_a_no_op    # F9, test_T15_duplicate_seq_is_idempotent
   seeded_bugs: 1          # a variant of the fold on which the proofs must fail
 graders:
   - formal
