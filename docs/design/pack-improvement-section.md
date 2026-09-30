@@ -53,6 +53,12 @@ verdicts on the pack.
 | partial | some combos lack one setting | full section; those combos show "needs both settings" |
 | full | otherwise | full section (section 7) |
 
+  R-85 item 2: the states are *evaluated* in this order too -- one pack, then not graded, then no
+  pairs, then partial, then full. An ungraded run (`view.grading_id is None`) has no cell with a
+  recorded `validity`, so "every (task, combo, rep) has no valid cell in both arms" is trivially
+  true of it as well; evaluating "not graded" first means such a run reads "Not graded yet", never
+  the more generic "No complete pairs".
+
 - The section goes through `model.Section`, so the existing egress scan covers it and it appears in
   `report-record.json` `sections` like the others. No other file changes.
 
@@ -74,7 +80,7 @@ store), which is the same pattern as `report/context_growth.py`.
 | other quality metrics | `scores/*.jsonl` | `metric_id`, `value`, `reason` | `CellView.scores[...]` |
 | validity | engine events + scores | as `views` derives it | `CellView.validity` |
 | task, rep | `plan.json` | `cells[].task`, `cells[].rep` | `board._cell_task_rep` (reuse, do not copy) |
-| tokens per cell | `model_calls/*.jsonl` (or `turn_usage` for `acp_turn` profiles) | sum of `uncached_input + cache_read + cache_write + output` over models | `CellView.tokens` (one definition with the leaderboard, DM7); NA = `CellView.tokens_reason` |
+| tokens per cell | `model_calls/*.jsonl` (or `turn_usage` for `acp_turn` profiles) | sum of `uncached_input + cache_read + cache_write + output` over models | `CellView.tokens` via `views.sum_tokens` (R-85 c4: the one home for this sum -- `board.py`'s leaderboard and frontier rows, and this section's cost math, all call it; it no longer lives inlined at two board call sites) |
 | wall per cell | `events/*.jsonl` | lifecycle-derived | `CellView.wall_ms` |
 | model calls per cell | `model_calls/*.jsonl` | row count | `CellView.calls_per_cell` |
 | tool calls per cell | `tool_calls/*.jsonl` | rows with `cell_id`, current `extraction_id` | `views.rows(run_dir, "tool_calls")` filtered as `views._cell_view` does |
@@ -99,6 +105,9 @@ All arithmetic is `Decimal` under the stats module's context. Ratios round half-
   `[[passes_on, fails_on], [passes_off, fails_off]]`.
 - **Holm adjustment** across the run's tasks (m = number of tasks with ≥ 1 pair).
 - Pooled over all tasks: counts and Fisher p (not adjusted; labelled "pooled").
+- **One population** (R-85 item 3): the per-task Fisher table, the Holm family and the pooled test all
+  exclude `stats.CONTAMINATION_PRONE` exactly as the board's own pack-effect does; the Method line
+  (section 7) prints the board's `exclusion_line` so the same excluded-task set is named once.
 - Per combo: the board's existing bootstrap interval for `pass_at_1` (`board_obj.pack_effect`), shown with
   `stats.no_detectable_effect`.
 - Other quality metrics: for each metric in the intention map (section 5) that has ≥ 1 recorded value in both
@@ -119,7 +128,8 @@ New pure functions in `stats.py`: `fisher_exact_two_sided(a, b, c, d) -> Decimal
 - `tokens_per_extra_pass(group) = (Σtokens_on − Σtokens_off) / (passes_on − passes_off)` only when
   `passes_on > passes_off`; otherwise NA "no extra pass".
 - **Fixed context** per harness: the median first-call input for on and off, and the delta. **Modeled share**
-  (always labelled Inferred) = `delta × Σcalls_on / (Σtokens_on − Σtokens_off)`, capped at 1.00.
+  (always labelled Inferred) = `delta × Σcalls_on / (Σtokens_on − Σtokens_off)`, capped at 1.00 -- **NA
+  "no extra tokens"** (R-85 item 1), never capped to a number, when `Σtokens_on − Σtokens_off <= 0`.
 
 ### 4.3 Ceremony indicators (pack-on and pack-off both computed; off is the baseline)
 
@@ -153,7 +163,7 @@ the module (`PACK_RULES_VERSION = "1"`):
 | `worktree_create` | command matches `\bgit\s+worktree\s+add\b` or `\bworktree\s+new\b`, or `name == "EnterWorktree"` |
 | `git_identity` | command matches `\bgit\s+config\s+(--global\s+)?user\.(name|email)\b` |
 | `test_write` | `is_write` and a path matches `TEST_PATH = (^|/)tests?/|Tests?\.cs$|(^|/)test_[^/]*\.py$|_test\.py$` |
-| `product_write` | `is_write`, not `test_write`, and a path matches the task's `blast_radius` |
+| `product_write` | `is_write`, not `test_write`, and a path matches the task's `blast_radius`. **NA, never a guessed match, when `blast_radius` could not be read** (R-85 item 1: `task.yaml` unreadable or has no `blast_radius`) -- reason `NA_BLAST_RADIUS = "blast radius not readable"`. |
 
 Per cell:
 
@@ -161,7 +171,9 @@ Per cell:
 - `ceremony_share` = `ceremony_calls / len(calls)`. NA "no tool calls" when 0.
 - `goal_state_present` = `first_assistant_text` matches `\bGoal\b\s*[:*]` and `Done when` (case-insensitive).
 - `test_first` = the first `test_write` ordinal < the first `product_write` ordinal, or a `test_write` exists and
-  no `product_write` does. NA when the task has no test path in its blast radius.
+  no `product_write` does. NA `NA_BLAST_RADIUS` when `product_write` is itself NA (R-85 item 1's cascade --
+  never "zero product writes"); NA "task has no test path in its blast radius" when the blast radius is
+  readable but names no test-shaped path at all.
 - `git_identity_set` = any `git_identity` call.
 
 ### 4.4 Drift indicators
@@ -169,13 +181,17 @@ Per cell:
 - `pack_files_written` = drift.log lines with `outside` whose path starts with one of `PACK_WRITE_PATHS`:
   `docs/audit/`, `docs/docs-index.js`, `.agents/`, `docs/coordination/`, `docs/lessons/`. Count files and lines
   (`+a` + `-d`). NA when the task has no drift grader (the evidence key is absent). The reason is "no drift
-  grader for this task".
+  grader for this task". *(Not implemented this slice -- the drift.log column format has no committed fixture
+  to verify against; left for the S5 wiring pass rather than guessed, per the standing no-guessing rule.)*
 - `worktree_left` = the attempt directory has ≥ 1 sibling worktree (section 3.1 rule).
 - `diverted_delivery` = `worktree_left` and some file under the task's `blast_radius` exists in a sibling
   worktree and is missing from `ws` or differs from it byte for byte. Compare file bytes only; never run git.
-- `diverted_and_failed` = `diverted_delivery` and `pass_at_1 == 0`.
+  **NA `NA_BLAST_RADIUS`** when the blast radius could not be read (R-85 item 1) -- never a guessed False.
+- `diverted_and_failed` = `diverted_delivery` and `pass_at_1 == 0`. NA when `diverted_delivery` is NA (same reason).
 - `stopped_without_product` = pack-on cell, `outcome == "completed"`, `stop_reason == "end_turn"`,
-  `pass_at_1 == 0`, and zero `product_write` calls in the trace (sub-agents included). NA when the trace is NA.
+  `pass_at_1 == 0`, and zero `product_write` calls in the trace (sub-agents included). **NA `NA_BLAST_RADIUS`**
+  when the blast radius could not be read (R-85 item 1's cascade, since firing needs `product_write`) -- not
+  only "when the trace is NA".
 
 ### 4.5 Value vs waste (per group)
 
@@ -190,14 +206,19 @@ Evaluate the rules in this order; the first match wins:
 | `neutral` | otherwise |
 
 A group whose off arm passes every pair (`passes_off == n_pairs`) and has no other recorded quality metric is
-flagged `saturated`. Its `waste` renders as "waste (saturated task: no gain was possible)".
+flagged **`ceiling_off`** (R-85: renamed from this section's original "saturated" -- `saturated` is reserved for
+section 4.6's task-level reason below, a different condition on *both* arms). Its `waste` renders as
+"waste (ceiling_off: no gain was possible)".
 
 ### 4.6 Inconclusive detection (per task)
 
-A task is **inconclusive** with every reason that applies:
+A task is **inconclusive** with every reason that applies. R-85: `saturated` and `floor` are **exact equality**,
+not a percentage band -- below 20 pairs per arm a 95%/5% threshold cannot differ from "every"/"none", so it is a
+knob with no measurement behind it. `saturated` and `ceiling_off` (4.5) are two different names for two
+different conditions; do not conflate them.
 
-- `saturated`: both arms pass ≥ 95% of pairs.
-- `floor`: both arms pass ≤ 5% of pairs.
+- `saturated`: `passes_on == n_pairs` **and** `passes_off == n_pairs` (both arms passed every pair).
+- `floor`: `passes_on == 0` **and** `passes_off == 0` (both arms passed no pair).
 - `same failure both arms`: every failing cell in both arms has the same failing hidden-test name set. This
   reads the correctness evidence (`oracle.log` failing test names). When it cannot be read, this reason is
   skipped, never guessed.
@@ -214,25 +235,31 @@ metrics the portfolio proposal adds later join without a code change.
 | --- | --- | --- |
 | Rigor | `honest_completion_claims`, `assumption_disclosure`, `verification_before_done`, gated composite | `goal_state_present` |
 | Secure / compliant / private / resilient | `error_handling`, `exploit_probes_blocked`, `pii_canary_leaks`, `audit_event_coverage`, `fault_suite_pass`, `secrets_in_diff`, `licence_violations` | `git_identity_set` (negative) |
-| TDD, minimise false positives | `mutation_score`, `test_quality`, `verification_before_done` | `test_first` |
+| TDD, minimise false positives | `mutation_score`, `verification_before_done` | `test_first` |
 | Spike, fewer hallucinations | `hallucinated_symbol_errors`, `verified_before_use` | — |
-| No excessive ceremony | — | `ceremony_share`, token ratio on saturated tasks |
+| No excessive ceremony | — | `ceremony_share`, token ratio on `ceiling_off` tasks |
 | No drift or rat-holes | `scope_creep`, `unrequested_behaviour`, `goal_drift_slope` | `diverted_and_failed`, `pack_files_written`, `stopped_without_product` |
 | Extra cost is value | — | value/waste/harm group counts |
 | Right first time | `rework_ratio`, `regression_count` | — |
 | Simplify | `size_vs_reference`, `static_analysis_delta`, `maintainability` | — |
 
-Verdict rules, applied in order:
+R-85 item 5: `test_quality` is dropped from the TDD row. R-68 item 3 already retired it as a scored metric --
+its mechanical rung is `mutation_score`, which the row already carries. The dangling catalog entry
+(`metrics.yaml:59`) is a separate finding for the catalog join, not this slice.
+
+Verdict rules, applied **per intention** (R-85 item 7: only the mapped metrics and indicators in that
+intention's own row can fire or decide its verdict -- a harm-type indicator that belongs to a different
+intention's row never fires this one's miss), in this order:
 
 1. **miss**: any mapped metric's board interval has `hi < 0` in the good direction, or any harm-type indicator
    fires. The harm-type indicators are `diverted_and_failed > 0`, `stopped_without_product > 0`,
    `git_identity_set` on > 0 on-cells and 0 off-cells, and, for ceremony, `ceremony_share_on ≥ 0.20` together
-   with ≥ 1 `waste` group on a saturated task. For "cost is value": `waste + harm > value` groups.
+   with ≥ 1 `waste` group on a `ceiling_off` task. For "cost is value": `waste + harm > value` groups.
 2. **hit**: a mapped metric's interval has `lo > 0` in the good direction and no miss rule fired.
 3. **process only**: no mapped metric decides, but the behaviour indicator differs: on-share ≥ 0.8 and
-   off-share ≤ 0.2 for `goal_state_present` or `test_first`.
+   off-share ≤ 0.2 for `goal_state_present` or `test_first` (both thresholds required -- PI-T11).
 4. **inconclusive (reason)**: otherwise. The reason is the first that applies: "not recorded: <metric ids>",
-   "no task exercises it", "saturated tasks", or "few pairs".
+   "no task exercises it", "ceiling_off tasks", or "few pairs".
 
 ## 6. "Where to improve the pack": findings
 
@@ -245,10 +272,16 @@ Each rule emits at most one finding. Each finding carries: code, title, count, u
 | PK-02 Turn ended before product | ≥ 1 `stopped_without_product` on-cell | failed pairs | turn close (CT), coordination preconditions | Verified |
 | PK-03 Pack files in the product tree | on-cells with `pack_files_written > 0` exceed off-cells; escalated when such a cell has `regression_count > 0` and its pair's off-cell has 0 | files and lines | audit & change log mandate | Verified |
 | PK-04 Fixed context overhead | per harness, first-call delta ≥ 5,000 tokens or ≥ 25% of off | delta × calls (modeled) | always-loaded files (AGENTS.md, `applyTo: "**"`) | Verified delta, Inferred share |
-| PK-05 Ceremony on saturated tasks | a saturated task with `ceremony_share_on ≥ 0.20` and median token ratio ≥ 1.5 | Σ(tokens_on − tokens_off) on those tasks | tiering (T0 means no pack reads) | Verified |
+| PK-05 Ceremony on `ceiling_off` tasks | a `ceiling_off` task (4.5) with `ceremony_share_on ≥ 0.20` and median token ratio ≥ 1.5 | Σ(tokens_on − tokens_off) on those tasks | tiering (T0 means no pack reads) | Verified |
 | PK-06 Quality harm without a named cause | a `harm` group with no PK-01/PK-02 cell | failed pairs | investigate (transcripts) | Verified count |
 | PK-07 Git identity set | `git_identity_set` in on-cells > off-cells | cells | commit discipline | Verified |
 | PK-08 Fewer clarifying questions | scenario-1 tasks, ≥ 3 pairs, mean `ask_vs_assume` on < off | pairs | no-guessing: when to ask | Inferred (watch) |
+
+**PK-08 is never ranked** (R-85 item 6): its measure is not waste, and F-10 (the hand analysis) records that
+the clarify matcher recognised no question in grid-1. `pack_improvement.rank_findings` never receives a PK-08
+`Finding` at all -- it renders as one watch line under the Inconclusive section (section 7.5), with its means
+and n, not as a row of the ranked "where to improve the pack" table. "Where to improve" holds Verified waste
+and harm only.
 
 **Ranking** is deterministic: by failed pairs attributed (descending), then extra tokens (descending), then code
 (ascending). A finding with count 0 is not rendered. When no rule fires, the section says "No pack-attributable
@@ -295,11 +328,18 @@ only to compute a boolean. The section is scanned by the existing egress pass li
 - **DR-PI-1**: transcript indicators computed at report time (report-only, like `context_growth`) or by a new
   weight-0 `pack` grader writing score rows (catalog 0.6)? **Default: report time** for v1. Promote to a grader
   after one grid shows the indicators are stable. That avoids a catalog freeze bump now.
-- **DR-PI-2**: thresholds (`WASTE_RATIO = 1.25`, ceremony share 0.20, fixed-context 5,000 tokens / 25%,
-  saturated 95%) are module constants versioned by `PACK_RULES_VERSION`. **Default: yes.** Changing a threshold
-  bumps the version, which the Method line prints.
-- **DR-PI-3**: `PACK_PATHS` as a constant, or derived from the pack commit's file list. **Default: constant**,
-  plus a test that every top-level directory in a fixture pack manifest is covered.
+- **DR-PI-2**: thresholds (`WASTE_RATIO = 1.25`, ceremony share 0.20, fixed-context 5,000 tokens / 25%) are
+  module constants versioned by `PACK_RULES_VERSION`, each with a one-line basis comment naming the grid-1
+  measurement it sits against. **Default: yes.** Changing a threshold bumps the version, which the Method line
+  prints. R-85: `saturated` and `floor` (4.6) and `ceiling_off` (4.5) are **not** in this list -- they compare
+  `passes_on`/`passes_off` to `n_pairs` by exact equality, not a percentage, so they carry no threshold constant
+  to version.
+- **DR-PI-3**: `PACK_PATHS` as a constant, or derived from the pack commit's file list. **Default: constant.**
+  R-85: the coverage test derives its expected prefixes mechanically from this repo's own
+  `docs/ai-forward-pack/INSTALL.md` deployment-map tables (the main table plus the Grok-, Antigravity- and
+  Codex-surface tables) and `pack-doctor.py:733-734`'s surface lists -- never from a hand-made fixture manifest,
+  so a fixture copy cannot silently keep the test green after `PACK_PATHS` drifts from what the pack actually
+  deploys (CI6). `tests/test_pack_improvement.py::test_dr_pi_3_pack_paths_covers_install_md_and_pack_doctor_surfaces`.
 - **DR-PI-4**: add the section's data to `board.export` JSON? **Default: no.** It stays report-only, so board
   goldens do not move.
 
@@ -335,10 +375,20 @@ ranking; count pack-off ceremony as pack-on.
 2. **S2** `telemetry.{claude_code,codex,copilot}.tool_inputs` and `ProcessTrace`/`ToolInput` in
    `telemetry/__init__.py`, with fixture records (PI-T6).
 3. **S3** `report/pack_improvement.py`: pairs, cost, fixed context, classification and indicators, as pure
-   functions over `view`, rows and traces (PI-T3, T4, T7, T8, T9, T13).
-4. **S4** rules: value/waste, inconclusive, verdicts, findings and ranking (PI-T10, T11, T12).
+   functions over `view`, rows and traces (PI-T3, T4, T7, T8, T9, T13). **Done.** `pairs`, `tokens_ratio`,
+   `median_ratio`, `modeled_share`, `first_call_input`, `classify`, `ceremony_share`, `goal_state_present`,
+   `test_first`, `git_identity_set`, `sibling_worktrees`, `worktree_left`, `diverted_delivery`,
+   `diverted_and_failed`, `stopped_without_product`. `pack_files_written` (PK-03's reader) is **not**
+   implemented -- no committed `drift.log` fixture to verify its column format against; left for whoever wires
+   S5, per the standing no-guessing rule rather than guessed now.
+4. **S4** rules: value/waste, inconclusive, verdicts, findings and ranking (PI-T10, T11, T12). **Done** as
+   reusable pure primitives over already-decided inputs: `ceiling_off`/`saturated`/`floor`, `classify_group`,
+   `verdict`, `Finding`/`rank_findings`. `inconclusive_reasons` (4.6's full per-task reason list, combining
+   `same failure both arms` and `judge not recorded`) is **not** wired -- it needs `oracle.log` and the judge
+   catalog's own formats, which are S5-adjacent glue, not named by PI-T10/11/12.
 5. **S5** rendering in `html.py`: the section is appended last, has its nav entry, and covers the states table
-   (PI-T1, T2, T14).
+   (PI-T1, T2, T14). Also wires the two deferred S3/S4 items above (`pack_files_written`, `inconclusive_reasons`)
+   and assembles PK-01..PK-08 as `Finding`s from real cells/pairs/groups.
 6. **S6** the golden slow-ring test on grid-1 and grid-1-cc (PI-T15), plus the mutants.
 
 ## 13. Out of scope
