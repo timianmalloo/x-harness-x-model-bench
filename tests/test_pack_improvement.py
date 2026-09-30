@@ -16,6 +16,7 @@ from harness_bench.report import pack_improvement as pi
 from harness_bench.telemetry import ToolInput
 
 ROOT = Path(__file__).resolve().parents[1]
+FIX = ROOT / "tests" / "fixtures" / "pack_improvement"
 
 
 def _cell(cid, combo, pack, validity="valid", tokens=None, tokens_reason="not graded"):
@@ -193,6 +194,100 @@ def test_pi_t8_a_directory_without_a_git_file_is_not_a_sibling_worktree(tmp_path
 
     assert pi.sibling_worktrees(attempt) == []
     assert pi.diverted_delivery(attempt, ws, ["solution.py"]) == views.Measure(False)
+
+
+# ---------------------------------------------------------------------------------------------------
+# PK-03: pack_files_written, read from a real (redacted) drift.log (format pinned against
+# `grade/drift.py:125,139`'s own writer, R-85 hand-off).
+# ---------------------------------------------------------------------------------------------------
+
+
+def test_pk_03_pack_files_written_counts_outside_pack_write_lines_only():
+    result = pi.pack_files_written(FIX / "drift-pack-files.log")
+    assert result.value == pi.PackFilesWritten(files=2, lines=16)  # .agents/artifacts.yml (+15) + log (+1)
+
+
+def test_pk_03_pack_files_written_is_na_when_the_evidence_key_is_absent():
+    assert pi.pack_files_written(None) == views.Measure(None, pi.NA_NO_DRIFT_GRADER)
+
+
+def test_pk_03_pack_files_written_is_a_real_zero_when_nothing_matches(tmp_path):
+    empty = tmp_path / "drift.log"
+    empty.write_text("added\tsrc/a.py\tinside\t+1 -0\t\n", encoding="utf-8")
+    assert pi.pack_files_written(empty).value == pi.PackFilesWritten(files=0, lines=0)
+
+
+# ---------------------------------------------------------------------------------------------------
+# 4.6: same_failure_both_arms / judge_not_recorded / inconclusive_reasons
+# ---------------------------------------------------------------------------------------------------
+
+
+def test_same_failure_both_arms_reads_unittest_and_xunit_fail_lines():
+    unittest_names = pi.failing_test_names(FIX / "oracle-unittest-fail.log")
+    assert unittest_names == frozenset({"test_b1_hidden.HiddenSpec.test_spec_required_sections"})
+    xunit_names = pi.failing_test_names(FIX / "oracle-xunit-fail.log")
+    assert xunit_names == frozenset({
+        "WingSpineHiddenTests.RectangularWingMatchesItsClosedForms",
+        "WingSpineHiddenTests.EveryDerivationRejectsANullWing",
+    })
+
+
+def test_failing_test_names_is_none_when_unreadable_or_no_match(tmp_path):
+    assert pi.failing_test_names(None) is None
+    missing = tmp_path / "nope.log"
+    assert pi.failing_test_names(missing) is None
+    no_fail = tmp_path / "clean.log"
+    no_fail.write_text("$ dotnet test\nexit 0\n", encoding="utf-8")
+    assert pi.failing_test_names(no_fail) is None
+
+
+def test_same_failure_both_arms_true_when_every_failing_cell_shares_the_set():
+    s = frozenset({"WingSpineHiddenTests.RectangularWingMatchesItsClosedForms"})
+    assert pi.same_failure_both_arms([s, s, s]) is True
+
+
+def test_same_failure_both_arms_false_on_a_differing_set_or_unreadable_entry():
+    a = frozenset({"a"})
+    b = frozenset({"b"})
+    assert pi.same_failure_both_arms([a, b]) is False
+    assert pi.same_failure_both_arms([a, None]) is False  # unreadable: skipped, never guessed
+    assert pi.same_failure_both_arms([]) is False  # no failing cell
+
+
+_CATALOG = {
+    "areas": {
+        "rigor": {"metrics": [
+            {"id": "honest_completion_claims", "source": ["J"], "grader": "judge"},
+            {"id": "verification_before_done", "source": ["D"], "grader": "rigor"},
+        ]},
+        "drift": {"metrics": [{"id": "goal_drift_slope", "source": ["J"], "grader": "judge"}]},
+    }
+}
+
+
+def test_judge_sourced_metric_ids_reads_the_source_list():
+    assert pi.judge_sourced_metric_ids(_CATALOG) == frozenset({"honest_completion_claims", "goal_drift_slope"})
+
+
+def test_judge_not_recorded_true_when_every_named_judge_metric_is_na():
+    assert pi.judge_not_recorded(["judge"], _CATALOG, frozenset()) is True
+    assert pi.judge_not_recorded(["judge"], _CATALOG, frozenset({"honest_completion_claims"})) is False
+
+
+def test_judge_not_recorded_false_when_the_task_names_no_judge_sourced_metric():
+    assert pi.judge_not_recorded(["rigor"], _CATALOG, frozenset()) is False
+
+
+def test_inconclusive_reasons_collects_every_reason_that_applies():
+    assert pi.inconclusive_reasons(
+        passes_on=4, passes_off=4, n_pairs=4, same_failure=True, judge_not_recorded_=True, no_mapped_metric=False,
+    ) == ("saturated", "same failure both arms", "judge not recorded")
+    assert pi.inconclusive_reasons(
+        passes_on=0, passes_off=0, n_pairs=2, same_failure=False, judge_not_recorded_=False, no_mapped_metric=True,
+    ) == ("floor", "few pairs", "no mapped metric")
+    assert pi.inconclusive_reasons(
+        passes_on=2, passes_off=1, n_pairs=5, same_failure=False, judge_not_recorded_=False, no_mapped_metric=False,
+    ) == ()
 
 
 # ---------------------------------------------------------------------------------------------------

@@ -56,6 +56,7 @@ NA_ARCHIVE_ABSENT = "archive not present"
 NA_RECORD_UNREADABLE = "native record unreadable"
 NA_NO_TOOL_CALLS = "no tool calls"
 NA_NO_TEST_PATH = "task has no test path in its blast radius"
+NA_NO_DRIFT_GRADER = "no drift grader for this task"
 
 # design section 4.3's table.
 PACK_PATHS = (
@@ -74,6 +75,23 @@ _DONE_WHEN = re.compile(r"Done when", re.IGNORECASE)
 _GITDIR_MARKER = "/ws/.git/worktrees/"
 
 CEREMONY_CLASSES = frozenset({"pack_read", "skill_load", "pack_script", "worktree_create"})
+
+# drift.log's own two line shapes (`grade/drift.py:125,139`, pinned by reading the grader's writer, not
+# guessed from a sample -- R-85 hand-off): a changed-file line is 5 tab-separated fields ending in the
+# +added/-deleted counts, a skipped-file line is `ignored\t<path>\n` (2 fields; never counted).
+_DRIFT_LINE = re.compile(
+    r"^(?P<status>[^\t]+)\t(?P<path>[^\t]+)\t(?P<zone>inside|outside)\t\+(?P<added>\d+) -(?P<deleted>\d+)(?:\t.*)?$"
+)
+
+# oracle.log's two observed failing-test-name shapes (design section 4.6 "same failure both arms";
+# pinned against the real grid-1/grid-1-cc corpus, `tests/fixtures/pack_improvement/oracle-*.log`):
+# unittest's verbose per-test line (`correctness.py`'s own oracle, stderr) and xUnit's `[FAIL]` line
+# (the dotnet oracle, `correctness.py:120-260`). No pytest-shaped failure line was observed in either
+# grid (pytest failures there come from a JUnit XML report, not oracle.log's own text) -- a task graded
+# by pytest with a failure this reader cannot parse simply yields no names, and the caller skips the
+# reason rather than guessing (design 4.6's own rule).
+_UNITTEST_FAIL_NAME = re.compile(r"^\S+ \(([\w.]+)\) \.\.\. FAIL$", re.MULTILINE)
+_XUNIT_FAIL_NAME = re.compile(r"^\[xUnit\.net[^\]]*\]\s+(\S+) \[FAIL\]$", re.MULTILINE)
 
 
 # --------------------------------------------------------------------------------------------------
@@ -327,6 +345,124 @@ def stopped_without_product(
     if not (outcome == "completed" and stop_reason == "end_turn" and pass_at_1 == 0):
         return Measure(False)
     return Measure(not any("product_write" in classify(c, blast_radius) for c in calls))
+
+
+@dataclass(frozen=True)
+class PackFilesWritten:
+    """PK-03's own count (design section 4.4): distinct out-of-radius files under one of
+    `PACK_WRITE_PATHS`, and the total lines those files' drift.log entries record (`+added` plus
+    `-deleted`)."""
+
+    files: int
+    lines: int
+
+
+def pack_files_written(drift_log: Path | None) -> Measure:
+    """PK-03's reader (design section 4.4, deferred by S3/S4 -- "no committed drift.log fixture to
+    verify against"; pinned this slice by reading `grade/drift.py`'s own writer, `_measure()`:
+    `f"{status}\\t{path}\\t{'inside'/'outside'}\\t+{added} -{deleted}\\t{broken}\\n"` for a changed
+    file, `f"ignored\\t{path}\\n"` for a skipped one -- confirmed byte for byte against real
+    grid-1/grid-1-cc drift.log files, `tests/fixtures/pack_improvement/drift-pack-files.log`).
+
+    `drift_log=None` is the design's own NA `NA_NO_DRIFT_GRADER` ("the evidence key is absent" --
+    the caller passes None only when `CellView.evidence.get("scope_creep")` itself was absent, never
+    for an I/O failure on a path the evidence dict did name). A drift.log that exists but names no
+    `outside` pack-write line is a real, readable zero -- never NA."""
+    if drift_log is None or not drift_log.is_file():
+        return Measure(None, NA_NO_DRIFT_GRADER)
+    files = lines = 0
+    for raw in drift_log.read_text(encoding="utf-8", errors="replace").splitlines():
+        m = _DRIFT_LINE.match(raw)
+        if m is None or m.group("zone") != "outside":
+            continue
+        if not any(m.group("path").startswith(p) for p in PACK_WRITE_PATHS):
+            continue
+        files += 1
+        lines += int(m.group("added")) + int(m.group("deleted"))
+    return Measure(PackFilesWritten(files, lines))
+
+
+# --------------------------------------------------------------------------------------------------
+# Section 4.6: "same failure both arms" and "judge not recorded" (deferred by S3/S4; wired this slice,
+# R-85 hand-off -- "needs oracle.log and the judge catalog's own formats").
+# --------------------------------------------------------------------------------------------------
+
+
+def failing_test_names(oracle_log: Path | None) -> frozenset[str] | None:
+    """The failing hidden-test name set `oracle.log`'s own free text records (design section 4.6),
+    read tolerantly across the two shapes the grid-1/grid-1-cc corpus actually contains (unittest's
+    verbose per-test line, xUnit's `[FAIL]` line -- `tests/fixtures/pack_improvement/oracle-*.log`).
+    `None` (never an empty set) when the file is absent/unreadable or the text names no failing test
+    in either shape -- the caller then SKIPS the "same failure both arms" reason, never guessing
+    (design 4.6: "when it cannot be read, this reason is skipped")."""
+    if oracle_log is None or not oracle_log.is_file():
+        return None
+    try:
+        text = oracle_log.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return None
+    names = frozenset(_UNITTEST_FAIL_NAME.findall(text)) | frozenset(_XUNIT_FAIL_NAME.findall(text))
+    return names or None
+
+
+def same_failure_both_arms(failing_name_sets: Sequence[frozenset[str] | None]) -> bool:
+    """Design section 4.6: true only when EVERY failing cell (on and off, pooled for the task) has
+    the SAME non-empty failing-test-name set. `failing_name_sets` is the caller's one entry per
+    failing cell (`pass_at_1 == 0`); an empty sequence (no failing cell) or any entry that is `None`
+    (unreadable) skips the reason -- never guessed true or false."""
+    if not failing_name_sets or any(s is None for s in failing_name_sets):
+        return False
+    first = failing_name_sets[0]
+    return bool(first) and all(s == first for s in failing_name_sets)
+
+
+def judge_sourced_metric_ids(catalog: Mapping) -> frozenset[str]:
+    """Metric ids in a loaded `bench/metrics.yaml` (`config.load_yaml`'s own shape) whose `source`
+    list includes `"J"` (design section 4.6's "judge-sourced metric" -- the catalog's own oracle
+    ladder, `bench/metrics.yaml:8`, never a second definition of which metrics are judged)."""
+    return frozenset(
+        m["id"]
+        for area in (catalog.get("areas") or {}).values()
+        for m in area.get("metrics") or []
+        if "J" in (m.get("source") or ())
+    )
+
+
+def judge_not_recorded(task_graders: Sequence[str], catalog: Mapping, recorded_metric_ids: frozenset[str]) -> bool:
+    """Design section 4.6: true when the task names at least one judge-sourced metric (through its
+    own `graders:` list) and every one of them is absent from `recorded_metric_ids` (this task's
+    recorded, non-NA score ids, pooled over its cells). A task whose graders name no judge-sourced
+    metric at all never fires this -- that is a different task, not an inconclusive one."""
+    judge_ids = judge_sourced_metric_ids(catalog)
+    named = {
+        m["id"]
+        for area in (catalog.get("areas") or {}).values()
+        for m in area.get("metrics") or []
+        if m.get("grader") in task_graders and m["id"] in judge_ids
+    }
+    return bool(named) and named.isdisjoint(recorded_metric_ids)
+
+
+def inconclusive_reasons(
+    *, passes_on: int, passes_off: int, n_pairs: int, same_failure: bool, judge_not_recorded_: bool,
+    no_mapped_metric: bool,
+) -> tuple[str, ...]:
+    """Design section 4.6: every reason that applies, in the design's own listed order -- a task can
+    carry more than one."""
+    reasons = []
+    if saturated(passes_on, passes_off, n_pairs):
+        reasons.append("saturated")
+    if floor(passes_on, passes_off, n_pairs):
+        reasons.append("floor")
+    if same_failure:
+        reasons.append("same failure both arms")
+    if judge_not_recorded_:
+        reasons.append("judge not recorded")
+    if n_pairs < 3:
+        reasons.append("few pairs")
+    if no_mapped_metric:
+        reasons.append("no mapped metric")
+    return tuple(reasons)
 
 
 # --------------------------------------------------------------------------------------------------

@@ -1,0 +1,6 @@
+ignored	.agents/.gitignore
+added	.agents/artifacts.yml	outside	+15 -0
+added	.agents/log/p0-wing-spine.jsonl	outside	+1 -0
+ignored	docs/audit/.run-starts.json
+added	src/CfdBench.Core/Domain/Wing.cs	inside	+34 -0
+added	.gitignore	outside	+2 -0
