@@ -181,12 +181,18 @@ Per cell:
 - `pack_files_written` = drift.log lines with `outside` whose path starts with one of `PACK_WRITE_PATHS`:
   `docs/audit/`, `docs/docs-index.js`, `.agents/`, `docs/coordination/`, `docs/lessons/`. Count files and lines
   (`+a` + `-d`). NA when the task has no drift grader (the evidence key is absent). The reason is "no drift
-  grader for this task". *(Not implemented this slice -- the drift.log column format has no committed fixture
-  to verify against; left for the S5 wiring pass rather than guessed, per the standing no-guessing rule.)*
+  grader for this task". Implemented (S5 hand-off): the line format is pinned against `grade/drift.py`'s own
+  writer (`_measure()`), not guessed -- `tests/fixtures/pack_improvement/drift-pack-files.log`, confirmed
+  byte-for-byte against a real `runs/grid-1` drift.log.
 - `worktree_left` = the attempt directory has ≥ 1 sibling worktree (section 3.1 rule).
 - `diverted_delivery` = `worktree_left` and some file under the task's `blast_radius` exists in a sibling
   worktree and is missing from `ws` or differs from it byte for byte. Compare file bytes only; never run git.
   **NA `NA_BLAST_RADIUS`** when the blast radius could not be read (R-85 item 1) -- never a guessed False.
+  Matching a `blast_radius` glob (`src/**`, a bare file name) against a sibling's files uses `fnmatch` on each
+  file's path relative to the sibling, the same matcher `product_write` uses for the identical syntax (one
+  definition, not two) -- found necessary against the real `grid-1-cc` archive (S5 hand-off): `Path.glob(pattern)`
+  per pattern silently misses every leaf file under a `**` segment (pathlib's `**` matches directories at each
+  depth, never the files inside them, without a trailing `/*`).
 - `diverted_and_failed` = `diverted_delivery` and `pass_at_1 == 0`. NA when `diverted_delivery` is NA (same reason).
 - `stopped_without_product` = pack-on cell, `outcome == "completed"`, `stop_reason == "end_turn"`,
   `pass_at_1 == 0`, and zero `product_write` calls in the trace (sub-agents included). **NA `NA_BLAST_RADIUS`**
@@ -384,12 +390,23 @@ ranking; count pack-off ceremony as pack-on.
 4. **S4** rules: value/waste, inconclusive, verdicts, findings and ranking (PI-T10, T11, T12). **Done** as
    reusable pure primitives over already-decided inputs: `ceiling_off`/`saturated`/`floor`, `classify_group`,
    `verdict`, `Finding`/`rank_findings`. `inconclusive_reasons` (4.6's full per-task reason list, combining
-   `same failure both arms` and `judge not recorded`) is **not** wired -- it needs `oracle.log` and the judge
-   catalog's own formats, which are S5-adjacent glue, not named by PI-T10/11/12.
-5. **S5** rendering in `html.py`: the section is appended last, has its nav entry, and covers the states table
-   (PI-T1, T2, T14). Also wires the two deferred S3/S4 items above (`pack_files_written`, `inconclusive_reasons`)
-   and assembles PK-01..PK-08 as `Finding`s from real cells/pairs/groups.
-6. **S6** the golden slow-ring test on grid-1 and grid-1-cc (PI-T15), plus the mutants.
+   `same failure both arms` and `judge not recorded`) is wired (S5 hand-off): `failing_test_names` reads
+   `oracle.log`'s two observed failing-test-name shapes (unittest verbose, xUnit `[FAIL]`) and
+   `judge_not_recorded` reads the catalog's `source: [J]` metric ids against the task's own `graders:` list.
+5. **S5** rendering in `html.py`: **done**. The section (`_pack_improvement`) is appended last, carries its nav
+   entry, and covers the states table (PI-T1, T2, T14; `report.pack_improvement.assemble()` decides the state
+   and the renderer switches on it). It wires `pack_files_written` and `inconclusive_reasons` and assembles
+   real PK-01..PK-07 `Finding`s from cells/pairs/groups (PK-08 a watch line, never ranked, per R-85 item 6). The
+   per-intention verdict table (section 5) is not rendered this slice: `board.py` computes a per-(combo)
+   bootstrap interval for `pass_at_1` alone, never a per-metric interval for the other mapped quality metrics,
+   and adding one is a `board.py` change this hand-off's scope excluded -- `quality_lo_positive` is always
+   `False` (named in `report/pack_improvement.py`'s own module docstring) so no verdict this slice would render
+   is fabricated. PK-01..07's Findings do not depend on that gap.
+6. **S6** the golden gate-ring test on grid-1 and grid-1-cc (PI-T15; `@pytest.mark.gate`, the marker
+   `test_grade_drift.py`'s own archived-run golden already uses, skipping cleanly via
+   `archived_runs.gate_runs_root()` when `runs/` is absent), plus the nine mutants (the design's seven and
+   R-85's two), all killed. **Done.** See section 14 for a verified deviation from this section's own PI-T15
+   text, found while wiring against the real archives.
 
 ## 13. Out of scope
 
@@ -402,3 +419,14 @@ change.
 The hand analysis summed `model_calls` directly and used `cell.outcome.turn_ms` for wall time. The section uses
 `CellView.tokens` and `CellView.wall_ms`, which match the leaderboard. Exact ratios may differ slightly, so
 PI-T15 asserts thresholds and cell-id sets rather than the page's numbers.
+
+**A verified deviation from this section's own PI-T15 text (S5/S6 hand-off, reported to the Leader, not
+silently reconciled):** of the four grid-1 cells this section's PI-T15 row names as PK-01 evidence, two
+(`3ff04431d3b5ac27`, `757143056c649892`) mechanically satisfy `diverted_and_failed` under section 4.4's own
+byte-for-byte rule; the other two (`4a6250261f80ded4`, `c6a763578ef7e110`, both D1 copilot-sol) do not --
+their sibling worktree's blast-radius files (297 matched under `src/AiDe.Core/Projections/**` and `tests/**`)
+are byte-identical to `ws` (`diff -rq`, checked directly against the real archive). The rule compares final
+file bytes only, never git history (section 4.4's own words), so a cell that detoured through a worktree and
+then converged is not "diverted" by this definition, even where an earlier manual transcript read called it
+that. `tests/test_pack_improvement_golden.py::test_pi_t15_grid_1_golden` pins the verified superset
+(`{3ff04431d3b5ac27, 757143056c649892}`) rather than the full four-cell text above.
