@@ -2504,6 +2504,40 @@ window.DOCS_INDEX = {
       "sourceSha256": "599e881c212a84daecdb3fe4fcce0f251a6f89faee2040584fd621926e706112"
     },
     {
+      "id": "proposal-enterprise-production-portfolio",
+      "path": "docs/proposals/enterprise-production-portfolio.md",
+      "title": "An Enterprise/Production portfolio for harness-bench",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-12-31",
+      "reviewSuggested": [],
+      "summary": "BOM 0.5 measures SWE capability on small, saturated tasks; no task carries a latent enterprise requirement with a mechanical oracle. Proposes eight task families (H security, I privacy, J compliance, K resilience, L operability, M long-horizon rework, N unfamiliar API / spike, O simplicity controls, P drift), their mechanical metrics, sample sizes (about 39 cells per arm for a 0.30 pass-rate delta), the map to each pack intention, and a phased rollout that fixes measurement first. The page is enterprise-production-portfolio.html.",
+      "tags": [
+        "benchmark",
+        "proposal",
+        "bom",
+        "security",
+        "privacy",
+        "resilience",
+        "rework",
+        "simplicity"
+      ],
+      "links": [
+        {
+          "to": "proposal-cross-harness-benchmarking",
+          "rel": "relates-to"
+        },
+        {
+          "to": "proposal-pack-onoff-analysis",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "d697717132ff5593483f35e8ecb04948ceadc97f9c1b83c1f4136140105f5b9d"
+    },
+    {
       "id": "proposal-pack-onoff-analysis",
       "path": "docs/proposals/pack-onoff-analysis.md",
       "title": "Pack on vs pack off: grid-1 analysis and ranked pack changes",
@@ -3232,6 +3266,14 @@ window.DOCS_INDEX = {
       "artifactId": "coordination-phase1-finish"
     },
     {
+      "id": "surface-proposals-enterprise-production-portfolio",
+      "path": "docs/proposals/enterprise-production-portfolio.html",
+      "title": "Enterprise production portfolio",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "proposal-enterprise-production-portfolio"
+    },
+    {
       "id": "surface-case-study",
       "path": "docs/case-study.html",
       "title": "From Specification to Implementation: An AI-Forward Case Study",
@@ -3270,5 +3312,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "878c112b043e09c8ff02de73f1ea97df832b4c347790fd4ff0ad5ffcfe0bdb90"
+  "graphSha256": "19591aa4a404e2b0f553911fff4bdd11df0f9e8d879e3515efe55d4c286f90d8"
 };
