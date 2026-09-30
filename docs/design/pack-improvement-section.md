@@ -437,3 +437,8 @@ file bytes only, never git history (section 4.4's own words), so a cell that det
 then converged is not "diverted" by this definition, even where an earlier manual transcript read called it
 that. `tests/test_pack_improvement_golden.py::test_pi_t15_grid_1_golden` pins the verified superset
 (`{3ff04431d3b5ac27, 757143056c649892}`) rather than the full four-cell text above.
+
+**2026-09-30:** this deviation is now also corrected in the hand analysis page itself
+(`docs/proposals/pack-onoff-analysis.html`/`.md`, F-4/F-5 and the Verdict section's own dated
+correction note) -- it had been verified here but not yet propagated back into the page that first
+made the claim.
