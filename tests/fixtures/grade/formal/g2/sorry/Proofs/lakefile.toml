@@ -1,0 +1,10 @@
+name = "proofs"
+defaultTargets = ["Fold", "Statements"]
+
+[[lean_lib]]
+name = "Fold"
+srcDir = "."
+
+[[lean_lib]]
+name = "Statements"
+srcDir = "."
