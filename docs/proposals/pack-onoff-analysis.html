@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pack on vs pack off: grid-1 analysis</title>
+<meta name="description" content="What the AI-Forward pack (r97) bought and cost in the grid-1 benchmark, judged against the pack's own intentions, with ranked pack changes.">
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --ink:#17202a; --ink-2:#4a5563; --ink-3:#7d8796;
+  --rule:#d8dde4; --rule-2:#eceff3; --accent:#1f5fbf;
+  --hit:#17804a; --hit-bg:#e5f4ec; --miss:#b3261e; --miss-bg:#fbe9e7; --inc:#8a5a00; --inc-bg:#fbf1dc;
+  --code:#eef1f5;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono","SFMono-Regular",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101418; --panel:#171c22; --ink:#e7ebf0; --ink-2:#b3bcc7; --ink-3:#7f8a97;
+    --rule:#2a323c; --rule-2:#1e252d; --accent:#7fb0ff;
+    --hit:#5fd394; --hit-bg:#15291f; --miss:#ff8a80; --miss-bg:#33191a; --inc:#f0c060; --inc-bg:#2e2513;
+    --code:#1f262e;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101418; --panel:#171c22; --ink:#e7ebf0; --ink-2:#b3bcc7; --ink-3:#7f8a97;
+  --rule:#2a323c; --rule-2:#1e252d; --accent:#7fb0ff;
+  --hit:#5fd394; --hit-bg:#15291f; --miss:#ff8a80; --miss-bg:#33191a; --inc:#f0c060; --inc-bg:#2e2513;
+  --code:#1f262e;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--font);font-variant-numeric:tabular-nums}
+main{max-width:1080px;margin:0 auto;padding:28px 16px 80px}
+h1{font-size:clamp(22px,4vw,30px);line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
+h2{font-size:21px;margin:44px 0 10px;padding-top:10px;border-top:1px solid var(--rule)}
+h3{font-size:16px;margin:24px 0 6px}
+p,li{max-width:78ch}
+a{color:var(--accent)}
+code{font-family:var(--mono);font-size:.88em;background:var(--code);padding:1px 4px;border-radius:4px;overflow-wrap:anywhere}
+.meta{color:var(--ink-2);font-size:13.5px;margin:0 0 18px}
+.lede{font-size:16.5px;max-width:80ch}
+nav.toc{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13.5px;margin:14px 0 4px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:18px 0}
+.tile{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:12px 14px}
+.tile .k{font-size:12.5px;color:var(--ink-2);text-transform:uppercase;letter-spacing:.04em}
+.tile .v{font-size:26px;font-weight:650;margin:2px 0}
+.tile .s{font-size:13px;color:var(--ink-2)}
+.wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--rule);border-radius:8px;background:var(--panel);margin:10px 0 6px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+caption{text-align:left;padding:10px 12px 4px;font-weight:600;color:var(--ink)}
+th,td{padding:7px 10px;border-bottom:1px solid var(--rule-2);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--ink-2);white-space:nowrap}
+td.n{text-align:right;white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+.tag{display:inline-block;font-size:12px;font-weight:650;padding:1px 7px;border-radius:10px;white-space:nowrap}
+.hit{color:var(--hit);background:var(--hit-bg)}
+.miss{color:var(--miss);background:var(--miss-bg)}
+.inc{color:var(--inc);background:var(--inc-bg)}
+.lbl{font-size:11.5px;font-weight:700;letter-spacing:.03em;color:var(--ink-2);border:1px solid var(--rule);border-radius:4px;padding:0 4px;white-space:nowrap}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:12px 16px;margin:10px 0}
+.card h3{margin-top:4px}
+.card dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 12px;margin:6px 0 0;font-size:14px}
+.card dt{color:var(--ink-2);font-weight:600}
+.card dd{margin:0}
+blockquote{margin:8px 0;padding:6px 12px;border-left:3px solid var(--rule);color:var(--ink-2);font-size:14px}
+.small{font-size:13px;color:var(--ink-2)}
+@media (max-width:560px){.card dl{grid-template-columns:1fr}.card dt{margin-top:6px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>Pack on vs pack off: what the AI-Forward pack bought in grid-1</h1>
+<p class="meta">Analysis, 2026-09-30 · data: <code>runs/grid-1</code> + <code>runs/grid-1-cc</code> (read-only) · pack revision 97 (<code>648f8f0e</code>) · BOM 0.3 smoke tasks A1, B1, C1, D1, E6, F1 · 3 harness/model combos × pack on/off × 3 repetitions = 108 graded cells, 54 on/off pairs · grid-2 pending (not graded when this was written) · worker-opus-pack (Claude Opus 5.5)</p>
+<nav class="toc" aria-label="Sections">
+<a href="#verdict">Verdict</a><a href="#method">Method</a><a href="#findings">Findings</a><a href="#pairs">Paired table</a><a href="#intentions">Intention scorecard</a><a href="#improve">Where to improve</a><a href="#hit">Where it hit</a><a href="#inconclusive">Inconclusive</a><a href="#unmeasured">Not measured</a><a href="#reflection">Reflection</a>
+</nav>
+</header>
+
+<section id="verdict">
+<h2>Verdict</h2>
+<p class="lede">The pack did not earn its cost in grid-1. It used <strong>3.5× the tokens and 1.9× the wall clock</strong> and passed 40 of 54 cells against pack-off's 48 of 54. That gap is not significant pooled (p = 0.08). <strong>10 of the 14 pack-on failures come from two pack behaviours, not from wrong code.</strong> In 7, the work went into a new git worktree the grader never saw (rule WT1). In 3, pack ceremony used up the turn before any code was written. Where the pack changed behaviour it did so as intended: a goal-state block in 51 of 54 cells, and tests written before code on D1 in 8 of 9. But no smoke task can show that this discipline pays off. The other intentions (security, privacy, compliance, resilience, the Spike Protocol, rework avoided) have <strong>no measurement at all</strong> in this BOM. So the rule the user set applies: the extra cost did not buy measurable rigor, so something must be fixed. The ranked fixes are in <a href="#improve">Where to improve</a>.</p>
+<div class="tiles">
+<div class="tile"><div class="k">Tokens, all cells</div><div class="v">3.5×</div><div class="s">73.7 M on vs 21.3 M off; higher in 51 of 54 pairs</div></div>
+<div class="tile"><div class="k">Wall clock (agent turn)</div><div class="v">1.9×</div><div class="s">3.54 h on vs 1.85 h off; longer in 47 of 54 pairs</div></div>
+<div class="tile"><div class="k">pass@1</div><div class="v">40 / 54 vs 48 / 54</div><div class="s">Fisher exact p = 0.08 pooled; F1 alone p = 0.009</div></div>
+<div class="tile"><div class="k">Tokens per passing cell</div><div class="v">4.2×</div><div class="s">1.84 M on vs 0.44 M off</div></div>
+<div class="tile"><div class="k">Pack-caused delivery failures</div><div class="v">10 of 14</div><div class="s">7 worktree diversion + 3 turn ended by ceremony</div></div>
+</div>
+<p class="small">Labels: <span class="lbl">VERIFIED</span> = observed in the run data or a transcript and cited. <span class="lbl">INFERRED</span> = a model or a reading, with its basis stated. With n = 3 per task × combo × arm, every per-task result is exploratory unless a test says otherwise.</p>
+</section>
+
+<section id="method">
+<h2>How this was measured</h2>
+<ul>
+<li><strong>Cells.</strong> grid-1 graded 84 of 108 cells: an OAuth expiry skipped 24 cc-opus cells. grid-1-cc re-ran all 36 cc-opus cells <em>with the same cell ids</em>, so its rows replace grid-1's 12 graded cc-opus rows. One of those rows (F1.cc-opus.pack-off.r1 in grid-1) had wall = 0 and failed. Result: 108 cells, n = 3 for every task × combo × arm.</li>
+<li><strong>Tokens</strong> are the sum of <code>model_calls</code> rows (uncached input + cache read + cache write + output). <code>turn_usage</code> undercounts: for Codex pack-on it shows about 65 k per cell against 1.3 M in <code>model_calls</code>, because it keeps one summed row per model. Copilot's record has session totals only, so per-call context for Copilot is NA.</li>
+<li><strong>Wall clock</strong> is <code>turn_ms</code> from each cell's <code>cell.outcome</code> event.</li>
+<li><strong>Quality</strong> is the graded <code>scores/*.jsonl</code> rows. Tests: two-sided Fisher exact on pass@1 counts, Holm-adjusted over the 6 tasks. Cost: the per-pair on/off ratio (pairs matched on combo and repetition), reported as the median and a count of pairs above 1.</li>
+<li><strong>Behaviour</strong> comes from each cell's transcript in <code>archive/&lt;cell&gt;/attempt-1/home</code>, in all three harness formats. The extractor counts tool calls that read pack files, load skills, call <code>audit-log.py</code>, <code>docs-graph.py</code> or <code>coord-core.py</code>, or create a worktree. It also detects goal-state blocks and the order of the first test-file write against the first source-file write. The first version of the test-first detector matched file <em>contents</em> as well as paths. A spot-check caught that, so the detector now reads only write-target paths. Every failure attributed below was confirmed in the grader's <code>oracle.log</code> and the archived tree.</li>
+<li><strong>grid-2</strong> (BOM 0.5, 22 tasks, same pack r97) was still running and <code>graded: false</code> at 20:22Z. Only codex-sol ran in full; copilot-sol and cc-opus were skipped by login failures. It is excluded and named pending.</li>
+</ul>
+</section>
+
+<section id="findings">
+<h2>Findings</h2>
+
+<div class="card"><h3>F-1 · The pack's cost is large and consistent <span class="lbl">VERIFIED</span></h3>
+<p>Token ratio on/off by harness: <strong>Codex 6.8×, Copilot 4.3×, Claude Code 1.6×</strong>. Wall ratio: 2.7×, 2.1×, 1.4×. Tool calls: 1,430 on vs 1,007 off. The median per-pair token ratio by task: A1 4.9, B1 11.5, C1 9.6, D1 3.4, E6 5.1, F1 1.3.</p></div>
+
+<div class="card"><h3>F-2 · Most of Claude Code's extra spend is fixed context; most of Codex's is extra calls <span class="lbl">VERIFIED</span> + <span class="lbl">INFERRED</span></h3>
+<p>Median input on the first model call (n = 18 per arm): <strong>Claude Code 21.4 k → 39.9 k (+18.4 k)</strong>; <strong>Codex 12.0 k → 21.1 k (+9.2 k)</strong>. Copilot session input: median 1.28 M vs 121 k (10.1×); per-call NA. In the installed pack, <code>AGENTS.md</code> is 26.5 KB, and 13 instruction files with <code>applyTo: "**"</code> total 241 KB. The pack commit adds 446 files. A model (per-call delta × measured calls; Inferred) says fixed context explains about <strong>90%</strong> of Claude Code's extra tokens (5.4 M of 6.1 M) but only <strong>20%</strong> of Codex's (5.8 M of 28.3 M). Codex pack-on made 630 calls against 244 pack-off. The two harnesses need different fixes.</p></div>
+
+<div class="card"><h3>F-3 · Quality: no task improved; F1 got worse <span class="lbl">VERIFIED</span></h3>
+<p>pass@1 on vs off: A1 9/9 vs 9/9 · B1 5/9 vs 3/9 (p = 0.64) · C1 8/9 vs 9/9 · D1 6/9 vs 9/9 (p = 0.21) · E6 9/9 vs 9/9 · <strong>F1 3/9 vs 9/9 (p = 0.009; Holm 0.054)</strong>. Without F1: 37/45 vs 39/45 (p = 0.77). By combo: Claude Code 13/18 vs 16/18, Codex 16/18 vs 17/18, Copilot 11/18 vs 15/18.</p></div>
+
+<div class="card"><h3>F-4 · Worktree diversion: the deliverable went somewhere the requester was not looking <span class="lbl">VERIFIED</span></h3>
+<p>Following WT1 ("A session that will write to the repository MUST begin by creating and entering its own git worktree"), <strong>22 of 54 pack-on cells</strong> ran <code>git worktree add</code> or <code>coord worktree new</code>. No pack-off cell did. In 7 of them the graded workspace was left empty or unchanged, and each one failed:</p>
+<ul>
+<li>D1: <code>4a6250261f80ded4</code>, <code>c6a763578ef7e110</code> (copilot), <code>3ff04431d3b5ac27</code> (codex). The hidden tests read "Failed: 5, Passed: 0".</li>
+<li>F1 cc-opus: <code>c4d05c98231eb3aa</code>, <code>050c08027c79a944</code>, <code>efbedb23da7173d0</code>. Each has no <code>src/</code> in <code>ws</code>, all code in <code>ws-p0-wing-spine</code> on an unmerged branch, and 10/10 hidden tests failed.</li>
+<li>C1 codex r1 <code>757143056c649892</code>: "docs/architecture.md is missing".</li>
+</ul>
+<blockquote>"The first Phase 0 slice is built and integrated on branch <code>p0-wing-spine</code>, in the worktree <code>../ws-p0-wing-spine</code>. All 59 tests pass from a clean build … Nothing is committed yet." (F1.cc-opus.pack-on.r1)</blockquote>
+<p>The agents were honest about where the work was. But the requester asked for the slice in <em>this</em> repository. Whether the diverted code would have passed the hidden tests is not measured here, because no builds ran during this analysis.</p></div>
+
+<div class="card"><h3>F-5 · Ceremony ended the turn before any product was written <span class="lbl">VERIFIED</span></h3>
+<p>All three F1 Copilot pack-on cells (<code>b765f438fb811ea0</code>, <code>dfb4ae60b8a3d3a3</code>, <code>0164cd01031f303f</code>) stopped with <code>end_turn</code> after 128–146 s. Before stopping, each had loaded <code>execute-with-coordination</code>, <code>optimize-graph</code> and <code>prepare-for-coordination</code>. Each had also run <code>coord classify init</code> and <code>coord install</code>, committed <code>.agents/artifacts.yml</code>, created an integration worktree, and written a coordination plan document. None of them dispatched a track or wrote code. Each final message announced the next step and then stopped:</p>
+<blockquote>"…the requested paths are disjoint authored files, so all three tracks can run against the fixed public contract … I'm recording that boundary before dispatch." (b765f438fb811ea0)</blockquote>
+<p>The Copilot pack-off cells passed 3/3, using 93 tool calls on average.</p></div>
+
+<div class="card"><h3>F-6 · Pack artifacts written into the product repo caused a regression <span class="lbl">VERIFIED</span></h3>
+<p>11 of 54 pack-on cells added <code>docs/audit/</code> (audit-log.jsonl, audit-data.js, audit-log.md, index.html) and often <code>docs/docs-index.js</code>, which is the Audit Mandate at work. Result: B1 <code>scope_creep</code> mean 661 lines vs 0, F1 409 vs 19. In <strong>D1.cc-opus.pack-on.r3</strong> (<code>73c87914995c00a9</code>), the product's <code>WhatTheRealCorpusCanProduceTests</code> reads <code>docs/audit/audit-log.jsonl</code> as its corpus. The new file broke 3 tests, and the grader confirmed them on a second run: "regressions 3 of 2172 passing before". Separately, 4 F1 pack-on cells <strong>set a repo-local git identity</strong> so they could commit pack artifacts. No pack-off cell did.</p></div>
+
+<div class="card"><h3>F-7 · A third of pack-on tool calls are ceremony <span class="lbl">VERIFIED</span></h3>
+<p>452 of 1,430 pack-on tool calls (32%) were pack-file reads, skill loads, audit/docs-graph/coord script calls or worktree creation. Pack-off: 12 of 1,007 (1%). On E6, a T0 calibration task (ten HumanEval functions), Copilot pack-on read 7 pack files per cell. Every E6 cell passed in both arms.</p></div>
+
+<div class="card"><h3>F-8 · Test-first behaviour is real; its payoff is not visible on these tasks <span class="lbl">VERIFIED</span></h3>
+<p>First test-file write came before first source write in <strong>D1: 8/9 on vs 0/9 off</strong>. On C1, pack-on wrote tests in 9/9 cells against 3/9 for pack-off. E6: 3/9 vs 1/9. In D1.codex-sol.pack-on.r2 (<code>4348964cb6e088e0</code>), the agent wrote the tests, ran them red, implemented, and then caught its own wrong expected value: "The first green run exposed an error in the test expectations … I'm correcting the expected values". The outcome did not move: D1 hidden tests already pass 9/9 pack-off, and <code>mutation_score</code> is 0.904 (n = 6) vs 0.927 (n = 9).</p></div>
+
+<div class="card"><h3>F-9 · The Spike Protocol never fired, and nothing needed it <span class="lbl">VERIFIED</span></h3>
+<p>0 of 108 cells mentioned or ran a spike. No smoke task depends on an unfamiliar, preview or post-cutoff API, so this is not applicable rather than a miss.</p></div>
+
+<div class="card"><h3>F-10 · On the ambiguity task, pack-on asked less but stated its assumption <span class="lbl">VERIFIED</span> n = 3, direction <span class="lbl">INFERRED</span></h3>
+<p>A1 Claude Code pack-off asked the clarifying question in 3 of 3 cells; pack-on asked in 1 of 3. Codex and Copilot never asked in either arm. Pack-on disclosed the assumption instead: "One assumption: the statement says 'find the sum' but doesn't say which sum. I took it to mean the largest possible total" (<code>17d304c23e0c84f3</code>). The scripted user matched <em>none</em> of the questions asked, although cc-opus asked the annotated key question almost word for word. So <code>key_question_recall</code> is 0 everywhere. That is a grader defect, not a pack result.</p></div>
+
+<div class="card"><h3>F-11 · Simplicity held: the pack did not add code weight <span class="lbl">VERIFIED</span></h3>
+<p>Median product source lines in passing cells (uncommitted changes, ceremony and build output excluded): C1 67 vs 70, D1 58.5 vs 62, E6 107 vs 131. The extra lines on C1 and D1 are tests, not product code.</p></div>
+</section>
+
+<section id="pairs">
+<h2>Paired table: task × combo</h2>
+<p class="small">n = 3 pack-on and 3 pack-off cells per row. Tokens are the mean per cell from <code>model_calls</code>. Wall is the mean <code>turn_ms</code>. Ratios are on/off.</p>
+<div class="wrap"><table>
+<caption>pass@1, tokens, wall and tool calls, pack on / pack off</caption>
+<thead><tr><th>Task</th><th>Combo</th><th>pass@1 on/off</th><th>Tokens on/off (k)</th><th>×</th><th>Wall s on/off</th><th>×</th><th>Tool calls on/off</th><th>Cause of pack-on failures</th></tr></thead>
+<tbody>
+<tr><td>A1</td><td>cc-opus</td><td class="n">3/3 · 3/3</td><td class="n">144 / 112</td><td class="n">1.3</td><td class="n">22 / 20</td><td class="n">1.1</td><td class="n">3 / 4</td><td>—</td></tr>
+<tr><td>A1</td><td>codex-sol</td><td class="n">3/3 · 3/3</td><td class="n">391 / 86</td><td class="n">4.6</td><td class="n">106 / 50</td><td class="n">2.1</td><td class="n">10 / 5</td><td>—</td></tr>
+<tr><td>A1</td><td>copilot-sol</td><td class="n">3/3 · 3/3</td><td class="n">782 / 34</td><td class="n">22.8</td><td class="n">114 / 28</td><td class="n">4.0</td><td class="n">16 / 6</td><td>—</td></tr>
+<tr><td>B1</td><td>cc-opus</td><td class="n">1/3 · 1/3</td><td class="n">779 / 365</td><td class="n">2.1</td><td class="n">241 / 307</td><td class="n">0.8</td><td class="n">13 / 6</td><td>format check (both arms)</td></tr>
+<tr><td>B1</td><td>codex-sol</td><td class="n">3/3 · 2/3</td><td class="n">1,974 / 157</td><td class="n">12.5</td><td class="n">380 / 120</td><td class="n">3.2</td><td class="n">30 / 6</td><td>—</td></tr>
+<tr><td>B1</td><td>copilot-sol</td><td class="n">1/3 · 0/3</td><td class="n">1,786 / 116</td><td class="n">15.4</td><td class="n">265 / 82</td><td class="n">3.2</td><td class="n">35 / 15</td><td>format check (both arms)</td></tr>
+<tr><td>C1</td><td>cc-opus</td><td class="n">3/3 · 3/3</td><td class="n">537 / 205</td><td class="n">2.6</td><td class="n">117 / 80</td><td class="n">1.5</td><td class="n">14 / 7</td><td>—</td></tr>
+<tr><td>C1</td><td>codex-sol</td><td class="n">2/3 · 3/3</td><td class="n">1,516 / 187</td><td class="n">8.1</td><td class="n">324 / 142</td><td class="n">2.3</td><td class="n">29 / 10</td><td>worktree diversion (1)</td></tr>
+<tr><td>C1</td><td>copilot-sol</td><td class="n">3/3 · 3/3</td><td class="n">2,058 / 133</td><td class="n">15.5</td><td class="n">256 / 104</td><td class="n">2.5</td><td class="n">33 / 14</td><td>—</td></tr>
+<tr><td>D1</td><td>cc-opus</td><td class="n">3/3 · 3/3</td><td class="n">928 / 370</td><td class="n">2.5</td><td class="n">503 / 269</td><td class="n">1.9</td><td class="n">19 / 10</td><td>(r3 passed with 3 regressions from audit log)</td></tr>
+<tr><td>D1</td><td>codex-sol</td><td class="n">2/3 · 3/3</td><td class="n">1,156 / 277</td><td class="n">4.2</td><td class="n">257 / 110</td><td class="n">2.3</td><td class="n">20 / 10</td><td>worktree diversion (1)</td></tr>
+<tr><td>D1</td><td>copilot-sol</td><td class="n">1/3 · 3/3</td><td class="n">1,114 / 190</td><td class="n">5.9</td><td class="n">165 / 67</td><td class="n">2.5</td><td class="n">31 / 20</td><td>worktree diversion (2)</td></tr>
+<tr><td>E6</td><td>cc-opus</td><td class="n">3/3 · 3/3</td><td class="n">322 / 126</td><td class="n">2.6</td><td class="n">51 / 31</td><td class="n">1.6</td><td class="n">6 / 4</td><td>—</td></tr>
+<tr><td>E6</td><td>codex-sol</td><td class="n">3/3 · 3/3</td><td class="n">420 / 71</td><td class="n">5.9</td><td class="n">139 / 53</td><td class="n">2.6</td><td class="n">10 / 4</td><td>—</td></tr>
+<tr><td>E6</td><td>copilot-sol</td><td class="n">3/3 · 3/3</td><td class="n">1,287 / 94</td><td class="n">13.6</td><td class="n">177 / 53</td><td class="n">3.4</td><td class="n">27 / 14</td><td>—</td></tr>
+<tr><td>F1</td><td>cc-opus</td><td class="n">0/3 · 3/3</td><td class="n">2,914 / 2,430</td><td class="n">1.2</td><td class="n">521 / 351</td><td class="n">1.5</td><td class="n">62 / 70</td><td>worktree diversion (3)</td></tr>
+<tr><td>F1</td><td>codex-sol</td><td class="n">3/3 · 3/3</td><td class="n">5,593 / 854</td><td class="n">6.5</td><td class="n">468 / 155</td><td class="n">3.0</td><td class="n">100 / 37</td><td>—</td></tr>
+<tr><td>F1</td><td>copilot-sol</td><td class="n">0/3 · 3/3</td><td class="n">867 / 1,289</td><td class="n">0.7</td><td class="n">136 / 195</td><td class="n">0.7</td><td class="n">19 / 93</td><td>turn ended by ceremony (3)</td></tr>
+</tbody></table></div>
+<p class="small">B1's four pack-on failures and all six pack-off B1 failures fail the same hidden check: "missing or empty sections: ['## Part A — Functional specification']". The prompt lists <code>### Core scenario</code> and similar headings under Part A, and a Part A that holds only subsections counts as empty. The check measures heading layout, not the pack.</p>
+</section>
+
+<section id="intentions">
+<h2>Intention scorecard</h2>
+<div class="wrap"><table>
+<caption>The pack's stated intentions, judged on grid-1</caption>
+<thead><tr><th>Intention</th><th>Verdict</th><th>Evidence</th></tr></thead>
+<tbody>
+<tr><td>Add rigor (Rigor Protocol, goal state)</td><td><span class="tag inc">process only</span></td><td>Goal state in 51/54 cells; one caught self-error (F-8). No quality metric moved (F-3). Judge metrics that would score rigor were not recorded.</td></tr>
+<tr><td>Test-driven, minimise false positives</td><td><span class="tag inc">process only</span></td><td>Test-first D1 8/9 vs 0/9; tests written on C1 9/9 vs 3/9. mutation_score 0.904 vs 0.927; hidden tests already pass off. No task has a naive solution that visible tests would pass and hidden tests would reject.</td></tr>
+<tr><td>Reduce hallucination (Spike Protocol)</td><td><span class="tag inc">not applicable</span></td><td>0/108 spikes; no smoke task depends on an unfamiliar API (F-9).</td></tr>
+<tr><td>Secure, compliant, private, resilient by design</td><td><span class="tag inc">not measurable</span></td><td>No task has a trust boundary, PII, a regulated flow or a failure-injected dependency. error_handling (judge) not recorded. Negative signal: invented git identities (F-6).</td></tr>
+<tr><td>No excessive ceremony</td><td><span class="tag miss">miss</span></td><td>32% of tool calls are ceremony (F-7). T0 tasks cost 2.6–13.6× tokens with no outcome change. Ceremony ended 3 turns (F-5).</td></tr>
+<tr><td>No drift or rat-holes</td><td><span class="tag miss">miss</span></td><td>Worktree diversion in 22 cells, 7 failures (F-4). Audit files written into the product repo, one regression (F-6).</td></tr>
+<tr><td>Extra cost buys value</td><td><span class="tag miss">miss</span></td><td>4.2× tokens per passing cell and a lower pass rate (F-1, F-3).</td></tr>
+<tr><td>Right first time (less rework)</td><td><span class="tag inc">not measurable</span></td><td>Every task is one shot. No follow-up change measures the cost of a short-sighted first design.</td></tr>
+<tr><td>Aggressively simplify</td><td><span class="tag hit">hit (weak)</span></td><td>Product code not larger (F-11); E6 18% smaller. The ceremony around the code is not simple (F-7).</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="improve">
+<h2>Where to improve the pack (ranked)</h2>
+<p>Ranked by harm first (failed deliveries), then by measured waste. Each change names the waste it removes, the evidence, and how the next grid verifies it. These are proposals for the pack; this repo does not change the pack.</p>
+
+<div class="card"><h3>1 · Scope WT1 so work lands where the requester looks</h3>
+<dl><dt>Change</dt><dd>WT1 applies when another writer may share the checkout. When the workspace was provisioned for this task (a fresh clone, a CI job, a benchmark cell, a single-agent repo), or the prompt names the repository to change, work in place. If a worktree was used, the turn is not done until the change is integrated back into the checkout the requester named. The alternative is a first line saying the change is <em>not</em> in that checkout. Add the class to <code>defect-classes.md</code> with a control: <code>pack-doctor</code> or the session close checks that the named checkout has the change.</dd>
+<dt>Waste removed</dt><dd>7 failed deliveries (all of D1's pack-on failures, all of F1 Claude Code's, and C1 Codex r1), plus worktree setup calls in 22 cells.</dd>
+<dt>Evidence</dt><dd>F-4.</dd>
+<dt>Verify</dt><dd>Next grid: 0 cells with a diverted deliverable; D1 and F1 pass parity with pack-off.</dd></dl></div>
+
+<div class="card"><h3>2 · Never end a turn on an announcement; cap ceremony before the first product write</h3>
+<dl><dt>Change</dt><dd>(a) Add a hard close check to CT: if the last message announces an action ("I'll…", "before dispatch"), take that action or say why not. (b) Set a ceremony budget before the first product write (T1 ≤ 5 tool calls, T2 ≤ 12). (c) <code>coord install</code>, <code>classify init</code> and a committed registry are <em>not</em> prerequisites to delegate when the prompt already names the tracks, owners and paths. The coordination layer is opt-in, not a precondition.</dd>
+<dt>Waste removed</dt><dd>3 failed deliveries (all of F1 Copilot's) and about 15 ceremony calls per F1 cell.</dd>
+<dt>Evidence</dt><dd>F-5.</dd>
+<dt>Verify</dt><dd>F1 Copilot pack-on reaches dispatch in 3/3; no cell ends with product paths untouched and <code>end_turn</code>.</dd></dl></div>
+
+<div class="card"><h3>3 · Keep pack artifacts out of the product tree unless the repo opted in</h3>
+<dl><dt>Change</dt><dd>The Audit Mandate writes to <code>docs/audit/</code> only when that directory already exists. Otherwise it writes to an ignored local log (the pack already uses <code>.agents/log/</code>). The same rule applies to <code>docs/docs-index.js</code>. Never set a git identity. If a commit fails for identity, leave the change uncommitted and say so. Never commit pack artifacts unasked.</dd>
+<dt>Waste removed</dt><dd>1 measured regression; 500–800 lines of scope creep per affected cell (11 cells); 4 invented identities, which is an attribution and compliance risk.</dd>
+<dt>Evidence</dt><dd>F-6.</dd>
+<dt>Verify</dt><dd><code>scope_creep_files</code> on B1/C1/D1 pack-on falls to the pack-off level; <code>regression_count</code> = 0.</dd></dl></div>
+
+<div class="card"><h3>4 · Shrink Copilot's always-applied instructions</h3>
+<dl><dt>Change</dt><dd>Keep one <code>applyTo: "**"</code> file of at most 8 KB: the floors, one line each with its rule id, plus an index. Move the other 12 always-applied files (241 KB together) to narrow <code>applyTo</code> globs or to <code>load: reference</code>, read on demand.</dd>
+<dt>Waste removed</dt><dd>The largest single token cost: Copilot session input 10.1× (median 1.28 M vs 121 k); A1 22.8×, E6 13.6×. The share attributable to always-applied files cannot be split from Copilot's session totals. <span class="lbl">INFERRED</span> from the 241 KB size.</dd>
+<dt>Evidence</dt><dd>F-2, F-7.</dd>
+<dt>Verify</dt><dd>Copilot pack-on/off session input ratio ≤ 2× on A1 and E6.</dd></dl></div>
+
+<div class="card"><h3>5 · Cut the per-call fixed context in AGENTS.md</h3>
+<dl><dt>Change</dt><dd>Reduce the managed pack block in <code>AGENTS.md</code> (26.5 KB today) to at most 6 KB: the standing rules as one line each with an id, plus where to read more. Measure it with a pack-side budget test (bytes of always-loaded context per harness) that fails on growth.</dd>
+<dt>Waste removed</dt><dd>+18.4 k tokens on every Claude Code call and +9.2 k on every Codex call (measured). Modeled at about 5.4 M of Claude Code's 6.1 M extra tokens in this grid <span class="lbl">INFERRED</span>.</dd>
+<dt>Evidence</dt><dd>F-2.</dd>
+<dt>Verify</dt><dd>First-call input delta ≤ 5 k on both harnesses.</dd></dl></div>
+
+<div class="card"><h3>6 · Make tiering mechanical: T0 means no pack reads</h3>
+<dl><dt>Change</dt><dd>A T0 turn (a closed, single-file, fully specified task) writes one goal line and reads no knowledge files or skills. The rule "ceremony scales with the tier" exists, but agents do not apply it on T0 tasks. Give the three harnesses a one-line T0 test ("one file, spec complete, no trust boundary").</dd>
+<dt>Waste removed</dt><dd>E6: 5.1× tokens and 2.65× wall; A1: 4.9× tokens and 2.2× wall; zero outcome change on either.</dd>
+<dt>Evidence</dt><dd>F-1, F-7.</dd>
+<dt>Verify</dt><dd>E6 and A1 pack-on token ratio ≤ 1.5×.</dd></dl></div>
+
+<div class="card"><h3>7 · Ask once when the objective itself is missing and a channel exists (watch item)</h3>
+<dl><dt>Change</dt><dd>In the No-Guessing Protocol, when the requester offers a clarification tool and the <em>goal</em> is underspecified (not just a detail), asking is the default move, and "mark it" is the fallback.</dd>
+<dt>Waste removed</dt><dd>Risk of a confidently wrong objective. The measured direction is 1/3 vs 3/3 on one combo, n = 3, not significant. Re-test on A1–A5 in grid-2.</dd>
+<dt>Evidence</dt><dd>F-10.</dd></dl></div>
+</section>
+
+<section id="hit">
+<h2>Where the pack hit its goals</h2>
+<ul>
+<li><strong>The front matter fires.</strong> A goal-state block appeared in 51 of 54 pack-on cells and in none of the pack-off cells. The control works as a behaviour <span class="lbl">VERIFIED</span>. Its value is not measured.</li>
+<li><strong>TDD is adopted.</strong> Tests came first on D1 in 8/9 cells, and pack-on wrote tests where pack-off wrote none (C1 9/9 vs 3/9). In one D1 cell the red-first loop caught a wrong expected value before completion was claimed <span class="lbl">VERIFIED</span>.</li>
+<li><strong>Honest completion claims.</strong> Diverted cells reported exactly where the code was and that nothing was committed. A1 pack-on stated its assumption. Honest, though the delivery was wrong <span class="lbl">VERIFIED</span>, from transcripts.</li>
+<li><strong>No code bloat.</strong> Product code was the same size or smaller (F-11) <span class="lbl">VERIFIED</span>.</li>
+<li><strong>Delegation discipline on Codex F1.</strong> 3/3 passes with sub-agent worktrees integrated back and models recorded. Pack-off Codex also passed 3/3 at 6.5× fewer tokens, so this is parity, not gain <span class="lbl">VERIFIED</span>.</li>
+</ul>
+</section>
+
+<section id="inconclusive">
+<h2>Task classification: hit, improve, or inconclusive because not applicable</h2>
+<div class="wrap"><table>
+<caption>Per task, all three combos pooled (n = 9 per arm)</caption>
+<thead><tr><th>Task</th><th>Class</th><th>Reason</th></tr></thead>
+<tbody>
+<tr><td>A1 ambiguous prompt</td><td><span class="tag inc">inconclusive: not applicable</span> + <span class="tag miss">improve: cost</span></td><td>Ceiling: 9/9 both arms. The clarify matcher recognised no question, so recall is 0 everywhere (grader defect). The real signal is cost: 4.9× tokens for nothing.</td></tr>
+<tr><td>B1 primer → spec</td><td><span class="tag inc">inconclusive: not applicable</span></td><td>pass@1 is a heading-layout check that fails both arms identically. spec_quality (judge) not recorded. 5/9 vs 3/9 is noise (p = 0.64) at 11.5× tokens and +661 lines of audit files.</td></tr>
+<tr><td>C1 spec → architecture</td><td><span class="tag miss">improve</span></td><td>8/9 vs 9/9; the failure is worktree diversion. 9.6× tokens. adr_quality (judge) not recorded. Tests written 9/9 vs 3/9 is a process hit.</td></tr>
+<tr><td>D1 architecture → code</td><td><span class="tag miss">improve</span></td><td>6/9 vs 9/9; all 3 failures are worktree diversion; one pass had 3 regressions caused by the audit log. TDD process hit (8/9 test-first), but the task is too easy for it to show.</td></tr>
+<tr><td>E6 prompt → code (calibration)</td><td><span class="tag inc">inconclusive: not applicable</span> + <span class="tag miss">improve: cost</span></td><td>T0 puzzles with a 9/9 ceiling. Nothing for rigor to improve; 5.1× tokens and 2.65× wall are pure overhead.</td></tr>
+<tr><td>F1 multi-agent tracks</td><td><span class="tag miss">improve</span></td><td>3/9 vs 9/9 (p = 0.009). Claude Code: worktree diversion 3/3. Copilot: turn ended by ceremony 3/3. Codex: 3/3 pass at 6.5× tokens.</td></tr>
+</tbody></table></div>
+<p>No smoke task is classified <span class="tag hit">hit</span>. The pack's clearest wins are behavioural (goal state, test-first), and on these tasks behaviour cannot turn into outcome. Every task is either saturated for a capable model or graded on something the pack does not touch.</p>
+</section>
+
+<section id="unmeasured">
+<h2>What could not be measured</h2>
+<ul>
+<li><strong>Dollar cost.</strong> <code>cost_usd</code> is NA in every cell: there is no price-list entry for gpt-6-sol, gpt-6-luna or claude-haiku-4-5. Tokens stand in.</li>
+<li><strong>Judge metrics.</strong> error_handling, honest_completion_claims, assumption_disclosure, unrequested_behaviour, goal_drift_slope, spec_quality, adr_quality, handoff_fidelity and mast_failure_codes are all not recorded. So are kg_use and protocol_conformance ("not built").</li>
+<li><strong>Copilot per-call context.</strong> The native record has session totals only.</li>
+<li><strong>Whether diverted code was correct.</strong> Grading the sibling worktrees needs builds, which were excluded while grid-2 held the machine.</li>
+<li><strong>Security, privacy, compliance, resilience, operability, rework, long-horizon change.</strong> No task in BOM 0.3 exercises them. See the companion proposal, <a href="enterprise-production-portfolio.html">Enterprise/Production portfolio</a>.</li>
+<li><strong>grid-2</strong> (22 tasks, BOM 0.5) is pending grading and effectively Codex only.</li>
+</ul>
+</section>
+
+<section id="reflection">
+<h2>Reflection on the exercise</h2>
+<h3>What this benchmark could show</h3>
+<p>It showed <em>delivery</em> failures and <em>cost</em> with no ambiguity. Both are real engineering outcomes, and both trace to specific pack rules with specific fixes. It also showed that the pack changes process (goal state, tests first) reliably across three harnesses, which is a precondition for any value. And it showed the harness split: the same pack costs 1.6× on Claude Code, which imports AGENTS.md and reads knowledge on demand, and 4–7× on Codex and Copilot, which load or explore far more. So the pack's delivery surface, not only its content, is a design variable.</p>
+<h3>What it could not show</h3>
+<p>It could not show the thing the pack exists for. The smoke tasks are small, fully specified and saturated: pack-off passed 48 of 54, and 5 of 6 tasks reach 100% pack-off. None has a latent requirement (a trust boundary, PII, a flaky dependency, a follow-up change) that a disciplined agent would catch and an undisciplined one would miss. Asking such a benchmark whether rigor pays is like asking a unit test whether an architecture scales. With n = 3 per cell only large effects are detectable: F1's 6-cell swing reached p = 0.009, and no rigor effect was large enough. The absence of evidence here is not evidence of absence.</p>
+<h3>What I would change about how the analysis was done</h3>
+<ul>
+<li><strong>Pre-register the intention → metric map</strong> before looking at data. I built the ceremony and test-first indicators after seeing results. They are simple and were spot-checked, but a fixed map (the <a href="../design/pack-improvement-section.md">pack-improvement section spec</a>) removes the choice.</li>
+<li><strong>Separate "wrong code" from "wrong place".</strong> The correctness grader treats a diverted deliverable like broken code. A distinct validity code (delivered outside the graded tree), plus grading the diverted tree, would have split the harm into its two parts in minutes.</li>
+<li><strong>Distrust my own heuristics first.</strong> The first test-first detector matched file contents and over-counted. One transcript read caught it. Every transcript-derived indicator should ship with a spot-check sample in its evidence.</li>
+<li><strong>Measure the pack surface directly.</strong> Bytes of always-loaded context per harness is a static number. It should be a pack-side budget gate, not something inferred from token deltas.</li>
+<li><strong>Price the models</strong> before the grid, so waste can be read in money as well as tokens.</li>
+<li><strong>Put the benchmark's own defects on the list.</strong> The A1 matcher and the B1 heading check each hid signal. A task whose control arm fails for a format reason cannot measure a treatment.</li>
+</ul>
+</section>
+</main>
+</body>
+</html>
