@@ -1369,6 +1369,46 @@ window.DOCS_INDEX = {
       "sourceSha256": "3a3352452011bf8332e3d25d5f2aa0e72c35225961e1cbbd1241848425163c84"
     },
     {
+      "id": "design-pack-improvement-section",
+      "path": "docs/design/pack-improvement-section.md",
+      "title": "Design: the report's closing section, \\\"Pack on vs pack off — where to improve the pack\\\"",
+      "type": "design",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 4 · report (follow-on to row 20)",
+      "reviewBy": "2027-03-31",
+      "reviewSuggested": [],
+      "summary": "Specifies a report section that is always present and always last: from a run's own facts it computes paired pack-on/pack-off deltas, a value-vs-waste class per (task, combo), ceremony and drift indicators read from the native records, inconclusive detection, per-intention verdicts and a ranked, deterministic list of \"where to improve the pack\" findings (PK-01..PK-08). Every number names its source file and field; NA always carries a reason and small n is always shown. Report-only (no new ledger fact); red-first test plan with goldens from grid-1 and grid-1-cc; six slices. Written for an engineer who was not in the analysis session.",
+      "tags": [
+        "benchmark",
+        "report",
+        "pack-effect",
+        "continuous-improvement",
+        "statistics",
+        "transcripts"
+      ],
+      "links": [
+        {
+          "to": "design-phase4-report",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-phase4-statistics",
+          "rel": "depends-on"
+        },
+        {
+          "to": "proposal-pack-onoff-analysis",
+          "rel": "implements"
+        },
+        {
+          "to": "proposal-enterprise-production-portfolio",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "1f343bb4b344d27dbcb09d60fcc59eead585ce7a8f4ec91aeac0f8b872f73123"
+    },
+    {
       "id": "design-phase1-walking-skeleton",
       "path": "docs/design/phase1-walking-skeleton.md",
       "title": "Design: phase 1 walking skeleton (engine, cells, telemetry, grading, report)",
@@ -3312,5 +3352,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "19591aa4a404e2b0f553911fff4bdd11df0f9e8d879e3515efe55d4c286f90d8"
+  "graphSha256": "ae05f8a2f60a9b52a9fc5499e7a96f217f9411e034e2b2e283838abec49e5522"
 };
